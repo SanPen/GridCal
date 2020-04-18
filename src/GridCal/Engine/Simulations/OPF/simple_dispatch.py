@@ -96,7 +96,7 @@ class OpfSimple(Opf):
         self.s_from = np.zeros(m)
         self.s_to = np.zeros(m)
         self.overloads = np.zeros(m)
-        self.rating = nc.br_rates / Sbase
+        self.rating = nc.branch_rates / Sbase
         self.nodal_restrictions = np.zeros(n)
 
         return True

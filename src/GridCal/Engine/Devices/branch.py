@@ -21,8 +21,9 @@ from matplotlib import pyplot as plt
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.types import BranchType
-from GridCal.Engine.Devices.transformer import TransformerType
-from GridCal.Engine.Devices.line import SequenceLineType
+from GridCal.Engine.Devices.transformer import TransformerType, Transformer2W
+from GridCal.Engine.Devices.line import SequenceLineType, Line
+from GridCal.Engine.Devices.hvdc_line import HvdcLine
 from GridCal.Engine.Devices.underground_line import UndergroundLineType
 
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
@@ -777,3 +778,65 @@ class Branch(EditableDevice):
         Get the branch defining coordinates
         """
         return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]
+
+
+def convert_branch(branch: Branch):
+    """
+
+    :param branch:
+    :return:
+    """
+    if branch.branch_type == BranchType.Line:
+
+        return Line(bus_from=branch.bus_from,
+                    bus_to=branch.bus_to,
+                    name=branch.name,
+                    r=branch.R,
+                    x=branch.X,
+                    b=branch.B,
+                    rate=branch.rate,
+                    active=branch.active,
+                    tolerance=branch.tolerance,
+                    cost=branch.Cost,
+                    mttf=branch.mttf,
+                    mttr=branch.mttr,
+                    r_fault=branch.r_fault,
+                    x_fault=branch.x_fault,
+                    fault_pos=branch.fault_pos,
+                    length=branch.length,
+                    temp_base=branch.temp_base,
+                    temp_oper=branch.temp_oper,
+                    alpha=branch.alpha,
+                    rate_prof=branch.rate_prof,
+                    Cost_prof=branch.Cost_prof,
+                    active_prof=branch.active_prof,
+                    temp_oper_prof=branch.temp_oper_prof)
+
+    elif branch.branch_type == BranchType.Transformer:
+
+        return Transformer2W(bus_from=branch.bus_from,
+                             bus_to=branch.bus_to,
+                             name=branch.name,
+                             r=branch.R,
+                             x=branch.X,
+                             b=branch.B,
+                             rate=branch.rate,
+                             active=branch.active,
+                             tolerance=branch.tolerance,
+                             cost=branch.Cost,
+                             mttf=branch.mttf,
+                             mttr=branch.mttr,
+                             tap=branch.tap_module,
+                             shift_angle=branch.vset,
+                             vset=branch.vset,
+                             bus_to_regulated=branch.bus_to_regulated,
+                             temp_base=branch.temp_base,
+                             temp_oper=branch.temp_oper,
+                             alpha=branch.alpha,
+                             template=branch.template,
+                             rate_prof=branch.rate_prof,
+                             Cost_prof=branch.Cost_prof,
+                             active_prof=branch.active_prof,
+                             temp_oper_prof=branch.temp_oper_prof)
+    else:
+        return branch

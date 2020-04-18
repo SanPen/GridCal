@@ -224,9 +224,8 @@ class Line(EditableDevice):
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Line', r=1e-20, x=1e-20, b=1e-20,
                  rate=1.0, active=True, tolerance=0, cost=0.0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
-                 branch_type: BranchType = BranchType.Line, length=1,
-                 temp_base=20, temp_oper=20, alpha=0.00330,
-                 template=LineTemplate(), ):
+                 length=1, temp_base=20, temp_oper=20, alpha=0.00330,
+                 template=LineTemplate(), rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -252,8 +251,6 @@ class Line(EditableDevice):
                                                                       '0% for lines.'),
                                                   'length': GCProp('km', float, 'Length of the branch '
                                                                    '(not used for calculation)'),
-                                                  'vset': GCProp('p.u.', float, 'Objective voltage at the "to" side of '
-                                                                 'the bus when regulating the tap.'),
                                                   'temp_base': GCProp('ºC', float, 'Base temperature at which R was '
                                                                       'measured.'),
                                                   'temp_oper': GCProp('ºC', float, 'Operation temperature to modify R.'),
@@ -277,7 +274,6 @@ class Line(EditableDevice):
                                                                       '0 would be at the "from" side,\n'
                                                                       '1 would be at the "to" side,\n'
                                                                       'therefore 0.5 is at the middle.'),
-                                                  'branch_type': GCProp('', BranchType, ''),
                                                   'template': GCProp('', LineTemplate, '')},
                                 non_editable_attributes=['bus_from', 'bus_to', 'template'],
                                 properties_with_profile={'active': 'active_prof',
@@ -314,15 +310,15 @@ class Line(EditableDevice):
 
         self.Cost = cost
 
-        self.Cost_prof = None
+        self.Cost_prof = Cost_prof
 
-        self.active_prof = None
+        self.active_prof = active_prof
 
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
         self.temp_oper = temp_oper
 
-        self.temp_oper_prof = None
+        self.temp_oper_prof = temp_oper_prof
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
@@ -330,10 +326,10 @@ class Line(EditableDevice):
         # branch rating in MVA
         self.rate = rate
 
-        self.rate_prof = None
+        self.rate_prof = rate_prof
 
         # branch type: Line, Transformer, etc...
-        self.branch_type = branch_type
+        self.branch_type = BranchType.Line
 
         # type template
         self.template = template

@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-
+import pandas as pd
 import numpy as np
 
 from GridCal.Engine.basic_structures import BusMode, ReactivePowerControlMode, SolverType, TapsControlMode, Logger
@@ -28,6 +28,42 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOpt
 from GridCal.Engine.Core.snapshot_data import SnapshotIsland
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_aux import compile_types
+from GridCal.Engine.Core.snapshot_data import compile_snapshot_circuit, split_into_islands
+
+
+class ConvergenceReport:
+
+    def __init__(self):
+        self.methods_ = list()
+        self.converged_ = list()
+        self.error_ = list()
+        self.elapsed_ = list()
+        self.iterations_ = list()
+
+    def add(self, method, converged, error, elapsed, iterations):
+        self.methods_.append(method)
+        self.converged_.append(converged)
+        self.error_.append(error)
+        self.elapsed_.append(elapsed)
+        self.iterations_.append(iterations)
+
+    def converged(self):
+        return self.converged_[-1]
+
+    def error(self):
+        return self.error_[-1]
+
+    def to_dataframe(self):
+        data = {'Method': self.methods_,
+                'Converged?': self.converged_,
+                'Error': self.error_,
+                'Elapsed (s)': self.elapsed_,
+                'Iterations': self.iterations_}
+
+        df = pd.DataFrame(data)
+
+        return df
+
 
 
 def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, Ysh_helm, B1, B2, Bpqpv, Bref, pq, pv, ref, pqpv, tolerance, max_iter,
@@ -222,13 +258,13 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
     """
 
     # get the original types and compile this class' own lists of node types for thread independence
-    original_types = circuit.types.copy()
-    ref, pq, pv, pqpv = compile_types(Sbus, original_types, logger)
+    original_types = circuit.bus_types.copy()
+    vd, pq, pv, pqpv = compile_types(Sbus, original_types, logger)
 
     # copy the tap positions
-    tap_positions = circuit.tap_position.copy()
+    tap_positions = circuit.tr_tap_position.copy()
 
-    tap_module = np.r_[circuit.tap_mod, np.ones(circuit.nhvdc), circuit.vsc_m]
+    tap_module = circuit.tr_tap_mod
 
     # control flags
     any_q_control_issue = True
@@ -247,22 +283,25 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
     # for k in circuit.bus_to_regulated_idx:   # indices of the branches that are regulated at the bus "to"
     #     control_max_iter = max(control_max_iter, circuit.max_tap[k] + circuit.min_tap[k])
 
-    inner_it = list()
+    # inner_it = list()
     outer_it = 0
-    elapsed = list()
-    methods = list()
-    converged_lst = list()
-    errors = list()
-    it = list()  # iterations
-    el = list()  # elapsed
+    # elapsed = list()
+    # methods = list()
+    # converged_lst = list()
+    # errors = list()
+    # it = list()  # iterations
+    # el = list()  # elapsed
 
     # For the iterate_pv_control logic:
     Vset = voltage_solution.copy()  # Origin voltage set-points
+    Scalc = Sbus
+
+    report = ConvergenceReport()
 
     # this the "outer-loop"
     while (any_q_control_issue or any_tap_control_issue) and outer_it < control_max_iter:
 
-        if len(circuit.ref) == 0:
+        if len(circuit.vd) == 0:
             voltage_solution = np.zeros(len(Sbus), dtype=complex)
             normF = 0
             Scalc = Sbus.copy()
@@ -278,25 +317,25 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
                                                                       Ibus=Ibus,
                                                                       Ybus=circuit.Ybus,
                                                                       Yseries=circuit.Yseries,
-                                                                      Ysh_helm=circuit.Ysh_helm,
+                                                                      Ysh_helm=circuit.Yshunt,
                                                                       B1=circuit.B1,
                                                                       B2=circuit.B2,
                                                                       Bpqpv=circuit.Bpqpv,
                                                                       Bref=circuit.Bref,
                                                                       pq=pq,
                                                                       pv=pv,
-                                                                      ref=ref,
+                                                                      ref=vd,
                                                                       pqpv=pqpv,
                                                                       tolerance=options.tolerance,
                                                                       max_iter=options.max_iter,
                                                                       acceleration_parameter=options.acceleration_parameter)
             if options.distributed_slack:
                 # Distribute the slack power
-                slack_power = Scalc[ref].real.sum()
-                installed_power = circuit.Sinstalled.sum()
+                slack_power = Scalc[vd].real.sum()
+                installed_power = circuit.bus_installed_power.sum()
 
                 if installed_power > 0.0:
-                    delta = slack_power * circuit.Sinstalled / installed_power
+                    delta = slack_power * circuit.bus_installed_power / installed_power
 
                     # repeat power flow with the redistributed power
                     voltage_solution, converged, normF, Scalc, it2, el2 = solve(solver_type=solver_type,
@@ -312,7 +351,7 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
                                                                                 Bref=circuit.Bref,
                                                                                 pq=pq,
                                                                                 pv=pv,
-                                                                                ref=ref,
+                                                                                ref=vd,
                                                                                 pqpv=pqpv,
                                                                                 tolerance=options.tolerance,
                                                                                 max_iter=options.max_iter,
@@ -322,7 +361,11 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
                     el += el2
 
             # record the method used
-            methods.append(solver_type)
+            report.add(method=solver_type,
+                       converged=converged,
+                       error=normF,
+                       elapsed=el,
+                       iterations=it)
 
             if converged:
 
@@ -335,9 +378,9 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
                     any_q_control_issue = control_q_direct(V=voltage_solution,
                                                            Vset=np.abs(voltage_solution),
                                                            Q=Scalc.imag,
-                                                           Qmax=circuit.Qmax,
-                                                           Qmin=circuit.Qmin,
-                                                           types=circuit.types,
+                                                           Qmax=circuit.Qmax_bus,
+                                                           Qmin=circuit.Qmin_bus,
+                                                           types=circuit.bus_types,
                                                            original_types=original_types,
                                                            verbose=options.verbose)
 
@@ -348,9 +391,9 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
                     any_q_control_issue = control_q_iterative(V=voltage_solution,
                                                               Vset=Vset,
                                                               Q=Scalc.imag,
-                                                              Qmax=circuit.Qmax,
-                                                              Qmin=circuit.Qmin,
-                                                              types=circuit.types,
+                                                              Qmax=circuit.Qmax_bus,
+                                                              Qmin=circuit.Qmin_bus,
+                                                              types=circuit.bus_types,
                                                               original_types=original_types,
                                                               verbose=options.verbose,
                                                               k=options.q_steepness_factor)
@@ -358,14 +401,14 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
                 else:
                     # did not check Q limits
                     any_q_control_issue = False
-                    types_new = circuit.types
+                    types_new = circuit.bus_types
                     Qnew = Scalc.imag
 
                 # Check the actions of the Q-control
                 if any_q_control_issue:
-                    circuit.types = types_new
+                    circuit.bus_types = types_new
                     Sbus = Sbus.real + 1j * Qnew
-                    ref, pq, pv, pqpv = compile_types(Sbus, types_new, logger)
+                    vd, pq, pv, pqpv = compile_types(Sbus, types_new, logger)
                 else:
                     if options.verbose:
                         print('Q controls Ok')
@@ -377,14 +420,14 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
                     stable, tap_module, \
                     tap_positions = control_taps_direct(voltage=voltage_solution,
                                                         T=circuit.T,
-                                                        bus_to_regulated_idx=circuit.bus_to_regulated_idx,
+                                                        bus_to_regulated_idx=circuit.tr_bus_to_regulated_idx,
                                                         tap_position=tap_positions,
                                                         tap_module=tap_module,
-                                                        min_tap=circuit.min_tap,
-                                                        max_tap=circuit.max_tap,
-                                                        tap_inc_reg_up=circuit.tap_inc_reg_up,
-                                                        tap_inc_reg_down=circuit.tap_inc_reg_down,
-                                                        vset=circuit.vset,
+                                                        min_tap=circuit.tr_min_tap,
+                                                        max_tap=circuit.tr_max_tap,
+                                                        tap_inc_reg_up=circuit.tr_tap_inc_reg_up,
+                                                        tap_inc_reg_down=circuit.tr_tap_inc_reg_down,
+                                                        vset=circuit.tr_vset,
                                                         verbose=options.verbose)
 
                 elif options.control_taps == TapsControlMode.Iterative:
@@ -395,11 +438,11 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
                                                            bus_to_regulated_idx=circuit.bus_to_regulated_idx,
                                                            tap_position=tap_positions,
                                                            tap_module=tap_module,
-                                                           min_tap=circuit.min_tap,
-                                                           max_tap=circuit.max_tap,
-                                                           tap_inc_reg_up=circuit.tap_inc_reg_up,
-                                                           tap_inc_reg_down=circuit.tap_inc_reg_down,
-                                                           vset=circuit.vset,
+                                                           min_tap=circuit.tr_min_tap,
+                                                           max_tap=circuit.tr_max_tap,
+                                                           tap_inc_reg_up=circuit.tr_tap_inc_reg_up,
+                                                           tap_inc_reg_down=circuit.tr_tap_inc_reg_down,
+                                                           vset=circuit.tr_vset,
                                                            verbose=options.verbose)
 
                 if not stable:
@@ -411,20 +454,8 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
                 any_q_control_issue = False
                 any_tap_control_issue = False
 
-        # increment the inner iterations counter
-        inner_it.append(it)
-
         # increment the outer control iterations counter
         outer_it += 1
-
-        # add the time taken by the solver in this iteration
-        elapsed.append(el)
-
-        # append loop error
-        errors.append(normF)
-
-        # append converged
-        converged_lst.append(bool(converged))
 
     if options.verbose:
         print("Stabilized in {} iteration(s) (outer control loop)".format(outer_it))
@@ -436,22 +467,23 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
                                                     branch_rates=branch_rates)
 
     # voltage, Sbranch, loading, losses, error, converged, Qpv
-    results = PowerFlowResults(Sbus=Scalc,
-                               voltage=voltage_solution,
-                               Sbranch=Sbranch,
-                               Ibranch=Ibranch,
-                               Vbranch=Vbranch,
-                               loading=loading,
-                               losses=losses,
-                               flow_direction=flow_direction,
-                               tap_module=tap_module,
-                               error=errors,
-                               converged=converged_lst,
-                               Qpv=Sbus.imag[pv],
-                               inner_it=inner_it,
-                               outer_it=outer_it,
-                               elapsed=elapsed,
-                               methods=methods)
+    results = PowerFlowResults(n=circuit.nbus,
+                               m=circuit.nbr,
+                               n_tr=circuit.ntr,
+                               bus_names=circuit.bus_names,
+                               branch_names=circuit.branch_names,
+                               transformer_names=circuit.tr_names)
+    results.Sbus = Scalc
+    results.voltage = voltage_solution
+    results.Sbranch = Sbranch
+    results.Ibranch = Ibranch
+    results.Vbranch = Vbranch
+    results.loading = loading
+    results.losses = losses
+    results.flow_direction = flow_direction
+    results.tap_module = tap_module
+    results.convergence_reports.append(report)
+    results.Qpv = Sbus.imag[pv]
 
     return results
 
@@ -667,7 +699,7 @@ def power_flow_post_process(calculation_inputs: SnapshotIsland, V, branch_rates,
     # Compute the slack and pv buses power
     Sbus = calculation_inputs.Sbus
 
-    vd = calculation_inputs.ref
+    vd = calculation_inputs.vd
     pv = calculation_inputs.pv
 
     # power at the slack nodes
@@ -1117,13 +1149,8 @@ def single_island_pf(circuit: SnapshotIsland, Vbus, Sbus, Ibus, branch_rates,
     # set worked to false to enter in the loop
     worked = False
     solver_idx = 0
-    methods = list()
-    inner_it = list()
-    elapsed = list()
-    errors = list()
-    converged_lst = list()
-    outer_it = 0
-    results = PowerFlowResults()
+
+    results = PowerFlowResults(n=0, m=0, n_tr=0, bus_names=(), branch_names=(), transformer_names=())
 
     while solver_idx < len(solvers) and not worked:
         # get the solver
@@ -1143,32 +1170,15 @@ def single_island_pf(circuit: SnapshotIsland, Vbus, Sbus, Ibus, branch_rates,
                                         logger=logger)
 
         # did it worked?
-        worked = np.all(results.converged)
+        worked = np.all(results.converged())
 
         # record the solver steps
-        methods += results.methods
-        inner_it += results.inner_iterations
-        outer_it += results.outer_iterations
-        elapsed += results.elapsed
-        errors += results.error
-        converged_lst += results.converged
-
         solver_idx += 1
 
     if not worked:
-        logger.append('Did not converge, even after retry!, Error:' + str(results.error))
-        return results
+        logger.append('Did not converge, even after retry!, Error:' + str(results.error()))
 
-    else:
-        # set the total process variables:
-        results.methods = methods
-        results.inner_iterations = inner_it
-        results.outer_iterations = outer_it
-        results.elapsed = elapsed
-        results.error = errors
-        results.converged = converged_lst
-
-        return results
+    return results
 
 
 def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_results=None,
@@ -1184,14 +1194,20 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     # print('PowerFlowDriver at ', self.grid.name)
     n = len(multi_circuit.buses)
     m = multi_circuit.get_branch_number()
-    results = PowerFlowResults()
-    results.initialize(n, m)
 
-    numerical_circuit = multi_circuit.compile_snapshot(opf_results=opf_results)
+    numerical_circuit = compile_snapshot_circuit(circuit=multi_circuit,
+                                                 apply_temperature=options.apply_temperature_correction,
+                                                 branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+                                                 impedance_tolerance=0.0,
+                                                 opf_results=opf_results)
 
-    calculation_inputs = numerical_circuit.compute(apply_temperature=options.apply_temperature_correction,
-                                                   branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-                                                   ignore_single_node_islands=options.ignore_single_node_islands)
+    calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,
+                                            ignore_single_node_islands=options.ignore_single_node_islands)
+
+    results = PowerFlowResults(n=n, m=m, n_tr=numerical_circuit.ntr,
+                               bus_names=numerical_circuit.bus_names,
+                               branch_names=numerical_circuit.branch_names,
+                               transformer_names=numerical_circuit.tr_names)
 
     results.bus_types = numerical_circuit.bus_types
 
@@ -1200,7 +1216,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
         # simulate each island and merge the results
         for i, calculation_input in enumerate(calculation_inputs):
 
-            if len(calculation_input.ref) > 0:
+            if len(calculation_input.vd) > 0:
 
                 # run circuit power flow
                 res = single_island_pf(circuit=calculation_input,
@@ -1213,17 +1229,16 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
 
                 bus_original_idx = calculation_input.original_bus_idx
                 branch_original_idx = calculation_input.original_branch_idx
+                tr_original_idx = calculation_input.original_tr_idx
 
                 # merge the results from this island
-                results.apply_from_island(res, bus_original_idx, branch_original_idx)
+                results.apply_from_island(res, bus_original_idx, branch_original_idx, tr_original_idx)
 
-                # # build the report
-                results.convergence_reports.append(res.get_report_dataframe())
             else:
                 logger.append('There are no slack nodes in the island ' + str(i))
     else:
 
-        if len(calculation_inputs[0].ref) > 0:
+        if len(calculation_inputs[0].vd) > 0:
             # only one island
             # run circuit power flow
             res = single_island_pf(circuit=calculation_inputs[0],
@@ -1237,10 +1252,9 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
             # merge the results from this island, this is needed because there may be single nodes omitted
             bus_original_idx = calculation_inputs[0].original_bus_idx
             branch_original_idx = calculation_inputs[0].original_branch_idx
-            results.apply_from_island(res, bus_original_idx, branch_original_idx)
+            tr_original_idx = calculation_inputs[0].original_tr_idx
+            results.apply_from_island(res, bus_original_idx, branch_original_idx, tr_original_idx)
 
-            # build the report
-            results.convergence_reports.append(results.get_report_dataframe())
         else:
             logger.append('There are no slack nodes')
 

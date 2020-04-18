@@ -264,7 +264,7 @@ class OpfAc(Opf):
         cost_l = numerical_circuit.load_cost
 
         # branch
-        branch_ratings = numerical_circuit.br_rates / Sbase
+        branch_ratings = numerical_circuit.branch_rates / Sbase
         Bseries = (numerical_circuit.branch_active * (1 / (numerical_circuit.R + 1j * numerical_circuit.X))).imag
         cost_br = numerical_circuit.branch_cost
 
@@ -307,7 +307,7 @@ class OpfAc(Opf):
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
-        self.v0 = np.abs(numerical_circuit.V0)
+        self.v0 = np.abs(numerical_circuit.Vbus)
         self.dva = dva
         self.dvm = dvm
         self.Pg = Pg

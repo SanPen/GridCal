@@ -2172,7 +2172,7 @@ class MainGUI(QMainWindow):
 
             # print convergence reports on the console
             for report in self.power_flow.convergence_reports:
-                msg_ = 'Power flow converged: \n' + report.__str__() + '\n\n'
+                msg_ = 'Power flow converged: \n' + report.to_dataframe().__str__() + '\n\n'
                 self.console_msg(msg_)
 
         else:

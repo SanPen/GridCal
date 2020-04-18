@@ -41,9 +41,9 @@ def get_objects_dictionary(circuit=MultiCircuit()):
     :return:
     """
     object_types = {'bus': [Bus(),
-                            circuit.buses],
+                            circuit.get_buses()],
                     'branch': [Branch(None, None),
-                               circuit.branches],
+                               circuit.get_branches()],
                     'load': [Load(),
                              circuit.get_loads()],
                     'static_generator': [StaticGenerator(),

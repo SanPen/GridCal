@@ -1,5 +1,5 @@
 # do not forget to keep a three-number version!!!
-__GridCal_VERSION__ = "3.7.1"
+__GridCal_VERSION__ = "4.0.0"
 
 url = 'https://github.com/SanPen/GridCal'
 

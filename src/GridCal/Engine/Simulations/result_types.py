@@ -31,6 +31,7 @@ class ResultTypes(Enum):
     BranchReactiveCurrent = 'Branch reactive current', DeviceType.BranchDevice
     BranchLoading = 'Branch loading', DeviceType.BranchDevice
     BranchTapModule = 'Branch tap module', DeviceType.BranchDevice
+    Transformer2WTapModule = 'Transformer tap module', DeviceType.Transformer2WDevice
     BranchVoltage = 'Branch voltage drop', DeviceType.BranchDevice
     BranchAngles = 'Branch voltage angles', DeviceType.BranchDevice
     BranchLosses = 'Branch losses', DeviceType.BranchDevice

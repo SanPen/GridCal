@@ -110,6 +110,8 @@ def get_elements_of_the_island(C_element_bus, island):
     :return: array of indices of the elements that match that island
     """
 
+    assert isinstance(C_element_bus, csc_matrix)
+
     # faster method
     n_rows = C_element_bus.shape[0]
     visited = np.zeros(n_rows, dtype=bool)

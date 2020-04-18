@@ -390,10 +390,10 @@ class Transformer2W(EditableDevice):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, tolerance=0, cost=0.0,
-                 mttf=0, mttr=0, branch_type: BranchType = BranchType.Transformer,
+                 mttf=0, mttr=0,
                  vset=1.0, bus_to_regulated=False,
                  temp_base=20, temp_oper=20, alpha=0.00330,
-                 template=TransformerType(), ):
+                 template=TransformerType(), rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -418,8 +418,6 @@ class Transformer2W(EditableDevice):
                                                                       'Tolerance expected for the impedance values\n'
                                                                       '7% is expected for transformers\n'
                                                                       '0% for lines.'),
-                                                  'length': GCProp('km', float, 'Length of the branch '
-                                                                   '(not used for calculation)'),
                                                   'tap_module': GCProp('', float, 'Tap changer module, '
                                                                        'it a value close to 1.0'),
                                                   'angle': GCProp('rad', float, 'Angle shift of the tap changer.'),
@@ -440,7 +438,6 @@ class Transformer2W(EditableDevice):
                                                                   'Aluminum @ 75ºC: 0.00330'),
                                                   'Cost': GCProp('e/MWh', float,
                                                                  'Cost of overloads. Used in OPF.'),
-                                                  'branch_type': GCProp('', BranchType, ''),
                                                   'template': GCProp('', TransformerType, '')},
                                 non_editable_attributes=['bus_from', 'bus_to', 'template'],
                                 properties_with_profile={'active': 'active_prof',
@@ -470,15 +467,15 @@ class Transformer2W(EditableDevice):
 
         self.Cost = cost
 
-        self.Cost_prof = None
+        self.Cost_prof = Cost_prof
 
-        self.active_prof = None
+        self.active_prof = active_prof
 
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
         self.temp_oper = temp_oper
 
-        self.temp_oper_prof = None
+        self.temp_oper_prof = temp_oper_prof
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
@@ -499,10 +496,10 @@ class Transformer2W(EditableDevice):
         # branch rating in MVA
         self.rate = rate
 
-        self.rate_prof = None
+        self.rate_prof = rate_prof
 
         # branch type: Line, Transformer, etc...
-        self.branch_type = branch_type
+        self.branch_type = BranchType.Transformer
 
         # type template
         self.template = template

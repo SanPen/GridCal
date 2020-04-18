@@ -278,6 +278,9 @@ class MultiCircuit:
 
         self.time_profile = None
 
+    def get_buses(self):
+        return self.buses
+
     def get_branches(self):
         """
         Return all the branch objects
@@ -1662,6 +1665,11 @@ class MultiCircuit:
 
         elif obj.device_type == DeviceType.HVDCLineDevice:
             self.add_hvdc(obj)
+
+        elif obj.device_type == DeviceType.BranchDevice:
+            # we need to convert it :D
+            obj2 = convert_branch(obj)
+            self.add_branch(obj2)  # call this again, but this time it is not a Branch object
 
     def delete_branch(self, obj: Branch):
         """

@@ -385,7 +385,7 @@ class OpfAcTimeSeries(OpfTimeSeries):
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
-        self.v0 = np.abs(numerical_circuit.V0)
+        self.v0 = np.abs(numerical_circuit.Vbus)
         self.dva = dva.transpose()
         self.dvm = dvm.transpose()
         self.Pg = Pg.transpose()

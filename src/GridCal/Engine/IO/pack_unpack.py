@@ -48,6 +48,14 @@ def get_objects_dictionary():
                     'transformer_types': TransformerType(),
 
                     'branch': Branch(),
+
+                    'transformer2w': Transformer2W(),
+
+                    'line': Line(),
+
+                    'dc_line': DCLine(),
+
+                    'vsc': VSC(Bus(), Bus(is_dc=True)),
                     }
 
     return object_types

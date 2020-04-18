@@ -64,98 +64,17 @@ class PowerFlowResults:
 
     """
 
-    def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, tap_module=None,
-                 flow_direction=None, Vbranch=None, error=None, converged=None, Qpv=None, battery_power_inc=None,
-                 inner_it=None,  outer_it=None, elapsed=None, methods=None, bus_types=None):
+    def __init__(self, n, m, n_tr, bus_names, branch_names, transformer_names):
 
         self.name = 'Power flow'
 
-        self.Sbus = Sbus
+        self.n = n
+        self.m = m
+        self.n_tr = n_tr
+        self.bus_names = bus_names
+        self.branch_names = branch_names
+        self.transformer_names = transformer_names
 
-        self.voltage = voltage
-
-        self.Sbranch = Sbranch
-
-        self.Ibranch = Ibranch
-
-        self.Vbranch = Vbranch
-
-        self.loading = loading
-
-        self.losses = losses
-
-        self.flow_direction = flow_direction
-
-        self.tap_module = tap_module
-
-        self.error = error
-
-        self.bus_types = bus_types
-
-        self.converged = converged
-
-        self.Qpv = Qpv
-
-        self.battery_power_inc = battery_power_inc
-
-        self.overloads = None
-
-        self.overvoltage = None
-
-        self.undervoltage = None
-
-        self.overloads_idx = None
-
-        self.overvoltage_idx = None
-
-        self.undervoltage_idx = None
-
-        self.buses_useful_for_storage = None
-
-        self.available_results = [ResultTypes.BusVoltageModule,
-                                  ResultTypes.BusVoltageAngle,
-                                  ResultTypes.BranchActivePower,
-                                  ResultTypes.BranchReactivePower,
-                                  ResultTypes.BranchActiveCurrent,
-                                  ResultTypes.BranchReactiveCurrent,
-                                  ResultTypes.BranchLoading,
-                                  ResultTypes.BranchTapModule,
-                                  ResultTypes.BranchActiveLosses,
-                                  ResultTypes.BranchReactiveLosses,
-                                  ResultTypes.BranchVoltage,
-                                  ResultTypes.BranchAngles,
-                                  ResultTypes.BatteryPower]
-
-        self.plot_bars_limit = 100
-
-        self.inner_iterations = inner_it
-
-        self.outer_iterations = outer_it
-
-        self.elapsed = elapsed
-
-        self.methods = methods
-
-        self.convergence_reports = list()
-
-    def copy(self):
-        """
-        Return a copy of this
-        @return:
-        """
-        return PowerFlowResults(Sbus=self.Sbus, voltage=self.voltage, Sbranch=self.Sbranch,
-                                Ibranch=self.Ibranch, loading=self.loading,
-                                losses=self.losses, error=self.error,
-                                converged=self.converged, Qpv=self.Qpv, inner_it=self.inner_iterations,
-                                outer_it=self.outer_iterations, elapsed=self.elapsed, methods=self.methods)
-
-    def initialize(self, n, m):
-        """
-        Initialize the arrays
-        @param n: number of buses
-        @param m: number of branches
-        @return:
-        """
         self.Sbus = np.zeros(n, dtype=complex)
 
         self.voltage = np.zeros(n, dtype=complex)
@@ -174,29 +93,77 @@ class PowerFlowResults:
 
         self.flow_direction = np.zeros(m, dtype=float)
 
-        self.tap_module = np.zeros(m, dtype=float)
+        self.tap_module = np.zeros(n_tr, dtype=float)
 
         self.losses = np.zeros(m, dtype=complex)
 
         self.overloads = np.zeros(m, dtype=complex)
 
-        self.error = list()
-
-        self.converged = list()
-
         self.buses_useful_for_storage = list()
 
         self.plot_bars_limit = 100
 
-        self.inner_iterations = list()
+        self.convergence_reports = list()
 
-        self.outer_iterations = list()
+        self.available_results = [ResultTypes.BusVoltageModule,
+                                  ResultTypes.BusVoltageAngle,
+                                  ResultTypes.BranchActivePower,
+                                  ResultTypes.BranchReactivePower,
+                                  ResultTypes.BranchActiveCurrent,
+                                  ResultTypes.BranchReactiveCurrent,
+                                  ResultTypes.BranchLoading,
+                                  ResultTypes.Transformer2WTapModule,
+                                  ResultTypes.BranchActiveLosses,
+                                  ResultTypes.BranchReactiveLosses,
+                                  ResultTypes.BranchVoltage,
+                                  ResultTypes.BranchAngles,
+                                  ResultTypes.BatteryPower]
 
-        self.elapsed = list()
+    def converged(self):
+        """
+        Check if converged in all modes
+        :return: True / False
+        """
+        val = True
+        for conv in self.convergence_reports:
+            val *= conv.converged()
+        return val
 
-        self.methods = list()
+    def error(self):
+        """
+        Check if converged in all modes
+        :return: True / False
+        """
+        val = 0.0
+        for conv in self.convergence_reports:
+            val = max(val, conv.error())
+        return val
 
-    def apply_from_island(self, results: "PowerFlowResults", b_idx, br_idx):
+    def copy(self):
+        """
+        Return a copy of this
+        @return:
+        """
+        val = PowerFlowResults(n=self.n, m=self.m, n_tr=self.n_tr,
+                               bus_names=self.bus_names,
+                               branch_names=self.branch_names,
+                               transformer_names=self.transformer_names)
+        val.Sbus = self.Sbus.copy()
+        val.voltage = self.voltage.copy()
+        val.overvoltage = self.overvoltage.copy()
+        val.undervoltage = self.undervoltage.copy()
+        val.Sbranch = self.Sbranch.copy()
+        val.Ibranch = self.Ibranch.copy()
+        val.Vbranch = self.Vbranch.copy()
+        val.loading = self.loading.copy()
+        val.flow_direction = self.flow_direction.copy()
+        val.tap_module = self.tap_module.copy()
+        val.losses = self.losses.copy()
+        val.overloads = self.overloads.copy()
+
+        return val
+
+    def apply_from_island(self, results: "PowerFlowResults", b_idx, br_idx, tr_idx):
         """
         Apply results from another island circuit to the circuit results represented
         here.
@@ -221,24 +188,13 @@ class PowerFlowResults:
 
         self.loading[br_idx] = results.loading
 
-        self.tap_module[br_idx] = results.tap_module
+        self.tap_module[tr_idx] = results.tap_module
 
         self.losses[br_idx] = results.losses
 
         self.flow_direction[br_idx] = results.flow_direction
 
-        # if results.error > self.error:
-        self.error.append(results.error)
-
-        self.converged.append(results.converged)
-
-        self.inner_iterations.append(results.inner_iterations)
-
-        self.outer_iterations.append(results.outer_iterations)
-
-        self.elapsed.append(results.elapsed)
-
-        self.methods.append(results.methods)
+        self.convergence_reports += results.convergence_reports
 
     def check_limits(self, F, T, Vmax, Vmin, wo=1, wv1=1, wv2=1):
         """
@@ -315,23 +271,14 @@ class PowerFlowResults:
 
             DataFrame
         """
-        if type(self.methods[island_idx]) == list:
+        report = self.convergence_reports[island_idx]
+        data = {'Method': report.methods_,
+                'Converged?': report.converged_,
+                'Error': report.error_,
+                'Elapsed (s)': report.elapsed_,
+                'Iterations': report.iterations_}
 
-            data = np.c_[self.methods[island_idx],
-                         self.converged[island_idx],
-                         self.error[island_idx],
-                         self.elapsed[island_idx],
-                         self.inner_iterations[island_idx]]
-        else:
-
-            data = np.c_[self.methods,
-                         self.converged,
-                         self.error,
-                         self.elapsed,
-                         self.inner_iterations]
-
-        col = ['Method', 'Converged?', 'Error', 'Elapsed (s)', 'Iterations']
-        df = pd.DataFrame(data, columns=col)
+        df = pd.DataFrame(data)
 
         return df
 
@@ -345,99 +292,107 @@ class PowerFlowResults:
         :return:
         """
 
-        if indices is None and names is not None:
+        if indices is None:
             indices = np.array(range(len(names)))
 
         if len(indices) > 0:
-            labels = names[indices]
 
             if result_type == ResultTypes.BusVoltageModule:
+                labels = self.bus_names[indices]
                 y = np.abs(self.voltage[indices])
                 y_label = '(p.u.)'
                 title = 'Bus voltage '
 
             elif result_type == ResultTypes.BusVoltageAngle:
+                labels = self.bus_names[indices]
                 y = np.angle(self.voltage[indices], deg=True)
                 y_label = '(deg)'
                 title = 'Bus voltage '
 
             elif result_type == ResultTypes.BusVoltagePolar:
+                labels = self.bus_names[indices]
                 y = self.voltage[indices]
                 y_label = '(p.u.)'
                 title = 'Bus voltage '
 
             elif result_type == ResultTypes.BranchPower:
+                labels = self.branch_names[indices]
                 y = self.Sbranch[indices]
                 y_label = '(MVA)'
                 title = 'Branch power '
 
             elif result_type == ResultTypes.BranchActivePower:
+                labels = self.branch_names[indices]
                 y = self.Sbranch[indices].real
                 y_label = '(MW)'
                 title = 'Branch active power '
 
             elif result_type == ResultTypes.BranchReactivePower:
+                labels = self.branch_names[indices]
                 y = self.Sbranch[indices].imag
                 y_label = '(MVAr)'
                 title = 'Branch reactive power '
 
-            elif result_type == ResultTypes.BranchTapModule:
+            elif result_type == ResultTypes.Transformer2WTapModule:
+                labels = self.transformer_names[indices]
                 y = self.tap_module[indices]
                 y_label = '(p.u.)'
-                title = 'Branch tap module '
+                title = 'Transformer tap module '
 
             elif result_type == ResultTypes.BranchCurrent:
+                labels = self.branch_names[indices]
                 y = self.Ibranch[indices]
                 y_label = '(p.u.)'
                 title = 'Branch current '
 
             elif result_type == ResultTypes.BranchActiveCurrent:
+                labels = self.branch_names[indices]
                 y = self.Ibranch[indices].real
                 y_label = '(p.u.)'
                 title = 'Branch active current '
 
             elif result_type == ResultTypes.BranchReactiveCurrent:
+                labels = self.branch_names[indices]
                 y = self.Ibranch[indices].imag
                 y_label = '(p.u.)'
                 title = 'Branch reactive current '
 
             elif result_type == ResultTypes.BranchLoading:
+                labels = self.branch_names[indices]
                 y = np.abs(self.loading[indices]) * 100
                 y_label = '(%)'
                 title = 'Branch loading '
 
             elif result_type == ResultTypes.BranchLosses:
+                labels = self.branch_names[indices]
                 y = self.losses[indices]
                 y_label = '(MVA)'
                 title = 'Branch losses '
 
             elif result_type == ResultTypes.BranchActiveLosses:
+                labels = self.branch_names[indices]
                 y = self.losses[indices].real
                 y_label = '(MW)'
                 title = 'Branch active losses '
 
             elif result_type == ResultTypes.BranchReactiveLosses:
+                labels = self.branch_names[indices]
                 y = self.losses[indices].imag
                 y_label = '(MVAr)'
                 title = 'Branch reactive losses '
 
             elif result_type == ResultTypes.BranchVoltage:
+                labels = self.branch_names[indices]
                 y = np.abs(self.Vbranch[indices])
                 y_label = '(p.u.)'
                 title = 'Branch voltage drop '
 
             elif result_type == ResultTypes.BranchAngles:
+                labels = self.branch_names[indices]
                 y = np.angle(self.Vbranch[indices], deg=True)
                 y_label = '(deg)'
                 title = 'Branch voltage angle '
 
-            elif result_type == ResultTypes.BatteryPower:
-                if self.battery_power_inc is not None:
-                    y = self.battery_power_inc[indices]
-                else:
-                    y = np.zeros(len(indices))
-                y_label = '(MVA)'
-                title = 'Battery power'
             else:
                 n = len(labels)
                 y = np.zeros(n)

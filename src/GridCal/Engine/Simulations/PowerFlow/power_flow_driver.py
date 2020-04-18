@@ -51,7 +51,7 @@ class PowerFlowDriver(QThread):
 
         self.opf_results = opf_results
 
-        self.results = PowerFlowResults()
+        self.results = PowerFlowResults(n=0, m=0, n_tr=0, bus_names=(), branch_names=(), transformer_names=())
 
         self.logger = Logger()
 

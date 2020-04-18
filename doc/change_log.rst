@@ -10,12 +10,21 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+Version 4.0.0
+^^^^^^^^^^^^^^^^^^^^^
+
+- Massive re-writing of all the structures and the engine in order to have a more flexible approach to the devices,
+  and how the information is passed from the asset manager (the circuit) to the simulations. Hence the version jump
+  attends to that.
+
+
 Version 3.7.1
 ^^^^^^^^^^^^^^^^^^^^^
 
 - Added Jacobian with numba optimization from Pandapower increasing Newton-Raphson performance by x20.
 - Measuring the branch power instead of the current in the stochastic simulations.
-- Fixes the problem with qtConsole by not displaying the console if the package crashes. Hopefully the QtConsole team will fix their issue.
+- Fixes the problem with qtConsole by not displaying the console if the package crashes. Hopefully the QtConsole team
+  will fix their issue.
 
 Version 3.7.0 (HELM)
 ^^^^^^^^^^^^^^^^^^^^^
