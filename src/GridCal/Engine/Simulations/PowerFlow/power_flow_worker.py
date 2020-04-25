@@ -27,7 +27,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Core.snapshot_data import SnapshotIsland
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.power_flow_aux import compile_types
+from GridCal.Engine.Core.common_functions import compile_types
 from GridCal.Engine.Core.snapshot_data import compile_snapshot_circuit, split_into_islands
 
 
