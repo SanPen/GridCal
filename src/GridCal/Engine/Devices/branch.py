@@ -183,6 +183,7 @@ class TapChanger:
 
 class Branch(EditableDevice):
     """
+    * This class exists for legacy reasons, use the Line or Transformer2w classes instead! *
     The **Branch** class represents the connections between nodes (i.e.
     :ref:`buses<bus>`) in **GridCal**. A branch is an element (cable, line, capacitor,
     transformer, etc.) with an electrical impedance. The basic **Branch** class
@@ -301,6 +302,7 @@ class Branch(EditableDevice):
                                 active=active,
                                 device_type=DeviceType.BranchDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the branch.'),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
                                                                      'Name of the bus at the "from" side of the branch.'),
                                                   'bus_to': GCProp('', DeviceType.BusDevice,
@@ -827,7 +829,7 @@ def convert_branch(branch: Branch):
                              mttf=branch.mttf,
                              mttr=branch.mttr,
                              tap=branch.tap_module,
-                             shift_angle=branch.vset,
+                             shift_angle=branch.angle,
                              vset=branch.vset,
                              bus_to_regulated=branch.bus_to_regulated,
                              temp_base=branch.temp_base,

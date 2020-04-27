@@ -76,23 +76,29 @@ class MultiCircuit:
 
     """
 
-    def __init__(self, name=''):
+    def __init__(self, name='', Sbase=100, fbase=50.0):
+        """
+
+        :param name:
+        :param Sbase:
+        :param fbase:
+        """
 
         self.name = name
 
         self.comments = ''
 
         # this is a number that serves
-        self.model_version = 1
+        self.model_version = 2
 
         # user mane
         self.user_name = get_system_user()
 
         # Base power (MVA)
-        self.Sbase = 100.0
+        self.Sbase = Sbase
 
         # Base frequency in Hz
-        self.fBase = 50.0
+        self.fBase = fbase
 
         # Should be able to accept Branches, Lines and Transformers alike
         # self.branches = list()
@@ -455,8 +461,11 @@ class MultiCircuit:
         elif element_type == DeviceType.WireDevice:
             return self.wire_types
 
+        elif element_type == DeviceType.DCBranchDevice:
+            return list()
+
         else:
-            raise Exception('Element type not understood' + str(element_type))
+            raise Exception('Element type not understood ' + str(element_type))
 
     def get_Jacobian(self, sparse=False):
         """

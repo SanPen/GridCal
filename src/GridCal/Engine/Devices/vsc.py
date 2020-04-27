@@ -26,7 +26,7 @@ from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, G
 
 class VSC(EditableDevice):
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='VSC', active=True,
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='VSC', idtag=None, active=True,
                  r1=0.0001, x1=0.05, m=0.8, theta=0.1, G0=1e-5, Beq=0.001, rate=1e-9,
                  mttf=0, mttr=0):
         """
@@ -46,9 +46,11 @@ class VSC(EditableDevice):
 
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=active,
                                 device_type=DeviceType.VscDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the branch.'),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
                                                                      'Name of the bus at the "from" side of the branch.'),
                                                   'bus_to': GCProp('', DeviceType.BusDevice,

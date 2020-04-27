@@ -58,7 +58,7 @@ class TransformerType(EditableDevice):
 
     def __init__(self, hv_nominal_voltage=0, lv_nominal_voltage=0, nominal_power=0.001, copper_losses=0, iron_losses=0,
                  no_load_current=0, short_circuit_voltage=0, gr_hv1=0.5, gx_hv1=0.5,
-                 name='TransformerType', tpe=BranchType.Transformer):
+                 name='TransformerType', tpe=BranchType.Transformer, idtag=None):
         """
 
         :param hv_nominal_voltage:
@@ -75,9 +75,11 @@ class TransformerType(EditableDevice):
         """
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=True,
                                 device_type=DeviceType.TransformerTypeDevice,
                                 editable_headers={'name': GCProp('', str, "Name of the transformer type"),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'HV': GCProp('kV', float, "Nominal voltage al the high voltage side"),
                                                   'LV': GCProp('kV', float, "Nominal voltage al the low voltage side"),
                                                   'rating': GCProp('MVA', float, "Nominal power"),
@@ -388,8 +390,9 @@ class Transformer2W(EditableDevice):
         **template** (BranchTemplate, BranchTemplate()): Basic branch template
     """
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Branch', r=1e-20, x=1e-20, g=1e-20, b=1e-20,
-                 rate=1.0, tap=1.0, shift_angle=0, active=True, tolerance=0, cost=0.0,
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, HV=None, LV=None, name='Branch', idtag=None,
+                 r=1e-20, x=1e-20, g=1e-20, b=1e-20,
+                 rate=1.0, tap=1.0, shift_angle=0.0, active=True, tolerance=0, cost=0.0,
                  mttf=0, mttr=0,
                  vset=1.0, bus_to_regulated=False,
                  temp_base=20, temp_oper=20, alpha=0.00330,
@@ -397,14 +400,18 @@ class Transformer2W(EditableDevice):
 
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=active,
                                 device_type=DeviceType.Transformer2WDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the branch.'),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
                                                                      'Name of the bus at the "from" side of the branch.'),
                                                   'bus_to': GCProp('', DeviceType.BusDevice,
                                                                    'Name of the bus at the "to" side of the branch.'),
                                                   'active': GCProp('', bool, 'Is the branch active?'),
+                                                  'HV': GCProp('kV', float, 'High voltage rating'),
+                                                  'LV': GCProp('kV', float, 'Low voltage rating'),
                                                   'rate': GCProp('MVA', float, 'Thermal rating power of the branch.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
@@ -448,6 +455,23 @@ class Transformer2W(EditableDevice):
         # connectivity
         self.bus_from = bus_from
         self.bus_to = bus_to
+
+        if bus_from is not None:
+            vh = max(bus_from.Vnom, bus_to.Vnom)
+            vl = min(bus_from.Vnom, bus_to.Vnom)
+        else:
+            vh = 1.0
+            vl = 1.0
+
+        if HV is None:
+            self.HV = vh
+        else:
+            self.HV = HV
+
+        if LV is None:
+            self.LV = vl
+        else:
+            self.LV = LV
 
         # List of measurements
         self.measurements = list()
@@ -566,7 +590,6 @@ class Transformer2W(EditableDevice):
                           temp_base=self.temp_base,
                           temp_oper=self.temp_oper,
                           alpha=self.alpha,
-                          branch_type=self.branch_type,
                           template=self.template)
 
         b.measurements = self.measurements
@@ -619,30 +642,27 @@ class Transformer2W(EditableDevice):
             **tap_t** (float, 1.0): Virtual tap at the *to* side
 
         """
-        if self.branch_type == BranchType.Transformer and type(self.template) == TransformerType:
-            # resolve how the transformer is actually connected and set the virtual taps
-            bus_f_v = self.bus_from.Vnom
-            bus_t_v = self.bus_to.Vnom
+        # resolve how the transformer is actually connected and set the virtual taps
+        bus_f_v = self.bus_from.Vnom
+        bus_t_v = self.bus_to.Vnom
 
-            dhf = abs(self.template.HV - bus_f_v)
-            dht = abs(self.template.HV - bus_t_v)
+        dhf = abs(self.HV - bus_f_v)
+        dht = abs(self.HV - bus_t_v)
 
-            if dhf < dht:
-                # the HV side is on the from side
-                tpe_f_v = self.template.HV
-                tpe_t_v = self.template.LV
-            else:
-                # the HV side is on the to side
-                tpe_t_v = self.template.HV
-                tpe_f_v = self.template.LV
-
-            tap_f = tpe_f_v / bus_f_v
-            tap_t = tpe_t_v / bus_t_v
-            return tap_f, tap_t
+        if dhf < dht:
+            # the HV side is on the from side
+            tpe_f_v = self.HV
+            tpe_t_v = self.LV
         else:
-            return 1.0, 1.0
+            # the HV side is on the to side
+            tpe_t_v = self.HV
+            tpe_f_v = self.LV
 
-    def apply_template(self, obj, Sbase, logger=Logger()):
+        tap_f = tpe_f_v / bus_f_v
+        tap_t = tpe_t_v / bus_t_v
+        return tap_f, tap_t
+
+    def apply_template(self, obj: TransformerType, Sbase, logger=Logger()):
         """
         Apply a branch template to this object
 
@@ -658,99 +678,33 @@ class Transformer2W(EditableDevice):
 
         if type(obj) is TransformerType:
 
-            if self.branch_type == BranchType.Transformer:
+            # get the transformer impedance in the base of the transformer
+            z_series, zsh = obj.get_impedances()
 
-                # get the transformer impedance in the base of the transformer
-                z_series, zsh = obj.get_impedances()
+            # Change the impedances to the system base
+            base_change = Sbase / obj.rating
+            z_series *= base_change
+            zsh *= base_change
 
-                # Change the impedances to the system base
-                base_change = Sbase / obj.rating
-                z_series *= base_change
-                zsh *= base_change
-
-                # compute the shunt admittance
-                if zsh.real != 0.0 or zsh.imag != 0.0:
-                    y_shunt = 1.0 / zsh
-                else:
-                    y_shunt = complex(0, 0)
-
-                self.R = np.round(z_series.real, 6)
-                self.X = np.round(z_series.imag, 6)
-                self.G = np.round(y_shunt.real, 6)
-                self.B = np.round(y_shunt.imag, 6)
-
-                self.rate = obj.rating
-
-                if obj != self.template:
-                    self.template = obj
-                    self.branch_type = BranchType.Transformer
+            # compute the shunt admittance
+            if zsh.real != 0.0 or zsh.imag != 0.0:
+                y_shunt = 1.0 / zsh
             else:
-                raise Exception('You are trying to apply a transformer type to a non-transformer branch')
+                y_shunt = complex(0, 0)
 
-        elif type(obj) is Tower:
+            self.R = np.round(z_series.real, 6)
+            self.X = np.round(z_series.imag, 6)
+            self.G = np.round(y_shunt.real, 6)
+            self.B = np.round(y_shunt.imag, 6)
 
-            if self.branch_type == BranchType.Line:
-                Vn = self.bus_to.Vnom
-                Zbase = (Vn * Vn) / Sbase
-                Ybase = 1 / Zbase
+            self.rate = obj.rating
 
-                z = obj.z_series() * self.length / Zbase
-                y = obj.y_shunt() * self.length / Ybase
-
-                self.R = np.round(z.real, 6)
-                self.X = np.round(z.imag, 6)
-                self.G = np.round(y.real, 6)
-                self.B = np.round(y.imag, 6)
-
-                # get the rating in MVA = kA * kV
-                self.rate = obj.rating * Vn * np.sqrt(3)
-
-                if obj != self.template:
-                    self.template = obj
-                    self.branch_type = BranchType.Line
-            else:
-                raise Exception('You are trying to apply an Overhead line type to a non-line branch')
-
-        elif type(obj) is UndergroundLineType:
-            Vn = self.bus_to.Vnom
-            Zbase = (Vn * Vn) / Sbase
-            Ybase = 1 / Zbase
-
-            z = obj.z_series() * self.length / Zbase
-            y = obj.y_shunt() * self.length / Ybase
-
-            self.R = np.round(z.real, 6)
-            self.X = np.round(z.imag, 6)
-            self.G = np.round(y.real, 6)
-            self.B = np.round(y.imag, 6)
-
-            # get the rating in MVA = kA * kV
-            self.rate = obj.rating * Vn * np.sqrt(3)
+            self.HV = obj.HV
+            self.LV = obj.LV
 
             if obj != self.template:
                 self.template = obj
-                self.branch_type = BranchType.Line
-
-        elif type(obj) is SequenceLineType:
-
-            Vn = self.bus_to.Vnom
-            Zbase = (Vn * Vn) / Sbase
-            Ybase = 1 / Zbase
-
-            self.R = np.round(obj.R * self.length / Zbase, 6)
-            self.X = np.round(obj.X * self.length / Zbase, 6)
-            self.G = np.round(obj.G * self.length / Ybase, 6)
-            self.B = np.round(obj.B * self.length / Ybase, 6)
-
-            # get the rating in MVA = kA * kV
-            self.rate = obj.rating * Vn * np.sqrt(3)
-
-            if obj != self.template:
-                self.template = obj
-                self.branch_type = BranchType.Line
-        elif type(obj) is TransformerType:
-            # this is the default template that does nothing
-            pass
+                self.branch_type = BranchType.Transformer
         else:
             logger.append(self.name + ' the object type template was not recognised')
 
@@ -765,6 +719,9 @@ class Transformer2W(EditableDevice):
 
             if properties.tpe == BranchType:
                 obj = self.branch_type.value
+
+            if properties.tpe == DeviceType.BusDevice:
+                obj = obj.idtag
 
             elif properties.tpe == TransformerType:
                 if obj is None:

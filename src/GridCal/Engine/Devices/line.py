@@ -30,7 +30,7 @@ from GridCal.Engine.Devices.tower import Tower
 
 class SequenceLineType(EditableDevice):
 
-    def __init__(self, name='SequenceLine', rating=1,
+    def __init__(self, name='SequenceLine', idtag=None, rating=1,
                  R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0, tpe=BranchType.Line):
         """
         Constructor
@@ -48,9 +48,11 @@ class SequenceLineType(EditableDevice):
 
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=True,
                                 device_type=DeviceType.SequenceLineDevice,
                                 editable_headers={'name': GCProp('', str, "Name of the line template"),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'rating': GCProp('kA', float, "Current rating of the line"),
                                                   'R': GCProp('Ohm/km', float, "Positive-sequence "
                                                               "resistance per km"),
@@ -87,11 +89,11 @@ class SequenceLineType(EditableDevice):
         self.B0 = B0
 
 
-
-
 class LineTemplate:
 
-    def __init__(self, name='BranchTemplate', tpe=BranchType.Branch):
+    def __init__(self, name='BranchTemplate', tpe=BranchType.Branch, idtag=None):
+
+        self.idtag = idtag
 
         self.name = name
 
@@ -221,7 +223,7 @@ class Line(EditableDevice):
         **template** (BranchTemplate, BranchTemplate()): Basic branch template
     """
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Line', r=1e-20, x=1e-20, b=1e-20,
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Line', idtag=None, r=1e-20, x=1e-20, b=1e-20,
                  rate=1.0, active=True, tolerance=0, cost=0.0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  length=1, temp_base=20, temp_oper=20, alpha=0.00330,
@@ -229,9 +231,11 @@ class Line(EditableDevice):
 
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=active,
                                 device_type=DeviceType.LineDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the branch.'),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
                                                                      'Name of the bus at the "from" side of the branch.'),
                                                   'bus_to': GCProp('', DeviceType.BusDevice,
@@ -466,6 +470,9 @@ class Line(EditableDevice):
 
             if properties.tpe == BranchType:
                 obj = self.branch_type.value
+
+            if properties.tpe == DeviceType.BusDevice:
+                obj = obj.idtag
 
             elif properties.tpe == LineTemplate:
                 if obj is None:

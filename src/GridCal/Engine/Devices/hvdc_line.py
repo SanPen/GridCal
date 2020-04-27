@@ -27,6 +27,26 @@ from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, G
 from GridCal.Engine.Devices.tower import Tower
 
 
+def firing_angles_to_reactive_limits(P, alphamin, alphamax):
+    # minimum reactive power calculated under assumption of no overlap angle
+    # i.e. power factor equals to tan(alpha)
+    Qmin = P * np.tan(alphamin)
+
+    # maximum reactive power calculated when overlap angle reaches max
+    # value (60 deg). I.e.
+    #      cos(phi) = 1/2*(cos(alpha)+cos(delta))
+    #      Q = P*tan(phi)
+    phi = np.arccos(0.5 * (np.cos(alphamax) + np.cos(np.deg2rad(60))))
+    Qmax = P * np.tan(phi)
+    # if Qmin < 0:
+    #     Qmin = -Qmin
+    #
+    # if Qmax < 0:
+    #     Qmax = -Qmax
+
+    return Qmin, Qmax
+
+
 class HvdcLine(EditableDevice):
     """
     The **Line** class represents the connections between nodes (i.e.
@@ -135,68 +155,88 @@ class HvdcLine(EditableDevice):
         **template** (BranchTemplate, BranchTemplate()): Basic branch template
     """
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Line', r=1e-20, psch=0.0,
-                 rate=1.0, active=True, tolerance=0, cost=0.0,
-                 mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
-                 branch_type: BranchType = BranchType.Line, length=1,
-                 temp_base=20, temp_oper=20, alpha=0.00330):
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, id_tag='', name='HVDC Line', idtag=None, active=True,
+                 rate=1.0, Pset=0.0, Vset_f=1.0, Vset_t=1.0, length=1.0, mttf=0.0, mttr=0.0, overload_cost=1000.0,
+                 min_firing_angle_f=-1.0, max_firing_angle_f=1.0, min_firing_angle_t=-1.0, max_firing_angle_t=1.0,
+                 active_prof=np.ones(0, dtype=bool), rate_prof=np.zeros(0), Pset_prof=np.zeros(0),
+                 Vset_f_prof=np.ones(0), Vset_t_prof=np.ones(0), overload_cost_prof=np.zeros(0)):
+        """
+        HVDC Line model
+        :param bus_from: Bus from
+        :param bus_to: Bus to
+        :param id_tag: id tag of the line
+        :param name: name of the line
+        :param active: Is the line active?
+        :param rate: Line rate in MVA
+        :param Pset: Active power set point
+        :param Vset_f: Voltage set point at the "from" side
+        :param Vset_t: Voltage set point at the "to" side
+        :param min_firing_angle_f: minimum firing angle at the "from" side
+        :param max_firing_angle_f: maximum firing angle at the "from" side
+        :param min_firing_angle_t: minimum firing angle at the "to" side
+        :param max_firing_angle_t: maximum firing angle at the "to" side
+        :param overload_cost: cost of a line overload in EUR/MW
+        :param mttf: Mean time to failure in hours
+        :param mttr: Mean time to recovery in hours
+        :param length: line length in km
+        :param active_prof: profile of active states (bool)
+        :param rate_prof: Profile of ratings in MVA
+        :param Pset_prof: Active power set points profile
+        :param Vset_f_prof: Voltage set points at the "from" side profile
+        :param Vset_t_prof: Voltage set points at the "to" side profile
+        :param overload_cost_prof: Profile of overload costs in EUR/MW
+        """
 
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=active,
                                 device_type=DeviceType.HVDCLineDevice,
-                                editable_headers={'name': GCProp('', str, 'Name of the branch.'),
+                                editable_headers={'name': GCProp('', str, 'Name of the line.'),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
-                                                                     'Name of the bus at the "from" side of the branch.'),
+                                                                     'Name of the bus at the "from" side of the line.'),
                                                   'bus_to': GCProp('', DeviceType.BusDevice,
-                                                                   'Name of the bus at the "to" side of the branch.'),
-                                                  'active': GCProp('', bool, 'Is the branch active?'),
-                                                  'rate': GCProp('MVA', float, 'Thermal rating power of the branch.'),
+                                                                   'Name of the bus at the "to" side of the line.'),
+                                                  'active': GCProp('', bool, 'Is the line active?'),
+
+                                                  'rate': GCProp('MVA', float, 'Thermal rating power of the line.'),
+
+                                                  'Pset': GCProp('MW', float, 'Set power flow.'),
+                                                  'Vset_f': GCProp('p.u.', float, 'Set voltage at the from side'),
+                                                  'Vset_t': GCProp('p.u.', float, 'Set voltage at the to side'),
+
+                                                  'min_firing_angle_f': GCProp('rad', float,
+                                                                               'minimum firing angle at the '
+                                                                               '"from" side.'),
+                                                  'max_firing_angle_f': GCProp('rad', float,
+                                                                               'maximum firing angle at the '
+                                                                               '"from" side.'),
+                                                  'min_firing_angle_t': GCProp('rad', float,
+                                                                               'minimum firing angle at the '
+                                                                               '"to" side.'),
+                                                  'max_firing_angle_t': GCProp('rad', float,
+                                                                               'maximum firing angle at the '
+                                                                               '"to" side.'),
+
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
-                                                                 'used in reliability studies.'),
+                                                                             'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
-                                                                 'used in reliability studies.'),
-                                                  'R': GCProp('p.u.', float, 'Total resistance.'),
-                                                  'Psch': GCProp('MW', float, 'Scheduled power.'),
-                                                  'tolerance': GCProp('%', float,
-                                                                      'Tolerance expected for the impedance values\n'
-                                                                      '7% is expected for transformers\n'
-                                                                      '0% for lines.'),
+                                                                             'used in reliability studies.'),
+
                                                   'length': GCProp('km', float, 'Length of the branch '
-                                                                   '(not used for calculation)'),
-                                                  'vset': GCProp('p.u.', float, 'Objective voltage at the "to" side of '
-                                                                 'the bus when regulating the tap.'),
-                                                  'temp_base': GCProp('ºC', float, 'Base temperature at which R was '
-                                                                      'measured.'),
-                                                  'temp_oper': GCProp('ºC', float, 'Operation temperature to modify R.'),
-                                                  'alpha': GCProp('1/ºC', float, 'Thermal coefficient to modify R,\n'
-                                                                  'around a reference temperature\n'
-                                                                  'using a linear approximation.\n'
-                                                                  'For example:\n'
-                                                                  'Copper @ 20ºC: 0.004041,\n'
-                                                                  'Copper @ 75ºC: 0.00323,\n'
-                                                                  'Annealed copper @ 20ºC: 0.00393,\n'
-                                                                  'Aluminum @ 20ºC: 0.004308,\n'
-                                                                  'Aluminum @ 75ºC: 0.00330'),
-                                                  'Cost': GCProp('e/MWh', float,
-                                                                 'Cost of overloads. Used in OPF.'),
-                                                  'r_fault': GCProp('p.u.', float, 'Resistance of the mid-line fault.\n'
-                                                                    'Used in short circuit studies.'),
-                                                  'x_fault': GCProp('p.u.', float, 'Reactance of the mid-line fault.\n'
-                                                                    'Used in short circuit studies.'),
-                                                  'fault_pos': GCProp('p.u.', float,
-                                                                      'Per-unit positioning of the fault:\n'
-                                                                      '0 would be at the "from" side,\n'
-                                                                      '1 would be at the "to" side,\n'
-                                                                      'therefore 0.5 is at the middle.'),
-                                                  'branch_type': GCProp('', BranchType, ''),
+                                                                                '(not used for calculation)'),
+
+                                                  'overload_cost': GCProp('e/MWh', float,
+                                                                          'Cost of overloads. Used in OPF.'),
                                                   },
                                 non_editable_attributes=['bus_from', 'bus_to', 'template'],
                                 properties_with_profile={'active': 'active_prof',
-                                                         'Psch': 'Psch_prof',
                                                          'rate': 'rate_prof',
-                                                         'temp_oper': 'temp_oper_prof',
-                                                         'Cost': 'Cost_prof'})
+                                                         'Pset': 'Pset_prof',
+                                                         'Vset_f': 'Vset_f_prof',
+                                                         'Vset_t': 'Vset_t_prof',
+                                                         'overload_cost': 'overload_cost_prof'})
 
         # connectivity
         self.bus_from = bus_from
@@ -208,57 +248,36 @@ class HvdcLine(EditableDevice):
         # line length in km
         self.length = length
 
-        # branch impedance tolerance
-        self.tolerance = tolerance
-
-        # short circuit impedance
-        self.r_fault = r_fault
-        self.x_fault = x_fault
-        self.fault_pos = fault_pos
-
-        # total impedance and admittance in p.u.
-        self.R = r
-
-        self.Psch = psch
+        self.Pset = Pset
 
         self.mttf = mttf
 
         self.mttr = mttr
 
-        self.Cost = cost
+        self.overload_cost = overload_cost
 
-        self.Cost_prof = None
+        # converter / inverter firing angles
+        self.min_firing_angle_f = min_firing_angle_f
+        self.max_firing_angle_f = max_firing_angle_f
+        self.min_firing_angle_t = min_firing_angle_t
+        self.max_firing_angle_t = max_firing_angle_t
 
-        self.Psch_prof = None
+        self.Qmin_f, self.Qmax_f = firing_angles_to_reactive_limits(self.Pset,
+                                                                    self.min_firing_angle_f,
+                                                                    self.max_firing_angle_f)
 
-        self.active_prof = None
+        self.Qmin_t, self.Qmax_t = firing_angles_to_reactive_limits(self.Pset,
+                                                                    self.min_firing_angle_t,
+                                                                    self.max_firing_angle_t)
 
-        # Conductor base and operating temperatures in ºC
-        self.temp_base = temp_base
-        self.temp_oper = temp_oper
+        self.overload_cost_prof = overload_cost_prof
 
-        self.temp_oper_prof = None
-
-        # Conductor thermal constant (1/ºC)
-        self.alpha = alpha
+        self.Pset_prof = Pset_prof
+        self.active_prof = active_prof
 
         # branch rating in MVA
         self.rate = rate
-
-        self.rate_prof = None
-
-        # branch type: Line, Transformer, etc...
-        self.branch_type = branch_type
-
-    @property
-    def R_corrected(self):
-        """
-        Returns a temperature corrected resistance based on a formula provided by:
-        NFPA 70-2005, National Electrical Code, Table 8, footnote #2; and
-        https://en.wikipedia.org/wiki/Electrical_resistivity_and_conductivity#Linear_approximation
-        (version of 2019-01-03 at 15:20 EST).
-        """
-        return self.R * (1 + self.alpha * (self.temp_oper - self.temp_base))
+        self.rate_prof = rate_prof
 
     def copy(self, bus_dict=None):
         """
@@ -318,8 +337,8 @@ class HvdcLine(EditableDevice):
         for name, properties in self.editable_headers.items():
             obj = getattr(self, name)
 
-            if properties.tpe == BranchType:
-                obj = self.branch_type.value
+            if properties.tpe == DeviceType.BusDevice:
+                obj = obj.idtag
 
             elif properties.tpe not in [str, float, int, bool]:
                 obj = str(obj)

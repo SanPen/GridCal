@@ -27,8 +27,8 @@ from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, G
 
 class DCLine(EditableDevice):
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='DC Line', active=True,
-                 r1=0.0001, rate=1e-9, force_flow=False, P_dc_set=0, mttf=0, mttr=0):
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='DC Line', idtag=None, active=True,
+                 r1=0.0001, rate=1e-9, force_flow=False, mttf=0, mttr=0):
         """
 
         :param bus_from:
@@ -45,9 +45,11 @@ class DCLine(EditableDevice):
 
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=active,
                                 device_type=DeviceType.DCBranchDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the branch.'),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
                                                                      'Name of the bus at the "from" side of the branch.'),
                                                   'bus_to': GCProp('', DeviceType.BusDevice,
@@ -77,8 +79,6 @@ class DCLine(EditableDevice):
         self.Rdc = r1
 
         self.force_flow = force_flow
-        self.P_dc_set = P_dc_set
-
         self.mttf = mttf
         self.mttr = mttr
 

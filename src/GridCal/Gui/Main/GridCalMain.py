@@ -29,6 +29,7 @@ from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 
 # Engine imports
 from GridCal.Engine.Core.snapshot_data import SnapshotIsland
+from GridCal.Engine.Core.time_series_data import compile_time_circuit
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
 from GridCal.Engine.Simulations.Dynamics.transient_stability_driver import *
@@ -399,11 +400,11 @@ class MainGUI(QMainWindow):
 
         self.ui.profile_display_pushButton.clicked.connect(self.display_profiles)
 
-        self.ui.plot_pushButton.clicked.connect(self.item_results_plot)
-
-        self.ui.select_all_pushButton.clicked.connect(self.check_all_result_objects)
-
-        self.ui.select_none_pushButton.clicked.connect(self.check_none_result_objects)
+        # self.ui.plot_pushButton.clicked.connect(self.item_results_plot)
+        #
+        # self.ui.select_all_pushButton.clicked.connect(self.check_all_result_objects)
+        #
+        # self.ui.select_none_pushButton.clicked.connect(self.check_none_result_objects)
 
         self.ui.saveResultsButton.clicked.connect(self.save_results_df)
 
@@ -491,15 +492,18 @@ class MainGUI(QMainWindow):
         self.ui.actionAutoatic_layout.triggered.connect(self.auto_layout)
 
         # list clicks
-        self.ui.result_listView.clicked.connect(self.update_available_results_in_the_study)
+        # self.ui.result_listView.clicked.connect(self.update_available_results_in_the_study)
 
-        self.ui.result_type_listView.clicked.connect(self.result_type_click)
+        # self.ui.result_type_listView.clicked.connect(self.result_type_click)
 
         self.ui.dataStructuresListView.clicked.connect(self.view_objects_data)
 
         self.ui.simulationDataStructuresListView.clicked.connect(self.view_simulation_objects_data)
 
         self.ui.catalogueDataStructuresListView.clicked.connect(self.catalogue_element_selected)
+
+        # tree-view clicks
+        self.ui.results_treeView.clicked.connect(self.on_objects_tree_view_click)
 
         # Table clicks
         self.ui.cascade_tableView.clicked.connect(self.cascade_table_click)
@@ -2523,9 +2527,13 @@ class MainGUI(QMainWindow):
                                                          Vbase=self.power_flow.results.voltage,
                                                          Starget=Sbase * alpha)
 
+                        pf_options = self.get_selected_power_flow_options()
+
                         # create object
-                        self.voltage_stability = VoltageCollapse(circuit=self.circuit, options=vc_options,
-                                                                 inputs=vc_inputs)
+                        self.voltage_stability = VoltageCollapse(circuit=self.circuit,
+                                                                 options=vc_options,
+                                                                 inputs=vc_inputs,
+                                                                 pf_options=pf_options)
 
                         # make connections
                         self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
@@ -2549,16 +2557,20 @@ class MainGUI(QMainWindow):
 
                         self.power_flow.run_at(start_idx)
 
-                        nc = self.circuit.compile_time_series()
+                        # get the power injections array to get the initial and end points
+                        nc = compile_time_circuit(circuit=self.circuit)
                         Sprof = nc.get_power_injections()
-                        vc_inputs = VoltageCollapseInput(
-                            Sbase=Sprof[start_idx, :],
-                            Vbase=self.power_flow.results.voltage,
-                            Starget=Sprof[end_idx, :])
+                        vc_inputs = VoltageCollapseInput(Sbase=Sprof[start_idx, :],
+                                                         Vbase=self.power_flow.results.voltage,
+                                                         Starget=Sprof[end_idx, :])
+
+                        pf_options = self.get_selected_power_flow_options()
 
                         # create object
-                        self.voltage_stability = VoltageCollapse(circuit=self.circuit, options=vc_options,
-                                                                 inputs=vc_inputs)
+                        self.voltage_stability = VoltageCollapse(circuit=self.circuit,
+                                                                 options=vc_options,
+                                                                 inputs=vc_inputs,
+                                                                 pf_options=pf_options)
 
                         # make connections
                         self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
@@ -3467,29 +3479,28 @@ class MainGUI(QMainWindow):
         """
         Update the results that are displayed in the results tab
         """
-        lst = list()
+
         self.available_results_dict = dict()
         self.available_results_steps_dict = dict()
 
         # clear results lists
-        self.ui.result_type_listView.setModel(None)
-        self.ui.result_element_selection_listView.setModel(None)
+        self.ui.results_treeView.setModel(None)
 
         available_results = self.get_available_results()
-
         max_steps = 0
+        d = dict()
+        lst = list()
         for driver in available_results:
             lst.append(driver.name)
-            self.available_results_dict[driver.name] = driver.results.available_results
+            d[driver.name] = [x.value[0] for x in driver.results.available_results]
+            self.available_results_dict[driver.name] = {x.value[0]: x for x in driver.results.available_results}
             steps = driver.get_steps()
             self.available_results_steps_dict[driver.name] = steps
             if len(steps) > max_steps:
                 max_steps = len(steps)
 
-        mdl = get_list_model(lst)
-        self.ui.result_listView.setModel(mdl)
-        self.ui.available_results_to_color_comboBox.setModel(mdl)
-
+        self.ui.results_treeView.setModel(get_tree_model(d, 'Results'))
+        self.ui.available_results_to_color_comboBox.setModel(get_list_model(lst))
         self.ui.resultsTableView.setModel(None)
 
         if len(lst) > 1 or max_steps > 0:
@@ -3525,11 +3536,11 @@ class MainGUI(QMainWindow):
         self.ui.simulation_data_island_comboBox.clear()
 
         self.available_results_dict = dict()
-        self.ui.result_listView.setModel(None)
+        # self.ui.result_listView.setModel(None)
         self.ui.resultsTableView.setModel(None)
-        self.ui.result_type_listView.setModel(None)
+        # self.ui.result_type_listView.setModel(None)
         self.ui.available_results_to_color_comboBox.model().clear()
-        self.ui.result_element_selection_listView.setModel(None)
+        # self.ui.result_element_selection_listView.setModel(None)
 
         self.ui.catalogueTableView.setModel(None)
 
@@ -3576,7 +3587,7 @@ class MainGUI(QMainWindow):
                               s_branch=self.power_flow.results.Sbranch,
                               voltages=self.power_flow.results.voltage,
                               loadings=np.abs(self.power_flow.results.loading),
-                              types=self.circuit.numerical_circuit.bus_types,  # TODO: fix this
+                              types=self.power_flow.results.bus_types,
                               losses=self.power_flow.results.losses,
                               file_name=file_name)
 
@@ -3591,7 +3602,7 @@ class MainGUI(QMainWindow):
                               s_branch=Sbranch,
                               voltages=voltage,
                               loadings=np.abs(loading),
-                              types=self.circuit.numerical_circuit.bus_types,   # TODO: fix this
+                              types=self.time_series.results.bus_types,
                               file_name=file_name)
 
             elif current_study == VoltageCollapse.name:
@@ -3601,7 +3612,7 @@ class MainGUI(QMainWindow):
                               s_branch=self.voltage_stability.results.Sbranch,
                               voltages=self.voltage_stability.results.voltages[current_step, :],
                               loadings=np.abs(self.voltage_stability.results.loading),
-                              types=self.circuit.numerical_circuit.bus_types,   # TODO: fix this
+                              types=self.voltage_stability.results.bus_types,
                               file_name=file_name)
 
             elif current_study == MonteCarlo.name:
@@ -3738,125 +3749,85 @@ class MainGUI(QMainWindow):
 
             self.ui.simulation_results_step_comboBox.setModel(mdl)
 
-    def update_available_results_in_the_study(self):
+    def on_objects_tree_view_click(self, index):
         """
-        Update the available results
+        Display the simulation results on the results table
         """
-        elm = self.ui.result_listView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
-        lst = self.available_results_dict[elm]
-        mdl = EnumModel(lst)
-        self.ui.result_type_listView.setModel(mdl)
+        tree_mdl = self.ui.results_treeView.model()
+        item = tree_mdl.itemFromIndex(index)
+        path = get_tree_item_path(item)
 
-    def result_type_click(self, qt_val=None, indices=None):
-        """
-        plot all the values for the selected result type
-        :param qt_val: trash variable to store what the QT object sends
-        :param indices: element indices selected for plotting
-        :return: Nothing
-        """
+        if len(path) > 1:
 
-        if len(self.ui.result_listView.selectedIndexes()) > 0 and \
-                len(self.ui.result_type_listView.selectedIndexes()) > 0:
-
-            study = self.ui.result_listView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
-            study_type = self.ui.result_type_listView.model().items[
-                self.ui.result_type_listView.selectedIndexes()[0].row()]
-
-            if study_type.value[1] == DeviceType.BusDevice:
-                names = self.circuit.bus_names
-            elif study_type.value[1] == DeviceType.BranchDevice:
-                names = self.circuit.branch_names
-            elif study_type.value[1] == DeviceType.BusDevice.LoadDevice:
-                names = self.circuit.get_load_names()
-            elif study_type.value[1] == DeviceType.BusDevice.GeneratorDevice:
-                names = self.circuit.get_controlled_generator_names()
-            elif study_type.value[1] == DeviceType.BusDevice.BatteryDevice:
-                names = self.circuit.get_battery_names()
-            else:
-                names = None
-
-            if indices is None:
-                mdl = get_list_model(names, checks=True)
-                self.ui.result_element_selection_listView.setModel(mdl)
+            study_name = path[0]
+            result_name = path[1]
+            study_type = self.available_results_dict[study_name][result_name]
 
             self.results_mdl = None
 
-            if study == PowerFlowDriver.name:
+            if study_name == PowerFlowDriver.name:
                 if self.power_flow.results is not None:
-                    self.results_mdl = self.power_flow.results.mdl(result_type=study_type, indices=indices, names=names)
+                    self.results_mdl = self.power_flow.results.mdl(result_type=study_type)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == TimeSeries.name:
+            elif study_name == TimeSeries.name:
                 if self.time_series.results is not None:
-                    self.results_mdl = self.time_series.results.mdl(result_type=study_type, indices=indices, names=names)
+                    self.results_mdl = self.time_series.results.mdl(result_type=study_type)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == VoltageCollapse.name:
+            elif study_name == VoltageCollapse.name:
                 if self.voltage_stability.results is not None:
-                    self.results_mdl = self.voltage_stability.results.mdl(result_type=study_type,
-                                                                          indices=indices, names=names)
+                    self.results_mdl = self.voltage_stability.results.mdl(result_type=study_type)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == MonteCarlo.name:
+            elif study_name == MonteCarlo.name:
                 if self.monte_carlo.results is not None:
-                    self.results_mdl = self.monte_carlo.results.mdl(result_type=study_type,
-                                                                    indices=indices, names=names)
+                    self.results_mdl = self.monte_carlo.results.mdl(result_type=study_type)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == LatinHypercubeSampling.name:
+            elif study_name == LatinHypercubeSampling.name:
                 if self.latin_hypercube_sampling.results is not None:
-                    self.results_mdl = self.latin_hypercube_sampling.results.mdl(result_type=study_type,
-                                                                                 indices=indices, names=names)
+                    self.results_mdl = self.latin_hypercube_sampling.results.mdl(result_type=study_type)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == ShortCircuit.name:
+            elif study_name == ShortCircuit.name:
                 if self.short_circuit.results is not None:
-                    self.results_mdl = self.short_circuit.results.mdl(result_type=study_type,
-                                                                      indices=indices, names=names)
+                    self.results_mdl = self.short_circuit.results.mdl(result_type=study_type)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == OptimalPowerFlow.name:
+            elif study_name == OptimalPowerFlow.name:
                 if self.optimal_power_flow.results is not None:
-                    self.results_mdl = self.optimal_power_flow.results.mdl(result_type=study_type,
-                                                                           indices=indices, names=names)
+                    self.results_mdl = self.optimal_power_flow.results.mdl(result_type=study_type)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == OptimalPowerFlowTimeSeries.name:
+            elif study_name == OptimalPowerFlowTimeSeries.name:
                 if self.optimal_power_flow_time_series.results is not None:
-                    self.results_mdl = self.optimal_power_flow_time_series.results.mdl(result_type=study_type,
-                                                                                       indices=indices,
-                                                                                       names=names)
+                    self.results_mdl = self.optimal_power_flow_time_series.results.mdl(result_type=study_type)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == PTDF.name:
+            elif study_name == PTDF.name:
                 if self.ptdf_analysis.results is not None:
-                    self.results_mdl = self.ptdf_analysis.results.mdl(result_type=study_type,
-                                                                      indices=indices,
-                                                                      names=names)
+                    self.results_mdl = self.ptdf_analysis.results.mdl(result_type=study_type)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == PtdfTimeSeries.name:
+            elif study_name == PtdfTimeSeries.name:
                 if self.ptdf_ts_analysis.results is not None:
-                    self.results_mdl = self.ptdf_ts_analysis.results.mdl(result_type=study_type,
-                                                                         indices=indices,
-                                                                         names=names)
+                    self.results_mdl = self.ptdf_ts_analysis.results.mdl(result_type=study_type)
                 else:
                     self.msg('There seem to be no results :(')
 
-            elif study == NMinusK.name:
+            elif study_name == NMinusK.name:
                 if self.otdf_analysis.results is not None:
-                    self.results_mdl = self.otdf_analysis.results.mdl(result_type=study_type,
-                                                                      indices=indices,
-                                                                      names=names)
+                    self.results_mdl = self.otdf_analysis.results.mdl(result_type=study_type)
                 else:
                     self.msg('There seem to be no results :(')
 
@@ -3870,8 +3841,7 @@ class MainGUI(QMainWindow):
 
     def plot_results(self):
         """
-
-        :return:
+        Plot the results
         """
         if self.results_mdl is not None:
 

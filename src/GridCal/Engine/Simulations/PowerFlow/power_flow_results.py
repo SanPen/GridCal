@@ -282,7 +282,7 @@ class PowerFlowResults:
 
         return df
 
-    def mdl(self, result_type: ResultTypes, indices=None, names=None) -> "ResultsModel":
+    def mdl(self, result_type: ResultTypes) -> "ResultsModel":
         """
 
         :param result_type:
@@ -292,120 +292,113 @@ class PowerFlowResults:
         :return:
         """
 
-        if indices is None:
-            indices = np.array(range(len(names)))
+        if result_type == ResultTypes.BusVoltageModule:
+            labels = self.bus_names
+            y = np.abs(self.voltage)
+            y_label = '(p.u.)'
+            title = 'Bus voltage '
 
-        if len(indices) > 0:
+        elif result_type == ResultTypes.BusVoltageAngle:
+            labels = self.bus_names
+            y = np.angle(self.voltage, deg=True)
+            y_label = '(deg)'
+            title = 'Bus voltage '
 
-            if result_type == ResultTypes.BusVoltageModule:
-                labels = self.bus_names[indices]
-                y = np.abs(self.voltage[indices])
-                y_label = '(p.u.)'
-                title = 'Bus voltage '
+        elif result_type == ResultTypes.BusVoltagePolar:
+            labels = self.bus_names
+            y = self.voltage
+            y_label = '(p.u.)'
+            title = 'Bus voltage '
 
-            elif result_type == ResultTypes.BusVoltageAngle:
-                labels = self.bus_names[indices]
-                y = np.angle(self.voltage[indices], deg=True)
-                y_label = '(deg)'
-                title = 'Bus voltage '
+        elif result_type == ResultTypes.BranchPower:
+            labels = self.branch_names
+            y = self.Sbranch
+            y_label = '(MVA)'
+            title = 'Branch power '
 
-            elif result_type == ResultTypes.BusVoltagePolar:
-                labels = self.bus_names[indices]
-                y = self.voltage[indices]
-                y_label = '(p.u.)'
-                title = 'Bus voltage '
+        elif result_type == ResultTypes.BranchActivePower:
+            labels = self.branch_names
+            y = self.Sbranch.real
+            y_label = '(MW)'
+            title = 'Branch active power '
 
-            elif result_type == ResultTypes.BranchPower:
-                labels = self.branch_names[indices]
-                y = self.Sbranch[indices]
-                y_label = '(MVA)'
-                title = 'Branch power '
+        elif result_type == ResultTypes.BranchReactivePower:
+            labels = self.branch_names
+            y = self.Sbranch.imag
+            y_label = '(MVAr)'
+            title = 'Branch reactive power '
 
-            elif result_type == ResultTypes.BranchActivePower:
-                labels = self.branch_names[indices]
-                y = self.Sbranch[indices].real
-                y_label = '(MW)'
-                title = 'Branch active power '
+        elif result_type == ResultTypes.Transformer2WTapModule:
+            labels = self.transformer_names
+            y = self.tap_module
+            y_label = '(p.u.)'
+            title = 'Transformer tap module '
 
-            elif result_type == ResultTypes.BranchReactivePower:
-                labels = self.branch_names[indices]
-                y = self.Sbranch[indices].imag
-                y_label = '(MVAr)'
-                title = 'Branch reactive power '
+        elif result_type == ResultTypes.BranchCurrent:
+            labels = self.branch_names
+            y = self.Ibranch
+            y_label = '(p.u.)'
+            title = 'Branch current '
 
-            elif result_type == ResultTypes.Transformer2WTapModule:
-                labels = self.transformer_names[indices]
-                y = self.tap_module[indices]
-                y_label = '(p.u.)'
-                title = 'Transformer tap module '
+        elif result_type == ResultTypes.BranchActiveCurrent:
+            labels = self.branch_names
+            y = self.Ibranch.real
+            y_label = '(p.u.)'
+            title = 'Branch active current '
 
-            elif result_type == ResultTypes.BranchCurrent:
-                labels = self.branch_names[indices]
-                y = self.Ibranch[indices]
-                y_label = '(p.u.)'
-                title = 'Branch current '
+        elif result_type == ResultTypes.BranchReactiveCurrent:
+            labels = self.branch_names
+            y = self.Ibranch.imag
+            y_label = '(p.u.)'
+            title = 'Branch reactive current '
 
-            elif result_type == ResultTypes.BranchActiveCurrent:
-                labels = self.branch_names[indices]
-                y = self.Ibranch[indices].real
-                y_label = '(p.u.)'
-                title = 'Branch active current '
+        elif result_type == ResultTypes.BranchLoading:
+            labels = self.branch_names
+            y = np.abs(self.loading) * 100
+            y_label = '(%)'
+            title = 'Branch loading '
 
-            elif result_type == ResultTypes.BranchReactiveCurrent:
-                labels = self.branch_names[indices]
-                y = self.Ibranch[indices].imag
-                y_label = '(p.u.)'
-                title = 'Branch reactive current '
+        elif result_type == ResultTypes.BranchLosses:
+            labels = self.branch_names
+            y = self.losses
+            y_label = '(MVA)'
+            title = 'Branch losses '
 
-            elif result_type == ResultTypes.BranchLoading:
-                labels = self.branch_names[indices]
-                y = np.abs(self.loading[indices]) * 100
-                y_label = '(%)'
-                title = 'Branch loading '
+        elif result_type == ResultTypes.BranchActiveLosses:
+            labels = self.branch_names
+            y = self.losses.real
+            y_label = '(MW)'
+            title = 'Branch active losses '
 
-            elif result_type == ResultTypes.BranchLosses:
-                labels = self.branch_names[indices]
-                y = self.losses[indices]
-                y_label = '(MVA)'
-                title = 'Branch losses '
+        elif result_type == ResultTypes.BranchReactiveLosses:
+            labels = self.branch_names
+            y = self.losses.imag
+            y_label = '(MVAr)'
+            title = 'Branch reactive losses '
 
-            elif result_type == ResultTypes.BranchActiveLosses:
-                labels = self.branch_names[indices]
-                y = self.losses[indices].real
-                y_label = '(MW)'
-                title = 'Branch active losses '
+        elif result_type == ResultTypes.BranchVoltage:
+            labels = self.branch_names
+            y = np.abs(self.Vbranch)
+            y_label = '(p.u.)'
+            title = 'Branch voltage drop '
 
-            elif result_type == ResultTypes.BranchReactiveLosses:
-                labels = self.branch_names[indices]
-                y = self.losses[indices].imag
-                y_label = '(MVAr)'
-                title = 'Branch reactive losses '
-
-            elif result_type == ResultTypes.BranchVoltage:
-                labels = self.branch_names[indices]
-                y = np.abs(self.Vbranch[indices])
-                y_label = '(p.u.)'
-                title = 'Branch voltage drop '
-
-            elif result_type == ResultTypes.BranchAngles:
-                labels = self.branch_names[indices]
-                y = np.angle(self.Vbranch[indices], deg=True)
-                y_label = '(deg)'
-                title = 'Branch voltage angle '
-
-            else:
-                n = len(labels)
-                y = np.zeros(n)
-                y_label = ''
-                title = ''
-
-            # assemble model
-            mdl = ResultsModel(data=y, index=labels, columns=[result_type.value[0]],
-                               title=title, ylabel=y_label, units=y_label)
-            return mdl
+        elif result_type == ResultTypes.BranchAngles:
+            labels = self.branch_names
+            y = np.angle(self.Vbranch, deg=True)
+            y_label = '(deg)'
+            title = 'Branch voltage angle '
 
         else:
-            return None
+            labels = []
+            n = 0
+            y = np.zeros(n)
+            y_label = ''
+            title = ''
+
+        # assemble model
+        mdl = ResultsModel(data=y, index=labels, columns=[result_type.value[0]],
+                           title=title, ylabel=y_label, units=y_label)
+        return mdl
 
     def export_all(self):
         """

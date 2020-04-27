@@ -59,6 +59,7 @@ class DeviceType(Enum):
     GeneratorDevice = 'Generator'
     StaticGeneratorDevice = 'Static Generator'
     ShuntDevice = 'Shunt'
+    ExternalGridDevice = 'External grid'
     WireDevice = 'Wire'
     SequenceLineDevice = 'Sequence line'
     UnderGroundLineDevice = 'Underground line'

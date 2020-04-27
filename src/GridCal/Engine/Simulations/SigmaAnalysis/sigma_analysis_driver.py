@@ -21,6 +21,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOpt
 from GridCal.Gui.GuiFunctions import ResultsModel
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.snapshot_data import compile_snapshot_circuit, split_into_islands
 from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_coefficients_josep, sigma_function
 
 
@@ -162,11 +163,14 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
     m = multi_circuit.get_branch_number()
     results = SigmaAnalysisResults(n)
 
-    numerical_circuit = multi_circuit.compile_snapshot()
+    numerical_circuit = compile_snapshot_circuit(circuit=multi_circuit,
+                                                 apply_temperature=options.apply_temperature_correction,
+                                                 branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+                                                 impedance_tolerance=0.0,
+                                                 opf_results=None)
 
-    calculation_inputs = numerical_circuit.compute(apply_temperature=options.apply_temperature_correction,
-                                                   branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-                                                   ignore_single_node_islands=options.ignore_single_node_islands)
+    calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,
+                                            ignore_single_node_islands=options.ignore_single_node_islands)
 
     if len(calculation_inputs) > 1:
 
@@ -181,7 +185,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
                                                          Ysh0=calculation_input.Ysh,
                                                          pq=calculation_input.pq,
                                                          pv=calculation_input.pv,
-                                                         sl=calculation_input.ref,
+                                                         sl=calculation_input.vd,
                                                          pqpv=calculation_input.pqpv,
                                                          tolerance=options.tolerance,
                                                          max_coeff=options.max_iter,
@@ -213,17 +217,17 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
                 logger.append('There are no slack nodes in the island ' + str(i))
     else:
 
-        if len(calculation_inputs[0].ref) > 0:
+        if len(calculation_inputs[0].vd) > 0:
             # only one island
             calculation_input = calculation_inputs[0]
 
             U, X, Q, iter_ = helm_coefficients_josep(Yseries=calculation_input.Yseries,
                                                      V0=calculation_input.Vbus,
                                                      S0=calculation_input.Sbus,
-                                                     Ysh0=calculation_input.Ysh,
+                                                     Ysh0=calculation_input.Yshunt,
                                                      pq=calculation_input.pq,
                                                      pv=calculation_input.pv,
-                                                     sl=calculation_input.ref,
+                                                     sl=calculation_input.vd,
                                                      pqpv=calculation_input.pqpv,
                                                      tolerance=options.tolerance,
                                                      max_coeff=options.max_iter,
@@ -233,7 +237,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
             n = calculation_input.nbus
             Sig_re = np.zeros(n, dtype=float)
             Sig_im = np.zeros(n, dtype=float)
-            Sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.ref])
+            Sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.vd])
             Sig_re[calculation_input.pqpv] = np.real(Sigma)
             Sig_im[calculation_input.pqpv] = np.imag(Sigma)
             sigma_distances = np.abs(sigma_distance(Sig_re, Sig_im))

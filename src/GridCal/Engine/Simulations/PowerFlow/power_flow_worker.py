@@ -15,7 +15,7 @@
 
 import pandas as pd
 import numpy as np
-
+import scipy.sparse as sp
 from GridCal.Engine.basic_structures import BusMode, ReactivePowerControlMode, SolverType, TapsControlMode, Logger
 from GridCal.Engine.Simulations.PowerFlow.linearized_power_flow import dcpf, lacpf
 from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_josep
@@ -230,7 +230,7 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, Ysh_helm, B1, B2, Bpqpv, B
 
 
 def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, solver_type: SolverType,
-                          voltage_solution, Sbus, Ibus, branch_rates, logger) -> "PowerFlowResults":
+                          voltage_solution, Sbus, Ibus, Ysh, branch_rates, logger) -> "PowerFlowResults":
     """
     Run a power flow simulation for a single circuit using the selected outer loop
     controls. This method shouldn't be called directly.
@@ -246,6 +246,8 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
         **Sbus**: vector of power injections
 
         **Ibus**: vector of current injections
+
+        **Ysh**: vector of admittance injections from the shunt devices (the legs of the PI branch are included already)
 
         **Sinstalled**: vector of installed power per bus in MVA
 
@@ -297,6 +299,9 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
 
     report = ConvergenceReport()
 
+    # modify the Ybus to include the shunts
+    Ybus = circuit.Ybus + sp.diags(Ysh)
+
     # this the "outer-loop"
     while (any_q_control_issue or any_tap_control_issue) and outer_it < control_max_iter:
 
@@ -314,9 +319,9 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
                                                                       V0=voltage_solution,
                                                                       Sbus=Sbus,
                                                                       Ibus=Ibus,
-                                                                      Ybus=circuit.Ybus,
+                                                                      Ybus=Ybus,
                                                                       Yseries=circuit.Yseries,
-                                                                      Ysh_helm=circuit.Yshunt,
+                                                                      Ysh_helm=circuit.Yshunt + Ysh,
                                                                       B1=circuit.B1,
                                                                       B2=circuit.B2,
                                                                       Bpqpv=circuit.Bpqpv,
@@ -341,9 +346,9 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
                                                                                 V0=voltage_solution,
                                                                                 Sbus=Sbus + delta,
                                                                                 Ibus=Ibus,
-                                                                                Ybus=circuit.Ybus,
+                                                                                Ybus=Ybus,
                                                                                 Yseries=circuit.Yseries,
-                                                                                Ysh_helm=circuit.Ysh_helm,
+                                                                                Ysh_helm=circuit.Yshunt + Ysh,
                                                                                 B1=circuit.B1,
                                                                                 B2=circuit.B2,
                                                                                 Bpqpv=circuit.Bpqpv,
@@ -462,6 +467,7 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
     # Compute the branches power and the slack buses power
     Sbranch, Ibranch, Vbranch, loading, losses, \
      flow_direction, Sbus = power_flow_post_process(calculation_inputs=circuit,
+                                                    Sbus=Scalc,
                                                     V=voltage_solution,
                                                     branch_rates=branch_rates)
 
@@ -560,7 +566,7 @@ def control_q_iterative(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, 
 
     for i in range(n):
 
-        if types[i] == BusMode.REF.value:
+        if types[i] == BusMode.Slack.value:
             pass
 
         elif types[i] == BusMode.PQ.value and original_types[i] == BusMode.PV.value:
@@ -679,7 +685,7 @@ def control_q_iterative(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, 
     return Qnew, types_new, any_control_issue
 
 
-def power_flow_post_process(calculation_inputs: SnapshotIsland, V, branch_rates, only_power=False):
+def power_flow_post_process(calculation_inputs: SnapshotIsland, Sbus, V, branch_rates, only_power=False):
     """
     Compute the power flows trough the branches.
 
@@ -696,8 +702,6 @@ def power_flow_post_process(calculation_inputs: SnapshotIsland, V, branch_rates,
         Sbranch (MVA), Ibranch (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
     """
     # Compute the slack and pv buses power
-    Sbus = calculation_inputs.Sbus
-
     vd = calculation_inputs.vd
     pv = calculation_inputs.pv
 
@@ -838,7 +842,7 @@ def control_q_direct(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
     any_control_issue = False
     for i in range(n):
 
-        if types[i] == BusMode.REF.value:
+        if types[i] == BusMode.Slack.value:
             pass
 
         elif types[i] == BusMode.PQ.value and original_types[i] == BusMode.PV.value:
@@ -1110,7 +1114,7 @@ def control_taps_direct(voltage, T, bus_to_regulated_idx, tap_position, tap_modu
     return stable, tap_module, tap_position
 
 
-def single_island_pf(circuit: SnapshotIsland, Vbus, Sbus, Ibus, branch_rates,
+def single_island_pf(circuit: SnapshotIsland, Vbus, Sbus, Ibus, Ysh, branch_rates,
                      options: PowerFlowOptions, logger: Logger) -> "PowerFlowResults":
     """
     Run a power flow for a circuit. In most cases, the **run** method should be
@@ -1165,6 +1169,7 @@ def single_island_pf(circuit: SnapshotIsland, Vbus, Sbus, Ibus, branch_rates,
                                         voltage_solution=V0,
                                         Sbus=Sbus,
                                         Ibus=Ibus,
+                                        Ysh=Ysh,
                                         branch_rates=branch_rates,
                                         logger=logger)
 
@@ -1222,6 +1227,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                        Vbus=calculation_input.Vbus,
                                        Sbus=calculation_input.Sbus,
                                        Ibus=calculation_input.Ibus,
+                                       Ysh=calculation_input.Yshunt_from_devices,
                                        branch_rates=calculation_input.branch_rates,
                                        options=options,
                                        logger=logger)
@@ -1244,6 +1250,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                    Vbus=calculation_inputs[0].Vbus,
                                    Sbus=calculation_inputs[0].Sbus,
                                    Ibus=calculation_inputs[0].Ibus,
+                                   Ysh=calculation_inputs[0].Yshunt_from_devices,
                                    branch_rates=calculation_inputs[0].branch_rates,
                                    options=options,
                                    logger=logger)

@@ -1470,3 +1470,47 @@ def get_checked_indices(mdl: QtGui.QStandardItemModel()):
             idx.append(row)
 
     return np.array(idx)
+
+
+def fill_model_from_dict(parent, d, editable=False):
+    """
+    Fill TreeViewModel from dictionary
+    :param parent: Parent QStandardItem
+    :param d: item
+    :return: Nothing
+    """
+    if isinstance(d, dict):
+        for k, v in d.items():
+            child = QtGui.QStandardItem(str(k))
+            child.setEditable(editable)
+            parent.appendRow(child)
+            fill_model_from_dict(child, v)
+    elif isinstance(d, list):
+        for v in d:
+            fill_model_from_dict(parent, v)
+    else:
+        item = QtGui.QStandardItem(str(d))
+        item.setEditable(editable)
+        parent.appendRow(item)
+
+
+def get_tree_model(d, top='Results'):
+    model = QtGui.QStandardItemModel()
+    model.setHorizontalHeaderLabels([top])
+    fill_model_from_dict(model.invisibleRootItem(), d)
+    return model
+
+def get_tree_item_path(item: QtGui.QStandardItem):
+    """
+
+    :param item:
+    :return:
+    """
+    item_parent = item.parent()
+    path = [item.text()]
+    while item_parent is not None:
+        parent_text = item_parent.text()
+        path.append(parent_text)
+        item_parent = item_parent.parent()
+    path.reverse()
+    return path

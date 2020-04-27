@@ -87,13 +87,14 @@ class Battery(Generator):
 
     """
 
-    def __init__(self, name='batt', active_power=0.0, power_factor=0.8, voltage_module=1.0,
+    def __init__(self, name='batt', idtag=None, active_power=0.0, power_factor=0.8, voltage_module=1.0,
                  is_controlled=True, Qmin=-9999, Qmax=9999, Snom=9999, Enom=9999, p_min=-9999, p_max=9999,
                  op_cost=1.0, power_prof=None, power_factor_prof=None, vset_prof=None, active=True, Sbase=100,
                  enabled_dispatch=True, mttf=0.0, mttr=0.0, charge_efficiency=0.9, discharge_efficiency=0.9,
                  max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1):
 
         Generator.__init__(self, name=name,
+                           idtag=idtag,
                            active_power=active_power,
                            power_factor=power_factor,
                            voltage_module=voltage_module,
@@ -115,6 +116,7 @@ class Battery(Generator):
 
         # manually modify the editable headers
         self.editable_headers = {'name': GCProp('', str, 'Name of the battery'),
+                                 'idtag': GCProp('', str, 'Unique ID'),
                                  'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
                                  'active': GCProp('', bool, 'Is the battery active?'),
                                  'is_controlled': GCProp('', bool, 'Is this battery voltage-controlled?'),

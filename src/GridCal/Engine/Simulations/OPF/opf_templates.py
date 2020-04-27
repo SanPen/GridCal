@@ -15,7 +15,7 @@
 
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.Engine.Core.snapshot_data import SnapshotCircuit
-from GridCal.Engine.Core.time_series_data import SeriesData
+from GridCal.Engine.Core.time_series_data import TimeCircuit
 from GridCal.ThirdParty.pulp import *
 
 
@@ -172,7 +172,7 @@ class Opf:
 
 class OpfTimeSeries:
 
-    def __init__(self, numerical_circuit: SeriesData, start_idx, end_idx, solver: MIPSolvers=MIPSolvers.CBC):
+    def __init__(self, numerical_circuit: TimeCircuit, start_idx, end_idx, solver: MIPSolvers=MIPSolvers.CBC):
         """
 
         :param numerical_circuit:

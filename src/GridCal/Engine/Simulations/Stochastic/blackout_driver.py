@@ -25,7 +25,6 @@ from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarlo
 from GridCal.Engine.Simulations.Stochastic.lhs_driver import LatinHypercubeSampling
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_data import SnapshotCircuit
-from GridCal.Engine.Core.time_series_data import SeriesData
 
 
 class CascadeType(Enum):

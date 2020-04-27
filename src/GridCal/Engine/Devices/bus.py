@@ -79,15 +79,17 @@ class Bus(EditableDevice):
 
     """
 
-    def __init__(self, name="Bus", vnom=10, vmin=0.9, vmax=1.1, r_fault=0.0, x_fault=0.0,
+    def __init__(self, name="Bus", idtag=None, vnom=10, vmin=0.9, vmax=1.1, r_fault=0.0, x_fault=0.0,
                  xpos=0, ypos=0, height=0, width=0, active=True, is_slack=False, is_dc=False,
                  area='Default', zone='Default', substation='Default', country='', longitude=0.0, latitude=0.0):
 
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=active,
                                 device_type=DeviceType.BusDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the bus'),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'active': GCProp('', bool,
                                                                    'Is the bus active? used to disable the bus.'),
                                                   'is_slack': GCProp('', bool,
@@ -114,7 +116,7 @@ class Bus(EditableDevice):
                                                   'substation': GCProp('', str, 'Substation of the bus.'),
                                                   'longitude': GCProp('deg', float, 'longitude of the bus.'),
                                                   'latitude': GCProp('deg', float, 'latitude of the bus.')},
-                                non_editable_attributes=list(),
+                                non_editable_attributes=['idtag'],
                                 properties_with_profile={'active': 'active_prof'})
 
         # Nominal voltage (kV)
@@ -164,11 +166,14 @@ class Bus(EditableDevice):
         # List of static generators attached tot this bus
         self.static_generators = list()
 
+        # List of External grid devices
+        self.external_grids = list()
+
         # List of measurements
         self.measurements = list()
 
         # Bus type
-        self.type = BusMode.NONE
+        self.type = BusMode.PQ
 
         # Flag to determine if the bus is a slack bus or not
         self.is_slack = is_slack
@@ -219,46 +224,54 @@ class Bus(EditableDevice):
         elif device.device_type == DeviceType.GeneratorDevice:
             self.controlled_generators.append(device)
 
+        elif device.device_type == DeviceType.ExternalGridDevice:
+            self.external_grids.append(device)
         else:
             raise Exception('Device type not understood:' + str(device.device_type))
 
     def determine_bus_type(self):
         """
         Infer the bus type from the devices attached to it
-        @return: Nothing
+        @return: self.type
         """
+        if self.is_slack:
+            # if it is set as slack, set the bus as slack and exit
+            self.type = BusMode.Slack
+            return self.type
 
+        elif len(self.external_grids) > 0:  # there are devices setting this as a slack bus
+
+            # count the number of active external grids
+            ext_on = 0
+            for elm in self.external_grids:
+                if elm.active:
+                    ext_on += 1
+
+            # if there ar any active external grids, set as slack and exit
+            if ext_on > 0:
+                self.type = BusMode.Slack
+                return self.type
+
+        # if we got here, determine what to do...
+
+        # count the active and controlled generators
         gen_on = 0
         for elm in self.controlled_generators:
             if elm.active and elm.is_controlled:
                 gen_on += 1
 
+        # count the active and controlled batteries
         batt_on = 0
         for elm in self.batteries:
             if elm.active and elm.is_controlled:
                 batt_on += 1
 
-        if gen_on > 0:
+        if (gen_on + batt_on) > 0:
+            self.type = BusMode.PV
 
-            if self.is_slack:  # If contains generators and is marked as REF, then set it as REF
-                self.type = BusMode.REF
-            else:  # Otherwise set as PV
-                self.type = BusMode.PV
-
-        elif batt_on > 0:
-
-            if self.dispatch_storage:
-                # If there are storage devices and the dispatchable flag is on, set the bus as dispatchable
-                self.type = BusMode.STO_DISPATCH
-            else:
-                # Otherwise a storage device shall be marked as a voltage controlled bus
-                self.type = BusMode.PV
         else:
-            if self.is_slack:  # If there is no device but still is marked as REF, then set as REF
-                self.type = BusMode.REF
-            else:
-                # Nothing special; set it as PQ
-                self.type = BusMode.PQ
+            # Nothing special; set it as PQ
+            self.type = BusMode.PQ
 
         return self.type
 

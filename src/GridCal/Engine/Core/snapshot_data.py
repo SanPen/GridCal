@@ -203,8 +203,8 @@ class SnapshotCircuit:
 
     def to_island(self) -> "SnapshotIsland":
         """
-        copy theis circuit as an island device
-        :return: NumericIsland instance
+        copy the circuit as an island device
+        :return: SnapshotIsland instance
         """
         island = SnapshotIsland(nbus=self.nbus,
                                 nline=self.nline,
@@ -347,7 +347,7 @@ class SnapshotCircuit:
         """
         Get the island corresponding to the given buses
         :param bus_idx: array of bus indices
-        :return: NumericIsland
+        :return: SnapshotIsland
         """
 
         # find the indices of the devices of the island
@@ -527,6 +527,7 @@ class SnapshotIsland(SnapshotCircuit):
 
         self.Sbus = np.zeros(self.nbus, dtype=complex)
         self.Ibus = np.zeros(self.nbus, dtype=complex)
+        self.Yshunt_from_devices = np.zeros(self.nbus, dtype=complex)
 
         self.Qmax_bus = np.zeros(self.nbus)
         self.Qmin_bus = np.zeros(self.nbus)
@@ -666,19 +667,19 @@ class SnapshotIsland(SnapshotCircuit):
         # does not apply since the HVDC-line model is the simplistic 2-generator model
 
         # SHUNT --------------------------------------------------------------------------------------------------------
-        Yshunt_from_devices = self.C_bus_shunt * (self.shunt_admittance * self.shunt_active / self.Sbase)
+        self.Yshunt_from_devices = self.C_bus_shunt * (self.shunt_admittance * self.shunt_active / self.Sbase)
 
         # form the admittance matrices ---------------------------------------------------------------------------------
         self.Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
         self.Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
-        self.Ybus = sp.csc_matrix(Cf.T * self.Yf + Ct.T * self.Yt + sp.diags(Yshunt_from_devices))
+        self.Ybus = sp.csc_matrix(Cf.T * self.Yf + Ct.T * self.Yt)
 
         # form the admittance matrices of the series and shunt elements ------------------------------------------------
         Yfs = sp.diags(Yffs) * Cf + sp.diags(Yfts) * Ct
         Yts = sp.diags(Ytfs) * Cf + sp.diags(Ytts) * Ct
         self.Yseries = sp.csc_matrix(Cf.T * Yfs + Ct.T * Yts)
 
-        self.Yshunt = Yshunt_from_devices + Cf.T * ysh_br + Ct.T * ysh_br
+        self.Yshunt = Cf.T * ysh_br + Ct.T * ysh_br
 
     def get_generator_injections(self):
         """
@@ -738,6 +739,10 @@ class SnapshotIsland(SnapshotCircuit):
             # hvdc to
             self.Qmax_bus += (self.hvdc_Qmax_t * self.hvdc_active) * self.C_hvdc_bus_t
             self.Qmin_bus += (self.hvdc_Qmin_t * self.hvdc_active) * self.C_hvdc_bus_t
+
+        # fix zero values
+        self.Qmax_bus[self.Qmax_bus == 0] = 1e20
+        self.Qmin_bus[self.Qmin_bus == 0] = -1e20
 
     def consolidate(self):
         """
@@ -970,7 +975,12 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
             nc.battery_installed_p[i_batt] = elm.Snom
 
             nc.C_bus_batt[i, i_batt] = 1
-            nc.Vbus[i] *= elm.Vset
+
+            if nc.Vbus[i].real == 1.0:
+                nc.Vbus[i] = complex(elm.Vset, 0)
+            elif elm.Vset != nc.Vbus[i]:
+                logger.append('Different set points at ' + bus.name + ': ' + str(elm.Vset) + ' !=' + str(nc.Vbus[i]))
+
             i_batt += 1
 
         for elm in bus.shunts:

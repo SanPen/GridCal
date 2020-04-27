@@ -27,20 +27,22 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, power_flow_worker_args
+from GridCal.Engine.Core.time_series_data import compile_time_circuit, split_time_circuit_into_islands, BranchImpedanceMode
 from GridCal.Engine.Simulations.Stochastic.latin_hypercube_sampling import lhs
 from GridCal.Gui.GuiFunctions import ResultsModel
 
 
 class TimeSeriesResults(PowerFlowResults):
 
-    def __init__(self, n, m, time_array):
+    def __init__(self, n, m, n_tr, bus_names, branch_names, transformer_names, time_array):
         """
         TimeSeriesResults constructor
         @param n: number of buses
         @param m: number of branches
         @param nt: number of time steps
         """
-        PowerFlowResults.__init__(self)
+        PowerFlowResults.__init__(self, n=n, m=m, n_tr=n_tr, bus_names=bus_names,
+                                  branch_names=branch_names, transformer_names=transformer_names)
         self.name = 'Time series'
         self.nt = len(time_array)
         self.m = m
@@ -106,19 +108,19 @@ class TimeSeriesResults(PowerFlowResults):
 
             self.converged = None
 
-            self.overloads = None
-
-            self.overvoltage = None
-
-            self.undervoltage = None
-
-            self.overloads_idx = None
-
-            self.overvoltage_idx = None
-
-            self.undervoltage_idx = None
-
-            self.buses_useful_for_storage = None
+            # self.overloads = None
+            #
+            # self.overvoltage = None
+            #
+            # self.undervoltage = None
+            #
+            # self.overloads_idx = None
+            #
+            # self.overvoltage_idx = None
+            #
+            # self.undervoltage_idx = None
+            #
+            # self.buses_useful_for_storage = None
 
         self.available_results = [ResultTypes.BusVoltageModule,
                                   ResultTypes.BusVoltageAngle,
@@ -158,23 +160,23 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.flow_direction[t, :] = results.flow_direction
 
-        self.error[t] = max(results.error)
+        self.error[t] = results.error()
 
-        self.converged[t] = min(results.converged)
+        self.converged[t] = results.converged()
 
-        self.overloads[t] = results.overloads
-
-        self.overvoltage[t] = results.overvoltage
-
-        self.undervoltage[t] = results.undervoltage
-
-        self.overloads_idx[t] = results.overloads_idx
-
-        self.overvoltage_idx[t] = results.overvoltage_idx
-
-        self.undervoltage_idx[t] = results.undervoltage_idx
-
-        self.buses_useful_for_storage[t] = results.buses_useful_for_storage
+        # self.overloads[t] = results.overloads
+        #
+        # self.overvoltage[t] = results.overvoltage
+        #
+        # self.undervoltage[t] = results.undervoltage
+        #
+        # self.overloads_idx[t] = results.overloads_idx
+        #
+        # self.overvoltage_idx[t] = results.overvoltage_idx
+        #
+        # self.undervoltage_idx[t] = results.undervoltage_idx
+        #
+        # self.buses_useful_for_storage[t] = results.buses_useful_for_storage
 
     @staticmethod
     def merge_if(df, arr, ind, cols):
@@ -601,121 +603,127 @@ class TimeSeries(QThread):
         :return: TimeSeriesResults instance
         """
 
-        # initialize the grid time series results we will append the island results with another function
-
-        n = self.grid.get_bus_number()
-        m = self.grid.get_branch_number()
-        time_series_results = TimeSeriesResults(n, m, time_array=self.grid.time_profile[time_indices])
-
         # compile the multi-circuit
-        numerical_circuit = self.grid.compile_time_series(opf_time_series_results=self.opf_time_series_results)
+        numerical_circuit = compile_time_circuit(circuit=self.grid,
+                                                 apply_temperature=False,
+                                                 branch_tolerance_mode=BranchImpedanceMode.Specified,
+                                                 impedance_tolerance=0.0,
+                                                 opf_results=self.opf_time_series_results)
 
         # do the topological computation
-        calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
-                                                     ignore_single_node_islands=self.options.ignore_single_node_islands)
+        time_islands = split_time_circuit_into_islands(numeric_circuit=numerical_circuit,
+                                                       ignore_single_node_islands=self.options.ignore_single_node_islands)
+
+        # initialize the grid time series results we will append the island results with another function
+        time_series_results = TimeSeriesResults(n=numerical_circuit.nbus,
+                                                m=numerical_circuit.nbr,
+                                                n_tr=numerical_circuit.ntr,
+                                                bus_names=numerical_circuit.bus_names,
+                                                branch_names=numerical_circuit.branch_names,
+                                                transformer_names=numerical_circuit.tr_names,
+                                                time_array=self.grid.time_profile[time_indices])
 
         time_series_results.bus_types = numerical_circuit.bus_types
 
-        # for each partition of the profiles...
-        for t_key, calc_inputs in calc_inputs_dict.items():
+        # For every island, run the time series
+        for island_index, calculation_input in enumerate(time_islands):
 
-            # For every island, run the time series
-            for island_index, calculation_input in enumerate(calc_inputs):
+            # Are we dispatching storage? if so, generate a dictionary of battery -> bus index
+            # to be able to set the batteries values into the vector S
+            batteries = list()
+            batteries_bus_idx = list()
+            if self.options.dispatch_storage:
+                for k, bus in enumerate(self.grid.buses):
+                    for battery in bus.batteries:
+                        battery.reset()  # reset the calculation values
+                        batteries.append(battery)
+                        batteries_bus_idx.append(k)
 
-                # Are we dispatching storage? if so, generate a dictionary of battery -> bus index
-                # to be able to set the batteries values into the vector S
-                batteries = list()
-                batteries_bus_idx = list()
+            self.progress_text.emit('Time series at circuit ' + str(island_index) + '...')
+
+            # find the original indices
+            bus_original_idx = calculation_input.original_bus_idx
+            branch_original_idx = calculation_input.original_branch_idx
+
+            # declare a results object for the partition
+            results = TimeSeriesResults(n=calculation_input.nbus,
+                                        m=calculation_input.nbr,
+                                        n_tr=calculation_input.ntr,
+                                        bus_names=calculation_input.bus_names,
+                                        branch_names=calculation_input.branch_names,
+                                        transformer_names=calculation_input.tr_names,
+                                        time_array=self.grid.time_profile[time_indices])
+
+            self.progress_signal.emit(0.0)
+
+            # default value in case of single-valued profile
+            dt = 1.0
+
+            # traverse the time profiles of the partition and simulate each time step
+            for it, t in enumerate(time_indices):
+
+                # set the power values
+                # if the storage dispatch option is active, the batteries power is not included
+                # therefore, it shall be included after processing
+                V = calculation_input.Vbus[it, :]
+                Ysh = calculation_input.Yshunt_from_devices[:, it]
+                I = calculation_input.Ibus[:, it]
+                S = calculation_input.Sbus[:, it]
+                branch_rates = calculation_input.branch_rates[it, :]
+
+                # add the controlled storage power if we are controlling the storage devices
                 if self.options.dispatch_storage:
-                    for k, bus in enumerate(self.grid.buses):
-                        for battery in bus.batteries:
-                            battery.reset()  # reset the calculation values
-                            batteries.append(battery)
-                            batteries_bus_idx.append(k)
 
-                self.progress_text.emit('Time series at circuit ' + str(island_index) + '...')
+                    if (it+1) < len(calculation_input.original_time_idx):
+                        # compute the time delta: the time values come in nanoseconds
+                        dt = (calculation_input.time_array[it + 1]
+                              - calculation_input.time_array[it]).value * 1e-9 / 3600.0
 
-                # find the original indices
-                bus_original_idx = calculation_input.original_bus_idx
-                branch_original_idx = calculation_input.original_branch_idx
+                    for k, battery in enumerate(batteries):
 
-                # if there are valid profiles...
-                if self.grid.time_profile is not None:
+                        power = battery.get_processed_at(it, dt=dt, store_values=True)
 
-                    # declare a results object for the partition
-                    results = TimeSeriesResults(n=calculation_input.nbus,
-                                                m=calculation_input.nbr,
-                                                time_array=self.grid.time_profile[time_indices])
-                    last_voltage = calculation_input.Vbus
+                        bus_idx = batteries_bus_idx[k]
 
-                    self.progress_signal.emit(0.0)
+                        S[bus_idx] += power / calculation_input.Sbase
 
-                    # default value in case of single-valued profile
-                    dt = 1.0
+                # run power flow at the circuit
+                res = single_island_pf(circuit=calculation_input,
+                                       Vbus=V,
+                                       Sbus=S,
+                                       Ibus=I,
+                                       Ysh=Ysh,
+                                       branch_rates=branch_rates,
+                                       options=self.options,
+                                       logger=self.logger)
 
-                    # traverse the time profiles of the partition and simulate each time step
-                    for it, t in enumerate(time_indices):
+                # Recycle voltage solution
+                # last_voltage = res.voltage
 
-                        # set the power values
-                        # if the storage dispatch option is active, the batteries power is not included
-                        # therefore, it shall be included after processing
-                        Ysh = calculation_input.Ysh_prof[:, it]
-                        I = calculation_input.Ibus_prof[:, it]
-                        S = calculation_input.Sbus_prof[:, it]
-                        branch_rates = calculation_input.branch_rates_prof[it, :]
+                # store circuit results at the time index 'it'
+                results.set_at(it, res)
 
-                        # add the controlled storage power if we are controlling the storage devices
-                        if self.options.dispatch_storage:
+                progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
+                self.progress_signal.emit(progress)
+                self.progress_text.emit('Simulating island ' + str(island_index)
+                                        + ' at ' + str(self.grid.time_profile[t]))
 
-                            if (it+1) < len(calculation_input.original_time_idx):
-                                # compute the time delta: the time values come in nanoseconds
-                                dt = (calculation_input.time_array[it + 1]
-                                      - calculation_input.time_array[it]).value * 1e-9 / 3600.0
-
-                            for k, battery in enumerate(batteries):
-
-                                power = battery.get_processed_at(it, dt=dt, store_values=True)
-
-                                bus_idx = batteries_bus_idx[k]
-
-                                S[bus_idx] += power / calculation_input.Sbase
-
-                        # run power flow at the circuit
-                        res = single_island_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I,
-                                               branch_rates=branch_rates,
-                                               options=self.options, logger=self.logger)
-
-                        # Recycle voltage solution
-                        # last_voltage = res.voltage
-
-                        # store circuit results at the time index 'it'
-                        results.set_at(it, res)
-
-                        progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
-                        self.progress_signal.emit(progress)
-                        self.progress_text.emit('Simulating island ' + str(island_index)
-                                                + ' at ' + str(self.grid.time_profile[t]))
-
-                        if self.__cancel__:
-                            # merge the circuit's results
-                            time_series_results.apply_from_island(results,
-                                                                  bus_original_idx,
-                                                                  branch_original_idx,
-                                                                  time_indices,
-                                                                  'TS')
-                            # abort by returning at this point
-                            return time_series_results
-
+                if self.__cancel__:
                     # merge the circuit's results
                     time_series_results.apply_from_island(results,
                                                           bus_original_idx,
                                                           branch_original_idx,
                                                           time_indices,
                                                           'TS')
+                    # abort by returning at this point
+                    return time_series_results
 
-                else:
-                    print('There are no profiles')
-                    self.progress_text.emit('There are no profiles')
+            # merge the circuit's results
+            time_series_results.apply_from_island(results,
+                                                  bus_original_idx,
+                                                  branch_original_idx,
+                                                  time_indices,
+                                                  'TS')
 
         return time_series_results
 

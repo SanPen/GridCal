@@ -22,8 +22,10 @@ from PySide2.QtGui import *
 from PySide2.QtSvg import QSvgGenerator
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.bus import Bus
+from GridCal.Engine.Devices.line import Line
+from GridCal.Engine.Devices.transformer import Transformer2W
 from GridCal.Gui.GridEditorWidget.bus import TerminalItem, BusGraphicItem
-from GridCal.Gui.GridEditorWidget.branch import BranchGraphicItem, BranchType, Branch
+from GridCal.Gui.GridEditorWidget.branch import BranchGraphicItem, BranchType
 
 
 '''
@@ -282,8 +284,7 @@ class GridEditor(QSplitter):
             self.libraryModel.appendRow(i)
 
         # set the objects list
-        self.object_types = ['Buses', 'Branches', 'Loads', 'Static Generators',
-                             'Generators', 'Batteries', 'Shunts']
+        self.object_types = [dev.device_type.value for dev in circuit.objects_with_profiles]
 
         self.catalogue_types = ['Wires', 'Overhead lines', 'Underground lines', 'Sequence lines', 'Transformers']
 
@@ -373,19 +374,22 @@ class GridEditor(QSplitter):
                         item.hosting_connections.append(self.started_branch)
                         # self.started_branch.setZValue(-1)
                         self.started_branch.bus_to = item.parent
-                        name = 'Branch ' + str(len(self.circuit.branches))
+
                         v1 = self.started_branch.bus_from.api_object.Vnom
                         v2 = self.started_branch.bus_to.api_object.Vnom
 
                         if abs(v1 - v2) > 1.0:
-                            branch_type = BranchType.Transformer
-                        else:
-                            branch_type = BranchType.Line
+                            name = 'Transformer ' + str(len(self.circuit.transformers2w) + 1)
+                            obj = Transformer2W(bus_from=self.started_branch.bus_from.api_object,
+                                                bus_to=self.started_branch.bus_to.api_object,
+                                                name=name)
 
-                        obj = Branch(bus_from=self.started_branch.bus_from.api_object,
-                                     bus_to=self.started_branch.bus_to.api_object,
-                                     name=name,
-                                     branch_type=branch_type)
+                        else:
+                            name = 'Line ' + str(len(self.circuit.lines) + 1)
+                            obj = Line(bus_from=self.started_branch.bus_from.api_object,
+                                       bus_to=self.started_branch.bus_to.api_object,
+                                       name=name)
+
                         obj.graphic_obj = self.started_branch
                         self.started_branch.api_object = obj
                         self.circuit.add_branch(obj)
@@ -617,7 +621,7 @@ class GridEditor(QSplitter):
 
         return graphic_obj
 
-    def add_api_branch(self, branch: Branch):
+    def add_api_branch(self, branch):
         """
         add API branch to the Scene
         :param branch: Branch instance

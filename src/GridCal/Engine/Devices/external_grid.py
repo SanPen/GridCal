@@ -17,12 +17,10 @@ from matplotlib import pyplot as plt
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
 
-class Load(EditableDevice):
+class ExternalGrid(EditableDevice):
     """
-    The load object implements the so-called ZIP model, in which the load can be
-    represented by a combination of power (P), current(I), and impedance (Z).
-
-    The sign convention is: Positive to act as a load, negative to act as a generator.
+    External grid device
+    In essence, this is a slack-enforcer device
 
     Arguments:
 
@@ -60,42 +58,27 @@ class Load(EditableDevice):
 
     """
 
-    def __init__(self, name='Load', idtag=None, G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, cost=0.0,
-                 G_prof=None, B_prof=None, Ir_prof=None, Ii_prof=None, P_prof=None, Q_prof=None,
-                 active=True, mttf=0.0, mttr=0.0):
+    def __init__(self, name='External grid', idtag=None, active=True, Vm=1.0, Va=0.0, Vm_prof=None, Va_prof=None,
+                  mttf=0.0, mttr=0.0):
 
         EditableDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
                                 active=active,
-                                device_type=DeviceType.LoadDevice,
+                                device_type=DeviceType.ExternalGridDevice,
                                 editable_headers={'name': GCProp('', str, 'Load name'),
                                                   'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
                                                   'active': GCProp('', bool, 'Is the load active?'),
-                                                  'P': GCProp('MW', float, 'Active power'),
-                                                  'Q': GCProp('MVAr', float, 'Reactive power'),
-                                                  'Ir': GCProp('MW', float,
-                                                               'Active power of the current component at V=1.0 p.u.'),
-                                                  'Ii': GCProp('MVAr', float,
-                                                               'Reactive power of the current component at V=1.0 p.u.'),
-                                                  'G': GCProp('MW', float,
-                                                              'Active power of the impedance component at V=1.0 p.u.'),
-                                                  'B': GCProp('MVAr', float,
-                                                              'Reactive power of the impedance component at V=1.0 p.u.'),
+                                                  'Vm': GCProp('p.u.', float, 'Active power'),
+                                                  'Va': GCProp('radians', float, 'Reactive power'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery'),
-                                                  'Cost': GCProp('e/MWh', float,
-                                                                 'Cost of not served energy. Used in OPF.')},
+                                                  },
                                 non_editable_attributes=list(),
                                 properties_with_profile={'active': 'active_prof',
-                                                         'P': 'P_prof',
-                                                         'Q': 'Q_prof',
-                                                         'Ir': 'Ir_prof',
-                                                         'Ii': 'Ii_prof',
-                                                         'G': 'G_prof',
-                                                         'B': 'B_prof',
-                                                         'Cost': 'Cost_prof'})
+                                                         'Vm': 'Vm_prof',
+                                                         'Va': 'Va_prof'})
 
         self.bus = None
 
@@ -105,61 +88,28 @@ class Load(EditableDevice):
 
         self.mttr = mttr
 
-        self.Cost = cost
-
-        self.Cost_prof = None
-
         # Impedance in equivalent MVA
-        self.G = G
-        self.B = B
-        self.Ir = Ir
-        self.Ii = Ii
-        self.P = P
-        self.Q = Q
-        self.G_prof = G_prof
-        self.B_prof = B_prof
-        self.Ir_prof = Ir_prof
-        self.Ii_prof = Ii_prof
-        self.P_prof = P_prof
-        self.Q_prof = Q_prof
+        self.Vm = Vm
+        self.Va = Va
+        self.Vm_prof = Vm_prof
+        self.Va_prof = Va_prof
 
     def copy(self):
 
-        load = Load()
+        elm = ExternalGrid()
 
-        load.name = self.name
+        elm.name = self.name
+        elm.active = self.active
+        elm.active_prof = self.active_prof
+        elm.Vm = self.Vm
+        elm.Va = self.Va
+        elm.Vm_prof = self.Vm_prof
+        elm.Va_prof = self.Va_prof
 
-        load.active = self.active
-        load.active_prof = self.active_prof
+        elm.mttf = self.mttf
+        elm.mttr = self.mttr
 
-        # Impedance (MVA)
-        load.G = self.G
-        load.B = self.B
-
-        # Current (MVA)
-        load.Ir = self.Ir
-        load.Ii = self.Ii
-
-        # Power (MVA)
-        load.P = self.P
-        load.Q = self.Q
-
-        # Impedance (MVA)
-        load.G_prof = self.G_prof
-        load.B_prof = self.B_prof
-
-        # Current (MVA)
-        load.Ir_prof = self.Ir_prof
-        load.Ii_prof = self.Ii_prof
-
-        # Power (MVA)
-        load.P_prof = self.P_prof
-        load.Q_prof = self.Q_prof
-
-        load.mttf = self.mttf
-        load.mttr = self.mttr
-
-        return load
+        return elm
 
     def get_json_dict(self, id, bus_dict):
         """
@@ -175,28 +125,16 @@ class Load(EditableDevice):
              'name': self.name,
              'bus': bus_dict[self.bus],
              'active': self.active,
-             'G': self.G,
-             'B': self.B,
-             'Ir': self.Ir,
-             'Ii': self.Ii,
-             'P': self.P,
-             'Q': self.Q,
+             'Vm': self.Vm,
+             'Va': self.Va,
              'active_profile': [],
-             'P_prof': [],
-             'Q_prof': [],
-             'Ir_prof': [],
-             'Ii_prof': [],
-             'G_prof': [],
-             'B_prof': []}
+             'Vm_prof': [],
+             'Va_prof': [],}
 
         if self.active_prof is not None:
             d['active_profile'] = self.active_prof.tolist()
-            d['P_prof'] = self.P_prof.tolist()
-            d['Q_prof'] = self.Q_prof.tolist()
-            d['Ir_prof'] = self.Ir_prof.tolist()
-            d['Ii_prof'] = self.Ii_prof.tolist()
-            d['G_prof'] = self.G_prof.tolist()
-            d['B_prof'] = self.B_prof.tolist()
+            d['Vm_prof'] = self.Vm_prof.tolist()
+            d['Va_prof'] = self.Va_prof.tolist()
 
         return d
 
@@ -214,17 +152,17 @@ class Load(EditableDevice):
             ax_2 = fig.add_subplot(212)
 
             # P
-            y = self.P_prof
+            y = self.Vm_prof
             df = pd.DataFrame(data=y, index=time, columns=[self.name])
-            ax_1.set_title('Active power', fontsize=14)
-            ax_1.set_ylabel('MW', fontsize=11)
+            ax_1.set_title('Voltage module', fontsize=14)
+            ax_1.set_ylabel('p.u.', fontsize=11)
             df.plot(ax=ax_1)
 
             # Q
-            y = self.Q_prof
+            y = self.Va_prof
             df = pd.DataFrame(data=y, index=time, columns=[self.name])
-            ax_2.set_title('Reactive power', fontsize=14)
-            ax_2.set_ylabel('MVAr', fontsize=11)
+            ax_2.set_title('Voltage angle', fontsize=14)
+            ax_2.set_ylabel('radians', fontsize=11)
             df.plot(ax=ax_2)
 
             plt.legend()

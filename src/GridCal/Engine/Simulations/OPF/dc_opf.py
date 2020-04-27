@@ -18,7 +18,6 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 from GridCal.Engine.Core.snapshot_data import SnapshotCircuit
-from GridCal.Engine.Core.time_series_data import SeriesData
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
 from GridCal.ThirdParty.pulp import *
 

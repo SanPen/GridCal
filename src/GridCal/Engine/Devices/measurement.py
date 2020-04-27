@@ -27,7 +27,7 @@ class MeasurementType(Enum):
 
 class Measurement:
 
-    def __init__(self, value, uncertainty, mtype: MeasurementType):
+    def __init__(self, value, uncertainty, mtype: MeasurementType, idtag=None):
         """
         Constructor
         :param value: value
@@ -37,3 +37,4 @@ class Measurement:
         self.val = value
         self.sigma = uncertainty
         self.measurement_type = mtype
+        idtag = idtag
