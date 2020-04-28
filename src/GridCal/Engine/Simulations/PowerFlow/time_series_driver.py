@@ -34,7 +34,7 @@ from GridCal.Gui.GuiFunctions import ResultsModel
 
 class TimeSeriesResults(PowerFlowResults):
 
-    def __init__(self, n, m, n_tr, bus_names, branch_names, transformer_names, time_array):
+    def __init__(self, n, m, n_tr, bus_names, branch_names, transformer_names, time_array, bus_types):
         """
         TimeSeriesResults constructor
         @param n: number of buses
@@ -42,7 +42,8 @@ class TimeSeriesResults(PowerFlowResults):
         @param nt: number of time steps
         """
         PowerFlowResults.__init__(self, n=n, m=m, n_tr=n_tr, bus_names=bus_names,
-                                  branch_names=branch_names, transformer_names=transformer_names)
+                                  branch_names=branch_names, transformer_names=transformer_names,
+                                  bus_types=bus_types)
         self.name = 'Time series'
         self.nt = len(time_array)
         self.m = m
@@ -296,7 +297,7 @@ class TimeSeriesResults(PowerFlowResults):
         return branch_overload_frequency, bus_undervoltage_frequency, bus_overvoltage_frequency, \
                 buses_selected_for_storage_frequency
 
-    def mdl(self, result_type: ResultTypes, indices=None, names=None) -> "ResultsModel":
+    def mdl(self, result_type: ResultTypes) -> "ResultsModel":
         """
 
         :param result_type:
@@ -305,118 +306,125 @@ class TimeSeriesResults(PowerFlowResults):
         :return:
         """
 
-        if indices is None:
-            indices = np.array(range(len(names)))
+        if result_type == ResultTypes.BusVoltageModule:
+            labels = self.bus_names
+            data = np.abs(self.voltage)
+            y_label = '(p.u.)'
+            title = 'Bus voltage '
 
-        if len(indices) > 0:
+        elif result_type == ResultTypes.BusVoltageAngle:
+            labels = self.bus_names
+            data = np.angle(self.voltage, deg=True)
+            y_label = '(Deg)'
+            title = 'Bus voltage '
 
-            labels = names[indices]
+        elif result_type == ResultTypes.BusActivePower:
+            labels = self.bus_names
+            data = self.S.real
+            y_label = '(MW)'
+            title = 'Bus active power '
 
-            if result_type == ResultTypes.BusVoltageModule:
-                data = np.abs(self.voltage[:, indices])
-                y_label = '(p.u.)'
-                title = 'Bus voltage '
+        elif result_type == ResultTypes.BusReactivePower:
+            labels = self.bus_names
+            data = self.S.imag
+            y_label = '(MVAr)'
+            title = 'Bus reactive power '
 
-            elif result_type == ResultTypes.BusVoltageAngle:
-                data = np.angle(self.voltage[:, indices], deg=True)
-                y_label = '(Deg)'
-                title = 'Bus voltage '
+        elif result_type == ResultTypes.BranchPower:
+            labels = self.branch_names
+            data = self.Sbranch
+            y_label = '(MVA)'
+            title = 'Branch power '
 
-            elif result_type == ResultTypes.BusActivePower:
-                data = self.S[:, indices].real
-                y_label = '(MW)'
-                title = 'Bus active power '
+        elif result_type == ResultTypes.BranchActivePower:
+            labels = self.branch_names
+            data = self.Sbranch.real
+            y_label = '(MW)'
+            title = 'Branch power '
 
-            elif result_type == ResultTypes.BusReactivePower:
-                data = self.S[:, indices].imag
-                y_label = '(MVAr)'
-                title = 'Bus reactive power '
+        elif result_type == ResultTypes.BranchReactivePower:
+            labels = self.branch_names
+            data = self.Sbranch.imag
+            y_label = '(MVAr)'
+            title = 'Branch power '
 
-            elif result_type == ResultTypes.BranchPower:
-                data = self.Sbranch[:, indices]
-                y_label = '(MVA)'
-                title = 'Branch power '
+        elif result_type == ResultTypes.BranchCurrent:
+            labels = self.branch_names
+            data = self.Ibranch
+            y_label = '(kA)'
+            title = 'Branch current '
 
-            elif result_type == ResultTypes.BranchActivePower:
-                data = self.Sbranch[:, indices].real
-                y_label = '(MW)'
-                title = 'Branch power '
+        elif result_type == ResultTypes.BranchActiveCurrent:
+            labels = self.branch_names
+            data = self.Ibranch.real
+            y_label = '(p.u.)'
+            title = 'Branch current '
 
-            elif result_type == ResultTypes.BranchReactivePower:
-                data = self.Sbranch[:, indices].imag
-                y_label = '(MVAr)'
-                title = 'Branch power '
+        elif result_type == ResultTypes.BranchReactiveCurrent:
+            labels = self.branch_names
+            data = self.Ibranch.imag
+            y_label = '(p.u.)'
+            title = 'Branch current '
 
-            elif result_type == ResultTypes.BranchCurrent:
-                data = self.Ibranch[:, indices]
-                y_label = '(kA)'
-                title = 'Branch current '
+        elif result_type == ResultTypes.BranchLoading:
+            labels = self.branch_names
+            data = np.abs(self.loading) * 100
+            y_label = '(%)'
+            title = 'Branch loading '
 
-            elif result_type == ResultTypes.BranchActiveCurrent:
-                data = self.Ibranch[:, indices].real
-                y_label = '(p.u.)'
-                title = 'Branch current '
+        elif result_type == ResultTypes.BranchLosses:
+            labels = self.branch_names
+            data = self.losses
+            y_label = '(MVA)'
+            title = 'Branch losses'
 
-            elif result_type == ResultTypes.BranchReactiveCurrent:
-                data = self.Ibranch[:, indices].imag
-                y_label = '(p.u.)'
-                title = 'Branch current '
+        elif result_type == ResultTypes.BranchActiveLosses:
+            labels = self.branch_names
+            data = self.losses.real
+            y_label = '(MW)'
+            title = 'Branch losses'
 
-            elif result_type == ResultTypes.BranchLoading:
-                data = np.abs(self.loading[:, indices]) * 100
-                y_label = '(%)'
-                title = 'Branch loading '
+        elif result_type == ResultTypes.BranchReactiveLosses:
+            labels = self.branch_names
+            data = self.losses.imag
+            y_label = '(MVAr)'
+            title = 'Branch losses'
 
-            elif result_type == ResultTypes.BranchLosses:
-                data = self.losses[:, indices]
-                y_label = '(MVA)'
-                title = 'Branch losses'
+        elif result_type == ResultTypes.BranchVoltage:
+            labels = self.branch_names
+            data = np.abs(self.Vbranch)
+            y_label = '(p.u.)'
+            title = result_type.value[0]
 
-            elif result_type == ResultTypes.BranchActiveLosses:
-                data = self.losses[:, indices].real
-                y_label = '(MW)'
-                title = 'Branch losses'
+        elif result_type == ResultTypes.BranchAngles:
+            labels = self.branch_names
+            data = np.angle(self.Vbranch, deg=True)
+            y_label = '(deg)'
+            title = result_type.value[0]
 
-            elif result_type == ResultTypes.BranchReactiveLosses:
-                data = self.losses[:, indices].imag
-                y_label = '(MVAr)'
-                title = 'Branch losses'
+        elif result_type == ResultTypes.BatteryPower:
+            labels = self.branch_names
+            data = np.zeros_like(self.losses)
+            y_label = '$\Delta$ (MVA)'
+            title = 'Battery power'
 
-            elif result_type == ResultTypes.BranchVoltage:
-                data = np.abs(self.Vbranch[:, indices])
-                y_label = '(p.u.)'
-                title = result_type.value[0]
-
-            elif result_type == ResultTypes.BranchAngles:
-                data = np.angle(self.Vbranch[:, indices], deg=True)
-                y_label = '(deg)'
-                title = result_type.value[0]
-
-            elif result_type == ResultTypes.BatteryPower:
-                data = np.zeros_like(self.losses[:, indices])
-                y_label = '$\Delta$ (MVA)'
-                title = 'Battery power'
-
-            elif result_type == ResultTypes.SimulationError:
-                data = self.error.reshape(-1, 1)
-                y_label = 'p.u.'
-                labels = ['Error']
-                title = 'Error'
-
-            else:
-                raise Exception('Result type not understood:' + str(result_type))
-
-            if self.time is not None:
-                index = self.time
-            else:
-                index = list(range(data.shape[0]))
-
-            # assemble model
-            mdl = ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
-            return mdl
+        elif result_type == ResultTypes.SimulationError:
+            data = self.error.reshape(-1, 1)
+            y_label = 'p.u.'
+            labels = ['Error']
+            title = 'Error'
 
         else:
-            return None
+            raise Exception('Result type not understood:' + str(result_type))
+
+        if self.time is not None:
+            index = self.time
+        else:
+            index = list(range(data.shape[0]))
+
+        # assemble model
+        mdl = ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
+        return mdl
 
 
 def kmeans_case_sampling(X, n_points=10):
@@ -621,6 +629,7 @@ class TimeSeries(QThread):
                                                 bus_names=numerical_circuit.bus_names,
                                                 branch_names=numerical_circuit.branch_names,
                                                 transformer_names=numerical_circuit.tr_names,
+                                                bus_types=numerical_circuit.bus_types,
                                                 time_array=self.grid.time_profile[time_indices])
 
         time_series_results.bus_types = numerical_circuit.bus_types
@@ -652,6 +661,7 @@ class TimeSeries(QThread):
                                         bus_names=calculation_input.bus_names,
                                         branch_names=calculation_input.branch_names,
                                         transformer_names=calculation_input.tr_names,
+                                        bus_types=numerical_circuit.bus_types,
                                         time_array=self.grid.time_profile[time_indices])
 
             self.progress_signal.emit(0.0)

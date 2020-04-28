@@ -477,7 +477,8 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
                                n_tr=circuit.ntr,
                                bus_names=circuit.bus_names,
                                branch_names=circuit.branch_names,
-                               transformer_names=circuit.tr_names)
+                               transformer_names=circuit.tr_names,
+                               bus_types=circuit.bus_types)
     results.Sbus = Scalc
     results.voltage = voltage_solution
     results.Sbranch = Sbranch
@@ -1153,7 +1154,7 @@ def single_island_pf(circuit: SnapshotIsland, Vbus, Sbus, Ibus, Ysh, branch_rate
     worked = False
     solver_idx = 0
 
-    results = PowerFlowResults(n=0, m=0, n_tr=0, bus_names=(), branch_names=(), transformer_names=())
+    results = PowerFlowResults(n=0, m=0, n_tr=0, bus_names=(), branch_names=(), transformer_names=(), bus_types=())
 
     while solver_idx < len(solvers) and not worked:
         # get the solver
@@ -1211,7 +1212,8 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     results = PowerFlowResults(n=n, m=m, n_tr=numerical_circuit.ntr,
                                bus_names=numerical_circuit.bus_names,
                                branch_names=numerical_circuit.branch_names,
-                               transformer_names=numerical_circuit.tr_names)
+                               transformer_names=numerical_circuit.tr_names,
+                               bus_types=numerical_circuit.bus_types)
 
     results.bus_types = numerical_circuit.bus_types
 

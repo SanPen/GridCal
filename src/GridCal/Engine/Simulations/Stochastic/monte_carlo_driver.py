@@ -45,9 +45,9 @@ def make_monte_carlo_input(numerical_input_island: TimeIsland):
     Ycdf = [None] * n
 
     for i in range(n):
-        Scdf[i] = CDF(numerical_input_island.Sbus_prof[i, :])
-        Icdf[i] = CDF(numerical_input_island.Ibus_prof[i, :])
-        Ycdf[i] = CDF(numerical_input_island.Ysh_prof[i, :])
+        Scdf[i] = CDF(numerical_input_island.Sbus[i, :])
+        Icdf[i] = CDF(numerical_input_island.Ibus[i, :])
+        Ycdf[i] = CDF(numerical_input_island.Yshunt_from_devices[i, :])
 
     return MonteCarloInput(n, Scdf, Icdf, Ycdf)
 

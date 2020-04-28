@@ -64,13 +64,16 @@ class PowerFlowResults:
 
     """
 
-    def __init__(self, n, m, n_tr, bus_names, branch_names, transformer_names):
+    def __init__(self, n, m, n_tr, bus_names, branch_names, transformer_names, bus_types):
 
         self.name = 'Power flow'
 
         self.n = n
         self.m = m
         self.n_tr = n_tr
+
+        self.bus_types = bus_types
+
         self.bus_names = bus_names
         self.branch_names = branch_names
         self.transformer_names = transformer_names
