@@ -25,8 +25,9 @@ from GridCal.Engine.Core.time_series_data import TimeIsland
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import CDF
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, single_island_pf, \
-                                                                    power_flow_worker_args
+                                                                    power_flow_worker_args, power_flow_post_process
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeriesResults
+from GridCal.Engine.Core.time_series_data import compile_time_circuit, split_time_circuit_into_islands, BranchImpedanceMode
 
 ########################################################################################################################
 # Monte Carlo classes
@@ -58,7 +59,8 @@ class MonteCarlo(QThread):
     done_signal = Signal()
     name = 'Monte Carlo'
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, mc_tol=1e-3, batch_size=100, max_mc_iter=10000):
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, mc_tol=1e-3, batch_size=100, max_mc_iter=10000,
+                 opf_time_series_results=None):
         """
         Monte Carlo simulation constructor
         :param grid: MultiGrid instance
@@ -73,15 +75,14 @@ class MonteCarlo(QThread):
 
         self.options = options
 
+        self.opf_time_series_results = opf_time_series_results
+
         self.mc_tol = mc_tol
 
         self.batch_size = batch_size
         self.max_mc_iter = max_mc_iter
 
-        n = len(self.circuit.buses)
-        m = self.circuit.get_branch_number()
-
-        self.results = MonteCarloResults(n, m, name='Monte Carlo')
+        self.results = None
 
         self.logger = Logger()
 
@@ -116,7 +117,7 @@ class MonteCarlo(QThread):
 
         # initialize the grid time series results
         # we will append the island results with another function
-        self.circuit.time_series_results = TimeSeriesResults(0, 0, [])
+        # self.circuit.time_series_results = TimeSeriesResults(0, 0, [])
         self.pool = multiprocessing.Pool()
         it = 0
         variance_sum = 0.0
@@ -243,28 +244,56 @@ class MonteCarlo(QThread):
 
         # initialize the grid time series results
         # we will append the island results with another function
-        self.circuit.time_series_results = TimeSeriesResults(0, 0, [])
-        Sbase = self.circuit.Sbase
+        # self.circuit.time_series_results = TimeSeriesResults(0, 0, [])
+        # Sbase = self.circuit.Sbase
 
         it = 0
         variance_sum = 0.0
         std_dev_progress = 0
         v_variance = 0
 
-        n = len(self.circuit.buses)
-        m = self.circuit.get_branch_number()
+        # n = len(self.circuit.buses)
+        # m = self.circuit.get_branch_number()
+        #
+        # # compile circuits
+        # numerical_circuit = self.circuit.compile_time_series()
+        #
+        # # perform the topological computation
+        # calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
+        #                                              ignore_single_node_islands=self.options.ignore_single_node_islands)
+        #
+        # mc_results = MonteCarloResults(n, m, name='Monte Carlo')
+        # avg_res = PowerFlowResults()
+        # avg_res.initialize(n, m)
 
-        # compile circuits
-        numerical_circuit = self.circuit.compile_time_series()
+        # compile the multi-circuit
+        numerical_circuit = compile_time_circuit(circuit=self.circuit,
+                                                 apply_temperature=False,
+                                                 branch_tolerance_mode=BranchImpedanceMode.Specified,
+                                                 impedance_tolerance=0.0,
+                                                 opf_results=self.opf_time_series_results)
 
-        # perform the topological computation
-        calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
-                                                     ignore_single_node_islands=self.options.ignore_single_node_islands)
+        # do the topological computation
+        calculation_inputs = split_time_circuit_into_islands(numeric_circuit=numerical_circuit,
+                                                             ignore_single_node_islands=self.options.ignore_single_node_islands)
 
-        mc_results = MonteCarloResults(n, m, name='Monte Carlo')
-        avg_res = PowerFlowResults()
-        avg_res.initialize(n, m)
+        mc_results_master = MonteCarloResults(n=numerical_circuit.nbus,
+                                              m=numerical_circuit.nbr,
+                                              p=self.max_mc_iter,
+                                              bus_names=numerical_circuit.bus_names,
+                                              branch_names=numerical_circuit.branch_names,
+                                              name='Monte Carlo')
 
+        avg_res = PowerFlowResults(n=numerical_circuit.nbus,
+                                   m=numerical_circuit.nbr,
+                                   n_tr=numerical_circuit.ntr,
+                                   bus_names=numerical_circuit.bus_names,
+                                   branch_names=numerical_circuit.branch_names,
+                                   transformer_names=numerical_circuit.tr_names,
+                                   bus_types=numerical_circuit.bus_types)
+
+        n = numerical_circuit.nbus
+        m = numerical_circuit.nbr
         v_sum = zeros(n, dtype=complex)
 
         self.progress_signal.emit(0.0)
@@ -273,64 +302,78 @@ class MonteCarlo(QThread):
 
             self.progress_text.emit('Running Monte Carlo: Variance: ' + str(v_variance))
 
-            mc_results = MonteCarloResults(n, m, self.batch_size, name='Monte Carlo')
+            batch_results = MonteCarloResults(n=numerical_circuit.nbus,
+                                              m=numerical_circuit.nbr,
+                                              p=self.max_mc_iter,
+                                              bus_names=numerical_circuit.bus_names,
+                                              branch_names=numerical_circuit.branch_names,
+                                              name='Monte Carlo')
 
-            # for each partition of the profiles...
-            for t_key, calc_inputs in calc_inputs_dict.items():
+            # For every island, run the time series
+            for island_index, numerical_island in enumerate(calculation_inputs):
 
-                # For every island, run the time series
-                for island_index, numerical_island in enumerate(calc_inputs):
+                # short cut the indices
+                bus_idx = numerical_island.original_bus_idx
+                br_idx = numerical_island.original_branch_idx
 
-                    # set the time series as sampled
-                    monte_carlo_input = make_monte_carlo_input(numerical_island)
-                    mc_time_series = monte_carlo_input(self.batch_size, use_latin_hypercube=False)
-                    Vbus = numerical_island.Vbus
+                # set the time series as sampled
+                monte_carlo_input = make_monte_carlo_input(numerical_island)
+                mc_time_series = monte_carlo_input(self.batch_size, use_latin_hypercube=False)
+                Vbus = numerical_island.Vbus[0, :]
 
-                    # run the time series
-                    for t in range(self.batch_size):
-                        # set the power values
-                        Y, I, S = mc_time_series.get_at(t)
+                # run the time series
+                for t in range(self.batch_size):
+                    # set the power values
+                    Y, I, S = mc_time_series.get_at(t)
 
-                        res = single_island_pf(circuit=numerical_island,
-                                               Vbus=Vbus,
-                                               Sbus=S,
-                                               Ibus=I,
-                                               branch_rates=numerical_island.branch_rates,
-                                               options=self.options,
-                                               logger=self.logger)
+                    res = single_island_pf(circuit=numerical_island,
+                                           Vbus=Vbus,
+                                           Sbus=S,
+                                           Ibus=I,
+                                           Ysh=Y,
+                                           branch_rates=numerical_island.branch_rates[0, :],
+                                           options=self.options,
+                                           logger=self.logger)
 
-                        mc_results.S_points[t, numerical_island.original_bus_idx] = res.Sbus
-                        mc_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
-                        mc_results.Sbr_points[t, numerical_island.original_branch_idx] = res.Sbranch
-                        mc_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
-                        mc_results.losses_points[t, numerical_island.original_branch_idx] = res.losses
-
-                    # short cut the indices
-                    b_idx = numerical_island.original_bus_idx
-                    br_idx = numerical_island.original_branch_idx
+                    batch_results.S_points[t, bus_idx] = res.Sbus
+                    batch_results.V_points[t, bus_idx] = res.voltage
+                    batch_results.Sbr_points[t, br_idx] = res.Sbranch
+                    batch_results.loading_points[t, br_idx] = res.loading
+                    batch_results.losses_points[t, br_idx] = res.losses
 
                 self.progress_text.emit('Compiling results...')
-                mc_results.compile()
+                batch_results.compile()
 
                 # compute the island branch results
-                island_avg_res = numerical_island.compute_branch_results(mc_results.voltage[b_idx])
+                Sbranch, Ibranch, Vbranch, loading, \
+                losses, flow_direction, Sbus = power_flow_post_process(numerical_island,
+                                                                       Sbus=batch_results.S_points.mean(axis=0)[bus_idx],
+                                                                       V=batch_results.V_points.mean(axis=0)[bus_idx],
+                                                                       branch_rates=numerical_island.branch_rates[0, :])
 
                 # apply the island averaged results
-                avg_res.apply_from_island(island_avg_res, b_idx=b_idx, br_idx=br_idx)
+                avg_res.Sbus[bus_idx] = Sbus
+                avg_res.voltage[bus_idx] = batch_results.voltage[bus_idx]
+                avg_res.Sbranch[br_idx] = Sbranch
+                avg_res.Ibranch[br_idx] = Ibranch
+                avg_res.Vbranch[br_idx] = Vbranch
+                avg_res.loading[br_idx] = loading
+                avg_res.losses[br_idx] = losses
+                avg_res.flow_direction[br_idx] = flow_direction
 
             # Compute the Monte Carlo values
             it += self.batch_size
-            mc_results.append_batch(mc_results)
-            v_sum += mc_results.get_voltage_sum()
+            mc_results_master.append_batch(batch_results)
+            v_sum += mc_results_master.get_voltage_sum()
             v_avg = v_sum / it
-            v_variance = abs((power(mc_results.V_points - v_avg, 2.0) / (it - 1)).min())
+            v_variance = abs((power(mc_results_master.V_points - v_avg, 2.0) / (it - 1)).min())
 
             # progress
             variance_sum += v_variance
             err = variance_sum / it
             if err == 0:
                 err = 1e-200  # to avoid division by zeros
-            mc_results.error_series.append(err)
+            mc_results_master.error_series.append(err)
 
             # emmit the progress signal
             std_dev_progress = 100 * self.mc_tol / err
@@ -339,16 +382,14 @@ class MonteCarlo(QThread):
             self.progress_signal.emit(max((std_dev_progress, it / self.max_mc_iter * 100)))
 
         # compile results
-        # mc_results.sbranch = avg_res.Sbranch
-        # mc_results.losses = avg_res.losses
-        mc_results.bus_types = numerical_circuit.bus_types
+        mc_results_master.bus_types = numerical_circuit.bus_types
 
         # send the finnish signal
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Done!')
         self.done_signal.emit()
 
-        return mc_results
+        return mc_results_master
 
     def run(self):
         """
