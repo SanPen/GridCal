@@ -327,16 +327,20 @@ class GridAnalysisGUI(QtWidgets.QDialog):
         :param format_str: Formatting string
         :return:
         """
+        if self.circuit.time_profile is not None:
+            nt = len(self.circuit.time_profile)
+        else:
+            nt = 0
 
         Pl = 0
         Pg = 0
-        Pl_prof = 0
-        Pg_prof = 0
+        Pl_prof = np.zeros(nt)
+        Pg_prof = np.zeros(nt)
 
         Ql = 0
         Qg = 0
-        Ql_prof = 0
-        Qg_prof = 0
+        Ql_prof = np.zeros(nt)
+        Qg_prof = np.zeros(nt)
 
         print('Analyzing...')
         # declare logs

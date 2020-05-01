@@ -24,7 +24,8 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.OPF.ac_opf import OpfAc
 from GridCal.Engine.Simulations.OPF.dc_opf import OpfDc
 from GridCal.Engine.Simulations.OPF.simple_dispatch import OpfSimple
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType, PowerFlowOptions
+from GridCal.Engine.Core.snapshot_data_opf import compile_snapshot_opf_circuit
 
 ########################################################################################################################
 # Optimal Power flow classes
@@ -70,7 +71,7 @@ class OptimalPowerFlow(QThread):
     done_signal = Signal()
     name = 'Optimal power flow'
 
-    def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions):
+    def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions, pf_options: PowerFlowOptions):
         """
         PowerFlowDriver class constructor
         @param grid: MultiCircuit Object
@@ -83,6 +84,8 @@ class OptimalPowerFlow(QThread):
 
         # Options to use
         self.options = options
+
+        self.pf_options = pf_options
 
         # OPF results
         self.results = None
@@ -107,23 +110,22 @@ class OptimalPowerFlow(QThread):
         Run a power flow for every circuit
         @return: OptimalPowerFlowResults object
         """
-        # print('PowerFlowDriver at ', self.grid.name)
 
-        # self.progress_signal.emit(0.0)
-        numerical_circuit = self.grid.compile_snapshot()
+        numerical_circuit = compile_snapshot_opf_circuit(circuit=self.grid,
+                                                         apply_temperature=self.pf_options.apply_temperature_correction,
+                                                         branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
+                                                         impedance_tolerance=0.0)
 
         if self.options.solver == SolverType.DC_OPF:
             # DC optimal power flow
-            problem = OpfDc(numerical_circuit=numerical_circuit,
-                            solver=self.options.mip_solver)
+            problem = OpfDc(numerical_circuit=numerical_circuit, solver=self.options.mip_solver)
 
         elif self.options.solver == SolverType.AC_OPF:
             # AC optimal power flow
-            problem = OpfAc(numerical_circuit=numerical_circuit,
-                            solver=self.options.mip_solver)
+            problem = OpfAc(numerical_circuit=numerical_circuit, solver=self.options.mip_solver)
 
         elif self.options.solver == SolverType.Simple_OPF:
-            # AC optimal power flow
+            # simplistic dispatch
             problem = OpfSimple(numerical_circuit=numerical_circuit)
 
         else:
@@ -142,7 +144,12 @@ class OptimalPowerFlow(QThread):
         gn[gn == None] = 0
 
         # pack the results
-        self.results = OptimalPowerFlowResults(Sbus=None,
+        self.results = OptimalPowerFlowResults(bus_names=numerical_circuit.bus_names,
+                                               branch_names=numerical_circuit.branch_names,
+                                               load_names=numerical_circuit.load_names,
+                                               generator_names=numerical_circuit.generator_names,
+                                               battery_names=numerical_circuit.battery_names,
+                                               Sbus=None,
                                                voltage=problem.get_voltage(),
                                                load_shedding=ld,
                                                generation_shedding=np.zeros_like(gn),

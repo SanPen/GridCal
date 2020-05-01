@@ -14,14 +14,14 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from GridCal.Engine.basic_structures import MIPSolvers
-from GridCal.Engine.Core.snapshot_data import SnapshotCircuit
+from GridCal.Engine.Core.snapshot_data_opf import SnapshotOpfCircuit
 from GridCal.Engine.Core.time_series_data import TimeCircuit
 from GridCal.ThirdParty.pulp import *
 
 
 class Opf:
 
-    def __init__(self, numerical_circuit: SnapshotCircuit, solver: MIPSolvers = MIPSolvers.CBC):
+    def __init__(self, numerical_circuit: SnapshotOpfCircuit, solver: MIPSolvers = MIPSolvers.CBC):
         """
         Optimal power flow template class
         :param numerical_circuit: NumericalCircuit instance

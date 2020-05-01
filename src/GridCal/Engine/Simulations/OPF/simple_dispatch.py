@@ -17,14 +17,14 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
-from GridCal.Engine.Core.snapshot_data import SnapshotCircuit
+from GridCal.Engine.Core.snapshot_data_opf import SnapshotOpfCircuit, split_into_opf_islands
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf
 from GridCal.ThirdParty.pulp import *
 
 
 class OpfSimple(Opf):
 
-    def __init__(self, numerical_circuit: SnapshotCircuit):
+    def __init__(self, numerical_circuit: SnapshotOpfCircuit):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
@@ -45,9 +45,9 @@ class OpfSimple(Opf):
         # general indices
         n = nc.nbus
         m = nc.nbr
-        ng = nc.n_ctrl_gen
-        nb = nc.n_batt
-        nl = nc.n_ld
+        ng = nc.ngen
+        nb = nc.nbatt
+        nl = nc.nload
         Sbase = nc.Sbase
 
         # battery
@@ -81,7 +81,7 @@ class OpfSimple(Opf):
         Pavail = Pg_max * nc.generator_active
         Gshare = Pavail / Pavail.sum()
 
-        Pl = (nc.load_active * nc.load_power.real) / Sbase
+        Pl = (nc.load_active * nc.load_s.real) / Sbase
 
         Pg = Pl.sum() * Gshare
 
@@ -173,36 +173,41 @@ class OpfSimple(Opf):
 
 
 if __name__ == '__main__':
+    from GridCal.Engine.basic_structures import BranchImpedanceMode
+    from GridCal.Engine.IO.file_handler import FileOpen
+    from GridCal.Engine.Core.snapshot_data_opf import compile_snapshot_opf_circuit
 
-        from GridCal.Engine.IO.file_handler import FileOpen
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv (2 islands).gridcal'
 
-        # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-        # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-        fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
-        # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv (2 islands).gridcal'
+    main_circuit = FileOpen(fname).open()
 
-        main_circuit = FileOpen(fname).open()
+    main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
 
-        main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
+    numerical_circuit_ = compile_snapshot_opf_circuit(circuit=main_circuit,
+                                                      apply_temperature=False,
+                                                      branch_tolerance_mode=BranchImpedanceMode.Specified,
+                                                      impedance_tolerance=0.0)
 
-        numerical_circuit_ = main_circuit.compile_snapshot()
-        problem = OpfSimple(numerical_circuit=numerical_circuit_)
+    problem = OpfSimple(numerical_circuit=numerical_circuit_)
 
-        print('Solving...')
-        status = problem.solve()
+    print('Solving...')
+    status = problem.solve()
 
-        # print("Status:", status)
+    print("Status:", status)
 
-        v = problem.get_voltage()
-        print('Angles\n', np.angle(v))
+    v = problem.get_voltage()
+    print('Angles\n', np.angle(v))
 
-        l = problem.get_loading()
-        print('Branch loading\n', l)
+    l = problem.get_loading()
+    print('Branch loading\n', l)
 
-        g = problem.get_generator_power()
-        print('Gen power\n', g)
+    g = problem.get_generator_power()
+    print('Gen power\n', g)
 
-        pr = problem.get_shadow_prices()
-        print('Nodal prices \n', pr)
+    pr = problem.get_shadow_prices()
+    print('Nodal prices \n', pr)
 
-        pass
+    pass

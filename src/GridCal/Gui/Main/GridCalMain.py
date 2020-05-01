@@ -2972,8 +2972,9 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Running optimal power flow...')
                 QtGui.QGuiApplication.processEvents()
+                pf_options = self.get_selected_power_flow_options()
                 # set power flow object instance
-                self.optimal_power_flow = OptimalPowerFlow(self.circuit, options)
+                self.optimal_power_flow = OptimalPowerFlow(self.circuit, options, pf_options)
 
                 self.optimal_power_flow.progress_signal.connect(self.ui.progressBar.setValue)
                 self.optimal_power_flow.progress_text.connect(self.ui.progress_label.setText)

@@ -1196,9 +1196,6 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     :param logger: list of events to add to
     :return: PowerFlowResults instance
     """
-    # print('PowerFlowDriver at ', self.grid.name)
-    n = len(multi_circuit.buses)
-    m = multi_circuit.get_branch_number()
 
     numerical_circuit = compile_snapshot_circuit(circuit=multi_circuit,
                                                  apply_temperature=options.apply_temperature_correction,
@@ -1209,7 +1206,9 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,
                                             ignore_single_node_islands=options.ignore_single_node_islands)
 
-    results = PowerFlowResults(n=n, m=m, n_tr=numerical_circuit.ntr,
+    results = PowerFlowResults(n=numerical_circuit.nbus,
+                               m=numerical_circuit.nbr,
+                               n_tr=numerical_circuit.ntr,
                                bus_names=numerical_circuit.bus_names,
                                branch_names=numerical_circuit.branch_names,
                                transformer_names=numerical_circuit.tr_names,

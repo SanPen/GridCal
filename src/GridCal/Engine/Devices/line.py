@@ -27,7 +27,6 @@ from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, G
 from GridCal.Engine.Devices.tower import Tower
 
 
-
 class SequenceLineType(EditableDevice):
 
     def __init__(self, name='SequenceLine', idtag=None, rating=1,
