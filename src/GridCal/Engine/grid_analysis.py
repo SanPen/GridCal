@@ -16,7 +16,7 @@ import numpy as np
 
 
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeriesResults
-from GridCal.Engine.Core.time_series_data import TimeCircuit
+from GridCal.Engine.Core.time_series_pf_data import TimeCircuit
 
 
 class TimeSeriesResultsAnalysis:

@@ -25,7 +25,7 @@ from GridCal.Engine.Simulations.OPF.ac_opf import OpfAc
 from GridCal.Engine.Simulations.OPF.dc_opf import OpfDc
 from GridCal.Engine.Simulations.OPF.simple_dispatch import OpfSimple
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType, PowerFlowOptions
-from GridCal.Engine.Core.snapshot_data_opf import compile_snapshot_opf_circuit
+from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
 
 ########################################################################################################################
 # Optimal Power flow classes

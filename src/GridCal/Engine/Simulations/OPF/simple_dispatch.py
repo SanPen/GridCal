@@ -17,14 +17,14 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
-from GridCal.Engine.Core.snapshot_data_opf import SnapshotOpfCircuit, split_into_opf_islands
+from GridCal.Engine.Core.snapshot_opf_data import OpfSnapshotCircuit, split_into_opf_islands
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf
 from GridCal.ThirdParty.pulp import *
 
 
 class OpfSimple(Opf):
 
-    def __init__(self, numerical_circuit: SnapshotOpfCircuit):
+    def __init__(self, numerical_circuit: OpfSnapshotCircuit):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
@@ -175,7 +175,7 @@ class OpfSimple(Opf):
 if __name__ == '__main__':
     from GridCal.Engine.basic_structures import BranchImpedanceMode
     from GridCal.Engine.IO.file_handler import FileOpen
-    from GridCal.Engine.Core.snapshot_data_opf import compile_snapshot_opf_circuit
+    from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'

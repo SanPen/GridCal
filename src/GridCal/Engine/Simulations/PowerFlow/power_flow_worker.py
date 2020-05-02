@@ -25,10 +25,10 @@ from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import NR_LS
 from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.Core.snapshot_data import SnapshotIsland
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotIsland
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.common_functions import compile_types
-from GridCal.Engine.Core.snapshot_data import compile_snapshot_circuit, split_into_islands
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
 
 
 class ConvergenceReport:

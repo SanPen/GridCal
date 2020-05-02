@@ -19,8 +19,8 @@ from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_data import SnapshotData
-from GridCal.Engine.Core.time_series_data import SeriesData
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
+from GridCal.Engine.Core.time_series_pf_data import SeriesData
 from GridCal.Engine.Devices import DeviceType
 
 

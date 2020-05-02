@@ -22,10 +22,10 @@ from GridCal.Engine.Simulations.ShortCircuit.short_circuit import short_circuit_
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowOptions
-from GridCal.Engine.Core.snapshot_data import SnapshotIsland
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotIsland
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Devices import Branch, Bus
-from GridCal.Engine.Core.snapshot_data import compile_snapshot_circuit, split_into_islands
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
 from GridCal.Gui.GuiFunctions import ResultsModel
 
 ########################################################################################################################

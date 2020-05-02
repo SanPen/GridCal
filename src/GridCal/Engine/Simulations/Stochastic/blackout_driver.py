@@ -24,7 +24,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriv
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
 from GridCal.Engine.Simulations.Stochastic.lhs_driver import LatinHypercubeSampling
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_data import SnapshotCircuit
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotCircuit
 
 
 class CascadeType(Enum):

@@ -27,7 +27,7 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, power_flow_worker_args
-from GridCal.Engine.Core.time_series_data import compile_time_circuit, split_time_circuit_into_islands, BranchImpedanceMode
+from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, split_time_circuit_into_islands, BranchImpedanceMode
 from GridCal.Engine.Simulations.Stochastic.latin_hypercube_sampling import lhs
 from GridCal.Gui.GuiFunctions import ResultsModel
 

@@ -21,7 +21,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOpt
 from GridCal.Gui.GuiFunctions import ResultsModel
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_data import compile_snapshot_circuit, split_into_islands
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
 from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_coefficients_josep, sigma_function
 
 

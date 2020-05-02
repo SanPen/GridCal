@@ -16,7 +16,7 @@
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
-from typing import List
+from typing import List, Dict
 
 from GridCal.Engine.basic_structures import Logger
 import GridCal.Engine.Core.topology as tp
@@ -24,12 +24,12 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
-from GridCal.Engine.Core.common_functions import compile_types
+from GridCal.Engine.Core.common_functions import compile_types, find_different_states
 
 
-class SnapshotOpfCircuit:
+class OpfTimeCircuit:
 
-    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, sbase,
+    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, ntime, sbase, time_array,
                  apply_temperature=False, impedance_tolerance=0.0,
                  branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
         """
@@ -54,6 +54,7 @@ class SnapshotOpfCircuit:
         self.ngen = ngen
         self.nbatt = nbatt
         self.nshunt = nshunt
+        self.ntime = ntime
 
         self.Sbase = sbase
 
@@ -61,22 +62,24 @@ class SnapshotOpfCircuit:
         self.branch_tolerance_mode = branch_tolerance_mode
         self.impedance_tolerance = impedance_tolerance
 
+        self.time_array = time_array
+
         # bus ----------------------------------------------------------------------------------------------------------
         self.bus_names = np.empty(nbus, dtype=object)
-        self.bus_active = np.ones(nbus, dtype=int)
-        self.Vbus = np.ones(nbus, dtype=complex)
         self.bus_types = np.empty(nbus, dtype=int)
         self.bus_installed_power = np.zeros(nbus, dtype=float)
+        self.bus_active = np.ones((ntime, nbus), dtype=int)
+        self.Vbus = np.ones((ntime, nbus), dtype=complex)
 
         # branch common ------------------------------------------------------------------------------------------------
         self.nbr = nline + ntr + nhvdc + nvsc  # compute the number of branches
 
         self.branch_names = np.empty(self.nbr, dtype=object)
-        self.branch_active = np.zeros(self.nbr, dtype=int)
+        self.branch_active = np.zeros((ntime, self.nbr), dtype=int)
         self.F = np.zeros(self.nbr, dtype=int)  # indices of the "from" buses
         self.T = np.zeros(self.nbr, dtype=int)  # indices of the "to" buses
-        self.branch_rates = np.zeros(self.nbr, dtype=float)
-        self.branch_cost = np.zeros(self.nbr, dtype=float)
+        self.branch_rates = np.zeros((ntime, self.nbr), dtype=float)
+        self.branch_cost = np.zeros((ntime, self.nbr), dtype=float)
         self.branch_R = np.zeros(self.nbr, dtype=float)
         self.branch_X = np.zeros(self.nbr, dtype=float)
         self.C_branch_bus_f = sp.lil_matrix((self.nbr, nbus), dtype=int)  # connectivity branch with their "from" bus
@@ -110,10 +113,10 @@ class SnapshotOpfCircuit:
 
         # hvdc line ----------------------------------------------------------------------------------------------------
         self.hvdc_names = np.zeros(nhvdc, dtype=object)
-        self.hvdc_active = np.zeros(nhvdc, dtype=bool)
-        self.hvdc_rate = np.zeros(nhvdc, dtype=float)
+        self.hvdc_active = np.zeros((ntime, nhvdc), dtype=bool)
+        self.hvdc_rate = np.zeros((ntime, nhvdc), dtype=float)
 
-        self.hvdc_Pset = np.zeros(nhvdc)
+        self.hvdc_Pset = np.zeros((ntime, nhvdc))
 
         self.C_hvdc_bus_f = sp.lil_matrix((nhvdc, nbus), dtype=int)  # this ons is just for splitting islands
         self.C_hvdc_bus_t = sp.lil_matrix((nhvdc, nbus), dtype=int)  # this ons is just for splitting islands
@@ -131,46 +134,56 @@ class SnapshotOpfCircuit:
 
         # load ---------------------------------------------------------------------------------------------------------
         self.load_names = np.empty(nload, dtype=object)
-        self.load_active = np.zeros(nload, dtype=bool)
-        self.load_s = np.zeros(nload, dtype=complex)
-        self.load_cost = np.zeros(nload)
+        self.load_active = np.zeros((ntime, nload), dtype=bool)
+        self.load_s = np.zeros((ntime, nload), dtype=complex)
+        self.load_cost = np.zeros((ntime, nload), dtype=complex)
 
         self.C_bus_load = sp.lil_matrix((nbus, nload), dtype=int)
 
         # battery ------------------------------------------------------------------------------------------------------
         self.battery_names = np.empty(nbatt, dtype=object)
-        self.battery_active = np.zeros(nbatt, dtype=bool)
         self.battery_controllable = np.zeros(nbatt, dtype=bool)
         self.battery_dispatchable = np.zeros(nbatt, dtype=bool)
-        self.battery_installed_p = np.zeros(nbatt)
-        self.battery_p = np.zeros(nbatt)
-        self.battery_pf = np.zeros(nbatt)
-        self.battery_v = np.zeros(nbatt)
         self.battery_pmin = np.zeros(nbatt)
         self.battery_pmax = np.zeros(nbatt)
-        self.battery_cost = np.zeros(nbatt)
+
+        self.battery_enom = np.zeros(nbatt)
+        self.battery_min_soc = np.zeros(nbatt)
+        self.battery_max_soc = np.zeros(nbatt)
+        self.battery_soc_0 = np.zeros(nbatt)
+        self.battery_charge_efficiency = np.zeros(nbatt)
+        self.battery_discharge_efficiency = np.zeros(nbatt)
+
+        self.battery_installed_p = np.zeros(nbatt)
+
+        self.battery_active = np.zeros((ntime, nbatt), dtype=bool)
+        self.battery_p = np.zeros((ntime, nbatt))
+        self.battery_pf = np.zeros((ntime, nbatt))
+        self.battery_v = np.zeros((ntime, nbatt))
+        self.battery_cost = np.zeros((ntime, nbatt))
 
         self.C_bus_batt = sp.lil_matrix((nbus, nbatt), dtype=int)
 
         # generator ----------------------------------------------------------------------------------------------------
         self.generator_names = np.empty(ngen, dtype=object)
-        self.generator_active = np.zeros(ngen, dtype=bool)
         self.generator_controllable = np.zeros(ngen, dtype=bool)
+        self.generator_dispatchable = np.zeros(ngen, dtype=bool)
         self.generator_installed_p = np.zeros(ngen)
-        self.generator_p = np.zeros(ngen)
-        self.generator_pf = np.zeros(ngen)
-        self.generator_v = np.zeros(ngen)
         self.generator_pmin = np.zeros(ngen)
         self.generator_pmax = np.zeros(ngen)
-        self.generator_cost = np.zeros(ngen)
-        self.generator_dispatchable = np.zeros(ngen, dtype=bool)
+
+        self.generator_active = np.zeros((ntime, ngen), dtype=bool)
+        self.generator_p = np.zeros((ntime, ngen))
+        self.generator_pf = np.zeros((ntime, ngen))
+        self.generator_v = np.zeros((ntime, ngen))
+        self.generator_cost = np.zeros((ntime, ngen))
 
         self.C_bus_gen = sp.lil_matrix((nbus, ngen), dtype=int)
 
         # shunt --------------------------------------------------------------------------------------------------------
         self.shunt_names = np.empty(nshunt, dtype=object)
-        self.shunt_active = np.zeros(nshunt, dtype=bool)
-        self.shunt_admittance = np.zeros(nshunt, dtype=complex)
+        self.shunt_active = np.zeros((ntime, nshunt), dtype=bool)
+        self.shunt_admittance = np.zeros((ntime, nshunt), dtype=complex)
 
         self.C_bus_shunt = sp.lil_matrix((nbus, nshunt), dtype=int)
 
@@ -196,25 +209,50 @@ class SnapshotOpfCircuit:
         self.bus_installed_power = self.C_bus_gen * self.generator_installed_p
         self.bus_installed_power += self.C_bus_batt * self.battery_installed_p
 
-    def to_island(self) -> "SnapshotOpfIsland":
+    def get_power_injections(self):
+        """
+        Compute the power
+        :return: Array of power injections
+        """
+        Sbus = - self.C_bus_load * (self.load_s * self.load_active)  # MW
+
+        # generators
+        Sbus += self.C_bus_gen * (self.generator_p * self.generator_active)
+
+        # battery
+        Sbus += self.C_bus_batt * (self.battery_p * self.battery_active)
+
+        # HVDC forced power
+        if self.nhvdc:
+            Sbus += self.hvdc_active * self.hvdc_Pset * self.C_hvdc_bus_f
+            Sbus -= self.hvdc_active * self.hvdc_Pset * self.C_hvdc_bus_t
+
+        Sbus /= self.Sbase
+
+        return Sbus
+
+    def to_island(self) -> "OpfTimeIsland":
         """
         copy the circuit as an island device
-        :return: SnapshotIsland instance
+        :return: TimeIsland instance
         """
-        island = SnapshotOpfIsland(nbus=self.nbus,
-                                   nline=self.nline,
-                                   ntr=self.ntr,
-                                   nvsc=self.nvsc,
-                                   nhvdc=self.nhvdc,
-                                   nload=self.nload,
-                                   ngen=self.ngen,
-                                   nbatt=self.nbatt,
-                                   nshunt=self.nshunt,
-                                   sbase=self.Sbase,
-                                   apply_temperature=self.apply_temperature,
-                                   impedance_tolerance=self.impedance_tolerance,
-                                   branch_tolerance_mode=self.branch_tolerance_mode)
+        island = OpfTimeIsland(nbus=self.nbus,
+                               nline=self.nline,
+                               ntr=self.ntr,
+                               nvsc=self.nvsc,
+                               nhvdc=self.nhvdc,
+                               nload=self.nload,
+                               ngen=self.ngen,
+                               nbatt=self.nbatt,
+                               nshunt=self.nshunt,
+                               ntime=self.ntime,
+                               sbase=self.Sbase,
+                               time_array=self.time_array,
+                               apply_temperature=self.apply_temperature,
+                               impedance_tolerance=self.impedance_tolerance,
+                               branch_tolerance_mode=self.branch_tolerance_mode)
 
+        island.original_time_idx = np.arange(self.ntime)
         island.original_bus_idx = np.arange(self.nbus)
         island.original_branch_idx = np.arange(self.nbr)
         island.original_tr_idx = np.arange(self.ntr)
@@ -223,9 +261,10 @@ class SnapshotOpfCircuit:
 
         # bus ----------------------------------------------------------------------------------------------------------
         island.bus_names = self.bus_names
+        island.bus_types = self.bus_types
+        island.bus_installed_power = self.bus_installed_power
         island.bus_active = self.bus_active
         island.Vbus = self.Vbus
-        island.bus_types = self.bus_types
 
         # branches common ----------------------------------------------------------------------------------------------
         island.branch_names = self.branch_names
@@ -236,6 +275,7 @@ class SnapshotOpfCircuit:
         island.branch_cost = self.branch_cost
         island.branch_R = self.branch_R
         island.branch_X = self.branch_X
+
         island.C_branch_bus_f = self.C_branch_bus_f
         island.C_branch_bus_t = self.C_branch_bus_t
 
@@ -253,7 +293,6 @@ class SnapshotOpfCircuit:
 
         # transformer 2W + 3W ------------------------------------------------------------------------------------------
         island.tr_names = self.tr_names
-
         island.tr_R = self.tr_R
         island.tr_X = self.tr_X
         island.tr_G = self.tr_G
@@ -300,12 +339,20 @@ class SnapshotOpfCircuit:
         island.battery_active = self.battery_active
         island.battery_controllable = self.battery_controllable
         island.battery_dispatchable = self.battery_dispatchable
-        island.battery_cost = self.battery_cost
+        island.battery_installed_p = self.battery_installed_p
+        island.battery_pmin = self.battery_pmin
+        island.battery_pmax = self.battery_pmax
+
+        island.battery_enom = self.battery_enom
+        island.battery_min_soc = self.battery_min_soc
+        island.battery_max_soc = self.battery_max_soc
+        island.battery_soc_0 = self.battery_soc_0
+        island.battery_charge_efficiency = self.battery_charge_efficiency
+        island.battery_discharge_efficiency = self.battery_discharge_efficiency
+
         island.battery_p = self.battery_p
         island.battery_pf = self.battery_pf
         island.battery_v = self.battery_v
-        island.battery_pmin = self.battery_pmin
-        island.battery_pmax = self.battery_pmax
         island.battery_cost = self.battery_cost
 
         island.C_bus_batt = self.C_bus_batt
@@ -315,12 +362,13 @@ class SnapshotOpfCircuit:
         island.generator_active = self.generator_active
         island.generator_controllable = self.generator_controllable
         island.generator_dispatchable = self.generator_dispatchable
-        island.generator_cost = self.generator_cost
+        island.generator_installed_p = self.generator_installed_p
+        island.generator_pmin = self.generator_pmin
+        island.generator_pmax = self.generator_pmax
         island.generator_p = self.generator_p
         island.generator_pf = self.generator_pf
         island.generator_v = self.generator_v
-        island.generator_pmin = self.generator_pmin
-        island.generator_pmax = self.generator_pmax
+        island.generator_cost = self.generator_cost
 
         island.C_bus_gen = self.C_bus_gen
 
@@ -333,11 +381,12 @@ class SnapshotOpfCircuit:
 
         return island
 
-    def get_island(self, bus_idx) -> "SnapshotOpfIsland":
+    def get_island(self, bus_idx, time_idx) -> "OpfTimeIsland":
         """
         Get the island corresponding to the given buses
         :param bus_idx: array of bus indices
-        :return: SnapshotIsland
+        :param time_idx: array of time indices
+        :return: TimeIsland
         """
 
         # find the indices of the devices of the island
@@ -352,42 +401,45 @@ class SnapshotOpfCircuit:
         batt_idx = tp.get_elements_of_the_island(self.C_bus_batt.T, bus_idx)
         shunt_idx = tp.get_elements_of_the_island(self.C_bus_shunt.T, bus_idx)
 
-        nc = SnapshotOpfIsland(nbus=len(bus_idx),
-                               nline=len(line_idx),
-                               ntr=len(tr_idx),
-                               nvsc=len(vsc_idx),
-                               nhvdc=len(hvdc_idx),
-                               nload=len(load_idx),
-                               ngen=len(gen_idx),
-                               nbatt=len(batt_idx),
-                               nshunt=len(shunt_idx),
-                               sbase=self.Sbase,
-                               apply_temperature=self.apply_temperature,
-                               impedance_tolerance=self.impedance_tolerance,
-                               branch_tolerance_mode=self.branch_tolerance_mode)
+        nc = OpfTimeIsland(nbus=len(bus_idx),
+                           nline=len(line_idx),
+                           ntr=len(tr_idx),
+                           nvsc=len(vsc_idx),
+                           nhvdc=len(hvdc_idx),
+                           nload=len(load_idx),
+                           ngen=len(gen_idx),
+                           nbatt=len(batt_idx),
+                           nshunt=len(shunt_idx),
+                           ntime=len(time_idx),
+                           sbase=self.Sbase,
+                           time_array=self.time_array[time_idx],
+                           apply_temperature=self.apply_temperature,
+                           impedance_tolerance=self.impedance_tolerance,
+                           branch_tolerance_mode=self.branch_tolerance_mode)
 
+        nc.original_time_idx = time_idx
         nc.original_bus_idx = bus_idx
         nc.original_branch_idx = br_idx
-
         nc.original_tr_idx = tr_idx
         nc.original_gen_idx = gen_idx
         nc.original_bat_idx = batt_idx
 
         # bus ----------------------------------------------------------------------------------------------------------
         nc.bus_names = self.bus_names[bus_idx]
-        nc.bus_active = self.bus_active[bus_idx]
-        nc.Vbus = self.Vbus[bus_idx]
         nc.bus_types = self.bus_types[bus_idx]
+        nc.bus_installed_power = self.bus_installed_power[bus_idx]
+        nc.bus_active = self.bus_active[np.ix_(time_idx, bus_idx)]
+        nc.Vbus = self.Vbus[np.ix_(time_idx, bus_idx)]
 
         # branch common ------------------------------------------------------------------------------------------------
         nc.branch_names = self.branch_names[br_idx]
-        nc.branch_active = self.branch_active[br_idx]
-        nc.F = self.F[br_idx]
-        nc.T = self.T[br_idx]
-        nc.branch_rates = self.branch_rates[br_idx]
-        nc.branch_cost = self.branch_cost[br_idx]
+        nc.branch_active = self.branch_active[np.ix_(time_idx, br_idx)]
+        nc.branch_rates = self.branch_rates[np.ix_(time_idx, br_idx)]
+        nc.branch_cost = self.branch_cost[np.ix_(time_idx, br_idx)]
         nc.branch_R = self.branch_R[br_idx]
         nc.branch_X = self.branch_X[br_idx]
+        nc.F = self.F[br_idx]
+        nc.T = self.T[br_idx]
         nc.C_branch_bus_f = self.C_branch_bus_f[np.ix_(br_idx, bus_idx)]
         nc.C_branch_bus_t = self.C_branch_bus_t[np.ix_(br_idx, bus_idx)]
 
@@ -419,10 +471,10 @@ class SnapshotOpfCircuit:
 
         # hvdc line ----------------------------------------------------------------------------------------------------
         nc.hvdc_names = self.hvdc_names[hvdc_idx]
-        nc.hvdc_active = self.hvdc_active[hvdc_idx]
-        nc.hvdc_rate = self.hvdc_rate[hvdc_idx]
 
-        nc.hvdc_Pset = self.hvdc_Pset[hvdc_idx]
+        nc.hvdc_active = self.hvdc_active[np.ix_(time_idx, hvdc_idx)]
+        nc.hvdc_rate = self.hvdc_rate[np.ix_(time_idx, hvdc_idx)]
+        nc.hvdc_Pset = self.hvdc_Pset[np.ix_(time_idx, hvdc_idx)]
 
         nc.C_hvdc_bus_f = self.C_hvdc_bus_f[np.ix_(hvdc_idx, bus_idx)]
         nc.C_hvdc_bus_t = self.C_hvdc_bus_t[np.ix_(hvdc_idx, bus_idx)]
@@ -440,21 +492,31 @@ class SnapshotOpfCircuit:
 
         # load ---------------------------------------------------------------------------------------------------------
         nc.load_names = self.load_names[load_idx]
-        nc.load_active = self.load_active[load_idx]
-        nc.load_s = self.load_s[load_idx]
-        nc.load_cost = self.load_cost[load_idx]
+        nc.load_active = self.load_active[np.ix_(time_idx, load_idx)]
+        nc.load_s = self.load_s[np.ix_(time_idx, load_idx)]
+        nc.load_cost = self.load_cost[np.ix_(time_idx, load_idx)]
 
         nc.C_bus_load = self.C_bus_load[np.ix_(bus_idx, load_idx)]
 
         # battery ------------------------------------------------------------------------------------------------------
         nc.battery_names = self.battery_names[batt_idx]
-        nc.battery_active = self.battery_active[batt_idx]
         nc.battery_controllable = self.battery_controllable[batt_idx]
         nc.battery_dispatchable = self.battery_dispatchable[batt_idx]
-        nc.battery_cost = self.battery_cost[batt_idx]
-        nc.battery_p = self.battery_p[batt_idx]
-        nc.battery_pf = self.battery_pf[batt_idx]
-        nc.battery_v = self.battery_v[batt_idx]
+        nc.battery_installed_p = self.battery_installed_p[batt_idx]
+
+        nc.battery_enom = self.battery_enom[batt_idx]
+        nc.battery_min_soc = self.battery_min_soc[batt_idx]
+        nc.battery_max_soc = self.battery_max_soc[batt_idx]
+        nc.battery_soc_0 = self.battery_soc_0[batt_idx]
+        nc.battery_charge_efficiency = self.battery_charge_efficiency[batt_idx]
+        nc.battery_discharge_efficiency = self.battery_discharge_efficiency[batt_idx]
+
+        nc.battery_active = self.battery_active[np.ix_(time_idx, batt_idx)]
+        nc.battery_p = self.battery_p[np.ix_(time_idx, batt_idx)]
+        nc.battery_pf = self.battery_pf[np.ix_(time_idx, batt_idx)]
+        nc.battery_v = self.battery_v[np.ix_(time_idx, batt_idx)]
+        nc.battery_cost = self.battery_cost[np.ix_(time_idx, batt_idx)]
+
         nc.battery_pmin = self.battery_pmin[batt_idx]
         nc.battery_pmax = self.battery_pmax[batt_idx]
 
@@ -462,13 +524,16 @@ class SnapshotOpfCircuit:
 
         # generator ----------------------------------------------------------------------------------------------------
         nc.generator_names = self.generator_names[gen_idx]
-        nc.generator_active = self.generator_active[gen_idx]
         nc.generator_controllable = self.generator_controllable[gen_idx]
         nc.generator_dispatchable = self.generator_dispatchable[gen_idx]
-        nc.generator_cost = self.generator_cost[gen_idx]
-        nc.generator_p = self.generator_p[gen_idx]
-        nc.generator_pf = self.generator_pf[gen_idx]
-        nc.generator_v = self.generator_v[gen_idx]
+        nc.battery_installed_p = self.battery_installed_p[gen_idx]
+
+        nc.generator_active = self.generator_active[np.ix_(time_idx, gen_idx)]
+        nc.generator_p = self.generator_p[np.ix_(time_idx, gen_idx)]
+        nc.generator_pf = self.generator_pf[np.ix_(time_idx, gen_idx)]
+        nc.generator_v = self.generator_v[np.ix_(time_idx, gen_idx)]
+        nc.generator_cost = self.generator_cost[np.ix_(time_idx, gen_idx)]
+
         nc.generator_pmin = self.generator_pmin[gen_idx]
         nc.generator_pmax = self.generator_pmax[gen_idx]
 
@@ -476,17 +541,17 @@ class SnapshotOpfCircuit:
 
         # shunt --------------------------------------------------------------------------------------------------------
         nc.shunt_names = self.shunt_names[shunt_idx]
-        nc.shunt_active = self.shunt_active[shunt_idx]
-        nc.shunt_admittance = self.shunt_admittance[shunt_idx]
+        nc.shunt_active = self.shunt_active[np.ix_(time_idx, shunt_idx)]
+        nc.shunt_admittance = self.shunt_admittance[np.ix_(time_idx, shunt_idx)]
 
         nc.C_bus_shunt = self.C_bus_shunt[np.ix_(bus_idx, shunt_idx)]
 
         return nc
 
 
-class SnapshotOpfIsland(SnapshotOpfCircuit):
+class OpfTimeIsland(OpfTimeCircuit):
 
-    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, sbase,
+    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, ntime, sbase, time_array,
                  apply_temperature=False, impedance_tolerance=0.0,
                  branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
         """
@@ -505,21 +570,31 @@ class SnapshotOpfIsland(SnapshotOpfCircuit):
         :param impedance_tolerance:
         :param branch_tolerance_mode:
         """
-        SnapshotOpfCircuit.__init__(self, nbus=nbus, nline=nline, ntr=ntr, nvsc=nvsc, nhvdc=nhvdc,
-                                    nload=nload, ngen=ngen, nbatt=nbatt, nshunt=nshunt, sbase=sbase,
-                                    apply_temperature=apply_temperature, branch_tolerance_mode=branch_tolerance_mode,
-                                    impedance_tolerance=impedance_tolerance)
+        OpfTimeCircuit.__init__(self, nbus=nbus, nline=nline, ntr=ntr, nvsc=nvsc, nhvdc=nhvdc,
+                                nload=nload, ngen=ngen, nbatt=nbatt, nshunt=nshunt, ntime=ntime, sbase=sbase,
+                                time_array=time_array, apply_temperature=apply_temperature,
+                                branch_tolerance_mode=branch_tolerance_mode, impedance_tolerance=impedance_tolerance)
 
-        self.Sbus = np.zeros(self.nbus, dtype=complex)
-        self.Ibus = np.zeros(self.nbus, dtype=complex)
-        self.Yshunt_from_devices = np.zeros(self.nbus, dtype=complex)
+        self.Sbus = np.zeros((self.nbus, ntime), dtype=complex)
+        self.Ibus = np.zeros((self.nbus, ntime), dtype=complex)
+        self.Yshunt_from_devices = np.zeros((self.nbus, ntime), dtype=complex)
 
+        self.Qmax_bus = np.zeros((self.nbus, ntime))
+        self.Qmin_bus = np.zeros((self.nbus, ntime))
+
+        # only one Y matrix per time island, that is the guarantee we get by splitting the TimeCircuit in TimeIslands
         self.Ybus = None
         self.Yf = None
         self.Yt = None
         self.Yseries = None
         self.Yshunt = None
+        # self.Ysh_helm = None
+        self.B1 = None
+        self.B2 = None
+        self.Bpqpv = None
+        self.Bref = None
 
+        self.original_time_idx = list()
         self.original_bus_idx = list()
         self.original_branch_idx = list()
         self.original_tr_idx = list()
@@ -530,6 +605,9 @@ class SnapshotOpfIsland(SnapshotOpfCircuit):
         self.pv = list()
         self.vd = list()
         self.pqpv = list()
+
+        self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries',
+                                     "B'", "B''", 'Types', 'Jacobian', 'Qmin', 'Qmax']
 
     def R_corrected(self):
         """
@@ -545,8 +623,11 @@ class SnapshotOpfIsland(SnapshotOpfCircuit):
         Compute the admittance matrices
         :return: Ybus, Yseries, Yshunt
         """
+
+        t = self.original_time_idx[0]
+
         # form the connectivity matrices with the states applied -------------------------------------------------------
-        br_states_diag = sp.diags(self.branch_active)
+        br_states_diag = sp.diags(self.branch_active[t, :])
         Cf = br_states_diag * self.C_branch_bus_f
         Ct = br_states_diag * self.C_branch_bus_t
 
@@ -641,19 +722,19 @@ class SnapshotOpfIsland(SnapshotOpfCircuit):
         # does not apply since the HVDC-line model is the simplistic 2-generator model
 
         # SHUNT --------------------------------------------------------------------------------------------------------
-        self.Yshunt_from_devices = self.C_bus_shunt * (self.shunt_admittance * self.shunt_active / self.Sbase)
+        self.Yshunt_from_devices = self.C_bus_shunt * (self.shunt_admittance * self.shunt_active / self.Sbase).T
 
         # form the admittance matrices ---------------------------------------------------------------------------------
         self.Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
         self.Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
-        self.Ybus = sp.csc_matrix(Cf.T * self.Yf + Ct.T * self.Yt) + sp.diags(self.Yshunt_from_devices)
+        self.Ybus = sp.csc_matrix(Cf.T * self.Yf + Ct.T * self.Yt)
 
         # form the admittance matrices of the series and shunt elements ------------------------------------------------
         Yfs = sp.diags(Yffs) * Cf + sp.diags(Yfts) * Ct
         Yts = sp.diags(Ytfs) * Cf + sp.diags(Ytts) * Ct
         self.Yseries = sp.csc_matrix(Cf.T * Yfs + Ct.T * Yts)
 
-        self.Yshunt = Cf.T * ysh_br + Ct.T * ysh_br + self.Yshunt_from_devices
+        self.Yshunt = Cf.T * ysh_br + Ct.T * ysh_br
 
     def get_generator_injections(self):
         """
@@ -680,18 +761,18 @@ class SnapshotOpfIsland(SnapshotOpfCircuit):
         Compute the power
         :return: nothing, the results are stored in the class
         """
-        self.Sbus = - self.C_bus_load * (self.load_s * self.load_active)  # MW
+        self.Sbus = - self.C_bus_load * (self.load_s * self.load_active).T  # MW
 
         # generators
-        self.Sbus += self.C_bus_gen * (self.get_generator_injections() * self.generator_active)
+        self.Sbus += self.C_bus_gen * (self.get_generator_injections() * self.generator_active).T
 
         # battery
-        self.Sbus += self.C_bus_batt * (self.get_battery_injections() * self.battery_active)
+        self.Sbus += self.C_bus_batt * (self.get_battery_injections() * self.battery_active).T
 
         # HVDC forced power
         if self.nhvdc:
-            self.Sbus += self.hvdc_active * self.hvdc_Pset * self.C_hvdc_bus_f
-            self.Sbus -= self.hvdc_active * self.hvdc_Pset * self.C_hvdc_bus_t
+            self.Sbus += ((self.hvdc_active * self.hvdc_Pset) * self.C_hvdc_bus_f).T
+            self.Sbus -= ((self.hvdc_active * self.hvdc_Pset) * self.C_hvdc_bus_t).T
 
         self.Sbus /= self.Sbase
 
@@ -706,8 +787,80 @@ class SnapshotOpfIsland(SnapshotOpfCircuit):
 
         self.compute_admittance_matrices()
 
+    def get_structure(self, structure_type) -> pd.DataFrame:
+        """
+        Get a DataFrame with the input.
 
-def split_into_opf_islands(numeric_circuit: SnapshotOpfCircuit, ignore_single_node_islands=False) -> List[SnapshotOpfIsland]:
+        Arguments:
+
+            **structure_type** (str): 'Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries' or 'Types'
+
+        Returns:
+
+            pandas DataFrame
+
+        """
+
+        if structure_type == 'Vbus':
+
+            df = pd.DataFrame(data=self.Vbus, columns=['Voltage (p.u.)'], index=self.bus_names)
+
+        elif structure_type == 'Sbus':
+            df = pd.DataFrame(data=self.Sbus, columns=['Power (p.u.)'], index=self.bus_names)
+
+        elif structure_type == 'Ibus':
+            df = pd.DataFrame(data=self.Ibus, columns=['Current (p.u.)'], index=self.bus_names)
+
+        elif structure_type == 'Ybus':
+            df = pd.DataFrame(data=self.Ybus.toarray(), columns=self.bus_names, index=self.bus_names)
+
+        elif structure_type == 'Yshunt':
+            df = pd.DataFrame(data=self.Yshunt, columns=['Shunt admittance (p.u.)'], index=self.bus_names)
+
+        elif structure_type == 'Yseries':
+            df = pd.DataFrame(data=self.Yseries.toarray(), columns=self.bus_names, index=self.bus_names)
+
+        elif structure_type == "B'":
+            df = pd.DataFrame(data=self.B1.toarray(), columns=self.bus_names, index=self.bus_names)
+
+        elif structure_type == "B''":
+            df = pd.DataFrame(data=self.B2.toarray(), columns=self.bus_names, index=self.bus_names)
+
+        elif structure_type == 'Types':
+            df = pd.DataFrame(data=self.bus_types, columns=['Bus types'], index=self.bus_names)
+
+        elif structure_type == 'Qmin':
+            df = pd.DataFrame(data=self.Qmin_bus, columns=['Qmin'], index=self.bus_names)
+
+        elif structure_type == 'Qmax':
+            df = pd.DataFrame(data=self.Qmax_bus, columns=['Qmax'], index=self.bus_names)
+
+        elif structure_type == 'Jacobian':
+
+            J = Jacobian(self.Ybus, self.Vbus, self.Ibus, self.pq, self.pqpv)
+
+            """
+            J11 = dS_dVa[array([pvpq]).T, pvpq].real
+            J12 = dS_dVm[array([pvpq]).T, pq].real
+            J21 = dS_dVa[array([pq]).T, pvpq].imag
+            J22 = dS_dVm[array([pq]).T, pq].imag
+            """
+            npq = len(self.pq)
+            npv = len(self.pv)
+            npqpv = npq + npv
+            cols = ['dS/dVa'] * npqpv + ['dS/dVm'] * npq
+            rows = cols
+            df = pd.DataFrame(data=J.toarray(), columns=cols, index=rows)
+
+        else:
+
+            raise Exception('PF input: structure type not found')
+
+        return df
+
+
+def split_opf_time_circuit_into_islands(numeric_circuit: OpfTimeCircuit,
+                                        ignore_single_node_islands=False) -> List[OpfTimeIsland]:
     """
     Split circuit into islands
     :param numeric_circuit: NumericCircuit instance
@@ -715,51 +868,95 @@ def split_into_opf_islands(numeric_circuit: SnapshotOpfCircuit, ignore_single_no
     :return: List[NumericCircuit]
     """
 
-    # compute the adjacency matrix
-    A = tp.get_adjacency_matrix(C_branch_bus_f=numeric_circuit.C_branch_bus_f,
-                                C_branch_bus_t=numeric_circuit.C_branch_bus_t,
-                                branch_active=numeric_circuit.branch_active,
-                                bus_active=numeric_circuit.bus_active)
+    circuit_islands = list()  # type: List[OpfTimeIsland]
 
-    # find the matching islands
-    idx_islands = tp.find_islands(A)
+    all_buses = np.arange(numeric_circuit.nbus)
+    all_time = np.arange(numeric_circuit.ntime)
 
-    if len(idx_islands) == 1:
-        island = numeric_circuit.to_island()  # convert the circuit to an island
-        island.consolidate()  # compute the internal magnitudes
-        return [island]
+    # find the probable time slices
+    states = find_different_states(branch_active_prof=numeric_circuit.branch_active)
 
-    else:
+    if len(states) == 1:
+        # compute the adjacency matrix
+        A = tp.get_adjacency_matrix(C_branch_bus_f=numeric_circuit.C_branch_bus_f,
+                                    C_branch_bus_t=numeric_circuit.C_branch_bus_t,
+                                    branch_active=numeric_circuit.branch_active[0, :],
+                                    bus_active=numeric_circuit.bus_active[0, :])
 
-        circuit_islands = list()  # type: List[SnapshotOpfIsland]
+        # find the matching islands
+        idx_islands = tp.find_islands(A)
 
-        for bus_idx in idx_islands:
+        if len(idx_islands) == 1:  # only one state and only one island -> just copy the data --------------------------
 
-            if ignore_single_node_islands:
+            island = numeric_circuit.to_island()  # convert the circuit to an island
+            island.consolidate()  # compute the internal magnitudes
+            return [island]
 
-                if len(bus_idx) > 1:
-                    island = numeric_circuit.get_island(bus_idx)
+        else:  # one state, many islands -> split by bus index, keep the time ------------------------------------------
+
+            for bus_idx in idx_islands:
+
+                if ignore_single_node_islands:
+
+                    if len(bus_idx) > 1:
+                        island = numeric_circuit.get_island(bus_idx, all_time)
+                        island.consolidate()  # compute the internal magnitudes
+                        circuit_islands.append(island)
+
+                else:
+                    island = numeric_circuit.get_island(bus_idx, all_time)
                     island.consolidate()  # compute the internal magnitudes
                     circuit_islands.append(island)
 
-            else:
-                island = numeric_circuit.get_island(bus_idx)
+    else:  # -----------------------------------------------------------------------------------------------------------
+
+        for t, t_array in states.items():
+
+            # compute the adjacency matrix
+            A = tp.get_adjacency_matrix(C_branch_bus_f=numeric_circuit.C_branch_bus_f,
+                                        C_branch_bus_t=numeric_circuit.C_branch_bus_t,
+                                        branch_active=numeric_circuit.branch_active[t_array, :],
+                                        bus_active=numeric_circuit.bus_active[t_array, :])
+
+            # find the matching islands
+            idx_islands = tp.find_islands(A)
+
+            if len(idx_islands) == 1:  # many time states, one island -> slice only by time ----------------------------
+
+                island = numeric_circuit.get_island(all_buses, t_array)  # convert the circuit to an island
                 island.consolidate()  # compute the internal magnitudes
+
                 circuit_islands.append(island)
+
+            else:  # any time states, many islands -> slice by both time and bus index ---------------------------------
+
+                for bus_idx in idx_islands:
+
+                    if ignore_single_node_islands:
+
+                        if len(bus_idx) > 1:
+                            island = numeric_circuit.get_island(bus_idx, t_array)
+                            island.consolidate()  # compute the internal magnitudes
+                            circuit_islands.append(island)
+
+                    else:
+                        island = numeric_circuit.get_island(bus_idx, t_array)
+                        island.consolidate()  # compute the internal magnitudes
+                        circuit_islands.append(island)
 
         return circuit_islands
 
 
-def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
-                                 branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                 impedance_tolerance=0.0) -> SnapshotOpfCircuit:
+def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
+                             branch_tolerance_mode=BranchImpedanceMode.Specified,
+                             impedance_tolerance=0.0) -> OpfTimeCircuit:
     """
     Compile the information of a circuit and generate the pertinent power flow islands
     :param circuit: Circuit instance
     :param apply_temperature:
     :param branch_tolerance_mode:
     :param impedance_tolerance:
-    :return: list of NumericIslands
+    :return: list of TimeOpfCircuit
     """
 
     logger = Logger()
@@ -782,22 +979,24 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
     ntr2w = len(circuit.transformers2w)
     nvsc = len(circuit.vsc_converters)
     nhvdc = len(circuit.hvdc_lines)
+    ntime = len(circuit.time_profile)
 
     # declare the numerical circuit
-    nc = SnapshotOpfCircuit(nbus=nbus,
-                            nline=nline,
-                            ntr=ntr2w,
-                            nvsc=nvsc,
-                            nhvdc=nhvdc,
-                            nload=nload,
-                            ngen=ngen,
-                            nbatt=n_batt,
-                            nshunt=nshunt,
-                            sbase=circuit.Sbase,
-                            apply_temperature=apply_temperature,
-                            impedance_tolerance=impedance_tolerance,
-                            branch_tolerance_mode=branch_tolerance_mode
-                            )
+    nc = OpfTimeCircuit(nbus=nbus,
+                        nline=nline,
+                        ntr=ntr2w,
+                        nvsc=nvsc,
+                        nhvdc=nhvdc,
+                        nload=nload,
+                        ngen=ngen,
+                        nbatt=n_batt,
+                        nshunt=nshunt,
+                        ntime=ntime,
+                        sbase=circuit.Sbase,
+                        time_array=circuit.time_profile,
+                        apply_temperature=apply_temperature,
+                        impedance_tolerance=impedance_tolerance,
+                        branch_tolerance_mode=branch_tolerance_mode)
 
     # buses and it's connected elements (loads, generators, etc...)
     i_ld = 0
@@ -808,7 +1007,7 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
 
         # bus parameters
         nc.bus_names[i] = bus.name
-        nc.bus_active[i] = bus.active
+        nc.bus_active[:, i] = bus.active_prof
         nc.bus_types[i] = bus.determine_bus_type().value
 
         # Add buses dictionary entry
@@ -816,57 +1015,67 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
 
         for elm in bus.loads:
             nc.load_names[i_ld] = elm.name
-            nc.load_active[i_ld] = elm.active
-            nc.load_s[i_ld] = complex(elm.P, elm.Q)
-            nc.load_cost[i_ld] = elm.Cost
+
+            nc.load_active[:, i_ld] = elm.active_prof
+            nc.load_s[:, i_ld] = elm.P_prof + 1j * elm.Q_prof
+
             nc.C_bus_load[i, i_ld] = 1
             i_ld += 1
 
         for elm in bus.controlled_generators:
+
             nc.generator_names[i_gen] = elm.name
-            nc.generator_cost[i_gen] = elm.Cost
-            nc.generator_pf[i_gen] = elm.Pf
-            nc.generator_v[i_gen] = elm.Vset
+
+            nc.generator_active[:, i_gen] = elm.active_prof
+            nc.generator_pf[:, i_gen] = elm.Pf_prof
+            nc.generator_v[:, i_gen] = elm.Vset_prof
+            nc.generator_p[:, i_gen] = elm.P_prof
+            nc.generator_cost[:, i_gen] = elm.Cost_prof
+
             nc.generator_pmin[i_gen] = elm.Pmin
             nc.generator_pmax[i_gen] = elm.Pmax
-            nc.generator_active[i_gen] = elm.active
             nc.generator_controllable[i_gen] = elm.is_controlled
-            nc.generator_p[i_gen] = elm.P
+            nc.generator_dispatchable[i_gen] = elm.enabled_dispatch
             nc.generator_installed_p[i_gen] = elm.Snom
 
             nc.C_bus_gen[i, i_gen] = 1
 
-            if nc.Vbus[i].real == 1.0:
-                nc.Vbus[i] = complex(elm.Vset, 0)
-            elif elm.Vset != nc.Vbus[i]:
-                logger.append('Different set points at ' + bus.name + ': ' + str(elm.Vset) + ' !=' + str(nc.Vbus[i]))
+            if nc.Vbus[0, i].real == 1.0:
+                nc.Vbus[:, i] = elm.Vset_prof + 1j * 0
+            elif elm.Vset != nc.Vbus[0, i]:
+                logger.append('Different set points at ' + bus.name + ': ' + str(elm.Vset) + ' !=' + str(nc.Vbus[0, i]))
             i_gen += 1
 
         for elm in bus.batteries:
             nc.battery_names[i_batt] = elm.name
-            nc.battery_cost[i_batt] = elm.Cost
-            nc.battery_p[i_batt] = elm.P
-            nc.battery_pf[i_batt] = elm.Pf
-            nc.battery_v[i_batt] = elm.Vset
+
+            nc.battery_active[:, i_batt] = elm.active_prof
+            nc.battery_p[:, i_batt] = elm.P_prof
+            nc.battery_pf[:, i_batt] = elm.Pf_prof
+            nc.battery_v[:, i_batt] = elm.Vset_prof
+            nc.battery_cost[:, i_batt] = elm.Cost_prof
+
+            nc.battery_enom[i_batt] = elm.Enom
+            nc.battery_min_soc[i_batt] = elm.min_soc
+            nc.battery_max_soc[i_batt] = elm.max_soc
+            nc.battery_soc_0[i_batt] = elm.soc_0
+            nc.battery_charge_efficiency[i_batt] = elm.charge_efficiency
+            nc.battery_discharge_efficiency[i_batt] = elm.discharge_efficiency
+
             nc.battery_pmin[i_batt] = elm.Pmin
             nc.battery_pmax[i_batt] = elm.Pmax
-            nc.battery_active[i_batt] = elm.active
             nc.battery_controllable[i_batt] = elm.is_controlled
+            nc.battery_dispatchable[i_batt] = elm.enabled_dispatch
             nc.battery_installed_p[i_batt] = elm.Snom
 
             nc.C_bus_batt[i, i_batt] = 1
-
-            if nc.Vbus[i].real == 1.0:
-                nc.Vbus[i] = complex(elm.Vset, 0)
-            elif elm.Vset != nc.Vbus[i]:
-                logger.append('Different set points at ' + bus.name + ': ' + str(elm.Vset) + ' !=' + str(nc.Vbus[i]))
-
+            nc.Vbus[:, i] *= elm.Vset_prof
             i_batt += 1
 
         for elm in bus.shunts:
             nc.shunt_names[i_sh] = elm.name
-            nc.shunt_active[i_sh] = elm.active
-            nc.shunt_admittance[i_sh] = complex(elm.G, elm.B)
+            nc.shunt_active[:, i_sh] = elm.active_prof
+            nc.shunt_admittance[:, i_sh] = elm.G_prof + 1j * elm.B
 
             nc.C_bus_shunt[i, i_sh] = 1
             i_sh += 1
@@ -875,13 +1084,10 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
     for i, elm in enumerate(circuit.lines):
         # generic stuff
         nc.branch_names[i] = elm.name
-        nc.branch_active[i] = elm.active
-        nc.branch_rates[i] = elm.rate
-
         nc.branch_R[i] = elm.R
         nc.branch_X[i] = elm.X
-        nc.branch_cost[i] = elm.Cost
-
+        nc.branch_active[:, i] = elm.active_prof
+        nc.branch_rates[:, i] = elm.rate_prof
         f = bus_dictionary[elm.bus_from]
         t = bus_dictionary[elm.bus_to]
         nc.C_branch_bus_f[i, f] = 1
@@ -894,8 +1100,14 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.line_R[i] = elm.R
         nc.line_X[i] = elm.X
         nc.line_B[i] = elm.B
+        nc.line_impedance_tolerance[i] = elm.tolerance
         nc.C_line_bus[i, f] = 1
         nc.C_line_bus[i, t] = 1
+
+        # Thermal correction
+        nc.line_temp_base[i] = elm.temp_base
+        nc.line_temp_oper[i] = elm.temp_oper
+        nc.line_alpha[i] = elm.alpha
 
     # 2-winding transformers
     for i, elm in enumerate(circuit.transformers2w):
@@ -905,13 +1117,11 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
         f = bus_dictionary[elm.bus_from]
         t = bus_dictionary[elm.bus_to]
 
-        nc.branch_R[i] = elm.R
-        nc.branch_X[i] = elm.X
-        nc.branch_cost[i] = elm.Cost
-
         nc.branch_names[ii] = elm.name
-        nc.branch_active[ii] = elm.active
-        nc.branch_rates[ii] = elm.rate
+        nc.branch_R[ii] = elm.R
+        nc.branch_X[ii] = elm.X
+        nc.branch_active[:, ii] = elm.active_prof
+        nc.branch_rates[:, ii] = elm.rate_prof
         nc.C_branch_bus_f[ii, f] = 1
         nc.C_branch_bus_t[ii, t] = 1
         nc.F[ii] = f
@@ -942,17 +1152,16 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
         f = bus_dictionary[elm.bus_from]
         t = bus_dictionary[elm.bus_to]
 
-        nc.branch_R[i] = elm.R1
-        nc.branch_X[i] = elm.X1
-        nc.branch_cost[i] = elm.Cost
-
         nc.branch_names[ii] = elm.name
-        nc.branch_active[ii] = elm.active
-        nc.branch_rates[ii] = elm.rate
+        nc.branch_R[ii] = elm.R1
+        nc.branch_X[ii] = elm.X1
         nc.C_branch_bus_f[ii, f] = 1
         nc.C_branch_bus_t[ii, t] = 1
         nc.F[ii] = f
         nc.T[ii] = t
+
+        nc.branch_active[:, ii] = elm.active_prof
+        nc.branch_rates[:, ii] = elm.rate_prof
 
         # vsc values
         nc.vsc_names[i] = elm.name
@@ -976,10 +1185,10 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
 
         # hvdc values
         nc.hvdc_names[i] = elm.name
-        nc.hvdc_active[i] = elm.active
-        nc.hvdc_rate[i] = elm.rate
 
-        nc.hvdc_Pset[i] = elm.Pset
+        nc.hvdc_active[:, i] = elm.active_prof
+        nc.hvdc_rate[:, i] = elm.rate_prof
+        nc.hvdc_Pset[:, i] = elm.Pset_prof
 
         # hack the bus types to believe they are PV
         nc.bus_types[f] = BusMode.PV.value

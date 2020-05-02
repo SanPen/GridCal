@@ -18,7 +18,7 @@ from enum import Enum
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_data import SnapshotCircuit, SnapshotIsland
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotCircuit, SnapshotIsland
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFVariation

@@ -24,7 +24,7 @@ from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import make_monte_
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, single_island_pf, \
                                                                    power_flow_worker_args, power_flow_post_process
-from GridCal.Engine.Core.time_series_data import compile_time_circuit, split_time_circuit_into_islands, BranchImpedanceMode
+from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, split_time_circuit_into_islands, BranchImpedanceMode
 
 
 class LatinHypercubeSampling(QThread):

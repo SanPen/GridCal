@@ -28,8 +28,8 @@ from GridCal.Gui.GIS.gis_dialogue import GISWindow
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 
 # Engine imports
-from GridCal.Engine.Core.snapshot_data import SnapshotIsland
-from GridCal.Engine.Core.time_series_data import compile_time_circuit
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotIsland
+from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
 from GridCal.Engine.Simulations.Dynamics.transient_stability_driver import *

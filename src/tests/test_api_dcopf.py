@@ -14,9 +14,9 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from GridCal.Engine.IO.file_handler import FileOpen
+from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowOptions
-from GridCal.Engine.Simulations.OPF.opf_time_series_driver import \
-    OptimalPowerFlowTimeSeries
+from GridCal.Engine.Simulations.OPF.opf_time_series_driver import OptimalPowerFlowTimeSeries
 
 
 def _test_api_dcopf():
@@ -39,8 +39,8 @@ def _test_api_dcopf():
     grid = FileOpen(fname).open()
     grid.compile_snapshot()
     opf_options = OptimalPowerFlowOptions()
-    # opf = OptimalPowerFlow(grid, opf_options)
-    # opf.run()
+    pf_options = PowerFlowOptions()
+
     print('Running ts...')
     opf_ts = OptimalPowerFlowTimeSeries(grid, opf_options)
     opf_ts.run()

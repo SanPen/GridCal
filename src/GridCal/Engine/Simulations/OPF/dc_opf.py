@@ -17,7 +17,7 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
-from GridCal.Engine.Core.snapshot_data_opf import SnapshotOpfCircuit, split_into_opf_islands
+from GridCal.Engine.Core.snapshot_opf_data import OpfSnapshotCircuit, split_into_opf_islands
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
 from GridCal.ThirdParty.pulp import *
 
@@ -84,7 +84,7 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     return lpDot(C_bus_gen, Pg) + lpDot(C_bus_bat, Pb) - lpDot(C_bus_load, Pl - LSlack)
 
 
-def add_dc_nodal_power_balance(numerical_circuit: SnapshotOpfCircuit, problem: LpProblem, theta, P):
+def add_dc_nodal_power_balance(numerical_circuit: OpfSnapshotCircuit, problem: LpProblem, theta, P):
     """
     Add the nodal power balance
     :param numerical_circuit: NumericalCircuit instance
@@ -178,7 +178,7 @@ def add_branch_loading_restriction(problem: LpProblem, theta_f, theta_t, Bseries
 
 class OpfDc(Opf):
 
-    def __init__(self, numerical_circuit: SnapshotOpfCircuit, solver: MIPSolvers = MIPSolvers.CBC):
+    def __init__(self, numerical_circuit: OpfSnapshotCircuit, solver: MIPSolvers = MIPSolvers.CBC):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
@@ -283,7 +283,7 @@ class OpfDc(Opf):
 if __name__ == '__main__':
     from GridCal.Engine.basic_structures import BranchImpedanceMode
     from GridCal.Engine.IO.file_handler import FileOpen
-    from GridCal.Engine.Core.snapshot_data_opf import compile_snapshot_opf_circuit
+    from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
 
     fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'

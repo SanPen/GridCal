@@ -25,7 +25,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import power_flow_po
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, VCStopAt, VCParametrization
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_data import compile_snapshot_circuit, split_into_islands
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Gui.GuiFunctions import ResultsModel
 

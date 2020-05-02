@@ -324,7 +324,6 @@ class GridAnalysisGUI(QtWidgets.QDialog):
         :param imbalance_threshold: Allowed percentage of imbalance
         :param v_low: lower voltage setting
         :param v_high: higher voltage setting
-        :param format_str: Formatting string
         :return:
         """
         if self.circuit.time_profile is not None:

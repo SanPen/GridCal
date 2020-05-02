@@ -21,205 +21,13 @@ from PySide2.QtCore import QThread, Signal
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.basic_structures import TimeGrouping, get_time_groups
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType
-from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowResults, OptimalPowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType, PowerFlowOptions
+from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowOptions
 from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfDcTimeSeries
 from GridCal.Engine.Simulations.OPF.ac_opf_ts import OpfAcTimeSeries
 from GridCal.Engine.Simulations.OPF.simple_dispatch_ts import OpfSimpleTimeSeries
-from GridCal.Gui.GuiFunctions import ResultsModel
-from GridCal.Engine.Simulations.result_types import ResultTypes
-
-
-class OptimalPowerFlowTimeSeriesResults:
-
-    def __init__(self, n, m, nt, ngen=0, nbat=0, nload=0, time=None):
-        """
-        OPF Time Series results constructor
-        :param n: number of buses
-        :param m: number of branches
-        :param nt: number of time steps
-        :param ngen:
-        :param nbat:
-        :param nload:
-        :param time: Time array (optional)
-        """
-        self.name = 'OPF time series'
-
-        self.n = n
-
-        self.m = m
-
-        self.nt = nt
-
-        self.time = time
-
-        self.voltage = np.zeros((nt, n), dtype=complex)
-
-        self.load_shedding = np.zeros((nt, nload), dtype=float)
-
-        self.loading = np.zeros((nt, m), dtype=float)
-
-        self.losses = np.zeros((nt, m), dtype=float)
-
-        self.overloads = np.zeros((nt, m), dtype=float)
-
-        self.Sbus = np.zeros((nt, n), dtype=complex)
-
-        self.shadow_prices = np.zeros((nt, n), dtype=float)
-
-        self.Sbranch = np.zeros((nt, m), dtype=complex)
-
-        self.bus_types = np.zeros(n, dtype=int)
-
-        self.available_results = [ResultTypes.BusVoltageModule,
-                                  ResultTypes.BusVoltageAngle,
-                                  ResultTypes.ShadowPrices,
-                                  ResultTypes.BranchPower,
-                                  ResultTypes.BranchLoading,
-                                  ResultTypes.BranchOverloads,
-                                  ResultTypes.LoadShedding,
-                                  ResultTypes.ControlledGeneratorShedding,
-                                  ResultTypes.ControlledGeneratorPower,
-                                  ResultTypes.BatteryPower,
-                                  ResultTypes.BatteryEnergy]
-
-        self.controlled_generator_power = np.zeros((nt, ngen), dtype=float)
-
-        self.controlled_generator_shedding = np.zeros((nt, ngen), dtype=float)
-
-        self.battery_power = np.zeros((nt, nbat), dtype=float)
-
-        self.battery_energy = np.zeros((nt, nbat), dtype=float)
-
-        self.converged = np.empty(nt, dtype=bool)
-
-    def init_object_results(self, ngen, nbat):
-        """
-        declare the generator results. This is done separately since these results are known at the end of the simulation
-        :param ngen: number of generators
-        :param nbat: number of batteries
-        """
-        self.controlled_generator_power = np.zeros((self.nt, ngen), dtype=float)
-
-        self.battery_power = np.zeros((self.nt, nbat), dtype=float)
-
-    def set_at(self, t, res: OptimalPowerFlowResults):
-        """
-        Set the results
-        :param t: time index
-        :param res: OptimalPowerFlowResults instance
-        """
-
-        self.voltage[t, :] = res.voltage
-
-        self.load_shedding[t, :] = res.load_shedding
-
-        self.loading[t, :] = np.abs(res.loading)
-
-        self.overloads[t, :] = np.abs(res.overloads)
-
-        self.losses[t, :] =np.abs(res.losses)
-
-        self.Sbus[t, :] = res.Sbus
-
-        self.Sbranch[t, :] = res.Sbranch
-
-    def mdl(self, result_type, indices=None, names=None) -> "ResultsModel":
-        """
-        Plot the results
-        :param result_type:
-        :param ax:
-        :param indices:
-        :param names:
-        :return:
-        """
-
-        if indices is None:
-            indices = np.array(range(len(names)))
-
-        if len(indices) > 0:
-            labels = names[indices]
-            y_label = ''
-            title = ''
-            if result_type == ResultTypes.BusVoltageModule:
-                y = np.abs(self.voltage[:, indices])
-                y_label = '(p.u.)'
-                title = 'Bus voltage module'
-
-            elif result_type == ResultTypes.BusVoltageAngle:
-                y = np.angle(self.voltage[:, indices])
-                y_label = '(Radians)'
-                title = 'Bus voltage angle'
-
-            elif result_type == ResultTypes.ShadowPrices:
-                y = self.shadow_prices[:, indices]
-                y_label = '(currency)'
-                title = 'Bus shadow prices'
-
-            elif result_type == ResultTypes.BranchPower:
-                y = self.Sbranch[:, indices].real
-                y_label = '(MW)'
-                title = 'Branch power '
-
-            elif result_type == ResultTypes.BusPower:
-                y = self.Sbus[:, indices].real
-                y_label = '(MW)'
-                title = 'Bus power '
-
-            elif result_type == ResultTypes.BranchLoading:
-                y = np.abs(self.loading[:, indices] * 100.0)
-                y_label = '(%)'
-                title = 'Branch loading '
-
-            elif result_type == ResultTypes.BranchOverloads:
-                y = np.abs(self.overloads[:, indices])
-                y_label = '(MW)'
-                title = 'Branch overloads '
-
-            elif result_type == ResultTypes.BranchLosses:
-                y = self.losses[:, indices].real
-                y_label = '(MW)'
-                title = 'Branch losses '
-
-            elif result_type == ResultTypes.LoadShedding:
-                y = self.load_shedding[:, indices]
-                y_label = '(MW)'
-                title = 'Load shedding'
-
-            elif result_type == ResultTypes.ControlledGeneratorPower:
-                y = self.controlled_generator_power[:, indices]
-                y_label = '(MW)'
-                title = 'Controlled generator power'
-
-            elif result_type == ResultTypes.ControlledGeneratorShedding:
-                y = self.controlled_generator_shedding[:, indices]
-                y_label = '(MW)'
-                title = 'Controlled generator power'
-
-            elif result_type == ResultTypes.BatteryPower:
-                y = self.battery_power[:, indices]
-                y_label = '(MW)'
-                title = 'Battery power'
-
-            elif result_type == ResultTypes.BatteryEnergy:
-                y = self.battery_energy[:, indices]
-                y_label = '(MWh)'
-                title = 'Battery energy'
-
-            else:
-                print(str(result_type) + ' not understood.')
-
-            if self.time is not None:
-                index = self.time
-            else:
-                index = np.arange(0, y.shape[0], 1)
-
-            mdl = ResultsModel(data=y, index=index, columns=labels, title=title,
-                               ylabel=y_label, xlabel='', units=y_label)
-            return mdl
-
-        else:
-            return None
+from GridCal.Engine.Core.time_series_opf_data import compile_opf_time_circuit
+from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 
 
 class OptimalPowerFlowTimeSeries(QThread):
@@ -239,13 +47,25 @@ class OptimalPowerFlowTimeSeries(QThread):
         # Grid to run a power flow in
         self.grid = grid
 
-        self.numerical_circuit = self.grid.compile_time_series()
-
         # Options to use
         self.options = options
 
+        # power flow options
+        self.pf_options = options.power_flow_options
+
+        # compile the circuit into a numerical equivalent for this simulation
+        self.numerical_circuit = compile_opf_time_circuit(circuit=self.grid,
+                                                          apply_temperature=self.pf_options.apply_temperature_correction,
+                                                          branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
+                                                          impedance_tolerance=self.pf_options.tolerance)
+
         # OPF results
-        self.results = OptimalPowerFlowTimeSeriesResults(n=self.grid.get_bus_number(),
+        self.results = OptimalPowerFlowTimeSeriesResults(bus_names=self.numerical_circuit.bus_names,
+                                                         branch_names=self.numerical_circuit.branch_names,
+                                                         load_names=self.numerical_circuit.load_names,
+                                                         generator_names=self.numerical_circuit.generator_names,
+                                                         battery_names=self.numerical_circuit.battery_names,
+                                                         n=self.grid.get_bus_number(),
                                                          m=self.grid.get_branch_number(),
                                                          nt=len(self.grid.time_profile),
                                                          ngen=len(self.grid.get_generators()),
@@ -271,7 +91,12 @@ class OptimalPowerFlowTimeSeries(QThread):
         Clears the results
         """
         # reinitialize
-        self.results = OptimalPowerFlowTimeSeriesResults(n=self.grid.get_bus_number(),
+        self.results = OptimalPowerFlowTimeSeriesResults(bus_names=self.numerical_circuit.bus_names,
+                                                         branch_names=self.numerical_circuit.branch_names,
+                                                         load_names=self.numerical_circuit.load_names,
+                                                         generator_names=self.numerical_circuit.generator_names,
+                                                         battery_names=self.numerical_circuit.battery_names,
+                                                         n=self.grid.get_bus_number(),
                                                          m=self.grid.get_branch_number(),
                                                          nt=len(self.grid.time_profile),
                                                          ngen=len(self.grid.get_generators()),
@@ -303,7 +128,8 @@ class OptimalPowerFlowTimeSeries(QThread):
 
             # DC optimal power flow
             problem = OpfDcTimeSeries(numerical_circuit=self.numerical_circuit,
-                                      start_idx=start_, end_idx=end_,
+                                      start_idx=start_,
+                                      end_idx=end_,
                                       solver=self.options.mip_solver,
                                       batteries_energy_0=batteries_energy_0)
 
@@ -311,7 +137,8 @@ class OptimalPowerFlowTimeSeries(QThread):
 
             # AC optimal power flow
             problem = OpfAcTimeSeries(numerical_circuit=self.numerical_circuit,
-                                      start_idx=start_, end_idx=end_,
+                                      start_idx=start_,
+                                      end_idx=end_,
                                       solver=self.options.mip_solver,
                                       batteries_energy_0=batteries_energy_0)
 
@@ -320,8 +147,10 @@ class OptimalPowerFlowTimeSeries(QThread):
             # AC optimal power flow
             problem = OpfSimpleTimeSeries(numerical_circuit=self.numerical_circuit,
                                           start_idx=start_, end_idx=end_,
-                                          solver=self.options.mip_solver, batteries_energy_0=batteries_energy_0,
-                                          text_prog=self.progress_text.emit, prog_func=self.progress_signal.emit)
+                                          solver=self.options.mip_solver,
+                                          batteries_energy_0=batteries_energy_0,
+                                          text_prog=self.progress_text.emit,
+                                          prog_func=self.progress_signal.emit)
 
         else:
             self.logger.append('Solver not supported in this mode: ' + str(self.options.solver))

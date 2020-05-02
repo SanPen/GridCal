@@ -24,7 +24,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
-from GridCal.Engine.Core.common_functions import compile_types
+from GridCal.Engine.Core.common_functions import compile_types, find_different_states
 
 
 class TimeCircuit:
@@ -258,6 +258,7 @@ class TimeCircuit:
         # bus ----------------------------------------------------------------------------------------------------------
         island.bus_names = self.bus_names
         island.bus_active = self.bus_active
+        island.bus_installed_power = self.bus_installed_power
         island.Vbus = self.Vbus
         island.bus_types = self.bus_types
 
@@ -343,6 +344,8 @@ class TimeCircuit:
         island.battery_names = self.battery_names
         island.battery_active = self.battery_active
         island.battery_controllable = self.battery_controllable
+        island.battery_installed_p = self.battery_installed_p
+
         island.battery_p = self.battery_p
         island.battery_pf = self.battery_pf
         island.battery_v = self.battery_v
@@ -355,6 +358,8 @@ class TimeCircuit:
         island.generator_names = self.generator_names
         island.generator_active = self.generator_active
         island.generator_controllable = self.generator_controllable
+        island.generator_installed_p = self.generator_installed_p
+
         island.generator_p = self.generator_p
         island.generator_pf = self.generator_pf
         island.generator_v = self.generator_v
@@ -865,43 +870,6 @@ class TimeIsland(TimeCircuit):
             raise Exception('PF input: structure type not found')
 
         return df
-
-
-def find_different_states(branch_active_prof) -> Dict[int, List[int]]:
-    """
-    Find the different branch states in time that may lead to different islands
-    :param branch_active_prof:
-    :return:
-    """
-    ntime = branch_active_prof.shape[0]
-
-    # initialize
-    states = dict()  # type: Dict[int, List[int]]
-    k = 1
-    for t in range(ntime):
-
-        # search this state in the already existing states
-        keys = list(states.keys())
-        nn = len(keys)
-        found = False
-        i = 0
-        while i < nn and not found:
-            t2 = keys[i]
-
-            # compare state at t2 with the state at t
-            if np.array_equal(branch_active_prof[t, :], branch_active_prof[t2, :]):
-                states[t2].append(t)
-                found = True
-
-            i += 1
-
-        if not found:
-            # new state found (append itself)
-            states[t] = [t]
-
-        k += 1
-
-    return states
 
 
 def split_time_circuit_into_islands(numeric_circuit: TimeCircuit, ignore_single_node_islands=False) -> List[TimeIsland]:
