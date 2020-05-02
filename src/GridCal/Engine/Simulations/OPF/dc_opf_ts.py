@@ -17,10 +17,10 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
-
+from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit, split_opf_time_circuit_into_islands
-from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
+
 from GridCal.ThirdParty.pulp import *
 
 
@@ -359,8 +359,8 @@ if __name__ == '__main__':
 
     from GridCal.Engine import *
 
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
 
     main_circuit = FileOpen(fname).open()

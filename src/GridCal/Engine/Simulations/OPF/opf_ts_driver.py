@@ -14,14 +14,13 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import pandas as pd
-import numpy as np
 import time
 from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.basic_structures import TimeGrouping, get_time_groups
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType, PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import SolverType
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowOptions
 from GridCal.Engine.Simulations.OPF.dc_opf_ts import OpfDcTimeSeries
 from GridCal.Engine.Simulations.OPF.ac_opf_ts import OpfAcTimeSeries
@@ -202,7 +201,7 @@ class OptimalPowerFlowTimeSeries(QThread):
             if start_ >= self.start_ and end_ <= self.end_:
 
                 # run an opf for the group interval only if the group is within the start:end boundaries
-                self.opf(start_=start_, end_=end_, remote=True, batteries_energy_0=energy_0)
+                self.opf(start_=start_, end_=end_ + 1, remote=True, batteries_energy_0=energy_0)
 
             energy_0 = self.results.battery_energy[end_ - 1, :]
 

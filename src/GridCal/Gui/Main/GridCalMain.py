@@ -47,7 +47,7 @@ from GridCal.Engine.Simulations.OPF.opf_driver import *
 from GridCal.Engine.Simulations.PTDF.ptdf_driver import *
 from GridCal.Engine.Simulations.PTDF.ptdf_ts_driver import PtdfTimeSeries
 from GridCal.Engine.Simulations.NK.n_minus_k_driver import *
-from GridCal.Engine.Simulations.OPF.opf_time_series_driver import *
+from GridCal.Engine.Simulations.OPF.opf_ts_driver import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import *
 from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *

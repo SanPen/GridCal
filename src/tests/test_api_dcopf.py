@@ -16,7 +16,7 @@
 from GridCal.Engine.IO.file_handler import FileOpen
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowOptions
-from GridCal.Engine.Simulations.OPF.opf_time_series_driver import OptimalPowerFlowTimeSeries
+from GridCal.Engine.Simulations.OPF.opf_ts_driver import OptimalPowerFlowTimeSeries
 
 
 def _test_api_dcopf():

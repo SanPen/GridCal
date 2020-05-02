@@ -136,7 +136,7 @@ class OpfTimeCircuit:
         self.load_names = np.empty(nload, dtype=object)
         self.load_active = np.zeros((ntime, nload), dtype=bool)
         self.load_s = np.zeros((ntime, nload), dtype=complex)
-        self.load_cost = np.zeros((ntime, nload), dtype=complex)
+        self.load_cost = np.zeros((ntime, nload))
 
         self.C_bus_load = sp.lil_matrix((nbus, nload), dtype=int)
 
@@ -1017,6 +1017,7 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
             nc.load_names[i_ld] = elm.name
 
             nc.load_active[:, i_ld] = elm.active_prof
+            nc.load_cost[:, i_ld] = elm.Cost_prof
             nc.load_s[:, i_ld] = elm.P_prof + 1j * elm.Q_prof
 
             nc.C_bus_load[i, i_ld] = 1
@@ -1086,14 +1087,16 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.branch_names[i] = elm.name
         nc.branch_R[i] = elm.R
         nc.branch_X[i] = elm.X
-        nc.branch_active[:, i] = elm.active_prof
-        nc.branch_rates[:, i] = elm.rate_prof
         f = bus_dictionary[elm.bus_from]
         t = bus_dictionary[elm.bus_to]
         nc.C_branch_bus_f[i, f] = 1
         nc.C_branch_bus_t[i, t] = 1
         nc.F[i] = f
         nc.T[i] = t
+
+        nc.branch_active[:, i] = elm.active_prof
+        nc.branch_rates[:, i] = elm.rate_prof
+        nc.branch_cost[:, i] = elm.Cost_prof
 
         # impedance
         nc.line_names[i] = elm.name
@@ -1120,12 +1123,14 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.branch_names[ii] = elm.name
         nc.branch_R[ii] = elm.R
         nc.branch_X[ii] = elm.X
-        nc.branch_active[:, ii] = elm.active_prof
-        nc.branch_rates[:, ii] = elm.rate_prof
         nc.C_branch_bus_f[ii, f] = 1
         nc.C_branch_bus_t[ii, t] = 1
         nc.F[ii] = f
         nc.T[ii] = t
+
+        nc.branch_active[:, ii] = elm.active_prof
+        nc.branch_rates[:, ii] = elm.rate_prof
+        nc.branch_cost[:, ii] = elm.Cost_prof
 
         # impedance
         nc.tr_names[i] = elm.name
@@ -1162,6 +1167,7 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
 
         nc.branch_active[:, ii] = elm.active_prof
         nc.branch_rates[:, ii] = elm.rate_prof
+        nc.branch_cost[:, ii] = elm.Cost_prof
 
         # vsc values
         nc.vsc_names[i] = elm.name

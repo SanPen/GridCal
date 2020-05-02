@@ -1293,7 +1293,8 @@ class ResultsModel(QtCore.QAbstractTableModel):
         """
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
-                return self.cols_c[p_int]
+                if self.c > 0:
+                    return self.cols_c[p_int]
             elif orientation == QtCore.Qt.Vertical:
                 if self.index_c is None:
                     return p_int
