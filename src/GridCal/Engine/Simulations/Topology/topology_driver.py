@@ -291,8 +291,8 @@ class TopologyReduction(QThread):
         for i, br_idx in enumerate(self.br_to_remove):
 
             # delete branch
-            removed_branch, removed_bus, \
-            updated_bus, updated_branches = reduce_grid_brute(circuit=self.grid, removed_br_idx=br_idx)
+            removed_branch, removed_bus, updated_bus, updated_branches = reduce_grid_brute(circuit=self.grid,
+                                                                                           removed_br_idx=br_idx)
 
             # display progress
             self.progress_text.emit('Removed branch ' + str(br_idx) + ': ' + removed_branch.name)

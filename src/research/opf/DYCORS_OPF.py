@@ -222,10 +222,10 @@ class AcOPFBlackBox:
         results.battery_power = np.zeros_like(self.numerical_circuit.battery_power)
         results.battery_power[self.bat_x_idx] = x[ngen:]
 
-        results.controlled_generation_power = np.zeros_like(self.numerical_circuit.controlled_gen_power)
-        results.controlled_generation_power[self.gen_x_idx] = x[0:ngen]
+        results.generators_power = np.zeros_like(self.numerical_circuit.controlled_gen_power)
+        results.generators_power[self.gen_x_idx] = x[0:ngen]
 
-        results.generation_shedding = np.zeros_like(results.controlled_generation_power)
+        results.generation_shedding = np.zeros_like(results.generators_power)
 
         results.load_shedding = np.zeros_like(self.numerical_circuit.load_power)
 
@@ -427,7 +427,7 @@ class AcOpfDYCORS:
 
     def get_controlled_generation(self):
 
-        return self.result.controlled_generation_power
+        return self.result.generators_power
 
     def get_generation_shedding(self):
 

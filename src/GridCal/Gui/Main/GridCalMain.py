@@ -4882,7 +4882,7 @@ class MainGUI(QMainWindow):
 
                 if reply == QMessageBox.Yes:
                     for i, gen in enumerate(self.circuit.get_generators()):
-                        gen.P_prof = self.optimal_power_flow_time_series.results.controlled_generator_power[:, i]
+                        gen.P_prof = self.optimal_power_flow_time_series.results.generator_power[:, i]
 
             else:
                 self.msg('The OPF time series has no results :(')

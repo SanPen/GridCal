@@ -300,7 +300,7 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
     report = ConvergenceReport()
 
     # modify the Ybus to include the shunts
-    Ybus = circuit.Ybus + sp.diags(Ysh)
+    Ybus = circuit.Ybus  # + sp.diags(Ysh)
 
     # this the "outer-loop"
     while (any_q_control_issue or any_tap_control_issue) and outer_it < control_max_iter:
@@ -321,7 +321,7 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
                                                                       Ibus=Ibus,
                                                                       Ybus=Ybus,
                                                                       Yseries=circuit.Yseries,
-                                                                      Ysh_helm=circuit.Yshunt + Ysh,
+                                                                      Ysh_helm=circuit.Yshunt,
                                                                       B1=circuit.B1,
                                                                       B2=circuit.B2,
                                                                       Bpqpv=circuit.Bpqpv,
@@ -348,7 +348,7 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
                                                                                 Ibus=Ibus,
                                                                                 Ybus=Ybus,
                                                                                 Yseries=circuit.Yseries,
-                                                                                Ysh_helm=circuit.Yshunt + Ysh,
+                                                                                Ysh_helm=circuit.Yshunt,
                                                                                 B1=circuit.B1,
                                                                                 B2=circuit.B2,
                                                                                 Bpqpv=circuit.Bpqpv,

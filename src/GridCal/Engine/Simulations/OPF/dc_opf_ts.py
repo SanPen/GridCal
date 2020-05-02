@@ -396,7 +396,7 @@ if __name__ == '__main__':
     l = optimal_power_flow_time_series.results.loading
     print('Branch loading\n', l)
 
-    g = optimal_power_flow_time_series.results.controlled_generator_power
+    g = optimal_power_flow_time_series.results.generator_power
     print('Gen power\n', g)
 
     pr = optimal_power_flow_time_series.results.shadow_prices

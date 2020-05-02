@@ -79,9 +79,9 @@ class OptimalPowerFlowTimeSeriesResults:
                                   ResultTypes.BatteryPower,
                                   ResultTypes.BatteryEnergy]
 
-        self.controlled_generator_power = np.zeros((nt, ngen), dtype=float)
+        self.generator_power = np.zeros((nt, ngen), dtype=float)
 
-        self.controlled_generator_shedding = np.zeros((nt, ngen), dtype=float)
+        self.generator_shedding = np.zeros((nt, ngen), dtype=float)
 
         self.battery_power = np.zeros((nt, nbat), dtype=float)
 
@@ -95,7 +95,7 @@ class OptimalPowerFlowTimeSeriesResults:
         :param ngen: number of generators
         :param nbat: number of batteries
         """
-        self.controlled_generator_power = np.zeros((self.nt, ngen), dtype=float)
+        self.generator_power = np.zeros((self.nt, ngen), dtype=float)
 
         self.battery_power = np.zeros((self.nt, nbat), dtype=float)
 
@@ -183,13 +183,13 @@ class OptimalPowerFlowTimeSeriesResults:
 
         elif result_type == ResultTypes.ControlledGeneratorPower:
             labels = self.generator_names
-            y = self.controlled_generator_power
+            y = self.generator_power
             y_label = '(MW)'
             title = 'Controlled generator power'
 
         elif result_type == ResultTypes.ControlledGeneratorShedding:
             labels = self.generator_names
-            y = self.controlled_generator_shedding
+            y = self.generator_shedding
             y_label = '(MW)'
             title = 'Controlled generator power'
 

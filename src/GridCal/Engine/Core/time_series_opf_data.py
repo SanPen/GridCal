@@ -214,18 +214,18 @@ class OpfTimeCircuit:
         Compute the power
         :return: Array of power injections
         """
-        Sbus = - self.C_bus_load * (self.load_s * self.load_active)  # MW
+        Sbus = - self.C_bus_load * (self.load_s * self.load_active).T  # MW
 
         # generators
-        Sbus += self.C_bus_gen * (self.generator_p * self.generator_active)
+        Sbus += self.C_bus_gen * (self.generator_p * self.generator_active).T
 
         # battery
-        Sbus += self.C_bus_batt * (self.battery_p * self.battery_active)
+        Sbus += self.C_bus_batt * (self.battery_p * self.battery_active).T
 
         # HVDC forced power
         if self.nhvdc:
-            Sbus += self.hvdc_active * self.hvdc_Pset * self.C_hvdc_bus_f
-            Sbus -= self.hvdc_active * self.hvdc_Pset * self.C_hvdc_bus_t
+            Sbus += ((self.hvdc_active * self.hvdc_Pset) * self.C_hvdc_bus_f).T
+            Sbus -= ((self.hvdc_active * self.hvdc_Pset) * self.C_hvdc_bus_t).T
 
         Sbus /= self.Sbase
 

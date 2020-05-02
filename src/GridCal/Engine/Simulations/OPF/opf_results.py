@@ -74,7 +74,7 @@ class OptimalPowerFlowResults:
 
         self.battery_power = battery_power
 
-        self.controlled_generation_power = controlled_generation_power
+        self.generators_power = controlled_generation_power
 
         self.flow_direction = None
 
@@ -110,7 +110,7 @@ class OptimalPowerFlowResults:
                                        loading=self.loading,
                                        generation_shedding=self.generation_shedding,
                                        battery_power=self.battery_power,
-                                       controlled_generation_power=self.controlled_generation_power,
+                                       controlled_generation_power=self.generators_power,
                                        converged=self.converged)
 
     def initialize(self, n, m):
@@ -201,7 +201,7 @@ class OptimalPowerFlowResults:
 
         elif result_type == ResultTypes.ControlledGeneratorPower:
             labels = self.generator_names
-            y = self.controlled_generation_power
+            y = self.generators_power
             y_label = '(MW)'
             title = 'Controlled generators power'
 

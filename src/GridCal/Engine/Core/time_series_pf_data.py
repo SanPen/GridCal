@@ -25,6 +25,11 @@ from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 from GridCal.Engine.Core.common_functions import compile_types, find_different_states
+from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
+from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
+
+
+sparse_type = get_sparse_type()
 
 
 class TimeCircuit:
@@ -118,12 +123,14 @@ class TimeCircuit:
 
         # hvdc line ----------------------------------------------------------------------------------------------------
         self.hvdc_names = np.zeros(nhvdc, dtype=object)
+
         self.hvdc_active = np.zeros((ntime, nhvdc), dtype=bool)
         self.hvdc_rate = np.zeros((ntime, nhvdc), dtype=float)
-
         self.hvdc_Pset = np.zeros((ntime, nhvdc))
         self.hvdc_Vset_f = np.zeros((ntime, nhvdc))
         self.hvdc_Vset_t = np.zeros((ntime, nhvdc))
+
+        self.hvdc_loss_factor = np.zeros(nhvdc)
         self.hvdc_Qmin_f = np.zeros(nhvdc)
         self.hvdc_Qmax_f = np.zeros(nhvdc)
         self.hvdc_Qmin_t = np.zeros(nhvdc)
@@ -310,6 +317,7 @@ class TimeCircuit:
         island.hvdc_rate = self.hvdc_rate
 
         island.hvdc_Pset = self.hvdc_Pset
+        island.hvdc_loss_factor = self.hvdc_loss_factor
 
         island.hvdc_Vset_f = self.hvdc_Vset_f
         island.hvdc_Vset_t = self.hvdc_Vset_t
@@ -477,6 +485,7 @@ class TimeCircuit:
         nc.hvdc_Vset_f = self.hvdc_Vset_f[np.ix_(time_idx, hvdc_idx)]
         nc.hvdc_Vset_t = self.hvdc_Vset_t[np.ix_(time_idx, hvdc_idx)]
 
+        nc.hvdc_loss_factor = self.hvdc_loss_factor[hvdc_idx]
         nc.hvdc_Qmin_f = self.hvdc_Qmin_f[hvdc_idx]
         nc.hvdc_Qmax_f = self.hvdc_Qmax_f[hvdc_idx]
         nc.hvdc_Qmin_t = self.hvdc_Qmin_t[hvdc_idx]
@@ -610,7 +619,8 @@ class TimeIsland(TimeCircuit):
         """
         return self.line_R * (1.0 + self.line_alpha * (self.line_temp_oper - self.line_temp_base))
 
-    def compute_admittance_matrices(self):
+    def compute_admittance_matrices(self, newton_raphson=False, linear_dc=False, linear_ac=False, fast_decoupled=False,
+                                    helm=False):
         """
         Compute the admittance matrices
         :return: Ybus, Yseries, Yshunt
@@ -626,18 +636,41 @@ class TimeIsland(TimeCircuit):
         # Declare the empty primitives ---------------------------------------------------------------------------------
 
         # The composition order is and will be: Pi model, HVDC, VSC
-        Ytt = np.empty(self.nbr, dtype=complex)
-        Yff = np.empty(self.nbr, dtype=complex)
-        Yft = np.empty(self.nbr, dtype=complex)
-        Ytf = np.empty(self.nbr, dtype=complex)
+        if newton_raphson:
+            Ytt = np.empty(self.nbr, dtype=complex)
+            Yff = np.empty(self.nbr, dtype=complex)
+            Yft = np.empty(self.nbr, dtype=complex)
+            Ytf = np.empty(self.nbr, dtype=complex)
+        else:
+            Ytt = np.empty(0, dtype=complex)
+            Yff = np.empty(0, dtype=complex)
+            Yft = np.empty(0, dtype=complex)
+            Ytf = np.empty(0, dtype=complex)
 
         # Branch primitives in vector form, for Yseries
-        Ytts = np.empty(self.nbr, dtype=complex)
-        Yffs = np.empty(self.nbr, dtype=complex)
-        Yfts = np.empty(self.nbr, dtype=complex)
-        Ytfs = np.empty(self.nbr, dtype=complex)
+        if linear_ac or helm:
+            Ytts = np.empty(self.nbr, dtype=complex)
+            Yffs = np.empty(self.nbr, dtype=complex)
+            Yfts = np.empty(self.nbr, dtype=complex)
+            Ytfs = np.empty(self.nbr, dtype=complex)
+            ysh_br = np.empty(self.nbr, dtype=complex)
+        else:
+            Ytts = np.empty(0, dtype=complex)
+            Yffs = np.empty(0, dtype=complex)
+            Yfts = np.empty(0, dtype=complex)
+            Ytfs = np.empty(0, dtype=complex)
+            ysh_br = np.empty(0, dtype=complex)
 
-        ysh_br = np.empty(self.nbr, dtype=complex)
+        # Arrays to compose the fast decoupled
+        if fast_decoupled:
+            reactances = np.empty(self.nbr)
+            susceptances = np.empty(self.nbr)
+            all_taps = np.ones(self.nbr, dtype=complex)
+
+        else:
+            reactances = np.empty(0)
+            susceptances = np.empty(0)
+            all_taps = np.ones(0, dtype=complex)
 
         # line ---------------------------------------------------------------------------------------------------------
         a = 0
@@ -660,17 +693,23 @@ class TimeIsland(TimeCircuit):
         Ys_line2 = Ys_line + Ysh_line / 2.0
 
         # branch primitives in vector form for Ybus
-        Ytt[a:b] = Ys_line2
-        Yff[a:b] = Ys_line2
-        Yft[a:b] = - Ys_line
-        Ytf[a:b] = - Ys_line
+        if newton_raphson:
+            Ytt[a:b] = Ys_line2
+            Yff[a:b] = Ys_line2
+            Yft[a:b] = - Ys_line
+            Ytf[a:b] = - Ys_line
 
         # branch primitives in vector form, for Yseries
-        Ytts[a:b] = Ys_line
-        Yffs[a:b] = Ys_line
-        Yfts[a:b] = - Ys_line
-        Ytfs[a:b] = - Ys_line
-        ysh_br[a:b] = Ysh_line / 2.0
+        if linear_ac or helm:
+            Ytts[a:b] = Ys_line
+            Yffs[a:b] = Ys_line
+            Yfts[a:b] = - Ys_line
+            Ytfs[a:b] = - Ys_line
+            ysh_br[a:b] = Ysh_line / 2.0
+
+        if fast_decoupled:
+            reactances[a:b] = self.line_X
+            susceptances[a:b] = self.line_B
 
         # transformer models -------------------------------------------------------------------------------------------
 
@@ -683,32 +722,47 @@ class TimeIsland(TimeCircuit):
         tap = self.tr_tap_mod * np.exp(1.0j * self.tr_tap_ang)
 
         # branch primitives in vector form for Ybus
-        Ytt[a:b] = Ys_tr2 / (self.tr_tap_t * self.tr_tap_t)
-        Yff[a:b] = Ys_tr2 / (self.tr_tap_f * self.tr_tap_f * tap * np.conj(tap))
-        Yft[a:b] = - Ys_tr / (self.tr_tap_f * self.tr_tap_t * np.conj(tap))
-        Ytf[a:b] = - Ys_tr / (self.tr_tap_t * self.tr_tap_f * tap)
+        if newton_raphson:
+            Ytt[a:b] = Ys_tr2 / (self.tr_tap_t * self.tr_tap_t)
+            Yff[a:b] = Ys_tr2 / (self.tr_tap_f * self.tr_tap_f * tap * np.conj(tap))
+            Yft[a:b] = - Ys_tr / (self.tr_tap_f * self.tr_tap_t * np.conj(tap))
+            Ytf[a:b] = - Ys_tr / (self.tr_tap_t * self.tr_tap_f * tap)
 
         # branch primitives in vector form, for Yseries
-        Ytts[a:b] = Ys_tr
-        Yffs[a:b] = Ys_tr / (tap * np.conj(tap))
-        Yfts[a:b] = - Ys_tr / np.conj(tap)
-        Ytfs[a:b] = - Ys_tr / tap
-        ysh_br[a:b] = Ysh_tr / 2.0
+        if linear_ac or helm:
+            Ytts[a:b] = Ys_tr
+            Yffs[a:b] = Ys_tr / (tap * np.conj(tap))
+            Yfts[a:b] = - Ys_tr / np.conj(tap)
+            Ytfs[a:b] = - Ys_tr / tap
+            ysh_br[a:b] = Ysh_tr / 2.0
+
+        if fast_decoupled:
+            reactances[a:b] = self.tr_X
+            susceptances[a:b] = self.tr_B
+            all_taps[a:b] = tap
 
         # VSC MODEL ----------------------------------------------------------------------------------------------------
         a = self.nline + self.ntr
         b = a + self.nvsc
 
         Y_vsc = 1.0 / (self.vsc_R1 + 1.0j * self.vsc_X1)  # Y1
-        Yff[a:b] = Y_vsc
-        Yft[a:b] = -self.vsc_m * np.exp(1.0j * self.vsc_theta) * Y_vsc
-        Ytf[a:b] = -self.vsc_m * np.exp(-1.0j * self.vsc_theta) * Y_vsc
-        Ytt[a:b] = self.vsc_Gsw + self.vsc_m * self.vsc_m * (Y_vsc + 1.0j * self.vsc_Beq)
 
-        Yffs[a:b] = Y_vsc
-        Yfts[a:b] = -self.vsc_m * np.exp(1.0j * self.vsc_theta) * Y_vsc
-        Ytfs[a:b] = -self.vsc_m * np.exp(-1.0j * self.vsc_theta) * Y_vsc
-        Ytts[a:b] = self.vsc_m * self.vsc_m * (Y_vsc + 1.0j)
+        if newton_raphson:
+            Yff[a:b] = Y_vsc
+            Yft[a:b] = -self.vsc_m * np.exp(1.0j * self.vsc_theta) * Y_vsc
+            Ytf[a:b] = -self.vsc_m * np.exp(-1.0j * self.vsc_theta) * Y_vsc
+            Ytt[a:b] = self.vsc_Gsw + self.vsc_m * self.vsc_m * (Y_vsc + 1.0j * self.vsc_Beq)
+
+        if linear_ac or helm:
+            Yffs[a:b] = Y_vsc
+            Yfts[a:b] = -self.vsc_m * np.exp(1.0j * self.vsc_theta) * Y_vsc
+            Ytfs[a:b] = -self.vsc_m * np.exp(-1.0j * self.vsc_theta) * Y_vsc
+            Ytts[a:b] = self.vsc_m * self.vsc_m * (Y_vsc + 1.0j)
+
+        if fast_decoupled:
+            reactances[a:b] = self.vsc_X1
+            susceptances[a:b] = self.vsc_Beq
+            all_taps[a:b] = self.vsc_m * np.exp(1.0j * self.vsc_theta)
 
         # HVDC LINE MODEL ----------------------------------------------------------------------------------------------
         # does not apply since the HVDC-line model is the simplistic 2-generator model
@@ -717,16 +771,38 @@ class TimeIsland(TimeCircuit):
         self.Yshunt_from_devices = self.C_bus_shunt * (self.shunt_admittance * self.shunt_active / self.Sbase).T
 
         # form the admittance matrices ---------------------------------------------------------------------------------
-        self.Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
-        self.Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
-        self.Ybus = sp.csc_matrix(Cf.T * self.Yf + Ct.T * self.Yt)
+        if newton_raphson:
+            self.Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
+            self.Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
+            self.Ybus = sp.csc_matrix(Cf.T * self.Yf + Ct.T * self.Yt) + sp.diags(self.Yshunt_from_devices[:, 0])
+
+            self.Bpqpv = self.Ybus.imag[np.ix_(self.pqpv, self.pqpv)]
+            self.Bref = self.Ybus.imag[np.ix_(self.pqpv, self.vd)]
 
         # form the admittance matrices of the series and shunt elements ------------------------------------------------
-        Yfs = sp.diags(Yffs) * Cf + sp.diags(Yfts) * Ct
-        Yts = sp.diags(Ytfs) * Cf + sp.diags(Ytts) * Ct
-        self.Yseries = sp.csc_matrix(Cf.T * Yfs + Ct.T * Yts)
+        if linear_ac or helm:
+            Yfs = sp.diags(Yffs) * Cf + sp.diags(Yfts) * Ct
+            Yts = sp.diags(Ytfs) * Cf + sp.diags(Ytts) * Ct
+            self.Yseries = sp.csc_matrix(Cf.T * Yfs + Ct.T * Yts)
+            self.Yshunt = Cf.T * ysh_br + Ct.T * ysh_br + self.Yshunt_from_devices[:, 0]
 
-        self.Yshunt = Cf.T * ysh_br + Ct.T * ysh_br
+        # Form the matrices for fast decoupled -------------------------------------------------------------------------
+        if fast_decoupled:
+            b1 = 1.0 / (reactances + 1e-20)
+            b1_tt = sp.diags(b1)
+            B1f = b1_tt * Cf - b1_tt * Ct
+            B1t = -b1_tt * Cf + b1_tt * Ct
+            self.B1 = sparse_type(Cf.T * B1f + Ct.T * B1t)
+
+            b2 = b1 + susceptances
+            b2_ff = -(b2 / (all_taps * np.conj(all_taps))).real
+            b2_ft = -(b1 / np.conj(all_taps)).real
+            b2_tf = -(b1 / all_taps).real
+            b2_tt = - b2
+
+            B2f = -sp.diags(b2_ff) * Cf + sp.diags(b2_ft) * Ct
+            B2t = sp.diags(b2_tf) * Cf + -sp.diags(b2_tt) * Ct
+            self.B2 = sparse_type(Cf.T * B2f + Ct.T * B2t)
 
     def get_generator_injections(self):
         """
@@ -796,7 +872,11 @@ class TimeIsland(TimeCircuit):
 
         self.vd, self.pq, self.pv, self.pqpv = compile_types(Sbus=self.Sbus, types=self.bus_types)
 
-        self.compute_admittance_matrices()
+        self.compute_admittance_matrices(newton_raphson=True,
+                                         linear_dc=True,
+                                         linear_ac=True,
+                                         fast_decoupled=True,
+                                         helm=True)
 
         self.compute_reactive_power_limits()
 
@@ -962,13 +1042,14 @@ def split_time_circuit_into_islands(numeric_circuit: TimeCircuit, ignore_single_
 def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                          branch_tolerance_mode=BranchImpedanceMode.Specified,
                          impedance_tolerance=0.0,
-                         opf_results=None) -> TimeCircuit:
+                         opf_results: OptimalPowerFlowTimeSeriesResults = None) -> TimeCircuit:
     """
     Compile the information of a circuit and generate the pertinent power flow islands
     :param circuit: Circuit instance
     :param apply_temperature:
     :param branch_tolerance_mode:
     :param impedance_tolerance:
+    :param opf_results: OptimalPowerFlowTimeSeriesResults instance
     :return: list of NumericIslands
     """
 
@@ -1028,9 +1109,12 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
 
         for elm in bus.loads:
             nc.load_names[i_ld] = elm.name
-
             nc.load_active[:, i_ld] = elm.active_prof
-            nc.load_s[:, i_ld] = elm.P_prof + 1j * elm.Q_prof
+
+            if opf_results is None:
+                nc.load_s[:, i_ld] = elm.P_prof + 1j * elm.Q_prof
+            else:
+                nc.load_s[:, i_ld] = elm.P_prof + 1j * elm.Q_prof - opf_results.load_shedding[:, i_ld]
 
             nc.C_bus_load[i, i_ld] = 1
             i_ld += 1
@@ -1042,12 +1126,15 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
             nc.generator_active[:, i_gen] = elm.active_prof
             nc.generator_pf[:, i_gen] = elm.Pf_prof
             nc.generator_v[:, i_gen] = elm.Vset_prof
-            nc.generator_p[:, i_gen] = elm.P_prof
-
             nc.generator_qmin[i_gen] = elm.Qmin
             nc.generator_qmax[i_gen] = elm.Qmax
             nc.generator_controllable[i_gen] = elm.is_controlled
             nc.generator_installed_p[i_gen] = elm.Snom
+
+            if opf_results is None:
+                nc.generator_p[:, i_gen] = elm.P_prof
+            else:
+                nc.generator_p[:, i_gen] = opf_results.generator_power[:, i_gen] - opf_results.generator_shedding[:, i_gen]
 
             nc.C_bus_gen[i, i_gen] = 1
 
@@ -1061,14 +1148,18 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
             nc.battery_names[i_batt] = elm.name
 
             nc.battery_active[:, i_batt] = elm.active_prof
-            nc.battery_p[:, i_batt] = elm.P_prof
+
             nc.battery_pf[:, i_batt] = elm.Pf_prof
             nc.battery_v[:, i_batt] = elm.Vset_prof
-
             nc.battery_qmin[i_batt] = elm.Qmin
             nc.battery_qmax[i_batt] = elm.Qmax
             nc.battery_controllable[i_batt] = elm.is_controlled
             nc.battery_installed_p[i_batt] = elm.Snom
+
+            if opf_results is None:
+                nc.battery_p[:, i_batt] = elm.P_prof
+            else:
+                nc.battery_p[:, i_batt] = opf_results.battery_power[:, i_batt]
 
             nc.C_bus_batt[i, i_batt] = 1
             nc.Vbus[:, i] *= elm.Vset_prof
@@ -1195,6 +1286,7 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.hvdc_Vset_f[:, i] = elm.Vset_f_prof
         nc.hvdc_Vset_t[:, i] = elm.Vset_t_prof
 
+        nc.hvdc_loss_factor[i] = elm.loss_factor
         nc.hvdc_Qmin_f[i] = elm.Qmin_f
         nc.hvdc_Qmax_f[i] = elm.Qmax_f
         nc.hvdc_Qmin_t[i] = elm.Qmin_t

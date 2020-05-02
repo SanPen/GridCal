@@ -155,20 +155,21 @@ class HvdcLine(EditableDevice):
         **template** (BranchTemplate, BranchTemplate()): Basic branch template
     """
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, id_tag='', name='HVDC Line', idtag=None, active=True,
-                 rate=1.0, Pset=0.0, Vset_f=1.0, Vset_t=1.0, length=1.0, mttf=0.0, mttr=0.0, overload_cost=1000.0,
-                 min_firing_angle_f=-1.0, max_firing_angle_f=1.0, min_firing_angle_t=-1.0, max_firing_angle_t=1.0,
-                 active_prof=np.ones(0, dtype=bool), rate_prof=np.zeros(0), Pset_prof=np.zeros(0),
-                 Vset_f_prof=np.ones(0), Vset_t_prof=np.ones(0), overload_cost_prof=np.zeros(0)):
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='HVDC Line', idtag=None, active=True,
+                 rate=1.0, Pset=0.0, loss_factor=0.0, Vset_f=1.0, Vset_t=1.0, length=1.0, mttf=0.0, mttr=0.0,
+                 overload_cost=1000.0,   min_firing_angle_f=-1.0, max_firing_angle_f=1.0, min_firing_angle_t=-1.0,
+                 max_firing_angle_t=1.0, active_prof=np.ones(0, dtype=bool), rate_prof=np.zeros(0),
+                 Pset_prof=np.zeros(0), Vset_f_prof=np.ones(0), Vset_t_prof=np.ones(0), overload_cost_prof=np.zeros(0)):
         """
         HVDC Line model
         :param bus_from: Bus from
         :param bus_to: Bus to
-        :param id_tag: id tag of the line
+        :param idtag: id tag of the line
         :param name: name of the line
         :param active: Is the line active?
         :param rate: Line rate in MVA
         :param Pset: Active power set point
+        :param loss_factor: Losses factor (p.u.)
         :param Vset_f: Voltage set point at the "from" side
         :param Vset_t: Voltage set point at the "to" side
         :param min_firing_angle_f: minimum firing angle at the "from" side
@@ -203,6 +204,11 @@ class HvdcLine(EditableDevice):
                                                   'rate': GCProp('MVA', float, 'Thermal rating power of the line.'),
 
                                                   'Pset': GCProp('MW', float, 'Set power flow.'),
+
+                                                  'loss_factor': GCProp('p.u.', float,
+                                                                        'Losses factor.\n'
+                                                                        'The losses are computed as losses=Pset x Ploss'),
+
                                                   'Vset_f': GCProp('p.u.', float, 'Set voltage at the from side'),
                                                   'Vset_t': GCProp('p.u.', float, 'Set voltage at the to side'),
 
@@ -230,7 +236,7 @@ class HvdcLine(EditableDevice):
                                                   'overload_cost': GCProp('e/MWh', float,
                                                                           'Cost of overloads. Used in OPF.'),
                                                   },
-                                non_editable_attributes=['bus_from', 'bus_to', 'template'],
+                                non_editable_attributes=['bus_from', 'bus_to'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'rate': 'rate_prof',
                                                          'Pset': 'Pset_prof',
@@ -250,11 +256,16 @@ class HvdcLine(EditableDevice):
 
         self.Pset = Pset
 
+        self.loss_factor = loss_factor
+
         self.mttf = mttf
 
         self.mttr = mttr
 
         self.overload_cost = overload_cost
+
+        self.Vset_f = Vset_f
+        self.Vset_t = Vset_t
 
         # converter / inverter firing angles
         self.min_firing_angle_f = min_firing_angle_f
@@ -274,6 +285,8 @@ class HvdcLine(EditableDevice):
 
         self.Pset_prof = Pset_prof
         self.active_prof = active_prof
+        self.Vset_f_prof = Vset_f_prof
+        self.Vset_t_prof = Vset_t_prof
 
         # branch rating in MVA
         self.rate = rate
@@ -292,41 +305,61 @@ class HvdcLine(EditableDevice):
             f = bus_dict[self.bus_from]
             t = bus_dict[self.bus_to]
 
+        '''
+        bus_from: Bus = None, 
+        bus_to: Bus = None, 
+        name='HVDC Line', 
+        idtag=None, 
+        active=True,
+        rate=1.0, Pset=0.0, 
+        loss_factor=0.0, 
+        Vset_f=1.0, 
+        Vset_t=1.0, 
+        length=1.0, 
+        mttf=0.0, 
+        mttr=0.0, 
+        overload_cost=1000.0,   
+        min_firing_angle_f=-1.0, 
+        max_firing_angle_f=1.0, 
+        min_firing_angle_t=-1.0, 
+        max_firing_angle_t=1.0, 
+        active_prof=np.ones(0, dtype=bool), 
+        rate_prof=np.zeros(0), 
+        Pset_prof=np.zeros(0), 
+        Vset_f_prof=np.ones(0), 
+        Vset_t_prof=np.ones(0), 
+        overload_cost_prof=np.zeros(0)
+        '''
+
         b = HvdcLine(bus_from=f,
                      bus_to=t,
                      name=self.name,
-                     r=self.R,
-                     psch=self.Psch,
+                     idtag=self.idtag,
                      rate=self.rate,
                      active=self.active,
+                     loss_factor=self.loss_factor,
+                     Vset_f=self.Vset_f,
+                     Vset_t=self.Vset_t,
+                     length=self.length,
                      mttf=self.mttf,
                      mttr=self.mttr,
-                     temp_base=self.temp_base,
-                     temp_oper=self.temp_oper,
-                     alpha=self.alpha,
-                     branch_type=self.branch_type)
+                     overload_cost=self.overload_cost,
+                     min_firing_angle_f=self.min_firing_angle_f,
+                     max_firing_angle_f=self.max_firing_angle_f,
+                     min_firing_angle_t=self.min_firing_angle_t,
+                     max_firing_angle_t=self.max_firing_angle_t,
+                     active_prof=self.active_prof,
+                     rate_prof=self.rate_prof,
+                     Pset_prof=self.Pset_prof,
+                     Vset_f_prof=self.Vset_f_prof,
+                     Vset_t_prof=self.Vset_t_prof,
+                     overload_cost_prof=self.overload_cost_prof)
 
         b.measurements = self.measurements
 
         b.active_prof = self.active_prof.copy()
 
         return b
-
-    def apply_template(self, obj: Tower, Sbase, logger=Logger()):
-        """
-        Apply a branch template to this object
-
-        Arguments:
-
-            **obj**: TransformerType or Tower object
-
-            **Sbase** (float): Nominal power in MVA
-
-            **logger** (list, []): Log list
-
-        """
-        from warnings import warn
-        warn('apply_template not implemented in HVDC lines')
 
     def get_save_data(self):
         """
@@ -362,12 +395,7 @@ class HvdcLine(EditableDevice):
              'to': bus_dict[self.bus_to],
              'active': self.active,
              'rate': self.rate,
-             'r': self.R,
              'length': self.length,
-             'temp_base': self.temp_base,
-             'temp_oper': self.temp_oper,
-             'alpha': self.alpha,
-             'branch_type': str(self.branch_type),
              'active_profile': [],
              'rate_prof': []}
 

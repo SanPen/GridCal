@@ -860,7 +860,7 @@ class MultiCircuit:
     #             circuit.generator_nominal_power[i_gen] = elm.Snom
     #
     #             if opf_results is not None:
-    #                 circuit.generator_power[i_gen] = opf_results.controlled_generation_power[i_gen]
+    #                 circuit.generator_power[i_gen] = opf_results.generators_power[i_gen]
     #             else:
     #                 circuit.generator_power[i_gen] = elm.P
     #
@@ -1210,14 +1210,14 @@ class MultiCircuit:
     #                 circuit.generator_nominal_power[i_gen] = elm.Snom
     #
     #                 if opf_results is not None:
-    #                     circuit.generator_power[i_gen] = opf_results.controlled_generation_power[i_gen]
+    #                     circuit.generator_power[i_gen] = opf_results.generators_power[i_gen]
     #                 else:
     #                     circuit.generator_power[i_gen] = elm.P
     #
     #                 if n_time > 0:
     #                     # power profile
     #                     if opf_time_series_results is not None:
-    #                         circuit.generator_power_profile[:, i_gen] = opf_time_series_results.controlled_generator_power[:, i_gen]
+    #                         circuit.generator_power_profile[:, i_gen] = opf_time_series_results.generator_power[:, i_gen]
     #                     else:
     #                         circuit.generator_power_profile[:, i_gen] = elm.P_prof
     #

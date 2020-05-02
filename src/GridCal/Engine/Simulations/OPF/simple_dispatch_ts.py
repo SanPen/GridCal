@@ -17,7 +17,7 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
-
+import numpy as np
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
@@ -229,7 +229,7 @@ if __name__ == '__main__':
     l = optimal_power_flow_time_series.results.loading
     print('Branch loading\n', l)
 
-    g = optimal_power_flow_time_series.results.controlled_generator_power
+    g = optimal_power_flow_time_series.results.generator_power
     print('Gen power\n', g)
 
     pr = optimal_power_flow_time_series.results.shadow_prices
