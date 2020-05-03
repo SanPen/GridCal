@@ -1509,12 +1509,14 @@ class MainGUI(QMainWindow):
         Rate the branches that do not have rate
         """
 
-        if len(self.circuit.branches) > 0:
+        branches = self.circuit.get_branches()
+
+        if len(branches) > 0:
 
             if self.power_flow is not None:
                 factor = self.ui.branch_rating_doubleSpinBox.value()
 
-                for i, branch in enumerate(self.circuit.branches):
+                for i, branch in enumerate(branches):
 
                     S = self.power_flow.results.Sbranch[i]
 
@@ -1534,17 +1536,16 @@ class MainGUI(QMainWindow):
         """
         Detect which branches are transformers
         """
-        if len(self.circuit.branches) > 0:
+        if len(self.circuit.lines) > 0:
 
-            for branch in self.circuit.branches:
+            for branch in self.circuit.lines:
 
                 v1 = branch.bus_from.Vnom
                 v2 = branch.bus_to.Vnom
 
                 if abs(v1 - v2) > 1.0:
-
-                    branch.branch_type = BranchType.Transformer
-
+                    self.circuit.transformers2w.append(branch)
+                    self.circuit.lines.remove(branch)
                 else:
 
                     pass  # is a line
@@ -3293,7 +3294,7 @@ class MainGUI(QMainWindow):
                 if self.time_series is not None:
 
                     # get the numerical object of the circuit
-                    numeric_circuit = self.circuit.compile_time_series()
+                    numeric_circuit = compile_time_circuit(self.circuit)
 
                     # perform a time series analysis
                     ts_analysis = TimeSeriesResultsAnalysis(numeric_circuit, self.time_series.results)

@@ -76,6 +76,8 @@ class TimeCircuit:
 
         self.bus_active = np.ones((ntime, nbus), dtype=int)
         self.Vbus = np.ones((ntime, nbus), dtype=complex)
+        self.Vmin = np.ones(nbus)
+        self.Vmax = np.ones(nbus)
 
         # branch common ------------------------------------------------------------------------------------------------
         self.nbr = nline + ntr + nhvdc + nvsc  # compute the number of branches
@@ -1103,6 +1105,9 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.bus_names[i] = bus.name
         nc.bus_active[:, i] = bus.active_prof
         nc.bus_types[i] = bus.determine_bus_type().value
+
+        nc.Vmin[i] = bus.Vmin
+        nc.Vmax[i] = bus.Vmax
 
         # Add buses dictionary entry
         bus_dictionary[bus] = i

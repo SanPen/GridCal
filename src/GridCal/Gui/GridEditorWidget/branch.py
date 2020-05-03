@@ -720,7 +720,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         ts = self.diagramScene.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().time_series
 
         # get the index of this object
-        i = self.diagramScene.circuit.branches.index(self.api_object)
+        i = self.diagramScene.circuit.get_branches().index(self.api_object)
 
         # plot the profiles
         self.api_object.plot_profiles(time_series=ts, my_index=i)
