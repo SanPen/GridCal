@@ -1458,51 +1458,11 @@ class MainGUI(QMainWindow):
             self.msg('The schematic drawing is disabled')
 
     def post_create_schematic(self):
+        """
 
+        :return:
+        """
         self.UNLOCK()
-
-    def update_map(self):
-        """
-        Update map
-        :return:
-        """
-        lat0 = self.ui.lat1_doubleSpinBox.value()
-        lon0 = self.ui.lon1_doubleSpinBox.value()
-        zoom = self.ui.zoom_spinBox.value()
-        self.grid_editor.diagramView.map.load_map(lat0, lon0, zoom)
-        self.grid_editor.diagramView.adapt_map_size()
-
-    def search_location(self):
-        """
-        Find the latitude and longitude of a lauwsy-defined location
-        :return:
-        """
-        geolocator = Nominatim()
-        location_text = self.ui.location_lineEdit.text()
-
-        if location_text.strip() != '':
-            try:
-                location = geolocator.geocode(location_text)
-                self.ui.lon1_doubleSpinBox.setValue(float(location.longitude))
-                self.ui.lat1_doubleSpinBox.setValue(float(location.latitude))
-            except:
-                self.msg('Location finding failed. \nCheck your connection.', 'Location finding')
-
-    def search_location(self):
-        """
-        Find the latitude and longitude of a lauwsy-defined location
-        :return:
-        """
-        geolocator = Nominatim()
-        location_text = self.ui.location_lineEdit.text()
-
-        if location_text.strip() != '':
-            try:
-                location = geolocator.geocode(location_text)
-                self.ui.lon1_doubleSpinBox.setValue(float(location.longitude))
-                self.ui.lat1_doubleSpinBox.setValue(float(location.latitude))
-            except:
-                self.msg('Location finding failed. \nCheck your connection.', 'Location finding')
 
     def auto_rate_branches(self):
         """

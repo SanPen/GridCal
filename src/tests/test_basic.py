@@ -1,10 +1,9 @@
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices.branch import Branch
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.static_generator import StaticGenerator
-from GridCal.Engine.Devices.transformer import TransformerType
+from GridCal.Engine.Devices.transformer import TransformerType, Transformer2W
 from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import \
     PowerFlowOptions, ReactivePowerControlMode, SolverType
@@ -98,26 +97,24 @@ def test_basic():
     grid.add_transformer_type(PM)
 
     # Create branches
-    X_C3 = Branch(bus_from=POI,
-                  bus_to=B_C3,
-                  name="X_C3",
-                  branch_type=BranchType.Transformer,
-                  template=SS)
-    grid.add_branch(X_C3)
+    X_C3 = Transformer2W(bus_from=POI,
+                         bus_to=B_C3,
+                         name="X_C3",
+                         template=SS)
+    grid.add_transformer2w(X_C3)
 
-    C_M32 = Branch(bus_from=B_C3,
-                   bus_to=B_MV_M32,
-                   name="C_M32",
-                   r=0.784,
-                   x=0.174)
-    grid.add_branch(C_M32)
+    C_M32 = Transformer2W(bus_from=B_C3,
+                          bus_to=B_MV_M32,
+                          name="C_M32",
+                          r=0.784,
+                          x=0.174)
+    grid.add_transformer2w(C_M32)
 
-    X_M32 = Branch(bus_from=B_MV_M32,
-                   bus_to=B_LV_M32,
-                   name="X_M32",
-                   branch_type=BranchType.Transformer,
-                   template=PM)
-    grid.add_branch(X_M32)
+    X_M32 = Transformer2W(bus_from=B_MV_M32,
+                          bus_to=B_LV_M32,
+                          name="X_M32",
+                          template=PM)
+    grid.add_transformer2w(X_M32)
 
     # Apply templates (device types)
     grid.apply_all_branch_types()
@@ -153,7 +150,8 @@ def test_basic():
     print()
 
     print("Branches:")
-    for b in grid.branches:
+    branches = grid.get_branches()
+    for b in branches:
         print(f" - {b}:")
         print(f"   R = {round(b.R, 4)} pu")
         print(f"   X = {round(b.X, 4)} pu")
@@ -168,8 +166,8 @@ def test_basic():
     print()
 
     print("Losses:")
-    for i in range(len(grid.branches)):
-        print(f" - {grid.branches[i]}: losses={1000*round(power_flow.results.losses[i], 3)} kVA")
+    for i in range(len(branches)):
+        print(f" - {branches[i]}: losses={1000*round(power_flow.results.losses[i], 3)} kVA")
     print()
 
     equal = True
@@ -250,26 +248,24 @@ def test_gridcal_basic_pi():
     grid.add_transformer_type(PM)
 
     # Create branches
-    X_C3 = Branch(bus_from=POI,
-                  bus_to=B_C3,
-                  name="X_C3",
-                  branch_type=BranchType.Transformer,
-                  template=SS)
-    grid.add_branch(X_C3)
+    X_C3 = Transformer2W(bus_from=POI,
+                         bus_to=B_C3,
+                         name="X_C3",
+                         template=SS)
+    grid.add_transformer2w(X_C3)
 
-    C_M32 = Branch(bus_from=B_C3,
-                   bus_to=B_MV_M32,
-                   name="C_M32",
-                   r=0.784,
-                   x=0.174)
-    grid.add_branch(C_M32)
+    C_M32 = Transformer2W(bus_from=B_C3,
+                          bus_to=B_MV_M32,
+                          name="C_M32",
+                          r=0.784,
+                          x=0.174)
+    grid.add_transformer2w(C_M32)
 
-    X_M32 = Branch(bus_from=B_MV_M32,
-                   bus_to=B_LV_M32,
-                   name="X_M32",
-                   branch_type=BranchType.Transformer,
-                   template=PM)
-    grid.add_branch(X_M32)
+    X_M32 = Transformer2W(bus_from=B_MV_M32,
+                          bus_to=B_LV_M32,
+                          name="X_M32",
+                          template=PM)
+    grid.add_transformer2w(X_M32)
 
     # Apply templates (device types)
     grid.apply_all_branch_types()
@@ -306,7 +302,8 @@ def test_gridcal_basic_pi():
     print()
 
     print("Branches:")
-    for b in grid.branches:
+    branches = grid.get_branches()
+    for b in branches:
         print(f" - {b}:")
         print(f"   R = {round(b.R, 4)} pu")
         print(f"   X = {round(b.X, 4)} pu")
@@ -321,8 +318,8 @@ def test_gridcal_basic_pi():
     print()
 
     print("Losses:")
-    for i in range(len(grid.branches)):
-        print(f" - {grid.branches[i]}: losses={1000*round(power_flow.results.losses[i], 3)} kVA")
+    for i in range(len(branches)):
+        print(f" - {branches[i]}: losses={1000*round(power_flow.results.losses[i], 3)} kVA")
     print()
 
     equal = True

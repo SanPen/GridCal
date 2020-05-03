@@ -270,7 +270,6 @@ class MonteCarlo(QThread):
         numerical_circuit = compile_time_circuit(circuit=self.circuit,
                                                  apply_temperature=False,
                                                  branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                                 impedance_tolerance=0.0,
                                                  opf_results=self.opf_time_series_results)
 
         # do the topological computation
@@ -330,7 +329,6 @@ class MonteCarlo(QThread):
                                            Vbus=Vbus,
                                            Sbus=S,
                                            Ibus=I,
-                                           Ysh=Y,
                                            branch_rates=numerical_island.branch_rates[0, :],
                                            options=self.options,
                                            logger=self.logger)

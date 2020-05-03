@@ -188,8 +188,7 @@ if __name__ == '__main__':
 
     numerical_circuit_ = compile_snapshot_opf_circuit(circuit=main_circuit,
                                                       apply_temperature=False,
-                                                      branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                                      impedance_tolerance=0.0)
+                                                      branch_tolerance_mode=BranchImpedanceMode.Specified)
 
     problem = OpfSimple(numerical_circuit=numerical_circuit_)
 

@@ -191,7 +191,6 @@ def power_flow_worker(variation: int, nbus, nbr, n_tr, bus_names, branch_names, 
                                    Vbus=calculation_input.Vbus,
                                    Sbus=calculation_input.Sbus - dP[calculation_input.original_bus_idx],
                                    Ibus=calculation_input.Ibus,
-                                   Ysh=calculation_input.Yshunt_from_devices,
                                    branch_rates=calculation_input.branch_rates,
                                    options=options,
                                    logger=Logger())

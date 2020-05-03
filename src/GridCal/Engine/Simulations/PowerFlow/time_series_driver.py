@@ -615,7 +615,6 @@ class TimeSeries(QThread):
         numerical_circuit = compile_time_circuit(circuit=self.grid,
                                                  apply_temperature=False,
                                                  branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                                 impedance_tolerance=0.0,
                                                  opf_results=self.opf_time_series_results)
 
         # do the topological computation
@@ -702,7 +701,6 @@ class TimeSeries(QThread):
                                        Vbus=V,
                                        Sbus=S,
                                        Ibus=I,
-                                       Ysh=Ysh,
                                        branch_rates=branch_rates,
                                        options=self.options,
                                        logger=self.logger)
@@ -1091,9 +1089,13 @@ class SampledTimeSeries(QThread):
                             pass
 
                         # run power flow at the circuit
-                        res = single_island_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I,
+                        res = single_island_pf(circuit=calculation_input,
+                                               Vbus=last_voltage,
+                                               Sbus=S,
+                                               Ibus=I,
                                                branch_rates=branch_rates,
-                                               options=self.options, logger=self.logger)
+                                               options=self.options,
+                                               logger=self.logger)
 
                         # Recycle voltage solution
                         # last_voltage = res.voltage

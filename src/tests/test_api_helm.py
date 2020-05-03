@@ -25,7 +25,7 @@ def test_api_helm():
     np.set_printoptions(precision=4)
     fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
     grid = FileOpen(fname).open()
-    grid.compile_snapshot()
+
     print('\n\n', grid.name)
 
     # print('Ybus:\n', grid.circuits[0].power_flow_input.Ybus.todense())

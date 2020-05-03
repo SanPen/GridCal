@@ -29,9 +29,8 @@ from GridCal.Engine.Core.common_functions import compile_types, find_different_s
 
 class OpfTimeCircuit:
 
-    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, ntime, sbase, time_array,
-                 apply_temperature=False, impedance_tolerance=0.0,
-                 branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
+    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, ntime, sbase, time_array,
+                 apply_temperature=False, branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
         """
 
         :param nbus: number of buses
@@ -54,13 +53,13 @@ class OpfTimeCircuit:
         self.ngen = ngen
         self.nbatt = nbatt
         self.nshunt = nshunt
+        self.nstagen = nstagen
         self.ntime = ntime
 
         self.Sbase = sbase
 
         self.apply_temperature = apply_temperature
         self.branch_tolerance_mode = branch_tolerance_mode
-        self.impedance_tolerance = impedance_tolerance
 
         self.time_array = time_array
 
@@ -140,6 +139,13 @@ class OpfTimeCircuit:
 
         self.C_bus_load = sp.lil_matrix((nbus, nload), dtype=int)
 
+        # static generators --------------------------------------------------------------------------------------------
+        self.static_generator_names = np.empty((nstagen, nload), dtype=object)
+        self.static_generator_active = np.zeros((nstagen, nload), dtype=bool)
+        self.static_generator_s = np.zeros((nstagen, nload), dtype=complex)
+
+        self.C_bus_static_generator = sp.lil_matrix((nbus, nstagen), dtype=int)
+
         # battery ------------------------------------------------------------------------------------------------------
         self.battery_names = np.empty(nbatt, dtype=object)
         self.battery_controllable = np.zeros(nbatt, dtype=bool)
@@ -205,6 +211,7 @@ class OpfTimeCircuit:
         self.C_bus_batt = self.C_bus_batt.tocsr()
         self.C_bus_gen = self.C_bus_gen.tocsr()
         self.C_bus_shunt = self.C_bus_shunt.tocsr()
+        self.C_bus_static_generator = self.C_bus_static_generator.tocsr()
 
         self.bus_installed_power = self.C_bus_gen * self.generator_installed_p
         self.bus_installed_power += self.C_bus_batt * self.battery_installed_p
@@ -214,7 +221,12 @@ class OpfTimeCircuit:
         Compute the power
         :return: Array of power injections
         """
+
+        # load
         Sbus = - self.C_bus_load * (self.load_s * self.load_active).T  # MW
+
+        # static generators
+        Sbus += self.C_bus_static_generator * (self.static_generator_s * self.static_generator_active)  # MW
 
         # generators
         Sbus += self.C_bus_gen * (self.generator_p * self.generator_active).T
@@ -245,6 +257,7 @@ class OpfTimeCircuit:
                                ngen=self.ngen,
                                nbatt=self.nbatt,
                                nshunt=self.nshunt,
+                               nstagen=self.nstagen,
                                ntime=self.ntime,
                                sbase=self.Sbase,
                                time_array=self.time_array,
@@ -334,6 +347,13 @@ class OpfTimeCircuit:
 
         island.C_bus_load = self.C_bus_load
 
+        # static generators --------------------------------------------------------------------------------------------
+        island.static_generator_names = self.static_generator_names
+        island.static_generator_active = self.static_generator_active
+        island.static_generator_s = self.static_generator_s
+
+        island.C_bus_static_generator = self.C_bus_static_generator
+
         # battery ------------------------------------------------------------------------------------------------------
         island.battery_names = self.battery_names
         island.battery_active = self.battery_active
@@ -397,6 +417,7 @@ class OpfTimeCircuit:
         br_idx = tp.get_elements_of_the_island(self.C_branch_bus_f + self.C_branch_bus_t, bus_idx)
 
         load_idx = tp.get_elements_of_the_island(self.C_bus_load.T, bus_idx)
+        stagen_idx = tp.get_elements_of_the_island(self.C_bus_static_generator.T, bus_idx)
         gen_idx = tp.get_elements_of_the_island(self.C_bus_gen.T, bus_idx)
         batt_idx = tp.get_elements_of_the_island(self.C_bus_batt.T, bus_idx)
         shunt_idx = tp.get_elements_of_the_island(self.C_bus_shunt.T, bus_idx)
@@ -410,6 +431,7 @@ class OpfTimeCircuit:
                            ngen=len(gen_idx),
                            nbatt=len(batt_idx),
                            nshunt=len(shunt_idx),
+                           nstagen=len(stagen_idx),
                            ntime=len(time_idx),
                            sbase=self.Sbase,
                            time_array=self.time_array[time_idx],
@@ -498,6 +520,13 @@ class OpfTimeCircuit:
 
         nc.C_bus_load = self.C_bus_load[np.ix_(bus_idx, load_idx)]
 
+        # static generators --------------------------------------------------------------------------------------------
+        nc.static_generator_names = self.static_generator_names[stagen_idx]
+        nc.static_generator_active = self.static_generator_active[np.ix_(time_idx, stagen_idx)]
+        nc.static_generator_s = self.static_generator_s[np.ix_(time_idx, stagen_idx)]
+
+        nc.C_bus_static_generator = self.C_bus_static_generator[np.ix_(bus_idx, stagen_idx)]
+
         # battery ------------------------------------------------------------------------------------------------------
         nc.battery_names = self.battery_names[batt_idx]
         nc.battery_controllable = self.battery_controllable[batt_idx]
@@ -551,9 +580,8 @@ class OpfTimeCircuit:
 
 class OpfTimeIsland(OpfTimeCircuit):
 
-    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, ntime, sbase, time_array,
-                 apply_temperature=False, impedance_tolerance=0.0,
-                 branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
+    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, ntime, sbase, time_array,
+                 apply_temperature=False, branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
         """
 
         :param nbus:
@@ -571,9 +599,9 @@ class OpfTimeIsland(OpfTimeCircuit):
         :param branch_tolerance_mode:
         """
         OpfTimeCircuit.__init__(self, nbus=nbus, nline=nline, ntr=ntr, nvsc=nvsc, nhvdc=nhvdc,
-                                nload=nload, ngen=ngen, nbatt=nbatt, nshunt=nshunt, ntime=ntime, sbase=sbase,
+                                nload=nload, ngen=ngen, nbatt=nbatt, nshunt=nshunt, nstagen=nstagen, ntime=ntime, sbase=sbase,
                                 time_array=time_array, apply_temperature=apply_temperature,
-                                branch_tolerance_mode=branch_tolerance_mode, impedance_tolerance=impedance_tolerance)
+                                branch_tolerance_mode=branch_tolerance_mode)
 
         self.Sbus = np.zeros((self.nbus, ntime), dtype=complex)
         self.Ibus = np.zeros((self.nbus, ntime), dtype=complex)
@@ -659,9 +687,9 @@ class OpfTimeIsland(OpfTimeCircuit):
 
         # modify the branches impedance with the lower, upper tolerance values
         if self.branch_tolerance_mode == BranchImpedanceMode.Lower:
-            line_R *= (1 - self.impedance_tolerance / 100.0)
+            line_R *= (1 - self.line_impedance_tolerance / 100.0)
         elif self.branch_tolerance_mode == BranchImpedanceMode.Upper:
-            line_R *= (1 + self.impedance_tolerance / 100.0)
+            line_R *= (1 + self.line_impedance_tolerance / 100.0)
 
         Ys_line = 1.0 / (line_R + 1.0j * self.line_X)
         Ysh_line = 1.0j * self.line_B
@@ -761,7 +789,11 @@ class OpfTimeIsland(OpfTimeCircuit):
         Compute the power
         :return: nothing, the results are stored in the class
         """
+        # load
         self.Sbus = - self.C_bus_load * (self.load_s * self.load_active).T  # MW
+
+        # static generators
+        self.Sbus += self.C_bus_static_generator * (self.static_generator_s * self.static_generator_active).T  # MW
 
         # generators
         self.Sbus += self.C_bus_gen * (self.get_generator_injections() * self.generator_active).T
@@ -948,8 +980,7 @@ def split_opf_time_circuit_into_islands(numeric_circuit: OpfTimeCircuit,
 
 
 def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
-                             branch_tolerance_mode=BranchImpedanceMode.Specified,
-                             impedance_tolerance=0.0) -> OpfTimeCircuit:
+                             branch_tolerance_mode=BranchImpedanceMode.Specified) -> OpfTimeCircuit:
     """
     Compile the information of a circuit and generate the pertinent power flow islands
     :param circuit: Circuit instance
@@ -995,7 +1026,6 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                         sbase=circuit.Sbase,
                         time_array=circuit.time_profile,
                         apply_temperature=apply_temperature,
-                        impedance_tolerance=impedance_tolerance,
                         branch_tolerance_mode=branch_tolerance_mode)
 
     # buses and it's connected elements (loads, generators, etc...)

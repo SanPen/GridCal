@@ -24,8 +24,12 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.line import Line
 from GridCal.Engine.Devices.transformer import Transformer2W
-from GridCal.Gui.GridEditorWidget.bus import TerminalItem, BusGraphicItem
-from GridCal.Gui.GridEditorWidget.branch import BranchGraphicItem, BranchType
+from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
+from GridCal.Gui.GridEditorWidget.bus import BusGraphicItem
+from GridCal.Gui.GridEditorWidget.line import LineGraphicItem
+from GridCal.Gui.GridEditorWidget.transformer2w import TransformerGraphicItem
+from GridCal.Gui.GridEditorWidget.hvdc import HvdcGraphicItem
+from GridCal.Gui.GridEditorWidget.vsc import VscGraphicItem
 
 
 '''
@@ -204,7 +208,7 @@ class DiagramScene(QGraphicsScene):
         @param mouseEvent:
         @return:
         """
-        self.parent_.sceneMouseMoveEvent(mouseEvent)
+        self.parent_.scene_mouse_move_event(mouseEvent)
         super(DiagramScene, self).mouseMoveEvent(mouseEvent)
 
     def mouseReleaseEvent(self, mouseEvent):
@@ -213,7 +217,7 @@ class DiagramScene(QGraphicsScene):
         @param mouseEvent:
         @return:
         """
-        self.parent_.sceneMouseReleaseEvent(mouseEvent)
+        self.parent_.scene_mouse_release_event(mouseEvent)
 
         # call mouseReleaseEvent on "me" (continue with the rest of the actions)
         super(DiagramScene, self).mouseReleaseEvent(mouseEvent)
@@ -332,20 +336,18 @@ class GridEditor(QSplitter):
         self.setStretchFactor(0, 0.1)
         self.setStretchFactor(1, 2000)
 
-    def startConnection(self, port: TerminalItem):
+    def start_connection(self, port: TerminalItem):
         """
         Start the branch creation
         @param port:
         @return:
         """
-        self.started_branch = BranchGraphicItem(port, None, self.diagramScene)
+        self.started_branch = LineGraphicItem(fromPort=port, toPort=None, diagramScene=self.diagramScene)
         self.started_branch.bus_from = port.parent
         port.setZValue(0)
-        # if self.diagramView.map.isVisible():
-        #     self.diagramView.map.setZValue(-1)
         port.process_callbacks(port.parent.pos() + port.pos())
 
-    def sceneMouseMoveEvent(self, event):
+    def scene_mouse_move_event(self, event):
         """
 
         @param event:
@@ -355,7 +357,7 @@ class GridEditor(QSplitter):
             pos = event.scenePos()
             self.started_branch.setEndPos(pos)
 
-    def sceneMouseReleaseEvent(self, event):
+    def scene_mouse_release_event(self, event):
         """
         Finalize the branch creation if its drawing ends in a terminal
         @param event:
@@ -372,7 +374,6 @@ class GridEditor(QSplitter):
 
                         self.started_branch.setToPort(item)
                         item.hosting_connections.append(self.started_branch)
-                        # self.started_branch.setZValue(-1)
                         self.started_branch.bus_to = item.parent
 
                         v1 = self.started_branch.bus_from.api_object.Vnom
@@ -384,20 +385,34 @@ class GridEditor(QSplitter):
                                                 bus_to=self.started_branch.bus_to.api_object,
                                                 name=name)
 
+                            obj.graphic_obj = TransformerGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                     toPort=self.started_branch.toPort,
+                                                                     diagramScene=self.diagramScene,
+                                                                     branch=obj)
+
                         else:
                             name = 'Line ' + str(len(self.circuit.lines) + 1)
                             obj = Line(bus_from=self.started_branch.bus_from.api_object,
                                        bus_to=self.started_branch.bus_to.api_object,
                                        name=name)
 
-                        obj.graphic_obj = self.started_branch
-                        self.started_branch.api_object = obj
-                        self.circuit.add_branch(obj)
-                        item.process_callbacks(item.parent.pos() + item.pos())
-                        self.started_branch.setZValue(-1)
+                            obj.graphic_obj = LineGraphicItem(fromPort=self.started_branch.fromPort,
+                                                              toPort=self.started_branch.toPort,
+                                                              diagramScene=self.diagramScene,
+                                                              branch=obj)
 
-            if self.started_branch.toPort is None:
-                self.started_branch.remove_widget()
+                        # add the new object to the circuit
+                        self.circuit.add_branch(obj)
+
+                        # update the connection placement
+                        obj.graphic_obj.fromPort.update()
+                        obj.graphic_obj.toPort.update()
+
+                        # set the connection placement
+                        obj.graphic_obj.setZValue(-1)
+
+            # if self.started_branch.toPort is None:
+            self.started_branch.remove_widget()
 
         # release this pointer
         self.started_branch = None
@@ -587,14 +602,28 @@ class GridEditor(QSplitter):
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
 
-    def add_branch(self, branch):
+    def add_line(self, branch):
         """
         Add branch to the schematic
         :param branch: Branch object
         """
         terminal_from = branch.bus_from.graphic_obj.terminal
         terminal_to = branch.bus_to.graphic_obj.terminal
-        graphic_obj = BranchGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+        graphic_obj = LineGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        terminal_from.hosting_connections.append(graphic_obj)
+        terminal_to.hosting_connections.append(graphic_obj)
+        graphic_obj.redraw()
+        branch.graphic_obj = graphic_obj
+
+    def add_transformer(self, branch):
+        """
+        Add branch to the schematic
+        :param branch: Branch object
+        """
+        terminal_from = branch.bus_from.graphic_obj.terminal
+        terminal_to = branch.bus_to.graphic_obj.terminal
+        graphic_obj = TransformerGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
         graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)
         terminal_to.hosting_connections.append(graphic_obj)
@@ -621,7 +650,7 @@ class GridEditor(QSplitter):
 
         return graphic_obj
 
-    def add_api_branch(self, branch):
+    def add_api_line(self, branch):
         """
         add API branch to the Scene
         :param branch: Branch instance
@@ -629,29 +658,133 @@ class GridEditor(QSplitter):
         terminal_from = branch.bus_from.graphic_obj.terminal
         terminal_to = branch.bus_to.graphic_obj.terminal
 
-        graphic_obj = BranchGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+        graphic_obj = LineGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
 
         graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-
         terminal_from.hosting_connections.append(graphic_obj)
         terminal_to.hosting_connections.append(graphic_obj)
-
         graphic_obj.redraw()
 
         return graphic_obj
 
-    def add_circuit_to_schematic(self, circuit: "MultiCircuit", explode_factor=1.0):
+    def add_api_hvdc(self, branch):
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        """
+        terminal_from = branch.bus_from.graphic_obj.terminal
+        terminal_to = branch.bus_to.graphic_obj.terminal
+
+        graphic_obj = HvdcGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+
+        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        terminal_from.hosting_connections.append(graphic_obj)
+        terminal_to.hosting_connections.append(graphic_obj)
+        graphic_obj.redraw()
+
+        return graphic_obj
+
+    def add_api_vsc(self, branch):
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        """
+        terminal_from = branch.bus_from.graphic_obj.terminal
+        terminal_to = branch.bus_to.graphic_obj.terminal
+
+        graphic_obj = VscGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+
+        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        terminal_from.hosting_connections.append(graphic_obj)
+        terminal_to.hosting_connections.append(graphic_obj)
+        graphic_obj.redraw()
+
+        return graphic_obj
+
+    def add_api_transformer(self, branch):
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        """
+        terminal_from = branch.bus_from.graphic_obj.terminal
+        terminal_to = branch.bus_to.graphic_obj.terminal
+
+        graphic_obj = TransformerGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+
+        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        terminal_from.hosting_connections.append(graphic_obj)
+        terminal_to.hosting_connections.append(graphic_obj)
+        graphic_obj.redraw()
+
+        return graphic_obj
+
+    def add_circuit_to_schematic(self, circuit: "MultiCircuit", explode_factor=1.0, prog_func=None, text_func=None):
         """
         Add a complete circuit to the schematic scene
         :param circuit: MultiCircuit instance
         :param explode_factor: factor of "explosion": Separation of the nodes factor
+        :param prog_func: progress report function
+        :param text_func: Text report function
         """
         # first create the buses
-        for bus in circuit.buses:
+        if text_func is not None:
+            text_func('Creating schematic buses')
+
+        nn = len(circuit.buses)
+        for i, bus in enumerate(circuit.buses):
+
+            if prog_func is not None:
+                prog_func((i+1) / nn * 100.0)
+
             bus.graphic_obj = self.add_api_bus(bus, explode_factor)
 
-        for branch in circuit.get_branches():
-            branch.graphic_obj = self.add_api_branch(branch)
+        # --------------------------------------------------------------------------------------------------------------
+        if text_func is not None:
+            text_func('Creating schematic line devices')
+
+        nn = len(circuit.lines)
+        for i, branch in enumerate(circuit.lines):
+
+            if prog_func is not None:
+                prog_func((i+1) / nn * 100.0)
+
+            branch.graphic_obj = self.add_api_line(branch)
+
+        # --------------------------------------------------------------------------------------------------------------
+        if text_func is not None:
+            text_func('Creating schematic transformer devices')
+
+        nn = len(circuit.transformers2w)
+        for i, branch in enumerate(circuit.transformers2w):
+
+            if prog_func is not None:
+                prog_func((i + 1) / nn * 100.0)
+
+            branch.graphic_obj = self.add_api_transformer(branch)
+
+        # --------------------------------------------------------------------------------------------------------------
+        if text_func is not None:
+            text_func('Creating schematic HVDC devices')
+
+        nn = len(circuit.hvdc_lines)
+        for i, branch in enumerate(circuit.hvdc_lines):
+
+            if prog_func is not None:
+                prog_func((i + 1) / nn * 100.0)
+
+            branch.graphic_obj = self.add_api_hvdc(branch)
+
+        # --------------------------------------------------------------------------------------------------------------
+        if text_func is not None:
+            text_func('Creating schematic VSC devices')
+
+        nn = len(circuit.vsc_converters)
+        for i, branch in enumerate(circuit.vsc_converters):
+
+            if prog_func is not None:
+                prog_func((i + 1) / nn * 100.0)
+
+            branch.graphic_obj = self.add_api_vsc(branch)
 
     def align_schematic(self):
         """
@@ -682,17 +815,25 @@ class GridEditor(QSplitter):
         #  center the view
         self.center_nodes()
 
-    def schematic_from_api(self, explode_factor=1.0):
+    def schematic_from_api(self, explode_factor=1.0, prog_func=None, text_func=None):
         """
         Generate schematic from the API
         :param explode_factor: factor to separate the nodes
+        :param prog_func: progress report function
+        :param text_func: Text report function
         :return: Nothing
         """
         # clear all
         self.diagramView.scene_.clear()
 
         # add to schematic
-        self.add_circuit_to_schematic(self.circuit, explode_factor=explode_factor)
+        self.add_circuit_to_schematic(self.circuit,
+                                      explode_factor=explode_factor,
+                                      prog_func=prog_func,
+                                      text_func=text_func)
+
+        if text_func is not None:
+            text_func('Aligning schematic...')
 
         self.align_schematic()
 

@@ -16,7 +16,7 @@ import os
 import json
 
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+
 from GridCal.Engine.IO.json_parser import save_json_file
 from GridCal.Engine.IO.cim_parser import CIMExport
 from GridCal.Engine.IO.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
@@ -31,7 +31,7 @@ from GridCal.Engine.IO.psse_parser import PSSeParser
 from GridCal.Engine.IO.cim_parser import CIMImport
 from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, open_data_frames_from_zip
 from GridCal.Engine.IO.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
-
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 from PySide2.QtCore import QThread, Signal
 

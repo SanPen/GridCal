@@ -6065,7 +6065,7 @@ points from time series</string>
      <normaloff>:/Icons/icons/automatic_layout.svg</normaloff>:/Icons/icons/automatic_layout.svg</iconset>
    </property>
    <property name="text">
-    <string>Autoatic layout</string>
+    <string>Automatic grid layout</string>
    </property>
    <property name="toolTip">
     <string>Automatic layout the of the grid</string>

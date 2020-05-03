@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Mon Apr 27 19:22:03 2020
+# Created: Sun May  3 11:55:51 2020
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -2765,7 +2765,7 @@ class Ui_mainWindow(object):
         self.actionCenter_view.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Center view", None, -1))
         self.actionCenter_view.setShortcut(QtWidgets.QApplication.translate("mainWindow", "F4", None, -1))
         self.actionShort_Circuit.setText(QtWidgets.QApplication.translate("mainWindow", "Short Circuit", None, -1))
-        self.actionAutoatic_layout.setText(QtWidgets.QApplication.translate("mainWindow", "Autoatic layout", None, -1))
+        self.actionAutoatic_layout.setText(QtWidgets.QApplication.translate("mainWindow", "Automatic grid layout", None, -1))
         self.actionAutoatic_layout.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Automatic layout the of the grid", None, -1))
         self.actionLatin_Hypercube_Sampling.setText(QtWidgets.QApplication.translate("mainWindow", "Stochastic power flow: Latin Hypercube", None, -1))
         self.actionLatin_Hypercube_Sampling.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Latin Hypercube stochastic power flow", None, -1))

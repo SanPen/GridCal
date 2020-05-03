@@ -113,8 +113,7 @@ class OptimalPowerFlow(QThread):
 
         numerical_circuit = compile_snapshot_opf_circuit(circuit=self.grid,
                                                          apply_temperature=self.pf_options.apply_temperature_correction,
-                                                         branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
-                                                         impedance_tolerance=0.0)
+                                                         branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
 
         if self.options.solver == SolverType.DC_OPF:
             # DC optimal power flow

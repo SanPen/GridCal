@@ -74,7 +74,10 @@ class OptimalPowerFlowTimeSeries(QThread):
 
         self.start_ = start_
 
-        self.end_ = end_
+        if end_ is not None:
+            self.end_ = end_
+        else:
+            self.end_ = len(self.grid.time_profile)
 
         self.logger = Logger()
 

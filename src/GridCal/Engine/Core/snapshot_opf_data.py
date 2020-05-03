@@ -27,9 +27,8 @@ from GridCal.Engine.Core.common_functions import compile_types
 
 class OpfSnapshotCircuit:
 
-    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, sbase,
-                 apply_temperature=False, impedance_tolerance=0.0,
-                 branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
+    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase,
+                 apply_temperature=False, branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
         """
 
         :param nbus: number of buses
@@ -52,12 +51,12 @@ class OpfSnapshotCircuit:
         self.ngen = ngen
         self.nbatt = nbatt
         self.nshunt = nshunt
+        self.nstagen = nstagen
 
         self.Sbase = sbase
 
         self.apply_temperature = apply_temperature
         self.branch_tolerance_mode = branch_tolerance_mode
-        self.impedance_tolerance = impedance_tolerance
 
         # bus ----------------------------------------------------------------------------------------------------------
         self.bus_names = np.empty(nbus, dtype=object)
@@ -135,6 +134,13 @@ class OpfSnapshotCircuit:
 
         self.C_bus_load = sp.lil_matrix((nbus, nload), dtype=int)
 
+        # static generators --------------------------------------------------------------------------------------------
+        self.static_generator_names = np.empty(nstagen, dtype=object)
+        self.static_generator_active = np.zeros(nstagen, dtype=bool)
+        self.static_generator_s = np.zeros(nstagen, dtype=complex)
+
+        self.C_bus_static_generator = sp.lil_matrix((nbus, nstagen), dtype=int)
+
         # battery ------------------------------------------------------------------------------------------------------
         self.battery_names = np.empty(nbatt, dtype=object)
         self.battery_active = np.zeros(nbatt, dtype=bool)
@@ -191,6 +197,7 @@ class OpfSnapshotCircuit:
         self.C_bus_batt = self.C_bus_batt.tocsr()
         self.C_bus_gen = self.C_bus_gen.tocsr()
         self.C_bus_shunt = self.C_bus_shunt.tocsr()
+        self.C_bus_static_generator = self.C_bus_static_generator.tocsr()
 
         self.bus_installed_power = self.C_bus_gen * self.generator_installed_p
         self.bus_installed_power += self.C_bus_batt * self.battery_installed_p
@@ -209,6 +216,7 @@ class OpfSnapshotCircuit:
                                    ngen=self.ngen,
                                    nbatt=self.nbatt,
                                    nshunt=self.nshunt,
+                                   nstagen=self.nstagen,
                                    sbase=self.Sbase,
                                    apply_temperature=self.apply_temperature,
                                    impedance_tolerance=self.impedance_tolerance,
@@ -294,6 +302,13 @@ class OpfSnapshotCircuit:
 
         island.C_bus_load = self.C_bus_load
 
+        # static generators --------------------------------------------------------------------------------------------
+        island.static_generator_names = self.static_generator_names
+        island.static_generator_active = self.static_generator_active
+        island.static_generator_s = self.static_generator_s
+
+        island.C_bus_static_generator = self.C_bus_static_generator
+
         # battery ------------------------------------------------------------------------------------------------------
         island.battery_names = self.battery_names
         island.battery_active = self.battery_active
@@ -347,6 +362,7 @@ class OpfSnapshotCircuit:
         br_idx = tp.get_elements_of_the_island(self.C_branch_bus_f + self.C_branch_bus_t, bus_idx)
 
         load_idx = tp.get_elements_of_the_island(self.C_bus_load.T, bus_idx)
+        stagen_idx = tp.get_elements_of_the_island(self.C_bus_static_generator.T, bus_idx)
         gen_idx = tp.get_elements_of_the_island(self.C_bus_gen.T, bus_idx)
         batt_idx = tp.get_elements_of_the_island(self.C_bus_batt.T, bus_idx)
         shunt_idx = tp.get_elements_of_the_island(self.C_bus_shunt.T, bus_idx)
@@ -360,6 +376,7 @@ class OpfSnapshotCircuit:
                                ngen=len(gen_idx),
                                nbatt=len(batt_idx),
                                nshunt=len(shunt_idx),
+                               nstagen=len(stagen_idx),
                                sbase=self.Sbase,
                                apply_temperature=self.apply_temperature,
                                impedance_tolerance=self.impedance_tolerance,
@@ -445,6 +462,13 @@ class OpfSnapshotCircuit:
 
         nc.C_bus_load = self.C_bus_load[np.ix_(bus_idx, load_idx)]
 
+        # static generators --------------------------------------------------------------------------------------------
+        nc.static_generator_names = self.static_generator_names[stagen_idx]
+        nc.static_generator_active = self.static_generator_active[stagen_idx]
+        nc.static_generator_s = self.static_generator_s[stagen_idx]
+
+        nc.C_bus_static_generator = self.C_bus_static_generator[np.ix_(bus_idx, stagen_idx)]
+
         # battery ------------------------------------------------------------------------------------------------------
         nc.battery_names = self.battery_names[batt_idx]
         nc.battery_active = self.battery_active[batt_idx]
@@ -485,9 +509,8 @@ class OpfSnapshotCircuit:
 
 class OpfSnapshotIsland(OpfSnapshotCircuit):
 
-    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, sbase,
-                 apply_temperature=False, impedance_tolerance=0.0,
-                 branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
+    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase,
+                 apply_temperature=False, branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
         """
 
         :param nbus:
@@ -505,9 +528,8 @@ class OpfSnapshotIsland(OpfSnapshotCircuit):
         :param branch_tolerance_mode:
         """
         OpfSnapshotCircuit.__init__(self, nbus=nbus, nline=nline, ntr=ntr, nvsc=nvsc, nhvdc=nhvdc,
-                                    nload=nload, ngen=ngen, nbatt=nbatt, nshunt=nshunt, sbase=sbase,
-                                    apply_temperature=apply_temperature, branch_tolerance_mode=branch_tolerance_mode,
-                                    impedance_tolerance=impedance_tolerance)
+                                    nload=nload, ngen=ngen, nbatt=nbatt, nshunt=nshunt, nstagen=nstagen, sbase=sbase,
+                                    apply_temperature=apply_temperature, branch_tolerance_mode=branch_tolerance_mode)
 
         self.Sbus = np.zeros(self.nbus, dtype=complex)
         self.Ibus = np.zeros(self.nbus, dtype=complex)
@@ -577,9 +599,9 @@ class OpfSnapshotIsland(OpfSnapshotCircuit):
 
         # modify the branches impedance with the lower, upper tolerance values
         if self.branch_tolerance_mode == BranchImpedanceMode.Lower:
-            line_R *= (1 - self.impedance_tolerance / 100.0)
+            line_R *= (1 - self.line_impedance_tolerance / 100.0)
         elif self.branch_tolerance_mode == BranchImpedanceMode.Upper:
-            line_R *= (1 + self.impedance_tolerance / 100.0)
+            line_R *= (1 + self.line_impedance_tolerance / 100.0)
 
         Ys_line = 1.0 / (line_R + 1.0j * self.line_X)
         Ysh_line = 1.0j * self.line_B
@@ -750,14 +772,12 @@ def split_into_opf_islands(numeric_circuit: OpfSnapshotCircuit, ignore_single_no
 
 
 def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
-                                 branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                 impedance_tolerance=0.0) -> OpfSnapshotCircuit:
+                                 branch_tolerance_mode=BranchImpedanceMode.Specified) -> OpfSnapshotCircuit:
     """
     Compile the information of a circuit and generate the pertinent power flow islands
     :param circuit: Circuit instance
     :param apply_temperature:
     :param branch_tolerance_mode:
-    :param impedance_tolerance:
     :return: list of NumericIslands
     """
 
@@ -771,11 +791,13 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
     ngen = 0
     n_batt = 0
     nshunt = 0
+    nstagen = 0
     for bus in circuit.buses:
         nload += len(bus.loads)
         ngen += len(bus.controlled_generators)
         n_batt += len(bus.batteries)
         nshunt += len(bus.shunts)
+        nstagen += len(bus.static_generators)
 
     nline = len(circuit.lines)
     ntr2w = len(circuit.transformers2w)
@@ -792,9 +814,9 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
                             ngen=ngen,
                             nbatt=n_batt,
                             nshunt=nshunt,
+                            nstagen=nstagen,
                             sbase=circuit.Sbase,
                             apply_temperature=apply_temperature,
-                            impedance_tolerance=impedance_tolerance,
                             branch_tolerance_mode=branch_tolerance_mode
                             )
 
@@ -803,6 +825,7 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
     i_gen = 0
     i_batt = 0
     i_sh = 0
+    i_stagen = 0
     for i, bus in enumerate(circuit.buses):
 
         # bus parameters
@@ -820,6 +843,13 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
             nc.load_cost[i_ld] = elm.Cost
             nc.C_bus_load[i, i_ld] = 1
             i_ld += 1
+
+        for elm in bus.static_generators:
+            nc.static_generator_names[i_stagen] = elm.name
+            nc.static_generator_active[i_stagen] = elm.active
+            nc.static_generator_s[i_stagen] = complex(elm.P, elm.Q)
+            nc.C_bus_static_generator[i, i_stagen] = 1
+            i_stagen += 1
 
         for elm in bus.controlled_generators:
             nc.generator_names[i_gen] = elm.name

@@ -1928,10 +1928,12 @@ class MultiCircuit:
         """
         logger = Logger()
         for branch in self.lines:
-            branch.apply_template(branch.template, self.Sbase, logger=logger)
+            if branch.template is not None:
+                branch.apply_template(branch.template, self.Sbase, logger=logger)
 
         for branch in self.transformers2w:
-            branch.apply_template(branch.template, self.Sbase, logger=logger)
+            if branch.template is not None:
+                branch.apply_template(branch.template, self.Sbase, logger=logger)
 
         return logger
 

@@ -230,7 +230,7 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, Ysh_helm, B1, B2, Bpqpv, B
 
 
 def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, solver_type: SolverType,
-                          voltage_solution, Sbus, Ibus, Ysh, branch_rates, logger) -> "PowerFlowResults":
+                          voltage_solution, Sbus, Ibus, branch_rates, logger) -> "PowerFlowResults":
     """
     Run a power flow simulation for a single circuit using the selected outer loop
     controls. This method shouldn't be called directly.
@@ -439,7 +439,7 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
                     stable, tap_module, \
                     tap_positions = control_taps_iterative(voltage=voltage_solution,
                                                            T=circuit.T,
-                                                           bus_to_regulated_idx=circuit.bus_to_regulated_idx,
+                                                           bus_to_regulated_idx=circuit.tr_bus_to_regulated_idx,
                                                            tap_position=tap_positions,
                                                            tap_module=tap_module,
                                                            min_tap=circuit.tr_min_tap,
@@ -1115,27 +1115,18 @@ def control_taps_direct(voltage, T, bus_to_regulated_idx, tap_position, tap_modu
     return stable, tap_module, tap_position
 
 
-def single_island_pf(circuit: SnapshotIsland, Vbus, Sbus, Ibus, Ysh, branch_rates,
+def single_island_pf(circuit: SnapshotIsland, Vbus, Sbus, Ibus, branch_rates,
                      options: PowerFlowOptions, logger: Logger) -> "PowerFlowResults":
     """
-    Run a power flow for a circuit. In most cases, the **run** method should be
-    used instead.
-
-    Arguments:
-
-        **circuit** (:ref:`CalculationInputs<calculation_inputs>`): CalculationInputs instance
-
-        **Vbus** (array): Initial voltage at each bus in complex per unit
-
-        **Sbus** (array): Power injection at each bus in complex MVA
-
-        **Ibus** (array): Current injection at each bus in complex MVA
-
-        **t** (optional) time step index
-
-    Returns:
-
-        :ref:`PowerFlowResults<power_flow_results>` instance
+    Run a power flow for a circuit. In most cases, the **run** method should be used instead.
+    :param circuit: SnapshotIsland instance
+    :param Vbus: Initial voltage at each bus in complex per unit
+    :param Sbus: Power injection at each bus in complex MVA
+    :param Ibus: Current injection at each bus in complex MVA
+    :param branch_rates: array of branch rates
+    :param options: PowerFlowOptions instance
+    :param logger: Logger instance
+    :return: PowerFlowResults instance
     """
 
     # Retry with another solver
@@ -1170,7 +1161,6 @@ def single_island_pf(circuit: SnapshotIsland, Vbus, Sbus, Ibus, Ysh, branch_rate
                                         voltage_solution=V0,
                                         Sbus=Sbus,
                                         Ibus=Ibus,
-                                        Ysh=Ysh,
                                         branch_rates=branch_rates,
                                         logger=logger)
 
@@ -1200,7 +1190,6 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     numerical_circuit = compile_snapshot_circuit(circuit=multi_circuit,
                                                  apply_temperature=options.apply_temperature_correction,
                                                  branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-                                                 impedance_tolerance=0.0,
                                                  opf_results=opf_results)
 
     calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,
@@ -1228,7 +1217,6 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                        Vbus=calculation_input.Vbus,
                                        Sbus=calculation_input.Sbus,
                                        Ibus=calculation_input.Ibus,
-                                       Ysh=calculation_input.Yshunt_from_devices,
                                        branch_rates=calculation_input.branch_rates,
                                        options=options,
                                        logger=logger)
@@ -1251,7 +1239,6 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                    Vbus=calculation_inputs[0].Vbus,
                                    Sbus=calculation_inputs[0].Sbus,
                                    Ibus=calculation_inputs[0].Ibus,
-                                   Ysh=calculation_inputs[0].Yshunt_from_devices,
                                    branch_rates=calculation_inputs[0].branch_rates,
                                    options=options,
                                    logger=logger)
@@ -1286,7 +1273,12 @@ def power_flow_worker_args(args):
     """
     t, options, circuit, Vbus, Sbus, Ibus, branch_rates = args
 
-    res = single_island_pf(circuit=circuit, Vbus=Vbus, Sbus=Sbus,
-                           Ibus=Ibus, branch_rates=branch_rates, options=options, logger=Logger())
+    res = single_island_pf(circuit=circuit,
+                           Vbus=Vbus,
+                           Sbus=Sbus,
+                           Ibus=Ibus,
+                           branch_rates=branch_rates,
+                           options=options,
+                           logger=Logger())
 
     return t, res

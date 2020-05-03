@@ -34,9 +34,8 @@ sparse_type = get_sparse_type()
 
 class TimeCircuit:
 
-    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, ntime, sbase, time_array,
-                 apply_temperature=False, impedance_tolerance=0.0,
-                 branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
+    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, ntime, sbase, time_array,
+                 apply_temperature=False, branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
         """
 
         :param nbus: number of buses
@@ -59,13 +58,13 @@ class TimeCircuit:
         self.ngen = ngen
         self.nbatt = nbatt
         self.nshunt = nshunt
+        self.nstagen = nstagen
         self.ntime = ntime
 
         self.Sbase = sbase
 
         self.apply_temperature = apply_temperature
         self.branch_tolerance_mode = branch_tolerance_mode
-        self.impedance_tolerance = impedance_tolerance
 
         self.time_array = time_array
 
@@ -114,6 +113,7 @@ class TimeCircuit:
         self.tr_tap_mod = np.ones(ntr)  # normal tap module
         self.tr_tap_ang = np.zeros(ntr)  # normal tap angle
         self.tr_is_bus_to_regulated = np.zeros(ntr, dtype=bool)
+        self.tr_bus_to_regulated_idx = np.zeros(ntr, dtype=int)
         self.tr_tap_position = np.zeros(ntr, dtype=int)
         self.tr_min_tap = np.zeros(ntr, dtype=int)
         self.tr_max_tap = np.zeros(ntr, dtype=int)
@@ -158,6 +158,13 @@ class TimeCircuit:
         self.load_s = np.zeros((ntime, nload), dtype=complex)
 
         self.C_bus_load = sp.lil_matrix((nbus, nload), dtype=int)
+
+        # static generators --------------------------------------------------------------------------------------------
+        self.static_generator_names = np.empty((nstagen, nload), dtype=object)
+        self.static_generator_active = np.zeros((nstagen, nload), dtype=bool)
+        self.static_generator_s = np.zeros((nstagen, nload), dtype=complex)
+
+        self.C_bus_static_generator = sp.lil_matrix((nbus, nstagen), dtype=int)
 
         # battery ------------------------------------------------------------------------------------------------------
         self.battery_names = np.empty(nbatt, dtype=object)
@@ -210,6 +217,7 @@ class TimeCircuit:
         self.C_bus_batt = self.C_bus_batt.tocsr()
         self.C_bus_gen = self.C_bus_gen.tocsr()
         self.C_bus_shunt = self.C_bus_shunt.tocsr()
+        self.C_bus_static_generator = self.C_bus_static_generator.tocsr()
 
         self.bus_installed_power = self.C_bus_gen * self.generator_installed_p
         self.bus_installed_power += self.C_bus_batt * self.battery_installed_p
@@ -219,7 +227,12 @@ class TimeCircuit:
         Compute the power
         :return: Array of power injections
         """
+
+        # load
         Sbus = - self.C_bus_load * (self.load_s * self.load_active)  # MW
+
+        # static generators
+        Sbus += self.C_bus_static_generator * (self.static_generator_s * self.static_generator_active)  # MW
 
         # generators
         Sbus += self.C_bus_gen * (self.generator_p * self.generator_active)
@@ -250,6 +263,7 @@ class TimeCircuit:
                             ngen=self.ngen,
                             nbatt=self.nbatt,
                             nshunt=self.nshunt,
+                            nstagen=self.nstagen,
                             ntime=self.ntime,
                             sbase=self.Sbase,
                             time_array=self.time_array,
@@ -350,6 +364,13 @@ class TimeCircuit:
 
         island.C_bus_load = self.C_bus_load
 
+        # static generators --------------------------------------------------------------------------------------------
+        island.static_generator_names = self.static_generator_names
+        island.static_generator_active = self.static_generator_active
+        island.static_generator_s = self.static_generator_s
+
+        island.C_bus_static_generator = self.C_bus_static_generator
+
         # battery ------------------------------------------------------------------------------------------------------
         island.battery_names = self.battery_names
         island.battery_active = self.battery_active
@@ -403,6 +424,7 @@ class TimeCircuit:
         br_idx = tp.get_elements_of_the_island(self.C_branch_bus_f + self.C_branch_bus_t, bus_idx)
 
         load_idx = tp.get_elements_of_the_island(self.C_bus_load.T, bus_idx)
+        stagen_idx = tp.get_elements_of_the_island(self.C_bus_static_generator.T, bus_idx)
         gen_idx = tp.get_elements_of_the_island(self.C_bus_gen.T, bus_idx)
         batt_idx = tp.get_elements_of_the_island(self.C_bus_batt.T, bus_idx)
         shunt_idx = tp.get_elements_of_the_island(self.C_bus_shunt.T, bus_idx)
@@ -416,6 +438,7 @@ class TimeCircuit:
                         ngen=len(gen_idx),
                         nbatt=len(batt_idx),
                         nshunt=len(shunt_idx),
+                        nstagen=len(stagen_idx),
                         ntime=len(time_idx),
                         sbase=self.Sbase,
                         time_array=self.time_array[time_idx],
@@ -514,6 +537,13 @@ class TimeCircuit:
 
         nc.C_bus_load = self.C_bus_load[np.ix_(bus_idx, load_idx)]
 
+        # static generators --------------------------------------------------------------------------------------------
+        nc.static_generator_names = self.static_generator_names[stagen_idx]
+        nc.static_generator_active = self.static_generator_active[np.ix_(time_idx, stagen_idx)]
+        nc.static_generator_s = self.static_generator_s[np.ix_(time_idx, stagen_idx)]
+
+        nc.C_bus_static_generator = self.C_bus_static_generator[np.ix_(bus_idx, stagen_idx)]
+
         # battery ------------------------------------------------------------------------------------------------------
         nc.battery_names = self.battery_names[batt_idx]
         nc.battery_controllable = self.battery_controllable[batt_idx]
@@ -554,9 +584,8 @@ class TimeCircuit:
 
 class TimeIsland(TimeCircuit):
 
-    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, ntime, sbase, time_array,
-                 apply_temperature=False, impedance_tolerance=0.0,
-                 branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
+    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, ntime, sbase, time_array,
+                 apply_temperature=False, branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
         """
 
         :param nbus:
@@ -570,13 +599,12 @@ class TimeIsland(TimeCircuit):
         :param nshunt:
         :param sbase:
         :param apply_temperature:
-        :param impedance_tolerance:
         :param branch_tolerance_mode:
         """
         TimeCircuit.__init__(self, nbus=nbus, nline=nline, ntr=ntr, nvsc=nvsc, nhvdc=nhvdc,
-                             nload=nload, ngen=ngen, nbatt=nbatt, nshunt=nshunt, ntime=ntime, sbase=sbase,
-                             time_array=time_array,  apply_temperature=apply_temperature,
-                             branch_tolerance_mode=branch_tolerance_mode, impedance_tolerance=impedance_tolerance)
+                             nload=nload, ngen=ngen, nbatt=nbatt, nshunt=nshunt, nstagen=nstagen, ntime=ntime,
+                             sbase=sbase, time_array=time_array,  apply_temperature=apply_temperature,
+                             branch_tolerance_mode=branch_tolerance_mode)
 
         self.Sbus = np.zeros((self.nbus, ntime), dtype=complex)
         self.Ibus = np.zeros((self.nbus, ntime), dtype=complex)
@@ -621,8 +649,21 @@ class TimeIsland(TimeCircuit):
         """
         return self.line_R * (1.0 + self.line_alpha * (self.line_temp_oper - self.line_temp_base))
 
+    def re_calc_admittance_matrices(self, tap_module):
+        """
+
+        :param tap_module:
+        :return:
+        """
+        self.compute_admittance_matrices(newton_raphson=False,
+                                         linear_dc=False,
+                                         linear_ac=False,
+                                         fast_decoupled=False,
+                                         helm=False,
+                                         tap_module=tap_module)
+
     def compute_admittance_matrices(self, newton_raphson=False, linear_dc=False, linear_ac=False, fast_decoupled=False,
-                                    helm=False):
+                                    helm=False, tap_module=None):
         """
         Compute the admittance matrices
         :return: Ybus, Yseries, Yshunt
@@ -686,9 +727,9 @@ class TimeIsland(TimeCircuit):
 
         # modify the branches impedance with the lower, upper tolerance values
         if self.branch_tolerance_mode == BranchImpedanceMode.Lower:
-            line_R *= (1 - self.impedance_tolerance / 100.0)
+            line_R *= (1 - self.line_impedance_tolerance / 100.0)
         elif self.branch_tolerance_mode == BranchImpedanceMode.Upper:
-            line_R *= (1 + self.impedance_tolerance / 100.0)
+            line_R *= (1 + self.line_impedance_tolerance / 100.0)
 
         Ys_line = 1.0 / (line_R + 1.0j * self.line_X)
         Ysh_line = 1.0j * self.line_B
@@ -721,7 +762,11 @@ class TimeIsland(TimeCircuit):
         Ys_tr = 1.0 / (self.tr_R + 1.0j * self.tr_X)
         Ysh_tr = 1.0j * self.tr_B
         Ys_tr2 = Ys_tr + Ysh_tr / 2.0
-        tap = self.tr_tap_mod * np.exp(1.0j * self.tr_tap_ang)
+
+        if tap_module is None:
+            tap = self.tr_tap_mod * np.exp(1.0j * self.tr_tap_ang)
+        else:
+            tap = tap_module * np.exp(1.0j * self.tr_tap_ang)
 
         # branch primitives in vector form for Ybus
         if newton_raphson:
@@ -831,7 +876,12 @@ class TimeIsland(TimeCircuit):
         Compute the power
         :return: nothing, the results are stored in the class
         """
+
+        # load
         self.Sbus = - self.C_bus_load * (self.load_s * self.load_active).T  # MW
+
+        # static generators
+        self.Sbus += self.C_bus_static_generator * (self.static_generator_s * self.static_generator_active).T  # MW
 
         # generators
         self.Sbus += self.C_bus_gen * (self.get_generator_injections() * self.generator_active).T
@@ -847,6 +897,9 @@ class TimeIsland(TimeCircuit):
         self.Sbus /= self.Sbase
 
     def compute_reactive_power_limits(self):
+        """
+        Compute the reactive power limits per bus
+        """
         # generators
         self.Qmax_bus = self.C_bus_gen * (self.generator_qmax * self.generator_active).T
         self.Qmin_bus = self.C_bus_gen * (self.generator_qmin * self.generator_active).T
@@ -868,7 +921,6 @@ class TimeIsland(TimeCircuit):
     def consolidate(self):
         """
         Computes the parameters given the filled-in information
-        :return:
         """
         self.compute_injections()
 
@@ -1043,14 +1095,12 @@ def split_time_circuit_into_islands(numeric_circuit: TimeCircuit, ignore_single_
 
 def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                          branch_tolerance_mode=BranchImpedanceMode.Specified,
-                         impedance_tolerance=0.0,
                          opf_results: OptimalPowerFlowTimeSeriesResults = None) -> TimeCircuit:
     """
     Compile the information of a circuit and generate the pertinent power flow islands
     :param circuit: Circuit instance
     :param apply_temperature:
     :param branch_tolerance_mode:
-    :param impedance_tolerance:
     :param opf_results: OptimalPowerFlowTimeSeriesResults instance
     :return: list of NumericIslands
     """
@@ -1065,17 +1115,20 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
     ngen = 0
     n_batt = 0
     nshunt = 0
+    nstagen = 0
     for bus in circuit.buses:
         nload += len(bus.loads)
         ngen += len(bus.controlled_generators)
         n_batt += len(bus.batteries)
         nshunt += len(bus.shunts)
+        nstagen += len(bus.static_generators)
 
     nline = len(circuit.lines)
     ntr2w = len(circuit.transformers2w)
     nvsc = len(circuit.vsc_converters)
     nhvdc = len(circuit.hvdc_lines)
     ntime = len(circuit.time_profile)
+
     # declare the numerical circuit
     nc = TimeCircuit(nbus=nbus,
                      nline=nline,
@@ -1090,15 +1143,14 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                      sbase=circuit.Sbase,
                      time_array=circuit.time_profile,
                      apply_temperature=apply_temperature,
-                     impedance_tolerance=impedance_tolerance,
-                     branch_tolerance_mode=branch_tolerance_mode
-                     )
+                     branch_tolerance_mode=branch_tolerance_mode)
 
     # buses and it's connected elements (loads, generators, etc...)
     i_ld = 0
     i_gen = 0
     i_batt = 0
     i_sh = 0
+    i_stagen = 0
     for i, bus in enumerate(circuit.buses):
 
         # bus parameters
@@ -1123,6 +1175,14 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
 
             nc.C_bus_load[i, i_ld] = 1
             i_ld += 1
+
+        for elm in bus.static_generators:
+            nc.static_generator_names[i_stagen] = elm.name
+            nc.static_generator_active[:, i_stagen] = elm.active_prof
+            nc.static_generator_s[:, i_stagen] = elm.P_prof + 1j * elm.Q_prof
+
+            nc.C_bus_static_generator[i, i_stagen] = 1
+            i_stagen += 1
 
         for elm in bus.controlled_generators:
 
@@ -1241,6 +1301,8 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.tr_tap_inc_reg_up[i] = elm.tap_changer.inc_reg_up
         nc.tr_tap_inc_reg_down[i] = elm.tap_changer.inc_reg_down
         nc.tr_vset[i] = elm.vset
+
+        nc.tr_bus_to_regulated_idx[i] = t if elm.bus_to_regulated else f
 
         # virtual taps for transformers where the connection voltage is off
         nc.tr_tap_f[i], nc.tr_tap_t[i] = elm.get_virtual_taps()

@@ -77,11 +77,15 @@ class COIN_CMD(LpSolver_CMD):
         return aCopy
 
     def actualSolve(self, lp, **kwargs):
-        """Solve a well formulated lp problem"""
+        """
+        Solve a well formulated lp problem
+        """
         return self.solve_CBC(lp, **kwargs)
 
     def available(self):
-        """True if the solver is available"""
+        """
+        True if the solver is available
+        """
         return self.executable(self.path)
 
     def solve_CBC(self, lp, use_mps=True):
@@ -112,6 +116,7 @@ class COIN_CMD(LpSolver_CMD):
         else:
             lp.writeLP(tmpLp)
             cmds = ' ' + tmpLp + " "
+
         if self.threads:
             cmds += "threads %s " % self.threads
         if self.fracGap is not None:

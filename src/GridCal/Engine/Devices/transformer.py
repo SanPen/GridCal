@@ -396,7 +396,8 @@ class Transformer2W(EditableDevice):
                  mttf=0, mttr=0,
                  vset=1.0, bus_to_regulated=False,
                  temp_base=20, temp_oper=20, alpha=0.00330,
-                 template=TransformerType(), rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None):
+                 template: TransformerType = None,
+                 rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -527,7 +528,9 @@ class Transformer2W(EditableDevice):
 
         # type template
         self.template = template
+
         self.bus_to_regulated = bus_to_regulated
+
         self.vset = vset
 
         # converter for enumerations
@@ -676,35 +679,33 @@ class Transformer2W(EditableDevice):
 
         """
 
-        if type(obj) is TransformerType:
+        # get the transformer impedance in the base of the transformer
+        z_series, zsh = obj.get_impedances()
 
-            # get the transformer impedance in the base of the transformer
-            z_series, zsh = obj.get_impedances()
+        # Change the impedances to the system base
+        base_change = Sbase / obj.rating
+        z_series *= base_change
+        zsh *= base_change
 
-            # Change the impedances to the system base
-            base_change = Sbase / obj.rating
-            z_series *= base_change
-            zsh *= base_change
+        # compute the shunt admittance
+        if zsh.real != 0.0 or zsh.imag != 0.0:
+            y_shunt = 1.0 / zsh
+        else:
+            y_shunt = complex(0, 0)
 
-            # compute the shunt admittance
-            if zsh.real != 0.0 or zsh.imag != 0.0:
-                y_shunt = 1.0 / zsh
-            else:
-                y_shunt = complex(0, 0)
+        self.R = np.round(z_series.real, 6)
+        self.X = np.round(z_series.imag, 6)
+        self.G = np.round(y_shunt.real, 6)
+        self.B = np.round(y_shunt.imag, 6)
 
-            self.R = np.round(z_series.real, 6)
-            self.X = np.round(z_series.imag, 6)
-            self.G = np.round(y_shunt.real, 6)
-            self.B = np.round(y_shunt.imag, 6)
+        self.rate = obj.rating
 
-            self.rate = obj.rating
+        self.HV = obj.HV
+        self.LV = obj.LV
 
-            self.HV = obj.HV
-            self.LV = obj.LV
-
-            if obj != self.template:
-                self.template = obj
-                self.branch_type = BranchType.Transformer
+        if obj != self.template:
+            self.template = obj
+            self.branch_type = BranchType.Transformer
         else:
             logger.append(self.name + ' the object type template was not recognised')
 
