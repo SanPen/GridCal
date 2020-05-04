@@ -1088,7 +1088,7 @@ class PSSeVscDCLine:
         self.F4 = ''
         var = [self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4]
 
-        if version in [33, 34]:
+        if version in [32, 33, 34]:
 
             '''
             NAME, MDC, RDC, O1, F1, ... O4, F4
