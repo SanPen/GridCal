@@ -166,7 +166,6 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
     numerical_circuit = compile_snapshot_circuit(circuit=multi_circuit,
                                                  apply_temperature=options.apply_temperature_correction,
                                                  branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-                                                 impedance_tolerance=0.0,
                                                  opf_results=None)
 
     calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,
@@ -177,12 +176,12 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
         # simulate each island and merge the results
         for i, calculation_input in enumerate(calculation_inputs):
 
-            if len(calculation_input.ref) > 0:
+            if len(calculation_input.vd) > 0:
                 # V, converged, norm_f, Scalc, iter_, elapsed, Sig_re, Sig_im
                 U, X, Q, iter_ = helm_coefficients_josep(Yseries=calculation_input.Yseries,
                                                          V0=calculation_input.Vbus,
                                                          S0=calculation_input.Sbus,
-                                                         Ysh0=calculation_input.Ysh,
+                                                         Ysh0=calculation_input.Yshunt,
                                                          pq=calculation_input.pq,
                                                          pv=calculation_input.pv,
                                                          sl=calculation_input.vd,
@@ -195,7 +194,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
                 n = calculation_input.nbus
                 Sig_re = np.zeros(n, dtype=float)
                 Sig_im = np.zeros(n, dtype=float)
-                Sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.ref])
+                Sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.vd])
                 Sig_re[calculation_input.pqpv] = np.real(Sigma)
                 Sig_im[calculation_input.pqpv] = np.imag(Sigma)
                 sigma_distances = np.abs(sigma_distance(Sig_re, Sig_im))

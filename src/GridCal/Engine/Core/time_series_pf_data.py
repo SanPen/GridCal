@@ -268,7 +268,6 @@ class TimeCircuit:
                             sbase=self.Sbase,
                             time_array=self.time_array,
                             apply_temperature=self.apply_temperature,
-                            impedance_tolerance=self.impedance_tolerance,
                             branch_tolerance_mode=self.branch_tolerance_mode)
 
         island.original_time_idx = np.arange(self.ntime)
@@ -1139,6 +1138,7 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                      ngen=ngen,
                      nbatt=n_batt,
                      nshunt=nshunt,
+                     nstagen=nstagen,
                      ntime=ntime,
                      sbase=circuit.Sbase,
                      time_array=circuit.time_profile,

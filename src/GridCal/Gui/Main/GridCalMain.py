@@ -231,7 +231,8 @@ class MainGUI(QMainWindow):
 
         self.ui.catalogueDataStructuresListView.setModel(get_list_model(self.grid_editor.catalogue_types))
 
-        pfo = SnapshotIsland(1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+        pfo = SnapshotIsland(nbus=1, nline=1, ntr=1, nvsc=1, nhvdc=1,
+                             nload=1, ngen=1, nbatt=1, nshunt=1, nstagen=1, sbase=100)
         self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
 
         # add the widgets
@@ -5014,6 +5015,7 @@ def run(use_native_dialogues=True):
     :return:
     """
     app = QApplication(sys.argv)
+    app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
     window = MainGUI(use_native_dialogues=use_native_dialogues)
     window.resize(int(1.61 * 700.0), 700)  # golden ratio :)
     window.show()
