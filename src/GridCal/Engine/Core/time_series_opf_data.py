@@ -227,7 +227,7 @@ class OpfTimeCircuit:
         Sbus = - self.C_bus_load * (self.load_s * self.load_active).T  # MW
 
         # static generators
-        Sbus += self.C_bus_static_generator * (self.static_generator_s * self.static_generator_active)  # MW
+        Sbus += self.C_bus_static_generator * (self.static_generator_s * self.static_generator_active).T  # MW
 
         # generators
         Sbus += self.C_bus_gen * (self.generator_p * self.generator_active).T

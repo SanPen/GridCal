@@ -102,7 +102,7 @@ class MainGUI(QMainWindow):
         QMainWindow.__init__(self, parent)
         self.ui = Ui_mainWindow()
         self.ui.setupUi(self)
-
+        self.setWindowTitle('GridCal ' + __GridCal_VERSION__)
         self.setAcceptDrops(True)
 
         self.use_native_dialogues = use_native_dialogues

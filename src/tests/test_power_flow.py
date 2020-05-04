@@ -34,6 +34,8 @@ def test_power_flow():
     print('\tReport')
     print(power_flow.results.get_report_dataframe())
 
+    assert power_flow.results.error() < 1e-3
+
 
 def test_ieee_grids():
     """
@@ -79,4 +81,5 @@ def test_ieee_grids():
 
 
 if __name__ == '__main__':
-    test_ieee_grids()
+    # test_ieee_grids()
+    test_power_flow()
