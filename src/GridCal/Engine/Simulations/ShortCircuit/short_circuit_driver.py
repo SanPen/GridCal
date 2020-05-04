@@ -383,7 +383,6 @@ class ShortCircuit(QRunnable):
         numerical_circuit = compile_snapshot_circuit(circuit=grid,
                                                      apply_temperature=self.pf_options.apply_temperature_correction,
                                                      branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
-                                                     impedance_tolerance=0.0,
                                                      opf_results=self.opf_results)
 
         calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,

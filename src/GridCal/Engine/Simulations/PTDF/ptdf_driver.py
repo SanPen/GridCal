@@ -102,7 +102,6 @@ class PTDF(QThread):
         numerical_circuit = compile_snapshot_circuit(circuit=circuit,
                                                      apply_temperature=options.apply_temperature_correction,
                                                      branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-                                                     impedance_tolerance=0.0,
                                                      opf_results=self.opf_results)
 
         calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,
@@ -186,7 +185,6 @@ class PTDF(QThread):
         numerical_circuit = compile_snapshot_circuit(circuit=circuit,
                                                      apply_temperature=options.apply_temperature_correction,
                                                      branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-                                                     impedance_tolerance=0.0,
                                                      opf_results=self.opf_results)
 
         calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,

@@ -214,8 +214,7 @@ class PtdfTimeSeries(QThread):
         # initialize the grid time series results, we will append the island results with another function
         nc = compile_opf_time_circuit(circuit=self.grid,
                                       apply_temperature=self.pf_options.apply_temperature_correction,
-                                      branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
-                                      impedance_tolerance=self.pf_options.tolerance)
+                                      branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
 
         results = PtdfTimeSeriesResults(n=nc.nbus,
                                         m=nc.nbr,

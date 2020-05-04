@@ -160,9 +160,10 @@ class TimeCircuit:
         self.C_bus_load = sp.lil_matrix((nbus, nload), dtype=int)
 
         # static generators --------------------------------------------------------------------------------------------
-        self.static_generator_names = np.empty((nstagen, nload), dtype=object)
-        self.static_generator_active = np.zeros((nstagen, nload), dtype=bool)
-        self.static_generator_s = np.zeros((nstagen, nload), dtype=complex)
+        self.static_generator_names = np.empty(nstagen, dtype=object)
+
+        self.static_generator_active = np.zeros((ntime, nstagen), dtype=bool)
+        self.static_generator_s = np.zeros((ntime, nstagen), dtype=complex)
 
         self.C_bus_static_generator = sp.lil_matrix((nbus, nstagen), dtype=int)
 
@@ -442,7 +443,6 @@ class TimeCircuit:
                         sbase=self.Sbase,
                         time_array=self.time_array[time_idx],
                         apply_temperature=self.apply_temperature,
-                        impedance_tolerance=self.impedance_tolerance,
                         branch_tolerance_mode=self.branch_tolerance_mode)
 
         nc.original_time_idx = time_idx

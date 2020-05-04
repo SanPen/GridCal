@@ -55,8 +55,7 @@ class OptimalPowerFlowTimeSeries(QThread):
         # compile the circuit into a numerical equivalent for this simulation
         self.numerical_circuit = compile_opf_time_circuit(circuit=self.grid,
                                                           apply_temperature=self.pf_options.apply_temperature_correction,
-                                                          branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
-                                                          impedance_tolerance=self.pf_options.tolerance)
+                                                          branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
 
         # OPF results
         self.results = OptimalPowerFlowTimeSeriesResults(bus_names=self.numerical_circuit.bus_names,

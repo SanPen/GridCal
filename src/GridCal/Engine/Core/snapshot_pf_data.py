@@ -396,7 +396,6 @@ class SnapshotCircuit:
                             nstagen=len(stagen_idx),
                             sbase=self.Sbase,
                             apply_temperature=self.apply_temperature,
-                            impedance_tolerance=self.impedance_tolerance,
                             branch_tolerance_mode=self.branch_tolerance_mode)
 
         nc.original_bus_idx = bus_idx

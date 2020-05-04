@@ -140,9 +140,10 @@ class OpfTimeCircuit:
         self.C_bus_load = sp.lil_matrix((nbus, nload), dtype=int)
 
         # static generators --------------------------------------------------------------------------------------------
-        self.static_generator_names = np.empty((nstagen, nload), dtype=object)
-        self.static_generator_active = np.zeros((nstagen, nload), dtype=bool)
-        self.static_generator_s = np.zeros((nstagen, nload), dtype=complex)
+        self.static_generator_names = np.empty(nstagen, dtype=object)
+
+        self.static_generator_active = np.zeros((ntime, nstagen), dtype=bool)
+        self.static_generator_s = np.zeros((ntime, nstagen), dtype=complex)
 
         self.C_bus_static_generator = sp.lil_matrix((nbus, nstagen), dtype=int)
 
@@ -262,7 +263,6 @@ class OpfTimeCircuit:
                                sbase=self.Sbase,
                                time_array=self.time_array,
                                apply_temperature=self.apply_temperature,
-                               impedance_tolerance=self.impedance_tolerance,
                                branch_tolerance_mode=self.branch_tolerance_mode)
 
         island.original_time_idx = np.arange(self.ntime)
@@ -436,7 +436,6 @@ class OpfTimeCircuit:
                            sbase=self.Sbase,
                            time_array=self.time_array[time_idx],
                            apply_temperature=self.apply_temperature,
-                           impedance_tolerance=self.impedance_tolerance,
                            branch_tolerance_mode=self.branch_tolerance_mode)
 
         nc.original_time_idx = time_idx
@@ -1000,11 +999,13 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
     ngen = 0
     n_batt = 0
     nshunt = 0
+    nstagen = 0
     for bus in circuit.buses:
         nload += len(bus.loads)
         ngen += len(bus.controlled_generators)
         n_batt += len(bus.batteries)
         nshunt += len(bus.shunts)
+        nstagen += len(bus.static_generators)
 
     nline = len(circuit.lines)
     ntr2w = len(circuit.transformers2w)
@@ -1022,6 +1023,7 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                         ngen=ngen,
                         nbatt=n_batt,
                         nshunt=nshunt,
+                        nstagen=nstagen,
                         ntime=ntime,
                         sbase=circuit.Sbase,
                         time_array=circuit.time_profile,
@@ -1033,6 +1035,7 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
     i_gen = 0
     i_batt = 0
     i_sh = 0
+    i_stagen = 0
     for i, bus in enumerate(circuit.buses):
 
         # bus parameters
@@ -1052,6 +1055,15 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
 
             nc.C_bus_load[i, i_ld] = 1
             i_ld += 1
+
+        for elm in bus.static_generators:
+            nc.static_generator_names[i_stagen] = elm.name
+
+            nc.static_generator_active[:, i_stagen] = elm.active_prof
+            nc.static_generator_s[:, i_stagen] = elm.P_prof + 1j * elm.Q_prof
+
+            nc.C_bus_static_generator[i, i_stagen] = 1
+            i_stagen += 1
 
         for elm in bus.controlled_generators:
 
