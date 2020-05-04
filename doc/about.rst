@@ -1,7 +1,7 @@
 .. _about:
 
 About GridCal
-=============
+================
 
 **GridCal** is a research oriented power systems software.
 
@@ -21,3 +21,7 @@ to collaborate, do not hesitate to contact.
 Cheers,
 
 Santiago
+
+
+
+

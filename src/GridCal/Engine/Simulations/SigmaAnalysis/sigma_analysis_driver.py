@@ -159,7 +159,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
     """
     # print('PowerFlowDriver at ', self.grid.name)
     n = len(multi_circuit.buses)
-    m = len(multi_circuit.branches)
+    m = multi_circuit.get_branch_number()
     results = SigmaAnalysisResults(n)
 
     numerical_circuit = multi_circuit.compile_snapshot()

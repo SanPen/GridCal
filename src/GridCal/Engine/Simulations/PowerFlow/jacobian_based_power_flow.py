@@ -283,73 +283,51 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
     npv = len(pv)
     npq = len(pq)
 
-    # generate lookup pvpq -> index pvpq (used in createJ)
-    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
-    pvpq_lookup[pvpq] = np.arange(len(pvpq))
-
     # j1:j2 - V angle of pv and pq buses
     j1 = 0
     j2 = npv + npq
     # j2:j3 - V mag of pq buses
     j3 = j2 + npq
 
-    # evaluate F(x0)
-    Scalc = V * np.conj(Ybus * V - Ibus)
-    dS = Scalc - Sbus  # compute the mismatch
-    f = np.r_[dS[pvpq].real, dS[pq].imag]
+    if (npq + npv) > 0:
 
-    # check tolerance
-    norm_f = 0.5 * f.dot(f)
+        # generate lookup pvpq -> index pvpq (used in createJ)
+        pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+        pvpq_lookup[pvpq] = np.arange(len(pvpq))
+        createJ = get_fastest_jacobian_function(pvpq, pq)
 
-    if error_registry is not None:
-        error_registry.append(norm_f)
+        # evaluate F(x0)
+        Scalc = V * np.conj(Ybus * V - Ibus)
+        dS = Scalc - Sbus  # compute the mismatch
+        f = np.r_[dS[pvpq].real, dS[pq].imag]
 
-    if norm_f < tol:
-        converged = 1
-
-    createJ = get_fastest_jacobian_function(pvpq, pq)
-
-    # do Newton iterations
-    while not converged and iter_ < max_it:
-        # update iteration counter
-        iter_ += 1
-
-        # evaluate Jacobian
-        # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
-        J = _create_J_with_numba(Ybus, V, pvpq, pq, createJ, pvpq_lookup, npv, npq)
-
-        # compute update step
-        dx = linear_solver(J, f)
-
-        # reassign the solution vector
-        dVa[pvpq] = dx[j1:j2]
-        dVm[pq] = dx[j2:j3]
-
-        # update voltage the Newton way (mu=1)
-        mu_ = 1.0
-        Vm -= mu_ * dVm
-        Va -= mu_ * dVa
-        Vnew = Vm * np.exp(1.0j * Va)
-
-        # compute the mismatch function f(x_new)
-        Scalc = Vnew * np.conj(Ybus * Vnew - Ibus)
-        dS = Scalc - Sbus  # complex power mismatch
-        f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
-        norm_f_new = 0.5 * f_new.dot(f_new)
+        # check tolerance
+        norm_f = 0.5 * f.dot(f)
 
         if error_registry is not None:
-            error_registry.append(norm_f_new)
+            error_registry.append(norm_f)
 
-        cond = norm_f_new > norm_f  # condition to back track (no improvement at all)
+        if norm_f < tol:
+            converged = 1
 
-        if not cond:
-            back_track_counter += 1
+        # do Newton iterations
+        while not converged and iter_ < max_it:
+            # update iteration counter
+            iter_ += 1
 
-        l_iter = 0
-        while not cond and l_iter < 10 and mu_ > 0.01:
-            # line search back
-            # update voltage with a closer value to the last value in the Jacobian direction
-            mu_ *= acceleration_parameter
+            # evaluate Jacobian
+            # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+            J = _create_J_with_numba(Ybus, V, pvpq, pq, createJ, pvpq_lookup, npv, npq)
+
+            # compute update step
+            dx = linear_solver(J, f)
+
+            # reassign the solution vector
+            dVa[pvpq] = dx[j1:j2]
+            dVm[pq] = dx[j2:j3]
+
+            # update voltage the Newton way (mu=1)
+            mu_ = 1.0
             Vm -= mu_ * dVm
             Va -= mu_ * dVa
             Vnew = Vm * np.exp(1.0j * Va)
@@ -358,34 +336,62 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
             Scalc = Vnew * np.conj(Ybus * Vnew - Ibus)
             dS = Scalc - Sbus  # complex power mismatch
             f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
-
             norm_f_new = 0.5 * f_new.dot(f_new)
-
-            cond = norm_f_new > norm_f
 
             if error_registry is not None:
                 error_registry.append(norm_f_new)
 
-            l_iter += 1
-            back_track_iterations += 1
+            cond = norm_f_new > norm_f  # condition to back track (no improvement at all)
 
-        # update calculation variables
-        V = Vnew
-        f = f_new
+            if not cond:
+                back_track_counter += 1
 
-        # check for convergence
-        if l_iter == 0:
-            # no correction loop executed, hence compute the error fresh
-            norm_f = 0.5 * f_new.dot(f_new)
-        else:
-            # pick the latest computer error in the correction loop
-            norm_f = norm_f_new
+            l_iter = 0
+            while not cond and l_iter < 10 and mu_ > 0.01:
+                # line search back
+                # update voltage with a closer value to the last value in the Jacobian direction
+                mu_ *= acceleration_parameter
+                Vm -= mu_ * dVm
+                Va -= mu_ * dVa
+                Vnew = Vm * np.exp(1.0j * Va)
 
-        if error_registry is not None:
-            error_registry.append(norm_f)
+                # compute the mismatch function f(x_new)
+                Scalc = Vnew * np.conj(Ybus * Vnew - Ibus)
+                dS = Scalc - Sbus  # complex power mismatch
+                f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
 
-        if norm_f < tol:
-            converged = 1
+                norm_f_new = 0.5 * f_new.dot(f_new)
+
+                cond = norm_f_new > norm_f
+
+                if error_registry is not None:
+                    error_registry.append(norm_f_new)
+
+                l_iter += 1
+                back_track_iterations += 1
+
+            # update calculation variables
+            V = Vnew
+            f = f_new
+
+            # check for convergence
+            if l_iter == 0:
+                # no correction loop executed, hence compute the error fresh
+                norm_f = 0.5 * f_new.dot(f_new)
+            else:
+                # pick the latest computer error in the correction loop
+                norm_f = norm_f_new
+
+            if error_registry is not None:
+                error_registry.append(norm_f)
+
+            if norm_f < tol:
+                converged = 1
+
+    else:
+        norm_f = 0
+        converged = True
+        Scalc = Sbus
 
     end = time.time()
     elapsed = end - start
@@ -568,24 +574,23 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     npv = len(pv)
     npq = len(pq)
 
-    # generate lookup pvpq -> index pvpq (used in createJ)
-    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
-    pvpq_lookup[pvpq] = np.arange(len(pvpq))
-
     # j1:j2 - V angle of pv buses
     j1 = 0
     j2 = npv + npq
     # j2:j3 - V mag of pq buses
     j3 = j2 + npq
 
-    # evaluate F(x0)
-    Scalc = V * np.conj(Ybus * V - Ibus)
-    mis = Scalc - Sbus  # compute the mismatch
-    f = np.r_[mis[pvpq].real, mis[pq].imag]
-
-    createJ = get_fastest_jacobian_function(pvpq, pq)
-
     if (npq + npv) > 0:
+
+        # generate lookup pvpq -> index pvpq (used in createJ)
+        pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+        pvpq_lookup[pvpq] = np.arange(len(pvpq))
+        createJ = get_fastest_jacobian_function(pvpq, pq)
+
+        # evaluate F(x0)
+        Scalc = V * np.conj(Ybus * V - Ibus)
+        mis = Scalc - Sbus  # compute the mismatch
+        f = np.r_[mis[pvpq].real, mis[pq].imag]
 
         # check tolerance
         norm_f = np.linalg.norm(f, np.Inf)
@@ -647,6 +652,7 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     else:
         norm_f = 0
         converged = True
+        Scalc = Sbus
 
     end = time.time()
     elapsed = end - start
@@ -685,11 +691,6 @@ def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     pvpq = np.r_[pv, pq]
     npv = len(pv)
     npq = len(pq)
-    # generate lookup pvpq -> index pvpq (used in createJ)
-    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
-    pvpq_lookup[pvpq] = np.arange(len(pvpq))
-
-    createJ = get_fastest_jacobian_function(pvpq, pq)
 
     # j1:j2 - V angle of pv and pq buses
     j1 = 0
@@ -698,6 +699,7 @@ def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     j3 = j2 + npq
 
     if (npq + npv) > 0:
+        normF = 100000
         update_jacobian = True
         converged = False
         iter_ = 0
@@ -707,6 +709,11 @@ def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
         nn = 2 * npq + npv
         ii = np.linspace(0, nn-1, nn)
         Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csc_matrix identity
+
+        # generate lookup pvpq -> index pvpq (used in createJ)
+        pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+        pvpq_lookup[pvpq] = np.arange(len(pvpq))
+        createJ = get_fastest_jacobian_function(pvpq, pq)
 
         while not converged and iter_ < max_it:
 
@@ -784,7 +791,7 @@ def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     else:
         normF = 0
         converged = True
-        Scalc = V * np.conj(Ybus * V - Ibus)
+        Scalc = Sbus  # V * np.conj(Ybus * V - Ibus)
         iter_ = 0
 
     end = time.time()

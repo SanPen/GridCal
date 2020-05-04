@@ -85,7 +85,7 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
     """
 
     # form C
-    m = len(circuit.branches)
+    m = circuit.get_branch_number()
     n = len(circuit.buses)
     buses_dict = {bus: i for i, bus in enumerate(circuit.buses)}
     C = lil_matrix((m, n), dtype=int)

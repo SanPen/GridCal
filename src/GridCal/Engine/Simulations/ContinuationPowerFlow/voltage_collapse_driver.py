@@ -21,6 +21,7 @@ from matplotlib import pyplot as plt
 from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import power_flow_post_process
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, VCStopAt, VCParametrization
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -140,8 +141,8 @@ class VoltageCollapseResults:
             json_str = json.dumps(self.get_results_dict())
             output_file.write(json_str)
 
-    def apply_from_island(self, voltage_collapse_res, pf_res: PowerFlowResults, bus_original_idx,
-                          branch_original_idx, nbus_full):
+    def apply_from_island(self, voltage_collapse_res, Sbranch, Ibranch, loading, losses, Sbus,
+                          bus_original_idx, branch_original_idx, nbus_full):
         """
         Apply the results of an island to this VoltageCollapseResults instance
         :param voltage_collapse_res: VoltageCollapseResults instance of the island
@@ -190,11 +191,11 @@ class VoltageCollapseResults:
                     self.voltages[:, bus_original_idx] = voltage_collapse_res.voltages
 
             # set the branch values
-            self.Sbranch[branch_original_idx] = pf_res.Sbranch
-            self.Ibranch[branch_original_idx] = pf_res.Ibranch
-            self.loading[branch_original_idx] = pf_res.loading
-            self.losses[branch_original_idx] = pf_res.losses
-            self.Sbus[bus_original_idx] = pf_res.Sbus
+            self.Sbranch[branch_original_idx] = Sbranch
+            self.Ibranch[branch_original_idx] = Ibranch
+            self.loading[branch_original_idx] = loading
+            self.losses[branch_original_idx] = losses
+            self.Sbus[bus_original_idx] = Sbus
 
     def mdl(self, result_type=ResultTypes.BusVoltage, indices=None, names=None):
         """
@@ -334,9 +335,13 @@ class VoltageCollapse(QThread):
 
             if len(res.voltages) > 0:
                 # compute the island branch results
-                branch_res = numerical_island.compute_branch_results(res.voltages[-1])
+                Sbranch, Ibranch, Vbranch, \
+                loading, losses, flow_direction, Sbus = power_flow_post_process(numerical_island,
+                                                                                res.voltages[-1],
+                                                                                numerical_island.branch_rates)
 
-                self.results.apply_from_island(res, branch_res, numerical_island.original_bus_idx,
+                self.results.apply_from_island(res, Sbranch, Ibranch, loading, losses, Sbus,
+                                               numerical_island.original_bus_idx,
                                                numerical_island.original_branch_idx, nbus)
             else:
                 print('No voltage values!')

@@ -45,8 +45,6 @@ class MonteCarloResults:
 
         self.V_points = np.zeros((p, n), dtype=complex)
 
-        self.I_points = np.zeros((p, m), dtype=complex)
-
         self.Sbr_points = np.zeros((p, m), dtype=complex)
 
         self.loading_points = np.zeros((p, m), dtype=complex)
@@ -58,20 +56,19 @@ class MonteCarloResults:
         self.bus_types = np.zeros(n, dtype=int)
 
         self.voltage = np.zeros(n)
-        self.current = np.zeros(m)
         self.loading = np.zeros(m)
         self.sbranch = np.zeros(m)
         self.losses = np.zeros(m)
 
         # magnitudes standard deviation convergence
         self.v_std_conv = None
-        self.c_std_conv = None
+        self.s_std_conv = None
         self.l_std_conv = None
         self.loss_std_conv = None
 
         # magnitudes average convergence
         self.v_avg_conv = None
-        self.c_avg_conv = None
+        self.s_avg_conv = None
         self.l_avg_conv = None
         self.loss_avg_conv = None
 
@@ -79,9 +76,9 @@ class MonteCarloResults:
                                   ResultTypes.BusVoltageStd,
                                   ResultTypes.BusVoltageCDF,
                                   ResultTypes.BusPowerCDF,
-                                  ResultTypes.BranchCurrentAverage,
-                                  ResultTypes.BranchCurrentStd,
-                                  ResultTypes.BranchCurrentCDF,
+                                  ResultTypes.BranchPowerAverage,
+                                  ResultTypes.BranchPowerStd,
+                                  ResultTypes.BranchPowerCDF,
                                   ResultTypes.BranchLoadingAverage,
                                   ResultTypes.BranchLoadingStd,
                                   ResultTypes.BranchLoadingCDF,
@@ -97,7 +94,7 @@ class MonteCarloResults:
         """
         self.S_points = np.vstack((self.S_points, mcres.S_points))
         self.V_points = np.vstack((self.V_points, mcres.V_points))
-        self.I_points = np.vstack((self.I_points, mcres.I_points))
+        self.Sbr_points = np.vstack((self.Sbr_points, mcres.Sbr_points))
         self.loading_points = np.vstack((self.loading_points, mcres.loading_points))
         self.losses_points = np.vstack((self.losses_points, mcres.loading_points))
 
@@ -114,15 +111,15 @@ class MonteCarloResults:
         @return:
         """
         p, n = self.V_points.shape
-        ni, m = self.I_points.shape
+        ni, m = self.Sbr_points.shape
         step = 1
         nn = int(np.floor(p / step) + 1)
         self.v_std_conv = np.zeros((nn, n))
-        self.c_std_conv = np.zeros((nn, m))
+        self.s_std_conv = np.zeros((nn, m))
         self.l_std_conv = np.zeros((nn, m))
         self.loss_std_conv = np.zeros((nn, m))
         self.v_avg_conv = np.zeros((nn, n))
-        self.c_avg_conv = np.zeros((nn, m))
+        self.s_avg_conv = np.zeros((nn, m))
         self.l_avg_conv = np.zeros((nn, m))
         self.loss_avg_conv = np.zeros((nn, m))
 
@@ -141,10 +138,10 @@ class MonteCarloResults:
             l_mean_prev = l_mean.copy()
             loss_mean_prev = loss_mean.copy()
 
-            v = abs(self.V_points[t, :])
-            c = abs(self.I_points[t, :])
-            l = abs(self.loading_points[t, :])
-            loss = abs(self.losses_points[t, :])
+            v = np.abs(self.V_points[t, :])
+            c = self.Sbr_points[t, :].real
+            l = self.loading_points[t, :].real
+            loss = self.losses_points[t, :].real
 
             v_mean += (v - v_mean) / t
             v_std += (v - v_mean) * (v - v_mean_prev)
@@ -153,8 +150,8 @@ class MonteCarloResults:
 
             c_mean += (c - c_mean) / t
             c_std += (c - c_mean) * (c - c_mean_prev)
-            self.c_std_conv[t] = c_std / t
-            self.c_avg_conv[t] = c_mean
+            self.s_std_conv[t] = c_std / t
+            self.s_avg_conv[t] = c_mean
 
             l_mean += (l - l_mean) / t
             l_std += (l - l_mean) * (l - l_mean_prev)
@@ -167,7 +164,7 @@ class MonteCarloResults:
             self.loss_avg_conv[t] = loss_mean
 
         self.voltage = self.v_avg_conv[-2]
-        self.current = self.c_avg_conv[-2]
+        self.sbranch = self.s_avg_conv[-2]
         self.loading = self.l_avg_conv[-2]
         self.losses = self.loss_avg_conv[-2]
 
@@ -180,8 +177,8 @@ class MonteCarloResults:
                 'Q': self.S_points.imag.tolist(),
                 'Vm': np.abs(self.V_points).tolist(),
                 'Va': np.angle(self.V_points).tolist(),
-                'Ibr_real': self.I_points.real.tolist(),
-                'Ibr_imag': self.I_points.imag.tolist(),
+                'Ibr_real': self.Sbr_points.real.tolist(),
+                'Ibr_imag': self.Sbr_points.imag.tolist(),
                 'Sbr_real': self.Sbr_points.real.tolist(),
                 'Sbr_imag': self.Sbr_points.imag.tolist(),
                 'loading': np.abs(self.loading_points).tolist(),
@@ -209,7 +206,7 @@ class MonteCarloResults:
                 data = json.load(input_file)
             self.S_points = np.array(data['S'])
             self.V_points = np.array(data['V'])
-            self.I_points = np.array(data['Ibr'])
+            self.Sbr_points = np.array(data['Ibr'])
             return True
         else:
             warn(fname + " not found")
@@ -248,10 +245,6 @@ class MonteCarloResults:
         # model = KNeighborsRegressor(n_neighbors=4, algorithm='brute', leaf_size=16)
 
         model = RandomForestRegressor(10)
-
-        # model = DecisionTreeRegressor()
-
-        # model = LinearRegression()
 
         model.fit(x_train, y_train)
 
@@ -299,7 +292,7 @@ class MonteCarloResults:
 
         cdf_result_types = [ResultTypes.BusVoltageCDF,
                             ResultTypes.BusPowerCDF,
-                            ResultTypes.BranchCurrentCDF,
+                            ResultTypes.BranchPowerCDF,
                             ResultTypes.BranchLoadingCDF,
                             ResultTypes.BranchLossesCDF]
 
@@ -323,9 +316,9 @@ class MonteCarloResults:
                 x_label = 'Sampling points'
                 title = 'Bus voltage \naverage convergence'
 
-            elif result_type == ResultTypes.BranchCurrentAverage:
-                y = self.c_avg_conv[1:-1, indices]
-                y_label = '(p.u.)'
+            elif result_type == ResultTypes.BranchPowerAverage:
+                y = self.s_avg_conv[1:-1, indices]
+                y_label = '(MW)'
                 x_label = 'Sampling points'
                 title = 'Bus current \naverage convergence'
 
@@ -347,9 +340,9 @@ class MonteCarloResults:
                 x_label = 'Sampling points'
                 title = 'Bus voltage standard \ndeviation convergence'
 
-            elif result_type == ResultTypes.BranchCurrentStd:
-                y = self.c_std_conv[1:-1, indices]
-                y_label = '(p.u.)'
+            elif result_type == ResultTypes.BranchPowerStd:
+                y = self.s_std_conv[1:-1, indices]
+                y_label = '(MW)'
                 x_label = 'Sampling points'
                 title = 'Bus current standard \ndeviation convergence'
 
@@ -386,16 +379,14 @@ class MonteCarloResults:
                 x_label = 'Probability $P(X \leq x)$'
                 title = result_type.value[0]
 
-            elif result_type == ResultTypes.BranchCurrentCDF:
-                cdf = CDF(np.abs(self.I_points[:, indices]))
-                # cdf.plot(ax=ax)
-                y_label = '(kA)'
+            elif result_type == ResultTypes.BranchPowerCDF:
+                cdf = CDF(self.Sbr_points[:, indices].real)
+                y_label = '(MW)'
                 x_label = 'Probability $P(X \leq x)$'
                 title = result_type.value[0]
 
             elif result_type == ResultTypes.BusPowerCDF:
-                cdf = CDF(np.abs(self.S_points[:, indices]))
-                # cdf.plot(ax=ax)
+                cdf = CDF(self.S_points[:, indices].real)
                 y_label = '(p.u.)'
                 x_label = 'Probability $P(X \leq x)$'
                 title = result_type.value[0]

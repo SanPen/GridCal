@@ -226,9 +226,9 @@ class StaticSeriesIslandInputs(StaticSnapshotIslandInputs):
     This class represents a StaticSeriesInputs for a single island
     """
 
-    def __init__(self, nbus, nbr, ntime, nbat, nctrlgen, Sbase=100.0):
+    def __init__(self, nbus, nbr, nhvdc, nvsc, ntime, nbat, nctrlgen, Sbase=100.0):
 
-        StaticSnapshotIslandInputs.__init__(self, nbus, nbr, nbat, nctrlgen, Sbase)
+        StaticSnapshotIslandInputs.__init__(self, nbus, nbr, nhvdc, nvsc, nbat, nctrlgen, Sbase)
 
         self.ntime = ntime
         self.time_array = None
@@ -258,7 +258,7 @@ class StaticSeriesIslandInputs(StaticSnapshotIslandInputs):
         :param branch_idx: branch indices of the island
         :return: CalculationInputs instance
         """
-        obj = StaticSeriesIslandInputs(len(bus_idx), len(branch_idx), self.ntime, len(bat_idx), len(gen_idx))
+        obj = StaticSeriesIslandInputs(len(bus_idx), len(branch_idx), 0, 0, self.ntime, len(bat_idx), len(gen_idx))
 
         # remember the island original indices
         obj.original_bus_idx = bus_idx
@@ -548,7 +548,7 @@ class StaticSeriesInputs(StaticSnapshotInputs):
     static values from the time series mode (power flow time series, monte carlo, PTDF time-series, etc.)
     """
 
-    def __init__(self, n_bus, n_br, n_ld, n_gen, n_sta_gen, n_batt, n_sh, n_time, Sbase):
+    def __init__(self, n_bus, n_br, n_hvdc, n_vsc, n_ld, n_gen, n_sta_gen, n_batt, n_sh, n_time, Sbase):
         """
         Topology constructor
         :param n_bus: number of nodes
@@ -562,7 +562,7 @@ class StaticSeriesInputs(StaticSnapshotInputs):
         :param Sbase: circuit base power
         """
 
-        StaticSnapshotInputs.__init__(self, n_bus, n_br, n_ld, n_gen, n_sta_gen, n_batt, n_sh, Sbase)
+        StaticSnapshotInputs.__init__(self, n_bus, n_br, n_hvdc, n_vsc, n_ld, n_gen, n_sta_gen, n_batt, n_sh, Sbase)
 
         # number of time steps
         self.ntime = n_time
@@ -750,7 +750,13 @@ class StaticSeriesInputs(StaticSnapshotInputs):
         :return: StaticSeriesIslandInputs object
         """
         # Declare object to store the calculation inputs
-        circuit = StaticSeriesIslandInputs(self.nbus, self.nbr, self.ntime, self.n_batt, self.n_ctrl_gen)
+        circuit = StaticSeriesIslandInputs(nbus=self.nbus,
+                                           nbr=self.nbr,
+                                           nhvdc=self.n_hvdc,
+                                           nvsc=self.n_vsc,
+                                           ntime=self.ntime,
+                                           nbat=self.n_batt,
+                                           nctrlgen=self.n_ctrl_gen)
 
         # branches
         circuit.branch_rates = self.br_rates
@@ -780,6 +786,8 @@ class StaticSeriesInputs(StaticSnapshotInputs):
         circuit.vset = self.vset
         circuit.tap_ang = self.tap_ang
         circuit.tap_mod = self.tap_mod
+
+        circuit.vsc_m = self.vsc_m
 
         # active power control
         circuit.controlled_gen_pmin = self.generator_pmin

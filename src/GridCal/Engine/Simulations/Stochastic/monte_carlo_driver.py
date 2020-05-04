@@ -79,7 +79,7 @@ class MonteCarlo(QThread):
         self.max_mc_iter = max_mc_iter
 
         n = len(self.circuit.buses)
-        m = len(self.circuit.branches)
+        m = self.circuit.get_branch_number()
 
         self.results = MonteCarloResults(n, m, name='Monte Carlo')
 
@@ -102,7 +102,7 @@ class MonteCarlo(QThread):
         """
         """
         t, _ = res
-        progress = (t + 1) / self.sampling_points * 100
+        progress = (t + 1) / self.max_mc_iter * 100
         self.progress_signal.emit(progress)
         self.returned_results.append(res)
 
@@ -124,7 +124,7 @@ class MonteCarlo(QThread):
         v_variance = 0
 
         n = len(self.circuit.buses)
-        m = len(self.circuit.branches)
+        m = self.circuit.get_branch_number()
 
         mc_results = MonteCarloResults(n, m, name='Monte Carlo')
         avg_res = PowerFlowResults()
@@ -186,7 +186,7 @@ class MonteCarlo(QThread):
                         # store circuit results at the time index 't'
                         mc_results.S_points[t, numerical_island.original_bus_idx] = res.Sbus
                         mc_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
-                        mc_results.I_points[t, numerical_island.original_branch_idx] = res.Ibranch
+                        mc_results.Sbr_points[t, numerical_island.original_branch_idx] = res.Sbranch
                         mc_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
                         mc_results.losses_points[t, numerical_island.original_branch_idx] = res.losses
 
@@ -252,7 +252,7 @@ class MonteCarlo(QThread):
         v_variance = 0
 
         n = len(self.circuit.buses)
-        m = len(self.circuit.branches)
+        m = self.circuit.get_branch_number()
 
         # compile circuits
         numerical_circuit = self.circuit.compile_time_series()
@@ -301,7 +301,7 @@ class MonteCarlo(QThread):
 
                         mc_results.S_points[t, numerical_island.original_bus_idx] = res.Sbus
                         mc_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
-                        mc_results.I_points[t, numerical_island.original_branch_idx] = res.Ibranch
+                        mc_results.Sbr_points[t, numerical_island.original_branch_idx] = res.Sbranch
                         mc_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
                         mc_results.losses_points[t, numerical_island.original_branch_idx] = res.losses
 
@@ -338,12 +338,8 @@ class MonteCarlo(QThread):
                 std_dev_progress = 100
             self.progress_signal.emit(max((std_dev_progress, it / self.max_mc_iter * 100)))
 
-            # print(iter, '/', max_mc_iter)
-            # print('Vmc:', Vavg)
-            # print('Vstd:', Vvariance, ' -> ', std_dev_progress, ' %')
-
         # compile results
-        mc_results.sbranch = avg_res.Sbranch
+        # mc_results.sbranch = avg_res.Sbranch
         # mc_results.losses = avg_res.losses
         mc_results.bus_types = numerical_circuit.bus_types
 

@@ -374,8 +374,8 @@ class ShortCircuit(QRunnable):
         else:
             grid = self.grid
 
-        n = len(grid.buses)
-        m = len(grid.branches)
+        n = grid.get_bus_number()
+        m = grid.get_branch_number()
         results = ShortCircuitResults()  # yes, reuse this class
         results.initialize(n, m)
 

@@ -228,7 +228,7 @@ def outer_loop_power_flow(circuit: StaticSnapshotIslandInputs, options: PowerFlo
     # copy the tap positions
     tap_positions = circuit.tap_position.copy()
 
-    tap_module = circuit.tap_mod.copy()
+    tap_module = np.r_[circuit.tap_mod, np.ones(circuit.nhvdc), circuit.vsc_m]
 
     # control flags
     any_q_control_issue = True
@@ -1183,7 +1183,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     """
     # print('PowerFlowDriver at ', self.grid.name)
     n = len(multi_circuit.buses)
-    m = len(multi_circuit.branches)
+    m = multi_circuit.get_branch_number()
     results = PowerFlowResults()
     results.initialize(n, m)
 

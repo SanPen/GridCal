@@ -1,4 +1,4 @@
-from qtconsole.qt import QtGui
+
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
 
@@ -10,23 +10,23 @@ class ConsoleWidget(RichJupyterWidget):
     """
 
     def __init__(self, customBanner=None, *args, **kwargs):
-        super(ConsoleWidget, self).__init__(*args, **kwargs)
+        RichJupyterWidget.__init__(self, *args, **kwargs)
 
         if customBanner is not None:
             self.banner = customBanner
 
         self.font_size = 6
         self.gui_completion = 'droplist'
-        self.kernel_manager = kernel_manager = QtInProcessKernelManager()
-        kernel_manager.start_kernel(show_banner=False)
-        kernel_manager.kernel.gui = 'qt'
+        self.kernel_manager = QtInProcessKernelManager()
+        self.kernel_manager.start_kernel(show_banner=False)
+        self.kernel_manager.kernel.gui = 'qt'
         self.kernel_client = kernel_client = self._kernel_manager.client()
         kernel_client.start_channels()
 
         def stop():
             kernel_client.stop_channels()
-            kernel_manager.shutdown_kernel()
-            guisupport.get_app_qt().exit()
+            self.kernel_manager.shutdown_kernel()
+            # guisupport.get_app_qt().exit()
 
         self.exit_requested.connect(stop)
 
@@ -59,7 +59,11 @@ class ConsoleWidget(RichJupyterWidget):
 
 
 if __name__ == '__main__':
-    app = QtGui.QApplication([])
+    try:
+        from qtconsole.qt import QtWidgets
+    except:
+        from qtconsole.qtconsoleapp import QtWidgets
+    app = QtWidgets.QApplication([])
     widget = ConsoleWidget()
     widget.show()
     app.exec_()

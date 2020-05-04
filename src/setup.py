@@ -30,6 +30,7 @@ if os.path.exists(os.path.join(here, '..', 'doc', 'about.rst')):
         description = f.read()
 else:
     description = ''
+    print('Unable to read the description file')
 
 
 base_path = os.path.join('GridCal')
@@ -51,7 +52,7 @@ package_data = {'GridCal': ['*.md'],
                 'GridCal.ThirdParty.pulp.solverdir.cbc.osx.64': ['*', '*.*'],
                 }
 
-dependencies = ["PySide2==5.13",  # for now, 5.14 breaks the UI generation for development
+dependencies = ["PySide2>=5.13",  # for now, 5.14 breaks the UI generation for development
                 "numpy>=1.14.0",
                 "scipy>=1.0.0",
                 "networkx>=2.1",
@@ -59,7 +60,7 @@ dependencies = ["PySide2==5.13",  # for now, 5.14 breaks the UI generation for d
                 "xlwt>=1.3.0",
                 "xlrd>=1.1.0",
                 "matplotlib>=2.1.1",
-                "qtconsole>=4.3.1",
+                "qtconsole>=4.5.4",
                 "pyDOE>=0.3.8",
                 "pySOT>=0.2.1",
                 "openpyxl>=2.4.9",

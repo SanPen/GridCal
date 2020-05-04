@@ -22,6 +22,15 @@ from numpy import array, angle, exp, linalg, r_, Inf, conj, diag, asmatrix, asar
 empty, float64, int32, arange
 from scipy.sparse import csr_matrix as sparse, hstack, vstack
 from scipy.sparse.linalg import spsolve, splu
+import numpy as np
+import pandas as pd
+import numba as nb
+import time
+from warnings import warn
+from scipy.sparse import coo_matrix, csc_matrix
+from scipy.sparse import hstack as hs, vstack as vs
+from scipy.sparse.linalg import factorized, spsolve
+from matplotlib import pyplot as plt
 import scipy
 scipy.ALLOW_THREADS = True
 import time
@@ -739,6 +748,216 @@ def runge_kutta_nr(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, error_registry=
     return V, converged, norm_f, Scalc, elapsed
 
 
+
+########################################################################################################################
+#  HELM
+########################################################################################################################
+
+@nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")
+def conv1(A, B, c, indices):
+    """
+    Performs the convolution of A* and B
+    :param A: Coefficients matrix 1 (orders, buses)
+    :param B: Coefficients matrix 2 (orders, buses)
+    :param c: order of the coefficients
+    :param indices: bus indices array
+    :return: Array with the convolution for the buses given by "indices"
+    """
+    suma = np.zeros(len(indices), dtype=nb.complex128)
+    for k in range(1, c + 1):
+        for i, d in enumerate(indices):
+            suma[i] += np.conj(A[k, d]) * B[c - k, d]
+    return suma
+
+
+@nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")
+def conv2(A, B, c, indices):
+    """
+    Performs the convolution of A and B
+    :param A: Coefficients matrix 1 (orders, buses)
+    :param B: Coefficients matrix 2 (orders, buses)
+    :param c: order of the coefficients
+    :param indices: bus indices array
+    :return: Array with the convolution for the buses given by "indices"
+    """
+    suma = np.zeros(len(indices), dtype=nb.complex128)
+    for k in range(1, c):
+        for i, d in enumerate(indices):
+            suma[i] += A[k, d] * B[c - 1 - k, d]
+    return suma
+
+
+@nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")
+def conv3(A, B, c, indices):
+    """
+    Performs the convolution of A and B*
+    :param A: Coefficients matrix 1 (orders, buses)
+    :param B: Coefficients matrix 2 (orders, buses)
+    :param c: order of the coefficients
+    :param indices: bus indices array
+    :return: Array with the convolution for the buses given by "indices"
+    """
+    suma = np.zeros(len(indices), dtype=nb.complex128)
+    for k in range(1, c):
+        for i, d in enumerate(indices):
+            suma[i] += A[k, d] * np.conj(B[c - k, d])
+    return suma
+
+
+def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, verbose=False):
+    """
+    Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
+    THis function just returns the coefficients for further usage in other routines
+    :param Yseries: Admittance matrix of the series elements
+    :param V0: vector of specified voltages
+    :param S0: vector of specified power
+    :param Ysh0: vector of shunt admittances (including the shunts of the branches)
+    :param pq: list of pq nodes
+    :param pv: list of pv nodes
+    :param sl: list of slack nodes
+    :param pqpv: sorted list of pq and pv nodes
+    :param tolerance: target error (or tolerance)
+    :param max_coeff: maximum number of coefficients
+    :param verbose: print intermediate information
+    :return: U, X, Q, iterations
+    """
+
+    npqpv = len(pqpv)
+    npv = len(pv)
+    nsl = len(sl)
+    n = Yseries.shape[0]
+
+    # --------------------------- PREPARING IMPLEMENTATION -------------------------------------------------------------
+    U = np.zeros((max_coeff, npqpv), dtype=complex)  # voltages
+    W = np.zeros((max_coeff, npqpv), dtype=complex)  # compute X=1/conj(U)
+    Q = np.zeros((max_coeff, npqpv), dtype=complex)  # unknown reactive powers
+    Vm0 = np.abs(V0)
+    Vm2 = Vm0 * Vm0
+
+    if n < 2:
+        return U, W, Q, 0
+
+    if verbose:
+        print('Yseries')
+        print(Yseries.toarray())
+        df = pd.DataFrame(data=np.c_[Ysh0.imag, S0.real, S0.imag, Vm0],
+                          columns=['Ysh', 'P0', 'Q0', 'V0'])
+        print(df)
+
+    Yred = Yseries[np.ix_(pqpv, pqpv)]  # admittance matrix without slack buses
+    Yslack = -Yseries[np.ix_(pqpv, sl)]  # yes, it is the negative of this
+    Yslack_vec = Yslack.sum(axis=1).A1
+    G = np.real(Yred)  # real parts of Yij
+    B = np.imag(Yred)  # imaginary parts of Yij
+    P_red = S0.real[pqpv]
+    Q_red = S0.imag[pqpv]
+    Vslack = V0[sl]
+    Ysh_red = Ysh0[pqpv]
+
+    # indices 0 based in the internal scheme
+    nsl_counted = np.zeros(n, dtype=int)
+    compt = 0
+    for i in range(n):
+        if i in sl:
+            compt += 1
+        nsl_counted[i] = compt
+
+    pq_ = pq - nsl_counted[pq]
+    pv_ = pv - nsl_counted[pv]
+
+    # .......................CALCULATION OF TERMS [0] ------------------------------------------------------------------
+
+    U[0, :] = spsolve(Yred, Yslack_vec)
+    W[0, :] = 1 / np.conj(U[0, :])
+
+    # .......................CALCULATION OF TERMS [1] ------------------------------------------------------------------
+    valor = np.zeros(npqpv, dtype=complex)
+
+    # get the current injections that appear due to the slack buses reduction
+    I_inj_slack = Yslack * Vslack
+
+    valor[pq_] = I_inj_slack[pq_] - Yslack_vec[pq_] + (P_red[pq_] - Q_red[pq_] * 1j) * W[0, pq_] - U[0, pq_] * Ysh_red[pq_]
+    valor[pv_] = I_inj_slack[pv_] - Yslack_vec[pv_] + P_red[pv_] * W[0, pv_] - U[0, pv_] * Ysh_red[pv_]
+
+    # compose the right-hand side vector
+    RHS = np.r_[valor.real,
+                valor.imag,
+                Vm2[pv] - (U[0, pv_] * U[0, pv_]).real]
+
+    # Form the system matrix (MAT)
+    Upv = U[0, pv_]
+    Xpv = W[0, pv_]
+    VRE = coo_matrix((2 * Upv.real, (np.arange(npv), pv_)), shape=(npv, npqpv)).tocsc()
+    VIM = coo_matrix((2 * Upv.imag, (np.arange(npv), pv_)), shape=(npv, npqpv)).tocsc()
+    XIM = coo_matrix((-Xpv.imag, (pv_, np.arange(npv))), shape=(npqpv, npv)).tocsc()
+    XRE = coo_matrix((Xpv.real, (pv_, np.arange(npv))), shape=(npqpv, npv)).tocsc()
+    EMPTY = csc_matrix((npv, npv))
+
+    MAT = vs((hs((G,  -B,   XIM)),
+              hs((B,   G,   XRE)),
+              hs((VRE, VIM, EMPTY))), format='csc')
+
+    if verbose:
+        print('MAT')
+        print(MAT.toarray())
+
+    # factorize (only once)
+    MAT_LU = factorized(MAT.tocsc())
+
+    # solve
+    LHS = MAT_LU(RHS)
+
+    # update coefficients
+    U[1, :] = LHS[:npqpv] + 1j * LHS[npqpv:2 * npqpv]
+    Q[0, pv_] = LHS[2 * npqpv:]
+    W[1, :] = -W[0, :] * np.conj(U[1, :]) / np.conj(U[0, :])
+
+    # .......................CALCULATION OF TERMS [>=2] ----------------------------------------------------------------
+    iter_ = 1
+    range_pqpv = np.arange(npqpv, dtype=np.int64)
+    V = V0.copy()
+    c = 2
+    converged = False
+    norm_f = tolerance + 1.0  # any number that violates the convergence
+
+    while c < max_coeff and not converged:  # c defines the current depth
+
+        valor[pq_] = (P_red[pq_] - Q_red[pq_] * 1j) * W[c - 1, pq_] - U[c - 1, pq_] * Ysh_red[pq_]
+        valor[pv_] = -1j * conv2(W, Q, c, pv_) - U[c - 1, pv_] * Ysh_red[pv_] + W[c - 1, pv_] * P_red[pv_]
+
+        RHS = np.r_[valor.real,
+                    valor.imag,
+                    -conv3(U, U, c, pv_).real]
+
+        LHS = MAT_LU(RHS)
+
+        # update voltage coefficients
+        U[c, :] = LHS[:npqpv] + 1j * LHS[npqpv:2 * npqpv]
+
+        # update reactive power
+        Q[c - 1, pv_] = LHS[2 * npqpv:]
+
+        # update voltage inverse coefficients
+        W[c, range_pqpv] = -conv1(U, W, c, range_pqpv) / np.conj(U[0, range_pqpv])
+
+        # compute power mismatch
+        if not np.mod(c, 2):  # check the mismatch every 4 iterations
+            V[pqpv] = U.sum(axis=0)
+            Scalc = V * np.conj(Ybus * V)
+            dP = np.abs(S0[pqpv].real - Scalc[pqpv].real)
+            dQ = np.abs(S0[pq].imag - Scalc[pq].imag)
+            norm_f = np.linalg.norm(np.r_[dP, dQ], np.inf)  # same as max(abs())
+
+            # check convergence
+            converged = norm_f < tolerance
+            print('mismatch check at c=', c)
+
+        c += 1
+        iter_ += 1
+
+    return U, W, Q, iter_, norm_f
+
+
 ########################################################################################################################
 #  MAIN
 ########################################################################################################################
@@ -753,11 +972,11 @@ if __name__ == "__main__":
     pd.set_option('display.max_columns', 500)
     pd.set_option('display.width', 1000)
 
-    # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
+    fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'Illinois200Bus.xlsx')
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'Pegase 2869.xlsx')
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', '1354 Pegase.xlsx')
-    fname = '/home/santi/Documentos/Private_Grids/2026_INVIERNO_para Plexos_FINAL_9.raw'
+    # fname = '/home/santi/Documentos/Private_Grids/2026_INVIERNO_para Plexos_FINAL_9.raw'
 
     grid = FileOpen(file_name=fname).open()
     nc = grid.compile_snapshot()
@@ -771,7 +990,7 @@ if __name__ == "__main__":
     circuit.Vbus = np.ones(len(circuit.Vbus), dtype=complex)
 
     print('Newton-Raphson-Line-search 1')
-    for acc in [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 0.1]:
+    for acc in [1e-6]:  # [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 0.1]
         start_time = time.time()
 
         error_data1 = list()
@@ -781,52 +1000,52 @@ if __name__ == "__main__":
                                            Ibus=circuit.Ibus,
                                            pv=circuit.pv,
                                            pq=circuit.pq,
-                                           tol=1e-9,
-                                           max_it=100,
+                                           tol=1e-20,
+                                           max_it=20,
                                            acceleration_parameter=acc,
                                            error_registry=error_data1)
         print("--- %s seconds ---" % (time.time() - start_time))
         print('error: \t', err)
         ax.plot(error_data1, lw=2, label='NRLS 1:' + str(acc))
 
-    print('\nNewton-Raphson-Line-search 2')
-    for acc in [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 0.1]:
-
-        start_time = time.time()
-        error_data2 = list()
-        V1, converged_, err, S, el = NR_LS2(Ybus=circuit.Ybus,
-                                            Sbus=circuit.Sbus,
-                                            V0=circuit.Vbus,
-                                            Ibus=circuit.Ibus,
-                                            pv=circuit.pv,
-                                            pq=circuit.pq,
-                                            tol=1e-9,
-                                            max_it=100,
-                                            acceleration_parameter=acc,
-                                            error_registry=error_data2)
-
-        print("--- %s seconds ---" % (time.time() - start_time))
-        print('error: \t', err)
-
-        ax.plot(error_data2, lw=2, linestyle=':', label='NRLS 2: ' + str(acc))
-
-    print('\nVanilla NR ---')
-    start_time = time.time()
-    error_data3 = list()
-    V1, converged_, err, S, el = NR(Ybus=circuit.Ybus,
-                                    Sbus=circuit.Sbus,
-                                    V0=circuit.Vbus,
-                                    Ibus=circuit.Ibus,
-                                    pv=circuit.pv,
-                                    pq=circuit.pq,
-                                    tol=1e-9,
-                                    max_it=5,
-                                    mu0=1.0,
-                                    error_registry=error_data3)
-    ax.plot(error_data3, lw=2, linestyle='--', label='NR')
-
-    print("--- %s seconds ---" % (time.time() - start_time))
-    print('error: \t', err)
+    # print('\nNewton-Raphson-Line-search 2')
+    # for acc in [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 0.1]:
+    #
+    #     start_time = time.time()
+    #     error_data2 = list()
+    #     V1, converged_, err, S, el = NR_LS2(Ybus=circuit.Ybus,
+    #                                         Sbus=circuit.Sbus,
+    #                                         V0=circuit.Vbus,
+    #                                         Ibus=circuit.Ibus,
+    #                                         pv=circuit.pv,
+    #                                         pq=circuit.pq,
+    #                                         tol=1e-9,
+    #                                         max_it=100,
+    #                                         acceleration_parameter=acc,
+    #                                         error_registry=error_data2)
+    #
+    #     print("--- %s seconds ---" % (time.time() - start_time))
+    #     print('error: \t', err)
+    #
+    #     ax.plot(error_data2, lw=2, linestyle=':', label='NRLS 2: ' + str(acc))
+    #
+    # print('\nVanilla NR ---')
+    # start_time = time.time()
+    # error_data3 = list()
+    # V1, converged_, err, S, el = NR(Ybus=circuit.Ybus,
+    #                                 Sbus=circuit.Sbus,
+    #                                 V0=circuit.Vbus,
+    #                                 Ibus=circuit.Ibus,
+    #                                 pv=circuit.pv,
+    #                                 pq=circuit.pq,
+    #                                 tol=1e-9,
+    #                                 max_it=5,
+    #                                 mu0=1.0,
+    #                                 error_registry=error_data3)
+    # ax.plot(error_data3, lw=2, linestyle='--', label='NR')
+    #
+    # print("--- %s seconds ---" % (time.time() - start_time))
+    # print('error: \t', err)
 
     print('\nRunge kutta ---')
     start_time = time.time()
@@ -850,6 +1069,51 @@ if __name__ == "__main__":
     ax.set_ylabel('Error')
     ax.legend()
 
+
+    print('\nHELM ---')
+    start_time = time.time()
+    n_coeff = 30
+
+    # compute the series of coefficients
+    U, X, Q, iter_, norm_f = helm_coefficients_josep(Ybus=circuit.Ybus,
+                                                     Yseries=circuit.Yseries,
+                                                     V0=circuit.Vbus,
+                                                     S0=circuit.Sbus,
+                                                     Ysh0=circuit.Ysh_helm,
+                                                     pv=circuit.pv,
+                                                     pq=circuit.pq,
+                                                     sl=circuit.ref,
+                                                     pqpv=circuit.pqpv,
+                                                     tolerance=1e-15,
+                                                     max_coeff=n_coeff,
+                                                     verbose=False)
+
+    V = circuit.Vbus.copy()
+    Sbus = circuit.Sbus
+    Ybus = circuit.Ybus
+    pv = circuit.pv
+    pq = circuit.pq
+    error_data4 = list()
+    for c in range(n_coeff):
+        V[circuit.pqpv] = U[:c, :].sum(axis=0)
+        # evaluate F(x0)
+        Scalc = V * np.conj(Ybus * V)
+        mis = Scalc - Sbus  # compute the mismatch
+        f = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]
+
+        # check tolerance
+        norm_f = np.linalg.norm(f, np.Inf)
+        error_data4.append(norm_f)
+
+    ax.plot(error_data4, lw=2, linestyle='--', label='HELM')
+
+    print("--- %s seconds ---" % (time.time() - start_time))
+    print('error: \t', err)
+
+    ax.set_yscale('log')
+    ax.set_xlabel('Evaluations of $f(x)$')
+    ax.set_ylabel('Error')
+    ax.legend()
     # check against the standard NR power flow used in GridCal
     # print('\nNR implemented in GridCal ---')
     # options = PowerFlowOptions(SolverType.NR, verbose=False, tolerance=1e-9, control_q=False)

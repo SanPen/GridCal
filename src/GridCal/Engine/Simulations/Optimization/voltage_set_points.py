@@ -59,7 +59,7 @@ class SetPointsOptimizationProblem(OptimizationProblem):
         self.numerical_input_islands = self.numerical_circuit.compute()
 
         n = len(self.circuit.buses)
-        m = len(self.circuit.branches)
+        m = self.circuit.get_branch_number()
 
         self.max_eval = max_iter
 

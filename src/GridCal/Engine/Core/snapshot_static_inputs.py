@@ -30,9 +30,19 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_aux import compile_types
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
 
 
-def calc_connectivity(branch_active, bus_active, C_branch_bus_f, C_branch_bus_t, apply_temperature, R_corrected,
+def calc_connectivity(n_br, n_hvdc, n_vsc,
+                      C_branch_bus_f, C_branch_bus_t,  branch_active,  bus_active,  # common to all branches
+
+                      # just for the pi-branch model
+                      apply_temperature, R_corrected,
                       R, X, G, B, branch_tolerance_mode: BranchImpedanceMode, impedance_tolerance,
-                      tap_mod, tap_ang, tap_t, tap_f, Ysh):
+                      tap_mod, tap_ang, tap_t, tap_f, Ysh,
+
+                      # for the HVDC lines
+                      Rdc,
+
+                      # for the VSC lines
+                      R1, X1, Gsw, Beq, m, theta):
     """
     Build all the admittance related objects
     :param branch_active: array of branch active
@@ -69,10 +79,28 @@ def calc_connectivity(branch_active, bus_active, C_branch_bus_f, C_branch_bus_t,
 
     sparse = get_sparse_type()
 
-    # form the connectivity matrices with the states applied
+    # form the connectivity matrices with the states applied -----------------------------------------------------------
     br_states_diag = sp.diags(branch_active)
     Cf = br_states_diag * C_branch_bus_f
     Ct = br_states_diag * C_branch_bus_t
+
+    # Declare the empty primitives -------------------------------------------------------------------------------------
+
+    # The composition order is and will be: Pi model, HVDC, VSC
+
+    mm = n_br + n_hvdc + n_vsc
+    Ytt = np.empty(mm, dtype=complex)
+    Yff = np.empty(mm, dtype=complex)
+    Yft = np.empty(mm, dtype=complex)
+    Ytf = np.empty(mm, dtype=complex)
+
+    # Branch primitives in vector form, for Yseries
+    Ytts = np.empty(mm, dtype=complex)
+    Yffs = np.empty(mm, dtype=complex)
+    Yfts = np.empty(mm, dtype=complex)
+    Ytfs = np.empty(mm, dtype=complex)
+
+    # PI BRANCH MODEL --------------------------------------------------------------------------------------------------
 
     # use the specified of the temperature-corrected resistance
     if apply_temperature:
@@ -86,51 +114,85 @@ def calc_connectivity(branch_active, bus_active, C_branch_bus_f, C_branch_bus_t,
 
     Ys = 1.0 / (R + 1.0j * X)
     GBc = G + 1.0j * B
+    Ys2 = (Ys + GBc / 2.0)
     tap = tap_mod * np.exp(1.0j * tap_ang)
 
     # branch primitives in vector form for Ybus
-    Ytt = (Ys + GBc / 2.0) / (tap_t * tap_t)
-    Yff = (Ys + GBc / 2.0) / (tap_f * tap_f * tap * np.conj(tap))
-    Yft = - Ys / (tap_f * tap_t * np.conj(tap))
-    Ytf = - Ys / (tap_t * tap_f * tap)
+    Ytt[:n_br] = Ys2 / (tap_t * tap_t)
+    Yff[:n_br] = Ys2 / (tap_f * tap_f * tap * np.conj(tap))
+    Yft[:n_br] = - Ys / (tap_f * tap_t * np.conj(tap))
+    Ytf[:n_br] = - Ys / (tap_t * tap_f * tap)
 
-    # form the admittance matrices
+    # branch primitives in vector form, for Yseries
+    Ytts[:n_br] = Ys
+    Yffs[:n_br] = Ys / (tap * np.conj(tap))
+    Yfts[:n_br] = - Ys / np.conj(tap)
+    Ytfs[:n_br] = - Ys / tap
+
+    # HVDC LINE MODEL --------------------------------------------------------------------------------------------------
+    a = n_br
+    b = a + n_hvdc
+    Ydc = 1 / Rdc
+    Ytt[a:b] = Ydc
+    Yff[a:b] = Ydc
+    Yft[a:b] = - Ydc
+    Ytf[a:b] = - Ydc
+
+    Ytts[a:b] = Ydc
+    Yffs[a:b] = Ydc
+    Yfts[a:b] = - Ydc
+    Ytfs[a:b] = - Ydc
+
+    # VSC MODEL --------------------------------------------------------------------------------------------------------
+    a = n_br + n_hvdc
+    b = a + n_vsc
+    Y_vsc = 1.0 / (R1 + 1.0j * X1)  # Y1
+    Yff[a:b] = Y_vsc
+    Yft[a:b] = -m * np.exp(1.0j * theta) * Y_vsc
+    Ytf[a:b] = -m * np.exp(-1.0j * theta) * Y_vsc
+    Ytt[a:b] = Gsw + m * m * (Y_vsc + 1.0j * Beq)
+
+    Yffs[a:b] = Y_vsc
+    Yfts[a:b] = -m * np.exp(1.0j * theta) * Y_vsc
+    Ytfs[a:b] = -m * np.exp(-1.0j * theta) * Y_vsc
+    Ytts[a:b] = m * m * (Y_vsc + 1.0j)
+
+    # form the admittance matrices -------------------------------------------------------------------------------------
     Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
     Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
     Ybus = sparse(Cf.T * Yf + Ct.T * Yt + sp.diags(Ysh))
 
-    # branch primitives in vector form, for Yseries
-    Ytts = Ys
-    Yffs = Ytts / (tap * np.conj(tap))
-    Yfts = - Ys / np.conj(tap)
-    Ytfs = - Ys / tap
-
-    # form the admittance matrices of the series elements
+    # form the admittance matrices of the series and shunt elements ----------------------------------------------------
     Yfs = sp.diags(Yffs) * Cf + sp.diags(Yfts) * Ct
     Yts = sp.diags(Ytfs) * Cf + sp.diags(Ytts) * Ct
     Yseries = sparse(Cf.T * Yfs + Ct.T * Yts)
-    Gsh = GBc / 2.0
+
+    Gsh = np.r_[GBc / 2.0, np.zeros(n_hvdc, dtype=complex), Gsw + 1j * Beq]
     Yshunt = Ysh + Cf.T * Gsh + Ct.T * Gsh
 
-    # Form the matrices for fast decoupled
-    b1 = 1.0 / (X + 1e-20)
+    # Form the matrices for fast decoupled -----------------------------------------------------------------------------
+    reactances = np.r_[X, np.zeros(n_hvdc), X1]
+    susceptances = np.r_[B, np.zeros(n_hvdc), Beq]
+    all_taps = np.r_[tap, np.ones(n_hvdc, dtype=complex), m * np.exp(1j * theta)]
+
+    b1 = 1.0 / (reactances + 1e-20)
     b1_tt = sp.diags(b1)
     B1f = b1_tt * Cf - b1_tt * Ct
     B1t = -b1_tt * Cf + b1_tt * Ct
     B1 = sparse(Cf.T * B1f + Ct.T * B1t).tocsc()
 
-    b2 = b1 + B
-    b2_ff = -(b2 / (tap * np.conj(tap))).real
-    b2_ft = -(b1 / np.conj(tap)).real
-    b2_tf = -(b1 / tap).real
+    b2 = b1 + susceptances
+    b2_ff = -(b2 / (all_taps * np.conj(all_taps))).real
+    b2_ft = -(b1 / np.conj(all_taps)).real
+    b2_tf = -(b1 / all_taps).real
     b2_tt = - b2
+
     B2f = -sp.diags(b2_ff) * Cf + sp.diags(b2_ft) * Ct
     B2t = sp.diags(b2_tf) * Cf + -sp.diags(b2_tt) * Ct
     B2 = sparse(Cf.T * B2f + Ct.T * B2t).tocsc()
 
-    ################################################################################################################
-    # Bus connectivity
-    ################################################################################################################
+    # Bus connectivity -------------------------------------------------------------------------------------------------
+
     # branch - bus connectivity
     C_branch_bus = Cf + Ct
 
@@ -142,7 +204,7 @@ def calc_connectivity(branch_active, bus_active, C_branch_bus_f, C_branch_bus_t,
 
 
 def calc_islands(circuit: "StaticSnapshotIslandInputs", bus_active, C_bus_bus, C_branch_bus, C_bus_gen, C_bus_batt,
-                 nbus, nbr, time_idx=None, ignore_single_node_islands=False) -> List["StaticSnapshotIslandInputs"]:
+                 nbus, nbr, ignore_single_node_islands=False) -> List["StaticSnapshotIslandInputs"]:
     """
     Partition the circuit in islands for the designated time intervals
     :param circuit: CalculationInputs instance with all the data regardless of the islands and the branch states
@@ -152,13 +214,14 @@ def calc_islands(circuit: "StaticSnapshotIslandInputs", bus_active, C_bus_bus, C
     :param C_bus_batt: battery-bus connectivity matrix
     :param nbus: number of buses
     :param nbr: number of branches
-    :param time_idx: array with the time indices where this set of islands belongs to
-                    (if None all the time series are kept)
     :param ignore_single_node_islands: Ignore the single node islands
     :return: list of CalculationInputs instances
     """
     # find the islands of the circuit
-    g = Graph(C_bus_bus=sp.csc_matrix(C_bus_bus), C_branch_bus=sp.csc_matrix(C_branch_bus), bus_states=bus_active)
+    g = Graph(C_bus_bus=sp.csc_matrix(C_bus_bus),
+              C_branch_bus=sp.csc_matrix(C_branch_bus),
+              bus_states=bus_active)
+
     islands = g.find_islands()
 
     # clear the list of circuits
@@ -222,7 +285,7 @@ class StaticSnapshotIslandInputs:
     This class represents a StaticSnapshotInputs for a single island
     """
 
-    def __init__(self, nbus, nbr, nbat, nctrlgen, Sbase=100):
+    def __init__(self, nbus, nbr, nhvdc, nvsc, nbat, nctrlgen, Sbase=100):
         """
 
         :param nbus:
@@ -233,6 +296,8 @@ class StaticSnapshotIslandInputs:
         """
         self.nbus = nbus
         self.nbr = nbr
+        self.nhvdc = nhvdc
+        self.nvsc = nvsc
 
         self.Sbase = Sbase
 
@@ -241,7 +306,14 @@ class StaticSnapshotIslandInputs:
         self.original_time_idx = list()
 
         self.bus_names = np.empty(self.nbus, dtype=object)
-        self.branch_names = np.empty(self.nbr, dtype=object)
+
+        # common to all branches
+        mm = nbr + nhvdc + nvsc
+        self.branch_names = np.empty(mm, dtype=object)
+        self.F = np.zeros(mm, dtype=int)
+        self.T = np.zeros(mm, dtype=int)
+        self.C_branch_bus_f = csc_matrix((mm, nbus), dtype=int)
+        self.C_branch_bus_t = csc_matrix((mm, nbus), dtype=int)
 
         # resulting matrices (calculation)
         self.Yf = csc_matrix((nbr, nbus), dtype=complex)
@@ -266,16 +338,13 @@ class StaticSnapshotIslandInputs:
         self.Qmax = np.zeros(nbus, dtype=float)
         self.Sinstalled = np.zeros(nbus, dtype=float)
 
-        self.F = np.zeros(nbr, dtype=int)
-        self.T = np.zeros(nbr, dtype=int)
-
         # vectors to re-calculate the admittance matrices
         self.Ys = np.zeros(nbr, dtype=complex)
         self.GBc = np.zeros(nbr, dtype=complex)
         self.tap_f = np.zeros(nbr, dtype=float)
         self.tap_t = np.zeros(nbr, dtype=float)
         self.tap_ang = np.zeros(nbr, dtype=float)
-        self.tap_mod = np.zeros(nbr, dtype=float)
+        self.tap_mod = np.ones(nbr, dtype=float)
 
         # needed fot the tap changer
         self.is_bus_to_regulated = np.zeros(nbr, dtype=int)
@@ -287,8 +356,8 @@ class StaticSnapshotIslandInputs:
         self.tap_inc_reg_down = np.zeros(nbr, dtype=float)
         self.vset = np.zeros(nbr, dtype=float)
 
-        self.C_branch_bus_f = csc_matrix((nbr, nbus), dtype=int)
-        self.C_branch_bus_t = csc_matrix((nbr, nbus), dtype=int)
+        # vsc
+        self.vsc_m = np.ones(nvsc, dtype=float)
 
         # Active power control
         self.controlled_gen_pmin = np.zeros(nctrlgen, dtype=float)
@@ -357,7 +426,7 @@ class StaticSnapshotIslandInputs:
         :param branch_idx: branch indices of the island
         :return: CalculationInputs instance
         """
-        obj = StaticSnapshotIslandInputs(len(bus_idx), len(branch_idx), len(bat_idx), len(gen_idx))
+        obj = StaticSnapshotIslandInputs(len(bus_idx), len(branch_idx), 0, 0, len(bat_idx), len(gen_idx))
 
         # remember the island original indices
         obj.original_bus_idx = bus_idx
@@ -430,47 +499,47 @@ class StaticSnapshotIslandInputs:
 
         return obj
 
-    def compute_branch_results(self, V) -> "PowerFlowResults":
-        """
-        Compute the branch magnitudes from the voltages
-        :param V: Voltage vector solution in p.u.
-        :return: PowerFlowResults instance
-        """
-
-        # declare circuit results
-        data = PowerFlowResults(self.nbus, self.nbr)
-
-        # copy the voltage
-        data.V = V
-
-        # power at the slack nodes
-        data.Sbus = self.Sbus.copy()
-        data.Sbus[self.ref] = V[self.ref] * np.conj(self.Ybus[self.ref, :].dot(V))
-
-        # Reactive power at the pv nodes: keep the original P injection and set the calculated reactive power
-        Q = (V[self.pv] * np.conj(self.Ybus[self.pv, :].dot(V))).imag
-
-        data.Sbus[self.pv] = self.Sbus[self.pv].real + 1j * Q
-
-        # Branches current, loading, etc
-        data.If = self.Yf * V
-        data.It = self.Yt * V
-        data.Sf = self.C_branch_bus_f * V * np.conj(data.If)
-        data.St = self.C_branch_bus_t * V * np.conj(data.It)
-
-        # Branch losses in MVA
-        data.losses = (data.Sf + data.St)
-
-        # Branch current in p.u.
-        data.Ibranch = np.maximum(data.If, data.It)
-
-        # Branch power in MVA
-        data.Sbranch = np.maximum(data.Sf, data.St)
-
-        # Branch loading in p.u.
-        data.loading = data.Sbranch / (self.branch_rates + 1e-9)
-
-        return data
+    # def compute_branch_results(self, V) -> "PowerFlowResults":
+    #     """
+    #     Compute the branch magnitudes from the voltages
+    #     :param V: Voltage vector solution in p.u.
+    #     :return: PowerFlowResults instance
+    #     """
+    #
+    #     # declare circuit results
+    #     data = PowerFlowResults(self.nbus, self.nbr)
+    #
+    #     # copy the voltage
+    #     data.V = V
+    #
+    #     # power at the slack nodes
+    #     data.Sbus = self.Sbus.copy()
+    #     data.Sbus[self.ref] = V[self.ref] * np.conj(self.Ybus[self.ref, :].dot(V))
+    #
+    #     # Reactive power at the pv nodes: keep the original P injection and set the calculated reactive power
+    #     Q = (V[self.pv] * np.conj(self.Ybus[self.pv, :].dot(V))).imag
+    #
+    #     data.Sbus[self.pv] = self.Sbus[self.pv].real + 1j * Q
+    #
+    #     # Branches current, loading, etc
+    #     data.If = self.Yf * V
+    #     data.It = self.Yt * V
+    #     data.Sf = self.C_branch_bus_f * V * np.conj(data.If)
+    #     data.St = self.C_branch_bus_t * V * np.conj(data.It)
+    #
+    #     # Branch losses in MVA
+    #     data.losses = (data.Sf + data.St)
+    #
+    #     # Branch current in p.u.
+    #     data.Ibranch = np.maximum(data.If, data.It)
+    #
+    #     # Branch power in MVA
+    #     data.Sbranch = np.maximum(data.Sf, data.St)
+    #
+    #     # Branch loading in p.u.
+    #     data.loading = data.Sbranch / (self.branch_rates + 1e-9)
+    #
+    #     return data
 
     def re_calc_admittance_matrices(self, tap_mod):
         """
@@ -482,7 +551,7 @@ class StaticSnapshotIslandInputs:
         Cf = self.C_branch_bus_f
         Ct = self.C_branch_bus_t
 
-        tap = tap_mod * np.exp(1.0j * self.tap_ang)
+        tap = np.r_[tap_mod * np.exp(1.0j * self.tap_ang), ]
 
         # branch primitives in vector form
         Ytt = (self.Ys + self.GBc / 2.0) / (self.tap_t * self.tap_t)
@@ -642,7 +711,7 @@ class StaticSnapshotInputs:
     static values from the snapshot mode (power flow, short circuit, voltage collapse, PTDF, etc.)
     """
 
-    def __init__(self, n_bus, n_br, n_ld, n_gen, n_sta_gen, n_batt, n_sh, Sbase):
+    def __init__(self, n_bus, n_br, n_hvdc, n_vsc, n_ld, n_gen, n_sta_gen, n_batt, n_sh, Sbase):
         """
         Topology constructor
         :param n_bus: number of nodes
@@ -652,7 +721,8 @@ class StaticSnapshotInputs:
         :param n_sta_gen: number of generators
         :param n_batt: number of generators
         :param n_sh: number of shunts
-        :param n_time: number of time_steps
+        :param n_hvdc: number of dc lines
+        :param n_vsc: number of VSC converters
         :param Sbase: circuit base power
         """
 
@@ -661,6 +731,10 @@ class StaticSnapshotInputs:
 
         # number of branches
         self.nbr = n_br
+
+        self.n_hvdc = n_hvdc
+
+        self.n_vsc = n_vsc
 
         self.n_batt = n_batt
 
@@ -673,7 +747,7 @@ class StaticSnapshotInputs:
 
         self.time_array = None
 
-        # bus
+        # bus ----------------------------------------------------------------------------------------------------------
         self.bus_names = np.empty(n_bus, dtype=object)
         self.bus_vnom = np.zeros(n_bus, dtype=float)
         self.bus_active = np.ones(n_bus, dtype=int)
@@ -682,12 +756,17 @@ class StaticSnapshotInputs:
         self.Vmax = np.ones(n_bus, dtype=float)
         self.bus_types = np.empty(n_bus, dtype=int)
 
-        # branch
-        self.branch_names = np.empty(n_br, dtype=object)
+        # branch common ------------------------------------------------------------------------------------------------
+        mm = n_br + n_hvdc + n_vsc
+        self.branch_names = np.empty(mm, dtype=object)
+        self.branch_active = np.zeros(mm, dtype=int)
+        self.F = np.zeros(mm, dtype=int)
+        self.T = np.zeros(mm, dtype=int)
+        self.br_rates = np.zeros(mm, dtype=float)
+        self.C_branch_bus_f = sp.lil_matrix((mm, n_bus), dtype=int)
+        self.C_branch_bus_t = sp.lil_matrix((mm, n_bus), dtype=int)
 
-        self.F = np.zeros(n_br, dtype=int)
-        self.T = np.zeros(n_br, dtype=int)
-
+        # branch (pi model)
         self.R = np.zeros(n_br, dtype=float)
         self.X = np.zeros(n_br, dtype=float)
         self.G = np.zeros(n_br, dtype=float)
@@ -697,9 +776,6 @@ class StaticSnapshotInputs:
         self.tap_t = np.ones(n_br, dtype=float)  # tap generated by the difference in nominal voltage at the to side
         self.tap_mod = np.zeros(n_br, dtype=float)  # normal tap module
         self.tap_ang = np.zeros(n_br, dtype=float)  # normal tap angle
-        self.br_rates = np.zeros(n_br, dtype=float)
-
-        self.branch_active = np.zeros(n_br, dtype=int)
 
         self.branch_cost = np.zeros(n_br, dtype=float)
 
@@ -717,13 +793,20 @@ class StaticSnapshotInputs:
         self.tap_inc_reg_up = np.zeros(n_br, dtype=float)
         self.tap_inc_reg_down = np.zeros(n_br, dtype=float)
         self.vset = np.zeros(n_br, dtype=float)
-
-        self.C_branch_bus_f = sp.lil_matrix((n_br, n_bus), dtype=int)
-        self.C_branch_bus_t = sp.lil_matrix((n_br, n_bus), dtype=int)
-
         self.switch_indices = list()
 
-        # load
+        # hvdc line
+        self.Rdc = np.zeros(n_hvdc, dtype=float)
+
+        # vsc converter
+        self.vsc_R1 = np.zeros(n_vsc, dtype=float)
+        self.vsc_X1 = np.zeros(n_vsc, dtype=float)
+        self.vsc_G0 = np.zeros(n_vsc, dtype=float)
+        self.vsc_Beq = np.zeros(n_vsc, dtype=float)
+        self.vsc_m = np.zeros(n_vsc, dtype=float)
+        self.vsc_theta = np.zeros(n_vsc, dtype=float)
+
+        # load ---------------------------------------------------------------------------------------------------------
         self.load_names = np.empty(n_ld, dtype=object)
         self.load_power = np.zeros(n_ld, dtype=complex)
         self.load_current = np.zeros(n_ld, dtype=complex)
@@ -737,7 +820,7 @@ class StaticSnapshotInputs:
 
         self.C_bus_load = sp.lil_matrix((n_bus, n_ld), dtype=int)
 
-        # battery
+        # battery ------------------------------------------------------------------------------------------------------
         self.battery_names = np.empty(n_batt, dtype=object)
         self.battery_power = np.zeros(n_batt, dtype=float)
         self.battery_voltage = np.zeros(n_batt, dtype=float)
@@ -760,7 +843,7 @@ class StaticSnapshotInputs:
 
         self.C_bus_batt = sp.lil_matrix((n_bus, n_batt), dtype=int)
 
-        # static generator
+        # static generator ---------------------------------------------------------------------------------------------
         self.static_gen_names = np.empty(n_sta_gen, dtype=object)
         self.static_gen_power = np.zeros(n_sta_gen, dtype=complex)
         self.static_gen_dispatchable = np.zeros(n_sta_gen, dtype=bool)
@@ -772,7 +855,7 @@ class StaticSnapshotInputs:
 
         self.C_bus_sta_gen = sp.lil_matrix((n_bus, n_sta_gen), dtype=int)
 
-        # controlled generator
+        # controlled generator -----------------------------------------------------------------------------------------
         self.generator_names = np.empty(n_gen, dtype=object)
         self.generator_power = np.zeros(n_gen, dtype=float)
         self.generator_power_factor = np.zeros(n_gen, dtype=float)
@@ -793,7 +876,7 @@ class StaticSnapshotInputs:
 
         self.C_bus_gen = sp.lil_matrix((n_bus, n_gen), dtype=int)
 
-        # shunt
+        # shunt --------------------------------------------------------------------------------------------------------
         self.shunt_names = np.empty(n_sh, dtype=object)
         self.shunt_admittance = np.zeros(n_sh, dtype=complex)
 
@@ -815,6 +898,9 @@ class StaticSnapshotInputs:
 
         return Sbus
 
+    def get_branch_number(self):
+        return self.nbr + self.n_hvdc + self.n_vsc
+
     def get_raw_circuit(self, add_generation, add_storage) -> StaticSnapshotIslandInputs:
         """
 
@@ -823,7 +909,12 @@ class StaticSnapshotInputs:
         :return:
         """
         # Declare object to store the calculation inputs
-        circuit = StaticSnapshotIslandInputs(self.nbus, self.nbr, self.n_batt, self.n_ctrl_gen)
+        circuit = StaticSnapshotIslandInputs(nbus=self.nbus,
+                                             nbr=self.nbr,
+                                             nhvdc=self.n_hvdc,
+                                             nvsc=self.n_vsc,
+                                             nbat=self.n_batt,
+                                             nctrlgen=self.n_ctrl_gen)
 
         # branches
         circuit.branch_rates = self.br_rates
@@ -934,6 +1025,22 @@ class StaticSnapshotInputs:
         # get the raw circuit with the inner arrays computed
         circuit = self.get_raw_circuit(add_generation=add_generation, add_storage=add_storage)
 
+        """
+          n_br, n_hvdc, n_vsc, 
+          C_branch_bus_f, C_branch_bus_t,  branch_active,  bus_active,  # common to all branches
+          
+          # just for the pi-branch model
+          apply_temperature, R_corrected,
+          R, X, G, B, branch_tolerance_mode: BranchImpedanceMode, impedance_tolerance,
+          tap_mod, tap_ang, tap_t, tap_f, Ysh,
+          
+          # for the HVDC lines
+          Rdc,
+          
+          # for the VSC lines
+          R1, X1, Gsw, Beq, m, theta
+        """
+
         # compute the connectivity and the different admittance matrices
         circuit.Ybus, \
         circuit.Yf, \
@@ -947,10 +1054,15 @@ class StaticSnapshotInputs:
         circuit.C_branch_bus_f, \
         circuit.C_branch_bus_t, \
         C_bus_bus, \
-        C_branch_bus = calc_connectivity(branch_active=self.branch_active,
-                                         bus_active=self.bus_active,
+        C_branch_bus = calc_connectivity(n_br=self.nbr,
+                                         n_hvdc=self.n_hvdc,
+                                         n_vsc=self.n_vsc,
                                          C_branch_bus_f=self.C_branch_bus_f,
                                          C_branch_bus_t=self.C_branch_bus_t,
+                                         branch_active=self.branch_active,
+                                         bus_active=self.bus_active,
+
+                                         # pi model
                                          apply_temperature=apply_temperature,
                                          R_corrected=self.R_corrected(),
                                          R=self.R,
@@ -963,7 +1075,19 @@ class StaticSnapshotInputs:
                                          tap_ang=self.tap_ang,
                                          tap_t=self.tap_t,
                                          tap_f=self.tap_f,
-                                         Ysh=circuit.Ysh)
+                                         Ysh=circuit.Ysh,
+
+                                         # HVDC line
+                                         Rdc=self.Rdc,
+
+                                         # VSC model
+                                         R1=self.vsc_R1,
+                                         X1=self.vsc_X1,
+                                         Gsw=self.vsc_G0,
+                                         Beq=self.vsc_Beq,
+                                         m=self.vsc_m,
+                                         theta=self.vsc_theta
+                                         )
 
         #  split the circuit object into the individual circuits that may arise from the topological islands
         calculation_islands = calc_islands(circuit=circuit,
@@ -973,8 +1097,7 @@ class StaticSnapshotInputs:
                                            C_bus_gen=self.C_bus_gen,
                                            C_bus_batt=self.C_bus_batt,
                                            nbus=self.nbus,
-                                           nbr=self.nbr,
-                                           time_idx=None,
+                                           nbr=self.get_branch_number(),
                                            ignore_single_node_islands=ignore_single_node_islands)
 
         for island in calculation_islands:

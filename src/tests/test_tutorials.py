@@ -1,6 +1,6 @@
-from GridCal.Tutorials.defining_a_grid_from_scratch_with_profiles import main \
+from Tutorials.defining_a_grid_from_scratch_with_profiles import main \
     as main_with_profiles
-from GridCal.Tutorials.defining_a_grid_from_scratch_without_profiles import \
+from Tutorials.defining_a_grid_from_scratch_without_profiles import \
     main as main_without_profiles
 
 

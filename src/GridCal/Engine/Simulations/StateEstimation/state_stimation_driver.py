@@ -199,7 +199,7 @@ class StateEstimation(QRunnable):
         :return:
         """
         n = len(self.grid.buses)
-        m = len(self.grid.branches)
+        m = self.grid.get_branch_number()
         self.se_results = StateEstimationResults()
         self.se_results.initialize(n, m)
 

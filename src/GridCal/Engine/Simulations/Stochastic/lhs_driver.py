@@ -88,7 +88,7 @@ class LatinHypercubeSampling(QThread):
         # initialize vars
         batch_size = self.sampling_points
         n = len(self.circuit.buses)
-        m = len(self.circuit.branches)
+        m = self.circuit.get_branch_number()
         n_cores = multiprocessing.cpu_count()
         self.pool = multiprocessing.Pool()
 
@@ -145,7 +145,6 @@ class LatinHypercubeSampling(QThread):
                     # store circuit results at the time index 't'
                     lhs_results.S_points[t, numerical_island.original_bus_idx] = res.Sbus
                     lhs_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
-                    lhs_results.I_points[t, numerical_island.original_branch_idx] = res.Ibranch
                     lhs_results.Sbr_points[t, numerical_island.original_branch_idx] = res.Sbranch
                     lhs_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
                     lhs_results.losses_points[t, numerical_island.original_branch_idx] = res.losses
@@ -185,7 +184,7 @@ class LatinHypercubeSampling(QThread):
 
         batch_size = self.sampling_points
         n = len(self.circuit.buses)
-        m = len(self.circuit.branches)
+        m = self.circuit.get_branch_number()
 
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Running Latin Hypercube Sampling...')
@@ -233,7 +232,6 @@ class LatinHypercubeSampling(QThread):
                     # Gather the results
                     lhs_results.S_points[t, numerical_island.original_bus_idx] = S
                     lhs_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
-                    lhs_results.I_points[t, numerical_island.original_branch_idx] = res.Ibranch
                     lhs_results.Sbr_points[t, numerical_island.original_branch_idx] = res.Sbranch
                     lhs_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
                     lhs_results.losses_points[t, numerical_island.original_branch_idx] = res.losses
