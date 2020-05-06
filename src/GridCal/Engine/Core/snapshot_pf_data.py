@@ -1060,8 +1060,7 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
                          nstagen=nstagen,
                          sbase=circuit.Sbase,
                          apply_temperature=apply_temperature,
-                         branch_tolerance_mode=branch_tolerance_mode
-                         )
+                         branch_tolerance_mode=branch_tolerance_mode)
 
     # buses and it's connected elements (loads, generators, etc...)
     i_ld = 0
@@ -1286,4 +1285,3 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
     nc.consolidate()
 
     return nc
-

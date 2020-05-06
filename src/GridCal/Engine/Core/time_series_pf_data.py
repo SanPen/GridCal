@@ -21,6 +21,7 @@ from typing import List, Dict
 from GridCal.Engine.basic_structures import Logger
 import GridCal.Engine.Core.topology as tp
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
@@ -579,6 +580,163 @@ class TimeCircuit:
         nc.C_bus_shunt = self.C_bus_shunt[np.ix_(bus_idx, shunt_idx)]
 
         return nc
+
+    def to_snapshots(self) -> List[SnapshotCircuit]:
+        """
+        Compile this time circuit to a list of snapshots
+        :return: List[SnapshotCircuit]
+        """
+        snapshots = [None] * self.ntime
+
+        for t in range(self.ntime):
+
+            # declare the numerical circuit
+            nc = SnapshotCircuit(nbus=self.nbus,
+                                 nline=self.nline,
+                                 ntr=self.ntr,
+                                 nvsc=self.nvsc,
+                                 nhvdc=self.nhvdc,
+                                 nload=self.nload,
+                                 ngen=self.ngen,
+                                 nbatt=self.nbatt,
+                                 nshunt=self.nshunt,
+                                 nstagen=self.nstagen,
+                                 sbase=self.Sbase,
+                                 apply_temperature=self.apply_temperature,
+                                 branch_tolerance_mode=self.branch_tolerance_mode)
+
+            nc.original_bus_idx = np.arange(self.nbus)
+            nc.original_branch_idx = np.arange(self.nbr)
+            nc.original_tr_idx = np.arange(self.ntr)
+            nc.original_gen_idx = np.arange(self.ngen)
+            nc.original_bat_idx = np.arange(self.nbatt)
+
+            # bus ------------------------------------------------------------------------------------------------------
+            nc.bus_names = self.bus_names
+            nc.bus_active = self.bus_active[t]
+            nc.Vbus = self.Vbus[t]
+            nc.bus_types = self.bus_types
+
+            # branches common ------------------------------------------------------------------------------------------
+            nc.branch_names = self.branch_names
+            nc.branch_active = self.branch_active[t]
+            nc.F = self.F
+            nc.T = self.T
+            nc.branch_rates = self.branch_rates[t]
+            nc.C_branch_bus_f = self.C_branch_bus_f
+            nc.C_branch_bus_t = self.C_branch_bus_t
+
+            # lines ----------------------------------------------------------------------------------------------------
+            nc.line_names = self.line_names
+            nc.line_R = self.line_R
+            nc.line_X = self.line_X
+            nc.line_B = self.line_B
+            nc.line_temp_base = self.line_temp_base
+            nc.line_temp_oper = self.line_temp_oper
+            nc.line_alpha = self.line_alpha
+            nc.line_impedance_tolerance = self.line_impedance_tolerance
+
+            nc.C_line_bus = self.C_line_bus
+
+            # transformer 2W + 3W --------------------------------------------------------------------------------------
+            nc.tr_names = self.tr_names
+            nc.tr_R = self.tr_R
+            nc.tr_X = self.tr_X
+            nc.tr_G = self.tr_G
+            nc.tr_B = self.tr_B
+
+            nc.tr_tap_f = self.tr_tap_f
+            nc.tr_tap_t = self.tr_tap_t
+            nc.tr_tap_mod = self.tr_tap_mod
+            nc.tr_tap_ang = self.tr_tap_ang
+            nc.tr_is_bus_to_regulated = self.tr_is_bus_to_regulated
+            nc.tr_tap_position = self.tr_tap_position
+            nc.tr_min_tap = self.tr_min_tap
+            nc.tr_max_tap = self.tr_max_tap
+            nc.tr_tap_inc_reg_up = self.tr_tap_inc_reg_up
+            nc.tr_tap_inc_reg_down = self.tr_tap_inc_reg_down
+            nc.tr_vset = self.tr_vset
+
+            nc.C_tr_bus = self.C_tr_bus
+
+            # hvdc line ------------------------------------------------------------------------------------------------
+            nc.hvdc_names = self.hvdc_names
+            nc.hvdc_active = self.hvdc_active[t]
+            nc.hvdc_rate = self.hvdc_rate[t]
+
+            nc.hvdc_Pset = self.hvdc_Pset[t]
+
+            nc.hvdc_loss_factor = self.hvdc_loss_factor
+            nc.hvdc_Vset_f = self.hvdc_Vset_f
+            nc.hvdc_Vset_t = self.hvdc_Vset_t
+
+            nc.hvdc_Qmin_f = self.hvdc_Qmin_f
+            nc.hvdc_Qmax_f = self.hvdc_Qmax_f
+            nc.hvdc_Qmin_t = self.hvdc_Qmin_t
+            nc.hvdc_Qmax_t = self.hvdc_Qmax_t
+
+            nc.C_hvdc_bus_f = self.C_hvdc_bus_f
+            nc.C_hvdc_bus_f = self.C_hvdc_bus_t
+
+            # vsc converter --------------------------------------------------------------------------------------------
+            nc.vsc_names = self.vsc_names
+            nc.vsc_R1 = self.vsc_R1
+            nc.vsc_X1 = self.vsc_X1
+            nc.vsc_Gsw = self.vsc_Gsw
+            nc.vsc_Beq = self.vsc_Beq
+            nc.vsc_m = self.vsc_m
+            nc.vsc_theta = self.vsc_theta
+
+            nc.C_vsc_bus = self.C_vsc_bus
+
+            # load -----------------------------------------------------------------------------------------------------
+            nc.load_names = self.load_names
+            nc.load_active = self.load_active[t]
+            nc.load_s = self.load_s[t]
+
+            nc.C_bus_load = self.C_bus_load
+
+            # static generators ----------------------------------------------------------------------------------------
+            nc.static_generator_names = self.static_generator_names
+            nc.static_generator_active = self.static_generator_active[t]
+            nc.static_generator_s = self.static_generator_s[t]
+
+            nc.C_bus_static_generator = self.C_bus_static_generator
+
+            # battery --------------------------------------------------------------------------------------------------
+            nc.battery_names = self.battery_names
+            nc.battery_active = self.battery_active[t]
+            nc.battery_controllable = self.battery_controllable
+            nc.battery_p = self.battery_p[t]
+            nc.battery_pf = self.battery_pf[t]
+            nc.battery_v = self.battery_v[t]
+            nc.battery_qmin = self.battery_qmin
+            nc.battery_qmax = self.battery_qmax
+
+            nc.C_bus_batt = self.C_bus_batt
+
+            # generator ------------------------------------------------------------------------------------------------
+            nc.generator_names = self.generator_names
+            nc.generator_active = self.generator_active[t]
+            nc.generator_controllable = self.generator_controllable
+            nc.generator_p = self.generator_p[t]
+            nc.generator_pf = self.generator_pf[t]
+            nc.generator_v = self.generator_v[t]
+            nc.generator_qmin = self.generator_qmin
+            nc.generator_qmax = self.generator_qmax
+
+            nc.C_bus_gen = self.C_bus_gen
+
+            # shunt ----------------------------------------------------------------------------------------------------
+            nc.shunt_names = self.shunt_names
+            nc.shunt_active = self.shunt_active[t]
+            nc.shunt_admittance = self.shunt_admittance[t]
+
+            nc.C_bus_shunt = self.C_bus_shunt
+
+            snapshots[t] = nc
+
+        return snapshots
 
 
 class TimeIsland(TimeCircuit):

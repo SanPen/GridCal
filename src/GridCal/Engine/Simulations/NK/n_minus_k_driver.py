@@ -13,12 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import time
+import datetime
 import numpy as np
+import pandas as pd
 from itertools import combinations
 from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, split_time_circuit_into_islands, TimeCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, SolverType, single_island_pf
 from GridCal.Engine.Simulations.NK.n_minus_k_results import NMinusKResults
 
@@ -46,6 +49,86 @@ def enumerate_states_n_k(m, k=1):
             states.append(arr2)
 
     return np.array(states), indices
+
+
+def set_base_profile(nc: TimeCircuit):
+    """
+    Re-index all the time based profiles
+    :return: Nothing, this is done in-place
+    """
+    now = datetime.datetime.now()
+    dte = datetime.datetime(year=now.year, month=1, day=1, hour=0)
+    nc.time_array = pd.to_datetime([dte])
+    nc.ntime = len(nc.time_array)
+
+    # branch
+    nc.branch_active_prof = nc.branch_active.reshape(1, -1)  # np.zeros((n_time, n_br), dtype=int)
+    nc.temp_oper_prof = nc.line_temp_oper.reshape(1, -1)  # np.zeros((n_time, n_br), dtype=float)
+    nc.br_rate_profile = nc.branch_rates.reshape(1, -1)  # np.zeros((n_time, n_br), dtype=float)
+
+    # load
+    nc.load_active_prof = nc.load_active.reshape(1, -1)  # np.zeros((n_time, n_ld), dtype=bool)
+
+    nc.load_power_profile = nc.load_s.reshape(1, -1)  # np.zeros((n_time, n_ld), dtype=complex)
+
+    # battery
+    nc.battery_active_prof = nc.battery_active.reshape(1, -1)  # np.zeros((n_time, n_batt), dtype=bool)
+    nc.battery_power_profile = nc.battery_p.reshape(1, -1)  # np.zeros((n_time, n_batt), dtype=float)
+    nc.battery_voltage_profile = nc.battery_v.reshape(1, -1)  # np.zeros((n_time, n_batt), dtype=float)
+
+    # static generator
+    nc.static_gen_active_prof = nc.static_generator_active.reshape(1, -1)  # np.zeros((n_time, n_sta_gen), dtype=bool)
+    nc.static_gen_power_profile = nc.static_generator_s.reshape(1, -1)  # np.zeros((n_time, n_sta_gen), dtype=complex)
+
+    # controlled generator
+    nc.generator_active_prof = nc.generator_active.reshape(1, -1)  # np.zeros((n_time, n_gen), dtype=bool)
+    nc.generator_power_profile = nc.generator_p.reshape(1, -1)  # np.zeros((n_time, n_gen), dtype=float)
+    nc.generator_power_factor_profile = nc.generator_pf.reshape(1, -1)  # np.zeros((n_time, n_gen), dtype=float)
+    nc.generator_voltage_profile = nc.generator_v.reshape(1, -1)  # np.zeros((n_time, n_gen), dtype=float)
+
+    # shunt
+    nc.shunt_active_prof = nc.shunt_active.reshape(1, -1)  # np.zeros((n_time, n_sh), dtype=bool)
+    nc.shunt_admittance_profile = nc.shunt_admittance.reshape(1, -1)  # np.zeros((n_time, n_sh), dtype=complex)
+
+
+def re_index_time(nc: TimeCircuit, t_idx):
+    """
+    Re-index all the time based profiles
+    :param t_idx: new indices of the time profiles
+    :return: Nothing, this is done in-place
+    """
+
+    nc.time_array = nc.time_array[t_idx]
+    nc.ntime = len(t_idx)
+
+    # branch
+    nc.branch_active_prof = nc.branch_active[t_idx, :]  # np.zeros((n_time, n_br), dtype=int)
+    # nc.temp_oper_prof = nc.line_temp_oper[t_idx, :]  # np.zeros((n_time, n_br), dtype=float)
+    nc.br_rate_profile = nc.branch_rates[t_idx, :]  # np.zeros((n_time, n_br), dtype=float)
+
+    # load
+    nc.load_active_prof = nc.load_active[t_idx, :]  # np.zeros((n_time, n_ld), dtype=bool)
+
+    nc.load_power_profile = nc.load_s[t_idx, :]  # np.zeros((n_time, n_ld), dtype=complex)
+
+    # battery
+    nc.battery_active_prof = nc.battery_active[t_idx, :]  # np.zeros((n_time, n_batt), dtype=bool)
+    nc.battery_power_profile = nc.battery_p[t_idx, :]  # np.zeros((n_time, n_batt), dtype=float)
+    nc.battery_voltage_profile = nc.battery_v[t_idx, :]  # np.zeros((n_time, n_batt), dtype=float)
+
+    # static generator
+    nc.static_gen_active_prof = nc.static_generator_active[t_idx, :]  # np.zeros((n_time, n_sta_gen), dtype=bool)
+    nc.static_gen_power_profile = nc.static_generator_s[t_idx, :]  # np.zeros((n_time, n_sta_gen), dtype=complex)
+
+    # controlled generator
+    nc.generator_active_prof = nc.generator_active[t_idx, :]  # np.zeros((n_time, n_gen), dtype=bool)
+    nc.generator_power_profile = nc.generator_p[t_idx, :]  # np.zeros((n_time, n_gen), dtype=float)
+    nc.generator_power_factor_profile = nc.generator_pf[t_idx, :]  # np.zeros((n_time, n_gen), dtype=float)
+    nc.generator_voltage_profile = nc.generator_v[t_idx, :]  # np.zeros((n_time, n_gen), dtype=float)
+
+    # shunt
+    nc.shunt_active_prof = nc.shunt_active[t_idx, :]  # np.zeros((n_time, n_sh), dtype=bool)
+    nc.shunt_admittance_profile = nc.shunt_admittance[t_idx, :]  # np.zeros((n_time, n_sh), dtype=complex)
 
 
 class NMinusKOptions:
@@ -79,8 +162,10 @@ class NMinusK(QThread):
         # power flow options
         self.pf_options = pf_options
 
-        # OPF results
-        self.results = NMinusKResults(0, 0, 0)
+        # N-K results
+        self.results = NMinusKResults(n=0, m=0, nt=0, n_tr=0, bus_names=(),
+                                      branch_names=(), transformer_names=(), bus_types=(),
+                                      time_array=None, states=None)
 
         # set cancel state
         self.__cancel__ = False
@@ -148,7 +233,10 @@ class NMinusK(QThread):
         # compile the multi-circuit
         self.progress_text.emit("Compiling assets...")
         self.progress_signal.emit(0)
-        numerical_circuit = self.grid.compile_time_series()
+
+        numerical_circuit = compile_time_circuit(circuit=self.grid,
+                                                 apply_temperature=self.pf_options.apply_temperature_correction,
+                                                 branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
 
         # re-index the profile (this is essential for time-compatibility)
         self.progress_signal.emit(100)
@@ -156,16 +244,16 @@ class NMinusK(QThread):
         # if no base profile time is given, pick the base values
         if indices is None:
             time_indices = np.array([0])
-            numerical_circuit.set_base_profile()
+            set_base_profile(numerical_circuit)
         else:
             time_indices = indices
 
         # construct the profile indices
         profile_indices = np.tile(time_indices, len(states))
-        numerical_circuit.re_index_time(t_idx=profile_indices)
+        re_index_time(numerical_circuit, t_idx=profile_indices)
 
         # set the branch states
-        numerical_circuit.branch_active_prof[:, branch_index] = np.tile(states, (len(time_indices), 1))
+        numerical_circuit.branch_active[:, branch_index] = np.tile(states, (len(time_indices), 1))
 
         # initialize the power flow
         pf_options = PowerFlowOptions(solver_type=SolverType.LACPF)
@@ -180,58 +268,56 @@ class NMinusK(QThread):
         # do the topological computation
         self.progress_text.emit("Compiling topology...")
         self.progress_signal.emit(0.0)
-        calc_inputs_dict = numerical_circuit.compute(ignore_single_node_islands=pf_options.ignore_single_node_islands,
-                                                     prog_func=self.progress_signal.emit,
-                                                     text_func=self.progress_text.emit)
+
+        calc_inputs = split_time_circuit_into_islands(numeric_circuit=numerical_circuit,
+                                                      ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
 
         n_k_results.bus_types = numerical_circuit.bus_types
 
         self.progress_text.emit("Simulating states...")
-        npart = len(calc_inputs_dict)
+        npart = len(calc_inputs)
         k = 1
-        # for each partition of the profiles...
-        for t_key, calc_inputs in calc_inputs_dict.items():
 
-            self.progress_signal.emit(k / npart * 100.0)
+        # For every island, run the time series
+        for island_index, calculation_input in enumerate(calc_inputs):
 
-            # For every island, run the time series
-            for island_index, calculation_input in enumerate(calc_inputs):
+            self.progress_signal.emit((island_index + 1) / npart * 100.0)
 
-                # find the original indices
-                bus_original_idx = calculation_input.original_bus_idx
-                branch_original_idx = calculation_input.original_branch_idx
+            # find the original indices
+            bus_original_idx = calculation_input.original_bus_idx
+            branch_original_idx = calculation_input.original_branch_idx
 
-                # declare a results object for the partition
-                # nt = calculation_input.ntime
-                nt = len(calculation_input.original_time_idx)
-                n = calculation_input.nbus
-                m = calculation_input.nbr
-                partial_results = NMinusKResults(n, m, nt)
-                last_voltage = calculation_input.Vbus
+            # declare a results object for the partition
+            # nt = calculation_input.ntime
+            nt = len(calculation_input.original_time_idx)
+            n = calculation_input.nbus
+            m = calculation_input.nbr
+            partial_results = NMinusKResults(n, m, nt)
+            last_voltage = calculation_input.Vbus
 
-                # traverse the time profiles of the partition and simulate each time step
-                for it, t in enumerate(calculation_input.original_time_idx):
-                    # set the power values
-                    # if the storage dispatch option is active, the batteries power is not included
-                    # therefore, it shall be included after processing
-                    Ysh = calculation_input.Ysh_prof[:, it]
-                    I = calculation_input.Ibus_prof[:, it]
-                    S = calculation_input.Sbus_prof[:, it]
-                    branch_rates = calculation_input.branch_rates_prof[it, :]
+            # traverse the time profiles of the partition and simulate each time step
+            for it, t in enumerate(calculation_input.original_time_idx):
+                # set the power values
+                # if the storage dispatch option is active, the batteries power is not included
+                # therefore, it shall be included after processing
 
-                    # run power flow at the circuit
-                    res = single_island_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I,
-                                           branch_rates=branch_rates, options=pf_options, logger=self.logger)
+                I = calculation_input.Ibus[:, it]
+                S = calculation_input.Sbus[:, it]
+                branch_rates = calculation_input.branch_rates[it, :]
 
-                    # Recycle voltage solution
-                    last_voltage = res.voltage
+                # run power flow at the circuit
+                res = single_island_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I,
+                                       branch_rates=branch_rates, options=pf_options, logger=self.logger)
 
-                    # store circuit results at the time index 't'
-                    partial_results.set_at(it, res)
+                # Recycle voltage solution
+                last_voltage = res.voltage
 
-                # merge the circuit's results
-                n_k_results.apply_from_island(partial_results, bus_original_idx, branch_original_idx,
-                                              calculation_input.original_time_idx, 'TS')
+                # store circuit results at the time index 't'
+                partial_results.set_at(it, res)
+
+            # merge the circuit's results
+            n_k_results.apply_from_island(partial_results, bus_original_idx, branch_original_idx,
+                                          calculation_input.original_time_idx, 'TS')
 
             k += 1
 
