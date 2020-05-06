@@ -98,6 +98,7 @@ class PTDFResults:
         :return: array of sensitivities from -1 to 1
         """
         delta = (self.pf_results[i].Sbranch.real - self.default_pf_results.Sbranch.real)
+        # self.variations[i].original_power is the power increment
         return delta / (self.variations[i].original_power + 1e-20)
 
     def get_voltage_sensitivity_at(self, i):

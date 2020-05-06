@@ -763,6 +763,7 @@ class StaticSeriesInputs(StaticSnapshotInputs):
         circuit.branch_rates_prof = self.br_rate_profile
         circuit.F = self.F
         circuit.T = self.T
+        circuit.X = self.X
         circuit.tap_f = self.tap_f
         circuit.tap_t = self.tap_t
         circuit.bus_names = self.bus_names

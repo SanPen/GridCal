@@ -17,9 +17,8 @@ import json
 import pandas as pd
 import numpy as np
 import time
-import multiprocessing
 
-from PySide2.QtCore import QThread, QThreadPool, Signal
+from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults

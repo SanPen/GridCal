@@ -179,7 +179,7 @@ def calc_connectivity(n_br, n_hvdc, n_vsc,
     b1_tt = sp.diags(b1)
     B1f = b1_tt * Cf - b1_tt * Ct
     B1t = -b1_tt * Cf + b1_tt * Ct
-    B1 = sparse(Cf.T * B1f + Ct.T * B1t)
+    B1 = sparse(Cf.T * B1f + Ct.T * B1t).tocsc()
 
     b2 = b1 + susceptances
     b2_ff = -(b2 / (all_taps * np.conj(all_taps))).real
@@ -189,7 +189,7 @@ def calc_connectivity(n_br, n_hvdc, n_vsc,
 
     B2f = -sp.diags(b2_ff) * Cf + sp.diags(b2_ft) * Ct
     B2t = sp.diags(b2_tf) * Cf + -sp.diags(b2_tt) * Ct
-    B2 = sparse(Cf.T * B2f + Ct.T * B2t)
+    B2 = sparse(Cf.T * B2f + Ct.T * B2t).tocsc()
 
     # Bus connectivity -------------------------------------------------------------------------------------------------
 

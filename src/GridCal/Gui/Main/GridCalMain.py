@@ -1761,7 +1761,7 @@ class MainGUI(QMainWindow):
                                        magnitudes=[magnitude],
                                        use_native_dialogues=self.use_native_dialogues)
             dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
-            dialogue.exec()  # exec leaves the parent on hold
+            dialogue._exec()  # exec leaves the parent on hold
 
             if dialogue.time is not None:
 
