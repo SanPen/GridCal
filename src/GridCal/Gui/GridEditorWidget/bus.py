@@ -268,47 +268,86 @@ class BusGraphicItem(QGraphicsRectItem):
         menu = QMenu()
 
         pe = menu.addAction('Enable/Disable')
+        pe_icon = QIcon()
+        if self.api_object.active:
+            pe_icon.addPixmap(QPixmap(":/Icons/icons/uncheck_all.svg"))
+        else:
+            pe_icon.addPixmap(QPixmap(":/Icons/icons/check_all.svg"))
+        pe.setIcon(pe_icon)
         pe.triggered.connect(self.enable_disable_toggle)
 
         pl = menu.addAction('Plot profiles')
+        plot_icon = QIcon()
+        plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
+        pl.setIcon(plot_icon)
         pl.triggered.connect(self.plot_profiles)
 
         menu.addSeparator()
 
         ra3 = menu.addAction('Delete all the connections')
+        del2_icon = QIcon()
+        del2_icon.addPixmap(QPixmap(":/Icons/icons/delete_conn.svg"))
+        ra3.setIcon(del2_icon)
         ra3.triggered.connect(self.delete_all_connections)
 
         da = menu.addAction('Delete')
+        del_icon = QIcon()
+        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+        da.setIcon(del_icon)
         da.triggered.connect(self.remove)
 
         re = menu.addAction('Reduce')
+        re_icon = QIcon()
+        re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
+        re.setIcon(re_icon)
         re.triggered.connect(self.reduce)
 
         menu.addSeparator()
 
         al = menu.addAction('Add load')
+        al_icon = QIcon()
+        al_icon.addPixmap(QPixmap(":/Icons/icons/add_load.svg"))
+        al.setIcon(al_icon)
         al.triggered.connect(self.add_load)
 
         ash = menu.addAction('Add shunt')
+        ash_icon = QIcon()
+        ash_icon.addPixmap(QPixmap(":/Icons/icons/add_shunt.svg"))
+        ash.setIcon(ash_icon)
         ash.triggered.connect(self.add_shunt)
 
         acg = menu.addAction('Add generator')
+        acg_icon = QIcon()
+        acg_icon.addPixmap(QPixmap(":/Icons/icons/add_gen.svg"))
+        acg.setIcon(acg_icon)
         acg.triggered.connect(self.add_generator)
 
         asg = menu.addAction('Add static generator')
+        asg_icon = QIcon()
+        asg_icon.addPixmap(QPixmap(":/Icons/icons/add_stagen.svg"))
+        asg.setIcon(asg_icon)
         asg.triggered.connect(self.add_static_generator)
 
         ab = menu.addAction('Add battery')
+        ab_icon = QIcon()
+        ab_icon.addPixmap(QPixmap(":/Icons/icons/add_batt.svg"))
+        ab.setIcon(ab_icon)
         ab.triggered.connect(self.add_battery)
 
         menu.addSeparator()
 
         arr = menu.addAction('Arrange')
+        arr_icon = QIcon()
+        arr_icon.addPixmap(QPixmap(":/Icons/icons/automatic_layout.svg"))
+        arr.setIcon(arr_icon)
         arr.triggered.connect(self.arrange_children)
 
         menu.addSeparator()
 
         sc = menu.addAction('Enable/Disable \nShort circuit')
+        sc_icon = QIcon()
+        sc_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
+        sc.setIcon(sc_icon)
         sc.triggered.connect(self.enable_disable_sc)
 
         menu.exec_(event.screenPos())
@@ -346,19 +385,20 @@ class BusGraphicItem(QGraphicsRectItem):
         """
         if self.api_object is not None:
             self.api_object.active = not self.api_object.active
-            # print('Enabled:', self.api_object.active)
 
             if self.api_object.active:
 
                 self.set_tile_color(QBrush(ACTIVE['color']))
 
                 for host in self.terminal.hosting_connections:
-                    host.set_enable(val=True)
+                    if host.api_object is not None:
+                        host.set_enable(val=True)
             else:
                 self.set_tile_color(QBrush(DEACTIVATED['color']))
 
                 for host in self.terminal.hosting_connections:
-                    host.set_enable(val=False)
+                    if host.api_object is not None:
+                        host.set_enable(val=False)
 
     def enable_disable_sc(self):
         """

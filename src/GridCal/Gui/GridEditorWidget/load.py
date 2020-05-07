@@ -96,12 +96,24 @@ class LoadGraphicItem(QGraphicsItemGroup):
         menu = QMenu()
 
         da = menu.addAction('Delete')
+        del_icon = QIcon()
+        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+        da.setIcon(del_icon)
         da.triggered.connect(self.remove)
 
         pe = menu.addAction('Enable/Disable')
+        pe_icon = QIcon()
+        if self.api_object.active:
+            pe_icon.addPixmap(QPixmap(":/Icons/icons/uncheck_all.svg"))
+        else:
+            pe_icon.addPixmap(QPixmap(":/Icons/icons/check_all.svg"))
+        pe.setIcon(pe_icon)
         pe.triggered.connect(self.enable_disable_toggle)
 
         pa = menu.addAction('Plot profiles')
+        plot_icon = QIcon()
+        plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
+        pa.setIcon(plot_icon)
         pa.triggered.connect(self.plot)
 
         menu.exec_(event.screenPos())

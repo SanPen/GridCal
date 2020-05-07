@@ -377,39 +377,44 @@ class VscGraphicItem(QGraphicsLineItem):
             menu = QMenu()
 
             pe = menu.addAction('Enable/Disable')
+            pe_icon = QIcon()
+            if self.api_object.active:
+                pe_icon.addPixmap(QPixmap(":/Icons/icons/uncheck_all.svg"))
+            else:
+                pe_icon.addPixmap(QPixmap(":/Icons/icons/check_all.svg"))
+            pe.setIcon(pe_icon)
             pe.triggered.connect(self.enable_disable_toggle)
 
             menu.addSeparator()
 
             ra2 = menu.addAction('Delete')
+            del_icon = QIcon()
+            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+            ra2.setIcon(del_icon)
             ra2.triggered.connect(self.remove)
 
             menu.addSeparator()
 
             ra3 = menu.addAction('Edit')
+            edit_icon = QIcon()
+            edit_icon.addPixmap(QPixmap(":/Icons/icons/edit.svg"))
+            ra3.setIcon(edit_icon)
             ra3.triggered.connect(self.edit)
 
             menu.addSeparator()
 
             ra6 = menu.addAction('Plot profiles')
+            plot_icon = QIcon()
+            plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
+            ra6.setIcon(plot_icon)
             ra6.triggered.connect(self.plot_profiles)
-
-            if self.api_object.branch_type == BranchType.Transformer:
-
-                ra3 = menu.addAction('Add to catalogue')
-                ra3.triggered.connect(self.add_to_templates)
-
-                menu.addSeparator()
-
-                ra4 = menu.addAction('Tap up')
-                ra4.triggered.connect(self.tap_up)
-
-                ra5 = menu.addAction('Tap down')
-                ra5.triggered.connect(self.tap_down)
 
             menu.addSeparator()
 
             re = menu.addAction('Reduce')
+            re_icon = QIcon()
+            re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
+            re.setIcon(re_icon)
             re.triggered.connect(self.reduce)
 
             menu.exec_(event.screenPos())

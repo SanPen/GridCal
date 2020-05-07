@@ -1,5 +1,11 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/delete_conn.svg</file>
+    <file>icons/add_batt.svg</file>
+    <file>icons/add_stagen.svg</file>
+    <file>icons/add_shunt.svg</file>
+    <file>icons/add_gen.svg</file>
+    <file>icons/add_load.svg</file>
     <file>icons/sigma.svg</file>
     <file>icons/sync.svg</file>
     <file>icons/show_color_controls.svg</file>
@@ -16,6 +22,7 @@
     <file>icons/delete2.svg</file>
     <file>icons/SE_Listen.svg</file>
     <file>icons/SE.svg</file>
+    <file>icons/down.svg</file>
     <file>icons/measurement.svg</file>
     <file>icons/minus (gray).svg</file>
     <file>icons/plus (gray).svg</file>
