@@ -287,12 +287,19 @@ class MultiCircuit:
     def get_buses(self):
         return self.buses
 
+    def get_branches_wo_hvdc(self):
+        """
+        Return all the branch objects
+        :return: lines + transformers 2w + hvdc
+        """
+        return self.lines + self.transformers2w + self.vsc_converters
+
     def get_branches(self):
         """
         Return all the branch objects
         :return: lines + transformers 2w + hvdc
         """
-        return self.lines + self.transformers2w + self.hvdc_lines + self.vsc_converters
+        return self.lines + self.transformers2w + self.vsc_converters + self.hvdc_lines
 
     def get_loads(self):
         """

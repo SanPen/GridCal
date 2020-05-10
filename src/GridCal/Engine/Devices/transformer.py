@@ -131,7 +131,10 @@ class TransformerType(EditableDevice):
         # Series impedance
         zsc = Vsc / 100.0
         rsc = (Pcu / 1000.0) / Sn
-        xsc = sqrt(zsc ** 2 - rsc ** 2)
+        if rsc < zsc:
+            xsc = sqrt(zsc ** 2 - rsc ** 2)
+        else:
+            xsc = 0.0
         zs = rsc + 1j * xsc
 
         # Shunt impedance (leakage)
@@ -155,7 +158,6 @@ class TransformerType(EditableDevice):
         zsh = rm + 1j * xm
 
         return zs, zsh
-
 
 
 class TapChanger:
@@ -446,7 +448,7 @@ class Transformer2W(EditableDevice):
                                                                   'Aluminum @ 75ºC: 0.00330'),
                                                   'Cost': GCProp('e/MWh', float,
                                                                  'Cost of overloads. Used in OPF.'),
-                                                  'template': GCProp('', TransformerType, '')},
+                                                  'template': GCProp('', DeviceType.TransformerTypeDevice, '')},
                                 non_editable_attributes=['bus_from', 'bus_to', 'template'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'rate': 'rate_prof',

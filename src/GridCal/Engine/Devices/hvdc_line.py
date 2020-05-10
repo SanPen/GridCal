@@ -292,6 +292,32 @@ class HvdcLine(EditableDevice):
         self.rate = rate
         self.rate_prof = rate_prof
 
+    def get_from_and_to_power(self):
+        """
+        Get the power set at both ends accounting for meaningful losses
+        :return: power from, power to
+        """
+        A = int(self.Pset > 0)
+        B = 1 - A
+
+        Pf = - self.Pset * A + self.Pset * (1 - self.loss_factor) * B
+        Pt = self.Pset * A * (1 - self.loss_factor) - self.Pset * B
+
+        return Pf, Pt
+
+    def get_from_and_to_power_profiles(self):
+        """
+        Get the power set at both ends accounting for meaningful losses
+        :return: power from, power to
+        """
+        A = (self.Pset_prof > 0).astype(int)
+        B = 1 - A
+
+        Pf = - self.Pset_prof * A + self.Pset_prof * (1 - self.loss_factor) * B
+        Pt = self.Pset_prof * A * (1 - self.loss_factor) - self.Pset_prof * B
+
+        return Pf, Pt
+
     def copy(self, bus_dict=None):
         """
         Returns a copy of the branch

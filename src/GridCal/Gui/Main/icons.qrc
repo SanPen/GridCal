@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/to_hvdc.svg</file>
+    <file>icons/to_transformer.svg</file>
+    <file>icons/to_vsc.svg</file>
     <file>icons/delete_conn.svg</file>
     <file>icons/add_batt.svg</file>
     <file>icons/add_stagen.svg</file>

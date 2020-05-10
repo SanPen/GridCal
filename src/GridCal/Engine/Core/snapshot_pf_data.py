@@ -72,7 +72,7 @@ class SnapshotCircuit:
         self.bus_installed_power = np.zeros(nbus, dtype=float)
 
         # branch common ------------------------------------------------------------------------------------------------
-        self.nbr = nline + ntr + nhvdc + nvsc  # compute the number of branches
+        self.nbr = nline + ntr + nvsc  # exclude the HVDC model since it is not a real branch
 
         self.branch_names = np.empty(self.nbr, dtype=object)
         self.branch_active = np.zeros(self.nbr, dtype=int)
@@ -122,7 +122,8 @@ class SnapshotCircuit:
         self.hvdc_rate = np.zeros(nhvdc)
         self.hvdc_loss_factor = np.zeros(nhvdc)
 
-        self.hvdc_Pset = np.zeros(nhvdc)
+        self.hvdc_Pf = np.zeros(nhvdc)
+        self.hvdc_Pt = np.zeros(nhvdc)
         self.hvdc_Vset_f = np.zeros(nhvdc)
         self.hvdc_Vset_t = np.zeros(nhvdc)
         self.hvdc_Qmin_f = np.zeros(nhvdc)
@@ -292,7 +293,8 @@ class SnapshotCircuit:
         island.hvdc_active = self.hvdc_active
         island.hvdc_rate = self.hvdc_rate
 
-        island.hvdc_Pset = self.hvdc_Pset
+        island.hvdc_Pf = self.hvdc_Pf
+        island.hvdc_Pt = self.hvdc_Pt
 
         island.hvdc_loss_factor = self.hvdc_loss_factor
         island.hvdc_Vset_f = self.hvdc_Vset_f
@@ -458,7 +460,8 @@ class SnapshotCircuit:
         nc.hvdc_active = self.hvdc_active[hvdc_idx]
         nc.hvdc_rate = self.hvdc_rate[hvdc_idx]
 
-        nc.hvdc_Pset = self.hvdc_Pset[hvdc_idx]
+        nc.hvdc_Pf = self.hvdc_Pf[hvdc_idx]
+        nc.hvdc_Pt = self.hvdc_Pt[hvdc_idx]
         nc.hvdc_Vset_f = self.hvdc_Vset_f[hvdc_idx]
         nc.hvdc_Vset_t = self.hvdc_Vset_t[hvdc_idx]
         nc.hvdc_loss_factor = self.hvdc_loss_factor[hvdc_idx]
@@ -851,8 +854,9 @@ class SnapshotIsland(SnapshotCircuit):
 
         # HVDC forced power
         if self.nhvdc:
-            self.Sbus += self.hvdc_active * self.hvdc_Pset * self.C_hvdc_bus_f
-            self.Sbus -= self.hvdc_active * self.hvdc_Pset * self.C_hvdc_bus_t
+            # Pf and Pt come with the correct sign already
+            self.Sbus += (self.hvdc_active * self.hvdc_Pf) * self.C_hvdc_bus_f
+            self.Sbus += (self.hvdc_active * self.hvdc_Pt) * self.C_hvdc_bus_t
 
         self.Sbus /= self.Sbase
 
@@ -1264,7 +1268,8 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.hvdc_active[i] = elm.active
         nc.hvdc_rate[i] = elm.rate
 
-        nc.hvdc_Pset[i] = elm.Pset
+        nc.hvdc_Pf[i], nc.hvdc_Pt[i] = elm.get_from_and_to_power()
+
         nc.hvdc_loss_factor[i] = elm.loss_factor
         nc.hvdc_Vset_f[i] = elm.Vset_f
         nc.hvdc_Vset_t[i] = elm.Vset_t

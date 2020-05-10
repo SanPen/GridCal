@@ -12,15 +12,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-
+import numpy as np
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 from PySide2.QtGui import *
-from GridCal.Gui.GridEditorWidget.generic import ACTIVE, DEACTIVATED, OTHER, Square
+from GridCal.Engine.Devices.load import Load
+from GridCal.Gui.GridEditorWidget.generic_graphics import *
 from GridCal.Gui.GuiFunctions import ObjectsModel
 
 
-class BatteryGraphicItem(QGraphicsItemGroup):
+class LoadGraphicItem(QGraphicsItemGroup):
 
     def __init__(self, parent, api_obj, diagramScene):
         """
@@ -28,7 +29,10 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         :param parent:
         :param api_obj:
         """
-        super(BatteryGraphicItem, self).__init__(parent)
+        super(LoadGraphicItem, self).__init__(parent)
+
+        self.w = 20.0
+        self.h = 20.0
 
         self.parent = parent
 
@@ -36,14 +40,12 @@ class BatteryGraphicItem(QGraphicsItemGroup):
 
         self.diagramScene = diagramScene
 
-        self.w = 40
-        self.h = 40
-
         # Properties of the container:
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
         self.width = 4
+
         if self.api_object is not None:
             if self.api_object.active:
                 self.style = ACTIVE['style']
@@ -60,16 +62,11 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         self.nexus.setPen(QPen(self.color, self.width, self.style))
         parent.scene().addItem(self.nexus)
 
-        pen = QPen(self.color, self.width, self.style)
-
-        self.glyph = Square(self)
-        self.glyph.setRect(0, 0, self.h, self.w)
-        self.glyph.setPen(pen)
+        # triangle
+        self.glyph = Polygon(self)
+        self.glyph.setPolygon(QPolygonF([QPointF(0, 0), QPointF(self.w, 0), QPointF(self.w / 2, self.h)]))
+        self.glyph.setPen(QPen(self.color, self.width, self.style))
         self.addToGroup(self.glyph)
-
-        self.label = QGraphicsTextItem('B', parent=self.glyph)
-        self.label.setDefaultTextColor(self.color)
-        self.label.setPos(self.h / 4, self.w / 5)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -97,20 +94,11 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         @return:
         """
         menu = QMenu()
+        menu.addSection("Load")
 
-        da = menu.addAction('Delete')
-        del_icon = QIcon()
-        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-        da.setIcon(del_icon)
-        da.triggered.connect(self.remove)
-
-        pe = menu.addAction('Enable/Disable')
-        pe_icon = QIcon()
-        if self.api_object.active:
-            pe_icon.addPixmap(QPixmap(":/Icons/icons/uncheck_all.svg"))
-        else:
-            pe_icon.addPixmap(QPixmap(":/Icons/icons/check_all.svg"))
-        pe.setIcon(pe_icon)
+        pe = menu.addAction('Active')
+        pe.setCheckable(True)
+        pe.setChecked(self.api_object.active)
         pe.triggered.connect(self.enable_disable_toggle)
 
         pa = menu.addAction('Plot profiles')
@@ -118,6 +106,12 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
         pa.setIcon(plot_icon)
         pa.triggered.connect(self.plot)
+
+        da = menu.addAction('Delete')
+        del_icon = QIcon()
+        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+        da.setIcon(del_icon)
+        da.triggered.connect(self.remove)
 
         menu.exec_(event.screenPos())
 
@@ -128,7 +122,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         """
         self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
-        self.api_object.bus.batteries.remove(self.api_object)
+        self.api_object.bus.loads.remove(self.api_object)
 
     def enable_disable_toggle(self):
         """
@@ -159,12 +153,8 @@ class BatteryGraphicItem(QGraphicsItemGroup):
             self.style = OTHER['style']
             self.color = OTHER['color']
         self.glyph.setPen(QPen(self.color, self.width, self.style))
-        self.label.setDefaultTextColor(self.color)
 
     def plot(self):
-        """
-        Plot API objects profiles
-        """
         # time series object from the last simulation
         ts = self.diagramScene.circuit.time_profile
 

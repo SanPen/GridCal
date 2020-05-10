@@ -129,7 +129,10 @@ class TimeCircuit:
 
         self.hvdc_active = np.zeros((ntime, nhvdc), dtype=bool)
         self.hvdc_rate = np.zeros((ntime, nhvdc), dtype=float)
-        self.hvdc_Pset = np.zeros((ntime, nhvdc))
+
+        self.hvdc_Pf = np.zeros((ntime, nhvdc))
+        self.hvdc_Pt = np.zeros((ntime, nhvdc))
+
         self.hvdc_Vset_f = np.zeros((ntime, nhvdc))
         self.hvdc_Vset_t = np.zeros((ntime, nhvdc))
 
@@ -244,8 +247,8 @@ class TimeCircuit:
 
         # HVDC forced power
         if self.nhvdc:
-            Sbus += self.hvdc_active * self.hvdc_Pset * self.C_hvdc_bus_f
-            Sbus -= self.hvdc_active * self.hvdc_Pset * self.C_hvdc_bus_t
+            Sbus += (self.hvdc_active * self.hvdc_Pf) * self.C_hvdc_bus_f
+            Sbus += (self.hvdc_active * self.hvdc_Pt) * self.C_hvdc_bus_t
 
         Sbus /= self.Sbase
 
@@ -333,7 +336,9 @@ class TimeCircuit:
         island.hvdc_active = self.hvdc_active
         island.hvdc_rate = self.hvdc_rate
 
-        island.hvdc_Pset = self.hvdc_Pset
+        island.hvdc_Pf = self.hvdc_Pf
+        island.hvdc_Pt = self.hvdc_Pt
+
         island.hvdc_loss_factor = self.hvdc_loss_factor
 
         island.hvdc_Vset_f = self.hvdc_Vset_f
@@ -506,7 +511,10 @@ class TimeCircuit:
 
         nc.hvdc_active = self.hvdc_active[np.ix_(time_idx, hvdc_idx)]
         nc.hvdc_rate = self.hvdc_rate[np.ix_(time_idx, hvdc_idx)]
-        nc.hvdc_Pset = self.hvdc_Pset[np.ix_(time_idx, hvdc_idx)]
+
+        nc.hvdc_Pf = self.hvdc_Pf[np.ix_(time_idx, hvdc_idx)]
+        nc.hvdc_Pt = self.hvdc_Pt[np.ix_(time_idx, hvdc_idx)]
+
         nc.hvdc_Vset_f = self.hvdc_Vset_f[np.ix_(time_idx, hvdc_idx)]
         nc.hvdc_Vset_t = self.hvdc_Vset_t[np.ix_(time_idx, hvdc_idx)]
 
@@ -664,7 +672,8 @@ class TimeCircuit:
             nc.hvdc_active = self.hvdc_active[t]
             nc.hvdc_rate = self.hvdc_rate[t]
 
-            nc.hvdc_Pset = self.hvdc_Pset[t]
+            nc.hvdc_Pf = self.hvdc_Pf[t]
+            nc.hvdc_Pt = self.hvdc_Pt[t]
 
             nc.hvdc_loss_factor = self.hvdc_loss_factor
             nc.hvdc_Vset_f = self.hvdc_Vset_f
@@ -1048,8 +1057,8 @@ class TimeIsland(TimeCircuit):
 
         # HVDC forced power
         if self.nhvdc:
-            self.Sbus += ((self.hvdc_active * self.hvdc_Pset) * self.C_hvdc_bus_f).T
-            self.Sbus -= ((self.hvdc_active * self.hvdc_Pset) * self.C_hvdc_bus_t).T
+            self.Sbus += ((self.hvdc_active * self.hvdc_Pf) * self.C_hvdc_bus_f).T
+            self.Sbus += ((self.hvdc_active * self.hvdc_Pt) * self.C_hvdc_bus_t).T
 
         self.Sbus /= self.Sbase
 
@@ -1507,7 +1516,9 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
 
         nc.hvdc_active[:, i] = elm.active_prof
         nc.hvdc_rate[:, i] = elm.rate_prof
-        nc.hvdc_Pset[:, i] = elm.Pset_prof
+
+        nc.hvdc_Pf[:, i], nc.hvdc_Pt[:, i] = elm.get_from_and_to_power_profiles()
+
         nc.hvdc_Vset_f[:, i] = elm.Vset_f_prof
         nc.hvdc_Vset_t[:, i] = elm.Vset_t_prof
 

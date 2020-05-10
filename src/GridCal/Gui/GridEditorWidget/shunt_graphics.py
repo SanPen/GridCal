@@ -16,7 +16,7 @@ import numpy as np
 from PySide2 import QtWidgets
 from PySide2.QtCore import QPointF, QLineF
 from PySide2.QtGui import *
-from GridCal.Gui.GridEditorWidget.generic import ACTIVE, DEACTIVATED, OTHER, QLine
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, QLine
 from GridCal.Gui.GuiFunctions import ObjectsModel
 
 
@@ -103,20 +103,11 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
         @return:
         """
         menu = QtWidgets.QMenu()
+        menu.addSection("Shunt")
 
-        da = menu.addAction('Delete')
-        del_icon = QIcon()
-        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-        da.setIcon(del_icon)
-        da.triggered.connect(self.remove)
-
-        pe = menu.addAction('Enable/Disable')
-        pe_icon = QIcon()
-        if self.api_object.active:
-            pe_icon.addPixmap(QPixmap(":/Icons/icons/uncheck_all.svg"))
-        else:
-            pe_icon.addPixmap(QPixmap(":/Icons/icons/check_all.svg"))
-        pe.setIcon(pe_icon)
+        pe = menu.addAction('Active')
+        pe.setCheckable(True)
+        pe.setChecked(self.api_object.active)
         pe.triggered.connect(self.enable_disable_toggle)
 
         pa = menu.addAction('Plot profiles')
@@ -124,6 +115,12 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
         plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
         pa.setIcon(plot_icon)
         pa.triggered.connect(self.plot)
+
+        da = menu.addAction('Delete')
+        del_icon = QIcon()
+        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+        da.setIcon(del_icon)
+        da.triggered.connect(self.remove)
 
         menu.exec_(event.screenPos())
 

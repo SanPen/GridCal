@@ -14,14 +14,15 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
-from GridCal.Gui.GridEditorWidget.generic import *
-from GridCal.Gui.GridEditorWidget.bus import TerminalItem
+from GridCal.Gui.GridEditorWidget.generic_graphics import *
+from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GuiFunctions import BranchObjectModel
-from GridCal.Engine.Devices.branch import Branch, BranchType, TransformerType
+from GridCal.Engine.Devices.line import Line
+from GridCal.Engine.Devices.branch import Branch, BranchType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
 
 
-class HvdcEditor(QDialog):
+class LineEditor(QDialog):
 
     def __init__(self, branch: Branch, Sbase=100):
         """
@@ -29,7 +30,7 @@ class HvdcEditor(QDialog):
         :param branch: Branch object to update
         :param Sbase: Base power in MVA
         """
-        super(HvdcEditor, self).__init__()
+        super(LineEditor, self).__init__()
 
         # keep pointer to the line object
         self.branch = branch
@@ -53,7 +54,7 @@ class HvdcEditor(QDialog):
 
         R = self.branch.R * Zbase
         X = self.branch.X * Zbase
-        G = self.branch.G * Ybase
+        G = 0.0
         B = self.branch.B * Ybase
 
         I = self.branch.rate / Vf  # current in kA
@@ -89,11 +90,11 @@ class HvdcEditor(QDialog):
         self.x_spinner.setValue(X)
 
         # G
-        self.g_spinner = QDoubleSpinBox()
-        self.g_spinner.setMinimum(0)
-        self.g_spinner.setMaximum(9999999)
-        self.g_spinner.setDecimals(6)
-        self.g_spinner.setValue(G)
+        # self.g_spinner = QDoubleSpinBox()
+        # self.g_spinner.setMinimum(0)
+        # self.g_spinner.setMaximum(9999999)
+        # self.g_spinner.setDecimals(6)
+        # self.g_spinner.setValue(G)
 
         # B
         self.b_spinner = QDoubleSpinBox()
@@ -122,8 +123,8 @@ class HvdcEditor(QDialog):
         self.layout.addWidget(QLabel("X: Inductance [Ohm/Km]"))
         self.layout.addWidget(self.x_spinner)
 
-        self.layout.addWidget(QLabel("G: Conductance [S/Km]"))
-        self.layout.addWidget(self.g_spinner)
+        # self.layout.addWidget(QLabel("G: Conductance [S/Km]"))
+        # self.layout.addWidget(self.g_spinner)
 
         self.layout.addWidget(QLabel("B: Susceptance [S/Km]"))
         self.layout.addWidget(self.b_spinner)
@@ -143,7 +144,7 @@ class HvdcEditor(QDialog):
         I = self.i_spinner.value()
         R = self.r_spinner.value() * l
         X = self.x_spinner.value() * l
-        G = self.g_spinner.value() * l
+        # G = self.g_spinner.value() * l
         B = self.b_spinner.value() * l
 
         Vf = self.branch.bus_from.Vnom
@@ -156,16 +157,15 @@ class HvdcEditor(QDialog):
 
         self.branch.R = np.round(R / Zbase, 6)
         self.branch.X = np.round(X / Zbase, 6)
-        self.branch.G = np.round(G / Ybase, 6)
         self.branch.B = np.round(B / Ybase, 6)
         self.branch.rate = Sn
 
         self.accept()
 
 
-class HvdcGraphicItem(QGraphicsLineItem):
+class LineGraphicItem(QGraphicsLineItem):
 
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5, branch: Branch = None):
+    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5, branch: Line = None):
         """
 
         :param fromPort:
@@ -241,38 +241,47 @@ class HvdcGraphicItem(QGraphicsLineItem):
 
         # remove the symbol of the branch
         self.remove_symbol()
-        self.make_dc_line_symbol()
-        self.symbol_type = BranchType.DCLine
 
-    def make_dc_line_symbol(self):
+        if self.api_object.branch_type == BranchType.Switch:
+            self.make_switch_symbol()
+            self.symbol_type = BranchType.Switch
+
+        elif self.api_object.branch_type == BranchType.Reactance:
+            self.make_reactance_symbol()
+            self.symbol_type = BranchType.Switch
+
+        else:
+            # this is a line
+            self.symbol = None
+            self.c0 = None
+            self.c1 = None
+            self.c2 = None
+            self.symbol_type = BranchType.Line
+
+    def make_switch_symbol(self):
         """
-        Make the DC Line symbol
+        Mathe the switch symbol
         :return:
         """
-        h = 30.0
+        h = 40.0
         w = h
-        w2 = int(w / 2)
         self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
-
-        offset = 3
-        t_points = QPolygonF()
-        t_points.append(QPointF(0, offset))
-        t_points.append(QPointF(w-offset, w2))
-        t_points.append(QPointF(0, w-offset))
-        triangle = QGraphicsPolygonItem(self.symbol)
-        triangle.setPolygon(t_points)
-        triangle.setPen(QPen(Qt.white))
-        triangle.setBrush(QBrush(Qt.white))
-
-        line = QGraphicsRectItem(QRectF(h-offset, offset, offset, w-2*offset), parent=self.symbol)
-        line.setPen(QPen(Qt.white))
-        line.setBrush(QBrush(Qt.white))
-
         self.symbol.setPen(QPen(self.color, self.width, self.style))
         if self.api_object.active:
             self.symbol.setBrush(self.color)
         else:
             self.symbol.setBrush(QBrush(Qt.white))
+
+    def make_reactance_symbol(self):
+        """
+        Make the reactance symbol
+        :return:
+        """
+        h = 40.0
+        w = 2 * h
+        self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
+        self.symbol.setPen(QPen(self.color, self.width, self.style))
+        self.symbol.setBrush(self.color)
 
     def setToolTipText(self, toolTip: str):
         """
@@ -298,33 +307,21 @@ class HvdcGraphicItem(QGraphicsLineItem):
         """
         if self.api_object is not None:
             menu = QMenu()
+            menu.addSection("Line")
 
-            pe = menu.addAction('Enable/Disable')
-            pe_icon = QIcon()
-            if self.api_object.active:
-                pe_icon.addPixmap(QPixmap(":/Icons/icons/uncheck_all.svg"))
-            else:
-                pe_icon.addPixmap(QPixmap(":/Icons/icons/check_all.svg"))
-            pe.setIcon(pe_icon)
+            pe = menu.addAction('Active')
+            pe.setCheckable(True)
+            pe.setChecked(self.api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
 
-            menu.addSeparator()
 
-            ra2 = menu.addAction('Delete')
-            del_icon = QIcon()
-            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-            ra2.setIcon(del_icon)
-            ra2.triggered.connect(self.remove)
-
-            menu.addSeparator()
-
-            ra3 = menu.addAction('Edit')
+            ra3 = menu.addAction('Editor')
             edit_icon = QIcon()
             edit_icon.addPixmap(QPixmap(":/Icons/icons/edit.svg"))
             ra3.setIcon(edit_icon)
             ra3.triggered.connect(self.edit)
 
-            menu.addSeparator()
+            # menu.addSeparator()
 
             ra6 = menu.addAction('Plot profiles')
             plot_icon = QIcon()
@@ -332,13 +329,38 @@ class HvdcGraphicItem(QGraphicsLineItem):
             ra6.setIcon(plot_icon)
             ra6.triggered.connect(self.plot_profiles)
 
-            menu.addSeparator()
+            # menu.addSeparator()
 
             re = menu.addAction('Reduce')
             re_icon = QIcon()
             re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
             re.setIcon(re_icon)
             re.triggered.connect(self.reduce)
+
+            ra2 = menu.addAction('Delete')
+            del_icon = QIcon()
+            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+            ra2.setIcon(del_icon)
+            ra2.triggered.connect(self.remove)
+
+            menu.addSection('Convert to')
+            toxfo = menu.addAction('Transformer')
+            toxfo_icon = QIcon()
+            toxfo_icon.addPixmap(QPixmap(":/Icons/icons/to_transformer.svg"))
+            toxfo.setIcon(toxfo_icon)
+            toxfo.triggered.connect(self.to_transformer)
+
+            tohvdc = menu.addAction('HVDC')
+            tohvdc_icon = QIcon()
+            tohvdc_icon.addPixmap(QPixmap(":/Icons/icons/to_hvdc.svg"))
+            tohvdc.setIcon(tohvdc_icon)
+            tohvdc.triggered.connect(self.to_hvdc)
+
+            tovsc = menu.addAction('VSC')
+            tovsc_icon = QIcon()
+            tovsc_icon.addPixmap(QPixmap(":/Icons/icons/to_vsc.svg"))
+            tovsc.setIcon(tovsc_icon)
+            tovsc.triggered.connect(self.to_vsc)
 
             menu.exec_(event.screenPos())
         else:
@@ -607,7 +629,7 @@ class HvdcGraphicItem(QGraphicsLineItem):
         """
         Sbase = self.diagramScene.circuit.Sbase
 
-        dlg = HvdcEditor(self.api_object, Sbase)
+        dlg = LineEditor(self.api_object, Sbase)
         if dlg.exec_():
             pass
 
@@ -618,19 +640,21 @@ class HvdcGraphicItem(QGraphicsLineItem):
         """
         Sbase = self.diagramScene.circuit.Sbase
 
-        dlg = HvdcEditor(self.api_object, Sbase)
+        dlg = LineEditor(self.api_object, Sbase)
         if dlg.exec_():
             pass
 
-    def tap_up(self):
-        """
-        Set one tap up
-        """
-        self.api_object.tap_up()
+    def to_transformer(self):
+        pass
 
-    def tap_down(self):
+    def to_hvdc(self):
         """
-        Set one tap down
+        Convert this object to HVDC
+        :return:
         """
-        self.api_object.tap_down()
+        editor = self.diagramScene.parent()
+        editor.convert_line_to_hvdc(self.api_object)
+
+    def to_vsc(self):
+        pass
 

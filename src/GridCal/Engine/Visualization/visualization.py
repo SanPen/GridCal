@@ -10,6 +10,10 @@ from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 
 
 def get_voltage_color_map():
+    """
+    Voltage Color map
+    :return: colormap
+    """
     vmax = 1.2
     seq = [(0 / vmax, 'black'),
            (0.8 / vmax, 'blue'),
@@ -22,6 +26,10 @@ def get_voltage_color_map():
 
 
 def get_loading_color_map():
+    """
+    Loading Color map
+    :return: colormap
+    """
     load_max = 1.5
     seq = [(0.0 / load_max, 'gray'),
            (0.8 / load_max, 'green'),
@@ -33,7 +41,7 @@ def get_loading_color_map():
 
 
 def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, types=None, losses=None,
-                         failed_br_idx=None, loading_label='loading', file_name=None):
+                         failed_br_idx=None, loading_label='loading'):
     """
     Color the grid based on the results passed
     :param circuit:
@@ -91,7 +99,7 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
     if s_branch is not None:
         lnorm = abs(loadings)
         lnorm[lnorm == np.inf] = 0
-        branches = circuit.get_branches()
+        branches = circuit.get_branches_wo_hvdc()  # HVDC branches are coloured separately
         for i, branch in enumerate(branches):
             if branch.graphic_obj is not None:
                 w = branch.graphic_obj.pen_width

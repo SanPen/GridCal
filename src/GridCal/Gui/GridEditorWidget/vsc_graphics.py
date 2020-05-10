@@ -14,10 +14,11 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
-from GridCal.Gui.GridEditorWidget.generic import *
-from GridCal.Gui.GridEditorWidget.bus import TerminalItem
+from GridCal.Gui.GridEditorWidget.generic_graphics import *
+from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GuiFunctions import BranchObjectModel
-from GridCal.Engine.Devices.branch import Branch, BranchType, TransformerType
+from GridCal.Engine.Devices.vsc import VSC
+from GridCal.Engine.Devices.branch import Branch, BranchType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
 
 
@@ -165,7 +166,7 @@ class VscEditor(QDialog):
 
 class VscGraphicItem(QGraphicsLineItem):
 
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5, branch: Branch = None):
+    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5, branch: VSC = None):
         """
 
         :param fromPort:

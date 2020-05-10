@@ -110,7 +110,8 @@ class OpfSnapshotCircuit:
         self.hvdc_active = np.zeros(nhvdc, dtype=bool)
         self.hvdc_rate = np.zeros(nhvdc, dtype=float)
 
-        self.hvdc_Pset = np.zeros(nhvdc)
+        self.hvdc_Pf = np.zeros(nhvdc)
+        self.hvdc_Pt = np.zeros(nhvdc)
 
         self.C_hvdc_bus_f = sp.lil_matrix((nhvdc, nbus), dtype=int)  # this ons is just for splitting islands
         self.C_hvdc_bus_t = sp.lil_matrix((nhvdc, nbus), dtype=int)  # this ons is just for splitting islands
@@ -277,7 +278,8 @@ class OpfSnapshotCircuit:
         island.hvdc_active = self.hvdc_active
         island.hvdc_rate = self.hvdc_rate
 
-        island.hvdc_Pset = self.hvdc_Pset
+        island.hvdc_Pf = self.hvdc_Pf
+        island.hvdc_Pt = self.hvdc_Pt
 
         island.C_hvdc_bus_f = self.C_hvdc_bus_f
         island.C_hvdc_bus_f = self.C_hvdc_bus_t
@@ -436,7 +438,8 @@ class OpfSnapshotCircuit:
         nc.hvdc_active = self.hvdc_active[hvdc_idx]
         nc.hvdc_rate = self.hvdc_rate[hvdc_idx]
 
-        nc.hvdc_Pset = self.hvdc_Pset[hvdc_idx]
+        nc.hvdc_Pf = self.hvdc_Pf[hvdc_idx]
+        nc.hvdc_Pt = self.hvdc_Pt[hvdc_idx]
 
         nc.C_hvdc_bus_f = self.C_hvdc_bus_f[np.ix_(hvdc_idx, bus_idx)]
         nc.C_hvdc_bus_t = self.C_hvdc_bus_t[np.ix_(hvdc_idx, bus_idx)]
@@ -709,8 +712,8 @@ class OpfSnapshotIsland(OpfSnapshotCircuit):
 
         # HVDC forced power
         if self.nhvdc:
-            self.Sbus += self.hvdc_active * self.hvdc_Pset * self.C_hvdc_bus_f
-            self.Sbus -= self.hvdc_active * self.hvdc_Pset * self.C_hvdc_bus_t
+            self.Sbus += (self.hvdc_active * self.hvdc_Pf) * self.C_hvdc_bus_f
+            self.Sbus += (self.hvdc_active * self.hvdc_Pt) * self.C_hvdc_bus_t
 
         self.Sbus /= self.Sbase
 
@@ -1006,7 +1009,7 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.hvdc_active[i] = elm.active
         nc.hvdc_rate[i] = elm.rate
 
-        nc.hvdc_Pset[i] = elm.Pset
+        nc.hvdc_Pf[i], nc.hvdc_Pt[i] = elm.get_from_and_to_power()
 
         # hack the bus types to believe they are PV
         nc.bus_types[f] = BusMode.PV.value

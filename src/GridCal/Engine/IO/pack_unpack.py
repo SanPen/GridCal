@@ -55,6 +55,8 @@ def get_objects_dictionary():
 
                     'dc_line': DCLine(),
 
+                    'hvdc': HvdcLine(),
+
                     'vsc': VSC(Bus(), Bus(is_dc=True)),
                     }
 
@@ -302,7 +304,21 @@ def data_frames_to_circuit(data: Dict):
                                 else:
                                     circuit.logger.append('Bus not found: ' + str(df[prop].values[i]))
 
+                            elif dtype in [DeviceType.TransformerTypeDevice,  # template types mostly
+                                           DeviceType.SequenceLineDevice,
+                                           DeviceType.TowerDevice]:
+
+                                if df[prop].values[i] in elements_dict[dtype].keys():
+
+                                    # get the actual template and set it
+                                    val = elements_dict[dtype][df[prop].values[i]]
+                                    setattr(devices[i], prop, val)
+
+                                else:
+                                    circuit.logger.append(dtype.value + ' type not found: ' + str(df[prop].values[i]))
+
                             else:
+                                # regular types (int, str, float, etc...)
                                 val = dtype(df[prop].values[i])
                                 setattr(devices[i], prop, val)
 

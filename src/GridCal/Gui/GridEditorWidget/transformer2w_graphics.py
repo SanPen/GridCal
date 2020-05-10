@@ -14,8 +14,8 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
-from GridCal.Gui.GridEditorWidget.generic import *
-from GridCal.Gui.GridEditorWidget.bus import TerminalItem
+from GridCal.Gui.GridEditorWidget.generic_graphics import *
+from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GuiFunctions import BranchObjectModel
 from GridCal.Engine.Devices.transformer import Transformer2W
 from GridCal.Engine.Devices.branch import Branch, BranchType, TransformerType
@@ -24,7 +24,7 @@ from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brut
 
 class TransformerEditor(QDialog):
 
-    def __init__(self, branch: Branch, Sbase=100, modify_on_accept=True):
+    def __init__(self, branch: Transformer2W, Sbase=100, modify_on_accept=True):
         """
         Transformer
         :param branch:
@@ -33,7 +33,7 @@ class TransformerEditor(QDialog):
         super(TransformerEditor, self).__init__()
 
         # keep pointer to the line object
-        self.branch = branch
+        self.transformer_obj = branch
 
         self.Sbase = Sbase
 
@@ -48,14 +48,17 @@ class TransformerEditor(QDialog):
         # ------------------------------------------------------------------------------------------
         # Set the object values
         # ------------------------------------------------------------------------------------------
-        self.Vf = self.branch.bus_from.Vnom
-        self.Vt = self.branch.bus_to.Vnom
+        self.Vf = self.transformer_obj.bus_from.Vnom
+        self.Vt = self.transformer_obj.bus_to.Vnom
 
-        R = self.branch.R
-        X = self.branch.X
-        G = self.branch.G
-        B = self.branch.B
-        Sn = self.branch.rate
+        # Change the impedances to the system base
+        base_change = Sbase / self.transformer_obj.rate
+
+        R = self.transformer_obj.R / base_change
+        X = self.transformer_obj.X / base_change
+        G = self.transformer_obj.G / base_change
+        B = self.transformer_obj.B / base_change
+        Sn = self.transformer_obj.rate
 
         zsc = np.sqrt(R * R + X * X)
         Vsc = 100.0 * zsc
@@ -146,8 +149,8 @@ class TransformerEditor(QDialog):
         :return: TransformerType instance
         """
         eps = 1e-20
-        Vf = self.branch.bus_from.Vnom  # kV
-        Vt = self.branch.bus_to.Vnom  # kV
+        Vf = self.transformer_obj.bus_from.Vnom  # kV
+        Vt = self.transformer_obj.bus_to.Vnom  # kV
         Sn = self.sn_spinner.value() + eps  # MVA
         Pcu = self.pcu_spinner.value() + eps  # kW
         Pfe = self.pfe_spinner.value() + eps  # kW
@@ -177,7 +180,7 @@ class TransformerEditor(QDialog):
 
         if self.modify_on_accept:
             tpe = self.get_template()
-            self.branch.apply_template(tpe, Sbase=self.Sbase)
+            self.transformer_obj.apply_template(tpe, Sbase=self.Sbase)
 
         self.accept()
 
@@ -318,17 +321,12 @@ class TransformerGraphicItem(QGraphicsLineItem):
         """
         if self.api_object is not None:
             menu = QMenu()
+            menu.addSection("Transformer")
 
-            pe = menu.addAction('Enable/Disable')
-            pe_icon = QIcon()
-            if self.api_object.active:
-                pe_icon.addPixmap(QPixmap(":/Icons/icons/uncheck_all.svg"))
-            else:
-                pe_icon.addPixmap(QPixmap(":/Icons/icons/check_all.svg"))
-            pe.setIcon(pe_icon)
+            pe = menu.addAction('Active')
+            pe.setCheckable(True)
+            pe.setChecked(self.api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
-
-            menu.addSeparator()
 
             ra2 = menu.addAction('Delete')
             del_icon = QIcon()
@@ -336,15 +334,17 @@ class TransformerGraphicItem(QGraphicsLineItem):
             ra2.setIcon(del_icon)
             ra2.triggered.connect(self.remove)
 
-            menu.addSeparator()
+            re = menu.addAction('Reduce')
+            re_icon = QIcon()
+            re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
+            re.setIcon(re_icon)
+            re.triggered.connect(self.reduce)
 
-            ra3 = menu.addAction('Edit')
+            ra3 = menu.addAction('Editor')
             edit_icon = QIcon()
             edit_icon.addPixmap(QPixmap(":/Icons/icons/edit.svg"))
             ra3.setIcon(edit_icon)
             ra3.triggered.connect(self.edit)
-
-            menu.addSeparator()
 
             ra6 = menu.addAction('Plot profiles')
             plot_icon = QIcon()
@@ -358,7 +358,7 @@ class TransformerGraphicItem(QGraphicsLineItem):
             ra3.setIcon(ra3_icon)
             ra3.triggered.connect(self.add_to_templates)
 
-            menu.addSeparator()
+            menu.addSection('Tap changer')
 
             ra4 = menu.addAction('Tap up')
             ra4_icon = QIcon()
@@ -372,15 +372,8 @@ class TransformerGraphicItem(QGraphicsLineItem):
             ra5.setIcon(ra5_icon)
             ra5.triggered.connect(self.tap_down)
 
-            menu.addSeparator()
-
-            re = menu.addAction('Reduce')
-            re_icon = QIcon()
-            re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
-            re.setIcon(re_icon)
-            re.triggered.connect(self.reduce)
-
             menu.exec_(event.screenPos())
+
         else:
             pass
 

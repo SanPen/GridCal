@@ -14,159 +14,17 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
-from GridCal.Gui.GridEditorWidget.generic import *
-from GridCal.Gui.GridEditorWidget.bus import TerminalItem
+from GridCal.Gui.GridEditorWidget.generic_graphics import *
+from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GuiFunctions import BranchObjectModel
-from GridCal.Engine.Devices.line import Line
+from GridCal.Engine.Devices.hvdc_line import HvdcLine
 from GridCal.Engine.Devices.branch import Branch, BranchType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
 
 
-class LineEditor(QDialog):
+class HvdcGraphicItem(QGraphicsLineItem):
 
-    def __init__(self, branch: Branch, Sbase=100):
-        """
-        Line Editor constructor
-        :param branch: Branch object to update
-        :param Sbase: Base power in MVA
-        """
-        super(LineEditor, self).__init__()
-
-        # keep pointer to the line object
-        self.branch = branch
-
-        self.Sbase = Sbase
-
-        self.setObjectName("self")
-
-        self.setContextMenuPolicy(Qt.NoContextMenu)
-
-        self.layout = QVBoxLayout(self)
-
-        # ------------------------------------------------------------------------------------------
-        # Set the object values
-        # ------------------------------------------------------------------------------------------
-        Vf = self.branch.bus_from.Vnom
-        Vt = self.branch.bus_to.Vnom
-
-        Zbase = self.Sbase / (Vf * Vf)
-        Ybase = 1 / Zbase
-
-        R = self.branch.R * Zbase
-        X = self.branch.X * Zbase
-        G = self.branch.G * Ybase
-        B = self.branch.B * Ybase
-
-        I = self.branch.rate / Vf  # current in kA
-
-        # ------------------------------------------------------------------------------------------
-
-        # line length
-        self.l_spinner = QDoubleSpinBox()
-        self.l_spinner.setMinimum(0)
-        self.l_spinner.setMaximum(9999999)
-        self.l_spinner.setDecimals(6)
-        self.l_spinner.setValue(1)
-
-        # Max current
-        self.i_spinner = QDoubleSpinBox()
-        self.i_spinner.setMinimum(0)
-        self.i_spinner.setMaximum(9999999)
-        self.i_spinner.setDecimals(2)
-        self.i_spinner.setValue(I)
-
-        # R
-        self.r_spinner = QDoubleSpinBox()
-        self.r_spinner.setMinimum(0)
-        self.r_spinner.setMaximum(9999999)
-        self.r_spinner.setDecimals(6)
-        self.r_spinner.setValue(R)
-
-        # X
-        self.x_spinner = QDoubleSpinBox()
-        self.x_spinner.setMinimum(0)
-        self.x_spinner.setMaximum(9999999)
-        self.x_spinner.setDecimals(6)
-        self.x_spinner.setValue(X)
-
-        # G
-        self.g_spinner = QDoubleSpinBox()
-        self.g_spinner.setMinimum(0)
-        self.g_spinner.setMaximum(9999999)
-        self.g_spinner.setDecimals(6)
-        self.g_spinner.setValue(G)
-
-        # B
-        self.b_spinner = QDoubleSpinBox()
-        self.b_spinner.setMinimum(0)
-        self.b_spinner.setMaximum(9999999)
-        self.b_spinner.setDecimals(6)
-        self.b_spinner.setValue(B)
-
-        # accept button
-        self.accept_btn = QPushButton()
-        self.accept_btn.setText('Accept')
-        self.accept_btn.clicked.connect(self.accept_click)
-
-        # labels
-
-        # add all to the GUI
-        self.layout.addWidget(QLabel("L: Line length [Km]"))
-        self.layout.addWidget(self.l_spinner)
-
-        self.layout.addWidget(QLabel("Imax: Max. current [KA] @" + str(int(Vf)) + " [KV]"))
-        self.layout.addWidget(self.i_spinner)
-
-        self.layout.addWidget(QLabel("R: Resistance [Ohm/Km]"))
-        self.layout.addWidget(self.r_spinner)
-
-        self.layout.addWidget(QLabel("X: Inductance [Ohm/Km]"))
-        self.layout.addWidget(self.x_spinner)
-
-        self.layout.addWidget(QLabel("G: Conductance [S/Km]"))
-        self.layout.addWidget(self.g_spinner)
-
-        self.layout.addWidget(QLabel("B: Susceptance [S/Km]"))
-        self.layout.addWidget(self.b_spinner)
-
-        self.layout.addWidget(self.accept_btn)
-
-        self.setLayout(self.layout)
-
-        self.setWindowTitle('Line editor')
-
-    def accept_click(self):
-        """
-        Set the values
-        :return:
-        """
-        l = self.l_spinner.value()
-        I = self.i_spinner.value()
-        R = self.r_spinner.value() * l
-        X = self.x_spinner.value() * l
-        G = self.g_spinner.value() * l
-        B = self.b_spinner.value() * l
-
-        Vf = self.branch.bus_from.Vnom
-        Vt = self.branch.bus_to.Vnom
-
-        Sn = np.round(I * Vf, 2)  # nominal power in MVA = kA * kV
-
-        Zbase = self.Sbase / (Vf * Vf)
-        Ybase = 1.0 / Zbase
-
-        self.branch.R = np.round(R / Zbase, 6)
-        self.branch.X = np.round(X / Zbase, 6)
-        self.branch.G = np.round(G / Ybase, 6)
-        self.branch.B = np.round(B / Ybase, 6)
-        self.branch.rate = Sn
-
-        self.accept()
-
-
-class LineGraphicItem(QGraphicsLineItem):
-
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5, branch: Line = None):
+    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5, branch: HvdcLine = None):
         """
 
         :param fromPort:
@@ -242,47 +100,38 @@ class LineGraphicItem(QGraphicsLineItem):
 
         # remove the symbol of the branch
         self.remove_symbol()
+        self.make_dc_line_symbol()
+        self.symbol_type = BranchType.DCLine
 
-        if self.api_object.branch_type == BranchType.Switch:
-            self.make_switch_symbol()
-            self.symbol_type = BranchType.Switch
-
-        elif self.api_object.branch_type == BranchType.Reactance:
-            self.make_reactance_symbol()
-            self.symbol_type = BranchType.Switch
-
-        else:
-            # this is a line
-            self.symbol = None
-            self.c0 = None
-            self.c1 = None
-            self.c2 = None
-            self.symbol_type = BranchType.Line
-
-    def make_switch_symbol(self):
+    def make_dc_line_symbol(self):
         """
-        Mathe the switch symbol
+        Make the DC Line symbol
         :return:
         """
-        h = 40.0
+        h = 30.0
         w = h
+        w2 = int(w / 2)
         self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
+
+        offset = 3
+        t_points = QPolygonF()
+        t_points.append(QPointF(0, offset))
+        t_points.append(QPointF(w-offset, w2))
+        t_points.append(QPointF(0, w-offset))
+        triangle = QGraphicsPolygonItem(self.symbol)
+        triangle.setPolygon(t_points)
+        triangle.setPen(QPen(Qt.white))
+        triangle.setBrush(QBrush(Qt.white))
+
+        line = QGraphicsRectItem(QRectF(h-offset, offset, offset, w-2*offset), parent=self.symbol)
+        line.setPen(QPen(Qt.white))
+        line.setBrush(QBrush(Qt.white))
+
         self.symbol.setPen(QPen(self.color, self.width, self.style))
         if self.api_object.active:
             self.symbol.setBrush(self.color)
         else:
             self.symbol.setBrush(QBrush(Qt.white))
-
-    def make_reactance_symbol(self):
-        """
-        Make the reactance symbol
-        :return:
-        """
-        h = 40.0
-        w = 2 * h
-        self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
-        self.symbol.setPen(QPen(self.color, self.width, self.style))
-        self.symbol.setBrush(self.color)
 
     def setToolTipText(self, toolTip: str):
         """
@@ -308,33 +157,12 @@ class LineGraphicItem(QGraphicsLineItem):
         """
         if self.api_object is not None:
             menu = QMenu()
+            menu.addSection("HVDC line")
 
-            pe = menu.addAction('Enable/Disable')
-            pe_icon = QIcon()
-            if self.api_object.active:
-                pe_icon.addPixmap(QPixmap(":/Icons/icons/uncheck_all.svg"))
-            else:
-                pe_icon.addPixmap(QPixmap(":/Icons/icons/check_all.svg"))
-            pe.setIcon(pe_icon)
+            pe = menu.addAction('Active')
+            pe.setCheckable(True)
+            pe.setChecked(self.api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
-
-            menu.addSeparator()
-
-            ra2 = menu.addAction('Delete')
-            del_icon = QIcon()
-            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-            ra2.setIcon(del_icon)
-            ra2.triggered.connect(self.remove)
-
-            menu.addSeparator()
-
-            ra3 = menu.addAction('Edit')
-            edit_icon = QIcon()
-            edit_icon.addPixmap(QPixmap(":/Icons/icons/edit.svg"))
-            ra3.setIcon(edit_icon)
-            ra3.triggered.connect(self.edit)
-
-            menu.addSeparator()
 
             ra6 = menu.addAction('Plot profiles')
             plot_icon = QIcon()
@@ -342,13 +170,11 @@ class LineGraphicItem(QGraphicsLineItem):
             ra6.setIcon(plot_icon)
             ra6.triggered.connect(self.plot_profiles)
 
-            menu.addSeparator()
-
-            re = menu.addAction('Reduce')
-            re_icon = QIcon()
-            re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
-            re.setIcon(re_icon)
-            re.triggered.connect(self.reduce)
+            ra2 = menu.addAction('Delete')
+            del_icon = QIcon()
+            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+            ra2.setIcon(del_icon)
+            ra2.triggered.connect(self.remove)
 
             menu.exec_(event.screenPos())
         else:
@@ -375,12 +201,7 @@ class LineGraphicItem(QGraphicsLineItem):
         :return:
         """
 
-        if self.api_object.branch_type in [BranchType.Transformer, BranchType.Line]:
-            # trigger the editor
-            self.edit()
-        elif self.api_object.branch_type is BranchType.Switch:
-            # change state
-            self.enable_disable_toggle()
+        pass
 
     def remove(self):
         """
@@ -561,36 +382,27 @@ class LineGraphicItem(QGraphicsLineItem):
             if self.api_object is not None:
 
                 # if the object branch type is different from the current displayed type, change it
-                if self.symbol_type != self.api_object.branch_type:
-                    self.update_symbol()
+                self.update_symbol()
 
-                if self.api_object.branch_type == BranchType.Line:
-                    pass
+                # if the branch has a moveable symbol, move it
+                try:
+                    h = self.pos2.y() - self.pos1.y()
+                    b = self.pos2.x() - self.pos1.x()
+                    ang = np.arctan2(h, b)
+                    h2 = self.symbol.rect().height() / 2.0
+                    w2 = self.symbol.rect().width() / 2.0
+                    a = h2 * np.cos(ang) - w2 * np.sin(ang)
+                    b = w2 * np.sin(ang) + h2 * np.cos(ang)
 
-                elif self.api_object.branch_type == BranchType.Branch:
-                    pass
+                    center = (self.pos1 + self.pos2) * 0.5 - QPointF(a, b)
 
-                else:
+                    transform = QTransform()
+                    transform.translate(center.x(), center.y())
+                    transform.rotate(np.rad2deg(ang))
+                    self.symbol.setTransform(transform)
 
-                    # if the branch has a moveable symbol, move it
-                    try:
-                        h = self.pos2.y() - self.pos1.y()
-                        b = self.pos2.x() - self.pos1.x()
-                        ang = np.arctan2(h, b)
-                        h2 = self.symbol.rect().height() / 2.0
-                        w2 = self.symbol.rect().width() / 2.0
-                        a = h2 * np.cos(ang) - w2 * np.sin(ang)
-                        b = w2 * np.sin(ang) + h2 * np.cos(ang)
-
-                        center = (self.pos1 + self.pos2) * 0.5 - QPointF(a, b)
-
-                        transform = QTransform()
-                        transform.translate(center.x(), center.y())
-                        transform.rotate(np.rad2deg(ang))
-                        self.symbol.setTransform(transform)
-
-                    except Exception as ex:
-                        print(ex)
+                except Exception as ex:
+                    print(ex)
 
     def set_pen(self, pen):
         """
@@ -599,48 +411,3 @@ class LineGraphicItem(QGraphicsLineItem):
             pen:
         """
         self.setPen(pen)
-
-        # Color the symbol only for switches
-        if self.api_object.branch_type == BranchType.Switch:
-            if self.symbol is not None:
-                self.symbol.setPen(pen)
-
-        elif self.api_object.branch_type == BranchType.Transformer:
-            if self.c1 is not None:
-                self.c1.setPen(pen)
-                self.c2.setPen(pen)
-
-    def edit(self):
-        """
-        Open the appropriate editor dialogue
-        :return:
-        """
-        Sbase = self.diagramScene.circuit.Sbase
-
-        dlg = LineEditor(self.api_object, Sbase)
-        if dlg.exec_():
-            pass
-
-    def add_to_templates(self):
-        """
-        Open the appropriate editor dialogue
-        :return:
-        """
-        Sbase = self.diagramScene.circuit.Sbase
-
-        dlg = LineEditor(self.api_object, Sbase)
-        if dlg.exec_():
-            pass
-
-    def tap_up(self):
-        """
-        Set one tap up
-        """
-        self.api_object.tap_up()
-
-    def tap_down(self):
-        """
-        Set one tap down
-        """
-        self.api_object.tap_down()
-

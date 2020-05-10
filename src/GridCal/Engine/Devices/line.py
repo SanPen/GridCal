@@ -277,7 +277,7 @@ class Line(EditableDevice):
                                                                       '0 would be at the "from" side,\n'
                                                                       '1 would be at the "to" side,\n'
                                                                       'therefore 0.5 is at the middle.'),
-                                                  'template': GCProp('', LineTemplate, '')},
+                                                  'template': GCProp('', DeviceType.SequenceLineDevice, '')},
                                 non_editable_attributes=['bus_from', 'bus_to', 'template'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'rate': 'rate_prof',

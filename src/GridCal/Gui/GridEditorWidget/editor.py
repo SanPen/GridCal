@@ -24,12 +24,14 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.line import Line
 from GridCal.Engine.Devices.transformer import Transformer2W
+from GridCal.Engine.Devices.vsc import VSC
+from GridCal.Engine.Devices.hvdc_line import HvdcLine
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
-from GridCal.Gui.GridEditorWidget.bus import BusGraphicItem
-from GridCal.Gui.GridEditorWidget.line import LineGraphicItem
-from GridCal.Gui.GridEditorWidget.transformer2w import TransformerGraphicItem
-from GridCal.Gui.GridEditorWidget.hvdc import HvdcGraphicItem
-from GridCal.Gui.GridEditorWidget.vsc import VscGraphicItem
+from GridCal.Gui.GridEditorWidget.bus_graphics import BusGraphicItem
+from GridCal.Gui.GridEditorWidget.line_graphics import LineGraphicItem
+from GridCal.Gui.GridEditorWidget.transformer2w_graphics import TransformerGraphicItem
+from GridCal.Gui.GridEditorWidget.hvdc_graphics import HvdcGraphicItem
+from GridCal.Gui.GridEditorWidget.vsc_graphics import VscGraphicItem
 
 
 '''
@@ -667,7 +669,7 @@ class GridEditor(QSplitter):
 
         return graphic_obj
 
-    def add_api_hvdc(self, branch):
+    def add_api_hvdc(self, branch: HvdcLine):
         """
         add API branch to the Scene
         :param branch: Branch instance
@@ -684,7 +686,7 @@ class GridEditor(QSplitter):
 
         return graphic_obj
 
-    def add_api_vsc(self, branch):
+    def add_api_vsc(self, branch: VSC):
         """
         add API branch to the Scene
         :param branch: Branch instance
@@ -701,7 +703,7 @@ class GridEditor(QSplitter):
 
         return graphic_obj
 
-    def add_api_transformer(self, branch):
+    def add_api_transformer(self, branch: Transformer2W):
         """
         add API branch to the Scene
         :param branch: Branch instance
@@ -717,6 +719,35 @@ class GridEditor(QSplitter):
         graphic_obj.redraw()
 
         return graphic_obj
+
+    def convert_line_to_hvdc(self, line: Line):
+        """
+        Convert a line to HVDC, this is the GUI way to create HVDC objects
+        :param line: Line instance
+        :return: Nothing
+        """
+        hvdc = HvdcLine(bus_from=line.bus_from,
+                        bus_to=line.bus_to,
+                        name='HVDC Line',
+                        active=line.active,
+                        rate=line.rate,
+                        active_prof=line.active_prof,
+                        rate_prof=line.rate_prof)
+
+        # add device to the circuit
+        self.circuit.add_hvdc(hvdc)
+
+        # add device to the schematic
+        hvdc.graphic_obj = self.add_api_hvdc(hvdc)
+
+        # update position
+        hvdc.graphic_obj.fromPort.update()
+        hvdc.graphic_obj.toPort.update()
+
+        # delete the line from the circuit
+        self.circuit.delete_line(line)
+
+        self.diagramScene.removeItem(line.graphic_obj)
 
     def add_circuit_to_schematic(self, circuit: "MultiCircuit", explode_factor=1.0, prog_func=None, text_func=None):
         """

@@ -115,7 +115,8 @@ class OpfTimeCircuit:
         self.hvdc_active = np.zeros((ntime, nhvdc), dtype=bool)
         self.hvdc_rate = np.zeros((ntime, nhvdc), dtype=float)
 
-        self.hvdc_Pset = np.zeros((ntime, nhvdc))
+        self.hvdc_Pf = np.zeros((ntime, nhvdc))
+        self.hvdc_Pt = np.zeros((ntime, nhvdc))
 
         self.C_hvdc_bus_f = sp.lil_matrix((nhvdc, nbus), dtype=int)  # this ons is just for splitting islands
         self.C_hvdc_bus_t = sp.lil_matrix((nhvdc, nbus), dtype=int)  # this ons is just for splitting islands
@@ -237,8 +238,8 @@ class OpfTimeCircuit:
 
         # HVDC forced power
         if self.nhvdc:
-            Sbus += ((self.hvdc_active * self.hvdc_Pset) * self.C_hvdc_bus_f).T
-            Sbus -= ((self.hvdc_active * self.hvdc_Pset) * self.C_hvdc_bus_t).T
+            Sbus += ((self.hvdc_active * self.hvdc_Pf) * self.C_hvdc_bus_f).T
+            Sbus += ((self.hvdc_active * self.hvdc_Pt) * self.C_hvdc_bus_t).T
 
         Sbus /= self.Sbase
 
@@ -323,7 +324,8 @@ class OpfTimeCircuit:
         island.hvdc_active = self.hvdc_active
         island.hvdc_rate = self.hvdc_rate
 
-        island.hvdc_Pset = self.hvdc_Pset
+        island.hvdc_Pf = self.hvdc_Pf
+        island.hvdc_Pt = self.hvdc_Pt
 
         island.C_hvdc_bus_f = self.C_hvdc_bus_f
         island.C_hvdc_bus_f = self.C_hvdc_bus_t
@@ -495,7 +497,9 @@ class OpfTimeCircuit:
 
         nc.hvdc_active = self.hvdc_active[np.ix_(time_idx, hvdc_idx)]
         nc.hvdc_rate = self.hvdc_rate[np.ix_(time_idx, hvdc_idx)]
-        nc.hvdc_Pset = self.hvdc_Pset[np.ix_(time_idx, hvdc_idx)]
+
+        nc.hvdc_Pf = self.hvdc_Pf[np.ix_(time_idx, hvdc_idx)]
+        nc.hvdc_Pt = self.hvdc_Pt[np.ix_(time_idx, hvdc_idx)]
 
         nc.C_hvdc_bus_f = self.C_hvdc_bus_f[np.ix_(hvdc_idx, bus_idx)]
         nc.C_hvdc_bus_t = self.C_hvdc_bus_t[np.ix_(hvdc_idx, bus_idx)]
@@ -802,8 +806,8 @@ class OpfTimeIsland(OpfTimeCircuit):
 
         # HVDC forced power
         if self.nhvdc:
-            self.Sbus += ((self.hvdc_active * self.hvdc_Pset) * self.C_hvdc_bus_f).T
-            self.Sbus -= ((self.hvdc_active * self.hvdc_Pset) * self.C_hvdc_bus_t).T
+            self.Sbus += ((self.hvdc_active * self.hvdc_Pf) * self.C_hvdc_bus_f).T
+            self.Sbus += ((self.hvdc_active * self.hvdc_Pt) * self.C_hvdc_bus_t).T
 
         self.Sbus /= self.Sbase
 
@@ -1236,7 +1240,8 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
 
         nc.hvdc_active[:, i] = elm.active_prof
         nc.hvdc_rate[:, i] = elm.rate_prof
-        nc.hvdc_Pset[:, i] = elm.Pset_prof
+
+        nc.hvdc_Pf[:, i], nc.hvdc_Pt[:, i] = elm.get_from_and_to_power_profiles()
 
         # hack the bus types to believe they are PV
         nc.bus_types[f] = BusMode.PV.value
