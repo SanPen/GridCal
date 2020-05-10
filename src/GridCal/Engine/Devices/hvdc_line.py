@@ -158,7 +158,7 @@ class HvdcLine(EditableDevice):
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='HVDC Line', idtag=None, active=True,
                  rate=1.0, Pset=0.0, loss_factor=0.0, Vset_f=1.0, Vset_t=1.0, length=1.0, mttf=0.0, mttr=0.0,
                  overload_cost=1000.0,   min_firing_angle_f=-1.0, max_firing_angle_f=1.0, min_firing_angle_t=-1.0,
-                 max_firing_angle_t=1.0, active_prof=np.ones(0, dtype=bool), rate_prof=np.zeros(0),
+                 max_firing_angle_t=1.0, Pmax=9999, Pmin=-9999, active_prof=np.ones(0, dtype=bool), rate_prof=np.zeros(0),
                  Pset_prof=np.zeros(0), Vset_f_prof=np.ones(0), Vset_t_prof=np.ones(0), overload_cost_prof=np.zeros(0)):
         """
         HVDC Line model
@@ -225,6 +225,9 @@ class HvdcLine(EditableDevice):
                                                                                'maximum firing angle at the '
                                                                                '"to" side.'),
 
+                                                  'Pmax': GCProp('MW', float, 'Maximum active power.'),
+                                                  'Pmin': GCProp('MW', float, 'Minimum active power.'),
+
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                              'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
@@ -255,6 +258,9 @@ class HvdcLine(EditableDevice):
         self.length = length
 
         self.Pset = Pset
+
+        self.Pmax = Pmax
+        self.Pmin = Pmin
 
         self.loss_factor = loss_factor
 
@@ -374,6 +380,8 @@ class HvdcLine(EditableDevice):
                      max_firing_angle_f=self.max_firing_angle_f,
                      min_firing_angle_t=self.min_firing_angle_t,
                      max_firing_angle_t=self.max_firing_angle_t,
+                     Pmax=self.Pmax,
+                     Pmin=self.Pmin,
                      active_prof=self.active_prof,
                      rate_prof=self.rate_prof,
                      Pset_prof=self.Pset_prof,

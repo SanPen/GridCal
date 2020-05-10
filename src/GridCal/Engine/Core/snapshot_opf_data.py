@@ -66,7 +66,7 @@ class OpfSnapshotCircuit:
         self.bus_installed_power = np.zeros(nbus, dtype=float)
 
         # branch common ------------------------------------------------------------------------------------------------
-        self.nbr = nline + ntr + nhvdc + nvsc  # compute the number of branches
+        self.nbr = nline + ntr + nvsc  # exclude the HVDC model since it is not a real branch
 
         self.branch_names = np.empty(self.nbr, dtype=object)
         self.branch_active = np.zeros(self.nbr, dtype=int)

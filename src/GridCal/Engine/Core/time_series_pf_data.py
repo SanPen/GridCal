@@ -80,7 +80,7 @@ class TimeCircuit:
         self.Vmax = np.ones(nbus)
 
         # branch common ------------------------------------------------------------------------------------------------
-        self.nbr = nline + ntr + nhvdc + nvsc  # compute the number of branches
+        self.nbr = nline + ntr + nvsc  # exclude the HVDC model since it is not a real branch
 
         self.branch_names = np.empty(self.nbr, dtype=object)
         self.branch_active = np.zeros((ntime, self.nbr), dtype=int)
@@ -1090,7 +1090,7 @@ class TimeIsland(TimeCircuit):
         """
         self.compute_injections()
 
-        self.vd, self.pq, self.pv, self.pqpv = compile_types(Sbus=self.Sbus, types=self.bus_types)
+        self.vd, self.pq, self.pv, self.pqpv = compile_types(Sbus=self.Sbus[:, 0], types=self.bus_types)
 
         self.compute_admittance_matrices(newton_raphson=True,
                                          linear_dc=True,
@@ -1219,6 +1219,8 @@ def split_time_circuit_into_islands(numeric_circuit: TimeCircuit, ignore_single_
                     island = numeric_circuit.get_island(bus_idx, all_time)
                     island.consolidate()  # compute the internal magnitudes
                     circuit_islands.append(island)
+
+            return circuit_islands
 
     else:  # -----------------------------------------------------------------------------------------------------------
 

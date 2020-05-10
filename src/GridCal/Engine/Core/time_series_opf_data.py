@@ -71,7 +71,7 @@ class OpfTimeCircuit:
         self.Vbus = np.ones((ntime, nbus), dtype=complex)
 
         # branch common ------------------------------------------------------------------------------------------------
-        self.nbr = nline + ntr + nhvdc + nvsc  # compute the number of branches
+        self.nbr = nline + ntr + nvsc  # exclude the HVDC model since it is not a real branch
 
         self.branch_names = np.empty(self.nbr, dtype=object)
         self.branch_active = np.zeros((ntime, self.nbr), dtype=int)
@@ -818,7 +818,7 @@ class OpfTimeIsland(OpfTimeCircuit):
         """
         self.compute_injections()
 
-        self.vd, self.pq, self.pv, self.pqpv = compile_types(Sbus=self.Sbus, types=self.bus_types)
+        self.vd, self.pq, self.pv, self.pqpv = compile_types(Sbus=self.Sbus[:, 0], types=self.bus_types)
 
         self.compute_admittance_matrices()
 
