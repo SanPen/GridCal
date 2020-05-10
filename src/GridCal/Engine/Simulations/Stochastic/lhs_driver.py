@@ -210,9 +210,11 @@ class LatinHypercubeSampling(QThread):
         avg_res = PowerFlowResults(n=numerical_circuit.nbus,
                                    m=numerical_circuit.nbr,
                                    n_tr=numerical_circuit.ntr,
+                                   n_hvdc=numerical_circuit.nhvdc,
                                    bus_names=numerical_circuit.bus_names,
                                    branch_names=numerical_circuit.branch_names,
                                    transformer_names=numerical_circuit.tr_names,
+                                   hvdc_names=numerical_circuit.hvdc_names,
                                    bus_types=numerical_circuit.bus_types)
 
         it = 0

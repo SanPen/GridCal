@@ -26,7 +26,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import CDF
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, single_island_pf, \
                                                                     power_flow_worker_args, power_flow_post_process
-from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeriesResults
+
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, split_time_circuit_into_islands, BranchImpedanceMode
 
 ########################################################################################################################
@@ -286,9 +286,11 @@ class MonteCarlo(QThread):
         avg_res = PowerFlowResults(n=numerical_circuit.nbus,
                                    m=numerical_circuit.nbr,
                                    n_tr=numerical_circuit.ntr,
+                                   n_hvdc=numerical_circuit.nhvdc,
                                    bus_names=numerical_circuit.bus_names,
                                    branch_names=numerical_circuit.branch_names,
                                    transformer_names=numerical_circuit.tr_names,
+                                   hvdc_names=numerical_circuit.hvdc_names,
                                    bus_types=numerical_circuit.bus_types)
 
         n = numerical_circuit.nbus

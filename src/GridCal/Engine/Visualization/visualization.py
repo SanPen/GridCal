@@ -40,7 +40,9 @@ def get_loading_color_map():
     return loading_cmap
 
 
-def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, types=None, losses=None,
+def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings,
+                         types=None, losses=None,
+                         hvdc_sending_power=None, hvdc_losses=None, hvdc_loading=None,
                          failed_br_idx=None, loading_label='loading'):
     """
     Color the grid based on the results passed
@@ -96,10 +98,11 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
             bus.graphic_obj.set_tile_color(QtCore.Qt.gray)
 
     # color branches
+    branches = circuit.get_branches_wo_hvdc()  # HVDC branches are coloured separately
+
     if s_branch is not None:
         lnorm = abs(loadings)
         lnorm[lnorm == np.inf] = 0
-        branches = circuit.get_branches_wo_hvdc()  # HVDC branches are coloured separately
         for i, branch in enumerate(branches):
             if branch.graphic_obj is not None:
                 w = branch.graphic_obj.pen_width
@@ -128,6 +131,29 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
                 color = QtCore.Qt.gray
                 branches[i].graphic_obj.set_pen(QtGui.QPen(color, w, style))
 
+    if hvdc_sending_power is not None:
+        for i, elm in enumerate(circuit.hvdc_lines):
+
+            if elm.graphic_obj is not None:
+                w = elm.graphic_obj.pen_width
+                if elm.active:
+                    style = QtCore.Qt.SolidLine
+                    r, g, b, a = loading_cmap(abs(hvdc_loading[i]))
+                    color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+                else:
+                    style = QtCore.Qt.DashLine
+                    color = QtCore.Qt.gray
+
+                tooltip = str(i) + ': ' + elm.name
+                tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(abs(hvdc_loading[i]) * 100) + ' [%]'
+
+                if hvdc_losses is not None:
+                    tooltip += '\nLosses: ' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
+
+                elm.graphic_obj.setToolTipText(tooltip)
+                elm.graphic_obj.set_pen(QtGui.QPen(color, w, style))
+                elm.graphic_obj.symbol.setPen(QtGui.QPen(color, w, style))
+                elm.graphic_obj.symbol.setBrush(color)
 
 def get_base_map(location, zoom_start=5):
     """

@@ -15,9 +15,6 @@
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
-
-from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Gui.GuiFunctions import ResultsModel
 
@@ -64,19 +61,21 @@ class PowerFlowResults:
 
     """
 
-    def __init__(self, n, m, n_tr, bus_names, branch_names, transformer_names, bus_types):
+    def __init__(self, n, m, n_tr, n_hvdc, bus_names, branch_names, transformer_names, hvdc_names, bus_types):
 
         self.name = 'Power flow'
 
         self.n = n
         self.m = m
         self.n_tr = n_tr
+        self.n_hvdc = n_hvdc
 
         self.bus_types = bus_types
 
         self.bus_names = bus_names
         self.branch_names = branch_names
         self.transformer_names = transformer_names
+        self.hvdc_names = hvdc_names
 
         self.Sbus = np.zeros(n, dtype=complex)
 
@@ -100,6 +99,12 @@ class PowerFlowResults:
 
         self.losses = np.zeros(m, dtype=complex)
 
+        self.hvdc_losses = np.zeros(self.n_hvdc)
+
+        self.hvdc_sent_power = np.zeros(self.n_hvdc)
+
+        self.hvdc_loading = np.zeros(self.n_hvdc)
+
         self.overloads = np.zeros(m, dtype=complex)
 
         self.buses_useful_for_storage = list()
@@ -120,6 +125,10 @@ class PowerFlowResults:
                                   ResultTypes.BranchReactiveLosses,
                                   ResultTypes.BranchVoltage,
                                   ResultTypes.BranchAngles,
+
+                                  ResultTypes.HvdcLosses,
+                                  ResultTypes.HvdcSentPower,
+
                                   ResultTypes.BatteryPower]
 
     def converged(self):
@@ -390,6 +399,18 @@ class PowerFlowResults:
             y = np.angle(self.Vbranch, deg=True)
             y_label = '(deg)'
             title = 'Branch voltage angle '
+
+        elif result_type == ResultTypes.HvdcLosses:
+            labels = self.hvdc_names
+            y = self.hvdc_losses
+            y_label = '(MW)'
+            title = result_type.value
+
+        elif result_type == ResultTypes.HvdcSentPower:
+            labels = self.hvdc_names
+            y = self.hvdc_sent_power
+            y_label = '(MW)'
+            title = result_type.value
 
         else:
             labels = []

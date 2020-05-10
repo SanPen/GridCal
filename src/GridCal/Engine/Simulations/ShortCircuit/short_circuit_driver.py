@@ -67,22 +67,26 @@ class ShortCircuitOptions:
 class ShortCircuitResults(PowerFlowResults):
 
     def __init__(self, n, m, n_tr, bus_names, branch_names, transformer_names, bus_types):
-
         """
 
-        Args:
-            Sbus:
-            voltage:
-            Sbranch:
-            Ibranch:
-            loading:
-            losses:
-            SCpower:
-            error:
-            converged:
-            Qpv:
+        :param n:
+        :param m:
+        :param n_tr:
+        :param bus_names:
+        :param branch_names:
+        :param transformer_names:
+        :param bus_types:
         """
-        PowerFlowResults.__init__(self, n, m, n_tr, bus_names, branch_names, transformer_names, bus_types)
+        PowerFlowResults.__init__(self,
+                                  n=n,
+                                  m=m,
+                                  n_tr=n_tr,
+                                  n_hvdc=0,
+                                  bus_names=bus_names,
+                                  branch_names=branch_names,
+                                  transformer_names=transformer_names,
+                                  hvdc_names=(),
+                                  bus_types=bus_types)
 
         self.name = 'Short circuit'
 

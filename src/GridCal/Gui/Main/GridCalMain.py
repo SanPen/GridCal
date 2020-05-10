@@ -2133,7 +2133,10 @@ class MainGUI(QMainWindow):
                                      voltages=self.power_flow.results.voltage,
                                      loadings=self.power_flow.results.loading,
                                      types=self.power_flow.results.bus_types,
-                                     losses=self.power_flow.results.losses)
+                                     losses=self.power_flow.results.losses,
+                                     hvdc_loading=self.power_flow.results.hvdc_loading,
+                                     hvdc_sending_power=self.power_flow.results.hvdc_sent_power,
+                                     hvdc_losses=self.power_flow.results.hvdc_losses)
             self.update_available_results()
 
             # print convergence reports on the console

@@ -174,9 +174,11 @@ def power_flow_worker(variation: int, nbus, nbr, n_tr, bus_names, branch_names, 
     pf_results = PowerFlowResults(n=nbus,
                                   m=nbr,
                                   n_tr=n_tr,
+                                  n_hvdc=0,
                                   bus_names=bus_names,
                                   branch_names=branch_names,
                                   transformer_names=transformer_names,
+                                  hvdc_names=(),
                                   bus_types=bus_types)
 
     logger = Logger()

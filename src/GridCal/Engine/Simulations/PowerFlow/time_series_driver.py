@@ -34,16 +34,32 @@ from GridCal.Gui.GuiFunctions import ResultsModel
 
 class TimeSeriesResults(PowerFlowResults):
 
-    def __init__(self, n, m, n_tr, bus_names, branch_names, transformer_names, time_array, bus_types):
+    def __init__(self, n, m, n_tr, n_hvdc, bus_names, branch_names, transformer_names, hvdc_names,
+                 time_array, bus_types):
         """
         TimeSeriesResults constructor
-        @param n: number of buses
-        @param m: number of branches
-        @param nt: number of time steps
+        :param n: number of buses
+        :param m: number of branches
+        :param n_tr:
+        :param n_hvdc:
+        :param bus_names:
+        :param branch_names:
+        :param transformer_names:
+        :param hvdc_names:
+        :param time_array:
+        :param bus_types:
         """
-        PowerFlowResults.__init__(self, n=n, m=m, n_tr=n_tr, bus_names=bus_names,
-                                  branch_names=branch_names, transformer_names=transformer_names,
+        PowerFlowResults.__init__(self,
+                                  n=n,
+                                  m=m,
+                                  n_tr=n_tr,
+                                  n_hvdc=n_hvdc,
+                                  bus_names=bus_names,
+                                  branch_names=branch_names,
+                                  transformer_names=transformer_names,
+                                  hvdc_names=hvdc_names,
                                   bus_types=bus_types)
+
         self.name = 'Time series'
         self.nt = len(time_array)
         self.m = m
@@ -53,76 +69,47 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.bus_types = np.zeros(n, dtype=int)
 
-        if self.nt > 0:
-            self.voltage = np.zeros((self.nt, n), dtype=complex)
+        self.voltage = np.zeros((self.nt, n), dtype=complex)
 
-            self.S = np.zeros((self.nt, n), dtype=complex)
+        self.S = np.zeros((self.nt, n), dtype=complex)
 
-            self.Sbranch = np.zeros((self.nt, m), dtype=complex)
+        self.Sbranch = np.zeros((self.nt, m), dtype=complex)
 
-            self.Ibranch = np.zeros((self.nt, m), dtype=complex)
+        self.Ibranch = np.zeros((self.nt, m), dtype=complex)
 
-            self.Vbranch = np.zeros((self.nt, m), dtype=complex)
+        self.Vbranch = np.zeros((self.nt, m), dtype=complex)
 
-            self.loading = np.zeros((self.nt, m), dtype=complex)
+        self.loading = np.zeros((self.nt, m), dtype=complex)
 
-            self.losses = np.zeros((self.nt, m), dtype=complex)
+        self.losses = np.zeros((self.nt, m), dtype=complex)
 
-            self.flow_direction = np.zeros((self.nt, m), dtype=float)
+        self.hvdc_losses = np.zeros((self.nt, self.n_hvdc))
 
-            self.error = np.zeros(self.nt)
+        self.hvdc_sent_power = np.zeros((self.nt, self.n_hvdc))
 
-            self.converged = np.ones(self.nt, dtype=bool)  # guilty assumption
+        self.hvdc_loading = np.zeros((self.nt, self.n_hvdc))
 
-            self.overloads = [None] * self.nt
+        self.flow_direction = np.zeros((self.nt, m), dtype=float)
 
-            self.overvoltage = [None] * self.nt
+        self.error = np.zeros(self.nt)
 
-            self.undervoltage = [None] * self.nt
+        self.converged = np.ones(self.nt, dtype=bool)  # guilty assumption
 
-            self.overloads_idx = [None] * self.nt
+        self.overloads = [None] * self.nt
 
-            self.overvoltage_idx = [None] * self.nt
+        self.overvoltage = [None] * self.nt
 
-            self.undervoltage_idx = [None] * self.nt
+        self.undervoltage = [None] * self.nt
 
-            self.buses_useful_for_storage = [None] * self.nt
+        self.overloads_idx = [None] * self.nt
 
-        else:
-            self.voltage = None
+        self.overvoltage_idx = [None] * self.nt
 
-            self.S = None
+        self.undervoltage_idx = [None] * self.nt
 
-            self.Sbranch = None
+        self.buses_useful_for_storage = [None] * self.nt
 
-            self.Ibranch = None
-
-            self.Vbranch = None
-
-            self.loading = None
-
-            self.losses = None
-
-            self.flow_direction = None
-
-            self.error = None
-
-            self.converged = None
-
-            # self.overloads = None
-            #
-            # self.overvoltage = None
-            #
-            # self.undervoltage = None
-            #
-            # self.overloads_idx = None
-            #
-            # self.overvoltage_idx = None
-            #
-            # self.undervoltage_idx = None
-            #
-            # self.buses_useful_for_storage = None
-
+        # results available
         self.available_results = [ResultTypes.BusVoltageModule,
                                   ResultTypes.BusVoltageAngle,
                                   ResultTypes.BusActivePower,
@@ -625,9 +612,11 @@ class TimeSeries(QThread):
         time_series_results = TimeSeriesResults(n=numerical_circuit.nbus,
                                                 m=numerical_circuit.nbr,
                                                 n_tr=numerical_circuit.ntr,
+                                                n_hvdc=numerical_circuit.nhvdc,
                                                 bus_names=numerical_circuit.bus_names,
                                                 branch_names=numerical_circuit.branch_names,
                                                 transformer_names=numerical_circuit.tr_names,
+                                                hvdc_names=numerical_circuit.hvdc_names,
                                                 bus_types=numerical_circuit.bus_types,
                                                 time_array=self.grid.time_profile[time_indices])
 
@@ -657,9 +646,11 @@ class TimeSeries(QThread):
             results = TimeSeriesResults(n=calculation_input.nbus,
                                         m=calculation_input.nbr,
                                         n_tr=calculation_input.ntr,
+                                        n_hvdc=calculation_input.nhvdc,
                                         bus_names=calculation_input.bus_names,
                                         branch_names=calculation_input.branch_names,
                                         transformer_names=calculation_input.tr_names,
+                                        hvdc_names=calculation_input.hvdc_names,
                                         bus_types=numerical_circuit.bus_types,
                                         time_array=self.grid.time_profile[time_indices])
 

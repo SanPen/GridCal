@@ -475,9 +475,11 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
     results = PowerFlowResults(n=circuit.nbus,
                                m=circuit.nbr,
                                n_tr=circuit.ntr,
+                               n_hvdc=circuit.nhvdc,
                                bus_names=circuit.bus_names,
                                branch_names=circuit.branch_names,
                                transformer_names=circuit.tr_names,
+                               hvdc_names=circuit.hvdc_names,
                                bus_types=circuit.bus_types)
     results.Sbus = Scalc
     results.voltage = voltage_solution
@@ -490,6 +492,11 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
     results.tap_module = tap_module
     results.convergence_reports.append(report)
     results.Qpv = Sbus.imag[pv]
+
+    # compile HVDC results
+    results.hvdc_sent_power = circuit.hvdc_Pf
+    results.hvdc_loading = circuit.hvdc_Pf / circuit.hvdc_rate
+    results.hvdc_losses = circuit.hvdc_Pf * circuit.hvdc_loss_factor
 
     return results
 
@@ -1145,7 +1152,9 @@ def single_island_pf(circuit: SnapshotIsland, Vbus, Sbus, Ibus, branch_rates,
     worked = False
     solver_idx = 0
 
-    results = PowerFlowResults(n=0, m=0, n_tr=0, bus_names=(), branch_names=(), transformer_names=(), bus_types=())
+    results = PowerFlowResults(n=0, m=0, n_tr=0, n_hvdc=0,
+                               bus_names=(), branch_names=(), transformer_names=(),
+                               hvdc_names=(), bus_types=())
 
     while solver_idx < len(solvers) and not worked:
         # get the solver
@@ -1198,10 +1207,17 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     results = PowerFlowResults(n=numerical_circuit.nbus,
                                m=numerical_circuit.nbr,
                                n_tr=numerical_circuit.ntr,
+                               n_hvdc=numerical_circuit.nhvdc,
                                bus_names=numerical_circuit.bus_names,
                                branch_names=numerical_circuit.branch_names,
                                transformer_names=numerical_circuit.tr_names,
+                               hvdc_names=numerical_circuit.hvdc_names,
                                bus_types=numerical_circuit.bus_types)
+
+    # compute the HVDC values
+    results.hvdc_sent_power = numerical_circuit.hvdc_Pf
+    results.hvdc_loading = numerical_circuit.hvdc_Pf / numerical_circuit.hvdc_rate
+    results.hvdc_losses = numerical_circuit.hvdc_Pf * numerical_circuit.hvdc_loss_factor
 
     results.bus_types = numerical_circuit.bus_types
 
