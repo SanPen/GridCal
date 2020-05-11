@@ -162,16 +162,16 @@ class PSSeGrid:
             # get the object
             branch = psse_banch.get_object(psse_bus_dict, self.SBASE, logger)
 
-            if branch.id_tag not in already_there:
+            if branch.idtag not in already_there:
 
                 # Add to the circuit
                 circuit.add_line(branch)
 
-                already_there.add(branch.id_tag)
+                already_there.add(branch.idtag)
 
             else:
                 logger.add(
-                    'The RAW file has a repeated line ' + str(branch.id_tag) + 'and it is omitted from the model')
+                    'The RAW file has a repeated line ' + str(branch.idtag) + 'and it is omitted from the model')
 
         # Go through Transformers
         for psse_banch in self.transformers:
@@ -179,28 +179,28 @@ class PSSeGrid:
             branches = psse_banch.get_object(psse_bus_dict, logger)
 
             for branch in branches:
-                if branch.id_tag not in already_there:
+                if branch.idtag not in already_there:
                     # Add to the circuit
                     circuit.add_transformer2w(branch)
-                    already_there.add(branch.id_tag)
+                    already_there.add(branch.idtag)
 
                 else:
-                    print('The RAW file has a repeated transformer', branch.id_tag, 'and it is omitted from the model')
+                    print('The RAW file has a repeated transformer', branch.idtag, 'and it is omitted from the model')
 
         # Go through hvdc lines
         for psse_banch in self.hvdc_lines:
             # get the object
             branch = psse_banch.get_object(psse_bus_dict, self.SBASE, logger)
 
-            if branch.id_tag not in already_there:
+            if branch.idtag not in already_there:
 
                 # Add to the circuit
                 circuit.add_hvdc(branch)
-                already_there.add(branch.id_tag)
+                already_there.add(branch.idtag)
 
             else:
                 logger.add(
-                    'The RAW file has a repeated line ' + str(branch.id_tag) + 'and it is omitted from the model')
+                    'The RAW file has a repeated line ' + str(branch.idtag) + 'and it is omitted from the model')
 
         return circuit
 
@@ -235,7 +235,7 @@ class PSSeBus:
             data:
         """
 
-        bustype = {1: BusMode.PQ, 2: BusMode.PV, 3: BusMode.REF, 4: BusMode.PQ}
+        bustype = {1: BusMode.PQ, 2: BusMode.PV, 3: BusMode.Slack, 4: BusMode.PQ}
 
         if version == 33:
             n = len(data[0])
@@ -289,7 +289,7 @@ class PSSeBus:
         if int(self.IDE) == 4:
             self.bus.active = False
 
-        if self.bus.type == BusMode.REF:
+        if self.bus.type == BusMode.Slack:
             self.bus.is_slack = True
 
         if int(self.IDE) == 4:
@@ -718,8 +718,8 @@ class PSSeGenerator:
         name = str(self.I) + '_' + str(self.ID).replace("'", "")
         elm = Generator(name=name,
                         idtag=name,
-                        P=self.PG,
-                        Vset=self.VS,
+                        active_power=self.PG,
+                        voltage_module=self.VS,
                         Qmin=self.QB,
                         Qmax=self.QT,
                         Snom=self.MBASE,
@@ -1129,7 +1129,7 @@ class PSSeVscDCLine:
         self.F4 = ''
         var = [self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4]
 
-        if version in [33, 34]:
+        if version in [32, 33, 34]:
 
             '''
             NAME, MDC, RDC, O1, F1, ... O4, F4
@@ -2055,7 +2055,7 @@ class PSSeParser:
         self.parsers = dict()
         self.versions = [33, 32, 30, 29]
 
-        self.logger = Logger(name='PSS/e parser logs')
+        self.logger = Logger()
 
         self.file_name = file_name
 
