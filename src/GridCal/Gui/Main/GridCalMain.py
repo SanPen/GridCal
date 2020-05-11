@@ -220,6 +220,9 @@ class MainGUI(QMainWindow):
         self.gis_dialogues = list()
         self.files_to_delete_at_exit = list()
 
+        # pointer to the analysis window
+        self.analysis_dialogue = None
+
         ################################################################################################################
         # Declare the schematic editor
         ################################################################################################################
@@ -3930,11 +3933,12 @@ class MainGUI(QMainWindow):
         Display the grid analysis GUI
         """
 
-        dialogue = GridAnalysisGUI(parent=self, object_types=self.grid_editor.object_types, circuit=self.circuit)
-        dialogue.resize(1.61 * 600.0, 600.0)
-        dialogue.setModal(False)
-        dialogue.show()
-        dialogue.exec_()
+        self.analysis_dialogue = GridAnalysisGUI(parent=self,
+                                                 object_types=self.grid_editor.object_types,
+                                                 circuit=self.circuit,
+                                                 use_native_dialogues=self.use_native_dialogues)
+        self.analysis_dialogue.resize(1.61 * 600.0, 600.0)
+        self.analysis_dialogue.show()
 
     def adjust_all_node_width(self):
         """

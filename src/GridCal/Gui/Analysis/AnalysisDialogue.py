@@ -131,10 +131,31 @@ class GridErrorLog:
 
         return model
 
+    def save(self, filename):
+        """
+        Save analysis to excel
+        :param filename:
+        :return:
+        """
+        data = list()
 
-class GridAnalysisGUI(QtWidgets.QDialog):
+        for message in self.logs.keys():
 
-    def __init__(self, parent=None, object_types=list(), circuit: MultiCircuit=None):
+            items = self.logs[message]
+
+            for [object_type, element_name, element_index, severity, propty] in items:
+
+                val = [message, object_type, element_name, element_index, severity, propty]
+                data.append(val)
+
+        hdr = ['Message', 'Object type', 'Name', 'Index', 'Severity', 'Property']
+        df = pd.DataFrame(data=data, columns=hdr)
+        df.to_excel(filename)
+
+
+class GridAnalysisGUI(QtWidgets.QMainWindow):
+
+    def __init__(self, parent=None, object_types=list(), circuit: MultiCircuit=None, use_native_dialogues=False):
         """
         Constructor
         Args:
@@ -142,13 +163,15 @@ class GridAnalysisGUI(QtWidgets.QDialog):
             object_types:
             circuit:
         """
-        QtWidgets.QDialog.__init__(self, parent)
-        self.ui = Ui_Dialog()
+        QtWidgets.QMainWindow.__init__(self, parent)
+        self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle('Grid analysis')
 
         # set the circuit
         self.circuit = circuit
+
+        self.use_native_dialogues = use_native_dialogues
 
         # declare logs
         self.log = GridErrorLog()
@@ -168,6 +191,8 @@ class GridAnalysisGUI(QtWidgets.QDialog):
         self.ui.plotwidget.canvas.fig.clear()
         self.ui.plotwidget.get_figure().set_facecolor('white')
         self.ui.plotwidget.get_axis().set_facecolor('white')
+
+        self.ui.actionSave_diagnostic.triggered.connect(self.save_diagnostic)
 
         self.analyze_all()
 
@@ -543,6 +568,22 @@ class GridAnalysisGUI(QtWidgets.QDialog):
         self.ui.logsTreeView.setModel(self.log.get_model())
         print('Done!')
 
+    def save_diagnostic(self):
+
+        files_types = "Excel (*.xlsx)"
+
+
+        options = QFileDialog.Options()
+        if self.use_native_dialogues:
+            options |= QFileDialog.DontUseNativeDialog
+
+        fname = 'Grid error analysis.xlsx'
+
+        filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
+        options = options)
+
+        if filename != '':
+            self.log.save(filename)
 
 if __name__ == "__main__":
 
