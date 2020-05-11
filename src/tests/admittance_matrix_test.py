@@ -26,14 +26,14 @@ def __check__(fname):
     main_circuit = FileOpen(fname).open()
 
     # compile the data
-    numerical_circuit = main_circuit.compile_snapshot()
+    numerical_circuit = compile_snapshot_circuit(main_circuit, apply_temperature=False)
 
     # split into the possible islands
-    islands = numerical_circuit.compute()
+    islands = split_into_islands(numerical_circuit)
 
     # check the consistency of each island
     for island in islands:
-        assert ((island.Ybus - (island.Yseries + diags(island.Ysh_helm))).data < 1e-9).all()
+        assert ((island.Ybus - (island.Yseries + diags(island.Yshunt))).data < 1e-9).all()
 
     return True
 
