@@ -48,6 +48,16 @@ def get_objects_dictionary():
                     'transformer_types': TransformerType(),
 
                     'branch': Branch(),
+
+                    'transformer2w': Transformer2W(),
+
+                    'line': Line(),
+
+                    'dc_line': DCLine(),
+
+                    'hvdc': HvdcLine(),
+
+                    'vsc': VSC(Bus(), Bus(is_dc=True)),
                     }
 
     return object_types
@@ -95,13 +105,15 @@ def create_data_frames(circuit: MultiCircuit):
                 names_count[elm.name] = 1
 
             elm.ensure_profiles_exist(T)
-
             elm.retrieve_graphic_position()
 
     ########################################################################################################
     # declare objects to iterate  name: [sample object, list of objects, headers]
     ########################################################################################################
     object_types = get_objects_dictionary()
+
+    # forget abut the Branch object when saving, now we have lines and transformers separated in their own lists
+    del object_types['branch']
 
     ########################################################################################################
     # generic object iteration
@@ -123,7 +135,6 @@ def create_data_frames(circuit: MultiCircuit):
 
                 # get the object normal information
                 obj.append(elm.get_save_data())
-
                 object_names.append(elm.name)
 
                 if T is not None:
@@ -209,7 +220,7 @@ def data_frames_to_circuit(data: Dict):
     # time profile -----------------------------------------------------------------------------------------------------
     if 'time' in data.keys():
         time_df = data['time']
-        circuit.time_profile = pd.to_datetime(time_df.values[:, 0])
+        circuit.time_profile = pd.to_datetime(time_df.values[:, 0], dayfirst=True)
     else:
         circuit.time_profile = None
 
@@ -229,16 +240,28 @@ def data_frames_to_circuit(data: Dict):
             # create the objects ...
             devices = list()
             devices_dict = dict()
-            for i in range(df.shape[0]):
+            if 'idtag' in df.columns.values:
+                for i in range(df.shape[0]):
 
-                elm = type(template_elm)()
-                name = df['name'].values[i]
+                    elm = type(template_elm)()
+                    idtag = df['idtag'].values[i]
 
-                # create the buses dictionary, this works because the bus is the first key in "object_types"
-                devices_dict[name] = elm
+                    # create the buses dictionary, this works because the bus is the first key in "object_types"
+                    devices_dict[idtag] = elm
 
-                # add the device to the elements
-                devices.append(elm)
+                    # add the device to the elements
+                    devices.append(elm)
+            else:
+                for i in range(df.shape[0]):
+
+                    elm = type(template_elm)()
+                    idtag = df['name'].values[i]
+
+                    # create the buses dictionary, this works because the bus is the first key in "object_types"
+                    devices_dict[idtag] = elm
+
+                    # add the device to the elements
+                    devices.append(elm)
 
             elements_dict[template_elm.device_type] = devices_dict
 
@@ -270,13 +293,32 @@ def data_frames_to_circuit(data: Dict):
                                     setattr(devices[i], prop, parent_bus)
 
                                     # add the device to the bus
-                                    if template_elm.device_type != DeviceType.BranchDevice:
+                                    if template_elm.device_type in [DeviceType.LoadDevice,
+                                                                    DeviceType.GeneratorDevice,
+                                                                    DeviceType.BatteryDevice,
+                                                                    DeviceType.StaticGeneratorDevice,
+                                                                    DeviceType.ShuntDevice,
+                                                                    DeviceType.ExternalGridDevice]:
                                         parent_bus.add_device(devices[i])
 
                                 else:
                                     circuit.logger.append('Bus not found: ' + str(df[prop].values[i]))
 
+                            elif dtype in [DeviceType.TransformerTypeDevice,  # template types mostly
+                                           DeviceType.SequenceLineDevice,
+                                           DeviceType.TowerDevice]:
+
+                                if df[prop].values[i] in elements_dict[dtype].keys():
+
+                                    # get the actual template and set it
+                                    val = elements_dict[dtype][df[prop].values[i]]
+                                    setattr(devices[i], prop, val)
+
+                                else:
+                                    circuit.logger.append(dtype.value + ' type not found: ' + str(df[prop].values[i]))
+
                             else:
+                                # regular types (int, str, float, etc...)
                                 val = dtype(df[prop].values[i])
                                 setattr(devices[i], prop, val)
 
@@ -319,7 +361,20 @@ def data_frames_to_circuit(data: Dict):
                 circuit.buses = devices
 
             elif template_elm.device_type == DeviceType.BranchDevice:
-                circuit.branches = devices
+                for d in devices:
+                    circuit.add_branch(d)  # each branch needs to be converted accordingly
+
+            elif template_elm.device_type == DeviceType.LineDevice:
+                circuit.lines = devices
+
+            elif template_elm.device_type == DeviceType.Transformer2WDevice:
+                circuit.transformers2w = devices
+
+            elif template_elm.device_type == DeviceType.HVDCLineDevice:
+                circuit.hvdc_lines = devices
+
+            elif template_elm.device_type == DeviceType.VscDevice:
+                circuit.vsc_converters = devices
 
             elif template_elm.device_type == DeviceType.TowerDevice:
                 circuit.overhead_line_types = devices

@@ -14,12 +14,12 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from GridCal.Engine.Devices.types import BranchType
-from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
 
 class UndergroundLineType(EditableDevice):
 
-    def __init__(self, name='UndergroundLine', rating=1, R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0):
+    def __init__(self, name='UndergroundLine', idtag=None, rating=1, R=0, X=0, G=0, B=0, R0=0, X0=0, G0=0, B0=0):
         """
         Constructor
         :param name: name of the device
@@ -36,9 +36,11 @@ class UndergroundLineType(EditableDevice):
         """
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=True,
                                 device_type=DeviceType.UnderGroundLineDevice,
                                 editable_headers={'name': GCProp('', str, "Name of the line template"),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'rating': GCProp('kA', float, "Current rating of the cable"),
                                                   'R': GCProp('Ohm/km', float, "Positive-sequence "
                                                                                "resistance per km"),

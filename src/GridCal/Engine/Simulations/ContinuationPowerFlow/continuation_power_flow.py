@@ -939,7 +939,7 @@ if __name__ == '__main__':
     from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
     from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
     from GridCal.Engine.Simulations.OPF.opf_driver import *
-    from GridCal.Engine.Simulations.OPF.opf_time_series_driver import *
+    from GridCal.Engine.Simulations.OPF.opf_ts_driver import *
     from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
     from GridCal.Engine.Simulations.MonteCarlo.stochastic_driver import *
     from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
@@ -952,17 +952,17 @@ if __name__ == '__main__':
 
     print('Reading...')
     main_circuit = FileOpen(fname).open()
-    options = PowerFlowOptions(SolverType.NR, verbose=False,
-                               initialize_with_existing_solution=False,
-                               multi_core=False, dispatch_storage=True,
-                               control_q=ReactivePowerControlMode.NoControl,
-                               control_p=True)
+    pf_options = PowerFlowOptions(SolverType.NR, verbose=False,
+                                  initialize_with_existing_solution=False,
+                                  multi_core=False, dispatch_storage=True,
+                                  control_q=ReactivePowerControlMode.NoControl,
+                                  control_p=True)
 
     ####################################################################################################################
     # PowerFlowDriver
     ####################################################################################################################
     print('\n\n')
-    power_flow = PowerFlowDriver(main_circuit, options)
+    power_flow = PowerFlowDriver(main_circuit, pf_options)
     power_flow.run()
 
     print('\n\n', main_circuit.name)
@@ -988,7 +988,7 @@ if __name__ == '__main__':
 
     # just for this test
     numeric_circuit = main_circuit.compile_snapshot()
-    numeric_inputs = numeric_circuit.compute(ignore_single_node_islands=options.ignore_single_node_islands)
+    numeric_inputs = numeric_circuit.compute(ignore_single_node_islands=pf_options.ignore_single_node_islands)
     Sbase = zeros(len(main_circuit.buses), dtype=complex)
     Vbase = zeros(len(main_circuit.buses), dtype=complex)
     for c in numeric_inputs:
@@ -1001,7 +1001,7 @@ if __name__ == '__main__':
     vc_inputs = VoltageCollapseInput(Sbase=Sbase,
                                      Vbase=Vbase,
                                      Starget=Sbase * (1 + unitary_vector))
-    vc = VoltageCollapse(circuit=main_circuit, options=vc_options, inputs=vc_inputs)
+    vc = VoltageCollapse(circuit=main_circuit, options=vc_options, inputs=vc_inputs, pf_options=pf_options)
     vc.run()
     df = vc.results.plot()
 

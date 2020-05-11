@@ -20,7 +20,7 @@ from PySide2 import QtCore
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.types import BranchType
-from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 from GridCal.Engine.Devices.wire import Wire
 
 
@@ -159,7 +159,7 @@ class WiresCollection(QtCore.QAbstractTableModel):
 
 class Tower(EditableDevice):
 
-    def __init__(self,  name='Tower', tpe=BranchType.Branch):
+    def __init__(self,  name='Tower', tpe=BranchType.Branch, idtag=None):
         """
         Overhead line editor
         :param name: name
@@ -167,9 +167,11 @@ class Tower(EditableDevice):
         """
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=True,
                                 device_type=DeviceType.TowerDevice,
                                 editable_headers={'name': GCProp('', str, "Tower name"),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'earth_resistivity': GCProp('Ohm/m3', float, "Earth resistivity"),
                                                   'frequency': GCProp('Hz', float, "Frequency"),
                                                   'R1': GCProp('Ohm/km', float, "Positive sequence resistance"),

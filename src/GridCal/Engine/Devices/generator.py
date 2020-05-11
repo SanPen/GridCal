@@ -15,7 +15,7 @@
 
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCal.Engine.Devices.meta_devices import EditableDevice, GCProp
+from GridCal.Engine.Devices.editable_device import EditableDevice, GCProp
 from GridCal.Engine.Devices.types import DeviceType, GeneratorTechnologyType
 
 
@@ -69,16 +69,18 @@ class Generator(EditableDevice):
 
     """
 
-    def __init__(self, name='gen', active_power=0.0, power_factor=0.8, voltage_module=1.0, is_controlled=True,
+    def __init__(self, name='gen', idtag=None, active_power=0.0, power_factor=0.8, voltage_module=1.0, is_controlled=True,
                  Qmin=-9999, Qmax=9999, Snom=9999, power_prof=None, power_factor_prof=None, vset_prof=None,
                  Cost_prof=None, active=True,  p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100, enabled_dispatch=True,
                  mttf=0.0, mttr=0.0, technology: GeneratorTechnologyType = GeneratorTechnologyType.CombinedCycle):
 
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=active,
                                 device_type=DeviceType.GeneratorDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the generator'),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
                                                   'active': GCProp('', bool, 'Is the generator active?'),
                                                   'is_controlled': GCProp('', bool,
@@ -199,6 +201,9 @@ class Generator(EditableDevice):
         # is the generator active?
         gen.active = self.active
 
+        # active profile
+        gen.active_prof = self.active_prof
+
         # power profile for this load
         gen.P_prof = self.P_prof
 
@@ -238,22 +243,35 @@ class Generator(EditableDevice):
         :param bus_dict: Dictionary of buses [object] -> ID
         :return: json-compatible dictionary
         """
-        return {'id': id,
-                'type': 'controlled_gen',
-                'phases': 'ps',
-                'name': self.name,
-                'bus': bus_dict[self.bus],
-                'active': self.active,
-                'is_controlled': self.is_controlled,
-                'P': self.P,
-                'Pf': self.Pf,
-                'vset': self.Vset,
-                'Snom': self.Snom,
-                'qmin': self.Qmin,
-                'qmax': self.Qmax,
-                'Pmin': self.Pmin,
-                'Pmax': self.Pmax,
-                'Cost': self.Cost}
+
+        d = {'id': id,
+             'type': 'controlled_gen',
+             'phases': 'ps',
+             'name': self.name,
+             'bus': bus_dict[self.bus],
+             'active': self.active,
+             'is_controlled': self.is_controlled,
+             'P': self.P,
+             'Pf': self.Pf,
+             'vset': self.Vset,
+             'Snom': self.Snom,
+             'qmin': self.Qmin,
+             'qmax': self.Qmax,
+             'Pmin': self.Pmin,
+             'Pmax': self.Pmax,
+             'Cost': self.Cost,
+             'active_profile': [],
+             'P_prof': [],
+             'Pf_prof': [],
+             'Vset_prof': []}
+
+        if self.active_prof is not None:
+            d['active_profile'] = self.active_prof.tolist()
+            d['P_prof'] = self.P_prof.tolist()
+            d['Pf_prof'] = self.Pf_prof.tolist()
+            d['Vset_prof'] = self.Vset_prof.tolist()
+
+        return d
 
     def plot_profiles(self, time=None, show_fig=True):
         """

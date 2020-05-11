@@ -1,10 +1,22 @@
+# This file is part of GridCal.
+#
+# GridCal is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GridCal is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices.branch import Branch, TapChanger
+from GridCal.Engine.Devices.transformer import Transformer2W, TapChanger, TransformerType
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.generator import Generator
-from GridCal.Engine.Devices.transformer import TransformerType
-from GridCal.Engine.Devices.types import BranchType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import \
     PowerFlowOptions, ReactivePowerControlMode, SolverType, TapsControlMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
@@ -97,18 +109,16 @@ def test_pv_1():
     grid.add_transformer_type(PM)
 
     # Create branches
-    X_C3 = Branch(bus_from=POI,
-                  bus_to=B_MV_M32,
-                  name="X_C3",
-                  branch_type=BranchType.Transformer,
-                  template=SS)
+    X_C3 = Transformer2W(bus_from=POI,
+                         bus_to=B_MV_M32,
+                         name="X_C3",
+                         template=SS)
     grid.add_branch(X_C3)
 
-    X_M32 = Branch(bus_from=B_MV_M32,
-                   bus_to=B_LV_M32,
-                   name="X_M32",
-                   branch_type=BranchType.Transformer,
-                   template=PM)
+    X_M32 = Transformer2W(bus_from=B_MV_M32,
+                          bus_to=B_LV_M32,
+                          name="X_M32",
+                          template=PM)
     grid.add_branch(X_M32)
 
     # Apply templates (device types)
@@ -146,7 +156,8 @@ def test_pv_1():
     print()
 
     print("Branches:")
-    for b in grid.branches:
+    branches = grid.get_branches()
+    for b in branches:
         print(f" - {b}:")
         print(f"   R = {round(b.R, 4)} pu")
         print(f"   X = {round(b.X, 4)} pu")
@@ -162,9 +173,9 @@ def test_pv_1():
     print()
 
     print("Losses:")
-    for i in range(len(grid.branches)):
+    for i in range(len(branches)):
         print(
-            f" - {grid.branches[i]}: losses={1000 * round(power_flow.results.losses[i], 3)} kVA")
+            f" - {branches[i]}: losses={1000 * round(power_flow.results.losses[i], 3)} kVA")
     print()
 
     equal = True
@@ -249,23 +260,21 @@ def test_pv_2():
     grid.add_transformer_type(PM)
 
     # Create branches
-    X_C3 = Branch(bus_from=POI,
-                  bus_to=B_MV_M32,
-                  name="X_C3",
-                  branch_type=BranchType.Transformer,
-                  template=SS,
-                  bus_to_regulated=True,
-                  vset=1.005)
+    X_C3 = Transformer2W(bus_from=POI,
+                         bus_to=B_MV_M32,
+                         name="X_C3",
+                         template=SS,
+                         bus_to_regulated=True,
+                         vset=1.005)
     X_C3.tap_changer = TapChanger(taps_up=16, taps_down=16, max_reg=1.1,
                                   min_reg=0.9)
     X_C3.tap_changer.set_tap(X_C3.tap_module)
     grid.add_branch(X_C3)
 
-    X_M32 = Branch(bus_from=B_MV_M32,
-                   bus_to=B_LV_M32,
-                   name="X_M32",
-                   branch_type=BranchType.Transformer,
-                   template=PM)
+    X_M32 = Transformer2W(bus_from=B_MV_M32,
+                          bus_to=B_LV_M32,
+                          name="X_M32",
+                          template=PM)
     grid.add_branch(X_M32)
 
     # Apply templates (device types)
@@ -276,7 +285,7 @@ def test_pv_2():
         print(f" - bus[{i}]: {b}")
     print()
 
-    options = PowerFlowOptions(SolverType.LM,
+    options = PowerFlowOptions(SolverType.NR,
                                verbose=True,
                                initialize_with_existing_solution=True,
                                multi_core=True,
@@ -303,7 +312,8 @@ def test_pv_2():
     print()
 
     print("Branches:")
-    for b in grid.branches:
+    branches = grid.get_branches()
+    for b in branches:
         print(f" - {b}:")
         print(f"   R = {round(b.R, 4)} pu")
         print(f"   X = {round(b.X, 4)} pu")
@@ -319,9 +329,9 @@ def test_pv_2():
     print()
 
     print("Losses:")
-    for i in range(len(grid.branches)):
+    for i in range(len(branches)):
         print(
-            f" - {grid.branches[i]}: losses={1000 * round(power_flow.results.losses[i], 3)} kVA")
+            f" - {branches[i]}: losses={1000 * round(power_flow.results.losses[i], 3)} kVA")
     print()
 
     equal = True
@@ -409,23 +419,21 @@ def test_pv_3():
     grid.add_transformer_type(PM)
 
     # Create branches
-    X_C3 = Branch(bus_from=POI,
-                  bus_to=B_MV_M32,
-                  name="X_C3",
-                  branch_type=BranchType.Transformer,
-                  template=SS,
-                  bus_to_regulated=True,
-                  vset=1.005)
+    X_C3 = Transformer2W(bus_from=POI,
+                         bus_to=B_MV_M32,
+                         name="X_C3",
+                         template=SS,
+                         bus_to_regulated=True,
+                         vset=1.005)
     X_C3.tap_changer = TapChanger(taps_up=16, taps_down=16, max_reg=1.1,
                                   min_reg=0.9)
     X_C3.tap_changer.set_tap(X_C3.tap_module)
     grid.add_branch(X_C3)
 
-    X_M32 = Branch(bus_from=B_MV_M32,
-                   bus_to=B_LV_M32,
-                   name="X_M32",
-                   branch_type=BranchType.Transformer,
-                   template=PM)
+    X_M32 = Transformer2W(bus_from=B_MV_M32,
+                          bus_to=B_LV_M32,
+                          name="X_M32",
+                          template=PM)
     grid.add_branch(X_M32)
 
     # Apply templates (device types)
@@ -436,10 +444,10 @@ def test_pv_3():
         print(f" - bus[{i}]: {b}")
     print()
 
-    options = PowerFlowOptions(SolverType.LM,
+    options = PowerFlowOptions(SolverType.NR,
                                verbose=True,
-                               initialize_with_existing_solution=True,
-                               multi_core=True,
+                               initialize_with_existing_solution=False,
+                               multi_core=False,
                                control_q=ReactivePowerControlMode.Iterative,
                                control_taps=TapsControlMode.Direct,
                                tolerance=1e-6,
@@ -463,7 +471,8 @@ def test_pv_3():
     print()
 
     print("Branches:")
-    for b in grid.branches:
+    branches = grid.get_branches()
+    for b in branches:
         print(f" - {b}:")
         print(f"   R = {round(b.R, 4)} pu")
         print(f"   X = {round(b.X, 4)} pu")
@@ -479,9 +488,9 @@ def test_pv_3():
     print()
 
     print("Losses:")
-    for i in range(len(grid.branches)):
+    for i in range(len(branches)):
         print(
-            f" - {grid.branches[i]}: losses={1000 * round(power_flow.results.losses[i], 3)} kVA")
+            f" - {branches[i]}: losses={1000 * round(power_flow.results.losses[i], 3)} kVA")
     print()
 
     equal = True

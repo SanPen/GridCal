@@ -12,15 +12,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
+import numpy as np
+from PySide2 import QtWidgets
+from PySide2.QtCore import QPointF, QLineF
 from PySide2.QtGui import *
-from GridCal.Gui.GridEditorWidget.generic import ACTIVE, DEACTIVATED, OTHER, Square
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, QLine
 from GridCal.Gui.GuiFunctions import ObjectsModel
 
 
-class StaticGeneratorGraphicItem(QGraphicsItemGroup):
+class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
 
     def __init__(self, parent, api_obj, diagramScene):
         """
@@ -28,7 +28,10 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         :param parent:
         :param api_obj:
         """
-        super(StaticGeneratorGraphicItem, self).__init__(parent)
+        super(ShuntGraphicItem, self).__init__(parent)
+
+        self.w = 15.0
+        self.h = 30.0
 
         self.parent = parent
 
@@ -36,14 +39,8 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
 
         self.diagramScene = diagramScene
 
-        self.w = 40
-        self.h = 40
-
-        # Properties of the container:
-        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
-
         self.width = 4
+
         if self.api_object is not None:
             if self.api_object.active:
                 self.style = ACTIVE['style']
@@ -55,21 +52,30 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
             self.style = OTHER['style']
             self.color = OTHER['color']
 
+        pen = QPen(self.color, self.width, self.style)
+
+        # Properties of the container:
+        self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
+        self.setCursor(QCursor(Qt.PointingHandCursor))
+
         # line to tie this object with the original bus (the parent)
-        self.nexus = QGraphicsLineItem()
+        self.nexus = QtWidgets.QGraphicsLineItem()
         self.nexus.setPen(QPen(self.color, self.width, self.style))
         parent.scene().addItem(self.nexus)
 
-        pen = QPen(self.color, self.width, self.style)
-
-        self.glyph = Square(parent)
-        self.glyph.setRect(0, 0, self.h, self.w)
-        self.glyph.setPen(pen)
-        self.addToGroup(self.glyph)
-
-        self.label = QGraphicsTextItem('S', parent=self.glyph)
-        self.label.setDefaultTextColor(self.color)
-        self.label.setPos(self.h / 4, self.w / 5)
+        self.lines = list()
+        self.lines.append(QLineF(QPointF(self.w / 2, 0), QPointF(self.w / 2, self.h * 0.4)))
+        self.lines.append(QLineF(QPointF(0, self.h * 0.4), QPointF(self.w, self.h * 0.4)))
+        self.lines.append(QLineF(QPointF(0, self.h * 0.6), QPointF(self.w, self.h * 0.6)))
+        self.lines.append(QLineF(QPointF(self.w / 2, self.h * 0.6), QPointF(self.w / 2, self.h)))
+        self.lines.append(QLineF(QPointF(0, self.h * 1), QPointF(self.w, self.h * 1)))
+        self.lines.append(QLineF(QPointF(self.w * 0.15, self.h * 1.1), QPointF(self.w * 0.85, self.h * 1.1)))
+        self.lines.append(QLineF(QPointF(self.w * 0.3, self.h * 1.2), QPointF(self.w * 0.7, self.h * 1.2)))
+        for l in self.lines:
+            l1 = QLine(self)
+            l1.setLine(l)
+            l1.setPen(pen)
+            self.addToGroup(l1)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -96,16 +102,25 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         @param event:
         @return:
         """
-        menu = QMenu()
+        menu = QtWidgets.QMenu()
+        menu.addSection("Shunt")
 
-        da = menu.addAction('Delete')
-        da.triggered.connect(self.remove)
-
-        pe = menu.addAction('Enable/Disable')
+        pe = menu.addAction('Active')
+        pe.setCheckable(True)
+        pe.setChecked(self.api_object.active)
         pe.triggered.connect(self.enable_disable_toggle)
 
-        pa = menu.addAction('Plot profile')
+        pa = menu.addAction('Plot profiles')
+        plot_icon = QIcon()
+        plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
+        pa.setIcon(plot_icon)
         pa.triggered.connect(self.plot)
+
+        da = menu.addAction('Delete')
+        del_icon = QIcon()
+        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+        da.setIcon(del_icon)
+        da.triggered.connect(self.remove)
 
         menu.exec_(event.screenPos())
 
@@ -116,7 +131,7 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         """
         self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
-        self.api_object.bus.static_generators.remove(self.api_object)
+        self.api_object.bus.shunts.remove(self.api_object)
 
     def enable_disable_toggle(self):
         """
@@ -146,8 +161,11 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         else:
             self.style = OTHER['style']
             self.color = OTHER['color']
-        self.glyph.setPen(QPen(self.color, self.width, self.style))
-        self.label.setDefaultTextColor(self.color)
+
+        pen = QPen(self.color, self.width, self.style)
+
+        for l in self.childItems():
+            l.setPen(pen)
 
     def plot(self):
         """

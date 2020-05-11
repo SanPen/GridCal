@@ -18,7 +18,7 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 
-from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs
+from GridCal.Engine.Core.snapshot_opf_data import OpfSnapshotCircuit, split_into_opf_islands
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
 from GridCal.ThirdParty.pulp import *
 
@@ -105,7 +105,7 @@ def add_ac_nodal_power_balance(numerical_circuit, problem: LpProblem, dvm, dva, 
     """
 
     # do the topological computation
-    calculation_inputs = numerical_circuit.compute()
+    calculation_inputs = split_into_opf_islands(numerical_circuit)
 
     nodal_restrictions_P = np.empty(numerical_circuit.nbus, dtype=object)
     nodal_restrictions_Q = np.empty(numerical_circuit.nbus, dtype=object)
@@ -113,7 +113,7 @@ def add_ac_nodal_power_balance(numerical_circuit, problem: LpProblem, dvm, dva, 
     # simulate each island and merge the results
     for i, calc_inpt in enumerate(calculation_inputs):
 
-        if len(calc_inpt.ref) > 0:
+        if len(calc_inpt.vd) > 0:
             # find the original indices
             bus_original_idx = np.array(calc_inpt.original_bus_idx)
 
@@ -131,7 +131,7 @@ def add_ac_nodal_power_balance(numerical_circuit, problem: LpProblem, dvm, dva, 
             pqpv = calc_inpt.pqpv
             pq = calc_inpt.pq
             pv = calc_inpt.pv
-            vd = calc_inpt.ref
+            vd = calc_inpt.vd
             vdpv = np.r_[vd, pv]
             vdpv.sort()
 
@@ -216,7 +216,7 @@ def add_branch_loading_restriction(problem: LpProblem,
 
 class OpfAc(Opf):
 
-    def __init__(self, numerical_circuit: StaticSnapshotInputs, solver: MIPSolvers = MIPSolvers.CBC):
+    def __init__(self, numerical_circuit: OpfSnapshotCircuit, solver: MIPSolvers = MIPSolvers.CBC):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
@@ -241,9 +241,9 @@ class OpfAc(Opf):
         # general indices
         n = numerical_circuit.nbus
         m = numerical_circuit.nbr
-        ng = numerical_circuit.n_ctrl_gen
-        nb = numerical_circuit.n_batt
-        nl = numerical_circuit.n_ld
+        ng = numerical_circuit.ngen
+        nb = numerical_circuit.nbatt
+        nl = numerical_circuit.nload
         Sbase = numerical_circuit.Sbase
 
         # battery
@@ -255,17 +255,17 @@ class OpfAc(Opf):
         Pg_max = numerical_circuit.generator_pmax / Sbase
         Pg_min = numerical_circuit.generator_pmin / Sbase
         cost_g = numerical_circuit.generator_cost
-        P_fix = numerical_circuit.generator_power / Sbase
+        P_fix = numerical_circuit.generator_p / Sbase
         enabled_for_dispatch = numerical_circuit.generator_dispatchable
 
         # load
-        Pl = (numerical_circuit.load_active * numerical_circuit.load_power.real) / Sbase
-        Ql = (numerical_circuit.load_active * numerical_circuit.load_power.imag) / Sbase
+        Pl = (numerical_circuit.load_active * numerical_circuit.load_s.real) / Sbase
+        Ql = (numerical_circuit.load_active * numerical_circuit.load_s.imag) / Sbase
         cost_l = numerical_circuit.load_cost
 
         # branch
-        branch_ratings = numerical_circuit.br_rates / Sbase
-        Bseries = (numerical_circuit.branch_active * (1 / (numerical_circuit.R + 1j * numerical_circuit.X))).imag
+        branch_ratings = numerical_circuit.branch_rates / Sbase
+        Bseries = (numerical_circuit.branch_active * (1 / (numerical_circuit.branch_R + 1j * numerical_circuit.branch_X))).imag
         cost_br = numerical_circuit.branch_cost
 
         # create LP variables
@@ -307,7 +307,7 @@ class OpfAc(Opf):
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
-        self.v0 = np.abs(numerical_circuit.V0)
+        self.v0 = np.abs(numerical_circuit.Vbus)
         self.dva = dva
         self.dvm = dvm
         self.Pg = Pg
@@ -333,34 +333,38 @@ class OpfAc(Opf):
 
 
 if __name__ == '__main__':
+    from GridCal.Engine.basic_structures import BranchImpedanceMode
+    from GridCal.Engine.IO.file_handler import FileOpen
+    from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
 
-        from GridCal.Engine.IO.file_handler import FileOpen
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv (2 islands).gridcal'
 
-        # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-        # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-        fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv (2 islands).gridcal'
+    main_circuit = FileOpen(fname).open()
 
-        main_circuit = FileOpen(fname).open()
+    # main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
 
-        main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
+    numerical_circuit_ = compile_snapshot_opf_circuit(circuit=main_circuit,
+                                                      apply_temperature=False,
+                                                      branch_tolerance_mode=BranchImpedanceMode.Specified)
 
-        numerical_circuit_ = main_circuit.compile_snapshot()
-        problem = OpfAc(numerical_circuit=numerical_circuit_)
+    problem = OpfAc(numerical_circuit=numerical_circuit_)
 
-        print('Solving...')
-        status = problem.solve()
+    print('Solving...')
+    status = problem.solve()
 
-        # print("Status:", status)
+    # print("Status:", status)
 
-        v = problem.get_voltage()
-        print('Modules\n', np.abs(v))
-        print('Angles\n', np.angle(v))
+    v = problem.get_voltage()
+    print('Modules\n', np.abs(v))
+    print('Angles\n', np.angle(v))
 
-        l = problem.get_loading()
-        print('Branch loading\n', l)
+    l = problem.get_loading()
+    print('Branch loading\n', l)
 
-        g = problem.get_generator_power()
-        print('Gen power\n', g)
+    g = problem.get_generator_power()
+    print('Gen power\n', g)
 
-        pr = problem.get_shadow_prices()
-        print('Nodal prices \n', pr)
+    pr = problem.get_shadow_prices()
+    print('Nodal prices \n', pr)

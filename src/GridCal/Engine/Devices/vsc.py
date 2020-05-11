@@ -20,18 +20,15 @@ from matplotlib import pyplot as plt
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.types import BranchType
-from GridCal.Engine.Devices.transformer import TransformerType
-from GridCal.Engine.Devices.sequence_line import SequenceLineType
-from GridCal.Engine.Devices.underground_line import UndergroundLineType
 
-from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
 
 class VSC(EditableDevice):
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='VSC', active=True,
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='VSC', idtag=None, active=True,
                  r1=0.0001, x1=0.05, m=0.8, theta=0.1, G0=1e-5, Beq=0.001, rate=1e-9,
-                 mttf=0, mttr=0):
+                 mttf=0, mttr=0, cost=1200, cost_prof=None):
         """
         Voltage source converter (VSC)
         :param bus_from:
@@ -49,9 +46,11 @@ class VSC(EditableDevice):
 
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=active,
                                 device_type=DeviceType.VscDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the branch.'),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
                                                                      'Name of the bus at the "from" side of the branch.'),
                                                   'bus_to': GCProp('', DeviceType.BusDevice,
@@ -68,10 +67,13 @@ class VSC(EditableDevice):
                                                   'Beq': GCProp('p.u.', float, 'Total shunt susceptance.'),
                                                   'm': GCProp('', float, 'Tap changer module, it a value close to 1.0'),
                                                   'theta': GCProp('rad', float, 'Converter firing angle.'),
+                                                  'Cost': GCProp('e/MWh', float,
+                                                                 'Cost of overloads. Used in OPF.'),
                                                   },
                                 non_editable_attributes=['bus_from', 'bus_to'],
                                 properties_with_profile={'active': 'active_prof',
-                                                         'rate': 'rate_prof'})
+                                                         'rate': 'rate_prof',
+                                                         'Cost': 'Cost_prof'})
 
         # the VSC must only connect from an AC to a DC bus
         assert(bus_from.is_dc != bus_to.is_dc)
@@ -96,6 +98,9 @@ class VSC(EditableDevice):
         self.Beq = Beq
         self.m = m
         self.theta = theta
+
+        self.Cost = cost
+        self.Cost_prof = cost_prof
 
         self.mttf = mttf
         self.mttr = mttr

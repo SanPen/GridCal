@@ -106,23 +106,28 @@ class StateEstimationInput:
 
 class StateEstimationResults(PowerFlowResults):
 
-    def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None,
-                 error=None, converged=None, Qpv=None):
+    def __init__(self, n, m, n_tr, bus_names, branch_names, transformer_names, bus_types):
         """
-        Constructor
-        :param Sbus: Bus power injections
-        :param voltage: Bus voltages
-        :param Sbranch: Branch power flow
-        :param Ibranch: Branch current flow
-        :param loading: Branch loading
-        :param losses: Branch losses
-        :param error: error
-        :param converged: converged?
-        :param Qpv: Reactive power at the PV nodes
+
+        :param n:
+        :param m:
+        :param n_tr:
+        :param bus_names:
+        :param branch_names:
+        :param transformer_names:
+        :param bus_types:
         """
         # initialize the
-        PowerFlowResults.__init__(self, Sbus=Sbus, voltage=voltage, Sbranch=Sbranch, Ibranch=Ibranch,
-                                  loading=loading, losses=losses, error=error, converged=converged, Qpv=Qpv)
+        PowerFlowResults.__init__(self,
+                                  n=n,
+                                  m=m,
+                                  n_tr=n_tr,
+                                  n_hvdc=0,
+                                  bus_names=bus_names,
+                                  branch_names=branch_names,
+                                  transformer_names=transformer_names,
+                                  hvdc_names=(),
+                                  bus_types=bus_types)
 
 
 class StateEstimation(QRunnable):
@@ -169,11 +174,12 @@ class StateEstimation(QRunnable):
                                     + str(m.measurement_type))
 
         # collect the branch measurements
+        branches = circuit.get_branches()
         for i in branch_idx:
 
             # branch = circuit.branches[i]
 
-            for m in circuit.branches[i].measurements:
+            for m in branches[i].measurements:
 
                 if m.measurement_type == MeasurementType.Pflow:
                     se_input.p_flow_idx.append(i)
@@ -188,7 +194,7 @@ class StateEstimation(QRunnable):
                     se_input.i_flow.append(m)
 
                 else:
-                    raise Exception('The branch ' + str(circuit.branches[i]) + ' contains a measurement of type '
+                    raise Exception('The branch ' + str(branches[i]) + ' contains a measurement of type '
                                     + str(m.measurement_type))
 
         return se_input

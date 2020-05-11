@@ -1293,7 +1293,8 @@ class ResultsModel(QtCore.QAbstractTableModel):
         """
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
-                return self.cols_c[p_int]
+                if self.c > 0:
+                    return self.cols_c[p_int]
             elif orientation == QtCore.Qt.Vertical:
                 if self.index_c is None:
                     return p_int
@@ -1316,7 +1317,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
     def is_complex(self):
         return self.data_c.dtype == complex
 
-    def get_data(self, mode=None):
+    def get_data(self, mode='as_is'):
         """
 
         Args:
@@ -1359,23 +1360,23 @@ class ResultsModel(QtCore.QAbstractTableModel):
             # there are no elements
             return list(), list(), list()
 
-    def save_to_excel(self, file_name, mode):
+    def save_to_excel(self, file_name):
         """
         save data to excel
         :param file_name:
         :param mode: 'real', 'imag', 'abs'
         """
-        index, columns, data = self.get_data(mode=mode)
+        index, columns, data = self.get_data()
 
         pd.DataFrame(data=data, index=index, columns=columns).to_excel(file_name)
 
-    def save_to_csv(self, file_name, mode):
+    def save_to_csv(self, file_name):
         """
         Save data to csv
         :param file_name:
         :param mode: 'real', 'imag', 'abs', 'as_is'
         """
-        index, columns, data = self.get_data(mode=mode)
+        index, columns, data = self.get_data()
         pd.DataFrame(data=data, index=index, columns=columns).to_csv(file_name)
 
     def get_data_frame(self, mode='as_is'):
@@ -1386,7 +1387,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
         index, columns, data = self.get_data(mode=mode)
         return pd.DataFrame(data=data, index=index, columns=columns)
 
-    def copy_to_clipboard(self, mode=None):
+    def copy_to_clipboard(self):
         """
         Copy profiles to clipboard
         Args:
@@ -1396,7 +1397,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
         if n > 0:
 
-            index, columns, data = self.get_data(mode=mode)
+            index, columns, data = self.get_data()
 
             # header first
             txt = '\t' + '\t'.join(columns) + '\n'
@@ -1470,3 +1471,47 @@ def get_checked_indices(mdl: QtGui.QStandardItemModel()):
             idx.append(row)
 
     return np.array(idx)
+
+
+def fill_model_from_dict(parent, d, editable=False):
+    """
+    Fill TreeViewModel from dictionary
+    :param parent: Parent QStandardItem
+    :param d: item
+    :return: Nothing
+    """
+    if isinstance(d, dict):
+        for k, v in d.items():
+            child = QtGui.QStandardItem(str(k))
+            child.setEditable(editable)
+            parent.appendRow(child)
+            fill_model_from_dict(child, v)
+    elif isinstance(d, list):
+        for v in d:
+            fill_model_from_dict(parent, v)
+    else:
+        item = QtGui.QStandardItem(str(d))
+        item.setEditable(editable)
+        parent.appendRow(item)
+
+
+def get_tree_model(d, top='Results'):
+    model = QtGui.QStandardItemModel()
+    model.setHorizontalHeaderLabels([top])
+    fill_model_from_dict(model.invisibleRootItem(), d)
+    return model
+
+def get_tree_item_path(item: QtGui.QStandardItem):
+    """
+
+    :param item:
+    :return:
+    """
+    item_parent = item.parent()
+    path = [item.text()]
+    while item_parent is not None:
+        parent_text = item_parent.text()
+        path.append(parent_text)
+        item_parent = item_parent.parent()
+    path.reverse()
+    return path

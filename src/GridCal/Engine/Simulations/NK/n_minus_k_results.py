@@ -29,20 +29,28 @@ from GridCal.Gui.GuiFunctions import ResultsModel
 
 class NMinusKResults(PowerFlowResults):
 
-    def __init__(self, n, m, nt, time_array=None, states=None):
+    def __init__(self, n, m, nt, n_tr, n_hvdc,bus_names, branch_names, transformer_names, hvdc_names,
+                 bus_types, time_array=None, states=None):
         """
         TimeSeriesResults constructor
         @param n: number of buses
         @param m: number of branches
         @param nt: number of time steps
         """
-        PowerFlowResults.__init__(self)
+        PowerFlowResults.__init__(self,
+                                  n=n,
+                                  m=m,
+                                  n_tr=n_tr,
+                                  n_hvdc=n_hvdc,
+                                  bus_names=bus_names,
+                                  branch_names=branch_names,
+                                  transformer_names=transformer_names,
+                                  hvdc_names=hvdc_names,
+                                  bus_types=bus_types)
 
         self.name = 'N-1'
 
         self.nt = nt
-        self.m = m
-        self.n = n
 
         self.time = time_array
 

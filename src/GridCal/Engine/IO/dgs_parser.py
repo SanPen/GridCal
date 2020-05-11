@@ -208,7 +208,7 @@ def read_DGS(filename):
     return data, pos_dict
 
 
-def data_to_grid_object(data, pos_dict, codification="utf-8"):
+def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     """
     Turns the read data dictionary into a GridCal MultiCircuit object
     Args:
@@ -1134,7 +1134,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8"):
     return circuit
 
 
-def dgs_to_circuit(filename):
+def dgs_to_circuit(filename) -> MultiCircuit:
 
     data, pos_dict = read_DGS(filename)
 

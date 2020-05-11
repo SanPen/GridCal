@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+import uuid
 import numpy as np
 from typing import List, Dict, AnyStr, Any, Optional
 from GridCal.Engine.Devices.types import DeviceType, TimeFrame
@@ -27,6 +28,7 @@ class GCProp:
         :param definition: Definition of the property
         :param profile_name: name of the associated profile property
         """
+
         self.units = units
 
         self.tpe = tpe
@@ -41,7 +43,8 @@ class EditableDevice:
     def __init__(self, name, active, device_type: DeviceType,
                  editable_headers: Dict[str, GCProp],
                  non_editable_attributes: List[str],
-                 properties_with_profile: Dict[str, Optional[Any]]):
+                 properties_with_profile: Dict[str, Optional[Any]],
+                 idtag=None):
         """
         Class to generalize any editable device
         :param name: Asset's name
@@ -50,7 +53,13 @@ class EditableDevice:
         :param device_type: DeviceType instance
         :param non_editable_attributes: list of non editable magnitudes
         :param properties_with_profile: dictionary of profile properties {'magnitude': profile_magnitude}
+        :param idtag: unique ID
         """
+
+        if idtag is None:
+            self.idtag = uuid.uuid4().hex
+        else:
+            self.idtag = idtag
 
         self.name = name
 
@@ -79,8 +88,14 @@ class EditableDevice:
         for name, properties in self.editable_headers.items():
             obj = getattr(self, name)
             if properties.tpe not in [str, float, int, bool]:
-                obj = str(obj)
-            data.append(obj)
+                # if the object is not of a primary type, get the idtag instead
+                try:
+                    data.append(obj.idtag)
+                except:
+                    # some data types might not have the idtag, ten just use the str method
+                    data.append(str(obj))
+            else:
+                data.append(obj)
         return data
 
     def get_headers(self) -> List[AnyStr]:

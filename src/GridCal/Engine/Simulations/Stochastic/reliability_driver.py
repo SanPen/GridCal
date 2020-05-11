@@ -19,8 +19,8 @@ from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs
-from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
+from GridCal.Engine.Core.time_series_pf_data import SeriesData
 from GridCal.Engine.Devices import DeviceType
 
 
@@ -86,7 +86,7 @@ def get_reliability_events(horizon, mttf, mttr, tpe: DeviceType):
     return events
 
 
-def get_reliability_scenario(nc: StaticSnapshotInputs, horizon=10000):
+def get_reliability_scenario(nc: SnapshotData, horizon=10000):
     """
     Get reliability events
     Args:
@@ -99,7 +99,7 @@ def get_reliability_scenario(nc: StaticSnapshotInputs, horizon=10000):
     all_events = list()
 
     # branches
-    all_events += get_reliability_events(horizon, nc.br_mttf, nc.br_mttr, DeviceType.BranchDevice)
+    all_events += get_reliability_events(horizon, nc.branch_mttf, nc.branch_mttr, DeviceType.BranchDevice)
 
     all_events += get_reliability_events(horizon, nc.generator_mttf, nc.generator_mttr, DeviceType.GeneratorDevice)
 
@@ -117,7 +117,7 @@ def get_reliability_scenario(nc: StaticSnapshotInputs, horizon=10000):
     return all_events
 
 
-def run_events(nc: StaticSnapshotInputs, events_list: list):
+def run_events(nc: SnapshotData, events_list: list):
 
     for t, tpe, i, state in events_list:
 

@@ -16,17 +16,16 @@ import numpy as np
 
 
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeriesResults
-from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
+from GridCal.Engine.Core.time_series_pf_data import TimeCircuit
 
 
 class TimeSeriesResultsAnalysis:
 
-    def __init__(self, numerical_circuit: StaticSeriesInputs, results: TimeSeriesResults):
+    def __init__(self, numerical_circuit: TimeCircuit, results: TimeSeriesResults):
         """
         Constructor
-        Args:
-            numerical_circuit:
-            results:
+        :param numerical_circuit: TimeCircuit instance
+        :param results: TimeSeriesResults instance
         """
         self.numerical_circuit = numerical_circuit
 
@@ -89,7 +88,7 @@ class TimeSeriesResultsAnalysis:
             self.bus_under_voltage_frequency[buses_under] += 1
             self.bus_over_voltage_frequency[buses_over] += 1
 
-            inc_loading = self.res.Sbranch[t, branches_over] - self.numerical_circuit.br_rates[branches_over]
+            inc_loading = self.res.Sbranch[t, branches_over] - self.numerical_circuit.branch_rates[t, branches_over]
             inc_over = bus_voltage[buses_over] - self.numerical_circuit.Vmax[buses_over]
             inc_under = self.numerical_circuit.Vmin[buses_under] - bus_voltage[buses_under]
 

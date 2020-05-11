@@ -27,47 +27,40 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PTDF.ptdf_driver import PTDF, PTDFOptions, PtdfGroupMode
 from GridCal.Gui.GuiFunctions import ResultsModel
+from GridCal.Engine.Core.time_series_opf_data import compile_opf_time_circuit
 
 
-class PtdfTimeSeriesResults(PowerFlowResults):
+class PtdfTimeSeriesResults:
 
-    def __init__(self, n, m, time_array):
+    def __init__(self, n, m, time_array, bus_names, branch_names):
         """
         TimeSeriesResults constructor
         @param n: number of buses
         @param m: number of branches
         @param nt: number of time steps
         """
-        PowerFlowResults.__init__(self)
         self.name = 'PTDF Time series'
         self.nt = len(time_array)
         self.m = m
         self.n = n
         self.time = time_array
 
-        if self.nt > 0:
+        self.bus_names = bus_names
 
-            self.voltage = np.zeros((self.nt, n), dtype=float)
+        self.branch_names = branch_names
 
-            self.S = np.zeros((self.nt, n), dtype=float)
+        self.voltage = np.zeros((self.nt, n), dtype=float)
 
-            self.Sbranch = np.zeros((self.nt, m), dtype=float)
+        self.S = np.zeros((self.nt, n), dtype=float)
 
-            self.loading = np.zeros((self.nt, m), dtype=float)
+        self.Sbranch = np.zeros((self.nt, m), dtype=float)
 
-        else:
+        self.loading = np.zeros((self.nt, m), dtype=float)
 
-            self.voltage = None
-
-            self.S = None
-
-            self.Sbranch = None
-
-            self.loading = None
+        self.losses = np.zeros((self.nt, m), dtype=float)
 
         self.available_results = [ResultTypes.BusVoltageModule,
                                   ResultTypes.BusActivePower,
-                                  # ResultTypes.BusReactivePower,
                                   ResultTypes.BranchActivePower,
                                   ResultTypes.BranchLoading]
 
@@ -109,74 +102,65 @@ class PtdfTimeSeriesResults(PowerFlowResults):
             json_str = json.dumps(self.get_results_dict())
             output_file.write(json_str)
 
-    def mdl(self, result_type: ResultTypes, indices=None, names=None) -> "ResultsModel":
+    def mdl(self, result_type: ResultTypes) -> "ResultsModel":
         """
         Get ResultsModel instance
         :param result_type:
-        :param indices:
-        :param names:
         :return: ResultsModel instance
         """
 
-        if indices is None:
-            indices = np.array(range(len(names)))
+        if result_type == ResultTypes.BusActivePower:
+            labels = self.bus_names
+            data = self.S.real
+            y_label = '(MW)'
+            title = 'Bus active power '
 
-        if len(indices) > 0:
+        elif result_type == ResultTypes.BusReactivePower:
+            labels = self.bus_names
+            data = self.S.imag
+            y_label = '(MVAr)'
+            title = 'Bus reactive power '
 
-            labels = names[indices]
+        elif result_type == ResultTypes.BranchPower:
+            labels = self.branch_names
+            data = self.Sbranch
+            y_label = '(MVA)'
+            title = 'Branch power '
 
-            if result_type == ResultTypes.BusActivePower:
-                data = self.S[:, indices].real
-                y_label = '(MW)'
-                title = 'Bus active power '
+        elif result_type == ResultTypes.BranchActivePower:
+            labels = self.branch_names
+            data = self.Sbranch.real
+            y_label = '(MW)'
+            title = 'Branch power '
 
-            elif result_type == ResultTypes.BusReactivePower:
-                data = self.S[:, indices].imag
-                y_label = '(MVAr)'
-                title = 'Bus reactive power '
+        elif result_type == ResultTypes.BranchLoading:
+            labels = self.branch_names
+            data = self.loading * 100
+            y_label = '(%)'
+            title = 'Branch loading '
 
-            elif result_type == ResultTypes.BranchPower:
-                data = self.Sbranch[:, indices]
-                y_label = '(MVA)'
-                title = 'Branch power '
+        elif result_type == ResultTypes.BranchLosses:
+            labels = self.branch_names
+            data = self.losses
+            y_label = '(MVA)'
+            title = 'Branch losses'
 
-            elif result_type == ResultTypes.BranchActivePower:
-                data = self.Sbranch[:, indices].real
-                y_label = '(MW)'
-                title = 'Branch power '
+        elif result_type == ResultTypes.BusVoltageModule:
+            labels = self.bus_names
+            data = self.voltage
+            y_label = '(p.u.)'
+            title = 'Bus voltage'
 
-            elif result_type == ResultTypes.BranchLoading:
-                data = self.loading[:, indices] * 100
-                y_label = '(%)'
-                title = 'Branch loading '
+        else:
+            raise Exception('Result type not understood:' + str(result_type))
 
-            elif result_type == ResultTypes.BranchLosses:
-                data = self.losses[:, indices]
-                y_label = '(MVA)'
-                title = 'Branch losses'
+        if self.time is not None:
+            index = self.time
+        else:
+            index = list(range(data.shape[0]))
 
-            elif result_type == ResultTypes.BusVoltageModule:
-                data = self.voltage[:, indices]
-                y_label = '(p.u.)'
-                title = 'Bus voltage'
-
-            elif result_type == ResultTypes.SimulationError:
-                data = self.error.reshape(-1, 1)
-                y_label = 'Per unit power'
-                labels = [y_label]
-                title = 'Error'
-
-            else:
-                raise Exception('Result type not understood:' + str(result_type))
-
-            if self.time is not None:
-                index = self.time
-            else:
-                index = list(range(data.shape[0]))
-
-            # assemble model
-            mdl = ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
-            return mdl
+        # assemble model
+        return ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
 
 
 class PtdfTimeSeries(QThread):
@@ -227,14 +211,18 @@ class PtdfTimeSeries(QThread):
         """
 
         # initialize the grid time series results, we will append the island results with another function
-        n = self.grid.get_bus_number()
-        m = self.grid.get_branch_number()
-        results = PtdfTimeSeriesResults(n, m, time_array=self.grid.time_profile[time_indices])
+        nc = compile_opf_time_circuit(circuit=self.grid,
+                                      apply_temperature=self.pf_options.apply_temperature_correction,
+                                      branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
+
+        results = PtdfTimeSeriesResults(n=nc.nbus,
+                                        m=nc.nbr,
+                                        time_array=self.grid.time_profile[time_indices],
+                                        bus_names=nc.bus_names,
+                                        branch_names=nc.branch_names)
 
         # if there are valid profiles...
         if self.grid.time_profile is not None:
-
-            nc = self.grid.compile_time_series()
 
             options_ = PTDFOptions(group_mode=PtdfGroupMode.ByNode,
                                    power_increment=self.power_delta,
@@ -258,14 +246,14 @@ class PtdfTimeSeries(QThread):
             # base magnitudes
             Pbr_0 = self.ptdf_driver.results.default_pf_results.Sbranch.real  # MW
             V_0 = np.abs(self.ptdf_driver.results.default_pf_results.voltage)  # MW
-            Pbus_0 = nc.C_bus_gen * nc.generator_power - nc.C_bus_load * nc.load_power.real  # MW
+            Pbus_0 = self.ptdf_driver.results.default_pf_results.Sbus.real   # MW
 
             # run the PTDF time series
             for k, t_idx in enumerate(time_indices):
                 dP = (Pbus_0[:] - Pbus[:, t_idx])
                 results.voltage[k, :] = V_0 + np.dot(dP, vtdf)
                 results.Sbranch[k, :] = Pbr_0 + np.dot(dP, ptdf)
-                results.loading[k, :] = results.Sbranch[k, :] / (nc.br_rates + 1e-9)
+                results.loading[k, :] = results.Sbranch[k, :] / (nc.branch_rates[t_idx, :] + 1e-9)
                 results.S[k, :] = Pbus[:, t_idx]
 
                 progress = ((t_idx - self.start_ + 1) / (self.end_ - self.start_)) * 100
@@ -320,8 +308,7 @@ if __name__ == '__main__':
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
-    fname = r'C:\Users\PENVERSA\OneDrive - Red Eléctrica Corporación\Escritorio\IEEE cases\WSCC 9 bus.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
     main_circuit = FileOpen(fname).open()
 
     pf_options_ = PowerFlowOptions(solver_type=SolverType.NR)

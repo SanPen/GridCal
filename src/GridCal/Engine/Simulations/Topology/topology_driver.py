@@ -49,17 +49,17 @@ def select_branches_to_reduce(circuit: MultiCircuit, rx_criteria=True, rx_thresh
     """
 
     branches_to_remove_idx = list()
-
-    for i in range(len(circuit.branches)):
+    branches = circuit.get_branches()
+    for i in range(len(branches)):
 
         # is this branch of the selected type?
-        if circuit.branches[i].branch_type in selected_types:
+        if branches[i].branch_type in selected_types:
 
             # Am I filtering by r+x threshold?
             if rx_criteria:
 
                 # compute the r+x ratio
-                rx = circuit.branches[i].R + circuit.branches[i].X
+                rx = branches[i].R + branches[i].X
 
                 # if the r+x criteria is met, add it
                 if rx < rx_threshold:
@@ -92,11 +92,11 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
     graph = DiGraph()
 
     # TODO: Fix the topology reduction with the GC example, see what is going on
-
-    for i in range(len(circuit.branches)):
+    branches = circuit.get_branches()
+    for i in range(len(branches)):
         # get the from and to bus indices
-        f = buses_dict[circuit.branches[i].bus_from]
-        t = buses_dict[circuit.branches[i].bus_to]
+        f = buses_dict[branches[i].bus_from]
+        t = buses_dict[branches[i].bus_to]
         graph.add_edge(f, t)
         C[i, f] = 1
         C[i, t] = -1
@@ -104,8 +104,8 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
     C = csc_matrix(C)
 
     # get branch buses
-    bus_f = circuit.branches[removed_br_idx].bus_from
-    bus_t = circuit.branches[removed_br_idx].bus_to
+    bus_f = branches[removed_br_idx].bus_from
+    bus_t = branches[removed_br_idx].bus_to
     f = buses_dict[bus_f]
     t = buses_dict[bus_t]
 
@@ -117,8 +117,6 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
     # get the number of paths
     n_paths = len(list(all_simple_paths(graph, f, t)))
 
-    # print('Deleting: ', circuit.branches[br_idx].name)
-
     if n_paths == 1:
 
         # get the branches that are connected to the bus f
@@ -127,20 +125,20 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
         for k in adjacent_br_idx:
 
             # get the indices of the buses
-            f2 = buses_dict[circuit.branches[k].bus_from]
-            t2 = buses_dict[circuit.branches[k].bus_to]
+            f2 = buses_dict[branches[k].bus_from]
+            t2 = buses_dict[branches[k].bus_to]
 
             # re-assign the right bus
             if f2 == f:
-                circuit.branches[k].bus_from = bus_t
+                branches[k].bus_from = bus_t
             elif t2 == t:
-                circuit.branches[k].bus_to = bus_t
+                branches[k].bus_to = bus_t
 
             # copy the state of the removed branch
-            circuit.branches[k].active = circuit.branches[removed_br_idx].active
+            branches[k].active = branches[removed_br_idx].active
 
             # remember the updated branches
-            updated_branches.append(circuit.branches[k])
+            updated_branches.append(branches[k])
 
         # merge buses
         bus_t.merge(bus_f)
@@ -150,11 +148,11 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
         removed_bus = circuit.buses.pop(f)
 
         # remove the branch and that's it
-        removed_branch = circuit.branches.pop(removed_br_idx)
+        removed_branch = branches.pop(removed_br_idx)
 
     else:
         # remove the branch and that's it
-        removed_branch = circuit.branches.pop(removed_br_idx)
+        removed_branch = branches.pop(removed_br_idx)
 
     # return the removed branch and the possible removed bus
     return removed_branch, removed_bus, updated_bus, updated_branches
@@ -176,7 +174,8 @@ def reduce_buses(circuit: MultiCircuit, buses_to_reduce: List[Bus], text_func=No
 
     # create dictionary of bus relationships
     bus_bus = dict()
-    for branch in circuit.branches:
+    branches = circuit.get_branches()
+    for branch in branches:
         f = branch.bus_from
         t = branch.bus_to
 
@@ -292,8 +291,8 @@ class TopologyReduction(QThread):
         for i, br_idx in enumerate(self.br_to_remove):
 
             # delete branch
-            removed_branch, removed_bus, \
-            updated_bus, updated_branches = reduce_grid_brute(circuit=self.grid, removed_br_idx=br_idx)
+            removed_branch, removed_bus, updated_bus, updated_branches = reduce_grid_brute(circuit=self.grid,
+                                                                                           removed_br_idx=br_idx)
 
             # display progress
             self.progress_text.emit('Removed branch ' + str(br_idx) + ': ' + removed_branch.name)

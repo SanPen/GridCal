@@ -42,7 +42,8 @@ try:
 
     available_sparse_solvers.append(SparseSolver.KLU)
 except ImportError:
-    print(SparseSolver.KLU.value + ' failed')
+    pass
+    # print(SparseSolver.KLU.value + ' failed')
 
 
 try:
@@ -52,7 +53,8 @@ try:
     available_sparse_solvers.append(SparseSolver.SuperLU)
     available_sparse_solvers.append(SparseSolver.GMRES)
 except ImportError:
-    print(SparseSolver.BLAS_LAPACK.value + ' failed')
+    pass
+    # print(SparseSolver.BLAS_LAPACK.value + ' failed')
 
 
 try:
@@ -60,14 +62,16 @@ try:
 
     available_sparse_solvers.append(SparseSolver.Pardiso)
 except ImportError:
-    print(SparseSolver.Pardiso.value + ' failed')
+    pass
+    # print(SparseSolver.Pardiso.value + ' failed')
 
 try:
     from scikits.umfpack import spsolve, splu
 
     available_sparse_solvers.append(SparseSolver.UMFPACK)
 except ImportError:
-    print(SparseSolver.UMFPACK.value + ' failed')
+    pass
+    # print(SparseSolver.UMFPACK.value + ' failed')
 
 
 preferred_type = SparseSolver.KLU

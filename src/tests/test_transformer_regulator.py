@@ -1,3 +1,17 @@
+# This file is part of GridCal.
+#
+# GridCal is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GridCal is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -167,7 +181,7 @@ def test_gridcal_regulator():
         print(f" - {grid.branches[i]}: losses={round(power_flow.results.losses[i], 3)} MVA")
     print()
 
-    print(f"Voltage settings: {grid.numerical_circuit.vset}")
+    print(f"Voltage settings: {grid.numerical_circuit.branch_vset}")   # TODO: fix this
 
     equal = np.isclose(approx_volt, solution, atol=1e-3).all()
 

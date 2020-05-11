@@ -14,7 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
 
 class Load(EditableDevice):
@@ -60,15 +60,17 @@ class Load(EditableDevice):
 
     """
 
-    def __init__(self, name='Load', G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, cost=0.0,
+    def __init__(self, name='Load', idtag=None, G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, cost=0.0,
                  G_prof=None, B_prof=None, Ir_prof=None, Ii_prof=None, P_prof=None, Q_prof=None,
                  active=True, mttf=0.0, mttr=0.0):
 
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=active,
                                 device_type=DeviceType.LoadDevice,
                                 editable_headers={'name': GCProp('', str, 'Load name'),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
                                                   'active': GCProp('', bool, 'Is the load active?'),
                                                   'P': GCProp('MW', float, 'Active power'),
@@ -127,6 +129,9 @@ class Load(EditableDevice):
 
         load.name = self.name
 
+        load.active = self.active
+        load.active_prof = self.active_prof
+
         # Impedance (MVA)
         load.G = self.G
         load.B = self.B
@@ -152,7 +157,6 @@ class Load(EditableDevice):
         load.Q_prof = self.Q_prof
 
         load.mttf = self.mttf
-
         load.mttr = self.mttr
 
         return load
@@ -164,18 +168,37 @@ class Load(EditableDevice):
         :param bus_dict: Dictionary of buses [object] -> ID
         :return:
         """
-        return {'id': id,
-                'type': 'load',
-                'phases': 'ps',
-                'name': self.name,
-                'bus': bus_dict[self.bus],
-                'active': self.active,
-                'G': self.G,
-                'B': self.B,
-                'Ir': self.Ir,
-                'Ii': self.Ii,
-                'P': self.P,
-                'Q': self.Q}
+
+        d = {'id': id,
+             'type': 'load',
+             'phases': 'ps',
+             'name': self.name,
+             'bus': bus_dict[self.bus],
+             'active': self.active,
+             'G': self.G,
+             'B': self.B,
+             'Ir': self.Ir,
+             'Ii': self.Ii,
+             'P': self.P,
+             'Q': self.Q,
+             'active_profile': [],
+             'P_prof': [],
+             'Q_prof': [],
+             'Ir_prof': [],
+             'Ii_prof': [],
+             'G_prof': [],
+             'B_prof': []}
+
+        if self.active_prof is not None:
+            d['active_profile'] = self.active_prof.tolist()
+            d['P_prof'] = self.P_prof.tolist()
+            d['Q_prof'] = self.Q_prof.tolist()
+            d['Ir_prof'] = self.Ir_prof.tolist()
+            d['Ii_prof'] = self.Ii_prof.tolist()
+            d['G_prof'] = self.G_prof.tolist()
+            d['B_prof'] = self.B_prof.tolist()
+
+        return d
 
     def plot_profiles(self, time=None, show_fig=True):
         """

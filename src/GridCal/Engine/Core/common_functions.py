@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-
+from typing import List, Dict
 import numpy as np
 from GridCal.Engine.basic_structures import BusMode, Logger
 
@@ -29,7 +29,7 @@ def compile_types(Sbus, types, logger=Logger()):
 
     pq = np.where(types == BusMode.PQ.value)[0]
     pv = np.where(types == BusMode.PV.value)[0]
-    ref = np.where(types == BusMode.REF.value)[0]
+    ref = np.where(types == BusMode.Slack.value)[0]
 
     if len(ref) == 0:  # there is no slack!
 
@@ -54,7 +54,7 @@ def compile_types(Sbus, types, logger=Logger()):
             # print('Setting bus', i, 'as slack')
 
         ref = np.ndarray.flatten(np.array(ref))
-        types[ref] = BusMode.REF.value
+        types[ref] = BusMode.Slack.value
     else:
         pass  # no problem :)
 
@@ -62,3 +62,40 @@ def compile_types(Sbus, types, logger=Logger()):
     pqpv.sort()
 
     return ref, pq, pv, pqpv
+
+
+def find_different_states(branch_active_prof) -> Dict[int, List[int]]:
+    """
+    Find the different branch states in time that may lead to different islands
+    :param branch_active_prof:
+    :return:
+    """
+    ntime = branch_active_prof.shape[0]
+
+    # initialize
+    states = dict()  # type: Dict[int, List[int]]
+    k = 1
+    for t in range(ntime):
+
+        # search this state in the already existing states
+        keys = list(states.keys())
+        nn = len(keys)
+        found = False
+        i = 0
+        while i < nn and not found:
+            t2 = keys[i]
+
+            # compare state at t2 with the state at t
+            if np.array_equal(branch_active_prof[t, :], branch_active_prof[t2, :]):
+                states[t2].append(t)
+                found = True
+
+            i += 1
+
+        if not found:
+            # new state found (append itself)
+            states[t] = [t]
+
+        k += 1
+
+    return states

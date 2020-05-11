@@ -14,13 +14,13 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import PySide2
 
-from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 from PySide2 import QtCore
 
 
 class Wire(EditableDevice):
 
-    def __init__(self, name='', gmr=0.01, r=0.01, x=0.0, max_current=1):
+    def __init__(self, name='', idtag=None, gmr=0.01, r=0.01, x=0.0, max_current=1):
         """
         Wire definition
         :param name: Name of the wire type
@@ -33,9 +33,11 @@ class Wire(EditableDevice):
 
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=True,
                                 device_type=DeviceType.WireDevice,
                                 editable_headers={'name': GCProp('', str, "Name of the conductor"),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'r': GCProp('Ohm/km', float, "resistance of the conductor"),
                                                   'x': GCProp('Ohm/km', float, "reactance of the conductor"),
                                                   'gmr': GCProp('m', float, "Geometric Mean Radius of the conductor"),

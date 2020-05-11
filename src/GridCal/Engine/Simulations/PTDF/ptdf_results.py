@@ -62,14 +62,16 @@ class PTDFResults:
         # names of the branches
         self.br_names = br_names
 
+        self.bus_names = bus_names
+
         # default power flow results
         self.default_pf_results = None
 
         # results of the variation
-        self.pf_results = [None] * n_variations
+        self.pf_results = [None] * n_variations  # type: List[PowerFlowResults]
 
         # definition of the variation
-        self.variations = [None] * n_variations
+        self.variations = [None] * n_variations  # type: List[PTDFVariation]
 
         self.logger = Logger()
 
@@ -145,7 +147,7 @@ class PTDFResults:
 
         return df
 
-    def mdl(self, result_type: ResultTypes, indices=None, names=None) -> ResultsModel:
+    def mdl(self, result_type: ResultTypes) -> ResultsModel:
         """
         Plot the results.
 
@@ -162,32 +164,25 @@ class PTDFResults:
             DataFrame
         """
 
-        if indices is None and names is not None:
-            indices = np.array(range(len(names)))
+        if result_type == ResultTypes.PTDFBranchesSensitivity:
+            labels = self.br_names
+            y = self.flows_sensitivity_matrix
+            y_label = '(p.u.)'
+            title = 'Branches sensitivity'
 
-        if len(indices) > 0:
-            labels = names[indices]
-
-            if result_type == ResultTypes.PTDFBranchesSensitivity:
-                y = self.flows_sensitivity_matrix[:, indices]
-                y_label = '(p.u.)'
-                title = 'Branches sensitivity'
-
-            elif result_type == ResultTypes.PTDFBusVoltageSensitivity:
-                y = self.voltage_sensitivity_matrix[:, indices]
-                y_label = '(p.u.)'
-                title = 'Buses voltage sensitivity'
-
-            else:
-                n = len(labels)
-                y = np.zeros(n)
-                y_label = ''
-                title = ''
-
-            # assemble model
-            mdl = ResultsModel(data=y, index=self.get_var_names(), columns=labels, title=title,
-                               ylabel=y_label, units=y_label)
-            return mdl
+        elif result_type == ResultTypes.PTDFBusVoltageSensitivity:
+            labels = self.bus_names
+            y = self.voltage_sensitivity_matrix
+            y_label = '(p.u.)'
+            title = 'Buses voltage sensitivity'
 
         else:
-            return None
+            labels = []
+            y = np.zeros(0)
+            y_label = ''
+            title = ''
+
+        # assemble model
+        mdl = ResultsModel(data=y, index=self.get_var_names(), columns=labels, title=title,
+                           ylabel=y_label, units=y_label)
+        return mdl

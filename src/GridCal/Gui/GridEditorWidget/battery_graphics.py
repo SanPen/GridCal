@@ -12,15 +12,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-import numpy as np
+
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 from PySide2.QtGui import *
-from GridCal.Gui.GridEditorWidget.generic import ACTIVE, DEACTIVATED, OTHER, Circle
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.GuiFunctions import ObjectsModel
 
 
-class GeneratorGraphicItem(QGraphicsItemGroup):
+class BatteryGraphicItem(QGraphicsItemGroup):
 
     def __init__(self, parent, api_obj, diagramScene):
         """
@@ -28,7 +28,7 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         :param parent:
         :param api_obj:
         """
-        super(GeneratorGraphicItem, self).__init__(parent)
+        super(BatteryGraphicItem, self).__init__(parent)
 
         self.parent = parent
 
@@ -62,12 +62,12 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
 
         pen = QPen(self.color, self.width, self.style)
 
-        self.glyph = Circle(self)
+        self.glyph = Square(self)
         self.glyph.setRect(0, 0, self.h, self.w)
         self.glyph.setPen(pen)
         self.addToGroup(self.glyph)
 
-        self.label = QGraphicsTextItem('G', parent=self.glyph)
+        self.label = QGraphicsTextItem('B', parent=self.glyph)
         self.label.setDefaultTextColor(self.color)
         self.label.setPos(self.h / 4, self.w / 5)
 
@@ -97,15 +97,25 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         @return:
         """
         menu = QMenu()
+        menu.addSection("Battery")
 
-        da = menu.addAction('Delete')
-        da.triggered.connect(self.remove)
-
-        pe = menu.addAction('Enable/Disable')
+        pe = menu.addAction('Active')
+        pe.setCheckable(True)
+        pe.setChecked(self.api_object.active)
         pe.triggered.connect(self.enable_disable_toggle)
 
         pa = menu.addAction('Plot profiles')
+        plot_icon = QIcon()
+        plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
+        pa.setIcon(plot_icon)
         pa.triggered.connect(self.plot)
+
+        da = menu.addAction('Delete')
+        del_icon = QIcon()
+        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+        da.setIcon(del_icon)
+        da.triggered.connect(self.remove)
+
 
         menu.exec_(event.screenPos())
 
@@ -116,7 +126,7 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         """
         self.diagramScene.removeItem(self.nexus)
         self.diagramScene.removeItem(self)
-        self.api_object.bus.controlled_generators.remove(self.api_object)
+        self.api_object.bus.batteries.remove(self.api_object)
 
     def enable_disable_toggle(self):
         """

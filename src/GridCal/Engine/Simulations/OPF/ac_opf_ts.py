@@ -19,10 +19,8 @@ That means that solves the OPF problem for a complete time series at once
 """
 
 from GridCal.Engine.basic_structures import MIPSolvers
-from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs
-from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
+from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit, split_opf_time_circuit_into_islands
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
-from GridCal.Engine.Core.series_static_inputs import StaticSeriesIslandInputs
 from GridCal.ThirdParty.pulp import *
 
 
@@ -99,7 +97,7 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, PlSlack, QlSl
     return P, Q
 
 
-def add_ac_nodal_power_balance(numerical_circuit: StaticSeriesIslandInputs, problem: LpProblem, dvm, dva, P, Q, start_, end_):
+def add_ac_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem: LpProblem, dvm, dva, P, Q, start_, end_):
     """
     Add the nodal power balance
     :param numerical_circuit: NumericalCircuit instance
@@ -110,7 +108,7 @@ def add_ac_nodal_power_balance(numerical_circuit: StaticSeriesIslandInputs, prob
     """
 
     # do the topological computation
-    calc_inputs_dict = numerical_circuit.compute()
+    calc_inputs = split_opf_time_circuit_into_islands(numerical_circuit)
 
     # generate the time indices to simulate
     if end_ == -1:
@@ -119,72 +117,69 @@ def add_ac_nodal_power_balance(numerical_circuit: StaticSeriesIslandInputs, prob
     nodal_restrictions_P = np.empty((numerical_circuit.nbus, end_ - start_), dtype=object)
     nodal_restrictions_Q = np.empty((numerical_circuit.nbus, end_ - start_), dtype=object)
 
-    # for each partition of the profiles...
-    for t_key, calc_inputs in calc_inputs_dict.items():
+    # For every island, run the time series
+    for i, calc_inpt in enumerate(calc_inputs):
 
-        # For every island, run the time series
-        for i, calc_inpt in enumerate(calc_inputs):
+        # find the original indices
+        bus_original_idx = np.array(calc_inpt.original_bus_idx)
 
-            # find the original indices
-            bus_original_idx = np.array(calc_inpt.original_bus_idx)
+        # re-pack the variables for the island and time interval
+        P_island = P[bus_original_idx, :]  # the sizes already reflect the correct time span
+        Q_island = Q[bus_original_idx, :]  # the sizes already reflect the correct time span
+        dva_island = dva[bus_original_idx, :]  # the sizes already reflect the correct time span
+        dvm_island = dvm[bus_original_idx, :]  # the sizes already reflect the correct time span
+        B_island = calc_inpt.Ybus.imag
+        G_island = calc_inpt.Ybus.real
+        Bs_island = calc_inpt.Yseries.imag
+        Gs_island = calc_inpt.Yseries.real
 
-            # re-pack the variables for the island and time interval
-            P_island = P[bus_original_idx, :]  # the sizes already reflect the correct time span
-            Q_island = Q[bus_original_idx, :]  # the sizes already reflect the correct time span
-            dva_island = dva[bus_original_idx, :]  # the sizes already reflect the correct time span
-            dvm_island = dvm[bus_original_idx, :]  # the sizes already reflect the correct time span
-            B_island = calc_inpt.Ybus.imag
-            G_island = calc_inpt.Ybus.real
-            Bs_island = calc_inpt.Yseries.imag
-            Gs_island = calc_inpt.Yseries.real
+        pqpv = calc_inpt.pqpv
+        pq = calc_inpt.pq
+        pv = calc_inpt.pv
+        vd = calc_inpt.vd
+        vdpv = np.r_[vd, pv]
+        vdpv.sort()
 
-            pqpv = calc_inpt.pqpv
-            pq = calc_inpt.pq
-            pv = calc_inpt.pv
-            vd = calc_inpt.ref
-            vdpv = np.r_[vd, pv]
-            vdpv.sort()
+        # Add nodal real power balance for the non slack nodes
+        idx = bus_original_idx[pqpv]
+        nodal_restrictions_P[idx] = lpAddRestrictions2(problem=problem,
+                                                       lhs=-lpDot(Bs_island[np.ix_(pqpv, pqpv)], dva_island[pqpv, :])
+                                                           + lpDot(G_island[np.ix_(pqpv, pq)], dvm_island[pq, :]),
+                                                       rhs=P_island[pqpv, :],
+                                                       name='Nodal_real_power_balance_pqpv_is' + str(i),
+                                                       op='=')
 
-            # Add nodal real power balance for the non slack nodes
-            idx = bus_original_idx[pqpv]
-            nodal_restrictions_P[idx] = lpAddRestrictions2(problem=problem,
-                                                           lhs=-lpDot(Bs_island[np.ix_(pqpv, pqpv)], dva_island[pqpv, :])
-                                                               + lpDot(G_island[np.ix_(pqpv, pq)], dvm_island[pq, :]),
-                                                           rhs=P_island[pqpv, :],
-                                                           name='Nodal_real_power_balance_pqpv_is' + str(i),
-                                                           op='=')
+        # Add nodal reactive power balance for the non slack nodes
+        idx = bus_original_idx[pq]
+        nodal_restrictions_Q[idx] = lpAddRestrictions2(problem=problem,
+                                                       lhs=-lpDot(Gs_island[np.ix_(pq, pqpv)], dva_island[pqpv, :])
+                                                           - lpDot(B_island[np.ix_(pq, pq)], dvm_island[pq, :]),
+                                                       rhs=Q_island[pq, :],
+                                                       name='Nodal_imag_power_balance_pqpv_is' + str(i),
+                                                       op='=')
 
-            # Add nodal reactive power balance for the non slack nodes
-            idx = bus_original_idx[pq]
-            nodal_restrictions_Q[idx] = lpAddRestrictions2(problem=problem,
-                                                           lhs=-lpDot(Gs_island[np.ix_(pq, pqpv)], dva_island[pqpv, :])
-                                                               - lpDot(B_island[np.ix_(pq, pq)], dvm_island[pq, :]),
-                                                           rhs=Q_island[pq, :],
-                                                           name='Nodal_imag_power_balance_pqpv_is' + str(i),
-                                                           op='=')
+        # Add nodal real power balance for the slack nodes
+        idx = bus_original_idx[vd]
+        nodal_restrictions_P[idx] = lpAddRestrictions2(problem=problem,
+                                                       lhs=-lpDot(Bs_island[vd, :], dva_island)
+                                                           + lpDot(G_island[vd, :], dvm_island),
+                                                       rhs=P_island[vd, :],
+                                                       name='Nodal_real_power_balance_vd_is' + str(i),
+                                                       op='=')
 
-            # Add nodal real power balance for the slack nodes
-            idx = bus_original_idx[vd]
-            nodal_restrictions_P[idx] = lpAddRestrictions2(problem=problem,
-                                                           lhs=-lpDot(Bs_island[vd, :], dva_island)
-                                                               + lpDot(G_island[vd, :], dvm_island),
-                                                           rhs=P_island[vd, :],
-                                                           name='Nodal_real_power_balance_vd_is' + str(i),
-                                                           op='=')
+        # delta of voltage angles equal to zero for the slack nodes (vd)
+        lpAddRestrictions2(problem=problem,
+                           lhs=dva_island[vd, :],
+                           rhs=np.zeros_like(dva_island[vd, :]),
+                           name='dVa_vd_zero_is' + str(i),
+                           op='=')
 
-            # delta of voltage angles equal to zero for the slack nodes (vd)
-            lpAddRestrictions2(problem=problem,
-                               lhs=dva_island[vd, :],
-                               rhs=np.zeros_like(dva_island[vd, :]),
-                               name='dVa_vd_zero_is' + str(i),
-                               op='=')
-
-            # delta of voltage module equal to zero for the slack and pv nodes (vdpv)
-            lpAddRestrictions2(problem=problem,
-                               lhs=dvm_island[vdpv, :],
-                               rhs=np.zeros_like(dva_island[vdpv, :]),
-                               name='dVm_vdpv_zero_is' + str(i),
-                               op='=')
+        # delta of voltage module equal to zero for the slack and pv nodes (vdpv)
+        lpAddRestrictions2(problem=problem,
+                           lhs=dvm_island[vdpv, :],
+                           rhs=np.zeros_like(dva_island[vdpv, :]),
+                           name='dVm_vdpv_zero_is' + str(i),
+                           op='=')
 
     return nodal_restrictions_P, nodal_restrictions_Q
 
@@ -264,7 +259,7 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
 
 class OpfAcTimeSeries(OpfTimeSeries):
 
-    def __init__(self, numerical_circuit: StaticSeriesInputs, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
+    def __init__(self, numerical_circuit: OpfTimeCircuit, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
                  batteries_energy_0=None):
         """
         AC time series linear optimal power flow
@@ -296,16 +291,16 @@ class OpfAcTimeSeries(OpfTimeSeries):
         # general indices
         n = numerical_circuit.nbus
         m = numerical_circuit.nbr
-        ng = numerical_circuit.n_ctrl_gen
-        nb = numerical_circuit.n_batt
-        nl = numerical_circuit.n_ld
+        ng = numerical_circuit.ngen
+        nb = numerical_circuit.nbatt
+        nl = numerical_circuit.nload
         nt = self.end_idx - self.start_idx
         a = self.start_idx
         b = self.end_idx
         Sbase = numerical_circuit.Sbase
 
         # battery
-        Capacity = numerical_circuit.battery_Enom / Sbase
+        Capacity = numerical_circuit.battery_enom / Sbase
         minSoC = numerical_circuit.battery_min_soc
         maxSoC = numerical_circuit.battery_max_soc
 
@@ -317,24 +312,24 @@ class OpfAcTimeSeries(OpfTimeSeries):
         Pb_max = numerical_circuit.battery_pmax / Sbase
         Pb_min = numerical_circuit.battery_pmin / Sbase
         Efficiency = (numerical_circuit.battery_discharge_efficiency + numerical_circuit.battery_charge_efficiency) / 2.0
-        cost_b = numerical_circuit.battery_cost_profile[a:b, :].transpose()
+        cost_b = numerical_circuit.battery_cost[a:b, :].transpose()
 
         # generator
         Pg_max = numerical_circuit.generator_pmax / Sbase
         Pg_min = numerical_circuit.generator_pmin / Sbase
-        P_profile = numerical_circuit.generator_power_profile[a:b, :].transpose() / Sbase
-        cost_g = numerical_circuit.generator_cost_profile[a:b, :].transpose()
+        P_profile = numerical_circuit.generator_p[a:b, :].transpose() / Sbase
+        cost_g = numerical_circuit.generator_cost[a:b, :].transpose()
         enabled_for_dispatch = numerical_circuit.generator_dispatchable
 
         # load
-        Pl = (numerical_circuit.load_active_prof[a:b, :] * numerical_circuit.load_power_profile.real[a:b, :]).transpose() / Sbase
-        Ql = (numerical_circuit.load_active_prof[a:b, :] * numerical_circuit.load_power_profile.imag[a:b, :]).transpose() / Sbase
-        cost_l = numerical_circuit.load_cost_prof[a:b, :].transpose()
+        Pl = (numerical_circuit.load_active[a:b, :] * numerical_circuit.load_s.real[a:b, :]).transpose() / Sbase
+        Ql = (numerical_circuit.load_active[a:b, :] * numerical_circuit.load_s.imag[a:b, :]).transpose() / Sbase
+        cost_l = numerical_circuit.load_cost[a:b, :].transpose()
 
         # branch
-        branch_ratings = numerical_circuit.br_rate_profile[a:b, :].transpose() / Sbase
-        Bseries = (numerical_circuit.branch_active_prof[a:b, :] * (1 / (numerical_circuit.R + 1j * numerical_circuit.X))).imag.transpose()
-        cost_br = numerical_circuit.branch_cost_profile[a:b, :].transpose()
+        branch_ratings = numerical_circuit.branch_rates[a:b, :].transpose() / Sbase
+        Bseries = (numerical_circuit.branch_active[a:b, :] * (1 / (numerical_circuit.branch_R + 1j * numerical_circuit.branch_X))).imag.transpose()
+        cost_br = numerical_circuit.branch_cost[a:b, :].transpose()
 
         # Compute time delta in hours
         dt = np.zeros(nt)  # here nt = end_idx - start_idx
@@ -386,7 +381,7 @@ class OpfAcTimeSeries(OpfTimeSeries):
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
-        self.v0 = np.abs(numerical_circuit.V0)
+        self.v0 = np.abs(numerical_circuit.Vbus[a:b, :])
         self.dva = dva.transpose()
         self.dvm = dvm.transpose()
         self.Pg = Pg.transpose()
@@ -453,7 +448,7 @@ if __name__ == '__main__':
     l = optimal_power_flow_time_series.results.loading
     print('Branch loading\n', l)
 
-    g = optimal_power_flow_time_series.results.controlled_generator_power
+    g = optimal_power_flow_time_series.results.generator_power
     print('Gen power\n', g)
 
     pr = optimal_power_flow_time_series.results.shadow_prices

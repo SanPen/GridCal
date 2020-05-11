@@ -21,33 +21,35 @@ from matplotlib import pyplot as plt
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.types import BranchType
-from GridCal.Engine.Devices.transformer import TransformerType
-from GridCal.Engine.Devices.sequence_line import SequenceLineType
-from GridCal.Engine.Devices.underground_line import UndergroundLineType
 
-from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
-from GridCal.Engine.Devices.tower import Tower
+from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
 
 class DCLine(EditableDevice):
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='DC Line', active=True,
-                 r1=0.0001, rate=1e-9, mttf=0, mttr=0):
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='DC Line', idtag=None, active=True,
+                 r1=0.0001, rate=1e-9, force_flow=False, mttf=0, mttr=0):
         """
-        Voltage source converter (VSC)
+
         :param bus_from:
         :param bus_to:
         :param name:
         :param active:
         :param r1:
         :param rate:
+        :param force_flow:
+        :param P_dc_set:
+        :param mttf:
+        :param mttr:
         """
 
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=active,
                                 device_type=DeviceType.DCBranchDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the branch.'),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
                                                                      'Name of the bus at the "from" side of the branch.'),
                                                   'bus_to': GCProp('', DeviceType.BusDevice,
@@ -59,6 +61,8 @@ class DCLine(EditableDevice):
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
                                                                  'used in reliability studies.'),
                                                   'Rrd': GCProp('p.u.', float, 'DC Resistance.'),
+                                                  'force_flow': GCProp('p.u.', bool, 'Force the line flow?'),
+                                                  'P_dc_set': GCProp('MW', float, 'Set power flow.'),
                                                   },
                                 non_editable_attributes=['bus_from', 'bus_to'],
                                 properties_with_profile={'active': 'active_prof',
@@ -74,6 +78,7 @@ class DCLine(EditableDevice):
         # total impedance and admittance in p.u.
         self.Rdc = r1
 
+        self.force_flow = force_flow
         self.mttf = mttf
         self.mttr = mttr
 

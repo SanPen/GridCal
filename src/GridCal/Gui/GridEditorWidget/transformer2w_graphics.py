@@ -14,15 +14,17 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
-from GridCal.Gui.GridEditorWidget.generic import *
+from GridCal.Gui.GridEditorWidget.generic_graphics import *
+from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GuiFunctions import BranchObjectModel
+from GridCal.Engine.Devices.transformer import Transformer2W
 from GridCal.Engine.Devices.branch import Branch, BranchType, TransformerType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
 
 
 class TransformerEditor(QDialog):
 
-    def __init__(self, branch: Branch, Sbase=100, modify_on_accept=True):
+    def __init__(self, branch: Transformer2W, Sbase=100, modify_on_accept=True):
         """
         Transformer
         :param branch:
@@ -31,7 +33,7 @@ class TransformerEditor(QDialog):
         super(TransformerEditor, self).__init__()
 
         # keep pointer to the line object
-        self.branch = branch
+        self.transformer_obj = branch
 
         self.Sbase = Sbase
 
@@ -46,14 +48,17 @@ class TransformerEditor(QDialog):
         # ------------------------------------------------------------------------------------------
         # Set the object values
         # ------------------------------------------------------------------------------------------
-        self.Vf = self.branch.bus_from.Vnom
-        self.Vt = self.branch.bus_to.Vnom
+        self.Vf = self.transformer_obj.bus_from.Vnom
+        self.Vt = self.transformer_obj.bus_to.Vnom
 
-        R = self.branch.R
-        X = self.branch.X
-        G = self.branch.G
-        B = self.branch.B
-        Sn = self.branch.rate
+        # Change the impedances to the system base
+        base_change = Sbase / self.transformer_obj.rate
+
+        R = self.transformer_obj.R / base_change
+        X = self.transformer_obj.X / base_change
+        G = self.transformer_obj.G / base_change
+        B = self.transformer_obj.B / base_change
+        Sn = self.transformer_obj.rate
 
         zsc = np.sqrt(R * R + X * X)
         Vsc = 100.0 * zsc
@@ -144,8 +149,8 @@ class TransformerEditor(QDialog):
         :return: TransformerType instance
         """
         eps = 1e-20
-        Vf = self.branch.bus_from.Vnom  # kV
-        Vt = self.branch.bus_to.Vnom  # kV
+        Vf = self.transformer_obj.bus_from.Vnom  # kV
+        Vt = self.transformer_obj.bus_to.Vnom  # kV
         Sn = self.sn_spinner.value() + eps  # MVA
         Pcu = self.pcu_spinner.value() + eps  # kW
         Pfe = self.pfe_spinner.value() + eps  # kW
@@ -175,161 +180,22 @@ class TransformerEditor(QDialog):
 
         if self.modify_on_accept:
             tpe = self.get_template()
-            self.branch.apply_template(tpe, Sbase=self.Sbase)
+            self.transformer_obj.apply_template(tpe, Sbase=self.Sbase)
 
         self.accept()
 
 
-class LineEditor(QDialog):
+class TransformerGraphicItem(QGraphicsLineItem):
 
-    def __init__(self, branch: Branch, Sbase=100):
-        """
-        Line Editor constructor
-        :param branch: Branch object to update
-        :param Sbase: Base power in MVA
-        """
-        super(LineEditor, self).__init__()
-
-        # keep pointer to the line object
-        self.branch = branch
-
-        self.Sbase = Sbase
-
-        self.setObjectName("self")
-
-        self.setContextMenuPolicy(Qt.NoContextMenu)
-
-        self.layout = QVBoxLayout(self)
-
-        # ------------------------------------------------------------------------------------------
-        # Set the object values
-        # ------------------------------------------------------------------------------------------
-        Vf = self.branch.bus_from.Vnom
-        Vt = self.branch.bus_to.Vnom
-
-        Zbase = self.Sbase / (Vf * Vf)
-        Ybase = 1 / Zbase
-
-        R = self.branch.R * Zbase
-        X = self.branch.X * Zbase
-        G = self.branch.G * Ybase
-        B = self.branch.B * Ybase
-
-        I = self.branch.rate / Vf  # current in kA
-
-        # ------------------------------------------------------------------------------------------
-
-        # line length
-        self.l_spinner = QDoubleSpinBox()
-        self.l_spinner.setMinimum(0)
-        self.l_spinner.setMaximum(9999999)
-        self.l_spinner.setDecimals(6)
-        self.l_spinner.setValue(1)
-
-        # Max current
-        self.i_spinner = QDoubleSpinBox()
-        self.i_spinner.setMinimum(0)
-        self.i_spinner.setMaximum(9999999)
-        self.i_spinner.setDecimals(2)
-        self.i_spinner.setValue(I)
-
-        # R
-        self.r_spinner = QDoubleSpinBox()
-        self.r_spinner.setMinimum(0)
-        self.r_spinner.setMaximum(9999999)
-        self.r_spinner.setDecimals(6)
-        self.r_spinner.setValue(R)
-
-        # X
-        self.x_spinner = QDoubleSpinBox()
-        self.x_spinner.setMinimum(0)
-        self.x_spinner.setMaximum(9999999)
-        self.x_spinner.setDecimals(6)
-        self.x_spinner.setValue(X)
-
-        # G
-        self.g_spinner = QDoubleSpinBox()
-        self.g_spinner.setMinimum(0)
-        self.g_spinner.setMaximum(9999999)
-        self.g_spinner.setDecimals(6)
-        self.g_spinner.setValue(G)
-
-        # B
-        self.b_spinner = QDoubleSpinBox()
-        self.b_spinner.setMinimum(0)
-        self.b_spinner.setMaximum(9999999)
-        self.b_spinner.setDecimals(6)
-        self.b_spinner.setValue(B)
-
-        # accept button
-        self.accept_btn = QPushButton()
-        self.accept_btn.setText('Accept')
-        self.accept_btn.clicked.connect(self.accept_click)
-
-        # labels
-
-        # add all to the GUI
-        self.layout.addWidget(QLabel("L: Line length [Km]"))
-        self.layout.addWidget(self.l_spinner)
-
-        self.layout.addWidget(QLabel("Imax: Max. current [KA] @" + str(int(Vf)) + " [KV]"))
-        self.layout.addWidget(self.i_spinner)
-
-        self.layout.addWidget(QLabel("R: Resistance [Ohm/Km]"))
-        self.layout.addWidget(self.r_spinner)
-
-        self.layout.addWidget(QLabel("X: Inductance [Ohm/Km]"))
-        self.layout.addWidget(self.x_spinner)
-
-        self.layout.addWidget(QLabel("G: Conductance [S/Km]"))
-        self.layout.addWidget(self.g_spinner)
-
-        self.layout.addWidget(QLabel("B: Susceptance [S/Km]"))
-        self.layout.addWidget(self.b_spinner)
-
-        self.layout.addWidget(self.accept_btn)
-
-        self.setLayout(self.layout)
-
-        self.setWindowTitle('Line editor')
-
-    def accept_click(self):
-        """
-        Set the values
-        :return:
-        """
-        l = self.l_spinner.value()
-        I = self.i_spinner.value()
-        R = self.r_spinner.value() * l
-        X = self.x_spinner.value() * l
-        G = self.g_spinner.value() * l
-        B = self.b_spinner.value() * l
-
-        Vf = self.branch.bus_from.Vnom
-        Vt = self.branch.bus_to.Vnom
-
-        Sn = np.round(I * Vf, 2)  # nominal power in MVA = kA * kV
-
-        Zbase = self.Sbase / (Vf * Vf)
-        Ybase = 1.0 / Zbase
-
-        self.branch.R = np.round(R / Zbase, 6)
-        self.branch.X = np.round(X / Zbase, 6)
-        self.branch.G = np.round(G / Ybase, 6)
-        self.branch.B = np.round(B / Ybase, 6)
-        self.branch.rate = Sn
-
-        self.accept()
-
-
-class BranchGraphicItem(QGraphicsLineItem):
-
-    def __init__(self, fromPort, toPort, diagramScene, width=5, branch: Branch = None):
+    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5,
+                 branch: Transformer2W = None):
         """
 
-        @param fromPort:
-        @param toPort:
-        @param diagramScene:
+        :param fromPort:
+        :param toPort:
+        :param diagramScene:
+        :param width:
+        :param branch:
         """
         QGraphicsLineItem.__init__(self, None)
 
@@ -398,30 +264,8 @@ class BranchGraphicItem(QGraphicsLineItem):
 
         # remove the symbol of the branch
         self.remove_symbol()
-
-        if self.api_object.branch_type == BranchType.Transformer:
-            self.make_transformer_symbol()
-            self.symbol_type = BranchType.Transformer
-
-        elif self.api_object.branch_type == BranchType.Switch:
-            self.make_switch_symbol()
-            self.symbol_type = BranchType.Switch
-
-        elif self.api_object.branch_type == BranchType.Reactance:
-            self.make_reactance_symbol()
-            self.symbol_type = BranchType.Switch
-
-        elif self.api_object.branch_type == BranchType.DCLine:
-            self.make_dc_line_symbol()
-            self.symbol_type = BranchType.DCLine
-
-        else:
-            # this is a line
-            self.symbol = None
-            self.c0 = None
-            self.c1 = None
-            self.c2 = None
-            self.symbol_type = BranchType.Line
+        self.make_transformer_symbol()
+        self.symbol_type = BranchType.Transformer
 
     def make_transformer_symbol(self):
         """
@@ -453,61 +297,6 @@ class BranchGraphicItem(QGraphicsLineItem):
         self.c1.setZValue(2)
         self.c2.setZValue(1)
 
-    def make_switch_symbol(self):
-        """
-        Mathe the switch symbol
-        :return:
-        """
-        h = 40.0
-        w = h
-        self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
-        self.symbol.setPen(QPen(self.color, self.width, self.style))
-        if self.api_object.active:
-            self.symbol.setBrush(self.color)
-        else:
-            self.symbol.setBrush(QBrush(Qt.white))
-
-    def make_dc_line_symbol(self):
-        """
-        Make the DC Line symbol
-        :return:
-        """
-        h = 30.0
-        w = h
-        w2 = int(w / 2)
-        self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
-
-        offset = 3
-        t_points = QPolygonF()
-        t_points.append(QPointF(0, offset))
-        t_points.append(QPointF(w-offset, w2))
-        t_points.append(QPointF(0, w-offset))
-        triangle = QGraphicsPolygonItem(self.symbol)
-        triangle.setPolygon(t_points)
-        triangle.setPen(QPen(Qt.white))
-        triangle.setBrush(QBrush(Qt.white))
-
-        line = QGraphicsRectItem(QRectF(h-offset, offset, offset, w-2*offset), parent=self.symbol)
-        line.setPen(QPen(Qt.white))
-        line.setBrush(QBrush(Qt.white))
-
-        self.symbol.setPen(QPen(self.color, self.width, self.style))
-        if self.api_object.active:
-            self.symbol.setBrush(self.color)
-        else:
-            self.symbol.setBrush(QBrush(Qt.white))
-
-    def make_reactance_symbol(self):
-        """
-        Make the reactance symbol
-        :return:
-        """
-        h = 40.0
-        w = 2 * h
-        self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
-        self.symbol.setPen(QPen(self.color, self.width, self.style))
-        self.symbol.setBrush(self.color)
-
     def setToolTipText(self, toolTip: str):
         """
         Set branch tool tip text
@@ -532,44 +321,59 @@ class BranchGraphicItem(QGraphicsLineItem):
         """
         if self.api_object is not None:
             menu = QMenu()
+            menu.addSection("Transformer")
 
-            pe = menu.addAction('Enable/Disable')
+            pe = menu.addAction('Active')
+            pe.setCheckable(True)
+            pe.setChecked(self.api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
 
-            menu.addSeparator()
-
             ra2 = menu.addAction('Delete')
+            del_icon = QIcon()
+            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+            ra2.setIcon(del_icon)
             ra2.triggered.connect(self.remove)
 
-            menu.addSeparator()
-
-            ra3 = menu.addAction('Edit')
-            ra3.triggered.connect(self.edit)
-
-            menu.addSeparator()
-
-            ra6 = menu.addAction('Plot profiles')
-            ra6.triggered.connect(self.plot_profiles)
-
-            if self.api_object.branch_type == BranchType.Transformer:
-
-                ra3 = menu.addAction('Add to catalogue')
-                ra3.triggered.connect(self.add_to_templates)
-
-                menu.addSeparator()
-
-                ra4 = menu.addAction('Tap up')
-                ra4.triggered.connect(self.tap_up)
-
-                ra5 = menu.addAction('Tap down')
-                ra5.triggered.connect(self.tap_down)
-
-            menu.addSeparator()
-
             re = menu.addAction('Reduce')
+            re_icon = QIcon()
+            re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
+            re.setIcon(re_icon)
             re.triggered.connect(self.reduce)
 
+            ra3 = menu.addAction('Editor')
+            edit_icon = QIcon()
+            edit_icon.addPixmap(QPixmap(":/Icons/icons/edit.svg"))
+            ra3.setIcon(edit_icon)
+            ra3.triggered.connect(self.edit)
+
+            ra6 = menu.addAction('Plot profiles')
+            plot_icon = QIcon()
+            plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
+            ra6.setIcon(plot_icon)
+            ra6.triggered.connect(self.plot_profiles)
+
+            ra3 = menu.addAction('Add to catalogue')
+            ra3_icon = QIcon()
+            ra3_icon.addPixmap(QPixmap(":/Icons/icons/Catalogue.svg"))
+            ra3.setIcon(ra3_icon)
+            ra3.triggered.connect(self.add_to_templates)
+
+            menu.addSection('Tap changer')
+
+            ra4 = menu.addAction('Tap up')
+            ra4_icon = QIcon()
+            ra4_icon.addPixmap(QPixmap(":/Icons/icons/up.svg"))
+            ra4.setIcon(ra4_icon)
+            ra4.triggered.connect(self.tap_up)
+
+            ra5 = menu.addAction('Tap down')
+            ra5_icon = QIcon()
+            ra5_icon.addPixmap(QPixmap(":/Icons/icons/down.svg"))
+            ra5.setIcon(ra5_icon)
+            ra5.triggered.connect(self.tap_down)
+
             menu.exec_(event.screenPos())
+
         else:
             pass
 
@@ -649,7 +453,7 @@ class BranchGraphicItem(QGraphicsLineItem):
             # remove the branch from the schematic
             self.diagramScene.removeItem(br.graphic_obj)
             # add the branch to the schematic with the rerouting and all
-            self.diagramScene.parent_.add_branch(br)
+            self.diagramScene.parent_.add_transformer(br)
             # update both buses
             br.bus_from.graphic_obj.update()
             br.bus_to.graphic_obj.update()
@@ -717,7 +521,7 @@ class BranchGraphicItem(QGraphicsLineItem):
         ts = self.diagramScene.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().time_series
 
         # get the index of this object
-        i = self.diagramScene.circuit.branches.index(self.api_object)
+        i = self.diagramScene.circuit.get_branches().index(self.api_object)
 
         # plot the profiles
         self.api_object.plot_profiles(time_series=ts, my_index=i)
@@ -836,15 +640,10 @@ class BranchGraphicItem(QGraphicsLineItem):
         """
         Sbase = self.diagramScene.circuit.Sbase
 
-        if self.api_object.branch_type == BranchType.Transformer:
-            dlg = TransformerEditor(self.api_object, Sbase, modify_on_accept=True)
-            if dlg.exec_():
-                pass
+        dlg = TransformerEditor(self.api_object, Sbase, modify_on_accept=True)
+        if dlg.exec_():
+            pass
 
-        elif self.api_object.branch_type == BranchType.Line:
-            dlg = LineEditor(self.api_object, Sbase)
-            if dlg.exec_():
-                pass
 
     def add_to_templates(self):
         """
@@ -853,29 +652,22 @@ class BranchGraphicItem(QGraphicsLineItem):
         """
         Sbase = self.diagramScene.circuit.Sbase
 
-        if self.api_object.branch_type == BranchType.Transformer:
-
-            if self.api_object.template is not None:
-                # automatically pick the template
-                if isinstance(self.api_object.template, TransformerType):
-                    self.diagramScene.circuit.add_transformer_type(self.api_object.template)
-                else:
-                    # raise dialogue to set the template
-                    dlg = TransformerEditor(self.api_object, Sbase, modify_on_accept=False)
-                    if dlg.exec_():
-                        tpe = dlg.get_template()
-                        self.diagramScene.circuit.add_transformer_type(tpe)
+        if self.api_object.template is not None:
+            # automatically pick the template
+            if isinstance(self.api_object.template, TransformerType):
+                self.diagramScene.circuit.add_transformer_type(self.api_object.template)
             else:
                 # raise dialogue to set the template
                 dlg = TransformerEditor(self.api_object, Sbase, modify_on_accept=False)
                 if dlg.exec_():
                     tpe = dlg.get_template()
                     self.diagramScene.circuit.add_transformer_type(tpe)
-
-        elif self.api_object.branch_type == BranchType.Line:
-            dlg = LineEditor(self.api_object, Sbase)
+        else:
+            # raise dialogue to set the template
+            dlg = TransformerEditor(self.api_object, Sbase, modify_on_accept=False)
             if dlg.exec_():
-                pass
+                tpe = dlg.get_template()
+                self.diagramScene.circuit.add_transformer_type(tpe)
 
     def tap_up(self):
         """

@@ -14,7 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
 
 class Shunt(EditableDevice):
@@ -39,13 +39,15 @@ class Shunt(EditableDevice):
 
     """
 
-    def __init__(self, name='shunt', G=0.0, B=0.0, G_prof=None, B_prof=None, active=True, mttf=0.0, mttr=0.0):
+    def __init__(self, name='shunt', idtag=None, G=0.0, B=0.0, G_prof=None, B_prof=None, active=True, mttf=0.0, mttr=0.0):
 
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=active,
                                 device_type=DeviceType.ShuntDevice,
                                 editable_headers={'name': GCProp('', str, 'Load name'),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
                                                   'active': GCProp('', bool, 'Is the load active?'),
                                                   'G': GCProp('MW', float,

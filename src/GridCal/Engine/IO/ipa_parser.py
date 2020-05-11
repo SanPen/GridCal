@@ -3,7 +3,12 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
 
 
-def load_iPA(file_name):
+def load_iPA(file_name) -> MultiCircuit:
+    """
+    Read the nuts' Indra file format
+    :param file_name: json file name
+    :return: MultiCircuit
+    """
 
     circuit = MultiCircuit()
 

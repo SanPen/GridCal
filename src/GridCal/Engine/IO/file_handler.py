@@ -16,7 +16,7 @@ import os
 import json
 
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
+
 from GridCal.Engine.IO.json_parser import save_json_file
 from GridCal.Engine.IO.cim_parser import CIMExport
 from GridCal.Engine.IO.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
@@ -31,7 +31,7 @@ from GridCal.Engine.IO.psse_parser import PSSeParser
 from GridCal.Engine.IO.cim_parser import CIMImport
 from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, open_data_frames_from_zip
 from GridCal.Engine.IO.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
-
+from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 from PySide2.QtCore import QThread, Signal
 
@@ -113,22 +113,13 @@ class FileOpen:
                     return None
 
             elif file_extension.lower() == '.dgs':
-                circ = dgs_to_circuit(self.file_name)
-                self.circuit.buses = circ.buses
-                self.circuit.branches = circ.branches
-                self.circuit.assign_circuit(circ)
+                self.circuit = dgs_to_circuit(self.file_name)
 
             elif file_extension.lower() == '.m':
-                circ = parse_matpower_file(self.file_name)
-                self.circuit.buses = circ.buses
-                self.circuit.branches = circ.branches
-                self.circuit.assign_circuit(circ)
+                self.circuit = parse_matpower_file(self.file_name)
 
             elif file_extension.lower() == '.dpx':
-                circ, log = load_dpx(self.file_name)
-                self.circuit.buses = circ.buses
-                self.circuit.branches = circ.branches
-                self.circuit.assign_circuit(circ)
+                self.circuit, log = load_dpx(self.file_name)
                 self.logger += log
 
             elif file_extension.lower() == '.json':
@@ -138,33 +129,24 @@ class FileOpen:
 
                 if type(data) == dict():
                     if 'Red' in data.keys():
-                        circ = load_iPA(self.file_name)
-                        self.circuit.buses = circ.buses
-                        self.circuit.branches = circ.branches
-                        self.circuit.assign_circuit(circ)
+                        self.circuit = load_iPA(self.file_name)
                     else:
                         self.logger.append('Unknown json format')
 
                 elif type(data) == list():
-                    circ = parse_json(self.file_name)
-                    self.circuit.buses = circ.buses
-                    self.circuit.branches = circ.branches
-                    self.circuit.assign_circuit(circ)
+                    self.circuit = parse_json(self.file_name)
+
                 else:
                     self.logger.append('Unknown json format')
 
             elif file_extension.lower() == '.raw':
                 parser = PSSeParser(self.file_name)
-                circ = parser.circuit
-                self.circuit.buses = circ.buses
-                self.circuit.branches = circ.branches
-                self.circuit.assign_circuit(circ)
+                self.circuit = parser.circuit
                 self.logger += parser.logger
 
             elif file_extension.lower() == '.xml':
                 parser = CIMImport()
-                circ = parser.load_cim_file(self.file_name)
-                self.circuit.assign_circuit(circ)
+                self.circuit = parser.load_cim_file(self.file_name)
                 self.logger += parser.logger
 
         else:

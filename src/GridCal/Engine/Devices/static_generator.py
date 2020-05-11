@@ -14,7 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
 
 class StaticGenerator(EditableDevice):
@@ -39,13 +39,16 @@ class StaticGenerator(EditableDevice):
 
     """
 
-    def __init__(self, name='StaticGen', P=0.0, Q=0.0, P_prof=None, Q_prof=None, active=True, mttf=0.0, mttr=0.0):
+    def __init__(self, name='StaticGen', idtag=None, P=0.0, Q=0.0, P_prof=None, Q_prof=None, active=True,
+                 mttf=0.0, mttr=0.0):
 
         EditableDevice.__init__(self,
                                 name=name,
+                                idtag=idtag,
                                 active=active,
                                 device_type=DeviceType.StaticGeneratorDevice,
                                 editable_headers={'name': GCProp('', str, ''),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus': GCProp('', DeviceType.BusDevice, ''),
                                                   'active': GCProp('', bool, ''),
                                                   'P': GCProp('MW', float, 'Active power'),

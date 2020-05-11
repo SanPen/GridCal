@@ -22,9 +22,10 @@ from GridCal.Engine.Simulations.ShortCircuit.short_circuit import short_circuit_
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowOptions
-from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotIslandInputs
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotIsland
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Devices import Branch, Bus
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
 from GridCal.Gui.GuiFunctions import ResultsModel
 
 ########################################################################################################################
@@ -65,29 +66,31 @@ class ShortCircuitOptions:
 
 class ShortCircuitResults(PowerFlowResults):
 
-    def __init__(self, Sbus=None, voltage=None, Sbranch=None, Ibranch=None, loading=None, losses=None, SCpower=None,
-                 error=None, converged=None, Qpv=None):
-
+    def __init__(self, n, m, n_tr, bus_names, branch_names, transformer_names, bus_types):
         """
 
-        Args:
-            Sbus:
-            voltage:
-            Sbranch:
-            Ibranch:
-            loading:
-            losses:
-            SCpower:
-            error:
-            converged:
-            Qpv:
+        :param n:
+        :param m:
+        :param n_tr:
+        :param bus_names:
+        :param branch_names:
+        :param transformer_names:
+        :param bus_types:
         """
-        PowerFlowResults.__init__(self, Sbus=Sbus, voltage=voltage, Sbranch=Sbranch, Ibranch=Ibranch,
-                                  loading=loading, losses=losses, error=error, converged=converged, Qpv=Qpv)
+        PowerFlowResults.__init__(self,
+                                  n=n,
+                                  m=m,
+                                  n_tr=n_tr,
+                                  n_hvdc=0,
+                                  bus_names=bus_names,
+                                  branch_names=branch_names,
+                                  transformer_names=transformer_names,
+                                  hvdc_names=(),
+                                  bus_types=bus_types)
 
         self.name = 'Short circuit'
 
-        self.short_circuit_power = SCpower
+        self.short_circuit_power = None
 
         self.available_results = [ResultTypes.BusVoltageModule,
                                   ResultTypes.BusVoltageAngle,
@@ -104,10 +107,9 @@ class ShortCircuitResults(PowerFlowResults):
         Return a copy of this
         @return:
         """
-        return ShortCircuitResults(Sbus=self.Sbus, voltage=self.voltage, Sbranch=self.Sbranch,
-                                   Ibranch=self.Ibranch, loading=self.loading,
-                                   losses=self.losses, SCpower=self.short_circuit_power, error=self.error,
-                                   converged=self.converged, Qpv=self.Qpv)
+        elm = super().copy()
+        elm.short_circuit_power = self.short_circuit_power
+        return elm
 
     def initialize(self, n, m):
         """
@@ -142,7 +144,7 @@ class ShortCircuitResults(PowerFlowResults):
 
         self.buses_useful_for_storage = list()
 
-    def apply_from_island(self, results, b_idx, br_idx):
+    def apply_from_island(self, results: "ShortCircuitResults", b_idx, br_idx):
         """
         Apply results from another island circuit to the circuit results represented here
         @param results: PowerFlowResults
@@ -170,11 +172,6 @@ class ShortCircuitResults(PowerFlowResults):
 
         self.overloads[br_idx] = results.overloads
 
-        if results.error > self.error:
-            self.error = results.error
-
-        self.converged = self.converged and results.converged
-
         if results.buses_useful_for_storage is not None:
             self.buses_useful_for_storage = b_idx[results.buses_useful_for_storage]
 
@@ -186,7 +183,7 @@ class ShortCircuit(QRunnable):
     name = 'Short Circuit'
 
     def __init__(self, grid: MultiCircuit, options: ShortCircuitOptions, pf_options: PowerFlowOptions,
-                 pf_results: PowerFlowResults):
+                 pf_results: PowerFlowResults, opf_results=None):
         """
         PowerFlowDriver class constructor
         @param grid: MultiCircuit Object
@@ -200,6 +197,8 @@ class ShortCircuit(QRunnable):
         self.pf_results = pf_results
 
         self.pf_options = pf_options
+
+        self.opf_results = opf_results
 
         # Options to use
         self.options = options
@@ -273,7 +272,7 @@ class ShortCircuit(QRunnable):
 
         return br1, br2, middle_bus
 
-    def single_short_circuit(self, calculation_inputs: StaticSnapshotIslandInputs, Vpf, Zf):
+    def single_short_circuit(self, calculation_inputs: SnapshotIsland, Vpf, Zf):
         """
         Run a power flow simulation for a single circuit
         @param calculation_inputs:
@@ -297,36 +296,46 @@ class ShortCircuit(QRunnable):
             Sbranch, Ibranch, loading, losses = self.compute_branch_results(calculation_inputs=calculation_inputs, V=V)
 
             # voltage, Sbranch, loading, losses, error, converged, Qpv
-            results = ShortCircuitResults(Sbus=calculation_inputs.Sbus,
-                                          voltage=V,
-                                          Sbranch=Sbranch,
-                                          Ibranch=Ibranch,
-                                          loading=loading,
-                                          losses=losses,
-                                          SCpower=SCpower,
-                                          error=0,
-                                          converged=True,
-                                          Qpv=None)
+            results = ShortCircuitResults(n=calculation_inputs.nbus,
+                                          m=calculation_inputs.nbr,
+                                          n_tr=calculation_inputs.ntr,
+                                          bus_names=calculation_inputs.bus_names,
+                                          branch_names=calculation_inputs.branch_names,
+                                          transformer_names=calculation_inputs.tr_names,
+                                          bus_types=calculation_inputs.bus_types)
+
+            results.Sbus = calculation_inputs.Sbus
+            results.voltage = V
+            results.Sbranch = Sbranch
+            results.Ibranch = Ibranch
+            results.losses = losses
+            results.SCpower = SCpower
+
+
         else:
             nbus = calculation_inputs.Ybus.shape[0]
             nbr = calculation_inputs.nbr
 
             # voltage, Sbranch, loading, losses, error, converged, Qpv
-            results = ShortCircuitResults(Sbus=calculation_inputs.Sbus,
-                                          voltage=np.zeros(nbus, dtype=complex),
-                                          Sbranch=np.zeros(nbr, dtype=complex),
-                                          Ibranch=np.zeros(nbr, dtype=complex),
-                                          loading=np.zeros(nbr, dtype=complex),
-                                          losses=np.zeros(nbr, dtype=complex),
-                                          SCpower=np.zeros(nbus, dtype=complex),
-                                          error=0,
-                                          converged=True,
-                                          Qpv=None)
+            results = ShortCircuitResults(n=calculation_inputs.nbus,
+                                          m=calculation_inputs.nbr,
+                                          n_tr=calculation_inputs.ntr,
+                                          bus_names=calculation_inputs.bus_names,
+                                          branch_names=calculation_inputs.branch_names,
+                                          transformer_names=calculation_inputs.tr_names,
+                                          bus_types=calculation_inputs.bus_types)
+
+            results.Sbus = calculation_inputs.Sbus
+            results.voltage = np.zeros(nbus, dtype=complex)
+            results.Sbranch = np.zeros(nbr, dtype=complex)
+            results.Ibranch = np.zeros(nbr, dtype=complex)
+            results.losses = np.zeros(nbr, dtype=complex)
+            results.SCpower = np.zeros(nbus, dtype=complex)
 
         return results
 
     @staticmethod
-    def compute_branch_results(calculation_inputs: StaticSnapshotIslandInputs, V):
+    def compute_branch_results(calculation_inputs: SnapshotIsland, V):
         """
         Compute the power flows trough the branches
         @param calculation_inputs: instance of Circuit
@@ -374,16 +383,22 @@ class ShortCircuit(QRunnable):
         else:
             grid = self.grid
 
-        n = grid.get_bus_number()
-        m = grid.get_branch_number()
-        results = ShortCircuitResults()  # yes, reuse this class
-        results.initialize(n, m)
-
         # Compile the grid
-        numerical_circuit = self.grid.compile_snapshot()
-        calculation_inputs = numerical_circuit.compute(branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
-                                                       ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
+        numerical_circuit = compile_snapshot_circuit(circuit=grid,
+                                                     apply_temperature=self.pf_options.apply_temperature_correction,
+                                                     branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
+                                                     opf_results=self.opf_results)
 
+        calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,
+                                                ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
+
+        results = ShortCircuitResults(n=numerical_circuit.nbus,
+                                      m=numerical_circuit.nbr,
+                                      n_tr=numerical_circuit.ntr,
+                                      bus_names=numerical_circuit.bus_names,
+                                      branch_names=numerical_circuit.branch_names,
+                                      transformer_names=numerical_circuit.tr_names,
+                                      bus_types=numerical_circuit.bus_types)
         results.bus_types = numerical_circuit.bus_types
 
         Zf = self.compile_zf(grid)

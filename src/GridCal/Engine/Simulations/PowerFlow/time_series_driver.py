@@ -27,20 +27,39 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, power_flow_worker_args
+from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, split_time_circuit_into_islands, BranchImpedanceMode
 from GridCal.Engine.Simulations.Stochastic.latin_hypercube_sampling import lhs
 from GridCal.Gui.GuiFunctions import ResultsModel
 
 
 class TimeSeriesResults(PowerFlowResults):
 
-    def __init__(self, n, m, time_array):
+    def __init__(self, n, m, n_tr, n_hvdc, bus_names, branch_names, transformer_names, hvdc_names,
+                 time_array, bus_types):
         """
         TimeSeriesResults constructor
-        @param n: number of buses
-        @param m: number of branches
-        @param nt: number of time steps
+        :param n: number of buses
+        :param m: number of branches
+        :param n_tr:
+        :param n_hvdc:
+        :param bus_names:
+        :param branch_names:
+        :param transformer_names:
+        :param hvdc_names:
+        :param time_array:
+        :param bus_types:
         """
-        PowerFlowResults.__init__(self)
+        PowerFlowResults.__init__(self,
+                                  n=n,
+                                  m=m,
+                                  n_tr=n_tr,
+                                  n_hvdc=n_hvdc,
+                                  bus_names=bus_names,
+                                  branch_names=branch_names,
+                                  transformer_names=transformer_names,
+                                  hvdc_names=hvdc_names,
+                                  bus_types=bus_types)
+
         self.name = 'Time series'
         self.nt = len(time_array)
         self.m = m
@@ -50,76 +69,47 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.bus_types = np.zeros(n, dtype=int)
 
-        if self.nt > 0:
-            self.voltage = np.zeros((self.nt, n), dtype=complex)
+        self.voltage = np.zeros((self.nt, n), dtype=complex)
 
-            self.S = np.zeros((self.nt, n), dtype=complex)
+        self.S = np.zeros((self.nt, n), dtype=complex)
 
-            self.Sbranch = np.zeros((self.nt, m), dtype=complex)
+        self.Sbranch = np.zeros((self.nt, m), dtype=complex)
 
-            self.Ibranch = np.zeros((self.nt, m), dtype=complex)
+        self.Ibranch = np.zeros((self.nt, m), dtype=complex)
 
-            self.Vbranch = np.zeros((self.nt, m), dtype=complex)
+        self.Vbranch = np.zeros((self.nt, m), dtype=complex)
 
-            self.loading = np.zeros((self.nt, m), dtype=complex)
+        self.loading = np.zeros((self.nt, m), dtype=complex)
 
-            self.losses = np.zeros((self.nt, m), dtype=complex)
+        self.losses = np.zeros((self.nt, m), dtype=complex)
 
-            self.flow_direction = np.zeros((self.nt, m), dtype=float)
+        self.hvdc_losses = np.zeros((self.nt, self.n_hvdc))
 
-            self.error = np.zeros(self.nt)
+        self.hvdc_sent_power = np.zeros((self.nt, self.n_hvdc))
 
-            self.converged = np.ones(self.nt, dtype=bool)  # guilty assumption
+        self.hvdc_loading = np.zeros((self.nt, self.n_hvdc))
 
-            self.overloads = [None] * self.nt
+        self.flow_direction = np.zeros((self.nt, m), dtype=float)
 
-            self.overvoltage = [None] * self.nt
+        self.error = np.zeros(self.nt)
 
-            self.undervoltage = [None] * self.nt
+        self.converged = np.ones(self.nt, dtype=bool)  # guilty assumption
 
-            self.overloads_idx = [None] * self.nt
+        self.overloads = [None] * self.nt
 
-            self.overvoltage_idx = [None] * self.nt
+        self.overvoltage = [None] * self.nt
 
-            self.undervoltage_idx = [None] * self.nt
+        self.undervoltage = [None] * self.nt
 
-            self.buses_useful_for_storage = [None] * self.nt
+        self.overloads_idx = [None] * self.nt
 
-        else:
-            self.voltage = None
+        self.overvoltage_idx = [None] * self.nt
 
-            self.S = None
+        self.undervoltage_idx = [None] * self.nt
 
-            self.Sbranch = None
+        self.buses_useful_for_storage = [None] * self.nt
 
-            self.Ibranch = None
-
-            self.Vbranch = None
-
-            self.loading = None
-
-            self.losses = None
-
-            self.flow_direction = None
-
-            self.error = None
-
-            self.converged = None
-
-            self.overloads = None
-
-            self.overvoltage = None
-
-            self.undervoltage = None
-
-            self.overloads_idx = None
-
-            self.overvoltage_idx = None
-
-            self.undervoltage_idx = None
-
-            self.buses_useful_for_storage = None
-
+        # results available
         self.available_results = [ResultTypes.BusVoltageModule,
                                   ResultTypes.BusVoltageAngle,
                                   ResultTypes.BusActivePower,
@@ -158,23 +148,23 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.flow_direction[t, :] = results.flow_direction
 
-        self.error[t] = max(results.error)
+        self.error[t] = results.error()
 
-        self.converged[t] = min(results.converged)
+        self.converged[t] = results.converged()
 
-        self.overloads[t] = results.overloads
-
-        self.overvoltage[t] = results.overvoltage
-
-        self.undervoltage[t] = results.undervoltage
-
-        self.overloads_idx[t] = results.overloads_idx
-
-        self.overvoltage_idx[t] = results.overvoltage_idx
-
-        self.undervoltage_idx[t] = results.undervoltage_idx
-
-        self.buses_useful_for_storage[t] = results.buses_useful_for_storage
+        # self.overloads[t] = results.overloads
+        #
+        # self.overvoltage[t] = results.overvoltage
+        #
+        # self.undervoltage[t] = results.undervoltage
+        #
+        # self.overloads_idx[t] = results.overloads_idx
+        #
+        # self.overvoltage_idx[t] = results.overvoltage_idx
+        #
+        # self.undervoltage_idx[t] = results.undervoltage_idx
+        #
+        # self.buses_useful_for_storage[t] = results.buses_useful_for_storage
 
     @staticmethod
     def merge_if(df, arr, ind, cols):
@@ -294,7 +284,7 @@ class TimeSeriesResults(PowerFlowResults):
         return branch_overload_frequency, bus_undervoltage_frequency, bus_overvoltage_frequency, \
                 buses_selected_for_storage_frequency
 
-    def mdl(self, result_type: ResultTypes, indices=None, names=None) -> "ResultsModel":
+    def mdl(self, result_type: ResultTypes) -> "ResultsModel":
         """
 
         :param result_type:
@@ -303,118 +293,125 @@ class TimeSeriesResults(PowerFlowResults):
         :return:
         """
 
-        if indices is None:
-            indices = np.array(range(len(names)))
+        if result_type == ResultTypes.BusVoltageModule:
+            labels = self.bus_names
+            data = np.abs(self.voltage)
+            y_label = '(p.u.)'
+            title = 'Bus voltage '
 
-        if len(indices) > 0:
+        elif result_type == ResultTypes.BusVoltageAngle:
+            labels = self.bus_names
+            data = np.angle(self.voltage, deg=True)
+            y_label = '(Deg)'
+            title = 'Bus voltage '
 
-            labels = names[indices]
+        elif result_type == ResultTypes.BusActivePower:
+            labels = self.bus_names
+            data = self.S.real
+            y_label = '(MW)'
+            title = 'Bus active power '
 
-            if result_type == ResultTypes.BusVoltageModule:
-                data = np.abs(self.voltage[:, indices])
-                y_label = '(p.u.)'
-                title = 'Bus voltage '
+        elif result_type == ResultTypes.BusReactivePower:
+            labels = self.bus_names
+            data = self.S.imag
+            y_label = '(MVAr)'
+            title = 'Bus reactive power '
 
-            elif result_type == ResultTypes.BusVoltageAngle:
-                data = np.angle(self.voltage[:, indices], deg=True)
-                y_label = '(Deg)'
-                title = 'Bus voltage '
+        elif result_type == ResultTypes.BranchPower:
+            labels = self.branch_names
+            data = self.Sbranch
+            y_label = '(MVA)'
+            title = 'Branch power '
 
-            elif result_type == ResultTypes.BusActivePower:
-                data = self.S[:, indices].real
-                y_label = '(MW)'
-                title = 'Bus active power '
+        elif result_type == ResultTypes.BranchActivePower:
+            labels = self.branch_names
+            data = self.Sbranch.real
+            y_label = '(MW)'
+            title = 'Branch power '
 
-            elif result_type == ResultTypes.BusReactivePower:
-                data = self.S[:, indices].imag
-                y_label = '(MVAr)'
-                title = 'Bus reactive power '
+        elif result_type == ResultTypes.BranchReactivePower:
+            labels = self.branch_names
+            data = self.Sbranch.imag
+            y_label = '(MVAr)'
+            title = 'Branch power '
 
-            elif result_type == ResultTypes.BranchPower:
-                data = self.Sbranch[:, indices]
-                y_label = '(MVA)'
-                title = 'Branch power '
+        elif result_type == ResultTypes.BranchCurrent:
+            labels = self.branch_names
+            data = self.Ibranch
+            y_label = '(kA)'
+            title = 'Branch current '
 
-            elif result_type == ResultTypes.BranchActivePower:
-                data = self.Sbranch[:, indices].real
-                y_label = '(MW)'
-                title = 'Branch power '
+        elif result_type == ResultTypes.BranchActiveCurrent:
+            labels = self.branch_names
+            data = self.Ibranch.real
+            y_label = '(p.u.)'
+            title = 'Branch current '
 
-            elif result_type == ResultTypes.BranchReactivePower:
-                data = self.Sbranch[:, indices].imag
-                y_label = '(MVAr)'
-                title = 'Branch power '
+        elif result_type == ResultTypes.BranchReactiveCurrent:
+            labels = self.branch_names
+            data = self.Ibranch.imag
+            y_label = '(p.u.)'
+            title = 'Branch current '
 
-            elif result_type == ResultTypes.BranchCurrent:
-                data = self.Ibranch[:, indices]
-                y_label = '(kA)'
-                title = 'Branch current '
+        elif result_type == ResultTypes.BranchLoading:
+            labels = self.branch_names
+            data = np.abs(self.loading) * 100
+            y_label = '(%)'
+            title = 'Branch loading '
 
-            elif result_type == ResultTypes.BranchActiveCurrent:
-                data = self.Ibranch[:, indices].real
-                y_label = '(p.u.)'
-                title = 'Branch current '
+        elif result_type == ResultTypes.BranchLosses:
+            labels = self.branch_names
+            data = self.losses
+            y_label = '(MVA)'
+            title = 'Branch losses'
 
-            elif result_type == ResultTypes.BranchReactiveCurrent:
-                data = self.Ibranch[:, indices].imag
-                y_label = '(p.u.)'
-                title = 'Branch current '
+        elif result_type == ResultTypes.BranchActiveLosses:
+            labels = self.branch_names
+            data = self.losses.real
+            y_label = '(MW)'
+            title = 'Branch losses'
 
-            elif result_type == ResultTypes.BranchLoading:
-                data = np.abs(self.loading[:, indices]) * 100
-                y_label = '(%)'
-                title = 'Branch loading '
+        elif result_type == ResultTypes.BranchReactiveLosses:
+            labels = self.branch_names
+            data = self.losses.imag
+            y_label = '(MVAr)'
+            title = 'Branch losses'
 
-            elif result_type == ResultTypes.BranchLosses:
-                data = self.losses[:, indices]
-                y_label = '(MVA)'
-                title = 'Branch losses'
+        elif result_type == ResultTypes.BranchVoltage:
+            labels = self.branch_names
+            data = np.abs(self.Vbranch)
+            y_label = '(p.u.)'
+            title = result_type.value[0]
 
-            elif result_type == ResultTypes.BranchActiveLosses:
-                data = self.losses[:, indices].real
-                y_label = '(MW)'
-                title = 'Branch losses'
+        elif result_type == ResultTypes.BranchAngles:
+            labels = self.branch_names
+            data = np.angle(self.Vbranch, deg=True)
+            y_label = '(deg)'
+            title = result_type.value[0]
 
-            elif result_type == ResultTypes.BranchReactiveLosses:
-                data = self.losses[:, indices].imag
-                y_label = '(MVAr)'
-                title = 'Branch losses'
+        elif result_type == ResultTypes.BatteryPower:
+            labels = self.branch_names
+            data = np.zeros_like(self.losses)
+            y_label = '$\Delta$ (MVA)'
+            title = 'Battery power'
 
-            elif result_type == ResultTypes.BranchVoltage:
-                data = np.abs(self.Vbranch[:, indices])
-                y_label = '(p.u.)'
-                title = result_type.value[0]
-
-            elif result_type == ResultTypes.BranchAngles:
-                data = np.angle(self.Vbranch[:, indices], deg=True)
-                y_label = '(deg)'
-                title = result_type.value[0]
-
-            elif result_type == ResultTypes.BatteryPower:
-                data = np.zeros_like(self.losses[:, indices])
-                y_label = '$\Delta$ (MVA)'
-                title = 'Battery power'
-
-            elif result_type == ResultTypes.SimulationError:
-                data = self.error.reshape(-1, 1)
-                y_label = 'p.u.'
-                labels = ['Error']
-                title = 'Error'
-
-            else:
-                raise Exception('Result type not understood:' + str(result_type))
-
-            if self.time is not None:
-                index = self.time
-            else:
-                index = list(range(data.shape[0]))
-
-            # assemble model
-            mdl = ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
-            return mdl
+        elif result_type == ResultTypes.SimulationError:
+            data = self.error.reshape(-1, 1)
+            y_label = 'p.u.'
+            labels = ['Error']
+            title = 'Error'
 
         else:
-            return None
+            raise Exception('Result type not understood:' + str(result_type))
+
+        if self.time is not None:
+            index = self.time
+        else:
+            index = list(range(data.shape[0]))
+
+        # assemble model
+        mdl = ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
+        return mdl
 
 
 def kmeans_case_sampling(X, n_points=10):
@@ -601,121 +598,131 @@ class TimeSeries(QThread):
         :return: TimeSeriesResults instance
         """
 
-        # initialize the grid time series results we will append the island results with another function
-
-        n = self.grid.get_bus_number()
-        m = self.grid.get_branch_number()
-        time_series_results = TimeSeriesResults(n, m, time_array=self.grid.time_profile[time_indices])
-
         # compile the multi-circuit
-        numerical_circuit = self.grid.compile_time_series(opf_time_series_results=self.opf_time_series_results)
+        numerical_circuit = compile_time_circuit(circuit=self.grid,
+                                                 apply_temperature=False,
+                                                 branch_tolerance_mode=BranchImpedanceMode.Specified,
+                                                 opf_results=self.opf_time_series_results)
 
         # do the topological computation
-        calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
-                                                     ignore_single_node_islands=self.options.ignore_single_node_islands)
+        time_islands = split_time_circuit_into_islands(numeric_circuit=numerical_circuit,
+                                                       ignore_single_node_islands=self.options.ignore_single_node_islands)
+
+        # initialize the grid time series results we will append the island results with another function
+        time_series_results = TimeSeriesResults(n=numerical_circuit.nbus,
+                                                m=numerical_circuit.nbr,
+                                                n_tr=numerical_circuit.ntr,
+                                                n_hvdc=numerical_circuit.nhvdc,
+                                                bus_names=numerical_circuit.bus_names,
+                                                branch_names=numerical_circuit.branch_names,
+                                                transformer_names=numerical_circuit.tr_names,
+                                                hvdc_names=numerical_circuit.hvdc_names,
+                                                bus_types=numerical_circuit.bus_types,
+                                                time_array=self.grid.time_profile[time_indices])
 
         time_series_results.bus_types = numerical_circuit.bus_types
 
-        # for each partition of the profiles...
-        for t_key, calc_inputs in calc_inputs_dict.items():
+        # For every island, run the time series
+        for island_index, calculation_input in enumerate(time_islands):
 
-            # For every island, run the time series
-            for island_index, calculation_input in enumerate(calc_inputs):
+            # Are we dispatching storage? if so, generate a dictionary of battery -> bus index
+            # to be able to set the batteries values into the vector S
+            batteries = list()
+            batteries_bus_idx = list()
+            if self.options.dispatch_storage:
+                for k, bus in enumerate(self.grid.buses):
+                    for battery in bus.batteries:
+                        battery.reset()  # reset the calculation values
+                        batteries.append(battery)
+                        batteries_bus_idx.append(k)
 
-                # Are we dispatching storage? if so, generate a dictionary of battery -> bus index
-                # to be able to set the batteries values into the vector S
-                batteries = list()
-                batteries_bus_idx = list()
+            self.progress_text.emit('Time series at circuit ' + str(island_index) + '...')
+
+            # find the original indices
+            bus_original_idx = calculation_input.original_bus_idx
+            branch_original_idx = calculation_input.original_branch_idx
+
+            # declare a results object for the partition
+            results = TimeSeriesResults(n=calculation_input.nbus,
+                                        m=calculation_input.nbr,
+                                        n_tr=calculation_input.ntr,
+                                        n_hvdc=calculation_input.nhvdc,
+                                        bus_names=calculation_input.bus_names,
+                                        branch_names=calculation_input.branch_names,
+                                        transformer_names=calculation_input.tr_names,
+                                        hvdc_names=calculation_input.hvdc_names,
+                                        bus_types=numerical_circuit.bus_types,
+                                        time_array=self.grid.time_profile[time_indices])
+
+            self.progress_signal.emit(0.0)
+
+            # default value in case of single-valued profile
+            dt = 1.0
+
+            # traverse the time profiles of the partition and simulate each time step
+            for it, t in enumerate(time_indices):
+
+                # set the power values
+                # if the storage dispatch option is active, the batteries power is not included
+                # therefore, it shall be included after processing
+                V = calculation_input.Vbus[it, :]
+                Ysh = calculation_input.Yshunt_from_devices[:, it]
+                I = calculation_input.Ibus[:, it]
+                S = calculation_input.Sbus[:, it]
+                branch_rates = calculation_input.branch_rates[it, :]
+
+                # add the controlled storage power if we are controlling the storage devices
                 if self.options.dispatch_storage:
-                    for k, bus in enumerate(self.grid.buses):
-                        for battery in bus.batteries:
-                            battery.reset()  # reset the calculation values
-                            batteries.append(battery)
-                            batteries_bus_idx.append(k)
 
-                self.progress_text.emit('Time series at circuit ' + str(island_index) + '...')
+                    if (it+1) < len(calculation_input.original_time_idx):
+                        # compute the time delta: the time values come in nanoseconds
+                        dt = (calculation_input.time_array[it + 1]
+                              - calculation_input.time_array[it]).value * 1e-9 / 3600.0
 
-                # find the original indices
-                bus_original_idx = calculation_input.original_bus_idx
-                branch_original_idx = calculation_input.original_branch_idx
+                    for k, battery in enumerate(batteries):
 
-                # if there are valid profiles...
-                if self.grid.time_profile is not None:
+                        power = battery.get_processed_at(it, dt=dt, store_values=True)
 
-                    # declare a results object for the partition
-                    results = TimeSeriesResults(n=calculation_input.nbus,
-                                                m=calculation_input.nbr,
-                                                time_array=self.grid.time_profile[time_indices])
-                    last_voltage = calculation_input.Vbus
+                        bus_idx = batteries_bus_idx[k]
 
-                    self.progress_signal.emit(0.0)
+                        S[bus_idx] += power / calculation_input.Sbase
 
-                    # default value in case of single-valued profile
-                    dt = 1.0
+                # run power flow at the circuit
+                res = single_island_pf(circuit=calculation_input,
+                                       Vbus=V,
+                                       Sbus=S,
+                                       Ibus=I,
+                                       branch_rates=branch_rates,
+                                       options=self.options,
+                                       logger=self.logger)
 
-                    # traverse the time profiles of the partition and simulate each time step
-                    for it, t in enumerate(time_indices):
+                # Recycle voltage solution
+                # last_voltage = res.voltage
 
-                        # set the power values
-                        # if the storage dispatch option is active, the batteries power is not included
-                        # therefore, it shall be included after processing
-                        Ysh = calculation_input.Ysh_prof[:, it]
-                        I = calculation_input.Ibus_prof[:, it]
-                        S = calculation_input.Sbus_prof[:, it]
-                        branch_rates = calculation_input.branch_rates_prof[it, :]
+                # store circuit results at the time index 'it'
+                results.set_at(it, res)
 
-                        # add the controlled storage power if we are controlling the storage devices
-                        if self.options.dispatch_storage:
+                progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
+                self.progress_signal.emit(progress)
+                self.progress_text.emit('Simulating island ' + str(island_index)
+                                        + ' at ' + str(self.grid.time_profile[t]))
 
-                            if (it+1) < len(calculation_input.original_time_idx):
-                                # compute the time delta: the time values come in nanoseconds
-                                dt = (calculation_input.time_array[it + 1]
-                                      - calculation_input.time_array[it]).value * 1e-9 / 3600.0
-
-                            for k, battery in enumerate(batteries):
-
-                                power = battery.get_processed_at(it, dt=dt, store_values=True)
-
-                                bus_idx = batteries_bus_idx[k]
-
-                                S[bus_idx] += power / calculation_input.Sbase
-
-                        # run power flow at the circuit
-                        res = single_island_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I,
-                                               branch_rates=branch_rates,
-                                               options=self.options, logger=self.logger)
-
-                        # Recycle voltage solution
-                        # last_voltage = res.voltage
-
-                        # store circuit results at the time index 'it'
-                        results.set_at(it, res)
-
-                        progress = ((t - self.start_ + 1) / (self.end_ - self.start_)) * 100
-                        self.progress_signal.emit(progress)
-                        self.progress_text.emit('Simulating island ' + str(island_index)
-                                                + ' at ' + str(self.grid.time_profile[t]))
-
-                        if self.__cancel__:
-                            # merge the circuit's results
-                            time_series_results.apply_from_island(results,
-                                                                  bus_original_idx,
-                                                                  branch_original_idx,
-                                                                  time_indices,
-                                                                  'TS')
-                            # abort by returning at this point
-                            return time_series_results
-
+                if self.__cancel__:
                     # merge the circuit's results
                     time_series_results.apply_from_island(results,
                                                           bus_original_idx,
                                                           branch_original_idx,
                                                           time_indices,
                                                           'TS')
+                    # abort by returning at this point
+                    return time_series_results
 
-                else:
-                    print('There are no profiles')
-                    self.progress_text.emit('There are no profiles')
+            # merge the circuit's results
+            time_series_results.apply_from_island(results,
+                                                  bus_original_idx,
+                                                  branch_original_idx,
+                                                  time_indices,
+                                                  'TS')
 
         return time_series_results
 
@@ -759,7 +766,7 @@ class TimeSeries(QThread):
 
         # initialize the grid time series results, we will append the island results with another function
         n = len(self.grid.buses)
-        m = self.circuit.get_branch_number()
+        m = self.grid.get_branch_number()
         time_series_results = TimeSeriesResults(n, m, time_array=self.grid.time_profile[time_indices])
 
         n_cores = multiprocessing.cpu_count()
@@ -835,7 +842,7 @@ class TimeSeries(QThread):
 
         # initialize the grid time series results, we will append the island results with another function
         n = len(self.grid.buses)
-        m = self.circuit.get_branch_number()
+        m = self.grid.get_branch_number()
         nt = len(time_indices)
         time_series_results = TimeSeriesResults(n, m, time_array=self.grid.time_profile[time_indices])
 
@@ -992,10 +999,9 @@ class SampledTimeSeries(QThread):
 
         # initialize the grid time series results we will append the island results with another function
         n = len(self.grid.buses)
-        m = self.circuit.get_branch_number()
+        m = self.grid.get_branch_number()
         nt = self.number_of_steps
-        time_series_results = TimeSeriesResults(n, m, nt, start=0, end=self.number_of_steps,
-                                                time_array=self.grid.time_profile[self.steps])
+        time_series_results = TimeSeriesResults(n, m, time_array=self.grid.time_profile[self.steps])
 
         # compile the multi-circuit
         numerical_circuit = self.grid.compile_time_series(opf_time_series_results=self.opf_time_series_results)
@@ -1074,9 +1080,13 @@ class SampledTimeSeries(QThread):
                             pass
 
                         # run power flow at the circuit
-                        res = single_island_pf(circuit=calculation_input, Vbus=last_voltage, Sbus=S, Ibus=I,
+                        res = single_island_pf(circuit=calculation_input,
+                                               Vbus=last_voltage,
+                                               Sbus=S,
+                                               Ibus=I,
                                                branch_rates=branch_rates,
-                                               options=self.options, logger=self.logger)
+                                               options=self.options,
+                                               logger=self.logger)
 
                         # Recycle voltage solution
                         # last_voltage = res.voltage
@@ -1131,9 +1141,9 @@ class SampledTimeSeries(QThread):
 
         # initialize the grid time series results, we will append the island results with another function
         n = len(self.grid.buses)
-        m = self.circuit.get_branch_number()
+        m = self.grid.get_branch_number()
         nt = len(self.grid.time_profile)
-        time_series_results = TimeSeriesResults(n, m, nt, self.start_, self.end_, time_array=self.grid.time_profile)
+        time_series_results = TimeSeriesResults(n, m, nt, time_array=self.grid.time_profile)
 
         if self.end_ is None:
             self.end_ = nt

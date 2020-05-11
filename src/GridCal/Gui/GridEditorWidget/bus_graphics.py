@@ -16,139 +16,17 @@
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 from PySide2.QtGui import *
+
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Gui.GridEditorWidget.generic import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_buses
-from GridCal.Gui.GridEditorWidget.load import LoadGraphicItem
-from GridCal.Gui.GridEditorWidget.generator import GeneratorGraphicItem
-from GridCal.Gui.GridEditorWidget.static_generator import StaticGeneratorGraphicItem
-from GridCal.Gui.GridEditorWidget.battery import BatteryGraphicItem
-from GridCal.Gui.GridEditorWidget.shunt import ShuntGraphicItem
-
-
-class TerminalItem(QGraphicsRectItem):
-    """
-    Represents a connection point to a subsystem
-    """
-
-    def __init__(self, name, editor=None, parent=None, h=10, w=10):
-        """
-
-        @param name:
-        @param editor:
-        @param parent:
-        """
-
-        QGraphicsRectItem.__init__(self, QRectF(-6, -6, h, w), parent)
-        self.setCursor(QCursor(Qt.CrossCursor))
-
-        # Properties:
-        self.color = ACTIVE['color']
-        self.pen_width = 2
-        self.style = ACTIVE['style']
-        self.setBrush(Qt.darkGray)
-        self.setPen(QPen(self.color, self.pen_width, self.style))
-
-        # terminal parent object
-        self.parent = parent
-
-        self.hosting_connections = list()
-
-        self.editor = editor
-
-        # Name:
-        self.name = name
-        self.posCallbacks = list()
-        self.setFlag(self.ItemSendsScenePositionChanges, True)
-
-    def process_callbacks(self, value):
-
-        w = self.rect().width()
-        h2 = self.rect().height() / 2.0
-        n = len(self.posCallbacks)
-        dx = w / (n + 1)
-        for i, call_back in enumerate(self.posCallbacks):
-            call_back(value + QPointF((i + 1) * dx, h2))
-
-    def itemChange(self, change, value):
-        """
-
-        @param change:
-        @param value: This is a QPointF object with the coordinates of the upper left corner of the TerminalItem
-        @return:
-        """
-        if change == self.ItemScenePositionHasChanged:
-
-            self.process_callbacks(value)
-
-            return value
-
-        else:
-            return super(TerminalItem, self).itemChange(change, value)
-
-    def mousePressEvent(self, event):
-        """
-        Start a connection
-        Args:
-            event:
-
-        Returns:
-
-        """
-        self.editor.startConnection(self)
-        self.hosting_connections.append(self.editor.started_branch)
-
-    def remove_all_connections(self):
-        """
-        Removes all the terminal connections
-        Returns:
-
-        """
-        n = len(self.hosting_connections)
-        for i in range(n - 1, -1, -1):
-            self.hosting_connections[i].remove_widget()
-            self.hosting_connections.pop(i)
-
-
-class HandleItem(QGraphicsEllipseItem):
-    """
-    A handle that can be moved by the mouse: Element to resize the boxes
-    """
-
-    def __init__(self, parent=None):
-        """
-
-        @param parent:
-        """
-        QGraphicsEllipseItem.__init__(self, QRectF(-4, -4, 8, 8), parent)
-
-        self.posChangeCallbacks = []
-        self.setBrush(Qt.red)
-        self.setFlag(self.ItemIsMovable, True)
-        self.setFlag(self.ItemSendsScenePositionChanges, True)
-        self.setCursor(QCursor(Qt.SizeFDiagCursor))
-
-    def itemChange(self, change, value):
-        """
-
-        @param change:
-        @param value:
-        @return:
-        """
-        if change == self.ItemPositionChange:
-            x, y = value.x(), value.y()
-            # TODO: make this a signal?
-            # This cannot be a signal because this is not a QObject
-            for cb in self.posChangeCallbacks:
-                res = cb(x, y)
-                if res:
-                    x, y = res
-                    value = QPointF(x, y)
-            return value
-
-        # Call superclass method:
-        return super(HandleItem, self).itemChange(change, value)
+from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem, HandleItem
+from GridCal.Gui.GridEditorWidget.load_graphics import LoadGraphicItem
+from GridCal.Gui.GridEditorWidget.generator_graphics import GeneratorGraphicItem
+from GridCal.Gui.GridEditorWidget.static_generator_graphics import StaticGeneratorGraphicItem
+from GridCal.Gui.GridEditorWidget.battery_graphics import BatteryGraphicItem
+from GridCal.Gui.GridEditorWidget.shunt_graphics import ShuntGraphicItem
 
 
 class BusGraphicItem(QGraphicsRectItem):
@@ -388,50 +266,82 @@ class BusGraphicItem(QGraphicsRectItem):
         @return:
         """
         menu = QMenu()
+        menu.addSection("Bus")
 
-        pe = menu.addAction('Enable/Disable')
+        pe = menu.addAction('Active')
+        pe.setCheckable(True)
+        pe.setChecked(self.api_object.active)
         pe.triggered.connect(self.enable_disable_toggle)
 
         pl = menu.addAction('Plot profiles')
+        plot_icon = QIcon()
+        plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
+        pl.setIcon(plot_icon)
         pl.triggered.connect(self.plot_profiles)
 
-        menu.addSeparator()
+        arr = menu.addAction('Arrange')
+        arr_icon = QIcon()
+        arr_icon.addPixmap(QPixmap(":/Icons/icons/automatic_layout.svg"))
+        arr.setIcon(arr_icon)
+        arr.triggered.connect(self.arrange_children)
+
+        sc = menu.addAction('Short circuit')
+        sc_icon = QIcon()
+        sc_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
+        sc.setIcon(sc_icon)
+        sc.setCheckable(True)
+        sc.setChecked(self.sc_enabled)
+        sc.triggered.connect(self.enable_disable_sc)
 
         ra3 = menu.addAction('Delete all the connections')
+        del2_icon = QIcon()
+        del2_icon.addPixmap(QPixmap(":/Icons/icons/delete_conn.svg"))
+        ra3.setIcon(del2_icon)
         ra3.triggered.connect(self.delete_all_connections)
 
         da = menu.addAction('Delete')
+        del_icon = QIcon()
+        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+        da.setIcon(del_icon)
         da.triggered.connect(self.remove)
 
         re = menu.addAction('Reduce')
+        re_icon = QIcon()
+        re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
+        re.setIcon(re_icon)
         re.triggered.connect(self.reduce)
 
-        menu.addSeparator()
+        menu.addSection("Add")
 
-        al = menu.addAction('Add load')
+        al = menu.addAction('Load')
+        al_icon = QIcon()
+        al_icon.addPixmap(QPixmap(":/Icons/icons/add_load.svg"))
+        al.setIcon(al_icon)
         al.triggered.connect(self.add_load)
 
-        ash = menu.addAction('Add shunt')
+        ash = menu.addAction('Shunt')
+        ash_icon = QIcon()
+        ash_icon.addPixmap(QPixmap(":/Icons/icons/add_shunt.svg"))
+        ash.setIcon(ash_icon)
         ash.triggered.connect(self.add_shunt)
 
-        acg = menu.addAction('Add generator')
+        acg = menu.addAction('Generator')
+        acg_icon = QIcon()
+        acg_icon.addPixmap(QPixmap(":/Icons/icons/add_gen.svg"))
+        acg.setIcon(acg_icon)
         acg.triggered.connect(self.add_generator)
 
-        asg = menu.addAction('Add static generator')
+        asg = menu.addAction('Static generator')
+        asg_icon = QIcon()
+        asg_icon.addPixmap(QPixmap(":/Icons/icons/add_stagen.svg"))
+        asg.setIcon(asg_icon)
         asg.triggered.connect(self.add_static_generator)
 
-        ab = menu.addAction('Add battery')
+        ab = menu.addAction('Battery')
+        ab_icon = QIcon()
+        ab_icon.addPixmap(QPixmap(":/Icons/icons/add_batt.svg"))
+        ab.setIcon(ab_icon)
         ab.triggered.connect(self.add_battery)
-
-        menu.addSeparator()
-
-        arr = menu.addAction('Arrange')
-        arr.triggered.connect(self.arrange_children)
-
-        menu.addSeparator()
-
-        sc = menu.addAction('Enable/Disable \nShort circuit')
-        sc.triggered.connect(self.enable_disable_sc)
 
         menu.exec_(event.screenPos())
 
@@ -468,19 +378,20 @@ class BusGraphicItem(QGraphicsRectItem):
         """
         if self.api_object is not None:
             self.api_object.active = not self.api_object.active
-            # print('Enabled:', self.api_object.active)
 
             if self.api_object.active:
 
                 self.set_tile_color(QBrush(ACTIVE['color']))
 
                 for host in self.terminal.hosting_connections:
-                    host.set_enable(val=True)
+                    if host.api_object is not None:
+                        host.set_enable(val=True)
             else:
                 self.set_tile_color(QBrush(DEACTIVATED['color']))
 
                 for host in self.terminal.hosting_connections:
-                    host.set_enable(val=False)
+                    if host.api_object is not None:
+                        host.set_enable(val=False)
 
     def enable_disable_sc(self):
         """

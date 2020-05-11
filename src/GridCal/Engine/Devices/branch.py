@@ -21,11 +21,12 @@ from matplotlib import pyplot as plt
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.types import BranchType
-from GridCal.Engine.Devices.transformer import TransformerType
-from GridCal.Engine.Devices.sequence_line import SequenceLineType
+from GridCal.Engine.Devices.transformer import TransformerType, Transformer2W
+from GridCal.Engine.Devices.line import SequenceLineType, Line
+from GridCal.Engine.Devices.hvdc_line import HvdcLine
 from GridCal.Engine.Devices.underground_line import UndergroundLineType
 
-from GridCal.Engine.Devices.meta_devices import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 from GridCal.Engine.Devices.tower import Tower
 
 # Global sqrt of 3 (bad practice?)
@@ -182,6 +183,7 @@ class TapChanger:
 
 class Branch(EditableDevice):
     """
+    * This class exists for legacy reasons, use the Line or Transformer2w classes instead! *
     The **Branch** class represents the connections between nodes (i.e.
     :ref:`buses<bus>`) in **GridCal**. A branch is an element (cable, line, capacitor,
     transformer, etc.) with an electrical impedance. The basic **Branch** class
@@ -300,6 +302,7 @@ class Branch(EditableDevice):
                                 active=active,
                                 device_type=DeviceType.BranchDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the branch.'),
+                                                  'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
                                                                      'Name of the bus at the "from" side of the branch.'),
                                                   'bus_to': GCProp('', DeviceType.BusDevice,
@@ -679,21 +682,22 @@ class Branch(EditableDevice):
         Return the data that matches the edit_headers
         :return:
         """
-        # conv = BranchTypeConverter(None)
-
         data = list()
         for name, properties in self.editable_headers.items():
             obj = getattr(self, name)
 
             if properties.tpe == BranchType:
                 obj = self.branch_type.value
+
             elif properties.tpe == BranchTemplate:
                 if obj is None:
                     obj = ''
                 else:
                     obj = str(obj)
+
             elif properties.tpe not in [str, float, int, bool]:
                 obj = str(obj)
+
             data.append(obj)
         return data
 
@@ -704,27 +708,36 @@ class Branch(EditableDevice):
         :param bus_dict: Dictionary of buses [object] -> ID
         :return:
         """
-        return {'id': id,
-                'type': 'branch',
-                'phases': 'ps',
-                'name': self.name,
-                'from': bus_dict[self.bus_from],
-                'to': bus_dict[self.bus_to],
-                'active': self.active,
-                'rate': self.rate,
-                'r': self.R,
-                'x': self.X,
-                'g': self.G,
-                'b': self.B,
-                'length': self.length,
-                'tap_module': self.tap_module,
-                'bus_to_regulated': self.bus_to_regulated,
-                'vset': self.vset,
-                'temp_base': self.temp_base,
-                'temp_oper': self.temp_oper,
-                'alpha': self.alpha,
-                'tap_angle': self.angle,
-                'branch_type': self.branch_type}
+
+        d = {'id': id,
+             'type': 'branch',
+             'phases': 'ps',
+             'name': self.name,
+             'from': bus_dict[self.bus_from],
+             'to': bus_dict[self.bus_to],
+             'active': self.active,
+             'rate': self.rate,
+             'r': self.R,
+             'x': self.X,
+             'g': self.G,
+             'b': self.B,
+             'length': self.length,
+             'tap_module': self.tap_module,
+             'bus_to_regulated': self.bus_to_regulated,
+             'vset': self.vset,
+             'temp_base': self.temp_base,
+             'temp_oper': self.temp_oper,
+             'alpha': self.alpha,
+             'tap_angle': self.angle,
+             'branch_type': str(self.branch_type),
+             'active_profile': [],
+             'rate_prof': []}
+
+        if self.active_prof is not None:
+            d['active_profile'] = self.active_prof.tolist()
+            d['rate_prof'] = self.rate_prof.tolist()
+
+        return d
 
     def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
         """
@@ -767,3 +780,65 @@ class Branch(EditableDevice):
         Get the branch defining coordinates
         """
         return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]
+
+
+def convert_branch(branch: Branch):
+    """
+
+    :param branch:
+    :return:
+    """
+    if branch.branch_type == BranchType.Line:
+
+        return Line(bus_from=branch.bus_from,
+                    bus_to=branch.bus_to,
+                    name=branch.name,
+                    r=branch.R,
+                    x=branch.X,
+                    b=branch.B,
+                    rate=branch.rate,
+                    active=branch.active,
+                    tolerance=branch.tolerance,
+                    cost=branch.Cost,
+                    mttf=branch.mttf,
+                    mttr=branch.mttr,
+                    r_fault=branch.r_fault,
+                    x_fault=branch.x_fault,
+                    fault_pos=branch.fault_pos,
+                    length=branch.length,
+                    temp_base=branch.temp_base,
+                    temp_oper=branch.temp_oper,
+                    alpha=branch.alpha,
+                    rate_prof=branch.rate_prof,
+                    Cost_prof=branch.Cost_prof,
+                    active_prof=branch.active_prof,
+                    temp_oper_prof=branch.temp_oper_prof)
+
+    elif branch.branch_type == BranchType.Transformer:
+
+        return Transformer2W(bus_from=branch.bus_from,
+                             bus_to=branch.bus_to,
+                             name=branch.name,
+                             r=branch.R,
+                             x=branch.X,
+                             b=branch.B,
+                             rate=branch.rate,
+                             active=branch.active,
+                             tolerance=branch.tolerance,
+                             cost=branch.Cost,
+                             mttf=branch.mttf,
+                             mttr=branch.mttr,
+                             tap=branch.tap_module,
+                             shift_angle=branch.angle,
+                             vset=branch.vset,
+                             bus_to_regulated=branch.bus_to_regulated,
+                             temp_base=branch.temp_base,
+                             temp_oper=branch.temp_oper,
+                             alpha=branch.alpha,
+                             template=branch.template,
+                             rate_prof=branch.rate_prof,
+                             Cost_prof=branch.Cost_prof,
+                             active_prof=branch.active_prof,
+                             temp_oper_prof=branch.temp_oper_prof)
+    else:
+        return branch

@@ -41,11 +41,18 @@ class OptimalPowerFlowResults:
         **converged**: converged?
     """
 
-    def __init__(self, Sbus=None, voltage=None, load_shedding=None, generation_shedding=None,
+    def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names,
+                 Sbus=None, voltage=None, load_shedding=None, generation_shedding=None,
                  battery_power=None, controlled_generation_power=None,
                  Sbranch=None, overloads=None, loading=None, losses=None, converged=None, bus_types=None):
 
         self.name = 'OPF'
+
+        self.bus_names = bus_names
+        self.branch_names = branch_names
+        self.load_names = load_names
+        self.generator_names = generator_names
+        self.battery_names = battery_names
 
         self.Sbus = Sbus
 
@@ -67,7 +74,7 @@ class OptimalPowerFlowResults:
 
         self.battery_power = battery_power
 
-        self.controlled_generation_power = controlled_generation_power
+        self.generators_power = controlled_generation_power
 
         self.flow_direction = None
 
@@ -90,7 +97,12 @@ class OptimalPowerFlowResults:
         Return a copy of this
         @return:
         """
-        return OptimalPowerFlowResults(Sbus=self.Sbus,
+        return OptimalPowerFlowResults(bus_names=self.bus_names,
+                                       branch_names=self.branch_names,
+                                       load_names=self.load_names,
+                                       generator_names=self.generator_names,
+                                       battery_names=self.battery_names,
+                                       Sbus=self.Sbus,
                                        voltage=self.voltage,
                                        load_shedding=self.load_shedding,
                                        Sbranch=self.Sbranch,
@@ -98,7 +110,7 @@ class OptimalPowerFlowResults:
                                        loading=self.loading,
                                        generation_shedding=self.generation_shedding,
                                        battery_power=self.battery_power,
-                                       controlled_generation_power=self.controlled_generation_power,
+                                       controlled_generation_power=self.generators_power,
                                        converged=self.converged)
 
     def initialize(self, n, m):
@@ -126,84 +138,91 @@ class OptimalPowerFlowResults:
 
         self.plot_bars_limit = 100
 
-    def mdl(self, result_type, indices=None, names=None) -> "ResultsModel":
+    def mdl(self, result_type) -> "ResultsModel":
         """
         Plot the results
         :param result_type: type of results (string)
-        :param ax: matplotlib axis object
-        :param indices: element indices
-        :param names: element names
         :return: DataFrame of the results (or None if the result was not understood)
         """
 
-        if indices is None:
-            indices = np.array(range(len(names)))
+        if result_type == ResultTypes.BusVoltageModule:
+            labels = self.bus_names
+            y = np.abs(self.voltage)
+            y_label = '(p.u.)'
+            title = 'Bus voltage module'
 
-        if len(indices) > 0:
-            labels = names[indices]
-            y_label = ''
-            title = ''
-            if result_type == ResultTypes.BusVoltageModule:
-                y = np.abs(self.voltage[indices])
-                y_label = '(p.u.)'
-                title = 'Bus voltage module'
+        elif result_type == ResultTypes.BusVoltageAngle:
+            labels = self.bus_names
+            y = np.angle(self.voltage)
+            y_label = '(Radians)'
+            title = 'Bus voltage angle'
 
-            if result_type == ResultTypes.BusVoltageAngle:
-                y = np.angle(self.voltage[indices])
-                y_label = '(Radians)'
-                title = 'Bus voltage angle'
+        elif result_type == ResultTypes.BranchPower:
+            labels = self.branch_names
+            y = self.Sbranch.real
+            y_label = '(MW)'
+            title = 'Branch power'
 
-            elif result_type == ResultTypes.BranchPower:
-                y = self.Sbranch[indices].real
-                y_label = '(MW)'
-                title = 'Branch power '
+        elif result_type == ResultTypes.BusPower:
+            labels = self.bus_names
+            y = self.Sbus.real
+            y_label = '(MW)'
+            title = 'Bus power'
 
-            elif result_type == ResultTypes.BusPower:
-                y = self.Sbus[indices].real
-                y_label = '(MW)'
-                title = 'Bus power '
+        elif result_type == ResultTypes.BranchLoading:
+            labels = self.branch_names
+            y = np.abs(self.loading * 100.0)
+            y_label = '(%)'
+            title = 'Branch loading'
 
-            elif result_type == ResultTypes.BranchLoading:
-                y = np.abs(self.loading[indices] * 100.0)
-                y_label = '(%)'
-                title = 'Branch loading '
+        elif result_type == ResultTypes.BranchOverloads:
+            labels = self.branch_names
+            y = np.abs(self.overloads)
+            y_label = '(MW)'
+            title = 'Branch overloads'
 
-            elif result_type == ResultTypes.BranchOverloads:
-                y = np.abs(self.overloads[indices])
-                y_label = '(MW)'
-                title = 'Branch overloads '
+        elif result_type == ResultTypes.BranchLosses:
+            labels = self.branch_names
+            y = self.losses.real
+            y_label = '(MW)'
+            title = 'Branch losses'
 
-            elif result_type == ResultTypes.BranchLosses:
-                y = self.losses[indices].real
-                y_label = '(MW)'
-                title = 'Branch losses '
+        elif result_type == ResultTypes.LoadShedding:
+            labels = self.load_names
+            y = self.load_shedding
+            y_label = '(MW)'
+            title = 'Load shedding'
 
-            elif result_type == ResultTypes.LoadShedding:
-                y = self.load_shedding[indices]
-                y_label = '(MW)'
-                title = 'Load shedding'
+        elif result_type == ResultTypes.ControlledGeneratorShedding:
+            labels = self.generator_names
+            y = self.generation_shedding
+            y_label = '(MW)'
+            title = 'Controlled generator shedding'
 
-            elif result_type == ResultTypes.ControlledGeneratorShedding:
-                y = self.generation_shedding[indices]
-                y_label = '(MW)'
-                title = 'Controlled generator shedding'
+        elif result_type == ResultTypes.ControlledGeneratorPower:
+            labels = self.generator_names
+            y = self.generators_power
+            y_label = '(MW)'
+            title = 'Controlled generators power'
 
-            elif result_type == ResultTypes.ControlledGeneratorPower:
-                y = self.controlled_generation_power[indices]
-                y_label = '(MW)'
-                title = 'Controlled generators power'
+        elif result_type == ResultTypes.BatteryPower:
+            labels = self.battery_names
+            y = self.battery_power
+            y_label = '(MW)'
+            title = 'Battery power'
 
-            elif result_type == ResultTypes.BatteryPower:
-                y = self.battery_power[indices]
-                y_label = '(MW)'
-                title = 'Battery power'
-
-            else:
-                pass
-
-            mdl = ResultsModel(data=y, index=labels, columns=[result_type], title=title,
-                               ylabel=y_label, xlabel='', units=y_label)
-            return mdl
         else:
-            return None
+            labels = []
+            y = np.zeros(0)
+            y_label = '(MW)'
+            title = 'Battery power'
+
+        mdl = ResultsModel(data=y,
+                           index=labels,
+                           columns=[result_type.value[0]],
+                           title=title,
+                           ylabel=y_label,
+                           xlabel='',
+                           units=y_label)
+        return mdl
 

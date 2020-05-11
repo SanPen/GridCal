@@ -10,6 +10,10 @@ from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 
 
 def get_voltage_color_map():
+    """
+    Voltage Color map
+    :return: colormap
+    """
     vmax = 1.2
     seq = [(0 / vmax, 'black'),
            (0.8 / vmax, 'blue'),
@@ -22,6 +26,10 @@ def get_voltage_color_map():
 
 
 def get_loading_color_map():
+    """
+    Loading Color map
+    :return: colormap
+    """
     load_max = 1.5
     seq = [(0.0 / load_max, 'gray'),
            (0.8 / load_max, 'green'),
@@ -32,8 +40,10 @@ def get_loading_color_map():
     return loading_cmap
 
 
-def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, types=None, losses=None,
-                         failed_br_idx=None, loading_label='loading', file_name=None):
+def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings,
+                         types=None, losses=None,
+                         hvdc_sending_power=None, hvdc_losses=None, hvdc_loading=None,
+                         failed_br_idx=None, loading_label='loading'):
     """
     Color the grid based on the results passed
     :param circuit:
@@ -88,11 +98,12 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
             bus.graphic_obj.set_tile_color(QtCore.Qt.gray)
 
     # color branches
+    branches = circuit.get_branches_wo_hvdc()  # HVDC branches are coloured separately
+
     if s_branch is not None:
         lnorm = abs(loadings)
         lnorm[lnorm == np.inf] = 0
-
-        for i, branch in enumerate(circuit.branches):
+        for i, branch in enumerate(branches):
             if branch.graphic_obj is not None:
                 w = branch.graphic_obj.pen_width
                 if branch.active:
@@ -114,12 +125,35 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
 
     if failed_br_idx is not None:
         for i in failed_br_idx:
-            if circuit.branches[i].graphic_obj is not None:
-                w = circuit.branches[i].graphic_obj.pen_width
+            if branches[i].graphic_obj is not None:
+                w = branches[i].graphic_obj.pen_width
                 style = QtCore.Qt.DashLine
                 color = QtCore.Qt.gray
-                circuit.branches[i].graphic_obj.set_pen(QtGui.QPen(color, w, style))
+                branches[i].graphic_obj.set_pen(QtGui.QPen(color, w, style))
 
+    if hvdc_sending_power is not None:
+        for i, elm in enumerate(circuit.hvdc_lines):
+
+            if elm.graphic_obj is not None:
+                w = elm.graphic_obj.pen_width
+                if elm.active:
+                    style = QtCore.Qt.SolidLine
+                    r, g, b, a = loading_cmap(abs(hvdc_loading[i]))
+                    color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+                else:
+                    style = QtCore.Qt.DashLine
+                    color = QtCore.Qt.gray
+
+                tooltip = str(i) + ': ' + elm.name
+                tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(abs(hvdc_loading[i]) * 100) + ' [%]'
+
+                if hvdc_losses is not None:
+                    tooltip += '\nLosses: ' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
+
+                elm.graphic_obj.setToolTipText(tooltip)
+                elm.graphic_obj.set_pen(QtGui.QPen(color, w, style))
+                elm.graphic_obj.symbol.setPen(QtGui.QPen(color, w, style))
+                elm.graphic_obj.symbol.setBrush(color)
 
 def get_base_map(location, zoom_start=5):
     """
@@ -214,8 +248,8 @@ def plot_html_map(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, ty
     # add lines
     lnorm = np.abs(loadings)
     lnorm[lnorm == np.inf] = 0
-
-    for i, branch in enumerate(circuit.branches):
+    branches = circuit.get_branches()
+    for i, branch in enumerate(branches):
 
         points = branch.get_coordinates()
 

@@ -52,7 +52,7 @@ grid.add_load(bus2, Load(P=40, Q=20))
 grid.add_load(bus3, Load(P=25, Q=15))
 grid.add_load(bus4, Load(P=40, Q=20))
 grid.add_load(bus5, Load(P=50, Q=20))
-grid.add_load(bus8, Load(P=50, Q=20))  # after HVDC load
+grid.add_load(bus8, Load(P=40, Q=20))  # after HVDC load
 
 ####################################################################################################################
 # Add the generators
@@ -64,19 +64,22 @@ grid.add_generator(bus1, Generator(name='gen', active_power=0.0))
 # Add the lines
 ####################################################################################################################
 
+grid.add_branch(VSC(bus5, bus6, name='VSC 5-6', r1=0.00001, x1=0.0005, m=1.0, theta=0.0, G0=1e-5, Beq=0.00001, rate=30))
+grid.add_branch(DCLine(bus6, bus7, name='DC line 6-7 (1)', r1=0.001, rate=30))
+grid.add_branch(DCLine(bus6, bus7, name='DC line 6-7 (2)', r1=0.001, rate=30))
+
+
 grid.add_branch(Branch(bus1, bus3, name='Line 1-2', r=0.05, x=0.11, b=0.02, rate=50))
 grid.add_branch(Branch(bus1, bus3, name='Line 1-3', r=0.05, x=0.11, b=0.02, rate=50))
-grid.add_branch(Branch(bus1, bus5, name='Line 1-5', r=0.03, x=0.08, b=0.02, rate=80))
-grid.add_branch(Branch(bus2, bus3, name='Line 2-3', r=0.04, x=0.09, b=0.02, rate=3))
+grid.add_branch(Branch(bus1, bus5, name='Line 1-5', r=0.03, x=0.08, b=0.02, rate=100))
+grid.add_branch(Branch(bus2, bus3, name='Line 2-3', r=0.04, x=0.09, b=0.02, rate=30))
 grid.add_branch(Branch(bus2, bus5, name='Line 2-5', r=0.04, x=0.09, b=0.02, rate=10))
 grid.add_branch(Branch(bus3, bus4, name='Line 3-4', r=0.06, x=0.13, b=0.03, rate=30))
 grid.add_branch(Branch(bus4, bus5, name='Line 4-5', r=0.04, x=0.09, b=0.02, rate=30))
 
-grid.add_branch(VSC(bus5, bus6, name='VSC 5-6', r1=0.0001, x1=0.05, m=0.9, theta=0.01, G0=1e-5, Beq=0.001, rate=30))
-grid.add_branch(DCLine(bus6, bus7, name='DC line 6-7 (1)', r1=0.1, rate=30))
-grid.add_branch(DCLine(bus6, bus7, name='DC line 6-7 (2)', r1=0.1, rate=30))
-grid.add_branch(VSC(bus7, bus8, name='VSC 7-8', r1=0.0001, x1=0.05, m=1.0, theta=0.01, G0=1e-5, Beq=0.01, rate=30))
+grid.add_branch(VSC(bus7, bus8, name='VSC 7-8', r1=0.00001, x1=0.0005, m=1.05, theta=0.0, G0=1e-5, Beq=0.00001, rate=30))
 
+FileSave(grid, 'hvdc.gridcal').save()
 ####################################################################################################################
 # Run a power flow simulation
 ####################################################################################################################

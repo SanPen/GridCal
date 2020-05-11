@@ -16,7 +16,7 @@
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
-from GridCal.Engine.IO.pack_unpack import create_data_frames
+from GridCal.Engine.IO.pack_unpack import create_data_frames, get_objects_dictionary
 from GridCal.Engine.IO.generic_io_functions import parse_config_df
 
 
@@ -34,29 +34,29 @@ def check_names(names):
                             'Did you create this file manually? Use GridCal instead.')
 
 
-def get_objects_dictionary(circuit=MultiCircuit()):
-    """
-
-    :param circuit:
-    :return:
-    """
-    object_types = {'bus': [Bus(),
-                            circuit.buses],
-                    'branch': [Branch(None, None),
-                               circuit.branches],
-                    'load': [Load(),
-                             circuit.get_loads()],
-                    'static_generator': [StaticGenerator(),
-                                         circuit.get_static_generators()],
-                    'battery': [Battery(),
-                                circuit.get_batteries()],
-                    'generator': [Generator(),
-                                  circuit.get_generators()],
-                    'shunt': [Shunt(),
-                              circuit.get_shunts()]
-                    }
-
-    return object_types
+# def get_objects_dictionary(circuit=MultiCircuit()):
+#     """
+#
+#     :param circuit:
+#     :return:
+#     """
+#     object_types = {'bus': [Bus(),
+#                             circuit.get_buses()],
+#                     'branch': [Branch(None, None),
+#                                circuit.get_branches()],
+#                     'load': [Load(),
+#                              circuit.get_loads()],
+#                     'static_generator': [StaticGenerator(),
+#                                          circuit.get_static_generators()],
+#                     'battery': [Battery(),
+#                                 circuit.get_batteries()],
+#                     'generator': [Generator(),
+#                                   circuit.get_generators()],
+#                     'shunt': [Shunt(),
+#                               circuit.get_shunts()]
+#                     }
+#
+#     return object_types
 
 
 def get_allowed_sheets(circuit=MultiCircuit()):
@@ -68,7 +68,7 @@ def get_allowed_sheets(circuit=MultiCircuit()):
     ########################################################################################################
     # declare objects to iterate  name: [sample object, list of objects, headers]
     ########################################################################################################
-    object_types = get_objects_dictionary(circuit)
+    object_types = get_objects_dictionary()
 
     ########################################################################################################
     # generic object iteration
@@ -100,7 +100,7 @@ def get_allowed_sheets(circuit=MultiCircuit()):
 
     for object_type_name in object_types.keys():
 
-        object_sample, lists_of_objects = object_types[object_type_name]
+        object_sample = object_types[object_type_name]
 
         for main_property, profile_property in object_sample.properties_with_profile.items():
 

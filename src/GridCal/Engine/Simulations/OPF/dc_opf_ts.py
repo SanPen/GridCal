@@ -17,11 +17,10 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
-
-from GridCal.Engine.basic_structures import MIPSolvers
-from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs
-from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
+from GridCal.Engine.basic_structures import MIPSolvers
+from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit, split_opf_time_circuit_into_islands
+
 from GridCal.ThirdParty.pulp import *
 
 
@@ -94,7 +93,7 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     return P
 
 
-def add_dc_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, start_, end_):
+def add_dc_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem: LpProblem, theta, P, start_, end_):
     """
     Add the nodal power balance
     :param numerical_circuit: NumericalCircuit instance
@@ -105,7 +104,7 @@ def add_dc_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, 
     """
 
     # do the topological computation
-    calc_inputs_dict = numerical_circuit.compute()
+    calc_inputs = split_opf_time_circuit_into_islands(numerical_circuit)
 
     # generate the time indices to simulate
     if end_ == -1:
@@ -113,45 +112,42 @@ def add_dc_nodal_power_balance(numerical_circuit, problem: LpProblem, theta, P, 
 
     nodal_restrictions = np.empty((numerical_circuit.nbus, end_ - start_), dtype=object)
 
-    # for each partition of the profiles...
-    for t_key, calc_inputs in calc_inputs_dict.items():
+    # For every island, run the time series
+    for i, calc_inpt in enumerate(calc_inputs):
 
-        # For every island, run the time series
-        for i, calc_inpt in enumerate(calc_inputs):
+        # find the original indices
+        bus_original_idx = np.array(calc_inpt.original_bus_idx)
 
-            # find the original indices
-            bus_original_idx = np.array(calc_inpt.original_bus_idx)
+        # re-pack the variables for the island and time interval
+        P_island = P[bus_original_idx, :]  # the sizes already reflect the correct time span
+        theta_island = theta[bus_original_idx, :]  # the sizes already reflect the correct time span
+        B_island = calc_inpt.Ybus.imag
 
-            # re-pack the variables for the island and time interval
-            P_island = P[bus_original_idx, :]  # the sizes already reflect the correct time span
-            theta_island = theta[bus_original_idx, :]  # the sizes already reflect the correct time span
-            B_island = calc_inpt.Ybus.imag
+        pqpv = calc_inpt.pqpv
+        vd = calc_inpt.vd
 
-            pqpv = calc_inpt.pqpv
-            vd = calc_inpt.ref
+        # Add nodal power balance for the non slack nodes
+        idx = bus_original_idx[pqpv]
+        nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
+                                                     lhs=lpDot(B_island[np.ix_(pqpv, pqpv)], theta_island[pqpv, :]),
+                                                     rhs=P_island[pqpv, :],
+                                                     name='Nodal_power_balance_pqpv_is' + str(i),
+                                                     op='=')
 
-            # Add nodal power balance for the non slack nodes
-            idx = bus_original_idx[pqpv]
-            nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
-                                                         lhs=lpDot(B_island[np.ix_(pqpv, pqpv)], theta_island[pqpv, :]),
-                                                         rhs=P_island[pqpv, :],
-                                                         name='Nodal_power_balance_pqpv_is' + str(i),
-                                                         op='=')
+        # Add nodal power balance for the slack nodes
+        idx = bus_original_idx[vd]
+        nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
+                                                     lhs=lpDot(B_island[vd, :], theta_island),
+                                                     rhs=P_island[vd, :],
+                                                     name='Nodal_power_balance_vd_is' + str(i),
+                                                     op='=')
 
-            # Add nodal power balance for the slack nodes
-            idx = bus_original_idx[vd]
-            nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
-                                                         lhs=lpDot(B_island[vd, :], theta_island),
-                                                         rhs=P_island[vd, :],
-                                                         name='Nodal_power_balance_vd_is' + str(i),
-                                                         op='=')
-
-            # slack angles equal to zero
-            lpAddRestrictions2(problem=problem,
-                               lhs=theta_island[vd, :],
-                               rhs=np.zeros_like(theta_island[vd, :]),
-                               name='Theta_vd_zero_is' + str(i),
-                               op='=')
+        # slack angles equal to zero
+        lpAddRestrictions2(problem=problem,
+                           lhs=theta_island[vd, :],
+                           rhs=np.zeros_like(theta_island[vd, :]),
+                           name='Theta_vd_zero_is' + str(i),
+                           op='=')
 
     return nodal_restrictions
 
@@ -231,7 +227,7 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
 
 class OpfDcTimeSeries(OpfTimeSeries):
 
-    def __init__(self, numerical_circuit: StaticSeriesInputs, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
+    def __init__(self, numerical_circuit: OpfTimeCircuit, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
                  batteries_energy_0=None):
         """
         DC time series linear optimal power flow
@@ -253,53 +249,52 @@ class OpfDcTimeSeries(OpfTimeSeries):
         :param batteries_energy_0: initial energy state of the batteries (if none, the default is taken)
         :return: PuLP Problem instance
         """
-        numerical_circuit = self.numerical_circuit
 
         # general indices
-        n = numerical_circuit.nbus
-        m = numerical_circuit.nbr
-        ng = numerical_circuit.n_ctrl_gen
-        nb = numerical_circuit.n_batt
-        nl = numerical_circuit.n_ld
+        n = self.numerical_circuit.nbus
+        m = self.numerical_circuit.nbr
+        ng = self.numerical_circuit.ngen
+        nb = self.numerical_circuit.nbatt
+        nl = self.numerical_circuit.nload
         nt = self.end_idx - self.start_idx
         a = self.start_idx
         b = self.end_idx
-        Sbase = numerical_circuit.Sbase
+        Sbase = self.numerical_circuit.Sbase
 
         # battery
-        Capacity = numerical_circuit.battery_Enom / Sbase
-        minSoC = numerical_circuit.battery_min_soc
-        maxSoC = numerical_circuit.battery_max_soc
+        Capacity = self.numerical_circuit.battery_enom / Sbase
+        minSoC = self.numerical_circuit.battery_min_soc
+        maxSoC = self.numerical_circuit.battery_max_soc
         if batteries_energy_0 is None:
-            SoC0 = numerical_circuit.battery_soc_0
+            SoC0 = self.numerical_circuit.battery_soc_0
         else:
             SoC0 = (batteries_energy_0 / Sbase) / Capacity
-        Pb_max = numerical_circuit.battery_pmax / Sbase
-        Pb_min = numerical_circuit.battery_pmin / Sbase
-        Efficiency = (numerical_circuit.battery_discharge_efficiency + numerical_circuit.battery_charge_efficiency) / 2.0
-        cost_b = numerical_circuit.battery_cost_profile[a:b, :].transpose()
+        Pb_max = self.numerical_circuit.battery_pmax / Sbase
+        Pb_min = self.numerical_circuit.battery_pmin / Sbase
+        Efficiency = (self.numerical_circuit.battery_discharge_efficiency + self.numerical_circuit.battery_charge_efficiency) / 2.0
+        cost_b = self.numerical_circuit.battery_cost[a:b, :].transpose()
 
         # generator
-        Pg_max = numerical_circuit.generator_pmax / Sbase
-        Pg_min = numerical_circuit.generator_pmin / Sbase
-        P_profile = numerical_circuit.generator_power_profile[a:b, :].transpose() / Sbase
-        cost_g = numerical_circuit.generator_cost_profile[a:b, :].transpose()
-        enabled_for_dispatch = numerical_circuit.generator_dispatchable
+        Pg_max = self.numerical_circuit.generator_pmax / Sbase
+        Pg_min = self.numerical_circuit.generator_pmin / Sbase
+        P_profile = self.numerical_circuit.generator_p[a:b, :].transpose() / Sbase
+        cost_g = self.numerical_circuit.generator_cost[a:b, :].transpose()
+        enabled_for_dispatch = self.numerical_circuit.generator_dispatchable
 
         # load
-        Pl = (numerical_circuit.load_active_prof[a:b, :] * numerical_circuit.load_power_profile.real[a:b, :]).transpose() / Sbase
-        cost_l = numerical_circuit.load_cost_prof[a:b, :].transpose()
+        Pl = (self.numerical_circuit.load_active[a:b, :] * self.numerical_circuit.load_s.real[a:b, :]).transpose() / Sbase
+        cost_l = self.numerical_circuit.load_cost[a:b, :].transpose()
 
         # branch
-        branch_ratings = numerical_circuit.br_rate_profile[a:b, :].transpose() / Sbase
-        Bseries = (numerical_circuit.branch_active_prof[a:b, :] * (
-                    1 / (numerical_circuit.R + 1j * numerical_circuit.X))).imag.transpose()
-        cost_br = numerical_circuit.branch_cost_profile[a:b, :].transpose()
+        branch_ratings = self.numerical_circuit.branch_rates[a:b, :].transpose() / Sbase
+        Bseries = (self.numerical_circuit.branch_active[a:b, :] * (
+                    1 / (self.numerical_circuit.branch_R + 1j * self.numerical_circuit.branch_X))).imag.transpose()
+        cost_br = self.numerical_circuit.branch_cost[a:b, :].transpose()
 
         # Compute time delta in hours
         dt = np.zeros(nt)  # here nt = end_idx - start_idx
         for t in range(1, nt):
-            dt[t - 1] = (numerical_circuit.time_array[a + t] - numerical_circuit.time_array[a + t - 1]).seconds / 3600
+            dt[t - 1] = (self.numerical_circuit.time_array[a + t] - self.numerical_circuit.time_array[a + t - 1]).seconds / 3600
 
         # create LP variables
         Pg = lpMakeVars(name='Pg', shape=(ng, nt), lower=Pg_min, upper=Pg_max)
@@ -307,8 +302,8 @@ class OpfDcTimeSeries(OpfTimeSeries):
         E = lpMakeVars(name='E', shape=(nb, nt), lower=Capacity * minSoC, upper=Capacity * maxSoC)
         load_slack = lpMakeVars(name='LSlack', shape=(nl, nt), lower=0, upper=None)
         theta = lpMakeVars(name='theta', shape=(n, nt), lower=-3.14, upper=3.14)
-        theta_f = theta[numerical_circuit.F, :]
-        theta_t = theta[numerical_circuit.T, :]
+        theta_f = theta[self.numerical_circuit.F, :]
+        theta_t = theta[self.numerical_circuit.T, :]
         branch_rating_slack1 = lpMakeVars(name='FSlack1', shape=(m, nt), lower=0, upper=None)
         branch_rating_slack2 = lpMakeVars(name='FSlack2', shape=(m, nt), lower=0, upper=None)
 
@@ -324,16 +319,16 @@ class OpfDcTimeSeries(OpfTimeSeries):
                            enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the power injections
-        P = get_power_injections(C_bus_gen=numerical_circuit.C_bus_gen,
+        P = get_power_injections(C_bus_gen=self.numerical_circuit.C_bus_gen,
                                  Pg=Pg,
-                                 C_bus_bat=numerical_circuit.C_bus_batt,
+                                 C_bus_bat=self.numerical_circuit.C_bus_batt,
                                  Pb=Pb,
-                                 C_bus_load=numerical_circuit.C_bus_load,
+                                 C_bus_load=self.numerical_circuit.C_bus_load,
                                  LSlack=load_slack,
                                  Pl=Pl)
 
         # set the nodal restrictions
-        nodal_restrictions = add_dc_nodal_power_balance(numerical_circuit, problem, theta, P,
+        nodal_restrictions = add_dc_nodal_power_balance(self.numerical_circuit, problem, theta, P,
                                                         start_=self.start_idx, end_=self.end_idx)
 
         load_f, load_t = add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, branch_ratings,
@@ -364,8 +359,8 @@ if __name__ == '__main__':
 
     from GridCal.Engine import *
 
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
 
     main_circuit = FileOpen(fname).open()
@@ -401,7 +396,7 @@ if __name__ == '__main__':
     l = optimal_power_flow_time_series.results.loading
     print('Branch loading\n', l)
 
-    g = optimal_power_flow_time_series.results.controlled_generator_power
+    g = optimal_power_flow_time_series.results.generator_power
     print('Gen power\n', g)
 
     pr = optimal_power_flow_time_series.results.shadow_prices

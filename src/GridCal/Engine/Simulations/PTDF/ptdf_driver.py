@@ -21,6 +21,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PTDF.ptdf_analysis import get_ptdf_variations, power_flow_worker, PtdfGroupMode
 from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFResults
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
 
 ########################################################################################################################
 # Optimal Power flow classes
@@ -50,7 +51,7 @@ class PTDF(QThread):
     done_signal = Signal()
     name = 'PTDF'
 
-    def __init__(self, grid: MultiCircuit, options: PTDFOptions, pf_options: PowerFlowOptions):
+    def __init__(self, grid: MultiCircuit, options: PTDFOptions, pf_options: PowerFlowOptions, opf_results=None):
         """
         Power Transfer Distribution Factors class constructor
         @param grid: MultiCircuit Object
@@ -66,6 +67,8 @@ class PTDF(QThread):
 
         # power flow options
         self.pf_options = pf_options
+
+        self.opf_results = opf_results
 
         # OPF results
         self.results = None
@@ -96,10 +99,13 @@ class PTDF(QThread):
             text_func('Compiling...')
 
         # compile to arrays
-        numerical_circuit = circuit.compile_snapshot()
-        calculation_inputs = numerical_circuit.compute(apply_temperature=options.apply_temperature_correction,
-                                                       branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-                                                       ignore_single_node_islands=options.ignore_single_node_islands)
+        numerical_circuit = compile_snapshot_circuit(circuit=circuit,
+                                                     apply_temperature=options.apply_temperature_correction,
+                                                     branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+                                                     opf_results=self.opf_results)
+
+        calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,
+                                                ignore_single_node_islands=options.ignore_single_node_islands)
 
         # compute the variations
         delta_of_power_variations = get_ptdf_variations(circuit=circuit,
@@ -126,6 +132,11 @@ class PTDF(QThread):
             power_flow_worker(variation=0,
                               nbus=numerical_circuit.nbus,
                               nbr=numerical_circuit.nbr,
+                              n_tr=numerical_circuit.ntr,
+                              bus_names=numerical_circuit.bus_names,
+                              branch_names=numerical_circuit.branch_names,
+                              transformer_names=numerical_circuit.tr_names,
+                              bus_types=numerical_circuit.bus_types,
                               calculation_inputs=calculation_inputs,
                               options=options,
                               dP=variation.dP,
@@ -166,10 +177,18 @@ class PTDF(QThread):
             text_func('Compiling...')
 
         # compile to arrays
-        numerical_circuit = circuit.compile_snapshot()
-        calculation_inputs = numerical_circuit.compute(apply_temperature=options.apply_temperature_correction,
-                                                       branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-                                                       ignore_single_node_islands=options.ignore_single_node_islands)
+        # numerical_circuit = circuit.compile_snapshot()
+        # calculation_inputs = numerical_circuit.compute(apply_temperature=options.apply_temperature_correction,
+        #                                                branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+        #                                                ignore_single_node_islands=options.ignore_single_node_islands)
+
+        numerical_circuit = compile_snapshot_circuit(circuit=circuit,
+                                                     apply_temperature=options.apply_temperature_correction,
+                                                     branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+                                                     opf_results=self.opf_results)
+
+        calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,
+                                                ignore_single_node_islands=options.ignore_single_node_islands)
 
         # compute the variations
         delta_of_power_variations = get_ptdf_variations(circuit=circuit,
@@ -205,6 +224,11 @@ class PTDF(QThread):
                 p = multiprocessing.Process(target=power_flow_worker, args=(v,
                                                                             numerical_circuit.nbus,
                                                                             numerical_circuit.nbr,
+                                                                            numerical_circuit.ntr,
+                                                                            numerical_circuit.bus_names,
+                                                                            numerical_circuit.branch_names,
+                                                                            numerical_circuit.tr_names,
+                                                                            numerical_circuit.bus_types,
                                                                             calculation_inputs,
                                                                             options,
                                                                             delta_of_power_variations[v].dP,

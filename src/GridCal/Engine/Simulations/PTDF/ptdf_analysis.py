@@ -18,7 +18,7 @@ from enum import Enum
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_static_inputs import StaticSnapshotInputs, StaticSnapshotIslandInputs
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotCircuit, SnapshotIsland
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFVariation
@@ -52,7 +52,7 @@ def group_generators_by_technology(circuit: MultiCircuit):
     return groups
 
 
-def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: StaticSnapshotInputs, group_mode: PtdfGroupMode, power_amount):
+def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: SnapshotCircuit, group_mode: PtdfGroupMode, power_amount):
     """
     Get the PTDF variations
     :param circuit: MultiCircuit instance
@@ -94,10 +94,10 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: StaticSnapshot
     elif group_mode == PtdfGroupMode.ByGenLoad:
 
         # add the generation variations
-        for i in range(numerical_circuit.n_ctrl_gen):
+        for i in range(numerical_circuit.ngen):
 
             # generate array of zeros, and modify the generation for the particular generator
-            dPg = np.zeros(numerical_circuit.n_ctrl_gen)
+            dPg = np.zeros(numerical_circuit.ngen)
             dPg[i] = power
 
             # declare the variation object
@@ -112,10 +112,10 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: StaticSnapshot
             variations.append(var)
 
         # add the load variations
-        for i in range(numerical_circuit.n_ld):
+        for i in range(numerical_circuit.nload):
 
             # generate array of zeros, and modify the generation for the particular generator
-            dPg = np.zeros(numerical_circuit.n_ld)
+            dPg = np.zeros(numerical_circuit.nload)
             dPg[i] = -power
 
             # declare the variation object
@@ -152,13 +152,18 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: StaticSnapshot
     return variations
 
 
-def power_flow_worker(variation: int, nbus, nbr, calculation_inputs: List[StaticSnapshotIslandInputs],
-                      options: PowerFlowOptions, dP, return_dict):
+def power_flow_worker(variation: int, nbus, nbr, n_tr, bus_names, branch_names, transformer_names, bus_types,
+                      calculation_inputs: List[SnapshotIsland], options: PowerFlowOptions, dP, return_dict):
     """
     Run asynchronous power flow
     :param variation: variation id
     :param nbus: number of buses
     :param nbr: number of branches
+    :param n_tr:
+    :param bus_names:
+    :param branch_names:
+    :param transformer_names:
+    :param bus_types:
     :param calculation_inputs: list of CalculationInputs' instances
     :param options: PowerFlowOptions instance
     :param dP: delta of active power (array of values of size nbus)
@@ -166,14 +171,22 @@ def power_flow_worker(variation: int, nbus, nbr, calculation_inputs: List[Static
     :return: Nothing because it is a worker, the return is done via the return_dict variable
     """
     # create new results
-    pf_results = PowerFlowResults()
-    pf_results.initialize(nbus, nbr)
+    pf_results = PowerFlowResults(n=nbus,
+                                  m=nbr,
+                                  n_tr=n_tr,
+                                  n_hvdc=0,
+                                  bus_names=bus_names,
+                                  branch_names=branch_names,
+                                  transformer_names=transformer_names,
+                                  hvdc_names=(),
+                                  bus_types=bus_types)
+
     logger = Logger()
 
     # simulate each island and merge the results
     for i, calculation_input in enumerate(calculation_inputs):
 
-        if len(calculation_input.ref) > 0:
+        if len(calculation_input.vd) > 0:
 
             # run circuit power flow
             res = single_island_pf(circuit=calculation_input,
@@ -184,11 +197,11 @@ def power_flow_worker(variation: int, nbus, nbr, calculation_inputs: List[Static
                                    options=options,
                                    logger=Logger())
 
-            bus_original_idx = calculation_input.original_bus_idx
-            branch_original_idx = calculation_input.original_branch_idx
-
             # merge the results from this island
-            pf_results.apply_from_island(res, bus_original_idx, branch_original_idx)
+            pf_results.apply_from_island(results=res,
+                                         b_idx=calculation_input.original_bus_idx,
+                                         br_idx=calculation_input.original_branch_idx,
+                                         tr_idx=calculation_input.original_tr_idx)
 
         else:
             logger.append('There are no slack nodes in the island ' + str(i))

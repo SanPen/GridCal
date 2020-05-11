@@ -25,7 +25,7 @@ from GridCal.Gui.GuiFunctions import ResultsModel
 
 class MonteCarloResults:
 
-    def __init__(self, n, m, p=0, name='Monte Carlo'):
+    def __init__(self, n, m, p, bus_names, branch_names, name='Monte Carlo'):
         """
         Constructor
         @param n: number of nodes
@@ -40,6 +40,10 @@ class MonteCarloResults:
         self.m = m
 
         self.points_number = p
+
+        self.bus_names = bus_names
+
+        self.branch_names = branch_names
 
         self.S_points = np.zeros((p, n), dtype=complex)
 
@@ -278,7 +282,7 @@ class MonteCarloResults:
 
         return idx, val, prob, cdf.arr[-1, :]
 
-    def mdl(self, result_type: ResultTypes, indices=None, names=None) -> "ResultsModel":
+    def mdl(self, result_type: ResultTypes) -> "ResultsModel":
         """
         Plot the results
         :param result_type:
@@ -287,127 +291,116 @@ class MonteCarloResults:
         :param names:
         :return:
         """
-
-        p, n = self.V_points.shape
-
         cdf_result_types = [ResultTypes.BusVoltageCDF,
                             ResultTypes.BusPowerCDF,
                             ResultTypes.BranchPowerCDF,
                             ResultTypes.BranchLoadingCDF,
                             ResultTypes.BranchLossesCDF]
 
-        if indices is None:
-            if names is None:
-                indices = np.arange(0, n, 1)
-                labels = None
-            else:
-                indices = np.array(range(len(names)))
-                labels = names[indices]
+        if result_type == ResultTypes.BusVoltageAverage:
+            labels = self.bus_names
+            y = self.v_avg_conv[1:-1, :]
+            y_label = '(p.u.)'
+            x_label = 'Sampling points'
+            title = 'Bus voltage \naverage convergence'
+
+        elif result_type == ResultTypes.BranchPowerAverage:
+            labels = self.branch_names
+            y = self.s_avg_conv[1:-1, :]
+            y_label = '(MW)'
+            x_label = 'Sampling points'
+            title = 'Branch power \naverage convergence'
+
+        elif result_type == ResultTypes.BranchLoadingAverage:
+            labels = self.branch_names
+            y = self.l_avg_conv[1:-1, :]
+            y_label = '(%)'
+            x_label = 'Sampling points'
+            title = 'Branch loading \naverage convergence'
+
+        elif result_type == ResultTypes.BranchLossesAverage:
+            labels = self.branch_names
+            y = self.loss_avg_conv[1:-1, :]
+            y_label = '(MVA)'
+            x_label = 'Sampling points'
+            title = 'Branch losses \naverage convergence'
+
+        elif result_type == ResultTypes.BusVoltageStd:
+            labels = self.bus_names
+            y = self.v_std_conv[1:-1, :]
+            y_label = '(p.u.)'
+            x_label = 'Sampling points'
+            title = 'Bus voltage standard \ndeviation convergence'
+
+        elif result_type == ResultTypes.BranchPowerStd:
+            labels = self.branch_names
+            y = self.s_std_conv[1:-1, :]
+            y_label = '(MW)'
+            x_label = 'Sampling points'
+            title = 'Branch power standard \ndeviation convergence'
+
+        elif result_type == ResultTypes.BranchLoadingStd:
+            labels = self.branch_names
+            y = self.l_std_conv[1:-1, :]
+            y_label = '(%)'
+            x_label = 'Sampling points'
+            title = 'Branch loading standard \ndeviation convergence'
+
+        elif result_type == ResultTypes.BranchLossesStd:
+            labels = self.branch_names
+            y = self.loss_std_conv[1:-1, :]
+            y_label = '(MVA)'
+            x_label = 'Sampling points'
+            title = 'Branch losses standard \ndeviation convergence'
+
+        elif result_type == ResultTypes.BusVoltageCDF:
+            labels = self.bus_names
+            cdf = CDF(np.abs(self.V_points))
+            y_label = '(p.u.)'
+            x_label = 'Probability $P(X \leq x)$'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.BranchLoadingCDF:
+            labels = self.branch_names
+            cdf = CDF(np.abs(self.loading_points.real))
+            y_label = '(p.u.)'
+            x_label = 'Probability $P(X \leq x)$'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.BranchLossesCDF:
+            labels = self.branch_names
+            cdf = CDF(np.abs(self.losses_points))
+            y_label = '(MVA)'
+            x_label = 'Probability $P(X \leq x)$'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.BranchPowerCDF:
+            labels = self.branch_names
+            cdf = CDF(self.Sbr_points.real)
+            y_label = '(MW)'
+            x_label = 'Probability $P(X \leq x)$'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.BusPowerCDF:
+            labels = self.bus_names
+            cdf = CDF(self.S_points.real)
+            y_label = '(p.u.)'
+            x_label = 'Probability $P(X \leq x)$'
+            title = result_type.value[0]
+
         else:
-            labels = names[indices]
-
-        if len(indices) > 0:
-
+            x_label = ''
             y_label = ''
             title = ''
-            if result_type == ResultTypes.BusVoltageAverage:
-                y = self.v_avg_conv[1:-1, indices]
-                y_label = '(p.u.)'
-                x_label = 'Sampling points'
-                title = 'Bus voltage \naverage convergence'
 
-            elif result_type == ResultTypes.BranchPowerAverage:
-                y = self.s_avg_conv[1:-1, indices]
-                y_label = '(MW)'
-                x_label = 'Sampling points'
-                title = 'Bus current \naverage convergence'
+        if result_type not in cdf_result_types:
 
-            elif result_type == ResultTypes.BranchLoadingAverage:
-                y = self.l_avg_conv[1:-1, indices]
-                y_label = '(%)'
-                x_label = 'Sampling points'
-                title = 'Branch loading \naverage convergence'
-
-            elif result_type == ResultTypes.BranchLossesAverage:
-                y = self.loss_avg_conv[1:-1, indices]
-                y_label = '(MVA)'
-                x_label = 'Sampling points'
-                title = 'Branch losses \naverage convergence'
-
-            elif result_type == ResultTypes.BusVoltageStd:
-                y = self.v_std_conv[1:-1, indices]
-                y_label = '(p.u.)'
-                x_label = 'Sampling points'
-                title = 'Bus voltage standard \ndeviation convergence'
-
-            elif result_type == ResultTypes.BranchPowerStd:
-                y = self.s_std_conv[1:-1, indices]
-                y_label = '(MW)'
-                x_label = 'Sampling points'
-                title = 'Bus current standard \ndeviation convergence'
-
-            elif result_type == ResultTypes.BranchLoadingStd:
-                y = self.l_std_conv[1:-1, indices]
-                y_label = '(%)'
-                x_label = 'Sampling points'
-                title = 'Branch loading standard \ndeviation convergence'
-
-            elif result_type == ResultTypes.BranchLossesStd:
-                y = self.loss_std_conv[1:-1, indices]
-                y_label = '(MVA)'
-                x_label = 'Sampling points'
-                title = 'Branch losses standard \ndeviation convergence'
-
-            elif result_type == ResultTypes.BusVoltageCDF:
-                cdf = CDF(np.abs(self.V_points[:, indices]))
-                # cdf.plot(ax=ax)
-                y_label = '(p.u.)'
-                x_label = 'Probability $P(X \leq x)$'
-                title = result_type.value[0]
-
-            elif result_type == ResultTypes.BranchLoadingCDF:
-                cdf = CDF(np.abs(self.loading_points.real[:, indices]))
-                # cdf.plot(ax=ax)
-                y_label = '(p.u.)'
-                x_label = 'Probability $P(X \leq x)$'
-                title = result_type.value[0]
-
-            elif result_type == ResultTypes.BranchLossesCDF:
-                cdf = CDF(np.abs(self.losses_points[:, indices]))
-                # cdf.plot(ax=ax)
-                y_label = '(MVA)'
-                x_label = 'Probability $P(X \leq x)$'
-                title = result_type.value[0]
-
-            elif result_type == ResultTypes.BranchPowerCDF:
-                cdf = CDF(self.Sbr_points[:, indices].real)
-                y_label = '(MW)'
-                x_label = 'Probability $P(X \leq x)$'
-                title = result_type.value[0]
-
-            elif result_type == ResultTypes.BusPowerCDF:
-                cdf = CDF(self.S_points[:, indices].real)
-                y_label = '(p.u.)'
-                x_label = 'Probability $P(X \leq x)$'
-                title = result_type.value[0]
-
-            else:
-                x_label = ''
-                y_label = ''
-                title = ''
-
-            if result_type not in cdf_result_types:
-
-                # assemble model
-                index = np.arange(0, y.shape[0], 1)
-                mdl = ResultsModel(data=np.abs(y), index=index, columns=labels, title=title,
-                                   ylabel=y_label, xlabel=x_label, units=y_label)
-
-            else:
-                mdl = ResultsModel(data=cdf.arr, index=cdf.prob, columns=labels, title=title,
-                                   ylabel=y_label, xlabel=x_label, units=y_label)
-            return mdl
+            # assemble model
+            index = np.arange(0, y.shape[0], 1)
+            mdl = ResultsModel(data=np.abs(y), index=index, columns=labels, title=title,
+                               ylabel=y_label, xlabel=x_label, units=y_label)
 
         else:
-            return None
-
+            mdl = ResultsModel(data=cdf.arr, index=cdf.prob, columns=labels, title=title,
+                               ylabel=y_label, xlabel=x_label, units=y_label)
+        return mdl

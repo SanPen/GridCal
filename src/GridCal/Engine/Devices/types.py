@@ -49,6 +49,9 @@ class TimeFrame(Enum):
 class DeviceType(Enum):
     BusDevice = 'Bus'
     BranchDevice = 'Branch'
+    LineDevice = 'Line'
+    Transformer2WDevice = 'Transformer'
+    HVDCLineDevice = 'HVDC Line'
     DCBranchDevice = 'DC Branch'
     VscDevice = 'VSC'
     BatteryDevice = 'Battery'
@@ -56,6 +59,7 @@ class DeviceType(Enum):
     GeneratorDevice = 'Generator'
     StaticGeneratorDevice = 'Static Generator'
     ShuntDevice = 'Shunt'
+    ExternalGridDevice = 'External grid'
     WireDevice = 'Wire'
     SequenceLineDevice = 'Sequence line'
     UnderGroundLineDevice = 'Underground line'

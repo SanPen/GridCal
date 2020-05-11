@@ -17,16 +17,15 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
-
+import numpy as np
 from GridCal.Engine.basic_structures import MIPSolvers
-from GridCal.Engine.Core.series_static_inputs import StaticSeriesInputs
+from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
-from GridCal.ThirdParty.pulp import *
 
 
 class OpfSimpleTimeSeries(OpfTimeSeries):
 
-    def __init__(self, numerical_circuit: StaticSeriesInputs, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
+    def __init__(self, numerical_circuit: OpfTimeCircuit, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
                  batteries_energy_0=None, text_prog=None, prog_func=None):
         """
         DC time series linear optimal power flow
@@ -57,9 +56,9 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
         # general indices
         n = nc.nbus
         m = nc.nbr
-        ng = nc.n_ctrl_gen
-        nb = nc.n_batt
-        nl = nc.n_ld
+        ng = nc.ngen
+        nb = nc.nbatt
+        nl = nc.nload
         nt = self.end_idx - self.start_idx
         a = self.start_idx
         b = self.end_idx
@@ -94,10 +93,10 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
         for i, t in enumerate(range(a, b)):
 
             # generator share:
-            Pavail = (Pg_max * nc.generator_active_prof[t, :])
+            Pavail = (Pg_max * nc.generator_active[t, :])
             Gshare = Pavail / Pavail.sum()
 
-            Pl[i] = (nc.load_active_prof[t, :] * nc.load_power_profile.real[t, :]) / Sbase
+            Pl[i] = (nc.load_active[t, :] * nc.load_s.real[t, :]) / Sbase
 
             Pg[i] = Pl[i].sum() * Gshare
 
@@ -117,7 +116,7 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
         self.s_from = np.zeros((nt, m))
         self.s_to = np.zeros((nt, m))
         self.overloads = np.zeros((nt, m))
-        self.rating = nc.br_rate_profile[a:b, :] / Sbase
+        self.rating = nc.branch_rates[a:b, :] / Sbase
         self.nodal_restrictions = np.zeros((nt, n))
 
     def get_voltage(self):
@@ -230,7 +229,7 @@ if __name__ == '__main__':
     l = optimal_power_flow_time_series.results.loading
     print('Branch loading\n', l)
 
-    g = optimal_power_flow_time_series.results.controlled_generator_power
+    g = optimal_power_flow_time_series.results.generator_power
     print('Gen power\n', g)
 
     pr = optimal_power_flow_time_series.results.shadow_prices

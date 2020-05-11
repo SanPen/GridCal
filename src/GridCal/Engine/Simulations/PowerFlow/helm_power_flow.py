@@ -471,7 +471,7 @@ if __name__ == '__main__':
     dQ = np.abs(inputs.Sbus.imag - Scalc_.imag)
     dQ[inputs.pv] = np.nan
     dQ[inputs.ref] = np.nan
-    df = pd.DataFrame(data=np.c_[inputs.types, Vm, Va, np.abs(inputs.Vbus), dP, dQ],
+    df = pd.DataFrame(data=np.c_[inputs.bus_types, Vm, Va, np.abs(inputs.Vbus), dP, dQ],
                       columns=['Types', 'Vm', 'Va', 'Vset', 'P mismatch', 'Q mismatch'])
     print(df)
     print('Error', error)

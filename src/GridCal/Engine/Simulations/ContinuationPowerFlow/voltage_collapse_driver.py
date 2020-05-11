@@ -21,10 +21,11 @@ from matplotlib import pyplot as plt
 from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import power_flow_post_process
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import power_flow_post_process, PowerFlowOptions
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, VCStopAt, VCParametrization
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Gui.GuiFunctions import ResultsModel
 
@@ -91,7 +92,7 @@ class VoltageCollapseInput:
 
 class VoltageCollapseResults:
 
-    def __init__(self, nbus, nbr):
+    def __init__(self, nbus, nbr, bus_names):
         """
         VoltageCollapseResults instance
         :param nbus:
@@ -99,6 +100,8 @@ class VoltageCollapseResults:
         """
 
         self.name = 'Voltage collapse'
+
+        self.bus_names = bus_names
 
         self.voltages = None
 
@@ -197,41 +200,31 @@ class VoltageCollapseResults:
             self.losses[branch_original_idx] = losses
             self.Sbus[bus_original_idx] = Sbus
 
-    def mdl(self, result_type=ResultTypes.BusVoltage, indices=None, names=None):
+    def mdl(self, result_type: ResultTypes = ResultTypes.BusVoltage) -> ResultsModel:
         """
         Plot the results
         :param result_type:
-        :param ax:
-        :param indices:
-        :param names:
         :return:
         """
 
-        if names is None:
-            names = np.array(['bus ' + str(i + 1) for i in range(self.voltages.shape[1])])
+        labels = self.bus_names
+        y_label = ''
+        x_label = ''
+        title = ''
+        if result_type == ResultTypes.BusVoltage:
+            y = abs(np.array(self.voltages))
+            x = self.lambdas
+            title = 'Bus voltage'
+            y_label = '(p.u.)'
+            x_label = 'Loading from the base situation ($\lambda$)'
+        else:
+            x = self.lambdas
+            y = self.voltages
 
-        if indices is None:
-            indices = np.array(range(len(names)))
-
-        if len(indices) > 0:
-            labels = names[indices]
-            y_label = ''
-            x_label = ''
-            title = ''
-            if result_type == ResultTypes.BusVoltage:
-                y = abs(np.array(self.voltages)[:, indices])
-                x = self.lambdas
-                title = 'Bus voltage'
-                y_label = '(p.u.)'
-                x_label = 'Loading from the base situation ($\lambda$)'
-            else:
-                x = self.lambdas
-                y = self.voltages[:, indices]
-
-            # assemble model
-            mdl = ResultsModel(data=y, index=x, columns=labels, title=title,
-                               ylabel=y_label, xlabel=x_label, units=y_label)
-            return mdl
+        # assemble model
+        mdl = ResultsModel(data=y, index=x, columns=labels, title=title,
+                           ylabel=y_label, xlabel=x_label, units=y_label)
+        return mdl
 
 
 class VoltageCollapse(QThread):
@@ -240,8 +233,8 @@ class VoltageCollapse(QThread):
     done_signal = Signal()
     name = 'Voltage Stability'
 
-    def __init__(self, circuit: MultiCircuit,
-                 options: VoltageCollapseOptions, inputs: VoltageCollapseInput):
+    def __init__(self, circuit: MultiCircuit, options: VoltageCollapseOptions, inputs: VoltageCollapseInput,
+                 pf_options: PowerFlowOptions, opf_results=None):
         """
         VoltageCollapse constructor
         @param circuit: NumericalCircuit instance
@@ -256,6 +249,10 @@ class VoltageCollapse(QThread):
         self.options = options
 
         self.inputs = inputs
+
+        self.pf_options = pf_options
+
+        self.opf_results = opf_results
 
         self.results = list()
 
@@ -284,13 +281,19 @@ class VoltageCollapse(QThread):
         @return:
         """
         print('Running voltage collapse...')
-        nbus = len(self.circuit.buses)
-        nbr = len(self.circuit.branches)
-        self.results = VoltageCollapseResults(nbus=nbus, nbr=nbr)
+        nbus = self.circuit.get_bus_number()
 
-        # compile the numerical circuit
-        numerical_circuit = self.circuit.compile_snapshot()
-        numerical_input_islands = numerical_circuit.compute()
+        numerical_circuit = compile_snapshot_circuit(circuit=self.circuit,
+                                                     apply_temperature=self.pf_options.apply_temperature_correction,
+                                                     branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
+                                                     opf_results=self.opf_results)
+
+        numerical_input_islands = split_into_islands(numeric_circuit=numerical_circuit,
+                                                     ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
+
+        self.results = VoltageCollapseResults(nbus=numerical_circuit.nbus,
+                                              nbr=numerical_circuit.nbr,
+                                              bus_names=numerical_circuit.bus_names)
 
         self.results.bus_types = numerical_circuit.bus_types
 
@@ -298,7 +301,7 @@ class VoltageCollapse(QThread):
 
             self.progress_text.emit('Running voltage collapse at circuit ' + str(nc) + '...')
 
-            if len(numerical_island.ref) > 0:
+            if len(numerical_island.vd) > 0:
                 Voltage_series, Lambda_series, \
                 normF, success = continuation_nr(Ybus=numerical_island.Ybus,
                                                  Ibus_base=numerical_island.Ibus,
@@ -321,13 +324,17 @@ class VoltageCollapse(QThread):
                                                  call_back_fx=self.progress_callback)
 
                 # nbus can be zero, because all the arrays are going to be overwritten
-                res = VoltageCollapseResults(nbus=numerical_island.nbus, nbr=numerical_island.nbr)
+                res = VoltageCollapseResults(nbus=numerical_island.nbus,
+                                             nbr=numerical_island.nbr,
+                                             bus_names=numerical_island.bus_names)
                 res.voltages = np.array(Voltage_series)
                 res.lambdas = np.array(Lambda_series)
                 res.error = normF
                 res.converged = bool(success)
             else:
-                res = VoltageCollapseResults(nbus=numerical_island.nbus, nbr=numerical_island.nbr)
+                res = VoltageCollapseResults(nbus=numerical_island.nbus,
+                                             nbr=numerical_island.nbr,
+                                             bus_names=numerical_island.bus_names)
                 res.voltages = np.array([[0] * numerical_island.nbus])
                 res.lambdas = np.array([[0] * numerical_island.nbus])
                 res.error = [0]
@@ -336,9 +343,10 @@ class VoltageCollapse(QThread):
             if len(res.voltages) > 0:
                 # compute the island branch results
                 Sbranch, Ibranch, Vbranch, \
-                loading, losses, flow_direction, Sbus = power_flow_post_process(numerical_island,
-                                                                                res.voltages[-1],
-                                                                                numerical_island.branch_rates)
+                loading, losses, flow_direction, Sbus = power_flow_post_process(calculation_inputs=numerical_island,
+                                                                                Sbus=self.inputs.Starget,
+                                                                                V=res.voltages[-1],
+                                                                                branch_rates=numerical_island.branch_rates)
 
                 self.results.apply_from_island(res, Sbranch, Ibranch, loading, losses, Sbus,
                                                numerical_island.original_bus_idx,
