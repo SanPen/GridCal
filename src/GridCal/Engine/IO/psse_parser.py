@@ -900,62 +900,65 @@ class PSSeTwoTerminalDCLine:
         :param version:
         :param logger:
 
-
-
         NAME	The non-blank alphanumeric identifier assigned to this dc line. Each two-terminal dc line must have a
-        unique NAME. NAME may be up to twelve characters and may contain any combination of blanks, uppercase letters,
-        numbers and special characters. NAME must be enclosed in single or double quotes if it contains any blanks or
-        special characters. No default allowed.
+                unique NAME. NAME may be up to twelve characters and may contain any combination of blanks,
+                uppercase letters, numbers and special characters. NAME must be enclosed in single or double quotes
+                if it contains any blanks or special characters. No default allowed.
 
-        MDC	Control mode: 0 for blocked, 1 for power, 2 for current. MDC = 0 by default.
+        MDC	    Control mode: 0 for blocked,
+                              1 for power,
+                              2 for current.
+                MDC = 0 by default.
 
-        RDC	The dc line resistance; entered in ohms. No default allowed.
+        RDC	    The dc line resistance; entered in ohms. No default allowed.
 
         SETVL	Current (amps) or power (MW) demand. When MDC is one, a positive value of SETVL specifies desired power
-        at the rectifier and a negative value specifies desired inverter power. No default allowed.
+                at the rectifier and a negative value specifies desired inverter power. No default allowed.
 
         VSCHD	Scheduled compounded dc voltage; entered in kV. No default allowed.
 
         VCMOD	Mode switch dc voltage; entered in kV. When the inverter dc voltage falls below this value and the
-        line is in power control mode (i.e., MDC = 1), the line switches to current control mode with a desired
-        current corresponding to the desired power at scheduled dc voltage. VCMOD = 0.0 by default.
+                line is in power control mode (i.e., MDC = 1), the line switches to current control mode with a desired
+                current corresponding to the desired power at scheduled dc voltage. VCMOD = 0.0 by default.
 
         RCOMP	Compounding resistance; entered in ohms. Gamma and/or TAPI is used to attempt to hold the compounded
-        voltage (VDCI + DCCURRCOMP) at VSCHD. To control the inverter end dc voltage VDCI, set RCOMP to zero;
-        to control the rectifier end dc voltage VDCR, set RCOMP to the dc line resistance, RDC; otherwise,
-        set RCOMP to the appropriate fraction of RDC. RCOMP = 0.0 by default.
+                voltage (VDCI + DCCURRCOMP) at VSCHD. To control the inverter end dc voltage VDCI, set RCOMP to zero;
+                to control the rectifier end dc voltage VDCR, set RCOMP to the dc line resistance, RDC; otherwise,
+                set RCOMP to the appropriate fraction of RDC. RCOMP = 0.0 by default.
 
         DELTI	Margin entered in per unit of desired dc power or current. This is the fraction by which the order is
-        reduced when ALPHA is at its minimum and the inverter is controlling the line current. DELTI = 0.0 by default.
+                reduced when ALPHA is at its minimum and the inverter is controlling the line current.
+                DELTI = 0.0 by default.
 
         METER	Metered end code of either R (for rectifier) or I (for inverter). METER = I by default.
 
         DCVMIN	Minimum compounded dc voltage; entered in kV. Only used in constant gamma operation
-        (i.e., when ANMXI = ANMNI) when TAPI is held constant and an ac transformer tap is adjusted to control
-        dc voltage (i.e., when IFI, ITI, and IDI specify a twowinding transformer). DCVMIN = 0.0 by default.
+                (i.e., when ANMXI = ANMNI) when TAPI is held constant and an ac transformer tap is adjusted to control
+                dc voltage (i.e., when IFI, ITI, and IDI specify a twowinding transformer). DCVMIN = 0.0 by default.
 
         CCCITMX	Iteration limit for capacitor commutated two-terminal dc line Newton solution procedure.
-        CCCITMX = 20 by default.
+                CCCITMX = 20 by default.
 
         CCCACC	Acceleration factor for capacitor commutated two-terminal dc line Newton solution procedure.
-        CCCACC = 1.0 by default.
+                CCCACC = 1.0 by default.
 
-        IPR	Rectifier converter bus number, or extended bus name enclosed in single quotes (refer to Extended Bus
-        Names). No default allowed.
+        IPR	    Rectifier converter bus number, or extended bus name enclosed in single quotes
+                (refer to Extended Bus Names).
+                No default allowed.
 
-        NBR	Number of bridges in series (rectifier). No default allowed.
+        NBR	    Number of bridges in series (rectifier). No default allowed.
 
         ANMXR	Nominal maximum rectifier firing angle; entered in degrees. No default allowed.
 
         ANMNR	Minimum steady-state rectifier firing angle; entered in degrees. No default allowed.
 
-        RCR	Rectifier commutating transformer resistance per bridge; entered in ohms. No default allowed.
+        RCR	    Rectifier commutating transformer resistance per bridge; entered in ohms. No default allowed.
 
-        XCR	Rectifier commutating transformer reactance per bridge; entered in ohms. No default allowed.
+        XCR	    Rectifier commutating transformer reactance per bridge; entered in ohms. No default allowed.
 
         EBASR	Rectifier primary base ac voltage; entered in kV. No default allowed.
 
-        TRR	Rectifier transformer ratio. TRR = 1.0 by default.
+        TRR	    Rectifier transformer ratio. TRR = 1.0 by default.
 
         TAPR	Rectifier tap setting. TAPR = 1.0 by default.
 
@@ -971,23 +974,25 @@ class PSSeTwoTerminalDCLine:
 
         STPR	Rectifier tap step; must be positive. STPR = 0.00625 by default.
 
-        ICR	Rectifier firing angle measuring bus number, or extended bus name enclosed in single quotes
-        (refer to Extended Bus Names). The firing angle and angle limits used inside the dc model are adjusted by
-        the difference between the phase angles at this bus and the ac/dc interface (i.e., the converter bus, IPR).
-        ICR = 0 by default.
+        ICR	    Rectifier firing angle measuring bus number, or extended bus name enclosed in single quotes
+                (refer to Extended Bus Names). The firing angle and angle limits used inside the dc model are
+                adjusted by the difference between the phase angles at this bus and the ac/dc interface
+                (i.e., the converter bus, IPR).
+                ICR = 0 by default.
 
-        IFR	Winding 1 side from bus number, or extended bus name enclosed in single quotes, of a two-winding
-        transformer. IFR = 0 by default.
+        IFR	    Winding 1 side from bus number, or extended bus name enclosed in single quotes, of a two-winding
+                transformer.
+                IFR = 0 by default.
 
-        ITR	Winding 2 side to bus number, or extended bus name enclosed in single quotes, of a two-winding
-        transformer. ITR = 0 by default.
+        ITR 	Winding 2 side to bus number, or extended bus name enclosed in single quotes, of a two-winding
+                transformer.
+                ITR = 0 by default.
 
-        IDR	Circuit identifier; the branch described by IFR, ITR, and IDR must have been entered as a two-winding
-        transformer; an ac transformer may control at most only one dc converter. IDR = '1' by default.
+        IDR	    Circuit identifier; the branch described by IFR, ITR, and IDR must have been entered as a two-winding
+                transformer; an ac transformer may control at most only one dc converter.
+                IDR = '1' by default.
 
         XCAPR	Commutating capacitor reactance magnitude per bridge; entered in ohms. XCAPR = 0.0 by default.
-
-
         """
 
         if version in [32, 33, 34]:
@@ -1049,16 +1054,19 @@ class PSSeTwoTerminalDCLine:
         z_base = self.VSCHD * self.VSCHD / Sbase
         r_pu = self.RDC / z_base
 
+        Vset_f = float(self.TAPR)
+        Vset_t = float(self.TAPI)
+
         name1 = self.NAME.replace("'", "").replace('/', '').strip()
-        name = str(self.IPR) + '_' + str(self.IPI) + '_' + name1
+        idtag = str(self.IPR) + '_' + str(self.IPI) + '_1'
 
         obj = HvdcLine(bus_from=bus1,
                        bus_to=bus2,
-                       name=name + '_DC_2_terminals',
-                       idtag=name,
+                       name=name1,
+                       idtag=idtag,
                        Pset=specified_power,
-                       Vset_f=1.0,
-                       Vset_t=1.0,
+                       Vset_f=Vset_f,
+                       Vset_t=Vset_t,
                        rate=specified_power,
                        min_firing_angle_f=np.deg2rad(self.ANMNR),
                        max_firing_angle_f=np.deg2rad(self.ANMXR),
@@ -1076,48 +1084,102 @@ class PSSeVscDCLine:
         :param version:
         :param logger:
 
-        NAME	The non-blank alphanumeric identifier assigned to this dc line. Each VSC dc line must have a unique NAME. NAME may be up to twelve characters and may contain any combination of blanks, uppercase letters, numbers and special characters. NAME must be enclosed in single or double quotes if it contains any blanks or special characters. No default allowed.
-        MDC	Control mode: 0 for out-of-service, 1 for in-service. MDC = 1 by default.
-        RDC	The dc line resistance; entered in ohms. RDC must be positive. No default allowed.
-        Oi An owner number (1 through 9999). Each VSC dc line may have up to four owners. By default, O1 is 1, and O2, O3 and O4 are zero.
-        Fi	The fraction of total ownership assigned to owner Oi; each Fi must be positive. The Fi values are normalized such that they sum to 1.0 before they are placed in the working case. By default, each Fi is 1.0.
+        NAME	The non-blank alphanumeric identifier assigned to this dc line. Each VSC dc line must have a unique NAME.
+                NAME may be up to twelve characters and may contain any combination of blanks, uppercase letters,
+                numbers and special characters. NAME must be enclosed in single or double quotes if it contains any
+                blanks or special characters. No default allowed.
 
-        IBUS	Converter bus number, or extended bus name enclosed in single quotes (refer to Extended Bus Names). No default allowed.
+        MDC	Control mode: 0 for out-of-service, 1 for in-service. MDC = 1 by default.
+
+        RDC	The dc line resistance; entered in ohms. RDC must be positive. No default allowed.
+
+        Oi An owner number (1 through 9999). Each VSC dc line may have up to four owners. By default, O1 is 1, and O2,
+            O3 and O4 are zero.
+
+        Fi	The fraction of total ownership assigned to owner Oi; each Fi must be positive. The Fi values are normalized
+            such that they sum to 1.0 before they are placed in the working case. By default, each Fi is 1.0.
+
+        IBUS	Converter bus number, or extended bus name enclosed in single quotes (refer to Extended Bus Names).
+                No default allowed.
 
         TYPE	Code for the type of converter dc control:
-        0	 for converter out-of-service 1	 for dc voltage control 2	 for MW control.
-        When both converters are in-service, exactly one converter of each VSC dc line must be TYPE 1. No default allowed.
+                0	 for converter out-of-service 1	 for dc voltage control
+                2	 for MW control.
+                When both converters are in-service, exactly one converter of each VSC dc line must be TYPE 1.
+                No default allowed.
+
         MODE	Converter ac control mode:
-        1	for ac voltage control
-        2	for fixed ac power factor.
-        MODE = 1 by default.
-        DCSET	Converter dc setpoint. For TYPE = 1, DCSET is the scheduled dc voltage on the dc side of the converter bus; entered in kV. For TYPE = 2, DCSET is the power demand, where a positive value specifies that the converter is feeding active power into the ac network at bus IBUS, and a negative value specifies that the converter is withdrawing active power from the ac network at bus IBUS; entered in MW. No default allowed.
-        ACSET	Converter ac setpoint. For MODE = 1, ACSET is the regulated ac voltage setpoint; entered in pu. For MODE = 2, ACSET is the power factor setpoint. ACSET = 1.0 by default.
-        Aloss,
-        Bloss	Coefficients of the linear equation used to calculate converter losses:
-        KWconv loss = Aloss + (Idc * Bloss)
-        Aloss is entered in kW. Bloss is entered in kW/amp. Aloss = Bloss = 0.0 by default.
-        MINloss	Minimum converter losses; entered in kW. MINloss = 0.0 by default.
-        SMAX	Converter MVA rating; entered in MVA. SMAX = 0.0 to allow unlimited converter MVA loading. SMAX = 0.0 by default.
-        IMAX	Converter ac current rating; entered in amps. IMAX = 0.0 to allow unlimited converter current loading. If a positive IMAX is specified, the base voltage assigned to bus IBUS must be positive. IMAX = 0.0 by default.
-        PWF	Power weighting factor fraction (0.0 < PWF < 1.0) used in reducing the active power order and either the reactive power order (when MODE is 2) or the reactive power limits (when MODE is 1) when the converter MVA or current rating is violated. When PWF is 0.0, only the active power is reduced; when PWF is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active and reactive power is applied. PWF = 1.0 by default.
+                1	for ac voltage control
+                2	for fixed ac power factor.
+                MODE = 1 by default.
+
+        DCSET	Converter dc setpoint.
+                For TYPE = 1, DCSET is the scheduled dc voltage on the dc side of the converter bus; entered in kV.
+                For TYPE = 2, DCSET is the power demand, where a positive value specifies that
+                the converter is feeding active power into the ac network at bus IBUS, and a negative value specifies
+                that the converter is withdrawing active power from the ac network at bus IBUS; entered in MW.
+                No default allowed.
+
+        ACSET	Converter ac setpoint.
+                For MODE = 1, ACSET is the regulated ac voltage setpoint; entered in pu.
+                For MODE = 2, ACSET is the power factor setpoint.
+                ACSET = 1.0 by default.
+
+        Aloss, Bloss	Coefficients of the linear equation used to calculate converter losses:
+                        KWconv loss = Aloss + (Idc * Bloss)
+
+                        Aloss is entered in kW.
+                        Bloss is entered in kW/amp.
+                        Aloss = Bloss = 0.0 by default.
+
+        MINloss	Minimum converter losses; entered in kW.
+                MINloss = 0.0 by default.
+
+        SMAX	Converter MVA rating; entered in MVA.
+                SMAX = 0.0 to allow unlimited converter MVA loading.
+                SMAX = 0.0 by default.
+
+        IMAX	Converter ac current rating; entered in amps.
+                IMAX = 0.0 to allow unlimited converter current loading.
+                If a positive IMAX is specified, the base voltage assigned to bus IBUS must be positive.
+                IMAX = 0.0 by default.
+
+        PWF	    Power weighting factor fraction (0.0 < PWF < 1.0) used in reducing the active power order and
+                either the reactive power order (when MODE is 2) or the reactive power limits (when MODE is 1) when
+                the converter MVA or current rating is violated. When PWF is 0.0, only the active power is reduced;
+                when PWF is 1.0, only the reactive power is reduced; otherwise, a weighted reduction of both active
+                and reactive power is applied.
+                PWF = 1.0 by default.
+
         MAXQ	Reactive power upper limit; entered in Mvar. A positive value of reactive power indicates reactive power
                 flowing into the ac network from the converter; a negative value of reactive power indicates reactive
-                power withdrawn from the ac network. Not used if MODE = 2. MAXQ = 9999.0 by default.
-        MINQ	Reactive power lower limit; entered in Mvar. A positive value of reactive power indicates reactive power flowing into the ac network from the converter; a negative value of reactive power indicates reactive power withdrawn from the ac network.
-                Not used if MODE = 2. MINQ = -9999.0 by default.
+                power withdrawn from the ac network. Not used if MODE = 2.
+                MAXQ = 9999.0 by default.
+
+        MINQ	Reactive power lower limit; entered in Mvar. A positive value of reactive power indicates reactive
+                power flowing into the ac network from the converter; a negative value of reactive power indicates
+                reactive power withdrawn from the ac network.
+                Not used if MODE = 2.
+                MINQ = -9999.0 by default.
+
         REMOT	Bus number, or extended bus name enclosed in single quotes (refer to Extended Bus Names), of a remote
                 Type 1 or 2 bus for which voltage is to be regulated by this converter to the value specified by ACSET.
                 If bus REMOT is other than a Type 1 or 2 bus, bus IBUS regulates its own voltage to the value specified
                 by ACSET.
-        REMOT   is entered as zero if the converter is to regulate its own voltage. Not used if MODE = 2. REMOT = 0 by
-                default.
+
+        REMOT   is entered as zero if the converter is to regulate its own voltage. Not used if MODE = 2.
+                REMOT = 0 by default.
+
         RMPCT	Percent of the total Mvar required to hold the voltage at the bus controlled by bus IBUS that is to be
-                contributed by this VSC; RMPCT must be positive. RMPCT is needed only if REMOT specifies a valid remote
+                contributed by this VSC;
+                RMPCT must be positive.
+                RMPCT is needed only if REMOT specifies a valid remote
                 bus and there is more than one local or remote voltage controlling device (plant, switched shunt, FACTS
                 device shunt element, or VSC dc line converter) controlling the voltage at bus REMOT to a setpoint, or
                 REMOT is zero but bus IBUS is the controlled bus, local or remote, of one or more other setpoint mode
-                voltage controlling devices. Not used if MODE = 2. RMPCT = 100.0 by default.
+                voltage controlling devices.
+                Not used if MODE = 2.
+                RMPCT = 100.0 by default.
         """
         self.O1 = ''
         self.F1 = ''
@@ -1174,11 +1236,24 @@ class PSSeVscDCLine:
         bus1 = psse_bus_dict[abs(self.IBUS1)]
         bus2 = psse_bus_dict[abs(self.IBUS2)]
 
+        name1 = self.NAME.replace("'", "").replace('/', '').strip()
+        idtag = str(self.IBUS1) + '_' + str(self.IBUS2) + '_1'
+
+        Vset_f = self.ACSET1
+        Vset_t = self.ACSET2
+        rate = max(self.SMAX1, self.SMAX2)
+
+        specified_power = 0
+
         obj = HvdcLine(bus_from=bus1,
                        bus_to=bus2,
-                       name=self.NAME + '_DC_2_terminals',
+                       name=name1,
+                       idtag=idtag,
+                       Pset=specified_power,
+                       Vset_f=Vset_f,
+                       Vset_t=Vset_t,
+                       rate=rate)
 
-                       rate=max(self.SMAX1, self.SMAX2))
         return obj
 
 

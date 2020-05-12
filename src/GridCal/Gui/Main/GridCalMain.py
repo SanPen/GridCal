@@ -5015,6 +5015,13 @@ class MainGUI(QMainWindow):
         # center nodes
         self.grid_editor.align_schematic()
 
+    def snapshot_balance(self):
+        """
+        Snapshot balance report
+        """
+        df = self.circuit.snapshot_balance()
+        self.console_msg('\n' + str(df))
+
 
 def run(use_native_dialogues=True):
     """
