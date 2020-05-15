@@ -1317,14 +1317,9 @@ class ResultsModel(QtCore.QAbstractTableModel):
     def is_complex(self):
         return self.data_c.dtype == complex
 
-    def get_data(self, mode='as_is'):
+    def get_data(self, ):
         """
-
-        Args:
-            mode: 'real', 'imag', 'abs', 'as_is'
-
         Returns: index, columns, data
-
         """
         n = len(self.cols_c)
 
@@ -1339,26 +1334,12 @@ class ResultsModel(QtCore.QAbstractTableModel):
             else:
                 names = [str(val) for val in self.cols_c]
 
-            if self.is_complex():
-
-                if mode == 'real':
-                    values = self.data_c.real
-                elif mode == 'imag':
-                    values = self.data_c.imag
-                elif mode == 'abs':
-                    values = np.abs(self.data_c)
-                elif mode == 'as_is':
-                    values = self.data_c
-                else:
-                    values = np.abs(self.data_c)
-
-            else:
-                values = self.data_c
+            values = self.data_c
 
             return self.index_c, names, values
         else:
             # there are no elements
-            return list(), list(), list()
+            return self.index_c, list(), self.data_c
 
     def save_to_excel(self, file_name):
         """
@@ -1416,15 +1397,14 @@ class ResultsModel(QtCore.QAbstractTableModel):
             # there are no elements
             pass
 
-    def plot(self, ax=None, mode=None, selected_col_idx=None):
+    def plot(self, ax=None, selected_col_idx=None):
         """
         Plot the data model
         :param ax: Matplotlib axis
-        :param mode: 'real', 'imag', 'abs'
         :param selected_col_idx: list of selected column indices
         """
 
-        index, columns, data = self.get_data(mode=mode)
+        index, columns, data = self.get_data()
 
         if selected_col_idx is not None:
             columns = [columns[i] for i in selected_col_idx]

@@ -95,8 +95,9 @@ class VoltageCollapseResults:
     def __init__(self, nbus, nbr, bus_names):
         """
         VoltageCollapseResults instance
-        :param nbus:
-        :param nbr:
+        :param nbus: number of buses
+        :param nbr: number of branches
+        :param bus_names: names of the buses
         """
 
         self.name = 'Voltage collapse'
@@ -149,7 +150,6 @@ class VoltageCollapseResults:
         """
         Apply the results of an island to this VoltageCollapseResults instance
         :param voltage_collapse_res: VoltageCollapseResults instance of the island
-        :param pf_res: Power flow results instance
         :param bus_original_idx: indices of the buses in the complete grid
         :param branch_original_idx: indices of the branches in the complete grid
         :param nbus_full: total number of buses in the complete grid
@@ -343,14 +343,22 @@ class VoltageCollapse(QThread):
             if len(res.voltages) > 0:
                 # compute the island branch results
                 Sbranch, Ibranch, Vbranch, \
-                loading, losses, flow_direction, Sbus = power_flow_post_process(calculation_inputs=numerical_island,
-                                                                                Sbus=self.inputs.Starget[numerical_island.original_bus_idx],
-                                                                                V=res.voltages[-1],
-                                                                                branch_rates=numerical_island.branch_rates)
+                loading, losses, flow_direction, \
+                Sbus = power_flow_post_process(calculation_inputs=numerical_island,
+                                               Sbus=self.inputs.Starget[numerical_island.original_bus_idx],
+                                               V=res.voltages[-1],
+                                               branch_rates=numerical_island.branch_rates)
 
-                self.results.apply_from_island(res, Sbranch, Ibranch, loading, losses, Sbus,
-                                               numerical_island.original_bus_idx,
-                                               numerical_island.original_branch_idx, nbus)
+                # update results
+                self.results.apply_from_island(voltage_collapse_res=res,
+                                               Sbranch=Sbranch,
+                                               Ibranch=Ibranch,
+                                               loading=loading,
+                                               losses=losses,
+                                               Sbus=Sbus,
+                                               bus_original_idx=numerical_island.original_bus_idx,
+                                               branch_original_idx=numerical_island.original_branch_idx,
+                                               nbus_full=nbus)
             else:
                 print('No voltage values!')
         print('done!')

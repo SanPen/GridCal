@@ -3828,11 +3828,13 @@ class MainGUI(QMainWindow):
                 cols = np.unique(cols)
 
                 # plot selection only
-                self.results_mdl.plot(ax=ax, selected_col_idx=cols)
-
-            else:
-                # none selected, plot all
                 self.results_mdl.plot(ax=ax)
+            else:
+                # plot all
+                cols = None
+
+            # none selected, plot all
+            self.results_mdl.plot(ax=ax, selected_col_idx=cols)
 
             plt.show()
 

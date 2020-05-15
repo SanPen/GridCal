@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Fri May 15 15:31:20 2020
+# Created: Fri May 15 18:07:14 2020
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -2498,8 +2498,8 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionDetect_transformers)
         self.toolBar.addAction(self.actionAuto_rate_branches)
         self.toolBar.addAction(self.actionStorage_location_suggestion)
-        self.toolBar.addAction(self.actionGrid_Reduction)
         self.toolBar.addSeparator()
+        self.toolBar.addAction(self.actionLaunch_data_analysis_tool)
         self.toolBar.addAction(self.actionShow_color_controls)
 
         self.retranslateUi(mainWindow)

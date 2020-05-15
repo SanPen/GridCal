@@ -79,10 +79,10 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
 
         # generator
         Pg_max = nc.generator_pmax / Sbase
-        # Pg_min = nc.generator_pmin / Sbase
-        # P_profile = nc.generator_power_profile[a:b, :] / Sbase
-        # cost_g = nc.generator_cost_profile[a:b, :]
-        # enabled_for_dispatch = nc.generator_active_prof
+        Pg_min = nc.generator_pmin / Sbase
+        P_profile = nc.generator_p[a:b, :] / Sbase
+        cost_g = nc.generator_cost[a:b, :]
+        enabled_for_dispatch = nc.generator_active
 
         # load
         Pl = np.zeros((nt, nl))

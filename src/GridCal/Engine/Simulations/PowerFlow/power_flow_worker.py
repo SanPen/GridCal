@@ -284,15 +284,6 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
     # for k in circuit.bus_to_regulated_idx:   # indices of the branches that are regulated at the bus "to"
     #     control_max_iter = max(control_max_iter, circuit.max_tap[k] + circuit.min_tap[k])
 
-    # inner_it = list()
-    outer_it = 0
-    # elapsed = list()
-    # methods = list()
-    # converged_lst = list()
-    # errors = list()
-    # it = list()  # iterations
-    # el = list()  # elapsed
-
     # For the iterate_pv_control logic:
     Vset = voltage_solution.copy()  # Origin voltage set-points
     Scalc = Sbus
@@ -303,6 +294,7 @@ def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, so
     Ybus = circuit.Ybus  # + sp.diags(Ysh)
 
     # this the "outer-loop"
+    outer_it = 0
     while (any_q_control_issue or any_tap_control_issue) and outer_it < control_max_iter:
 
         if len(circuit.vd) == 0:
