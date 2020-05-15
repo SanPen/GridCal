@@ -1511,7 +1511,7 @@ class MultiCircuit:
             **index**: Time profile
         """
 
-        self.time_profile = np.array(index)
+        self.time_profile = pd.to_datetime(index, dayfirst=True)
 
         for elm in self.buses:
             elm.create_profiles(index)

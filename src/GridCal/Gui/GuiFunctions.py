@@ -810,7 +810,7 @@ class ObjectHistory:
 
         self.position = len(self.undo_stack) - 1
 
-        print('Stored', action_name)
+        # print('Stored', action_name)
 
     def redo(self):
         """
@@ -1233,7 +1233,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
         if self.editable and index.column() > self.editable_min_idx:
             return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
         else:
-            return QtCore.Qt.ItemIsEnabled
+            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 
     def rowCount(self, parent=None):
         """
@@ -1416,14 +1416,19 @@ class ResultsModel(QtCore.QAbstractTableModel):
             # there are no elements
             pass
 
-    def plot(self, ax=None, mode=None):
+    def plot(self, ax=None, mode=None, selected_col_idx=None):
         """
         Plot the data model
         :param ax: Matplotlib axis
         :param mode: 'real', 'imag', 'abs'
+        :param selected_col_idx: list of selected column indices
         """
 
         index, columns, data = self.get_data(mode=mode)
+
+        if selected_col_idx is not None:
+            columns = [columns[i] for i in selected_col_idx]
+            data = data[:, selected_col_idx]
 
         if ax is None:
             fig = plt.figure(figsize=(12, 6))

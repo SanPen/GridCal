@@ -693,7 +693,7 @@ def control_q_iterative(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, 
     return Qnew, types_new, any_control_issue
 
 
-def power_flow_post_process(calculation_inputs: SnapshotIsland, Sbus, V, branch_rates, only_power=False):
+def power_flow_post_process(calculation_inputs: SnapshotIsland, Sbus, V, branch_rates):
     """
     Compute the power flows trough the branches.
 
@@ -721,38 +721,32 @@ def power_flow_post_process(calculation_inputs: SnapshotIsland, Sbus, V, branch_
     Q = (V[pv] * np.conj(calculation_inputs.Ybus[pv, :].dot(V))).imag
     Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
 
-    if not only_power:
-        # Branches current, loading, etc
-        Vf = calculation_inputs.C_branch_bus_f * V
-        Vt = calculation_inputs.C_branch_bus_t * V
-        If = calculation_inputs.Yf * V
-        It = calculation_inputs.Yt * V
-        Sf = Vf * np.conj(If)
-        St = Vt * np.conj(It)
+    # Branches current, loading, etc
+    Vf = calculation_inputs.C_branch_bus_f * V
+    Vt = calculation_inputs.C_branch_bus_t * V
+    If = calculation_inputs.Yf * V
+    It = calculation_inputs.Yt * V
+    Sf = Vf * np.conj(If)
+    St = Vt * np.conj(It)
 
-        # Branch losses in MVA
-        losses = (Sf + St) * calculation_inputs.Sbase
+    # Branch losses in MVA
+    losses = (Sf + St) * calculation_inputs.Sbase
 
-        flow_direction = Sf.real / np.abs(Sf + 1e-20)
+    flow_direction = Sf.real / np.abs(Sf + 1e-20)
 
-        # branch voltage increment
-        Vbranch = Vf - Vt
+    # branch voltage increment
+    Vbranch = Vf - Vt
 
-        # Branch current in p.u.
-        Ibranch = If
+    # Branch current in p.u.
+    Ibranch = If
 
-        # Branch power in MVA
-        Sbranch = Sf * calculation_inputs.Sbase
+    # Branch power in MVA
+    Sbranch = Sf * calculation_inputs.Sbase
 
-        # Branch loading in p.u.
-        loading = Sbranch / (branch_rates + 1e-9)
+    # Branch loading in p.u.
+    loading = Sbranch / (branch_rates + 1e-9)
 
-        return Sbranch, Ibranch, Vbranch, loading, losses, flow_direction, Sbus
-
-    else:
-        no_val = np.zeros(calculation_inputs.nbr, dtype=complex)
-        flow_direction = np.ones(calculation_inputs.nbr, dtype=complex)
-        return no_val, no_val, no_val, no_val, no_val, flow_direction, Sbus
+    return Sbranch, Ibranch, Vbranch, loading, losses, flow_direction, Sbus
 
 
 def control_q_direct(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):

@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'MainWindow.ui',
 # licensing of 'MainWindow.ui' applies.
 #
-# Created: Sat May  9 21:11:32 2020
+# Created: Fri May 15 15:31:20 2020
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -462,11 +462,6 @@ class Ui_mainWindow(object):
         self.device_type_magnitude_comboBox = QtWidgets.QComboBox(self.frame)
         self.device_type_magnitude_comboBox.setObjectName("device_type_magnitude_comboBox")
         self.horizontalLayout.addWidget(self.device_type_magnitude_comboBox)
-        self.profile_display_pushButton = QtWidgets.QPushButton(self.frame)
-        self.profile_display_pushButton.setText("")
-        self.profile_display_pushButton.setIcon(icon14)
-        self.profile_display_pushButton.setObjectName("profile_display_pushButton")
-        self.horizontalLayout.addWidget(self.profile_display_pushButton)
         self.plot_time_series_pushButton = QtWidgets.QPushButton(self.frame)
         self.plot_time_series_pushButton.setText("")
         icon29 = QtGui.QIcon()
@@ -669,6 +664,7 @@ class Ui_mainWindow(object):
         self.horizontalLayout_2.addWidget(self.plot_data_pushButton)
         self.verticalLayout_24.addWidget(self.frame_8)
         self.resultsTableView = QtWidgets.QTableView(self.frame_5)
+        self.resultsTableView.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectColumns)
         self.resultsTableView.setObjectName("resultsTableView")
         self.verticalLayout_24.addWidget(self.resultsTableView)
         self.verticalLayout_13.addWidget(self.results_splitter)
@@ -2417,6 +2413,11 @@ class Ui_mainWindow(object):
         icon73.addPixmap(QtGui.QPixmap(":/Icons/icons/sigma.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionSigma_analysis.setIcon(icon73)
         self.actionSigma_analysis.setObjectName("actionSigma_analysis")
+        self.actionClear_stuff_running_right_now = QtWidgets.QAction(mainWindow)
+        icon74 = QtGui.QIcon()
+        icon74.addPixmap(QtGui.QPixmap(":/Icons/icons/clear_runs.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionClear_stuff_running_right_now.setIcon(icon74)
+        self.actionClear_stuff_running_right_now.setObjectName("actionClear_stuff_running_right_now")
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actionOpen_file)
         self.menuProject.addAction(self.actionSave)
@@ -2460,6 +2461,7 @@ class Ui_mainWindow(object):
         self.menuActions.addSeparator()
         self.menuActions.addAction(self.actionLaunch_data_analysis_tool)
         self.menuActions.addAction(self.actionReset_console)
+        self.menuActions.addAction(self.actionClear_stuff_running_right_now)
         self.menuBar.addAction(self.menuProject.menuAction())
         self.menuBar.addAction(self.menuActions.menuAction())
         self.menuBar.addAction(self.menuAbout.menuAction())
@@ -2562,7 +2564,6 @@ class Ui_mainWindow(object):
         self.profile_time_selection_comboBox.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Time step selector", None, -1))
         self.profile_device_type_comboBox.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Device type", None, -1))
         self.device_type_magnitude_comboBox.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Magnitude with profile", None, -1))
-        self.profile_display_pushButton.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Display the profile", None, -1))
         self.plot_time_series_pushButton.setToolTip(QtWidgets.QApplication.translate("mainWindow", "PLot the selected object\'s profile", None, -1))
         self.profile_add_pushButton.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Add value to the profile", None, -1))
         self.profile_subtract_pushButton.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Subtract value from the profile", None, -1))
@@ -2826,6 +2827,7 @@ class Ui_mainWindow(object):
         self.actionDrawSchematic.setText(QtWidgets.QApplication.translate("mainWindow", "Draw schematic", None, -1))
         self.actionSigma_analysis.setText(QtWidgets.QApplication.translate("mainWindow", "Sigma analysis", None, -1))
         self.actionSigma_analysis.setToolTip(QtWidgets.QApplication.translate("mainWindow", "Perform HELM-Sigma analysis", None, -1))
+        self.actionClear_stuff_running_right_now.setText(QtWidgets.QApplication.translate("mainWindow", "Clear \"stuff running right now\"", None, -1))
 
 from .icons_rc import *
 

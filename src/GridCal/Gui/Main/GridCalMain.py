@@ -220,9 +220,6 @@ class MainGUI(QMainWindow):
         self.gis_dialogues = list()
         self.files_to_delete_at_exit = list()
 
-        # pointer to the analysis window
-        self.analysis_dialogue = None
-
         ################################################################################################################
         # Declare the schematic editor
         ################################################################################################################
@@ -284,6 +281,8 @@ class MainGUI(QMainWindow):
         # window pointers
         self.file_sync_window = None
         self.sigma_dialogue = None
+        self.analysis_dialogue = None
+        self.profile_input_dialogue = None
         self.stuff_running_now = list()
 
         self.file_name = ''
@@ -390,6 +389,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionSigma_analysis.triggered.connect(self.sigma_analisys)
 
+        self.ui.actionClear_stuff_running_right_now.triggered.connect(self.clear_stuff_running)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -401,14 +402,6 @@ class MainGUI(QMainWindow):
         self.ui.set_profile_state_button.clicked.connect(self.set_profiles_state_to_grid)
 
         self.ui.edit_profiles_pushButton.clicked.connect(self.import_profiles)
-
-        self.ui.profile_display_pushButton.clicked.connect(self.display_profiles)
-
-        # self.ui.plot_pushButton.clicked.connect(self.item_results_plot)
-        #
-        # self.ui.select_all_pushButton.clicked.connect(self.check_all_result_objects)
-        #
-        # self.ui.select_none_pushButton.clicked.connect(self.check_none_result_objects)
 
         self.ui.saveResultsButton.clicked.connect(self.save_results_df)
 
@@ -496,9 +489,6 @@ class MainGUI(QMainWindow):
         self.ui.actionAutoatic_layout.triggered.connect(self.auto_layout)
 
         # list clicks
-        # self.ui.result_listView.clicked.connect(self.update_available_results_in_the_study)
-
-        # self.ui.result_type_listView.clicked.connect(self.result_type_click)
 
         self.ui.dataStructuresListView.clicked.connect(self.view_objects_data)
 
@@ -514,6 +504,8 @@ class MainGUI(QMainWindow):
 
         # combobox
         self.ui.profile_device_type_comboBox.currentTextChanged.connect(self.profile_device_type_changed)
+
+        self.ui.device_type_magnitude_comboBox.currentTextChanged.connect(self.display_profiles)
 
         self.ui.plt_style_comboBox.currentTextChanged.connect(self.plot_style_change)
 
@@ -599,6 +591,10 @@ class MainGUI(QMainWindow):
                                 "plt": plt,
                                 "clc": self.clc,
                                 'app': self})
+
+    def clear_stuff_running(self):
+
+        self.stuff_running_now.clear()
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls:
@@ -1736,20 +1732,20 @@ class MainGUI(QMainWindow):
         objects = self.circuit.get_elements_by_type(dev_type)
 
         if len(objects) > 0:
-            dialogue = ProfileInputGUI(parent=self,
-                                       list_of_objects=objects,
-                                       magnitudes=[magnitude],
-                                       use_native_dialogues=self.use_native_dialogues)
-            dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
-            dialogue._exec()  # exec leaves the parent on hold
+            self.profile_input_dialogue = ProfileInputGUI(parent=self,
+                                                          list_of_objects=objects,
+                                                          magnitudes=[magnitude],
+                                                          use_native_dialogues=self.use_native_dialogues)
+            self.profile_input_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
+            self.profile_input_dialogue.exec_()  # exec leaves the parent on hold
 
-            if dialogue.time is not None:
+            if self.profile_input_dialogue.time is not None:
 
                 # if there are no profiles:
                 if self.circuit.time_profile is None:
-                    self.circuit.format_profiles(dialogue.time)
+                    self.circuit.format_profiles(self.profile_input_dialogue.time)
 
-                elif len(dialogue.time) != len(self.circuit.time_profile):
+                elif len(self.profile_input_dialogue.time) != len(self.circuit.time_profile):
                     self.msg("The imported profile length does not match the existing one.\n"
                              "Delete the existing profiles before continuing.\n"
                              "The import action will not be performed")
@@ -1757,12 +1753,12 @@ class MainGUI(QMainWindow):
 
                 # Assign profiles
                 for i, elm in enumerate(objects):
-                    if not dialogue.zeroed[i]:
+                    if not self.profile_input_dialogue.zeroed[i]:
 
-                        if dialogue.normalized:
-                            data = dialogue.data[:, i]
+                        if self.profile_input_dialogue.normalized:
+                            data = self.profile_input_dialogue.data[:, i]
                         else:
-                            data = dialogue.data[:, i]
+                            data = self.profile_input_dialogue.data[:, i]
 
                         # assign the profile to the object
                         prof_attr = elm.properties_with_profile[magnitude]
@@ -1772,7 +1768,7 @@ class MainGUI(QMainWindow):
                 # set up sliders
                 self.set_up_profile_sliders()
                 self.update_date_dependent_combos()
-
+                self.display_profiles()
             else:
                 pass  # the dialogue was closed
 
@@ -3816,10 +3812,28 @@ class MainGUI(QMainWindow):
 
             plt.rcParams["date.autoformatter.minute"] = "%Y-%m-%d %H:%M:%S"
 
+            # get the selected element
+            obj_idx = self.ui.resultsTableView.selectedIndexes()
+
+            # create figure to plot
             fig = plt.figure(figsize=(12, 8))
             ax = fig.add_subplot(111)
 
-            self.results_mdl.plot(ax=ax)
+            if len(obj_idx):
+
+                # get the unique columns in the selected cells
+                cols = np.zeros(len(obj_idx), dtype=int)
+                for i in range(len(obj_idx)):
+                    cols[i] = obj_idx[i].column()
+                cols = np.unique(cols)
+
+                # plot selection only
+                self.results_mdl.plot(ax=ax, selected_col_idx=cols)
+
+            else:
+                # none selected, plot all
+                self.results_mdl.plot(ax=ax)
+
             plt.show()
 
     def save_results_df(self):

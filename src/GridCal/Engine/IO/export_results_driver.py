@@ -82,34 +82,16 @@ class ExportAllThread(QThread):
                         # ge the result type definition
                         result_name, device_type = available_result.value
 
-                        # get the object names
-                        names = names_dict[device_type]
-
                         self.progress_text.emit('flushing ' + driver.results.name + ' ' + result_name)
 
                         # save the DataFrame to the buffer
-                        mdl = driver.results.mdl(result_type=available_result,
-                                                 indices=None,
-                                                 names=names)
-                        if mdl is not None:
-                            if mdl.is_complex():
-                                # save real part
-                                with StringIO() as buffer:
-                                    filename = driver.results.name + ' ' + result_name + ' real.csv'
-                                    mdl.save_to_csv(buffer, mode='real')
-                                    myzip.writestr(filename, buffer.getvalue())
+                        mdl = driver.results.mdl(result_type=available_result)
 
-                                # save imaginary part
-                                with StringIO() as buffer:
-                                    filename = driver.results.name + ' ' + result_name + ' imag.csv'
-                                    mdl.save_to_csv(buffer, mode='imag')
-                                    myzip.writestr(filename, buffer.getvalue())
-                            else:
-                                # save
-                                with StringIO() as buffer:
-                                    filename = driver.results.name + ' ' + result_name + '.csv'
-                                    mdl.save_to_csv(buffer, mode='as_is')
-                                    myzip.writestr(filename, buffer.getvalue())
+                        if mdl is not None:
+                            with StringIO() as buffer:
+                                filename = driver.results.name + ' ' + result_name + '.csv'
+                                mdl.save_to_csv(buffer)
+                                myzip.writestr(filename, buffer.getvalue())
                         else:
                             self.logger.add_info('No results for ' + driver.results.name + ' - ' + result_name)
 

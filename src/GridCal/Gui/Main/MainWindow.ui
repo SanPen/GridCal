@@ -1089,20 +1089,6 @@ p, li { white-space: pre-wrap; }
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="profile_display_pushButton">
-                 <property name="toolTip">
-                  <string>Display the profile</string>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="icons.qrc">
-                   <normaloff>:/Icons/icons/magnifying_glass.svg</normaloff>:/Icons/icons/magnifying_glass.svg</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <widget class="QPushButton" name="plot_time_series_pushButton">
                  <property name="toolTip">
                   <string>PLot the selected object's profile</string>
@@ -1570,7 +1556,11 @@ p, li { white-space: pre-wrap; }
              </widget>
             </item>
             <item>
-             <widget class="QTableView" name="resultsTableView"/>
+             <widget class="QTableView" name="resultsTableView">
+              <property name="selectionBehavior">
+               <enum>QAbstractItemView::SelectColumns</enum>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -5677,6 +5667,7 @@ points from time series</string>
     <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="actionReset_console"/>
+    <addaction name="actionClear_stuff_running_right_now"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
@@ -6453,6 +6444,15 @@ points from time series</string>
    </property>
    <property name="toolTip">
     <string>Perform HELM-Sigma analysis</string>
+   </property>
+  </action>
+  <action name="actionClear_stuff_running_right_now">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/clear_runs.svg</normaloff>:/Icons/icons/clear_runs.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Clear &quot;stuff running right now&quot;</string>
    </property>
   </action>
  </widget>

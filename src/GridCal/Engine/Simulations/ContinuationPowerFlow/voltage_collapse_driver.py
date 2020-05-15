@@ -344,7 +344,7 @@ class VoltageCollapse(QThread):
                 # compute the island branch results
                 Sbranch, Ibranch, Vbranch, \
                 loading, losses, flow_direction, Sbus = power_flow_post_process(calculation_inputs=numerical_island,
-                                                                                Sbus=self.inputs.Starget,
+                                                                                Sbus=self.inputs.Starget[numerical_island.original_bus_idx],
                                                                                 V=res.voltages[-1],
                                                                                 branch_rates=numerical_island.branch_rates)
 
