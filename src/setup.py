@@ -37,7 +37,10 @@ base_path = os.path.join('GridCal')
 
 packages = find_packages(exclude=['docs', 'test', 'research', 'tests'])
 
-package_data = {'GridCal': ['*.md'],
+package_data = {'GridCal': ['*.md',
+                            'data/cables.csv',
+                            'data/transformers.csv',
+                            'data/wires.csv'],
                 'GridCal.ThirdParty.pulp': ["AUTHORS", "LICENSE",
                                             "pulp.cfg.linux",
                                             "pulp.cfg.win",
