@@ -105,6 +105,15 @@
            <enum>QFrame::Raised</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
            <item>
             <widget class="QFrame" name="frame_10">
              <property name="frameShape">
@@ -292,7 +301,7 @@
                  <string/>
                 </property>
                 <property name="text">
-                 <string/>
+                 <string>Accept</string>
                 </property>
                 <property name="icon">
                  <iconset resource="icons.qrc">

@@ -56,6 +56,7 @@ from GridCal.Engine.IO.file_handler import *
 from GridCal.Engine.IO.synchronization_driver import FileSyncThread
 from GridCal.Engine.Simulations.result_types import SimulationTypes
 from GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisDriver
+from GridCal.Engine.Devices.templates import get_transformer_catalogue, get_cables_catalogue, get_wires_catalogue
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 
 import gc
@@ -229,6 +230,8 @@ class MainGUI(QMainWindow):
 
         self.ui.dataStructuresListView.setModel(get_list_model([o.device_type.value for o in self.circuit.objects_with_profiles]))
 
+        self.add_default_catalogue()
+
         self.ui.catalogueDataStructuresListView.setModel(get_list_model(self.grid_editor.catalogue_types))
 
         pfo = SnapshotIsland(nbus=1, nline=1, ntr=1, nvsc=1, nhvdc=1,
@@ -388,6 +391,8 @@ class MainGUI(QMainWindow):
         self.ui.actionDrawSchematic.triggered.connect(self.draw_schematic)
 
         self.ui.actionSigma_analysis.triggered.connect(self.sigma_analisys)
+
+        self.ui.actionAdd_default_catalogue.triggered.connect(self.add_default_catalogue)
 
         self.ui.actionClear_stuff_running_right_now.triggered.connect(self.clear_stuff_running)
 
@@ -961,6 +966,8 @@ class MainGUI(QMainWindow):
         self.stuff_running_now = list()
 
         self.clear_results()
+
+        self.add_default_catalogue()
 
     def new_project(self):
         """
@@ -5037,6 +5044,14 @@ class MainGUI(QMainWindow):
         """
         df = self.circuit.snapshot_balance()
         self.console_msg('\n' + str(df))
+
+    def add_default_catalogue(self):
+        """
+        Add default catalogue to circuit
+        """
+        self.circuit.transformer_types += get_transformer_catalogue()
+        self.circuit.underground_cable_types += get_cables_catalogue()
+        self.circuit.wire_types += get_wires_catalogue()
 
 
 def run(use_native_dialogues=True):

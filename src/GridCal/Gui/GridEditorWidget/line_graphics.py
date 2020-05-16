@@ -14,17 +14,18 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
+from GridCal.Gui.GuiFunctions import get_list_model
 from GridCal.Gui.GridEditorWidget.generic_graphics import *
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GuiFunctions import BranchObjectModel
-from GridCal.Engine.Devices.line import Line
-from GridCal.Engine.Devices.branch import Branch, BranchType
+from GridCal.Engine.Devices.line import Line, SequenceLineType, Tower
+from GridCal.Engine.Devices.branch import BranchType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
 
 
 class LineEditor(QDialog):
 
-    def __init__(self, branch: Branch, Sbase=100):
+    def __init__(self, branch: Line, Sbase=100, templates=None, current_template=None):
         """
         Line Editor constructor
         :param branch: Branch object to update
@@ -36,6 +37,12 @@ class LineEditor(QDialog):
         self.branch = branch
 
         self.Sbase = Sbase
+
+        self.templates = templates
+
+        self.current_template = current_template
+
+        self.selected_template = None
 
         self.setObjectName("self")
 
@@ -60,6 +67,25 @@ class LineEditor(QDialog):
         I = self.branch.rate / Vf  # current in kA
 
         # ------------------------------------------------------------------------------------------
+
+        # catalogue
+        self.catalogue_combo = QComboBox()
+        if self.templates is not None:
+            if len(self.templates) > 0:
+                self.catalogue_combo.setModel(get_list_model(self.templates))
+
+                if self.current_template is not None:
+                    try:
+                        idx = self.templates.index(self.current_template)
+                        self.catalogue_combo.setCurrentIndex(idx)
+                        self.load_template_btn_click()
+                    except:
+                        pass
+
+        # load template
+        self.load_template_btn = QPushButton()
+        self.load_template_btn.setText('Load template values')
+        self.load_template_btn.clicked.connect(self.load_template_btn_click)
 
         # line length
         self.l_spinner = QDoubleSpinBox()
@@ -111,6 +137,11 @@ class LineEditor(QDialog):
         # labels
 
         # add all to the GUI
+        if templates is not None:
+            self.layout.addWidget(QLabel("Available templates"))
+            self.layout.addWidget(self.catalogue_combo)
+            self.layout.addWidget(self.load_template_btn)
+
         self.layout.addWidget(QLabel("L: Line length [Km]"))
         self.layout.addWidget(self.l_spinner)
 
@@ -160,7 +191,34 @@ class LineEditor(QDialog):
         self.branch.B = np.round(B / Ybase, 6)
         self.branch.rate = Sn
 
+        if self.selected_template is not None:
+            self.branch.template = self.selected_template
+
         self.accept()
+
+    def load_template_btn_click(self):
+        """
+        Accept template values
+        """
+
+        if self.templates is not None:
+
+            idx = self.catalogue_combo.currentIndex()
+            template = self.templates[idx]
+
+            if isinstance(template, SequenceLineType):
+                self.i_spinner.setValue(template.rating)
+                self.r_spinner.setValue(template.R)
+                self.x_spinner.setValue(template.X)
+                self.b_spinner.setValue(template.B)
+
+            elif isinstance(template, Tower):
+                self.i_spinner.setValue(template.rating)
+                self.r_spinner.setValue(template.R1)
+                self.x_spinner.setValue(template.X1)
+                self.b_spinner.setValue(template.Bsh1)
+
+            self.selected_template = template
 
 
 class LineGraphicItem(QGraphicsLineItem):
@@ -628,8 +686,9 @@ class LineGraphicItem(QGraphicsLineItem):
         :return:
         """
         Sbase = self.diagramScene.circuit.Sbase
-
-        dlg = LineEditor(self.api_object, Sbase)
+        templates = self.diagramScene.circuit.underground_cable_types + self.diagramScene.circuit.overhead_line_types
+        current_template = self.api_object.template
+        dlg = LineEditor(self.api_object, Sbase, templates, current_template)
         if dlg.exec_():
             pass
 

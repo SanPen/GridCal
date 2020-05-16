@@ -13,18 +13,19 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
-
+from typing import List
+from GridCal.Gui.GuiFunctions import get_list_model
 from GridCal.Gui.GridEditorWidget.generic_graphics import *
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GuiFunctions import BranchObjectModel
-from GridCal.Engine.Devices.transformer import Transformer2W
-from GridCal.Engine.Devices.branch import Branch, BranchType, TransformerType
+from GridCal.Engine.Devices.transformer import Transformer2W, TransformerType
+from GridCal.Engine.Devices.branch import BranchType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
 
 
 class TransformerEditor(QDialog):
 
-    def __init__(self, branch: Transformer2W, Sbase=100, modify_on_accept=True):
+    def __init__(self, branch: Transformer2W, Sbase=100, modify_on_accept=True, templates=None, current_template=None):
         """
         Transformer
         :param branch:
@@ -38,6 +39,12 @@ class TransformerEditor(QDialog):
         self.Sbase = Sbase
 
         self.modify_on_accept = modify_on_accept
+
+        self.templates = self.filter_valid_templates(templates)
+
+        self.current_template = current_template
+
+        self.selected_template = None
 
         self.setObjectName("self")
 
@@ -78,6 +85,26 @@ class TransformerEditor(QDialog):
             I0 = 0
 
         # ------------------------------------------------------------------------------------------
+
+        # catalogue
+        self.catalogue_combo = QComboBox()
+        if templates is not None:
+            if len(self.templates) > 0:
+
+                self.catalogue_combo.setModel(get_list_model(self.templates))
+
+                if self.current_template is not None:
+                    try:
+                        idx = self.templates.index(self.current_template)
+                        self.catalogue_combo.setCurrentIndex(idx)
+                        self.load_template_btn_click()
+                    except:
+                        pass
+
+        # load template
+        self.load_template_btn = QPushButton()
+        self.load_template_btn.setText('Load template values')
+        self.load_template_btn.clicked.connect(self.load_template_btn_click)
 
         # Sn
         self.sn_spinner = QDoubleSpinBox()
@@ -122,6 +149,13 @@ class TransformerEditor(QDialog):
         # labels
 
         # add all to the GUI
+
+        # add all to the GUI
+        if templates is not None:
+            self.layout.addWidget(QLabel("Available templates"))
+            self.layout.addWidget(self.catalogue_combo)
+            self.layout.addWidget(self.load_template_btn)
+
         self.layout.addWidget(QLabel("Sn: Nominal power [MVA]"))
         self.layout.addWidget(self.sn_spinner)
 
@@ -142,6 +176,35 @@ class TransformerEditor(QDialog):
         self.setLayout(self.layout)
 
         self.setWindowTitle('Transformer editor')
+
+    def filter_valid_templates(self, templates: List[TransformerType]):
+        """
+        Filter templates
+        :param templates:
+        :return:
+        """
+        if templates is None:
+            return None
+
+        lst = list()
+
+        Vf = self.transformer_obj.bus_from.Vnom
+        Vt = self.transformer_obj.bus_to.Vnom
+
+        for tpe in templates:
+
+            HV2 = tpe.HV * 1.01
+            HV1 = tpe.HV * 0.99
+
+            LV2 = tpe.LV * 1.01
+            LV1 = tpe.LV * 0.99
+
+            # check that the voltages are within a 1% tolerance
+            if (HV1 < Vf < HV2) or (LV1 < Vf < LV2):
+                if (HV1 < Vt < HV2) or (LV1 < Vt < LV2):
+                    lst.append(tpe)
+
+        return lst
 
     def get_template(self):
         """
@@ -179,10 +242,37 @@ class TransformerEditor(QDialog):
         """
 
         if self.modify_on_accept:
-            tpe = self.get_template()
+
+            if self.selected_template is None:
+                # no selected template, but a new one was generated
+                tpe = self.get_template()
+            else:
+                # pick the last selected template
+                tpe = self.selected_template
+
             self.transformer_obj.apply_template(tpe, Sbase=self.Sbase)
 
         self.accept()
+
+    def load_template_btn_click(self):
+        """
+        Accept template values
+        """
+
+        if self.templates is not None:
+
+            idx = self.catalogue_combo.currentIndex()
+            template = self.templates[idx]
+
+            if isinstance(template, TransformerType):
+
+                self.sn_spinner.setValue(template.rating)  # MVA
+                self.pcu_spinner.setValue(template.Pcu)  # kW
+                self.pfe_spinner.setValue(template.Pfe)  # kW
+                self.I0_spinner.setValue(template.I0)  # %
+                self.vsc_spinner.setValue(template.Vsc)  # %
+
+                self.selected_template = template
 
 
 class TransformerGraphicItem(QGraphicsLineItem):
@@ -639,11 +729,14 @@ class TransformerGraphicItem(QGraphicsLineItem):
         :return:
         """
         Sbase = self.diagramScene.circuit.Sbase
-
-        dlg = TransformerEditor(self.api_object, Sbase, modify_on_accept=True)
+        templates = self.diagramScene.circuit.transformer_types
+        current_template = self.api_object.template
+        dlg = TransformerEditor(self.api_object, Sbase,
+                                modify_on_accept=True,
+                                templates=templates,
+                                current_template=current_template)
         if dlg.exec_():
             pass
-
 
     def add_to_templates(self):
         """

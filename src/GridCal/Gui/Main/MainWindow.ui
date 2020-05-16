@@ -5607,7 +5607,7 @@ points from time series</string>
      <x>0</x>
      <y>0</y>
      <width>1264</width>
-     <height>26</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
@@ -5648,8 +5648,8 @@ points from time series</string>
     <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="actionAdd_default_catalogue"/>
-    <addaction name="actionReset_console"/>
     <addaction name="actionClear_stuff_running_right_now"/>
+    <addaction name="actionReset_console"/>
    </widget>
    <widget class="QMenu" name="menuSimulations">
     <property name="title">

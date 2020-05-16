@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'gui.ui',
 # licensing of 'gui.ui' applies.
 #
-# Created: Tue Oct  8 08:16:16 2019
-#      by: pyside2-uic  running on PySide2 5.13.0
+# Created: Sat May 16 17:20:30 2020
+#      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -62,6 +62,7 @@ class Ui_Dialog(object):
         self.frame_6.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_6.setObjectName("frame_6")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.frame_6)
+        self.verticalLayout_3.setContentsMargins(0, 0, 0, -1)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.frame_10 = QtWidgets.QFrame(self.frame_6)
         self.frame_10.setFrameShape(QtWidgets.QFrame.NoFrame)
@@ -141,7 +142,6 @@ class Ui_Dialog(object):
         self.gridLayout.addWidget(self.multSpinBox, 0, 1, 1, 1)
         self.doit_button = QtWidgets.QPushButton(self.frame_9)
         self.doit_button.setStatusTip("")
-        self.doit_button.setText("")
         icon7 = QtGui.QIcon()
         icon7.addPixmap(QtGui.QPixmap(":/Icons/icons/gear.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.doit_button.setIcon(icon7)
@@ -199,6 +199,7 @@ class Ui_Dialog(object):
         self.clear_selection_button.setToolTip(QtWidgets.QApplication.translate("Dialog", "Clear selection", None, -1))
         self.set_multiplier_button.setToolTip(QtWidgets.QApplication.translate("Dialog", "Set multiplier", None, -1))
         self.doit_button.setToolTip(QtWidgets.QApplication.translate("Dialog", "Do it!", None, -1))
+        self.doit_button.setText(QtWidgets.QApplication.translate("Dialog", "Accept", None, -1))
         self.normalized_checkBox.setToolTip(QtWidgets.QApplication.translate("Dialog", "Check if you want the profiles to be normalized on the base object property", None, -1))
         self.normalized_checkBox.setText(QtWidgets.QApplication.translate("Dialog", "normalized", None, -1))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtWidgets.QApplication.translate("Dialog", "Assignation", None, -1))
