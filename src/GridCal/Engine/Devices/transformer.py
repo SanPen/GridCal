@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 from numpy import sqrt
 import pandas as pd
 import numpy as np
@@ -20,7 +21,7 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.types import BranchType
+from GridCal.Engine.Devices.enumerations import BranchType
 from GridCal.Engine.Devices.line import SequenceLineType
 from GridCal.Engine.Devices.underground_line import UndergroundLineType
 

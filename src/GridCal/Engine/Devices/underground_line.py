@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from GridCal.Engine.Devices.types import BranchType
+from GridCal.Engine.Devices.enumerations import BranchType
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
 

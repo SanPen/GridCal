@@ -15,7 +15,7 @@
 import uuid
 import numpy as np
 from typing import List, Dict, AnyStr, Any, Optional
-from GridCal.Engine.Devices.types import DeviceType, TimeFrame
+from GridCal.Engine.Devices.enumerations import DeviceType, TimeFrame
 
 
 class GCProp:

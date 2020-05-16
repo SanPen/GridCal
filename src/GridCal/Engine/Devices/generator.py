@@ -16,7 +16,7 @@
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCal.Engine.Devices.editable_device import EditableDevice, GCProp
-from GridCal.Engine.Devices.types import DeviceType, GeneratorTechnologyType
+from GridCal.Engine.Devices.enumerations import DeviceType, GeneratorTechnologyType
 
 
 class Generator(EditableDevice):
