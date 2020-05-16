@@ -78,7 +78,7 @@ class LineEditor(QDialog):
                     try:
                         idx = self.templates.index(self.current_template)
                         self.catalogue_combo.setCurrentIndex(idx)
-                        self.load_template_btn_click()
+                        self.load_template(self.current_template)
                     except:
                         pass
 
@@ -196,6 +196,24 @@ class LineEditor(QDialog):
 
         self.accept()
 
+    def load_template(self, template):
+
+        if isinstance(template, SequenceLineType):
+            self.i_spinner.setValue(template.rating)
+            self.r_spinner.setValue(template.R)
+            self.x_spinner.setValue(template.X)
+            self.b_spinner.setValue(template.B)
+
+            self.selected_template = template
+
+        elif isinstance(template, Tower):
+            self.i_spinner.setValue(template.rating)
+            self.r_spinner.setValue(template.R1)
+            self.x_spinner.setValue(template.X1)
+            self.b_spinner.setValue(template.Bsh1)
+
+            self.selected_template = template
+
     def load_template_btn_click(self):
         """
         Accept template values
@@ -206,19 +224,8 @@ class LineEditor(QDialog):
             idx = self.catalogue_combo.currentIndex()
             template = self.templates[idx]
 
-            if isinstance(template, SequenceLineType):
-                self.i_spinner.setValue(template.rating)
-                self.r_spinner.setValue(template.R)
-                self.x_spinner.setValue(template.X)
-                self.b_spinner.setValue(template.B)
+            self.load_template(template)
 
-            elif isinstance(template, Tower):
-                self.i_spinner.setValue(template.rating)
-                self.r_spinner.setValue(template.R1)
-                self.x_spinner.setValue(template.X1)
-                self.b_spinner.setValue(template.Bsh1)
-
-            self.selected_template = template
 
 
 class LineGraphicItem(QGraphicsLineItem):

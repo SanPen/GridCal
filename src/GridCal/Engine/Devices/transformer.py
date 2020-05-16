@@ -724,14 +724,14 @@ class Transformer2W(EditableDevice):
             if properties.tpe == BranchType:
                 obj = self.branch_type.value
 
-            if properties.tpe == DeviceType.BusDevice:
+            elif properties.tpe == DeviceType.BusDevice:
                 obj = obj.idtag
 
-            elif properties.tpe == TransformerType:
+            elif properties.tpe == DeviceType.TransformerTypeDevice:
                 if obj is None:
                     obj = ''
                 else:
-                    obj = str(obj)
+                    obj = obj.idtag
 
             elif properties.tpe not in [str, float, int, bool]:
                 obj = str(obj)

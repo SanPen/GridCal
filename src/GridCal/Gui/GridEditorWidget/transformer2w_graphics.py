@@ -97,7 +97,13 @@ class TransformerEditor(QDialog):
                     try:
                         idx = self.templates.index(self.current_template)
                         self.catalogue_combo.setCurrentIndex(idx)
-                        self.load_template_btn_click()
+                        # self.load_template(self.current_template)
+
+                        Sn = self.current_template.rating  # MVA
+                        Pcu = self.current_template.Pcu  # kW
+                        Pfe = self.current_template.Pfe  # kW
+                        I0 = self.current_template.I0  # %
+                        Vsc = self.current_template.Vsc
                     except:
                         pass
 
@@ -254,6 +260,20 @@ class TransformerEditor(QDialog):
 
         self.accept()
 
+    def load_template(self, template: TransformerType):
+        """
+
+        :param template:
+        :return:
+        """
+        self.sn_spinner.setValue(template.rating)  # MVA
+        self.pcu_spinner.setValue(template.Pcu)  # kW
+        self.pfe_spinner.setValue(template.Pfe)  # kW
+        self.I0_spinner.setValue(template.I0)  # %
+        self.vsc_spinner.setValue(template.Vsc)  # %
+
+        self.selected_template = template
+
     def load_template_btn_click(self):
         """
         Accept template values
@@ -265,14 +285,7 @@ class TransformerEditor(QDialog):
             template = self.templates[idx]
 
             if isinstance(template, TransformerType):
-
-                self.sn_spinner.setValue(template.rating)  # MVA
-                self.pcu_spinner.setValue(template.Pcu)  # kW
-                self.pfe_spinner.setValue(template.Pfe)  # kW
-                self.I0_spinner.setValue(template.I0)  # %
-                self.vsc_spinner.setValue(template.Vsc)  # %
-
-                self.selected_template = template
+                self.load_template(template)
 
 
 class TransformerGraphicItem(QGraphicsLineItem):
