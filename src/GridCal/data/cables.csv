@@ -1,4 +1,4 @@
-Name,Rated voltage [kV],Rated current [kA],Nominal Frequency,"R [Ohm/km AC,20°C]",X [Ohm/km],L [Ohm/km],R0 (AC) [Ohm/km],X0  [Ohm/km],L0 [mH/km]
+Name,Rated voltage [kV],Rated current [kA],Nominal Frequency,R [Ohm/km AC@20°C],X [Ohm/km],L [Ohm/km],R0 (AC) [Ohm/km],X0  [Ohm/km],L0 [mH/km]
 BD-FPE AL2-4x5   0.60 kV,0.6,1.8,50,0.00217,0.0014,0.004456,0.052,0.087,0.27693
 BD-FPE AL2-4x6   0.60 kV,0.6,2.2,50,0.00194,0.00131,0.00417,0.243,0.149,0.474282
 BD-FPE AL4-4x4   0.60 kV,0.6,2.6,50,0.0014,0.001,0.003183,0.173,0.123,0.391521

@@ -5607,7 +5607,7 @@ points from time series</string>
      <x>0</x>
      <y>0</y>
      <width>1264</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
@@ -5636,6 +5636,25 @@ points from time series</string>
     <property name="title">
      <string>Actions</string>
     </property>
+    <addaction name="actionBigger_nodes"/>
+    <addaction name="actionSmaller_nodes"/>
+    <addaction name="actionCenter_view"/>
+    <addaction name="actionAutoatic_layout"/>
+    <addaction name="actionDetect_transformers"/>
+    <addaction name="actionAuto_rate_branches"/>
+    <addaction name="actionGrid_Reduction"/>
+    <addaction name="actionTry_to_fix_buses_location"/>
+    <addaction name="actionDrawSchematic"/>
+    <addaction name="separator"/>
+    <addaction name="actionLaunch_data_analysis_tool"/>
+    <addaction name="actionAdd_default_catalogue"/>
+    <addaction name="actionReset_console"/>
+    <addaction name="actionClear_stuff_running_right_now"/>
+   </widget>
+   <widget class="QMenu" name="menuSimulations">
+    <property name="title">
+     <string>Simulations</string>
+    </property>
     <addaction name="actionPower_flow"/>
     <addaction name="actionPower_Flow_Time_series"/>
     <addaction name="separator"/>
@@ -5654,23 +5673,10 @@ points from time series</string>
     <addaction name="actionPTDF"/>
     <addaction name="actionPTDF_time_series"/>
     <addaction name="actionOTDF"/>
-    <addaction name="separator"/>
-    <addaction name="actionBigger_nodes"/>
-    <addaction name="actionSmaller_nodes"/>
-    <addaction name="actionCenter_view"/>
-    <addaction name="actionAutoatic_layout"/>
-    <addaction name="actionDetect_transformers"/>
-    <addaction name="actionAuto_rate_branches"/>
-    <addaction name="actionGrid_Reduction"/>
-    <addaction name="actionTry_to_fix_buses_location"/>
-    <addaction name="actionDrawSchematic"/>
-    <addaction name="separator"/>
-    <addaction name="actionLaunch_data_analysis_tool"/>
-    <addaction name="actionReset_console"/>
-    <addaction name="actionClear_stuff_running_right_now"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
+   <addaction name="menuSimulations"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
@@ -6453,6 +6459,15 @@ points from time series</string>
    </property>
    <property name="text">
     <string>Clear &quot;stuff running right now&quot;</string>
+   </property>
+  </action>
+  <action name="actionAdd_default_catalogue">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/CatalogueAdd.svg</normaloff>:/Icons/icons/CatalogueAdd.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Add default catalogue</string>
    </property>
   </action>
  </widget>
