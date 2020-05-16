@@ -192,6 +192,34 @@ class SnapshotCircuit:
 
         self.C_bus_shunt = sp.lil_matrix((nbus, nshunt), dtype=int)
 
+    def get_injections(self):
+        """
+        Compute the power
+        :return: nothing, the results are stored in the class
+        """
+
+        # load
+        Sbus = - self.C_bus_load * (self.load_s * self.load_active)  # MW
+
+        # static generators
+        Sbus += self.C_bus_static_generator * (self.static_generator_s * self.static_generator_active)
+
+        # generators
+        Sbus += self.C_bus_gen * (self.generator_p * self.generator_active)
+
+        # battery
+        Sbus += self.C_bus_batt * (self.battery_p * self.battery_active)
+
+        # HVDC forced power
+        if self.nhvdc:
+            # Pf and Pt come with the correct sign already
+            Sbus += (self.hvdc_active * self.hvdc_Pf) * self.C_hvdc_bus_f
+            Sbus += (self.hvdc_active * self.hvdc_Pt) * self.C_hvdc_bus_t
+
+        Sbus /= self.Sbase
+
+        return Sbus
+
     def consolidate(self):
         """
         Consolidates the information of this object

@@ -2073,13 +2073,18 @@ class MainGUI(QMainWindow):
 
                 # compute the automatic precision
                 if self.ui.auto_precision_checkBox.isChecked():
-                    numerical = self.circuit.compile_snapshot()
-                    S = numerical.load_power / numerical.Sbase
-                    lg = np.log10(abs(S))
-                    lg[lg == -np.inf] = 0
-                    tol_idx = int(min(abs(lg))) + 3
+
+                    numerical_circuit = compile_snapshot_circuit(circuit=self.circuit)
+                    S = numerical_circuit.get_injections()
+                    lg = np.log10(np.abs(S))
+                    lg[lg == -np.inf] = 1e20
+                    tol_idx = int(np.min(np.abs(lg))) * 3
                     tolerance = 1.0 / (10.0 ** tol_idx)
                     options.tolerance = tolerance
+
+                    if tol_idx > 12:
+                        tol_idx = 12
+
                     self.ui.tolerance_spinBox.setValue(tol_idx)
 
                 use_opf = self.ui.actionOpf_to_Power_flow.isChecked()
