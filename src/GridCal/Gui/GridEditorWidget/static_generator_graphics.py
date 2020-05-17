@@ -18,6 +18,7 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.GuiFunctions import ObjectsModel
+from GridCal.Gui.GridEditorWidget.messages import *
 
 
 class StaticGeneratorGraphicItem(QGraphicsItemGroup):
@@ -123,9 +124,11 @@ class StaticGeneratorGraphicItem(QGraphicsItemGroup):
         Remove this element
         @return:
         """
-        self.diagramScene.removeItem(self.nexus)
-        self.diagramScene.removeItem(self)
-        self.api_object.bus.static_generators.remove(self.api_object)
+        ok = yes_no_question('Are you sure that you want to remove this static generator', 'Remove static generator')
+        if ok:
+            self.diagramScene.removeItem(self.nexus)
+            self.diagramScene.removeItem(self)
+            self.api_object.bus.static_generators.remove(self.api_object)
 
     def enable_disable_toggle(self):
         """

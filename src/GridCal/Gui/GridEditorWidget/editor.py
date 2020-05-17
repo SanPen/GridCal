@@ -378,30 +378,44 @@ class GridEditor(QSplitter):
                         item.hosting_connections.append(self.started_branch)
                         self.started_branch.bus_to = item.parent
 
-                        v1 = self.started_branch.bus_from.api_object.Vnom
-                        v2 = self.started_branch.bus_to.api_object.Vnom
+                        if self.started_branch.bus_from.api_object.is_dc != self.started_branch.bus_to.api_object.is_dc:
+                            # different DC status -> VSC
+                            name = 'VSC ' + str(len(self.circuit.vsc_converters) + 1)
+                            obj = VSC(bus_from=self.started_branch.bus_from.api_object,
+                                      bus_to=self.started_branch.bus_to.api_object,
+                                      name=name)
 
-                        if abs(v1 - v2) > 1.0:
-                            name = 'Transformer ' + str(len(self.circuit.transformers2w) + 1)
-                            obj = Transformer2W(bus_from=self.started_branch.bus_from.api_object,
-                                                bus_to=self.started_branch.bus_to.api_object,
-                                                name=name)
-
-                            obj.graphic_obj = TransformerGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                     toPort=self.started_branch.toPort,
-                                                                     diagramScene=self.diagramScene,
-                                                                     branch=obj)
+                            obj.graphic_obj = VscGraphicItem(fromPort=self.started_branch.fromPort,
+                                                             toPort=self.started_branch.toPort,
+                                                             diagramScene=self.diagramScene,
+                                                             branch=obj)
 
                         else:
-                            name = 'Line ' + str(len(self.circuit.lines) + 1)
-                            obj = Line(bus_from=self.started_branch.bus_from.api_object,
-                                       bus_to=self.started_branch.bus_to.api_object,
-                                       name=name)
+                            # Same DC status -> line / trafo
+                            v1 = self.started_branch.bus_from.api_object.Vnom
+                            v2 = self.started_branch.bus_to.api_object.Vnom
 
-                            obj.graphic_obj = LineGraphicItem(fromPort=self.started_branch.fromPort,
-                                                              toPort=self.started_branch.toPort,
-                                                              diagramScene=self.diagramScene,
-                                                              branch=obj)
+                            if abs(v1 - v2) > 1.0:
+                                name = 'Transformer ' + str(len(self.circuit.transformers2w) + 1)
+                                obj = Transformer2W(bus_from=self.started_branch.bus_from.api_object,
+                                                    bus_to=self.started_branch.bus_to.api_object,
+                                                    name=name)
+
+                                obj.graphic_obj = TransformerGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                         toPort=self.started_branch.toPort,
+                                                                         diagramScene=self.diagramScene,
+                                                                         branch=obj)
+
+                            else:
+                                name = 'Line ' + str(len(self.circuit.lines) + 1)
+                                obj = Line(bus_from=self.started_branch.bus_from.api_object,
+                                           bus_to=self.started_branch.bus_to.api_object,
+                                           name=name)
+
+                                obj.graphic_obj = LineGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                  toPort=self.started_branch.toPort,
+                                                                  diagramScene=self.diagramScene,
+                                                                  branch=obj)
 
                         # add the new object to the circuit
                         self.circuit.add_branch(obj)
@@ -747,6 +761,74 @@ class GridEditor(QSplitter):
         # delete the line from the circuit
         self.circuit.delete_line(line)
 
+        # delete from the schematic
+        self.diagramScene.removeItem(line.graphic_obj)
+
+    def convert_line_to_transformer(self, line: Line):
+        """
+        Convert a line to Transformer
+        :param line: Line instance
+        :return: Nothing
+        """
+        transformer = Transformer2W(bus_from=line.bus_from,
+                                    bus_to=line.bus_to,
+                                    name='Transformer',
+                                    active=line.active,
+                                    rate=line.rate,
+                                    r=line.R,
+                                    x=line.X,
+                                    b=line.B,
+                                    active_prof=line.active_prof,
+                                    rate_prof=line.rate_prof)
+
+        # add device to the circuit
+        self.circuit.add_transformer2w(transformer)
+
+        # add device to the schematic
+        transformer.graphic_obj = self.add_api_transformer(transformer)
+
+        # update position
+        transformer.graphic_obj.fromPort.update()
+        transformer.graphic_obj.toPort.update()
+
+        # delete the line from the circuit
+        self.circuit.delete_line(line)
+
+        # delete from the schematic
+        self.diagramScene.removeItem(line.graphic_obj)
+
+    def convert_line_to_vsc(self, line: Line):
+        """
+        Convert a line to voltage source converter
+        :param line: Line instance
+        :return: Nothing
+        """
+        vsc = VSC(bus_from=line.bus_from,
+                  bus_to=line.bus_to,
+                  name='VSC',
+                  active=line.active,
+                  rate=line.rate,
+                  r1=line.R,
+                  x1=line.X,
+                  Beq=line.B,
+                  m=1.0,
+                  active_prof=line.active_prof,
+                  rate_prof=line.rate_prof)
+
+        # add device to the circuit
+        self.circuit.add_vsc(vsc)
+
+        # add device to the schematic
+        vsc.graphic_obj = self.add_api_vsc(vsc)
+
+        # update position
+        vsc.graphic_obj.fromPort.update()
+        vsc.graphic_obj.toPort.update()
+
+        # delete the line from the circuit
+        self.circuit.delete_line(line)
+
+        # delete from the schematic
         self.diagramScene.removeItem(line.graphic_obj)
 
     def add_circuit_to_schematic(self, circuit: "MultiCircuit", explode_factor=1.0, prog_func=None, text_func=None):

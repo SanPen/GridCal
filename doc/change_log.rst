@@ -13,10 +13,12 @@ Hence if something goes wrong, you need to re-upload with a new Version number.
 Version 4.0.0
 ^^^^^^^^^^^^^^^^^^^^^
 
-- Massive re-writing of all the structures and the engine in order to have a more flexible approach to the devices
-  and how the information is passed from the asset manager (the circuit) to the simulations. Hence the version jump
-  attends to that massive effort.
+- Massive re-write of all the structures and the engine in order to have a more flexible approach to the devices
+  and how the information is passed from the asset manager (the circuit) to the simulations.
+  Hence the version jump attends to that massive effort.
 - Revamp of the context menus
+- Improved the transformer and line editors integrating the template selection
+- Replaced how all the GUI messages are handled
 - Fixed transformer editor Sbase conversion
 - Added HVDC line model
 - Added VSC branch model

@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/vsc.svg</file>
+    <file>icons/dc.svg</file>
     <file>icons/CatalogueAdd.svg</file>
     <file>icons/clear_runs.svg</file>
     <file>icons/to_hvdc.svg</file>

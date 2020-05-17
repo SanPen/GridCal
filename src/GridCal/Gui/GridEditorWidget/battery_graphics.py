@@ -18,6 +18,7 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.GuiFunctions import ObjectsModel
+from GridCal.Gui.GridEditorWidget.messages import *
 
 
 class BatteryGraphicItem(QGraphicsItemGroup):
@@ -116,7 +117,6 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         da.setIcon(del_icon)
         da.triggered.connect(self.remove)
 
-
         menu.exec_(event.screenPos())
 
     def remove(self):
@@ -124,9 +124,11 @@ class BatteryGraphicItem(QGraphicsItemGroup):
         Remove this element
         @return:
         """
-        self.diagramScene.removeItem(self.nexus)
-        self.diagramScene.removeItem(self)
-        self.api_object.bus.batteries.remove(self.api_object)
+        ok = yes_no_question('Are you sure that you want to remove this battery', 'Remove battery')
+        if ok:
+            self.diagramScene.removeItem(self.nexus)
+            self.diagramScene.removeItem(self)
+            self.api_object.bus.batteries.remove(self.api_object)
 
     def enable_disable_toggle(self):
         """

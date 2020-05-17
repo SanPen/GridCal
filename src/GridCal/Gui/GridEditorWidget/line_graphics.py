@@ -17,6 +17,7 @@ import numpy as np
 from GridCal.Gui.GuiFunctions import get_list_model
 from GridCal.Gui.GridEditorWidget.generic_graphics import *
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
+from GridCal.Gui.GridEditorWidget.messages import *
 from GridCal.Gui.GuiFunctions import BranchObjectModel
 from GridCal.Engine.Devices.line import Line, SequenceLineType, Tower, UndergroundLineType
 from GridCal.Engine.Devices.branch import BranchType
@@ -143,7 +144,6 @@ class LineEditor(QDialog):
         self.accept_btn = QPushButton()
         self.accept_btn.setText('Accept')
         self.accept_btn.clicked.connect(self.accept_click)
-
 
         # add all to the GUI
         if templates is not None:
@@ -486,53 +486,59 @@ class LineGraphicItem(QGraphicsLineItem):
         Remove this object in the diagram and the API
         @return:
         """
-        self.diagramScene.circuit.delete_branch(self.api_object)
-        self.diagramScene.removeItem(self)
+        ok = yes_no_question('Do you want to remove this line?', 'Remove line')
+
+        if ok:
+            self.diagramScene.circuit.delete_branch(self.api_object)
+            self.diagramScene.removeItem(self)
 
     def reduce(self):
         """
         Reduce this branch
         """
 
-        # get the index of the branch
-        br_idx = self.diagramScene.circuit.branches.index(self.api_object)
+        ok = yes_no_question('Do you want to reduce this line?', 'Reduce line')
 
-        # call the reduction routine
-        removed_branch, removed_bus, \
-            updated_bus, updated_branches = reduce_grid_brute(self.diagramScene.circuit, br_idx)
+        if ok:
+            # get the index of the branch
+            br_idx = self.diagramScene.circuit.branches.index(self.api_object)
 
-        # remove the reduced branch
-        removed_branch.graphic_obj.remove_symbol()
-        self.diagramScene.removeItem(removed_branch.graphic_obj)
+            # call the reduction routine
+            removed_branch, removed_bus, \
+                updated_bus, updated_branches = reduce_grid_brute(self.diagramScene.circuit, br_idx)
 
-        # update the buses (the deleted one and the updated one)
-        if removed_bus is not None:
-            # merge the removed bus with the remaining one
-            updated_bus.graphic_obj.merge(removed_bus.graphic_obj)
+            # remove the reduced branch
+            removed_branch.graphic_obj.remove_symbol()
+            self.diagramScene.removeItem(removed_branch.graphic_obj)
 
-            # remove the updated bus children
-            for g in updated_bus.graphic_obj.shunt_children:
-                self.diagramScene.removeItem(g.nexus)
-                self.diagramScene.removeItem(g)
-            # re-draw the children
-            updated_bus.graphic_obj.create_children_icons()
+            # update the buses (the deleted one and the updated one)
+            if removed_bus is not None:
+                # merge the removed bus with the remaining one
+                updated_bus.graphic_obj.merge(removed_bus.graphic_obj)
 
-            # remove bus
-            for g in removed_bus.graphic_obj.shunt_children:
-                self.diagramScene.removeItem(g.nexus)  # remove the links between the bus and the children
-            self.diagramScene.removeItem(removed_bus.graphic_obj)  # remove the bus and all the children contained
+                # remove the updated bus children
+                for g in updated_bus.graphic_obj.shunt_children:
+                    self.diagramScene.removeItem(g.nexus)
+                    self.diagramScene.removeItem(g)
+                # re-draw the children
+                updated_bus.graphic_obj.create_children_icons()
 
-            #
-            # updated_bus.graphic_obj.update()
+                # remove bus
+                for g in removed_bus.graphic_obj.shunt_children:
+                    self.diagramScene.removeItem(g.nexus)  # remove the links between the bus and the children
+                self.diagramScene.removeItem(removed_bus.graphic_obj)  # remove the bus and all the children contained
 
-        for br in updated_branches:
-            # remove the branch from the schematic
-            self.diagramScene.removeItem(br.graphic_obj)
-            # add the branch to the schematic with the rerouting and all
-            self.diagramScene.parent_.add_line(br)
-            # update both buses
-            br.bus_from.graphic_obj.update()
-            br.bus_to.graphic_obj.update()
+                #
+                # updated_bus.graphic_obj.update()
+
+            for br in updated_branches:
+                # remove the branch from the schematic
+                self.diagramScene.removeItem(br.graphic_obj)
+                # add the branch to the schematic with the rerouting and all
+                self.diagramScene.parent_.add_line(br)
+                # update both buses
+                br.bus_from.graphic_obj.update()
+                br.bus_to.graphic_obj.update()
 
     def remove_widget(self):
         """
@@ -733,16 +739,32 @@ class LineGraphicItem(QGraphicsLineItem):
             pass
 
     def to_transformer(self):
-        pass
+        """
+        Convert this object to HVDC
+        :return:
+        """
+        ok = yes_no_question('Are you sure that you want to convert this line into a transformer?', 'Convert line')
+        if ok:
+            editor = self.diagramScene.parent()
+            editor.convert_line_to_transformer(self.api_object)
 
     def to_hvdc(self):
         """
         Convert this object to HVDC
         :return:
         """
-        editor = self.diagramScene.parent()
-        editor.convert_line_to_hvdc(self.api_object)
+        ok = yes_no_question('Are you sure that you want to convert this line into a HVDC line?', 'Convert line')
+        if ok:
+            editor = self.diagramScene.parent()
+            editor.convert_line_to_hvdc(self.api_object)
 
     def to_vsc(self):
-        pass
+        """
+        Convert this object to VSC
+        :return:
+        """
+        ok = yes_no_question('Are you sure that you want to convert this line into a VSC?', 'Convert line')
+        if ok:
+            editor = self.diagramScene.parent()
+            editor.convert_line_to_vsc(self.api_object)
 

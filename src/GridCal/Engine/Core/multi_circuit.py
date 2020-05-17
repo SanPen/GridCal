@@ -915,10 +915,15 @@ class MultiCircuit:
         elif obj.device_type == DeviceType.HVDCLineDevice:
             self.add_hvdc(obj)
 
+        elif obj.device_type == DeviceType.VscDevice:
+            self.add_vsc(obj)
+
         elif obj.device_type == DeviceType.BranchDevice:
             # we need to convert it :D
             obj2 = convert_branch(obj)
             self.add_branch(obj2)  # call this again, but this time it is not a Branch object
+        else:
+            raise Exception('Unrecognized branch type ' + obj.device_type.value)
 
     def delete_branch(self, obj: Branch):
         """

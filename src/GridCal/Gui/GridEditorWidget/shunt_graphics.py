@@ -18,6 +18,7 @@ from PySide2.QtCore import QPointF, QLineF
 from PySide2.QtGui import *
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, QLine
 from GridCal.Gui.GuiFunctions import ObjectsModel
+from GridCal.Gui.GridEditorWidget.messages import *
 
 
 class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
@@ -129,9 +130,11 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
         Remove this element
         @return:
         """
-        self.diagramScene.removeItem(self.nexus)
-        self.diagramScene.removeItem(self)
-        self.api_object.bus.shunts.remove(self.api_object)
+        ok = yes_no_question('Are you sure that you want to remove this shunt', 'Remove shunt')
+        if ok:
+            self.diagramScene.removeItem(self.nexus)
+            self.diagramScene.removeItem(self)
+            self.api_object.bus.shunts.remove(self.api_object)
 
     def enable_disable_toggle(self):
         """

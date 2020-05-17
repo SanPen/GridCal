@@ -18,8 +18,9 @@ from GridCal.Gui.GridEditorWidget.generic_graphics import *
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GuiFunctions import BranchObjectModel
 from GridCal.Engine.Devices.hvdc_line import HvdcLine
-from GridCal.Engine.Devices.branch import Branch, BranchType
+from GridCal.Engine.Devices.branch import BranchType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
+from GridCal.Gui.GridEditorWidget.messages import *
 
 
 class HvdcGraphicItem(QGraphicsLineItem):
@@ -208,53 +209,58 @@ class HvdcGraphicItem(QGraphicsLineItem):
         Remove this object in the diagram and the API
         @return:
         """
-        self.diagramScene.circuit.delete_branch(self.api_object)
-        self.diagramScene.removeItem(self)
+        ok = yes_no_question('Do you want to remove this HVDC line?', 'Remove HVDC line')
+
+        if ok:
+            self.diagramScene.circuit.delete_branch(self.api_object)
+            self.diagramScene.removeItem(self)
 
     def reduce(self):
         """
         Reduce this branch
         """
+        ok = yes_no_question('Do you want to reduce this HVDC line?', 'Reduce HVDC line')
 
-        # get the index of the branch
-        br_idx = self.diagramScene.circuit.branches.index(self.api_object)
+        if ok:
+            # get the index of the branch
+            br_idx = self.diagramScene.circuit.branches.index(self.api_object)
 
-        # call the reduction routine
-        removed_branch, removed_bus, \
-            updated_bus, updated_branches = reduce_grid_brute(self.diagramScene.circuit, br_idx)
+            # call the reduction routine
+            removed_branch, removed_bus, \
+                updated_bus, updated_branches = reduce_grid_brute(self.diagramScene.circuit, br_idx)
 
-        # remove the reduced branch
-        removed_branch.graphic_obj.remove_symbol()
-        self.diagramScene.removeItem(removed_branch.graphic_obj)
+            # remove the reduced branch
+            removed_branch.graphic_obj.remove_symbol()
+            self.diagramScene.removeItem(removed_branch.graphic_obj)
 
-        # update the buses (the deleted one and the updated one)
-        if removed_bus is not None:
-            # merge the removed bus with the remaining one
-            updated_bus.graphic_obj.merge(removed_bus.graphic_obj)
+            # update the buses (the deleted one and the updated one)
+            if removed_bus is not None:
+                # merge the removed bus with the remaining one
+                updated_bus.graphic_obj.merge(removed_bus.graphic_obj)
 
-            # remove the updated bus children
-            for g in updated_bus.graphic_obj.shunt_children:
-                self.diagramScene.removeItem(g.nexus)
-                self.diagramScene.removeItem(g)
-            # re-draw the children
-            updated_bus.graphic_obj.create_children_icons()
+                # remove the updated bus children
+                for g in updated_bus.graphic_obj.shunt_children:
+                    self.diagramScene.removeItem(g.nexus)
+                    self.diagramScene.removeItem(g)
+                # re-draw the children
+                updated_bus.graphic_obj.create_children_icons()
 
-            # remove bus
-            for g in removed_bus.graphic_obj.shunt_children:
-                self.diagramScene.removeItem(g.nexus)  # remove the links between the bus and the children
-            self.diagramScene.removeItem(removed_bus.graphic_obj)  # remove the bus and all the children contained
+                # remove bus
+                for g in removed_bus.graphic_obj.shunt_children:
+                    self.diagramScene.removeItem(g.nexus)  # remove the links between the bus and the children
+                self.diagramScene.removeItem(removed_bus.graphic_obj)  # remove the bus and all the children contained
 
-            #
-            # updated_bus.graphic_obj.update()
+                #
+                # updated_bus.graphic_obj.update()
 
-        for br in updated_branches:
-            # remove the branch from the schematic
-            self.diagramScene.removeItem(br.graphic_obj)
-            # add the branch to the schematic with the rerouting and all
-            self.diagramScene.parent_.add_line(br)
-            # update both buses
-            br.bus_from.graphic_obj.update()
-            br.bus_to.graphic_obj.update()
+            for br in updated_branches:
+                # remove the branch from the schematic
+                self.diagramScene.removeItem(br.graphic_obj)
+                # add the branch to the schematic with the rerouting and all
+                self.diagramScene.parent_.add_line(br)
+                # update both buses
+                br.bus_from.graphic_obj.update()
+                br.bus_to.graphic_obj.update()
 
     def remove_widget(self):
         """

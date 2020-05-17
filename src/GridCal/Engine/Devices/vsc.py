@@ -27,8 +27,8 @@ from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, G
 class VSC(EditableDevice):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='VSC', idtag=None, active=True,
-                 r1=0.0001, x1=0.05, m=0.8, theta=0.1, G0=1e-5, Beq=0.001, rate=1e-9,
-                 mttf=0, mttr=0, cost=1200, cost_prof=None):
+                 r1=0.0001, x1=0.05, m=1.0, theta=0.1, Gsw=1e-5, Beq=0.001, rate=1e-9,
+                 mttf=0, mttr=0, cost=1200, cost_prof=None, rate_prof=None, active_prof=None):
         """
         Voltage source converter (VSC)
         :param bus_from:
@@ -39,7 +39,7 @@ class VSC(EditableDevice):
         :param x1:
         :param m:
         :param theta:
-        :param G0:
+        :param Gsw:
         :param Beq:
         :param rate:
         """
@@ -76,17 +76,20 @@ class VSC(EditableDevice):
                                                          'Cost': 'Cost_prof'})
 
         # the VSC must only connect from an AC to a DC bus
-        assert(bus_from.is_dc != bus_to.is_dc)
-
-        # connectivity:
-        # for the later primitives to make sense, the "bus from" must be AC and the "bus to" must be DC
-        if bus_to.is_dc:
-            self.bus_from = bus_from
-            self.bus_to = bus_to
+        # assert(bus_from.is_dc != bus_to.is_dc)
+        if bus_to is not None and bus_from is not None:
+            # connectivity:
+            # for the later primitives to make sense, the "bus from" must be AC and the "bus to" must be DC
+            if bus_to.is_dc:
+                self.bus_from = bus_from
+                self.bus_to = bus_to
+            else:
+                self.bus_from = bus_to
+                self.bus_to = bus_from
+                print('Corrected the connection direction of the VSC device:', self.name)
         else:
-            self.bus_from = bus_to
-            self.bus_to = bus_from
-            print('Corrected the connection direction of the VSC device:', self.name)
+            self.bus_from = None
+            self.bus_to = None
 
         # List of measurements
         self.measurements = list()
@@ -94,7 +97,7 @@ class VSC(EditableDevice):
         # total impedance and admittance in p.u.
         self.R1 = r1
         self.X1 = x1
-        self.G0 = G0
+        self.Gsw = Gsw
         self.Beq = Beq
         self.m = m
         self.theta = theta
@@ -106,11 +109,47 @@ class VSC(EditableDevice):
         self.mttr = mttr
 
         self.active = active
-        self.active_prof = None
+        self.active_prof = active_prof
 
         # branch rating in MVA
         self.rate = rate
-        self.rate_prof = None
+        self.rate_prof = rate_prof
 
         # branch type: Line, Transformer, etc...
         self.branch_type = BranchType.VSC
+
+    def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
+        """
+        Plot the time series results of this object
+        :param time_series: TimeSeries Instance
+        :param my_index: index of this object in the simulation
+        :param show_fig: Show the figure?
+        """
+
+        if time_series is not None:
+            fig = plt.figure(figsize=(12, 8))
+
+            ax_1 = fig.add_subplot(211)
+            ax_2 = fig.add_subplot(212)
+
+            x = time_series.results.time
+
+            # loading
+            y = time_series.results.loading * 100.0
+            df = pd.DataFrame(data=y[:, my_index], index=x, columns=[self.name])
+            ax_1.set_title('Loading', fontsize=14)
+            ax_1.set_ylabel('Loading [%]', fontsize=11)
+            df.plot(ax=ax_1)
+
+            # losses
+            y = time_series.results.losses
+            df = pd.DataFrame(data=y[:, my_index], index=x, columns=[self.name])
+            ax_2.set_title('Losses', fontsize=14)
+            ax_2.set_ylabel('Losses [MVA]', fontsize=11)
+            df.plot(ax=ax_2)
+
+            plt.legend()
+            fig.suptitle(self.name, fontsize=20)
+
+        if show_fig:
+            plt.show()

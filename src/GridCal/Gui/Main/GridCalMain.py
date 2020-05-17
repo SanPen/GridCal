@@ -26,6 +26,7 @@ from GridCal.Gui.GeneralDialogues import *
 from GridCal.Gui.GuiFunctions import *
 from GridCal.Gui.GIS.gis_dialogue import GISWindow
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
+from GridCal.Gui.GridEditorWidget.messages import *
 
 # Engine imports
 from GridCal.Engine.Core.snapshot_pf_data import SnapshotIsland
@@ -311,7 +312,7 @@ class MainGUI(QMainWindow):
         try:
             self.create_console()
         except TypeError:
-            self.msg('The console has failed because the QtConsole guys have a bug in their package :(')
+            error_msg('The console has failed because the QtConsole guys have a bug in their package :(')
 
         ################################################################################################################
         # Connections
@@ -337,8 +338,6 @@ class MainGUI(QMainWindow):
         self.ui.actionPower_flow_Stochastic.triggered.connect(self.run_stochastic)
 
         self.ui.actionLatin_Hypercube_Sampling.triggered.connect(self.run_lhs)
-
-        self.ui.actionTransient_stability.triggered.connect(self.run_transient_stability)
 
         self.ui.actionBlackout_cascade.triggered.connect(self.view_cascade_menu)
 
@@ -639,7 +638,7 @@ class MainGUI(QMainWindow):
                         self.open_file_now(filename=file_name)
 
                 else:
-                    self.msg('File type not accepted :(')
+                    error_msg('The file type ' + file_extension.lower() + ' is not accepted :(')
 
     def add_simulation(self, val: SimulationTypes):
         """
@@ -812,20 +811,20 @@ class MainGUI(QMainWindow):
         """
         self.console.clear()
 
-    def msg(self, text, title="Warning"):
-        """
-        Message box
-        :param text: Text to display
-        :param title: Name of the window
-        """
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
-        msg.setText(text)
-        # msg.setInformativeText("This is additional information")
-        msg.setWindowTitle(title)
-        # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QMessageBox.Ok)
-        retval = msg.exec_()
+    # def msg(self, text, title="Warning"):
+    #     """
+    #     Message box
+    #     :param text: Text to display
+    #     :param title: Name of the window
+    #     """
+    #     msg = QMessageBox()
+    #     msg.setIcon(QMessageBox.Information)
+    #     msg.setText(text)
+    #     # msg.setInformativeText("This is additional information")
+    #     msg.setWindowTitle(title)
+    #     # msg.setDetailedText("The details are as follows:")
+    #     msg.setStandardButtons(QMessageBox.Ok)
+    #     retval = msg.exec_()
 
     def console_msg(self, msg_):
         """
@@ -866,7 +865,7 @@ class MainGUI(QMainWindow):
                     self.circuit.build_graph()
                 except:
                     exc_type, exc_value, exc_traceback = sys.exc_info()
-                    self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Automatic layout')
+                    error_msg(str(exc_traceback) + '\n' + str(exc_value), 'Automatic layout')
 
             alg = dict()
             alg['circular_layout'] = nx.circular_layout
@@ -1002,7 +1001,7 @@ class MainGUI(QMainWindow):
                 self.open_file_threaded()
 
         else:
-            self.msg('There is a file being processed now.')
+            warning_msg('There is a file being processed now.')
 
     def open_file_threaded(self, post_function=None):
         """
@@ -1237,7 +1236,7 @@ class MainGUI(QMainWindow):
             self.stuff_running_now.append('file_save')
 
         else:
-            self.msg('There is a file being processed..')
+            warning_msg('There is a file being processed..')
 
     def post_file_save(self):
         """
@@ -1304,7 +1303,7 @@ class MainGUI(QMainWindow):
                 # TODO: Correct this function
                 self.circuit.export_pf(file_name=filename, power_flow_results=self.power_flow.results)
         else:
-            self.msg('There are no power flow results', 'Save power flow results')
+            warning_msg('There are no power flow results', 'Save power flow results')
 
     def export_object_profiles(self):
         """
@@ -1336,7 +1335,7 @@ class MainGUI(QMainWindow):
                 # TODO: correct this function
                 self.circuit.export_profiles(file_name=filename)
         else:
-            self.msg('There are no profiles!', 'Export object profiles')
+            warning_msg('There are no profiles!', 'Export object profiles')
 
     def export_all(self):
         """
@@ -1373,7 +1372,7 @@ class MainGUI(QMainWindow):
                 self.export_all_thread_object.done_signal.connect(self.post_export_all)
                 self.export_all_thread_object.start()
         else:
-            self.msg('There are no result available :/')
+            warning_msg('There are no result available :/')
 
     def post_export_all(self):
         """
@@ -1462,7 +1461,7 @@ class MainGUI(QMainWindow):
 
             self.grid_editor.schematic_from_api(explode_factor=explode_factor)
         else:
-            self.msg('The schematic drawing is disabled')
+            info_msg('The schematic drawing is disabled')
 
     def post_create_schematic(self):
         """
@@ -1494,10 +1493,10 @@ class MainGUI(QMainWindow):
                         pass  # the rate is ok
 
             else:
-                self.msg('Run a power flow simulation first.\nThe results are needed in this function.')
+                info_msg('Run a power flow simulation first.\nThe results are needed in this function.')
 
         else:
-            self.msg('There are no branches!')
+            warning_msg('There are no branches!')
 
     def detect_transformers(self):
         """
@@ -1518,7 +1517,7 @@ class MainGUI(QMainWindow):
                     pass  # is a line
 
         else:
-            self.msg('There are no branches!')
+            warning_msg('There are no branches!')
 
     def view_objects_data(self):
         """
@@ -1697,7 +1696,7 @@ class MainGUI(QMainWindow):
             else:
                 pass
         else:
-            self.msg('There are no profiles', 'Delete profiles')
+            warning_msg('There are no profiles', 'Delete profiles')
 
     def set_profiles_state_to_grid(self):
         """
@@ -1718,9 +1717,9 @@ class MainGUI(QMainWindow):
                 else:
                     pass
             else:
-                self.msg('No profile time selected', 'Set profile values')
+                warning_msg('No profile time selected', 'Set profile values')
         else:
-            self.msg('There are no profiles', 'Set profile values')
+            warning_msg('There are no profiles', 'Set profile values')
 
     def import_profiles(self):
         """
@@ -1753,9 +1752,9 @@ class MainGUI(QMainWindow):
                     self.circuit.format_profiles(self.profile_input_dialogue.time)
 
                 elif len(self.profile_input_dialogue.time) != len(self.circuit.time_profile):
-                    self.msg("The imported profile length does not match the existing one.\n"
-                             "Delete the existing profiles before continuing.\n"
-                             "The import action will not be performed")
+                    warning_msg("The imported profile length does not match the existing one.\n"
+                                "Delete the existing profiles before continuing.\n"
+                                "The import action will not be performed")
                     return False
 
                 # Assign profiles
@@ -1780,7 +1779,7 @@ class MainGUI(QMainWindow):
                 pass  # the dialogue was closed
 
         else:
-            self.msg("There are no objects to which to assign a profile")
+            warning_msg("There are no objects to which to assign a profile")
 
     def modify_profiles(self, operation='+'):
         """
@@ -2095,13 +2094,13 @@ class MainGUI(QMainWindow):
                         if self.optimal_power_flow.results is not None:
                             opf_results = self.optimal_power_flow.results
                         else:
-                            self.msg('There are no OPF results, '
-                                     'therefore this operation will not use OPF information.')
+                            warning_msg('There are no OPF results, '
+                                        'therefore this operation will not use OPF information.')
                             self.ui.actionOpf_to_Power_flow.setChecked(False)
                             opf_results = None
                     else:
-                        self.msg('There are no OPF results, '
-                                 'therefore this operation will not use OPF information.')
+                        warning_msg('There are no OPF results, '
+                                    'therefore this operation will not use OPF information.')
                         self.ui.actionOpf_to_Power_flow.setChecked(False)
                         opf_results = None
                 else:
@@ -2119,7 +2118,7 @@ class MainGUI(QMainWindow):
                 self.power_flow.start()
 
             else:
-                self.msg('Another simulation of the same type is running...')
+                warning_msg('Another simulation of the same type is running...')
         else:
             pass
 
@@ -2156,7 +2155,7 @@ class MainGUI(QMainWindow):
                 self.console_msg(msg_)
 
         else:
-            self.msg('There are no power flow results.\nIs there any slack bus or generator?', 'Power flow')
+            warning_msg('There are no power flow results.\nIs there any slack bus or generator?', 'Power flow')
             QtGui.QGuiApplication.processEvents()
 
         if len(self.power_flow.logger) > 0:
@@ -2189,8 +2188,8 @@ class MainGUI(QMainWindow):
                             sel_buses.append(i)
 
                     if len(sel_buses) == 0:
-                        self.msg('You need to enable some buses for short circuit.'
-                                 + '\nEnable them by right click, and selecting on the context menu.')
+                        warning_msg('You need to enable some buses for short circuit.'
+                                     + '\nEnable them by right click, and selecting on the context menu.')
                     else:
                         self.LOCK()
 
@@ -2221,15 +2220,15 @@ class MainGUI(QMainWindow):
 
                         except Exception as ex:
                             exc_type, exc_value, exc_traceback = sys.exc_info()
-                            self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Short circuit')
+                            error_msg(str(exc_traceback) + '\n' + str(exc_value), 'Short circuit')
                             self.short_circuit = None
                             self.UNLOCK()
 
                 else:
-                    self.msg(
-                        'Run a power flow simulation first.\nThe results are needed to initialize this simulation.')
+                    info_msg('Run a power flow simulation first.\n'
+                             'The results are needed to initialize this simulation.')
             else:
-                self.msg('Another short circuit is being executed now...')
+                warning_msg('Another short circuit is being executed now...')
         else:
             pass
 
@@ -2255,7 +2254,7 @@ class MainGUI(QMainWindow):
                                      loadings=self.short_circuit.results.loading)
             self.update_available_results()
         else:
-            warn('Something went wrong, There are no power flow results.')
+            error_msg('Something went wrong, There are no power short circuit results.')
 
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
@@ -2292,7 +2291,7 @@ class MainGUI(QMainWindow):
 
                     self.ptdf_analysis.start()
             else:
-                self.msg('Another PTDF is being executed now...')
+                warning_msg('Another PTDF is being executed now...')
         else:
             pass
 
@@ -2313,7 +2312,7 @@ class MainGUI(QMainWindow):
 
                 self.update_available_results()
             else:
-                self.msg('Something went wrong, There are no PTDF results.')
+                error_msg('Something went wrong, There are no PTDF results.')
 
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
@@ -2349,9 +2348,9 @@ class MainGUI(QMainWindow):
 
                     self.ptdf_ts_analysis.start()
                 else:
-                    self.msg('Another PTDF time series is being executed now...')
+                    warning_msg('Another PTDF time series is being executed now...')
             else:
-                self.msg('There are no time series...')
+                warning_msg('There are no time series...')
 
     def post_ptdf_ts(self):
         """
@@ -2377,7 +2376,7 @@ class MainGUI(QMainWindow):
 
                 self.update_available_results()
             else:
-                self.msg('Something went wrong, There are no PTDF Time series results.')
+                error_msg('Something went wrong, There are no PTDF Time series results.')
 
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
@@ -2391,7 +2390,7 @@ class MainGUI(QMainWindow):
             if SimulationTypes.OTDF_run not in self.stuff_running_now:
 
                 if self.circuit.time_profile is None:
-                    self.msg('OTDF needs a profile of at least length 1')
+                    info_msg('OTDF needs a profile of at least length 1')
 
                 else:
                     self.add_simulation(SimulationTypes.OTDF_run)
@@ -2410,7 +2409,7 @@ class MainGUI(QMainWindow):
                         self.otdf_analysis.done_signal.connect(self.post_otdf)
                         self.otdf_analysis.start()
             else:
-                self.msg('Another OTDF is being executed now...')
+                warning_msg('Another OTDF is being executed now...')
         else:
             pass
 
@@ -2431,7 +2430,7 @@ class MainGUI(QMainWindow):
 
                 self.update_available_results()
             else:
-                self.msg('Something went wrong, There are no PTDF results.')
+                error_msg('Something went wrong, There are no PTDF results.')
 
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
@@ -2519,7 +2518,7 @@ class MainGUI(QMainWindow):
                         # thread start
                         self.voltage_stability.start()
                     else:
-                        self.msg('Run a power flow simulation first.\n'
+                        info_msg('Run a power flow simulation first.\n'
                                  'The results are needed to initialize this simulation.')
 
                 elif use_profiles:
@@ -2555,9 +2554,9 @@ class MainGUI(QMainWindow):
                         # thread start
                         self.voltage_stability.start()
                     else:
-                        self.msg('Check the selected start and finnish time series indices.')
+                        info_msg('Check the selected start and finnish time series indices.')
             else:
-                self.msg('Another voltage collapse simulation is running...')
+                warning_msg('Another voltage collapse simulation is running...')
         else:
             pass
 
@@ -2583,9 +2582,9 @@ class MainGUI(QMainWindow):
                                          types=self.voltage_stability.results.bus_types)
                 self.update_available_results()
             else:
-                self.msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
+                info_msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
         else:
-            warn('Something went wrong, There are no voltage stability results.')
+            error_msg('Something went wrong, There are no voltage stability results.')
 
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
@@ -2611,7 +2610,7 @@ class MainGUI(QMainWindow):
                         if self.optimal_power_flow_time_series is None:
                             if use_opf_vals:
                                 use_opf_vals = False
-                                self.msg('There are no OPF time series, '
+                                info_msg('There are no OPF time series, '
                                          'therefore this operation will not use OPF information.')
                                 self.ui.actionOpf_to_Power_flow.setChecked(False)
 
@@ -2620,7 +2619,7 @@ class MainGUI(QMainWindow):
                             if self.optimal_power_flow_time_series.results is not None:
                                 opf_time_series_results = self.optimal_power_flow_time_series.results
                             else:
-                                self.msg('There are no OPF time series results, '
+                                info_msg('There are no OPF time series results, '
                                          'therefore this operation will not use OPF information.')
                                 self.ui.actionOpf_to_Power_flow.setChecked(False)
                                 opf_time_series_results = None
@@ -2645,9 +2644,9 @@ class MainGUI(QMainWindow):
                     self.time_series.start()
 
                 else:
-                    self.msg('There are no time series.', 'Time series')
+                    warning_msg('There are no time series.', 'Time series')
             else:
-                self.msg('Another time series power flow is being executed now...')
+                warning_msg('Another time series power flow is being executed now...')
         else:
             pass
 
@@ -2673,7 +2672,7 @@ class MainGUI(QMainWindow):
             self.update_available_results()
 
         else:
-            print('No results for the time series simulation.')
+            warning_msg('No results for the time series simulation.')
 
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
@@ -2710,13 +2709,12 @@ class MainGUI(QMainWindow):
 
                     self.monte_carlo.start()
                 else:
-                    self.msg('There are no time series.')
+                    warning_msg('There are no time series.')
 
             else:
-                self.msg('Another Monte Carlo simulation is running...')
+                warning_msg('Another Monte Carlo simulation is running...')
 
         else:
-            # self.msg('There are no time series.')
             pass
 
     def post_stochastic(self):
@@ -2774,9 +2772,9 @@ class MainGUI(QMainWindow):
 
                     self.latin_hypercube_sampling.start()
                 else:
-                    self.msg('There are no time series.')
+                    warning_msg('There are no time series.')
             else:
-                self.msg('Another latin hypercube is being sampled...')
+                warning_msg('Another latin hypercube is being sampled...')
         else:
             pass
 
@@ -2867,7 +2865,7 @@ class MainGUI(QMainWindow):
                 self.cascade.start()
 
             else:
-                self.msg('Another cascade is running...')
+                warning_msg('Another cascade is running...')
         else:
             pass
 
@@ -2959,7 +2957,7 @@ class MainGUI(QMainWindow):
                 self.optimal_power_flow.start()
 
             else:
-                self.msg('Another OPF is being run...')
+                warning_msg('Another OPF is being run...')
         else:
             pass
 
@@ -2984,9 +2982,9 @@ class MainGUI(QMainWindow):
 
             else:
 
-                self.msg('Some islands did not solve.\n'
-                         'Check that all branches have rating and \n'
-                         'that there is a generator at the slack node.', 'OPF')
+                warning_msg('Some islands did not solve.\n'
+                            'Check that all branches have rating and \n'
+                            'that there is a generator at the slack node.', 'OPF')
 
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
@@ -3040,10 +3038,10 @@ class MainGUI(QMainWindow):
                     self.optimal_power_flow_time_series.start()
 
                 else:
-                    self.msg('There are no time series.\nLoad time series are needed for this simulation.')
+                    warning_msg('There are no time series.\nLoad time series are needed for this simulation.')
 
             else:
-                self.msg('Another OPF time series is running already...')
+                warning_msg('Another OPF time series is running already...')
 
         else:
             pass
@@ -3086,59 +3084,6 @@ class MainGUI(QMainWindow):
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
 
-    def run_transient_stability(self):
-        """
-        Run transient stability
-        """
-        if len(self.circuit.buses) > 0:
-
-            if self.power_flow is not None:
-
-                # Since we must run this study in the same conditions as
-                # the last power flow, no compilation is needed
-
-                self.LOCK()
-
-                self.add_simulation(SimulationTypes.TransientStability_run)
-
-                options = TransientStabilityOptions()
-                options.t_sim = self.ui.transient_time_span_doubleSpinBox.value()
-                options.h = self.ui.transient_time_step_doubleSpinBox.value()
-                self.transient_stability = TransientStability(self.circuit,
-                                                              options,
-                                                              self.power_flow.results)
-
-                try:
-                    self.transient_stability.progress_signal.connect(self.ui.progressBar.setValue)
-                    self.transient_stability.progress_text.connect(self.ui.progress_label.setText)
-                    self.transient_stability.done_signal.connect(self.post_transient_stability)
-
-                    # Run
-                    self.transient_stability.start()
-
-                except Exception as ex:
-                    exc_type, exc_value, exc_traceback = sys.exc_info()
-                    self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Transient stability')
-                    self.transient_stability = None
-                    self.UNLOCK()
-
-            else:
-                self.msg('Run a power flow simulation first.\nThe results are needed to initialize this simulation.')
-        else:
-            pass
-
-    def post_transient_stability(self):
-        """
-        Executed when the transient stability is done
-        :return:
-        """
-        self.remove_simulation(SimulationTypes.TransientStability_run)
-
-        self.update_available_results()
-
-        if len(self.stuff_running_now) == 0:
-            self.UNLOCK()
-
     def copy_opf_to_time_series(self):
         """
         Copy the OPF generation values to the Time series object and execute a time series simulation
@@ -3162,11 +3107,11 @@ class MainGUI(QMainWindow):
                         pass
 
                 else:
-                    self.msg('There are no OPF time series execution.'
+                    info_msg('There are no OPF time series execution.'
                              '\nRun OPF time series to be able to copy the value to the time series object.')
 
             else:
-                self.msg('There are no time series.\nLoad time series are needed for this simulation.')
+                warning_msg('There are no time series.\nLoad time series are needed for this simulation.')
         else:
             pass
 
@@ -3183,9 +3128,6 @@ class MainGUI(QMainWindow):
                 rx_criteria = self.ui.rxThresholdCheckBox.isChecked()
                 exponent = self.ui.rxThresholdSpinBox.value()
                 rx_threshold = 1.0 / (10.0 ** exponent)
-                # type_criteria = self.ui.removeByTypeCheckBox.isChecked()
-                # selected_type_txt = self.ui.removeByTypeComboBox.currentText()
-                # selected_type = BranchTypeConverter(BranchType.Branch).conv[selected_type_txt]
 
                 # get the selected indices
                 checked = get_checked_indices(self.ui.removeByTypeListView.model())
@@ -3210,7 +3152,8 @@ class MainGUI(QMainWindow):
                                                              selected_types=options.selected_type)
                     if len(br_to_remove) > 0:
                         # raise dialogue
-                        elms = [self.circuit.branches[i] for i in br_to_remove]
+                        branches = self.circuit.get_branches()
+                        elms = [branches[i] for i in br_to_remove]
                         diag = ElementsDialogue('Elements to be reduced', elms)
                         diag.show()
                         diag.exec_()
@@ -3233,12 +3176,12 @@ class MainGUI(QMainWindow):
                         else:
                             pass
                     else:
-                        self.msg('There were no branches identified', 'Topological grid reduction')
+                        info_msg('There were no branches identified', 'Topological grid reduction')
                 else:
-                    self.msg('Select at least one reduction option in the topology settings',
-                             'Topological grid reduction')
+                    warning_msg('Select at least one reduction option in the topology settings',
+                                'Topological grid reduction')
             else:
-                self.msg('Another topological reduction is being conducted...', 'Topological grid reduction')
+                warning_msg('Another topological reduction is being conducted...', 'Topological grid reduction')
         else:
             pass
 
@@ -3303,11 +3246,12 @@ class MainGUI(QMainWindow):
                                 bus.graphic_obj.add_big_marker(color=color)
                     else:
 
-                        self.msg('No problems were detected, therefore no storage is suggested', 'Storage location')
+                        info_msg('No problems were detected, therefore no storage is suggested',
+                                 'Storage location')
 
                 else:
-                    self.msg('There is no time series simulation.\n It is needed for this functionality.',
-                             'Storage location')
+                    warning_msg('There is no time series simulation.\n It is needed for this functionality.',
+                                'Storage location')
 
             else:
 
@@ -3746,67 +3690,67 @@ class MainGUI(QMainWindow):
                 if self.power_flow.results is not None:
                     self.results_mdl = self.power_flow.results.mdl(result_type=study_type)
                 else:
-                    self.msg('There seem to be no results :(')
+                    warning_msg('There seem to be no results :(')
 
             elif study_name == TimeSeries.name:
                 if self.time_series.results is not None:
                     self.results_mdl = self.time_series.results.mdl(result_type=study_type)
                 else:
-                    self.msg('There seem to be no results :(')
+                    warning_msg('There seem to be no results :(')
 
             elif study_name == VoltageCollapse.name:
                 if self.voltage_stability.results is not None:
                     self.results_mdl = self.voltage_stability.results.mdl(result_type=study_type)
                 else:
-                    self.msg('There seem to be no results :(')
+                    warning_msg('There seem to be no results :(')
 
             elif study_name == MonteCarlo.name:
                 if self.monte_carlo.results is not None:
                     self.results_mdl = self.monte_carlo.results.mdl(result_type=study_type)
                 else:
-                    self.msg('There seem to be no results :(')
+                    warning_msg('There seem to be no results :(')
 
             elif study_name == LatinHypercubeSampling.name:
                 if self.latin_hypercube_sampling.results is not None:
                     self.results_mdl = self.latin_hypercube_sampling.results.mdl(result_type=study_type)
                 else:
-                    self.msg('There seem to be no results :(')
+                    warning_msg('There seem to be no results :(')
 
             elif study_name == ShortCircuit.name:
                 if self.short_circuit.results is not None:
                     self.results_mdl = self.short_circuit.results.mdl(result_type=study_type)
                 else:
-                    self.msg('There seem to be no results :(')
+                    warning_msg('There seem to be no results :(')
 
             elif study_name == OptimalPowerFlow.name:
                 if self.optimal_power_flow.results is not None:
                     self.results_mdl = self.optimal_power_flow.results.mdl(result_type=study_type)
                 else:
-                    self.msg('There seem to be no results :(')
+                    warning_msg('There seem to be no results :(')
 
             elif study_name == OptimalPowerFlowTimeSeries.name:
                 if self.optimal_power_flow_time_series.results is not None:
                     self.results_mdl = self.optimal_power_flow_time_series.results.mdl(result_type=study_type)
                 else:
-                    self.msg('There seem to be no results :(')
+                    warning_msg('There seem to be no results :(')
 
             elif study_name == PTDF.name:
                 if self.ptdf_analysis.results is not None:
                     self.results_mdl = self.ptdf_analysis.results.mdl(result_type=study_type)
                 else:
-                    self.msg('There seem to be no results :(')
+                    warning_msg('There seem to be no results :(')
 
             elif study_name == PtdfTimeSeries.name:
                 if self.ptdf_ts_analysis.results is not None:
                     self.results_mdl = self.ptdf_ts_analysis.results.mdl(result_type=study_type)
                 else:
-                    self.msg('There seem to be no results :(')
+                    warning_msg('There seem to be no results :(')
 
             elif study_name == NMinusK.name:
                 if self.otdf_analysis.results is not None:
                     self.results_mdl = self.otdf_analysis.results.mdl(result_type=study_type)
                 else:
-                    self.msg('There seem to be no results :(')
+                    warning_msg('There seem to be no results :(')
 
             if self.results_mdl is not None:
                 # set the table model
@@ -3880,9 +3824,9 @@ class MainGUI(QMainWindow):
                     mdl.save_to_csv(f)
                     print('Saved!')
                 else:
-                    self.msg(file[0] + ' is not valid :(')
+                    error_msg(file[0] + ' is not valid :(')
         else:
-            self.msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
+            warning_msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
 
     def copy_results_data(self):
         """
@@ -3893,37 +3837,37 @@ class MainGUI(QMainWindow):
             mdl.copy_to_clipboard()
             print('Copied!')
         else:
-            self.msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
+            warning_msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
 
-    def item_results_plot(self):
-        """
-        Same as result_type_click but for the selected items
-        :return:
-        """
-        mdl = self.ui.result_element_selection_listView.model()
-        if mdl is not None:
-            indices = get_checked_indices(mdl)
-            self.result_type_click(qt_val=None, indices=indices)
+    # def item_results_plot(self):
+    #     """
+    #     Same as result_type_click but for the selected items
+    #     :return:
+    #     """
+    #     mdl = self.ui.result_element_selection_listView.model()
+    #     if mdl is not None:
+    #         indices = get_checked_indices(mdl)
+    #         self.result_type_click(qt_val=None, indices=indices)
 
-    def check_all_result_objects(self):
-        """
-        Check all the result objects
-        :return:
-        """
-        mdl = self.ui.result_element_selection_listView.model()
-        if mdl is not None:
-            for row in range(mdl.rowCount()):
-                mdl.item(row).setCheckState(QtCore.Qt.Checked)
+    # def check_all_result_objects(self):
+    #     """
+    #     Check all the result objects
+    #     :return:
+    #     """
+    #     mdl = self.ui.result_element_selection_listView.model()
+    #     if mdl is not None:
+    #         for row in range(mdl.rowCount()):
+    #             mdl.item(row).setCheckState(QtCore.Qt.Checked)
 
-    def check_none_result_objects(self):
-        """
-        Check all the result objects
-        :return:
-        """
-        mdl = self.ui.result_element_selection_listView.model()
-        if mdl is not None:
-            for row in range(mdl.rowCount()):
-                mdl.item(row).setCheckState(QtCore.Qt.Unchecked)
+    # def check_none_result_objects(self):
+    #     """
+    #     Check all the result objects
+    #     :return:
+    #     """
+    #     mdl = self.ui.result_element_selection_listView.model()
+    #     if mdl is not None:
+    #         for row in range(mdl.rowCount()):
+    #             mdl.item(row).setCheckState(QtCore.Qt.Unchecked)
 
     def set_state(self):
         """
@@ -3935,7 +3879,7 @@ class MainGUI(QMainWindow):
         if idx > -1:
             self.circuit.set_state(t=idx)
         else:
-            self.msg('No time state selected', 'Set state')
+            info_msg('No time state selected', 'Set state')
 
     def set_value_to_column(self):
         """
@@ -3947,12 +3891,11 @@ class MainGUI(QMainWindow):
         col = idx.column()
         if mdl is not None:
             if col > -1:
-                # print(idx.row(), idx.column())
                 mdl.copy_to_column(idx)
                 # update the view
                 self.view_objects_data()
             else:
-                self.msg('Select some element to serve as source to copy', 'Set value to column')
+                info_msg('Select some element to serve as source to copy', 'Set value to column')
         else:
             pass
 
@@ -4115,18 +4058,18 @@ class MainGUI(QMainWindow):
 
                 elif tpe == 'Wires':
 
-                    self.msg('No editor available.\nThe values can be changes from within the table.', 'Wires')
+                    warning_msg('No editor available.\nThe values can be changes from within the table.', 'Wires')
 
                 elif tpe == 'Transformers':
 
-                    self.msg('No editor available.\nThe values can be changes from within the table.', 'Transformers')
+                    warning_msg('No editor available.\nThe values can be changes from within the table.', 'Transformers')
 
                 else:
                     pass
             else:
-                self.msg('Select an element from the table')
+                info_msg('Select an element from the table')
         else:
-            self.msg('Select a catalogue element and then a catalogue object')
+            info_msg('Select a catalogue element and then a catalogue object')
 
         if something_happened:
             self.catalogue_element_selected()
@@ -4174,9 +4117,9 @@ class MainGUI(QMainWindow):
                 else:
                     pass
             else:
-                self.msg('Select an element from the table')
+                info_msg('Select an element from the table')
         else:
-            self.msg('Select a catalogue element and then a catalogue object')
+            info_msg('Select a catalogue element and then a catalogue object')
 
         if something_happened:
             self.catalogue_element_selected()
@@ -4293,13 +4236,13 @@ class MainGUI(QMainWindow):
                         dlg.exec_()
 
                 else:
-                    self.msg(tpe_name + ' is not in the types', 'Assign branch type')
+                    warning_msg(tpe_name + ' is not in the types', 'Assign branch type')
                     # update catalogue displayed
 
             else:
-                self.msg('Select a type from the catalogue not the generic category', 'Assign branch type')
+                info_msg('Select a type from the catalogue not the generic category', 'Assign branch type')
         else:
-            self.msg('Select a type from the catalogue', 'Assign branch type')
+            info_msg('Select a type from the catalogue', 'Assign branch type')
 
     def process_templates(self):
         """
@@ -4361,7 +4304,7 @@ class MainGUI(QMainWindow):
             mdl.copy_to_clipboard()
             print('Copied!')
         else:
-            self.msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
+            warning_msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
 
     def paste_profiles(self):
         """
@@ -4383,7 +4326,7 @@ class MainGUI(QMainWindow):
             mdl.paste_from_clipboard(row_idx=row_idx, col_idx=col_idx)
             print('Pasted!')
         else:
-            self.msg('There is no profile displayed, please display one', 'Paste profile to clipboard')
+            warning_msg('There is no profile displayed, please display one', 'Paste profile to clipboard')
 
     def undo(self):
         """
@@ -4455,7 +4398,7 @@ class MainGUI(QMainWindow):
                 try:
                     args = tpe(args)
                 except:
-                    self.msg('Could not parse the argument for the data type')
+                    error_msg('Could not parse the argument for the data type')
                     return
 
                 filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) > args]
@@ -4467,7 +4410,7 @@ class MainGUI(QMainWindow):
                 try:
                     args = tpe(args)
                 except:
-                    self.msg('Could not parse the argument for the data type')
+                    error_msg('Could not parse the argument for the data type')
                     return
 
                 filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) < args]
@@ -4479,7 +4422,7 @@ class MainGUI(QMainWindow):
                 try:
                     args = tpe(args)
                 except:
-                    self.msg('Could not parse the argument for the data type')
+                    error_msg('Could not parse the argument for the data type')
                     return
 
                 filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) >= args]
@@ -4491,7 +4434,7 @@ class MainGUI(QMainWindow):
                 try:
                     args = tpe(args)
                 except:
-                    self.msg('Could not parse the argument for the data type')
+                    error_msg('Could not parse the argument for the data type')
                     return
 
                 filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) <= args]
@@ -4505,7 +4448,7 @@ class MainGUI(QMainWindow):
                     try:
                         args = tpe(args)
                     except:
-                        self.msg('Could not parse the argument for the data type')
+                        error_msg('Could not parse the argument for the data type')
                         return
 
                     filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).lower()]
@@ -4514,7 +4457,7 @@ class MainGUI(QMainWindow):
                     filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).name.lower()]
 
                 else:
-                    self.msg('This filter type is only valid for strings')
+                    info_msg('This filter type is only valid for strings')
 
             elif command.startswith('='):
                 # Exact match
@@ -4525,7 +4468,7 @@ class MainGUI(QMainWindow):
                     try:
                         args = tpe(args)
                     except:
-                        self.msg('Could not parse the argument for the data type')
+                        error_msg('Could not parse the argument for the data type')
                         return
 
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() == args]
@@ -4545,7 +4488,7 @@ class MainGUI(QMainWindow):
                     try:
                         args = tpe(args)
                     except:
-                        self.msg('Could not parse the argument for the data type')
+                        error_msg('Could not parse the argument for the data type')
                         return
 
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() != args]
@@ -4614,7 +4557,7 @@ class MainGUI(QMainWindow):
                         pass
 
                 else:
-                    self.msg('This function is only applicable to buses')
+                    info_msg('This function is only applicable to buses')
 
             else:
                 # no objects
@@ -4681,7 +4624,7 @@ class MainGUI(QMainWindow):
                 else:
                     pass
             else:
-                self.msg('Select some cells')
+                info_msg('Select some cells')
         else:
             pass
 
@@ -4748,7 +4691,7 @@ class MainGUI(QMainWindow):
                         self.set_big_bus_marker(buses=buses, color=color)
 
                 else:
-                    self.msg('Select some elements to highlight', 'Highlight')
+                    info_msg('Select some elements to highlight', 'Highlight')
             else:
                 pass
 
@@ -4807,10 +4750,10 @@ class MainGUI(QMainWindow):
                             color = QColor(r * 255, g * 255, b * 255, a * 255)
                             bus.graphic_obj.add_big_marker(color=color)
                     else:
-                        self.msg('The maximum value is 0, so the coloring cannot be applied',
+                        info_msg('The maximum value is 0, so the coloring cannot be applied',
                                  'Highlight based on property')
                 else:
-                    self.msg('The selected property must be of a numeric type',
+                    info_msg('The selected property must be of a numeric type',
                              'Highlight based on property')
 
             else:
@@ -4848,7 +4791,7 @@ class MainGUI(QMainWindow):
                 else:
                     pass
             else:
-                self.msg('Select some elements from the schematic', 'Delete buses')
+                info_msg('Select some elements from the schematic', 'Delete buses')
         else:
             pass
 
@@ -4863,7 +4806,7 @@ class MainGUI(QMainWindow):
             for k, bus in selected_buses:
                 bus.graphic_obj.set_position(x=bus.x, y=bus.y)
         else:
-            self.msg('Select some elements from the schematic', 'Fix buses locations')
+            info_msg('Select some elements from the schematic', 'Fix buses locations')
 
     def copy_opf_to_profiles(self):
         """
@@ -4882,9 +4825,9 @@ class MainGUI(QMainWindow):
                         gen.P_prof = self.optimal_power_flow_time_series.results.generator_power[:, i]
 
             else:
-                self.msg('The OPF time series has no results :(')
+                warning_msg('The OPF time series has no results :(')
         else:
-            self.msg('The OPF time series has not been run!')
+            warning_msg('The OPF time series has not been run!')
 
     def valid_time_series(self):
         """
@@ -4935,7 +4878,7 @@ class MainGUI(QMainWindow):
                 self.enable_manual_file_operations(False)
 
             else:
-                self.msg('Cannot sync because the file does not exist.\nDid you save the model?')
+                warning_msg('Cannot sync because the file does not exist.\nDid you save the model?')
                 self.ui.actionSync.setChecked(False)
 
                 # enable the regular save button

@@ -19,6 +19,7 @@ from PySide2.QtGui import *
 from GridCal.Engine.Devices.load import Load
 from GridCal.Gui.GridEditorWidget.generic_graphics import *
 from GridCal.Gui.GuiFunctions import ObjectsModel
+from GridCal.Gui.GridEditorWidget.messages import *
 
 
 class LoadGraphicItem(QGraphicsItemGroup):
@@ -120,9 +121,11 @@ class LoadGraphicItem(QGraphicsItemGroup):
         Remove this element
         @return:
         """
-        self.diagramScene.removeItem(self.nexus)
-        self.diagramScene.removeItem(self)
-        self.api_object.bus.loads.remove(self.api_object)
+        ok = yes_no_question('Are you sure that you want to remove this load', 'Remove load')
+        if ok:
+            self.diagramScene.removeItem(self.nexus)
+            self.diagramScene.removeItem(self)
+            self.api_object.bus.loads.remove(self.api_object)
 
     def enable_disable_toggle(self):
         """

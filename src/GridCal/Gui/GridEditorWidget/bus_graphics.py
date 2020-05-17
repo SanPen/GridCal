@@ -27,6 +27,7 @@ from GridCal.Gui.GridEditorWidget.generator_graphics import GeneratorGraphicItem
 from GridCal.Gui.GridEditorWidget.static_generator_graphics import StaticGeneratorGraphicItem
 from GridCal.Gui.GridEditorWidget.battery_graphics import BatteryGraphicItem
 from GridCal.Gui.GridEditorWidget.shunt_graphics import ShuntGraphicItem
+from GridCal.Gui.GridEditorWidget.messages import *
 
 
 class BusGraphicItem(QGraphicsRectItem):
@@ -293,6 +294,14 @@ class BusGraphicItem(QGraphicsRectItem):
         sc.setChecked(self.sc_enabled)
         sc.triggered.connect(self.enable_disable_sc)
 
+        dc = menu.addAction('Is a DC bus')
+        dc_icon = QIcon()
+        dc_icon.addPixmap(QPixmap(":/Icons/icons/dc.svg"))
+        dc.setIcon(dc_icon)
+        dc.setCheckable(True)
+        dc.setChecked(self.api_object.is_dc)
+        dc.triggered.connect(self.enable_disable_dc)
+
         ra3 = menu.addAction('Delete all the connections')
         del2_icon = QIcon()
         del2_icon.addPixmap(QPixmap(":/Icons/icons/delete_conn.svg"))
@@ -346,7 +355,9 @@ class BusGraphicItem(QGraphicsRectItem):
         menu.exec_(event.screenPos())
 
     def delete_all_connections(self):
-
+        """
+        Delete all bus connections
+        """
         self.terminal.remove_all_connections()
 
     def reduce(self):
@@ -354,22 +365,25 @@ class BusGraphicItem(QGraphicsRectItem):
         Reduce this bus
         :return:
         """
-        reduce_buses(self.diagramScene.circuit, [self.api_object])
-
-        self.remove()
+        ok = yes_no_question('Are you sure that you want to reduce this bus', 'Reduce bus')
+        if ok:
+            reduce_buses(self.diagramScene.circuit, [self.api_object])
+            self.remove()
 
     def remove(self):
         """
         Remove this element
         @return:
         """
-        self.delete_all_connections()
+        ok = yes_no_question('Are you sure that you want to remove this bus', 'Remove bus')
+        if ok:
+            self.delete_all_connections()
 
-        for g in self.shunt_children:
-            self.diagramScene.removeItem(g.nexus)
+            for g in self.shunt_children:
+                self.diagramScene.removeItem(g.nexus)
 
-        self.diagramScene.removeItem(self)
-        self.diagramScene.circuit.delete_bus(self.api_object)
+            self.diagramScene.removeItem(self)
+            self.diagramScene.circuit.delete_bus(self.api_object)
 
     def enable_disable_toggle(self):
         """
@@ -403,10 +417,18 @@ class BusGraphicItem(QGraphicsRectItem):
             # self.tile.setPen(QPen(QColor(ACTIVE['color']), self.pen_width))
             self.tile.setPen(QPen(Qt.transparent, self.pen_width))
             self.sc_enabled = False
-
         else:
             self.sc_enabled = True
             self.tile.setPen(QPen(QColor(EMERGENCY['color']), self.pen_width))
+
+    def enable_disable_dc(self):
+        """
+        Activates or deactivates the bus as a DC bus
+        """
+        if self.api_object.is_dc:
+            self.api_object.is_dc = False
+        else:
+            self.api_object.is_dc = True
 
     def plot_profiles(self):
         """
