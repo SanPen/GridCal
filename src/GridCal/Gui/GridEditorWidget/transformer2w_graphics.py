@@ -97,13 +97,13 @@ class TransformerEditor(QDialog):
                     try:
                         idx = self.templates.index(self.current_template)
                         self.catalogue_combo.setCurrentIndex(idx)
-                        # self.load_template(self.current_template)
 
+                        # set the template parameters
                         Sn = self.current_template.rating  # MVA
                         Pcu = self.current_template.Pcu  # kW
                         Pfe = self.current_template.Pfe  # kW
                         I0 = self.current_template.I0  # %
-                        Vsc = self.current_template.Vsc
+                        Vsc = self.current_template.Vsc  # %
                     except:
                         pass
 
@@ -161,6 +161,7 @@ class TransformerEditor(QDialog):
             self.layout.addWidget(QLabel("Available templates"))
             self.layout.addWidget(self.catalogue_combo)
             self.layout.addWidget(self.load_template_btn)
+            self.layout.addWidget(QLabel(""))
 
         self.layout.addWidget(QLabel("Sn: Nominal power [MVA]"))
         self.layout.addWidget(self.sn_spinner)

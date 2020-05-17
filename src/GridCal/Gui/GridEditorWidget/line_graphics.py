@@ -18,7 +18,7 @@ from GridCal.Gui.GuiFunctions import get_list_model
 from GridCal.Gui.GridEditorWidget.generic_graphics import *
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
 from GridCal.Gui.GuiFunctions import BranchObjectModel
-from GridCal.Engine.Devices.line import Line, SequenceLineType, Tower
+from GridCal.Engine.Devices.line import Line, SequenceLineType, Tower, UndergroundLineType
 from GridCal.Engine.Devices.branch import BranchType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
 
@@ -61,7 +61,6 @@ class LineEditor(QDialog):
 
         R = self.branch.R * Zbase
         X = self.branch.X * Zbase
-        G = 0.0
         B = self.branch.B * Ybase
 
         I = self.branch.rate / Vf  # current in kA
@@ -78,7 +77,25 @@ class LineEditor(QDialog):
                     try:
                         idx = self.templates.index(self.current_template)
                         self.catalogue_combo.setCurrentIndex(idx)
-                        self.load_template(self.current_template)
+
+                        if isinstance(self.current_template, SequenceLineType):
+                            I = self.current_template.rating
+                            R = self.current_template.R
+                            X = self.current_template.X
+                            B = self.current_template.B
+
+                        if isinstance(self.current_template, UndergroundLineType):
+                            I = self.current_template.rating
+                            R = self.current_template.R
+                            X = self.current_template.X
+                            B = self.current_template.B
+
+                        elif isinstance(self.current_template, Tower):
+                            I = self.current_template.rating
+                            R = self.current_template.R1
+                            X = self.current_template.X1
+                            B = self.current_template.Bsh1
+
                     except:
                         pass
 
@@ -115,13 +132,6 @@ class LineEditor(QDialog):
         self.x_spinner.setDecimals(6)
         self.x_spinner.setValue(X)
 
-        # G
-        # self.g_spinner = QDoubleSpinBox()
-        # self.g_spinner.setMinimum(0)
-        # self.g_spinner.setMaximum(9999999)
-        # self.g_spinner.setDecimals(6)
-        # self.g_spinner.setValue(G)
-
         # B
         self.b_spinner = QDoubleSpinBox()
         self.b_spinner.setMinimum(0)
@@ -134,13 +144,13 @@ class LineEditor(QDialog):
         self.accept_btn.setText('Accept')
         self.accept_btn.clicked.connect(self.accept_click)
 
-        # labels
 
         # add all to the GUI
         if templates is not None:
             self.layout.addWidget(QLabel("Available templates"))
             self.layout.addWidget(self.catalogue_combo)
             self.layout.addWidget(self.load_template_btn)
+            self.layout.addWidget(QLabel(""))
 
         self.layout.addWidget(QLabel("L: Line length [Km]"))
         self.layout.addWidget(self.l_spinner)
@@ -197,8 +207,20 @@ class LineEditor(QDialog):
         self.accept()
 
     def load_template(self, template):
+        """
 
+        :param template:
+        :return:
+        """
         if isinstance(template, SequenceLineType):
+            self.i_spinner.setValue(template.rating)
+            self.r_spinner.setValue(template.R)
+            self.x_spinner.setValue(template.X)
+            self.b_spinner.setValue(template.B)
+
+            self.selected_template = template
+
+        elif isinstance(template, UndergroundLineType):
             self.i_spinner.setValue(template.rating)
             self.r_spinner.setValue(template.R)
             self.x_spinner.setValue(template.X)
