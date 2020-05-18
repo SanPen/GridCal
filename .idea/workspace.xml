@@ -19,7 +19,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Distribution Grid Tutorial File Creation">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Distribution Grid Tutorial File Creation Update Step 0 Step 1">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/tutorials/distribution_grid.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/tutorials/distribution_grid.rst" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -122,7 +123,35 @@
       <option name="project" value="LOCAL" />
       <updated>1589567438818</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Distribution Grid Tutorial File Creation">
+      <created>1589817536673</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1589817536673</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Distribution Grid Tutorial File Creation Update Step 0 Step 1">
+      <created>1589817595280</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1589817595280</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Distribution Grid Tutorial File Creation Update Step 0 Step 1">
+      <created>1589817598351</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1589817598351</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Distribution Grid Tutorial File Creation Update Step 0 Step 1">
+      <created>1589817607895</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1589817607895</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -140,7 +169,9 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Trial" />
     <MESSAGE value="Distribution Grid Tutorial File Creation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Distribution Grid Tutorial File Creation" />
+    <MESSAGE value="Distribution Grid Tutorial Update Step 0 Step 1" />
+    <MESSAGE value="Distribution Grid Tutorial File Creation Update Step 0 Step 1" />
+    <option name="LAST_COMMIT_MESSAGE" value="Distribution Grid Tutorial File Creation Update Step 0 Step 1" />
   </component>
   <component name="WindowStateProjectService">
     <state x="449" y="152" width="376" height="361" key="FileChooserDialogImpl" timestamp="1589563951442">
@@ -182,9 +213,10 @@
     </state>
     <state x="485" y="167" width="1016" height="738" key="SettingsEditor/67.27.1853.1052@67.27.1853.1052" timestamp="1588272368037" />
     <state x="60" y="246" width="900" height="720" key="SettingsEditor/960.0.1280.720/0.246.960.540@960.0.1280.720" timestamp="1589563987445" />
-    <state x="1120" y="176" width="800" height="536" key="Vcs.Push.Dialog.v2" timestamp="1589567691665">
-      <screen x="960" y="0" width="1280" height="720" />
+    <state x="240" y="757" width="800" height="536" key="Vcs.Push.Dialog.v2" timestamp="1589817539860">
+      <screen x="0" y="493" width="1920" height="1080" />
     </state>
+    <state x="240" y="757" key="Vcs.Push.Dialog.v2/1920.0.2560.1440/0.493.1920.1080@0.493.1920.1080" timestamp="1589817539860" />
     <state x="1120" y="176" width="800" height="536" key="Vcs.Push.Dialog.v2/960.0.1280.720/0.246.960.540@960.0.1280.720" timestamp="1589567691665" />
     <state x="570" y="645" width="770" height="773" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1589814958715">
       <screen x="0" y="493" width="1920" height="1080" />

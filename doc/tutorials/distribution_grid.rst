@@ -77,7 +77,89 @@ Open GridCal:
 .. figure:: ../figures/tutorials/dg/transformer.png
     :scale: 70 %
 
-A transformer will be created between HV Bus and Bus 2.
+Note: A transformer will be created between HV Bus and Bus 2 when nominal voltage values are different.
+Note: The name of an element may not change until you 'double click' the element on the diagram canvas after the change.
 
 Step 2: Create a Lines of Different Lengths
 -------------------------------------------
+
+1. Create 3 more Buses (Bus 3, Bus 4 and Bus 5) and create a branch between them.
+
+.. figure:: ../figures/tutorials/dg/threebusaddition.png
+    :scale: 70 %
+
+2. Select the branch between Bus 2 and Bus 3 and change its parameters to:
+
++------------+--------+
+|   name     | Line 1 |
++------------+--------+
+| length[km] |   5    |
++------------+--------+
+
+3. Select the branch between Bus 3 and Bus 4 and change its parameters to:
+
++------------+--------+
+|   name     | Line 2 |
++------------+--------+
+| length[km] |   3    |
++------------+--------+
+
+4. Select the branch between Bus 4 and Bus 5 and change its parameters to:
+
++------------+--------+
+|   name     | Line 3 |
++------------+--------+
+| length[km] |   7    |
++------------+--------+
+
+
+Note: Element placing can be changed by 'clicking' the square on the right hand side of a bus.
+
+Step 3: Add more Lines and Buses
+--------------------------------
+
+1. Add Bus 6 to the right of Bus 2.
+2. Add Bus 7 to the right of Bus 3.
+3. Add Bus 8 and Bus 10 to the left of Bus 4.
+4. Add Bus 9 and Bus 11 to the left of Bus 5.
+
+.. figure:: ../figures/tutorials/dg/morebuses.png
+    :scale: 70 %
+
+5. Select the branch between Bus 2 and Bus 6 and change its parameters to:
+
++------------+--------+
+|   name     | Line 4 |
++------------+--------+
+| length[km] |   2    |
++------------+--------+
+
+5. Select the branch between Bus 3 and Bus 7 and change its parameters to:
+
++------------+--------+
+|   name     | Line 5 |
++------------+--------+
+| length[km] |   1.6  |
++------------+--------+
+
+6. Select the branch between Bus 4 and Bus 8 and change its parameters to:
+
++------------+--------+
+|   name     | Line 7 |
++------------+--------+
+| length[km] |   1.5  |
++------------+--------+
+
+7. Select the branch between Bus 5 and Bus 9 and change its parameters to:
+
++------------+--------+
+|   name     | Line 8 |
++------------+--------+
+| length[km] |    2   |
++------------+--------+
+
+.. figure:: ../figures/tutorials/dg/morebuseslines.png
+    :scale: 70 %
+
+Step 4: Create Loads
+--------------------
