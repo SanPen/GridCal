@@ -121,9 +121,9 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
                 if losses is not None:
                     tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
                 branch.graphic_obj.setToolTipText(tooltip)
-                branch.graphic_obj.set_pen(QtGui.QPen(color, w, style))
-                branch.graphic_obj.symbol.color = color
-                branch.graphic_obj.symbol.setBrush(color)
+                branch.graphic_obj.set_colour(color, w, style)
+                # if branch.graphic_obj.symbol is not None:
+                #     branch.graphic_obj.symbol.setBrush(color)
 
     if failed_br_idx is not None:
         for i in failed_br_idx:
@@ -153,10 +153,8 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
                     tooltip += '\nLosses: ' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
 
                 elm.graphic_obj.setToolTipText(tooltip)
-                elm.graphic_obj.set_pen(QtGui.QPen(color, w, style))
-                elm.graphic_obj.symbol.setPen(QtGui.QPen(color, w, style))
-                elm.graphic_obj.symbol.color = color
-                elm.graphic_obj.symbol.setBrush(color)
+                elm.graphic_obj.set_colour(color, w, style)
+
 
 def get_base_map(location, zoom_start=5):
     """

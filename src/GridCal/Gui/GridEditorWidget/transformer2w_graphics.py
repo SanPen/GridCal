@@ -348,6 +348,18 @@ class TransformerGraphicItem(QGraphicsLineItem):
         if fromPort and toPort:
             self.redraw()
 
+    def set_colour(self, color: QColor, w, style: Qt.PenStyle):
+        """
+        Set color and style
+        :param color: QColor instance
+        :param w: width
+        :param style: PenStyle instance
+        :return:
+        """
+        self.setPen(QPen(color, w, style))
+        self.c2.setPen(QPen(color, w, style))
+        self.c1.setPen(QPen(color, w, style))
+
     def remove_symbol(self):
         """
         Remove all symbols

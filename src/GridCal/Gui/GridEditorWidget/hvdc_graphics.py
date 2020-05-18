@@ -72,13 +72,26 @@ class HvdcGraphicItem(QGraphicsLineItem):
         self.c1 = None
         self.c2 = None
         if self.api_object is not None:
-            self.update_symbol()
+            self.make_dc_line_symbol()
 
         # add the line and it possible children to the scene
         self.diagramScene.addItem(self)
 
         if fromPort and toPort:
             self.redraw()
+
+    def set_colour(self, color: QColor, w, style: Qt.PenStyle):
+        """
+        Set color and style
+        :param color: QColor instance
+        :param w: width
+        :param style: PenStyle instance
+        :return:
+        """
+        self.setPen(QPen(color, w, style))
+        self.symbol.setPen(QPen(color, w, style))
+        self.symbol.setPen(QPen(color, w, style))
+        self.symbol.setBrush(color)
 
     def remove_symbol(self):
         """
@@ -388,7 +401,7 @@ class HvdcGraphicItem(QGraphicsLineItem):
             if self.api_object is not None:
 
                 # if the object branch type is different from the current displayed type, change it
-                self.update_symbol()
+                # self.update_symbol()
 
                 # if the branch has a moveable symbol, move it
                 try:

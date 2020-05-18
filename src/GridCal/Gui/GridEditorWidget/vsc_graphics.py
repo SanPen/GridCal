@@ -220,6 +220,18 @@ class VscGraphicItem(QGraphicsLineItem):
         if fromPort and toPort:
             self.redraw()
 
+    def set_colour(self, color: QColor, w, style: Qt.PenStyle):
+        """
+        Set color and style
+        :param color: QColor instance
+        :param w: width
+        :param style: PenStyle instance
+        :return:
+        """
+        self.setPen(QPen(color, w, style))
+        self.symbol.setPen(QPen(color, w, style))
+        self.symbol.setBrush(color)
+
     def remove_symbol(self):
         """
         Remove all symbols
@@ -251,6 +263,7 @@ class VscGraphicItem(QGraphicsLineItem):
 
         graphic = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self.symbol)
         graphic.setBrush(QBrush(QPixmap(":/Icons/icons/vsc.svg")))
+        graphic.setPen(QPen(Qt.transparent, self.width, self.style))
 
         if self.api_object.active:
             self.symbol.setBrush(self.color)
