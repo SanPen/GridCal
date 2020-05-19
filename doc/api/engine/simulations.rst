@@ -19,7 +19,7 @@ Subpackages
     simulations/Dynamics
     simulations/OPF
     simulations/Optimization
-    simulations/PowerFlowDriver
+    simulations/PowerFlow
     simulations/ShortCircuit
     simulations/StateEstimation
     simulations/Stochastic
