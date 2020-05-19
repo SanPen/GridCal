@@ -20,53 +20,29 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="fixes for readthedocs">
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Core.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Devices.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.IO.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Replacements.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.ContinuationPowerFlow.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Dynamics.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.NK.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.OPF.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Optimization.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.PTDF.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.PowerFlow.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.ShortCircuit.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.SigmaAnalysis.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.StateEstimation.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Stochastic.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Topology.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Sparse.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Visualization.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.Analysis.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.GIS.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.GridEditorWidget.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.LoadDesigner.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.Main.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.ProfilesInput.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.SigmaAnalysis.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.SyncDialogue.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.TowerBuilder.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solver_interfaces.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.linux.32.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.linux.64.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.linux.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.osx.64.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.osx.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.win.32.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.win.64.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.win.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.data.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/api/auto/modules.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/engine/IO.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/engine/core.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/engine/devices.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/engine/replacements.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/ContinuationPowerFlow.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/Dynamics.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/OPF.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/Optimization.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/PowerFlow.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/ShortCircuit.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/StateEstimation.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/Stochastic.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/Topology.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/gridcal_engine.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/gridcal_gui.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/gridcal_package.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/gui/Analysis.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/gui/Main.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/gui/ProfilesInput.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/gui/TowerBuilder.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/index.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/index.rst" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -192,7 +168,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1588271249557</updated>
-      <workItem from="1589895359918" duration="9551000" />
+      <workItem from="1589895359918" duration="10268000" />
     </task>
     <task id="LOCAL-00001" summary="Trial">
       <created>1589563536685</created>
@@ -229,7 +205,14 @@
       <option name="project" value="LOCAL" />
       <updated>1589911538537</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="fixes for readthedocs">
+      <created>1589912212609</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1589912212609</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -331,10 +314,10 @@
     </state>
     <state x="485" y="167" width="1016" height="738" key="SettingsEditor/67.27.1853.1052@67.27.1853.1052" timestamp="1588272368037" />
     <state x="60" y="246" width="900" height="720" key="SettingsEditor/960.0.1280.720/0.246.960.540@960.0.1280.720" timestamp="1589563987445" />
-    <state x="293" y="284" width="800" height="535" key="Vcs.Push.Dialog.v2" timestamp="1589911540193">
+    <state x="293" y="284" width="800" height="535" key="Vcs.Push.Dialog.v2" timestamp="1589912214921">
       <screen x="60" y="26" width="1860" height="1054" />
     </state>
-    <state x="293" y="284" width="800" height="535" key="Vcs.Push.Dialog.v2/60.26.1860.1054@60.26.1860.1054" timestamp="1589911540193" />
+    <state x="293" y="284" width="800" height="535" key="Vcs.Push.Dialog.v2/60.26.1860.1054@60.26.1860.1054" timestamp="1589912214921" />
     <state x="1120" y="176" width="800" height="536" key="Vcs.Push.Dialog.v2/960.0.1280.720/0.246.960.540@960.0.1280.720" timestamp="1589567691665" />
     <state x="570" y="645" width="770" height="773" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1589814958715">
       <screen x="0" y="493" width="1920" height="1080" />
