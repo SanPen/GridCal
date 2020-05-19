@@ -53,7 +53,7 @@ def get_objects_dictionary():
 
                     'line': Line(),
 
-                    'dc_line': DCLine(),
+                    'dc_line': DcLine(None, None),
 
                     'hvdc': HvdcLine(),
 
@@ -366,6 +366,9 @@ def data_frames_to_circuit(data: Dict):
 
             elif template_elm.device_type == DeviceType.LineDevice:
                 circuit.lines = devices
+
+            elif template_elm.device_type == DeviceType.DCLineDevice:
+                circuit.dc_lines = devices
 
             elif template_elm.device_type == DeviceType.Transformer2WDevice:
                 circuit.transformers2w = devices

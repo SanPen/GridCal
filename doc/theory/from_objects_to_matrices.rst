@@ -328,7 +328,7 @@ A snippet from the code where the admittances are computed:
 
     # use the specified of the temperature-corrected resistance
     if apply_temperature:
-        R = self.R_corrected
+        R = self.AC_R_corrected
     else:
         R = self.R
 

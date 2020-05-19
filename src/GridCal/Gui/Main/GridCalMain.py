@@ -235,7 +235,7 @@ class MainGUI(QMainWindow):
 
         self.ui.catalogueDataStructuresListView.setModel(get_list_model(self.grid_editor.catalogue_types))
 
-        pfo = SnapshotIsland(nbus=1, nline=1, ntr=1, nvsc=1, nhvdc=1,
+        pfo = SnapshotIsland(nbus=1, nline=1, ndcline=1, ntr=1, nvsc=1, nhvdc=1,
                              nload=1, ngen=1, nbatt=1, nshunt=1, nstagen=1, sbase=100)
         self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
 
@@ -1414,8 +1414,20 @@ class MainGUI(QMainWindow):
         if filename != "":
             if not filename.endswith('.xlsx'):
                 filename += '.xlsx'
-            # TODO: Correct this function to not to depend on a previous compilation
-            self.circuit.save_calculation_objects(file_path=filename)
+
+            numerical_circuit = compile_snapshot_circuit(circuit=self.circuit)
+            calculation_inputs = split_into_islands(numerical_circuit)
+
+            writer = pd.ExcelWriter(filename)
+
+            for c, calc_input in enumerate(calculation_inputs):
+
+                for elm_type in calc_input.available_structures:
+                    name = elm_type + '_' + str(c)
+                    df = calc_input.get_structure(elm_type).astype(str)
+                    df.to_excel(writer, name)
+
+            writer.save()
 
     def export_diagram(self):
         """
@@ -1575,6 +1587,10 @@ class MainGUI(QMainWindow):
         elif elm_type == DeviceType.VscDevice.value:
             elm = VSC(Bus(), Bus(is_dc=True))
             elements = self.circuit.vsc_converters
+
+        elif elm_type == DeviceType.DCLineDevice.value:
+            elm = DcLine(None, None)
+            elements = self.circuit.dc_lines
 
         else:
             raise Exception('elm_type not understood: ' + elm_type)

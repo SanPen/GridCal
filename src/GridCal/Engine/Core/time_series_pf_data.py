@@ -52,6 +52,7 @@ class TimeCircuit:
 
         self.nbus = nbus
         self.nline = nline
+        self.ndcline = 0
         self.ntr = ntr
         self.nvsc = nvsc
         self.nhvdc = nhvdc
@@ -601,6 +602,7 @@ class TimeCircuit:
             # declare the numerical circuit
             nc = SnapshotCircuit(nbus=self.nbus,
                                  nline=self.nline,
+                                 ndcline=self.ndcline,
                                  ntr=self.ntr,
                                  nvsc=self.nvsc,
                                  nhvdc=self.nhvdc,

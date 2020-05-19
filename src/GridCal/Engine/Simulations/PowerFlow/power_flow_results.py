@@ -255,22 +255,6 @@ class PowerFlowResults:
 
         return np.abs(wo * np.sum(self.overloads) + wv1 * np.sum(self.overvoltage) + wv2 * np.sum(self.undervoltage))
 
-    def get_convergence_report(self):
-
-        res = 'converged' + str(self.converged)
-
-        res += '\n\tinner_iterations: ' + str(self.inner_iterations)
-
-        res += '\n\touter_iterations: ' + str(self.outer_iterations)
-
-        res += '\n\terror: ' + str(self.error)
-
-        res += '\n\telapsed: ' + str(self.elapsed)
-
-        res += '\n\tmethods: ' + str(self.methods)
-
-        return res
-
     def get_report_dataframe(self, island_idx=0):
         """
         Get a DataFrame containing the convergence report.

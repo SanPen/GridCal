@@ -33,7 +33,7 @@ sparse_type = get_sparse_type()
 
 class SnapshotCircuit:
 
-    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase,
+    def __init__(self, nbus, nline, ndcline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase,
                  apply_temperature=False, branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
         """
 
@@ -50,6 +50,7 @@ class SnapshotCircuit:
 
         self.nbus = nbus
         self.nline = nline
+        self.ndcline = ndcline
         self.ntr = ntr
         self.nvsc = nvsc
         self.nhvdc = nhvdc
@@ -70,9 +71,10 @@ class SnapshotCircuit:
         self.Vbus = np.ones(nbus, dtype=complex)
         self.bus_types = np.empty(nbus, dtype=int)
         self.bus_installed_power = np.zeros(nbus, dtype=float)
+        self.bus_is_dc = np.empty(nbus, dtype=bool)
 
         # branch common ------------------------------------------------------------------------------------------------
-        self.nbr = nline + ntr + nvsc  # exclude the HVDC model since it is not a real branch
+        self.nbr = nline + ntr + nvsc + ndcline  # exclude the HVDC model since it is not a real branch
 
         self.branch_names = np.empty(self.nbr, dtype=object)
         self.branch_active = np.zeros(self.nbr, dtype=int)
@@ -93,6 +95,16 @@ class SnapshotCircuit:
         self.line_impedance_tolerance = np.zeros(nline, dtype=float)
 
         self.C_line_bus = sp.lil_matrix((nline, nbus), dtype=int)  # this ons is just for splitting islands
+
+        # dc lines -----------------------------------------------------------------------------------------------------
+        self.dc_line_names = np.zeros(ndcline, dtype=object)
+        self.dc_line_R = np.zeros(ndcline, dtype=float)
+        self.dc_line_temp_base = np.zeros(ndcline, dtype=float)
+        self.dc_line_temp_oper = np.zeros(ndcline, dtype=float)
+        self.dc_line_alpha = np.zeros(ndcline, dtype=float)
+        self.dc_line_impedance_tolerance = np.zeros(ndcline, dtype=float)
+
+        self.C_dc_line_bus = sp.lil_matrix((ndcline, nbus), dtype=int)  # this ons is just for splitting islands
 
         # transformer 2W + 3W ------------------------------------------------------------------------------------------
         self.tr_names = np.zeros(ntr, dtype=object)
@@ -229,6 +241,7 @@ class SnapshotCircuit:
         self.C_branch_bus_t = self.C_branch_bus_t.tocsc()
 
         self.C_line_bus = self.C_line_bus.tocsc()
+        self.C_dc_line_bus = self.C_line_bus.tocsc()
         self.C_tr_bus = self.C_tr_bus.tocsc()
         self.C_hvdc_bus_f = self.C_hvdc_bus_f.tocsc()
         self.C_hvdc_bus_t = self.C_hvdc_bus_t.tocsc()
@@ -250,6 +263,7 @@ class SnapshotCircuit:
         """
         island = SnapshotIsland(nbus=self.nbus,
                                 nline=self.nline,
+                                ndcline=self.ndcline,
                                 ntr=self.ntr,
                                 nvsc=self.nvsc,
                                 nhvdc=self.nhvdc,
@@ -347,6 +361,16 @@ class SnapshotCircuit:
 
         island.C_vsc_bus = self.C_vsc_bus
 
+        # dc lines -----------------------------------------------------------------------------------------------------
+        island.dc_line_names = self.dc_line_names
+        island.dc_line_R = self.dc_line_R
+        island.dc_line_temp_base = self.dc_line_temp_base
+        island.dc_line_temp_oper = self.dc_line_temp_oper
+        island.dc_line_alpha = self.dc_line_alpha
+        island.dc_line_impedance_tolerance = self.dc_line_impedance_tolerance
+
+        island.C_dc_line_bus = self.C_dc_line_bus
+
         # load ---------------------------------------------------------------------------------------------------------
         island.load_names = self.load_names
         island.load_active = self.load_active
@@ -403,6 +427,7 @@ class SnapshotCircuit:
 
         # find the indices of the devices of the island
         line_idx = tp.get_elements_of_the_island(self.C_line_bus, bus_idx)
+        dc_line_idx = tp.get_elements_of_the_island(self.C_dc_line_bus, bus_idx)
         tr_idx = tp.get_elements_of_the_island(self.C_tr_bus, bus_idx)
         vsc_idx = tp.get_elements_of_the_island(self.C_vsc_bus, bus_idx)
         hvdc_idx = tp.get_elements_of_the_island(self.C_hvdc_bus_f + self.C_hvdc_bus_t, bus_idx)
@@ -416,6 +441,7 @@ class SnapshotCircuit:
 
         nc = SnapshotIsland(nbus=len(bus_idx),
                             nline=len(line_idx),
+                            ndcline=len(dc_line_idx),
                             ntr=len(tr_idx),
                             nvsc=len(vsc_idx),
                             nhvdc=len(hvdc_idx),
@@ -512,6 +538,16 @@ class SnapshotCircuit:
 
         nc.C_vsc_bus = self.C_vsc_bus[np.ix_(vsc_idx, bus_idx)]
 
+        # dc lines -----------------------------------------------------------------------------------------------------
+        nc.dc_line_names = self.dc_line_names[dc_line_idx]
+        nc.dc_line_R = self.dc_line_R[dc_line_idx]
+        nc.dc_line_temp_base = self.dc_line_temp_base[dc_line_idx]
+        nc.dc_line_temp_oper = self.dc_line_temp_oper[dc_line_idx]
+        nc.dc_line_alpha = self.dc_line_alpha[dc_line_idx]
+        nc.dc_line_impedance_tolerance = self.dc_line_impedance_tolerance[dc_line_idx]
+
+        nc.C_dc_line_bus = self.C_dc_line_bus[np.ix_(dc_line_idx, bus_idx)]
+
         # load ---------------------------------------------------------------------------------------------------------
         nc.load_names = self.load_names[load_idx]
         nc.load_active = self.load_active[load_idx]
@@ -562,7 +598,7 @@ class SnapshotCircuit:
 
 class SnapshotIsland(SnapshotCircuit):
 
-    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase,
+    def __init__(self, nbus, nline, ndcline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase,
                  apply_temperature=False,
                  branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
         """
@@ -581,7 +617,7 @@ class SnapshotIsland(SnapshotCircuit):
         :param impedance_tolerance:
         :param branch_tolerance_mode:
         """
-        SnapshotCircuit.__init__(self, nbus=nbus, nline=nline, ntr=ntr, nvsc=nvsc, nhvdc=nhvdc,
+        SnapshotCircuit.__init__(self, nbus=nbus, nline=nline, ndcline=ndcline, ntr=ntr, nvsc=nvsc, nhvdc=nhvdc,
                                  nload=nload, ngen=ngen, nbatt=nbatt, nshunt=nshunt, nstagen=nstagen, sbase=sbase,
                                  apply_temperature=apply_temperature, branch_tolerance_mode=branch_tolerance_mode)
 
@@ -622,7 +658,7 @@ class SnapshotIsland(SnapshotCircuit):
         self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries',
                                      "B'", "B''", 'Types', 'Jacobian', 'Qmin', 'Qmax']
 
-    def R_corrected(self):
+    def AC_R_corrected(self):
         """
         Returns temperature corrected resistances (numpy array) based on a formula
         provided by: NFPA 70-2005, National Electrical Code, Table 8, footnote #2; and
@@ -630,6 +666,15 @@ class SnapshotIsland(SnapshotCircuit):
         (version of 2019-01-03 at 15:20 EST).
         """
         return self.line_R * (1.0 + self.line_alpha * (self.line_temp_oper - self.line_temp_base))
+
+    def DC_R_corrected(self):
+        """
+        Returns temperature corrected resistances (numpy array) based on a formula
+        provided by: NFPA 70-2005, National Electrical Code, Table 8, footnote #2; and
+        https://en.wikipedia.org/wiki/Electrical_resistivity_and_conductivity#Linear_approximation
+        (version of 2019-01-03 at 15:20 EST).
+        """
+        return self.dc_line_R * (1.0 + self.dc_line_alpha * (self.dc_line_temp_oper - self.dc_line_temp_base))
 
     def re_calc_admittance_matrices(self, tap_module):
         """
@@ -711,7 +756,7 @@ class SnapshotIsland(SnapshotCircuit):
 
         # use the specified of the temperature-corrected resistance
         if self.apply_temperature:
-            line_R = self.R_corrected()
+            line_R = self.AC_R_corrected()
         else:
             line_R = self.line_R
 
@@ -743,7 +788,6 @@ class SnapshotIsland(SnapshotCircuit):
         if fast_decoupled:
             reactances[a:b] = self.line_X
             susceptances[a:b] = self.line_B
-            # all_taps[a:b] = np.empty(self.nbr, dtype=complex)
 
         # transformer models -------------------------------------------------------------------------------------------
 
@@ -801,6 +845,38 @@ class SnapshotIsland(SnapshotCircuit):
             reactances[a:b] = self.vsc_X1
             susceptances[a:b] = self.vsc_Beq
             all_taps[a:b] = self.vsc_m * np.exp(1.0j * self.vsc_theta)
+
+        # dc-line ------------------------------------------------------------------------------------------------------
+        a = self.nline + self.ntr + self.nvsc
+        b = a + self.ndcline
+
+        # use the specified of the temperature-corrected resistance
+        if self.apply_temperature:
+            dc_line_R = self.DC_R_corrected()
+        else:
+            dc_line_R = self.dc_line_R
+
+        # modify the branches impedance with the lower, upper tolerance values
+        if self.branch_tolerance_mode == BranchImpedanceMode.Lower:
+            dc_line_R *= (1 - self.dc_line_impedance_tolerance / 100.0)
+        elif self.branch_tolerance_mode == BranchImpedanceMode.Upper:
+            dc_line_R *= (1 + self.dc_line_impedance_tolerance / 100.0)
+
+        Ys_dc_line = 1.0 / dc_line_R
+
+        # branch primitives in vector form for Ybus
+        if newton_raphson:
+            Ytt[a:b] = Ys_dc_line
+            Yff[a:b] = Ys_dc_line
+            Yft[a:b] = - Ys_dc_line
+            Ytf[a:b] = - Ys_dc_line
+
+        # branch primitives in vector form, for Yseries
+        if linear_ac or helm:
+            Ytts[a:b] = Ys_dc_line
+            Yffs[a:b] = Ys_dc_line
+            Yfts[a:b] = - Ys_dc_line
+            Ytfs[a:b] = - Ys_dc_line
 
         # HVDC LINE MODEL ----------------------------------------------------------------------------------------------
         # does not apply since the HVDC-line model is the simplistic 2-generator model
@@ -1078,10 +1154,12 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
     ntr2w = len(circuit.transformers2w)
     nvsc = len(circuit.vsc_converters)
     nhvdc = len(circuit.hvdc_lines)
+    ndcline = len(circuit.dc_lines)
 
     # declare the numerical circuit
     nc = SnapshotCircuit(nbus=nbus,
                          nline=nline,
+                         ndcline=ndcline,
                          ntr=ntr2w,
                          nvsc=nvsc,
                          nhvdc=nhvdc,
@@ -1282,6 +1360,34 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
 
         nc.C_vsc_bus[i, f] = 1
         nc.C_vsc_bus[i, t] = 1
+
+    # DC-lines
+    for i, elm in enumerate(circuit.dc_lines):
+        ii = i + nline + ntr2w + nvsc
+
+        # generic stuff
+        f = bus_dictionary[elm.bus_from]
+        t = bus_dictionary[elm.bus_to]
+
+        nc.branch_names[ii] = elm.name
+        nc.branch_active[ii] = elm.active
+        nc.branch_rates[ii] = elm.rate
+        nc.C_branch_bus_f[ii, f] = 1
+        nc.C_branch_bus_t[ii, t] = 1
+        nc.F[ii] = f
+        nc.T[ii] = t
+
+        # dc line values
+        nc.dc_line_names[i] = elm.name
+        nc.dc_line_R[i] = elm.R
+        nc.dc_line_impedance_tolerance[i] = elm.tolerance
+        nc.C_dc_line_bus[i, f] = 1
+        nc.C_dc_line_bus[i, t] = 1
+
+        # Thermal correction
+        nc.dc_line_temp_base[i] = elm.temp_base
+        nc.dc_line_temp_oper[i] = elm.temp_oper
+        nc.dc_line_alpha[i] = elm.alpha
 
     # HVDC
     for i, elm in enumerate(circuit.hvdc_lines):
