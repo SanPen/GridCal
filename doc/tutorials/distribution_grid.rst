@@ -219,3 +219,129 @@ Note: do not forget to add the load after you rename the House buses.
 
 Step 6: Defining the Main Transformer
 -------------------------------------
+
+In order to define the type of transformer a catalogue is available within the GridCal repository.
+
+This transformer is the transformer between HV Bus and Bus 2. The transformer is: 25 MV 20/10 kV.
+
+1. Access the catalogue (Excel file). It can be found in the repository at Gridcal/Grids_and_profiles/grids/equipment and select 'equipment.ods'.
+
+2. Select the 'Transformers' sheet.
+
+3. Remove all filters on the 'Rate (MVA)' column by pressing on the downward arrow.
+
+.. figure:: ../figures/tutorials/dg/downtriangle.png
+    :scale: 70 %
+
+4. Select the '20 kV' filter on the 'HV (kV)' column using the downward arrow.
+
+4. Select the '10 kV' filter on the 'LV (kV)' column using the downward arrow.
+
+
+6. The parameters of the transformer are:
+
++--------------------+------------------+
+|        name        | 25 MVA 20/10 kV  |
++--------------------+------------------+
+|     Rate[MVA]      |       25         |
++--------------------+------------------+
+|   Frequency[Hz]    |       50         |
++--------------------+------------------+
+|       HV[kV]       |       20         |
++--------------------+------------------+
+|       LV[kV]       |        10        |
++--------------------+------------------+
+|  Copper Losses[kW] |      102.76      |
++--------------------+------------------+
+| No Load Losses[kW] |      10.96       |
++--------------------+------------------+
+| No Load Current[%] |       0.1        |
++--------------------+------------------+
+| V Short Circuit[%] |      10.3        |
++--------------------+------------------+
+| HV Vector Group    |        YN        |
++--------------------+------------------+
+|   LV Vector Group  |         D        |
++--------------------+------------------+
+|   Phase Shift      |       5          |
++--------------------+------------------+
+
+7. Double click on the transformer between HV Bus and Bus 2 and enter the following parameters (based on the model selected):
+
++--------+--------+
+|   Sn   | 25     |
++--------+--------+
+|  Pcu   | 102.76 |
++--------+--------+
+|   Pfe  |  10.96 |
++--------+--------+
+|   lo   | 0.1    |
++--------+--------+
+|    Vsc | 10.3   |
++--------+--------+
+
+8. Once the parameters are placed, right click and select 'Add to catalogue'. This way the branch p.u. values are calculated from the template values.
+
+
+Step 7: Defining Transformer
+----------------------------
+
+The transformers used for the 4 loads (houses) a 10 to 0.4 kV transformer will be used. The name is a '0.016 MVA 10/0.4 kV ET 16/23 SGB'.
+
+1. Using the same catalogue find the transformer and do this for the transformer between Bus 6 and House 1.
+
+2. The parameters of the transformer are:
+
++--------------------+-----------------------------------+
+|        name        | 0.016 MVA 10/0.4 kV ET 16/23 SGB  |
++--------------------+-----------------------------------+
+|     Rate[MVA]      |                       0.016       |
++--------------------+-----------------------------------+
+|   Frequency[Hz]    |                         50        |
++--------------------+-----------------------------------+
+|       HV[kV]       |                         10        |
++--------------------+-----------------------------------+
+|       LV[kV]       |                        0.4        |
++--------------------+-----------------------------------+
+|  Copper Losses[kW] |                            0.45   |
++--------------------+-----------------------------------+
+| No Load Losses[kW] |                         0.11      |
++--------------------+-----------------------------------+
+| No Load Current[%] |                       0.68751     |
++--------------------+-----------------------------------+
+| V Short Circuit[%] |                          3.75     |
++--------------------+-----------------------------------+
+| HV Vector Group    |                            Y      |
++--------------------+-----------------------------------+
+|   LV Vector Group  |                            ZN     |
++--------------------+-----------------------------------+
+|   Phase Shift      |                         5         |
++--------------------+-----------------------------------+
+
+3. Fill these values out for the pop up menu:
+
++--------+---------+
+|   Sn   |  0.016  |
++--------+---------+
+|  Pcu   | 0.45    |
++--------+---------+
+|   Pfe  |  0.11   |
++--------+---------+
+|   lo   |0.687510 |
++--------+---------+
+|    Vsc |3.75     |
++--------+---------+
+
+4. Right click on the transformer and select 'Add to catalogue' this will create a template for quick add.
+
+5. Rename the transformer to 'TR house 1'.
+
+6. On the lower tabs select 'Types catalogue'.
+
+.. figure:: ../figures/tutorials/dg/typescatalogue.png
+    :scale: 70 %
+
+7. Select the transformer that has the characteristics of the 10 to 0.4 kV transformer and rename it to 'House transfo'. Now you have defined a transformer type that can be added to many transformers.
+
+Step 7: Defining Transformer
+----------------------------
