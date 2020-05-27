@@ -163,3 +163,33 @@ Step 3: Add more Lines and Buses
 
 Step 4: Create Loads
 --------------------
+
+1. Select Bus 10 and change parameters to:
+
++----------+----------+
+|   name   | House 3  |
++----------+----------+
+| Vnom[kV] |   0.4    |
++----------+----------+
+
+2. Create a line between Bus 8 and House 3 (a transformer will be created). Rename it to 'TR House 3'.
+
+3. Select Bus 11 and change parameters to:
+
++----------+----------+
+|   name   | House 4  |
++----------+----------+
+| Vnom[kV] |   0.4    |
++----------+----------+
+
+4. Create a line between Bus 9 and House 4 (a transformer will be created). Rename it to 'TR House 4'.
+
+5. Right 'click' on House 3 and select 'Add Load'.
+
+6. Right 'click' on House 4 and select 'Add Load'.
+
+.. figure:: ../figures/tutorials/dg/loads.png
+    :scale: 70 %
+
+Step 5: Create House 1 and House 2
+----------------------------------

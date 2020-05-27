@@ -20,29 +20,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="fixes for readthedocs">
-      <change beforePath="$PROJECT_DIR$/doc/api.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/engine/IO.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/engine/core.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/engine/devices.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/engine/replacements.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/ContinuationPowerFlow.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/Dynamics.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/OPF.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/Optimization.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/PowerFlow.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/ShortCircuit.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/StateEstimation.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/Stochastic.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/engine/simulations/Topology.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/gridcal_engine.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/gridcal_gui.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/gridcal_package.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/gui/Analysis.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/gui/Main.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/gui/ProfilesInput.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/gui/TowerBuilder.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/index.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/index.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/GridCal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/GridCal.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/tutorials/distribution_grid.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/tutorials/distribution_grid.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,6 +57,7 @@
     <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
@@ -239,6 +223,10 @@
     <option name="LAST_COMMIT_MESSAGE" value="fixes for readthedocs" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="622" y="688" width="666" height="687" key="#ExecuteGridCal" timestamp="1590453680984">
+      <screen x="0" y="493" width="1920" height="1080" />
+    </state>
+    <state x="622" y="688" width="666" height="687" key="#ExecuteGridCal/1920.0.2560.1440/0.493.1920.1080@0.493.1920.1080" timestamp="1590453680984" />
     <state x="532" y="449" width="897" height="631" key="#xdebugger.evaluate" timestamp="1589905866827">
       <screen x="60" y="26" width="1860" height="1054" />
     </state>
@@ -257,34 +245,34 @@
     <state x="777" y="298" width="424" height="492" key="FileChooserDialogImpl/67.27.1853.1052@67.27.1853.1052" timestamp="1588272337840" />
     <state x="755" y="111" key="FileChooserDialogImpl/67.27.3773.1053@67.27.3773.1053" timestamp="1588285925126" />
     <state x="449" y="152" width="376" height="361" key="FileChooserDialogImpl/960.0.1280.720/0.246.960.540@960.0.1280.720" timestamp="1589563951442" />
-    <state width="1816" height="306" key="GridCell.Tab.0.bottom" timestamp="1589911900772">
-      <screen x="60" y="26" width="1860" height="1054" />
+    <state width="1897" height="412" key="GridCell.Tab.0.bottom" timestamp="1590503597839">
+      <screen x="0" y="493" width="1920" height="1080" />
     </state>
-    <state width="1897" height="287" key="GridCell.Tab.0.bottom/1920.0.2560.1440/0.493.1920.1080@0.493.1920.1080" timestamp="1589811770572" />
+    <state width="1897" height="412" key="GridCell.Tab.0.bottom/1920.0.2560.1440/0.493.1920.1080@0.493.1920.1080" timestamp="1590503597839" />
     <state width="1816" height="306" key="GridCell.Tab.0.bottom/60.26.1860.1054@60.26.1860.1054" timestamp="1589911900772" />
     <state width="1830" height="278" key="GridCell.Tab.0.bottom/67.27.1853.1052@67.27.1853.1052" timestamp="1588272371513" />
     <state width="1830" height="278" key="GridCell.Tab.0.bottom/67.27.3773.1053@67.27.3773.1053" timestamp="1588285931463" />
     <state width="1897" height="278" key="GridCell.Tab.0.bottom/960.0.1280.720/0.246.960.540@960.0.1280.720" timestamp="1589572635547" />
-    <state width="1816" height="306" key="GridCell.Tab.0.center" timestamp="1589911900772">
-      <screen x="60" y="26" width="1860" height="1054" />
+    <state width="1897" height="412" key="GridCell.Tab.0.center" timestamp="1590503597839">
+      <screen x="0" y="493" width="1920" height="1080" />
     </state>
-    <state width="1897" height="287" key="GridCell.Tab.0.center/1920.0.2560.1440/0.493.1920.1080@0.493.1920.1080" timestamp="1589811770572" />
+    <state width="1897" height="412" key="GridCell.Tab.0.center/1920.0.2560.1440/0.493.1920.1080@0.493.1920.1080" timestamp="1590503597839" />
     <state width="1816" height="306" key="GridCell.Tab.0.center/60.26.1860.1054@60.26.1860.1054" timestamp="1589911900772" />
     <state width="1830" height="278" key="GridCell.Tab.0.center/67.27.1853.1052@67.27.1853.1052" timestamp="1588272371513" />
     <state width="1830" height="278" key="GridCell.Tab.0.center/67.27.3773.1053@67.27.3773.1053" timestamp="1588285931462" />
     <state width="1897" height="278" key="GridCell.Tab.0.center/960.0.1280.720/0.246.960.540@960.0.1280.720" timestamp="1589572635547" />
-    <state width="1816" height="306" key="GridCell.Tab.0.left" timestamp="1589911900772">
-      <screen x="60" y="26" width="1860" height="1054" />
+    <state width="1897" height="412" key="GridCell.Tab.0.left" timestamp="1590503597838">
+      <screen x="0" y="493" width="1920" height="1080" />
     </state>
-    <state width="1897" height="287" key="GridCell.Tab.0.left/1920.0.2560.1440/0.493.1920.1080@0.493.1920.1080" timestamp="1589811770572" />
+    <state width="1897" height="412" key="GridCell.Tab.0.left/1920.0.2560.1440/0.493.1920.1080@0.493.1920.1080" timestamp="1590503597838" />
     <state width="1816" height="306" key="GridCell.Tab.0.left/60.26.1860.1054@60.26.1860.1054" timestamp="1589911900772" />
     <state width="1830" height="278" key="GridCell.Tab.0.left/67.27.1853.1052@67.27.1853.1052" timestamp="1588272371512" />
     <state width="1830" height="278" key="GridCell.Tab.0.left/67.27.3773.1053@67.27.3773.1053" timestamp="1588285931462" />
     <state width="1897" height="278" key="GridCell.Tab.0.left/960.0.1280.720/0.246.960.540@960.0.1280.720" timestamp="1589572635547" />
-    <state width="1816" height="306" key="GridCell.Tab.0.right" timestamp="1589911900772">
-      <screen x="60" y="26" width="1860" height="1054" />
+    <state width="1897" height="412" key="GridCell.Tab.0.right" timestamp="1590503597839">
+      <screen x="0" y="493" width="1920" height="1080" />
     </state>
-    <state width="1897" height="287" key="GridCell.Tab.0.right/1920.0.2560.1440/0.493.1920.1080@0.493.1920.1080" timestamp="1589811770572" />
+    <state width="1897" height="412" key="GridCell.Tab.0.right/1920.0.2560.1440/0.493.1920.1080@0.493.1920.1080" timestamp="1590503597839" />
     <state width="1816" height="306" key="GridCell.Tab.0.right/60.26.1860.1054@60.26.1860.1054" timestamp="1589911900772" />
     <state width="1830" height="278" key="GridCell.Tab.0.right/67.27.1853.1052@67.27.1853.1052" timestamp="1588272371513" />
     <state width="1830" height="278" key="GridCell.Tab.0.right/67.27.3773.1053@67.27.3773.1053" timestamp="1588285931463" />
@@ -309,9 +297,10 @@
       <screen x="60" y="26" width="1860" height="1054" />
     </state>
     <state x="873" y="423" width="446" height="267" key="MultipleFileMergeDialog/60.26.1860.1054@60.26.1860.1054" timestamp="1589829482204" />
-    <state x="60" y="246" width="900" height="720" key="SettingsEditor" timestamp="1589563987445">
-      <screen x="0" y="246" width="960" height="540" />
+    <state x="120" y="493" width="1800" height="1080" key="SettingsEditor" timestamp="1590453688452">
+      <screen x="0" y="493" width="1920" height="1080" />
     </state>
+    <state x="120" y="493" width="1800" height="1080" key="SettingsEditor/1920.0.2560.1440/0.493.1920.1080@0.493.1920.1080" timestamp="1590453688452" />
     <state x="485" y="167" width="1016" height="738" key="SettingsEditor/67.27.1853.1052@67.27.1853.1052" timestamp="1588272368037" />
     <state x="60" y="246" width="900" height="720" key="SettingsEditor/960.0.1280.720/0.246.960.540@960.0.1280.720" timestamp="1589563987445" />
     <state x="293" y="284" width="800" height="535" key="Vcs.Push.Dialog.v2" timestamp="1589912214921">
@@ -349,9 +338,5 @@
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
-  </component>
-  <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1589907615259" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
-    <SUITE FILE_PATH="coverage/GridCal$jupyter_console_ABC_bug.coverage" NAME="jupyter_console_ABC_bug Coverage Results" MODIFIED="1589896576612" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research" />
   </component>
 </project>
