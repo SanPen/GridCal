@@ -193,3 +193,29 @@ Step 4: Create Loads
 
 Step 5: Create House 1 and House 2
 ----------------------------------
+
+1. Create load House 1: Create a new bus and name it 'House 1' to the right of Bus 6, and a transformer in the line between Bus 6 and House 1. The parameters are the following:
+
++----------+----------+
+|   name   | House 1  |
++----------+----------+
+| Vnom[kV] |   0.4    |
++----------+----------+
+
+2. Create load House 2: Create a new bus and name it 'House 2' to the right of Bus 7, and a transformer in the line between Bus 7 and House 2. The parameters are the following:
+
++----------+----------+
+|   name   | House 2  |
++----------+----------+
+| Vnom[kV] |   0.4    |
++----------+----------+
+
+The full system topoly looks like:
+
+.. figure:: ../figures/tutorials/dg/fourhouses.png
+    :scale: 70 %
+
+Note: do not forget to add the load after you rename the House buses.
+
+Step 6: Defining the Main Transformer
+-------------------------------------
