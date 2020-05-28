@@ -282,9 +282,12 @@ This transformer is the transformer between HV Bus and Bus 2. The transformer is
 
 8. Once the parameters are placed, right click and select 'Add to catalogue'. This way the branch p.u. values are calculated from the template values.
 
+Note: In the new GridCal version, a transformer can be defined by just right clicking on the desired transformer and selecting the type from the drop down menu.
 
-Step 7: Defining Transformer
-----------------------------
+Note: All of the element types can be found under the 'Types catalogue' tab after clicking on the desired element, then clock 'Load Values' to change the parameters.
+
+Step 7: Defining Load Transformers
+----------------------------------
 
 The transformers used for the 4 loads (houses) a 10 to 0.4 kV transformer will be used. The name is a '0.016 MVA 10/0.4 kV ET 16/23 SGB'.
 
@@ -341,7 +344,25 @@ The transformers used for the 4 loads (houses) a 10 to 0.4 kV transformer will b
 .. figure:: ../figures/tutorials/dg/typescatalogue.png
     :scale: 70 %
 
-7. Select the transformer that has the characteristics of the 10 to 0.4 kV transformer and rename it to 'House transfo'. Now you have defined a transformer type that can be added to many transformers.
+7. Select the transformer that has the characteristics of the 10 to 0.4 kV transformer and rename it to 'House trafo'. Now you have defined a transformer type that can be added to many transformers.
 
-Step 7: Defining Transformer
-----------------------------
+Note: In the new GridCal version, a transformer can be defined by just right clicking on the desired transformer and selecting the type from the drop down menu.
+
+Step 7: Defining Load Transformer
+---------------------------------
+
+Now that 'House trafo' has been created, other transformers can be set to the same type.
+
+1. In the 'Schematic' tab change the name of the other load transformers to their respective load (i.e. House 3 transformer rename to 'TR house 3').
+
+2. Double click on the transformer
+
+3. Click 'Load Values' to set the parameters.
+
+4. Repeat for all desired transformers: TR house 3, TR house 4, TR house 2.
+
+Note: this can be done with all elements either to preloaded models or models you create.
+
+
+Step 8: Defining Load Transformer
+---------------------------------
