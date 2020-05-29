@@ -22,7 +22,7 @@ from GridCal.Engine.Simulations.ShortCircuit.short_circuit import short_circuit_
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowOptions
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotIsland
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotCircuit
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Devices import Branch, Bus
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
@@ -272,7 +272,7 @@ class ShortCircuit(QRunnable):
 
         return br1, br2, middle_bus
 
-    def single_short_circuit(self, calculation_inputs: SnapshotIsland, Vpf, Zf):
+    def single_short_circuit(self, calculation_inputs: SnapshotCircuit, Vpf, Zf):
         """
         Run a power flow simulation for a single circuit
         @param calculation_inputs:
@@ -335,7 +335,7 @@ class ShortCircuit(QRunnable):
         return results
 
     @staticmethod
-    def compute_branch_results(calculation_inputs: SnapshotIsland, V):
+    def compute_branch_results(calculation_inputs: SnapshotCircuit, V):
         """
         Compute the power flows trough the branches
         @param calculation_inputs: instance of Circuit

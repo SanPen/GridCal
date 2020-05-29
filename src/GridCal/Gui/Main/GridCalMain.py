@@ -29,7 +29,7 @@ from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.GridEditorWidget.messages import *
 
 # Engine imports
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotIsland
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
@@ -235,7 +235,7 @@ class MainGUI(QMainWindow):
 
         self.ui.catalogueDataStructuresListView.setModel(get_list_model(self.grid_editor.catalogue_types))
 
-        pfo = SnapshotIsland(nbus=1, nline=1, ndcline=1, ntr=1, nvsc=1, nhvdc=1,
+        pfo = SnapshotCircuit(nbus=1, nline=1, ndcline=1, ntr=1, nvsc=1, nhvdc=1,
                              nload=1, ngen=1, nbatt=1, nshunt=1, nstagen=1, sbase=100)
         self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
 
@@ -3558,7 +3558,7 @@ class MainGUI(QMainWindow):
                               voltages=self.monte_carlo.results.V_points[current_step, :],
                               loadings=np.abs(self.monte_carlo.results.loading_points[current_step, :]),
                               s_branch=self.monte_carlo.results.Sbr_points[current_step, :],
-                              types=self.circuit.numerical_circuit.bus_types,    # TODO: fix this
+                              types=self.monte_carlo.grid.bus_types,
                               s_bus=self.monte_carlo.results.S_points[current_step, :],
                               file_name=file_name)
 
@@ -3568,7 +3568,7 @@ class MainGUI(QMainWindow):
                               voltages=self.latin_hypercube_sampling.results.V_points[current_step, :],
                               loadings=self.latin_hypercube_sampling.results.loading_points[current_step, :],
                               s_branch=self.latin_hypercube_sampling.results.Sbr_points[current_step, :],
-                              types=self.circuit.numerical_circuit.bus_types,    # TODO: fix this
+                              types=self.latin_hypercube_sampling.results.bus_types,
                               s_bus=self.latin_hypercube_sampling.results.S_points[current_step, :],
                               file_name=file_name)
 
@@ -3577,7 +3577,7 @@ class MainGUI(QMainWindow):
                               s_bus=self.short_circuit.results.Sbus,
                               s_branch=self.short_circuit.results.Sbranch,
                               voltages=self.short_circuit.results.voltage,
-                              types=self.circuit.numerical_circuit.bus_types,    # TODO: fix this
+                              types=self.short_circuit.results.bus_types,
                               loadings=self.short_circuit.results.loading,
                               file_name=file_name)
 
@@ -3585,7 +3585,7 @@ class MainGUI(QMainWindow):
                 plot_function(circuit=self.circuit,
                               voltages=self.optimal_power_flow.results.voltage,
                               loadings=self.optimal_power_flow.results.loading,
-                              types=self.circuit.numerical_circuit.bus_types,    # TODO: fix this
+                              types=self.optimal_power_flow.grid.bus_types,
                               s_branch=self.optimal_power_flow.results.Sbranch,
                               s_bus=self.optimal_power_flow.results.Sbus,
                               file_name=file_name)
@@ -3601,7 +3601,7 @@ class MainGUI(QMainWindow):
                               s_branch=Sbranch,
                               voltages=voltage,
                               loadings=np.abs(loading),
-                              types=self.circuit.numerical_circuit.bus_types,  # TODO: fix this
+                              types=self.optimal_power_flow_time_series.numerical_circuit.bus_types,
                               file_name=file_name)
 
             elif current_study == PTDF.name:
@@ -3615,7 +3615,7 @@ class MainGUI(QMainWindow):
                               s_branch=Sbranch,
                               voltages=voltage,
                               loadings=loading,
-                              types=self.circuit.numerical_circuit.bus_types,  # TODO: fix this
+                              types=self.ptdf_analysis.grid.bus_types,
                               loading_label='Sensitivity',
                               file_name=file_name)
 
@@ -3626,7 +3626,7 @@ class MainGUI(QMainWindow):
                               s_branch=self.ptdf_ts_analysis.results.Sbranch[current_step],
                               voltages=self.ptdf_ts_analysis.results.voltage[current_step],
                               loadings=np.abs(self.ptdf_ts_analysis.results.loading[current_step]),
-                              types=None,
+                              types=self.ptdf_ts_analysis.grid.bus_types,
                               file_name=file_name)
 
             elif current_study == 'Transient stability':

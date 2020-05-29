@@ -43,7 +43,7 @@ def get_loading_color_map():
 def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings,
                          types=None, losses=None,
                          hvdc_sending_power=None, hvdc_losses=None, hvdc_loading=None,
-                         failed_br_idx=None, loading_label='loading'):
+                         failed_br_idx=None, loading_label='loading', file_name=None):
     """
     Color the grid based on the results passed
     :param circuit:

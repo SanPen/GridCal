@@ -16,6 +16,7 @@ import numpy as np
 from PySide2 import QtWidgets
 from PySide2.QtCore import QPointF, QLineF
 from PySide2.QtGui import *
+from PySide2 import Qt
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, QLine
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.GridEditorWidget.messages import *
@@ -57,7 +58,7 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
 
         # Properties of the container:
         self.setFlags(self.ItemIsSelectable | self.ItemIsMovable)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
+        # self.setCursor(QCursor(Qt.PointingHandCursor))
 
         # line to tie this object with the original bus (the parent)
         self.nexus = QtWidgets.QGraphicsLineItem()

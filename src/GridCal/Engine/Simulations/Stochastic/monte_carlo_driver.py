@@ -21,7 +21,7 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_input import MonteCarloInput
-from GridCal.Engine.Core.time_series_pf_data import TimeIsland
+from GridCal.Engine.Core.time_series_pf_data import TimeCircuit
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import CDF
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, single_island_pf, \
@@ -34,7 +34,7 @@ from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, split_
 ########################################################################################################################
 
 
-def make_monte_carlo_input(numerical_input_island: TimeIsland):
+def make_monte_carlo_input(numerical_input_island: TimeCircuit):
     """
     Generate a monte carlo input instance
     :param numerical_input_island:
@@ -281,6 +281,7 @@ class MonteCarlo(QThread):
                                               p=self.max_mc_iter,
                                               bus_names=numerical_circuit.bus_names,
                                               branch_names=numerical_circuit.branch_names,
+                                              bus_types=numerical_circuit.bus_types,
                                               name='Monte Carlo')
 
         avg_res = PowerFlowResults(n=numerical_circuit.nbus,
@@ -308,6 +309,7 @@ class MonteCarlo(QThread):
                                               p=self.max_mc_iter,
                                               bus_names=numerical_circuit.bus_names,
                                               branch_names=numerical_circuit.branch_names,
+                                              bus_types=numerical_circuit.bus_types,
                                               name='Monte Carlo')
 
             # For every island, run the time series

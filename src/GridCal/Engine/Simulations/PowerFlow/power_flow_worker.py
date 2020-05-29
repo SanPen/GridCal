@@ -25,7 +25,7 @@ from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import NR_LS
 from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotIsland
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotCircuit
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.common_functions import compile_types
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
@@ -229,7 +229,7 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, Ysh_helm, B1, B2, Bpqpv, B
     return V, converged, normF, Scalc, it, el
 
 
-def outer_loop_power_flow(circuit: SnapshotIsland, options: PowerFlowOptions, solver_type: SolverType,
+def outer_loop_power_flow(circuit: SnapshotCircuit, options: PowerFlowOptions, solver_type: SolverType,
                           voltage_solution, Sbus, Ibus, branch_rates, logger) -> "PowerFlowResults":
     """
     Run a power flow simulation for a single circuit using the selected outer loop
@@ -685,7 +685,7 @@ def control_q_iterative(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, 
     return Qnew, types_new, any_control_issue
 
 
-def power_flow_post_process(calculation_inputs: SnapshotIsland, Sbus, V, branch_rates):
+def power_flow_post_process(calculation_inputs: SnapshotCircuit, Sbus, V, branch_rates):
     """
     Compute the power flows trough the branches.
 
@@ -1108,11 +1108,11 @@ def control_taps_direct(voltage, T, bus_to_regulated_idx, tap_position, tap_modu
     return stable, tap_module, tap_position
 
 
-def single_island_pf(circuit: SnapshotIsland, Vbus, Sbus, Ibus, branch_rates,
+def single_island_pf(circuit: SnapshotCircuit, Vbus, Sbus, Ibus, branch_rates,
                      options: PowerFlowOptions, logger: Logger) -> "PowerFlowResults":
     """
     Run a power flow for a circuit. In most cases, the **run** method should be used instead.
-    :param circuit: SnapshotIsland instance
+    :param circuit: SnapshotCircuit instance
     :param Vbus: Initial voltage at each bus in complex per unit
     :param Sbus: Power injection at each bus in complex MVA
     :param Ibus: Current injection at each bus in complex MVA
