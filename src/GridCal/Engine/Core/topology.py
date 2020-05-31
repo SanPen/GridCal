@@ -110,7 +110,8 @@ def get_elements_of_the_island(C_element_bus, island):
     :return: array of indices of the elements that match that island
     """
 
-    assert isinstance(C_element_bus, csc_matrix)
+    if not isinstance(C_element_bus, csc_matrix):
+        C_element_bus = C_element_bus.tocsc()
 
     # faster method
     n_rows = C_element_bus.shape[0]

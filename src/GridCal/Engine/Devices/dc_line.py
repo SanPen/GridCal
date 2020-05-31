@@ -173,6 +173,9 @@ class DcLine(EditableDevice):
         """
         return self.R * (1 + self.alpha * (self.temp_oper - self.temp_base))
 
+    def get_weight(self):
+        return self.R
+
     def copy(self, bus_dict=None):
         """
         Returns a copy of the dc line

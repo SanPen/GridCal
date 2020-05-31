@@ -36,11 +36,11 @@ from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
 from GridCal.Engine.Simulations.Dynamics.transient_stability_driver import *
 from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
 from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReduction, TopologyReductionOptions, \
-    DeleteAndReduce
+    DeleteAndReduce, DistanceMatrixDriver
 from GridCal.Engine.Simulations.Topology.topology_driver import select_branches_to_reduce
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 from GridCal.Engine.Devices import *
-from GridCal.Engine.Visualization.visualization import colour_the_schematic, plot_html_map, get_create_gridcal_folder
+from GridCal.Engine.Visualization.visualization import *
 from GridCal.Engine.basic_structures import Logger, SyncIssueType
 
 from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
@@ -280,6 +280,7 @@ class MainGUI(QMainWindow):
         self.painter = None
         self.delete_and_reduce_driver = None
         self.export_all_thread_object = None
+        self.find_node_groups_driver = None
         self.file_sync_thread = FileSyncThread(None, None, None)
 
         # window pointers
@@ -394,6 +395,8 @@ class MainGUI(QMainWindow):
         self.ui.actionAdd_default_catalogue.triggered.connect(self.add_default_catalogue)
 
         self.ui.actionClear_stuff_running_right_now.triggered.connect(self.clear_stuff_running)
+
+        self.ui.actionFind_node_groups.triggered.connect(self.run_find_node_groups)
 
         # Buttons
 
@@ -3200,6 +3203,50 @@ class MainGUI(QMainWindow):
                 warning_msg('Another topological reduction is being conducted...', 'Topological grid reduction')
         else:
             pass
+
+    def run_find_node_groups(self):
+        """
+
+        :return:
+        """
+        if self.ui.actionFind_node_groups.isChecked():
+            self.LOCK()
+            sigmas = self.ui.node_distances_sigma_doubleSpinBox.value()
+            min_group_size = self.ui.node_distances_elements_spinBox.value()
+            self.find_node_groups_driver = DistanceMatrixDriver(grid=self.circuit,
+                                                                sigmas=sigmas,
+                                                                min_group_size=min_group_size)
+
+            # Set the time series run options
+            self.find_node_groups_driver.progress_signal.connect(self.ui.progressBar.setValue)
+            self.find_node_groups_driver.progress_text.connect(self.ui.progress_label.setText)
+            self.find_node_groups_driver.done_signal.connect(self.post_run_find_node_groups)
+            self.find_node_groups_driver.start()
+
+        else:
+            # delete the markers
+            for bus in self.circuit.buses:
+                bus.graphic_obj.delete_big_marker()
+
+    def post_run_find_node_groups(self):
+        """
+        Colour the grid after running the node grouping
+        :return:
+        """
+        self.UNLOCK()
+        print('\nGroups:')
+        for group in self.find_node_groups_driver.groups_by_name:
+            print(group)
+
+        colours = get_n_colours(n=len(self.find_node_groups_driver.groups_by_index))
+
+        for c, group in enumerate(self.find_node_groups_driver.groups_by_index):
+            for i in group:
+                bus = self.circuit.buses[i]
+                r, g, b, a = colours[c]
+                color = QColor(r * 255, g * 255, b * 255, a * 255)
+                bus.graphic_obj.add_big_marker(color=color)
+
 
     def post_reduce_grid(self):
         """

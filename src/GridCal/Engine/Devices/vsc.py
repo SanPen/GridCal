@@ -118,6 +118,9 @@ class VSC(EditableDevice):
         # branch type: Line, Transformer, etc...
         self.branch_type = BranchType.VSC
 
+    def get_weight(self):
+        return np.sqrt(self.R1 * self.R1 + self.X1 * self.X1)
+
     def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
         """
         Plot the time series results of this object
