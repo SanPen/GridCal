@@ -5,6 +5,9 @@ __pycache__
 /doc/_build
 /doc/_static
 
+/.idea
+/.idea/inspectionProfiles
+
 /build
 /dist
 /GridCal.egg-info
