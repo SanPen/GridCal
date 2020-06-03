@@ -28,7 +28,7 @@ the author's
     gui
     development
     benchmarks
-    api
+    api/auto/modules
     change_log
 
 This documentation is generated using Sphinx and autodoc.

@@ -5,6 +5,10 @@ from folium.plugins import MarkerCluster
 from PySide2 import QtCore, QtGui, QtWidgets
 from matplotlib.colors import LinearSegmentedColormap
 
+import matplotlib.pyplot as plt
+import matplotlib.cm as mplcm
+import matplotlib.colors as colors
+
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 
@@ -43,7 +47,7 @@ def get_loading_color_map():
 def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings,
                          types=None, losses=None,
                          hvdc_sending_power=None, hvdc_losses=None, hvdc_loading=None,
-                         failed_br_idx=None, loading_label='loading'):
+                         failed_br_idx=None, loading_label='loading', file_name=None):
     """
     Color the grid based on the results passed
     :param circuit:
@@ -290,3 +294,32 @@ def has_null_coordinates(coord):
         if x == 0.0 and y == 0.0:
             return True
     return False
+
+
+def convert_to_hex(rgba_color):
+    """
+    Convert an RGBa reference to HEX
+    :param rgba_color: RGBa color
+    :return: HEX color
+    """
+    red = int(rgba_color.red * 255)
+    green = int(rgba_color.green * 255)
+    blue = int(rgba_color.blue * 255)
+    return '0x{r:02x}{g:02x}{b:02x}'.format(r=red, g=green, b=blue)
+
+
+def get_n_colours(n, colormap='gist_rainbow'):
+    """
+    get a number of different colours
+    :param n: number of different colours
+    :param colormap: colormap name to use
+    :return: list of colours in RGBa
+    """
+    cm = plt.get_cmap(colormap)
+    cNorm = colors.Normalize(vmin=0, vmax=n - 1)
+    scalarMap = mplcm.ScalarMappable(norm=cNorm, cmap=cm)
+
+    # alternative:
+    # [cm(1. * i / NUM_COLORS) for i in range(NUM_COLORS)]
+
+    return [scalarMap.to_rgba(i) for i in range(n)]

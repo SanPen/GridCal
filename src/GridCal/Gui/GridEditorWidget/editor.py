@@ -23,12 +23,14 @@ from PySide2.QtSvg import QSvgGenerator
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.line import Line
+from GridCal.Engine.Devices.dc_line import DcLine
 from GridCal.Engine.Devices.transformer import Transformer2W
 from GridCal.Engine.Devices.vsc import VSC
 from GridCal.Engine.Devices.hvdc_line import HvdcLine
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.GridEditorWidget.bus_graphics import BusGraphicItem
 from GridCal.Gui.GridEditorWidget.line_graphics import LineGraphicItem
+from GridCal.Gui.GridEditorWidget.dc_line_graphics import DcLineGraphicItem
 from GridCal.Gui.GridEditorWidget.transformer2w_graphics import TransformerGraphicItem
 from GridCal.Gui.GridEditorWidget.hvdc_graphics import HvdcGraphicItem
 from GridCal.Gui.GridEditorWidget.vsc_graphics import VscGraphicItem
@@ -380,6 +382,7 @@ class GridEditor(QSplitter):
 
                         if self.started_branch.bus_from.api_object.is_dc != self.started_branch.bus_to.api_object.is_dc:
                             # different DC status -> VSC
+
                             name = 'VSC ' + str(len(self.circuit.vsc_converters) + 1)
                             obj = VSC(bus_from=self.started_branch.bus_from.api_object,
                                       bus_to=self.started_branch.bus_to.api_object,
@@ -389,6 +392,19 @@ class GridEditor(QSplitter):
                                                              toPort=self.started_branch.toPort,
                                                              diagramScene=self.diagramScene,
                                                              branch=obj)
+
+                        elif self.started_branch.bus_from.api_object.is_dc == True and self.started_branch.bus_to.api_object.is_dc == True:
+                            # both buses are DC
+
+                            name = 'Dc line ' + str(len(self.circuit.dc_lines) + 1)
+                            obj = DcLine(bus_from=self.started_branch.bus_from.api_object,
+                                         bus_to=self.started_branch.bus_to.api_object,
+                                         name=name)
+
+                            obj.graphic_obj = DcLineGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                toPort=self.started_branch.toPort,
+                                                                diagramScene=self.diagramScene,
+                                                                branch=obj)
 
                         else:
                             # Same DC status -> line / trafo
@@ -618,7 +634,7 @@ class GridEditor(QSplitter):
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
 
-    def add_line(self, branch):
+    def add_line(self, branch: Line):
         """
         Add branch to the schematic
         :param branch: Branch object
@@ -632,7 +648,21 @@ class GridEditor(QSplitter):
         graphic_obj.redraw()
         branch.graphic_obj = graphic_obj
 
-    def add_transformer(self, branch):
+    def add_dc_line(self, branch: DcLine):
+        """
+        Add branch to the schematic
+        :param branch: Branch object
+        """
+        terminal_from = branch.bus_from.graphic_obj.terminal
+        terminal_to = branch.bus_to.graphic_obj.terminal
+        graphic_obj = DcLineGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        terminal_from.hosting_connections.append(graphic_obj)
+        terminal_to.hosting_connections.append(graphic_obj)
+        graphic_obj.redraw()
+        branch.graphic_obj = graphic_obj
+
+    def add_transformer(self, branch: Transformer2W):
         """
         Add branch to the schematic
         :param branch: Branch object
@@ -666,7 +696,7 @@ class GridEditor(QSplitter):
 
         return graphic_obj
 
-    def add_api_line(self, branch):
+    def add_api_line(self, branch: Line):
         """
         add API branch to the Scene
         :param branch: Branch instance
@@ -675,6 +705,23 @@ class GridEditor(QSplitter):
         terminal_to = branch.bus_to.graphic_obj.terminal
 
         graphic_obj = LineGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+
+        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        terminal_from.hosting_connections.append(graphic_obj)
+        terminal_to.hosting_connections.append(graphic_obj)
+        graphic_obj.redraw()
+
+        return graphic_obj
+
+    def add_api_dc_line(self, branch: DcLine):
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        """
+        terminal_from = branch.bus_from.graphic_obj.terminal
+        terminal_to = branch.bus_to.graphic_obj.terminal
+
+        graphic_obj = DcLineGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
 
         graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)
@@ -862,6 +909,18 @@ class GridEditor(QSplitter):
                 prog_func((i+1) / nn * 100.0)
 
             branch.graphic_obj = self.add_api_line(branch)
+
+        # --------------------------------------------------------------------------------------------------------------
+        if text_func is not None:
+            text_func('Creating schematic line devices')
+
+        nn = len(circuit.dc_lines)
+        for i, branch in enumerate(circuit.dc_lines):
+
+            if prog_func is not None:
+                prog_func((i + 1) / nn * 100.0)
+
+            branch.graphic_obj = self.add_api_dc_line(branch)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:

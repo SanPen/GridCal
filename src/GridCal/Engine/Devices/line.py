@@ -22,9 +22,8 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.enumerations import BranchType
 from GridCal.Engine.Devices.underground_line import UndergroundLineType
-
-from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 from GridCal.Engine.Devices.tower import Tower
+from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
 
 class SequenceLineType(EditableDevice):
@@ -233,14 +232,14 @@ class Line(EditableDevice):
                                 idtag=idtag,
                                 active=active,
                                 device_type=DeviceType.LineDevice,
-                                editable_headers={'name': GCProp('', str, 'Name of the branch.'),
+                                editable_headers={'name': GCProp('', str, 'Name of the line.'),
                                                   'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
-                                                                     'Name of the bus at the "from" side of the branch.'),
+                                                                     'Name of the bus at the "from" side of the line.'),
                                                   'bus_to': GCProp('', DeviceType.BusDevice,
-                                                                   'Name of the bus at the "to" side of the branch.'),
-                                                  'active': GCProp('', bool, 'Is the branch active?'),
-                                                  'rate': GCProp('MVA', float, 'Thermal rating power of the branch.'),
+                                                                   'Name of the bus at the "to" side of the line.'),
+                                                  'active': GCProp('', bool, 'Is the line active?'),
+                                                  'rate': GCProp('MVA', float, 'Thermal rating power of the line.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
@@ -252,7 +251,7 @@ class Line(EditableDevice):
                                                                       'Tolerance expected for the impedance values\n'
                                                                       '7% is expected for transformers\n'
                                                                       '0% for lines.'),
-                                                  'length': GCProp('km', float, 'Length of the branch '
+                                                  'length': GCProp('km', float, 'Length of the line '
                                                                    '(not used for calculation)'),
                                                   'temp_base': GCProp('ºC', float, 'Base temperature at which R was '
                                                                       'measured.'),
@@ -294,7 +293,7 @@ class Line(EditableDevice):
         # line length in km
         self.length = length
 
-        # branch impedance tolerance
+        # line impedance tolerance
         self.tolerance = tolerance
 
         # short circuit impedance
@@ -326,12 +325,12 @@ class Line(EditableDevice):
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
 
-        # branch rating in MVA
+        # line rating in MVA
         self.rate = rate
 
         self.rate_prof = rate_prof
 
-        # branch type: Line, Transformer, etc...
+        # line type: Line, Transformer, etc...
         self.branch_type = BranchType.Line
 
         # type template
@@ -347,9 +346,12 @@ class Line(EditableDevice):
         """
         return self.R * (1 + self.alpha * (self.temp_oper - self.temp_base))
 
+    def get_weight(self):
+        return np.sqrt(self.R * self.R + self.X * self.X)
+
     def copy(self, bus_dict=None):
         """
-        Returns a copy of the branch
+        Returns a copy of the line
         @return: A new  with the same content as this
         """
 
@@ -373,7 +375,6 @@ class Line(EditableDevice):
                  temp_base=self.temp_base,
                  temp_oper=self.temp_oper,
                  alpha=self.alpha,
-                 branch_type=self.branch_type,
                  template=self.template)
 
         b.measurements = self.measurements
@@ -384,7 +385,7 @@ class Line(EditableDevice):
 
     def apply_template(self, obj: Tower, Sbase, logger=Logger()):
         """
-        Apply a branch template to this object
+        Apply a line template to this object
 
         Arguments:
 
@@ -417,7 +418,7 @@ class Line(EditableDevice):
                     self.template = obj
                     self.branch_type = BranchType.Line
             else:
-                raise Exception('You are trying to apply an Overhead line type to a non-line branch')
+                raise Exception('You are trying to apply an Overhead line type to a non-line line')
 
         elif type(obj) is UndergroundLineType:
             Vn = self.bus_to.Vnom
@@ -469,7 +470,6 @@ class Line(EditableDevice):
 
             if properties.tpe == BranchType:
                 obj = self.branch_type.value
-
             if properties.tpe == DeviceType.BusDevice:
                 obj = obj.idtag
 
@@ -556,6 +556,6 @@ class Line(EditableDevice):
 
     def get_coordinates(self):
         """
-        Get the branch defining coordinates
+        Get the line defining coordinates
         """
         return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]

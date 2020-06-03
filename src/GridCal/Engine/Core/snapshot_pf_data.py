@@ -33,7 +33,7 @@ sparse_type = get_sparse_type()
 
 class SnapshotCircuit:
 
-    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase,
+    def __init__(self, nbus, nline, ndcline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase,
                  apply_temperature=False, branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
         """
 
@@ -50,6 +50,7 @@ class SnapshotCircuit:
 
         self.nbus = nbus
         self.nline = nline
+        self.ndcline = ndcline
         self.ntr = ntr
         self.nvsc = nvsc
         self.nhvdc = nhvdc
@@ -70,9 +71,10 @@ class SnapshotCircuit:
         self.Vbus = np.ones(nbus, dtype=complex)
         self.bus_types = np.empty(nbus, dtype=int)
         self.bus_installed_power = np.zeros(nbus, dtype=float)
+        self.bus_is_dc = np.empty(nbus, dtype=bool)
 
         # branch common ------------------------------------------------------------------------------------------------
-        self.nbr = nline + ntr + nvsc  # exclude the HVDC model since it is not a real branch
+        self.nbr = nline + ntr + nvsc + ndcline  # exclude the HVDC model since it is not a real branch
 
         self.branch_names = np.empty(self.nbr, dtype=object)
         self.branch_active = np.zeros(self.nbr, dtype=int)
@@ -93,6 +95,16 @@ class SnapshotCircuit:
         self.line_impedance_tolerance = np.zeros(nline, dtype=float)
 
         self.C_line_bus = sp.lil_matrix((nline, nbus), dtype=int)  # this ons is just for splitting islands
+
+        # dc lines -----------------------------------------------------------------------------------------------------
+        self.dc_line_names = np.zeros(ndcline, dtype=object)
+        self.dc_line_R = np.zeros(ndcline, dtype=float)
+        self.dc_line_temp_base = np.zeros(ndcline, dtype=float)
+        self.dc_line_temp_oper = np.zeros(ndcline, dtype=float)
+        self.dc_line_alpha = np.zeros(ndcline, dtype=float)
+        self.dc_line_impedance_tolerance = np.zeros(ndcline, dtype=float)
+
+        self.C_dc_line_bus = sp.lil_matrix((ndcline, nbus), dtype=int)  # this ons is just for splitting islands
 
         # transformer 2W + 3W ------------------------------------------------------------------------------------------
         self.tr_names = np.zeros(ntr, dtype=object)
@@ -192,6 +204,47 @@ class SnapshotCircuit:
 
         self.C_bus_shunt = sp.lil_matrix((nbus, nshunt), dtype=int)
 
+        #---------------------------------------------------------------------------------------------------------------
+        # Results
+        # --------------------------------------------------------------------------------------------------------------
+
+        self.Sbus = np.zeros(self.nbus, dtype=complex)
+        self.Ibus = np.zeros(self.nbus, dtype=complex)
+        self.Yshunt_from_devices = np.zeros(self.nbus, dtype=complex)
+
+        self.Qmax_bus = np.zeros(self.nbus)
+        self.Qmin_bus = np.zeros(self.nbus)
+
+        self.Ybus = None
+        self.Yf = None
+        self.Yt = None
+
+        # Admittance for HELM / AC linear
+        self.Yseries = None
+        self.Yshunt = None
+
+        # Admittances for Fast-Decoupled
+        self.B1 = None
+        self.B2 = None
+
+        # Admittances for Linear
+        self.Bpqpv = None
+        self.Bref = None
+
+        self.original_bus_idx = np.arange(self.nbus)
+        self.original_branch_idx = np.arange(self.nbr)
+        self.original_tr_idx = np.arange(self.ntr)
+        self.original_gen_idx = np.arange(self.ngen)
+        self.original_bat_idx = np.arange(self.nbatt)
+
+        self.pq = list()
+        self.pv = list()
+        self.vd = list()
+        self.pqpv = list()
+
+        self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries',
+                                     "B'", "B''", 'Types', 'Jacobian', 'Qmin', 'Qmax']
+
     def get_injections(self):
         """
         Compute the power
@@ -229,6 +282,7 @@ class SnapshotCircuit:
         self.C_branch_bus_t = self.C_branch_bus_t.tocsc()
 
         self.C_line_bus = self.C_line_bus.tocsc()
+        self.C_dc_line_bus = self.C_line_bus.tocsc()
         self.C_tr_bus = self.C_tr_bus.tocsc()
         self.C_hvdc_bus_f = self.C_hvdc_bus_f.tocsc()
         self.C_hvdc_bus_t = self.C_hvdc_bus_t.tocsc()
@@ -243,386 +297,7 @@ class SnapshotCircuit:
         self.bus_installed_power = self.C_bus_gen * self.generator_installed_p
         self.bus_installed_power += self.C_bus_batt * self.battery_installed_p
 
-    def to_island(self) -> "SnapshotIsland":
-        """
-        copy the circuit as an island device
-        :return: SnapshotIsland instance
-        """
-        island = SnapshotIsland(nbus=self.nbus,
-                                nline=self.nline,
-                                ntr=self.ntr,
-                                nvsc=self.nvsc,
-                                nhvdc=self.nhvdc,
-                                nload=self.nload,
-                                ngen=self.ngen,
-                                nbatt=self.nbatt,
-                                nshunt=self.nshunt,
-                                nstagen=self.nstagen,
-                                sbase=self.Sbase,
-                                apply_temperature=self.apply_temperature,
-                                branch_tolerance_mode=self.branch_tolerance_mode)
-
-        island.original_bus_idx = np.arange(self.nbus)
-        island.original_branch_idx = np.arange(self.nbr)
-        island.original_tr_idx = np.arange(self.ntr)
-        island.original_gen_idx = np.arange(self.ngen)
-        island.original_bat_idx = np.arange(self.nbatt)
-
-        # bus ----------------------------------------------------------------------------------------------------------
-        island.bus_names = self.bus_names
-        island.bus_active = self.bus_active
-        island.Vbus = self.Vbus
-        island.bus_types = self.bus_types
-
-        # branches common ----------------------------------------------------------------------------------------------
-        island.branch_names = self.branch_names
-        island.branch_active = self.branch_active
-        island.F = self.F
-        island.T = self.T
-        island.branch_rates = self.branch_rates
-        island.C_branch_bus_f = self.C_branch_bus_f
-        island.C_branch_bus_t = self.C_branch_bus_t
-
-        # lines --------------------------------------------------------------------------------------------------------
-        island.line_names = self.line_names
-        island.line_R = self.line_R
-        island.line_X = self.line_X
-        island.line_B = self.line_B
-        island.line_temp_base = self.line_temp_base
-        island.line_temp_oper = self.line_temp_oper
-        island.line_alpha = self.line_alpha
-        island.line_impedance_tolerance = self.line_impedance_tolerance
-
-        island.C_line_bus = self.C_line_bus
-
-        # transformer 2W + 3W ------------------------------------------------------------------------------------------
-        island.tr_names = self.tr_names
-        island.tr_R = self.tr_R
-        island.tr_X = self.tr_X
-        island.tr_G = self.tr_G
-        island.tr_B = self.tr_B
-
-        island.tr_tap_f = self.tr_tap_f
-        island.tr_tap_t = self.tr_tap_t
-        island.tr_tap_mod = self.tr_tap_mod
-        island.tr_tap_ang = self.tr_tap_ang
-        island.tr_is_bus_to_regulated = self.tr_is_bus_to_regulated
-        island.tr_tap_position = self.tr_tap_position
-        island.tr_min_tap = self.tr_min_tap
-        island.tr_max_tap = self.tr_max_tap
-        island.tr_tap_inc_reg_up = self.tr_tap_inc_reg_up
-        island.tr_tap_inc_reg_down = self.tr_tap_inc_reg_down
-        island.tr_vset = self.tr_vset
-
-        island.C_tr_bus = self.C_tr_bus
-
-        # hvdc line ----------------------------------------------------------------------------------------------------
-        island.hvdc_names = self.hvdc_names
-        island.hvdc_active = self.hvdc_active
-        island.hvdc_rate = self.hvdc_rate
-
-        island.hvdc_Pf = self.hvdc_Pf
-        island.hvdc_Pt = self.hvdc_Pt
-
-        island.hvdc_loss_factor = self.hvdc_loss_factor
-        island.hvdc_Vset_f = self.hvdc_Vset_f
-        island.hvdc_Vset_t = self.hvdc_Vset_t
-
-        island.hvdc_Qmin_f = self.hvdc_Qmin_f
-        island.hvdc_Qmax_f = self.hvdc_Qmax_f
-        island.hvdc_Qmin_t = self.hvdc_Qmin_t
-        island.hvdc_Qmax_t = self.hvdc_Qmax_t
-
-        island.C_hvdc_bus_f = self.C_hvdc_bus_f
-        island.C_hvdc_bus_f = self.C_hvdc_bus_t
-
-        # vsc converter ------------------------------------------------------------------------------------------------
-        island.vsc_names = self.vsc_names
-        island.vsc_R1 = self.vsc_R1
-        island.vsc_X1 = self.vsc_X1
-        island.vsc_Gsw = self.vsc_Gsw
-        island.vsc_Beq = self.vsc_Beq
-        island.vsc_m = self.vsc_m
-        island.vsc_theta = self.vsc_theta
-
-        island.C_vsc_bus = self.C_vsc_bus
-
-        # load ---------------------------------------------------------------------------------------------------------
-        island.load_names = self.load_names
-        island.load_active = self.load_active
-        island.load_s = self.load_s
-
-        island.C_bus_load = self.C_bus_load
-
-        # static generators --------------------------------------------------------------------------------------------
-        island.static_generator_names = self.static_generator_names
-        island.static_generator_active = self.static_generator_active
-        island.static_generator_s = self.static_generator_s
-
-        island.C_bus_static_generator = self.C_bus_static_generator
-
-        # battery ------------------------------------------------------------------------------------------------------
-        island.battery_names = self.battery_names
-        island.battery_active = self.battery_active
-        island.battery_controllable = self.battery_controllable
-        island.battery_p = self.battery_p
-        island.battery_pf = self.battery_pf
-        island.battery_v = self.battery_v
-        island.battery_qmin = self.battery_qmin
-        island.battery_qmax = self.battery_qmax
-
-        island.C_bus_batt = self.C_bus_batt
-
-        # generator ----------------------------------------------------------------------------------------------------
-        island.generator_names = self.generator_names
-        island.generator_active = self.generator_active
-        island.generator_controllable = self.generator_controllable
-        island.generator_p = self.generator_p
-        island.generator_pf = self.generator_pf
-        island.generator_v = self.generator_v
-        island.generator_qmin = self.generator_qmin
-        island.generator_qmax = self.generator_qmax
-
-        island.C_bus_gen = self.C_bus_gen
-
-        # shunt --------------------------------------------------------------------------------------------------------
-        island.shunt_names = self.shunt_names
-        island.shunt_active = self.shunt_active
-        island.shunt_admittance = self.shunt_admittance
-
-        island.C_bus_shunt = self.C_bus_shunt
-
-        return island
-
-    def get_island(self, bus_idx) -> "SnapshotIsland":
-        """
-        Get the island corresponding to the given buses
-        :param bus_idx: array of bus indices
-        :return: SnapshotIsland
-        """
-
-        # find the indices of the devices of the island
-        line_idx = tp.get_elements_of_the_island(self.C_line_bus, bus_idx)
-        tr_idx = tp.get_elements_of_the_island(self.C_tr_bus, bus_idx)
-        vsc_idx = tp.get_elements_of_the_island(self.C_vsc_bus, bus_idx)
-        hvdc_idx = tp.get_elements_of_the_island(self.C_hvdc_bus_f + self.C_hvdc_bus_t, bus_idx)
-        br_idx = tp.get_elements_of_the_island(self.C_branch_bus_f + self.C_branch_bus_t, bus_idx)
-
-        load_idx = tp.get_elements_of_the_island(self.C_bus_load.T, bus_idx)
-        stagen_idx = tp.get_elements_of_the_island(self.C_bus_static_generator.T, bus_idx)
-        gen_idx = tp.get_elements_of_the_island(self.C_bus_gen.T, bus_idx)
-        batt_idx = tp.get_elements_of_the_island(self.C_bus_batt.T, bus_idx)
-        shunt_idx = tp.get_elements_of_the_island(self.C_bus_shunt.T, bus_idx)
-
-        nc = SnapshotIsland(nbus=len(bus_idx),
-                            nline=len(line_idx),
-                            ntr=len(tr_idx),
-                            nvsc=len(vsc_idx),
-                            nhvdc=len(hvdc_idx),
-                            nload=len(load_idx),
-                            ngen=len(gen_idx),
-                            nbatt=len(batt_idx),
-                            nshunt=len(shunt_idx),
-                            nstagen=len(stagen_idx),
-                            sbase=self.Sbase,
-                            apply_temperature=self.apply_temperature,
-                            branch_tolerance_mode=self.branch_tolerance_mode)
-
-        nc.original_bus_idx = bus_idx
-        nc.original_branch_idx = br_idx
-
-        nc.original_tr_idx = tr_idx
-        nc.original_gen_idx = gen_idx
-        nc.original_bat_idx = batt_idx
-
-        # bus ----------------------------------------------------------------------------------------------------------
-        nc.bus_names = self.bus_names[bus_idx]
-        nc.bus_active = self.bus_active[bus_idx]
-        nc.Vbus = self.Vbus[bus_idx]
-        nc.bus_types = self.bus_types[bus_idx]
-
-        # branch common ------------------------------------------------------------------------------------------------
-        nc.branch_names = self.branch_names[br_idx]
-        nc.branch_active = self.branch_active[br_idx]
-        nc.F = self.F[br_idx]
-        nc.T = self.T[br_idx]
-        nc.branch_rates = self.branch_rates[br_idx]
-        nc.C_branch_bus_f = self.C_branch_bus_f[np.ix_(br_idx, bus_idx)]
-        nc.C_branch_bus_t = self.C_branch_bus_t[np.ix_(br_idx, bus_idx)]
-
-        # lines --------------------------------------------------------------------------------------------------------
-        nc.line_names = self.line_names[line_idx]
-        nc.line_R = self.line_R[line_idx]
-        nc.line_X = self.line_X[line_idx]
-        nc.line_B = self.line_B[line_idx]
-        nc.line_temp_base = self.line_temp_base[line_idx]
-        nc.line_temp_oper = self.line_temp_oper[line_idx]
-        nc.line_alpha = self.line_alpha[line_idx]
-        nc.line_impedance_tolerance = self.line_impedance_tolerance[line_idx]
-
-        nc.C_line_bus = self.C_line_bus[np.ix_(line_idx, bus_idx)]
-
-        # transformer 2W + 3W ------------------------------------------------------------------------------------------
-        nc.tr_names = self.tr_names[tr_idx]
-        nc.tr_R = self.tr_R[tr_idx]
-        nc.tr_X = self.tr_X[tr_idx]
-        nc.tr_G = self.tr_G[tr_idx]
-        nc.tr_B = self.tr_B[tr_idx]
-
-        nc.tr_tap_f = self.tr_tap_f[tr_idx]
-        nc.tr_tap_t = self.tr_tap_t[tr_idx]
-        nc.tr_tap_mod = self.tr_tap_mod[tr_idx]
-        nc.tr_tap_ang = self.tr_tap_ang[tr_idx]
-        nc.tr_is_bus_to_regulated = self.tr_is_bus_to_regulated[tr_idx]
-        nc.tr_tap_position = self.tr_tap_position[tr_idx]
-        nc.tr_min_tap = self.tr_min_tap[tr_idx]
-        nc.tr_max_tap = self.tr_max_tap[tr_idx]
-        nc.tr_tap_inc_reg_up = self.tr_tap_inc_reg_up[tr_idx]
-        nc.tr_tap_inc_reg_down = self.tr_tap_inc_reg_down[tr_idx]
-        nc.tr_vset = self.tr_vset[tr_idx]
-
-        nc.C_tr_bus = self.C_tr_bus[np.ix_(tr_idx, bus_idx)]
-
-        # hvdc line ----------------------------------------------------------------------------------------------------
-        nc.hvdc_names = self.hvdc_names[hvdc_idx]
-        nc.hvdc_active = self.hvdc_active[hvdc_idx]
-        nc.hvdc_rate = self.hvdc_rate[hvdc_idx]
-
-        nc.hvdc_Pf = self.hvdc_Pf[hvdc_idx]
-        nc.hvdc_Pt = self.hvdc_Pt[hvdc_idx]
-        nc.hvdc_Vset_f = self.hvdc_Vset_f[hvdc_idx]
-        nc.hvdc_Vset_t = self.hvdc_Vset_t[hvdc_idx]
-        nc.hvdc_loss_factor = self.hvdc_loss_factor[hvdc_idx]
-        nc.hvdc_Qmin_f = self.hvdc_Qmin_f[hvdc_idx]
-        nc.hvdc_Qmax_f = self.hvdc_Qmax_f[hvdc_idx]
-        nc.hvdc_Qmin_t = self.hvdc_Qmin_t[hvdc_idx]
-        nc.hvdc_Qmax_t = self.hvdc_Qmax_t[hvdc_idx]
-
-        nc.C_hvdc_bus_f = self.C_hvdc_bus_f[np.ix_(hvdc_idx, bus_idx)]
-        nc.C_hvdc_bus_t = self.C_hvdc_bus_t[np.ix_(hvdc_idx, bus_idx)]
-
-        # vsc converter ------------------------------------------------------------------------------------------------
-        nc.vsc_names = self.vsc_names[vsc_idx]
-        nc.vsc_R1 = self.vsc_R1[vsc_idx]
-        nc.vsc_X1 = self.vsc_X1[vsc_idx]
-        nc.vsc_Gsw = self.vsc_Gsw[vsc_idx]
-        nc.vsc_Beq = self.vsc_Beq[vsc_idx]
-        nc.vsc_m = self.vsc_m[vsc_idx]
-        nc.vsc_theta = self.vsc_theta[vsc_idx]
-
-        nc.C_vsc_bus = self.C_vsc_bus[np.ix_(vsc_idx, bus_idx)]
-
-        # load ---------------------------------------------------------------------------------------------------------
-        nc.load_names = self.load_names[load_idx]
-        nc.load_active = self.load_active[load_idx]
-        nc.load_s = self.load_s[load_idx]
-
-        nc.C_bus_load = self.C_bus_load[np.ix_(bus_idx, load_idx)]
-
-        # static generators --------------------------------------------------------------------------------------------
-        nc.static_generator_names = self.static_generator_names[stagen_idx]
-        nc.static_generator_active = self.static_generator_active[stagen_idx]
-        nc.static_generator_s = self.static_generator_s[stagen_idx]
-
-        nc.C_bus_static_generator = self.C_bus_static_generator[np.ix_(bus_idx, stagen_idx)]
-
-        # battery ------------------------------------------------------------------------------------------------------
-        nc.battery_names = self.battery_names[batt_idx]
-        nc.battery_active = self.battery_active[batt_idx]
-        nc.battery_controllable = self.battery_controllable[batt_idx]
-        nc.battery_p = self.battery_p[batt_idx]
-        nc.battery_pf = self.battery_pf[batt_idx]
-        nc.battery_v = self.battery_v[batt_idx]
-        nc.battery_qmin = self.battery_qmin[batt_idx]
-        nc.battery_qmax = self.battery_qmax[batt_idx]
-
-        nc.C_bus_batt = self.C_bus_batt[np.ix_(bus_idx, batt_idx)]
-
-        # generator ----------------------------------------------------------------------------------------------------
-        nc.generator_names = self.generator_names[gen_idx]
-        nc.generator_active = self.generator_active[gen_idx]
-        nc.generator_controllable = self.generator_controllable[gen_idx]
-        nc.generator_p = self.generator_p[gen_idx]
-        nc.generator_pf = self.generator_pf[gen_idx]
-        nc.generator_v = self.generator_v[gen_idx]
-        nc.generator_qmin = self.generator_qmin[gen_idx]
-        nc.generator_qmax = self.generator_qmax[gen_idx]
-
-        nc.C_bus_gen = self.C_bus_gen[np.ix_(bus_idx, gen_idx)]
-
-        # shunt --------------------------------------------------------------------------------------------------------
-        nc.shunt_names = self.shunt_names[shunt_idx]
-        nc.shunt_active = self.shunt_active[shunt_idx]
-        nc.shunt_admittance = self.shunt_admittance[shunt_idx]
-
-        nc.C_bus_shunt = self.C_bus_shunt[np.ix_(bus_idx, shunt_idx)]
-
-        return nc
-
-
-class SnapshotIsland(SnapshotCircuit):
-
-    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase,
-                 apply_temperature=False,
-                 branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
-        """
-
-        :param nbus:
-        :param nline:
-        :param ntr:
-        :param nvsc:
-        :param nhvdc:
-        :param nload:
-        :param ngen:
-        :param nbatt:
-        :param nshunt:
-        :param sbase:
-        :param apply_temperature:
-        :param impedance_tolerance:
-        :param branch_tolerance_mode:
-        """
-        SnapshotCircuit.__init__(self, nbus=nbus, nline=nline, ntr=ntr, nvsc=nvsc, nhvdc=nhvdc,
-                                 nload=nload, ngen=ngen, nbatt=nbatt, nshunt=nshunt, nstagen=nstagen, sbase=sbase,
-                                 apply_temperature=apply_temperature, branch_tolerance_mode=branch_tolerance_mode)
-
-        self.Sbus = np.zeros(self.nbus, dtype=complex)
-        self.Ibus = np.zeros(self.nbus, dtype=complex)
-        self.Yshunt_from_devices = np.zeros(self.nbus, dtype=complex)
-
-        self.Qmax_bus = np.zeros(self.nbus)
-        self.Qmin_bus = np.zeros(self.nbus)
-
-        self.Ybus = None
-        self.Yf = None
-        self.Yt = None
-
-        # Admittance for HELM / AC linear
-        self.Yseries = None
-        self.Yshunt = None
-
-        # Admittances for Fast-Decoupled
-        self.B1 = None
-        self.B2 = None
-
-        # Admittances for Linear
-        self.Bpqpv = None
-        self.Bref = None
-
-        self.original_bus_idx = list()
-        self.original_branch_idx = list()
-        self.original_tr_idx = list()
-        self.original_gen_idx = list()
-        self.original_bat_idx = list()
-
-        self.pq = list()
-        self.pv = list()
-        self.vd = list()
-        self.pqpv = list()
-
-        self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries',
-                                     "B'", "B''", 'Types', 'Jacobian', 'Qmin', 'Qmax']
-
-    def R_corrected(self):
+    def AC_R_corrected(self):
         """
         Returns temperature corrected resistances (numpy array) based on a formula
         provided by: NFPA 70-2005, National Electrical Code, Table 8, footnote #2; and
@@ -630,6 +305,15 @@ class SnapshotIsland(SnapshotCircuit):
         (version of 2019-01-03 at 15:20 EST).
         """
         return self.line_R * (1.0 + self.line_alpha * (self.line_temp_oper - self.line_temp_base))
+
+    def DC_R_corrected(self):
+        """
+        Returns temperature corrected resistances (numpy array) based on a formula
+        provided by: NFPA 70-2005, National Electrical Code, Table 8, footnote #2; and
+        https://en.wikipedia.org/wiki/Electrical_resistivity_and_conductivity#Linear_approximation
+        (version of 2019-01-03 at 15:20 EST).
+        """
+        return self.dc_line_R * (1.0 + self.dc_line_alpha * (self.dc_line_temp_oper - self.dc_line_temp_base))
 
     def re_calc_admittance_matrices(self, tap_module):
         """
@@ -711,7 +395,7 @@ class SnapshotIsland(SnapshotCircuit):
 
         # use the specified of the temperature-corrected resistance
         if self.apply_temperature:
-            line_R = self.R_corrected()
+            line_R = self.AC_R_corrected()
         else:
             line_R = self.line_R
 
@@ -743,7 +427,6 @@ class SnapshotIsland(SnapshotCircuit):
         if fast_decoupled:
             reactances[a:b] = self.line_X
             susceptances[a:b] = self.line_B
-            # all_taps[a:b] = np.empty(self.nbr, dtype=complex)
 
         # transformer models -------------------------------------------------------------------------------------------
 
@@ -801,6 +484,38 @@ class SnapshotIsland(SnapshotCircuit):
             reactances[a:b] = self.vsc_X1
             susceptances[a:b] = self.vsc_Beq
             all_taps[a:b] = self.vsc_m * np.exp(1.0j * self.vsc_theta)
+
+        # dc-line ------------------------------------------------------------------------------------------------------
+        a = self.nline + self.ntr + self.nvsc
+        b = a + self.ndcline
+
+        # use the specified of the temperature-corrected resistance
+        if self.apply_temperature:
+            dc_line_R = self.DC_R_corrected()
+        else:
+            dc_line_R = self.dc_line_R
+
+        # modify the branches impedance with the lower, upper tolerance values
+        if self.branch_tolerance_mode == BranchImpedanceMode.Lower:
+            dc_line_R *= (1 - self.dc_line_impedance_tolerance / 100.0)
+        elif self.branch_tolerance_mode == BranchImpedanceMode.Upper:
+            dc_line_R *= (1 + self.dc_line_impedance_tolerance / 100.0)
+
+        Ys_dc_line = 1.0 / dc_line_R
+
+        # branch primitives in vector form for Ybus
+        if newton_raphson:
+            Ytt[a:b] = Ys_dc_line
+            Yff[a:b] = Ys_dc_line
+            Yft[a:b] = - Ys_dc_line
+            Ytf[a:b] = - Ys_dc_line
+
+        # branch primitives in vector form, for Yseries
+        if linear_ac or helm:
+            Ytts[a:b] = Ys_dc_line
+            Yffs[a:b] = Ys_dc_line
+            Yfts[a:b] = - Ys_dc_line
+            Ytfs[a:b] = - Ys_dc_line
 
         # HVDC LINE MODEL ----------------------------------------------------------------------------------------------
         # does not apply since the HVDC-line model is the simplistic 2-generator model
@@ -1000,7 +715,185 @@ class SnapshotIsland(SnapshotCircuit):
         return df
 
 
-def split_into_islands(numeric_circuit: SnapshotCircuit, ignore_single_node_islands=False) -> List[SnapshotIsland]:
+def get_pf_island(circuit: SnapshotCircuit, bus_idx) -> "SnapshotCircuit":
+    """
+    Get the island corresponding to the given buses
+    :param bus_idx: array of bus indices
+    :return: SnapshotCircuit
+    """
+
+    # find the indices of the devices of the island
+    line_idx = tp.get_elements_of_the_island(circuit.C_line_bus, bus_idx)
+    dc_line_idx = tp.get_elements_of_the_island(circuit.C_dc_line_bus, bus_idx)
+    tr_idx = tp.get_elements_of_the_island(circuit.C_tr_bus, bus_idx)
+    vsc_idx = tp.get_elements_of_the_island(circuit.C_vsc_bus, bus_idx)
+    hvdc_idx = tp.get_elements_of_the_island(circuit.C_hvdc_bus_f + circuit.C_hvdc_bus_t, bus_idx)
+    br_idx = tp.get_elements_of_the_island(circuit.C_branch_bus_f + circuit.C_branch_bus_t, bus_idx)
+
+    load_idx = tp.get_elements_of_the_island(circuit.C_bus_load.T, bus_idx)
+    stagen_idx = tp.get_elements_of_the_island(circuit.C_bus_static_generator.T, bus_idx)
+    gen_idx = tp.get_elements_of_the_island(circuit.C_bus_gen.T, bus_idx)
+    batt_idx = tp.get_elements_of_the_island(circuit.C_bus_batt.T, bus_idx)
+    shunt_idx = tp.get_elements_of_the_island(circuit.C_bus_shunt.T, bus_idx)
+
+    nc = SnapshotCircuit(nbus=len(bus_idx),
+                         nline=len(line_idx),
+                         ndcline=len(dc_line_idx),
+                         ntr=len(tr_idx),
+                         nvsc=len(vsc_idx),
+                         nhvdc=len(hvdc_idx),
+                         nload=len(load_idx),
+                         ngen=len(gen_idx),
+                         nbatt=len(batt_idx),
+                         nshunt=len(shunt_idx),
+                         nstagen=len(stagen_idx),
+                         sbase=circuit.Sbase,
+                         apply_temperature=circuit.apply_temperature,
+                         branch_tolerance_mode=circuit.branch_tolerance_mode)
+
+    nc.original_bus_idx = bus_idx
+    nc.original_branch_idx = br_idx
+
+    nc.original_tr_idx = tr_idx
+    nc.original_gen_idx = gen_idx
+    nc.original_bat_idx = batt_idx
+
+    # bus ----------------------------------------------------------------------------------------------------------
+    nc.bus_names = circuit.bus_names[bus_idx]
+    nc.bus_active = circuit.bus_active[bus_idx]
+    nc.Vbus = circuit.Vbus[bus_idx]
+    nc.bus_types = circuit.bus_types[bus_idx]
+
+    # branch common ------------------------------------------------------------------------------------------------
+    nc.branch_names = circuit.branch_names[br_idx]
+    nc.branch_active = circuit.branch_active[br_idx]
+    nc.F = circuit.F[br_idx]
+    nc.T = circuit.T[br_idx]
+    nc.branch_rates = circuit.branch_rates[br_idx]
+    nc.C_branch_bus_f = circuit.C_branch_bus_f[np.ix_(br_idx, bus_idx)]
+    nc.C_branch_bus_t = circuit.C_branch_bus_t[np.ix_(br_idx, bus_idx)]
+
+    # lines --------------------------------------------------------------------------------------------------------
+    nc.line_names = circuit.line_names[line_idx]
+    nc.line_R = circuit.line_R[line_idx]
+    nc.line_X = circuit.line_X[line_idx]
+    nc.line_B = circuit.line_B[line_idx]
+    nc.line_temp_base = circuit.line_temp_base[line_idx]
+    nc.line_temp_oper = circuit.line_temp_oper[line_idx]
+    nc.line_alpha = circuit.line_alpha[line_idx]
+    nc.line_impedance_tolerance = circuit.line_impedance_tolerance[line_idx]
+
+    nc.C_line_bus = circuit.C_line_bus[np.ix_(line_idx, bus_idx)]
+
+    # transformer 2W + 3W ------------------------------------------------------------------------------------------
+    nc.tr_names = circuit.tr_names[tr_idx]
+    nc.tr_R = circuit.tr_R[tr_idx]
+    nc.tr_X = circuit.tr_X[tr_idx]
+    nc.tr_G = circuit.tr_G[tr_idx]
+    nc.tr_B = circuit.tr_B[tr_idx]
+
+    nc.tr_tap_f = circuit.tr_tap_f[tr_idx]
+    nc.tr_tap_t = circuit.tr_tap_t[tr_idx]
+    nc.tr_tap_mod = circuit.tr_tap_mod[tr_idx]
+    nc.tr_tap_ang = circuit.tr_tap_ang[tr_idx]
+    nc.tr_is_bus_to_regulated = circuit.tr_is_bus_to_regulated[tr_idx]
+    nc.tr_tap_position = circuit.tr_tap_position[tr_idx]
+    nc.tr_min_tap = circuit.tr_min_tap[tr_idx]
+    nc.tr_max_tap = circuit.tr_max_tap[tr_idx]
+    nc.tr_tap_inc_reg_up = circuit.tr_tap_inc_reg_up[tr_idx]
+    nc.tr_tap_inc_reg_down = circuit.tr_tap_inc_reg_down[tr_idx]
+    nc.tr_vset = circuit.tr_vset[tr_idx]
+
+    nc.C_tr_bus = circuit.C_tr_bus[np.ix_(tr_idx, bus_idx)]
+
+    # hvdc line ----------------------------------------------------------------------------------------------------
+    nc.hvdc_names = circuit.hvdc_names[hvdc_idx]
+    nc.hvdc_active = circuit.hvdc_active[hvdc_idx]
+    nc.hvdc_rate = circuit.hvdc_rate[hvdc_idx]
+
+    nc.hvdc_Pf = circuit.hvdc_Pf[hvdc_idx]
+    nc.hvdc_Pt = circuit.hvdc_Pt[hvdc_idx]
+    nc.hvdc_Vset_f = circuit.hvdc_Vset_f[hvdc_idx]
+    nc.hvdc_Vset_t = circuit.hvdc_Vset_t[hvdc_idx]
+    nc.hvdc_loss_factor = circuit.hvdc_loss_factor[hvdc_idx]
+    nc.hvdc_Qmin_f = circuit.hvdc_Qmin_f[hvdc_idx]
+    nc.hvdc_Qmax_f = circuit.hvdc_Qmax_f[hvdc_idx]
+    nc.hvdc_Qmin_t = circuit.hvdc_Qmin_t[hvdc_idx]
+    nc.hvdc_Qmax_t = circuit.hvdc_Qmax_t[hvdc_idx]
+
+    nc.C_hvdc_bus_f = circuit.C_hvdc_bus_f[np.ix_(hvdc_idx, bus_idx)]
+    nc.C_hvdc_bus_t = circuit.C_hvdc_bus_t[np.ix_(hvdc_idx, bus_idx)]
+
+    # vsc converter ------------------------------------------------------------------------------------------------
+    nc.vsc_names = circuit.vsc_names[vsc_idx]
+    nc.vsc_R1 = circuit.vsc_R1[vsc_idx]
+    nc.vsc_X1 = circuit.vsc_X1[vsc_idx]
+    nc.vsc_Gsw = circuit.vsc_Gsw[vsc_idx]
+    nc.vsc_Beq = circuit.vsc_Beq[vsc_idx]
+    nc.vsc_m = circuit.vsc_m[vsc_idx]
+    nc.vsc_theta = circuit.vsc_theta[vsc_idx]
+
+    nc.C_vsc_bus = circuit.C_vsc_bus[np.ix_(vsc_idx, bus_idx)]
+
+    # dc lines -----------------------------------------------------------------------------------------------------
+    nc.dc_line_names = circuit.dc_line_names[dc_line_idx]
+    nc.dc_line_R = circuit.dc_line_R[dc_line_idx]
+    nc.dc_line_temp_base = circuit.dc_line_temp_base[dc_line_idx]
+    nc.dc_line_temp_oper = circuit.dc_line_temp_oper[dc_line_idx]
+    nc.dc_line_alpha = circuit.dc_line_alpha[dc_line_idx]
+    nc.dc_line_impedance_tolerance = circuit.dc_line_impedance_tolerance[dc_line_idx]
+
+    nc.C_dc_line_bus = circuit.C_dc_line_bus[np.ix_(dc_line_idx, bus_idx)]
+
+    # load ---------------------------------------------------------------------------------------------------------
+    nc.load_names = circuit.load_names[load_idx]
+    nc.load_active = circuit.load_active[load_idx]
+    nc.load_s = circuit.load_s[load_idx]
+
+    nc.C_bus_load = circuit.C_bus_load[np.ix_(bus_idx, load_idx)]
+
+    # static generators --------------------------------------------------------------------------------------------
+    nc.static_generator_names = circuit.static_generator_names[stagen_idx]
+    nc.static_generator_active = circuit.static_generator_active[stagen_idx]
+    nc.static_generator_s = circuit.static_generator_s[stagen_idx]
+
+    nc.C_bus_static_generator = circuit.C_bus_static_generator[np.ix_(bus_idx, stagen_idx)]
+
+    # battery ------------------------------------------------------------------------------------------------------
+    nc.battery_names = circuit.battery_names[batt_idx]
+    nc.battery_active = circuit.battery_active[batt_idx]
+    nc.battery_controllable = circuit.battery_controllable[batt_idx]
+    nc.battery_p = circuit.battery_p[batt_idx]
+    nc.battery_pf = circuit.battery_pf[batt_idx]
+    nc.battery_v = circuit.battery_v[batt_idx]
+    nc.battery_qmin = circuit.battery_qmin[batt_idx]
+    nc.battery_qmax = circuit.battery_qmax[batt_idx]
+
+    nc.C_bus_batt = circuit.C_bus_batt[np.ix_(bus_idx, batt_idx)]
+
+    # generator ----------------------------------------------------------------------------------------------------
+    nc.generator_names = circuit.generator_names[gen_idx]
+    nc.generator_active = circuit.generator_active[gen_idx]
+    nc.generator_controllable = circuit.generator_controllable[gen_idx]
+    nc.generator_p = circuit.generator_p[gen_idx]
+    nc.generator_pf = circuit.generator_pf[gen_idx]
+    nc.generator_v = circuit.generator_v[gen_idx]
+    nc.generator_qmin = circuit.generator_qmin[gen_idx]
+    nc.generator_qmax = circuit.generator_qmax[gen_idx]
+
+    nc.C_bus_gen = circuit.C_bus_gen[np.ix_(bus_idx, gen_idx)]
+
+    # shunt --------------------------------------------------------------------------------------------------------
+    nc.shunt_names = circuit.shunt_names[shunt_idx]
+    nc.shunt_active = circuit.shunt_active[shunt_idx]
+    nc.shunt_admittance = circuit.shunt_admittance[shunt_idx]
+
+    nc.C_bus_shunt = circuit.C_bus_shunt[np.ix_(bus_idx, shunt_idx)]
+
+    return nc
+
+
+def split_into_islands(numeric_circuit: SnapshotCircuit, ignore_single_node_islands=False) -> List[SnapshotCircuit]:
     """
     Split circuit into islands
     :param numeric_circuit: NumericCircuit instance
@@ -1018,25 +911,24 @@ def split_into_islands(numeric_circuit: SnapshotCircuit, ignore_single_node_isla
     idx_islands = tp.find_islands(A)
 
     if len(idx_islands) == 1:
-        island = numeric_circuit.to_island()  # convert the circuit to an island
-        island.consolidate()  # compute the internal magnitudes
-        return [island]
+        numeric_circuit.consolidate()  # compute the internal magnitudes
+        return [numeric_circuit]
 
     else:
 
-        circuit_islands = list()  # type: List[SnapshotIsland]
+        circuit_islands = list()  # type: List[SnapshotCircuit]
 
         for bus_idx in idx_islands:
 
             if ignore_single_node_islands:
 
                 if len(bus_idx) > 1:
-                    island = numeric_circuit.get_island(bus_idx)
+                    island = get_pf_island(numeric_circuit, bus_idx)
                     island.consolidate()  # compute the internal magnitudes
                     circuit_islands.append(island)
 
             else:
-                island = numeric_circuit.get_island(bus_idx)
+                island = get_pf_island(numeric_circuit, bus_idx)
                 island.consolidate()  # compute the internal magnitudes
                 circuit_islands.append(island)
 
@@ -1078,10 +970,12 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
     ntr2w = len(circuit.transformers2w)
     nvsc = len(circuit.vsc_converters)
     nhvdc = len(circuit.hvdc_lines)
+    ndcline = len(circuit.dc_lines)
 
     # declare the numerical circuit
     nc = SnapshotCircuit(nbus=nbus,
                          nline=nline,
+                         ndcline=ndcline,
                          ntr=ntr2w,
                          nvsc=nvsc,
                          nhvdc=nhvdc,
@@ -1282,6 +1176,34 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
 
         nc.C_vsc_bus[i, f] = 1
         nc.C_vsc_bus[i, t] = 1
+
+    # DC-lines
+    for i, elm in enumerate(circuit.dc_lines):
+        ii = i + nline + ntr2w + nvsc
+
+        # generic stuff
+        f = bus_dictionary[elm.bus_from]
+        t = bus_dictionary[elm.bus_to]
+
+        nc.branch_names[ii] = elm.name
+        nc.branch_active[ii] = elm.active
+        nc.branch_rates[ii] = elm.rate
+        nc.C_branch_bus_f[ii, f] = 1
+        nc.C_branch_bus_t[ii, t] = 1
+        nc.F[ii] = f
+        nc.T[ii] = t
+
+        # dc line values
+        nc.dc_line_names[i] = elm.name
+        nc.dc_line_R[i] = elm.R
+        nc.dc_line_impedance_tolerance[i] = elm.tolerance
+        nc.C_dc_line_bus[i, f] = 1
+        nc.C_dc_line_bus[i, t] = 1
+
+        # Thermal correction
+        nc.dc_line_temp_base[i] = elm.temp_base
+        nc.dc_line_temp_oper[i] = elm.temp_oper
+        nc.dc_line_alpha[i] = elm.alpha
 
     # HVDC
     for i, elm in enumerate(circuit.hvdc_lines):

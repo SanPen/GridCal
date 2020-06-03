@@ -12,8 +12,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-from networkx import DiGraph, all_simple_paths
+import numpy as np
 import pandas as pd
+# from networkx import DiGraph, all_simple_paths, Graph, all_pairs_dijkstra_path_length
+import networkx as nx
 from scipy.sparse import lil_matrix, csc_matrix
 from PySide2.QtCore import QThread, Signal
 from typing import List
@@ -89,7 +91,7 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
     n = len(circuit.buses)
     buses_dict = {bus: i for i, bus in enumerate(circuit.buses)}
     C = lil_matrix((m, n), dtype=int)
-    graph = DiGraph()
+    graph = nx.DiGraph()
 
     # TODO: Fix the topology reduction with the GC example, see what is going on
     branches = circuit.get_branches()
@@ -115,7 +117,7 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
     updated_branches = list()
 
     # get the number of paths
-    n_paths = len(list(all_simple_paths(graph, f, t)))
+    n_paths = len(list(nx.all_simple_paths(graph, f, t)))
 
     if n_paths == 1:
 
@@ -371,3 +373,130 @@ class DeleteAndReduce(QThread):
         self.progress_text.emit('Cancelled')
         self.done_signal.emit()
 
+
+class DistanceMatrixDriver(QThread):
+    progress_signal = Signal(float)
+    progress_text = Signal(str)
+    done_signal = Signal()
+
+    def __init__(self, grid: MultiCircuit, sigmas=0.5, min_group_size=2):
+        """
+        Electric distance clustering
+        :param grid: MultiCircuit instance
+        :param sigmas: number of standard deviations to consider
+        """
+        QThread.__init__(self)
+
+        self.grid = grid
+
+        self.sigmas = sigmas
+
+        self.min_group_size = min_group_size
+
+        n = len(grid.buses)
+
+        # results
+        self.distances = np.zeros((n, n))
+        self.sigma = 1.0
+        self.groups_by_name = list()
+        self.groups_by_index = list()
+
+        self.__cancel__ = False
+
+    def build_weighted_graph(self):
+        """
+
+        :return:
+        """
+        graph = nx.Graph()
+
+        bus_dictionary = {bus: i for i, bus in enumerate(self.grid.buses)}
+
+        for branch_list in self.grid.get_branch_lists():
+            for i, branch in enumerate(branch_list):
+                # if branch.active:
+                f = bus_dictionary[branch.bus_from]
+                t = bus_dictionary[branch.bus_to]
+                w = branch.get_weight()
+                graph.add_edge(f, t, weight=w)
+
+        return graph
+
+    def run(self):
+        """
+        Run the monte carlo simulation
+        @return:
+        """
+        from sklearn.cluster import DBSCAN
+
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Exploring Dijkstra distances...')
+
+        n = len(self.grid.buses)
+
+        # explore
+        g = self.build_weighted_graph()
+        k = 0
+        for i, distances_dict in nx.all_pairs_dijkstra_path_length(g):
+            for j, d in distances_dict.items():
+                self.distances[i, j] = d
+
+            self.progress_signal.emit((k+1) / n * 100.0)
+            k += 1
+
+        # compute the sample sigma
+        self.sigma = np.std(self.distances)
+        max_distance = self.sigma * self.sigmas
+
+        # construct groups
+        self.progress_text.emit('Building groups with DBSCAN...')
+
+        # Compute DBSCAN
+        model = DBSCAN(eps=max_distance,
+                       min_samples=self.min_group_size,
+                       metric='precomputed')
+        db = model.fit(self.distances)
+
+        # get the labels that are greater than -1
+        labels = list({i for i in db.labels_ if i > -1})
+        self.groups_by_name = [list() for k in labels]
+        self.groups_by_index = [list() for k in labels]
+
+        # fill in the groups
+        for i, (bus, group_idx) in enumerate(zip(self.grid.buses, db.labels_)):
+            if group_idx > -1:
+                self.groups_by_name[group_idx].append(bus.name)
+                self.groups_by_index[group_idx].append(i)
+
+        # display progress
+        self.progress_text.emit('Done')
+        self.progress_signal.emit(0.0)
+        self.done_signal.emit()
+
+    def cancel(self):
+        """
+        Cancel the simulation
+        :return:
+        """
+        self.__cancel__ = True
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Cancelled')
+        self.done_signal.emit()
+
+
+if __name__ == '__main__':
+
+    from GridCal.Engine import *
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Illinois 200 Bus.gridcal'
+    fname = '/home/santi/Documentos/Private_Grids/Penísula Ibérica 2026.gridcal'
+    grid = FileOpen(fname).open()
+
+    driver = DistanceMatrixDriver(grid=grid, sigmas=1e-3)
+    driver.run()
+
+    print('\nGroups:')
+    for group in driver.groups_by_name:
+        print(group)
+
+    for group in driver.groups_by_index:
+        print(group)

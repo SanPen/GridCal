@@ -53,7 +53,7 @@ class DeviceType(Enum):
     LineDevice = 'Line'
     Transformer2WDevice = 'Transformer'
     HVDCLineDevice = 'HVDC Line'
-    DCBranchDevice = 'DC Branch'
+    DCLineDevice = 'DC line'
     VscDevice = 'VSC'
     BatteryDevice = 'Battery'
     LoadDevice = 'Load'

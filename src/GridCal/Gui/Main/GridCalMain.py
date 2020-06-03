@@ -29,18 +29,18 @@ from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.GridEditorWidget.messages import *
 
 # Engine imports
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotIsland
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
 from GridCal.Engine.Simulations.Dynamics.transient_stability_driver import *
 from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
 from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReduction, TopologyReductionOptions, \
-    DeleteAndReduce
+    DeleteAndReduce, DistanceMatrixDriver
 from GridCal.Engine.Simulations.Topology.topology_driver import select_branches_to_reduce
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 from GridCal.Engine.Devices import *
-from GridCal.Engine.Visualization.visualization import colour_the_schematic, plot_html_map, get_create_gridcal_folder
+from GridCal.Engine.Visualization.visualization import *
 from GridCal.Engine.basic_structures import Logger, SyncIssueType
 
 from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
@@ -235,7 +235,7 @@ class MainGUI(QMainWindow):
 
         self.ui.catalogueDataStructuresListView.setModel(get_list_model(self.grid_editor.catalogue_types))
 
-        pfo = SnapshotIsland(nbus=1, nline=1, ntr=1, nvsc=1, nhvdc=1,
+        pfo = SnapshotCircuit(nbus=1, nline=1, ndcline=1, ntr=1, nvsc=1, nhvdc=1,
                              nload=1, ngen=1, nbatt=1, nshunt=1, nstagen=1, sbase=100)
         self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
 
@@ -280,6 +280,7 @@ class MainGUI(QMainWindow):
         self.painter = None
         self.delete_and_reduce_driver = None
         self.export_all_thread_object = None
+        self.find_node_groups_driver = None
         self.file_sync_thread = FileSyncThread(None, None, None)
 
         # window pointers
@@ -394,6 +395,8 @@ class MainGUI(QMainWindow):
         self.ui.actionAdd_default_catalogue.triggered.connect(self.add_default_catalogue)
 
         self.ui.actionClear_stuff_running_right_now.triggered.connect(self.clear_stuff_running)
+
+        self.ui.actionFind_node_groups.triggered.connect(self.run_find_node_groups)
 
         # Buttons
 
@@ -1414,8 +1417,20 @@ class MainGUI(QMainWindow):
         if filename != "":
             if not filename.endswith('.xlsx'):
                 filename += '.xlsx'
-            # TODO: Correct this function to not to depend on a previous compilation
-            self.circuit.save_calculation_objects(file_path=filename)
+
+            numerical_circuit = compile_snapshot_circuit(circuit=self.circuit)
+            calculation_inputs = split_into_islands(numerical_circuit)
+
+            writer = pd.ExcelWriter(filename)
+
+            for c, calc_input in enumerate(calculation_inputs):
+
+                for elm_type in calc_input.available_structures:
+                    name = elm_type + '_' + str(c)
+                    df = calc_input.get_structure(elm_type).astype(str)
+                    df.to_excel(writer, name)
+
+            writer.save()
 
     def export_diagram(self):
         """
@@ -1575,6 +1590,10 @@ class MainGUI(QMainWindow):
         elif elm_type == DeviceType.VscDevice.value:
             elm = VSC(Bus(), Bus(is_dc=True))
             elements = self.circuit.vsc_converters
+
+        elif elm_type == DeviceType.DCLineDevice.value:
+            elm = DcLine(None, None)
+            elements = self.circuit.dc_lines
 
         else:
             raise Exception('elm_type not understood: ' + elm_type)
@@ -3185,6 +3204,50 @@ class MainGUI(QMainWindow):
         else:
             pass
 
+    def run_find_node_groups(self):
+        """
+
+        :return:
+        """
+        if self.ui.actionFind_node_groups.isChecked():
+            self.LOCK()
+            sigmas = self.ui.node_distances_sigma_doubleSpinBox.value()
+            min_group_size = self.ui.node_distances_elements_spinBox.value()
+            self.find_node_groups_driver = DistanceMatrixDriver(grid=self.circuit,
+                                                                sigmas=sigmas,
+                                                                min_group_size=min_group_size)
+
+            # Set the time series run options
+            self.find_node_groups_driver.progress_signal.connect(self.ui.progressBar.setValue)
+            self.find_node_groups_driver.progress_text.connect(self.ui.progress_label.setText)
+            self.find_node_groups_driver.done_signal.connect(self.post_run_find_node_groups)
+            self.find_node_groups_driver.start()
+
+        else:
+            # delete the markers
+            for bus in self.circuit.buses:
+                bus.graphic_obj.delete_big_marker()
+
+    def post_run_find_node_groups(self):
+        """
+        Colour the grid after running the node grouping
+        :return:
+        """
+        self.UNLOCK()
+        print('\nGroups:')
+        for group in self.find_node_groups_driver.groups_by_name:
+            print(group)
+
+        colours = get_n_colours(n=len(self.find_node_groups_driver.groups_by_index))
+
+        for c, group in enumerate(self.find_node_groups_driver.groups_by_index):
+            for i in group:
+                bus = self.circuit.buses[i]
+                r, g, b, a = colours[c]
+                color = QColor(r * 255, g * 255, b * 255, a * 255)
+                bus.graphic_obj.add_big_marker(color=color)
+
+
     def post_reduce_grid(self):
         """
         Actions after reducing
@@ -3542,7 +3605,7 @@ class MainGUI(QMainWindow):
                               voltages=self.monte_carlo.results.V_points[current_step, :],
                               loadings=np.abs(self.monte_carlo.results.loading_points[current_step, :]),
                               s_branch=self.monte_carlo.results.Sbr_points[current_step, :],
-                              types=self.circuit.numerical_circuit.bus_types,    # TODO: fix this
+                              types=self.monte_carlo.grid.bus_types,
                               s_bus=self.monte_carlo.results.S_points[current_step, :],
                               file_name=file_name)
 
@@ -3552,7 +3615,7 @@ class MainGUI(QMainWindow):
                               voltages=self.latin_hypercube_sampling.results.V_points[current_step, :],
                               loadings=self.latin_hypercube_sampling.results.loading_points[current_step, :],
                               s_branch=self.latin_hypercube_sampling.results.Sbr_points[current_step, :],
-                              types=self.circuit.numerical_circuit.bus_types,    # TODO: fix this
+                              types=self.latin_hypercube_sampling.results.bus_types,
                               s_bus=self.latin_hypercube_sampling.results.S_points[current_step, :],
                               file_name=file_name)
 
@@ -3561,7 +3624,7 @@ class MainGUI(QMainWindow):
                               s_bus=self.short_circuit.results.Sbus,
                               s_branch=self.short_circuit.results.Sbranch,
                               voltages=self.short_circuit.results.voltage,
-                              types=self.circuit.numerical_circuit.bus_types,    # TODO: fix this
+                              types=self.short_circuit.results.bus_types,
                               loadings=self.short_circuit.results.loading,
                               file_name=file_name)
 
@@ -3569,7 +3632,7 @@ class MainGUI(QMainWindow):
                 plot_function(circuit=self.circuit,
                               voltages=self.optimal_power_flow.results.voltage,
                               loadings=self.optimal_power_flow.results.loading,
-                              types=self.circuit.numerical_circuit.bus_types,    # TODO: fix this
+                              types=self.optimal_power_flow.grid.bus_types,
                               s_branch=self.optimal_power_flow.results.Sbranch,
                               s_bus=self.optimal_power_flow.results.Sbus,
                               file_name=file_name)
@@ -3585,7 +3648,7 @@ class MainGUI(QMainWindow):
                               s_branch=Sbranch,
                               voltages=voltage,
                               loadings=np.abs(loading),
-                              types=self.circuit.numerical_circuit.bus_types,  # TODO: fix this
+                              types=self.optimal_power_flow_time_series.numerical_circuit.bus_types,
                               file_name=file_name)
 
             elif current_study == PTDF.name:
@@ -3599,7 +3662,7 @@ class MainGUI(QMainWindow):
                               s_branch=Sbranch,
                               voltages=voltage,
                               loadings=loading,
-                              types=self.circuit.numerical_circuit.bus_types,  # TODO: fix this
+                              types=self.ptdf_analysis.grid.bus_types,
                               loading_label='Sensitivity',
                               file_name=file_name)
 
@@ -3610,7 +3673,7 @@ class MainGUI(QMainWindow):
                               s_branch=self.ptdf_ts_analysis.results.Sbranch[current_step],
                               voltages=self.ptdf_ts_analysis.results.voltage[current_step],
                               loadings=np.abs(self.ptdf_ts_analysis.results.loading[current_step]),
-                              types=None,
+                              types=self.ptdf_ts_analysis.grid.bus_types,
                               file_name=file_name)
 
             elif current_study == 'Transient stability':

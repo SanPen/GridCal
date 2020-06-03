@@ -19,7 +19,15 @@ if __name__ == '__main__':
         fbase = os.path.join(folder, 'Script')
 
     # update icon/images resources
-    call([py, os.path.join(fbase, 'pyside2-rcc'), 'icons.qrc', '-o', 'icons_rc.py'])
+    if os.path.exists(os.path.join(fbase, 'pyside2-rcc')):
+        call([py, os.path.join(fbase, 'pyside2-rcc'), 'icons.qrc', '-o', 'icons_rc.py'])
+        print('pyside2-rcc (py) ok')
+    else:
+        try:
+            call(['pyside2-rcc', 'icons.qrc', '-o', 'icons_rc.py'])
+            print('pyside2-rcc (command) ok')
+        except:
+            print('pyside2-rcc failed :(')
 
     #  update files
     file_names_ui = ['MainWindow.ui', 'ConsoleLog.ui']
@@ -28,9 +36,15 @@ if __name__ == '__main__':
     for filename, filename_ui in zip(file_names, file_names_ui):
 
         # update ui handler file
-        call([py, os.path.join(fbase, 'pyside2-uic'),
-              '-x', filename_ui,
-              '-o', filename])
+        if os.path.exists(os.path.join(fbase, 'pyside2-uic')):
+            call([py, os.path.join(fbase, 'pyside2-uic'), '-x', filename_ui,'-o', filename])
+            print('pyside2-uic (py) ok')
+        else:
+            try:
+                call(['pyside2-uic', filename_ui, '-o', filename])
+                print('pyside2-uic (command) ok')
+            except:
+                print('pyside2-uic failed :(')
 
         # replace annoying text import
         # Read in the file

@@ -105,6 +105,8 @@ class MultiCircuit:
 
         self.lines = list()  # type: List[Line]
 
+        self.dc_lines = list()  # type: List[DcLine]
+
         self.transformers2w = list()  # type: List[Transformer2W]
 
         self.hvdc_lines = list()  # type: List[HvdcLine]
@@ -166,10 +168,18 @@ class MultiCircuit:
         self.time_profile = None
 
         # objects with profiles
-        self.objects_with_profiles = [Bus(), Load(), StaticGenerator(),
-                                      Generator(), Battery(), Shunt(),
-                                      Line(None, None), Transformer2W(None, None),
-                                      HvdcLine(None, None), VSC(Bus(), Bus(is_dc=True))]
+        self.objects_with_profiles = [Bus(),
+                                      Load(),
+                                      StaticGenerator(),
+                                      Generator(),
+                                      Battery(),
+                                      Shunt(),
+                                      Line(None, None),
+                                      DcLine(None, None),
+                                      Transformer2W(None, None),
+                                      HvdcLine(None, None),
+                                      VSC(Bus(),
+                                      Bus(is_dc=True))]
 
         # dictionary of profile magnitudes per object
         self.profile_magnitudes = dict()
@@ -199,8 +209,11 @@ class MultiCircuit:
         return len(self.buses)
 
     def get_branch_lists(self):
-
-        return [self.lines, self.transformers2w, self.hvdc_lines, self.vsc_converters]
+        """
+        GEt list of the branch lists
+        :return:
+        """
+        return [self.lines, self.transformers2w, self.hvdc_lines, self.vsc_converters, self.dc_lines]
 
     def get_branch_number(self):
         """
@@ -235,6 +248,7 @@ class MultiCircuit:
         """
         # Should be able to accept Branches, Lines and Transformers alike
         self.lines = list()
+        self.dc_lines = list()
         self.transformers2w = list()
         self.hvdc_lines = list()
         self.vsc_converters = list()
@@ -299,7 +313,7 @@ class MultiCircuit:
         Return all the branch objects
         :return: lines + transformers 2w + hvdc
         """
-        return self.lines + self.transformers2w + self.vsc_converters + self.hvdc_lines
+        return self.lines + self.transformers2w + self.vsc_converters + self.hvdc_lines + self.dc_lines
 
     def get_loads(self):
         """
@@ -468,8 +482,8 @@ class MultiCircuit:
         elif element_type == DeviceType.WireDevice:
             return self.wire_types
 
-        elif element_type == DeviceType.DCBranchDevice:
-            return list()
+        elif element_type == DeviceType.DCLineDevice:
+            return self.dc_lines
 
         else:
             raise Exception('Element type not understood ' + str(element_type))
@@ -666,30 +680,6 @@ class MultiCircuit:
         self.sequence_line_types = list(set(self.sequence_line_types + circ.sequence_line_types))
         self.transformer_types = list(set(self.transformer_types + circ.transformer_types))
 
-    def save_calculation_objects(self, file_path):
-        """
-        Save all the calculation objects of all the grids.
-
-        Arguments:
-
-            **file_path** (str): Path to file
-        """
-
-        # print('Compiling...', end='')
-        numerical_circuit = self.compile_snapshot()
-        calculation_inputs = numerical_circuit.compute()
-
-        writer = pd.ExcelWriter(file_path)
-
-        for c, calc_input in enumerate(calculation_inputs):
-
-            for elm_type in calc_input.available_structures:
-                name = elm_type + '_' + str(c)
-                df = calc_input.get_structure(elm_type).astype(str)
-                df.to_excel(writer, name)
-
-        writer.save()
-
     def build_graph(self):
         """
         Returns a networkx DiGraph object of the grid.
@@ -705,7 +695,6 @@ class MultiCircuit:
                 self.graph.add_edge(f, t)
 
         return self.graph
-
 
     def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
         """
@@ -804,19 +793,6 @@ class MultiCircuit:
 
         return elements, parent_buses
 
-    def set_power(self, S):
-        """
-        Set the power array in the circuits.
-
-        Arguments:
-
-            **S** (list): Array of power values in MVA for all the nodes in all the
-            islands
-        """
-        for circuit_island in self.circuits:
-            idx = circuit_island.bus_original_idx  # get the buses original indexing in the island
-            circuit_island.power_flow_input.Sbus = S[idx]  # set the values
-
     def get_bus_dict(self):
         """
         Return dictionary of buses
@@ -867,6 +843,16 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.lines.append(obj)
 
+    def add_dc_line(self, obj: DcLine):
+        """
+        Add a line object
+        :param obj: Line instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.dc_lines.append(obj)
+
     def add_transformer2w(self, obj: Transformer2W):
         """
         Add a transformer object
@@ -909,6 +895,9 @@ class MultiCircuit:
         if obj.device_type == DeviceType.LineDevice:
             self.add_line(obj)
 
+        elif obj.device_type == DeviceType.DCLineDevice:
+            self.add_dc_line(obj)
+
         elif obj.device_type == DeviceType.Transformer2WDevice:
             self.add_transformer2w(obj)
 
@@ -945,6 +934,13 @@ class MultiCircuit:
         :param obj: Line instance
         """
         self.lines.remove(obj)
+
+    def delete_dc_line(self, obj: DcLine):
+        """
+        Delete line
+        :param obj: Line instance
+        """
+        self.dc_lines.remove(obj)
 
     def delete_transformer2w(self, obj: Transformer2W):
         """
@@ -1319,7 +1315,7 @@ class MultiCircuit:
 
         bus_dict = {bus: i for i, bus in enumerate(self.buses)}
 
-        for branch_list in [self.lines, self.transformers2w, self.hvdc_lines]:
+        for branch_list in self.get_branch_lists():
             for k, br in enumerate(branch_list):
                 i = bus_dict[br.bus_from]  # store the row indices
                 j = bus_dict[br.bus_to]  # store the row indices
@@ -1387,8 +1383,8 @@ class MultiCircuit:
 
     def get_boundaries(self, buses):
         """
-
-        :return:
+        Get the graphic representation boundaries
+        :return: min_x, max_x, min_y, max_y
         """
         min_x = sys.maxsize
         min_y = sys.maxsize
@@ -1429,7 +1425,7 @@ class MultiCircuit:
 
         min_x, max_x, min_y, max_y = self.get_boundaries(self.buses)
 
-        branches = self.lines + self.transformers2w + self.hvdc_lines
+        branches = self.lines + self.transformers2w + self.hvdc_lines + self.dc_lines
 
         sep1 = self.average_separation(branches)
 
@@ -1468,6 +1464,8 @@ class MultiCircuit:
         self.lines += circuit.lines
         self.transformers2w += circuit.transformers2w
         self.hvdc_lines += circuit.hvdc_lines
+        self.vsc_converters += circuit.vsc_converters
+        self.dc_lines += circuit.dc_lines
 
         return circuit.buses
 

@@ -25,7 +25,7 @@ from GridCal.Gui.GuiFunctions import ResultsModel
 
 class MonteCarloResults:
 
-    def __init__(self, n, m, p, bus_names, branch_names, name='Monte Carlo'):
+    def __init__(self, n, m, p, bus_names, branch_names, bus_types, name='Monte Carlo'):
         """
         Constructor
         @param n: number of nodes
@@ -44,6 +44,8 @@ class MonteCarloResults:
         self.bus_names = bus_names
 
         self.branch_names = branch_names
+
+        self.bus_types = bus_types
 
         self.S_points = np.zeros((p, n), dtype=complex)
 

@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/color_grid2.svg</file>
     <file>icons/vsc.svg</file>
     <file>icons/dc.svg</file>
     <file>icons/CatalogueAdd.svg</file>

@@ -555,6 +555,9 @@ class Transformer2W(EditableDevice):
         """
         return self.R * (1 + self.alpha * (self.temp_oper - self.temp_base))
 
+    def get_weight(self):
+        return np.sqrt(self.R * self.R + self.X * self.X)
+
     def branch_type_converter(self, val_string):
         """
         function to convert the branch type string into the BranchType
