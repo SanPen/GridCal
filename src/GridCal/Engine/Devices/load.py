@@ -161,44 +161,71 @@ class Load(EditableDevice):
 
         return load
 
-    def get_json_dict(self, id, bus_dict):
+    def get_properties_dict(self):
         """
         Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID
         :return:
         """
 
-        d = {'id': id,
+        d = {'id': self.idtag,
              'type': 'load',
              'phases': 'ps',
              'name': self.name,
-             'bus': bus_dict[self.bus],
+             'bus': self.bus.idtag,
              'active': self.active,
-             'G': self.G,
-             'B': self.B,
-             'Ir': self.Ir,
-             'Ii': self.Ii,
-             'P': self.P,
-             'Q': self.Q,
-             'active_profile': [],
-             'P_prof': [],
-             'Q_prof': [],
-             'Ir_prof': [],
-             'Ii_prof': [],
-             'G_prof': [],
-             'B_prof': []}
 
-        if self.active_prof is not None:
-            d['active_profile'] = self.active_prof.tolist()
-            d['P_prof'] = self.P_prof.tolist()
-            d['Q_prof'] = self.Q_prof.tolist()
-            d['Ir_prof'] = self.Ir_prof.tolist()
-            d['Ii_prof'] = self.Ii_prof.tolist()
-            d['G_prof'] = self.G_prof.tolist()
-            d['B_prof'] = self.B_prof.tolist()
+             'g': self.G,
+             'b': self.B,
+             'ir': self.Ir,
+             'ii': self.Ii,
+             'p': self.P,
+             'q': self.Q
+             }
 
         return d
+
+    def get_profiles_dict(self):
+        """
+
+        :return:
+        """
+
+        if self.active_prof is not None:
+            active_profile = self.active_prof.tolist()
+            P_prof = self.P_prof.tolist()
+            Q_prof = self.Q_prof.tolist()
+            Ir_prof = self.Ir_prof.tolist()
+            Ii_prof = self.Ii_prof.tolist()
+            G_prof = self.G_prof.tolist()
+            B_prof = self.B_prof.tolist()
+        else:
+            active_profile = list()
+            P_prof = list()
+            Q_prof = list()
+            Ir_prof = list()
+            Ii_prof = list()
+            G_prof = list()
+            B_prof = list()
+
+        return {'id': self.idtag,
+                'active': active_profile,
+                'p': P_prof,
+                'q': Q_prof,
+                'ir': Ir_prof,
+                'ii': Ii_prof,
+                'g': G_prof,
+                'b': B_prof}
+
+    def get_units_dict(self):
+        """
+        Get units of the values
+        """
+        return {'g': 'MVAr at V=1 p.u.',
+                'b': 'MVAr at V=1 p.u.',
+                'ir': 'MVAr at V=1 p.u.',
+                'ii': 'MVAr at V=1 p.u.',
+                'p': 'MW',
+                'q': 'MVAr'}
 
     def plot_profiles(self, time=None, show_fig=True):
         """

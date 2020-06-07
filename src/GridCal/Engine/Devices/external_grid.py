@@ -111,25 +111,20 @@ class ExternalGrid(EditableDevice):
 
         return elm
 
-    def get_json_dict(self, id, bus_dict):
+    def get_properties_dict(self):
         """
         Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID
         :return:
         """
 
-        d = {'id': id,
+        d = {'id': self.idtag,
              'type': 'load',
              'phases': 'ps',
              'name': self.name,
-             'bus': bus_dict[self.bus],
+             'bus': self.bus.idtag,
              'active': self.active,
              'Vm': self.Vm,
-             'Va': self.Va,
-             'active_profile': [],
-             'Vm_prof': [],
-             'Va_prof': [],}
+             'Va': self.Va}
 
         if self.active_prof is not None:
             d['active_profile'] = self.active_prof.tolist()
@@ -137,6 +132,25 @@ class ExternalGrid(EditableDevice):
             d['Va_prof'] = self.Va_prof.tolist()
 
         return d
+
+    def get_profiles_dict(self):
+        """
+
+        :return:
+        """
+        if self.active_prof is not None:
+            active_profile = self.active_prof.tolist()
+            Vm_prof = self.Vm_prof.tolist()
+            Va_prof = self.Va_prof.tolist()
+        else:
+            active_profile = list()
+            Vm_prof = list()
+            Va_prof = list()
+
+        return {'id': self.idtag,
+                'active': active_profile,
+                'vm': Vm_prof,
+                'va': Va_prof}
 
     def plot_profiles(self, time=None, show_fig=True):
         """

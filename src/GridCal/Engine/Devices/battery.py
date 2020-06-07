@@ -169,7 +169,6 @@ class Battery(Generator):
 
         self.power_array = None
 
-
     def copy(self):
         """
         Make a copy of this object
@@ -245,28 +244,98 @@ class Battery(Generator):
 
         return batt
 
-    def get_json_dict(self, id, bus_dict):
+    def get_properties_dict(self):
         """
         Get json dictionary
         :param id: ID: Id for this object
         :param bus_dict: Dictionary of buses [object] -> ID
         :return: json-compatible dictionary
         """
-        return {'id': id,
+
+        data = {'id': self.idtag,
                 'type': 'battery',
                 'phases': 'ps',
                 'name': self.name,
-                'bus': bus_dict[self.bus],
+                'bus': self.bus.idtag,
                 'active': self.active,
-                'P': self.P,
-                'Vset': self.Vset,
-                'Snom': self.Snom,
-                'Enom': self.Enom,
+
+                'p': self.P,
+                'vset': self.Vset,
+                'pf': self.Pf,
+                'snom': self.Snom,
+                'enom': self.Enom,
                 'qmin': self.Qmin,
                 'qmax': self.Qmax,
-                'Pmin': self.Pmin,
-                'Pmax': self.Pmax,
-                'Cost': self.Cost}
+                'pmin': self.Pmin,
+                'pmax': self.Pmax,
+                'cost': self.Cost,
+                'charge_efficiency': self.charge_efficiency,
+                'discharge_efficiency': self.discharge_efficiency,
+                'min_soc': self.min_soc,
+                'max_soc': self.max_soc,
+                'soc_0': self.soc_0,
+                'min_soc_charge': self.min_soc_charge,
+                'charge_per_cycle': self.charge_per_cycle,
+                'discharge_per_cycle': self.discharge_per_cycle,
+                }
+
+        return data
+
+    def get_profiles_dict(self):
+        """
+
+        :return:
+        """
+
+        if self.active_prof is None:
+            active_prof = list()
+        else:
+            active_prof = self.active_prof.tolist()
+
+        if self.P_prof is None:
+            P_prof = list()
+        else:
+            P_prof = self.P_prof.tolist()
+
+        if self.Pf_prof is None:
+            Pf_prof = list()
+        else:
+            Pf_prof = self.Pf_prof.tolist()
+
+        if self.Vset_prof is None:
+            Vset_prof = list()
+        else:
+            Vset_prof = self.Vset_prof.tolist()
+
+        return {'id': self.idtag,
+                'active': active_prof,
+                'p': P_prof,
+                'v': Vset_prof,
+                'pf': Pf_prof
+                }
+
+    def get_units_dict(self):
+        """
+        Get units of the values
+        """
+        return {'p': 'MW',
+                'vset': 'p.u.',
+                'pf': 'p.u.',
+                'snom': 'MVA',
+                'enom': 'MWh',
+                'qmin': 'MVAr',
+                'qmax': 'MVAr',
+                'pmin': 'MW',
+                'pmax': 'MW',
+                'cost': '€/MWh',
+                'charge_efficiency': 'p.u.',
+                'discharge_efficiency': 'p.u.',
+                'min_soc': 'p.u.',
+                'max_soc': 'p.u.',
+                'soc_0': 'p.u.',
+                'min_soc_charge': 'p.u.',
+                'charge_per_cycle': 'p.u.',
+                'discharge_per_cycle': 'p.u.'}
 
     def initialize_arrays(self, index, arr=None, arr_in_pu=False):
         """

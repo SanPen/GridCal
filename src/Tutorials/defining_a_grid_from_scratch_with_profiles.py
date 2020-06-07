@@ -8,7 +8,7 @@ Author: Santiago Peñate Vera (September 2018)
 """
 import numpy as np
 import pandas as pd
-from tabulate import tabulate
+from GridCal.Engine import *
 from GridCal.Engine.Devices.branch import Branch, BranchTemplate
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.generator import Generator
@@ -140,6 +140,8 @@ def main():
     grid.add_branch(Branch(bus3, bus4, name='Line 3-4', r=0.06, x=0.13, b=0.03, rate=30))
     grid.add_branch(Branch(bus4, bus5, name='Line 4-5', r=0.04, x=0.09, b=0.02, rate=30))
 
+    FileSave(grid, 'lynn5node.gridcal').save()
+
     ####################################################################################################################
     # Overwrite the default profiles with the custom ones
     ####################################################################################################################
@@ -196,9 +198,11 @@ def main():
     print('\nError:', pf.results.error)
     print('Elapsed time (s):', pf.results.elapsed, '\n')
 
-    print(tabulate(v_df, tablefmt="pipe", headers=v_df.columns.values))
-    print()
-    print(tabulate(br_df, tablefmt="pipe", headers=br_df.columns.values))
+    # print(tabulate(v_df, tablefmt="pipe", headers=v_df.columns.values))
+    # print()
+    # print(tabulate(br_df, tablefmt="pipe", headers=br_df.columns.values))
+
+
 
     ####################################################################################################################
     # Run a time series power flow simulation
@@ -219,7 +223,6 @@ def main():
     print('Voltage time series')
     df_voltage = pd.DataFrame(data=np.abs(ts.results.voltage), columns=grid.bus_names, index=grid.time_profile)
     df_voltage.to_excel(writer, sheet_name='Vts')
-
     writer.close()
 
 

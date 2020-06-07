@@ -89,21 +89,51 @@ class StaticGenerator(EditableDevice):
                                mttf=self.mttf,
                                mttr=self.mttr)
 
-    def get_json_dict(self, id, bus_dict):
+    def get_properties_dict(self):
         """
         Get json dictionary
         :param id: ID: Id for this object
         :param bus_dict: Dictionary of buses [object] -> ID
         :return:
         """
-        return {'id': id,
-                'type': 'static_gen',
+
+        data = {'id': self.idtag,
                 'phases': 'ps',
                 'name': self.name,
-                'bus': bus_dict[self.bus],
+                'bus': self.bus.idtag,
                 'active': self.active,
                 'P': self.P,
-                'Q': self.Q}
+                'Q': self.Q
+                }
+
+        return data
+
+    def get_profiles_dict(self):
+        """
+
+        :return:
+        """
+
+        if self.active_prof is not None:
+            active_profile = self.active_prof.tolist()
+            P_prof = self.P_prof.tolist()
+            Q_prof = self.Q_prof.tolist()
+        else:
+            active_profile = list()
+            P_prof = list()
+            Q_prof = list()
+
+        return {'id': self.idtag,
+                'active': active_profile,
+                'p': P_prof,
+                'q': Q_prof}
+
+    def get_units_dict(self):
+        """
+        Get units of the values
+        """
+        return {'p': 'MW',
+                'q': 'MVAr'}
 
     def plot_profiles(self, time=None, show_fig=True):
         """

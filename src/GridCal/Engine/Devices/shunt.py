@@ -93,21 +93,51 @@ class Shunt(EditableDevice):
                     mttr=self.mttr)
         return shu
 
-    def get_json_dict(self, id, bus_dict):
+    def get_properties_dict(self):
         """
         Get json dictionary
         :param id: ID: Id for this object
         :param bus_dict: Dictionary of buses [object] -> ID
         :return:
         """
-        return {'id': id,
+
+        data = {'id': self.idtag,
                 'type': 'shunt',
                 'phases': 'ps',
                 'name': self.name,
-                'bus': bus_dict[self.bus],
+                'bus': self.bus.idtag,
                 'active': self.active,
                 'g': self.G,
-                'b': self.B}
+                'b': self.B
+                }
+        return data
+
+    def get_profiles_dict(self):
+        """
+
+        :return:
+        """
+
+        if self.active_prof is not None:
+            active_profile = self.active_prof.tolist()
+            G_prof = self.G_prof.tolist()
+            B_prof = self.B_prof.tolist()
+        else:
+            active_profile = list()
+            G_prof = list()
+            B_prof = list()
+
+        return {'id': self.idtag,
+                'active': active_profile,
+                'g': G_prof,
+                'b': B_prof}
+
+    def get_units_dict(self):
+        """
+        Get units of the values
+        """
+        return {'g': 'MVAr at V=1 p.u.',
+                'b': 'MVAr at V=1 p.u.'}
 
     def plot_profiles(self, time=None, show_fig=True):
         """

@@ -236,7 +236,7 @@ class Generator(EditableDevice):
 
         return gen
 
-    def get_json_dict(self, id, bus_dict):
+    def get_properties_dict(self):
         """
         Get json dictionary
         :param id: ID: Id for this object
@@ -244,34 +244,72 @@ class Generator(EditableDevice):
         :return: json-compatible dictionary
         """
 
-        d = {'id': id,
-             'type': 'controlled_gen',
+        d = {'id': self.idtag,
+             'type': 'generator',
              'phases': 'ps',
              'name': self.name,
-             'bus': bus_dict[self.bus],
+             'bus': self.bus.idtag,
              'active': self.active,
              'is_controlled': self.is_controlled,
-             'P': self.P,
-             'Pf': self.Pf,
+             'p': self.P,
+             'pf': self.Pf,
              'vset': self.Vset,
-             'Snom': self.Snom,
+             'snom': self.Snom,
              'qmin': self.Qmin,
              'qmax': self.Qmax,
-             'Pmin': self.Pmin,
-             'Pmax': self.Pmax,
-             'Cost': self.Cost,
-             'active_profile': [],
-             'P_prof': [],
-             'Pf_prof': [],
-             'Vset_prof': []}
-
-        if self.active_prof is not None:
-            d['active_profile'] = self.active_prof.tolist()
-            d['P_prof'] = self.P_prof.tolist()
-            d['Pf_prof'] = self.Pf_prof.tolist()
-            d['Vset_prof'] = self.Vset_prof.tolist()
+             'pmin': self.Pmin,
+             'pmax': self.Pmax,
+             'cost': self.Cost
+             }
 
         return d
+
+    def get_profiles_dict(self):
+        """
+
+        :return:
+        """
+
+        if self.active_prof is None:
+            active_prof = list()
+        else:
+            active_prof = self.active_prof.tolist()
+
+        if self.P_prof is None:
+            P_prof = list()
+        else:
+            P_prof = self.P_prof.tolist()
+
+        if self.Pf_prof is None:
+            Pf_prof = list()
+        else:
+            Pf_prof = self.Pf_prof.tolist()
+
+        if self.Vset_prof is None:
+            Vset_prof = list()
+        else:
+            Vset_prof = self.Vset_prof.tolist()
+
+        return {'id': self.idtag,
+                'active': active_prof,
+                'p': P_prof,
+                'v': Vset_prof,
+                'pf': Pf_prof}
+
+    def get_units_dict(self):
+        """
+        Get units of the values
+        """
+        return {'p': 'MW',
+                'vset': 'p.u.',
+                'pf': 'p.u.',
+                'snom': 'MVA',
+                'enom': 'MWh',
+                'qmin': 'MVAr',
+                'qmax': 'MVAr',
+                'pmin': 'MW',
+                'pmax': 'MW',
+                'cost': '€/MWh'}
 
     def plot_profiles(self, time=None, show_fig=True):
         """
