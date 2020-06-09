@@ -409,19 +409,19 @@ class Bus(EditableDevice):
 
         return bus
 
-    def get_json_dict(self, id):
+    def get_properties_dict(self):
         """
         Return Json-like dictionary
         :return: Dictionary
         """
 
-        d = {'id': id,
-             'type': 'bus',
+        d = {'id': self.idtag,
+             'type': self.determine_bus_type().value,
              'phases': 'ps',
              'name': self.name,
              'active': self.active,
              'is_slack': self.is_slack,
-             'Vnom': self.Vnom,
+             'vnom': self.Vnom,
              'vmin': self.Vmin,
              'vmax': self.Vmax,
              'rf': self.r_fault,
@@ -434,13 +434,39 @@ class Bus(EditableDevice):
              'lon': self.longitude,
              'area': self.area,
              'zone': self.zone,
-             'substation': self.substation,
-             'active_profile': []}
-
-        if self.active_prof is not None:
-            d['active_profile'] = self.active_prof.tolist()
+             'substation': self.substation
+             }
 
         return d
+
+    def get_profiles_dict(self):
+        """
+
+        :return:
+        """
+        if self.active_prof is not None:
+            active_profile = self.active_prof.tolist()
+        else:
+            active_profile = list()
+
+        return {'id': self.idtag,
+                'active': active_profile}
+
+    def get_units_dict(self):
+        """
+        Get units of the values
+        """
+        return {'vnom': 'kV',
+                'vmin': 'p.u.',
+                'vmax': 'p.u.',
+                'rf': 'p.u.',
+                'xf': 'p.u.',
+                'x': 'px',
+                'y': 'px',
+                'h': 'px',
+                'w': 'px',
+                'lat': 'degrees',
+                'lon': 'degrees'}
 
     def set_state(self, t):
         """

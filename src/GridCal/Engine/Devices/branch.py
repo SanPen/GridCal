@@ -704,20 +704,18 @@ class Branch(EditableDevice):
             data.append(obj)
         return data
 
-    def get_json_dict(self, id, bus_dict):
+    def get_properties_dict(self):
         """
         Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID
         :return:
         """
 
-        d = {'id': id,
+        d = {'id': self.idtag,
              'type': 'branch',
              'phases': 'ps',
              'name': self.name,
-             'from': bus_dict[self.bus_from],
-             'to': bus_dict[self.bus_to],
+             'from': self.bus_from.idtag,
+             'to': self.bus_to.idtag,
              'active': self.active,
              'rate': self.rate,
              'r': self.R,

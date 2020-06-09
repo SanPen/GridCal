@@ -174,6 +174,26 @@ def parse_json_data(data) -> MultiCircuit:
     return circuit
 
 
+def parse_json_data_v2(data: dict, logger: Logger):
+
+    devices = data['devices']
+    profiles = data['profiles']
+
+    if DeviceType.CircuitDevice.value in devices.keys():
+
+        dta = devices[DeviceType.CircuitDevice.value]
+        circuit = MultiCircuit(name=dta['name'],
+                               Sbase=dta['sbase'],
+                               fbase=dta['fbase'],
+                               idtag=dta['id'])
+
+        return circuit
+
+    else:
+        logger.add('The Json structure does not have a Circuit inside the devices!')
+        return MultiCircuit()
+
+
 def parse_json(file_name) -> MultiCircuit:
     """
     Parse JSON file into Circuit
@@ -191,46 +211,61 @@ def save_json_file(file_path, circuit: MultiCircuit):
     :param file_path: file path 
     :param circuit: GridCal MultiCircuit element
     """
-    elements = list()  # list of
+    elements = dict()
+    element_profiles = dict()
     key = 0
-    bus_key_dict = dict()
+    units_dict = dict()
     logger = Logger()
 
+    def add_to_dict(d, d2, key):
+        if key in d.keys():
+            d[key].append(d2)
+        else:
+            d[key] = [d2]
+
+    def add_to_dict2(d, d2, key):
+        if key not in d.keys():
+            d[key] = d2
+
     # add the circuit
-    circuit_dict = circuit.get_json_dict(key)
-    elements.append(circuit_dict)
-    key += 1
+    elements[DeviceType.CircuitDevice.value] = circuit.get_properties_dict()
+    units_dict[DeviceType.CircuitDevice.value] = circuit.get_units_dict()
+    element_profiles[DeviceType.CircuitDevice.value] = circuit.get_profiles_dict()
 
     # add the buses
-    for bus in circuit.buses:
+    for elm in circuit.buses:
 
         # pack the bus data into a dictionary
-        dictionary = bus.get_json_dict(key)
-        dictionary['circuit'] = circuit_dict['id']  # add the circuit id on each bus
-        elements.append(dictionary)
-        bus_key_dict[bus] = key
-        key += 1
+        add_to_dict(d=elements, d2=elm.get_properties_dict(), key=elm.device_type.value)
+        add_to_dict(d=element_profiles, d2=elm.get_profiles_dict(), key=elm.device_type.value)
+        add_to_dict2(d=units_dict, d2=elm.get_units_dict(), key=elm.device_type.value)
 
         # pack all the elements within the bus
-        for device in bus.loads + bus.controlled_generators + bus.static_generators + bus.batteries + bus.shunts:
-            dictionary = device.get_json_dict(key, bus_key_dict)
-            elements.append(dictionary)
-            key += 1
+        devices = elm.loads + elm.controlled_generators + elm.static_generators + elm.batteries + elm.shunts
+        for device in devices:
+            add_to_dict(d=elements, d2=device.get_properties_dict(), key=device.device_type.value)
+            add_to_dict(d=element_profiles, d2=device.get_profiles_dict(), key=device.device_type.value)
+            add_to_dict2(d=units_dict, d2=device.get_units_dict(), key=device.device_type.value)
 
     # branches
-    for branch_list in [circuit.lines, circuit.transformers2w, circuit.hvdc_lines]:
-        for branch in branch_list:
+    for branch_list in circuit.get_branch_lists():
+        for elm in branch_list:
             # pack the branch data into a dictionary
-            dictionary = branch.get_json_dict(key, bus_key_dict)
-            elements.append(dictionary)
-            key += 1
+            add_to_dict(d=elements, d2=elm.get_properties_dict(), key=elm.device_type.value)
+            add_to_dict(d=element_profiles, d2=elm.get_profiles_dict(), key=elm.device_type.value)
+            add_to_dict2(d=units_dict, d2=elm.get_units_dict(), key=elm.device_type.value)
 
-    # convert the list of dictionaries to json
-    json_str = json.dumps(elements, indent=True)
+    data = {'version': '2.0',
+            'software': 'GridCal',
+            'units': units_dict,
+            'devices': elements,
+            'profiles': element_profiles}
+
+    data_str = json.dumps(data, indent=True)
 
     # Save json to a text file file
     text_file = open(file_path, "w")
-    text_file.write(json_str)
+    text_file.write(data_str)
     text_file.close()
 
     return logger

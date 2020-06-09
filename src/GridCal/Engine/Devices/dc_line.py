@@ -304,36 +304,52 @@ class DcLine(EditableDevice):
             data.append(obj)
         return data
 
-    def get_json_dict(self, id, bus_dict):
+    def get_properties_dict(self):
         """
         Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID
         :return:
         """
 
-        d = {'id': id,
+        d = {'id': self.idtag,
              'type': 'dc_line',
              'phases': 'ps',
              'name': self.name,
-             'from': bus_dict[self.bus_from],
-             'to': bus_dict[self.bus_to],
+             'bus_from': self.bus_from.idtag,
+             'bus_to': self.bus_to.idtag,
              'active': self.active,
+
              'rate': self.rate,
              'r': self.R,
              'length': self.length,
-             'temp_base': self.temp_base,
-             'temp_oper': self.temp_oper,
-             'alpha': self.alpha,
-             'branch_type': str(self.branch_type),
-             'active_profile': [],
-             'rate_prof': []}
-
-        if self.active_prof is not None:
-            d['active_profile'] = self.active_prof.tolist()
-            d['rate_prof'] = self.rate_prof.tolist()
+             'base_temperature': self.temp_base,
+             'operational_temperature': self.temp_oper,
+             'alpha': self.alpha}
 
         return d
+
+    def get_profiles_dict(self):
+
+        if self.active_prof is not None:
+            active_prof = self.active_prof.tolist()
+            rate_prof = self.rate_prof.tolist()
+        else:
+            active_prof = list()
+            rate_prof = list()
+
+        return {'id': self.idtag,
+                'active': active_prof,
+                'rate': rate_prof}
+
+    def get_units_dict(self):
+        """
+        Get units of the values
+        """
+        return {'rate': 'MW',
+                'r': 'p.u.',
+                'length': 'km',
+                'base_temperature': 'ºC',
+                'operational_temperature': 'ºC',
+                'alpha': '1/ºC'}
 
     def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
         """

@@ -15,7 +15,7 @@
 
 import sys
 import os
-from uuid import getnode as get_mac
+from uuid import getnode as get_mac, uuid4
 from datetime import timedelta
 import networkx as nx
 from scipy.sparse import csc_matrix, lil_matrix
@@ -76,15 +76,21 @@ class MultiCircuit:
 
     """
 
-    def __init__(self, name='', Sbase=100, fbase=50.0):
+    def __init__(self, name='', Sbase=100, fbase=50.0, idtag=None):
         """
-
-        :param name:
-        :param Sbase:
-        :param fbase:
+        class constructor
+        :param name: name of the circuit
+        :param Sbase: base power in MVA
+        :param fbase: base frequency in Hz
+        :param idtag: unique identifier
         """
 
         self.name = name
+
+        if idtag is None:
+            self.idtag = uuid4().hex
+        else:
+            self.idtag = idtag
 
         self.comments = ''
 
@@ -629,7 +635,7 @@ class MultiCircuit:
 
         return d
 
-    def get_json_dict(self, id):
+    def get_properties_dict(self):
         """
         Returns a JSON dictionary of the :ref:`MultiCircuit<multicircuit>` instance
         with the following values: id, type, phases, name, Sbase, comments.
@@ -638,20 +644,31 @@ class MultiCircuit:
 
             **id**: Arbitrary identifier
         """
-        d = {'id': id,
-             'type': 'circuit',
+        d = {'id': self.idtag,
              'phases': 'ps',
              'name': self.name,
-             'Sbase': self.Sbase,
-             'ModelVersion': self.model_version,
-             'UserName': self.user_name,
+             'sbase': self.Sbase,
+             'fbase': self.fBase,
+             'model_version': self.model_version,
+             'user_name': self.user_name,
              'comments': self.comments,
-             'time': []}
-
-        if self.time_profile is not None:
-            d['time'] = self.time_profile.astype(int).tolist()
+             }
 
         return d
+
+    def get_units_dict(self):
+        """
+        """
+        return {'time': 'Milliseconds since 1/1/1970 (Unix time in ms)'}
+
+    def get_profiles_dict(self):
+        """
+        """
+        if self.time_profile is not None:
+            t = self.time_profile.astype(int).tolist()
+        else:
+            t = list()
+        return {'time': t}
 
     def assign_circuit(self, circ: "MultiCircuit"):
         """

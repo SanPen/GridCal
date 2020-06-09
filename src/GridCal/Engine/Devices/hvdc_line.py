@@ -299,7 +299,6 @@ class HvdcLine(EditableDevice):
         """
         A = int(self.Pset > 0)
         B = 1 - A
-
         Pf = - self.Pset * A + self.Pset * (1 - self.loss_factor) * B
         Pt = self.Pset * A * (1 - self.loss_factor) - self.Pset * B
 
@@ -374,8 +373,6 @@ class HvdcLine(EditableDevice):
                      max_firing_angle_f=self.max_firing_angle_f,
                      min_firing_angle_t=self.min_firing_angle_t,
                      max_firing_angle_t=self.max_firing_angle_t,
-                     Pmax=self.Pmax,
-                     Pmin=self.Pmin,
                      active_prof=self.active_prof,
                      rate_prof=self.rate_prof,
                      Pset_prof=self.Pset_prof,
@@ -407,31 +404,73 @@ class HvdcLine(EditableDevice):
             data.append(obj)
         return data
 
-    def get_json_dict(self, id, bus_dict):
+    def get_properties_dict(self):
         """
         Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID
         :return:
         """
 
-        d = {'id': id,
+        d = {'id': self.idtag,
              'type': 'branch',
              'phases': 'ps',
              'name': self.name,
-             'from': bus_dict[self.bus_from],
-             'to': bus_dict[self.bus_to],
+             'bus_from': self.bus_from.idtag,
+             'bus_to': self.bus_to.idtag,
              'active': self.active,
              'rate': self.rate,
              'length': self.length,
-             'active_profile': [],
-             'rate_prof': []}
 
-        if self.active_prof is not None:
-            d['active_profile'] = self.active_prof.tolist()
-            d['rate_prof'] = self.rate_prof.tolist()
+             'loss_factor': self.loss_factor,
+             'vset_f': self.Vset_f,
+             'vset_t': self.Vset_t,
+             'pset': self.Pset,
+             'min_firing_angle_f': self.min_firing_angle_f,
+             'max_firing_angle_f': self.max_firing_angle_f,
+             'min_firing_angle_t': self.min_firing_angle_t,
+             'max_firing_angle_t': self.max_firing_angle_t,
+             'overload_cost': self.overload_cost
+             }
 
         return d
+
+    def get_profiles_dict(self):
+        """
+
+        :return:
+        """
+
+        if self.active_prof is not None:
+            active_prof = self.active_prof.tolist()
+            rate_prof = self.rate_prof.tolist()
+            pset_prof = self.Pset_prof.tolist()
+            cost_prof = self.overload_cost_prof.tolist()
+        else:
+            active_prof = list()
+            rate_prof = list()
+            pset_prof = list()
+            cost_prof = list()
+
+        return {'id': self.idtag,
+                'active': active_prof,
+                'rate': rate_prof,
+                'pset': pset_prof,
+                'overload_cost': cost_prof}
+
+    def get_units_dict(self):
+        """
+        Get units of the values
+        """
+        return {'rate': 'MW',
+                'length': 'km',
+                'loss_factor': '%',
+                'vset_f': 'p.u.',
+                'vset_t': 'p.u.',
+                'pset': 'MW',
+                'min_firing_angle_f': 'radians',
+                'max_firing_angle_f': 'radians',
+                'min_firing_angle_t': 'radians',
+                'max_firing_angle_t': 'radians',
+                'overload_cost': '€/MWh'}
 
     def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
         """

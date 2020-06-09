@@ -100,6 +100,7 @@ class PSSeGrid:
         """
 
         circuit = MultiCircuit(Sbase=self.SBASE)
+        circuit.comments = 'Converted from a PSS/e .raw file'
 
         area_dict = {elm.I: elm.ARNAME for elm in self.areas}
         zones_dict = {elm.I: elm.ZONAME for elm in self.zones}
@@ -2139,6 +2140,9 @@ class PSSeParser:
         self.logger += logs
 
         self.circuit = self.pss_grid.get_circuit(self.logger)
+
+        self.circuit.comments = 'Converted from the PSS/e .raw file ' \
+                                + os.path.basename(file_name) + '\n\n' + str(self.logger)
 
     def read_and_split(self) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
         """

@@ -742,43 +742,73 @@ class Transformer2W(EditableDevice):
             data.append(obj)
         return data
 
-    def get_json_dict(self, id, bus_dict):
+    def get_properties_dict(self):
         """
         Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID
         :return:
         """
 
-        d = {'id': id,
-             'type': 'branch',
+        tap_f, tap_t = self.get_virtual_taps()
+
+        d = {'id': self.idtag,
+             'type': 'transformer',
              'phases': 'ps',
              'name': self.name,
-             'from': bus_dict[self.bus_from],
-             'to': bus_dict[self.bus_to],
+             'bus_from': self.bus_from.idtag,
+             'bus_to': self.bus_to.idtag,
              'active': self.active,
              'rate': self.rate,
              'r': self.R,
              'x': self.X,
              'g': self.G,
              'b': self.B,
-             'length': self.length,
              'tap_module': self.tap_module,
+             'tap_angle': self.angle,
+             'tap_position': self.tap_changer.tap,
+             'min_tap_position': self.tap_changer.min_tap,
+             'max_tap_position': self.tap_changer.max_tap,
+             'tap_inc_reg_down': self.tap_changer.inc_reg_down,
+             'tap_inc_reg_up': self.tap_changer.inc_reg_up,
+             'virtual_tap_from': tap_f,
+             'virtual_tap_to': tap_t,
              'bus_to_regulated': self.bus_to_regulated,
              'vset': self.vset,
-             'temp_base': self.temp_base,
-             'temp_oper': self.temp_oper,
+             'base_temperature': self.temp_base,
+             'operational_temperature': self.temp_oper,
              'alpha': self.alpha,
-             'tap_angle': self.angle,
-             'branch_type': str(self.branch_type),
-             'active_profile': [],
-             'rate_prof': []}
 
-        if self.active_prof is not None:
-            d['active_profile'] = self.active_prof.tolist()
-            d['rate_prof'] = self.rate_prof.tolist()
+             }
 
         return d
+
+    def get_profiles_dict(self):
+        """
+
+        :return:
+        """
+        if self.active_prof is not None:
+            active_prof = self.active_prof.tolist()
+            rate_prof = self.rate_prof.tolist()
+        else:
+            active_prof = list()
+            rate_prof = list()
+
+        return {'id': self.idtag,
+                'active': active_prof,
+                'rate': rate_prof}
+
+    def get_units_dict(self):
+        """
+        Get units of the values
+        """
+        return {'rate': 'MW',
+                'r': 'p.u.',
+                'x': 'p.u.',
+                'b': 'p.u.',
+                'g': 'p.u.',
+                'base_temperature': 'ºC',
+                'operational_temperature': 'ºC',
+                'alpha': '1/ºC'}
 
     def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
         """

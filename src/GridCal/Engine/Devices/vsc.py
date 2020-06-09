@@ -121,6 +121,51 @@ class VSC(EditableDevice):
     def get_weight(self):
         return np.sqrt(self.R1 * self.R1 + self.X1 * self.X1)
 
+
+    def get_properties_dict(self):
+        """
+        Get json dictionary
+        :return:
+        """
+
+        if self.active_prof is not None:
+            active_prof = self.active_prof.tolist()
+            rate_prof = self.rate_prof.tolist()
+        else:
+            active_prof = list()
+            rate_prof = list()
+
+        d = {'id': self.idtag,
+             'type': 'line',
+             'phases': 'ps',
+             'name': self.name,
+             'bus_from': self.bus_from.idtag,
+             'bus_to': self.bus_to.idtag,
+             'active': self.active,
+
+             'rate': self.rate,
+             'r': self.R1,
+             'x': self.X1,
+             'b': self.Beq,
+             'g': self.Gsw,
+
+             'profiles': {
+                 'active': active_prof,
+                 'rate': rate_prof}
+             }
+
+        return d
+
+    def get_units_dict(self):
+        """
+        Get units of the values
+        """
+        return {'rate': 'MW',
+                'r': 'p.u.',
+                'x': 'p.u.',
+                'b': 'p.u.',
+                'g': 'p.u.'}
+
     def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
         """
         Plot the time series results of this object
