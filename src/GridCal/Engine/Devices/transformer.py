@@ -745,10 +745,10 @@ class Transformer2W(EditableDevice):
     def get_properties_dict(self):
         """
         Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID
         :return:
         """
+
+        tap_f, tap_t = self.get_virtual_taps()
 
         d = {'id': self.idtag,
              'type': 'transformer',
@@ -763,12 +763,20 @@ class Transformer2W(EditableDevice):
              'g': self.G,
              'b': self.B,
              'tap_module': self.tap_module,
+             'tap_angle': self.angle,
+             'tap_position': self.tap_changer.tap,
+             'min_tap_position': self.tap_changer.min_tap,
+             'max_tap_position': self.tap_changer.max_tap,
+             'tap_inc_reg_down': self.tap_changer.inc_reg_down,
+             'tap_inc_reg_up': self.tap_changer.inc_reg_up,
+             'virtual_tap_from': tap_f,
+             'virtual_tap_to': tap_t,
              'bus_to_regulated': self.bus_to_regulated,
              'vset': self.vset,
              'base_temperature': self.temp_base,
              'operational_temperature': self.temp_oper,
              'alpha': self.alpha,
-             'tap_angle': self.angle
+
              }
 
         return d

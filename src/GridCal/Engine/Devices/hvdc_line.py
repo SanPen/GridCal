@@ -299,7 +299,6 @@ class HvdcLine(EditableDevice):
         """
         A = int(self.Pset > 0)
         B = 1 - A
-
         Pf = - self.Pset * A + self.Pset * (1 - self.loss_factor) * B
         Pt = self.Pset * A * (1 - self.loss_factor) - self.Pset * B
 

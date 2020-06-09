@@ -589,6 +589,13 @@ class Logger:
         self.messages.append(msg)
         self.severity.append(severity)
 
+    def __str__(self):
+
+        val = ''
+        for m, s in zip(self.messages, self.severity):
+            val += str(s) + ': ' + m + '\n'
+        return val
+
     def __getitem__(self, key):
         """
         get [index] implementation

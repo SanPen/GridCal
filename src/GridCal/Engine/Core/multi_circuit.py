@@ -647,9 +647,10 @@ class MultiCircuit:
         d = {'id': self.idtag,
              'phases': 'ps',
              'name': self.name,
-             'Sbase': self.Sbase,
-             'ModelVersion': self.model_version,
-             'UserName': self.user_name,
+             'sbase': self.Sbase,
+             'fbase': self.fBase,
+             'model_version': self.model_version,
+             'user_name': self.user_name,
              'comments': self.comments,
              }
 
@@ -657,15 +658,11 @@ class MultiCircuit:
 
     def get_units_dict(self):
         """
-
-        :return:
         """
-        return {'time': 'Miliseconds since 1/1/1970 (Unix time in ms)'}
+        return {'time': 'Milliseconds since 1/1/1970 (Unix time in ms)'}
 
     def get_profiles_dict(self):
         """
-
-        :return:
         """
         if self.time_profile is not None:
             t = self.time_profile.astype(int).tolist()

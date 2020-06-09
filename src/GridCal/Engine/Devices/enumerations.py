@@ -48,6 +48,7 @@ class TimeFrame(Enum):
 
 
 class DeviceType(Enum):
+    CircuitDevice = 'Circuit'
     BusDevice = 'Bus'
     BranchDevice = 'Branch'
     LineDevice = 'Line'

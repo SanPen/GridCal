@@ -416,7 +416,7 @@ class Bus(EditableDevice):
         """
 
         d = {'id': self.idtag,
-             'type': 'bus',
+             'type': self.determine_bus_type().value,
              'phases': 'ps',
              'name': self.name,
              'active': self.active,

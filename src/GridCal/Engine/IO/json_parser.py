@@ -174,6 +174,26 @@ def parse_json_data(data) -> MultiCircuit:
     return circuit
 
 
+def parse_json_data_v2(data: dict, logger: Logger):
+
+    devices = data['devices']
+    profiles = data['profiles']
+
+    if DeviceType.CircuitDevice.value in devices.keys():
+
+        dta = devices[DeviceType.CircuitDevice.value]
+        circuit = MultiCircuit(name=dta['name'],
+                               Sbase=dta['sbase'],
+                               fbase=dta['fbase'],
+                               idtag=dta['id'])
+
+        return circuit
+
+    else:
+        logger.add('The Json structure does not have a Circuit inside the devices!')
+        return MultiCircuit()
+
+
 def parse_json(file_name) -> MultiCircuit:
     """
     Parse JSON file into Circuit
@@ -208,9 +228,9 @@ def save_json_file(file_path, circuit: MultiCircuit):
             d[key] = d2
 
     # add the circuit
-    elements['Circuit'] = circuit.get_properties_dict()
-    units_dict['Circuit'] = circuit.get_units_dict()
-    element_profiles['Circuit'] = circuit.get_profiles_dict()
+    elements[DeviceType.CircuitDevice.value] = circuit.get_properties_dict()
+    units_dict[DeviceType.CircuitDevice.value] = circuit.get_units_dict()
+    element_profiles[DeviceType.CircuitDevice.value] = circuit.get_profiles_dict()
 
     # add the buses
     for elm in circuit.buses:
