@@ -123,7 +123,7 @@ def mu(Ybus, Ibus, J, incS, dV, dx, pvpq, pq, npv, npq):
     pvpq_lookup[pvpq] = np.arange(len(pvpq))
 
     createJ = get_fastest_jacobian_function(pvpq, pq)
-    J2 = _create_J_with_numba(Ybus, dV, pvpq, pq, createJ, pvpq_lookup, npv, npq)
+    J2 = _create_J_with_numba(Ybus, dV, pvpq, pq, pvpq_lookup, npv, npq)
 
     # J2 = Jacobian(Ybus, dV, Ibus, pq, pvpq)
 
@@ -294,7 +294,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
         # generate lookup pvpq -> index pvpq (used in createJ)
         pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
         pvpq_lookup[pvpq] = np.arange(len(pvpq))
-        createJ = get_fastest_jacobian_function(pvpq, pq)
+        # createJ = get_fastest_jacobian_function(pvpq, pq)
 
         # evaluate F(x0)
         Scalc = V * np.conj(Ybus * V - Ibus)
@@ -310,6 +310,9 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
         if norm_f < tol:
             converged = 1
 
+        # to be able to compare
+        Ybus.sort_indices()
+
         # do Newton iterations
         while not converged and iter_ < max_it:
             # update iteration counter
@@ -317,7 +320,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
 
             # evaluate Jacobian
             # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
-            J = _create_J_with_numba(Ybus, V, pvpq, pq, createJ, pvpq_lookup, npv, npq)
+            J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
 
             # compute update step
             dx = linear_solver(J, f)
@@ -605,7 +608,8 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
 
             # evaluate Jacobian
             # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
-            J = _create_J_with_numba(Ybus, V, pvpq, pq, createJ, pvpq_lookup, npv, npq)
+            # Ybus, V, pvpq, pq, pvpq_lookup, npv, npq
+            J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
 
             # compute update step
             try:
@@ -719,7 +723,7 @@ def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
 
             # evaluate Jacobian
             if update_jacobian:
-                H = _create_J_with_numba(Ybus, V, pvpq, pq, createJ, pvpq_lookup, npv, npq)
+                H = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
                 # H = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
             # evaluate the solution error F(x0)

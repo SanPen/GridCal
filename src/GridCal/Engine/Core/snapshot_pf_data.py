@@ -233,6 +233,7 @@ class SnapshotCircuit:
 
         self.original_bus_idx = np.arange(self.nbus)
         self.original_branch_idx = np.arange(self.nbr)
+        self.original_line_idx = np.arange(self.nline)
         self.original_tr_idx = np.arange(self.ntr)
         self.original_gen_idx = np.arange(self.ngen)
         self.original_bat_idx = np.arange(self.nbatt)
@@ -242,8 +243,29 @@ class SnapshotCircuit:
         self.vd = list()
         self.pqpv = list()
 
-        self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries',
-                                     "B'", "B''", 'Types', 'Jacobian', 'Qmin', 'Qmax']
+        self.available_structures = ['Vbus',
+                                     'Sbus',
+                                     'Ibus',
+                                     'Ybus',
+                                     'Yshunt',
+                                     'Yseries',
+                                     "B'",
+                                     "B''",
+                                     'Types',
+                                     'Jacobian',
+                                     'Qmin',
+                                     'Qmax',
+                                     'pq',
+                                     'pv',
+                                     'vd',
+                                     'pqpv',
+                                     'original_bus_idx',
+                                     'original_branch_idx',
+                                     'original_line_idx',
+                                     'original_tr_idx',
+                                     'original_gen_idx',
+                                     'original_bat_idx'
+                                     ]
 
     def get_injections(self):
         """
@@ -691,6 +713,33 @@ class SnapshotCircuit:
         elif structure_type == 'Qmax':
             df = pd.DataFrame(data=self.Qmax_bus, columns=['Qmax'], index=self.bus_names)
 
+        elif structure_type == 'pq':
+            df = pd.DataFrame(data=self.pq, columns=['pq'], index=self.bus_names[self.pq])
+
+        elif structure_type == 'pv':
+            df = pd.DataFrame(data=self.pv, columns=['pv'], index=self.bus_names[self.pv])
+
+        elif structure_type == 'vd':
+            df = pd.DataFrame(data=self.vd, columns=['vd'], index=self.bus_names[self.vd])
+
+        elif structure_type == 'pqpv':
+            df = pd.DataFrame(data=self.pqpv, columns=['pqpv'], index=self.bus_names[self.pqpv])
+
+        elif structure_type == 'original_bus_idx':
+            df = pd.DataFrame(data=self.original_bus_idx, columns=['original_bus_idx'], index=self.bus_names)
+
+        elif structure_type == 'original_branch_idx':
+            df = pd.DataFrame(data=self.original_branch_idx, columns=['original_branch_idx'], index=self.branch_names)
+
+        elif structure_type == 'original_line_idx':
+            df = pd.DataFrame(data=self.original_line_idx, columns=['original_line_idx'], index=self.line_names)
+
+        elif structure_type == 'original_tr_idx':
+            df = pd.DataFrame(data=self.original_tr_idx, columns=['original_tr_idx'], index=self.tr_names)
+
+        elif structure_type == 'original_gen_idx':
+            df = pd.DataFrame(data=self.original_gen_idx, columns=['original_gen_idx'], index=self.generator_names)
+
         elif structure_type == 'Jacobian':
 
             J = Jacobian(self.Ybus, self.Vbus, self.Ibus, self.pq, self.pqpv)
@@ -754,6 +803,7 @@ def get_pf_island(circuit: SnapshotCircuit, bus_idx) -> "SnapshotCircuit":
     nc.original_bus_idx = bus_idx
     nc.original_branch_idx = br_idx
 
+    nc.original_line_idx = line_idx
     nc.original_tr_idx = tr_idx
     nc.original_gen_idx = gen_idx
     nc.original_bat_idx = batt_idx

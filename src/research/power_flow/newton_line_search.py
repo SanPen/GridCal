@@ -962,25 +962,26 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
 #  MAIN
 ########################################################################################################################
 if __name__ == "__main__":
-    from GridCal.Engine import PowerFlowOptions, PowerFlowDriver, SolverType, FileOpen
+    from GridCal.Engine import PowerFlowOptions, PowerFlowDriver, SolverType, FileOpen, compile_snapshot_circuit, split_into_islands
     from matplotlib import pyplot as plt
     import pandas as pd
     import os
     import time
-
+    np.set_printoptions(linewidth=10000)
     pd.set_option('display.max_rows', 500)
     pd.set_option('display.max_columns', 500)
     pd.set_option('display.width', 1000)
 
-    fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
+    # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'Illinois200Bus.xlsx')
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'Pegase 2869.xlsx')
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', '1354 Pegase.xlsx')
+    fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 14.xlsx')
     # fname = '/home/santi/Documentos/Private_Grids/2026_INVIERNO_para Plexos_FINAL_9.raw'
 
     grid = FileOpen(file_name=fname).open()
-    nc = grid.compile_snapshot()
-    islands = nc.compute()
+    nc = compile_snapshot_circuit(grid)
+    islands = split_into_islands(nc)
     circuit = islands[0]
 
     # declare figure
@@ -992,6 +993,9 @@ if __name__ == "__main__":
     print('Newton-Raphson-Line-search 1')
     for acc in [1e-6]:  # [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 0.1]
         start_time = time.time()
+
+        print('Ybus')
+        print(circuit.Ybus.toarray())
 
         error_data1 = list()
         V1, converged_, err, S, el = NR_LS(Ybus=circuit.Ybus,

@@ -149,6 +149,9 @@ class VSC(EditableDevice):
              'b': self.Beq,
              'g': self.Gsw,
 
+             'tap_module': self.m,
+             'firing_angle': self.theta,
+
              'profiles': {
                  'active': active_prof,
                  'rate': rate_prof}

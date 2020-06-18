@@ -19,10 +19,13 @@ import networkx as nx
 from scipy.sparse import lil_matrix, csc_matrix
 from PySide2.QtCore import QThread, Signal
 from typing import List
+from sklearn.cluster import DBSCAN
+from sklearn.preprocessing import Normalizer
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.branch import BranchType
 from GridCal.Engine.Devices.bus import Bus
+from GridCal.Engine.Simulations.PTDF.ptdf_driver import PTDF
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -374,12 +377,12 @@ class DeleteAndReduce(QThread):
         self.done_signal.emit()
 
 
-class DistanceMatrixDriver(QThread):
+class NodeGroupsDriver(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
 
-    def __init__(self, grid: MultiCircuit, sigmas=0.5, min_group_size=2):
+    def __init__(self, grid: MultiCircuit, sigmas=0.5, min_group_size=2, ptdf_results=None):
         """
         Electric distance clustering
         :param grid: MultiCircuit instance
@@ -395,8 +398,12 @@ class DistanceMatrixDriver(QThread):
 
         n = len(grid.buses)
 
+        self.use_ptdf = True
+
+        self.ptdf_results = ptdf_results
+
         # results
-        self.distances = np.zeros((n, n))
+        self.X_train = np.zeros((n, n))
         self.sigma = 1.0
         self.groups_by_name = list()
         self.groups_by_index = list()
@@ -427,25 +434,32 @@ class DistanceMatrixDriver(QThread):
         Run the monte carlo simulation
         @return:
         """
-        from sklearn.cluster import DBSCAN
-
         self.progress_signal.emit(0.0)
-        self.progress_text.emit('Exploring Dijkstra distances...')
 
         n = len(self.grid.buses)
 
-        # explore
-        g = self.build_weighted_graph()
-        k = 0
-        for i, distances_dict in nx.all_pairs_dijkstra_path_length(g):
-            for j, d in distances_dict.items():
-                self.distances[i, j] = d
+        if self.use_ptdf:
+            self.progress_text.emit('Analyzing PTDF...')
 
-            self.progress_signal.emit((k+1) / n * 100.0)
-            k += 1
+            # the PTDF matrix will be scaled to 0, 1 to be able to train
+            self.X_train = Normalizer().fit_transform(self.ptdf_results.flows_sensitivity_matrix)
+
+            metric = 'euclidean'
+        else:
+            self.progress_text.emit('Exploring Dijkstra distances...')
+            # explore
+            g = self.build_weighted_graph()
+            k = 0
+            for i, distances_dict in nx.all_pairs_dijkstra_path_length(g):
+                for j, d in distances_dict.items():
+                    self.X_train[i, j] = d
+
+                self.progress_signal.emit((k+1) / n * 100.0)
+                k += 1
+            metric = 'precomputed'
 
         # compute the sample sigma
-        self.sigma = np.std(self.distances)
+        self.sigma = np.std(self.X_train)
         max_distance = self.sigma * self.sigmas
 
         # construct groups
@@ -454,8 +468,9 @@ class DistanceMatrixDriver(QThread):
         # Compute DBSCAN
         model = DBSCAN(eps=max_distance,
                        min_samples=self.min_group_size,
-                       metric='precomputed')
-        db = model.fit(self.distances)
+                       metric=metric)
+
+        db = model.fit(self.X_train)
 
         # get the labels that are greater than -1
         labels = list({i for i in db.labels_ if i > -1})
@@ -491,7 +506,7 @@ if __name__ == '__main__':
     fname = '/home/santi/Documentos/Private_Grids/Penísula Ibérica 2026.gridcal'
     grid = FileOpen(fname).open()
 
-    driver = DistanceMatrixDriver(grid=grid, sigmas=1e-3)
+    driver = NodeGroupsDriver(grid=grid, sigmas=1e-3)
     driver.run()
 
     print('\nGroups:')

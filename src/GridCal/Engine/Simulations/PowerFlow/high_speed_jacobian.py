@@ -187,6 +187,7 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
                     nnz += 1
         # Jp: number of nonzeros per row = nnz - nnzStart (nnz at begging of loop - nnz at end of loop)
         Jp[r + 1] = nnz - nnzStart + Jp[r]
+
     # second: iterate pq (J21 and J22)
     for r in range(lpq):
         nnzStart = nnz
@@ -199,6 +200,7 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
                 Jx[nnz] = dVa_x[c].imag
                 Jj[nnz] = cc
                 nnz += 1
+
                 if cc >= lpv:
                     # if entry is found in the "pq part" of pvpq = Add entry of J22
                     Jx[nnz] = dVm_x[c].imag
@@ -275,7 +277,7 @@ def create_J2(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragm
         Jp[r + lpvpq + 1] = nnz - nnzStart + Jp[r + lpvpq]
 
 
-def _create_J_with_numba(Ybus, V, pvpq, pq, createJ, pvpq_lookup, npv, npq):
+def _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq):
     """
 
     :param Ybus:
@@ -300,7 +302,11 @@ def _create_J_with_numba(Ybus, V, pvpq, pq, createJ, pvpq_lookup, npv, npq):
     Jj = empty(len(dVm_x) * 4, dtype=int32)
 
     # fill Jx, Jj and Jp
-    createJ(dVm_x, dVa_x, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, pq, Jx, Jj, Jp)
+    # createJ(dVm_x, dVa_x, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, pq, Jx, Jj, Jp)
+    if len(pvpq) == len(pq):
+        create_J2(dVm_x, dVa_x, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, pq, Jx, Jj, Jp)
+    else:
+        create_J(dVm_x, dVa_x, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, pq, Jx, Jj, Jp)
 
     # resize before generating the scipy sparse matrix
     Jx.resize(Jp[-1], refcheck=False)
@@ -331,7 +337,6 @@ def _create_J_without_numba(Ybus, V, pvpq, pq):
             hstack([J11, J12])
         ], format="csr")
     return J
-
 
 
 def get_fastest_jacobian_function(pvpq, pq):

@@ -36,7 +36,7 @@ from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
 from GridCal.Engine.Simulations.Dynamics.transient_stability_driver import *
 from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
 from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReduction, TopologyReductionOptions, \
-    DeleteAndReduce, DistanceMatrixDriver
+    DeleteAndReduce, NodeGroupsDriver
 from GridCal.Engine.Simulations.Topology.topology_driver import select_branches_to_reduce
 from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
 from GridCal.Engine.Devices import *
@@ -3210,18 +3210,29 @@ class MainGUI(QMainWindow):
         :return:
         """
         if self.ui.actionFind_node_groups.isChecked():
-            self.LOCK()
-            sigmas = self.ui.node_distances_sigma_doubleSpinBox.value()
-            min_group_size = self.ui.node_distances_elements_spinBox.value()
-            self.find_node_groups_driver = DistanceMatrixDriver(grid=self.circuit,
-                                                                sigmas=sigmas,
-                                                                min_group_size=min_group_size)
 
-            # Set the time series run options
-            self.find_node_groups_driver.progress_signal.connect(self.ui.progressBar.setValue)
-            self.find_node_groups_driver.progress_text.connect(self.ui.progress_label.setText)
-            self.find_node_groups_driver.done_signal.connect(self.post_run_find_node_groups)
-            self.find_node_groups_driver.start()
+            if self.ptdf_analysis is not None:
+
+                if self.ptdf_analysis.results is not None:
+                    self.LOCK()
+                    sigmas = self.ui.node_distances_sigma_doubleSpinBox.value()
+                    min_group_size = self.ui.node_distances_elements_spinBox.value()
+
+                    ptdf_results = self.ptdf_analysis.results
+                    self.find_node_groups_driver = NodeGroupsDriver(grid=self.circuit,
+                                                                    sigmas=sigmas,
+                                                                    min_group_size=min_group_size,
+                                                                    ptdf_results=ptdf_results)
+
+                    # Set the time series run options
+                    self.find_node_groups_driver.progress_signal.connect(self.ui.progressBar.setValue)
+                    self.find_node_groups_driver.progress_text.connect(self.ui.progress_label.setText)
+                    self.find_node_groups_driver.done_signal.connect(self.post_run_find_node_groups)
+                    self.find_node_groups_driver.start()
+                else:
+                    error_msg('There are no PTDF results :/')
+            else:
+                info_msg('You need to run a PTDF simulation first :/')
 
         else:
             # delete the markers
@@ -3243,10 +3254,10 @@ class MainGUI(QMainWindow):
         for c, group in enumerate(self.find_node_groups_driver.groups_by_index):
             for i in group:
                 bus = self.circuit.buses[i]
-                r, g, b, a = colours[c]
-                color = QColor(r * 255, g * 255, b * 255, a * 255)
-                bus.graphic_obj.add_big_marker(color=color)
-
+                if bus.active:
+                    r, g, b, a = colours[c]
+                    color = QColor(r * 255, g * 255, b * 255, a * 255)
+                    bus.graphic_obj.add_big_marker(color=color, tool_tip_text='Group ' + str(c))
 
     def post_reduce_grid(self):
         """
