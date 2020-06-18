@@ -175,7 +175,12 @@ def parse_json_data(data) -> MultiCircuit:
 
 
 def parse_json_data_v2(data: dict, logger: Logger):
-
+    """
+    New Json parser
+    :param data:
+    :param logger:
+    :return:
+    """
     devices = data['devices']
     profiles = data['profiles']
 
@@ -186,6 +191,199 @@ def parse_json_data_v2(data: dict, logger: Logger):
                                Sbase=dta['sbase'],
                                fbase=dta['fbase'],
                                idtag=dta['id'])
+
+        jcircuit = devices["Circuit"]
+        circuit.Sbase = jcircuit["sbase"]
+
+        bus_dict = dict()
+
+        if 'Bus' in devices.keys():
+            buses = devices["Bus"]
+            for jentry in buses:
+                bus = Bus(name=jentry['name'],
+                          idtag=jentry['id'],
+                          vnom=jentry['vnom'],
+                          vmin=jentry['vmin'],
+                          vmax=jentry['vmax'],
+                          r_fault=jentry['rf'],
+                          x_fault=jentry['xf'],
+                          xpos=jentry['x'],
+                          ypos=jentry['y'],
+                          height=jentry['h'],
+                          width=jentry['w'],
+                          active=jentry['active'],
+                          is_slack=jentry['is_slack'],
+                          # is_dc=jbus['id'],
+                          area=jentry['area'],
+                          zone=jentry['zone'],
+                          substation=jentry['substation'],
+                          # country=jbus['id'],
+                          longitude=jentry['lon'],
+                          latitude=jentry['lat'], )
+
+                bus_dict[jentry['id']] = bus
+                circuit.add_bus(bus)
+
+        if 'Generator' in devices.keys():
+            generators = devices["Generator"]
+            for jentry in generators:
+                gen = Generator(name=jentry['name'],
+                                idtag=jentry['id'],
+                                active_power=jentry['p'],
+                                power_factor=jentry['pf'],
+                                voltage_module=jentry['vset'],
+                                is_controlled=jentry['is_controlled'],
+                                Qmin=jentry['qmin'],
+                                Qmax=jentry['qmax'],
+                                Snom=jentry['snom'],
+                                # power_prof=jgen['name'],
+                                # power_factor_prof=jgen['name'],
+                                # vset_prof=jgen['name'],
+                                # Cost_prof=jgen['name'],
+                                active=jentry['active'],
+                                p_min=jentry['pmin'],
+                                p_max=jentry['pmax'],
+                                op_cost=jentry['cost'],
+                                # Sbase=jgen['name'],
+                                # enabled_dispatch=jgen['name'],
+                                # mttf=jgen['name'],
+                                # mttr=jgen['name']
+                                )
+                gen.bus = bus_dict[jentry['bus']]
+                circuit.add_generator(gen.bus, gen)
+
+        if 'Battery' in devices.keys():
+            batteries = devices["Battery"]
+            for jentry in batteries:
+                gen = Battery(name=jentry['name'],
+                              idtag=jentry['id'],
+                              active_power=jentry['p'],
+                              power_factor=jentry['pf'],
+                              voltage_module=jentry['vset'],
+                              is_controlled=jentry['is_controlled'],
+                              Qmin=jentry['qmin'],
+                              Qmax=jentry['qmax'],
+                              Snom=jentry['snom'],
+                              # power_prof=jgen['name'],
+                              # power_factor_prof=jgen['name'],
+                              # vset_prof=jgen['name'],
+                              # Cost_prof=jgen['name'],
+                              active=jentry['active'],
+                              p_min=jentry['pmin'],
+                              p_max=jentry['pmax'],
+                              op_cost=jentry['cost'],
+                              # Sbase=jgen['name'],
+                              # enabled_dispatch=jgen['name'],
+                              # mttf=jgen['name'],
+                              # mttr=jgen['name']
+                              )
+                gen.bus = bus_dict[jentry['bus']]
+                circuit.add_battery(gen.bus, gen)
+
+        if 'Load' in devices.keys():
+            loads = devices["Load"]
+            for jentry in loads:
+                elm = Load(name=jentry['name'],
+                           idtag=jentry['name'],
+                           # G: float = 0.0,
+                           # B: float = 0.0,
+                           # Ir: float = 0.0,
+                           # Ii: float = 0.0,
+                           P=jentry['p'],
+                           Q=jentry['q'],
+                           # cost=jentry['cost'],
+                           # G_prof: Any = None,
+                           # B_prof: Any = None,
+                           # Ir_prof: Any = None,
+                           # Ii_prof: Any = None,
+                           # P_prof: Any = None,
+                           # Q_prof: Any = None,
+                           active=jentry['active'])
+                elm.bus = bus_dict[jentry['bus']]
+                circuit.add_load(elm.bus, elm)
+
+        if "Shunt" in devices.keys():
+            shunts = devices["Shunt"]
+            for jentry in shunts:
+                elm = Shunt(name=jentry['name'],
+                            idtag=jentry['name'],
+                            G=jentry['g'],
+                            B=jentry['b'],
+                            # G_prof: Any = None,
+                            # B_prof: Any = None,
+                            active=jentry['active'])
+                elm.bus = bus_dict[jentry['bus']]
+                circuit.add_shunt(elm.bus, elm)
+
+        if "Line" in devices.keys():
+            lines = devices["Line"]
+            for entry in lines:
+                elm = Line(bus_from=bus_dict[entry['bus_from']],
+                           bus_to=bus_dict[entry['bus_to']],
+                           name=entry['name'],
+                           idtag=entry['id'],
+                           r=entry['r'],
+                           x=entry['x'],
+                           b=entry['b'],
+                           rate=entry['rate'],
+                           active=entry['active'],
+                           # tolerance: int = 0,
+                           # cost: float = 0.0,
+                           # mttf: int = 0,
+                           # mttr: int = 0,
+                           # r_fault: float = 0.0,
+                           # x_fault: float = 0.0,
+                           # fault_pos: float = 0.5,
+                           length=entry['length'],
+                           # temp_base: int = 20,
+                           # temp_oper: int = 20,
+                           # alpha: float = 0.00330,
+                           # template: LineTemplate = LineTemplate(),
+                           # rate_prof: Any = None,
+                           # Cost_prof: Any = None,
+                           # active_prof: Any = None,
+                           # temp_oper_prof: Any = None
+                           )
+                circuit.add_line(elm)
+
+        if "Transformer" in devices.keys():
+            transformers = devices["Transformer"]
+            for entry in transformers:
+                elm = Transformer2W(bus_from=bus_dict[entry['bus_from']],
+                                    bus_to=bus_dict[entry['bus_to']],
+                                    name=entry['name'],
+                                    idtag=entry['id'],
+                                    r=entry['r'],
+                                    x=entry['x'],
+                                    g=entry['g'],
+                                    b=entry['b'],
+                                    rate=entry['rate'],
+                                    active=entry['active'],
+                                    tap=entry['tap_module'],
+                                    shift_angle=entry['tap_angle'],
+                                    # tolerance: int = 0,
+                                    # cost: float = 0.0,
+                                    # mttf: int = 0,
+                                    # mttr: int = 0,
+                                    # r_fault: float = 0.0,
+                                    # x_fault: float = 0.0,
+                                    # fault_pos: float = 0.5,
+                                    # temp_base: int = 20,
+                                    # temp_oper: int = 20,
+                                    # alpha: float = 0.00330,
+                                    # template: LineTemplate = LineTemplate(),
+                                    # rate_prof: Any = None,
+                                    # Cost_prof: Any = None,
+                                    # active_prof: Any = None,
+                                    # temp_oper_prof: Any = None
+                                    )
+                circuit.add_transformer2w(elm)
+
+        if "VSC" in devices.keys():
+            vsc = devices["VSC"]
+
+        if "HVDC Line" in devices.keys():
+            hvdc = devices["HVDC Line"]
 
         return circuit
 
