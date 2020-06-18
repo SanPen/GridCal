@@ -247,6 +247,10 @@ class SnapshotCircuit:
                                      'Sbus',
                                      'Ibus',
                                      'Ybus',
+                                     'Yf',
+                                     'Yt',
+                                     'Cf',
+                                     'Ct',
                                      'Yshunt',
                                      'Yseries',
                                      "B'",
@@ -691,6 +695,18 @@ class SnapshotCircuit:
 
         elif structure_type == 'Ybus':
             df = pd.DataFrame(data=self.Ybus.toarray(), columns=self.bus_names, index=self.bus_names)
+
+        elif structure_type == 'Yf':
+            df = pd.DataFrame(data=self.Yf.toarray(), columns=self.bus_names, index=self.branch_names)
+
+        elif structure_type == 'Yt':
+            df = pd.DataFrame(data=self.Yt.toarray(), columns=self.bus_names, index=self.branch_names)
+
+        elif structure_type == 'Cf':
+            df = pd.DataFrame(data=self.C_branch_bus_f.toarray(), columns=self.bus_names, index=self.branch_names)
+
+        elif structure_type == 'Ct':
+            df = pd.DataFrame(data=self.C_branch_bus_t.toarray(), columns=self.bus_names, index=self.branch_names)
 
         elif structure_type == 'Yshunt':
             df = pd.DataFrame(data=self.Yshunt, columns=['Shunt admittance (p.u.)'], index=self.bus_names)
