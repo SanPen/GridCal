@@ -118,7 +118,8 @@ class PTDF(QThread):
                               n_br=numerical_circuit.nbr,
                               n_bus=numerical_circuit.nbus,
                               br_names=numerical_circuit.branch_names,
-                              bus_names=numerical_circuit.bus_names)
+                              bus_names=numerical_circuit.bus_names,
+                              bus_types=numerical_circuit.bus_types)
 
         if text_func is not None:
             text_func('Running PTDF...')
@@ -201,7 +202,8 @@ class PTDF(QThread):
                               n_br=numerical_circuit.nbr,
                               n_bus=numerical_circuit.nbus,
                               br_names=numerical_circuit.branch_names,
-                              bus_names=numerical_circuit.bus_names)
+                              bus_names=numerical_circuit.bus_names,
+                              bus_types=numerical_circuit.bus_types)
 
         if text_func is not None:
             text_func('Running PTDF...')

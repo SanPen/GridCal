@@ -178,7 +178,7 @@ def sigma_function(coeff_matU, coeff_matX, order, V_slack):
 
 
 @nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")
-def conv1(A, B, c, indices):
+def conv1_old(A, B, c, indices):
     """
     Performs the convolution of A* and B
     :param A: Coefficients matrix 1 (orders, buses)
@@ -191,6 +191,23 @@ def conv1(A, B, c, indices):
     for k in range(1, c + 1):
         for i, d in enumerate(indices):
             suma[i] += np.conj(A[k, d]) * B[c - k, d]
+    return suma
+
+
+@nb.njit("(c16[:])(c16[:, :], c16[:, :], i8)")
+def conv1(A, B, c):
+    """
+    Performs the convolution of A* and B
+    :param A: Coefficients matrix 1 (orders, buses)
+    :param B: Coefficients matrix 2 (orders, buses)
+    :param c: order of the coefficients
+    :param indices: bus indices array
+    :return: Array with the convolution for the buses given by "indices"
+    """
+    suma = np.zeros(A.shape[1], dtype=nb.complex128)
+    for k in range(1, c + 1):
+        for i in range(A.shape[1]):
+            suma[i] += np.conj(A[k, i]) * B[c - k, i]
     return suma
 
 
@@ -344,7 +361,6 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
 
     # .......................CALCULATION OF TERMS [>=2] ----------------------------------------------------------------
     iter_ = 1
-    range_pqpv = np.arange(npqpv, dtype=np.int64)
     for c in range(2, max_coeff):  # c defines the current depth
 
         valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] - U[c - 1, pq_] * Ysh[pq_]
@@ -363,7 +379,7 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
         Q[c - 1, pv_] = LHS[2 * npqpv:]
 
         # update voltage inverse coefficients
-        X[c, range_pqpv] = -conv1(U, X, c, range_pqpv) / np.conj(U[0, range_pqpv])
+        X[c, :] = -conv1(U, X, c) / np.conj(U[0, :])
 
         iter_ += 1
 

@@ -69,7 +69,8 @@ class OptimalPowerFlowTimeSeries(QThread):
                                                          ngen=len(self.grid.get_generators()),
                                                          nbat=len(self.grid.get_batteries()),
                                                          nload=len(self.grid.get_loads()),
-                                                         time=self.grid.time_profile)
+                                                         time=self.grid.time_profile,
+                                                         bus_types=self.numerical_circuit.bus_types)
 
         self.start_ = start_
 
@@ -103,7 +104,8 @@ class OptimalPowerFlowTimeSeries(QThread):
                                                          ngen=len(self.grid.get_generators()),
                                                          nbat=len(self.grid.get_batteries()),
                                                          nload=len(self.grid.get_loads()),
-                                                         time=self.grid.time_profile)
+                                                         time=self.grid.time_profile,
+                                                         bus_types=self.numerical_circuit.bus_types)
 
     def get_steps(self):
         """

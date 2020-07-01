@@ -22,7 +22,7 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 class OptimalPowerFlowTimeSeriesResults:
 
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names,
-                 n, m, nt, ngen=0, nbat=0, nload=0, time=None):
+                 n, m, nt, ngen=0, nbat=0, nload=0, time=None, bus_types=()):
         """
         OPF Time Series results constructor
         :param n: number of buses
@@ -40,6 +40,8 @@ class OptimalPowerFlowTimeSeriesResults:
         self.load_names = load_names
         self.generator_names = generator_names
         self.battery_names = battery_names
+
+        self.bus_types = bus_types
 
         self.n = n
 

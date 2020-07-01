@@ -3640,10 +3640,11 @@ class MainGUI(QMainWindow):
                               file_name=file_name)
 
             elif current_study == OptimalPowerFlow.name:
+
                 plot_function(circuit=self.circuit,
                               voltages=self.optimal_power_flow.results.voltage,
                               loadings=self.optimal_power_flow.results.loading,
-                              types=self.optimal_power_flow.grid.bus_types,
+                              types=self.optimal_power_flow.results.bus_types,
                               s_branch=self.optimal_power_flow.results.Sbranch,
                               s_bus=self.optimal_power_flow.results.Sbus,
                               file_name=file_name)
@@ -3659,13 +3660,13 @@ class MainGUI(QMainWindow):
                               s_branch=Sbranch,
                               voltages=voltage,
                               loadings=np.abs(loading),
-                              types=self.optimal_power_flow_time_series.numerical_circuit.bus_types,
+                              types=self.optimal_power_flow_time_series.results.bus_types,
                               file_name=file_name)
 
             elif current_study == PTDF.name:
 
                 voltage = self.ptdf_analysis.results.pf_results[current_step].voltage
-                loading = self.ptdf_analysis.results.sensitivity_matrix[current_step, :]
+                loading = self.ptdf_analysis.results.flows_sensitivity_matrix[current_step, :]
                 Sbranch = self.ptdf_analysis.results.pf_results[current_step].Sbranch
 
                 plot_function(circuit=self.circuit,
@@ -3673,7 +3674,7 @@ class MainGUI(QMainWindow):
                               s_branch=Sbranch,
                               voltages=voltage,
                               loadings=loading,
-                              types=self.ptdf_analysis.grid.bus_types,
+                              types=self.ptdf_analysis.results.bus_types,
                               loading_label='Sensitivity',
                               file_name=file_name)
 
@@ -3684,7 +3685,7 @@ class MainGUI(QMainWindow):
                               s_branch=self.ptdf_ts_analysis.results.Sbranch[current_step],
                               voltages=self.ptdf_ts_analysis.results.voltage[current_step],
                               loadings=np.abs(self.ptdf_ts_analysis.results.loading[current_step]),
-                              types=self.ptdf_ts_analysis.grid.bus_types,
+                              types=self.ptdf_ts_analysis.results.bus_types,
                               file_name=file_name)
 
             elif current_study == 'Transient stability':
@@ -4547,6 +4548,17 @@ class MainGUI(QMainWindow):
 
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() == args]
 
+                elif tpe == bool:
+
+                    if args.lower() == 'true':
+                        args = True
+                    elif args.lower() == 'false':
+                        args = False
+                    else:
+                        args = False
+
+                    filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) == args]
+
                 elif tpe == DeviceType.BusDevice:
                     filtered_objects = [x for x in self.type_objects_list if args == getattr(x, attr).name.lower()]
 
@@ -4751,7 +4763,12 @@ class MainGUI(QMainWindow):
 
                         self.set_big_bus_marker(buses=sel_obj, color=color)
 
-                    elif elm.device_type == DeviceType.BranchDevice:
+                    elif elm.device_type in [DeviceType.BranchDevice,
+                                             DeviceType.LineDevice,
+                                             DeviceType.Transformer2WDevice,
+                                             DeviceType.HVDCLineDevice,
+                                             DeviceType.VscDevice,
+                                             DeviceType.DCLineDevice]:
                         buses = list()
                         for br in sel_obj:
                             buses.append(br.bus_from)
