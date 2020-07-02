@@ -65,8 +65,8 @@ class ConvergenceReport:
         return df
 
 
-def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, Ysh_helm, B1, B2, Bpqpv, Bref, pq, pv, ref, pqpv, tolerance, max_iter,
-          acceleration_parameter=1e-5):
+def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, Ybus, Yseries, Ysh_helm,
+          B1, B2, Bpqpv, Bref, pq, pv, ref, pqpv, tolerance, max_iter, acceleration_parameter=1e-5, logger=Logger()):
     """
     Run a power flow simulation using the selected method (no outer loop controls).
 
@@ -109,99 +109,104 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, Ysh_helm, B1, B2, Bpqpv, B
         V0 (Voltage solution), converged (converged?), normF (error in power),
         Scalc (Computed bus power), iterations, elapsed
     """
-    # type HELM
-    if solver_type == SolverType.HELM:
-        V, converged, normF, Scalc, it, el = helm_josep(Ybus=Ybus,
-                                                        Yseries=Yseries,
-                                                        V0=V0,
-                                                        S0=Sbus,
-                                                        Ysh0=Ysh_helm,
-                                                        pq=pq,
-                                                        pv=pv,
-                                                        sl=ref,
-                                                        pqpv=pqpv,
-                                                        tolerance=tolerance,
-                                                        max_coeff=max_iter,
-                                                        use_pade=True,
-                                                        verbose=False)
 
-    # type DC
-    elif solver_type == SolverType.DC:
-        V, converged, normF, Scalc, it, el = dcpf(Ybus=Ybus,
-                                                  Bpqpv=Bpqpv,
-                                                  Bref=Bref,
-                                                  Sbus=Sbus,
-                                                  Ibus=Ibus,
-                                                  V0=V0,
-                                                  ref=ref,
-                                                  pvpq=pqpv,
-                                                  pq=pq,
-                                                  pv=pv)
+    if options.retry_with_other_methods:
+        solvers = [options.solver_type,
+                   SolverType.IWAMOTO,
+                   SolverType.LM,
+                   SolverType.HELM,
+                   SolverType.LACPF]
+    else:
+        # No retry selected
+        solvers = [options.solver_type]
 
-    # LAC PF
-    elif solver_type == SolverType.LACPF:
-        V, converged, normF, Scalc, it, el = lacpf(Y=Ybus,
-                                                   Ys=Yseries,
-                                                   S=Sbus,
-                                                   I=Ibus,
-                                                   Vset=V0,
-                                                   pq=pq,
-                                                   pv=pv)
+    # set worked to false to enter in the loop
+    worked = False
+    solver_idx = 0
+    results = PowerFlowResults(n=0, m=0, n_tr=0, n_hvdc=0,
+                               bus_names=(), branch_names=(), transformer_names=(),
+                               hvdc_names=(), bus_types=())
 
-    # Levenberg-Marquardt
-    elif solver_type == SolverType.LM:
-        V, converged, normF, Scalc, it, el = levenberg_marquardt_pf(Ybus=Ybus,
-                                                                    Sbus=Sbus,
-                                                                    V0=V0,
-                                                                    Ibus=Ibus,
-                                                                    pv=pv,
-                                                                    pq=pq,
-                                                                    tol=tolerance,
-                                                                    max_it=max_iter)
+    # set the initial value
+    V = V0
+    converged = False
+    normF = 0
+    Scalc = Sbus
+    it = 0
+    el = 0.0
 
-    # Fast decoupled
-    elif solver_type == SolverType.FASTDECOUPLED:
-        V, converged, normF, Scalc, it, el = FDPF(Vbus=V0,
-                                                  Sbus=Sbus,
-                                                  Ibus=Ibus,
-                                                  Ybus=Ybus,
-                                                  B1=B1,
-                                                  B2=B2,
-                                                  pq=pq,
-                                                  pv=pv,
-                                                  pqpv=pqpv,
-                                                  tol=tolerance,
-                                                  max_it=max_iter)
+    while solver_idx < len(solvers) and not worked:
+        # get the solver
+        solver_type = solvers[solver_idx]
 
-    # Newton-Raphson (full)
-    elif solver_type == SolverType.NR:
-        # Solve NR with the linear AC solution
-        V, converged, normF, Scalc, it, el = NR_LS(Ybus=Ybus,
-                                                   Sbus=Sbus,
-                                                   V0=V0,
-                                                   Ibus=Ibus,
-                                                   pv=pv,
-                                                   pq=pq,
-                                                   tol=tolerance,
-                                                   max_it=max_iter,
-                                                   acceleration_parameter=acceleration_parameter)
+        # type HELM
+        if solver_type == SolverType.HELM:
+            V, converged, normF, Scalc, it, el = helm_josep(Ybus=Ybus,
+                                                            Yseries=Yseries,
+                                                            V0=V0,
+                                                            S0=Sbus,
+                                                            Ysh0=Ysh_helm,
+                                                            pq=pq,
+                                                            pv=pv,
+                                                            sl=ref,
+                                                            pqpv=pqpv,
+                                                            tolerance=tolerance,
+                                                            max_coeff=max_iter,
+                                                            use_pade=True,
+                                                            verbose=False)
 
-    # Newton-Raphson-Decpupled
-    elif solver_type == SolverType.NRD:
-        # Solve NR with the linear AC solution
-        V, converged, normF, Scalc, it, el = NRD_LS(Ybus=Ybus,
-                                                    Sbus=Sbus,
-                                                    V0=V0,
-                                                    Ibus=Ibus,
-                                                    pv=pv,
-                                                    pq=pq,
-                                                    tol=tolerance,
-                                                    max_it=max_iter,
-                                                    acceleration_parameter=acceleration_parameter)
+        # type DC
+        elif solver_type == SolverType.DC:
+            V, converged, normF, Scalc, it, el = dcpf(Ybus=Ybus,
+                                                      Bpqpv=Bpqpv,
+                                                      Bref=Bref,
+                                                      Sbus=Sbus,
+                                                      Ibus=Ibus,
+                                                      V0=V0,
+                                                      ref=ref,
+                                                      pvpq=pqpv,
+                                                      pq=pq,
+                                                      pv=pv)
 
-    # Newton-Raphson-Iwamoto
-    elif solver_type == SolverType.IWAMOTO:
-        V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=Ybus,
+        # LAC PF
+        elif solver_type == SolverType.LACPF:
+            V, converged, normF, Scalc, it, el = lacpf(Y=Ybus,
+                                                       Ys=Yseries,
+                                                       S=Sbus,
+                                                       I=Ibus,
+                                                       Vset=V0,
+                                                       pq=pq,
+                                                       pv=pv)
+
+        # Levenberg-Marquardt
+        elif solver_type == SolverType.LM:
+            V, converged, normF, Scalc, it, el = levenberg_marquardt_pf(Ybus=Ybus,
+                                                                        Sbus=Sbus,
+                                                                        V0=V0,
+                                                                        Ibus=Ibus,
+                                                                        pv=pv,
+                                                                        pq=pq,
+                                                                        tol=tolerance,
+                                                                        max_it=max_iter)
+
+        # Fast decoupled
+        elif solver_type == SolverType.FASTDECOUPLED:
+            V, converged, normF, Scalc, it, el = FDPF(Vbus=V0,
+                                                      Sbus=Sbus,
+                                                      Ibus=Ibus,
+                                                      Ybus=Ybus,
+                                                      B1=B1,
+                                                      B2=B2,
+                                                      pq=pq,
+                                                      pv=pv,
+                                                      pqpv=pqpv,
+                                                      tol=tolerance,
+                                                      max_it=max_iter)
+
+        # Newton-Raphson (full)
+        elif solver_type == SolverType.NR:
+            # Solve NR with the linear AC solution
+            V, converged, normF, Scalc, it, el = NR_LS(Ybus=Ybus,
                                                        Sbus=Sbus,
                                                        V0=V0,
                                                        Ibus=Ibus,
@@ -209,27 +214,68 @@ def solve(solver_type, V0, Sbus, Ibus, Ybus, Yseries, Ysh_helm, B1, B2, Bpqpv, B
                                                        pq=pq,
                                                        tol=tolerance,
                                                        max_it=max_iter,
-                                                       robust=True)
+                                                       acceleration_parameter=acceleration_parameter)
 
-    # Newton-Raphson in current equations
-    elif solver_type == SolverType.NRI:
-        V, converged, normF, Scalc, it, el = NR_I_LS(Ybus=Ybus,
-                                                     Sbus_sp=Sbus,
-                                                     V0=V0,
-                                                     Ibus_sp=Ibus,
-                                                     pv=pv,
-                                                     pq=pq,
-                                                     tol=tolerance,
-                                                     max_it=max_iter)
+        # Newton-Raphson-Decpupled
+        elif solver_type == SolverType.NRD:
+            # Solve NR with the linear AC solution
+            V, converged, normF, Scalc, it, el = NRD_LS(Ybus=Ybus,
+                                                        Sbus=Sbus,
+                                                        V0=V0,
+                                                        Ibus=Ibus,
+                                                        pv=pv,
+                                                        pq=pq,
+                                                        tol=tolerance,
+                                                        max_it=max_iter,
+                                                        acceleration_parameter=acceleration_parameter)
 
-    else:
-        # for any other method, raise exception
-        raise Exception(solver_type + ' Not supported in power flow mode')
+        # Newton-Raphson-Iwamoto
+        elif solver_type == SolverType.IWAMOTO:
+            V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=Ybus,
+                                                           Sbus=Sbus,
+                                                           V0=V0,
+                                                           Ibus=Ibus,
+                                                           pv=pv,
+                                                           pq=pq,
+                                                           tol=tolerance,
+                                                           max_it=max_iter,
+                                                           robust=True)
+
+        # Newton-Raphson in current equations
+        elif solver_type == SolverType.NRI:
+            V, converged, normF, Scalc, it, el = NR_I_LS(Ybus=Ybus,
+                                                         Sbus_sp=Sbus,
+                                                         V0=V0,
+                                                         Ibus_sp=Ibus,
+                                                         pv=pv,
+                                                         pq=pq,
+                                                         tol=tolerance,
+                                                         max_it=max_iter)
+
+        else:
+            # for any other method, raise exception
+            raise Exception(solver_type + ' Not supported in power flow mode')
+
+        # record the method used
+        report.add(method=solver_type,
+                   converged=converged,
+                   error=normF,
+                   elapsed=el,
+                   iterations=it)
+
+        # did it worked?
+        worked = np.all(results.converged())
+
+        # record the solver steps
+        solver_idx += 1
+
+    if not worked:
+        logger.append('Did not converge, even after retry!, Error:' + str(results.error()))
 
     return V, converged, normF, Scalc, it, el
 
 
-def outer_loop_power_flow(circuit: SnapshotCircuit, options: PowerFlowOptions, solver_type: SolverType,
+def outer_loop_power_flow(circuit: SnapshotCircuit, options: PowerFlowOptions,
                           voltage_solution, Sbus, Ibus, branch_rates, logger) -> "PowerFlowResults":
     """
     Run a power flow simulation for a single circuit using the selected outer loop
@@ -307,24 +353,26 @@ def outer_loop_power_flow(circuit: SnapshotCircuit, options: PowerFlowOptions, s
         else:
 
             # run the power flow method that shall be run
-            voltage_solution, converged, normF, Scalc, it, el = solve(solver_type=solver_type,
-                                                                      V0=voltage_solution,
-                                                                      Sbus=Sbus,
-                                                                      Ibus=Ibus,
-                                                                      Ybus=Ybus,
-                                                                      Yseries=circuit.Yseries,
-                                                                      Ysh_helm=circuit.Yshunt,
-                                                                      B1=circuit.B1,
-                                                                      B2=circuit.B2,
-                                                                      Bpqpv=circuit.Bpqpv,
-                                                                      Bref=circuit.Bref,
-                                                                      pq=pq,
-                                                                      pv=pv,
-                                                                      ref=vd,
-                                                                      pqpv=pqpv,
-                                                                      tolerance=options.tolerance,
-                                                                      max_iter=options.max_iter,
-                                                                      acceleration_parameter=options.acceleration_parameter)
+            voltage_solution, converged, normF, Scalc, it, el = solve(options=options,
+                                                                       report=report,  # is modified here
+                                                                       V0=voltage_solution,
+                                                                       Sbus=Sbus,
+                                                                       Ibus=Ibus,
+                                                                       Ybus=Ybus,
+                                                                       Yseries=circuit.Yseries,
+                                                                       Ysh_helm=circuit.Yshunt,
+                                                                       B1=circuit.B1,
+                                                                       B2=circuit.B2,
+                                                                       Bpqpv=circuit.Bpqpv,
+                                                                       Bref=circuit.Bref,
+                                                                       pq=pq,
+                                                                       pv=pv,
+                                                                       ref=vd,
+                                                                       pqpv=pqpv,
+                                                                       tolerance=options.tolerance,
+                                                                       max_iter=options.max_iter,
+                                                                       acceleration_parameter=options.acceleration_parameter,
+                                                                       logger=logger)
             if options.distributed_slack:
                 # Distribute the slack power
                 slack_power = Scalc[vd].real.sum()
@@ -334,34 +382,29 @@ def outer_loop_power_flow(circuit: SnapshotCircuit, options: PowerFlowOptions, s
                     delta = slack_power * circuit.bus_installed_power / installed_power
 
                     # repeat power flow with the redistributed power
-                    voltage_solution, converged, normF, Scalc, it2, el2 = solve(solver_type=solver_type,
-                                                                                V0=voltage_solution,
-                                                                                Sbus=Sbus + delta,
-                                                                                Ibus=Ibus,
-                                                                                Ybus=Ybus,
-                                                                                Yseries=circuit.Yseries,
-                                                                                Ysh_helm=circuit.Yshunt,
-                                                                                B1=circuit.B1,
-                                                                                B2=circuit.B2,
-                                                                                Bpqpv=circuit.Bpqpv,
-                                                                                Bref=circuit.Bref,
-                                                                                pq=pq,
-                                                                                pv=pv,
-                                                                                ref=vd,
-                                                                                pqpv=pqpv,
-                                                                                tolerance=options.tolerance,
-                                                                                max_iter=options.max_iter,
-                                                                                acceleration_parameter=options.acceleration_parameter)
+                    voltage_solution, converged, normF, Scalc, it2, el2 = solve(options=options,
+                                                                                 report=report, # is modified here
+                                                                                 V0=voltage_solution,
+                                                                                 Sbus=Sbus + delta,
+                                                                                 Ibus=Ibus,
+                                                                                 Ybus=Ybus,
+                                                                                 Yseries=circuit.Yseries,
+                                                                                 Ysh_helm=circuit.Yshunt,
+                                                                                 B1=circuit.B1,
+                                                                                 B2=circuit.B2,
+                                                                                 Bpqpv=circuit.Bpqpv,
+                                                                                 Bref=circuit.Bref,
+                                                                                 pq=pq,
+                                                                                 pv=pv,
+                                                                                 ref=vd,
+                                                                                 pqpv=pqpv,
+                                                                                 tolerance=options.tolerance,
+                                                                                 max_iter=options.max_iter,
+                                                                                 acceleration_parameter=options.acceleration_parameter,
+                                                                                 logger=logger)
                     # increase the metrics with the second run numbers
                     it += it2
                     el += el2
-
-            # record the method used
-            report.add(method=solver_type,
-                       converged=converged,
-                       error=normF,
-                       elapsed=el,
-                       iterations=it)
 
             if converged:
 
@@ -1122,48 +1165,17 @@ def single_island_pf(circuit: SnapshotCircuit, Vbus, Sbus, Ibus, branch_rates,
     :return: PowerFlowResults instance
     """
 
-    # Retry with another solver
+    # solve the power flow
+    results = outer_loop_power_flow(circuit=circuit,
+                                    options=options,
+                                    voltage_solution=Vbus,
+                                    Sbus=Sbus,
+                                    Ibus=Ibus,
+                                    branch_rates=branch_rates,
+                                    logger=logger)
 
-    if options.retry_with_other_methods:
-        solvers = [options.solver_type,
-                   SolverType.IWAMOTO,
-                   SolverType.LM,
-                   SolverType.HELM,
-                   SolverType.LACPF]
-    else:
-        # No retry selected
-        solvers = [options.solver_type]
-
-    # set worked to false to enter in the loop
-    worked = False
-    solver_idx = 0
-
-    results = PowerFlowResults(n=0, m=0, n_tr=0, n_hvdc=0,
-                               bus_names=(), branch_names=(), transformer_names=(),
-                               hvdc_names=(), bus_types=())
-
-    while solver_idx < len(solvers) and not worked:
-        # get the solver
-        solver = solvers[solver_idx]
-
-        # set the initial voltage
-        V0 = Vbus.copy()
-
-        # solve the power flow
-        results = outer_loop_power_flow(circuit=circuit,
-                                        options=options,
-                                        solver_type=solver,
-                                        voltage_solution=V0,
-                                        Sbus=Sbus,
-                                        Ibus=Ibus,
-                                        branch_rates=branch_rates,
-                                        logger=logger)
-
-        # did it worked?
-        worked = np.all(results.converged())
-
-        # record the solver steps
-        solver_idx += 1
+    # did it worked?
+    worked = np.all(results.converged())
 
     if not worked:
         logger.append('Did not converge, even after retry!, Error:' + str(results.error()))
