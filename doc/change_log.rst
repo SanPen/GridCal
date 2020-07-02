@@ -22,6 +22,9 @@ Version 4.0.0
 - Fixed transformer editor Sbase conversion
 - Added HVDC line model
 - Added VSC branch model
+- Improved filtering (bool values are recognised now)
+- Added tags to the sigma-plot
+- Changes the power flow inner loops order
 
 
 Version 3.7.1
