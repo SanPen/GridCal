@@ -35,6 +35,8 @@ class SigmaAnalysisResults:
 
         self.lambda_value = 1.0
 
+        self.bus_names = np.zeros(n, dtype=object)
+
         self.Sbus = np.zeros(n, dtype=complex)
 
         self.distances = np.zeros(n, dtype=float) + 0.25  # the default distance is 0.25
@@ -73,9 +75,10 @@ class SigmaAnalysisResults:
 
         self.sigma_im[b_idx] = results.sigma_im
 
-    def plot(self, ax, npoints=1000):
+    def plot(self, fig, ax, npoints=1000):
         """
         Plot the analysis
+        :param fig:
         :param ax:
         :param npoints:
         :return:
@@ -87,13 +90,50 @@ class SigmaAnalysisResults:
         sx = np.linspace(-0.25, np.max(self.sigma_re) + 0.1, npoints)
         sy1 = np.sqrt(0.25 + sx)
         sy2 = -np.sqrt(0.25 + sx)
+        names = self.bus_names
 
         ax.plot(sx, sy1, 'k', linewidth=2)
         ax.plot(sx, sy2, 'k', linewidth=2)
-        ax.plot(self.sigma_re, self.sigma_im, 'o')
+        # sc = ax.plot(self.sigma_re, self.sigma_im, 'o')
+
+        sc = ax.scatter(self.sigma_re, self.sigma_im, s=100)
+
+        annot = ax.annotate("", xy=(0, 0), xytext=(20, 20), textcoords="offset points",
+                            bbox=dict(boxstyle="round", fc="w"),
+                            arrowprops=dict(arrowstyle="->"))
+        annot.set_visible(False)
+
         ax.set_title('Sigma plot')
         ax.set_xlabel('$\sigma_{re}$')
         ax.set_ylabel('$\sigma_{im}$')
+
+        def update_annot(ind):
+
+            pos = sc.get_offsets()[ind["ind"][0]]
+            annot.xy = pos
+            # text = "{}, {}".format(" ".join(list(map(str, ind["ind"]))),
+            #                        " ".join([names[n] for n in ind["ind"]]))
+
+            text = "{}".format("\n".join([names[n] for n in ind["ind"]]))
+
+            annot.set_text(text)
+            # annot.get_bbox_patch().set_facecolor(cmap(norm(c[ind["ind"][0]])))
+            annot.get_bbox_patch().set_alpha(0.8)
+
+        def hover(event):
+            vis = annot.get_visible()
+            if event.inaxes == ax:
+                cont, ind = sc.contains(event)
+                if cont:
+                    update_annot(ind)
+                    annot.set_visible(True)
+                    fig.canvas.draw_idle()
+                else:
+                    if vis:
+                        annot.set_visible(False)
+                        fig.canvas.draw_idle()
+
+        fig.canvas.mpl_connect("motion_notify_event", hover)
 
     def mdl(self, result_type: ResultTypes, indices=None, names=None) -> "ResultsModel":
         """
@@ -167,6 +207,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
                                                  apply_temperature=options.apply_temperature_correction,
                                                  branch_tolerance_mode=options.branch_impedance_tolerance_mode,
                                                  opf_results=None)
+    results.bus_names = numerical_circuit.bus_names
 
     calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,
                                             ignore_single_node_islands=options.ignore_single_node_islands)
