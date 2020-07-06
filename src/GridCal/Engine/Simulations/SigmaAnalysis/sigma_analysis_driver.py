@@ -107,29 +107,22 @@ class SigmaAnalysisResults:
         ax.set_xlabel('$\sigma_{re}$')
         ax.set_ylabel('$\sigma_{im}$')
 
-        def update_annot(ind):
-
+        def update_annotation(ind):
             pos = sc.get_offsets()[ind["ind"][0]]
             annot.xy = pos
-            # text = "{}, {}".format(" ".join(list(map(str, ind["ind"]))),
-            #                        " ".join([names[n] for n in ind["ind"]]))
-
             text = "{}".format("\n".join([names[n] for n in ind["ind"]]))
-
             annot.set_text(text)
-            # annot.get_bbox_patch().set_facecolor(cmap(norm(c[ind["ind"][0]])))
             annot.get_bbox_patch().set_alpha(0.8)
 
         def hover(event):
-            vis = annot.get_visible()
             if event.inaxes == ax:
                 cont, ind = sc.contains(event)
                 if cont:
-                    update_annot(ind)
+                    update_annotation(ind)
                     annot.set_visible(True)
                     fig.canvas.draw_idle()
                 else:
-                    if vis:
+                    if annot.get_visible():
                         annot.set_visible(False)
                         fig.canvas.draw_idle()
 

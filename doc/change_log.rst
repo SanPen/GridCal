@@ -24,7 +24,7 @@ Version 4.0.0
 - Added VSC branch model
 - Improved filtering (bool values are recognised now)
 - Added tags to the sigma-plot
-- Changes the power flow inner loops order
+- Changes the power flow inner loops order. This changes the behaviour to the better when the controls are active.
 
 
 Version 3.7.1
