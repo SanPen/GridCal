@@ -177,7 +177,7 @@ class PSSeGrid:
         # Go through Transformers
         for psse_banch in self.transformers:
             # get the object
-            branches = psse_banch.get_object(psse_bus_dict, logger)
+            branches = psse_banch.get_object(psse_bus_dict, self.SBASE, logger)
 
             for branch in branches:
                 if branch.idtag not in already_there:
@@ -1862,7 +1862,7 @@ class PSSeTransformer:
         else:
             logger.append('Transformer not implemented for version ' + str(version))
 
-    def get_object(self, psse_bus_dict, logger: list):
+    def get_object(self, psse_bus_dict, sbase, logger: list):
         """
         Return Newton branch object
         Args:
@@ -1905,19 +1905,49 @@ class PSSeTransformer:
             idtag = str(self.I) + '_' + str(self.J) + '_' + str(self.CKT)
             idtag = idtag.strip().replace("'", "")
 
+            """            
+            PSS/e's randomness:            
+            """
+
             if self.CZ == 1:
+                """
+                When CZ is 1, they are the resistance and reactance, respectively, in pu on system
+                MVA base and winding voltage base.
+                """
                 r = self.R1_2
                 x = self.X1_2
                 g = self.MAG1
                 b = self.MAG2
 
+            elif self.CZ == 2:
+
+                """
+                When CZ is 2, they are the resistance and reactance, respectively, in pu on Winding
+                1 to 2 MVA base (SBASE1-2) and winding voltage base.
+                """
+                # see: https://en.wikipedia.org/wiki/Per-unit_system
+                base_change = sbase / self.SBASE1_2
+                r = self.R1_2 * base_change
+                x = self.X1_2 * base_change
+                g = self.MAG1
+                b = self.MAG2
+
+            elif self.CZ == 3:
+
+                """
+                When CZ is 3, R1-2 is the load loss in watts, and X1-2 is the impedance magnitude
+                in pu on Winding 1 to 2 MVA base (SBASE1-2) and winding voltage base. For
+                three-phase transformers or three-phase banks of single phase transformers, R1-2
+                should specify the three-phase load loss.
+                """
+                # see: https://en.wikipedia.org/wiki/Per-unit_system
+                base_change = sbase / self.SBASE1_2
+                r = self.R1_2 * 1e-6
+                x = self.X1_2 * base_change
+                g = self.MAG1
+                b = self.MAG2
             else:
-                r = self.R1_2
-                x = self.X1_2
-                g = self.MAG1
-                b = self.MAG2
-
-                logger.append('Transformer impedance is not in p.u.')
+                raise Exception('Unknown impedance combination CZ=' + str(self.CZ))
 
             if self.CW == 1:
                 tap_mod = self.WINDV1 * self.WINDV2
@@ -1977,14 +2007,66 @@ class PSSeTransformer:
             else:
                 V3 = self.NOMV3
 
+            """            
+            PSS/e's randomness:            
+            """
+
+            # see: https://en.wikipedia.org/wiki/Per-unit_system
+            base_change12 = sbase / self.SBASE1_2
+            base_change23 = sbase / self.SBASE2_3
+            base_change31 = sbase / self.SBASE3_1
+
+            if self.CZ == 1:
+                """
+                When CZ is 1, they are the resistance and reactance, respectively, in pu on system
+                MVA base and winding voltage base.
+                """
+                r12 = self.R1_2
+                x12 = self.X1_2
+                r23 = self.R2_3
+                x23 = self.X2_3
+                r31 = self.R3_1
+                x31 = self.X3_1
+
+            elif self.CZ == 2:
+
+                """
+                When CZ is 2, they are the resistance and reactance, respectively, in pu on Winding
+                1 to 2 MVA base (SBASE1-2) and winding voltage base.
+                """
+                r12 = self.R1_2 * base_change12
+                x12 = self.X1_2 * base_change12
+                r23 = self.R2_3 * base_change23
+                x23 = self.X2_3 * base_change23
+                r31 = self.R3_1 * base_change31
+                x31 = self.X3_1 * base_change31
+
+            elif self.CZ == 3:
+
+                """
+                When CZ is 3, R1-2 is the load loss in watts, and X1-2 is the impedance magnitude
+                in pu on Winding 1 to 2 MVA base (SBASE1-2) and winding voltage base. For
+                three-phase transformers or three-phase banks of single phase transformers, R1-2
+                should specify the three-phase load loss.
+                """
+
+                r12 = self.R1_2 * 1e-6
+                x12 = self.X1_2 * base_change12
+                r23 = self.R2_3 * 1e-6
+                x23 = self.X2_3 * base_change23
+                r31 = self.R3_1 * 1e-6
+                x31 = self.X3_1 * base_change31
+            else:
+                raise Exception('Unknown impedance combination CZ=' + str(self.CZ))
+
             elm1 = Transformer2W(bus_from=bus_1,
                                  bus_to=bus_2,
-                                 idtag=idtag,
+                                 idtag=idtag + '_12',
                                  name=self.NAME,
                                  HV=V1,
                                  LV=V2,
-                                 r=self.R1_2,
-                                 x=self.X1_2,
+                                 r=r12,
+                                 x=x12,
                                  rate=max(self.RATA1, self.RATA2, self.RATA3),
                                  shift_angle=self.ANG1,
                                  active=bool(self.STAT),
@@ -1993,12 +2075,12 @@ class PSSeTransformer:
 
             elm2 = Transformer2W(bus_from=bus_2,
                                  bus_to=bus_3,
-                                 idtag=idtag,
+                                 idtag=idtag + '_23',
                                  name=self.NAME,
                                  HV=V2,
                                  LV=V3,
-                                 r=self.R1_2,
-                                 x=self.X1_2,
+                                 r=r23,
+                                 x=x23,
                                  rate=max(self.RATB1, self.RATB2, self.RATB3),
                                  shift_angle=self.ANG2,
                                  active=bool(self.STAT),
@@ -2007,12 +2089,12 @@ class PSSeTransformer:
 
             elm3 = Transformer2W(bus_from=bus_3,
                                  bus_to=bus_1,
-                                 idtag=idtag,
+                                 idtag=idtag + '_31',
                                  name=self.NAME,
                                  HV=V1,
                                  LV=V3,
-                                 r=self.R3_1,
-                                 x=self.X3_1,
+                                 r=r31,
+                                 x=x31,
                                  rate=max(self.RATC1, self.RATC2, self.RATC3),
                                  shift_angle=self.ANG3,
                                  active=bool(self.STAT),
@@ -2314,7 +2396,7 @@ class PSSeParser:
 
 
 if __name__ == '__main__':
-    fname = '/home/santi/Descargas/PSS_file.raw'
+    fname = '/home/santi/Documentos/Private_Grids/2030DG_ES_FR_PT_fgen.raw'
 
     pss_parser = PSSeParser(fname)
 

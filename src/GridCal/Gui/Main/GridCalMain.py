@@ -1078,6 +1078,15 @@ class MainGUI(QMainWindow):
                 # assign the loaded circuit
                 self.circuit = self.open_file_thread_object.circuit
 
+                if len(self.circuit.buses) > 1500:
+                    quit_msg = "The grid is quite large, hence the schematic might be slow.\n" \
+                               "Do you want to disable the schematic?\n" \
+                               "(you can always enable the drawing later)"
+                    reply = QMessageBox.question(self, 'Disable schematic', quit_msg, QMessageBox.Yes, QMessageBox.No)
+
+                    if reply == QMessageBox.Yes:
+                        self.ui.draw_schematic_checkBox.setChecked(False)
+
                 # create schematic
                 self.create_schematic_from_api(explode_factor=1)
 

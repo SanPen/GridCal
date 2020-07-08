@@ -132,7 +132,7 @@ def compute_ptdf(Ybus, Yf, Yt, Cf, Ct, V, Ibus, Sbus, pq, pv):
 
     PTDF = sp.diags(dVmf) * dPf_dVm + sp.diags(dVmt) * dPt_dVm + sp.diags(dVaf) * dPf_dVa + sp.diags(dVat) * dPt_dVa
 
-    return PTDF
+    return PTDF, J
 
 
 def test_ptdf(grid):
@@ -145,21 +145,22 @@ def test_ptdf(grid):
     islands = split_into_islands(nc)
     inputs = islands[0]  # pick the first island
 
-    PTDF = compute_ptdf(Ybus=inputs.Ybus,
-                        Yf=inputs.Yf,
-                        Yt=inputs.Yt,
-                        Cf=inputs.C_branch_bus_f,
-                        Ct=inputs.C_branch_bus_t,
-                        V=inputs.Vbus,
-                        Ibus=inputs.Ibus,
-                        Sbus=inputs.Sbus,
-                        pq=inputs.pq,
-                        pv=inputs.pv)
+    PTDF, J = compute_ptdf(Ybus=inputs.Ybus,
+                           Yf=inputs.Yf,
+                           Yt=inputs.Yt,
+                           Cf=inputs.C_branch_bus_f,
+                           Ct=inputs.C_branch_bus_t,
+                           V=inputs.Vbus,
+                           Ibus=inputs.Ibus,
+                           Sbus=inputs.Sbus,
+                           pq=inputs.pq,
+                           pv=inputs.pv)
 
     # compose some made up situation
-    S2 = inputs.Sbus * 5
-    dS = inputs.Sbus - S2
-    dSbr = PTDF * dS
+    delta = 2.0
+    S2 = inputs.Sbus * delta  # new power
+    dS = S2 - inputs.Sbus  # power increment
+    dSbr = (PTDF * dS) * inputs.Sbase  # increment of branch power
 
     # run a power flow to get the initial branch power and compose the second branch power with the increment
     driver = PowerFlowDriver(grid=grid, options=PowerFlowOptions())
@@ -167,18 +168,29 @@ def test_ptdf(grid):
 
     Sbr0 = driver.results.Sbranch
     Sbr2 = Sbr0 + dSbr
+    # Sbr2 = PTDF * S2
 
-    PTDFsq = PTDF * PTDF.T
-    LODF = PTDFsq * inv(sp.diags(ones(PTDF.shape[0])) - PTDFsq).toarray()
+    # run a power flow to get the initial branch power and compose the second branch power with the increment
+    grid.modify_power(delta)
+    driver = PowerFlowDriver(grid=grid, options=PowerFlowOptions())
+    driver.run()
+
+    #
+    Sbr3 = driver.results.Sbranch
+
+    # PTDFsq = PTDF * PTDF.T
+    # LODF = PTDFsq * inv(sp.diags(ones(PTDF.shape[0])) - PTDFsq).toarray()
 
     print('PTDF:')
     print(PTDF.toarray())
     print()
     print('Sbr0')
     print(Sbr0)
+
     print('Sbr2')
     print(Sbr2)
-
+    print('Sbr3')
+    print(Sbr3)
 
 
 if __name__ == '__main__':

@@ -1522,3 +1522,20 @@ class MultiCircuit:
         data['Imbalance (%)'] = abs(load - generation) / max(load, generation) * 100.0
 
         return pd.DataFrame(data, index=['Power (MW)']).transpose()
+
+    def modify_power(self, delta):
+        """
+        Modify the loads and generators
+        :param delta: multiplier
+        :return: Nothing
+        """
+        for elm in self.get_loads():
+            elm.P *= delta
+            elm.Q *= delta
+
+        for elm in self.get_generators():
+            elm.P *= delta
+
+        for elm in self.get_static_generators():
+            elm.P *= delta
+            elm.Q *= delta
