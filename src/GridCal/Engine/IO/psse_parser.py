@@ -1908,51 +1908,38 @@ class PSSeTransformer:
             """            
             PSS/e's randomness:            
             """
+            zbs = bus_from.Vnom * bus_from.Vnom / sbase
 
-            if self.CZ == 1:
-                """
-                When CZ is 1, they are the resistance and reactance, respectively, in pu on system
-                MVA base and winding voltage base.
-                """
-                r = self.R1_2
-                x = self.X1_2
-                g = self.MAG1
-                b = self.MAG2
+            r = self.R1_2
+            x = self.X1_2
+            g = self.MAG1
+            b = self.MAG2
+            tap_mod = self.WINDV1 / self.WINDV2
+            use_winding_base_voltage = True
 
-            elif self.CZ == 2:
+            if self.CZ == 3:
+                r *= 1e-6 / self.SBASE1_2
+                x = np.sqrt(self.X1_2 * self.X1_2 - r * r)
 
-                """
-                When CZ is 2, they are the resistance and reactance, respectively, in pu on Winding
-                1 to 2 MVA base (SBASE1-2) and winding voltage base.
-                """
-                # see: https://en.wikipedia.org/wiki/Per-unit_system
-                base_change = sbase / self.SBASE1_2
-                r = self.R1_2 * base_change
-                x = self.X1_2 * base_change
-                g = self.MAG1
-                b = self.MAG2
+            if self.CZ == 2 or self.CZ == 3:
+                if self.SBASE1_2 > 0:
+                    zb = self.WINDV1 * self.WINDV1 / self.SBASE1_2
 
-            elif self.CZ == 3:
+                    if use_winding_base_voltage:
+                        r *= zb / zbs
+                        x *= zb / zbs
+                    else:
+                        r *= sbase / self.SBASE1_2
+                        x *= sbase / self.SBASE1_2
+                else:
+                    logger.append(idtag + ': SBASE1_2 is zero!!!')
 
-                """
-                When CZ is 3, R1-2 is the load loss in watts, and X1-2 is the impedance magnitude
-                in pu on Winding 1 to 2 MVA base (SBASE1-2) and winding voltage base. For
-                three-phase transformers or three-phase banks of single phase transformers, R1-2
-                should specify the three-phase load loss.
-                """
-                # see: https://en.wikipedia.org/wiki/Per-unit_system
-                base_change = sbase / self.SBASE1_2
-                r = self.R1_2 * 1e-6
-                x = self.X1_2 * base_change
-                g = self.MAG1
-                b = self.MAG2
-            else:
-                raise Exception('Unknown impedance combination CZ=' + str(self.CZ))
+            # adjust tap
+            if self.CW == 2 or self.CW == 3:
+                tap_mod *= bus_to.Vnom / bus_from.Vnom
 
-            if self.CW == 1:
-                tap_mod = self.WINDV1 * self.WINDV2
-            else:
-                tap_mod = 1.0
+            if self.CW == 3:
+                tap_mod *= self.NOMV1 / self.NOMV2
 
             if self.NOMV1 == 0:
                 V1 = bus_from.Vnom
@@ -2396,7 +2383,7 @@ class PSSeParser:
 
 
 if __name__ == '__main__':
-    fname = '/home/santi/Documentos/Private_Grids/2030DG_ES_FR_PT_fgen.raw'
+    fname = '/home/santi/Documentos/Private_Grids/Transformado.raw'
 
     pss_parser = PSSeParser(fname)
 

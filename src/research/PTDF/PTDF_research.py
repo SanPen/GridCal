@@ -171,7 +171,7 @@ def test_ptdf(grid):
     # Sbr2 = PTDF * S2
 
     # run a power flow to get the initial branch power and compose the second branch power with the increment
-    grid.modify_power(delta)
+    grid.scale_power(delta)
     driver = PowerFlowDriver(grid=grid, options=PowerFlowOptions())
     driver.run()
 

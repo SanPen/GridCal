@@ -1523,19 +1523,19 @@ class MultiCircuit:
 
         return pd.DataFrame(data, index=['Power (MW)']).transpose()
 
-    def modify_power(self, delta):
+    def scale_power(self, factor):
         """
         Modify the loads and generators
-        :param delta: multiplier
+        :param factor: multiplier
         :return: Nothing
         """
         for elm in self.get_loads():
-            elm.P *= delta
-            elm.Q *= delta
+            elm.P *= factor
+            elm.Q *= factor
 
         for elm in self.get_generators():
-            elm.P *= delta
+            elm.P *= factor
 
         for elm in self.get_static_generators():
-            elm.P *= delta
-            elm.Q *= delta
+            elm.P *= factor
+            elm.Q *= factor
