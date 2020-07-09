@@ -187,10 +187,10 @@ def parse_json_data_v2(data: dict, logger: Logger):
     if DeviceType.CircuitDevice.value in devices.keys():
 
         dta = devices[DeviceType.CircuitDevice.value]
-        circuit = MultiCircuit(name=dta['name'],
-                               Sbase=dta['sbase'],
-                               fbase=dta['fbase'],
-                               idtag=dta['id'])
+        circuit = MultiCircuit(name=str(dta['name']),
+                               Sbase=float(dta['sbase']),
+                               fbase=float(dta['fbase']),
+                               idtag=str(dta['id']))
 
         jcircuit = devices["Circuit"]
         circuit.Sbase = jcircuit["sbase"]
@@ -200,26 +200,26 @@ def parse_json_data_v2(data: dict, logger: Logger):
         if 'Bus' in devices.keys():
             buses = devices["Bus"]
             for jentry in buses:
-                bus = Bus(name=jentry['name'],
-                          idtag=jentry['id'],
-                          vnom=jentry['vnom'],
-                          vmin=jentry['vmin'],
-                          vmax=jentry['vmax'],
-                          r_fault=jentry['rf'],
-                          x_fault=jentry['xf'],
-                          xpos=jentry['x'],
-                          ypos=jentry['y'],
-                          height=jentry['h'],
-                          width=jentry['w'],
-                          active=jentry['active'],
-                          is_slack=jentry['is_slack'],
+                bus = Bus(name=str(jentry['name']),
+                          idtag=str(jentry['id']),
+                          vnom=float(jentry['vnom']),
+                          vmin=float(jentry['vmin']),
+                          vmax=float(jentry['vmax']),
+                          r_fault=float(jentry['rf']),
+                          x_fault=float(jentry['xf']),
+                          xpos=float(jentry['x']),
+                          ypos=float(jentry['y']),
+                          height=float(jentry['h']),
+                          width=float(jentry['w']),
+                          active=bool(jentry['active']),
+                          is_slack=bool(jentry['is_slack']),
                           # is_dc=jbus['id'],
                           area=jentry['area'],
                           zone=jentry['zone'],
                           substation=jentry['substation'],
                           # country=jbus['id'],
-                          longitude=jentry['lon'],
-                          latitude=jentry['lat'], )
+                          longitude=float(jentry['lon']),
+                          latitude=float(jentry['lat']) )
 
                 bus_dict[jentry['id']] = bus
                 circuit.add_bus(bus)
@@ -227,23 +227,23 @@ def parse_json_data_v2(data: dict, logger: Logger):
         if 'Generator' in devices.keys():
             generators = devices["Generator"]
             for jentry in generators:
-                gen = Generator(name=jentry['name'],
-                                idtag=jentry['id'],
-                                active_power=jentry['p'],
-                                power_factor=jentry['pf'],
-                                voltage_module=jentry['vset'],
-                                is_controlled=jentry['is_controlled'],
-                                Qmin=jentry['qmin'],
-                                Qmax=jentry['qmax'],
-                                Snom=jentry['snom'],
+                gen = Generator(name=str(jentry['name']),
+                                idtag=str(jentry['id']),
+                                active_power=float(jentry['p']),
+                                power_factor=float(jentry['pf']),
+                                voltage_module=float(jentry['vset']),
+                                is_controlled=bool(jentry['is_controlled']),
+                                Qmin=float(jentry['qmin']),
+                                Qmax=float(jentry['qmax']),
+                                Snom=float(jentry['snom']),
                                 # power_prof=jgen['name'],
                                 # power_factor_prof=jgen['name'],
                                 # vset_prof=jgen['name'],
                                 # Cost_prof=jgen['name'],
-                                active=jentry['active'],
-                                p_min=jentry['pmin'],
-                                p_max=jentry['pmax'],
-                                op_cost=jentry['cost'],
+                                active=bool(jentry['active']),
+                                p_min=float(jentry['pmin']),
+                                p_max=float(jentry['pmax']),
+                                op_cost=float(jentry['cost']),
                                 # Sbase=jgen['name'],
                                 # enabled_dispatch=jgen['name'],
                                 # mttf=jgen['name'],
@@ -255,23 +255,23 @@ def parse_json_data_v2(data: dict, logger: Logger):
         if 'Battery' in devices.keys():
             batteries = devices["Battery"]
             for jentry in batteries:
-                gen = Battery(name=jentry['name'],
-                              idtag=jentry['id'],
-                              active_power=jentry['p'],
-                              power_factor=jentry['pf'],
-                              voltage_module=jentry['vset'],
-                              is_controlled=jentry['is_controlled'],
-                              Qmin=jentry['qmin'],
-                              Qmax=jentry['qmax'],
-                              Snom=jentry['snom'],
+                gen = Battery(name=str(jentry['name']),
+                              idtag=str(jentry['id']),
+                              active_power=float(jentry['p']),
+                              power_factor=float(jentry['pf']),
+                              voltage_module=float(jentry['vset']),
+                              is_controlled=bool(jentry['is_controlled']),
+                              Qmin=float(jentry['qmin']),
+                              Qmax=float(jentry['qmax']),
+                              Snom=float(jentry['snom']),
                               # power_prof=jgen['name'],
                               # power_factor_prof=jgen['name'],
                               # vset_prof=jgen['name'],
                               # Cost_prof=jgen['name'],
-                              active=jentry['active'],
-                              p_min=jentry['pmin'],
-                              p_max=jentry['pmax'],
-                              op_cost=jentry['cost'],
+                              active=bool(jentry['active']),
+                              p_min=float(jentry['pmin']),
+                              p_max=float(jentry['pmax']),
+                              op_cost=float(jentry['cost']),
                               # Sbase=jgen['name'],
                               # enabled_dispatch=jgen['name'],
                               # mttf=jgen['name'],
@@ -283,14 +283,14 @@ def parse_json_data_v2(data: dict, logger: Logger):
         if 'Load' in devices.keys():
             loads = devices["Load"]
             for jentry in loads:
-                elm = Load(name=jentry['name'],
-                           idtag=jentry['name'],
+                elm = Load(name=str(jentry['name']),
+                           idtag=str(jentry['id']),
                            # G: float = 0.0,
                            # B: float = 0.0,
                            # Ir: float = 0.0,
                            # Ii: float = 0.0,
-                           P=jentry['p'],
-                           Q=jentry['q'],
+                           P=float(jentry['p']),
+                           Q=float(jentry['q']),
                            # cost=jentry['cost'],
                            # G_prof: Any = None,
                            # B_prof: Any = None,
@@ -298,20 +298,20 @@ def parse_json_data_v2(data: dict, logger: Logger):
                            # Ii_prof: Any = None,
                            # P_prof: Any = None,
                            # Q_prof: Any = None,
-                           active=jentry['active'])
+                           active=bool(jentry['active']))
                 elm.bus = bus_dict[jentry['bus']]
                 circuit.add_load(elm.bus, elm)
 
         if "Shunt" in devices.keys():
             shunts = devices["Shunt"]
             for jentry in shunts:
-                elm = Shunt(name=jentry['name'],
-                            idtag=jentry['name'],
-                            G=jentry['g'],
-                            B=jentry['b'],
+                elm = Shunt(name=str(jentry['name']),
+                            idtag=str(jentry['id']),
+                            G=float(jentry['g']),
+                            B=float(jentry['b']),
                             # G_prof: Any = None,
                             # B_prof: Any = None,
-                            active=jentry['active'])
+                            active=bool(jentry['active']))
                 elm.bus = bus_dict[jentry['bus']]
                 circuit.add_shunt(elm.bus, elm)
 
@@ -320,12 +320,12 @@ def parse_json_data_v2(data: dict, logger: Logger):
             for entry in lines:
                 elm = Line(bus_from=bus_dict[entry['bus_from']],
                            bus_to=bus_dict[entry['bus_to']],
-                           name=entry['name'],
-                           idtag=entry['id'],
-                           r=entry['r'],
-                           x=entry['x'],
-                           b=entry['b'],
-                           rate=entry['rate'],
+                           name=str(entry['name']),
+                           idtag=str(entry['id']),
+                           r=float(entry['r']),
+                           x=float(entry['x']),
+                           b=float(entry['b']),
+                           rate=float(entry['rate']),
                            active=entry['active'],
                            # tolerance: int = 0,
                            # cost: float = 0.0,
@@ -334,7 +334,7 @@ def parse_json_data_v2(data: dict, logger: Logger):
                            # r_fault: float = 0.0,
                            # x_fault: float = 0.0,
                            # fault_pos: float = 0.5,
-                           length=entry['length'],
+                           length=float(entry['length']),
                            # temp_base: int = 20,
                            # temp_oper: int = 20,
                            # alpha: float = 0.00330,
@@ -351,16 +351,16 @@ def parse_json_data_v2(data: dict, logger: Logger):
             for entry in transformers:
                 elm = Transformer2W(bus_from=bus_dict[entry['bus_from']],
                                     bus_to=bus_dict[entry['bus_to']],
-                                    name=entry['name'],
-                                    idtag=entry['id'],
-                                    r=entry['r'],
-                                    x=entry['x'],
-                                    g=entry['g'],
-                                    b=entry['b'],
-                                    rate=entry['rate'],
-                                    active=entry['active'],
-                                    tap=entry['tap_module'],
-                                    shift_angle=entry['tap_angle'],
+                                    name=str(entry['name']),
+                                    idtag=str(entry['id']),
+                                    r=float(entry['r']),
+                                    x=float(entry['x']),
+                                    g=float(entry['g']),
+                                    b=float(entry['b']),
+                                    rate=float(entry['rate']),
+                                    active=bool(entry['active']),
+                                    tap=float(entry['tap_module']),
+                                    shift_angle=float(entry['tap_angle']),
                                     # tolerance: int = 0,
                                     # cost: float = 0.0,
                                     # mttf: int = 0,

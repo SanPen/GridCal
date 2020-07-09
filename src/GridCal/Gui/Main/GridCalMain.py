@@ -3255,6 +3255,9 @@ class MainGUI(QMainWindow):
         """
         self.UNLOCK()
         print('\nGroups:')
+
+        print(self.find_node_groups_driver.distances)
+
         for group in self.find_node_groups_driver.groups_by_name:
             print(group)
 
