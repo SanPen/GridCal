@@ -98,7 +98,7 @@ def dSbus_dV(Ybus, V, I):
     return dS_dVm, dS_dVa
 
 
-def mu(Ybus, Ibus, J, incS, dV, dx, pvpq, pq, npv, npq):
+def mu(Ybus, Ibus, J, pvpq_lookup, incS, dV, dx, pvpq, pq, npv, npq):
     """
     Calculate the Iwamoto acceleration parameter as described in:
     "A Load Flow Calculation Method for Ill-Conditioned Power Systems" by Iwamoto, S. and Tamura, Y."
@@ -119,12 +119,10 @@ def mu(Ybus, Ibus, J, incS, dV, dx, pvpq, pq, npv, npq):
     # since the Jacobian (J2) has been calculated with dV instead of V
 
     # generate lookup pvpq -> index pvpq (used in createJ)
-    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
-    pvpq_lookup[pvpq] = np.arange(len(pvpq))
+    # pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+    # pvpq_lookup[pvpq] = np.arange(len(pvpq))
 
-    createJ = get_fastest_jacobian_function(pvpq, pq)
     J2 = _create_J_with_numba(Ybus, dV, pvpq, pq, pvpq_lookup, npv, npq)
-
     # J2 = Jacobian(Ybus, dV, Ibus, pq, pvpq)
 
     a = incS
@@ -588,7 +586,6 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
         # generate lookup pvpq -> index pvpq (used in createJ)
         pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
         pvpq_lookup[pvpq] = np.arange(len(pvpq))
-        createJ = get_fastest_jacobian_function(pvpq, pq)
 
         # evaluate F(x0)
         Scalc = V * np.conj(Ybus * V - Ibus)
@@ -629,15 +626,16 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
                 # if dV contains zeros will crash the second Jacobian derivative
                 if not (dV == 0.0).any():
                     # calculate the optimal multiplier for enhanced convergence
-                    mu_ = mu(Ybus, Ibus, J, f, dV, dx, pvpq, pq, npv, npq)
+                    mu_ = mu(Ybus, Ibus, J, pvpq_lookup, f, dV, dx, pvpq, pq, npv, npq)
                 else:
                     mu_ = 1.0
             else:
                 mu_ = 1.0
 
+            print('mu:', mu_)
+
             Vm -= mu_ * dVm
             Va -= mu_ * dVa
-
             V = Vm * np.exp(1j * Va)
 
             Vm = np.abs(V)  # update Vm and Va again in case
@@ -650,9 +648,7 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
 
             # check for convergence
             norm_f = np.linalg.norm(f, np.Inf)
-
-            if norm_f < tol:
-                converged = 1
+            converged = norm_f < tol
     else:
         norm_f = 0
         converged = True
@@ -717,7 +713,6 @@ def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
         # generate lookup pvpq -> index pvpq (used in createJ)
         pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
         pvpq_lookup[pvpq] = np.arange(len(pvpq))
-        createJ = get_fastest_jacobian_function(pvpq, pq)
 
         while not converged and iter_ < max_it:
 

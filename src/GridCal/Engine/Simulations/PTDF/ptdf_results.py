@@ -42,7 +42,7 @@ class PTDFVariation:
 
 class PTDFResults:
 
-    def __init__(self, n_variations=0, n_br=0, n_bus=0, br_names=(), bus_names=()):
+    def __init__(self, n_variations=0, n_br=0, n_bus=0, br_names=(), bus_names=(), bus_types=()):
         """
         Number of variations
         :param n_variations:
@@ -63,6 +63,8 @@ class PTDFResults:
         self.br_names = br_names
 
         self.bus_names = bus_names
+
+        self.bus_types = bus_types
 
         # default power flow results
         self.default_pf_results = None

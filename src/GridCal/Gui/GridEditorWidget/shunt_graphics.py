@@ -16,7 +16,6 @@ import numpy as np
 from PySide2 import QtWidgets
 from PySide2.QtCore import QPointF, QLineF
 from PySide2.QtGui import *
-from PySide2 import Qt
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, QLine
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.GridEditorWidget.messages import *

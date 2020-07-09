@@ -348,7 +348,7 @@ The transformers used for the 4 loads (houses) a 10 to 0.4 kV transformer will b
 
 Note: In the new GridCal version, a transformer can be defined by just right clicking on the desired transformer and selecting the type from the drop down menu.
 
-Step 7: Defining Load Transformer
+Step 8: Defining Load Transformer
 ---------------------------------
 
 Now that 'House trafo' has been created, other transformers can be set to the same type.
@@ -364,5 +364,79 @@ Now that 'House trafo' has been created, other transformers can be set to the sa
 Note: this can be done with all elements either to preloaded models or models you create.
 
 
-Step 8: Defining Load Transformer
----------------------------------
+Step 9: Defining Wires and Overhead Lines
+-----------------------------------------
+
+1. Just like in Step 7 access the 'Types catalouge' and select 'Wires'.
+
+2. All of the wire types will show up and select the 17th option 'AWG SLD'. The parameters are:
+
++-------------------+----------+
+|  R [Oh/Km]        |  1.485077|
++-------------------+----------+
+|   X [Ohm/Km]      |        0 |
++-------------------+----------+
+|    GMR [m]        | 0.001603 |
++------------------+-----------+
+|  Max Current [kA] | 0.11     |
++-------------------+----------+
+
+Note: A new wire or custom wire can be added using the '+' button on the top right.
+
+3. Now that you have located the wire you will use, in the same tab of 'Data structures' select 'Overhead Lines'.
+
+4. Click on the '+' sign at the top right to create a new element. A new element '0:Tower' should come up.
+
+5. Select the element '0: Tower' and click on the pencil on the top right corner to edit. A new window should pop up.
+
+6. Rename the overhead line to: 'Distribution Line'.
+
+7. Select the wire 'AWG SLD', highlight it and click on the '+' sign on the 'Wire composition' section below:
+
+.. figure:: ../figures/tutorials/dg/awgsld.png
+    :scale: 70 %
+
+8. Add the 'AWG SLD' wire three times to enter the wire arrangement. The formulas come from ATP-EMTP.
+
+9. Give each cable a different phase: 1, 2 and 3. Enter the following parameters for Phase 2 and Phase 3.
+
++-----------+------+-------+-------+
+| Wire      | X[m] | Y [m] | Phase |
++-----------+------+-------+-------+
+|  AWG SLD  |  0   |  7.0  |     1 |
++-----------+------+-------+-------+
+|  AWG SLD  |0.4   |  7.3  |     2 |
++-----------+------+-------+-------+
+|  AWG SLD  |0.8   |  7.0  |     3 |
++-----------+------+-------+-------+
+
+.. figure:: ../figures/tutorials/dg/threeawgsld.png
+    :scale: 70 %
+
+10. Click on the 'Compute matrices' button the little calculator on the bottom right and you will be able to see:
+-Tower Wire Position (right).
+- Z Series [Ohm/Km] for ABCN (under the 'Z series' tab at the top).
+- Z Series [Ohm/Km] for ABC (under the 'Z series' tab at the top).
+- Z Series [Ohm/Km] for the sequence components (under the 'Z series' tab at the top).
+- Y shunt [uS/Km] for ABCN (under the 'Y shunt' tab at the top).
+- Y shunt [uS/Km] for ABC (under the 'Y shunt' tab at the top).
+- Y shunt [uS/Km] for the sequence components (under the 'Y shunt' tab at the top).
+
+12. Close the window, and your 'Elements Data' tab should look lie:
+
+13. To apply this model to the lines in the model: In the 'Schematic' tab change the name of the other load transformers to their respective load (i.e. House 3 transformer rename to 'TR house 3').
+
+14. Double click on the desired line. Click 'Load Values' to set the parameters.
+
+15. Repeat for all desired lines. In this case Line 1 to Line 8. The 'Objecs -> Line' Data tab should look like:
+
+.. figure:: ../figures/tutorials/dg/threeawgsld.png
+    :scale: 70 %
+
+Note: this can be done with all elements either to preloaded models or models you create.
+
+Step 10: Importing Load Profiles
+--------------------------------
+
+1.
+
