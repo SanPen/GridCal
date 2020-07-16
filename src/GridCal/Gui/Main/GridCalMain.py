@@ -1550,17 +1550,22 @@ class MainGUI(QMainWindow):
         elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
         self.view_template_controls(False)
+        dictionary_of_lists = dict()
 
         if elm_type == DeviceType.BusDevice.value:
             elm = Bus()
             elements = self.circuit.buses
+            dictionary_of_lists = {DeviceType.AreaDevice.value: self.circuit.areas,
+                                   DeviceType.ZoneDevice.value: self.circuit.zones,
+                                   DeviceType.SubstationDevice.value: self.circuit.substations,
+                                   DeviceType.CountryDevice.value: self.circuit.countries}
 
         elif elm_type == DeviceType.BranchDevice.value:
 
             self.fill_catalogue_tree_view()
 
             elm = Branch(None, None)
-            elements = self.circuit.branches
+            elements = list()
 
             self.view_template_controls(True)
 
@@ -1604,6 +1609,22 @@ class MainGUI(QMainWindow):
             elm = DcLine(None, None)
             elements = self.circuit.dc_lines
 
+        elif elm_type == DeviceType.SubstationDevice.value:
+            elm = Substation()
+            elements = self.circuit.substations
+
+        elif elm_type == DeviceType.ZoneDevice.value:
+            elm = Zone()
+            elements = self.circuit.zones
+
+        elif elm_type == DeviceType.AreaDevice.value:
+            elm = Area()
+            elements = self.circuit.areas
+
+        elif elm_type == DeviceType.CountryDevice.value:
+            elm = Country()
+            elements = self.circuit.countries
+
         else:
             raise Exception('elm_type not understood: ' + elm_type)
 
@@ -1615,7 +1636,8 @@ class MainGUI(QMainWindow):
 
             mdl = ObjectsModel(elements, elm.editable_headers,
                                parent=self.ui.dataStructureTableView, editable=True,
-                               non_editable_attributes=elm.non_editable_attributes)
+                               non_editable_attributes=elm.non_editable_attributes,
+                               dictionary_of_lists=dictionary_of_lists)
         self.type_objects_list = elements
         self.ui.dataStructureTableView.setModel(mdl)
         self.ui.property_comboBox.clear()
@@ -3256,7 +3278,7 @@ class MainGUI(QMainWindow):
         self.UNLOCK()
         print('\nGroups:')
 
-        print(self.find_node_groups_driver.distances)
+        # print(self.find_node_groups_driver.distances)
 
         for group in self.find_node_groups_driver.groups_by_name:
             print(group)

@@ -487,11 +487,15 @@ def parse_matpower_file(filename, export=False) -> MultiCircuit:
 
     # further process the loaded text
     for chunk in chunks:
-        if chunk.startswith("baseMVA"):
+
+        vals = chunk.split('=')
+        key = vals[0].strip()
+
+        if key == "baseMVA":
             v = find_between(chunk, '=', ';')
             circuit.Sbase = float(v)
 
-        elif chunk.startswith("bus"):
+        elif key == "bus":
             if chunk.startswith("bus_name"):
                 v = txt2mat(find_between(chunk, '{', '}'), line_splitter=';', to_float=False)
                 v = np.ndarray.flatten(v)
@@ -499,13 +503,13 @@ def parse_matpower_file(filename, export=False) -> MultiCircuit:
             else:
                 data['bus'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
 
-        elif chunk.startswith("gencost"):
+        elif key == "gencost":
             data['gen_cost'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
 
-        elif chunk.startswith("gen"):
+        elif key == "gen":
             data['gen'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
 
-        elif chunk.startswith("branch"):
+        elif key == "branch":
             data['branch'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
 
     circuit = interpret_data_v1(circuit, data)

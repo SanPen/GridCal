@@ -20,7 +20,7 @@ from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtGui import *
 from warnings import warn
 from enum import EnumMeta
-from GridCal.Engine.Devices import DeviceType, BranchTemplate, BranchType, Bus
+from GridCal.Engine.Devices import DeviceType, BranchTemplate, BranchType, Bus, Area, Substation, Zone, Country
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from collections import defaultdict
 from matplotlib import pyplot as plt
@@ -483,7 +483,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
     Class to populate a Qt table view with the properties of objects
     """
     def __init__(self, objects, editable_headers, parent=None, editable=False,
-                 non_editable_attributes=list(), transposed=False, check_unique=list()):
+                 non_editable_attributes=list(), transposed=False, check_unique=list(),
+                 dictionary_of_lists={}):
         """
 
         :param objects: list of objects associated to the editor
@@ -492,6 +493,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :param editable: Is the table editable?
         :param non_editable_attributes: List of attributes that are not enabled for editing
         :param transposed: Display the table transposed?
+        :param dictionary_of_lists: dictionary of lists for the Delegates
         """
         QtCore.QAbstractTableModel.__init__(self, parent)
 
@@ -520,6 +522,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         self.formatter = lambda x: "%.2f" % x
 
         self.transposed = transposed
+
+        self.dictionary_of_lists = dictionary_of_lists
 
         self.set_delegates()
 
@@ -564,6 +568,15 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             elif isinstance(tpe, EnumMeta):
                 objects = list(tpe)
                 values = [x.value for x in objects]
+                delegate = ComboDelegate(self.parent, objects, values)
+                F(i, delegate)
+
+            elif tpe in [DeviceType.SubstationDevice,
+                         DeviceType.AreaDevice,
+                         DeviceType.ZoneDevice,
+                         DeviceType.CountryDevice]:
+                objects = self.dictionary_of_lists[tpe.value]
+                values = [x.name for x in objects]
                 delegate = ComboDelegate(self.parent, objects, values)
                 F(i, delegate)
 

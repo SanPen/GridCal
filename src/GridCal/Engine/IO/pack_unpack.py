@@ -25,7 +25,15 @@ def get_objects_dictionary():
     creates a dictionary with the types and the circuit objects
     :return: Dictionary instance
     """
-    object_types = {'bus': Bus(),
+    object_types = {'area': Area(),
+
+                    'zone': Zone(),
+
+                    'substation': Substation(),
+
+                    'country': Country(),
+
+                    'bus': Bus(),
 
                     'load': Load(),
 
@@ -227,6 +235,7 @@ def data_frames_to_circuit(data: Dict):
     # dictionary of dictionaries by element type
     # elements_dict[DataType][element_name] = actual object
     elements_dict = dict()
+    elements_dict_by_name = dict()
 
     # ------------------------------------------------------------------------------------------------------------------
     # for each element type...
@@ -285,6 +294,48 @@ def data_frames_to_circuit(data: Dict):
                                 val = df[prop].values[i]
                                 setattr(devices[i], prop, val)
 
+                            elif dtype in [DeviceType.SubstationDevice,
+                                           DeviceType.AreaDevice,
+                                           DeviceType.ZoneDevice,
+                                           DeviceType.CountryDevice]:
+
+                                """
+                                This piece is to assign the objects matching the Area, Substation, Zone and Country
+                                The cases may be:
+                                a) there is a matching id tag -> ok, assign it
+                                b) the value is a string -> create the relevant object, 
+                                                            make sure it is not repeated by name
+                                                            inset the object in its matching object dictionary
+                                """
+
+                                # search for the Substation, Area, Zone or Country matching object and assign the object
+                                val = str(df[prop].values[i])  # this is the stored string (either idtag or name...)
+
+                                if dtype not in elements_dict.keys():
+                                    elements_dict[dtype] = dict()
+
+                                if dtype not in elements_dict_by_name.keys():
+                                    elements_dict_by_name[dtype] = dict()
+
+                                if val in elements_dict[dtype].keys():
+                                    # the grouping exists as object, use it
+                                    grouping = elements_dict[dtype][val]
+                                else:
+                                    # create the grouping
+
+                                    if val in elements_dict_by_name[dtype].keys():
+                                        grouping = elements_dict_by_name[dtype][val]
+
+                                    else:
+                                        grouping = type(object_types[dtype.value.lower()])(name=val)
+                                        elements_dict[dtype][grouping.idtag] = grouping
+
+                                        # store also by name
+                                        elements_dict_by_name[dtype][grouping.name] = grouping
+
+                                # set the object
+                                setattr(devices[i], prop, grouping)
+
                             elif dtype == DeviceType.BusDevice:
                                 # check if the bus is in the dictionary...
                                 if df[prop].values[i] in elements_dict[DeviceType.BusDevice].keys():
@@ -299,6 +350,7 @@ def data_frames_to_circuit(data: Dict):
                                                                     DeviceType.StaticGeneratorDevice,
                                                                     DeviceType.ShuntDevice,
                                                                     DeviceType.ExternalGridDevice]:
+
                                         parent_bus.add_device(devices[i])
 
                                 else:
@@ -360,6 +412,18 @@ def data_frames_to_circuit(data: Dict):
             if template_elm.device_type == DeviceType.BusDevice:
                 circuit.buses = devices
 
+            # elif template_elm.device_type == DeviceType.SubstationDevice:
+            #     circuit.substations = devices
+            #
+            # elif template_elm.device_type == DeviceType.AreaDevice:
+            #     circuit.areas = devices
+            #
+            # elif template_elm.device_type == DeviceType.ZoneDevice:
+            #     circuit.zones = devices
+            #
+            # elif template_elm.device_type == DeviceType.CountryDevice:
+            #     circuit.countries = devices
+
             elif template_elm.device_type == DeviceType.BranchDevice:
                 for d in devices:
                     circuit.add_branch(d)  # each branch needs to be converted accordingly
@@ -419,6 +483,19 @@ def data_frames_to_circuit(data: Dict):
 
     # Other actions ----------------------------------------------------------------------------------------------------
     circuit.logger += circuit.apply_all_branch_types()
+
+    # Add the groups ---------------------------------------------------------------------------------------------------
+    if DeviceType.SubstationDevice in elements_dict.keys():
+        circuit.substations = list(elements_dict[DeviceType.SubstationDevice].values())
+
+    if DeviceType.AreaDevice in elements_dict.keys():
+        circuit.areas = list(elements_dict[DeviceType.AreaDevice].values())
+
+    if DeviceType.ZoneDevice in elements_dict.keys():
+        circuit.zones = list(elements_dict[DeviceType.ZoneDevice].values())
+
+    if DeviceType.CountryDevice in elements_dict.keys():
+        circuit.countries = list(elements_dict[DeviceType.CountryDevice].values())
 
     return circuit
 

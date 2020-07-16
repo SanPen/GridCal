@@ -146,6 +146,18 @@ class MultiCircuit:
         # List of transformer types
         self.transformer_types = list()  # type: List[TransformerType]
 
+        # list of substations
+        self.substations = list()  # type: List[Substation]
+
+        # list of areas
+        self.areas = list()  # type: List[Area]
+
+        # list of zones
+        self.zones = list()  # type: List[Zone]
+
+        # list of countries
+        self.countries = list()  # type: List[Country]
+
         # logger of events
         self.logger = Logger()
 
@@ -185,7 +197,11 @@ class MultiCircuit:
                                       Transformer2W(None, None),
                                       HvdcLine(None, None),
                                       VSC(Bus(),
-                                      Bus(is_dc=True))]
+                                      Bus(is_dc=True)),
+                                      Substation(),
+                                      Zone(),
+                                      Area(),
+                                      Country()]
 
         # dictionary of profile magnitudes per object
         self.profile_magnitudes = dict()
@@ -491,35 +507,47 @@ class MultiCircuit:
         elif element_type == DeviceType.DCLineDevice:
             return self.dc_lines
 
+        elif element_type == DeviceType.SubstationDevice:
+            return self.substations
+
+        elif element_type == DeviceType.AreaDevice:
+            return self.areas
+
+        elif element_type == DeviceType.ZoneDevice:
+            return self.zones
+
+        elif element_type == DeviceType.CountryDevice:
+            return self.countries
+
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
-    def get_Jacobian(self, sparse=False):
-        """
-        Returns the grid Jacobian matrix.
-
-        Arguments:
-
-            **sparse** (bool, False): Return the matrix in CSR sparse format (True) or
-            as full matrix (False)
-        """
-
-        numerical_circuit = self.compile_snapshot()
-        islands = numerical_circuit.compute()
-        i = 0
-        # Initial magnitudes
-        pvpq = np.r_[islands[i].pv, islands[i].pq]
-
-        J = Jacobian(Ybus=islands[i].Ybus,
-                     V=islands[i].Vbus,
-                     Ibus=islands[i].Ibus,
-                     pq=islands[i].pq,
-                     pvpq=pvpq)
-
-        if sparse:
-            return J
-        else:
-            return J.todense()
+    # def get_Jacobian(self, sparse=False):
+    #     """
+    #     Returns the grid Jacobian matrix.
+    #
+    #     Arguments:
+    #
+    #         **sparse** (bool, False): Return the matrix in CSR sparse format (True) or
+    #         as full matrix (False)
+    #     """
+    #
+    #     numerical_circuit = self.compile_snapshot()
+    #     islands = numerical_circuit.compute()
+    #     i = 0
+    #     # Initial magnitudes
+    #     pvpq = np.r_[islands[i].pv, islands[i].pq]
+    #
+    #     J = Jacobian(Ybus=islands[i].Ybus,
+    #                  V=islands[i].Vbus,
+    #                  Ibus=islands[i].Ibus,
+    #                  pq=islands[i].pq,
+    #                  pvpq=pvpq)
+    #
+    #     if sparse:
+    #         return J
+    #     else:
+    #         return J.todense()
 
     def apply_lp_profiles(self):
         """
@@ -1194,6 +1222,62 @@ class MultiCircuit:
                 branch.apply_template(branch.template, self.Sbase, logger=logger)
 
         return logger
+
+    def add_substation(self, obj: Substation):
+        """
+        Add substation
+        :param obj: Substation object
+        """
+        self.substations.append(obj)
+
+    def delete_substation(self, i):
+        """
+        Delete substation
+        :param i: index
+        """
+        self.substations.pop(i)
+
+    def add_area(self, obj: Area):
+        """
+        Add area
+        :param obj: Area object
+        """
+        self.areas.append(obj)
+
+    def delete_area(self, i):
+        """
+        Delete area
+        :param i: index
+        """
+        self.areas.pop(i)
+
+    def add_zone(self, obj: Zone):
+        """
+        Add zone
+        :param obj: Zone object
+        """
+        self.zones.append(obj)
+
+    def delete_zone(self, i):
+        """
+        Delete zone
+        :param i: index
+        """
+        self.zones.pop(i)
+
+    def add_country(self, obj: Country):
+        """
+        Add country
+        :param obj: Country object
+        """
+        self.countries.append(obj)
+
+    def delete_country(self, i):
+        """
+        Delete country
+        :param i: index
+        """
+        self.countries.pop(i)
 
     def plot_graph(self, ax=None):
         """

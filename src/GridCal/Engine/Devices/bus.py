@@ -19,6 +19,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCal.Engine.Devices.groupings import Area, Substation, Zone, Country
 
 
 class Bus(EditableDevice):
@@ -103,17 +104,17 @@ class Bus(EditableDevice):
                                                   'r_fault': GCProp('p.u.', float,
                                                                     'Resistance of the fault.\n'
                                                                     'This is used for short circuit studies.'),
-                                                  'x_fault': GCProp('p.u.', float,
-                                                                    'Reactance of the fault.\n'
+                                                  'x_fault': GCProp('p.u.', float, 'Reactance of the fault.\n'
                                                                     'This is used for short circuit studies.'),
                                                   'x': GCProp('px', float, 'x position in pixels.'),
                                                   'y': GCProp('px', float, 'y position in pixels.'),
                                                   'h': GCProp('px', float, 'height of the bus in pixels.'),
                                                   'w': GCProp('px', float, 'Width of the bus in pixels.'),
-                                                  'country': GCProp('', str, 'Country of the bus'),
-                                                  'area': GCProp('', str, 'Area of the bus'),
-                                                  'zone': GCProp('', str, 'Zone of the bus'),
-                                                  'substation': GCProp('', str, 'Substation of the bus.'),
+                                                  'country': GCProp('', DeviceType.CountryDevice, 'Country of the bus'),
+                                                  'area': GCProp('', DeviceType.AreaDevice, 'Area of the bus'),
+                                                  'zone': GCProp('', DeviceType.ZoneDevice, 'Zone of the bus'),
+                                                  'substation': GCProp('', DeviceType.SubstationDevice,
+                                                                       'Substation of the bus.'),
                                                   'longitude': GCProp('deg', float, 'longitude of the bus.'),
                                                   'latitude': GCProp('deg', float, 'latitude of the bus.')},
                                 non_editable_attributes=['idtag'],

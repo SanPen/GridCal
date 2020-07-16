@@ -637,6 +637,25 @@ class Transformer2W(EditableDevice):
         else:
             self.tap_module = self.tap_changer.get_tap()
 
+    def get_from_to_nominal_voltages(self):
+
+        bus_f_v = self.bus_from.Vnom
+        bus_t_v = self.bus_to.Vnom
+
+        dhf = abs(self.HV - bus_f_v)
+        dht = abs(self.HV - bus_t_v)
+
+        if dhf < dht:
+            # the HV side is on the from side
+            tpe_f_v = self.HV
+            tpe_t_v = self.LV
+        else:
+            # the HV side is on the to side
+            tpe_t_v = self.HV
+            tpe_f_v = self.LV
+
+        return tpe_f_v, tpe_t_v
+
     def get_virtual_taps(self):
         """
         Get the branch virtual taps
@@ -655,17 +674,8 @@ class Transformer2W(EditableDevice):
         bus_f_v = self.bus_from.Vnom
         bus_t_v = self.bus_to.Vnom
 
-        dhf = abs(self.HV - bus_f_v)
-        dht = abs(self.HV - bus_t_v)
-
-        if dhf < dht:
-            # the HV side is on the from side
-            tpe_f_v = self.HV
-            tpe_t_v = self.LV
-        else:
-            # the HV side is on the to side
-            tpe_t_v = self.HV
-            tpe_f_v = self.LV
+        # obtain the nominal voltages at the from and to sides
+        tpe_f_v, tpe_t_v = self.get_from_to_nominal_voltages()
 
         tap_f = tpe_f_v / bus_f_v
         tap_t = tpe_t_v / bus_t_v
@@ -747,8 +757,11 @@ class Transformer2W(EditableDevice):
         Get json dictionary
         :return:
         """
-
+        # get the virtual taps
         tap_f, tap_t = self.get_virtual_taps()
+
+        # get the nominal voltages
+        v_from, v_to = self.get_from_to_nominal_voltages()
 
         d = {'id': self.idtag,
              'type': 'transformer',
@@ -756,6 +769,8 @@ class Transformer2W(EditableDevice):
              'name': self.name,
              'bus_from': self.bus_from.idtag,
              'bus_to': self.bus_to.idtag,
+             'v_from': v_from,
+             'v_to': v_to,
              'active': self.active,
              'rate': self.rate,
              'r': self.R,
@@ -775,8 +790,7 @@ class Transformer2W(EditableDevice):
              'vset': self.vset,
              'base_temperature': self.temp_base,
              'operational_temperature': self.temp_oper,
-             'alpha': self.alpha,
-
+             'alpha': self.alpha
              }
 
         return d

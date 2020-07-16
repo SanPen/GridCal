@@ -68,6 +68,12 @@ class DeviceType(Enum):
     TowerDevice = 'Tower'
     TransformerTypeDevice = 'Transformer type'
 
+    GenericArea = 'Generic Area'
+    SubstationDevice = 'Substation'
+    AreaDevice = 'Area'
+    ZoneDevice = 'Zone'
+    CountryDevice = 'Country'
+
     def __str__(self):
         return self.value
 

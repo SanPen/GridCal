@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-
+import uuid
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
@@ -36,6 +36,8 @@ SQRT3 = np.sqrt(3.0)
 class BranchTemplate:
 
     def __init__(self, name='BranchTemplate', tpe=BranchType.Branch):
+
+        self.idtag = uuid.uuid4().hex
 
         self.name = name
 

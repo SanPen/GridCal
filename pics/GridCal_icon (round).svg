@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   sodipodi:docname="GridCal_icon (round).svg"
+   inkscape:export-filename="/home/santi/Documentos/GitHub/GridCal/pics/GridCal_round_icon.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.51720995"
+     inkscape:cx="-78.889365"
+     inkscape:cy="6.4888569"
+     inkscape:document-units="px"
+     inkscape:current-layer="g863"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1848"
+     inkscape:window-height="1016"
+     inkscape:window-x="72"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Capa 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-540.36216)">
+    <g
+       id="g863"
+       transform="matrix(4.0912642,0,0,4.0912642,-5.6597364,-3247.4697)"
+       style="stroke:#005544;fill:#37c8ab">
+      <g
+         id="g821"
+         transform="matrix(0.97656248,0,0,0.97656248,1.4989618,23.165797)">
+        <circle
+           r="60.682423"
+           cy="988.40643"
+           cx="63.955719"
+           id="path817"
+           style="fill:#37c8ab;fill-opacity:1;stroke:#165044;stroke-width:3.77985001;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+        <path
+           style="fill:#37c8ab;fill-rule:evenodd;stroke:#005544;stroke-width:2.81724906;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="m 8.1070615,1010.905 c 0,0 4.0679715,-56.9728 8.4595535,-57.04883 4.545715,-0.0788 3.656215,61.54493 8.482878,61.55543 3.576137,0.01 4.011921,-48.76419 7.87139,-48.89263 2.717924,-0.0903 4.417143,39.62923 8.05309,39.55753 2.555464,-0.05 5.018995,-31.46517 8.858737,-31.51402 2.756091,-0.0351 4.769761,28.51302 8.265455,28.42742 2.935213,-0.073 6.035437,-23.45631 8.970384,-23.35294 2.550996,0.0898 3.740381,18.78954 6.884046,18.81414 2.405527,0.019 4.799446,-14.96416 7.815564,-15.05002 2.177538,-0.0622 3.005013,10.44913 5.303415,10.3914 1.610356,-0.0399 3.005654,-6.66498 5.415075,-6.56932 1.69781,0.0676 2.795388,2.59581 4.466037,2.62779 2.178652,0.0422 4.298214,-0.86858 6.475734,-0.95561 2.38487,-0.095 4.76029,0.3981 7.14564,0.47775 1.93435,0.0643 5.80585,0 5.80585,0 l 6.30829,-0.0602"
+           id="path4166-1"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="cssssssssssssaacc" />
+      </g>
+    </g>
+    <rect
+       style="opacity:1;fill:#00aa88;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+       id="rect865"
+       width="77.338036"
+       height="75.404579"
+       x="-322.88632"
+       y="468.46002" />
+    <rect
+       style="opacity:1;fill:#165044;fill-opacity:1;stroke:none;stroke-width:2.61818194;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+       id="rect867"
+       width="70.869766"
+       height="69.604233"
+       x="-278.41696"
+       y="505.19559" />
+  </g>
+</svg>

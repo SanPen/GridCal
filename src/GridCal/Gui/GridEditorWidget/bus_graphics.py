@@ -28,6 +28,7 @@ from GridCal.Gui.GridEditorWidget.static_generator_graphics import StaticGenerat
 from GridCal.Gui.GridEditorWidget.battery_graphics import BatteryGraphicItem
 from GridCal.Gui.GridEditorWidget.shunt_graphics import ShuntGraphicItem
 from GridCal.Gui.GridEditorWidget.messages import *
+from GridCal.Engine.Devices.enumerations import DeviceType
 
 
 class BusGraphicItem(QGraphicsRectItem):
@@ -460,8 +461,21 @@ class BusGraphicItem(QGraphicsRectItem):
         mouse press: display the editor
         :param event: QGraphicsSceneMouseEvent
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
-                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
+        dictionary_of_lists = dict()
+
+        if self.api_object.device_type == DeviceType.BusDevice:
+            dictionary_of_lists = {DeviceType.AreaDevice.value: self.diagramScene.circuit.areas,
+                                   DeviceType.ZoneDevice.value: self.diagramScene.circuit.zones,
+                                   DeviceType.SubstationDevice.value: self.diagramScene.circuit.substations,
+                                   DeviceType.CountryDevice.value: self.diagramScene.circuit.countries}
+
+        mdl = ObjectsModel([self.api_object],
+                           self.api_object.editable_headers,
+                           parent=self.diagramScene.parent().object_editor_table,
+                           editable=True,
+                           transposed=True,
+                           dictionary_of_lists=dictionary_of_lists)
+
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
     def mouseDoubleClickEvent(self, event):
