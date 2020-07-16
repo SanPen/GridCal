@@ -1918,19 +1918,14 @@ class PSSeTransformer:
             use_winding_base_voltage = True
 
             if self.CZ == 3:
-                r *= 1e-6 / self.SBASE1_2
+                r *= 1e-6 / self.SBASE1_2 / sbase
                 x = np.sqrt(self.X1_2 * self.X1_2 - r * r)
 
-            if self.CZ == 2 or self.CZ == 3:
+            if self.CZ == 2:
                 if self.SBASE1_2 > 0:
-                    zb = self.WINDV1 * self.WINDV1 / self.SBASE1_2
-
-                    if use_winding_base_voltage:
-                        r *= zb / zbs
-                        x *= zb / zbs
-                    else:
-                        r *= sbase / self.SBASE1_2
-                        x *= sbase / self.SBASE1_2
+                    zb = sbase / self.SBASE1_2
+                    r *= zb
+                    x *= zb
                 else:
                     logger.append(idtag + ': SBASE1_2 is zero!!!')
 
@@ -2021,12 +2016,16 @@ class PSSeTransformer:
                 When CZ is 2, they are the resistance and reactance, respectively, in pu on Winding
                 1 to 2 MVA base (SBASE1-2) and winding voltage base.
                 """
-                r12 = self.R1_2 * base_change12
-                x12 = self.X1_2 * base_change12
-                r23 = self.R2_3 * base_change23
-                x23 = self.X2_3 * base_change23
-                r31 = self.R3_1 * base_change31
-                x31 = self.X3_1 * base_change31
+                zb12 = sbase / self.SBASE1_2
+                zb23 = sbase / self.SBASE2_3
+                zb31 = sbase / self.SBASE3_1
+
+                r12 = self.R1_2 * zb12
+                x12 = self.X1_2 * zb12
+                r23 = self.R2_3 * zb23
+                x23 = self.X2_3 * zb23
+                r31 = self.R3_1 * zb31
+                x31 = self.X3_1 * zb31
 
             elif self.CZ == 3:
 
