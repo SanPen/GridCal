@@ -18,13 +18,15 @@ Version 4.0.0
   Hence the version jump attends to that massive effort.
 - Revamp of the context menus
 - Improved the transformer and line editors integrating the template selection
+- Improved filtering (bool values are recognised now)
+- Improved the PSS/e conversion
 - Replaced how all the GUI messages are handled
 - Fixed transformer editor Sbase conversion
 - Added HVDC line model
 - Added VSC branch model
-- Improved filtering (bool values are recognised now)
 - Added tags to the sigma-plot
-- Changes the power flow inner loops order. This changes the behaviour to the better when the controls are active.
+- Added Substation, Zone, Area and Country objects to group better the buses.
+- Changed the power flow inner loops order. This changes the behaviour to the better when the controls are active.
 
 
 Version 3.7.1

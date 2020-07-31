@@ -113,7 +113,13 @@ class EditorGraphicsView(QGraphicsView):
             stream.writeQString('Bus')
             if obj_type == data:
                 name = 'Bus ' + str(len(self.scene_.circuit.buses))
-                obj = Bus(name=name)
+
+                obj = Bus(name=name,
+                          area=self.scene_.circuit.areas[0],
+                          zone=self.scene_.circuit.zones[0],
+                          substation=self.scene_.circuit.zones[0],
+                          country=self.scene_.circuit.countries[0])
+
                 elm = BusGraphicItem(diagramScene=self.scene(), name=name, editor=self.editor, bus=obj)
                 obj.graphic_obj = elm
                 self.scene_.circuit.add_bus(obj)  # weird but it's the only way to have graphical-API communication

@@ -730,7 +730,7 @@ class LpAffineExpression(_DICT_TYPE):
 
     def addInPlace(self, other):
 
-        if other is 0 or other is None:
+        if other == 0 or other is None:
             return self
 
         if isinstance(other, LpElement):
@@ -754,7 +754,7 @@ class LpAffineExpression(_DICT_TYPE):
 
     def subInPlace(self, other):
 
-        if other is 0 or other is None:
+        if other == 0 or other is None:
             return self
 
         if isinstance(other, LpElement):

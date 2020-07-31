@@ -476,6 +476,8 @@ class MainGUI(QMainWindow):
 
         self.ui.delete_selected_objects_pushButton.clicked.connect(self.delete_selected_objects)
 
+        self.ui.add_object_pushButton.clicked.connect(self.add_objects)
+
         self.ui.delete_and_reduce_pushButton.clicked.connect(self.delete_and_reduce_selected_objects)
 
         self.ui.highlight_selection_buses_pushButton.clicked.connect(self.highlight_selection_buses)
@@ -586,7 +588,8 @@ class MainGUI(QMainWindow):
                                                   "np: numpy\n"
                                                   "pd: pandas\n"
                                                   "plt: matplotlib\n"
-                                                  "app: This instance of GridCal\n\n")
+                                                  "app: This instance of GridCal\n"
+                                                  "circuit: The current grid\n\n")
         # add the console widget to the user interface
 
         self.ui.main_console_tab.layout().addWidget(self.console)
@@ -597,19 +600,33 @@ class MainGUI(QMainWindow):
                                 "pd": pd,
                                 "plt": plt,
                                 "clc": self.clc,
-                                'app': self})
+                                'app': self,
+                                'circuit': self.circuit})
 
     def clear_stuff_running(self):
+        """
 
+        :return:
+        """
         self.stuff_running_now.clear()
 
     def dragEnterEvent(self, event):
+        """
+
+        :param event:
+        :return:
+        """
         if event.mimeData().hasUrls:
             event.accept()
         else:
             event.ignore()
 
     def dragMoveEvent(self, event):
+        """
+
+        :param event:
+        :return:
+        """
         if event.mimeData().hasUrls:
             event.accept()
         else:
@@ -4468,6 +4485,13 @@ class MainGUI(QMainWindow):
 
             elm = elements[0]
 
+            dictionary_of_lists = dict()
+            if elm.device_type == DeviceType.BusDevice:
+                dictionary_of_lists = {DeviceType.AreaDevice.value: self.circuit.areas,
+                                       DeviceType.ZoneDevice.value: self.circuit.zones,
+                                       DeviceType.SubstationDevice.value: self.circuit.substations,
+                                       DeviceType.CountryDevice.value: self.circuit.countries}
+
             if elm.device_type in [DeviceType.BranchDevice, DeviceType.SequenceLineDevice,
                                    DeviceType.UnderGroundLineDevice]:
 
@@ -4478,7 +4502,8 @@ class MainGUI(QMainWindow):
 
                 mdl = ObjectsModel(elements, elm.editable_headers,
                                    parent=self.ui.dataStructureTableView, editable=True,
-                                   non_editable_attributes=elm.non_editable_attributes)
+                                   non_editable_attributes=elm.non_editable_attributes,
+                                   dictionary_of_lists=dictionary_of_lists)
 
             self.ui.dataStructureTableView.setModel(mdl)
 
@@ -4597,7 +4622,10 @@ class MainGUI(QMainWindow):
                     filtered_objects = [x for x in self.type_objects_list if args == getattr(x, attr).name.lower()]
 
                 else:
-                    filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) == args]
+                    try:
+                        filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).name.lower() == args]
+                    except:
+                        filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) == args]
 
             elif command.startswith('!='):
                 # Exact match
@@ -4748,9 +4776,45 @@ class MainGUI(QMainWindow):
         else:
             pass
 
+    def add_objects(self):
+        """
+        Add default objects objects
+        """
+        model = self.ui.dataStructureTableView.model()
+        elm_type = self.ui.dataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+
+        if model is not None:
+
+            if elm_type == DeviceType.SubstationDevice.value:
+                self.circuit.add_substation(Substation('Default'))
+
+            elif elm_type == DeviceType.ZoneDevice.value:
+                self.circuit.add_zone(Zone('Default'))
+
+            elif elm_type == DeviceType.AreaDevice.value:
+                self.circuit.add_area(Area('Default'))
+
+            elif elm_type == DeviceType.CountryDevice.value:
+                self.circuit.add_country(Country('Default'))
+
+            elif elm_type == DeviceType.BusDevice.value:
+                self.circuit.add_bus(Bus(name='Bus ' + str(len(self.circuit.buses) + 1),
+                                         area=self.circuit.areas[0],
+                                         zone=self.circuit.zones[0],
+                                         substation=self.circuit.zones[0],
+                                         country=self.circuit.countries[0]))
+
+            else:
+                info_msg("This object does not support table-like addition.\nUse the schematic instead.")
+                return
+
+            # update the view
+            # self.display_filter(objects)
+            self.view_objects_data()
+
     def clear_big_bus_markers(self):
         """
-        clears all the buses "big marker"
+        clear all the buses' "big marker"
         """
         for bus in self.circuit.buses:
             bus.graphic_obj.delete_big_marker()

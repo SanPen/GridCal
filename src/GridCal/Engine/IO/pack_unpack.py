@@ -112,6 +112,7 @@ def create_data_frames(circuit: MultiCircuit):
             else:
                 names_count[elm.name] = 1
 
+            elm.ensure_area_objects(circuit)
             elm.ensure_profiles_exist(T)
             elm.retrieve_graphic_position()
 

@@ -208,6 +208,12 @@ class MultiCircuit:
 
         self.device_type_name_dict = dict()
 
+        # add default objects
+        self.add_substation(Substation('Default'))
+        self.add_zone(Zone('Default'))
+        self.add_area(Area('Default'))
+        self.add_country(Country('Default'))
+
         '''
         self.type_name = 'Shunt'
 

@@ -219,7 +219,7 @@ def parse_json_data_v2(data: dict, logger: Logger):
                           substation=jentry['substation'],
                           # country=jbus['id'],
                           longitude=float(jentry['lon']),
-                          latitude=float(jentry['lat']) )
+                          latitude=float(jentry['lat']))
 
                 bus_dict[jentry['id']] = bus
                 circuit.add_bus(bus)
@@ -236,18 +236,10 @@ def parse_json_data_v2(data: dict, logger: Logger):
                                 Qmin=float(jentry['qmin']),
                                 Qmax=float(jentry['qmax']),
                                 Snom=float(jentry['snom']),
-                                # power_prof=jgen['name'],
-                                # power_factor_prof=jgen['name'],
-                                # vset_prof=jgen['name'],
-                                # Cost_prof=jgen['name'],
                                 active=bool(jentry['active']),
                                 p_min=float(jentry['pmin']),
                                 p_max=float(jentry['pmax']),
                                 op_cost=float(jentry['cost']),
-                                # Sbase=jgen['name'],
-                                # enabled_dispatch=jgen['name'],
-                                # mttf=jgen['name'],
-                                # mttr=jgen['name']
                                 )
                 gen.bus = bus_dict[jentry['bus']]
                 circuit.add_generator(gen.bus, gen)
@@ -264,18 +256,10 @@ def parse_json_data_v2(data: dict, logger: Logger):
                               Qmin=float(jentry['qmin']),
                               Qmax=float(jentry['qmax']),
                               Snom=float(jentry['snom']),
-                              # power_prof=jgen['name'],
-                              # power_factor_prof=jgen['name'],
-                              # vset_prof=jgen['name'],
-                              # Cost_prof=jgen['name'],
                               active=bool(jentry['active']),
                               p_min=float(jentry['pmin']),
                               p_max=float(jentry['pmax']),
                               op_cost=float(jentry['cost']),
-                              # Sbase=jgen['name'],
-                              # enabled_dispatch=jgen['name'],
-                              # mttf=jgen['name'],
-                              # mttr=jgen['name']
                               )
                 gen.bus = bus_dict[jentry['bus']]
                 circuit.add_battery(gen.bus, gen)
@@ -285,19 +269,8 @@ def parse_json_data_v2(data: dict, logger: Logger):
             for jentry in loads:
                 elm = Load(name=str(jentry['name']),
                            idtag=str(jentry['id']),
-                           # G: float = 0.0,
-                           # B: float = 0.0,
-                           # Ir: float = 0.0,
-                           # Ii: float = 0.0,
                            P=float(jentry['p']),
                            Q=float(jentry['q']),
-                           # cost=jentry['cost'],
-                           # G_prof: Any = None,
-                           # B_prof: Any = None,
-                           # Ir_prof: Any = None,
-                           # Ii_prof: Any = None,
-                           # P_prof: Any = None,
-                           # Q_prof: Any = None,
                            active=bool(jentry['active']))
                 elm.bus = bus_dict[jentry['bus']]
                 circuit.add_load(elm.bus, elm)
@@ -309,8 +282,6 @@ def parse_json_data_v2(data: dict, logger: Logger):
                             idtag=str(jentry['id']),
                             G=float(jentry['g']),
                             B=float(jentry['b']),
-                            # G_prof: Any = None,
-                            # B_prof: Any = None,
                             active=bool(jentry['active']))
                 elm.bus = bus_dict[jentry['bus']]
                 circuit.add_shunt(elm.bus, elm)
@@ -327,27 +298,19 @@ def parse_json_data_v2(data: dict, logger: Logger):
                            b=float(entry['b']),
                            rate=float(entry['rate']),
                            active=entry['active'],
-                           # tolerance: int = 0,
-                           # cost: float = 0.0,
-                           # mttf: int = 0,
-                           # mttr: int = 0,
-                           # r_fault: float = 0.0,
-                           # x_fault: float = 0.0,
-                           # fault_pos: float = 0.5,
                            length=float(entry['length']),
-                           # temp_base: int = 20,
-                           # temp_oper: int = 20,
-                           # alpha: float = 0.00330,
-                           # template: LineTemplate = LineTemplate(),
-                           # rate_prof: Any = None,
-                           # Cost_prof: Any = None,
-                           # active_prof: Any = None,
-                           # temp_oper_prof: Any = None
                            )
                 circuit.add_line(elm)
 
-        if "Transformer" in devices.keys():
-            transformers = devices["Transformer"]
+        if "Transformer" in devices.keys() or "Transformer2w" in devices.keys():
+
+            if "Transformer" in devices.keys():
+                transformers = devices["Transformer"]
+            elif "Transformer2w" in devices.keys():
+                transformers = devices["Transformer2w"]
+            else:
+                raise Exception('Transformer key not found')
+
             for entry in transformers:
                 elm = Transformer2W(bus_from=bus_dict[entry['bus_from']],
                                     bus_to=bus_dict[entry['bus_to']],
@@ -361,21 +324,6 @@ def parse_json_data_v2(data: dict, logger: Logger):
                                     active=bool(entry['active']),
                                     tap=float(entry['tap_module']),
                                     shift_angle=float(entry['tap_angle']),
-                                    # tolerance: int = 0,
-                                    # cost: float = 0.0,
-                                    # mttf: int = 0,
-                                    # mttr: int = 0,
-                                    # r_fault: float = 0.0,
-                                    # x_fault: float = 0.0,
-                                    # fault_pos: float = 0.5,
-                                    # temp_base: int = 20,
-                                    # temp_oper: int = 20,
-                                    # alpha: float = 0.00330,
-                                    # template: LineTemplate = LineTemplate(),
-                                    # rate_prof: Any = None,
-                                    # Cost_prof: Any = None,
-                                    # active_prof: Any = None,
-                                    # temp_oper_prof: Any = None
                                     )
                 circuit.add_transformer2w(elm)
 
@@ -429,6 +377,14 @@ def save_json_file(file_path, circuit: MultiCircuit):
     elements[DeviceType.CircuitDevice.value] = circuit.get_properties_dict()
     units_dict[DeviceType.CircuitDevice.value] = circuit.get_units_dict()
     element_profiles[DeviceType.CircuitDevice.value] = circuit.get_profiles_dict()
+
+    # add the areas
+    for cls in [circuit.substations, circuit.zones, circuit.areas, circuit.countries]:
+        for elm in cls:
+            # pack the bus data into a dictionary
+            add_to_dict(d=elements, d2=elm.get_properties_dict(), key=elm.device_type.value)
+            add_to_dict(d=element_profiles, d2=elm.get_profiles_dict(), key=elm.device_type.value)
+            add_to_dict2(d=units_dict, d2=elm.get_units_dict(), key=elm.device_type.value)
 
     # add the buses
     for elm in circuit.buses:

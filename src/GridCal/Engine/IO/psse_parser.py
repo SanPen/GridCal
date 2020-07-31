@@ -102,8 +102,11 @@ class PSSeGrid:
         circuit = MultiCircuit(Sbase=self.SBASE)
         circuit.comments = 'Converted from a PSS/e .raw file'
 
-        area_dict = {elm.I: elm.ARNAME for elm in self.areas}
-        zones_dict = {elm.I: elm.ZONAME for elm in self.zones}
+        circuit.areas = [Area(name=x.ARNAME) for x in self.areas]
+        circuit.zones = [Zone(name=x.ZONAME) for x in self.zones]
+
+        area_dict = {val.I: elm for val, elm in zip(self.areas, circuit.areas)}
+        zones_dict = {val.I: elm for val, elm in zip(self.zones, circuit.zones)}
 
         # ---------------------------------------------------------------------
         # Bus related
@@ -127,6 +130,7 @@ class PSSeGrid:
                 slack_buses.append(psse_bus.I)
 
             # add the bus to the circuit
+            psse_bus.bus.ensure_area_objects(circuit)
             circuit.add_bus(psse_bus.bus)
 
         for area in self.areas:

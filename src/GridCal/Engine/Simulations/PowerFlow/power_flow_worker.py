@@ -111,31 +111,40 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
     """
 
     if options.retry_with_other_methods:
-        solvers = [options.solver_type,
-                   SolverType.IWAMOTO,
-                   SolverType.LM,
-                   SolverType.HELM,
-                   SolverType.LACPF]
+        solver_list = [SolverType.NR,
+                       SolverType.HELM,
+                       SolverType.IWAMOTO,
+                       SolverType.LM,
+                       SolverType.LACPF]
+        solver_list.remove(options.solver_type)
+        solvers = [options.solver_type] + solver_list
     else:
         # No retry selected
         solvers = [options.solver_type]
 
     # set worked to false to enter in the loop
-    worked = False
+    # worked = False
     solver_idx = 0
     results = PowerFlowResults(n=0, m=0, n_tr=0, n_hvdc=0,
                                bus_names=(), branch_names=(), transformer_names=(),
                                hvdc_names=(), bus_types=())
 
     # set the initial value
-    V = V0
+    V = V0.copy()
     converged = False
     normF = 0
     Scalc = Sbus
     it = 0
     el = 0.0
 
-    while solver_idx < len(solvers) and not worked:
+    V_final = V0
+    converged_final = False
+    normF_final = 1e200
+    Scalc_final = Sbus
+    it_final = 0
+    el_final = 0.0
+
+    while solver_idx < len(solvers) and not converged:
         # get the solver
         solver_type = solvers[solver_idx]
 
@@ -143,7 +152,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
         if solver_type == SolverType.HELM:
             V, converged, normF, Scalc, it, el = helm_josep(Ybus=Ybus,
                                                             Yseries=Yseries,
-                                                            V0=V0,
+                                                            V0=V0,  # take V0 instead of V
                                                             S0=Sbus,
                                                             Ysh0=Ysh_helm,
                                                             pq=pq,
@@ -182,7 +191,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
         elif solver_type == SolverType.LM:
             V, converged, normF, Scalc, it, el = levenberg_marquardt_pf(Ybus=Ybus,
                                                                         Sbus=Sbus,
-                                                                        V0=V0,
+                                                                        V0=V,
                                                                         Ibus=Ibus,
                                                                         pv=pv,
                                                                         pq=pq,
@@ -208,7 +217,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
             # Solve NR with the linear AC solution
             V, converged, normF, Scalc, it, el = NR_LS(Ybus=Ybus,
                                                        Sbus=Sbus,
-                                                       V0=V0,
+                                                       V0=V,
                                                        Ibus=Ibus,
                                                        pv=pv,
                                                        pq=pq,
@@ -221,7 +230,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
             # Solve NR with the linear AC solution
             V, converged, normF, Scalc, it, el = NRD_LS(Ybus=Ybus,
                                                         Sbus=Sbus,
-                                                        V0=V0,
+                                                        V0=V,
                                                         Ibus=Ibus,
                                                         pv=pv,
                                                         pq=pq,
@@ -233,7 +242,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
         elif solver_type == SolverType.IWAMOTO:
             V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=Ybus,
                                                            Sbus=Sbus,
-                                                           V0=V0,
+                                                           V0=V,
                                                            Ibus=Ibus,
                                                            pv=pv,
                                                            pq=pq,
@@ -245,7 +254,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
         elif solver_type == SolverType.NRI:
             V, converged, normF, Scalc, it, el = NR_I_LS(Ybus=Ybus,
                                                          Sbus_sp=Sbus,
-                                                         V0=V0,
+                                                         V0=V,
                                                          Ibus_sp=Ibus,
                                                          pv=pv,
                                                          pq=pq,
@@ -256,23 +265,27 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
             # for any other method, raise exception
             raise Exception(solver_type + ' Not supported in power flow mode')
 
-        # record the method used
-        report.add(method=solver_type,
-                   converged=converged,
-                   error=normF,
-                   elapsed=el,
-                   iterations=it)
-
-        # did it worked?
-        worked = np.all(results.converged())
+        # record the method used, if it improved the solution
+        if normF < normF_final:
+            report.add(method=solver_type,
+                       converged=converged,
+                       error=normF,
+                       elapsed=el,
+                       iterations=it)
+            V_final = V
+            converged_final = converged
+            normF_final = normF
+            Scalc_final = Scalc
+            it_final = it
+            el_final = el
 
         # record the solver steps
         solver_idx += 1
 
-    if not worked:
+    if not converged:
         logger.append('Did not converge, even after retry!, Error:' + str(results.error()))
 
-    return V, converged, normF, Scalc, it, el
+    return V_final, converged_final, normF_final, Scalc_final, it_final, el_final
 
 
 def outer_loop_power_flow(circuit: SnapshotCircuit, options: PowerFlowOptions,

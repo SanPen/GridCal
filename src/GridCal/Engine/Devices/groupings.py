@@ -23,7 +23,7 @@ from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, G
 
 class GenericAreaGroup(EditableDevice):
 
-    def __init__(self, name='', idtag=None, device_type=DeviceType.GenericArea, latitude=0.0, longitude=0.0):
+    def __init__(self, name='', code='', idtag=None, device_type=DeviceType.GenericArea, latitude=0.0, longitude=0.0):
         """
 
         :param name:
@@ -44,8 +44,25 @@ class GenericAreaGroup(EditableDevice):
                                 non_editable_attributes=['idtag'],
                                 properties_with_profile={})
 
+        self.code = code
         self.latitude = latitude
         self.longitude = longitude
+
+    def get_properties_dict(self):
+
+        data = {'id': self.idtag,
+                'name': self.name,
+                'code': self.code
+                }
+        return data
+
+    def get_profiles_dict(self):
+        data = {'id': self.idtag}
+        return data
+
+    def get_units_dict(self):
+        data = {}
+        return data
 
 
 class Substation(GenericAreaGroup):

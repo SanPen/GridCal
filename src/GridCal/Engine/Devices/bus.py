@@ -82,7 +82,7 @@ class Bus(EditableDevice):
 
     def __init__(self, name="Bus", idtag=None, vnom=10, vmin=0.9, vmax=1.1, r_fault=0.0, x_fault=0.0,
                  xpos=0, ypos=0, height=0, width=0, active=True, is_slack=False, is_dc=False,
-                 area='Default', zone='Default', substation='Default', country='', longitude=0.0, latitude=0.0):
+                 area=None, zone=None, substation=None, country=None, longitude=0.0, latitude=0.0):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -433,9 +433,11 @@ class Bus(EditableDevice):
              'w': self.w,
              'lat': self.latitude,
              'lon': self.longitude,
-             'area': self.area,
-             'zone': self.zone,
-             'substation': self.substation
+             'alt': 0.0,
+             'country': self.country.idtag,
+             'area': self.area.idtag,
+             'zone': self.zone.idtag,
+             'substation': self.substation.idtag
              }
 
         return d
@@ -467,7 +469,8 @@ class Bus(EditableDevice):
                 'h': 'px',
                 'w': 'px',
                 'lat': 'degrees',
-                'lon': 'degrees'}
+                'lon': 'degrees',
+                'alt': 'm'}
 
     def set_state(self, t):
         """
@@ -621,3 +624,20 @@ class Bus(EditableDevice):
         :return: list of connected objects
         """
         return self.loads + self.controlled_generators + self.batteries + self.static_generators + self.shunts
+
+    def ensure_area_objects(self, circuit):
+        """
+        Ensure that every grouping parameter has an object
+        :param circuit: MultiCircuit instance
+        """
+        if self.area is None:
+            self.area = circuit.areas[0]
+
+        if self.zone is None:
+            self.zone = circuit.zones[0]
+
+        if self.substation is None:
+            self.substation = circuit.substations[0]
+
+        if self.country is None:
+            self.country = circuit.countries[0]
