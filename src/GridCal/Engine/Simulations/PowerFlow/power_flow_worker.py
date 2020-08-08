@@ -1295,7 +1295,7 @@ def power_flow_worker_args(args):
         **Vbus: Voltages to initialize
         **Sbus: Power injections
         **Ibus: Current injections
-        **return_dict: parallel module dictionary in wich to return the values
+        **return_dict: parallel module dictionary in which to return the values
     :return:
     """
     t, options, circuit, Vbus, Sbus, Ibus, branch_rates = args

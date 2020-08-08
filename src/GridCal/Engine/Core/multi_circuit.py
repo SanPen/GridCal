@@ -15,6 +15,7 @@
 
 import sys
 import os
+from typing import List
 from uuid import getnode as get_mac, uuid4
 from datetime import timedelta
 import networkx as nx
@@ -196,8 +197,7 @@ class MultiCircuit:
                                       DcLine(None, None),
                                       Transformer2W(None, None),
                                       HvdcLine(None, None),
-                                      VSC(Bus(),
-                                      Bus(is_dc=True)),
+                                      VSC(None, None),
                                       Substation(),
                                       Zone(),
                                       Area(),
@@ -334,7 +334,7 @@ class MultiCircuit:
         Return all the branch objects
         :return: lines + transformers 2w + hvdc
         """
-        return self.lines + self.transformers2w + self.vsc_converters
+        return self.lines + self.transformers2w + self.vsc_converters + self.dc_lines
 
     def get_branches(self):
         """
@@ -524,6 +524,43 @@ class MultiCircuit:
 
         elif element_type == DeviceType.CountryDevice:
             return self.countries
+
+        else:
+            raise Exception('Element type not understood ' + str(element_type))
+
+    def get_node_elements_by_type2(self, element_type: DeviceType):
+        """
+        Get set of elements and their parent nodes
+        :param element_type: DeviceTYpe instance
+        :return: List of elements, it raises an exception if the elements are unknown
+        """
+
+        if element_type == DeviceType.LoadDevice:
+            return self.get_loads()
+
+        elif element_type == DeviceType.StaticGeneratorDevice:
+            return self.get_static_generators()
+
+        elif element_type == DeviceType.GeneratorDevice:
+            return self.get_generators()
+
+        elif element_type == DeviceType.BatteryDevice:
+            return self.get_batteries()
+
+        elif element_type == DeviceType.ShuntDevice:
+            return self.get_shunts()
+
+        elif element_type == DeviceType.SubstationDevice:
+            return [x.substation for x in self.buses]
+
+        elif element_type == DeviceType.AreaDevice:
+            return [x.area for x in self.buses]
+
+        elif element_type == DeviceType.ZoneDevice:
+            return [x.zone for x in self.buses]
+
+        elif element_type == DeviceType.CountryDevice:
+            return [x.country for x in self.buses]
 
         else:
             raise Exception('Element type not understood ' + str(element_type))
@@ -737,12 +774,12 @@ class MultiCircuit:
         """
         self.graph = nx.DiGraph()
 
-        self.bus_dictionary = {bus: i for i, bus in enumerate(self.buses)}
+        self.bus_dictionary = {bus.idtag: i for i, bus in enumerate(self.buses)}
 
         for branch_list in self.get_branch_lists():
             for i, branch in enumerate(branch_list):
-                f = self.bus_dictionary[branch.bus_from]
-                t = self.bus_dictionary[branch.bus_to]
+                f = self.bus_dictionary[branch.bus_from.idtag]
+                t = self.bus_dictionary[branch.bus_to.idtag]
                 self.graph.add_edge(f, t)
 
         return self.graph
@@ -877,7 +914,9 @@ class MultiCircuit:
         for branch_list in self.get_branch_lists():
             for i in range(len(branch_list) - 1, -1, -1):
                 if branch_list[i].bus_from == obj or branch_list[i].bus_to == obj:
-                    branch_list.pop(i)
+                    deleted_elm = branch_list.pop(i)
+                    if deleted_elm.graphic_obj is not None:
+                        deleted_elm.graphic_obj.remove()
 
         # remove the bus itself
         if obj in self.buses:

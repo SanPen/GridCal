@@ -17,7 +17,6 @@ import chardet
 import re
 from typing import List, AnyStr, Dict
 
-from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
 
@@ -252,8 +251,8 @@ class PSSeBus:
 
             # create bus
             name = self.NAME.replace("'", "")
-            self.bus = Bus(name=name, idtag=str(self.I),
-                           vnom=self.BASKV, vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0, active=True,
+            self.bus = Bus(name=name,
+                           vnom=self.BASKV, code=str(self.I), vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0, active=True,
                            area=self.AREA, zone=self.ZONE)
 
         elif version == 32:
@@ -262,7 +261,7 @@ class PSSeBus:
 
             # create bus
             name = self.NAME
-            self.bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
+            self.bus = Bus(name=name, code=str(self.I), vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
                            active=True, area=self.AREA, zone=self.ZONE)
 
         elif version in [29, 30]:
@@ -272,7 +271,7 @@ class PSSeBus:
 
             # create bus
             name = self.NAME
-            self.bus = Bus(name=name, vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
+            self.bus = Bus(name=name, code=str(self.I), vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
                            active=True, area=self.AREA, zone=self.ZONE)
 
             if self.GL > 0 or self.BL > 0:
@@ -302,7 +301,6 @@ class PSSeBus:
 
         # Ensures unique name
         self.bus.name = self.bus.name.replace("'", "").strip()
-        self.bus.idtag = str(self.I)
 
 
 class PSSeLoad:

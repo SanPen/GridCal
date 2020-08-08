@@ -887,6 +887,7 @@ class MainGUI(QMainWindow):
                     exc_type, exc_value, exc_traceback = sys.exc_info()
                     error_msg(str(exc_traceback) + '\n' + str(exc_value), 'Automatic layout')
 
+
             alg = dict()
             alg['circular_layout'] = nx.circular_layout
             alg['random_layout'] = nx.random_layout
@@ -1619,7 +1620,7 @@ class MainGUI(QMainWindow):
             elements = self.circuit.hvdc_lines
 
         elif elm_type == DeviceType.VscDevice.value:
-            elm = VSC(Bus(), Bus(is_dc=True))
+            elm = VSC(None, None)
             elements = self.circuit.vsc_converters
 
         elif elm_type == DeviceType.DCLineDevice.value:
@@ -4746,31 +4747,42 @@ class MainGUI(QMainWindow):
 
             if len(sel_idx) > 0:
 
-                reply = QMessageBox.question(self, 'Message',
-                                             'Are you sure that you want to delete the selected elements?',
-                                             QMessageBox.Yes, QMessageBox.No)
+                # check if the selected element is in use
+                used = False
+                used_objects = self.circuit.get_node_elements_by_type2(objects[0].device_type)
+                unique_tags = {x.idtag for x in used_objects}
+                for i in sel_idx:
+                    for tag in unique_tags:
+                        if objects[i.row()].idtag == tag:
+                            used = True
 
-                if reply == QMessageBox.Yes:
+                # prompt to delete if the object is not in use...
+                if not used:
 
-                    # get the unique rows
-                    unique = set()
-                    for idx in sel_idx:
-                        unique.add(idx.row())
+                    ok = yes_no_question('Are you sure that you want to delete the selected elements?', 'Delete')
+                    if ok:
 
-                    unique = list(unique)
-                    unique.sort(reverse=True)
-                    for r in unique:
-                        obj = objects.pop(r)
+                        # get the unique rows
+                        unique = set()
+                        for idx in sel_idx:
+                            unique.add(idx.row())
 
-                        if obj.graphic_obj is not None:
-                            # this is a more complete function than the circuit one because it removes the
-                            # graphical items too, and for loads and generators it deletes them properly
-                            obj.graphic_obj.remove()
+                        unique = list(unique)
+                        unique.sort(reverse=True)
+                        for r in unique:
+                            obj = objects.pop(r)
 
-                    # update the view
-                    self.display_filter(objects)
+                            if obj.graphic_obj is not None:
+                                # this is a more complete function than the circuit one because it removes the
+                                # graphical items too, and for loads and generators it deletes them properly
+                                obj.graphic_obj.remove()
+
+                        # update the view
+                        self.display_filter(objects)
+                    else:
+                        pass
                 else:
-                    pass
+                    info_msg('The object(s) is in use, so it cannot be deleted :(')
             else:
                 info_msg('Select some cells')
         else:

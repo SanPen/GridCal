@@ -428,7 +428,7 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
         f = circuit.buses[bus_idx_dict[int(table[i, e.F_BUS])]]
         t = circuit.buses[bus_idx_dict[int(table[i, e.T_BUS])]]
 
-        if f.Vnom != t.Vnom or table[i, e.TAP] != 1.0 or table[i, e.SHIFT] != 0.0:
+        if f.Vnom != t.Vnom or (table[i, e.TAP] != 1.0 and table[i, e.TAP] != 0) or table[i, e.SHIFT] != 0.0:
 
             branch = Transformer2W(bus_from=f,
                                    bus_to=t,

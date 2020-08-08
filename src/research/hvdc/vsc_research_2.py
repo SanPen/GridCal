@@ -65,8 +65,8 @@ grid.add_generator(bus1, Generator(name='gen', active_power=0.0))
 ####################################################################################################################
 
 grid.add_branch(VSC(bus5, bus6, name='VSC 5-6', r1=0.00001, x1=0.0005, m=1.0, theta=0.0, G0=1e-5, Beq=0.00001, rate=30))
-grid.add_branch(DCLine(bus6, bus7, name='DC line 6-7 (1)', r1=0.001, rate=30))
-grid.add_branch(DCLine(bus6, bus7, name='DC line 6-7 (2)', r1=0.001, rate=30))
+grid.add_branch(DcLine(bus6, bus7, name='DC line 6-7 (1)', r=0.001, rate=30))
+grid.add_branch(DcLine(bus6, bus7, name='DC line 6-7 (2)', r=0.001, rate=30))
 
 
 grid.add_branch(Branch(bus1, bus3, name='Line 1-2', r=0.05, x=0.11, b=0.02, rate=50))

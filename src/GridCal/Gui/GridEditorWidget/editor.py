@@ -399,7 +399,7 @@ class GridEditor(QSplitter):
                                                              diagramScene=self.diagramScene,
                                                              branch=obj)
 
-                        elif self.started_branch.bus_from.api_object.is_dc == True and self.started_branch.bus_to.api_object.is_dc == True:
+                        elif self.started_branch.bus_from.api_object.is_dc and self.started_branch.bus_to.api_object.is_dc:
                             # both buses are DC
 
                             name = 'Dc line ' + str(len(self.circuit.dc_lines) + 1)

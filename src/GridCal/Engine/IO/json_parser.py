@@ -195,11 +195,93 @@ def parse_json_data_v2(data: dict, logger: Logger):
         jcircuit = devices["Circuit"]
         circuit.Sbase = jcircuit["sbase"]
 
-        bus_dict = dict()
+        # Countries
+        country_dict = dict()
+        if 'Country' in devices.keys():
+            elms = devices["Country"]
+            for jentry in elms:
+                elm = Country(idtag=str(jentry['id']),
+                              code=str(jentry['code']),
+                              name=str(jentry['name']))
+                circuit.countries.append(elm)
+                country_dict[elm.idtag] = elm
+        else:
+            elm = Country(idtag=None, code='Default', name='Default')
+            circuit.countries.append(elm)
 
+        # Areas
+        areas_dict = dict()
+        if 'Area' in devices.keys():
+            elms = devices["Area"]
+            for jentry in elms:
+                elm = Area(idtag=str(jentry['id']),
+                           code=str(jentry['code']),
+                           name=str(jentry['name']))
+                circuit.areas.append(elm)
+                areas_dict[elm.idtag] = elm
+        else:
+            elm = Area(idtag=None, code='Default', name='Default')
+            circuit.areas.append(elm)
+
+        # Zones
+        zones_dict = dict()
+        if 'Zone' in devices.keys():
+            elms = devices["Zone"]
+            for jentry in elms:
+                elm = Zone(idtag=str(jentry['id']),
+                           code=str(jentry['code']),
+                           name=str(jentry['name']))
+                circuit.zones.append(elm)
+                zones_dict[elm.idtag] = elm
+        else:
+            elm = Zone(idtag=None, code='Default', name='Default')
+            circuit.zones.append(elm)
+
+        # Substations
+        substations_dict = dict()
+        if 'Substation' in devices.keys():
+            elms = devices["Substation"]
+            for jentry in elms:
+                elm = Substation(idtag=str(jentry['id']),
+                                 code=str(jentry['code']),
+                                 name=str(jentry['name']))
+                circuit.substations.append(elm)
+                substations_dict[elm.idtag] = elm
+        else:
+            elm = Substation(idtag=None, code='Default', name='Default')
+            circuit.substations.append(elm)
+
+        # buses
+        bus_dict = dict()
         if 'Bus' in devices.keys():
             buses = devices["Bus"]
             for jentry in buses:
+
+                area_id = str(jentry['area']) if 'area' in jentry.keys() else ''
+                zone_id = str(jentry['zone']) if 'zone' in jentry.keys() else ''
+                substation_id = str(jentry['substation']) if 'substation' in jentry.keys() else ''
+                country_id = str(jentry['country']) if 'country' in jentry.keys() else ''
+
+                if area_id in areas_dict.keys():
+                    area = areas_dict[area_id]
+                else:
+                    area = circuit.areas[0]
+
+                if zone_id in zones_dict.keys():
+                    zone = zones_dict[zone_id]
+                else:
+                    zone = circuit.zones[0]
+
+                if substation_id in substations_dict.keys():
+                    substation = substations_dict[substation_id]
+                else:
+                    substation = circuit.substations[0]
+
+                if country_id in country_dict.keys():
+                    country = country_dict[country_id]
+                else:
+                    country = circuit.countries[0]
+
                 bus = Bus(name=str(jentry['name']),
                           idtag=str(jentry['id']),
                           vnom=float(jentry['vnom']),
@@ -213,11 +295,10 @@ def parse_json_data_v2(data: dict, logger: Logger):
                           width=float(jentry['w']),
                           active=bool(jentry['active']),
                           is_slack=bool(jentry['is_slack']),
-                          # is_dc=jbus['id'],
-                          area=jentry['area'],
-                          zone=jentry['zone'],
-                          substation=jentry['substation'],
-                          # country=jbus['id'],
+                          area=area,
+                          zone=zone,
+                          substation=substation,
+                          country=country,
                           longitude=float(jentry['lon']),
                           latitude=float(jentry['lat']))
 
@@ -329,6 +410,8 @@ def parse_json_data_v2(data: dict, logger: Logger):
 
         if "VSC" in devices.keys():
             vsc = devices["VSC"]
+
+            # TODO: call correct_buses_connection()
 
         if "HVDC Line" in devices.keys():
             hvdc = devices["HVDC Line"]

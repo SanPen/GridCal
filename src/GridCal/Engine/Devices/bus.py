@@ -80,7 +80,7 @@ class Bus(EditableDevice):
 
     """
 
-    def __init__(self, name="Bus", idtag=None, vnom=10, vmin=0.9, vmax=1.1, r_fault=0.0, x_fault=0.0,
+    def __init__(self, name="Bus", idtag=None, code='', vnom=10, vmin=0.9, vmax=1.1, r_fault=0.0, x_fault=0.0,
                  xpos=0, ypos=0, height=0, width=0, active=True, is_slack=False, is_dc=False,
                  area=None, zone=None, substation=None, country=None, longitude=0.0, latitude=0.0):
 
@@ -91,6 +91,7 @@ class Bus(EditableDevice):
                                 device_type=DeviceType.BusDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the bus'),
                                                   'idtag': GCProp('', str, 'Unique ID'),
+                                                  'code': GCProp('', str, 'Some code to further identify the bus'),
                                                   'active': GCProp('', bool,
                                                                    'Is the bus active? used to disable the bus.'),
                                                   'is_slack': GCProp('', bool, 'Force the bus to be of slack type.'),
@@ -151,6 +152,8 @@ class Bus(EditableDevice):
         self.zone = zone
 
         self.substation = substation
+
+        self.code = code
 
         # List of load s attached to this bus
         self.loads = list()

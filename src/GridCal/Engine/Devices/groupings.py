@@ -67,7 +67,7 @@ class GenericAreaGroup(EditableDevice):
 
 class Substation(GenericAreaGroup):
 
-    def __init__(self, name='Substation', idtag=None, latitude=0.0, longitude=0.0):
+    def __init__(self, name='Substation', idtag=None, code='', latitude=0.0, longitude=0.0):
         """
 
         :param name:
@@ -78,6 +78,7 @@ class Substation(GenericAreaGroup):
         GenericAreaGroup.__init__(self,
                                   name=name,
                                   idtag=idtag,
+                                  code=code,
                                   device_type=DeviceType.SubstationDevice,
                                   latitude=latitude,
                                   longitude=longitude)
@@ -85,7 +86,7 @@ class Substation(GenericAreaGroup):
 
 class Area(GenericAreaGroup):
 
-    def __init__(self, name='Area', idtag=None, latitude=0.0, longitude=0.0):
+    def __init__(self, name='Area', idtag=None, code='', latitude=0.0, longitude=0.0):
         """
 
         :param name:
@@ -96,6 +97,7 @@ class Area(GenericAreaGroup):
         GenericAreaGroup.__init__(self,
                                   name=name,
                                   idtag=idtag,
+                                  code=code,
                                   device_type=DeviceType.AreaDevice,
                                   latitude=latitude,
                                   longitude=longitude)
@@ -103,7 +105,7 @@ class Area(GenericAreaGroup):
 
 class Zone(GenericAreaGroup):
 
-    def __init__(self, name='Zone', idtag=None, latitude=0.0, longitude=0.0):
+    def __init__(self, name='Zone', idtag=None, code='',latitude=0.0, longitude=0.0):
         """
 
         :param name:
@@ -114,6 +116,7 @@ class Zone(GenericAreaGroup):
         GenericAreaGroup.__init__(self,
                                   name=name,
                                   idtag=idtag,
+                                  code=code,
                                   device_type=DeviceType.ZoneDevice,
                                   latitude=latitude,
                                   longitude=longitude)
@@ -121,7 +124,7 @@ class Zone(GenericAreaGroup):
 
 class Country(GenericAreaGroup):
 
-    def __init__(self, name='Country', idtag=None, latitude=0.0, longitude=0.0):
+    def __init__(self, name='Country', idtag=None, code='',latitude=0.0, longitude=0.0):
         """
 
         :param name:
@@ -132,6 +135,7 @@ class Country(GenericAreaGroup):
         GenericAreaGroup.__init__(self,
                                   name=name,
                                   idtag=idtag,
+                                  code=code,
                                   device_type=DeviceType.CountryDevice,
                                   latitude=latitude,
                                   longitude=longitude)

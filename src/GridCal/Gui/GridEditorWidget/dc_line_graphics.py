@@ -287,14 +287,6 @@ class DcLineGraphicItem(QGraphicsLineItem):
         """
         self.setToolTip(toolTip)
 
-        if self.symbol is not None:
-            self.symbol.setToolTip(toolTip)
-
-        if self.c0 is not None:
-            self.c0.setToolTip(toolTip)
-            self.c1.setToolTip(toolTip)
-            self.c2.setToolTip(toolTip)
-
     def contextMenuEvent(self, event):
         """
         Show context menu
@@ -465,19 +457,6 @@ class DcLineGraphicItem(QGraphicsLineItem):
             self.style = OTHER['style']
             self.color = OTHER['color']
 
-        # Switch coloring
-        if self.symbol_type == BranchType.Switch:
-            if self.api_object.active:
-                self.symbol.setBrush(self.color)
-            else:
-                self.symbol.setBrush(Qt.white)
-
-        if self.symbol_type == BranchType.DCLine:
-            self.symbol.setBrush(self.color)
-            if self.api_object.active:
-                self.symbol.setPen(QPen(ACTIVE['color']))
-            else:
-                self.symbol.setPen(QPen(DEACTIVATED['color']))
 
         # Set pen for everyone
         self.set_pen(QPen(self.color, self.width, self.style))
@@ -559,16 +538,6 @@ class DcLineGraphicItem(QGraphicsLineItem):
             pen:
         """
         self.setPen(pen)
-
-        # Color the symbol only for switches
-        if self.api_object.branch_type == BranchType.Switch:
-            if self.symbol is not None:
-                self.symbol.setPen(pen)
-
-        elif self.api_object.branch_type == BranchType.Transformer:
-            if self.c1 is not None:
-                self.c1.setPen(pen)
-                self.c2.setPen(pen)
 
     def edit(self):
         """

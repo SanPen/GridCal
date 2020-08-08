@@ -111,6 +111,9 @@ class EditableDevice:
         """
         return self.name
 
+    def __eq__(self, other):
+        return self.idtag == other.idtag
+
     def create_profiles(self, index):
         """
         Create the load object default profiles

@@ -502,7 +502,7 @@ def get_opf_island(self, bus_idx) -> "OpfSnapshotCircuit":
     nc.vsc_names = self.vsc_names[vsc_idx]
     nc.vsc_R1 = self.vsc_R1[vsc_idx]
     nc.vsc_X1 = self.vsc_X1[vsc_idx]
-    nc.vsc_Gsw = self.vsc_Gsw[vsc_idx]
+    nc.vsc_Gsw = self.vsc_G0[vsc_idx]
     nc.vsc_Beq = self.vsc_Beq[vsc_idx]
     nc.vsc_m = self.vsc_m[vsc_idx]
     nc.vsc_theta = self.vsc_theta[vsc_idx]
@@ -820,7 +820,7 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.vsc_names[i] = elm.name
         nc.vsc_R1[i] = elm.R1
         nc.vsc_X1[i] = elm.X1
-        nc.vsc_Gsw[i] = elm.Gsw
+        nc.vsc_Gsw[i] = elm.G0
         nc.vsc_Beq[i] = elm.Beq
         nc.vsc_m[i] = elm.m
         nc.vsc_theta[i] = elm.theta

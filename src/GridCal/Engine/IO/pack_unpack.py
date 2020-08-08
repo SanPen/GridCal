@@ -65,7 +65,7 @@ def get_objects_dictionary():
 
                     'hvdc': HvdcLine(),
 
-                    'vsc': VSC(Bus(), Bus(is_dc=True)),
+                    'vsc': VSC(None, None),
                     }
 
     return object_types
@@ -442,6 +442,8 @@ def data_frames_to_circuit(data: Dict):
                 circuit.hvdc_lines = devices
 
             elif template_elm.device_type == DeviceType.VscDevice:
+                for dev in devices:
+                    dev.correct_buses_connection()
                 circuit.vsc_converters = devices
 
             elif template_elm.device_type == DeviceType.TowerDevice:

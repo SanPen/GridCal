@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
         # update ui handler file
         if os.path.exists(os.path.join(fbase, 'pyside2-uic')):
-            call([py, os.path.join(fbase, 'pyside2-uic'), '-x', filename_ui,'-o', filename])
+            call([py, os.path.join(fbase, 'pyside2-uic'), filename_ui, '-o', filename])
             print('pyside2-uic (py) ok')
         else:
             try:

@@ -21,9 +21,7 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.enumerations import BranchType
-from GridCal.Engine.Devices.line import SequenceLineType
-from GridCal.Engine.Devices.underground_line import UndergroundLineType
+from GridCal.Engine.Devices.enumerations import BranchType, TransformerControlType
 
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 from GridCal.Engine.Devices.tower import Tower
@@ -399,6 +397,7 @@ class Transformer2W(EditableDevice):
                  mttf=0, mttr=0,
                  vset=1.0, bus_to_regulated=False,
                  temp_base=20, temp_oper=20, alpha=0.00330,
+                 control_mode: TransformerControlType = TransformerControlType.fixed,
                  template: TransformerType = None,
                  rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None):
 
@@ -432,6 +431,8 @@ class Transformer2W(EditableDevice):
                                                   'tap_module': GCProp('', float, 'Tap changer module, '
                                                                        'it a value close to 1.0'),
                                                   'angle': GCProp('rad', float, 'Angle shift of the tap changer.'),
+                                                  'control_mode': GCProp('', TransformerControlType,
+                                                                         'Control type of the transformer'),
                                                   'bus_to_regulated': GCProp('', bool, 'Is the bus tap regulated?'),
                                                   'vset': GCProp('p.u.', float, 'Objective voltage at the "to" side of '
                                                                  'the bus when regulating the tap.'),
@@ -535,6 +536,8 @@ class Transformer2W(EditableDevice):
         self.bus_to_regulated = bus_to_regulated
 
         self.vset = vset
+
+        self.control_mode = control_mode
 
         # converter for enumerations
         self.conv = {'branch': BranchType.Branch,

@@ -18,6 +18,7 @@ import pandas as pd
 import scipy.sparse as sp
 from typing import List
 
+from GridCal.Engine.Devices.enumerations import get_vsc_control_numbers_dict, get_transformer_control_numbers_dict
 from GridCal.Engine.basic_structures import Logger
 import GridCal.Engine.Core.topology as tp
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -105,6 +106,8 @@ class SnapshotCircuit:
         self.dc_line_impedance_tolerance = np.zeros(ndcline, dtype=float)
 
         self.C_dc_line_bus = sp.lil_matrix((ndcline, nbus), dtype=int)  # this ons is just for splitting islands
+        self.dc_F = np.zeros(ndcline, dtype=int)
+        self.dc_T = np.zeros(ndcline, dtype=int)
 
         # transformer 2W + 3W ------------------------------------------------------------------------------------------
         self.tr_names = np.zeros(ntr, dtype=object)
@@ -125,6 +128,7 @@ class SnapshotCircuit:
         self.tr_tap_inc_reg_up = np.zeros(ntr)
         self.tr_tap_inc_reg_down = np.zeros(ntr)
         self.tr_vset = np.ones(ntr)
+        self.tr_control_mode = np.zeros(ntr, dtype=int)
 
         self.C_tr_bus = sp.lil_matrix((ntr, nbus), dtype=int)  # this ons is just for splitting islands
 
@@ -150,10 +154,16 @@ class SnapshotCircuit:
         self.vsc_names = np.zeros(nvsc, dtype=object)
         self.vsc_R1 = np.zeros(nvsc)
         self.vsc_X1 = np.zeros(nvsc)
-        self.vsc_Gsw = np.zeros(nvsc)
+        self.vsc_G0 = np.zeros(nvsc)
         self.vsc_Beq = np.zeros(nvsc)
         self.vsc_m = np.zeros(nvsc)
         self.vsc_theta = np.zeros(nvsc)
+        self.vsc_Inom = np.zeros(nvsc)
+        self.vsc_Pset = np.zeros(nvsc)
+        self.vsc_Qset = np.zeros(nvsc)
+        self.vsc_Vac_set = np.ones(nvsc)
+        self.vsc_Vdc_set = np.ones(nvsc)
+        self.vsc_control_mode = np.zeros(nvsc, dtype=int)
 
         self.C_vsc_bus = sp.lil_matrix((nvsc, nbus), dtype=int)  # this ons is just for splitting islands
 
@@ -352,10 +362,10 @@ class SnapshotCircuit:
                                          linear_ac=False,
                                          fast_decoupled=False,
                                          helm=False,
-                                         tap_module=tap_module)
+                                         tr_tap_module=tap_module)
 
     def compute_admittance_matrices(self, newton_raphson=False, linear_dc=False, linear_ac=False, fast_decoupled=False,
-                                    helm=False, tap_module=None):
+                                    helm=False, tr_tap_module=None):
         """
         Compute the admittance matrices
         :param newton_raphson: Compute the matrices necessary for Newton-Raphson like power flow
@@ -463,10 +473,10 @@ class SnapshotCircuit:
         Ysh_tr = 1.0j * self.tr_B
         Ys_tr2 = Ys_tr + Ysh_tr / 2.0
 
-        if tap_module is None:
+        if tr_tap_module is None:
             tap = self.tr_tap_mod * np.exp(1.0j * self.tr_tap_ang)
         else:
-            tap = tap_module * np.exp(1.0j * self.tr_tap_ang)
+            tap = tr_tap_module * np.exp(1.0j * self.tr_tap_ang)
 
         # branch primitives in vector form for Ybus
         if newton_raphson:
@@ -498,7 +508,7 @@ class SnapshotCircuit:
             Yff[a:b] = Y_vsc
             Yft[a:b] = -self.vsc_m * np.exp(1.0j * self.vsc_theta) * Y_vsc
             Ytf[a:b] = -self.vsc_m * np.exp(-1.0j * self.vsc_theta) * Y_vsc
-            Ytt[a:b] = self.vsc_Gsw + self.vsc_m * self.vsc_m * (Y_vsc + 1.0j * self.vsc_Beq)
+            Ytt[a:b] = self.vsc_G0 + self.vsc_m * self.vsc_m * (Y_vsc + 1.0j * self.vsc_Beq)
 
         if linear_ac or helm:
             Yffs[a:b] = Y_vsc
@@ -894,10 +904,16 @@ def get_pf_island(circuit: SnapshotCircuit, bus_idx) -> "SnapshotCircuit":
     nc.vsc_names = circuit.vsc_names[vsc_idx]
     nc.vsc_R1 = circuit.vsc_R1[vsc_idx]
     nc.vsc_X1 = circuit.vsc_X1[vsc_idx]
-    nc.vsc_Gsw = circuit.vsc_Gsw[vsc_idx]
+    nc.vsc_G0 = circuit.vsc_G0[vsc_idx]
     nc.vsc_Beq = circuit.vsc_Beq[vsc_idx]
     nc.vsc_m = circuit.vsc_m[vsc_idx]
     nc.vsc_theta = circuit.vsc_theta[vsc_idx]
+    nc.vsc_Inom = circuit.vsc_Inom[vsc_idx]
+    nc.vsc_Pset = circuit.vsc_Pset[vsc_idx]
+    nc.vsc_Qset = circuit.vsc_Qset[vsc_idx]
+    nc.vsc_Vac_set = circuit.vsc_Vac_set[vsc_idx]
+    nc.vsc_Vdc_set = circuit.vsc_Vdc_set[vsc_idx]
+    nc.vsc_control_mode = circuit.vsc_control_mode[vsc_idx]
 
     nc.C_vsc_bus = circuit.C_vsc_bus[np.ix_(vsc_idx, bus_idx)]
 
@@ -910,6 +926,8 @@ def get_pf_island(circuit: SnapshotCircuit, bus_idx) -> "SnapshotCircuit":
     nc.dc_line_impedance_tolerance = circuit.dc_line_impedance_tolerance[dc_line_idx]
 
     nc.C_dc_line_bus = circuit.C_dc_line_bus[np.ix_(dc_line_idx, bus_idx)]
+    nc.dc_F = circuit.dc_F[dc_line_idx]
+    nc.dc_T = circuit.dc_T[dc_line_idx]
 
     # load ---------------------------------------------------------------------------------------------------------
     nc.load_names = circuit.load_names[load_idx]
@@ -1068,7 +1086,7 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.bus_types[i] = bus.determine_bus_type().value
 
         # Add buses dictionary entry
-        bus_dictionary[bus] = i
+        bus_dictionary[bus.idtag] = i
 
         for elm in bus.loads:
             nc.load_names[i_ld] = elm.name
@@ -1152,8 +1170,8 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.branch_names[i] = elm.name
         nc.branch_active[i] = elm.active
         nc.branch_rates[i] = elm.rate
-        f = bus_dictionary[elm.bus_from]
-        t = bus_dictionary[elm.bus_to]
+        f = bus_dictionary[elm.bus_from.idtag]
+        t = bus_dictionary[elm.bus_to.idtag]
         nc.C_branch_bus_f[i, f] = 1
         nc.C_branch_bus_t[i, t] = 1
         nc.F[i] = f
@@ -1174,12 +1192,13 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.line_alpha[i] = elm.alpha
 
     # 2-winding transformers
+    tr_control_mode_dict = get_transformer_control_numbers_dict()
     for i, elm in enumerate(circuit.transformers2w):
         ii = i + nline
 
         # generic stuff
-        f = bus_dictionary[elm.bus_from]
-        t = bus_dictionary[elm.bus_to]
+        f = bus_dictionary[elm.bus_from.idtag]
+        t = bus_dictionary[elm.bus_to.idtag]
 
         nc.branch_names[ii] = elm.name
         nc.branch_active[ii] = elm.active
@@ -1209,6 +1228,7 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.tr_tap_inc_reg_up[i] = elm.tap_changer.inc_reg_up
         nc.tr_tap_inc_reg_down[i] = elm.tap_changer.inc_reg_down
         nc.tr_vset[i] = elm.vset
+        nc.tr_control_mode[i] = tr_control_mode_dict[elm.control_mode]
 
         nc.tr_bus_to_regulated_idx[i] = t if elm.bus_to_regulated else f
 
@@ -1216,12 +1236,13 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.tr_tap_f[i], nc.tr_tap_t[i] = elm.get_virtual_taps()
 
     # VSC
+    vsc_control_mode_dict = get_vsc_control_numbers_dict()
     for i, elm in enumerate(circuit.vsc_converters):
         ii = i + nline + ntr2w
 
         # generic stuff
-        f = bus_dictionary[elm.bus_from]
-        t = bus_dictionary[elm.bus_to]
+        f = bus_dictionary[elm.bus_from.idtag]
+        t = bus_dictionary[elm.bus_to.idtag]
 
         nc.branch_names[ii] = elm.name
         nc.branch_active[ii] = elm.active
@@ -1235,10 +1256,16 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.vsc_names[i] = elm.name
         nc.vsc_R1[i] = elm.R1
         nc.vsc_X1[i] = elm.X1
-        nc.vsc_Gsw[i] = elm.Gsw
+        nc.vsc_G0[i] = elm.G0
         nc.vsc_Beq[i] = elm.Beq
         nc.vsc_m[i] = elm.m
         nc.vsc_theta[i] = elm.theta
+        nc.vsc_Inom[i] = elm.Inom
+        nc.vsc_Pset[i] = elm.Pset
+        nc.vsc_Qset[i] = elm.Qset
+        nc.vsc_Vac_set[i] = elm.Vac_set
+        nc.vsc_Vdc_set[i] = elm.Vdc_set
+        nc.vsc_control_mode[i] = vsc_control_mode_dict[elm.control_mode]
 
         nc.C_vsc_bus[i, f] = 1
         nc.C_vsc_bus[i, t] = 1
@@ -1248,8 +1275,8 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
         ii = i + nline + ntr2w + nvsc
 
         # generic stuff
-        f = bus_dictionary[elm.bus_from]
-        t = bus_dictionary[elm.bus_to]
+        f = bus_dictionary[elm.bus_from.idtag]
+        t = bus_dictionary[elm.bus_to.idtag]
 
         nc.branch_names[ii] = elm.name
         nc.branch_active[ii] = elm.active
@@ -1265,6 +1292,8 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.dc_line_impedance_tolerance[i] = elm.tolerance
         nc.C_dc_line_bus[i, f] = 1
         nc.C_dc_line_bus[i, t] = 1
+        nc.dc_F[i] = f
+        nc.dc_T[i] = t
 
         # Thermal correction
         nc.dc_line_temp_base[i] = elm.temp_base
@@ -1276,8 +1305,8 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
         ii = i + nline + ntr2w + nvsc
 
         # generic stuff
-        f = bus_dictionary[elm.bus_from]
-        t = bus_dictionary[elm.bus_to]
+        f = bus_dictionary[elm.bus_from.idtag]
+        t = bus_dictionary[elm.bus_to.idtag]
 
         # hvdc values
         nc.hvdc_names[i] = elm.name

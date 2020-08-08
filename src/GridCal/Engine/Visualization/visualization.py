@@ -89,9 +89,9 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
             r, g, b, a = voltage_cmap(vnorm[i])
             bus.graphic_obj.set_tile_color(QtGui.QColor(r * 255, g * 255, b * 255, a * 255))
 
-            tooltip = str(i) + ': ' + bus.name + '\n' \
-                      + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n' \
-                      + 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
+            tooltip = str(i) + ': ' + bus.name + '\n'
+            tooltip += 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n'
+            tooltip += 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
             if s_bus is not None:
                 tooltip += '\nS: ' + "{:10.4f}".format(s_bus[i] * Sbase) + ' [MVA]'
             if types is not None:

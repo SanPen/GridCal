@@ -17,9 +17,8 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 
-from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.enumerations import BranchType
+from GridCal.Engine.Devices.enumerations import BranchType, ConverterControlType
 
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
@@ -27,21 +26,35 @@ from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, G
 class VSC(EditableDevice):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='VSC', idtag=None, active=True,
-                 r1=0.0001, x1=0.05, m=1.0, theta=0.1, Gsw=1e-5, Beq=0.001, rate=1e-9,
+                 r1=0.0001, x1=0.05, m=1.0, theta=0.1, G0=1e-5, Beq=0.001, Inom=100, rate=1e-9,
+                 control_mode: ConverterControlType = ConverterControlType.pf_vac, Pset = 0.0, Vac_set=1.0, Vdc_set=1.0, Qset=0.0,
                  mttf=0, mttr=0, cost=1200, cost_prof=None, rate_prof=None, active_prof=None):
         """
         Voltage source converter (VSC)
         :param bus_from:
         :param bus_to:
         :param name:
+        :param idtag:
         :param active:
         :param r1:
         :param x1:
         :param m:
         :param theta:
-        :param Gsw:
+        :param G0:
         :param Beq:
+        :param Inom:
         :param rate:
+        :param control_mode:
+        :param Pset:
+        :param Vac_set:
+        :param Vdc_set:
+        :param Qset:
+        :param mttf:
+        :param mttr:
+        :param cost:
+        :param cost_prof:
+        :param rate_prof:
+        :param active_prof:
         """
 
         EditableDevice.__init__(self,
@@ -57,16 +70,20 @@ class VSC(EditableDevice):
                                                                    'Name of the bus at the "to" side of the branch.'),
                                                   'active': GCProp('', bool, 'Is the branch active?'),
                                                   'rate': GCProp('MVA', float, 'Thermal rating power of the branch.'),
+                                                  'control_mode': GCProp('', ConverterControlType, 'Converter control mode'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
                                                                  'used in reliability studies.'),
                                                   'R1': GCProp('p.u.', float, 'Resistive losses.'),
                                                   'X1': GCProp('p.u.', float, 'Magnetic losses.'),
-                                                  'Gsw': GCProp('p.u.', float, 'Inverter losses.'),
+                                                  'G0': GCProp('p.u.', float, 'Inverter losses.'),
                                                   'Beq': GCProp('p.u.', float, 'Total shunt susceptance.'),
                                                   'm': GCProp('', float, 'Tap changer module, it a value close to 1.0'),
                                                   'theta': GCProp('rad', float, 'Converter firing angle.'),
+                                                  'Inom': GCProp('kA', float, 'Nominal current.'),
+                                                  'Pset': GCProp('MW', float,
+                                                                 'Set power (Only valid for type I control modes).'),
                                                   'Cost': GCProp('e/MWh', float,
                                                                  'Cost of overloads. Used in OPF.'),
                                                   },
@@ -75,18 +92,24 @@ class VSC(EditableDevice):
                                                          'rate': 'rate_prof',
                                                          'Cost': 'Cost_prof'})
 
-        # the VSC must only connect from an AC to a DC bus
+        # the VSC must only connect from an DC to a AC bus
+        # this connectivity sense is done to keep track with the articles that set it
+        # from -> DC
+        # to   -> AC
         # assert(bus_from.is_dc != bus_to.is_dc)
         if bus_to is not None and bus_from is not None:
             # connectivity:
             # for the later primitives to make sense, the "bus from" must be AC and the "bus to" must be DC
-            if bus_to.is_dc:
+            if bus_from.is_dc and not bus_to.is_dc:  # correct sense
                 self.bus_from = bus_from
                 self.bus_to = bus_to
-            else:
+            elif not bus_from.is_dc and bus_to.is_dc:  # opposite sense, revert
                 self.bus_from = bus_to
                 self.bus_to = bus_from
                 print('Corrected the connection direction of the VSC device:', self.name)
+            else:
+                raise Exception('Impossible connecting a VSC device here. '
+                                'VSC devices must be connected between AC and DC buses')
         else:
             self.bus_from = None
             self.bus_to = None
@@ -97,10 +120,17 @@ class VSC(EditableDevice):
         # total impedance and admittance in p.u.
         self.R1 = r1
         self.X1 = x1
-        self.Gsw = Gsw
+        self.G0 = G0
         self.Beq = Beq
         self.m = m
         self.theta = theta
+        self.Inom = Inom
+
+        self.Pset = Pset
+        self.Qset = Qset
+        self.Vac_set = Vac_set
+        self.Vdc_set = Vdc_set
+        self.control_mode = control_mode
 
         self.Cost = cost
         self.Cost_prof = cost_prof
@@ -121,6 +151,29 @@ class VSC(EditableDevice):
     def get_weight(self):
         return np.sqrt(self.R1 * self.R1 + self.X1 * self.X1)
 
+    def correct_buses_connection(self):
+        """
+        Fix the buses connection (from: DC, To: AC)
+        """
+        # the VSC must only connect from an DC to a AC bus
+        # this connectivity sense is done to keep track with the articles that set it
+        # from -> DC
+        # to   -> AC
+        # assert(bus_from.is_dc != bus_to.is_dc)
+        if self.bus_to is not None and self.bus_from is not None:
+            # connectivity:
+            # for the later primitives to make sense, the "bus from" must be AC and the "bus to" must be DC
+            if self.bus_from.is_dc and not self.bus_to.is_dc:  # correct sense
+                pass
+            elif not self.bus_from.is_dc and self.bus_to.is_dc:  # opposite sense, revert
+                self.bus_from, self.bus_to = self.bus_to, self.bus_from
+                print('Corrected the connection direction of the VSC device:', self.name)
+            else:
+                raise Exception('Impossible connecting a VSC device here. '
+                                'VSC devices must be connected between AC and DC buses')
+        else:
+            self.bus_from = None
+            self.bus_to = None
 
     def get_properties_dict(self):
         """
@@ -147,7 +200,7 @@ class VSC(EditableDevice):
              'r': self.R1,
              'x': self.X1,
              'b': self.Beq,
-             'g': self.Gsw,
+             'g': self.G0,
 
              'tap_module': self.m,
              'firing_angle': self.theta,
