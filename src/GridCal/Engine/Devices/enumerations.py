@@ -70,15 +70,6 @@ class TransformerControlType(Enum):
         return list(map(lambda c: c.value, cls))
 
 
-def get_transformer_control_numbers_dict():
-    """
-    Get a dictionary relating the control modes to a number
-    """
-    return {TransformerControlType.fixed: 0,
-            TransformerControlType.angle_tap: 3,
-            TransformerControlType.tap: 2,
-            TransformerControlType.angle: 1}
-
 
 class ConverterControlType(Enum):
 
@@ -112,16 +103,6 @@ class ConverterControlType(Enum):
     def list(cls):
         return list(map(lambda c: c.value, cls))
 
-
-def get_vsc_control_numbers_dict():
-    """
-    Get a dictionary relating the control modes to a number
-    """
-    return {ConverterControlType.theta_vac: 1,
-            ConverterControlType.pf_qac: 2,
-            ConverterControlType.pf_vac: 3,
-            ConverterControlType.vdc_qac: 4,
-            ConverterControlType.vdc_vac: 5}
 
 
 class TimeFrame(Enum):
