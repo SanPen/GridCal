@@ -86,6 +86,7 @@ class AcDcSnapshotCircuit:
         self.G = np.zeros(self.nbr, dtype=float)
         self.B = np.zeros(self.nbr, dtype=float)
         self.m = np.ones(self.nbr, dtype=float)
+        self.k = np.ones(self.nbr, dtype=float)
         self.theta = np.zeros(self.nbr, dtype=float)
         self.Beq = np.zeros(self.nbr, dtype=float)
         self.G0 = np.zeros(self.nbr, dtype=float)
@@ -806,6 +807,7 @@ def compile_acdc_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False
         nc.G0[ii] = elm.G0
         nc.Beq[ii] = elm.Beq
         nc.m[ii] = elm.m
+        nc.k[ii] = 0.8660254037844386  # sqrt(3)/2
         nc.theta[ii] = elm.theta
         nc.Inom[ii] = elm.Inom
         nc.Pset[ii] = elm.Pset
