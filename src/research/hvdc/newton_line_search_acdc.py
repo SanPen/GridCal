@@ -80,7 +80,7 @@ def determine_branch_indices(circuit: AcDcSnapshotCircuit):
     ------------------------------------
 
     """
-
+        
     # indices in the global branch scheme
     idx_sh = list()  # indices of the branches controlling Pf flow
     idx_qz = list()  # indices of the branches when forcing the Qf flow to zero (aka "the zero condition")

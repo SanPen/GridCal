@@ -409,36 +409,36 @@ def NR_I2(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
 if __name__ == "__main__":
     from GridCal.Engine import *
 
-    grid = FileOpen('IEEE30.xlsx').open()
-    # grid.load_file('lynn5buspq.xlsx')
-    # grid.load_file('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 145 Bus.xlsx')
-    # grid.load_file('D:\GitHub\GridCal\Grids_and_profiles\grids\Pegasus 89 Bus.xlsx')
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE14_from_raw.gridcal'
+    grid = FileOpen(fname).open()
 
-    circuit = grid.compile_snapshot().compute()
+    nc = compile_snapshot_circuit(grid)
+    islands = split_into_islands(nc)
+    circuit = islands[0]
 
-    print('\nYbus:\n', circuit.power_flow_input.Ybus.todense())
-    print('\nYseries:\n', circuit.power_flow_input.Yseries.todense())
-    print('\nYshunt:\n', circuit.power_flow_input.Yshunt)
-    print('\nSbus:\n', circuit.power_flow_input.Sbus)
-    print('\nIbus:\n', circuit.power_flow_input.Ibus)
-    print('\nVbus:\n', circuit.power_flow_input.Vbus)
-    print('\ntypes:\n', circuit.power_flow_input.types)
-    print('\npq:\n', circuit.power_flow_input.pq)
-    print('\npv:\n', circuit.power_flow_input.pv)
-    print('\nvd:\n', circuit.power_flow_input.ref)
+    print('\nYbus:\n', circuit.Ybus.todense())
+    print('\nYseries:\n', circuit.Yseries.todense())
+    print('\nYshunt:\n', circuit.Yshunt)
+    print('\nSbus:\n', circuit.Sbus)
+    print('\nIbus:\n', circuit.Ibus)
+    print('\nVbus:\n', circuit.Vbus)
+    print('\ntypes:\n', circuit.bus_types)
+    print('\npq:\n', circuit.pq)
+    print('\npv:\n', circuit.pv)
+    print('\nvd:\n', circuit.vd)
 
     import time
     print('Newton-Raphson-current')
     start_time = time.time()
-    # Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15
-    V1, converged_, err, S = NR_I_LS(Ybus=circuit.power_flow_input.Ybus,
-                                     Sbus_sp=circuit.power_flow_input.Sbus,
-                                     V0=circuit.power_flow_input.Vbus,
-                                     Ibus_sp=circuit.power_flow_input.Ibus,
-                                     pv=circuit.power_flow_input.pv,
-                                     pq=circuit.power_flow_input.pq,
-                                     tol=1e-9,
-                                     max_it=100)
+    # V, converged, normF, Scalc, iter_, elapsed
+    V1, converged_, err, S, iter_, elapsed_ = NR_I_LS(Ybus=circuit.Ybus,
+                                                      Sbus_sp=circuit.Sbus,
+                                                      V0=circuit.Vbus,
+                                                      Ibus_sp=circuit.Ibus,
+                                                      pv=circuit.pv,
+                                                      pq=circuit.pq,
+                                                      tol=1e-9,
+                                                      max_it=100)
 
     print("--- %s seconds ---" % (time.time() - start_time))
     # print_coeffs(C, W, R, X, H)
@@ -449,17 +449,17 @@ if __name__ == "__main__":
 
     # check the HELM solution: v against the NR power flow
     print('\nNR standard')
-    options = PowerFlowOptions(SolverType.NR, verbose=False, robust=False, tolerance=1e-9, control_q=False)
-    power_flow = PowerFlow(grid, options)
+    options = PowerFlowOptions(SolverType.NR, verbose=False, tolerance=1e-9, control_q=False)
+    power_flow = PowerFlowDriver(grid, options)
 
     start_time = time.time()
     power_flow.run()
     print("--- %s seconds ---" % (time.time() - start_time))
-    vnr = circuit.power_flow_results.voltage
+    vnr = power_flow.results.voltage
 
     # print('V module:\t', abs(vnr))
     # print('V angle: \t', angle(vnr))
-    print('error: \t', circuit.power_flow_results.error)
+    print('error: \t', power_flow.results.error())
 
     data = c_[np.abs(V1), angle(V1), np.abs(vnr), angle(vnr),  np.abs(V1 - vnr)]
     cols = ['|V|', 'angle', '|V| benchmark NR', 'angle benchmark NR', 'Diff']
