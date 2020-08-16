@@ -30,7 +30,7 @@ import numpy as np
 np.set_printoptions(precision=8, suppress=True, linewidth=320000)
 
 
-def ASD1(Ybus, S0, V0, I0, pv, pq, pqpv, vd, tol, max_it=15):
+def ASD1(Ybus, Yseries, Ysh0, S0, V0, I0, pv, pq, pqpv, vd, tol, max_it=15):
     """
 
     :param Ybus:
@@ -111,7 +111,7 @@ def ASD1(Ybus, S0, V0, I0, pv, pq, pqpv, vd, tol, max_it=15):
     return V, converged, normF, Scalc, iterations, elapsed
 
 
-def ASD2(Ybus, S0, V0, I0, pv, pq, pqpv, vd, tol, max_it=15):
+def ASD2(Ybus, Yseries, Ysh0, S0, V0, I0, pv, pq, pqpv, vd, tol, max_it=15):
     """
 
     :param Ybus:
@@ -201,7 +201,7 @@ def ASD2(Ybus, S0, V0, I0, pv, pq, pqpv, vd, tol, max_it=15):
     return V, converged, normF, Scalc, iterations, elapsed
 
 
-def ASD3(Ybus, S0, V0, I0, pv, pq, pqpv, vd, tol, max_it=15):
+def ASD3(Ybus, Yseries, Ysh0, S0, V0, I0, pv, pq, pqpv, vd, tol, max_it=15):
     """
 
     :param Ybus:
@@ -226,26 +226,32 @@ def ASD3(Ybus, S0, V0, I0, pv, pq, pqpv, vd, tol, max_it=15):
     converged = False
 
     # reduced system
-    Yred = Ybus[pqpv, :][:, pqpv]
+    # Yred = Ybus[pqpv, :][:, pqpv]
     Sred = S0[pqpv]
     I0_red = I0[pqpv]
 
+    Yseries_red = Yseries[np.ix_(pqpv, pqpv)]  # admittance matrix without slack buses
+    Yslack = -Yseries[np.ix_(pqpv, vd)]  # yes, it is the negative of this
+    Yslack_vec = Yslack.sum(axis=1).A1
+    Vslack = V0[vd]
+    Ysh_red = Ysh0[pqpv]
+
     # get the first voltage approximation V0, or simply V(l
-    Ivd = -Ybus[pqpv, :][:, vd].dot(V[vd])  # slack currents
-    V_l = spsolve(Yred, Ivd + (S0/V0)[pqpv])  # slack voltages influence
+    Ivd = Yslack * Vslack  # slack currents
+    V_l = spsolve(Yseries_red, Ivd + Ysh_red * V[pqpv])  # slack voltages influence
 
     # compute alpha
     Vabs = np.abs(V_l)
     alpha = sp.diags(np.conj(Sred) / (Vabs * Vabs))
 
     # compute Y-alpha
-    Y_alpha = (Yred - alpha)
+    Y_alpha = (Yseries_red - alpha)
     Y_alpha_fact = factorized(Y_alpha)
 
     # compute beta as a vector
     B = Y_alpha.diagonal()
     beta = diags(B)
-    Y_beta = Yred - beta
+    Y_beta = Yseries_red - beta
 
     n = len(V0)
     C = np.zeros((max_it + 1, n), dtype=complex)
@@ -258,11 +264,11 @@ def ASD3(Ybus, S0, V0, I0, pv, pq, pqpv, vd, tol, max_it=15):
         iterations += 1
 
         # Global step
-        rhs_global = np.conj(Sred) / np.conj(V_l) - alpha * V_l + I0_red + Ivd
+        rhs_global = np.conj(Sred) / np.conj(V_l) - alpha * V_l + I0_red + Ivd - Ysh_red * V_l
         V_l12 = Y_alpha_fact(rhs_global)
 
         # local step
-        A = (Y_beta * V_l12 - I0_red - Ivd) / B
+        A = (Y_beta * V_l12 - I0_red - Ivd + Ysh_red * V_l) / B
         Sigma = - np.conj(Sred) / (A * np.conj(A) * B)
         U = (-1 + np.sqrt(1 - 4 * (Sigma.imag * Sigma.imag + Sigma.real))) / 2.0 - 1j * Sigma.imag
         V_l = U * A  # it is the new V_l
@@ -320,6 +326,8 @@ if __name__ == "__main__":
     start_time = time.time()
     # V, converged, normF, Scalc, iter_, elapsed
     V1, converged_, err, S, iter_, elapsed_ = ASD3(Ybus=circuit.Ybus,
+                                                   Yseries=circuit.Yseries,
+                                                   Ysh0=circuit.Yshunt,
                                                    S0=circuit.Sbus,
                                                    V0=circuit.Vbus,
                                                    I0=circuit.Ibus,
