@@ -1,21 +1,17 @@
-# Copyright (c) 1996-2015 PSERC. All rights reserved.
-# Use of this source code is governed by a BSD-style
-# license that can be found in the LICENSE_MATPOWER file.
-
-# Copyright 1996-2015 PSERC. All rights reserved.
-# Use of this source code is governed by a BSD-style
-# license that can be found in the LICENSE file.
-
-# Copyright (c) 2016-2017 by University of Kassel and Fraunhofer Institute for Wind Energy and
-# Energy System Technology (IWES), Kassel. All rights reserved. Use of this source code is governed
-# by a BSD-style license that can be found in the LICENSE file.
-
-# The file has been modified from Pypower.
-# The function mu() has been added to the solver in order to provide an optimal iteration control
+# This file is part of GridCal.
 #
-# Copyright (c) 2018 Santiago Peñate Vera
+# GridCal is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# This file retains the BSD-Style license
+# GridCal is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from numpy import array, angle, exp, linalg, r_, Inf, conj, diag, asmatrix, asarray, zeros_like, zeros, complex128, \

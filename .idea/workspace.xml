@@ -19,10 +19,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added ASD research file">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/power_flow/asd/asd_power_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/power_flow/asd/asd_power_flow.py" afterDir="false" />
-    </list>
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="ASD in coefficients mode" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -319,7 +316,7 @@
       <workItem from="1597395686148" duration="7568000" />
       <workItem from="1597480664209" duration="14300000" />
       <workItem from="1597524032449" duration="565000" />
-      <workItem from="1597565975707" duration="2021000" />
+      <workItem from="1597565975707" duration="2653000" />
     </task>
     <task id="LOCAL-00001" summary="Trial">
       <created>1589563536685</created>
@@ -503,7 +500,14 @@
       <option name="project" value="LOCAL" />
       <updated>1597524584159</updated>
     </task>
-    <option name="localTasksCounter" value="27" />
+    <task id="LOCAL-00027" summary="ASD in coefficients mode">
+      <created>1597568531908</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1597568531908</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -549,7 +553,8 @@
     <MESSAGE value="oddly working, although the indices od 'm' seem to be wrong" />
     <MESSAGE value="Fixed sides on Y formation&#10;Added k to the snapshot data" />
     <MESSAGE value="Added ASD research file" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added ASD research file" />
+    <MESSAGE value="ASD in coefficients mode" />
+    <option name="LAST_COMMIT_MESSAGE" value="ASD in coefficients mode" />
   </component>
   <component name="WindowStateProjectService">
     <state x="671" y="217" width="1072" height="826" key="#ExecuteGridCal" timestamp="1590757259455">
@@ -660,11 +665,11 @@
     <state x="120" y="493" width="1800" height="1080" key="SettingsEditor/1920.0.2560.1440/0.493.1920.1080@0.493.1920.1080" timestamp="1590453688452" />
     <state x="187" y="27" width="1668" height="961" key="SettingsEditor/72.27.1848.1053@72.27.1848.1053" timestamp="1597400934818" />
     <state x="60" y="246" width="900" height="720" key="SettingsEditor/960.0.1280.720/0.246.960.540@960.0.1280.720" timestamp="1589563987445" />
-    <state x="303" y="285" width="800" height="660" key="Vcs.Push.Dialog.v2" timestamp="1597524586593">
+    <state x="303" y="285" width="800" height="660" key="Vcs.Push.Dialog.v2" timestamp="1597568537545">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="293" y="284" width="800" height="535" key="Vcs.Push.Dialog.v2/60.26.1860.1054@60.26.1860.1054" timestamp="1589912214921" />
-    <state x="303" y="285" width="800" height="660" key="Vcs.Push.Dialog.v2/72.27.1848.1053@72.27.1848.1053" timestamp="1597524586593" />
+    <state x="303" y="285" width="800" height="660" key="Vcs.Push.Dialog.v2/72.27.1848.1053@72.27.1848.1053" timestamp="1597568537545" />
     <state x="1120" y="176" width="800" height="536" key="Vcs.Push.Dialog.v2/960.0.1280.720/0.246.960.540@960.0.1280.720" timestamp="1589567691665" />
     <state width="1804" height="526" key="XDebugger.FullValuePopup" timestamp="1594803771742">
       <screen x="72" y="27" width="1848" height="1053" />
