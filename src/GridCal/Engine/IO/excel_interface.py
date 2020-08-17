@@ -713,6 +713,9 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 elif conv is BranchType:
                     # cbr = BranchTypeConverter(None)
                     setattr(obj_, attr, BranchType(values[a]))
+                elif conv in [DeviceType.AreaDevice, DeviceType.SubstationDevice,
+                              DeviceType.ZoneDevice, DeviceType.CountryDevice]:
+                    pass
                 else:
                     setattr(obj_, attr, conv(values[a]))
             else:

@@ -104,7 +104,6 @@ class ConverterControlType(Enum):
         return list(map(lambda c: c.value, cls))
 
 
-
 class TimeFrame(Enum):
     Continuous = 'Continuous'
 

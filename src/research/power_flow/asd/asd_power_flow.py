@@ -26,7 +26,7 @@ import numpy as np
 np.set_printoptions(precision=8, suppress=True, linewidth=320000)
 
 
-def ASD1(Ybus, Yseries, Ysh0, S0, V0, I0, pv, pq, pqpv, vd, tol, max_it=15):
+def ASD1(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15):
     """
 
     :param Ybus:
@@ -35,7 +35,6 @@ def ASD1(Ybus, Yseries, Ysh0, S0, V0, I0, pv, pq, pqpv, vd, tol, max_it=15):
     :param I0:
     :param pv:
     :param pq:
-    :param pqpv:
     :param vd:
     :param tol:
     :param max_it:
@@ -45,119 +44,53 @@ def ASD1(Ybus, Yseries, Ysh0, S0, V0, I0, pv, pq, pqpv, vd, tol, max_it=15):
 
     # initialize
     V = V0.copy()
+    Vset_pv = np.abs(V0[pv])
     Scalc = S0.copy()
+    Scalc[pv] = Scalc[pv].real + 0j
     normF = 1e20
     iterations = 0
     converged = False
+    n = len(V0)
+    npq = len(pq)
+    npv = len(pv)
+    pqpv = np.r_[pq, pv]
+
+    npqpv = len(pqpv)
+
+    # kron
+    Y11 = Ybus[pq, :][:, pq]
+    Y12 = Ybus[pq, :][:, pv]
+    Y21 = Ybus[pv, :][:, pq]
+    Y22 = Ybus[pv, :][:, pv]
+    # Ykron = Y22 + Y21 * (spsolve(Y11, Y12))
 
     # reduced system
-    Y = Ybus[pqpv, :][:, pqpv]
-    Sred = Scalc[pqpv]
-    I0_red = I0[pqpv]
-
-    # get the first voltage approximation V0, or simply V(l
-    Ivd = Ybus[pqpv, :][:, vd].dot(V[vd])  # slack currents
-    V_l = spsolve(Y, -Ivd)  # slack voltages influence
-
-    # compute alpha
-    Vabs = np.abs(V_l)
-    alpha = sp.diags(np.conj(S0[pqpv]) / np.conj(Vabs * Vabs))
-
-    # compute Y-alpha
-    Y_alpha = (Y - alpha)
-    Y_alpha_fact = factorized(Y_alpha)
-
-    # compute beta as a vector
-    B = Y_alpha.diagonal()
-    beta = diags(B)
-    Y_beta = Y - beta
-
-    while not converged and iterations < max_it:
-
-        # Global step
-        rhs_global = np.conj(Sred) / np.conj(V_l) - alpha * V_l + I0_red + Ivd
-        V_l12 = Y_alpha_fact(rhs_global)
-
-        # local step
-        A = (Y_beta * V_l12 - I0_red - Ivd) / B
-        Sigma = -np.conj(Sred) / (A * np.conj(A) * B)
-        U = (-1 + np.sqrt(1 - 4 * (Sigma.imag * Sigma.imag + Sigma.real))) / 2.0 - 1j * Sigma.imag
-        V_l = U * A  # it is the new V_l
-
-        # Assign the reduced solution
-        V[pqpv] = V_l
-
-        # compute the error
-        error = np.max(np.abs(V_l12 - V_l))
-        converged = error < tol
-
-        # compute the calculated power injection and the error of the voltage solution
-        Scalc = V * np.conj(Ybus * V - I0)
-        Sred = Scalc[pqpv]
-
-        mis = Scalc - S0  # complex power mismatch
-        mismatch = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
-        normF = np.linalg.norm(mismatch, np.Inf)
-        print(normF)
-        iterations += 1
-
-    end = time.time()
-    elapsed = end - start
-
-    return V, converged, normF, Scalc, iterations, elapsed
-
-
-def ASD2(Ybus, Yseries, Ysh0, S0, V0, I0, pv, pq, pqpv, vd, tol, max_it=15):
-    """
-
-    :param Ybus:
-    :param S0:
-    :param V0:
-    :param I0:
-    :param pv:
-    :param pq:
-    :param pqpv:
-    :param vd:
-    :param tol:
-    :param max_it:
-    :return:
-    """
-    start = time.time()
-
-    # initialize
-    V = V0.copy()
-    Scalc = S0.copy()
-    normF = 1e20
-    iterations = 0
-    converged = False
-
-    # reduced system
-    Yred = Ybus[pqpv, :][:, pqpv]
+    Yred = vstack_sp((hstack_sp((Y11, Y12)), hstack_sp((Y21, Y22))))
+    # Sred = np.r_[S0[pq], S0[pv].real]
     Sred = S0[pqpv]
     I0_red = I0[pqpv]
 
-    # get the first voltage approximation V0, or simply V(l
-    Ivd = -Ybus[pqpv, :][:, vd].dot(V[vd])  # slack currents
-    V_l = spsolve(Yred, Ivd)  # slack voltages influence
+    Yslack = - Ybus[np.ix_(pqpv, vd)]  # yes, it is the negative of this
+    Vslack = V0[vd]
 
     # compute alpha
-    Vabs = np.abs(V_l)
+    Vabs = np.ones(npqpv)
     alpha = sp.diags(np.conj(Sred) / (Vabs * Vabs))
 
     # compute Y-alpha
     Y_alpha = (Yred - alpha)
-    Y_alpha_fact = factorized(Y_alpha)
 
     # compute beta as a vector
     B = Y_alpha.diagonal()
     beta = diags(B)
     Y_beta = Yred - beta
 
-    n = len(V0)
-    C = np.zeros((max_it + 1, n), dtype=complex)
-    C[iterations, vd] = V0[vd]
-    C[iterations, pqpv] = V_l
-    V = V0.copy()
+    # get the first voltage approximation V0, or simply V(l
+    Ivd = Yslack * Vslack  # slack currents
+    V_l = spsolve(Y_alpha, Ivd)  # slack voltages influence
+    V_l = V0[pqpv]
+
+    # gamma = 0.5
 
     while not converged and iterations < max_it:
 
@@ -165,132 +98,49 @@ def ASD2(Ybus, Yseries, Ysh0, S0, V0, I0, pv, pq, pqpv, vd, tol, max_it=15):
 
         # Global step
         rhs_global = np.conj(Sred) / np.conj(V_l) - alpha * V_l + I0_red + Ivd
-        V_l12 = Y_alpha_fact(rhs_global)
+        V_l12 = spsolve(Y_alpha, rhs_global)
+
+        # PV correction
+        V_pv = V_l12[npq:]
+        # V_pv_abs = np.abs(V_pv)
+        # dV_l12 = (Vset_pv - V_pv_abs) * V_pv / V_pv_abs
+        # dI_l12 = Ykron * dV_l12
+        # dQ_l12 = (V_pv * np.conj(dI_l12)).imag  # correct the reactive power
+        # Sred[npq:] = Sred[npq:].real + 1j * (Sred[npq:].imag + gamma * dQ_l12)  # assign the reactive power
+        # V_l12[npq:] += dV_l12  # correct the voltage
+
+        # better PV correction (using Lynn's formulation)
+        V_l12[npq:] = V_pv * Vset_pv / np.abs(V_pv)
+        V[pq] = V_l12[:npq]
+        V[pv] = V_l12[npq:]
+        Qpv = (V[pv] * np.conj((Ybus[pv, :] * V))).imag
+        Sred[npq:] = Sred[npq:].real + 1j * Qpv
 
         # local step
         A = (Y_beta * V_l12 - I0_red - Ivd) / B
-        Sigma = -np.conj(Sred) / (A * np.conj(A) * B)
-        U = (-1 + np.sqrt(1 - 4 * (Sigma.imag * Sigma.imag + Sigma.real))) / 2.0 - 1j * Sigma.imag
-        V_l = U * A  # it is the new V_l
-
-        # Assign the reduced solution
-        C[iterations, pqpv] = V_l
-        V[pqpv] -= V_l
-
-        # compute the error
-        error = np.max(np.abs(V_l12 - V_l))
-        converged = error < tol
-
-        # compute the calculated power injection and the error of the voltage solution
-        # V = C.sum(axis=0)
-        Scalc = V * np.conj(Ybus * V - I0)
-
-        mis = Scalc - S0  # complex power mismatch
-        mismatch = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
-        normF = np.linalg.norm(mismatch, np.Inf)
-        print(normF)
-
-    print(C)
-    end = time.time()
-    elapsed = end - start
-
-    return V, converged, normF, Scalc, iterations, elapsed
-
-
-def ASD3(Ybus, Yseries, Ysh0, S0, V0, I0, pv, pq, pqpv, vd, tol, max_it=15):
-    """
-
-    :param Ybus:
-    :param S0:
-    :param V0:
-    :param I0:
-    :param pv:
-    :param pq:
-    :param pqpv:
-    :param vd:
-    :param tol:
-    :param max_it:
-    :return:
-    """
-    start = time.time()
-
-    # initialize
-    V = V0.copy()
-    Scalc = S0.copy()
-    normF = 1e20
-    iterations = 0
-    converged = False
-
-    # reduced system
-    # Yred = Ybus[pqpv, :][:, pqpv]
-    Sred = S0[pqpv]
-    I0_red = I0[pqpv]
-
-    Yseries_red = Yseries[np.ix_(pqpv, pqpv)]  # admittance matrix without slack buses
-    Yslack = -Yseries[np.ix_(pqpv, vd)]  # yes, it is the negative of this
-    Yslack_vec = Yslack.sum(axis=1).A1
-    Vslack = V0[vd]
-    Ysh_red = Ysh0[pqpv]
-
-    # get the first voltage approximation V0, or simply V(l
-    Ivd = Yslack * Vslack  # slack currents
-    V_l = spsolve(Yseries_red, Ivd + Ysh_red * V[pqpv])  # slack voltages influence
-
-    # compute alpha
-    Vabs = np.abs(V_l)
-    alpha = sp.diags(np.conj(Sred) / (Vabs * Vabs))
-
-    # compute Y-alpha
-    Y_alpha = (Yseries_red - alpha)
-    Y_alpha_fact = factorized(Y_alpha)
-
-    # compute beta as a vector
-    B = Y_alpha.diagonal()
-    beta = diags(B)
-    Y_beta = Yseries_red - beta
-
-    n = len(V0)
-    C = np.zeros((max_it + 1, n), dtype=complex)
-    C[iterations, vd] = V0[vd]
-    C[iterations, pqpv] = V_l
-    V = V0.copy()
-
-    while not converged and iterations < max_it:
-
-        iterations += 1
-
-        # Global step
-        rhs_global = np.conj(Sred) / np.conj(V_l) - alpha * V_l + I0_red + Ivd - Ysh_red * V_l
-        V_l12 = Y_alpha_fact(rhs_global)
-
-        # local step
-        A = (Y_beta * V_l12 - I0_red - Ivd + Ysh_red * V_l) / B
         Sigma = - np.conj(Sred) / (A * np.conj(A) * B)
-        U = (-1 + np.sqrt(1 - 4 * (Sigma.imag * Sigma.imag + Sigma.real))) / 2.0 - 1j * Sigma.imag
-        V_l = U * A  # it is the new V_l
+        U = (-1 - np.sqrt(1 - 4 * (Sigma.imag * Sigma.imag + Sigma.real))) / 2.0 + 1j * Sigma.imag
+        V_l = U * A
 
         # Assign the reduced solution
-        C[iterations, pqpv] = V_l
-        V[pqpv] -= V_l
-
-        # compute the error
-        error = np.max(np.abs(V_l12 - V_l))
-        converged = error < tol
+        V[pq] = V_l[:npq]
+        V[pv] = V_l[npq:]
 
         # compute the calculated power injection and the error of the voltage solution
-        # V = C.sum(axis=0)
         Scalc = V * np.conj(Ybus * V - I0)
-
         mis = Scalc - S0  # complex power mismatch
         mismatch = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
         normF = np.linalg.norm(mismatch, np.Inf)
+
+        converged = normF < tol
+
         print(normF)
 
-    print(C)
     end = time.time()
     elapsed = end - start
 
     return V, converged, normF, Scalc, iterations, elapsed
+
 
 ########################################################################################################################
 #  MAIN
@@ -299,7 +149,9 @@ if __name__ == "__main__":
     from GridCal.Engine import *
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE14_from_raw.gridcal'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspq.xlsx'
+    # fname = 'Josep.gridcal'
     grid = FileOpen(fname).open()
 
     nc = compile_snapshot_circuit(grid)
@@ -320,16 +172,12 @@ if __name__ == "__main__":
     import time
     print('ASD')
     start_time = time.time()
-    # V, converged, normF, Scalc, iter_, elapsed
-    V1, converged_, err, S, iter_, elapsed_ = ASD3(Ybus=circuit.Ybus,
-                                                   Yseries=circuit.Yseries,
-                                                   Ysh0=circuit.Yshunt,
+    V1, converged_, err, S, iter_, elapsed_ = ASD1(Ybus=circuit.Ybus,
                                                    S0=circuit.Sbus,
                                                    V0=circuit.Vbus,
                                                    I0=circuit.Ibus,
                                                    pv=circuit.pv,
                                                    pq=circuit.pq,
-                                                   pqpv=circuit.pqpv,
                                                    vd=circuit.vd,
                                                    tol=1e-9,
                                                    max_it=20)
@@ -337,24 +185,3 @@ if __name__ == "__main__":
     print("--- %s seconds ---" % (time.time() - start_time))
     print('V:\n', np.abs(V1))
     print('error: \t', err)
-
-    # check the ASD solution: v against the NR power flow
-    # print('\nNR standard')
-    # options = PowerFlowOptions(SolverType.NR, verbose=False, tolerance=1e-9, control_q=False)
-    # power_flow = PowerFlowDriver(grid, options)
-    #
-    # start_time = time.time()
-    # power_flow.run()
-    # print("--- %s seconds ---" % (time.time() - start_time))
-    # vnr = power_flow.results.voltage
-    #
-    # # print('V module:\t', abs(vnr))
-    # # print('V angle: \t', angle(vnr))
-    # print('error: \t', power_flow.results.error())
-    #
-    # data = c_[np.abs(V1), angle(V1), np.abs(vnr), angle(vnr),  np.abs(V1 - vnr)]
-    # cols = ['|V|', 'angle', '|V| benchmark NR', 'angle benchmark NR', 'Diff']
-    # df = pd.DataFrame(data, columns=cols)
-    #
-    # print()
-    # print(df)
