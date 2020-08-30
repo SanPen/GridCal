@@ -45,7 +45,7 @@ def convert_to_reduced(pq, pv, vd, n):
     return pq_, pv_
 
 
-def ASD1(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15):
+def ASD1(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15, gamma=0.5):
     """
     Alternate Search Directions Power Flow
 
@@ -63,6 +63,7 @@ def ASD1(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15):
     :param vd: Array of Slack bus indices
     :param tol: Tolerance
     :param max_it: Maximum number of iterations
+    :param gamma: Reactive power acceleration factor
     :return: V, converged, normF, Scalc, iterations, elapsed
     """
     start = time.time()
@@ -83,14 +84,19 @@ def ASD1(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15):
     npqpv = len(pqpv)
 
     # kron
-    Y11 = Ybus[pq, :][:, pq]
-    Y12 = Ybus[pq, :][:, pv]
-    Y21 = Ybus[pv, :][:, pq]
-    Y22 = Ybus[pv, :][:, pv]
-    Ykron = Y22 + Y21 * (spsolve(Y11, Y12))
+    if npv:
+        Y11 = Ybus[pq, :][:, pq]
+        Y12 = Ybus[pq, :][:, pv]
+        Y21 = Ybus[pv, :][:, pq]
+        Y22 = Ybus[pv, :][:, pv]
+        Ykron = Y22 + Y21 * (spsolve(Y11, Y12))
+
+        Yred = vstack_sp((hstack_sp((Y11, Y12)), hstack_sp((Y21, Y22))))
+        
+    else:
+        Yred = Ybus[pq, :][:, pq]
 
     # reduced system
-    Yred = vstack_sp((hstack_sp((Y11, Y12)), hstack_sp((Y21, Y22))))
     Sred = S0[pqpv]
     I0_red = I0[pqpv]
 
@@ -114,8 +120,6 @@ def ASD1(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15):
     V_l = spsolve(Y_alpha, Ivd)  # slack voltages influence
     V_l = V0[pqpv]
 
-    gamma = 0.5
-
     while not converged and iterations < max_it:
 
         iterations += 1
@@ -125,13 +129,14 @@ def ASD1(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15):
         V_l12 = spsolve(Y_alpha, rhs_global)
 
         # PV correction
-        V_pv = V_l12[npq:]
-        V_pv_abs = np.abs(V_pv)
-        dV_l12 = (Vset_pv - V_pv_abs) * V_pv / V_pv_abs
-        dI_l12 = Ykron * dV_l12
-        dQ_l12 = (V_pv * np.conj(dI_l12)).imag  # correct the reactive power
-        Sred[npq:] = Sred[npq:].real + 1j * (Sred[npq:].imag + gamma * dQ_l12)  # assign the reactive power
-        V_l12[npq:] += dV_l12  # correct the voltage
+        if npv:
+            V_pv = V_l12[npq:]
+            V_pv_abs = np.abs(V_pv)
+            dV_l12 = (Vset_pv - V_pv_abs) * V_pv / V_pv_abs
+            dI_l12 = Ykron * dV_l12
+            dQ_l12 = (V_pv * np.conj(dI_l12)).imag  # correct the reactive power
+            Sred[npq:] = Sred[npq:].real + 1j * (Sred[npq:].imag + gamma * dQ_l12)  # assign the reactive power
+            V_l12[npq:] += dV_l12  # correct the voltage
 
         # local step
         A = (Y_beta * V_l12 - I0_red - Ivd) / B
@@ -159,7 +164,7 @@ def ASD1(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15):
     return V, converged, normF, Scalc, iterations, elapsed
 
 
-def ASD2(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15):
+def ASD2(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15, gamma=0.1):
     """
     Alternate Search Directions Power Flow
 
@@ -228,7 +233,7 @@ def ASD2(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15):
     # get the first voltage approximation V0, or simply V(l
     Ivd = Yslack * Vslack  # slack currents
     V_l = spsolve(Y_alpha, Ivd)  # slack voltages influence
-    V_l = V0[pqpv]
+    # V_l = V0[pqpv]
 
     while not converged and iterations < max_it:
 
@@ -244,7 +249,7 @@ def ASD2(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15):
         V[pq] = V_l12[:npq]
         V[pv] = V_l12[npq:]
         Qpv = (V[pv] * np.conj((Ybus[pv, :] * V))).imag
-        Sred[npq:] = Sred[npq:].real + 1j * Qpv
+        Sred[npq:] = Sred[npq:].real + 1j * gamma * Qpv
 
         # local step
         A = (Y_beta * V_l12 - I0_red - Ivd) / B
@@ -272,7 +277,7 @@ def ASD2(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15):
     return V, converged, normF, Scalc, iterations, elapsed
 
 
-def ASD3(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15):
+def ASD3(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15, gamma=0.1):
     """
     Alternate Search Directions Power Flow
 
@@ -351,7 +356,7 @@ def ASD3(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15):
 
         # compute the reactive power at the PV nodes (actual scheme)
         Qpv = (V[pv] * np.conj((Ybus[pv, :] * V - I0[pv]))).imag
-        Sred[pv_] = Sred[pv_].real + 1j * Qpv  # assign the PV reactive power in the reduced scheme
+        Sred[pv_] = Sred[pv_].real + 1j * gamma * Qpv  # assign the PV reactive power in the reduced scheme
 
         # local step
         A = (Y_beta * V_l12 - I0_red - Ivd) / B
@@ -379,15 +384,168 @@ def ASD3(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15):
     return V, converged, normF, Scalc, iterations, elapsed
 
 
+def func(Sred, pv_, x, Qpv, Y_beta, V_l12, I0_red, Ivd, B, V, pqpv, Ybus, I0, S0, pv, pq):
+    Sred[pv_] = Sred[pv_].real + 1j * x * Qpv
+    # local step
+    A = (Y_beta * V_l12 - I0_red - Ivd) / B
+    Sigma = - np.conj(Sred) / (A * np.conj(A) * B)
+    U = (-1.0 - np.sqrt(1.0 - 4.0 * (Sigma.imag * Sigma.imag + Sigma.real))) / 2.0 + 1.0j * Sigma.imag
+    V_l = U * A
+    V[pqpv] = V_l
+    Scalc = V * np.conj(Ybus * V - I0)
+    mis = Scalc - S0  # complex power mismatch
+    mismatch = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
+    f = 0.5 * np.dot(mismatch, mismatch)
+    return f
+
+
+def ASD4(Ybus, S0, V0, I0, pv, pq, vd, tol, max_it=15, gamma=0.1):
+    """
+    Alternate Search Directions Power Flow
+
+    As defined in the paper:
+
+        Unified formulation of a family of iterative solvers for power system analysis
+        by Domenico Borzacchiello et. Al.
+
+    Modifications:
+    - Better reactive power computation
+    - No need to partition the buses in PQ|PV
+    - No need to perform the partitioning of Y, nor the Kron reduction for the PV buses correction
+    - Automatic finding of gamma
+
+    :param Ybus: Admittance matrix
+    :param S0: Power injections
+    :param V0: Initial Voltage Vector
+    :param I0: Current injections @V=1.0 p.u.
+    :param pv: Array of PV bus indices
+    :param pq: Array of PQ bus indices
+    :param vd: Array of Slack bus indices
+    :param tol: Tolerance
+    :param max_it: Maximum number of iterations
+    :return: V, converged, normF, Scalc, iterations, elapsed
+    """
+    start = time.time()
+
+    # initialize
+    V = V0.copy()
+    Vset_pv = np.abs(V0[pv])
+    Scalc = S0.copy()
+    normF = 1e20
+    iterations = 0
+    converged = False
+    n = len(V0)
+    pqpv = np.r_[pq, pv]
+    pqpv.sort()
+
+    # Create the zero-based indices in the internal reduced scheme
+    pq_, pv_ = convert_to_reduced(pq, pv, vd, n)
+
+    # reduced system
+    Yred = Ybus[np.ix_(pqpv, pqpv)]
+    Sred = S0[pqpv]
+    I0_red = I0[pqpv]
+
+    Yslack = - Ybus[np.ix_(pqpv, vd)]  # yes, it is the negative of this
+    Vslack = V0[vd]
+
+    # compute alpha
+    # Vabs = np.abs(Vslack)
+    # alpha = sp.diags(np.conj(Sred) / (Vabs * Vabs))
+    alpha = -sp.linalg.inv(sp.diags(Yred.diagonal()).tocsc())
+
+    # compute Y-alpha
+    Y_alpha = (Yred - alpha).tocsc()
+
+    # compute beta as a vector
+    B = Yred.diagonal()
+    beta = diags(B)
+    Y_beta = Yred - beta
+
+    # get the first voltage approximation V0, or simply V(l
+    Ivd = Yslack * Vslack  # slack currents
+    V_l = spsolve(Y_alpha, Ivd)  # slack voltages influence
+
+    while not converged and iterations < max_it:
+
+        # Global step
+        rhs_global = np.conj(Sred) / np.conj(V_l) - alpha * V_l + I0_red + Ivd
+        V_l12 = spsolve(Y_alpha, rhs_global)
+
+        # Better PV correction than the paper, using Lynn's formulation
+        V_pv = V_l12[pv_]
+        V_l12[pv_] = V_pv * Vset_pv / np.abs(V_pv)  # compute the corrected bus voltage
+        V[pqpv] = V_l12  # Assign the reduced solution
+
+        # compute the reactive power at the PV nodes (actual scheme)
+        Qpv = (V[pv] * np.conj((Ybus[pv, :] * V - I0[pv]))).imag
+
+        # Find gamma the first time
+        # if iterations == 0:
+        N = 1
+        a = 1.0
+        b = 0
+        found = False
+        c = (a + b) / 2
+        while not found or N <= max_it:  # limit iterations to prevent infinite loop
+            c = (a + b) / 2  # new midpoint
+
+            f_c = func(Sred.copy(), pv_, c, Qpv, Y_beta, V_l12, I0_red, Ivd, B, V.copy(), pqpv, Ybus, I0, S0, pv, pq)
+            f_a = func(Sred.copy(), pv_, a, Qpv, Y_beta, V_l12, I0_red, Ivd, B, V.copy(), pqpv, Ybus, I0, S0, pv, pq)
+
+            sign_fa = f_a < 0
+            sign_fc = f_c < 0
+
+            if f_c <= tol or (a - b) / 2 < tol:  # solution found
+                found = True
+
+            N += 1  # increment step  counter
+            if f_a > f_c:
+                b = c
+            else:
+                a = c  # new interval
+
+        gamma = c
+
+        # compute the reactive power at the PV nodes (actual scheme)
+        Sred[pv_] = Sred[pv_].real + 1j * gamma * Qpv  # assign the PV reactive power in the reduced scheme
+
+        # local step
+        A = (Y_beta * V_l12 - I0_red - Ivd) / B
+        Sigma = - np.conj(Sred) / (A * np.conj(A) * B)
+        U = (-1.0 - np.sqrt(1.0 - 4.0 * (Sigma.imag * Sigma.imag + Sigma.real))) / 2.0 + 1.0j * Sigma.imag
+        V_l = U * A
+
+        # Assign the reduced solution
+        V[pqpv] = V_l
+
+        # compute the calculated power injection and the error of the voltage solution
+        Scalc = V * np.conj(Ybus * V - I0)
+        mis = Scalc - S0  # complex power mismatch
+        mismatch = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
+        normF = 0.5 * np.dot(mismatch, mismatch)  # np.linalg.norm(mismatch, np.Inf)
+
+
+
+        converged = normF < tol
+
+        print(normF)
+        iterations += 1
+
+    end = time.time()
+    elapsed = end - start
+
+    return V, converged, normF, Scalc, iterations, elapsed
+
 ########################################################################################################################
 #  MAIN
 ########################################################################################################################
 if __name__ == "__main__":
     from GridCal.Engine import *
 
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE14_from_raw.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE14_from_raw.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus.gridcal'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
     # fname ='/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Brazil11_loading05.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 5 Bus.xlsx'
 
@@ -411,7 +569,8 @@ if __name__ == "__main__":
     import time
     print('ASD')
     start_time = time.time()
-    V1, converged_, err, S, iter_, elapsed_ = ASD3(Ybus=circuit.Ybus,
+
+    V1, converged_, err, S, iter_, elapsed_ = ASD1(Ybus=circuit.Ybus,
                                                    S0=circuit.Sbus,
                                                    V0=circuit.Vbus,
                                                    I0=circuit.Ibus,
@@ -419,7 +578,8 @@ if __name__ == "__main__":
                                                    pq=circuit.pq,
                                                    vd=circuit.vd,
                                                    tol=1e-9,
-                                                   max_it=20)
+                                                   max_it=20,
+                                                   gamma=0.1)
 
     print("--- %s seconds ---" % (time.time() - start_time))
     print('V:\n', np.abs(V1))

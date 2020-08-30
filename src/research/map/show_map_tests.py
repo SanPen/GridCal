@@ -49,7 +49,7 @@ def getImageCluster(lat_deg, lon_deg, delta_lat, delta_long, zoom):
 class MapWidget(QGraphicsRectItem):
 
     def __init__(self, scene, parent, lat0=42, lat1=-1, lon0=55, lon1=3, zoom=3):
-        super(MapWidget, self).__init__(parent)
+        QGraphicsRectItem.__init__(self)
 
         self.scene = scene
         self.setRect(0.0, 0.0, 800, 600)
@@ -119,7 +119,7 @@ class Window(QDialog):
 
         self.layout.addWidget(self.view)
 
-        self.map = MapWidget(self.scene)
+        self.map = MapWidget(self.scene, self)
 
         self.resize(1200, 800)
 

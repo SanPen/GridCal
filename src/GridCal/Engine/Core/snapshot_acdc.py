@@ -659,7 +659,7 @@ def compile_acdc_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False
         nc.bus_types[i] = bus.determine_bus_type().value
 
         # Add buses dictionary entry
-        bus_dictionary[bus.idtag] = i
+        bus_dictionary[bus] = i
 
         for elm in bus.loads:
             nc.load_names[i_ld] = elm.name
@@ -743,8 +743,8 @@ def compile_acdc_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False
         nc.branch_names[i] = elm.name
         nc.branch_active[i] = elm.active
         nc.branch_rates[i] = elm.rate
-        f = bus_dictionary[elm.bus_from.idtag]
-        t = bus_dictionary[elm.bus_to.idtag]
+        f = bus_dictionary[elm.bus_from]
+        t = bus_dictionary[elm.bus_to]
         nc.C_branch_bus_f[i, f] = 1
         nc.C_branch_bus_t[i, t] = 1
         nc.F[i] = f
@@ -762,8 +762,8 @@ def compile_acdc_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False
         ii = i + nline
 
         # generic stuff
-        f = bus_dictionary[elm.bus_from.idtag]
-        t = bus_dictionary[elm.bus_to.idtag]
+        f = bus_dictionary[elm.bus_from]
+        t = bus_dictionary[elm.bus_to]
 
         nc.branch_names[ii] = elm.name
         nc.branch_active[ii] = elm.active
@@ -790,8 +790,8 @@ def compile_acdc_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False
         ii = i + nline + ntr2w
 
         # generic stuff
-        f = bus_dictionary[elm.bus_from.idtag]
-        t = bus_dictionary[elm.bus_to.idtag]
+        f = bus_dictionary[elm.bus_from]
+        t = bus_dictionary[elm.bus_to]
 
         nc.branch_names[ii] = elm.name
         nc.branch_active[ii] = elm.active
@@ -824,8 +824,8 @@ def compile_acdc_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False
         ii = i + nline + ntr2w + nvsc
 
         # generic stuff
-        f = bus_dictionary[elm.bus_from.idtag]
-        t = bus_dictionary[elm.bus_to.idtag]
+        f = bus_dictionary[elm.bus_from]
+        t = bus_dictionary[elm.bus_to]
 
         nc.branch_names[ii] = elm.name
         nc.branch_active[ii] = elm.active
@@ -846,8 +846,8 @@ def compile_acdc_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False
     #     ii = i + nline + ntr2w + nvsc
     #
     #     # generic stuff
-    #     f = bus_dictionary[elm.bus_from.idtag]
-    #     t = bus_dictionary[elm.bus_to.idtag]
+    #     f = bus_dictionary[elm.bus_from]
+    #     t = bus_dictionary[elm.bus_to]
     #
     #     # hvdc values
     #     nc.hvdc_names[i] = elm.name

@@ -78,6 +78,26 @@ class EditableDevice:
 
         self.properties_with_profile = properties_with_profile
 
+    def __str__(self) -> AnyStr:
+        """
+        Name of the object
+        :return: string
+        """
+        return self.name
+
+    def __repr__(self):
+        return self.idtag + '::' + self.name
+
+    def __hash__(self):
+        # alternatively, return hash(repr(self))
+        return int(self.idtag, 16)  # hex string to int
+
+    def __lt__(self, other):
+        return self.idtag < other.idtag
+
+    def __eq__(self, other):
+        return self.idtag == other.idtag
+
     def get_save_data(self):
         """
         Return the data that matches the edit_headers
@@ -103,16 +123,6 @@ class EditableDevice:
         Return a list of headers
         """
         return list(self.editable_headers.keys())
-
-    def __str__(self) -> AnyStr:
-        """
-        Name of the object
-        :return: string
-        """
-        return self.name
-
-    def __eq__(self, other):
-        return self.idtag == other.idtag
 
     def create_profiles(self, index):
         """

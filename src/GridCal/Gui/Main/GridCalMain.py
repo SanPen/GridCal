@@ -33,7 +33,6 @@ from GridCal.Engine.Core.snapshot_pf_data import SnapshotCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
-from GridCal.Engine.Simulations.Dynamics.transient_stability_driver import *
 from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
 from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReduction, TopologyReductionOptions, \
     DeleteAndReduce, NodeGroupsDriver
@@ -281,7 +280,7 @@ class MainGUI(QMainWindow):
         self.delete_and_reduce_driver = None
         self.export_all_thread_object = None
         self.find_node_groups_driver = None
-        self.file_sync_thread = FileSyncThread(None, None, None)
+        self.file_sync_thread = FileSyncThread(self.circuit, None, None)
 
         # window pointers
         self.file_sync_window = None
@@ -354,11 +353,11 @@ class MainGUI(QMainWindow):
 
         self.ui.actionDetect_transformers.triggered.connect(self.detect_transformers)
 
-        self.ui.actionExport_all_power_flow_results.triggered.connect(self.export_pf_results)
+        # self.ui.actionExport_all_power_flow_results.triggered.connect(self.export_pf_results)
 
         self.ui.actionExport_all_the_device_s_profiles.triggered.connect(self.export_object_profiles)
 
-        self.ui.actionCopy_OPF_profiles_to_Time_series.triggered.connect(self.copy_opf_to_time_series)
+        # self.ui.actionCopy_OPF_profiles_to_Time_series.triggered.connect(self.copy_opf_to_time_series)
 
         self.ui.actionGrid_Reduction.triggered.connect(self.reduce_grid)
 

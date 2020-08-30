@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1264</width>
+    <width>1210</width>
     <height>764</height>
    </rect>
   </property>
@@ -5982,8 +5982,8 @@ points from time series</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1264</width>
-     <height>22</height>
+     <width>1210</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
@@ -6124,41 +6124,6 @@ points from time series</string>
    <addaction name="actionLaunch_data_analysis_tool"/>
    <addaction name="actionShow_color_controls"/>
   </widget>
-  <action name="actionLine">
-   <property name="text">
-    <string>Add Line</string>
-   </property>
-   <property name="toolTip">
-    <string>Line</string>
-   </property>
-   <property name="shortcut">
-    <string>Alt+L</string>
-   </property>
-  </action>
-  <action name="actionTransformer">
-   <property name="text">
-    <string>Add Transformer</string>
-   </property>
-   <property name="shortcut">
-    <string>Alt+T</string>
-   </property>
-  </action>
-  <action name="actionLine_type">
-   <property name="text">
-    <string>Line type</string>
-   </property>
-   <property name="shortcut">
-    <string>Alt+L, Alt+T</string>
-   </property>
-  </action>
-  <action name="actionTransformer_type">
-   <property name="text">
-    <string>Transformer type</string>
-   </property>
-   <property name="shortcut">
-    <string>Alt+T, Alt+T</string>
-   </property>
-  </action>
   <action name="actionOpen_file">
    <property name="icon">
     <iconset resource="icons.qrc">
@@ -6183,11 +6148,6 @@ points from time series</string>
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionImport">
-   <property name="text">
-    <string>Import</string>
-   </property>
-  </action>
   <action name="actionExport">
    <property name="icon">
     <iconset resource="icons.qrc">
@@ -6207,22 +6167,6 @@ points from time series</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
-   </property>
-  </action>
-  <action name="actionColor_by_type">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Color by type</string>
-   </property>
-  </action>
-  <action name="actionColor_by_results">
-   <property name="text">
-    <string>Color by results</string>
    </property>
   </action>
   <action name="actionPower_flow">
@@ -6250,73 +6194,6 @@ points from time series</string>
    </property>
    <property name="shortcut">
     <string>F6</string>
-   </property>
-  </action>
-  <action name="actionBlackout">
-   <property name="text">
-    <string>Blackout</string>
-   </property>
-  </action>
-  <action name="actionMove_node_Up">
-   <property name="text">
-    <string>Move node Up</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Up</string>
-   </property>
-  </action>
-  <action name="actionMove_node_Down">
-   <property name="text">
-    <string>Move node Down</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Down</string>
-   </property>
-  </action>
-  <action name="actionMove_node_Left">
-   <property name="text">
-    <string>Move node Left</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Left</string>
-   </property>
-  </action>
-  <action name="actionMove_node_Right">
-   <property name="text">
-    <string>Move node Right</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Right</string>
-   </property>
-  </action>
-  <action name="actionBus_voltages">
-   <property name="text">
-    <string>Bus voltages</string>
-   </property>
-  </action>
-  <action name="actionBranches_current">
-   <property name="text">
-    <string>Branches current</string>
-   </property>
-  </action>
-  <action name="actionBranches_loading">
-   <property name="text">
-    <string>Branches loading (%)</string>
-   </property>
-  </action>
-  <action name="actionBlackout_2">
-   <property name="text">
-    <string>Blackout</string>
-   </property>
-  </action>
-  <action name="actionBranches_losses">
-   <property name="text">
-    <string>Branches losses</string>
-   </property>
-  </action>
-  <action name="actionBus_voltages_p_u">
-   <property name="text">
-    <string>Bus voltages (p.u.)</string>
    </property>
   </action>
   <action name="actionBigger_nodes">
@@ -6359,31 +6236,6 @@ points from time series</string>
    </property>
    <property name="toolTip">
     <string>Monte Carlo stochastic power flow</string>
-   </property>
-  </action>
-  <action name="actionActivate_map">
-   <property name="text">
-    <string>Activate map</string>
-   </property>
-  </action>
-  <action name="actionVoltage_p_u">
-   <property name="text">
-    <string>Voltage (p.u.)</string>
-   </property>
-  </action>
-  <action name="actionCurrent_p_u">
-   <property name="text">
-    <string>Current (p.u.)</string>
-   </property>
-  </action>
-  <action name="actionLoading">
-   <property name="text">
-    <string>Loading (%)</string>
-   </property>
-  </action>
-  <action name="actionLosses">
-   <property name="text">
-    <string>Losses</string>
    </property>
   </action>
   <action name="actionVoltage_stability">
@@ -6473,33 +6325,6 @@ points from time series</string>
     <string>Run a simulation or step by step blackout cascade</string>
    </property>
   </action>
-  <action name="actionRun_complete_cascade">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/file/run_cascade.svg</normaloff>:/file/run_cascade.svg</iconset>
-   </property>
-   <property name="text">
-    <string>run complete cascade</string>
-   </property>
-  </action>
-  <action name="actionRun_cascade_step">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/file/run_cascade_step.svg</normaloff>:/file/run_cascade_step.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Run cascade step</string>
-   </property>
-  </action>
-  <action name="actionCopy_cascade_state_to_main_grid">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/white/icons/copy.svg</normaloff>:/white/icons/copy.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Copy cascade state to main grid</string>
-   </property>
-  </action>
   <action name="actionOPF">
    <property name="icon">
     <iconset resource="icons.qrc">
@@ -6554,27 +6379,6 @@ points from time series</string>
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatic rating of the branches.&lt;/p&gt;&lt;p&gt;Use the branches calculated power to establish a rate, if the branch rate is unknown. A factor is available in the settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
-  <action name="actionCopy_OPF_profiles_to_Time_series">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/dcopf2ts.svg</normaloff>:/Icons/icons/dcopf2ts.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Set OPF results as Time events</string>
-   </property>
-   <property name="toolTip">
-    <string>Set OPF results as Time events</string>
-   </property>
-  </action>
-  <action name="actionExport_all_power_flow_results">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Export all power flow results</string>
-   </property>
-  </action>
   <action name="actionExport_all_the_device_s_profiles">
    <property name="icon">
     <iconset resource="icons.qrc">
@@ -6582,21 +6386,6 @@ points from time series</string>
    </property>
    <property name="text">
     <string>Export all the device's profiles</string>
-   </property>
-  </action>
-  <action name="actionTransient_stability">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/dyn.svg</normaloff>:/Icons/icons/dyn.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Transient stability</string>
-   </property>
-   <property name="toolTip">
-    <string>Transient stability simulation</string>
-   </property>
-   <property name="shortcut">
-    <string>F8</string>
    </property>
   </action>
   <action name="actionGrid_Reduction">
