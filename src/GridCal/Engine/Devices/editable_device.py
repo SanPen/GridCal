@@ -53,7 +53,7 @@ class EditableDevice:
         :param device_type: DeviceType instance
         :param non_editable_attributes: list of non editable magnitudes
         :param properties_with_profile: dictionary of profile properties {'magnitude': profile_magnitude}
-        :param idtag: unique ID
+        :param idtag: unique ID, if not provided it is generated
         """
 
         if idtag is None:
@@ -93,7 +93,7 @@ class EditableDevice:
         return int(self.idtag, 16)  # hex string to int
 
     def __lt__(self, other):
-        return self.idtag < other.idtag
+        return self.__hash__() < other.__hash__()
 
     def __eq__(self, other):
         return self.idtag == other.idtag
@@ -109,9 +109,9 @@ class EditableDevice:
             obj = getattr(self, name)
             if properties.tpe not in [str, float, int, bool]:
                 # if the object is not of a primary type, get the idtag instead
-                try:
+                if hasattr(obj, 'idtag'):
                     data.append(obj.idtag)
-                except:
+                else:
                     # some data types might not have the idtag, ten just use the str method
                     data.append(str(obj))
             else:
@@ -229,4 +229,3 @@ class EditableDevice:
 
     def get_profiles_dict(self):
         return dict()
-
