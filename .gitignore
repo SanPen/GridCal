@@ -13,3 +13,5 @@ __pycache__
 
 /venv
 /.tox/
+.idea/*.iml
+.idea/*.xml
