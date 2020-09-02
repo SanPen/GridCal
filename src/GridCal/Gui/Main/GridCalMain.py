@@ -29,8 +29,6 @@ from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.GridEditorWidget.messages import *
 
 # Engine imports
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotCircuit
-from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
 from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *

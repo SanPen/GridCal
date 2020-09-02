@@ -411,6 +411,8 @@ class Bus(EditableDevice):
 
         bus.measurements = self.measurements
 
+        bus.active_prof = self.active_prof
+
         return bus
 
     def get_properties_dict(self):

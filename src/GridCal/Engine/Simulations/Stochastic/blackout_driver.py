@@ -24,7 +24,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriv
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
 from GridCal.Engine.Simulations.Stochastic.lhs_driver import LatinHypercubeSampling
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotCircuit
+from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, split_time_circuit_into_islands, TimeCircuit
 
 
 class CascadeType(Enum):
@@ -156,7 +156,7 @@ class Cascading(QThread):
         return idx, criteria
 
     @staticmethod
-    def remove_probability_based(numerical_circuit: SnapshotCircuit, results: MonteCarloResults, max_val, min_prob):
+    def remove_probability_based(numerical_circuit: TimeCircuit, results: MonteCarloResults, max_val, min_prob):
         """
         Remove branches based on their chance of overload
         :param numerical_circuit:
@@ -252,8 +252,9 @@ class Cascading(QThread):
 
         # compile
         # print('Compiling...', end='')
-        numerical_circuit = self.grid.compile_time_series()
-        calculation_inputs = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode)
+        numerical_circuit = compile_time_circuit(self.grid)
+        calculation_inputs = split_time_circuit_into_islands(numerical_circuit,
+                                                             ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         self.results = CascadingResults(self.cascade_type)
 
@@ -279,20 +280,20 @@ class Cascading(QThread):
         it = 0
         while len(calculation_inputs) <= n_grids and it <= n_grids:
 
-            # For every circuit, run a power flow
-            # for c in self.grid.circuits:
+            # For every circuit, run the model (time series, lhs, or whatever)
             model_simulator.run()
-            # print(model_simulator.results.get_convergence_report())
 
             # remove grid elements (branches)
-            idx, criteria = self.remove_probability_based(numerical_circuit, model_simulator.results, max_val=1.0, min_prob=0.1)
+            idx, criteria = self.remove_probability_based(numerical_circuit, model_simulator.results,
+                                                          max_val=1.0, min_prob=0.1)
 
             # store the removed indices and the results
             entry = CascadingReportElement(idx, model_simulator.results, criteria)
             self.results.events.append(entry)
 
             # recompile grid
-            calculation_inputs = numerical_circuit.compute()
+            calculation_inputs = split_time_circuit_into_islands(numerical_circuit,
+                                                                 ignore_single_node_islands=self.options.ignore_single_node_islands)
 
             it += 1
 

@@ -2,7 +2,7 @@
 This example is coming from the book:
 Power System Load Flow Analysis - Lynn Powell
 
-The added profile is just to demosntrate how to create load profiles properly
+The added profile is just to demonstrate how to create load profiles properly
 
 Author: Santiago Peñate Vera (September 2018)
 """

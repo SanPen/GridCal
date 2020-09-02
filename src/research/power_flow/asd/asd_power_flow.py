@@ -551,8 +551,8 @@ if __name__ == "__main__":
 
     grid = FileOpen(fname).open()
 
-    nc = compile_snapshot_circuit(grid)
-    islands = split_into_islands(nc)
+    numeric_circuit = compile_snapshot_circuit(grid)
+    islands = split_into_islands(numeric_circuit)
     circuit = islands[0]
 
     print('\nYbus:\n', circuit.Ybus.todense())

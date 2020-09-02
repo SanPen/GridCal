@@ -14,10 +14,10 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import numpy as np
-
-from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import \
-    VoltageCollapseOptions, VoltageCollapseInput, VoltageCollapse
+from GridCal.Engine import *
+# from GridCal.Engine.IO.file_handler import FileOpen
+# from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import \
+#     VoltageCollapseOptions, VoltageCollapseInput, VoltageCollapse
 from tests.conftest import ROOT_PATH
 
 
@@ -36,11 +36,11 @@ def test_voltage_collapse(root_path=ROOT_PATH):
     print('\n\n')
     vc_options = VoltageCollapseOptions()
     # just for this test
-    numeric_circuit = main_circuit.compile_snapshot()
-    numeric_inputs = numeric_circuit.compute()
+    numeric_circuit = compile_snapshot_circuit(main_circuit)
+    islands = split_into_islands(numeric_circuit)
     Sbase = np.zeros(len(main_circuit.buses), dtype=complex)
     Vbase = np.zeros(len(main_circuit.buses), dtype=complex)
-    for c in numeric_inputs:
+    for c in islands:
         Sbase[c.original_bus_idx] = c.Sbus
         Vbase[c.original_bus_idx] = c.Vbus
     unitary_vector = -1 + 2 * np.random.random(len(main_circuit.buses))

@@ -15,3 +15,4 @@
 
 from GridCal.Engine.Simulations.Stochastic.lhs_driver import *
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
+from GridCal.Engine.Simulations.Stochastic.blackout_driver import *

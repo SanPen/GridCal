@@ -15,22 +15,11 @@
 import os
 
 import numpy as np
-from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import \
-    VoltageCollapseOptions, VoltageCollapseInput, VoltageCollapse
-from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowOptions, OptimalPowerFlow
-from GridCal.Engine.Simulations.OPF.opf_ts_driver import OptimalPowerFlowTimeSeries
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import ReactivePowerControlMode, SolverType
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
-from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeries
-from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import ShortCircuitOptions, ShortCircuit
-from GridCal.Engine.Simulations.Stochastic.blackout_driver import Cascading,  CascadeType
-from GridCal.Engine.Simulations.Stochastic.lhs_driver import LatinHypercubeSampling
-from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import MonteCarlo
-from GridCal.Engine.grid_analysis import TimeSeriesResultsAnalysis
+
+from GridCal.Engine import *
 
 
-def _test_api():
+def test_api():
     fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
     print('Reading...')
     main_circuit = FileOpen(fname).open()
@@ -71,8 +60,8 @@ def _test_api():
     print('Running TS...', '')
     ts = TimeSeries(grid=main_circuit, options=pf_options, start_=0, end_=96)
     ts.run()
-    numeric_circuit = main_circuit.compile_snapshot()
-    ts_analysis = TimeSeriesResultsAnalysis(numeric_circuit, ts.results)
+    ts_numeric_circuit = compile_time_circuit(main_circuit)
+    ts_analysis = TimeSeriesResultsAnalysis(ts_numeric_circuit, ts.results)
     ####################################################################################################################
     # OPF
     ####################################################################################################################
@@ -97,8 +86,9 @@ def _test_api():
     ####################################################################################################################
     vc_options = VoltageCollapseOptions()
     # just for this test
-    numeric_circuit = main_circuit.compile_snapshot()
-    numeric_inputs = numeric_circuit.compute()
+    numeric_circuit = compile_snapshot_circuit(main_circuit)
+    numeric_inputs = split_into_islands(numeric_circuit)
+
     Sbase = np.zeros(len(main_circuit.buses), dtype=complex)
     Vbase = np.zeros(len(main_circuit.buses), dtype=complex)
     for c in numeric_inputs:
@@ -109,18 +99,18 @@ def _test_api():
                                      Vbase=Vbase,
                                      Starget=Sbase * (1 + unitary_vector))
     vc = VoltageCollapse(circuit=main_circuit, options=vc_options,
-                         inputs=vc_inputs)
+                         inputs=vc_inputs, pf_options=pf_options)
     vc.run()
     mdl = vc.results.mdl()
-    mdl.plot()
-    from matplotlib import pyplot as plt
-    plt.show()
+    # mdl.plot()
+    # from matplotlib import pyplot as plt
+    # plt.show()
     ####################################################################################################################
     # Monte Carlo
     ####################################################################################################################
     print('Running MC...')
     mc_sim = MonteCarlo(main_circuit, pf_options, mc_tol=1e-5,
-                        max_mc_iter=1000000)
+                        max_mc_iter=1000)
     mc_sim.run()
     lst = np.array(list(range(mc_sim.results.n)), dtype=int)
     # mc_sim.results.plot(ResultTypes.BusVoltageAverage, indices=lst, names=lst)
@@ -134,17 +124,17 @@ def _test_api():
     ####################################################################################################################
     # Cascading
     ####################################################################################################################
-    print('Running Cascading...')
-    cascade = Cascading(main_circuit.copy(), pf_options,
-                        max_additional_islands=5,
-                        cascade_type_=CascadeType.LatinHypercube,
-                        n_lhs_samples_=10)
-    cascade.run()
-    cascade.perform_step_run()
-    cascade.perform_step_run()
-    cascade.perform_step_run()
-    cascade.perform_step_run()
+    # print('Running Cascading...')
+    # cascade = Cascading(main_circuit.copy(), pf_options,
+    #                     max_additional_islands=5,
+    #                     cascade_type_=CascadeType.LatinHypercube,
+    #                     n_lhs_samples_=10)
+    # cascade.run()
+    # cascade.perform_step_run()
+    # cascade.perform_step_run()
+    # cascade.perform_step_run()
+    # cascade.perform_step_run()
 
 
 if __name__ == '__main__':
-    _test_api()
+    test_api()

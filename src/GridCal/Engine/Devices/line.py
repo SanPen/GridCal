@@ -379,7 +379,9 @@ class Line(EditableDevice):
 
         b.measurements = self.measurements
 
-        b.active_prof = self.active_prof.copy()
+        b.active_prof = self.active_prof
+        b.rate_prof = self.rate_prof
+        b.Cost_prof = self.Cost_prof
 
         return b
 

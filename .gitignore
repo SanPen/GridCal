@@ -5,8 +5,8 @@ __pycache__
 /doc/_build
 /doc/_static
 
-/.idea
-/.idea/inspectionProfiles
+.idea
+.idea/inspectionProfiles
 
 /build
 /dist
@@ -16,4 +16,6 @@ __pycache__
 
 /venv
 /.tox/
-/.idea
+.idea/*.iml
+.idea/*.xml
+.idea/dictionaries/*.xml

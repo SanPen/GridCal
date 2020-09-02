@@ -260,13 +260,13 @@ class MonteCarloResults:
 
     def get_index_loading_cdf(self, max_val=1.0):
         """
-        Find the elements where the CDF is greater or equal to a velue
+        Find the elements where the CDF is greater or equal to a value
         :param max_val: value to compare
         :return: indices, associated probability
         """
 
         # turn the loading real values into CDF
-        cdf = CDF(np.abs(self.loading_points.real[:, :]))
+        cdf = CDF(np.abs(self.Sbr_points.real))
 
         n = cdf.arr.shape[1]
         idx = list()
