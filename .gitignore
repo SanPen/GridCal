@@ -16,3 +16,4 @@ __pycache__
 .idea/*.iml
 .idea/*.xml
 .idea/dictionaries/*.xml
+./.idea/inspectionProfiles/*.xml
