@@ -1,4 +1,4 @@
-.. _distribution_grid:
+Gr  .. _distribution_grid:
 
 Distribution Grid
 ==================
@@ -376,9 +376,9 @@ Step 9: Defining Wires and Overhead Lines
 +-------------------+----------+
 |   X [Ohm/Km]      |        0 |
 +-------------------+----------+
-|    GMR [m]        | 0.001603 |
+|    GMR [m]        |  0.001603 |
 +------------------+-----------+
-|  Max Current [kA] | 0.11     |
+|  Max Current [kA] |  0.11     |
 +-------------------+----------+
 
 Note: A new wire or custom wire can be added using the '+' button on the top right.
