@@ -20,13 +20,14 @@ from GridCal.Engine.Devices.enumerations import DeviceType, TimeFrame
 
 class GCProp:
 
-    def __init__(self, units, tpe, definition, profile_name=''):
+    def __init__(self, units, tpe, definition, profile_name='', display=True):
         """
         GridCal property
         :param units: units of the property
         :param tpe: data type (int, complex, float, etc...)
         :param definition: Definition of the property
         :param profile_name: name of the associated profile property
+        :param display: Display the property in the GUI
         """
 
         self.units = units
@@ -36,6 +37,8 @@ class GCProp:
         self.definition = definition
 
         self.profile_name = profile_name
+
+        self.display = display
 
 
 class EditableDevice:

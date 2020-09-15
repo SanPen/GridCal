@@ -830,6 +830,20 @@ class MultiCircuit:
             for elm in branch_list:
                 elm.create_profiles(index)
 
+    def ensure_profiles_exist(self):
+        """
+        Format the pandas profiles in place using a time index.
+        """
+        if self.time_profile is None:
+            raise Exception('Cannot ensure profiles existence without a time index. Try format_profiles instead')
+
+        for elm in self.buses:
+            elm.ensure_profiles_exist(self.time_profile)
+
+        for branch_list in self.get_branch_lists():
+            for elm in branch_list:
+                elm.ensure_profiles_exist(self.time_profile)
+
     def get_node_elements_by_type(self, element_type: DeviceType):
         """
         Get set of elements and their parent nodes.
