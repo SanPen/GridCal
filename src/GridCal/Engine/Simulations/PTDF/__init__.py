@@ -17,3 +17,5 @@ from GridCal.Engine.Simulations.PTDF.ptdf_driver import *
 from GridCal.Engine.Simulations.PTDF.ptdf_analysis import *
 from GridCal.Engine.Simulations.PTDF.ptdf_results import *
 from GridCal.Engine.Simulations.PTDF.ptdf_ts_driver import *
+from GridCal.Engine.Simulations.PTDF.analytic_ptdf import *
+from GridCal.Engine.Simulations.PTDF.analytic_ptdf_driver import *

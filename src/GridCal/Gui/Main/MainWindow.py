@@ -1490,10 +1490,10 @@ class Ui_mainWindow(object):
         self.frame_32.setFrameShadow(QFrame.Raised)
         self.gridLayout_14 = QGridLayout(self.frame_32)
         self.gridLayout_14.setObjectName(u"gridLayout_14")
-        self.label_56 = QLabel(self.frame_32)
-        self.label_56.setObjectName(u"label_56")
+        self.label_21 = QLabel(self.frame_32)
+        self.label_21.setObjectName(u"label_21")
 
-        self.gridLayout_14.addWidget(self.label_56, 2, 0, 1, 2)
+        self.gridLayout_14.addWidget(self.label_21, 5, 0, 1, 1)
 
         self.label_61 = QLabel(self.frame_32)
         self.label_61.setObjectName(u"label_61")
@@ -1506,68 +1506,18 @@ class Ui_mainWindow(object):
         font1.setPointSize(12)
         self.label_61.setFont(font1)
 
-        self.gridLayout_14.addWidget(self.label_61, 6, 0, 1, 2)
-
-        self.label = QLabel(self.frame_32)
-        self.label.setObjectName(u"label")
-
-        self.gridLayout_14.addWidget(self.label, 4, 0, 1, 2)
-
-        self.ptdf_power_delta_doubleSpinBox = QDoubleSpinBox(self.frame_32)
-        self.ptdf_power_delta_doubleSpinBox.setObjectName(u"ptdf_power_delta_doubleSpinBox")
-        self.ptdf_power_delta_doubleSpinBox.setDecimals(1)
-        self.ptdf_power_delta_doubleSpinBox.setMinimum(-1000000000000000000000.000000000000000)
-        self.ptdf_power_delta_doubleSpinBox.setMaximum(10000000000000000000.000000000000000)
-        self.ptdf_power_delta_doubleSpinBox.setValue(100.000000000000000)
-
-        self.gridLayout_14.addWidget(self.ptdf_power_delta_doubleSpinBox, 3, 0, 1, 2)
-
-        self.verticalSpacer_12 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.gridLayout_14.addItem(self.verticalSpacer_12, 10, 0, 1, 1)
-
-        self.line_23 = QFrame(self.frame_32)
-        self.line_23.setObjectName(u"line_23")
-        palette7 = QPalette()
-        palette7.setBrush(QPalette.Active, QPalette.WindowText, brush2)
-        palette7.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
-        palette7.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_23.setPalette(palette7)
-        self.line_23.setFrameShadow(QFrame.Plain)
-        self.line_23.setLineWidth(4)
-        self.line_23.setFrameShape(QFrame.HLine)
-
-        self.gridLayout_14.addWidget(self.line_23, 7, 0, 1, 2)
-
-        self.line_22 = QFrame(self.frame_32)
-        self.line_22.setObjectName(u"line_22")
-        palette8 = QPalette()
-        palette8.setBrush(QPalette.Active, QPalette.WindowText, brush2)
-        palette8.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
-        palette8.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_22.setPalette(palette8)
-        self.line_22.setFrameShadow(QFrame.Plain)
-        self.line_22.setLineWidth(4)
-        self.line_22.setFrameShape(QFrame.HLine)
-
-        self.gridLayout_14.addWidget(self.line_22, 1, 0, 1, 2)
+        self.gridLayout_14.addWidget(self.label_61, 3, 0, 1, 2)
 
         self.spinBox = QSpinBox(self.frame_32)
         self.spinBox.setObjectName(u"spinBox")
         self.spinBox.setMinimum(1)
         self.spinBox.setValue(1)
 
-        self.gridLayout_14.addWidget(self.spinBox, 8, 1, 1, 1)
+        self.gridLayout_14.addWidget(self.spinBox, 5, 1, 1, 1)
 
-        self.label_21 = QLabel(self.frame_32)
-        self.label_21.setObjectName(u"label_21")
+        self.verticalSpacer_12 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        self.gridLayout_14.addWidget(self.label_21, 8, 0, 1, 1)
-
-        self.ptdf_grouping_comboBox = QComboBox(self.frame_32)
-        self.ptdf_grouping_comboBox.setObjectName(u"ptdf_grouping_comboBox")
-
-        self.gridLayout_14.addWidget(self.ptdf_grouping_comboBox, 5, 0, 1, 2)
+        self.gridLayout_14.addItem(self.verticalSpacer_12, 7, 0, 1, 1)
 
         self.frame_42 = QFrame(self.frame_32)
         self.frame_42.setObjectName(u"frame_42")
@@ -1587,11 +1537,11 @@ class Ui_mainWindow(object):
 
         self.label_71 = QLabel(self.frame_42)
         self.label_71.setObjectName(u"label_71")
-        palette9 = QPalette()
-        palette9.setBrush(QPalette.Active, QPalette.WindowText, brush)
-        palette9.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
-        palette9.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_71.setPalette(palette9)
+        palette7 = QPalette()
+        palette7.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette7.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
+        palette7.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_71.setPalette(palette7)
         self.label_71.setFont(font)
         self.label_71.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
 
@@ -1599,6 +1549,38 @@ class Ui_mainWindow(object):
 
 
         self.gridLayout_14.addWidget(self.frame_42, 0, 0, 1, 2)
+
+        self.line_22 = QFrame(self.frame_32)
+        self.line_22.setObjectName(u"line_22")
+        palette8 = QPalette()
+        palette8.setBrush(QPalette.Active, QPalette.WindowText, brush2)
+        palette8.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
+        palette8.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_22.setPalette(palette8)
+        self.line_22.setFrameShadow(QFrame.Plain)
+        self.line_22.setLineWidth(4)
+        self.line_22.setFrameShape(QFrame.HLine)
+
+        self.gridLayout_14.addWidget(self.line_22, 1, 0, 1, 2)
+
+        self.line_23 = QFrame(self.frame_32)
+        self.line_23.setObjectName(u"line_23")
+        palette9 = QPalette()
+        palette9.setBrush(QPalette.Active, QPalette.WindowText, brush2)
+        palette9.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
+        palette9.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_23.setPalette(palette9)
+        self.line_23.setFrameShadow(QFrame.Plain)
+        self.line_23.setLineWidth(4)
+        self.line_23.setFrameShape(QFrame.HLine)
+
+        self.gridLayout_14.addWidget(self.line_23, 4, 0, 1, 2)
+
+        self.ptdf_distributed_slack_checkBox = QCheckBox(self.frame_32)
+        self.ptdf_distributed_slack_checkBox.setObjectName(u"ptdf_distributed_slack_checkBox")
+        self.ptdf_distributed_slack_checkBox.setChecked(True)
+
+        self.gridLayout_14.addWidget(self.ptdf_distributed_slack_checkBox, 2, 0, 1, 2)
 
 
         self.horizontalLayout_8.addWidget(self.frame_32)
@@ -3347,16 +3329,14 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_3), QCoreApplication.translate("mainWindow", u"Power flow settings", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_56.setText(QCoreApplication.translate("mainWindow", u"Power increment", None))
+        self.label_21.setText(QCoreApplication.translate("mainWindow", u"k", None))
         self.label_61.setText(QCoreApplication.translate("mainWindow", u"N-k", None))
-        self.label.setText(QCoreApplication.translate("mainWindow", u"Grouping", None))
-        self.ptdf_power_delta_doubleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
 #if QT_CONFIG(tooltip)
         self.spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Number of elements failed at one simulation. It is incremental, so when k=2, the simulation does the branch failing for k=1 and k=2.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_21.setText(QCoreApplication.translate("mainWindow", u"k", None))
         self.label_70.setText("")
         self.label_71.setText(QCoreApplication.translate("mainWindow", u"PTDF", None))
+        self.ptdf_distributed_slack_checkBox.setText(QCoreApplication.translate("mainWindow", u"Distributed slack", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_9), QCoreApplication.translate("mainWindow", u"PTDF", None))
         self.label_72.setText("")
         self.label_73.setText(QCoreApplication.translate("mainWindow", u"Optimal Power Flow", None))

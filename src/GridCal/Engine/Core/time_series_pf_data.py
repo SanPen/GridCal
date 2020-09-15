@@ -264,30 +264,31 @@ class TimeCircuit:
         self.bus_installed_power = self.C_bus_gen * self.generator_installed_p
         self.bus_installed_power += self.C_bus_batt * self.battery_installed_p
 
-    def get_power_injections(self):
+    def get_power_injections(self, normalize=True):
         """
         Compute the power
         :return: Array of power injections
         """
 
         # load
-        Sbus = - self.C_bus_load * (self.load_s * self.load_active)  # MW
+        Sbus = - self.C_bus_load * (self.load_s * self.load_active).T  # MW
 
         # static generators
-        Sbus += self.C_bus_static_generator * (self.static_generator_s * self.static_generator_active)  # MW
+        Sbus += self.C_bus_static_generator * (self.static_generator_s * self.static_generator_active).T  # MW
 
         # generators
-        Sbus += self.C_bus_gen * (self.generator_p * self.generator_active)
+        Sbus += self.C_bus_gen * (self.get_generator_injections() * self.generator_active).T
 
         # battery
-        Sbus += self.C_bus_batt * (self.battery_p * self.battery_active)
+        Sbus += self.C_bus_batt * (self.get_battery_injections() * self.battery_active).T
 
         # HVDC forced power
         if self.nhvdc:
-            Sbus += (self.hvdc_active * self.hvdc_Pf) * self.C_hvdc_bus_f
-            Sbus += (self.hvdc_active * self.hvdc_Pt) * self.C_hvdc_bus_t
+            Sbus += ((self.hvdc_active * self.hvdc_Pf) * self.C_hvdc_bus_f).T
+            Sbus += ((self.hvdc_active * self.hvdc_Pt) * self.C_hvdc_bus_t).T
 
-        Sbus /= self.Sbase
+        if normalize:
+            Sbus /= self.Sbase
 
         return Sbus
 

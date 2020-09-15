@@ -126,8 +126,8 @@ if __name__ == '__main__':
     # fname = 'helm_data1.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14 PQ only.gridcal'
     # fname = 'IEEE 14 PQ only full.gridcal'
-    # fname = '/home/santi/Descargas/matpower-fubm-master/data/case5.m'
-    fname = '/home/santi/Descargas/matpower-fubm-master/data/case30.m'
+    fname = '/home/santi/Descargas/matpower-fubm-master/data/case5.m'
+    # fname = '/home/santi/Descargas/matpower-fubm-master/data/case30.m'
     grid_ = FileOpen(fname).open()
 
     # test_voltage(grid=grid)
