@@ -2457,11 +2457,9 @@ class MainGUI(QMainWindow):
                     if len(self.circuit.buses) > 0:
                         self.LOCK()
 
-                        pf_options = self.get_selected_power_flow_options()
+                        options = NMinusKOptions(distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
 
-                        options = NMinusKOptions(use_multi_threading=self.ui.use_multiprocessing_checkBox.isChecked())
-
-                        self.otdf_analysis = NMinusK(grid=self.circuit, options=options, pf_options=pf_options)
+                        self.otdf_analysis = NMinusK(grid=self.circuit, options=options)
 
                         self.otdf_analysis.progress_signal.connect(self.ui.progressBar.setValue)
                         self.otdf_analysis.progress_text.connect(self.ui.progress_label.setText)
@@ -2484,12 +2482,12 @@ class MainGUI(QMainWindow):
         if not self.otdf_analysis.__cancel__:
             if self.otdf_analysis.results is not None:
 
-                self.ui.progress_label.setText('Colouring PTDF results in the grid...')
+                self.ui.progress_label.setText('Colouring OTDF results in the grid...')
                 QtGui.QGuiApplication.processEvents()
 
                 self.update_available_results()
             else:
-                error_msg('Something went wrong, There are no PTDF results.')
+                error_msg('Something went wrong, There are no OTDF results.')
 
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()

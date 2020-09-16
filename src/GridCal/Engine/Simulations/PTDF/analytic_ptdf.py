@@ -64,7 +64,7 @@ def make_ptdf(Bbus, Bf, pqpv, vd, distribute_slack=True):
     return H
 
 
-def make_lodf(Cf, Ct, PTDF):
+def make_lodf(Cf, Ct, PTDF, correct_values=True):
     """
     Compute the LODF matrix
     :param Cf: Branch "from" -bus connectivity matrix
@@ -84,18 +84,35 @@ def make_lodf(Cf, Ct, PTDF):
     # LODF = H / (np.ones((nl, nl)) - h * np.ones(nl))
 
     # divide each row of H by the vector 1 - H.diagonal
-    LODF = H / (1 - H.diagonal())
+    # LODF = H / (1 - H.diagonal())
+    #
+    # # replace possible nan and inf
+    # LODF[LODF == -np.inf] = 0
+    # LODF[LODF == np.inf] = 0
+    # LODF = np.nan_to_num(LODF)
 
-    # replace possible nan and inf
-    LODF[LODF == -np.inf] = 0
-    LODF[LODF == np.inf] = 0
-    LODF = np.nan_to_num(LODF)
+    # this loop avoids the divisions by zero
+    # in those cases the LODF column should be zero
+    LODF = np.zeros((nl, nl))
+    div = 1 - H.diagonal()
+    for j in range(H.shape[1]):
+        if div[j] != 0:
+            LODF[:, j] = H[:, j] / div[j]
 
     # replace the diagonal elements by -1
     # old code
     # LODF = LODF - sp.diags(LODF.diagonal()) - sp.eye(nl, nl), replaced by:
     for i in range(nl):
         LODF[i, i] = - 1.0
+
+    if correct_values:
+        i1, j1 = np.where(LODF > 1)
+        for i, j in zip(i1, j1):
+            LODF[i, j] = 1
+
+        i2, j2 = np.where(LODF < -1)
+        for i, j in zip(i2, j2):
+            LODF[i, j] = -1
 
     return LODF
 
@@ -175,7 +192,7 @@ class LinearAnalysisResults:
 
 class LinearAnalysis:
 
-    def __init__(self, grid: MultiCircuit, distributed_slack=True):
+    def __init__(self, grid: MultiCircuit, distributed_slack=True, correct_values=True):
         """
 
         :param grid:
@@ -185,6 +202,8 @@ class LinearAnalysis:
         self.grid = grid
 
         self.distributed_slack = distributed_slack
+
+        self.correct_values = correct_values
 
         self.numerical_circuit = None
 
@@ -239,7 +258,8 @@ class LinearAnalysis:
         # the LODF algorithm doesn't seem to solve any circuit, hence there is no need of island splitting
         self.results.LODF = make_lodf(Cf=self.numerical_circuit.C_branch_bus_f,
                                       Ct=self.numerical_circuit.C_branch_bus_t,
-                                      PTDF=self.results.PTDF)
+                                      PTDF=self.results.PTDF,
+                                      correct_values=self.correct_values)
 
     def get_branch_time_series(self, Sbus):
         """

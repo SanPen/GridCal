@@ -222,7 +222,7 @@ class PtdfTimeSeries(QThread):
         self.results.Sbranch = ptdf_analysis.get_branch_time_series(Pbus_0)
 
         # compute post process
-        self.results.loading = (self.results.Sbranch / ptdf_analysis.numerical_circuit.branch_rates)
+        self.results.loading = self.results.Sbranch / (ptdf_analysis.numerical_circuit.branch_rates + 1e-9)
         self.results.S = Pbus_0.T
 
         self.elapsed = time.time() - a
@@ -249,7 +249,7 @@ class PtdfTimeSeries(QThread):
 
 if __name__ == '__main__':
     from matplotlib import pyplot as plt
-    from GridCal.Engine import FileOpen, SolverType, TimeSeries
+    from GridCal.Engine import *
 
     fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'

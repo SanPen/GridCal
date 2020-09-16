@@ -280,7 +280,7 @@ class SnapshotCircuit:
                                      'original_bat_idx'
                                      ]
 
-    def get_injections(self):
+    def get_injections(self, normalize=True):
         """
         Compute the power
         :return: nothing, the results are stored in the class
@@ -304,7 +304,8 @@ class SnapshotCircuit:
             Sbus += (self.hvdc_active * self.hvdc_Pf) * self.C_hvdc_bus_f
             Sbus += (self.hvdc_active * self.hvdc_Pt) * self.C_hvdc_bus_t
 
-        Sbus /= self.Sbase
+        if normalize:
+            Sbus /= self.Sbase
 
         return Sbus
 

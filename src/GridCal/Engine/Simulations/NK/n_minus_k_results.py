@@ -27,233 +27,43 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Gui.GuiFunctions import ResultsModel
 
 
-class NMinusKResults(PowerFlowResults):
+class NMinusKResults:
 
-    def __init__(self, n, m, nt, n_tr, n_hvdc,bus_names, branch_names, transformer_names, hvdc_names,
-                 bus_types, time_array=None, states=None):
+    def __init__(self, n, m, bus_names, branch_names, bus_types):
         """
         TimeSeriesResults constructor
         @param n: number of buses
         @param m: number of branches
         @param nt: number of time steps
         """
-        PowerFlowResults.__init__(self,
-                                  n=n,
-                                  m=m,
-                                  n_tr=n_tr,
-                                  n_hvdc=n_hvdc,
-                                  bus_names=bus_names,
-                                  branch_names=branch_names,
-                                  transformer_names=transformer_names,
-                                  hvdc_names=hvdc_names,
-                                  bus_types=bus_types)
 
         self.name = 'N-1'
 
-        self.nt = nt
-
-        self.time = time_array
-
-        self.states = states
-
         self.bus_types = np.zeros(n, dtype=int)
 
-        self.branch_names = None
+        self.branch_names = branch_names
 
-        if nt > 0:
-            self.voltage = np.zeros((nt, n), dtype=complex)
+        self.bus_names = bus_names
 
-            self.S = np.zeros((nt, n), dtype=complex)
+        self.bus_types = bus_types
 
-            self.Sbranch = np.zeros((nt, m), dtype=complex)
+        self.voltage = np.ones((m, n), dtype=complex)
 
-            self.Ibranch = np.zeros((nt, m), dtype=complex)
+        self.S = np.zeros((m, n), dtype=complex)
 
-            self.Vbranch = np.zeros((nt, m), dtype=complex)
+        self.Sbranch = np.zeros((m, m), dtype=complex)
 
-            self.loading = np.zeros((nt, m), dtype=complex)
-
-            self.losses = np.zeros((nt, m), dtype=complex)
-
-            self.flow_direction = np.zeros((nt, m), dtype=float)
-
-            self.error = np.zeros(nt)
-
-            self.converged = np.ones(nt, dtype=bool)  # guilty assumption
-
-            self.overloads = [None] * nt
-
-            self.overvoltage = [None] * nt
-
-            self.undervoltage = [None] * nt
-
-            self.overloads_idx = [None] * nt
-
-            self.overvoltage_idx = [None] * nt
-
-            self.undervoltage_idx = [None] * nt
-
-            self.buses_useful_for_storage = [None] * nt
-
-        else:
-            self.voltage = None
-
-            self.S = None
-
-            self.Sbranch = None
-
-            self.Ibranch = None
-
-            self.Vbranch = None
-
-            self.loading = None
-
-            self.losses = None
-
-            self.flow_direction = None
-
-            self.error = None
-
-            self.converged = None
-
-            self.overloads = None
-
-            self.overvoltage = None
-
-            self.undervoltage = None
-
-            self.overloads_idx = None
-
-            self.overvoltage_idx = None
-
-            self.undervoltage_idx = None
-
-            self.buses_useful_for_storage = None
+        self.loading = np.zeros((m, m), dtype=complex)
 
         self.otdf = np.zeros((m, m))
 
         self.available_results = [ResultTypes.OTDF,
-                                  ResultTypes.BusVoltageModule,
-                                  ResultTypes.BusVoltageAngle,
                                   ResultTypes.BusActivePower,
-                                  ResultTypes.BusReactivePower,
-                                  ResultTypes.BranchPower,
-                                  ResultTypes.BranchCurrent,
-                                  ResultTypes.BranchLoading,
-                                  ResultTypes.BranchLosses,
-                                  ResultTypes.BranchVoltage,
-                                  ResultTypes.BranchAngles,
-                                  ResultTypes.OTDFSimulationError]
-
-    def set_at(self, t, results: PowerFlowResults):
-        """
-        Set the results at the step t
-        @param t: time index
-        @param results: PowerFlowResults instance
-        """
-
-        self.voltage[t, :] = results.voltage
-
-        self.S[t, :] = results.Sbus
-
-        self.Sbranch[t, :] = results.Sbranch
-
-        self.Ibranch[t, :] = results.Ibranch
-
-        self.Vbranch[t, :] = results.Vbranch
-
-        self.loading[t, :] = results.loading
-
-        self.losses[t, :] = results.losses
-
-        self.flow_direction[t, :] = results.flow_direction
-
-        self.error[t] = max(results.error)
-
-        self.converged[t] = min(results.converged)
-
-        self.overloads[t] = results.overloads
-
-        self.overvoltage[t] = results.overvoltage
-
-        self.undervoltage[t] = results.undervoltage
-
-        self.overloads_idx[t] = results.overloads_idx
-
-        self.overvoltage_idx[t] = results.overvoltage_idx
-
-        self.undervoltage_idx[t] = results.undervoltage_idx
-
-        self.buses_useful_for_storage[t] = results.buses_useful_for_storage
+                                  ResultTypes.BranchActivePower,
+                                  ResultTypes.BranchLoading]
 
     def get_steps(self):
         return
-
-    @staticmethod
-    def merge_if(df, arr, ind, cols):
-        """
-
-        @param df:
-        @param arr:
-        @param ind:
-        @param cols:
-        @return:
-        """
-        obj = pd.DataFrame(data=arr, index=ind, columns=cols)
-        if df is None:
-            df = obj
-        else:
-            df = pd.concat([df, obj], axis=1)
-
-        return df
-
-    def apply_from_island(self, results, b_idx, br_idx, t_index, grid_idx):
-        """
-        Apply results from another island circuit to the circuit results represented here
-        @param results: PowerFlowResults
-        @param b_idx: bus original indices
-        @param br_idx: branch original indices
-        @return:
-        """
-
-        # bus results
-        if self.voltage.shape == results.voltage.shape:
-            self.voltage = results.voltage
-            self.S = results.S
-        else:
-            self.voltage[np.ix_(t_index, b_idx)] = results.voltage
-            self.S[np.ix_(t_index, b_idx)] = results.S
-
-        # branch results
-        if self.Sbranch.shape == results.Sbranch.shape:
-            self.Sbranch = results.Sbranch
-
-            self.Ibranch = results.Ibranch
-
-            self.Vbranch = results.Vbranch
-
-            self.loading = results.loading
-
-            self.losses = results.losses
-
-            self.flow_direction = results.flow_direction
-        else:
-            self.Sbranch[np.ix_(t_index, br_idx)] = results.Sbranch
-
-            self.Ibranch[np.ix_(t_index, br_idx)] = results.Ibranch
-
-            self.Vbranch[np.ix_(t_index, br_idx)] = results.Vbranch
-
-            self.loading[np.ix_(t_index, br_idx)] = results.loading
-
-            self.losses[np.ix_(t_index, br_idx)] = results.losses
-
-            self.flow_direction[np.ix_(t_index, br_idx)] = results.flow_direction
-
-        if (results.error > self.error[t_index]).any():
-            self.error[t_index] += results.error
-
-        self.converged[t_index] = self.converged[t_index] * results.converged
 
     def get_results_dict(self):
         """
@@ -266,10 +76,7 @@ class NMinusKResults(PowerFlowResults):
                 'Q': self.S.imag.tolist(),
                 'Sbr_real': self.Sbranch.real.tolist(),
                 'Sbr_imag': self.Sbranch.imag.tolist(),
-                'Ibr_real': self.Ibranch.real.tolist(),
-                'Ibr_imag': self.Ibranch.imag.tolist(),
-                'loading': np.abs(self.loading).tolist(),
-                'losses': np.abs(self.losses).tolist()}
+                'loading': np.abs(self.loading).tolist()}
         return data
 
     def save(self, fname):
@@ -299,102 +106,62 @@ class NMinusKResults(PowerFlowResults):
         return branch_overload_frequency, bus_undervoltage_frequency, bus_overvoltage_frequency, \
                 buses_selected_for_storage_frequency
 
-    def mdl(self, result_type: ResultTypes, indices=None, names=None):
+    def mdl(self, result_type: ResultTypes):
         """
         Plot the results
         :param result_type:
-        :param ax:
-        :param indices:
-        :param names:
         :return:
         """
 
-        if indices is None:
-            indices = np.array(range(len(names)))
+        if result_type == ResultTypes.BusVoltageModule:
+            data = np.abs(self.voltage)
+            y_label = '(p.u.)'
+            title = 'Bus voltage '
+            labels = self.branch_names
+            index = self.bus_names
 
-        if len(indices) > 0:
+        elif result_type == ResultTypes.BusVoltageAngle:
+            data = np.angle(self.voltage, deg=True)
+            y_label = '(Deg)'
+            title = 'Bus voltage '
+            labels = self.branch_names
+            index = self.bus_names
 
-            labels = names[indices]
+        elif result_type == ResultTypes.BusActivePower:
+            data = self.S.real
+            y_label = '(MW)'
+            title = 'Bus active power '
+            labels = self.branch_names
+            index = self.bus_names
 
-            if result_type == ResultTypes.BusVoltageModule:
-                data = np.abs(self.voltage[indices + 1])
-                y_label = '(p.u.)'
-                title = 'Bus voltage '
+        elif result_type == ResultTypes.BranchActivePower:
+            data = self.Sbranch.real
+            y_label = 'MW'
+            title = 'Branch active power '
+            labels = self.branch_names
+            index = self.branch_names
 
-            elif result_type == ResultTypes.BusVoltageAngle:
-                data = np.angle(self.voltage[indices + 1], deg=True)
-                y_label = '(Deg)'
-                title = 'Bus voltage '
+        elif result_type == ResultTypes.BranchLoading:
+            data = self.loading.real * 100
+            y_label = '(%)'
+            title = 'Branch loading '
+            labels = self.branch_names
+            index = self.branch_names
 
-            elif result_type == ResultTypes.BusActivePower:
-                data = self.S[indices + 1].real
-                y_label = '(MW)'
-                title = 'Bus active power '
-
-            elif result_type == ResultTypes.BusReactivePower:
-                data = self.S[indices + 1].imag
-                y_label = '(MVAr)'
-                title = 'Bus reactive power '
-
-            elif result_type == ResultTypes.BranchPower:
-                data = self.Sbranch[indices + 1]
-                y_label = '(MVA)'
-                title = 'Branch power '
-
-            elif result_type == ResultTypes.BranchCurrent:
-                data = self.Ibranch[indices + 1]
-                y_label = '(kA)'
-                title = 'Branch current '
-
-            elif result_type == ResultTypes.BranchLoading:
-                data = self.loading[indices + 1] * 100
-                y_label = '(%)'
-                title = 'Branch loading '
-
-            elif result_type == ResultTypes.BranchLosses:
-                data = self.losses[indices + 1]
-                y_label = '(MVA)'
-                title = 'Branch losses'
-
-            elif result_type == ResultTypes.BranchVoltage:
-                data = np.abs(self.Vbranch[indices + 1])
-                y_label = '(p.u.)'
-                title = result_type.value[0]
-
-            elif result_type == ResultTypes.BranchAngles:
-                data = np.angle(self.Vbranch[indices + 1], deg=True)
-                y_label = '(deg)'
-                title = result_type.value[0]
-
-            elif result_type == ResultTypes.BatteryPower:
-                data = np.zeros_like(self.losses[indices + 1])
-                y_label = '$\Delta$ (MVA)'
-                title = 'Battery power'
-
-            elif result_type == ResultTypes.OTDFSimulationError:
-                data = self.error[indices + 1]
-                y_label = 'Per unit power'
-                labels = [y_label]
-                title = 'Error'
-
-            elif result_type == ResultTypes.OTDF:
-                data = self.otdf[indices, :]
-                y_label = 'Per unit'
-                labels = [y_label]
-                title = 'OTDF'
-
-                # assemble model
-                mdl = ResultsModel(data=data, index=self.branch_names[indices],
-                                   columns=self.branch_names, title=title, ylabel=y_label)
-                return mdl
-            else:
-                raise Exception('Result type not understood:' + str(result_type))
-
-            index = self.branch_names[indices]
-
-            # assemble model
-            mdl = ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label)
-            return mdl
-
+        elif result_type == ResultTypes.OTDF:
+            data = self.otdf
+            y_label = 'Per unit'
+            labels = self.branch_names
+            index = self.branch_names
+            title = 'OTDF'
         else:
-            return None
+            raise Exception('Result type not understood:' + str(result_type))
+
+        # assemble model
+        mdl = ResultsModel(data=data,
+                           index=index,
+                           columns=labels,
+                           title=title,
+                           ylabel=y_label)
+        return mdl
+
