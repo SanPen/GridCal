@@ -14,15 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
-import pandas as pd
 import numpy as np
-import time
-import multiprocessing
-from matplotlib import pyplot as plt
-
-from PySide2.QtCore import QThread, Signal
-
-from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Gui.GuiFunctions import ResultsModel
 
@@ -113,46 +105,48 @@ class NMinusKResults:
         :return:
         """
 
+        index = self.branch_names
+
         if result_type == ResultTypes.BusVoltageModule:
             data = np.abs(self.voltage)
             y_label = '(p.u.)'
             title = 'Bus voltage '
-            labels = self.branch_names
-            index = self.bus_names
+            labels = self.bus_names
+            # index = self.branch_names
 
         elif result_type == ResultTypes.BusVoltageAngle:
             data = np.angle(self.voltage, deg=True)
             y_label = '(Deg)'
             title = 'Bus voltage '
-            labels = self.branch_names
-            index = self.bus_names
+            labels = self.bus_names
+            # index = self.branch_names
 
         elif result_type == ResultTypes.BusActivePower:
             data = self.S.real
             y_label = '(MW)'
             title = 'Bus active power '
-            labels = self.branch_names
-            index = self.bus_names
+            labels = self.bus_names
+            # index = self.branch_names
 
         elif result_type == ResultTypes.BranchActivePower:
             data = self.Sbranch.real
             y_label = 'MW'
             title = 'Branch active power '
-            labels = self.branch_names
-            index = self.branch_names
+            labels = ['# ' + x for x in self.branch_names]
+            # index = self.branch_names
 
         elif result_type == ResultTypes.BranchLoading:
             data = self.loading.real * 100
             y_label = '(%)'
             title = 'Branch loading '
-            labels = self.branch_names
-            index = self.branch_names
+            labels = ['# ' + x for x in self.branch_names]
+            # index = self.branch_names
 
         elif result_type == ResultTypes.OTDF:
             data = self.otdf
             y_label = 'Per unit'
-            labels = self.branch_names
-            index = self.branch_names
+            labels = ['# ' + x for x in self.branch_names]
+
             title = 'OTDF'
         else:
             raise Exception('Result type not understood:' + str(result_type))
