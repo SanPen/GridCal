@@ -48,7 +48,12 @@ def make_ptdf(Bbus, Bf, pqpv, vd, distribute_slack=True):
     # solve for change in voltage angles
     dTheta = np.zeros((nb, nbi))
     Bref = Bbus[noslack, :][:, noref].tocsc()
-    dTheta[noref, :] = spsolve(Bref,  dP[noslack, :]).toarray()
+    dtheta_ref = spsolve(Bref,  dP[noslack, :])
+
+    if sp.issparse(dtheta_ref):
+        dTheta[noref, :] = dtheta_ref.toarray()
+    else:
+        dTheta[noref, :] = dtheta_ref
 
     # compute corresponding change in branch flows
     # Bf is a sparse matrix
@@ -233,15 +238,17 @@ class LinearAnalysis:
                 # compute the linear-DC matrices
                 Bbus, Bf = island.get_linear_matrices()
 
-                # compute the PTDF of the island
-                ptdf_island = make_ptdf(Bbus=Bbus,
-                                        Bf=Bf,
-                                        pqpv=island.pqpv,
-                                        vd=island.vd,
-                                        distribute_slack=self.distributed_slack)
+                if len(island.vd) > 0 and len(island.pqpv) > 0:  # no slacks will make it impossible to compute the PTDF analytically
 
-                # assign the PTDF to the matrix
-                self.results.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
+                    # compute the PTDF of the island
+                    ptdf_island = make_ptdf(Bbus=Bbus,
+                                            Bf=Bf,
+                                            pqpv=island.pqpv,
+                                            vd=island.vd,
+                                            distribute_slack=self.distributed_slack)
+
+                    # assign the PTDF to the matrix
+                    self.results.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
 
         else:
 

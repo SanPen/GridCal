@@ -19,13 +19,16 @@ Version 4.0.0
 - Revamp of the context menus
 - Improved the transformer and line editors integrating the template selection
 - Improved filtering (bool values are recognised now)
-- Improved the PSS/e conversion
+- Improved the PSS/e Raw file import
 - Replaced how all the GUI messages are handled
+- Replaced the empirical PTDF/OTDF by the analytical PTDF/LODF which are several orders of magnitude faster.
 - Fixed transformer editor Sbase conversion
 - Added HVDC line model
 - Added VSC branch model
+- Added DC line model
 - Added tags to the sigma-plot
 - Added Substation, Zone, Area and Country objects to group better the buses.
+- Added better Json export file.
 - Changed the power flow inner loops order. This changes the behaviour to the better when the controls are active.
 
 

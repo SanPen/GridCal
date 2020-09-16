@@ -163,8 +163,9 @@ def check_lodf(grid: MultiCircuit):
     nl = circuit.nbr
     flows_n1 = np.zeros((nl, nl))
     for c in range(nl):  # branch that fails (contingency)
-        for m in range(nl):  # branch to monitor
-            flows_n1[m, c] = flows_n[m] + LODF[m, c] * flows_n[c]
+        # for m in range(nl):  # branch to monitor
+        #     flows_n1[m, c] = flows_n[m] + LODF[m, c] * flows_n[c]
+        flows_n1[:, c] = flows_n[:] + LODF[:, c] * flows_n[c]
 
     return Pn1_nr, flows_n1
 
@@ -179,11 +180,11 @@ if __name__ == '__main__':
     pd.set_option('display.max_columns', 500)
     pd.set_option('display.width', 1000)
 
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
     # fname = 'helm_data1.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14 PQ only.gridcal'
     # fname = 'IEEE 14 PQ only full.gridcal'

@@ -2448,23 +2448,18 @@ class MainGUI(QMainWindow):
         if len(self.circuit.buses) > 0:
             if SimulationTypes.OTDF_run not in self.stuff_running_now:
 
-                if self.circuit.time_profile is None:
-                    info_msg('OTDF needs a profile of at least length 1')
+                self.add_simulation(SimulationTypes.OTDF_run)
 
-                else:
-                    self.add_simulation(SimulationTypes.OTDF_run)
+                self.LOCK()
 
-                    if len(self.circuit.buses) > 0:
-                        self.LOCK()
+                options = NMinusKOptions(distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
 
-                        options = NMinusKOptions(distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
+                self.otdf_analysis = NMinusK(grid=self.circuit, options=options)
 
-                        self.otdf_analysis = NMinusK(grid=self.circuit, options=options)
-
-                        self.otdf_analysis.progress_signal.connect(self.ui.progressBar.setValue)
-                        self.otdf_analysis.progress_text.connect(self.ui.progress_label.setText)
-                        self.otdf_analysis.done_signal.connect(self.post_otdf)
-                        self.otdf_analysis.start()
+                self.otdf_analysis.progress_signal.connect(self.ui.progressBar.setValue)
+                self.otdf_analysis.progress_text.connect(self.ui.progress_label.setText)
+                self.otdf_analysis.done_signal.connect(self.post_otdf)
+                self.otdf_analysis.start()
             else:
                 warning_msg('Another OTDF is being executed now...')
         else:
