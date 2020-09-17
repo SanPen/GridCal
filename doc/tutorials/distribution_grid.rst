@@ -27,7 +27,7 @@ Step 0: System Overview
 The system grid is supposed to look like the figure below.
 
 .. figure:: ../figures/tutorials/dg/overview.png
-    :scale: 70 %
+    :scale: 50%
 
 The parameters of the system are:
 
@@ -54,7 +54,7 @@ Open GridCal:
 1. 'Drag and drop' 2 'Bus' element to the diagram canvas:
 
 .. figure:: ../figures/tutorials/dg/busaddition.png
-    :scale: 70 %
+    :scale: 50%
 
 2. Select (double 'click') Bus 0 and change the parameters (on the left side pane):
 
@@ -75,7 +75,7 @@ Open GridCal:
 4. Hover over either bus element, 'click and drag' (when there is a cross) to the other bus to create a branch.
 
 .. figure:: ../figures/tutorials/dg/transformer.png
-    :scale: 70 %
+    :scale: 50%
 
 Note: A transformer will be created between HV Bus and Bus 2 when nominal voltage values are different.
 Note: The name of an element may not change until you 'double click' the element on the diagram canvas after the change.
@@ -86,7 +86,7 @@ Step 2: Create a Lines of Different Lengths
 1. Create 3 more Buses (Bus 3, Bus 4 and Bus 5) and create a branch between them.
 
 .. figure:: ../figures/tutorials/dg/threebusaddition.png
-    :scale: 70 %
+    :scale: 50%
 
 2. Select the branch between Bus 2 and Bus 3 and change its parameters to:
 
@@ -124,7 +124,7 @@ Step 3: Add more Lines and Buses
 4. Add Bus 9 and Bus 11 to the left of Bus 5.
 
 .. figure:: ../figures/tutorials/dg/morebuses.png
-    :scale: 70 %
+    :scale: 50%
 
 5. Select the branch between Bus 2 and Bus 6 and change its parameters to:
 
@@ -159,7 +159,7 @@ Step 3: Add more Lines and Buses
 +------------+--------+
 
 .. figure:: ../figures/tutorials/dg/morebuseslines.png
-    :scale: 70 %
+    :scale: 50%
 
 Step 4: Create Loads
 --------------------
@@ -189,7 +189,7 @@ Step 4: Create Loads
 6. Right 'click' on House 4 and select 'Add Load'.
 
 .. figure:: ../figures/tutorials/dg/loads.png
-    :scale: 70 %
+    :scale: 50%
 
 Step 5: Create House 1 and House 2
 ----------------------------------
@@ -213,7 +213,7 @@ Step 5: Create House 1 and House 2
 The full system topoly looks like:
 
 .. figure:: ../figures/tutorials/dg/fourhouses.png
-    :scale: 70 %
+    :scale: 50%
 
 Note: do not forget to add the load after you rename the House buses.
 
@@ -231,7 +231,7 @@ This transformer is the transformer between HV Bus and Bus 2. The transformer is
 3. Remove all filters on the 'Rate (MVA)' column by pressing on the downward arrow.
 
 .. figure:: ../figures/tutorials/dg/downtriangle.png
-    :scale: 70 %
+    :scale: 50%
 
 4. Select the '20 kV' filter on the 'HV (kV)' column using the downward arrow.
 
@@ -342,7 +342,7 @@ The transformers used for the 4 loads (houses) a 10 to 0.4 kV transformer will b
 6. On the lower tabs select 'Types catalogue'.
 
 .. figure:: ../figures/tutorials/dg/typescatalogue.png
-    :scale: 70 %
+    :scale: 50%
 
 7. Select the transformer that has the characteristics of the 10 to 0.4 kV transformer and rename it to 'House trafo'. Now you have defined a transformer type that can be added to many transformers.
 
@@ -376,9 +376,9 @@ Step 9: Defining Wires and Overhead Lines
 +-------------------+----------+
 |   X [Ohm/Km]      |        0 |
 +-------------------+----------+
-|    GMR [m]        |  0.001603 |
+|    GMR [m]        |  0.001603|
 +------------------+-----------+
-|  Max Current [kA] |  0.11     |
+|  Max Current [kA] |  0.11    |
 +-------------------+----------+
 
 Note: A new wire or custom wire can be added using the '+' button on the top right.
@@ -394,7 +394,8 @@ Note: A new wire or custom wire can be added using the '+' button on the top rig
 7. Select the wire 'AWG SLD', highlight it and click on the '+' sign on the 'Wire composition' section below:
 
 .. figure:: ../figures/tutorials/dg/awgsld.png
-    :scale: 70 %
+    :scale: 30%
+
 
 8. Add the 'AWG SLD' wire three times to enter the wire arrangement. The formulas come from ATP-EMTP.
 
@@ -411,7 +412,7 @@ Note: A new wire or custom wire can be added using the '+' button on the top rig
 +-----------+------+-------+-------+
 
 .. figure:: ../figures/tutorials/dg/threeawgsld.png
-    :scale: 70 %
+    :scale: 30 %
 
 10. Click on the 'Compute matrices' button the little calculator on the bottom right and you will be able to see:
 -Tower Wire Position (right).
@@ -431,12 +432,73 @@ Note: A new wire or custom wire can be added using the '+' button on the top rig
 15. Repeat for all desired lines. In this case Line 1 to Line 8. The 'Objecs -> Line' Data tab should look like:
 
 .. figure:: ../figures/tutorials/dg/threeawgsld.png
-    :scale: 70 %
+    :scale: 30 %
 
 Note: this can be done with all elements either to preloaded models or models you create.
 
 Step 10: Importing Load Profiles
 --------------------------------
 
-1.
+1. Head to the 'Time Events' tab on the bottom part of the GUI. Then click on the left and select 'Import Profiles'. This should bring up the 'Profile Import Dialogue' box.
+
+.. figure:: ../figures/tutorials/dg/importprofiles.png
+    :scale: 30 %
+
+2. Click on 'Import file' box on the left. This will bring up a file explorer tab.
+
+3. In the installation location head to '../GridCal/Grids_and_Profiles/profiles/..' then select the Excel file called: 'Total_profiles_1W_1H.xlsx'.
+
+.. figure:: ../figures/tutorials/dg/filelocation.png
+    :scale: 30 %
+
+4. On the next dialogue box select 'Sheet 1' and 'OK'. Wait for all of the profiles to load.
+
+5. Any load profile can be selected. For example, click on 'USA_AL_Dothan.Muni.AP.7222268_TMY3_BASE(kW)'. Then select the 'Plot' tab to see the load profile in kW for January 2018.
+
+.. figure:: ../figures/tutorials/dg/loadprofilechart.png
+    :scale: 30 %
+
+Note: in the 'Assignation' tab, the units can be changed to: T, G, k , m Watts.
+
+Set the units to 'k'.
+
+6. On the right, you can see the different 'Objectives', fill the out by double-clicking on a profile and then double-clicking in the 'active' box of the desired 'Objective'. The profiles are assigned as follows:
+    - Load@House 1: 'USA_AL_Muscle.Shoals.Rgni.AP.723235_TMY3_BASE(k@)'.
+    - Load@House 2: 'USA_AZ_Douglas-Bisbee.Douglas.intl.AP.722735_TMY3_BASE(k@)'.
+    - Load@House 3: 'USA_AL_Tuscaloosa.Muni.AP.722286_TMY3_BASE(k@)'.
+    - Load@House 4: 'USA_AL_Birmingham.Muni.AP.722286_TMY3_BASE(k@)'.
+
+The selection should look like this:
+
+.. figure:: ../figures/tutorials/dg/profileslsection.png
+    :scale: 30 %
+
+Click 'Accept' to load the profiles.
+
+7. On the 'Time events' tab, confirm that the time series has bene added:
+
+.. figure:: ../figures/tutorials/dg/timeevents.png
+    :scale: 30 %
+
+8. To set the reactive power as a copy of the active power and scale it, click on the dropdown menu and select 'Q'. Then click next to it on the 'Copy the selected profile into the profiles selected next to this button' button. When the pop up box comes on confirming the action select 'Yes'.
+
+.. figure:: ../figures/tutorials/dg/scaling.png
+    :scale: 30 %
+
+9. The profiles can be visualized by 1) selecting the times, and load, and clicking on the 'Plot the selected project's profile' button.
+
+.. figure:: ../figures/tutorials/dg/timeselection.png
+    :scale: 30 %
+
+.. figure:: ../figures/tutorials/dg/profileplot.png
+    :scale: 30 %
+
+10. Power flow snapshots can be seen also by going to the 'Time events' tabs, and then
+
+.. figure:: ../figures/tutorials/dg/snapshotpf.png
+    :scale: 30 %
+
+Step 10: Setting a Slack Bus
+----------------------------
+
 
