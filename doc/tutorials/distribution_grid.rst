@@ -210,7 +210,7 @@ Step 5: Create House 1 and House 2
 | Vnom[kV] |   0.4    |
 +----------+----------+
 
-The full system topoly looks like:
+The full system topology looks like:
 
 .. figure:: ../figures/tutorials/dg/fourhouses.png
     :scale: 50%
@@ -342,7 +342,7 @@ The transformers used for the 4 loads (houses) a 10 to 0.4 kV transformer will b
 6. On the lower tabs select 'Types catalogue'.
 
 .. figure:: ../figures/tutorials/dg/typescatalogue.png
-    :scale: 50%
+    :scale: 60%
 
 7. Select the transformer that has the characteristics of the 10 to 0.4 kV transformer and rename it to 'House trafo'. Now you have defined a transformer type that can be added to many transformers.
 
@@ -442,21 +442,21 @@ Step 10: Importing Load Profiles
 1. Head to the 'Time Events' tab on the bottom part of the GUI. Then click on the left and select 'Import Profiles'. This should bring up the 'Profile Import Dialogue' box.
 
 .. figure:: ../figures/tutorials/dg/importprofiles.png
-    :scale: 30 %
+    :scale: 50 %
 
 2. Click on 'Import file' box on the left. This will bring up a file explorer tab.
 
 3. In the installation location head to '../GridCal/Grids_and_Profiles/profiles/..' then select the Excel file called: 'Total_profiles_1W_1H.xlsx'.
 
 .. figure:: ../figures/tutorials/dg/filelocation.png
-    :scale: 30 %
+    :scale: 50 %
 
 4. On the next dialogue box select 'Sheet 1' and 'OK'. Wait for all of the profiles to load.
 
 5. Any load profile can be selected. For example, click on 'USA_AL_Dothan.Muni.AP.7222268_TMY3_BASE(kW)'. Then select the 'Plot' tab to see the load profile in kW for January 2018.
 
 .. figure:: ../figures/tutorials/dg/loadprofilechart.png
-    :scale: 30 %
+    :scale: 40 %
 
 Note: in the 'Assignation' tab, the units can be changed to: T, G, k , m Watts.
 
@@ -470,35 +470,51 @@ Set the units to 'k'.
 
 The selection should look like this:
 
-.. figure:: ../figures/tutorials/dg/profileslsection.png
-    :scale: 30 %
+.. figure:: ../figures/tutorials/dg/profileselsection.png
+    :scale: 50 %
 
 Click 'Accept' to load the profiles.
 
 7. On the 'Time events' tab, confirm that the time series has bene added:
 
 .. figure:: ../figures/tutorials/dg/timeevents.png
-    :scale: 30 %
+    :scale: 50 %
 
 8. To set the reactive power as a copy of the active power and scale it, click on the dropdown menu and select 'Q'. Then click next to it on the 'Copy the selected profile into the profiles selected next to this button' button. When the pop up box comes on confirming the action select 'Yes'.
 
 .. figure:: ../figures/tutorials/dg/scaling.png
-    :scale: 30 %
+    :scale: 60 %
 
 9. The profiles can be visualized by 1) selecting the times, and load, and clicking on the 'Plot the selected project's profile' button.
 
 .. figure:: ../figures/tutorials/dg/timeselection.png
-    :scale: 30 %
+    :scale: 50 %
 
 .. figure:: ../figures/tutorials/dg/profileplot.png
-    :scale: 30 %
+    :scale: 50 %
 
 10. Power flow snapshots can be seen also by going to the 'Time events' tabs, and then
 
 .. figure:: ../figures/tutorials/dg/snapshotpf.png
-    :scale: 30 %
+    :scale: 50 %
 
 Step 10: Setting a Slack Bus
 ----------------------------
+In order to run the power flow, we must select the slack bus.
 
+1. Return to the 'Schematic' tab.
 
+2. Select the 'HV Bus'.
+
+3. On the left pane, select 'True' in the 'is_slack' option.
+
+.. figure:: ../figures/tutorials/dg/isslack.png
+    :scale: 50 %
+
+4. Click on the 'Run Power Flow' button and the grid will be colored according to the voltage or loading.
+
+.. figure:: ../figures/tutorials/dg/runpf.png
+    :scale: 50 %
+
+Step 11: Setting a Slack Bus
+----------------------------
