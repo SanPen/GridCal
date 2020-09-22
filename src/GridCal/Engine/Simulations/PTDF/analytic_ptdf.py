@@ -236,7 +236,7 @@ class LinearAnalysis:
             for island in islands:
 
                 # compute the linear-DC matrices
-                Bbus, Bf = island.get_linear_matrices()
+                Bbus, Bf, reactances = island.get_linear_matrices()
 
                 if len(island.vd) > 0 and len(island.pqpv) > 0:  # no slacks will make it impossible to compute the PTDF analytically
 
@@ -253,7 +253,7 @@ class LinearAnalysis:
         else:
 
             # compute the linear-DC matrices
-            Bbus, Bf = islands[0].get_linear_matrices()
+            Bbus, Bf, reactances = islands[0].get_linear_matrices()
 
             # there is only 1 island, compute the PTDF
             self.results.PTDF = make_ptdf(Bbus=Bbus,

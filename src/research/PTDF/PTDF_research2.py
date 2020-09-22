@@ -31,13 +31,12 @@ def make_ptdf(circuit: SnapshotCircuit, distribute_slack=True):
     :param circuit:
     :return:
     """
-    Bbus, Bf = circuit.get_linear_matrices()
+    Bbus, Bf, reactances = circuit.get_linear_matrices()
 
     n = circuit.nbus
     dP = sp.eye(n, n).tocsc()
-    nb = n
     nbi = n
-    noref = np.arange(1, nb)
+    noref = np.arange(1, n)
     noslack = circuit.pqpv
 
     # compute the reduced susceptance matrix
@@ -47,16 +46,17 @@ def make_ptdf(circuit: SnapshotCircuit, distribute_slack=True):
     dthetha_red = spsolve(Bref,  dP[noslack, :]).toarray()  # pass to array because it is a full matrix
 
     # compute the PTDF matrix (H)
-    H = (Bf * np.vstack((np.zeros(nbi), dthetha_red)))
+    theta = np.vstack((np.zeros(nbi), dthetha_red))
+    PTDF = Bf * theta
 
     # Distribute the effect of the slack
     if distribute_slack:
         slack = circuit.vd + 1  # the +1 is to avoid zero divisions if the slack is the bus 0
         w_slack = slack / np.sum(slack)  # weighted slack
-        mod = sp.eye(nb, nb).toarray() - w_slack * ones((1, nb))
-        H = np.dot(H, mod)
+        mod = sp.eye(n, n).toarray() - w_slack * ones((1, n))
+        PTDF = np.dot(PTDF, mod)
 
-    return H
+    return PTDF
 
 
 def make_lodf(circuit: SnapshotCircuit, PTDF, correct_values=True):
@@ -180,7 +180,7 @@ if __name__ == '__main__':
     pd.set_option('display.max_columns', 500)
     pd.set_option('display.width', 1000)
 
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     # fname = 'helm_data1.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14 PQ only.gridcal'
     # fname = 'IEEE 14 PQ only full.gridcal'
-    # fname = '/home/santi/Descargas/matpower-fubm-master/data/case5.m'
+    fname = '/home/santi/Descargas/matpower-fubm-master/data/case5.m'
     # fname = '/home/santi/Descargas/matpower-fubm-master/data/case30.m'
     grid_ = FileOpen(fname).open()
 

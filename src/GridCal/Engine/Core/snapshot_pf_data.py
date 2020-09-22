@@ -607,7 +607,6 @@ class SnapshotCircuit:
         susceptances = np.empty(self.nbr)
         all_taps = np.ones(self.nbr, dtype=complex)
 
-
         # line ---------------------------------------------------------------------------------------------------------
         a = 0
         b = self.nline
@@ -660,7 +659,7 @@ class SnapshotCircuit:
         B1t = -b1_tt * Cf + b1_tt * Ct
         B1 = sparse_type(Cf.T * B1f + Ct.T * B1t)
 
-        return B1, B1f
+        return B1, B1f, reactances
 
     def get_generator_injections(self):
         """
