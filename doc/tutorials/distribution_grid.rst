@@ -444,6 +444,8 @@ Step 10: Importing Load Profiles
 .. figure:: ../figures/tutorials/dg/importprofiles.png
     :scale: 50 %
 
+Note: Make sure that the desired object is set to 'Load' and power types are both set to 'P'.
+
 2. Click on 'Import file' box on the left. This will bring up a file explorer tab.
 
 3. In the installation location head to '../GridCal/Grids_and_Profiles/profiles/..' then select the Excel file called: 'Total_profiles_1W_1H.xlsx'.
@@ -483,24 +485,49 @@ Click 'Accept' to load the profiles.
 8. To set the reactive power as a copy of the active power and scale it, click on the dropdown menu and select 'Q'. Then click next to it on the 'Copy the selected profile into the profiles selected next to this button' button. When the pop up box comes on confirming the action select 'Yes'.
 
 .. figure:: ../figures/tutorials/dg/scaling.png
-    :scale: 60 %
+    :scale: 100 %
+
+.. figure:: ../figures/tutorials/dg/pprofile.png
+    :scale: 100 %
+
+9. On the bottom left side scale it by 0.8 and click on the multiply button. The profile should look like this:
+
+.. figure:: ../figures/tutorials/dg/qprofile.png
+    :scale: 100 %
 
 9. The profiles can be visualized by 1) selecting the times, and load, and clicking on the 'Plot the selected project's profile' button.
 
-.. figure:: ../figures/tutorials/dg/timeselection.png
-    :scale: 50 %
-
-.. figure:: ../figures/tutorials/dg/profileplot.png
-    :scale: 50 %
+.. figure:: ../figures/tutorials/dg/profilegraph.png
+    :scale: 100 %
 
 10. Power flow snapshots can be seen also by going to the 'Time events' tabs, and then
 
 .. figure:: ../figures/tutorials/dg/snapshotpf.png
     :scale: 50 %
 
-Step 10: Setting a Slack Bus
-----------------------------
-In order to run the power flow, we must select the slack bus.
+Step 10: Set Power Flow From A Profile
+--------------------------------------
+Once we have checked that the profiles are okay, we can set the power flow snapshot from the profiles and run a power flow.
+
+1. Head to the 'Time Series' Tab and select '2018+01-03T12:00:00.00000000000000'.
+
+.. figure:: ../figures/tutorials/dg/timeselection.png
+    :scale: 50 %
+
+2. Select the 'Assign selected values to the selected time slot to the grid'.
+
+3. Select 'Yes'.
+
+
+Step 11: Running a Power Flow
+-----------------------------
+
+In order to run the power flow, we must select the slack bus. If you try run without one, you will get this error message:
+
+.. figure:: ../figures/tutorials/dg/noslackbus.png
+    :scale: 50 %
+
+Note: to run a Power Flow, select the 'Power Flow' button in the red square in the figure above.
 
 1. Return to the 'Schematic' tab.
 
@@ -511,10 +538,105 @@ In order to run the power flow, we must select the slack bus.
 .. figure:: ../figures/tutorials/dg/isslack.png
     :scale: 50 %
 
-4. Click on the 'Run Power Flow' button and the grid will be colored according to the voltage or loading.
+4. Click on the 'Power Flow' button and the grid will be colored according to the voltage or loading.
 
 .. figure:: ../figures/tutorials/dg/runpf.png
     :scale: 50 %
 
-Step 11: Setting a Slack Bus
-----------------------------
+5. Click on the 'Power Flow Time Series' button and the grid will be colored according to th
+
+.. figure:: ../figures/tutorials/dg/runpftimeseries.png
+    :scale: 50 %
+
+6. In addition by hovering above a transformer you can see the loading percentage and the power.
+
+.. figure:: ../figures/tutorials/dg/transfomerpower.png
+    :scale: 50 %
+
+Step 12: Results & Features
+---------------------------
+
+Here are some of the few results and features that are available with GridCal. All results can be found in the 'Results' tab. Here you can see a list of all studies perfomed and their respective results:
+
+.. figure:: ../figures/tutorials/dg/results.png
+    :scale: 50 %
+
+In the results you can also choose from:
+
+- Study
+- Result Type
+- Devices
+
+From here you can choose and customize the plot and results that are displayed to you.
+
+.. figure:: ../figures/tutorials/dg/resultsorting.png
+    :scale: 50 %
+
+Select the Study, Result Type and Devices, then the Data will pop up in table format, to graph it use the 'Graph' button on the top right. The graph will come up on a new figure:
+
+.. figure:: ../figures/tutorials/dg/resultselection.png
+    :scale: 50 %
+
+In the 'Schematic' Tab, you can visualize the result's profiles, by selection the load, right click and selecting 'Plot Profiles':
+
+.. figure:: ../figures/tutorials/dg/plotprofiles.png
+    :scale: 50 %
+
+From the result plots you can do various things with the plot:
+
+.. figure:: ../figures/tutorials/dg/plotoptions.png
+    :scale: 50 %
+
+
+In the 'Settings Tab' some of the stuff that can be changed are:
+
+- **General Settings**: Base Power.
+- **General Settings**: Frequency.
+- **General Settings**: Multiprocessing.
+- **Visualization**: Export Resolution.
+- **Visualization**: Plotting Style.
+- **Visualization**: Schematic Selection.
+- **PF**: Solver Selection.
+- **PF**: Method Retry.
+- **PF**: Distributed Slack.
+- **PF**: Ignore Single Node Islands.
+- **PF**: Automatic Graph Precision.
+- **PF**: Precision.
+- **PF**: Numerical Method Max. Iterations.
+- **PF**: Outer Loop Max. Iterations.
+- **PF**: Reactive Control Mode.
+- **PF**: Q Steepnes Factor.
+- **PF**: Transformer Tap Control.
+- **PF**: Apply Temperature Correction.
+- **PF**: Apply Impedance Tolerances.
+- **PF**: Dispatch Storage.
+- **PF**: Use Clustering.
+- **PF**: Cluster Numbers.
+- **PTDF**: Power Increment.
+- **PTDF**: Grouping.
+- **PTDF**: k.
+- **OPF**: Method.
+- **OPF**: Time Grouping.
+- **OPF**: MIP Solver.
+- **Stability**: Max. Iterations.
+- **Stability**: Stop Settings.
+- **Stability**: Using Alpha Target From Current Situation.
+- **Stability**: Lambda Factor.
+- **Stability**: User Departure and Target Points From Time Series.
+- **Stability**: 'Now' Time.
+- **Stability**: 'Target' Time.
+- **Stochastic - Monte Carlo**: Precision Group Data.
+- **Stochastic - Monte Carlo**: Max Iterations.
+- **Stochastic - Latin Hypercube Sampling**: Samples.
+- **Stochastic - Cascading**: Additional Islands Until Stop.
+- **Topology - Grid Reduction**: Branch Selection Type.
+- **Topology - Grid Reduction**: Filter by R+X Under Treshold.
+- **Topology - Node Layout**: Automatic Layout Algorithm.
+- **Topology - Node Layout**: Ask Before Applying.
+- **Topology - Node Layout**: Node Expansion Factor.
+- **Topology - Branch Rating**: Branch Rating Factor.
+- **Topology - Branch Rating**: Override Values.
+- **Synchronization**: Synchronization Interval.
+- **Synchronization**: Accept Newer Cahnges.
+
+
