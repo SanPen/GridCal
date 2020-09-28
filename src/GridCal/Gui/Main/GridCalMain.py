@@ -2340,7 +2340,7 @@ class MainGUI(QMainWindow):
                 if len(self.circuit.buses) > 0:
                     self.LOCK()
 
-                    options = LinearAnalysisOptions(distribute_slack=self.ui.distributed_slack_checkBox.isChecked())
+                    options = LinearAnalysisOptions(distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked())
 
                     self.ptdf_analysis = LinearAnalysisDriver(grid=self.circuit, options=options)
 

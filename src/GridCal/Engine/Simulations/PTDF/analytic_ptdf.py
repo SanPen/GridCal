@@ -27,23 +27,28 @@ from GridCal.Gui.GuiFunctions import ResultsModel
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
 
 
-def make_ptdf(Bbus, Bf, pqpv, vd, distribute_slack=True):
+def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
     """
     Build the PTDF matrix
     :param Bbus: DC-linear susceptance matrix
     :param Bf: Bus-branch "from" susceptance matrix
     :param pqpv: array of sorted pq and pv node indices
-    :param vd: array of slack node indices
     :param distribute_slack: distribute the slack?
     :return: PTDF matrix. It is a full matrix of dimensions branches x buses
     """
 
     n = Bbus.shape[0]
-    dP = sp.eye(n, n).tocsc()
     nb = n
     nbi = n
     noref = np.arange(1, nb)
     noslack = pqpv
+
+    if distribute_slack:
+        dP = np.ones((n, n)) * (-1/(n-1))
+        for i in range(n):
+            dP[i, i] = 1.0
+    else:
+        dP = np.eye(n, n)
 
     # solve for change in voltage angles
     dTheta = np.zeros((nb, nbi))
@@ -58,13 +63,6 @@ def make_ptdf(Bbus, Bf, pqpv, vd, distribute_slack=True):
     # compute corresponding change in branch flows
     # Bf is a sparse matrix
     H = Bf * dTheta
-
-    # normalize the slack
-    if distribute_slack:
-        slack = vd + 1  # the +1 is to avoid zero divisions
-        w_slack = slack / np.sum(slack)
-        mod = sp.eye(nb, nb).toarray() - w_slack * np.ones((1, nb))
-        H = np.dot(H, mod)
 
     return H
 
@@ -81,7 +79,6 @@ def make_lodf(Cf, Ct, PTDF, correct_values=True):
 
     # compute the connectivity matrix
     Cft = Cf - Ct
-
     H = PTDF * Cft.T
 
     # old code
@@ -244,7 +241,6 @@ class LinearAnalysis:
                     ptdf_island = make_ptdf(Bbus=Bbus,
                                             Bf=Bf,
                                             pqpv=island.pqpv,
-                                            vd=island.vd,
                                             distribute_slack=self.distributed_slack)
 
                     # assign the PTDF to the matrix
@@ -259,7 +255,6 @@ class LinearAnalysis:
             self.results.PTDF = make_ptdf(Bbus=Bbus,
                                           Bf=Bf,
                                           pqpv=islands[0].pqpv,
-                                          vd=islands[0].vd,
                                           distribute_slack=self.distributed_slack)
 
         # the LODF algorithm doesn't seem to solve any circuit, hence there is no need of island splitting

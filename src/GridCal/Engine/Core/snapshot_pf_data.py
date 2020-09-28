@@ -651,8 +651,7 @@ class SnapshotCircuit:
         all_taps[a:b] = self.vsc_m * np.exp(1.0j * self.vsc_theta)
 
         # Form the matrices for fast decoupled -------------------------------------------------------------------------
-        b1 = 1.0 / (reactances + 1e-20)
-        b1 /= np.abs(all_taps)
+        b1 = 1.0 / (np.abs(all_taps) * reactances + 1e-20)
 
         b1_tt = sp.diags(b1)
         B1f = b1_tt * Cf - b1_tt * Ct
