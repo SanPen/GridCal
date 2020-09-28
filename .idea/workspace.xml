@@ -21,9 +21,7 @@
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Modified gitignore">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/runpf.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/figures/tutorials/dg/runpf.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/figures/tutorials/dg/timeselection.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/figures/tutorials/dg/timeselection.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/make.sh" beforeDir="false" afterPath="$PROJECT_DIR$/doc/make.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/equipment/.~lock.Equipment.ods#" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/tutorials/distribution_grid.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/tutorials/distribution_grid.rst" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

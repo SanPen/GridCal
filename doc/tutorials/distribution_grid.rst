@@ -29,17 +29,12 @@ The system grid is supposed to look like the figure below.
 .. figure:: ../figures/tutorials/dg/overview.png
     :scale: 50%
 
-The parameters of the system are:
+The system featurese:
 
-Buses:
-
-Loads:
-
-Lines:
-
-Transformers:
-
-
+- 9 Buses.
+- 5 Transformers.
+- 4 Loads.
+- 7 Lines.
 
 Solution file of the grid system can be found in _GitHub.
 
@@ -371,15 +366,15 @@ Step 9: Defining Wires and Overhead Lines
 
 2. All of the wire types will show up and select the 17th option 'AWG SLD'. The parameters are:
 
-+-------------------+----------+
-|  R [Oh/Km]        |  1.485077|
-+-------------------+----------+
-|   X [Ohm/Km]      |        0 |
-+-------------------+----------+
-|    GMR [m]        |  0.001603|
-+------------------+-----------+
-|  Max Current [kA] |  0.11    |
-+-------------------+----------+
++-------------------+-----------+
+|  R [Oh/Km]        |  1.485077 |
++-------------------+-----------+
+|   X [Ohm/Km]      |        0  |
++-------------------+-----------+
+|    GMR [m]        |  0.001603 |
++------------------+------------+
+|  Max Current [kA] |  0.11     |
++-------------------+-----------+
 
 Note: A new wire or custom wire can be added using the '+' button on the top right.
 
@@ -472,7 +467,7 @@ Set the units to 'k'.
 
 The selection should look like this:
 
-.. figure:: ../figures/tutorials/dg/profileselsection.png
+.. figure:: ../figures/tutorials/dg/profileselection.png
     :scale: 50 %
 
 Click 'Accept' to load the profiles.
@@ -488,17 +483,17 @@ Click 'Accept' to load the profiles.
     :scale: 100 %
 
 .. figure:: ../figures/tutorials/dg/pprofile.png
-    :scale: 100 %
+    :scale: 50 %
 
 9. On the bottom left side scale it by 0.8 and click on the multiply button. The profile should look like this:
 
 .. figure:: ../figures/tutorials/dg/qprofile.png
-    :scale: 100 %
+    :scale: 50 %
 
 9. The profiles can be visualized by 1) selecting the times, and load, and clicking on the 'Plot the selected project's profile' button.
 
 .. figure:: ../figures/tutorials/dg/profilegraph.png
-    :scale: 100 %
+    :scale: 50 %
 
 10. Power flow snapshots can be seen also by going to the 'Time events' tabs, and then
 
@@ -550,7 +545,7 @@ Note: to run a Power Flow, select the 'Power Flow' button in the red square in t
 
 6. In addition by hovering above a transformer you can see the loading percentage and the power.
 
-.. figure:: ../figures/tutorials/dg/transfomerpower.png
+.. figure:: ../figures/tutorials/dg/transformerpower.png
     :scale: 50 %
 
 Step 12: Results & Features
