@@ -87,7 +87,7 @@ def find_islands(adj: csc_matrix):
                     start = adj.indptr[v]
                     end = adj.indptr[v + 1]
                     for i in range(start, end):
-                        k = adj.indices[i]  # get the column index in the CSC scheme
+                        k = adj.indices[i]  # get the row index in the CSC scheme
                         if not visited[k]:
                             stack.append(k)
             # ------------------------------------------------------------------------------------------------------

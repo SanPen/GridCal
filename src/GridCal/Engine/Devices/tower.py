@@ -55,6 +55,8 @@ class WireInTower:
 
         self.phase = phase
 
+        self.device_type = DeviceType.WireDevice
+
 
 class WiresCollection(QtCore.QAbstractTableModel):
 
@@ -293,26 +295,26 @@ class Tower(EditableDevice):
                 all_y_zero = False
 
             if wire_i.wire.gmr < 0:
-                logger.append('The wires' + wire_i.name + '(' + str(i) + ') has GRM=0 which is impossible.')
+                logger.add('The wires' + wire_i.name + '(' + str(i) + ') has GRM=0 which is impossible.')
                 return False
 
             for j, wire_j in enumerate(self.wires_in_tower):
 
                 if i != j:
                     if wire_i.xpos == wire_j.xpos and wire_i.ypos == wire_j.ypos:
-                        logger.append('The wires' + wire_i.name + '(' + str(i) + ') and ' +
-                                      wire_j.name + '(' + str(j) + ') have the same position which is impossible.')
+                        logger.add('The wires' + wire_i.name + '(' + str(i) + ') and ' +
+                                    wire_j.name + '(' + str(j) + ') have the same position which is impossible.')
                         return False
                 else:
                     pass
 
         if all_y_zero:
-            logger.append('All the vertical coordinates (y) are exactly zero.\n'
-                          'If this is correct, try a very small value.')
+            logger.add('All the vertical coordinates (y) are exactly zero.\n'
+                       'If this is correct, try a very small value.')
             return False
 
         if len(phases) == 1:
-            logger.append('All the wires are in the same phase!')
+            logger.add('All the wires are in the same phase!')
             return False
 
         return True

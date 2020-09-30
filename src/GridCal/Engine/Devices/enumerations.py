@@ -46,11 +46,11 @@ class BranchType(Enum):
 class TransformerControlType(Enum):
 
     fixed = '0:Fixed'
-    angle = '1:Angle'
-    v_from = '3:Control V from'
+    power = '1:power'
+    # v_from = '3:Control V from'
     v_to = '4:Control V to'
-    angle_v_from = '5:Control Angle + V from'
-    angle_v_to = '6:Control Angle + V to'
+    # power_v_from = '5:Control Angle + V from'
+    power_v_to = '6:Control Angle + V to'
 
     def __str__(self):
         return str(self.value)
@@ -70,21 +70,29 @@ class TransformerControlType(Enum):
         return list(map(lambda c: c.value, cls))
 
 
-
 class ConverterControlType(Enum):
 
     # Type I
-    theta_vac = '1:Angle+Vac'
-    pf_qac = '2:Pflow + Qflow'
-    pf_vac = '3:Pflow + Vac'
+    # theta_vac = '1:Angle+Vac'
+    # pf_qac = '2:Pflow + Qflow'
+    # pf_vac = '3:Pflow + Vac'
+    #
+    # # Type II
+    # vdc_qac = '4:Vdc+Qflow'
+    # vdc_vac = '5:Vdc+Vac'
+    #
+    # # type III
+    # vdc_droop_qac = '6:VdcDroop+Qac'
+    # vdc_droop_vac = '7:VdcDroop+Vac'
 
-    # Type II
-    vdc_qac = '4:Vdc+Qflow'
-    vdc_vac = '5:Vdc+Vac'
-
-    # type III
-    # vdc_droop_qac = 6
-    # vdc_droop_vac = 7
+    type_1_free = '1a:Free'
+    type_1_pf = '1b:Pflow'
+    type_1_qf = '1c:Qflow'
+    type_1_vac = '1d:Vac'
+    type_2_vdc = '2a:Vdc'
+    type_2_vdc_pf = '2b:Vdc+Pflow'
+    type_3 = '3a:Droop'
+    type_4 = '4a:Droop-slack'
 
     def __str__(self):
         return str(self.value)
@@ -112,7 +120,9 @@ class DeviceType(Enum):
     CircuitDevice = 'Circuit'
     BusDevice = 'Bus'
     BranchDevice = 'Branch'
+    BranchTypeDevice = 'Branch template'
     LineDevice = 'Line'
+    LineTypeDevice = 'Line Template'
     Transformer2WDevice = 'Transformer'
     HVDCLineDevice = 'HVDC Line'
     DCLineDevice = 'DC line'

@@ -724,11 +724,13 @@ class Transformer2W(EditableDevice):
             self.HV = obj.HV
             self.LV = obj.LV
 
-            if obj != self.template:
-                self.template = obj
-                self.branch_type = BranchType.Transformer
+            if self.template is not None:
+                if obj != self.template:
+                    self.template = obj
+                else:
+                    logger.append(self.name + ' the object type template was not recognised')
             else:
-                logger.append(self.name + ' the object type template was not recognised')
+                self.template = obj
 
     def get_save_data(self):
         """

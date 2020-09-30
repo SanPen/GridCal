@@ -22,7 +22,7 @@ from GridCal.Engine.basic_structures import Logger
 import GridCal.Engine.Core.topology as tp
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
-from GridCal.Engine.basic_structures import BusMode
+from GridCal.Engine.Devices.enumerations import ConverterControlType, TransformerControlType
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 from GridCal.Engine.Core.common_functions import compile_types
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
@@ -99,6 +99,7 @@ class AcDcSnapshotCircuit:
         self.Qset = np.zeros(self.nbr)
         self.vf_set = np.ones(self.nbr)
         self.vt_set = np.ones(self.nbr)
+        self.Kdp = np.ones(self.nbr)
         self.control_mode = np.zeros(self.nbr, dtype=object)
 
         self.C_branch_bus_f = sp.lil_matrix((self.nbr, nbus), dtype=int)  # connectivity branch with their "from" bus
@@ -782,6 +783,12 @@ def compile_acdc_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False
         nc.control_mode[ii] = elm.control_mode
         nc.tap_f[ii], nc.tap_t[ii] = elm.get_virtual_taps()
 
+        if elm.control_mode == TransformerControlType.v_to:
+            nc.Vbus[t] = elm.vset
+
+        elif elm.control_mode == TransformerControlType.power_v_to:  # 2a:Vdc
+            nc.Vbus[t] = elm.vset
+
         nc.C_tr_bus[i, f] = 1
         nc.C_tr_bus[i, t] = 1
 
@@ -807,14 +814,20 @@ def compile_acdc_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False
         nc.G0[ii] = elm.G0
         nc.Beq[ii] = elm.Beq
         nc.m[ii] = elm.m
-        nc.k[ii] = 0.8660254037844386  # sqrt(3)/2
+        nc.k[ii] = 1.0  # 0.8660254037844386  # sqrt(3)/2
         nc.theta[ii] = elm.theta
-        nc.Inom[ii] = elm.Inom
+        nc.Inom[ii] = (elm.rate / nc.Sbase) / nc.Vbus[f]
         nc.Pset[ii] = elm.Pset
         nc.Qset[ii] = elm.Qset
+        nc.Kdp[ii] = elm.kdp
         nc.vf_set[ii] = elm.Vac_set
         nc.vt_set[ii] = elm.Vdc_set
         nc.control_mode[ii] = elm.control_mode
+
+        if elm.control_mode == ConverterControlType.type_1_vac:  # 1d:Vac
+            nc.Vbus[t] = elm.Vac_set
+        elif elm.control_mode == ConverterControlType.type_2_vdc:  # 2a:Vdc
+            nc.Vbus[f] = elm.Vdc_set
 
         nc.C_vsc_bus[i, f] = 1
         nc.C_vsc_bus[i, t] = 1

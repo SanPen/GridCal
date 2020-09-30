@@ -25,7 +25,7 @@ from sklearn.preprocessing import Normalizer
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.branch import BranchType
 from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Simulations.PTDF.ptdf_driver import PTDF
+from GridCal.Engine.Simulations.PTDF.analytic_ptdf_driver import LinearAnalysisResults
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -382,7 +382,7 @@ class NodeGroupsDriver(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
 
-    def __init__(self, grid: MultiCircuit, sigmas=0.5, min_group_size=2, ptdf_results=None):
+    def __init__(self, grid: MultiCircuit, sigmas=0.5, min_group_size=2, ptdf_results: LinearAnalysisResults = None):
         """
         Electric distance clustering
         :param grid: MultiCircuit instance
@@ -442,7 +442,7 @@ class NodeGroupsDriver(QThread):
             self.progress_text.emit('Analyzing PTDF...')
 
             # the PTDF matrix will be scaled to 0, 1 to be able to train
-            self.X_train = Normalizer().fit_transform(self.ptdf_results.flows_sensitivity_matrix)
+            self.X_train = Normalizer().fit_transform(self.ptdf_results.PTDF.T)
 
             metric = 'euclidean'
         else:

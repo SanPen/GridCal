@@ -26,8 +26,14 @@ from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, G
 class VSC(EditableDevice):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='VSC', idtag=None, active=True,
-                 r1=0.0001, x1=0.05, m=1.0, theta=0.1, G0=1e-5, Beq=0.001, Inom=100, rate=1e-9,
-                 control_mode: ConverterControlType = ConverterControlType.pf_vac, Pset = 0.0, Vac_set=1.0, Vdc_set=1.0, Qset=0.0,
+                 r1=0.0001, x1=0.05,
+                 m=1.0, m_max=1.1, m_min=0.8,
+                 theta=0.1, theta_max=6.28, theta_min=-6.28,
+                 Beq=0.001, Beq_min=-0.1, Beq_max=0.1,
+                 G0=1e-5, rate=1e-9, kdp=-0.05,
+                 control_mode: ConverterControlType = ConverterControlType.type_1_free,
+                 Pset = 0.0, Qset=0.0, Vac_set=1.0, Vdc_set=1.0,
+                 alpha1=0.0001, alpha2=0.015, alpha3=0.2,
                  mttf=0, mttr=0, cost=1200, cost_prof=None, rate_prof=None, active_prof=None):
         """
         Voltage source converter (VSC)
@@ -39,16 +45,26 @@ class VSC(EditableDevice):
         :param r1:
         :param x1:
         :param m:
+        :param m_max:
+        :param m_min:
         :param theta:
+        :param theta_max:
+        :param theta_min:
         :param G0:
         :param Beq:
+        :param Beq_min:
+        :param Beq_max:
         :param Inom:
         :param rate:
+        :param kdp:
         :param control_mode:
         :param Pset:
         :param Vac_set:
         :param Vdc_set:
         :param Qset:
+        :param alpha1:
+        :param alpha2:
+        :param alpha3:
         :param mttf:
         :param mttr:
         :param cost:
@@ -78,14 +94,25 @@ class VSC(EditableDevice):
                                                   'R1': GCProp('p.u.', float, 'Resistive losses.'),
                                                   'X1': GCProp('p.u.', float, 'Magnetic losses.'),
                                                   'G0': GCProp('p.u.', float, 'Inverter losses.'),
+
                                                   'Beq': GCProp('p.u.', float, 'Total shunt susceptance.'),
+                                                  'Beq_max': GCProp('p.u.', float, 'Max total shunt susceptance.'),
+                                                  'Beq_min': GCProp('p.u.', float, 'Min total shunt susceptance.'),
+
                                                   'm': GCProp('', float, 'Tap changer module, it a value close to 1.0'),
+                                                  'm_max': GCProp('', float, 'Max tap changer module'),
+                                                  'm_min': GCProp('', float, 'Min tap changer module'),
+
                                                   'theta': GCProp('rad', float, 'Converter firing angle.'),
-                                                  'Inom': GCProp('kA', float, 'Nominal current.'),
-                                                  'Pset': GCProp('MW', float,
-                                                                 'Set power (Only valid for type I control modes).'),
-                                                  'Cost': GCProp('e/MWh', float,
-                                                                 'Cost of overloads. Used in OPF.'),
+                                                  'theta_max': GCProp('rad', float, 'Max converter firing angle.'),
+                                                  'theta_min': GCProp('rad', float, 'Min converter firing angle.'),
+
+                                                  'kdp': GCProp('p.u./p.u.', float, 'Droop Power Voltage slope.'),
+                                                  'Pset': GCProp('MW', float, 'Active power set point.'),
+                                                  'Qset': GCProp('MVAr', float, 'Reactive power set point.'),
+                                                  'Vac_set': GCProp('p.u.', float, 'AC voltage set point.'),
+                                                  'Vdc_set': GCProp('p.u.', float, 'DC voltage set point.'),
+                                                  'Cost': GCProp('e/MWh', float, 'Cost of overloads. Used in OPF.'),
                                                   },
                                 non_editable_attributes=['bus_from', 'bus_to'],
                                 properties_with_profile={'active': 'active_prof',
@@ -124,13 +151,24 @@ class VSC(EditableDevice):
         self.Beq = Beq
         self.m = m
         self.theta = theta
-        self.Inom = Inom
+
+        self.m_max = m_max
+        self.m_min = m_min
+        self.theta_max = theta_max
+        self.theta_min = theta_min
+        self.Beq_min = Beq_min
+        self.Beq_max = Beq_max
 
         self.Pset = Pset
         self.Qset = Qset
         self.Vac_set = Vac_set
         self.Vdc_set = Vdc_set
         self.control_mode = control_mode
+
+        self.kdp = kdp
+        self.alpha1 = alpha1
+        self.alpha2 = alpha2
+        self.alpha3 = alpha3
 
         self.Cost = cost
         self.Cost_prof = cost_prof
@@ -199,8 +237,8 @@ class VSC(EditableDevice):
              'rate': self.rate,
              'r': self.R1,
              'x': self.X1,
-             'b': self.Beq,
-             'g': self.G0,
+             'Beq': self.Beq,
+             'G0': self.G0,
 
              'tap_module': self.m,
              'firing_angle': self.theta,

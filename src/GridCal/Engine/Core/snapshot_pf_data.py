@@ -280,7 +280,7 @@ class SnapshotCircuit:
                                      'original_bat_idx'
                                      ]
 
-    def get_injections(self):
+    def get_injections(self, normalize=True):
         """
         Compute the power
         :return: nothing, the results are stored in the class
@@ -304,7 +304,8 @@ class SnapshotCircuit:
             Sbus += (self.hvdc_active * self.hvdc_Pf) * self.C_hvdc_bus_f
             Sbus += (self.hvdc_active * self.hvdc_Pt) * self.C_hvdc_bus_t
 
-        Sbus /= self.Sbase
+        if normalize:
+            Sbus /= self.Sbase
 
         return Sbus
 
@@ -591,6 +592,73 @@ class SnapshotCircuit:
             B2f = -sp.diags(b2_ff) * Cf + sp.diags(b2_ft) * Ct
             B2t = sp.diags(b2_tf) * Cf + -sp.diags(b2_tt) * Ct
             self.B2 = sparse_type(Cf.T * B2f + Ct.T * B2t)
+
+    def get_linear_matrices(self):
+
+        # form the connectivity matrices with the states applied -------------------------------------------------------
+        br_states_diag = sp.diags(self.branch_active)
+        Cf = br_states_diag * self.C_branch_bus_f
+        Ct = br_states_diag * self.C_branch_bus_t
+
+        # Declare the empty primitives ---------------------------------------------------------------------------------
+
+        # Arrays to compose the fast decoupled
+        reactances = np.empty(self.nbr)
+        susceptances = np.empty(self.nbr)
+        all_taps = np.ones(self.nbr, dtype=complex)
+
+        # line ---------------------------------------------------------------------------------------------------------
+        a = 0
+        b = self.nline
+
+        # use the specified of the temperature-corrected resistance
+        if self.apply_temperature:
+            line_R = self.AC_R_corrected()
+        else:
+            line_R = self.line_R
+
+        # modify the branches impedance with the lower, upper tolerance values
+        if self.branch_tolerance_mode == BranchImpedanceMode.Lower:
+            line_R *= (1 - self.line_impedance_tolerance / 100.0)
+        elif self.branch_tolerance_mode == BranchImpedanceMode.Upper:
+            line_R *= (1 + self.line_impedance_tolerance / 100.0)
+
+        reactances[a:b] = self.line_X
+        susceptances[a:b] = self.line_B
+
+        # transformer models -------------------------------------------------------------------------------------------
+
+        a = self.nline
+        b = a + self.ntr
+
+        Ys_tr = 1.0 / (self.tr_R + 1.0j * self.tr_X)
+        Ysh_tr = 1.0j * self.tr_B
+        Ys_tr2 = Ys_tr + Ysh_tr / 2.0
+
+        tap = self.tr_tap_mod * np.exp(1.0j * self.tr_tap_ang)
+
+        reactances[a:b] = self.tr_X
+        susceptances[a:b] = self.tr_B
+        all_taps[a:b] = tap
+
+        # VSC MODEL ----------------------------------------------------------------------------------------------------
+        a = self.nline + self.ntr
+        b = a + self.nvsc
+
+        Y_vsc = 1.0 / (self.vsc_R1 + 1.0j * self.vsc_X1)  # Y1
+        reactances[a:b] = self.vsc_X1
+        susceptances[a:b] = self.vsc_Beq
+        all_taps[a:b] = self.vsc_m * np.exp(1.0j * self.vsc_theta)
+
+        # Form the matrices for fast decoupled -------------------------------------------------------------------------
+        b1 = 1.0 / (np.abs(all_taps) * reactances + 1e-20)
+
+        b1_tt = sp.diags(b1)
+        B1f = b1_tt * Cf - b1_tt * Ct
+        B1t = -b1_tt * Cf + b1_tt * Ct
+        B1 = sparse_type(Cf.T * B1f + Ct.T * B1t)
+
+        return B1, B1f, reactances
 
     def get_generator_injections(self):
         """
@@ -1257,7 +1325,7 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.vsc_Beq[i] = elm.Beq
         nc.vsc_m[i] = elm.m
         nc.vsc_theta[i] = elm.theta
-        nc.vsc_Inom[i] = elm.Inom
+        nc.vsc_Inom[i] = (elm.rate / nc.Sbase) / np.abs(nc.Vbus[f])
         nc.vsc_Pset[i] = elm.Pset
         nc.vsc_Qset[i] = elm.Qset
         nc.vsc_Vac_set[i] = elm.Vac_set

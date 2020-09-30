@@ -97,6 +97,8 @@ class LineTemplate:
 
         self.tpe = tpe
 
+        self.device_type = DeviceType.LineTypeDevice
+
         self.edit_headers = []
         self.units = []
         self.non_editable_indices = []
@@ -416,9 +418,11 @@ class Line(EditableDevice):
                 # get the rating in MVA = kA * kV
                 self.rate = obj.rating * Vn * np.sqrt(3)
 
-                if obj != self.template:
+                if self.template is not None:
+                    if obj != self.template:
+                        self.template = obj
+                else:
                     self.template = obj
-                    self.branch_type = BranchType.Line
             else:
                 raise Exception('You are trying to apply an Overhead line type to a non-line line')
 
@@ -437,9 +441,11 @@ class Line(EditableDevice):
             # get the rating in MVA = kA * kV
             self.rate = obj.rating * Vn * np.sqrt(3)
 
-            if obj != self.template:
+            if self.template is not None:
+                if obj != self.template:
+                    self.template = obj
+            else:
                 self.template = obj
-                self.branch_type = BranchType.Line
 
         elif type(obj) is SequenceLineType:
 
@@ -454,9 +460,11 @@ class Line(EditableDevice):
             # get the rating in MVA = kA * kV
             self.rate = obj.rating * Vn * np.sqrt(3)
 
-            if obj != self.template:
+            if self.template is not None:
+                if obj != self.template:
+                    self.template = obj
+            else:
                 self.template = obj
-                self.branch_type = BranchType.Line
 
         else:
             logger.append(self.name + ' the object type template was not recognised')

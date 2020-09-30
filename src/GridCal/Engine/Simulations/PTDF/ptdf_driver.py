@@ -33,7 +33,7 @@ class PTDFOptions:
     def __init__(self, group_mode: PtdfGroupMode = PtdfGroupMode.ByGenLoad,
                  power_increment=100.0, use_multi_threading=False):
         """
-        Power Transfer Distribution Factors's options
+        Power Transfer Distribution Factors' options
         :param group_mode: Grouping type
         :param power_increment: Amount of power to change in MVA
         :param use_multi_threading: use multi-threading?

@@ -65,7 +65,7 @@ class LineEditor(QDialog):
         B = self.branch.B * Ybase
 
         I = self.branch.rate / Vf  # current in kA
-
+        length = self.branch.length
         # ------------------------------------------------------------------------------------------
 
         # catalogue
@@ -110,7 +110,7 @@ class LineEditor(QDialog):
         self.l_spinner.setMinimum(0)
         self.l_spinner.setMaximum(9999999)
         self.l_spinner.setDecimals(6)
-        self.l_spinner.setValue(1)
+        self.l_spinner.setValue(length)
 
         # Max current
         self.i_spinner = QDoubleSpinBox()
@@ -164,9 +164,6 @@ class LineEditor(QDialog):
         self.layout.addWidget(QLabel("X: Inductance [Ohm/Km]"))
         self.layout.addWidget(self.x_spinner)
 
-        # self.layout.addWidget(QLabel("G: Conductance [S/Km]"))
-        # self.layout.addWidget(self.g_spinner)
-
         self.layout.addWidget(QLabel("B: Susceptance [S/Km]"))
         self.layout.addWidget(self.b_spinner)
 
@@ -175,8 +172,6 @@ class LineEditor(QDialog):
         self.setLayout(self.layout)
 
         self.setWindowTitle('Line editor')
-
-
 
     def accept_click(self):
         """

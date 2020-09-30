@@ -42,7 +42,8 @@ from GridCal.Engine.basic_structures import Logger, SyncIssueType
 
 from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
 from GridCal.Engine.Simulations.OPF.opf_driver import *
-from GridCal.Engine.Simulations.PTDF.ptdf_driver import *
+from GridCal.Engine.Simulations.PTDF.analytic_ptdf import *
+from GridCal.Engine.Simulations.PTDF.analytic_ptdf_driver import *
 from GridCal.Engine.Simulations.PTDF.ptdf_ts_driver import PtdfTimeSeries
 from GridCal.Engine.Simulations.NK.n_minus_k_driver import *
 from GridCal.Engine.Simulations.OPF.opf_ts_driver import *
@@ -156,13 +157,13 @@ class MainGUI(QMainWindow):
 
         # ptdf grouping modes
         self.ptdf_group_modes = OrderedDict()
-        self.ptdf_group_modes[PtdfGroupMode.ByNode.value] = PtdfGroupMode.ByNode
-        self.ptdf_group_modes[PtdfGroupMode.ByGenLoad.value] = PtdfGroupMode.ByGenLoad
-        self.ptdf_group_modes[PtdfGroupMode.ByTechnology.value] = PtdfGroupMode.ByTechnology
+        # self.ptdf_group_modes[PtdfGroupMode.ByNode.value] = PtdfGroupMode.ByNode
+        # self.ptdf_group_modes[PtdfGroupMode.ByGenLoad.value] = PtdfGroupMode.ByGenLoad
+        # self.ptdf_group_modes[PtdfGroupMode.ByTechnology.value] = PtdfGroupMode.ByTechnology
 
-        lst = list(self.ptdf_group_modes.keys())
-        mdl = get_list_model(lst)
-        self.ui.ptdf_grouping_comboBox.setModel(mdl)
+        # lst = list(self.ptdf_group_modes.keys())
+        # mdl = get_list_model(lst)
+        # self.ui.ptdf_grouping_comboBox.setModel(mdl)
 
         # Automatic layout modes
         mdl = get_list_model(['fruchterman_reingold_layout',
@@ -2337,15 +2338,9 @@ class MainGUI(QMainWindow):
                 if len(self.circuit.buses) > 0:
                     self.LOCK()
 
-                    pf_options = self.get_selected_power_flow_options()
+                    options = LinearAnalysisOptions(distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked())
 
-                    group_mode = self.ptdf_group_modes[self.ui.ptdf_grouping_comboBox.currentText()]
-
-                    options = PTDFOptions(group_mode=group_mode,
-                                          use_multi_threading=self.ui.use_multiprocessing_checkBox.isChecked(),
-                                          power_increment=self.ui.ptdf_power_delta_doubleSpinBox.value())
-
-                    self.ptdf_analysis = PTDF(grid=self.circuit, options=options, pf_options=pf_options)
+                    self.ptdf_analysis = LinearAnalysisDriver(grid=self.circuit, options=options)
 
                     self.ui.progress_label.setText('Running PTDF...')
                     QtGui.QGuiApplication.processEvents()
@@ -2393,16 +2388,13 @@ class MainGUI(QMainWindow):
                     self.add_simulation(SimulationTypes.PTDF_TS_run)
                     self.LOCK()
 
-                    pf_options = self.get_selected_power_flow_options()
-
-                    power_delta = self.ui.ptdf_power_delta_doubleSpinBox.value()
+                    options = LinearAnalysisOptions(distribute_slack=self.ui.distributed_slack_checkBox.isChecked())
                     start_ = self.ui.profile_start_slider.value()
                     end_ = self.ui.profile_end_slider.value()
                     self.ptdf_ts_analysis = PtdfTimeSeries(grid=self.circuit,
-                                                           pf_options=pf_options,
+                                                           options=options,
                                                            start_=start_,
-                                                           end_=end_,
-                                                           power_delta=power_delta)
+                                                           end_=end_)
 
                     self.ui.progress_label.setText('Running PTDF time series...')
                     QtGui.QGuiApplication.processEvents()
@@ -2454,25 +2446,18 @@ class MainGUI(QMainWindow):
         if len(self.circuit.buses) > 0:
             if SimulationTypes.OTDF_run not in self.stuff_running_now:
 
-                if self.circuit.time_profile is None:
-                    info_msg('OTDF needs a profile of at least length 1')
+                self.add_simulation(SimulationTypes.OTDF_run)
 
-                else:
-                    self.add_simulation(SimulationTypes.OTDF_run)
+                self.LOCK()
 
-                    if len(self.circuit.buses) > 0:
-                        self.LOCK()
+                options = NMinusKOptions(distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
 
-                        pf_options = self.get_selected_power_flow_options()
+                self.otdf_analysis = NMinusK(grid=self.circuit, options=options)
 
-                        options = NMinusKOptions(use_multi_threading=self.ui.use_multiprocessing_checkBox.isChecked())
-
-                        self.otdf_analysis = NMinusK(grid=self.circuit, options=options, pf_options=pf_options)
-
-                        self.otdf_analysis.progress_signal.connect(self.ui.progressBar.setValue)
-                        self.otdf_analysis.progress_text.connect(self.ui.progress_label.setText)
-                        self.otdf_analysis.done_signal.connect(self.post_otdf)
-                        self.otdf_analysis.start()
+                self.otdf_analysis.progress_signal.connect(self.ui.progressBar.setValue)
+                self.otdf_analysis.progress_text.connect(self.ui.progress_label.setText)
+                self.otdf_analysis.done_signal.connect(self.post_otdf)
+                self.otdf_analysis.start()
             else:
                 warning_msg('Another OTDF is being executed now...')
         else:
@@ -2490,12 +2475,12 @@ class MainGUI(QMainWindow):
         if not self.otdf_analysis.__cancel__:
             if self.otdf_analysis.results is not None:
 
-                self.ui.progress_label.setText('Colouring PTDF results in the grid...')
+                self.ui.progress_label.setText('Colouring OTDF results in the grid...')
                 QtGui.QGuiApplication.processEvents()
 
                 self.update_available_results()
             else:
-                error_msg('Something went wrong, There are no PTDF results.')
+                error_msg('Something went wrong, There are no OTDF results.')
 
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
@@ -3712,11 +3697,11 @@ class MainGUI(QMainWindow):
                               types=self.optimal_power_flow_time_series.results.bus_types,
                               file_name=file_name)
 
-            elif current_study == PTDF.name:
+            elif current_study == LinearAnalysisDriver.name:
 
-                voltage = self.ptdf_analysis.results.pf_results[current_step].voltage
-                loading = self.ptdf_analysis.results.flows_sensitivity_matrix[current_step, :]
-                Sbranch = self.ptdf_analysis.results.pf_results[current_step].Sbranch
+                voltage = np.ones(self.circuit.get_bus_number())
+                loading = np.ones(self.circuit.get_branch_number())
+                Sbranch = self.ptdf_analysis.results.PTDF[:, current_step]
 
                 plot_function(circuit=self.circuit,
                               s_bus=None,
@@ -3858,7 +3843,7 @@ class MainGUI(QMainWindow):
                 else:
                     warning_msg('There seem to be no results :(')
 
-            elif study_name == PTDF.name:
+            elif study_name == LinearAnalysisDriver.name:
                 if self.ptdf_analysis.results is not None:
                     self.results_mdl = self.ptdf_analysis.results.mdl(result_type=study_type)
                 else:
@@ -4204,49 +4189,68 @@ class MainGUI(QMainWindow):
         :return:
         """
         something_happened = False
+        preserved = 0
+
         if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
 
             # get the object type
             tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
-            # get the selected index
-            idx = self.ui.catalogueTableView.currentIndex().row()
+            rows = list(set([idx.row() for idx in self.ui.catalogueTableView.selectedIndexes()]))
 
-            if idx > -1:
-                if tpe == 'Overhead lines':
+            if len(rows) > 0:
 
-                    self.circuit.delete_overhead_line(idx)
-                    something_happened = True
+                # sort the rows in reverse order to uses pop properly
+                rows.sort(reverse=True)
 
-                elif tpe == 'Underground lines':
+                # get the templates in use
+                used_templates = self.circuit.get_used_templates()
 
-                    self.circuit.delete_underground_line(idx)
-                    something_happened = True
+                for row in rows:
 
-                elif tpe == 'Sequence lines':
+                    deleted = True  # guilty assumption
 
-                    self.circuit.delete_sequence_line(idx)
-                    something_happened = True
+                    if tpe == 'Overhead lines':
 
-                elif tpe == 'Wires':
+                        deleted = self.circuit.delete_overhead_line(row, catalogue_to_check=used_templates)
+                        something_happened = True
 
-                    self.circuit.delete_wire(idx)
-                    something_happened = True
+                    elif tpe == 'Underground lines':
 
-                elif tpe == 'Transformers':
+                        deleted = self.circuit.delete_underground_line(row, catalogue_to_check=used_templates)
+                        something_happened = True
 
-                    self.circuit.delete_transformer_type(idx)
-                    something_happened = True
+                    elif tpe == 'Sequence lines':
 
-                else:
-                    pass
-            else:
-                info_msg('Select an element from the table')
+                        deleted = self.circuit.delete_sequence_line(row, catalogue_to_check=used_templates)
+                        something_happened = True
+
+                    elif tpe == 'Wires':
+
+                        deleted = self.circuit.delete_wire(row, catalogue_to_check=used_templates)
+                        something_happened = True
+
+                    elif tpe == 'Transformers':
+
+                        deleted = self.circuit.delete_transformer_type(row, catalogue_to_check=used_templates)
+                        something_happened = True
+
+                    else:
+                        pass
+
+                    if not deleted:
+                        preserved += 1
+
+
         else:
             info_msg('Select a catalogue element and then a catalogue object')
 
         if something_happened:
             self.catalogue_element_selected()
+
+        if preserved > 0:
+            info_msg(str(preserved) + 'elements were not deleted because they are in use',
+                     'Delete template elements')
 
     def catalogue_element_selected(self):
         """

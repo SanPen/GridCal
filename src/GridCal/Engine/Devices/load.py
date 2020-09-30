@@ -70,7 +70,7 @@ class Load(EditableDevice):
                                 active=active,
                                 device_type=DeviceType.LoadDevice,
                                 editable_headers={'name': GCProp('', str, 'Load name'),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
+                                                  'idtag': GCProp('', str, 'Unique ID', False),
                                                   'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
                                                   'active': GCProp('', bool, 'Is the load active?'),
                                                   'P': GCProp('MW', float, 'Active power'),

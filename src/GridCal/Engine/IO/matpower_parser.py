@@ -292,14 +292,20 @@ def txt2mat(txt, line_splitter=';', col_splitter='\t', to_float=True):
     Returns:
 
     """
-    lines = txt.strip().split(line_splitter)
-    del lines[-1]
+    lines = txt.strip().split('\n')
+    # del lines[-1]
     nrows = len(lines)
 
     arr = None
 
     for i, line in enumerate(lines):
-        vec = line.strip().split(col_splitter)
+
+        if ';' in line:
+            line2 = line.split(';')[0]
+        else:
+            line2 = line
+
+        vec = line2.strip().split()
 
         if arr is None:
             ncols = len(vec)
@@ -337,8 +343,8 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
     import GridCal.Engine.IO.matpower_bus_definitions as e
     # Buses
     table = data['bus']
-    buses_dict = dict()
-    n = len(table)
+
+    n = table.shape[0]
 
     # load profiles
     if 'Lprof' in data.keys():
@@ -352,7 +358,7 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
     if 'bus_names' in data.keys():
         names = data['bus_names']
     else:
-        names = ['bus ' + str(i) for i in range(n)]
+        names = ['bus ' + str(i+1) for i in range(n)]
 
     # Buses
     bus_idx_dict = dict()
@@ -428,37 +434,156 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
         f = circuit.buses[bus_idx_dict[int(table[i, e.F_BUS])]]
         t = circuit.buses[bus_idx_dict[int(table[i, e.T_BUS])]]
 
-        if f.Vnom != t.Vnom or (table[i, e.TAP] != 1.0 and table[i, e.TAP] != 0) or table[i, e.SHIFT] != 0.0:
+        if table.shape[1] == 37:  # FUBM model
 
-            branch = Transformer2W(bus_from=f,
-                                   bus_to=t,
-                                   name=names[i],
-                                   r=table[i, e.BR_R],
-                                   x=table[i, e.BR_X],
-                                   g=0,
-                                   b=table[i, e.BR_B],
-                                   rate=table[i, e.RATE_A],
-                                   tap=table[i, e.TAP],
-                                   shift_angle=table[i, e.SHIFT],
-                                   active=bool(table[i, e.BR_STATUS]))
-            circuit.add_transformer2w(branch)
+            matpower_mode = table[i, e.CONV_A]
+
+            if matpower_mode > 0:  # it is a converter
+
+                # this is by design of the matpower FUBM model, if it is a converter,
+                # the DC bus is always the from bus
+                f.is_dc = True
+
+                # determine the converter control mode
+                Pset = table[i, e.PF]
+                Vac_set = table[i, e.VT_SET]
+                Vdc_set = table[i, e.VF_SET]
+                Qset = table[i, e.QF]
+                m = table[i, e.TAP] if table[i, e.TAP] > 0 else 1.0
+
+                if matpower_mode == 1:
+
+                    if Pset != 0.0:
+                        control_mode = ConverterControlType.type_1_pf
+                    elif Qset != 0.0:
+                        control_mode = ConverterControlType.type_1_qf
+                    elif Vac_set != 0.0:
+                        control_mode = ConverterControlType.type_1_vac
+                    else:
+                        control_mode = ConverterControlType.type_1_free
+
+                elif matpower_mode == 2:
+
+                    if Pset == 0.0:
+                        control_mode = ConverterControlType.type_2_vdc
+                    else:
+                        control_mode = ConverterControlType.type_2_vdc_pf
+
+                elif matpower_mode == 3:
+                    control_mode = ConverterControlType.type_3
+
+                elif matpower_mode == 4:
+                    control_mode = ConverterControlType.type_4
+                else:
+                    control_mode = ConverterControlType.type_1_free
+
+                branch = VSC(bus_from=f,
+                             bus_to=t,
+                             name='VSC' + str(len(circuit.vsc_converters) + 1),
+                             active=bool(table[i, e.BR_STATUS]),
+                             r1=table[i, e.BR_R],
+                             x1=table[i, e.BR_X],
+                             m=m,
+                             m_max=table[i, e.MA_MAX],
+                             m_min=table[i, e.MA_MIN],
+                             theta=table[i, e.SHIFT],
+                             theta_max=np.deg2rad(table[i, e.ANGMAX]),
+                             theta_min=np.deg2rad(table[i, e.ANGMIN]),
+                             G0=table[i, e.GSW],
+                             Beq=table[i, e.BEQ],
+                             Beq_max=table[i, e.BEQ_MAX],
+                             Beq_min=table[i, e.BEQ_MIN],
+                             rate=table[i, e.RATE_A],
+                             kdp=table[i, e.KDP],
+                             control_mode=control_mode,
+                             Pset=Pset,
+                             Qset=Qset,
+                             Vac_set=Vac_set,
+                             Vdc_set=Vdc_set,
+                             alpha1=table[i, e.ALPHA1],
+                             alpha2=table[i, e.ALPHA2],
+                             alpha3=table[i, e.ALPHA3])
+                circuit.add_vsc(branch)
+
+            else:
+
+                if f.Vnom != t.Vnom or (table[i, e.TAP] != 1.0 and table[i, e.TAP] != 0) or table[i, e.SHIFT] != 0.0:
+
+                    branch = Transformer2W(bus_from=f,
+                                           bus_to=t,
+                                           name=names[i],
+                                           r=table[i, e.BR_R],
+                                           x=table[i, e.BR_X],
+                                           g=0,
+                                           b=table[i, e.BR_B],
+                                           rate=table[i, e.RATE_A],
+                                           tap=table[i, e.TAP],
+                                           shift_angle=table[i, e.SHIFT],
+                                           active=bool(table[i, e.BR_STATUS]))
+                    circuit.add_transformer2w(branch)
+
+                else:
+                    branch = Line(bus_from=f,
+                                  bus_to=t,
+                                  name=names[i],
+                                  r=table[i, e.BR_R],
+                                  x=table[i, e.BR_X],
+                                  b=table[i, e.BR_B],
+                                  rate=table[i, e.RATE_A],
+                                  active=bool(table[i, e.BR_STATUS]))
+                    circuit.add_line(branch)
 
         else:
-            branch = Line(bus_from=f,
-                          bus_to=t,
-                          name=names[i],
-                          r=table[i, e.BR_R],
-                          x=table[i, e.BR_X],
-                          b=table[i, e.BR_B],
-                          rate=table[i, e.RATE_A],
-                          active=bool(table[i, e.BR_STATUS]))
-            circuit.add_line(branch)
+
+            if f.Vnom != t.Vnom or (table[i, e.TAP] != 1.0 and table[i, e.TAP] != 0) or table[i, e.SHIFT] != 0.0:
+
+                branch = Transformer2W(bus_from=f,
+                                       bus_to=t,
+                                       name=names[i],
+                                       r=table[i, e.BR_R],
+                                       x=table[i, e.BR_X],
+                                       g=0,
+                                       b=table[i, e.BR_B],
+                                       rate=table[i, e.RATE_A],
+                                       tap=table[i, e.TAP],
+                                       shift_angle=table[i, e.SHIFT],
+                                       active=bool(table[i, e.BR_STATUS]))
+                circuit.add_transformer2w(branch)
+
+            else:
+                branch = Line(bus_from=f,
+                              bus_to=t,
+                              name=names[i],
+                              r=table[i, e.BR_R],
+                              x=table[i, e.BR_X],
+                              b=table[i, e.BR_B],
+                              rate=table[i, e.RATE_A],
+                              active=bool(table[i, e.BR_STATUS]))
+                circuit.add_line(branch)
+
+    # convert normal lines into DC-lines if needed
+    for line in circuit.lines:
+
+        if line.bus_to.is_dc and line.bus_from.is_dc:
+            dc_line = DcLine(bus_from=line.bus_from,
+                             bus_to=line.bus_to,
+                             name=line.name,
+                             active=line.active,
+                             rate=line.rate,
+                             r=line.R,
+                             active_prof=line.active_prof,
+                             rate_prof=line.rate_prof)
+
+            # add device to the circuit
+            circuit.add_dc_line(dc_line)
+
+            # delete the line from the circuit
+            circuit.delete_line(line)
 
     # add the profiles
     if master_time_array is not None:
-
         circuit.format_profiles(master_time_array)
-    print('Interpreted.')
+
     return circuit
 
 
@@ -475,7 +600,7 @@ def parse_matpower_file(filename, export=False) -> MultiCircuit:
 
     # open the file as text
     with open(filename, 'r') as myfile:
-        text = myfile.read().replace('\n', '')
+        text = myfile.read() #.replace('\n', '')
 
     # split the file into its case variables (the case variables always start with 'mpc.')
     chunks = text.split('mpc.')
@@ -516,3 +641,10 @@ def parse_matpower_file(filename, export=False) -> MultiCircuit:
 
     return circuit
 
+
+if __name__ == '__main__':
+
+    fname = '/home/santi/Descargas/matpower-fubm-master/data/fubm_caseHVDC_vt.m'
+    grid = parse_matpower_file(fname)
+
+    print()

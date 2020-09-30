@@ -1373,12 +1373,12 @@ class ResultsModel(QtCore.QAbstractTableModel):
         index, columns, data = self.get_data()
         pd.DataFrame(data=data, index=index, columns=columns).to_csv(file_name)
 
-    def get_data_frame(self, mode='as_is'):
+    def get_data_frame(self):
         """
         Save data to csv
         :param mode: 'real', 'imag', 'abs', 'as_is'
         """
-        index, columns, data = self.get_data(mode=mode)
+        index, columns, data = self.get_data()
         return pd.DataFrame(data=data, index=index, columns=columns)
 
     def copy_to_clipboard(self):
