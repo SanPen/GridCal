@@ -364,7 +364,7 @@ class DcLine(EditableDevice):
             fig = plt.figure(figsize=(12, 8))
 
             ax_1 = fig.add_subplot(211)
-            ax_2 = fig.add_subplot(212)
+            ax_2 = fig.add_subplot(212, sharex=ax_1)
 
             x = time_series.results.time
 

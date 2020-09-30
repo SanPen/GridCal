@@ -949,6 +949,7 @@ def plexos_to_gridcal(mdl: PlexosModel, plexos_results_folder, time_indices=None
 
 if __name__ == '__main__':
 
+    folder = ''
     f = os.path.join(folder, 'BASE N.zip')
     folder = os.path.dirname(f)
 

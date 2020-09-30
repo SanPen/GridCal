@@ -303,7 +303,7 @@ class Bus(EditableDevice):
             if time_series_driver is not None:
                 # 2 plots: load + voltage
                 ax_load = fig.add_subplot(211)
-                ax_voltage = fig.add_subplot(212)
+                ax_voltage = fig.add_subplot(212, sharex=ax_load)
             else:
                 # only 1 plot: load
                 ax_load = fig.add_subplot(111)
