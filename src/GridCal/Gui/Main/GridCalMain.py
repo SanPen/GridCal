@@ -2140,12 +2140,13 @@ class MainGUI(QMainWindow):
                 if self.ui.auto_precision_checkBox.isChecked():
 
                     numerical_circuit = compile_snapshot_circuit(circuit=self.circuit)
-                    S = numerical_circuit.get_injections()
-                    lg = np.log10(np.abs(S))
-                    lg[lg == -np.inf] = 1e20
-                    tol_idx = int(np.min(np.abs(lg))) * 3
-                    tolerance = 1.0 / (10.0 ** tol_idx)
-                    options.tolerance = tolerance
+                    # P = np.abs(numerical_circuit.get_injections().real)
+                    # P = P[P > 0]
+                    # lg = np.log10(P)
+                    # lg[lg == -np.inf] = 1e20
+                    # tol_idx = int(np.min(np.abs(lg))) * 3
+                    # tolerance = 1.0 / (10.0 ** tol_idx)
+                    options.tolerance, tol_idx = self.circuit.get_automatic_precision()
 
                     if tol_idx > 12:
                         tol_idx = 12
