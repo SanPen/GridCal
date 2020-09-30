@@ -123,6 +123,64 @@ def get_branch_time_series(circuit: TimeCircuit, PTDF):
     return Pbr
 
 
+def multiple_failure_old(flows, LODF, beta, delta, alpha):
+    """
+
+    :param flows: array of all the pre-contingency flows
+    :param LODF: Line Outage Distribution Factors Matrix
+    :param beta: index of the first failed line
+    :param delta: index of the second failed line
+    :param alpha: index of the line where you want to see the effects
+    :return: post contingency flow in the line alpha
+    """
+    # multiple contingency matrix
+    M = np.ones((2, 2))
+    M[0, 1] = -LODF[beta, delta]
+    M[1, 0] = -LODF[delta, beta]
+
+    # normal flows of the lines beta and delta
+    F = flows[[beta, delta]]
+
+    # contingency flows after failing the ines beta and delta
+    Ff = np.linalg.solve(M, F)
+
+    # flow delta in the line alpha after the multiple contingency of the lines beta and delta
+    L = LODF[alpha, :][[beta, delta]]
+    dFf_alpha = np.dot(L, Ff)
+
+    return F[alpha] + dFf_alpha
+
+
+def multiple_failure(flows, LODF, failed_idx):
+    """
+    From the paper:
+    Multiple Element Contingency Screening
+        IEEE TRANSACTIONS ON POWER SYSTEMS, VOL. 26, NO. 3, AUGUST 2011
+        C. Matthew Davis and Thomas J. Overbye
+    :param flows: array of all the pre-contingency flows (the base flows)
+    :param LODF: Line Outage Distribution Factors Matrix
+    :param failed_idx: indices of the failed lines
+    :return: all post contingency flows
+    """
+    # multiple contingency matrix
+    M = -LODF[np.ix_(failed_idx, failed_idx)]
+    for i in range(len(failed_idx)):
+        M[i, i] = 1.0
+
+    # normal flows of the failed lines indicated by failed_idx
+    F = flows[failed_idx]
+
+    # Affected flows after failing the lines indicated by failed_idx
+    Ff = np.linalg.solve(M, F)
+
+    # flow delta in the line alpha after the multiple contingency of the lines indicated by failed_idx
+    L = LODF[:, failed_idx]
+    dFf_alpha = np.dot(L, Ff)
+
+    # return the final contingency flow as the base flow plus the contingency flow delta
+    return flows + dFf_alpha
+
+
 def get_n_minus_1_flows(circuit: MultiCircuit):
 
     opt = PowerFlowOptions()
@@ -146,7 +204,7 @@ def get_n_minus_1_flows(circuit: MultiCircuit):
 
 def check_lodf(grid: MultiCircuit):
 
-    Pn1_nr = get_n_minus_1_flows(grid)
+    flows_n1_nr = get_n_minus_1_flows(grid)
 
     # assume 1 island
     nc = compile_snapshot_circuit(grid)
@@ -166,7 +224,7 @@ def check_lodf(grid: MultiCircuit):
         #     flows_n1[m, c] = flows_n[m] + LODF[m, c] * flows_n[c]
         flows_n1[:, c] = flows_n[:] + LODF[:, c] * flows_n[c]
 
-    return Pn1_nr, flows_n1
+    return flows_n, flows_n1_nr, flows_n1
 
 
 if __name__ == '__main__':
@@ -179,7 +237,7 @@ if __name__ == '__main__':
     pd.set_option('display.max_columns', 500)
     pd.set_option('display.width', 1000)
 
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
@@ -189,6 +247,7 @@ if __name__ == '__main__':
     # fname = 'IEEE 14 PQ only full.gridcal'
     # fname = '/home/santi/Descargas/matpower-fubm-master/data/case5.m'
     # fname = '/home/santi/Descargas/matpower-fubm-master/data/case30.m'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/PGOC_6bus.gridcal'
     grid_ = FileOpen(fname).open()
 
     # test_voltage(grid=grid)
@@ -199,16 +258,22 @@ if __name__ == '__main__':
     islands_ = split_into_islands(nc_)
     circuit_ = islands_[0]
 
-    H_ = make_ptdf(circuit_, distribute_slack=True)
+    H_ = make_ptdf(circuit_, distribute_slack=False)
     LODF_ = make_lodf(circuit_, H_)
 
     if H_.shape[0] < 50:
         print('PTDF:\n', H_)
         print('LODF:\n', LODF_)
 
-    Pn1_nr, flows_n1 = check_lodf(grid_)
-    Pn1_nr_df = pd.DataFrame(data=Pn1_nr, index=nc_.branch_names, columns=nc_.branch_names)
-    flows_n1_df = pd.DataFrame(data=flows_n1, index=nc_.branch_names, columns=nc_.branch_names)
+    flows_n_, flows_n1_nr_, flows_n1_ = check_lodf(grid_)
+
+    # in the case of the grid PGOC_6bus
+    flows_multiple = multiple_failure(flows=flows_n_,
+                                      LODF=LODF_,
+                                      failed_idx=[1, 5])  # failed lines 2 and 6
+
+    Pn1_nr_df = pd.DataFrame(data=flows_n1_nr_, index=nc_.branch_names, columns=nc_.branch_names)
+    flows_n1_df = pd.DataFrame(data=flows_n_, index=nc_.branch_names, columns=nc_.branch_names)
 
     # plot N-1
     fig = plt.figure(figsize=(12, 8))

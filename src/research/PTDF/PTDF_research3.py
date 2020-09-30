@@ -35,7 +35,7 @@ def make_ptdf(circuit: SnapshotCircuit, distribute_slack=True):
     nbr = circuit.nbr
     nbus = circuit.nbus
     PTDF = np.zeros((nbr, nbus))
-
+    vd = circuit.vd
     Bbus[np.ix_(circuit.pqpv, circuit.vd)] = 0
     Bbus[np.ix_(circuit.vd, circuit.pqpv)] = 0
     Bbus[np.ix_(circuit.vd, circuit.vd)] = 1
@@ -43,15 +43,15 @@ def make_ptdf(circuit: SnapshotCircuit, distribute_slack=True):
     for i in range(nbr):
         f = circuit.F[i]
         t = circuit.T[i]
-        for j in range(nbus):
-            a_alpha = np.zeros(nbus)
-            a_alpha[f] = 1
-            a_alpha[t] = -1
+        a_alpha = np.zeros(nbus)
+        a_alpha[f] = 1
+        a_alpha[t] = -1
 
+        for j in circuit.pqpv:
             a = np.zeros(nbus)
-            a[f] = 1
-            a[t] = -1
-            PTDF[i, j] = np.dot((1 / reactances[i]) * a_alpha, spsolve(Bbus, a))
+            a[j] = 1
+            a[vd] = -1
+            PTDF[i, j] = np.dot((a_alpha / reactances[i]), spsolve(Bbus, a))
 
     return PTDF
 
