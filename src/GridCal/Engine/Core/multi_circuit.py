@@ -1188,12 +1188,19 @@ class MultiCircuit:
             else:
                 print('The template is not a wire!')
 
-    def delete_wire(self, i):
+    def delete_wire(self, i, catalogue_to_check=None):
         """
         Delete wire from the collection
         :param i: index
+        :param catalogue_to_check: list of catalogue types to check this deletion
         """
+
+        if catalogue_to_check is not None:
+            if self.wire_types[i] in catalogue_to_check:
+                return False  # do not delete
+
         self.wire_types.pop(i)
+        return True
 
     def add_overhead_line(self, obj: Tower):
         """
@@ -1206,12 +1213,19 @@ class MultiCircuit:
             else:
                 print('The template is not an overhead line!')
 
-    def delete_overhead_line(self, i):
+    def delete_overhead_line(self, i, catalogue_to_check=None):
         """
         Delete tower from the collection
         :param i: index
+        :param catalogue_to_check: list of catalogue types to check this deletion
         """
+
+        if catalogue_to_check is not None:
+            if self.overhead_line_types[i] in catalogue_to_check:
+                return False  # do not delete
+
         self.overhead_line_types.pop(i)
+        return True
 
     def add_underground_line(self, obj: UndergroundLineType):
         """
@@ -1224,12 +1238,18 @@ class MultiCircuit:
             else:
                 print('The template is not an underground line!')
 
-    def delete_underground_line(self, i):
+    def delete_underground_line(self, i, catalogue_to_check=None):
         """
         Delete underground line
         :param i: index
+        :param catalogue_to_check: list of catalogue types to check this deletion
         """
+        if catalogue_to_check is not None:
+            if self.underground_cable_types[i] in catalogue_to_check:
+                return False  # do not delete
+
         self.underground_cable_types.pop(i)
+        return True
 
     def add_sequence_line(self, obj: SequenceLineType):
         """
@@ -1242,12 +1262,18 @@ class MultiCircuit:
             else:
                 print('The template is not a sequence line!')
 
-    def delete_sequence_line(self, i):
+    def delete_sequence_line(self, i, catalogue_to_check=None):
         """
         Delete sequence line from the collection
         :param i: index
+        :param catalogue_to_check: list of catalogue types to check this deletion
         """
+        if catalogue_to_check is not None:
+            if self.sequence_line_types[i] in catalogue_to_check:
+                return False  # do not delete
+
         self.sequence_line_types.pop(i)
+        return True
 
     def add_transformer_type(self, obj: TransformerType):
         """
@@ -1260,12 +1286,18 @@ class MultiCircuit:
             else:
                 print('The template is not a transformer!')
 
-    def delete_transformer_type(self, i):
+    def delete_transformer_type(self, i, catalogue_to_check):
         """
         Delete transformer type from the collection
         :param i: index
+        :param catalogue_to_check: list of catalogue types to check this deletion
         """
+        if catalogue_to_check is not None:
+            if self.transformer_types[i] in catalogue_to_check:
+                return False  # do not delete
+
         self.transformer_types.pop(i)
+        return True
 
     def apply_all_branch_types(self):
         """
@@ -1682,3 +1714,24 @@ class MultiCircuit:
         for elm in self.get_static_generators():
             elm.P *= factor
             elm.Q *= factor
+
+    def get_used_templates(self):
+        """
+        Get a list of the used templates in the objects
+        :return: list
+        """
+        val = set()
+
+        branches = self.get_branches()
+
+        for branch in branches:
+            if hasattr(branch, 'template'):
+                obj = getattr(branch, 'template')
+                val.add(obj)
+
+                # if it is a tower, add the wire templates too
+                if obj.device_type == DeviceType.TowerDevice:
+                    for wire in obj.wires_in_tower:
+                        val.add(wire)
+
+        return list(val)

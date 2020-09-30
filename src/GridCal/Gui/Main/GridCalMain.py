@@ -4191,49 +4191,68 @@ class MainGUI(QMainWindow):
         :return:
         """
         something_happened = False
+        preserved = 0
+
         if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
 
             # get the object type
             tpe = self.ui.catalogueDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
 
-            # get the selected index
-            idx = self.ui.catalogueTableView.currentIndex().row()
+            rows = list(set([idx.row() for idx in self.ui.catalogueTableView.selectedIndexes()]))
 
-            if idx > -1:
-                if tpe == 'Overhead lines':
+            if len(rows) > 0:
 
-                    self.circuit.delete_overhead_line(idx)
-                    something_happened = True
+                # sort the rows in reverse order to uses pop properly
+                rows.sort(reverse=True)
 
-                elif tpe == 'Underground lines':
+                # get the templates in use
+                used_templates = self.circuit.get_used_templates()
 
-                    self.circuit.delete_underground_line(idx)
-                    something_happened = True
+                for row in rows:
 
-                elif tpe == 'Sequence lines':
+                    deleted = True  # guilty assumption
 
-                    self.circuit.delete_sequence_line(idx)
-                    something_happened = True
+                    if tpe == 'Overhead lines':
 
-                elif tpe == 'Wires':
+                        deleted = self.circuit.delete_overhead_line(row, catalogue_to_check=used_templates)
+                        something_happened = True
 
-                    self.circuit.delete_wire(idx)
-                    something_happened = True
+                    elif tpe == 'Underground lines':
 
-                elif tpe == 'Transformers':
+                        deleted = self.circuit.delete_underground_line(row, catalogue_to_check=used_templates)
+                        something_happened = True
 
-                    self.circuit.delete_transformer_type(idx)
-                    something_happened = True
+                    elif tpe == 'Sequence lines':
 
-                else:
-                    pass
-            else:
-                info_msg('Select an element from the table')
+                        deleted = self.circuit.delete_sequence_line(row, catalogue_to_check=used_templates)
+                        something_happened = True
+
+                    elif tpe == 'Wires':
+
+                        deleted = self.circuit.delete_wire(row, catalogue_to_check=used_templates)
+                        something_happened = True
+
+                    elif tpe == 'Transformers':
+
+                        deleted = self.circuit.delete_transformer_type(row, catalogue_to_check=used_templates)
+                        something_happened = True
+
+                    else:
+                        pass
+
+                    if not deleted:
+                        preserved += 1
+
+
         else:
             info_msg('Select a catalogue element and then a catalogue object')
 
         if something_happened:
             self.catalogue_element_selected()
+
+        if preserved > 0:
+            info_msg(str(preserved) + 'elements were not deleted because they are in use',
+                     'Delete template elements')
 
     def catalogue_element_selected(self):
         """

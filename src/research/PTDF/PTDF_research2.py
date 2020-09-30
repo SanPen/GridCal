@@ -34,27 +34,26 @@ def make_ptdf(circuit: SnapshotCircuit, distribute_slack=True):
     Bbus, Bf, reactances = circuit.get_linear_matrices()
 
     n = circuit.nbus
-    dP = sp.eye(n, n).tocsc()
     nbi = n
     noref = np.arange(1, n)
     noslack = circuit.pqpv
+
+    if distribute_slack:
+        dP = np.ones((n, n)) * (-1 / (n - 1))
+        for i in range(n):
+            dP[i, i] = 1.0
+    else:
+        dP = np.eye(n, n)
 
     # compute the reduced susceptance matrix
     Bref = Bbus[noslack, :][:, noref].tocsc()
 
     # solve for change in voltage angles
-    dthetha_red = spsolve(Bref,  dP[noslack, :]).toarray()  # pass to array because it is a full matrix
+    dthetha_red = spsolve(Bref,  dP[noslack, :])  # pass to array because it is a full matrix
 
     # compute the PTDF matrix (H)
     theta = np.vstack((np.zeros(nbi), dthetha_red))
     PTDF = Bf * theta
-
-    # Distribute the effect of the slack
-    if distribute_slack:
-        slack = circuit.vd + 1  # the +1 is to avoid zero divisions if the slack is the bus 0
-        w_slack = slack / np.sum(slack)  # weighted slack
-        mod = sp.eye(n, n).toarray() - w_slack * ones((1, n))
-        PTDF = np.dot(PTDF, mod)
 
     return PTDF
 
@@ -180,7 +179,7 @@ if __name__ == '__main__':
     pd.set_option('display.max_columns', 500)
     pd.set_option('display.width', 1000)
 
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
@@ -188,7 +187,7 @@ if __name__ == '__main__':
     # fname = 'helm_data1.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14 PQ only.gridcal'
     # fname = 'IEEE 14 PQ only full.gridcal'
-    fname = '/home/santi/Descargas/matpower-fubm-master/data/case5.m'
+    # fname = '/home/santi/Descargas/matpower-fubm-master/data/case5.m'
     # fname = '/home/santi/Descargas/matpower-fubm-master/data/case30.m'
     grid_ = FileOpen(fname).open()
 
@@ -200,7 +199,7 @@ if __name__ == '__main__':
     islands_ = split_into_islands(nc_)
     circuit_ = islands_[0]
 
-    H_ = make_ptdf(circuit_, distribute_slack=False)
+    H_ = make_ptdf(circuit_, distribute_slack=True)
     LODF_ = make_lodf(circuit_, H_)
 
     if H_.shape[0] < 50:

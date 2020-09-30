@@ -158,7 +158,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.tower_driver.tower.earth_resistivity = self.ui.rho_doubleSpinBox.value()
 
         # heck the wires configuration
-        logs = list()
+        logs = Logger()
         all_ok = self.tower_driver.tower.check(logs)
 
         if not all_ok:

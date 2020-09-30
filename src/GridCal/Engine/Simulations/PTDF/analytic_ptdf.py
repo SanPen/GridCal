@@ -44,7 +44,7 @@ def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
     noslack = pqpv
 
     if distribute_slack:
-        dP = np.ones((n, n)) * (-1/(n-1))
+        dP = np.ones((n, n)) * (-1 / (n - 1))
         for i in range(n):
             dP[i, i] = 1.0
     else:

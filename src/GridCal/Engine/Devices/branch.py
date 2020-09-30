@@ -43,6 +43,8 @@ class BranchTemplate:
 
         self.tpe = tpe
 
+        self.device_type = DeviceType.BranchTypeDevice
+
         self.edit_headers = []
         self.units = []
         self.non_editable_indices = []
