@@ -12,7 +12,8 @@ so that you can get started.
     five_node_grid
     power_flow_script
     line_definition_from_tower
-    distribution_grid
+    distribution_grid_standalone
+    distribution_grid_library
     example_files
 
 
