@@ -157,13 +157,6 @@ class MainGUI(QMainWindow):
 
         # ptdf grouping modes
         self.ptdf_group_modes = OrderedDict()
-        # self.ptdf_group_modes[PtdfGroupMode.ByNode.value] = PtdfGroupMode.ByNode
-        # self.ptdf_group_modes[PtdfGroupMode.ByGenLoad.value] = PtdfGroupMode.ByGenLoad
-        # self.ptdf_group_modes[PtdfGroupMode.ByTechnology.value] = PtdfGroupMode.ByTechnology
-
-        # lst = list(self.ptdf_group_modes.keys())
-        # mdl = get_list_model(lst)
-        # self.ui.ptdf_grouping_comboBox.setModel(mdl)
 
         # Automatic layout modes
         mdl = get_list_model(['fruchterman_reingold_layout',
@@ -562,7 +555,8 @@ class MainGUI(QMainWindow):
         """
         Unlock the interface
         """
-        self.LOCK(False)
+        if len(self.stuff_running_now) == 0:
+            self.LOCK(False)
 
     def set_grid_editor_state(self):
         """
@@ -2243,8 +2237,6 @@ class MainGUI(QMainWindow):
             if SimulationTypes.ShortCircuit_run not in self.stuff_running_now:
                 if self.power_flow is not None:
 
-                    self.add_simulation(SimulationTypes.ShortCircuit_run)
-
                     # Since we must run this study in the same conditions as
                     # the last power flow, no compilation is needed
 
@@ -2258,6 +2250,8 @@ class MainGUI(QMainWindow):
                         warning_msg('You need to enable some buses for short circuit.'
                                      + '\nEnable them by right click, and selecting on the context menu.')
                     else:
+                        self.add_simulation(SimulationTypes.ShortCircuit_run)
+
                         self.LOCK()
 
                         if self.ui.apply_impedance_tolerances_checkBox.isChecked():
@@ -2288,6 +2282,7 @@ class MainGUI(QMainWindow):
                         except Exception as ex:
                             exc_type, exc_value, exc_traceback = sys.exc_info()
                             error_msg(str(exc_traceback) + '\n' + str(exc_value), 'Short circuit')
+                            self.remove_simulation(SimulationTypes.ShortCircuit_run)
                             self.short_circuit = None
                             self.UNLOCK()
 
@@ -2339,7 +2334,8 @@ class MainGUI(QMainWindow):
                 if len(self.circuit.buses) > 0:
                     self.LOCK()
 
-                    options = LinearAnalysisOptions(distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked())
+                    options = LinearAnalysisOptions(distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked(),
+                                                    correct_values=self.ui.ptdf_correct_nonsense_values_checkBox.isChecked())
 
                     self.ptdf_analysis = LinearAnalysisDriver(grid=self.circuit, options=options)
 
@@ -2425,12 +2421,15 @@ class MainGUI(QMainWindow):
                 self.ui.progress_label.setText('Colouring PTDF results in the grid...')
                 QtGui.QGuiApplication.processEvents()
                 if self.ui.draw_schematic_checkBox.isChecked():
-                    colour_the_schematic(circuit=self.circuit,
-                                         s_bus=self.ptdf_ts_analysis.results.S.max(axis=0),
-                                         s_branch=self.ptdf_ts_analysis.results.Sbranch.max(axis=0),
-                                         voltages=self.ptdf_ts_analysis.results.voltage.max(axis=0),
-                                         loadings=np.abs(self.ptdf_ts_analysis.results.loading).max(axis=0),
-                                         types=None)
+                    if self.ptdf_ts_analysis.results.S.shape[0] > 0:
+                        colour_the_schematic(circuit=self.circuit,
+                                             s_bus=self.ptdf_ts_analysis.results.S.max(axis=0),
+                                             s_branch=self.ptdf_ts_analysis.results.Sbranch.max(axis=0),
+                                             voltages=self.ptdf_ts_analysis.results.voltage.max(axis=0),
+                                             loadings=np.abs(self.ptdf_ts_analysis.results.loading).max(axis=0),
+                                             types=None)
+                    else:
+                        info_msg('Cannot colour because the PTDF results have zero time steps :/')
 
                 self.update_available_results()
             else:
@@ -3571,6 +3570,7 @@ class MainGUI(QMainWindow):
         # self.ui.result_type_listView.setModel(None)
         self.ui.available_results_to_color_comboBox.model().clear()
         # self.ui.result_element_selection_listView.setModel(None)
+        self.ui.results_treeView.setModel(None)
 
         self.ui.catalogueTableView.setModel(None)
 

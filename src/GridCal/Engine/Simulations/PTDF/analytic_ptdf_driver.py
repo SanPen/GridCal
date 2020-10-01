@@ -28,12 +28,13 @@ from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split
 
 class LinearAnalysisOptions:
 
-    def __init__(self, distribute_slack=True):
+    def __init__(self, distribute_slack=True, correct_values=True):
         """
         Power Transfer Distribution Factors' options
         :param distribute_slack:
         """
         self.distribute_slack = distribute_slack
+        self.correct_values = correct_values
 
 
 class LinearAnalysisDriver(QThread):
@@ -82,7 +83,8 @@ class LinearAnalysisDriver(QThread):
 
         # Run Analysis
         analysis = LinearAnalysis(grid=self.grid,
-                                  distributed_slack=self.options.distribute_slack)
+                                  distributed_slack=self.options.distribute_slack,
+                                  correct_values=self.options.correct_values)
 
         analysis.run()
 
