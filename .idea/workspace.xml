@@ -19,9 +19,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed the division by zero in the tolerance approximation">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed image sizes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/tutorials/distribution_grid.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/tutorials/distribution_grid.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/tutorials/distribution_grid.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/tutorials/tutorials_module.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/tutorials/tutorials_module.rst" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -608,7 +609,14 @@
       <option name="project" value="LOCAL" />
       <updated>1601457587940</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="Fixed image sizes">
+      <created>1601511468553</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1601511468553</updated>
+    </task>
+    <option name="localTasksCounter" value="39" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -642,7 +650,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="implemented new json export format that is more consistent" />
     <MESSAGE value="Added Json export" />
     <MESSAGE value="Added node grouping based on PTDF" />
     <MESSAGE value="Added more internal structures to the snapshot" />
@@ -667,16 +674,18 @@
     <MESSAGE value="Fixed the PTDF distributed slack" />
     <MESSAGE value="merged" />
     <MESSAGE value="Fixed the division by zero in the tolerance approximation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed the division by zero in the tolerance approximation" />
+    <MESSAGE value="Fixed image sizes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed image sizes" />
   </component>
   <component name="WindowStateProjectService">
     <state x="454" y="211" width="1084" height="708" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1601397245915">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="454" y="211" width="1084" height="708" key="#com.intellij.execution.impl.EditConfigurationsDialog/72.27.1848.1053@72.27.1848.1053" timestamp="1601397245915" />
-    <state x="635" y="355" width="712" height="403" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1599508013675">
-      <screen x="72" y="27" width="1848" height="1053" />
+    <state x="2432" y="327" width="698" height="402" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1601511599415">
+      <screen x="1920" y="0" width="1680" height="1050" />
     </state>
+    <state x="2432" y="327" width="698" height="402" key="#com.intellij.fileTypes.FileTypeChooser/0.27.1920.1053/1920.0.1680.1050@1920.0.1680.1050" timestamp="1601511599415" />
     <state x="635" y="355" width="712" height="403" key="#com.intellij.fileTypes.FileTypeChooser/72.27.1848.1053@72.27.1848.1053" timestamp="1599508013675" />
     <state x="1096" y="484" width="824" height="521" key="#xdebugger.evaluate" timestamp="1601461197960">
       <screen x="72" y="27" width="1848" height="1053" />
@@ -739,9 +748,10 @@
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="93" y="58" width="1668" height="961" key="SettingsEditor/72.27.1848.1053@72.27.1848.1053" timestamp="1601461195083" />
-    <state x="303" y="285" width="800" height="660" key="Vcs.Push.Dialog.v2" timestamp="1601457589966">
-      <screen x="72" y="27" width="1848" height="1053" />
+    <state x="2130" y="257" width="800" height="660" key="Vcs.Push.Dialog.v2" timestamp="1601511480495">
+      <screen x="1920" y="0" width="1680" height="1050" />
     </state>
+    <state x="2130" y="257" key="Vcs.Push.Dialog.v2/0.27.1920.1053/1920.0.1680.1050@1920.0.1680.1050" timestamp="1601511480495" />
     <state x="303" y="285" width="800" height="660" key="Vcs.Push.Dialog.v2/72.27.1848.1053@72.27.1848.1053" timestamp="1601457589966" />
     <state width="1804" height="526" key="XDebugger.FullValuePopup" timestamp="1600166196313">
       <screen x="72" y="27" width="1848" height="1053" />
