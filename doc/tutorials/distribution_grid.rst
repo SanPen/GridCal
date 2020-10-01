@@ -49,7 +49,8 @@ Open GridCal:
 1. 'Drag and drop' 2 'Bus' element to the diagram canvas:
 
 .. figure:: ../figures/tutorials/dg/busaddition.png
-    :scale: 50%
+    :width: 500 px
+    :align: center
 
 2. Select (double 'click') Bus 0 and change the parameters (on the left side pane):
 
@@ -70,7 +71,8 @@ Open GridCal:
 4. Hover over either bus element, 'click and drag' (when there is a cross) to the other bus to create a branch.
 
 .. figure:: ../figures/tutorials/dg/transformer.png
-    :scale: 50%
+    :width: 500 px
+    :align: center
 
 Note: A transformer will be created between HV Bus and Bus 2 when nominal voltage values are different.
 Note: The name of an element may not change until you 'double click' the element on the diagram canvas after the change.
@@ -81,7 +83,8 @@ Step 2: Create a Lines of Different Lengths
 1. Create 3 more Buses (Bus 3, Bus 4 and Bus 5) and create a branch between them.
 
 .. figure:: ../figures/tutorials/dg/threebusaddition.png
-    :scale: 50%
+    :width: 500 px
+    :align: center
 
 2. Select the branch between Bus 2 and Bus 3 and change its parameters to:
 
@@ -119,7 +122,8 @@ Step 3: Add more Lines and Buses
 4. Add Bus 9 and Bus 11 to the left of Bus 5.
 
 .. figure:: ../figures/tutorials/dg/morebuses.png
-    :scale: 50%
+    :width: 500 px
+    :align: center
 
 5. Select the branch between Bus 2 and Bus 6 and change its parameters to:
 
@@ -154,7 +158,8 @@ Step 3: Add more Lines and Buses
 +------------+--------+
 
 .. figure:: ../figures/tutorials/dg/morebuseslines.png
-    :scale: 50%
+    :width: 500 px
+    :align: center
 
 Step 4: Create Loads
 --------------------
@@ -184,7 +189,8 @@ Step 4: Create Loads
 6. Right 'click' on House 4 and select 'Add Load'.
 
 .. figure:: ../figures/tutorials/dg/loads.png
-    :scale: 50%
+    :width: 500 px
+    :align: center
 
 Step 5: Create House 1 and House 2
 ----------------------------------
@@ -208,7 +214,8 @@ Step 5: Create House 1 and House 2
 The full system topology looks like:
 
 .. figure:: ../figures/tutorials/dg/fourhouses.png
-    :scale: 50%
+    :width: 500 px
+    :align: center
 
 Note: do not forget to add the load after you rename the House buses.
 
@@ -226,7 +233,8 @@ This transformer is the transformer between HV Bus and Bus 2. The transformer is
 3. Remove all filters on the 'Rate (MVA)' column by pressing on the downward arrow.
 
 .. figure:: ../figures/tutorials/dg/downtriangle.png
-    :scale: 50%
+    :width: 500 px
+    :align: center
 
 4. Select the '20 kV' filter on the 'HV (kV)' column using the downward arrow.
 
@@ -337,7 +345,8 @@ The transformers used for the 4 loads (houses) a 10 to 0.4 kV transformer will b
 6. On the lower tabs select 'Types catalogue'.
 
 .. figure:: ../figures/tutorials/dg/typescatalogue.png
-    :scale: 60%
+    :width: 500 px
+    :align: center
 
 7. Select the transformer that has the characteristics of the 10 to 0.4 kV transformer and rename it to 'House trafo'. Now you have defined a transformer type that can be added to many transformers.
 
@@ -389,7 +398,8 @@ Note: A new wire or custom wire can be added using the '+' button on the top rig
 7. Select the wire 'AWG SLD', highlight it and click on the '+' sign on the 'Wire composition' section below:
 
 .. figure:: ../figures/tutorials/dg/awgsld.png
-    :scale: 30%
+    :width: 500 px
+    :align: center
 
 
 8. Add the 'AWG SLD' wire three times to enter the wire arrangement. The formulas come from ATP-EMTP.
@@ -407,7 +417,8 @@ Note: A new wire or custom wire can be added using the '+' button on the top rig
 +-----------+------+-------+-------+
 
 .. figure:: ../figures/tutorials/dg/threeawgsld.png
-    :scale: 30 %
+    :width: 500 px
+    :align: center
 
 10. Click on the 'Compute matrices' button the little calculator on the bottom right and you will be able to see:
 -Tower Wire Position (right).
@@ -427,7 +438,8 @@ Note: A new wire or custom wire can be added using the '+' button on the top rig
 15. Repeat for all desired lines. In this case Line 1 to Line 8. The 'Objecs -> Line' Data tab should look like:
 
 .. figure:: ../figures/tutorials/dg/threeawgsld.png
-    :scale: 30 %
+    :width: 500 px
+    :align: center
 
 Note: this can be done with all elements either to preloaded models or models you create.
 
@@ -437,7 +449,8 @@ Step 10: Importing Load Profiles
 1. Head to the 'Time Events' tab on the bottom part of the GUI. Then click on the left and select 'Import Profiles'. This should bring up the 'Profile Import Dialogue' box.
 
 .. figure:: ../figures/tutorials/dg/importprofiles.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 Note: Make sure that the desired object is set to 'Load' and power types are both set to 'P'.
 
@@ -446,14 +459,16 @@ Note: Make sure that the desired object is set to 'Load' and power types are bot
 3. In the installation location head to '../GridCal/Grids_and_Profiles/profiles/..' then select the Excel file called: 'Total_profiles_1W_1H.xlsx'.
 
 .. figure:: ../figures/tutorials/dg/filelocation.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 4. On the next dialogue box select 'Sheet 1' and 'OK'. Wait for all of the profiles to load.
 
 5. Any load profile can be selected. For example, click on 'USA_AL_Dothan.Muni.AP.7222268_TMY3_BASE(kW)'. Then select the 'Plot' tab to see the load profile in kW for January 2018.
 
 .. figure:: ../figures/tutorials/dg/loadprofilechart.png
-    :scale: 40 %
+    :width: 500 px
+    :align: center
 
 Note: in the 'Assignation' tab, the units can be changed to: T, G, k , m Watts.
 
@@ -468,37 +483,44 @@ Set the units to 'k'.
 The selection should look like this:
 
 .. figure:: ../figures/tutorials/dg/profileselection.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 Click 'Accept' to load the profiles.
 
 7. On the 'Time events' tab, confirm that the time series has bene added:
 
 .. figure:: ../figures/tutorials/dg/timeevents.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 8. To set the reactive power as a copy of the active power and scale it, click on the dropdown menu and select 'Q'. Then click next to it on the 'Copy the selected profile into the profiles selected next to this button' button. When the pop up box comes on confirming the action select 'Yes'.
 
 .. figure:: ../figures/tutorials/dg/scaling.png
-    :scale: 100 %
+    :width: 500 px
+    :align: center
 
 .. figure:: ../figures/tutorials/dg/pprofile.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 9. On the bottom left side scale it by 0.8 and click on the multiply button. The profile should look like this:
 
 .. figure:: ../figures/tutorials/dg/qprofile.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 9. The profiles can be visualized by 1) selecting the times, and load, and clicking on the 'Plot the selected project's profile' button.
 
 .. figure:: ../figures/tutorials/dg/profilegraph.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 10. Power flow snapshots can be seen also by going to the 'Time events' tabs, and then
 
 .. figure:: ../figures/tutorials/dg/snapshotpf.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 Step 10: Set Power Flow From A Profile
 --------------------------------------
@@ -507,7 +529,8 @@ Once we have checked that the profiles are okay, we can set the power flow snaps
 1. Head to the 'Time Series' Tab and select '2018+01-03T12:00:00.00000000000000'.
 
 .. figure:: ../figures/tutorials/dg/timeselection.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 2. Select the 'Assign selected values to the selected time slot to the grid'.
 
@@ -520,7 +543,8 @@ Step 11: Running a Power Flow
 In order to run the power flow, we must select the slack bus. If you try run without one, you will get this error message:
 
 .. figure:: ../figures/tutorials/dg/noslackbus.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 Note: to run a Power Flow, select the 'Power Flow' button in the red square in the figure above.
 
@@ -531,22 +555,26 @@ Note: to run a Power Flow, select the 'Power Flow' button in the red square in t
 3. On the left pane, select 'True' in the 'is_slack' option.
 
 .. figure:: ../figures/tutorials/dg/isslack.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 4. Click on the 'Power Flow' button and the grid will be colored according to the voltage or loading.
 
 .. figure:: ../figures/tutorials/dg/runpf.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 5. Click on the 'Power Flow Time Series' button and the grid will be colored according to th
 
 .. figure:: ../figures/tutorials/dg/runpftimeseries.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 6. In addition by hovering above a transformer you can see the loading percentage and the power.
 
 .. figure:: ../figures/tutorials/dg/transformerpower.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 Step 12: Results & Features
 ---------------------------
@@ -554,7 +582,8 @@ Step 12: Results & Features
 Here are some of the few results and features that are available with GridCal. All results can be found in the 'Results' tab. Here you can see a list of all studies perfomed and their respective results:
 
 .. figure:: ../figures/tutorials/dg/results.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 In the results you can also choose from:
 
@@ -565,22 +594,26 @@ In the results you can also choose from:
 From here you can choose and customize the plot and results that are displayed to you.
 
 .. figure:: ../figures/tutorials/dg/resultsorting.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 Select the Study, Result Type and Devices, then the Data will pop up in table format, to graph it use the 'Graph' button on the top right. The graph will come up on a new figure:
 
 .. figure:: ../figures/tutorials/dg/resultselection.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 In the 'Schematic' Tab, you can visualize the result's profiles, by selection the load, right click and selecting 'Plot Profiles':
 
 .. figure:: ../figures/tutorials/dg/plotprofiles.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 From the result plots you can do various things with the plot:
 
 .. figure:: ../figures/tutorials/dg/plotoptions.png
-    :scale: 50 %
+    :width: 500 px
+    :align: center
 
 
 In the 'Settings Tab' some of the stuff that can be changed are:
