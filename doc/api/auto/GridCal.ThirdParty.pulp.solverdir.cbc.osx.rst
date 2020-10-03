@@ -10,5 +10,6 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
    GridCal.ThirdParty.pulp.solverdir.cbc.osx.64

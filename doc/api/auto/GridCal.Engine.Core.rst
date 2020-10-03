@@ -25,6 +25,14 @@ GridCal.Engine.Core.multi\_circuit module
    :undoc-members:
    :show-inheritance:
 
+GridCal.Engine.Core.snapshot\_acdc module
+-----------------------------------------
+
+.. automodule:: GridCal.Engine.Core.snapshot_acdc
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GridCal.Engine.Core.snapshot\_opf\_data module
 ----------------------------------------------
 

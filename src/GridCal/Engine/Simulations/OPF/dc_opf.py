@@ -17,9 +17,10 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
+import numpy as np
+import GridCal.ThirdParty.pulp as pl
 from GridCal.Engine.Core.snapshot_opf_data import OpfSnapshotCircuit, split_into_opf_islands
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
-from GridCal.ThirdParty.pulp import *
 
 
 def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
@@ -38,13 +39,13 @@ def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
     :return: Nothing, just assign the objective function
     """
 
-    f_obj = lpSum(cost_g * Pg)
+    f_obj = pl.lpSum(cost_g * Pg)
 
-    f_obj += lpSum(cost_b * Pb)
+    f_obj += pl.lpSum(cost_b * Pb)
 
-    f_obj += lpSum(cost_l * LSlack)
+    f_obj += pl.lpSum(cost_l * LSlack)
 
-    f_obj += lpSum(cost_br * (FSlack1 + FSlack2))
+    f_obj += pl.lpSum(cost_br * (FSlack1 + FSlack2))
 
     return f_obj
 
@@ -61,11 +62,11 @@ def set_fix_generation(problem, Pg, P_fix, enabled_for_dispatch):
 
     idx = np.where(enabled_for_dispatch == False)[0]
 
-    lpAddRestrictions2(problem=problem,
-                       lhs=Pg[idx],
-                       rhs=P_fix[idx],
-                       name='fixed_generation',
-                       op='=')
+    pl.lpAddRestrictions2(problem=problem,
+                          lhs=Pg[idx],
+                          rhs=P_fix[idx],
+                          name='fixed_generation',
+                          op='=')
 
 
 def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
@@ -81,10 +82,10 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     :return: Power injection at the buses (n, nt)
     """
 
-    return lpDot(C_bus_gen, Pg) + lpDot(C_bus_bat, Pb) - lpDot(C_bus_load, Pl - LSlack)
+    return pl.lpDot(C_bus_gen, Pg) + pl.lpDot(C_bus_bat, Pb) - pl.lpDot(C_bus_load, Pl - LSlack)
 
 
-def add_dc_nodal_power_balance(numerical_circuit: OpfSnapshotCircuit, problem: LpProblem, theta, P):
+def add_dc_nodal_power_balance(numerical_circuit: OpfSnapshotCircuit, problem: pl.LpProblem, theta, P):
     """
     Add the nodal power balance
     :param numerical_circuit: NumericalCircuit instance
@@ -119,31 +120,31 @@ def add_dc_nodal_power_balance(numerical_circuit: OpfSnapshotCircuit, problem: L
 
             # Add nodal power balance for the non slack nodes
             idx = bus_original_idx[pqpv]
-            nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
-                                                         lhs=lpDot(B_island[np.ix_(pqpv, pqpv)], theta_island[pqpv]),
-                                                         rhs=P_island[pqpv],
-                                                         name='Nodal_power_balance_pqpv_is' + str(i),
-                                                         op='=')
+            nodal_restrictions[idx] = pl.lpAddRestrictions2(problem=problem,
+                                                            lhs=pl.lpDot(B_island[np.ix_(pqpv, pqpv)], theta_island[pqpv]),
+                                                            rhs=P_island[pqpv],
+                                                            name='Nodal_power_balance_pqpv_is' + str(i),
+                                                            op='=')
 
             # Add nodal power balance for the slack nodes
             idx = bus_original_idx[vd]
-            nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
-                                                         lhs=lpDot(B_island[vd, :], theta_island),
-                                                         rhs=P_island[vd],
-                                                         name='Nodal_power_balance_vd_is' + str(i),
-                                                         op='=')
+            nodal_restrictions[idx] = pl.lpAddRestrictions2(problem=problem,
+                                                            lhs=pl.lpDot(B_island[vd, :], theta_island),
+                                                            rhs=P_island[vd],
+                                                            name='Nodal_power_balance_vd_is' + str(i),
+                                                            op='=')
 
             # slack angles equal to zero
-            lpAddRestrictions2(problem=problem,
-                               lhs=theta_island[vd],
-                               rhs=np.zeros(len(vd)),
-                               name='Theta_vd_zero_is' + str(i),
-                               op='=')
+            pl.lpAddRestrictions2(problem=problem,
+                                  lhs=theta_island[vd],
+                                  rhs=np.zeros(len(vd)),
+                                  name='Theta_vd_zero_is' + str(i),
+                                  op='=')
 
     return nodal_restrictions
 
 
-def add_branch_loading_restriction(problem: LpProblem, theta_f, theta_t, Bseries, rating, FSlack1, FSlack2):
+def add_branch_loading_restriction(problem: pl.LpProblem, theta_f, theta_t, Bseries, rating, FSlack1, FSlack2):
     """
     Add the branch loading restrictions
     :param problem: LpProblem instance
@@ -160,18 +161,18 @@ def add_branch_loading_restriction(problem: LpProblem, theta_f, theta_t, Bseries
     load_t = Bseries * (theta_t - theta_f)
 
     # from-to branch power restriction
-    lpAddRestrictions2(problem=problem,
-                       lhs=load_f,
-                       rhs=rating + FSlack1,  # rating + FSlack1
-                       name='from_to_branch_rate',
-                       op='<=')
+    pl.lpAddRestrictions2(problem=problem,
+                          lhs=load_f,
+                          rhs=rating + FSlack1,  # rating + FSlack1
+                          name='from_to_branch_rate',
+                          op='<=')
 
     # to-from branch power restriction
-    lpAddRestrictions2(problem=problem,
-                       lhs=load_t,
-                       rhs=rating + FSlack2,  # rating + FSlack2
-                       name='to_from_branch_rate',
-                       op='<=')
+    pl.lpAddRestrictions2(problem=problem,
+                          lhs=load_t,
+                          rhs=rating + FSlack2,  # rating + FSlack2
+                          name='to_from_branch_rate',
+                          op='<=')
 
     return load_f, load_t
 
@@ -220,21 +221,22 @@ class OpfDc(Opf):
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
-        Bseries = (self.numerical_circuit.branch_active * (1 / (self.numerical_circuit.branch_R + 1j * self.numerical_circuit.branch_X))).imag
+        Ys = 1 / (self.numerical_circuit.branch_R + 1j * self.numerical_circuit.branch_X)
+        Bseries = (self.numerical_circuit.branch_active * Ys).imag
         cost_br = self.numerical_circuit.branch_cost
 
         # create LP variables
-        Pg = lpMakeVars(name='Pg', shape=ng, lower=Pg_min, upper=Pg_max)
-        Pb = lpMakeVars(name='Pb', shape=nb, lower=Pb_min, upper=Pb_max)
-        load_slack = lpMakeVars(name='LSlack', shape=nl, lower=0, upper=None)
-        theta = lpMakeVars(name='theta', shape=n, lower=-3.14, upper=3.14)
+        Pg = pl.lpMakeVars(name='Pg', shape=ng, lower=Pg_min, upper=Pg_max)
+        Pb = pl.lpMakeVars(name='Pb', shape=nb, lower=Pb_min, upper=Pb_max)
+        load_slack = pl.lpMakeVars(name='LSlack', shape=nl, lower=0, upper=None)
+        theta = pl.lpMakeVars(name='theta', shape=n, lower=-3.14, upper=3.14)
         theta_f = theta[self.numerical_circuit.F]
         theta_t = theta[self.numerical_circuit.T]
-        branch_rating_slack1 = lpMakeVars(name='FSlack1', shape=m, lower=0, upper=None)
-        branch_rating_slack2 = lpMakeVars(name='FSlack2', shape=m, lower=0, upper=None)
+        branch_rating_slack1 = pl.lpMakeVars(name='FSlack1', shape=m, lower=0, upper=None)
+        branch_rating_slack2 = pl.lpMakeVars(name='FSlack2', shape=m, lower=0, upper=None)
 
         # declare problem
-        problem = LpProblem(name='DC_OPF')
+        problem = pl.LpProblem(name='DC_OPF')
 
         # add the objective function
         problem += add_objective_function(Pg, Pb, load_slack, branch_rating_slack1, branch_rating_slack2,
@@ -285,8 +287,8 @@ if __name__ == '__main__':
     from GridCal.Engine.IO.file_handler import FileOpen
     from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
 
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
 
     main_circuit = FileOpen(fname).open()
 

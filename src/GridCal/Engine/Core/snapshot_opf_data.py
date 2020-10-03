@@ -502,7 +502,7 @@ def get_opf_island(self, bus_idx) -> "OpfSnapshotCircuit":
     nc.vsc_names = self.vsc_names[vsc_idx]
     nc.vsc_R1 = self.vsc_R1[vsc_idx]
     nc.vsc_X1 = self.vsc_X1[vsc_idx]
-    nc.vsc_Gsw = self.vsc_G0[vsc_idx]
+    nc.vsc_Gsw = self.vsc_Gsw[vsc_idx]
     nc.vsc_Beq = self.vsc_Beq[vsc_idx]
     nc.vsc_m = self.vsc_m[vsc_idx]
     nc.vsc_theta = self.vsc_theta[vsc_idx]
@@ -767,9 +767,9 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
         f = bus_dictionary[elm.bus_from]
         t = bus_dictionary[elm.bus_to]
 
-        nc.branch_R[i] = elm.R
-        nc.branch_X[i] = elm.X
-        nc.branch_cost[i] = elm.Cost
+        nc.branch_R[ii] = elm.R
+        nc.branch_X[ii] = elm.X
+        nc.branch_cost[ii] = elm.Cost
 
         nc.branch_names[ii] = elm.name
         nc.branch_active[ii] = elm.active
@@ -804,9 +804,9 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
         f = bus_dictionary[elm.bus_from]
         t = bus_dictionary[elm.bus_to]
 
-        nc.branch_R[i] = elm.R1
-        nc.branch_X[i] = elm.X1
-        nc.branch_cost[i] = elm.Cost
+        nc.branch_R[ii] = elm.R1
+        nc.branch_X[ii] = elm.X1
+        nc.branch_cost[ii] = elm.Cost
 
         nc.branch_names[ii] = elm.name
         nc.branch_active[ii] = elm.active

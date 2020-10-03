@@ -73,6 +73,14 @@ GridCal.Engine.Devices.generator module
    :undoc-members:
    :show-inheritance:
 
+GridCal.Engine.Devices.groupings module
+---------------------------------------
+
+.. automodule:: GridCal.Engine.Devices.groupings
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GridCal.Engine.Devices.hvdc\_line module
 ----------------------------------------
 

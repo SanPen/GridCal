@@ -9,6 +9,22 @@ GridCal.Engine.Simulations.PTDF package
 Submodules
 ----------
 
+GridCal.Engine.Simulations.PTDF.analytic\_ptdf module
+-----------------------------------------------------
+
+.. automodule:: GridCal.Engine.Simulations.PTDF.analytic_ptdf
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+GridCal.Engine.Simulations.PTDF.analytic\_ptdf\_driver module
+-------------------------------------------------------------
+
+.. automodule:: GridCal.Engine.Simulations.PTDF.analytic_ptdf_driver
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GridCal.Engine.Simulations.PTDF.ptdf\_analysis module
 -----------------------------------------------------
 

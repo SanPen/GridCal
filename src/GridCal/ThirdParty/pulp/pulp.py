@@ -94,8 +94,7 @@ References:
 """
 
 import itertools
-
-from GridCal.ThirdParty.pulp.solvers import *
+import configparser
 from GridCal.ThirdParty.pulp.solver_interfaces import *
 from collections import Iterable
 
@@ -132,7 +131,7 @@ def setConfigInformation(**keywords):
     """
     # TODO: extend if we ever add another section in the config file
     # read the old configuration
-    config = ConfigParser.SafeConfigParser()
+    config = configparser.SafeConfigParser()
     config.read(config_filename)
     # set the new keys
     for key, val in keywords.items():
@@ -563,9 +562,9 @@ class LpAffineExpression(_DICT_TYPE):
 
     name = property(fget=getName, fset=setName)
 
-    def __init__(self, e = None, constant = 0, name = None):
+    def __init__(self, e=None, constant=0, name=None):
         self.name = name
-        #TODO remove isinstance usage
+        # TODO remove isinstance usage
         if e is None:
             e = {}
         if isinstance(e, LpAffineExpression):
@@ -578,7 +577,7 @@ class LpAffineExpression(_DICT_TYPE):
         elif isinstance(e, Iterable):
             self.constant = constant
             super(LpAffineExpression, self).__init__(e)
-        elif isinstance(e,LpElement):
+        elif isinstance(e, LpElement):
             self.constant = 0
             super(LpAffineExpression, self).__init__( [(e, 1)])
         else:
@@ -704,7 +703,7 @@ class LpAffineExpression(_DICT_TYPE):
                 line += [term]
         return result, line
 
-    def asCplexLpAffineExpression(self, name, constant = 1):
+    def asCplexLpAffineExpression(self, name, constant=1.0):
         """
         returns a string that represents the Affine Expression in lp format
         """
@@ -730,8 +729,12 @@ class LpAffineExpression(_DICT_TYPE):
 
     def addInPlace(self, other):
 
-        if other == 0 or other is None:
+        if other is None:
             return self
+
+        elif type(other) == int or type(other) == float:
+            if other == 0:
+                return self
 
         if isinstance(other, LpElement):
             self.addterm(other, 1)
@@ -754,8 +757,12 @@ class LpAffineExpression(_DICT_TYPE):
 
     def subInPlace(self, other):
 
-        if other == 0 or other is None:
+        if other is None:
             return self
+
+        elif type(other) == int or type(other) == float:
+            if other == 0:
+                return self
 
         if isinstance(other, LpElement):
             self.addterm(other, -1)
@@ -849,7 +856,7 @@ class LpAffineExpression(_DICT_TYPE):
             other = other.constant
         e = self.emptyCopy()
         e.constant = self.constant / other
-        for v,x in self.items():
+        for v, x in self.items():
             e[v] = x / other
         return e
 
@@ -878,8 +885,7 @@ class LpAffineExpression(_DICT_TYPE):
 
 class LpConstraint(LpAffineExpression):
     """An LP constraint"""
-    def __init__(self, e = None, sense = LpConstraintEQ,
-                  name = None, rhs = None):
+    def __init__(self, e=None, sense=LpConstraintEQ, name=None, rhs=None):
         """
         :param e: an instance of :class:`LpAffineExpression`
         :param sense: one of :data:`~pulp.constants.LpConstraintEQ`, :data:`~pulp.constants.LpConstraintGE`, :data:`~pulp.constants.LpConstraintLE` (0, 1, -1 respectively)
@@ -895,15 +901,13 @@ class LpConstraint(LpAffineExpression):
         self.modified = True
 
     def getLb(self):
-        if ( (self.sense == LpConstraintGE) or
-             (self.sense == LpConstraintEQ) ):
+        if (self.sense == LpConstraintGE) or (self.sense == LpConstraintEQ):
             return -self.constant
         else:
             return None
 
     def getUb(self):
-        if ( (self.sense == LpConstraintLE) or
-             (self.sense == LpConstraintEQ) ):
+        if (self.sense == LpConstraintLE) or (self.sense == LpConstraintEQ):
             return -self.constant
         else:
             return None
@@ -923,9 +927,9 @@ class LpConstraint(LpAffineExpression):
             line += ["0"]
         c = -self.constant
         if c == 0:
-            c = 0 # Supress sign
+            c = 0  # Supress sign
         term = " %s %.12g" % (LpConstraintSenses[self.sense], c)
-        if self._count_characters(line)+len(term) > LpCplexLPLineSize:
+        if self._count_characters(line) + len(term) > LpCplexLPLineSize:
             result += ["".join(line)]
             line = [term]
         else:
@@ -1083,8 +1087,7 @@ class LpFractionConstraint(LpConstraint):
             self.denominator = denominator
             self.complement = complement
         lhs = self.numerator - RHS * self.denominator
-        LpConstraint.__init__(self, lhs,
-              sense = sense, rhs = 0, name = name)
+        LpConstraint.__init__(self, lhs, sense=sense, rhs=0, name=name)
         self.RHS = RHS
 
     def findLHSValue(self):
@@ -1197,8 +1200,10 @@ class LpProblem(object):
             self._variable_ids[id(v)] = v
 
     def copy(self):
-        """Make a copy of self. Expressions are copied by reference"""
-        lpcopy = LpProblem(name = self.name, sense = self.sense)
+        """
+        Make a copy of self. Expressions are copied by reference
+        """
+        lpcopy = LpProblem(name=self.name, sense=self.sense)
         lpcopy.objective = self.objective
         lpcopy.constraints = self.constraints.copy()
         lpcopy.sos1 = self.sos1.copy()
@@ -1207,7 +1212,7 @@ class LpProblem(object):
 
     def deepcopy(self):
         """Make a copy of self. Expressions are copied by value"""
-        lpcopy = LpProblem(name = self.name, sense = self.sense)
+        lpcopy = LpProblem(name=self.name, sense=self.sense)
         if self.objective is not None:
             lpcopy.objective = self.objective.copy()
         lpcopy.constraints = {}
@@ -1605,7 +1610,7 @@ class LpProblem(object):
         else:
             return vs, variablesNames, constraintsNames, cobj.name
 
-    def writeLP(self, filename, writeSOS = 1, mip = 1):
+    def writeLP(self, filename, writeSOS=1, mip=1):
         """
         Write the given Lp problem to a .lp file.
 
@@ -1990,11 +1995,11 @@ class FractionElasticSubProblem(FixedElasticSubProblem):
         where [-ve, +ve]
     """
     def __init__(self, name, numerator, RHS, sense,
-                                        complement = None,
-                                        denominator = None,
-                                        penalty = None,
-                                        proportionFreeBound = None,
-                                        proportionFreeBoundList = None):
+                                        complement=None,
+                                        denominator=None,
+                                        penalty=None,
+                                        proportionFreeBound=None,
+                                        proportionFreeBoundList=None):
         subProblemName = "%s_elastic_SubProblem" % name
         self.numerator = numerator
         if denominator is None and complement is not None:
@@ -2085,15 +2090,18 @@ class FractionElasticSubProblem(FixedElasticSubProblem):
 
 class LpVariableDict(dict):
     """An LP variable generator"""
-    def __init__(self, name, data={}, lowBound = None, upBound = None, cat = LpContinuous):
+    def __init__(self, name, data={}, lowBound = None, upBound = None, cat=LpContinuous):
         self.name = name
+        self.lowBound = lowBound
+        self.upBound = upBound
+        self.cat = cat
         dict.__init__(self, data)
 
     def __getitem__(self, key):
         if key in self:
             return dict.__getitem__(self, key)
         else:
-            self[key] = LpVariable(self.name % key, lowBound, upBound, cat)
+            self[key] = LpVariable(self.name % key, self.lowBound, self.upBound, self.cat)
             return self[key]
 
 
@@ -2110,24 +2118,30 @@ def lpSum(vector):
 
 
 def lpDot(v1, v2):
-    """Calculate the dot product of two lists of linear expressions"""
+    """
+    Calculate the dot product of two lists of linear expressions
+    """
     if not isiterable(v1) and not isiterable(v2):
         return v1 * v2
     elif not isiterable(v1):
-        return lpDot([v1]*len(v2),v2)
+        return lpDot([v1] * len(v2), v2)
     elif not isiterable(v2):
-        return lpDot(v1,[v2]*len(v1))
+        return lpDot(v1, [v2] * len(v1))
     else:
-        return lpSum([lpDot(e1,e2) for e1,e2 in zip(v1,v2)])
+        return lpSum([lpDot(e1, e2) for e1, e2 in zip(v1, v2)])
 
 
 def isNumber(x):
-    """Returns true if x is an int or a float"""
+    """
+    Returns true if x is an int or a float
+    """
     return isinstance(x, (int, float))
 
 
 def value(x):
-    """Returns the value of the variable/expression x, or x if it is a number"""
+    """
+    Returns the value of the variable/expression x, or x if it is a number
+    """
     if isNumber(x):
         return x
     else:
@@ -2135,9 +2149,11 @@ def value(x):
 
 
 def valueOrDefault(x):
-    """Returns the value of the variable/expression x, or x if it is a number
+    """
+    Returns the value of the variable/expression x, or x if it is a number
     Variable without value (None) are affected a possible value (within their
-    bounds)."""
+    bounds).
+    """
     if isNumber(x):
         return x
     else:
@@ -2315,13 +2331,14 @@ def __makeDict(headers, array, default = None):
     result = {}
     returndefaultvalue = None
     if len(headers) == 1:
-        result.update(dict(zip(headers[0],array)))
+        result.update(dict(zip(headers[0], array)))
         defaultvalue = default
     else:
         for i, h in enumerate(headers[0]):
             result[h], defaultvalue = __makeDict(headers[1:], array[i], default)
     if default is not None:
-        f = lambda :defaultvalue
+        import collections
+        f = lambda: defaultvalue
         defresult = collections.defaultdict(f)
         defresult.update(result)
         result = defresult
@@ -2422,8 +2439,7 @@ def pulpTestAll():
                GUROBI,
                GUROBI_CMD,
                PYGLPK,
-               YAPOSIB
-               ]
+               YAPOSIB]
 
     failed = False
     for s in solvers:

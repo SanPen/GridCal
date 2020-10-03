@@ -277,14 +277,14 @@ class VSC(EditableDevice):
             x = time_series.results.time
 
             # loading
-            y = time_series.results.loading * 100.0
+            y = time_series.results.loading.real * 100.0
             df = pd.DataFrame(data=y[:, my_index], index=x, columns=[self.name])
             ax_1.set_title('Loading', fontsize=14)
             ax_1.set_ylabel('Loading [%]', fontsize=11)
             df.plot(ax=ax_1)
 
             # losses
-            y = time_series.results.losses
+            y = np.abs(time_series.results.losses)
             df = pd.DataFrame(data=y[:, my_index], index=x, columns=[self.name])
             ax_2.set_title('Losses', fontsize=14)
             ax_2.set_ylabel('Losses [MVA]', fontsize=11)

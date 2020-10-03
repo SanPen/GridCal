@@ -10,6 +10,7 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
    GridCal.Engine.Core
    GridCal.Engine.Devices

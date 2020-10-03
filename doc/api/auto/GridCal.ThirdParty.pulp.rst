@@ -10,6 +10,7 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
    GridCal.ThirdParty.pulp.solver_interfaces
    GridCal.ThirdParty.pulp.solverdir

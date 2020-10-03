@@ -555,8 +555,45 @@ class MainGUI(QMainWindow):
         """
         Unlock the interface
         """
-        if len(self.stuff_running_now) == 0:
+        if not self.any_thread_running():
             self.LOCK(False)
+
+    def any_thread_running(self):
+        """
+        Checks if any thread is running
+        :return: True/False
+        """
+        val = False
+
+        # this list cannot be created only once, because the None will be copied
+        # instead of being a pointer to the future value like it would in a typed language
+        all_threads = [self.power_flow,
+                       self.short_circuit,
+                       self.monte_carlo,
+                       self.time_series,
+                       self.voltage_stability,
+                       self.latin_hypercube_sampling,
+                       self.cascade,
+                       self.optimal_power_flow,
+                       self.optimal_power_flow_time_series,
+                       self.transient_stability,
+                       self.topology_reduction,
+                       self.open_file_thread_object,
+                       self.save_file_thread_object,
+                       self.ptdf_analysis,
+                       self.ptdf_ts_analysis,
+                       self.otdf_analysis,
+                       self.painter,
+                       self.delete_and_reduce_driver,
+                       self.export_all_thread_object,
+                       self.find_node_groups_driver,
+                       self.file_sync_thread]
+
+        for thr in all_threads:
+            if thr is not None:
+                if thr.isRunning():
+                    return True
+        return val
 
     def set_grid_editor_state(self):
         """
@@ -1243,6 +1280,13 @@ class MainGUI(QMainWindow):
         if ('file_save' not in self.stuff_running_now) and ('file_open' not in self.stuff_running_now):
             # lock the ui
             self.LOCK()
+
+            # check to not to kill threads avoiding segmentation faults
+            if self.save_file_thread_object is not None:
+                if self.save_file_thread_object.isRunning():
+                    ok = yes_no_question("There is a saving procedure running.\nCancel and retry?")
+                    if ok:
+                        self.save_file_thread_object.quit()
 
             self.save_file_thread_object = FileSaveThread(self.circuit, filename)
 

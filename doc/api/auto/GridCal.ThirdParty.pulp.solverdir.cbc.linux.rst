@@ -10,6 +10,7 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
    GridCal.ThirdParty.pulp.solverdir.cbc.linux.32
    GridCal.ThirdParty.pulp.solverdir.cbc.linux.64

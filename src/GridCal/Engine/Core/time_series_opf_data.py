@@ -954,6 +954,8 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
         nc.branch_names[i] = elm.name
         nc.branch_R[i] = elm.R
         nc.branch_X[i] = elm.X
+        nc.branch_cost[i] = elm.Cost
+
         f = bus_dictionary[elm.bus_from]
         t = bus_dictionary[elm.bus_to]
         nc.C_branch_bus_f[i, f] = 1
@@ -987,9 +989,11 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
         f = bus_dictionary[elm.bus_from]
         t = bus_dictionary[elm.bus_to]
 
-        nc.branch_names[ii] = elm.name
         nc.branch_R[ii] = elm.R
         nc.branch_X[ii] = elm.X
+        nc.branch_cost[ii] = elm.Cost
+
+        nc.branch_names[ii] = elm.name
         nc.C_branch_bus_f[ii, f] = 1
         nc.C_branch_bus_t[ii, t] = 1
         nc.F[ii] = f
@@ -1024,9 +1028,11 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
         f = bus_dictionary[elm.bus_from]
         t = bus_dictionary[elm.bus_to]
 
-        nc.branch_names[ii] = elm.name
         nc.branch_R[ii] = elm.R1
         nc.branch_X[ii] = elm.X1
+        nc.branch_cost[ii] = elm.Cost
+
+        nc.branch_names[ii] = elm.name
         nc.C_branch_bus_f[ii, f] = 1
         nc.C_branch_bus_t[ii, t] = 1
         nc.F[ii] = f
