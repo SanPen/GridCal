@@ -19,35 +19,24 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improved the results of the PTDF driver">
-      <change beforePath="$PROJECT_DIR$/.idea/GridCal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/GridCal.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="OPF fixes">
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/battery_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/branch_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/bus_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/circuit_to_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/dc_lines_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/generator_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/hvdc_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/lines_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/load_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/shunt_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/static_generator_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/transformer_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/vsc_data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/Illinois 200 Bus.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/Illinois 200 Bus.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/Some distribution grid (Video).gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/Some distribution grid (Video).gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Core.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Core.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Devices.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Devices.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.PTDF.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.PTDF.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.linux.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.linux.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.osx.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.osx.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.win.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.cbc.win.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solverdir.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_opf_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_opf_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/time_series_opf_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/time_series_opf_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/line.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/transformer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/vsc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/vsc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/pulp.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/pulp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,7 +64,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="devel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -101,6 +90,9 @@
     <option name="mySaveCallSignatures" value="true" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/research/hvdc" />
       <recent name="$PROJECT_DIR$/src/research" />
@@ -372,7 +364,7 @@
       <workItem from="1601488096243" duration="1737000" />
       <workItem from="1601533150367" duration="7101000" />
       <workItem from="1601718062452" duration="6765000" />
-      <workItem from="1601740767155" duration="1028000" />
+      <workItem from="1601740767155" duration="13912000" />
     </task>
     <task id="LOCAL-00001" summary="Trial">
       <created>1589563536685</created>
@@ -647,7 +639,14 @@
       <option name="project" value="LOCAL" />
       <updated>1601568887067</updated>
     </task>
-    <option name="localTasksCounter" value="40" />
+    <task id="LOCAL-00040" summary="OPF fixes">
+      <created>1601742371045</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1601742371045</updated>
+    </task>
+    <option name="localTasksCounter" value="41" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -681,7 +680,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added node grouping based on PTDF" />
     <MESSAGE value="Added more internal structures to the snapshot" />
     <MESSAGE value="Improved filter of boolean properties" />
     <MESSAGE value="Added tags to the sigma-plot&#10;Changes the power flow inner loops order" />
@@ -706,7 +704,8 @@
     <MESSAGE value="Fixed the division by zero in the tolerance approximation" />
     <MESSAGE value="Research on multiple failure" />
     <MESSAGE value="Improved the results of the PTDF driver" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved the results of the PTDF driver" />
+    <MESSAGE value="OPF fixes" />
+    <option name="LAST_COMMIT_MESSAGE" value="OPF fixes" />
   </component>
   <component name="WindowStateProjectService">
     <state x="454" y="211" width="1084" height="708" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1601397245915">
@@ -733,38 +732,38 @@
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="486" y="27" width="874" height="926" key="FileChooserDialogImpl/72.27.1848.1053@72.27.1848.1053" timestamp="1601458952521" />
-    <state width="1806" height="437" key="GridCell.Tab.0.bottom" timestamp="1601742329632">
+    <state width="1806" height="391" key="GridCell.Tab.0.bottom" timestamp="1601756109431">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
-    <state width="1806" height="437" key="GridCell.Tab.0.bottom/72.27.1848.1053@72.27.1848.1053" timestamp="1601742329632" />
-    <state width="1806" height="437" key="GridCell.Tab.0.center" timestamp="1601742329631">
+    <state width="1806" height="391" key="GridCell.Tab.0.bottom/72.27.1848.1053@72.27.1848.1053" timestamp="1601756109431" />
+    <state width="1806" height="391" key="GridCell.Tab.0.center" timestamp="1601756109430">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
-    <state width="1806" height="437" key="GridCell.Tab.0.center/72.27.1848.1053@72.27.1848.1053" timestamp="1601742329631" />
-    <state width="1806" height="437" key="GridCell.Tab.0.left" timestamp="1601742329631">
+    <state width="1806" height="391" key="GridCell.Tab.0.center/72.27.1848.1053@72.27.1848.1053" timestamp="1601756109430" />
+    <state width="1806" height="391" key="GridCell.Tab.0.left" timestamp="1601756109430">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
-    <state width="1806" height="437" key="GridCell.Tab.0.left/72.27.1848.1053@72.27.1848.1053" timestamp="1601742329631" />
-    <state width="1806" height="437" key="GridCell.Tab.0.right" timestamp="1601742329631">
+    <state width="1806" height="391" key="GridCell.Tab.0.left/72.27.1848.1053@72.27.1848.1053" timestamp="1601756109430" />
+    <state width="1806" height="391" key="GridCell.Tab.0.right" timestamp="1601756109431">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
-    <state width="1806" height="437" key="GridCell.Tab.0.right/72.27.1848.1053@72.27.1848.1053" timestamp="1601742329631" />
-    <state width="1806" height="391" key="GridCell.Tab.1.bottom" timestamp="1601740364330">
+    <state width="1806" height="391" key="GridCell.Tab.0.right/72.27.1848.1053@72.27.1848.1053" timestamp="1601756109431" />
+    <state width="1806" height="391" key="GridCell.Tab.1.bottom" timestamp="1601756108963">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
-    <state width="1806" height="391" key="GridCell.Tab.1.bottom/72.27.1848.1053@72.27.1848.1053" timestamp="1601740364330" />
-    <state width="1806" height="391" key="GridCell.Tab.1.center" timestamp="1601740364330">
+    <state width="1806" height="391" key="GridCell.Tab.1.bottom/72.27.1848.1053@72.27.1848.1053" timestamp="1601756108963" />
+    <state width="1806" height="391" key="GridCell.Tab.1.center" timestamp="1601756108963">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
-    <state width="1806" height="391" key="GridCell.Tab.1.center/72.27.1848.1053@72.27.1848.1053" timestamp="1601740364330" />
-    <state width="1806" height="391" key="GridCell.Tab.1.left" timestamp="1601740364329">
+    <state width="1806" height="391" key="GridCell.Tab.1.center/72.27.1848.1053@72.27.1848.1053" timestamp="1601756108963" />
+    <state width="1806" height="391" key="GridCell.Tab.1.left" timestamp="1601756108963">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
-    <state width="1806" height="391" key="GridCell.Tab.1.left/72.27.1848.1053@72.27.1848.1053" timestamp="1601740364329" />
-    <state width="1806" height="391" key="GridCell.Tab.1.right" timestamp="1601740364330">
+    <state width="1806" height="391" key="GridCell.Tab.1.left/72.27.1848.1053@72.27.1848.1053" timestamp="1601756108963" />
+    <state width="1806" height="391" key="GridCell.Tab.1.right" timestamp="1601756108963">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
-    <state width="1806" height="391" key="GridCell.Tab.1.right/72.27.1848.1053@72.27.1848.1053" timestamp="1601740364330" />
+    <state width="1806" height="391" key="GridCell.Tab.1.right/72.27.1848.1053@72.27.1848.1053" timestamp="1601756108963" />
     <state x="252" y="117" width="1478" height="879" key="MergeDialog" timestamp="1594315086733">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
@@ -777,10 +776,10 @@
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="93" y="58" width="1668" height="961" key="SettingsEditor/72.27.1848.1053@72.27.1848.1053" timestamp="1601461195083" />
-    <state x="303" y="285" width="800" height="660" key="Vcs.Push.Dialog.v2" timestamp="1601568912454">
+    <state x="303" y="285" width="800" height="660" key="Vcs.Push.Dialog.v2" timestamp="1601742373642">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
-    <state x="303" y="285" width="800" height="660" key="Vcs.Push.Dialog.v2/72.27.1848.1053@72.27.1848.1053" timestamp="1601568912454" />
+    <state x="303" y="285" width="800" height="660" key="Vcs.Push.Dialog.v2/72.27.1848.1053@72.27.1848.1053" timestamp="1601742373642" />
     <state width="1804" height="526" key="XDebugger.FullValuePopup" timestamp="1600166196313">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
@@ -960,6 +959,16 @@
           <line>576</line>
           <option name="timeStamp" value="310" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_power_flow.py</url>
+          <line>297</line>
+          <option name="timeStamp" value="312" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_results.py</url>
+          <line>190</line>
+          <option name="timeStamp" value="313" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
@@ -987,7 +996,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_transformer_regulator_py.coverage" NAME="Nosetests in test_transformer_regulator.py Coverage Results" MODIFIED="1598803756451" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$PTDF_research.coverage" NAME="PTDF_research Coverage Results" MODIFIED="1600707513093" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$gis_dialogue.coverage" NAME="gis_dialogue Coverage Results" MODIFIED="1598594782912" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/GIS" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1601742329618" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1601756108931" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$power_world_epc.coverage" NAME="power_world_epc Coverage Results" MODIFIED="1594141589251" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_world_format" />
     <SUITE FILE_PATH="coverage/GridCal$psse_parser.coverage" NAME="psse_parser Coverage Results" MODIFIED="1594285082315" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
     <SUITE FILE_PATH="coverage/GridCal$newton_line_search.coverage" NAME="newton_line_search Coverage Results" MODIFIED="1591974579886" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_flow" />
