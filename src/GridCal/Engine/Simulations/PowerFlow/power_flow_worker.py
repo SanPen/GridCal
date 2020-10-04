@@ -320,7 +320,12 @@ def outer_loop_power_flow(circuit: SnapshotCircuit, options: PowerFlowOptions,
     # get the original types and compile this class' own lists of node types for thread independence
     original_types = circuit.bus_data.bus_types.copy()
     bus_types = circuit.bus_data.bus_types.copy()
-    vd, pq, pv, pqpv = compile_types(Sbus, original_types, logger)
+    # vd, pq, pv, pqpv = compile_types(Sbus, original_types, logger)
+
+    vd = circuit.vd.copy()
+    pq = circuit.pq.copy()
+    pv = circuit.pv.copy()
+    pqpv = circuit.pqpv.copy()
 
     # copy the tap positions
     tap_positions = circuit.transformer_data.tr_tap_position.copy()
@@ -390,10 +395,10 @@ def outer_loop_power_flow(circuit: SnapshotCircuit, options: PowerFlowOptions,
             if options.distributed_slack:
                 # Distribute the slack power
                 slack_power = Scalc[vd].real.sum()
-                installed_power = circuit.bus_data.bus_installed_power.sum()
+                total_installed_power = circuit.bus_data.bus_installed_power.sum()
 
-                if installed_power > 0.0:
-                    delta = slack_power * circuit.bus_data.bus_installed_power / installed_power
+                if total_installed_power > 0.0:
+                    delta = slack_power * circuit.bus_data.bus_installed_power / total_installed_power
 
                     # repeat power flow with the redistributed power
                     voltage_solution, converged, normF, Scalc, it2, el2 = solve(options=options,
@@ -529,7 +534,7 @@ def outer_loop_power_flow(circuit: SnapshotCircuit, options: PowerFlowOptions,
                                branch_names=circuit.branch_data.branch_names,
                                transformer_names=circuit.transformer_data.tr_names,
                                hvdc_names=circuit.hvdc_data.hvdc_names,
-                               bus_types=circuit.bus_data.bus_types)
+                               bus_types=bus_types)
     results.Sbus = Scalc
     results.voltage = voltage_solution
     results.Sbranch = Sbranch
@@ -1266,13 +1271,6 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
 
         else:
             logger.append('There are no slack nodes')
-
-    # compute the HVDC values
-    results.hvdc_sent_power = numerical_circuit.hvdc_data.hvdc_Pf
-    results.hvdc_loading = numerical_circuit.hvdc_data.get_loading()
-    results.hvdc_losses = numerical_circuit.hvdc_data.get_losses()
-
-    results.bus_types = numerical_circuit.bus_data.bus_types
 
     return results
 

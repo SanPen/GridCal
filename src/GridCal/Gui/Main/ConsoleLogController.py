@@ -15,7 +15,7 @@
 
 import sys
 
-from PySide2.QtWidgets import *
+from PySide2 import QtWidgets
 
 from GridCal.Gui.Main.ConsoleLog import *
 
@@ -39,6 +39,6 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = ConsoleLogDialogue()
 
-    window.resize(1.61 * 400.0, 400.0)  # golden ratio
+    window.resize(int(1.61 * 400.0), 400)  # golden ratio
     window.show()
     sys.exit(app.exec_())

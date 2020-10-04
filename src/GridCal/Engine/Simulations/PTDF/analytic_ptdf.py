@@ -224,9 +224,9 @@ class LinearAnalysis:
 
         self.results = LinearAnalysisResults(n_br=self.numerical_circuit.nbr,
                                              n_bus=self.numerical_circuit.nbus,
-                                             br_names=self.numerical_circuit.branch_names,
-                                             bus_names=self.numerical_circuit.bus_names,
-                                             bus_types=self.numerical_circuit.bus_types)
+                                             br_names=self.numerical_circuit.branch_data.branch_names,
+                                             bus_names=self.numerical_circuit.bus_data.bus_names,
+                                             bus_types=self.numerical_circuit.bus_data.bus_types)
 
         # compute the PTDF per islands
         if len(islands) > 0:
@@ -256,8 +256,8 @@ class LinearAnalysis:
                     self.results.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
 
                     # compute the island LODF
-                    lodf_island = make_lodf(Cf=self.numerical_circuit.C_branch_bus_f,
-                                            Ct=self.numerical_circuit.C_branch_bus_t,
+                    lodf_island = make_lodf(Cf=self.numerical_circuit.branch_data.C_branch_bus_f,
+                                            Ct=self.numerical_circuit.branch_data.C_branch_bus_t,
                                             PTDF=ptdf_island_no_dist,
                                             correct_values=self.correct_values)
 
@@ -284,8 +284,8 @@ class LinearAnalysis:
                 ptdf_island_no_dist = self.results.PTDF
 
             # the LODF algorithm doesn't seem to solve any circuit, hence there is no need of island splitting
-            self.results.LODF = make_lodf(Cf=self.numerical_circuit.C_branch_bus_f,
-                                          Ct=self.numerical_circuit.C_branch_bus_t,
+            self.results.LODF = make_lodf(Cf=self.numerical_circuit.branch_data.C_branch_bus_f,
+                                          Ct=self.numerical_circuit.branch_data.C_branch_bus_t,
                                           PTDF=ptdf_island_no_dist,
                                           correct_values=self.correct_values)
 

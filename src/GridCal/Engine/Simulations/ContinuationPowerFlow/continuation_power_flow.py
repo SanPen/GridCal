@@ -933,19 +933,7 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
 
 if __name__ == '__main__':
 
-    from GridCal.Engine.IO.file_handler import *
-    from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, ReactivePowerControlMode, PowerFlowDriver, \
-        SolverType
-    from GridCal.Engine.Simulations.ShortCircuit.short_circuit_driver import *
-    from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
-    from GridCal.Engine.Simulations.OPF.opf_driver import *
-    from GridCal.Engine.Simulations.OPF.opf_ts_driver import *
-    from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
-    from GridCal.Engine.Simulations.MonteCarlo.stochastic_driver import *
-    from GridCal.Engine.Simulations.Stochastic.blackout_driver import *
-    from GridCal.Engine.Simulations.Optimization.optimization_driver import *
-    from GridCal.Engine.io_structures import *
-    from GridCal.Engine.grid_analysis import *
+    from GridCal.Engine import *
 
     # fname = os.path.join('..', '..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
     fname = os.path.join('..', '..', '..', '..', 'Grids_and_profiles', 'grids', 'lynn5buspv.xlsx')

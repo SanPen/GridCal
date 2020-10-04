@@ -26,14 +26,14 @@ from GridCal.Engine.Core.common_functions import compile_types
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
 from GridCal.Engine.Core.DataStructures import *
+import GridCal.Engine.Core.admittance_matrices as ycalc
 
 sparse_type = get_sparse_type()
 
 
 class SnapshotCircuit:
 
-    def __init__(self, nbus, nline, ndcline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase,
-                 apply_temperature=False, branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
+    def __init__(self, nbus, nline, ndcline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase):
         """
 
         :param nbus: number of buses
@@ -63,9 +63,6 @@ class SnapshotCircuit:
 
         self.Sbase = sbase
 
-        self.apply_temperature = apply_temperature
-        self.branch_tolerance_mode = branch_tolerance_mode
-
         # ---------------------------------------------------------------------------------------------------------------
         # Data structures
         # --------------------------------------------------------------------------------------------------------------
@@ -85,29 +82,35 @@ class SnapshotCircuit:
         #---------------------------------------------------------------------------------------------------------------
         # Results
         # --------------------------------------------------------------------------------------------------------------
-        self.Vbus = np.zeros(self.nbus, dtype=complex)
-        self.Sbus = np.zeros(self.nbus, dtype=complex)
-        self.Ibus = np.zeros(self.nbus, dtype=complex)
-        self.Yshunt_from_devices = np.zeros(self.nbus, dtype=complex)
 
-        self.Qmax_bus = np.zeros(self.nbus)
-        self.Qmin_bus = np.zeros(self.nbus)
+        self.Cf_ = None
+        self.Ct_ = None
 
-        self.Ybus = None
-        self.Yf = None
-        self.Yt = None
+        self.Vbus_ = None
+        self.Sbus_ = None
+        self.Ibus_ = None
+        self.Yshunt_from_devices_ = None
+
+        self.Qmax_bus_ = None
+        self.Qmin_bus_ = None
+
+        self.Ybus_ = None
+        self.Yf_ = None
+        self.Yt_ = None
 
         # Admittance for HELM / AC linear
-        self.Yseries = None
-        self.Yshunt = None
+        self.Yseries_ = None
+        self.Yshunt_ = None
 
         # Admittances for Fast-Decoupled
-        self.B1 = None
-        self.B2 = None
+        self.B1_ = None
+        self.B2_ = None
 
         # Admittances for Linear
-        self.Bpqpv = None
-        self.Bref = None
+        self.Bbus_ = None
+        self.Bf_ = None
+        self.Bpqpv_ = None
+        self.Bref_ = None
 
         self.original_bus_idx = np.arange(self.nbus)
         self.original_branch_idx = np.arange(self.nbr)
@@ -116,10 +119,10 @@ class SnapshotCircuit:
         self.original_gen_idx = np.arange(self.ngen)
         self.original_bat_idx = np.arange(self.nbatt)
 
-        self.pq = list()
-        self.pv = list()
-        self.vd = list()
-        self.pqpv = list()
+        self.pq_ = None
+        self.pv_ = None
+        self.vd_ = None
+        self.pqpv_ = None
 
         self.available_structures = ['Vbus',
                                      'Sbus',
@@ -177,17 +180,6 @@ class SnapshotCircuit:
 
         return Sbus
 
-    def compute_injections(self):
-        """
-        Compute the power and store it in-place
-        :return: nothing, the results are stored in the class
-        """
-
-        # load
-        self.Sbus = self.get_injections(normalize=True)
-
-        self.Ibus = np.zeros(self.nbus, dtype=complex)
-
     def consolidate_information(self):
         """
         Consolidates the information of this object
@@ -205,8 +197,14 @@ class SnapshotCircuit:
         self.nbatt = len(self.battery_data)
         self.nshunt = len(self.shunt_data)
         self.nstagen = len(self.static_generator_data)
-
         self.nbr = self.nline + self.ntr + self.nvsc + self.ndcline
+
+        self.original_bus_idx = np.arange(self.nbus)
+        self.original_branch_idx = np.arange(self.nbr)
+        self.original_line_idx = np.arange(self.nline)
+        self.original_tr_idx = np.arange(self.ntr)
+        self.original_gen_idx = np.arange(self.ngen)
+        self.original_bat_idx = np.arange(self.nbatt)
 
         self.branch_data.C_branch_bus_f = self.branch_data.C_branch_bus_f.tocsc()
         self.branch_data.C_branch_bus_t = self.branch_data.C_branch_bus_t.tocsc()
@@ -233,354 +231,293 @@ class SnapshotCircuit:
         :param tap_module:
         :return:
         """
-        self.compute_admittance_matrices(newton_raphson=False,
-                                         linear_dc=False,
-                                         linear_ac=False,
-                                         fast_decoupled=False,
-                                         helm=False,
-                                         tr_tap_module=tap_module)
+        self.Ybus_, self.Yf_, self.Yt_ = ycalc.compute_admittances(R=self.branch_data.R,
+                                                                   X=self.branch_data.X,
+                                                                   G=self.branch_data.G,
+                                                                   B=self.branch_data.B,
+                                                                   k=self.branch_data.k,
+                                                                   m=tap_module,
+                                                                   mf=self.branch_data.tap_f,
+                                                                   mt=self.branch_data.tap_t,
+                                                                   theta=self.branch_data.theta,
+                                                                   Beq=self.branch_data.Beq,
+                                                                   Cf=self.Cf,
+                                                                   Ct=self.Ct,
+                                                                   G0=self.branch_data.G0,
+                                                                   If=np.zeros(len(self.branch_data)),
+                                                                   a=self.branch_data.a,
+                                                                   b=self.branch_data.b,
+                                                                   c=self.branch_data.c,
+                                                                   Yshunt_bus=self.Yshunt_from_devices)
 
-    def compute_admittance_matrices(self, newton_raphson=False, linear_dc=False, linear_ac=False, fast_decoupled=False,
-                                    helm=False, tr_tap_module=None):
-        """
-        Compute the admittance matrices
-        :param newton_raphson: Compute the matrices necessary for Newton-Raphson like power flow
-        :param linear_dc: Compute the matrices necessary for the Linear-DC method
-        :param linear_ac: Compute the matrices necessary for the Linear-AC method
-        :param fast_decoupled: Compute the matrices necessary for the fast-decoupled method
-        :param helm: Compute the matrices necessary for the HELM method
-        :return:
-        """
+    @property
+    def Vbus(self):
 
-        """
-        
-        :return: Ybus, Yseries, Yshunt
-        """
-        # form the connectivity matrices with the states applied -------------------------------------------------------
-        br_states_diag = sp.diags(self.branch_data.branch_active)
-        Cf = br_states_diag * self.branch_data.C_branch_bus_f
-        Ct = br_states_diag * self.branch_data.C_branch_bus_t
+        if self.Vbus_ is None:
+            self.Vbus_ = self.bus_data.Vbus.copy()
 
-        # Declare the empty primitives ---------------------------------------------------------------------------------
+        return self.Vbus_
 
-        # The composition order is and will be: Pi model, HVDC, VSC
-        if newton_raphson:
-            Ytt = np.empty(self.nbr, dtype=complex)
-            Yff = np.empty(self.nbr, dtype=complex)
-            Yft = np.empty(self.nbr, dtype=complex)
-            Ytf = np.empty(self.nbr, dtype=complex)
-        else:
-            Ytt = np.empty(0, dtype=complex)
-            Yff = np.empty(0, dtype=complex)
-            Yft = np.empty(0, dtype=complex)
-            Ytf = np.empty(0, dtype=complex)
+    @property
+    def Sbus(self):
 
-        # Branch primitives in vector form, for Yseries
-        if linear_ac or helm:
-            Ytts = np.empty(self.nbr, dtype=complex)
-            Yffs = np.empty(self.nbr, dtype=complex)
-            Yfts = np.empty(self.nbr, dtype=complex)
-            Ytfs = np.empty(self.nbr, dtype=complex)
-            ysh_br = np.empty(self.nbr, dtype=complex)
+        if self.Sbus_ is None:
+            self.Sbus_ = self.get_injections(normalize=True)
 
-        else:
-            Ytts = np.empty(0, dtype=complex)
-            Yffs = np.empty(0, dtype=complex)
-            Yfts = np.empty(0, dtype=complex)
-            Ytfs = np.empty(0, dtype=complex)
-            ysh_br = np.empty(0, dtype=complex)
+        return self.Sbus_
 
-        # Arrays to compose the fast decoupled
-        if fast_decoupled:
-            reactances = np.empty(self.nbr)
-            susceptances = np.empty(self.nbr)
-            all_taps = np.ones(self.nbr, dtype=complex)
+    @property
+    def Ibus(self):
 
-        else:
-            reactances = np.empty(0)
-            susceptances = np.empty(0)
-            all_taps = np.ones(0, dtype=complex)
+        if self.Ibus_ is None:
+            self.Ibus_ = np.zeros(len(self.bus_data), dtype=complex)
 
-        # line ---------------------------------------------------------------------------------------------------------
-        a = 0
-        b = self.nline
+        return self.Ibus_
 
-        # use the specified of the temperature-corrected resistance
-        if self.apply_temperature:
-            line_R = self.line_data.AC_R_corrected()
-        else:
-            line_R = self.line_data.line_R
+    @property
+    def Qmax_bus(self):
 
-        # modify the branches impedance with the lower, upper tolerance values
-        if self.branch_tolerance_mode == BranchImpedanceMode.Lower:
-            line_R *= (1 - self.line_data.line_impedance_tolerance / 100.0)
-        elif self.branch_tolerance_mode == BranchImpedanceMode.Upper:
-            line_R *= (1 + self.line_data.line_impedance_tolerance / 100.0)
+        if self.Qmax_bus_ is None:
+            self.Qmax_bus_, self.Qmin_bus_ = self.compute_reactive_power_limits()
 
-        Ys_line = 1.0 / (line_R + 1.0j * self.line_data.line_X)
-        Ysh_line = 1.0j * self.line_data.line_B
-        Ys_line2 = Ys_line + Ysh_line / 2.0
+        return self.Qmax_bus_
 
-        # branch primitives in vector form for Ybus
-        if newton_raphson:
-            Ytt[a:b] = Ys_line2
-            Yff[a:b] = Ys_line2
-            Yft[a:b] = - Ys_line
-            Ytf[a:b] = - Ys_line
+    @property
+    def Qmin_bus(self):
 
-        # branch primitives in vector form, for Yseries
-        if linear_ac or helm:
-            Ytts[a:b] = Ys_line
-            Yffs[a:b] = Ys_line
-            Yfts[a:b] = - Ys_line
-            Ytfs[a:b] = - Ys_line
-            ysh_br[a:b] = Ysh_line / 2.0
+        if self.Qmin_bus_ is None:
+            self.Qmax_bus_, self.Qmin_bus_ = self.compute_reactive_power_limits()
 
-        if fast_decoupled:
-            reactances[a:b] = self.line_data.line_X
-            susceptances[a:b] = self.line_data.line_B
+        return self.Qmin_bus_
 
-        # transformer models -------------------------------------------------------------------------------------------
+    @property
+    def Yshunt_from_devices(self):
 
-        a = self.nline
-        b = a + self.ntr
+        # compute on demand and store
+        if self.Yshunt_from_devices_ is None:
+            self.Yshunt_from_devices_ = self.shunt_data.get_injections_per_bus() / self.Sbus
 
-        Ys_tr = 1.0 / (self.transformer_data.tr_R + 1.0j * self.transformer_data.tr_X)
-        Ysh_tr = 1.0j * self.transformer_data.tr_B
-        Ys_tr2 = Ys_tr + Ysh_tr / 2.0
+        return self.Yshunt_from_devices_
 
-        if tr_tap_module is None:
-            tap = self.transformer_data.tr_tap_mod * np.exp(1.0j * self.transformer_data.tr_tap_ang)
-        else:
-            tap = tr_tap_module * np.exp(1.0j * self.transformer_data.tr_tap_ang)
+    @property
+    def bus_types(self):
+        return self.bus_data.bus_types
 
-        # branch primitives in vector form for Ybus
-        if newton_raphson:
-            Ytt[a:b] = Ys_tr2 / (self.transformer_data.tr_tap_t * self.transformer_data.tr_tap_t)
-            Yff[a:b] = Ys_tr2 / (self.transformer_data.tr_tap_f * self.transformer_data.tr_tap_f * tap * np.conj(tap))
-            Yft[a:b] = - Ys_tr / (self.transformer_data.tr_tap_f * self.transformer_data.tr_tap_t * np.conj(tap))
-            Ytf[a:b] = - Ys_tr / (self.transformer_data.tr_tap_t * self.transformer_data.tr_tap_f * tap)
+    @property
+    def Cf(self):
 
-        # branch primitives in vector form, for Yseries
-        if linear_ac or helm:
-            Ytts[a:b] = Ys_tr
-            Yffs[a:b] = Ys_tr / (tap * np.conj(tap))
-            Yfts[a:b] = - Ys_tr / np.conj(tap)
-            Ytfs[a:b] = - Ys_tr / tap
-            ysh_br[a:b] = Ysh_tr / 2.0
+        # compute on demand and store
+        if self.Cf_ is None:
+            self.Cf_, self.Ct_ = ycalc.compute_connectivity(branch_active=self.branch_data.branch_active,
+                                                            Cf_=self.branch_data.C_branch_bus_f,
+                                                            Ct_=self.branch_data.C_branch_bus_t)
+        return self.Cf_
 
-        if fast_decoupled:
-            reactances[a:b] = self.transformer_data.tr_X
-            susceptances[a:b] = self.transformer_data.tr_B
-            all_taps[a:b] = tap
+    @property
+    def Ct(self):
 
-        # VSC MODEL ----------------------------------------------------------------------------------------------------
-        a = self.nline + self.ntr
-        b = a + self.nvsc
+        # compute on demand and store
+        if self.Ct_ is None:
+            self.Cf_, self.Ct_ = ycalc.compute_connectivity(branch_active=self.branch_data.branch_active,
+                                                            Cf_=self.branch_data.C_branch_bus_f,
+                                                            Ct_=self.branch_data.C_branch_bus_t)
+        return self.Ct_
 
-        Y_vsc = 1.0 / (self.vsc_data.vsc_R1 + 1.0j * self.vsc_data.vsc_X1)  # Y1
+    @property
+    def Ybus(self):
 
-        if newton_raphson:
-            Yff[a:b] = Y_vsc
-            Yft[a:b] = -self.vsc_data.vsc_m * np.exp(1.0j * self.vsc_data.vsc_theta) * Y_vsc
-            Ytf[a:b] = -self.vsc_data.vsc_m * np.exp(-1.0j * self.vsc_data.vsc_theta) * Y_vsc
-            Ytt[a:b] = self.vsc_data.vsc_G0 + self.vsc_data.vsc_m * self.vsc_data.vsc_m * (Y_vsc + 1.0j * self.vsc_data.vsc_Beq)
+        # compute admittances on demand
+        if self.Ybus_ is None:
 
-        if linear_ac or helm:
-            Yffs[a:b] = Y_vsc
-            Yfts[a:b] = -self.vsc_data.vsc_m * np.exp(1.0j * self.vsc_data.vsc_theta) * Y_vsc
-            Ytfs[a:b] = -self.vsc_data.vsc_m * np.exp(-1.0j * self.vsc_data.vsc_theta) * Y_vsc
-            Ytts[a:b] = self.vsc_data.vsc_m * self.vsc_data.vsc_m * (Y_vsc + 1.0j)
+            self.Ybus_, self.Yf_, self.Yt_ = ycalc.compute_admittances(R=self.branch_data.R,
+                                                                       X=self.branch_data.X,
+                                                                       G=self.branch_data.G,
+                                                                       B=self.branch_data.B,
+                                                                       k=self.branch_data.k,
+                                                                       m=self.branch_data.m,
+                                                                       mf=self.branch_data.tap_f,
+                                                                       mt=self.branch_data.tap_t,
+                                                                       theta=self.branch_data.theta,
+                                                                       Beq=self.branch_data.Beq,
+                                                                       Cf=self.Cf,
+                                                                       Ct=self.Ct,
+                                                                       G0=self.branch_data.G0,
+                                                                       If=np.zeros(len(self.branch_data)),
+                                                                       a=self.branch_data.a,
+                                                                       b=self.branch_data.b,
+                                                                       c=self.branch_data.c,
+                                                                       Yshunt_bus=self.Yshunt_from_devices)
+        return self.Ybus_
 
-        if fast_decoupled:
-            reactances[a:b] = self.vsc_data.vsc_X1
-            susceptances[a:b] = self.vsc_data.vsc_Beq
-            all_taps[a:b] = self.vsc_data.vsc_m * np.exp(1.0j * self.vsc_data.vsc_theta)
+    @property
+    def Yf(self):
 
-        # dc-line ------------------------------------------------------------------------------------------------------
-        a = self.nline + self.ntr + self.nvsc
-        b = a + self.ndcline
+        if self.Yf_ is None:
+            x = self.Ybus  # call the constructor of Yf
 
-        # use the specified of the temperature-corrected resistance
-        if self.apply_temperature:
-            dc_line_R = self.dc_line_data.DC_R_corrected()
-        else:
-            dc_line_R = self.dc_line_data.dc_line_R
+        return self.Yf_
 
-        # modify the branches impedance with the lower, upper tolerance values
-        if self.branch_tolerance_mode == BranchImpedanceMode.Lower:
-            dc_line_R *= (1 - self.dc_line_data.dc_line_impedance_tolerance / 100.0)
-        elif self.branch_tolerance_mode == BranchImpedanceMode.Upper:
-            dc_line_R *= (1 + self.dc_line_data.dc_line_impedance_tolerance / 100.0)
+    @property
+    def Yt(self):
 
-        Ys_dc_line = 1.0 / dc_line_R
+        if self.Yt_ is None:
+            x = self.Ybus  # call the constructor of Yt
 
-        # branch primitives in vector form for Ybus
-        if newton_raphson:
-            Ytt[a:b] = Ys_dc_line
-            Yff[a:b] = Ys_dc_line
-            Yft[a:b] = - Ys_dc_line
-            Ytf[a:b] = - Ys_dc_line
+        return self.Yt_
 
-        # branch primitives in vector form, for Yseries
-        if linear_ac or helm:
-            Ytts[a:b] = Ys_dc_line
-            Yffs[a:b] = Ys_dc_line
-            Yfts[a:b] = - Ys_dc_line
-            Ytfs[a:b] = - Ys_dc_line
+    @property
+    def Yseries(self):
 
-        # HVDC LINE MODEL ----------------------------------------------------------------------------------------------
-        # does not apply since the HVDC-line model is the simplistic 2-generator model
+        # compute admittances on demand
+        if self.Ybus_ is None:
 
-        # SHUNT --------------------------------------------------------------------------------------------------------
-        self.Yshunt_from_devices = self.shunt_data.get_injections_per_bus() / self.Sbase
+            self.Yseries_, self.Yshunt_ = ycalc.compute_split_admittances(R=self.branch_data.R,
+                                                                          X=self.branch_data.X,
+                                                                          G=self.branch_data.G,
+                                                                          B=self.branch_data.B,
+                                                                          k=self.branch_data.k,
+                                                                          m=self.branch_data.m,
+                                                                          mf=self.branch_data.tap_f,
+                                                                          mt=self.branch_data.tap_t,
+                                                                          theta=self.branch_data.theta,
+                                                                          Beq=self.branch_data.Beq,
+                                                                          Cf=self.Cf,
+                                                                          Ct=self.Ct,
+                                                                          G0=self.branch_data.G0,
+                                                                          If=np.zeros(len(self.branch_data)),
+                                                                          a=self.branch_data.a,
+                                                                          b=self.branch_data.b,
+                                                                          c=self.branch_data.c,
+                                                                          Yshunt_bus=self.Yshunt_from_devices)
+        return self.Ybus_
 
-        # form the admittance matrices ---------------------------------------------------------------------------------
-        if newton_raphson:
-            self.Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
-            self.Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
-            self.Ybus = sp.csc_matrix(Cf.T * self.Yf + Ct.T * self.Yt) + sp.diags(self.Yshunt_from_devices)
+    @property
+    def Yshunt(self):
 
-            self.Bpqpv = self.Ybus.imag[np.ix_(self.pqpv, self.pqpv)]
-            self.Bref = self.Ybus.imag[np.ix_(self.pqpv, self.vd)]
+        if self.Yshunt_ is None:
+            x = self.Yseries  # call the constructor of Yshunt
 
-        # form the admittance matrices of the series and shunt elements ------------------------------------------------
-        if linear_ac or helm:
-            Yfs = sp.diags(Yffs) * Cf + sp.diags(Yfts) * Ct
-            Yts = sp.diags(Ytfs) * Cf + sp.diags(Ytts) * Ct
-            self.Yseries = sp.csc_matrix(Cf.T * Yfs + Ct.T * Yts)
-            self.Yshunt = Cf.T * ysh_br + Ct.T * ysh_br + self.Yshunt_from_devices
+        return self.Yshunt_
 
-        # Form the matrices for fast decoupled -------------------------------------------------------------------------
-        if fast_decoupled:
-            b1 = 1.0 / (reactances + 1e-20)
-            b1_tt = sp.diags(b1)
-            B1f = b1_tt * Cf - b1_tt * Ct
-            B1t = -b1_tt * Cf + b1_tt * Ct
-            self.B1 = sparse_type(Cf.T * B1f + Ct.T * B1t)
+    @property
+    def B1(self):
 
-            b2 = b1 + susceptances
-            b2_ff = -(b2 / (all_taps * np.conj(all_taps))).real
-            b2_ft = -(b1 / np.conj(all_taps)).real
-            b2_tf = -(b1 / all_taps).real
-            b2_tt = - b2
+        if self.B1_ is None:
 
-            B2f = -sp.diags(b2_ff) * Cf + sp.diags(b2_ft) * Ct
-            B2t = sp.diags(b2_tf) * Cf + -sp.diags(b2_tt) * Ct
-            self.B2 = sparse_type(Cf.T * B2f + Ct.T * B2t)
+            self.B1_, self.B2_ = ycalc.compute_fast_decoupled_admittances(X=self.branch_data.X,
+                                                                          B=self.branch_data.B,
+                                                                          m=self.branch_data.m,
+                                                                          mf=self.branch_data.vf_set,
+                                                                          mt=self.branch_data.vt_set,
+                                                                          Cf=self.Cf,
+                                                                          Ct=self.Ct)
+        return self.B1_
 
-    def get_linear_matrices(self):
+    @property
+    def B2(self):
 
-        # form the connectivity matrices with the states applied -------------------------------------------------------
-        br_states_diag = sp.diags(self.branch_data.branch_active)
-        Cf = br_states_diag * self.branch_data.C_branch_bus_f
-        Ct = br_states_diag * self.branch_data.C_branch_bus_t
+        if self.B2_ is None:
+            x = self.B1  # call the constructor of B2
 
-        # Declare the empty primitives ---------------------------------------------------------------------------------
+        return self.B2_
 
-        # Arrays to compose the fast decoupled
-        reactances = np.empty(self.nbr)
-        susceptances = np.empty(self.nbr)
-        all_taps = np.ones(self.nbr, dtype=complex)
+    @property
+    def Bbus(self):
 
-        # line ---------------------------------------------------------------------------------------------------------
-        a = 0
-        b = self.nline
+        if self.Bbus_ is None:
+            self.Bbus_, self.Bf_ = ycalc.compute_linear_admittances(X=self.branch_data.X,
+                                                                    m=self.branch_data.m,
+                                                                    Cf=self.Cf,
+                                                                    Ct=self.Ct)
+            self.Bpqpv_ = self.Bbus_[np.ix_(self.pqpv, self.pqpv)]
+            self.Bref_ = self.Bbus_[np.ix_(self.pqpv, self.vd)]
 
-        # use the specified of the temperature-corrected resistance
-        if self.apply_temperature:
-            line_R = self.line_data.AC_R_corrected()
-        else:
-            line_R = self.line_data.line_R
+        return self.Bbus_
 
-        # modify the branches impedance with the lower, upper tolerance values
-        if self.branch_tolerance_mode == BranchImpedanceMode.Lower:
-            line_R *= (1 - self.line_data.line_impedance_tolerance / 100.0)
-        elif self.branch_tolerance_mode == BranchImpedanceMode.Upper:
-            line_R *= (1 + self.line_data.line_impedance_tolerance / 100.0)
+    @property
+    def Bf(self):
 
-        reactances[a:b] = self.line_data.line_X
-        susceptances[a:b] = self.line_data.line_B
+        if self.Bf_ is None:
+            x = self.Bbus  # call the constructor of Bf
 
-        # transformer models -------------------------------------------------------------------------------------------
+        return self.Bf_
 
-        a = self.nline
-        b = a + self.ntr
+    @property
+    def Bpqpv(self):
 
-        Ys_tr = 1.0 / (self.transformer_data.tr_R + 1.0j * self.transformer_data.tr_X)
-        Ysh_tr = 1.0j * self.transformer_data.tr_B
-        Ys_tr2 = Ys_tr + Ysh_tr / 2.0
+        if self.Bpqpv_ is None:
+            x = self.Bbus  # call the constructor of Bpqpv
 
-        tap = self.transformer_data.tr_tap_mod * np.exp(1.0j * self.transformer_data.tr_tap_ang)
+        return self.Bpqpv_
 
-        reactances[a:b] = self.transformer_data.tr_X
-        susceptances[a:b] = self.transformer_data.tr_B
-        all_taps[a:b] = tap
+    @property
+    def Bref(self):
 
-        # VSC MODEL ----------------------------------------------------------------------------------------------------
-        a = self.nline + self.ntr
-        b = a + self.nvsc
+        if self.Bref_ is None:
+            x = self.Bbus  # call the constructor of Bref
 
-        Y_vsc = 1.0 / (self.vsc_data.vsc_R1 + 1.0j * self.vsc_data.vsc_X1)  # Y1
-        reactances[a:b] = self.vsc_data.vsc_X1
-        susceptances[a:b] = self.vsc_data.vsc_Beq
-        all_taps[a:b] = self.vsc_data.vsc_m * np.exp(1.0j * self.vsc_data.vsc_theta)
+        return self.Bref_
 
-        # Form the matrices for fast decoupled -------------------------------------------------------------------------
-        b1 = 1.0 / (np.abs(all_taps) * reactances + 1e-20)
+    @property
+    def vd(self):
 
-        b1_tt = sp.diags(b1)
-        B1f = b1_tt * Cf - b1_tt * Ct
-        B1t = -b1_tt * Cf + b1_tt * Ct
-        B1 = sparse_type(Cf.T * B1f + Ct.T * B1t)
+        if self.vd_ is None:
+            self.vd_, self.pq_, self.pv_, self.pqpv_ = compile_types(Sbus=self.Sbus, types=self.bus_data.bus_types)
 
-        return B1, B1f, reactances
+        return self.vd_
+
+    @property
+    def pq(self):
+
+        if self.pq_ is None:
+            x = self.vd  # call the constructor
+
+        return self.pq_
+
+    @property
+    def pv(self):
+
+        if self.pv_ is None:
+            x = self.vd  # call the constructor
+
+        return self.pv_
+
+    @property
+    def pqpv(self):
+
+        if self.pqpv_ is None:
+            x = self.vd  # call the constructor
+
+        return self.pqpv_
 
     def compute_reactive_power_limits(self):
         """
         compute the reactive power limits in place
-        :return: Nothing
+        :return: Qmax_bus, Qmin_bus
         """
         # generators
-        self.Qmax_bus = self.generator_data.get_qmax_per_bus()
-        self.Qmin_bus = self.generator_data.get_qmin_per_bus()
+        Qmax_bus = self.generator_data.get_qmax_per_bus()
+        Qmin_bus = self.generator_data.get_qmin_per_bus()
 
         if self.nbatt > 0:
             # batteries
-            self.Qmax_bus += self.battery_data.get_qmax_per_bus()
-            self.Qmin_bus += self.battery_data.get_qmin_per_bus()
+            Qmax_bus += self.battery_data.get_qmax_per_bus()
+            Qmin_bus += self.battery_data.get_qmin_per_bus()
 
         if self.nhvdc > 0:
             # hvdc from
-            self.Qmax_bus += self.hvdc_data.get_qmax_from_per_bus()
-            self.Qmin_bus += self.hvdc_data.get_qmin_from_per_bus()
+            Qmax_bus += self.hvdc_data.get_qmax_from_per_bus()
+            Qmin_bus += self.hvdc_data.get_qmin_from_per_bus()
 
             # hvdc to
-            self.Qmax_bus += self.hvdc_data.get_qmax_to_per_bus()
-            self.Qmin_bus += self.hvdc_data.get_qmin_to_per_bus()
+            Qmax_bus += self.hvdc_data.get_qmax_to_per_bus()
+            Qmin_bus += self.hvdc_data.get_qmin_to_per_bus()
 
         # fix zero values
-        self.Qmax_bus[self.Qmax_bus == 0] = 1e20
-        self.Qmin_bus[self.Qmin_bus == 0] = -1e20
+        Qmax_bus[Qmax_bus == 0] = 1e20
+        Qmin_bus[Qmin_bus == 0] = -1e20
 
-    def compute_all(self):
-        """
-        Computes the parameters given the filled-in information
-        :return:
-        """
-        self.compute_injections()
-
-        self.Vbus = self.bus_data.Vbus.copy()
-
-        self.vd, self.pq, self.pv, self.pqpv = compile_types(Sbus=self.Sbus, types=self.bus_data.bus_types)
-
-        self.compute_admittance_matrices(newton_raphson=True,
-                                         linear_dc=True,
-                                         linear_ac=True,
-                                         fast_decoupled=True,
-                                         helm=True)  # always compute Ybus, Yf, Yt
-
-        self.compute_reactive_power_limits()
+        return Qmax_bus, Qmin_bus
 
     def get_structure(self, structure_type) -> pd.DataFrame:
         """
@@ -622,12 +559,12 @@ class SnapshotCircuit:
                               index=self.branch_data.branch_names)
 
         elif structure_type == 'Cf':
-            df = pd.DataFrame(data=self.C_branch_bus_f.toarray(),
+            df = pd.DataFrame(data=self.Cf.toarray(),
                               columns=self.bus_data.bus_names,
                               index=self.branch_data.branch_names)
 
         elif structure_type == 'Ct':
-            df = pd.DataFrame(data=self.C_branch_bus_t.toarray(),
+            df = pd.DataFrame(data=self.Ct.toarray(),
                               columns=self.bus_data.bus_names,
                               index=self.branch_data.branch_names)
 
@@ -745,9 +682,7 @@ def get_pf_island(circuit: SnapshotCircuit, bus_idx) -> "SnapshotCircuit":
                          nbatt=len(batt_idx),
                          nshunt=len(shunt_idx),
                          nstagen=len(stagen_idx),
-                         sbase=circuit.Sbase,
-                         apply_temperature=circuit.apply_temperature,
-                         branch_tolerance_mode=circuit.branch_tolerance_mode)
+                         sbase=circuit.Sbase)
 
     nc.original_bus_idx = bus_idx
     nc.original_branch_idx = br_idx
@@ -792,7 +727,7 @@ def split_into_islands(numeric_circuit: SnapshotCircuit, ignore_single_node_isla
     idx_islands = tp.find_islands(A)
 
     if len(idx_islands) == 1:
-        numeric_circuit.compute_all()  # compute the internal magnitudes
+        # numeric_circuit.compute_all()  # compute the internal magnitudes
         return [numeric_circuit]
 
     else:
@@ -805,12 +740,12 @@ def split_into_islands(numeric_circuit: SnapshotCircuit, ignore_single_node_isla
 
                 if len(bus_idx) > 1:
                     island = get_pf_island(numeric_circuit, bus_idx)
-                    island.compute_all()  # compute the internal magnitudes
+                    # island.compute_all()  # compute the internal magnitudes
                     circuit_islands.append(island)
 
             else:
                 island = get_pf_island(numeric_circuit, bus_idx)
-                island.compute_all()  # compute the internal magnitudes
+                # island.compute_all()  # compute the internal magnitudes
                 circuit_islands.append(island)
 
         return circuit_islands
@@ -834,9 +769,7 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
                          nbatt=0,
                          nshunt=0,
                          nstagen=0,
-                         sbase=circuit.Sbase,
-                         apply_temperature=apply_temperature,
-                         branch_tolerance_mode=branch_tolerance_mode)
+                         sbase=circuit.Sbase)
 
     bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
 
@@ -847,11 +780,11 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
     nc.battery_data = get_battery_data(circuit, bus_dict, nc.bus_data.Vbus, logger, opf_results)
     nc.shunt_data = get_shunt_data(circuit, bus_dict)
 
-    nc.line_data = get_line_data(circuit, bus_dict)
+    nc.line_data = get_line_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode)
     nc.transformer_data = get_transformer_data(circuit, bus_dict)
     nc.vsc_data = get_vsc_data(circuit, bus_dict)
-    nc.dc_line_data = get_dc_line_data(circuit, bus_dict)
-    nc.branch_data = get_branch_data(circuit, bus_dict)
+    nc.dc_line_data = get_dc_line_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode)
+    nc.branch_data = get_branch_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode)
     nc.hvdc_data = get_hvdc_data(circuit, bus_dict, nc.bus_data.bus_types)
 
     nc.consolidate_information()

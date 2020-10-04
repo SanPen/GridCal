@@ -200,7 +200,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
                                                  apply_temperature=options.apply_temperature_correction,
                                                  branch_tolerance_mode=options.branch_impedance_tolerance_mode,
                                                  opf_results=None)
-    results.bus_names = numerical_circuit.bus_names
+    results.bus_names = numerical_circuit.bus_data.bus_names
 
     calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,
                                             ignore_single_node_islands=options.ignore_single_node_islands)
@@ -302,11 +302,19 @@ def sigma_distance(a, b):
 
     Making d'=0, and solving for x, we obtain:
 
-    x1 = 1/12 (-64 a^3 + 48 a^2 + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2) - 12 a + 216 b^2 + 1)^(1/3) - (-256 a^2 + 128 a - 16)/
-         (192 (-64 a^3 + 48 a^2 + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2) - 12 a + 216 b^2 + 1)^(1/3)) + 1/12 (8 a - 5)
+    x1 = 1/12 (-64 a^3 + 48 a^2
+               + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2)
+               - 12 a + 216 b^2 + 1)^(1/3) - (-256 a^2 + 128 a - 16)/
+         (192 (-64 a^3 + 48 a^2
+               + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2)
+               - 12 a + 216 b^2 + 1)^(1/3)) + 1/12 (8 a - 5)
 
-    x2 = 1/12 (-64 a^3 + 48 a^2 + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2) - 12 a + 216 b^2 + 1)^(1/3) - (-256 a^2 + 128 a - 16)/
-         (192 (-64 a^3 + 48 a^2 + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2) - 12 a + 216 b^2 + 1)^(1/3)) + 1/12 (8 a - 5)
+    x2 = 1/12 (-64 a^3 + 48 a^2
+               + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2)
+               - 12 a + 216 b^2 + 1)^(1/3) - (-256 a^2 + 128 a - 16) /
+         (192 (-64 a^3 + 48 a^2
+               + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2)
+               - 12 a + 216 b^2 + 1)^(1/3)) + 1/12 (8 a - 5)
     :param a: Sigma real
     :param b: Sigma imag
     :return: distance of the sigma point to the curve sqrt(0.25 + x)

@@ -5,7 +5,7 @@ from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 from GridCal.Engine.Core.common_functions import compile_types
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
-
+from GridCal.Engine.Devices.enumerations import ConverterControlType, TransformerControlType
 from GridCal.Engine.Core.DataStructures import *
 
 
@@ -192,7 +192,17 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
     return data
 
 
-def get_line_data(circuit: MultiCircuit, bus_dict):
+def get_line_data(circuit: MultiCircuit, bus_dict,
+                  apply_temperature, branch_tolerance_mode: BranchImpedanceMode):
+
+    """
+
+    :param circuit:
+    :param bus_dict:
+    :param apply_temperature:
+    :param branch_tolerance_mode:
+    :return:
+    """
 
     nc = LinesData(nline=len(circuit.lines), nbus=len(circuit.buses))
 
@@ -202,19 +212,23 @@ def get_line_data(circuit: MultiCircuit, bus_dict):
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
 
-        # impedance
         nc.line_names[i] = elm.name
-        nc.line_R[i] = elm.R
+
+        if apply_temperature:
+            nc.line_R[i] = elm.R_corrected
+        else:
+            nc.line_R[i] = elm.R
+
+        if branch_tolerance_mode == BranchImpedanceMode.Lower:
+            nc.line_R[i] *= (1 - elm.tolerance / 100.0)
+        elif branch_tolerance_mode == BranchImpedanceMode.Upper:
+            nc.line_R[i] *= (1 + elm.tolerance / 100.0)
+
         nc.line_X[i] = elm.X
         nc.line_B[i] = elm.B
-        nc.line_impedance_tolerance[i] = elm.tolerance
         nc.C_line_bus[i, f] = 1
         nc.C_line_bus[i, t] = 1
 
-        # Thermal correction
-        nc.line_temp_base[i] = elm.temp_base
-        nc.line_temp_oper[i] = elm.temp_oper
-        nc.line_alpha[i] = elm.alpha
 
     return nc
 
@@ -302,11 +316,14 @@ def get_vsc_data(circuit: MultiCircuit, bus_dict):
     return nc
 
 
-def get_dc_line_data(circuit: MultiCircuit, bus_dict):
+def get_dc_line_data(circuit: MultiCircuit, bus_dict,
+                     apply_temperature, branch_tolerance_mode: BranchImpedanceMode):
     """
 
     :param circuit:
     :param bus_dict:
+    :param apply_temperature:
+    :param branch_tolerance_mode:
     :return:
     """
     nc = DcLinesData(ndcline=len(circuit.dc_lines), nbus=len(circuit.buses))
@@ -320,7 +337,17 @@ def get_dc_line_data(circuit: MultiCircuit, bus_dict):
 
         # dc line values
         nc.dc_line_names[i] = elm.name
-        nc.dc_line_R[i] = elm.R
+
+        if apply_temperature:
+            nc.dc_line_R[i] = elm.R_corrected
+        else:
+            nc.dc_line_R[i] = elm.R
+
+        if branch_tolerance_mode == BranchImpedanceMode.Lower:
+            nc.dc_line_R[i] *= (1 - elm.tolerance / 100.0)
+        elif branch_tolerance_mode == BranchImpedanceMode.Upper:
+            nc.dc_line_R[i] *= (1 + elm.tolerance / 100.0)
+
         nc.dc_line_impedance_tolerance[i] = elm.tolerance
         nc.C_dc_line_bus[i, f] = 1
         nc.C_dc_line_bus[i, t] = 1
@@ -335,11 +362,13 @@ def get_dc_line_data(circuit: MultiCircuit, bus_dict):
     return nc
 
 
-def get_branch_data(circuit: MultiCircuit, bus_dict):
+def get_branch_data(circuit: MultiCircuit, bus_dict, apply_temperature, branch_tolerance_mode: BranchImpedanceMode):
     """
 
     :param circuit:
     :param bus_dict:
+    :param apply_temperature:
+    :param branch_tolerance_mode:
     :return:
     """
     nline = len(circuit.lines)
@@ -362,6 +391,19 @@ def get_branch_data(circuit: MultiCircuit, bus_dict):
         data.F[i] = f
         data.T[i] = t
 
+        if apply_temperature:
+            data.R[i] = elm.R_corrected
+        else:
+            data.R[i] = elm.R
+
+        if branch_tolerance_mode == BranchImpedanceMode.Lower:
+            data.R[i] *= (1 - elm.tolerance / 100.0)
+        elif branch_tolerance_mode == BranchImpedanceMode.Upper:
+            data.R[i] *= (1 + elm.tolerance / 100.0)
+
+        data.X[i] = elm.X
+        data.B[i] = elm.B
+
     # 2-winding transformers
     for i, elm in enumerate(circuit.transformers2w):
         ii = i + nline
@@ -377,6 +419,21 @@ def get_branch_data(circuit: MultiCircuit, bus_dict):
         data.C_branch_bus_t[ii, t] = 1
         data.F[ii] = f
         data.T[ii] = t
+
+        data.R[ii] = elm.R
+        data.X[ii] = elm.X
+        data.G[ii] = elm.G
+        data.B[ii] = elm.B
+        data.m[ii] = elm.tap_module
+        data.theta[ii] = elm.angle
+        data.control_mode[ii] = elm.control_mode
+        data.tap_f[ii], data.tap_t[ii] = elm.get_virtual_taps()
+
+        if elm.control_mode == TransformerControlType.v_to:
+            data.Vbus[t] = elm.vset
+
+        elif elm.control_mode == TransformerControlType.power_v_to:  # 2a:Vdc
+            data.Vbus[t] = elm.vset
 
     # VSC
     for i, elm in enumerate(circuit.vsc_converters):
@@ -394,6 +451,25 @@ def get_branch_data(circuit: MultiCircuit, bus_dict):
         data.F[ii] = f
         data.T[ii] = t
 
+        data.R[ii] = elm.R1
+        data.X[ii] = elm.X1
+        data.G0[ii] = elm.G0
+        data.Beq[ii] = elm.Beq
+        data.m[ii] = elm.m
+        data.k[ii] = 1.0  # 0.8660254037844386  # sqrt(3)/2
+        data.theta[ii] = elm.theta
+        data.Pset[ii] = elm.Pset
+        data.Qset[ii] = elm.Qset
+        data.Kdp[ii] = elm.kdp
+        data.vf_set[ii] = elm.Vac_set
+        data.vt_set[ii] = elm.Vdc_set
+        data.control_mode[ii] = elm.control_mode
+
+        if elm.control_mode == ConverterControlType.type_1_vac:  # 1d:Vac
+            data.Vbus[t] = elm.Vac_set
+        elif elm.control_mode == ConverterControlType.type_2_vdc:  # 2a:Vdc
+            data.Vbus[f] = elm.Vdc_set
+
     # DC-lines
     for i, elm in enumerate(circuit.dc_lines):
         ii = i + nline + ntr + nvsc
@@ -409,6 +485,16 @@ def get_branch_data(circuit: MultiCircuit, bus_dict):
         data.C_branch_bus_t[ii, t] = 1
         data.F[ii] = f
         data.T[ii] = t
+
+        if apply_temperature:
+            data.R[i] = elm.R_corrected
+        else:
+            data.R[i] = elm.R
+
+        if branch_tolerance_mode == BranchImpedanceMode.Lower:
+            data.R[i] *= (1 - elm.tolerance / 100.0)
+        elif branch_tolerance_mode == BranchImpedanceMode.Upper:
+            data.R[i] *= (1 + elm.tolerance / 100.0)
 
     return data
 
