@@ -232,21 +232,18 @@ class LinearAnalysis:
         if len(islands) > 0:
             for island in islands:
 
-                # compute the linear-DC matrices
-                Bbus, Bf, reactances = island.get_linear_matrices()
-
                 if len(island.vd) > 0 and len(island.pqpv) > 0:  # no slacks will make it impossible to compute the PTDF analytically
 
                     # compute the PTDF of the island
-                    ptdf_island = make_ptdf(Bbus=Bbus,
-                                            Bf=Bf,
+                    ptdf_island = make_ptdf(Bbus=island.Bbus,
+                                            Bf=island.Bf,
                                             pqpv=island.pqpv,
                                             distribute_slack=self.distributed_slack)
 
                     if self.distributed_slack:
                         # the LODF requires a PTDF that does not have the distributed slack
-                        ptdf_island_no_dist = make_ptdf(Bbus=Bbus,
-                                                        Bf=Bf,
+                        ptdf_island_no_dist = make_ptdf(Bbus=island.Bbus,
+                                                        Bf=island.Bf,
                                                         pqpv=island.pqpv,
                                                         distribute_slack=False)
                     else:
@@ -265,19 +262,16 @@ class LinearAnalysis:
 
         else:
 
-            # compute the linear-DC matrices
-            Bbus, Bf, reactances = islands[0].get_linear_matrices()
-
             # there is only 1 island, compute the PTDF
-            self.results.PTDF = make_ptdf(Bbus=Bbus,
-                                          Bf=Bf,
+            self.results.PTDF = make_ptdf(Bbus=islands[0].Bbus,
+                                          Bf=islands[0].Bf,
                                           pqpv=islands[0].pqpv,
                                           distribute_slack=self.distributed_slack)
 
             if self.distributed_slack:
                 # the LODF requires a PTDF that does not have the distributed slack
-                ptdf_island_no_dist = make_ptdf(Bbus=Bbus,
-                                                Bf=Bf,
+                ptdf_island_no_dist = make_ptdf(Bbus=islands[0].Bbus,
+                                                Bf=islands[0].Bf,
                                                 pqpv=islands[0].pqpv,
                                                 distribute_slack=False)
             else:

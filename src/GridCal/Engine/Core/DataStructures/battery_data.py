@@ -46,20 +46,20 @@ class BatteryData:
         :param bus_idx:
         :return:
         """
-        nc = BatteryData(nbatt=len(batt_idx), nbus=len(bus_idx))
+        data = BatteryData(nbatt=len(batt_idx), nbus=len(bus_idx))
 
-        nc.battery_names = self.battery_names[batt_idx]
-        nc.battery_active = self.battery_active[batt_idx]
-        nc.battery_controllable = self.battery_controllable[batt_idx]
-        nc.battery_p = self.battery_p[batt_idx]
-        nc.battery_pf = self.battery_pf[batt_idx]
-        nc.battery_v = self.battery_v[batt_idx]
-        nc.battery_qmin = self.battery_qmin[batt_idx]
-        nc.battery_qmax = self.battery_qmax[batt_idx]
+        data.battery_names = self.battery_names[batt_idx]
+        data.battery_active = self.battery_active[batt_idx]
+        data.battery_controllable = self.battery_controllable[batt_idx]
+        data.battery_p = self.battery_p[batt_idx]
+        data.battery_pf = self.battery_pf[batt_idx]
+        data.battery_v = self.battery_v[batt_idx]
+        data.battery_qmin = self.battery_qmin[batt_idx]
+        data.battery_qmax = self.battery_qmax[batt_idx]
 
-        nc.C_bus_batt = self.C_bus_batt[np.ix_(bus_idx, batt_idx)]
+        data.C_bus_batt = self.C_bus_batt[np.ix_(bus_idx, batt_idx)]
 
-        return nc
+        return data
 
     def get_island(self, bus_idx):
         return tp.get_elements_of_the_island(self.C_bus_batt.T, bus_idx)
@@ -88,3 +88,45 @@ class BatteryData:
 
     def __len__(self):
         return self.nbatt
+
+
+class BatteryTimeData(BatteryData):
+
+    def __init__(self, nbatt, nbus, ntime):
+        BatteryData.__init__(self, nbatt, nbus)
+
+        self.ntime = ntime
+
+        self.battery_active = np.zeros((ntime, nbatt), dtype=bool)
+        self.battery_p = np.zeros((ntime, nbatt))
+        self.battery_pf = np.zeros((ntime, nbatt))
+        self.battery_v = np.zeros((ntime, nbatt))
+
+    def slice_time(self, batt_idx, bus_idx, time_idx):
+        """
+
+        :param batt_idx:
+        :param bus_idx:
+        :param time_idx:
+        :return:
+        """
+        data = BatteryTimeData(nbatt=len(batt_idx), nbus=len(bus_idx), ntime=len(time_idx))
+
+        data.battery_names = self.battery_names[batt_idx]
+
+        data.battery_active = self.battery_active[np.ix_(time_idx, batt_idx)]
+        data.battery_p = self.battery_p[np.ix_(time_idx, batt_idx)]
+        data.battery_pf = self.battery_pf[np.ix_(time_idx, batt_idx)]
+        data.battery_v = self.battery_v[np.ix_(time_idx, batt_idx)]
+
+        data.battery_controllable = self.battery_controllable[batt_idx]
+
+        data.battery_qmin = self.battery_qmin[batt_idx]
+        data.battery_qmax = self.battery_qmax[batt_idx]
+
+        data.C_bus_batt = self.C_bus_batt[np.ix_(bus_idx, batt_idx)]
+
+        return data
+
+    def get_injections_per_bus(self):
+        return self.C_bus_batt * (self.get_injections() * self.battery_active).T

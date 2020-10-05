@@ -88,3 +88,43 @@ class GeneratorData:
 
     def __len__(self):
         return self.ngen
+
+
+class GeneratorTimeData(GeneratorData):
+
+    def __init__(self, ngen, nbus, ntime):
+        GeneratorData.__init__(self, ngen, nbus)
+
+        self.ntime = ntime
+
+        self.generator_active = np.zeros((ntime, ngen), dtype=bool)
+        self.generator_p = np.zeros((ntime, ngen))
+        self.generator_pf = np.zeros((ntime, ngen))
+        self.generator_v = np.zeros((ntime, ngen))
+
+    def slice_time(self, gen_idx, bus_idx, time_idx):
+        """
+
+        :param gen_idx:
+        :param bus_idx:
+        :param time_idx:
+        :return:
+        """
+        data = GeneratorTimeData(ngen=len(gen_idx), nbus=len(bus_idx), ntime=len(time_idx))
+
+        data.generator_names = self.generator_names[gen_idx]
+        data.generator_controllable = self.generator_controllable[gen_idx]
+        data.generator_qmin = self.generator_qmin[gen_idx]
+        data.generator_qmax = self.generator_qmax[gen_idx]
+
+        data.generator_active = self.generator_active[np.ix_(time_idx, gen_idx)]
+        data.generator_p = self.generator_p[np.ix_(time_idx, gen_idx)]
+        data.generator_pf = self.generator_pf[np.ix_(time_idx, gen_idx)]
+        data.generator_v = self.generator_v[np.ix_(time_idx, gen_idx)]
+
+        data.C_bus_gen = self.C_bus_gen[np.ix_(bus_idx, gen_idx)]
+
+        return data
+
+    def get_injections_per_bus(self):
+        return self.C_bus_gen * (self.get_injections() * self.generator_active).T

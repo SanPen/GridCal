@@ -58,3 +58,32 @@ class ShuntData:
 
     def __len__(self):
         return self.nshunt
+
+
+class ShuntTimeData(ShuntData):
+
+    def __init__(self, nshunt, nbus, ntime):
+        ShuntData.__init__(self, nshunt, nbus)
+        self.ntime = ntime
+
+        self.shunt_active = np.zeros((ntime, nshunt), dtype=bool)
+        self.shunt_admittance = np.zeros((ntime, nshunt), dtype=complex)
+
+    def slice_time(self, shunt_idx, bus_idx, time_idx):
+        """
+
+        :param shunt_idx:
+        :param bus_idx:
+        :param time_idx:
+        :return:
+        """
+        data = ShuntTimeData(nshunt=len(shunt_idx), nbus=len(bus_idx), ntime=len(time_idx))
+
+        data.shunt_names = self.shunt_names[shunt_idx]
+
+        data.shunt_active = self.shunt_active[np.ix_(time_idx, shunt_idx)]
+        data.shunt_admittance = self.shunt_admittance[np.ix_(time_idx, shunt_idx)]
+
+        data.C_bus_shunt = self.C_bus_shunt[np.ix_(bus_idx, shunt_idx)]
+
+        return data

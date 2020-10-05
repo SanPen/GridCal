@@ -21,14 +21,16 @@ class BranchData:
 
     def __init__(self, nbr, nbus):
         """
-
-        :param nbr:
-        :param nbus:
+        Branch data arrays
+        :param nbr: number of branches
+        :param nbus: number of buses
         """
         self.nbr = nbr
 
         self.branch_names = np.empty(self.nbr, dtype=object)
         self.branch_active = np.zeros(self.nbr, dtype=int)
+        self.branch_rates = np.zeros(self.nbr, dtype=float)
+
         self.F = np.zeros(self.nbr, dtype=int)  # indices of the "from" buses
         self.T = np.zeros(self.nbr, dtype=int)  # indices of the "to" buses
 
@@ -57,21 +59,22 @@ class BranchData:
         self.Kdp = np.ones(self.nbr)
         self.control_mode = np.zeros(self.nbr, dtype=object)
 
-        self.branch_rates = np.zeros(self.nbr, dtype=float)
         self.C_branch_bus_f = sp.lil_matrix((self.nbr, nbus), dtype=int)  # connectivity branch with their "from" bus
         self.C_branch_bus_t = sp.lil_matrix((self.nbr, nbus), dtype=int)  # connectivity branch with their "to" bus
 
     def slice(self, br_idx, bus_idx):
         """
-
-        :param br_idx:
-        :param bus_idx:
-        :return:
+        Slice this class
+        :param br_idx: branch indices
+        :param bus_idx: bus indices
+        :return: new BranchData instance
         """
         data = BranchData(nbr=len(br_idx), nbus=len(bus_idx))
 
         data.branch_names = self.branch_names[br_idx]
         data.branch_active = self.branch_active[br_idx]
+        data.branch_rates = self.branch_rates[br_idx]
+
         data.F = self.F[br_idx]
         data.T = self.T[br_idx]
 
@@ -95,7 +98,6 @@ class BranchData:
         data.Kdp = self.Kdp[br_idx]
         data.control_mode = self.control_mode[br_idx]
 
-        data.branch_rates = self.branch_rates[br_idx]
         data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(br_idx, bus_idx)]
         data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(br_idx, bus_idx)]
 
@@ -103,11 +105,70 @@ class BranchData:
 
     def get_island(self, bus_idx):
         """
-
-        :param bus_idx:
-        :return:
+        get the array of branch indices that belong to the islands given by the bus indices
+        :param bus_idx: array of bus indices
+        :return: array of island branch indices
         """
         return tp.get_elements_of_the_island(self.C_branch_bus_f + self.C_branch_bus_t, bus_idx)
 
     def __len__(self):
         return self.nbr
+
+
+class BranchTimeData(BranchData):
+
+    def __init__(self, nbr, nbus, ntime):
+        """
+        Branch data arrays
+        :param nbr: number of branches
+        :param nbus: number of buses
+        :param ntime: number of time steps
+        """
+        BranchData.__init__(self, nbr, nbus)
+
+        self.ntime = ntime
+
+        self.branch_active = np.zeros((ntime, self.nbr), dtype=int)
+        self.branch_rates = np.zeros((ntime, self.nbr), dtype=float)
+
+    def slice_time(self, br_idx, bus_idx, time_idx):
+        """
+
+        :param br_idx:
+        :param bus_idx:
+        :param time_idx:
+        :return:
+        """
+        data = BranchTimeData(nbr=len(br_idx), nbus=len(bus_idx), ntime=len(time_idx))
+
+        data.branch_names = self.branch_names[br_idx]
+        data.branch_active = self.branch_active[np.ix_(time_idx, br_idx)]
+        data.branch_rates = self.branch_rates[np.ix_(time_idx, br_idx)]
+
+        data.F = self.F[br_idx]
+        data.T = self.T[br_idx]
+
+        data.R = self.R[br_idx]
+        data.X = self.X[br_idx]
+        data.G = self.G[br_idx]
+        data.B = self.B[br_idx]
+        data.m = self.m[br_idx]
+        data.k = self.k[br_idx]
+        data.theta = self.theta[br_idx]
+        data.Beq = self.Beq[br_idx]
+        data.G0 = self.G0[br_idx]
+
+        data.tap_t = self.tap_f[br_idx]
+        data.tap_f = self.tap_t[br_idx]
+
+        data.Pset = self.Pset[br_idx]
+        data.Qset = self.Qset[br_idx]
+        data.vf_set = self.vf_set[br_idx]
+        data.vt_set = self.vt_set[br_idx]
+        data.Kdp = self.Kdp[br_idx]
+        data.control_mode = self.control_mode[br_idx]
+
+        data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(br_idx, bus_idx)]
+        data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(br_idx, bus_idx)]
+
+        return data

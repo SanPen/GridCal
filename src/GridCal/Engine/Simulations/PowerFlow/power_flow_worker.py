@@ -318,8 +318,8 @@ def outer_loop_power_flow(circuit: SnapshotCircuit, options: PowerFlowOptions,
     """
 
     # get the original types and compile this class' own lists of node types for thread independence
-    original_types = circuit.bus_data.bus_types.copy()
-    bus_types = circuit.bus_data.bus_types.copy()
+    original_types = circuit.bus_types.copy()
+    bus_types = circuit.bus_types.copy()
     # vd, pq, pv, pqpv = compile_types(Sbus, original_types, logger)
 
     vd = circuit.vd.copy()
@@ -328,9 +328,9 @@ def outer_loop_power_flow(circuit: SnapshotCircuit, options: PowerFlowOptions,
     pqpv = circuit.pqpv.copy()
 
     # copy the tap positions
-    tap_positions = circuit.transformer_data.tr_tap_position.copy()
+    tap_positions = circuit.tr_tap_position.copy()
 
-    tap_module = circuit.transformer_data.tr_tap_mod
+    tap_module = circuit.tr_tap_mod
 
     # control flags
     any_q_control_issue = True
@@ -395,10 +395,10 @@ def outer_loop_power_flow(circuit: SnapshotCircuit, options: PowerFlowOptions,
             if options.distributed_slack:
                 # Distribute the slack power
                 slack_power = Scalc[vd].real.sum()
-                total_installed_power = circuit.bus_data.bus_installed_power.sum()
+                total_installed_power = circuit.bus_installed_power.sum()
 
                 if total_installed_power > 0.0:
-                    delta = slack_power * circuit.bus_data.bus_installed_power / total_installed_power
+                    delta = slack_power * circuit.bus_installed_power / total_installed_power
 
                     # repeat power flow with the redistributed power
                     voltage_solution, converged, normF, Scalc, it2, el2 = solve(options=options,
@@ -477,30 +477,30 @@ def outer_loop_power_flow(circuit: SnapshotCircuit, options: PowerFlowOptions,
 
                     stable, tap_module, \
                     tap_positions = control_taps_direct(voltage=voltage_solution,
-                                                        T=circuit.branch_data.T,
-                                                        bus_to_regulated_idx=circuit.transformer_data.tr_bus_to_regulated_idx,
+                                                        T=circuit.T,
+                                                        bus_to_regulated_idx=circuit.tr_bus_to_regulated_idx,
                                                         tap_position=tap_positions,
                                                         tap_module=tap_module,
-                                                        min_tap=circuit.transformer_data.tr_min_tap,
-                                                        max_tap=circuit.transformer_data.tr_max_tap,
-                                                        tap_inc_reg_up=circuit.transformer_data.tr_tap_inc_reg_up,
-                                                        tap_inc_reg_down=circuit.transformer_data.tr_tap_inc_reg_down,
-                                                        vset=circuit.transformer_data.tr_vset,
+                                                        min_tap=circuit.tr_min_tap,
+                                                        max_tap=circuit.tr_max_tap,
+                                                        tap_inc_reg_up=circuit.tr_tap_inc_reg_up,
+                                                        tap_inc_reg_down=circuit.tr_tap_inc_reg_down,
+                                                        vset=circuit.tr_vset,
                                                         verbose=options.verbose)
 
                 elif options.control_taps == TapsControlMode.Iterative:
 
                     stable, tap_module, \
                     tap_positions = control_taps_iterative(voltage=voltage_solution,
-                                                           T=circuit.branch_data.T,
-                                                           bus_to_regulated_idx=circuit.transformer_data.tr_bus_to_regulated_idx,
+                                                           T=circuit.T,
+                                                           bus_to_regulated_idx=circuit.tr_bus_to_regulated_idx,
                                                            tap_position=tap_positions,
                                                            tap_module=tap_module,
-                                                           min_tap=circuit.transformer_data.tr_min_tap,
-                                                           max_tap=circuit.transformer_data.tr_max_tap,
-                                                           tap_inc_reg_up=circuit.transformer_data.tr_tap_inc_reg_up,
-                                                           tap_inc_reg_down=circuit.transformer_data.tr_tap_inc_reg_down,
-                                                           vset=circuit.transformer_data.tr_vset,
+                                                           min_tap=circuit.tr_min_tap,
+                                                           max_tap=circuit.tr_max_tap,
+                                                           tap_inc_reg_up=circuit.tr_tap_inc_reg_up,
+                                                           tap_inc_reg_down=circuit.tr_tap_inc_reg_down,
+                                                           vset=circuit.tr_vset,
                                                            verbose=options.verbose)
 
                 if not stable:
@@ -530,10 +530,10 @@ def outer_loop_power_flow(circuit: SnapshotCircuit, options: PowerFlowOptions,
                                m=circuit.nbr,
                                n_tr=circuit.ntr,
                                n_hvdc=circuit.nhvdc,
-                               bus_names=circuit.bus_data.bus_names,
-                               branch_names=circuit.branch_data.branch_names,
-                               transformer_names=circuit.transformer_data.tr_names,
-                               hvdc_names=circuit.hvdc_data.hvdc_names,
+                               bus_names=circuit.bus_names,
+                               branch_names=circuit.branch_names,
+                               transformer_names=circuit.tr_names,
+                               hvdc_names=circuit.hvdc_names,
                                bus_types=bus_types)
     results.Sbus = Scalc
     results.voltage = voltage_solution
@@ -548,9 +548,9 @@ def outer_loop_power_flow(circuit: SnapshotCircuit, options: PowerFlowOptions,
     results.Qpv = Sbus.imag[pv]
 
     # compile HVDC results
-    results.hvdc_sent_power = circuit.hvdc_data.hvdc_Pf
-    results.hvdc_loading = circuit.hvdc_data.get_loading()
-    results.hvdc_losses = circuit.hvdc_data.get_losses()
+    results.hvdc_sent_power = circuit.hvdc_Pf
+    results.hvdc_loading = circuit.hvdc_loading
+    results.hvdc_losses = circuit.hvdc_losses
 
     return results
 
@@ -776,8 +776,8 @@ def power_flow_post_process(calculation_inputs: SnapshotCircuit, Sbus, V, branch
     Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
 
     # Branches current, loading, etc
-    Vf = calculation_inputs.branch_data.C_branch_bus_f * V
-    Vt = calculation_inputs.branch_data.C_branch_bus_t * V
+    Vf = calculation_inputs.Cf * V
+    Vt = calculation_inputs.Ct * V
     If = calculation_inputs.Yf * V
     It = calculation_inputs.Yt * V
     Sf = Vf * np.conj(If)

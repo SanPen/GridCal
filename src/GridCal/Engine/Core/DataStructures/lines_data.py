@@ -62,3 +62,11 @@ class LinesData:
 
     def __len__(self):
         return self.nline
+
+
+class LinesTimeData(LinesData):
+
+    def __init__(self, nline, nbus, ntime):
+        LinesData.__init__(self, nline, nbus)
+
+        self.ntime = ntime

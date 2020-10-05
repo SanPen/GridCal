@@ -36,15 +36,18 @@ class SnapshotCircuit:
     def __init__(self, nbus, nline, ndcline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase):
         """
 
-        :param nbus: number of buses
-        :param nline: number of lines
-        :param ntr: number of transformers
+        :param nbus:
+        :param nline:
+        :param ndcline:
+        :param ntr:
         :param nvsc:
         :param nhvdc:
         :param nload:
         :param ngen:
         :param nbatt:
         :param nshunt:
+        :param nstagen:
+        :param sbase:
         """
 
         self.nbus = nbus
@@ -63,7 +66,7 @@ class SnapshotCircuit:
 
         self.Sbase = sbase
 
-        # ---------------------------------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------------------------------
         # Data structures
         # --------------------------------------------------------------------------------------------------------------
         self.bus_data = BusData(nbus=nbus)
@@ -79,7 +82,7 @@ class SnapshotCircuit:
         self.generator_data = GeneratorData(ngen=ngen, nbus=nbus)
         self.shunt_data = ShuntData(nshunt=nshunt, nbus=nbus)
 
-        #---------------------------------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------------------------------
         # Results
         # --------------------------------------------------------------------------------------------------------------
 
@@ -116,8 +119,14 @@ class SnapshotCircuit:
         self.original_branch_idx = np.arange(self.nbr)
         self.original_line_idx = np.arange(self.nline)
         self.original_tr_idx = np.arange(self.ntr)
+        self.original_dc_line_idx = np.arange(self.ndcline)
+        self.original_vsc_idx = np.arange(self.nvsc)
+        self.original_hvdc_idx = np.arange(self.nhvdc)
         self.original_gen_idx = np.arange(self.ngen)
         self.original_bat_idx = np.arange(self.nbatt)
+        self.original_load_idx = np.arange(self.nload)
+        self.original_stagen_idx = np.arange(self.nstagen)
+        self.original_shunt_idx = np.arange(self.nshunt)
 
         self.pq_ = None
         self.pv_ = None
@@ -159,7 +168,7 @@ class SnapshotCircuit:
         """
 
         # load
-        Sbus = - self.load_data.get_injections_per_bus()  # MW
+        Sbus = self.load_data.get_injections_per_bus()  # MW (negative already)
 
         # static generators
         Sbus += self.static_generator_data.get_injections_per_bus()
@@ -203,8 +212,14 @@ class SnapshotCircuit:
         self.original_branch_idx = np.arange(self.nbr)
         self.original_line_idx = np.arange(self.nline)
         self.original_tr_idx = np.arange(self.ntr)
+        self.original_dc_line_idx = np.arange(self.ndcline)
+        self.original_vsc_idx = np.arange(self.nvsc)
+        self.original_hvdc_idx = np.arange(self.nhvdc)
         self.original_gen_idx = np.arange(self.ngen)
         self.original_bat_idx = np.arange(self.nbatt)
+        self.original_load_idx = np.arange(self.nload)
+        self.original_stagen_idx = np.arange(self.nstagen)
+        self.original_shunt_idx = np.arange(self.nshunt)
 
         self.branch_data.C_branch_bus_f = self.branch_data.C_branch_bus_f.tocsc()
         self.branch_data.C_branch_bus_t = self.branch_data.C_branch_bus_t.tocsc()
@@ -295,13 +310,89 @@ class SnapshotCircuit:
 
         # compute on demand and store
         if self.Yshunt_from_devices_ is None:
-            self.Yshunt_from_devices_ = self.shunt_data.get_injections_per_bus() / self.Sbus
+            self.Yshunt_from_devices_ = self.shunt_data.get_injections_per_bus() / self.Sbase
 
         return self.Yshunt_from_devices_
 
     @property
     def bus_types(self):
         return self.bus_data.bus_types
+
+    @property
+    def bus_installed_power(self):
+        return self.bus_data.bus_installed_power
+
+    @property
+    def bus_names(self):
+        return self.bus_data.bus_names
+
+    @property
+    def branch_names(self):
+        return self.branch_data.branch_names
+
+    @property
+    def tr_names(self):
+        return self.transformer_data.tr_names
+
+    @property
+    def hvdc_names(self):
+        return self.hvdc_data.hvdc_names
+
+    @property
+    def tr_tap_position(self):
+        return self.transformer_data.tr_tap_position
+
+    @property
+    def tr_tap_mod(self):
+        return self.transformer_data.tr_tap_mod
+
+    @property
+    def tr_bus_to_regulated_idx(self):
+        return self.transformer_data.tr_bus_to_regulated_idx
+
+    @property
+    def tr_max_tap(self):
+        return self.transformer_data.tr_max_tap
+
+    @property
+    def tr_min_tap(self):
+        return self.transformer_data.tr_min_tap
+
+    @property
+    def tr_tap_inc_reg_up(self):
+        return self.transformer_data.tr_tap_inc_reg_up
+
+    @property
+    def tr_tap_inc_reg_down(self):
+        return self.transformer_data.tr_tap_inc_reg_down
+
+    @property
+    def tr_vset(self):
+        return self.transformer_data.tr_vset
+
+    @property
+    def F(self):
+        return self.branch_data.F
+
+    @property
+    def T(self):
+        return self.branch_data.T
+
+    @property
+    def branch_rates(self):
+        return self.branch_data.branch_rates
+
+    @property
+    def hvdc_Pf(self):
+        return self.hvdc_data.hvdc_Pf
+
+    @property
+    def hvdc_loading(self):
+        return self.hvdc_data.get_loading()
+
+    @property
+    def hvdc_losses(self):
+        return self.hvdc_data.get_losses()
 
     @property
     def Cf(self):
@@ -369,7 +460,7 @@ class SnapshotCircuit:
     def Yseries(self):
 
         # compute admittances on demand
-        if self.Ybus_ is None:
+        if self.Yseries_ is None:
 
             self.Yseries_, self.Yshunt_ = ycalc.compute_split_admittances(R=self.branch_data.R,
                                                                           X=self.branch_data.X,
@@ -389,7 +480,7 @@ class SnapshotCircuit:
                                                                           b=self.branch_data.b,
                                                                           c=self.branch_data.c,
                                                                           Yshunt_bus=self.Yshunt_from_devices)
-        return self.Ybus_
+        return self.Yseries_
 
     @property
     def Yshunt(self):
@@ -684,13 +775,19 @@ def get_pf_island(circuit: SnapshotCircuit, bus_idx) -> "SnapshotCircuit":
                          nstagen=len(stagen_idx),
                          sbase=circuit.Sbase)
 
+    # set the original indices
     nc.original_bus_idx = bus_idx
     nc.original_branch_idx = br_idx
-
     nc.original_line_idx = line_idx
     nc.original_tr_idx = tr_idx
+    nc.original_dc_line_idx = dc_line_idx
+    nc.original_vsc_idx = vsc_idx
+    nc.original_hvdc_idx = hvdc_idx
     nc.original_gen_idx = gen_idx
     nc.original_bat_idx = batt_idx
+    nc.original_load_idx = load_idx
+    nc.original_stagen_idx = stagen_idx
+    nc.original_shunt_idx = shunt_idx
 
     # slice data
     nc.bus_data = circuit.bus_data.slice(bus_idx)

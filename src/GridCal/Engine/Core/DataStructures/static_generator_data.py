@@ -57,3 +57,36 @@ class StaticGeneratorData:
 
     def __len__(self):
         return self.nstagen
+
+
+class StaticGeneratorTimeData(StaticGeneratorData):
+
+    def __init__(self, nstagen, nbus, ntime):
+        StaticGeneratorData.__init__(self, nstagen, nbus)
+        self.ntime = ntime
+
+        self.static_generator_active = np.zeros((ntime, nstagen), dtype=bool)
+        self.static_generator_s = np.zeros((ntime, nstagen), dtype=complex)
+
+    def slice_time(self, nstagen_idx, bus_idx, time_idx):
+        """
+
+        :param nstagen_idx:
+        :param bus_idx:
+        :param time_idx:
+        :return:
+        """
+        data = StaticGeneratorTimeData(nstagen=len(nstagen_idx), nbus=len(bus_idx), ntime=len(time_idx))
+
+        data.load_names = self.static_generator_names[nstagen_idx]
+
+        data.static_generator_active = self.static_generator_active[np.ix_(time_idx, nstagen_idx)]
+        data.static_generator_s = self.static_generator_s[np.ix_(time_idx, nstagen_idx)]
+
+        data.C_bus_static_generator = self.C_bus_static_generator[np.ix_(bus_idx, nstagen_idx)]
+
+        return data
+
+    def get_injections_per_bus(self):
+        return self.C_bus_static_generator * (self.static_generator_s * self.static_generator_active).T
+

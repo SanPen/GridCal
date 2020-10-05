@@ -58,3 +58,35 @@ class LoadData:
 
     def __len__(self):
         return self.nload
+
+
+class LoadTimeData(LoadData):
+
+    def __init__(self, nload, nbus, ntime):
+        LoadData.__init__(self, nload, nbus)
+        self.ntime = ntime
+
+        self.load_active = np.zeros((ntime, nload), dtype=bool)
+        self.load_s = np.zeros((ntime, nload), dtype=complex)
+
+    def slice_time(self, load_idx, bus_idx, time_idx):
+        """
+
+        :param load_idx:
+        :param bus_idx:
+        :param time_idx:
+        :return:
+        """
+        data = LoadTimeData(nload=len(load_idx), nbus=len(bus_idx), ntime=len(time_idx))
+
+        data.load_names = self.load_names[load_idx]
+
+        data.load_active = self.load_active[np.ix_(time_idx, load_idx)]
+        data.load_s = self.load_s[np.ix_(time_idx, load_idx)]
+
+        data.C_bus_load = self.C_bus_load[np.ix_(bus_idx, load_idx)]
+
+        return data
+
+    def get_injections_per_bus(self):
+        return - self.C_bus_load * (self.load_s * self.load_active).T

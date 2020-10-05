@@ -80,3 +80,11 @@ class DcLinesData:
 
     def __len__(self):
         return self.ndcline
+
+
+class DcLinesTimeData(DcLinesData):
+
+    def __init__(self, ndcline, nbus, ntime):
+        DcLinesData.__init__(self, ndcline, nbus)
+
+        self.ntime = ntime

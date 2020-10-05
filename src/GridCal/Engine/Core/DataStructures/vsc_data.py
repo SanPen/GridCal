@@ -81,3 +81,11 @@ class VscData:
 
     def __len__(self):
         return self.nvsc
+
+
+class VscTimeData(VscData):
+
+    def __init__(self, nvsc, nbus, ntime):
+        VscData.__init__(self, nvsc, nbus)
+
+        self.ntime = ntime

@@ -22,7 +22,7 @@ class TransformerData:
     def __init__(self, ntr, nbus):
         """
 
-        :param nbr:
+        :param ntr:
         :param nbus:
         """
         self.ntr = ntr
@@ -52,7 +52,7 @@ class TransformerData:
     def slice(self, tr_idx, bus_idx):
         """
 
-        :param br_idx:
+        :param tr_idx:
         :param bus_idx:
         :return:
         """
@@ -90,3 +90,10 @@ class TransformerData:
 
     def __len__(self):
         return self.ntr
+
+
+class TransformerTimeData(TransformerData):
+
+    def __init__(self, ntr, nbus, ntime):
+        TransformerData.__init__(self, ntr, nbus)
+        self.ntime = ntime
