@@ -15,6 +15,7 @@
 
 import numpy as np
 import pandas as pd
+import numba as nb
 import time
 from warnings import warn
 import scipy.sparse as sp
@@ -25,18 +26,52 @@ from matplotlib import pyplot as plt
 from GridCal.Engine import *
 
 
-def make_ptdf(circuit: SnapshotCircuit, distribute_slack=True):
+def Jacobian(Ybus, V, Ibus, pq, pvpq):
     """
+    Computes the system Jacobian matrix in polar coordinates
+    Args:
+        Ybus: Admittance matrix
+        V: Array of nodal voltages
+        Ibus: Array of nodal current injections
+        pq: Array with the indices of the PQ buses
+        pvpq: Array with the indices of the PV and PQ buses
 
-    :param circuit:
-    :return:
+    Returns:
+        The system Jacobian matrix
     """
-    Bbus, Bf, reactances = circuit.get_linear_matrices()
+    I = Ybus * V - Ibus
+    Vdiag = sp.diags(V)
+    Idiag = sp.diags(I)
+    Ediag = sp.diags(V / np.abs(V))
 
-    n = circuit.nbus
-    nbi = n
-    noref = np.arange(1, n)
-    noslack = circuit.pqpv
+    dS_dVm = Vdiag * np.conj(Ybus * Ediag) + np.conj(Idiag) * Ediag
+    dS_dVa = 1.0j * Vdiag * np.conj(Idiag - Ybus * Vdiag)
+
+    J = sp.vstack([sp.hstack([dS_dVa[np.ix_(pvpq, pvpq)].real, dS_dVm[np.ix_(pvpq, pq)].real]),
+                   sp.hstack([dS_dVa[np.ix_(pq, pvpq)].imag,   dS_dVm[np.ix_(pq, pq)].imag])], format="csc")
+
+    return J
+
+
+def compute_acptdf(Ybus, Yf, Yt, Cf, V, Ibus, pq, pv, distribute_slack):
+    """
+    Compute the AC-PTDF
+    :param Ybus: admittance matrix
+    :param Yf: Admittance matrix of the buses "from"
+    :param Yt: Admittance matrix of the buses "to"
+    :param Cf: Connectivity branch - bus "from"
+    :param V: voltages array
+    :param Ibus: array of currents
+    :param pq: array of pq node indices
+    :param pv: array of pv node indices
+    :return: AC-PTDF matrix (branches, buses)
+    """
+    n = len(V)
+    pvpq = np.r_[pv, pq]
+    npq = len(pq)
+
+    # compute the Jacobian
+    J = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
     if distribute_slack:
         dP = np.ones((n, n)) * (-1 / (n - 1))
@@ -45,15 +80,35 @@ def make_ptdf(circuit: SnapshotCircuit, distribute_slack=True):
     else:
         dP = np.eye(n, n)
 
-    # compute the reduced susceptance matrix
-    Bref = Bbus[noslack, :][:, noref].tocsc()
+    # compose the compatible array (the Q increments are considered zero
+    dQ = np.zeros((npq, n))
+    # dQ = np.eye(n, n)[pq, :]
+    dS = np.r_[dP[pvpq, :], dQ]
 
-    # solve for change in voltage angles
-    dthetha_red = spsolve(Bref,  dP[noslack, :])  # pass to array because it is a full matrix
+    # solve the voltage increments
+    dx = spsolve(J, dS)
 
-    # compute the PTDF matrix (H)
-    theta = np.vstack((np.zeros(nbi), dthetha_red))
-    PTDF = Bf * theta
+    # compute branch derivatives
+    If = Yf * V
+    E = V / np.abs(V)
+    Vdiag = sp.diags(V)
+    Vdiag_conj = sp.diags(np.conj(V))
+    Ediag = sp.diags(E)
+    Ediag_conj = sp.diags(np.conj(E))
+    If_diag_conj = sp.diags(np.conj(If))
+
+    Yf_conj = Yf.copy()
+    Yf_conj.data = np.conj(Yf_conj.data)
+    Yt_conj = Yt.copy()
+    Yt_conj.data = np.conj(Yt_conj.data)
+
+    dSf_dVa = 1j * (If_diag_conj * Cf * Vdiag - sp.diags(Cf * V) * Yf_conj * Vdiag_conj)
+    dSf_dVm = If_diag_conj * Cf * Ediag - sp.diags(Cf * V) * Yf_conj * Ediag_conj
+
+    # compose the final AC-PTDF
+    dPf_dVa = dSf_dVa.real[:, pvpq]
+    dPf_dVm = dSf_dVm.real[:, pq]
+    PTDF = sp.hstack((dPf_dVa, dPf_dVm)) * dx
 
     return PTDF
 
@@ -211,7 +266,18 @@ def check_lodf(grid: MultiCircuit):
     islands = split_into_islands(nc)
     circuit = islands[0]
 
-    PTDF = make_ptdf(circuit, distribute_slack=False)
+    pf_driver = PowerFlowDriver(grid, PowerFlowOptions())
+    pf_driver.run()
+
+    PTDF = compute_acptdf(Ybus=circuit.Ybus,
+                          Yf=circuit.Yf,
+                          Yt=circuit.Yt,
+                          Cf=circuit.C_branch_bus_f,
+                          V=pf_driver.results.voltage,
+                          Ibus=circuit.Ibus,
+                          pq=circuit.pq,
+                          pv=circuit.pv,
+                          distribute_slack=True)
     LODF = make_lodf(circuit, PTDF)
 
     Pbus = circuit.get_injections(False).real
@@ -225,6 +291,33 @@ def check_lodf(grid: MultiCircuit):
         flows_n1[:, c] = flows_n[:] + LODF[:, c] * flows_n[c]
 
     return flows_n, flows_n1_nr, flows_n1
+
+
+def test_ptdf(grid):
+    """
+    Sigma-distances test
+    :param grid:
+    :return:
+    """
+    nc = compile_snapshot_circuit(grid)
+    islands = split_into_islands(nc)
+    inputs = islands[0]  # pick the first island
+
+    pf_driver = PowerFlowDriver(grid, PowerFlowOptions())
+    pf_driver.run()
+
+    PTDF = compute_acptdf(Ybus=inputs.Ybus,
+                          Yf=inputs.Yf,
+                          Yt=inputs.Yt,
+                          Cf=inputs.C_branch_bus_f,
+                          V=pf_driver.results.voltage,
+                          Ibus=inputs.Ibus,
+                          pq=inputs.pq,
+                          pv=inputs.pv,
+                          distribute_slack=False)
+
+    print('PTDF:')
+    print(PTDF)
 
 
 if __name__ == '__main__':
@@ -241,25 +334,31 @@ if __name__ == '__main__':
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
     # fname = 'helm_data1.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14 PQ only.gridcal'
     # fname = 'IEEE 14 PQ only full.gridcal'
-    # fname = '/home/santi/Descargas/matpower-fubm-master/data/case5.m'
+    fname = '/home/santi/Descargas/matpower-fubm-master/data/case5.m'
     # fname = '/home/santi/Descargas/matpower-fubm-master/data/case30.m'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/PGOC_6bus.gridcal'
     grid_ = FileOpen(fname).open()
 
-    # test_voltage(grid=grid)
-
-    # test_sigma(grid=grid)
+    test_ptdf(grid_)
     name = os.path.splitext(fname.split(os.sep)[-1])[0]
-    method = 'PTDF'
+    method = 'ACPTDF (Jacobian, V=Vpf)'
     nc_ = compile_snapshot_circuit(grid_)
     islands_ = split_into_islands(nc_)
     circuit_ = islands_[0]
 
-    H_ = make_ptdf(circuit_, distribute_slack=False)
+    H_ = compute_acptdf(Ybus=circuit_.Ybus,
+                        Yf=circuit_.Yf,
+                        Yt=circuit_.Yt,
+                        Cf=circuit_.C_branch_bus_f,
+                        V=circuit_.Vbus,
+                        Ibus=circuit_.Ibus,
+                        pq=circuit_.pq,
+                        pv=circuit_.pv,
+                        distribute_slack=False)
     LODF_ = make_lodf(circuit_, H_)
 
     if H_.shape[0] < 50:
@@ -329,6 +428,8 @@ if __name__ == '__main__':
         ax1.set_title('Newton-Raphson flows')
         ax2.set_title('PTDF flows')
         ax3.set_title('Difference')
+
         fig.savefig(title + '.png')
 
     plt.show()
+
