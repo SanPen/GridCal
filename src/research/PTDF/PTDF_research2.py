@@ -170,7 +170,7 @@ def multiple_failure(flows, LODF, failed_idx):
     # normal flows of the failed lines indicated by failed_idx
     F = flows[failed_idx]
 
-    # Affected flows after failing the lines indicated by failed_idx
+    # Affected flows of the failed lines that will be shared among the others
     Ff = np.linalg.solve(M, F)
 
     # flow delta in the line alpha after the multiple contingency of the lines indicated by failed_idx
@@ -238,10 +238,10 @@ if __name__ == '__main__':
     pd.set_option('display.width', 1000)
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE14_from_raw.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
     # fname = 'helm_data1.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14 PQ only.gridcal'
     # fname = 'IEEE 14 PQ only full.gridcal'
@@ -269,9 +269,14 @@ if __name__ == '__main__':
     flows_n_, flows_n1_nr_, flows_n1_ = check_lodf(grid_)
 
     # in the case of the grid PGOC_6bus
+    # flows_multiple = multiple_failure(flows=flows_n_,
+    #                                   LODF=LODF_,
+    #                                   failed_idx=[1, 5])  # failed lines 2 and 6
+
     flows_multiple = multiple_failure(flows=flows_n_,
                                       LODF=LODF_,
-                                      failed_idx=[1, 5])  # failed lines 2 and 6
+                                      failed_idx=[1, 2])
+    print('Linear contingency flows:\n', flows_multiple)
 
     Pn1_nr_df = pd.DataFrame(data=flows_n1_nr_, index=nc_.branch_names, columns=nc_.branch_names)
     flows_n1_df = pd.DataFrame(data=flows_n1_, index=nc_.branch_names, columns=nc_.branch_names)
