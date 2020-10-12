@@ -272,24 +272,24 @@ class OpfDcTimeSeries(OpfTimeSeries):
         Pb_max = self.numerical_circuit.battery_pmax / Sbase
         Pb_min = self.numerical_circuit.battery_pmin / Sbase
         Efficiency = (self.numerical_circuit.battery_discharge_efficiency + self.numerical_circuit.battery_charge_efficiency) / 2.0
-        cost_b = self.numerical_circuit.battery_cost[a:b, :].transpose()
+        cost_b = self.numerical_circuit.battery_cost[:, a:b]
 
         # generator
         Pg_max = self.numerical_circuit.generator_pmax / Sbase
         Pg_min = self.numerical_circuit.generator_pmin / Sbase
-        P_profile = self.numerical_circuit.generator_p[a:b, :].transpose() / Sbase
-        cost_g = self.numerical_circuit.generator_cost[a:b, :].transpose()
+        P_profile = self.numerical_circuit.generator_p[:, a:b] / Sbase
+        cost_g = self.numerical_circuit.generator_cost[:, a:b]
         enabled_for_dispatch = self.numerical_circuit.generator_dispatchable
 
         # load
-        Pl = (self.numerical_circuit.load_active[a:b, :] * self.numerical_circuit.load_s.real[a:b, :]).transpose() / Sbase
-        cost_l = self.numerical_circuit.load_cost[a:b, :].transpose()
+        Pl = (self.numerical_circuit.load_active[:, a:b] * self.numerical_circuit.load_s.real[:, a:b]) / Sbase
+        cost_l = self.numerical_circuit.load_cost[:, a:b]
 
         # branch
-        branch_ratings = self.numerical_circuit.branch_rates[a:b, :].transpose() / Sbase
-        Bseries = (self.numerical_circuit.branch_active[a:b, :] * (
-                    1 / (self.numerical_circuit.branch_R + 1j * self.numerical_circuit.branch_X))).imag.transpose()
-        cost_br = self.numerical_circuit.branch_cost[a:b, :].transpose()
+        branch_ratings = self.numerical_circuit.branch_rates[:, a:b] / Sbase
+        ys = 1 / (self.numerical_circuit.branch_R + 1j * self.numerical_circuit.branch_X)
+        Bseries = (self.numerical_circuit.branch_active[:, a:b].T * ys.imag).T
+        cost_br = self.numerical_circuit.branch_cost[:, a:b]
 
         # Compute time delta in hours
         dt = np.zeros(nt)  # here nt = end_idx - start_idx

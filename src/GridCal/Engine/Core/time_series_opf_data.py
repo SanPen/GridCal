@@ -81,7 +81,7 @@ class OpfTimeCircuit(TimeCircuit):
 
     @property
     def battery_cost(self):
-        return self.battery_data.battery_cost.T
+        return self.battery_data.battery_cost
 
     @property
     def generator_pmax(self):
@@ -97,27 +97,27 @@ class OpfTimeCircuit(TimeCircuit):
 
     @property
     def generator_cost(self):
-        return self.generator_data.generator_cost.T
+        return self.generator_data.generator_cost
 
     @property
     def generator_p(self):
-        return self.generator_data.generator_p.T
+        return self.generator_data.generator_p
 
     @property
     def generator_active(self):
-        return self.generator_data.generator_active.T
+        return self.generator_data.generator_active
 
     @property
     def load_active(self):
-        return self.load_data.load_active.T
+        return self.load_data.load_active
 
     @property
     def load_s(self):
-        return self.load_data.load_s.T
+        return self.load_data.load_s
 
     @property
     def load_cost(self):
-        return self.load_data.load_cost.T
+        return self.load_data.load_cost
 
     @property
     def branch_R(self):
@@ -129,15 +129,15 @@ class OpfTimeCircuit(TimeCircuit):
 
     @property
     def branch_active(self):
-        return self.branch_data.branch_active.T
+        return self.branch_data.branch_active
 
     @property
     def branch_rates(self):
-        return self.branch_data.branch_rates.T
+        return self.branch_data.branch_rates
 
     @property
     def branch_cost(self):
-        return self.branch_data.branch_cost.T
+        return self.branch_data.branch_cost
 
     def get_island(self, bus_idx, time_idx=None) -> "OpfTimeCircuit":
         """

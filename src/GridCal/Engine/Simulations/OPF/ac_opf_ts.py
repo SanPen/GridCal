@@ -312,24 +312,25 @@ class OpfAcTimeSeries(OpfTimeSeries):
         Pb_max = numerical_circuit.battery_pmax / Sbase
         Pb_min = numerical_circuit.battery_pmin / Sbase
         Efficiency = (numerical_circuit.battery_discharge_efficiency + numerical_circuit.battery_charge_efficiency) / 2.0
-        cost_b = numerical_circuit.battery_cost[a:b, :].transpose()
+        cost_b = numerical_circuit.battery_cost[:, a:b]
 
         # generator
         Pg_max = numerical_circuit.generator_pmax / Sbase
         Pg_min = numerical_circuit.generator_pmin / Sbase
-        P_profile = numerical_circuit.generator_p[a:b, :].transpose() / Sbase
-        cost_g = numerical_circuit.generator_cost[a:b, :].transpose()
+        P_profile = numerical_circuit.generator_p[:, a:b] / Sbase
+        cost_g = numerical_circuit.generator_cost[:, a:b]
         enabled_for_dispatch = numerical_circuit.generator_dispatchable
 
         # load
-        Pl = (numerical_circuit.load_active[a:b, :] * numerical_circuit.load_s.real[a:b, :]).transpose() / Sbase
-        Ql = (numerical_circuit.load_active[a:b, :] * numerical_circuit.load_s.imag[a:b, :]).transpose() / Sbase
-        cost_l = numerical_circuit.load_cost[a:b, :].transpose()
+        Pl = (numerical_circuit.load_active[:, a:b] * numerical_circuit.load_s.real[:, a:b]) / Sbase
+        Ql = (numerical_circuit.load_active[:, a:b] * numerical_circuit.load_s.imag[:, a:b]) / Sbase
+        cost_l = numerical_circuit.load_cost[:, a:b]
 
         # branch
-        branch_ratings = numerical_circuit.branch_rates[a:b, :].transpose() / Sbase
-        Bseries = (numerical_circuit.branch_active[a:b, :] * (1 / (numerical_circuit.branch_R + 1j * numerical_circuit.branch_X))).imag.transpose()
-        cost_br = numerical_circuit.branch_cost[a:b, :].transpose()
+        branch_ratings = numerical_circuit.branch_rates[:, a:b] / Sbase
+        ys = 1 / (numerical_circuit.branch_R + 1j * numerical_circuit.branch_X)
+        Bseries = (numerical_circuit.branch_active[:, a:b].T * ys.imag).T
+        cost_br = numerical_circuit.branch_cost[:, a:b]
 
         # Compute time delta in hours
         dt = np.zeros(nt)  # here nt = end_idx - start_idx
@@ -360,9 +361,9 @@ class OpfAcTimeSeries(OpfTimeSeries):
                            enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the power injections per node
-        P, Q = get_power_injections(C_bus_gen=numerical_circuit.C_bus_gen, Pg=Pg,
-                                    C_bus_bat=numerical_circuit.C_bus_batt, Pb=Pb,
-                                    C_bus_load=numerical_circuit.C_bus_load,
+        P, Q = get_power_injections(C_bus_gen=numerical_circuit.generator_data.C_bus_gen, Pg=Pg,
+                                    C_bus_bat=numerical_circuit.battery_data.C_bus_batt, Pb=Pb,
+                                    C_bus_load=numerical_circuit.load_data.C_bus_load,
                                     PlSlack=load_slack, QlSlack=load_slack,
                                     Pl=Pl, Ql=Ql)
 
@@ -381,7 +382,7 @@ class OpfAcTimeSeries(OpfTimeSeries):
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
-        self.v0 = np.abs(numerical_circuit.Vbus[a:b, :])
+        self.v0 = np.abs(numerical_circuit.Vbus[:, a:b]).T
         self.dva = dva.transpose()
         self.dvm = dvm.transpose()
         self.Pg = Pg.transpose()
