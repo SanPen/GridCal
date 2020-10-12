@@ -19,13 +19,14 @@ import GridCal.Engine.Core.topology as tp
 
 class TransformerData:
 
-    def __init__(self, ntr, nbus):
+    def __init__(self, ntr, nbus, ntime=1):
         """
 
         :param ntr:
         :param nbus:
         """
         self.ntr = ntr
+        self.ntime = ntime
 
         self.tr_names = np.zeros(ntr, dtype=object)
         self.tr_R = np.zeros(ntr, dtype=float)
@@ -49,11 +50,12 @@ class TransformerData:
 
         self.C_tr_bus = sp.lil_matrix((ntr, nbus), dtype=int)  # this ons is just for splitting islands
 
-    def slice(self, tr_idx, bus_idx):
+    def slice(self, tr_idx, bus_idx, time_idx=None):
         """
 
         :param tr_idx:
         :param bus_idx:
+        :param time_idx
         :return:
         """
         data = TransformerData(ntr=len(tr_idx), nbus=len(bus_idx))
@@ -90,10 +92,3 @@ class TransformerData:
 
     def __len__(self):
         return self.ntr
-
-
-class TransformerTimeData(TransformerData):
-
-    def __init__(self, ntr, nbus, ntime):
-        TransformerData.__init__(self, ntr, nbus)
-        self.ntime = ntime

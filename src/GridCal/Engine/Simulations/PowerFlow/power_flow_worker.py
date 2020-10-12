@@ -25,10 +25,10 @@ from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import NR_LS
 from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotCircuit
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.common_functions import compile_types
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
 
 class ConvergenceReport:
@@ -288,7 +288,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
     return V_final, converged_final, normF_final, Scalc_final, it_final, el_final
 
 
-def outer_loop_power_flow(circuit: SnapshotCircuit, options: PowerFlowOptions,
+def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                           voltage_solution, Sbus, Ibus, branch_rates, logger) -> "PowerFlowResults":
     """
     Run a power flow simulation for a single circuit using the selected outer loop
@@ -747,7 +747,7 @@ def control_q_iterative(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, 
     return Qnew, types_new, any_control_issue
 
 
-def power_flow_post_process(calculation_inputs: SnapshotCircuit, Sbus, V, branch_rates):
+def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_rates):
     """
     Compute the power flows trough the branches.
 
@@ -1170,11 +1170,11 @@ def control_taps_direct(voltage, T, bus_to_regulated_idx, tap_position, tap_modu
     return stable, tap_module, tap_position
 
 
-def single_island_pf(circuit: SnapshotCircuit, Vbus, Sbus, Ibus, branch_rates,
+def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, branch_rates,
                      options: PowerFlowOptions, logger: Logger) -> "PowerFlowResults":
     """
     Run a power flow for a circuit. In most cases, the **run** method should be used instead.
-    :param circuit: SnapshotCircuit instance
+    :param circuit: SnapshotData instance
     :param Vbus: Initial voltage at each bus in complex per unit
     :param Sbus: Power injection at each bus in complex MVA
     :param Ibus: Current injection at each bus in complex MVA
@@ -1213,23 +1213,22 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     :return: PowerFlowResults instance
     """
 
-    numerical_circuit = compile_snapshot_circuit(circuit=multi_circuit,
-                                                 apply_temperature=options.apply_temperature_correction,
-                                                 branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-                                                 opf_results=opf_results)
+    nc = compile_snapshot_circuit(circuit=multi_circuit,
+                                  apply_temperature=options.apply_temperature_correction,
+                                  branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+                                  opf_results=opf_results)
 
-    calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,
-                                            ignore_single_node_islands=options.ignore_single_node_islands)
+    calculation_inputs = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
 
-    results = PowerFlowResults(n=numerical_circuit.nbus,
-                               m=numerical_circuit.nbr,
-                               n_tr=numerical_circuit.ntr,
-                               n_hvdc=numerical_circuit.nhvdc,
-                               bus_names=numerical_circuit.bus_data.bus_names,
-                               branch_names=numerical_circuit.branch_data.branch_names,
-                               transformer_names=numerical_circuit.transformer_data.tr_names,
-                               hvdc_names=numerical_circuit.hvdc_data.hvdc_names,
-                               bus_types=numerical_circuit.bus_data.bus_types)
+    results = PowerFlowResults(n=nc.nbus,
+                               m=nc.nbr,
+                               n_tr=nc.ntr,
+                               n_hvdc=nc.nhvdc,
+                               bus_names=nc.bus_data.bus_names,
+                               branch_names=nc.branch_data.branch_names,
+                               transformer_names=nc.transformer_data.tr_names,
+                               hvdc_names=nc.hvdc_data.hvdc_names,
+                               bus_types=nc.bus_data.bus_types)
 
     if len(calculation_inputs) > 1:
 
@@ -1243,7 +1242,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                        Vbus=calculation_input.Vbus,
                                        Sbus=calculation_input.Sbus,
                                        Ibus=calculation_input.Ibus,
-                                       branch_rates=calculation_input.branch_data.branch_rates,
+                                       branch_rates=calculation_input.Rates,
                                        options=options,
                                        logger=logger)
 
@@ -1265,7 +1264,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                        Vbus=calculation_inputs[0].Vbus,
                                        Sbus=calculation_inputs[0].Sbus,
                                        Ibus=calculation_inputs[0].Ibus,
-                                       branch_rates=calculation_inputs[0].branch_data.branch_rates,
+                                       branch_rates=calculation_inputs[0].Rates,
                                        options=options,
                                        logger=logger)
 

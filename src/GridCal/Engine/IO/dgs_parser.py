@@ -589,8 +589,8 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     cub_term_idx = cubicles['fold_id'].values
 
     # for i, elm_id in enumerate(cub_obj_idx):
-    #     bus_idx = cub_term_idx[i]
-    #     terminals_dict[elm_id] = bus_idx
+    #     elm_idx = cub_term_idx[i]
+    #     terminals_dict[elm_id] = elm_idx
 
     ID_idx = 0
     for cla in classes:
@@ -987,8 +987,8 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
 
             circuit.add_load(bus_obj, load)
 
-            # BUSES[bus_idx, 2] += p
-            # BUSES[bus_idx, 3] += q
+            # BUSES[elm_idx, 2] += p
+            # BUSES[elm_idx, 3] += q
     else:
         warn('There are no loads')
 

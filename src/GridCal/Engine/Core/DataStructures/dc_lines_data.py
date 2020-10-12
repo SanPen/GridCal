@@ -19,13 +19,14 @@ import GridCal.Engine.Core.topology as tp
 
 class DcLinesData:
 
-    def __init__(self, ndcline, nbus):
+    def __init__(self, ndcline, nbus, ntime=1):
         """
 
         :param ndcline:
         :param nbus:
         """
         self.ndcline = ndcline
+        self.ntime = ntime
 
         self.dc_line_names = np.zeros(ndcline, dtype=object)
         self.dc_line_R = np.zeros(ndcline, dtype=float)
@@ -38,11 +39,12 @@ class DcLinesData:
         self.dc_F = np.zeros(ndcline, dtype=int)
         self.dc_T = np.zeros(ndcline, dtype=int)
 
-    def slice(self, dc_line_idx, bus_idx):
+    def slice(self, dc_line_idx, bus_idx, time_idx=None):
         """
 
         :param dc_line_idx:
         :param bus_idx:
+        :param time_idx:
         :return:
         """
 
@@ -80,11 +82,3 @@ class DcLinesData:
 
     def __len__(self):
         return self.ndcline
-
-
-class DcLinesTimeData(DcLinesData):
-
-    def __init__(self, ndcline, nbus, ntime):
-        DcLinesData.__init__(self, ndcline, nbus)
-
-        self.ntime = ntime

@@ -19,13 +19,14 @@ import GridCal.Engine.Core.topology as tp
 
 class VscData:
 
-    def __init__(self, nvsc, nbus):
+    def __init__(self, nvsc, nbus, ntime=1):
         """
 
         :param nvsc:
         :param nbus:
         """
         self.nvsc = nvsc
+        self.ntime = ntime
 
         self.vsc_names = np.zeros(nvsc, dtype=object)
         self.vsc_R1 = np.zeros(nvsc)
@@ -35,39 +36,48 @@ class VscData:
         self.vsc_m = np.zeros(nvsc)
         self.vsc_theta = np.zeros(nvsc)
         self.vsc_Inom = np.zeros(nvsc)
-        self.vsc_Pset = np.zeros(nvsc)
-        self.vsc_Qset = np.zeros(nvsc)
-        self.vsc_Vac_set = np.ones(nvsc)
-        self.vsc_Vdc_set = np.ones(nvsc)
+
+        self.vsc_Pset = np.zeros((nvsc, ntime))
+        self.vsc_Qset = np.zeros((nvsc, ntime))
+        self.vsc_Vac_set = np.ones((nvsc, ntime))
+        self.vsc_Vdc_set = np.ones((nvsc, ntime))
+
         self.vsc_control_mode = np.zeros(nvsc, dtype=object)
 
         self.C_vsc_bus = sp.lil_matrix((nvsc, nbus), dtype=int)  # this ons is just for splitting islands
 
-    def slice(self, vsc_idx, bus_idx):
+    def slice(self, elm_idx, bus_idx, time_idx=None):
         """
 
-        :param vsc_idx:
+        :param elm_idx:
         :param bus_idx:
         :return:
         """
 
-        nc = VscData(nvsc=len(vsc_idx), nbus=len(bus_idx))
+        if time_idx is None:
+            tidx = elm_idx
+        else:
+            tidx = np.ix_(elm_idx, time_idx)
 
-        nc.vsc_names = self.vsc_names[vsc_idx]
-        nc.vsc_R1 = self.vsc_R1[vsc_idx]
-        nc.vsc_X1 = self.vsc_X1[vsc_idx]
-        nc.vsc_G0 = self.vsc_G0[vsc_idx]
-        nc.vsc_Beq = self.vsc_Beq[vsc_idx]
-        nc.vsc_m = self.vsc_m[vsc_idx]
-        nc.vsc_theta = self.vsc_theta[vsc_idx]
-        nc.vsc_Inom = self.vsc_Inom[vsc_idx]
-        nc.vsc_Pset = self.vsc_Pset[vsc_idx]
-        nc.vsc_Qset = self.vsc_Qset[vsc_idx]
-        nc.vsc_Vac_set = self.vsc_Vac_set[vsc_idx]
-        nc.vsc_Vdc_set = self.vsc_Vdc_set[vsc_idx]
-        nc.vsc_control_mode = self.vsc_control_mode[vsc_idx]
+        nc = VscData(nvsc=len(elm_idx), nbus=len(bus_idx))
 
-        nc.C_vsc_bus = self.C_vsc_bus[np.ix_(vsc_idx, bus_idx)]
+        nc.vsc_names = self.vsc_names[elm_idx]
+        nc.vsc_R1 = self.vsc_R1[elm_idx]
+        nc.vsc_X1 = self.vsc_X1[elm_idx]
+        nc.vsc_G0 = self.vsc_G0[elm_idx]
+        nc.vsc_Beq = self.vsc_Beq[elm_idx]
+        nc.vsc_m = self.vsc_m[elm_idx]
+        nc.vsc_theta = self.vsc_theta[elm_idx]
+        nc.vsc_Inom = self.vsc_Inom[elm_idx]
+
+        nc.vsc_Pset = self.vsc_Pset[tidx]
+        nc.vsc_Qset = self.vsc_Qset[tidx]
+        nc.vsc_Vac_set = self.vsc_Vac_set[tidx]
+        nc.vsc_Vdc_set = self.vsc_Vdc_set[tidx]
+
+        nc.vsc_control_mode = self.vsc_control_mode[elm_idx]
+
+        nc.C_vsc_bus = self.C_vsc_bus[np.ix_(elm_idx, bus_idx)]
 
         return nc
 
@@ -81,11 +91,3 @@ class VscData:
 
     def __len__(self):
         return self.nvsc
-
-
-class VscTimeData(VscData):
-
-    def __init__(self, nvsc, nbus, ntime):
-        VscData.__init__(self, nvsc, nbus)
-
-        self.ntime = ntime

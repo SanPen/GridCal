@@ -24,7 +24,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriv
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
 from GridCal.Engine.Simulations.Stochastic.lhs_driver import LatinHypercubeSampling
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, split_time_circuit_into_islands, TimeCircuit
+from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, TimeCircuit
 
 
 class CascadeType(Enum):
@@ -252,9 +252,8 @@ class Cascading(QThread):
 
         # compile
         # print('Compiling...', end='')
-        numerical_circuit = compile_time_circuit(self.grid)
-        calculation_inputs = split_time_circuit_into_islands(numerical_circuit,
-                                                             ignore_single_node_islands=self.options.ignore_single_node_islands)
+        nc = compile_time_circuit(self.grid)
+        calculation_inputs = nc.split_into_islands(ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         self.results = CascadingResults(self.cascade_type)
 
@@ -284,7 +283,7 @@ class Cascading(QThread):
             model_simulator.run()
 
             # remove grid elements (branches)
-            idx, criteria = self.remove_probability_based(numerical_circuit, model_simulator.results,
+            idx, criteria = self.remove_probability_based(nc, model_simulator.results,
                                                           max_val=1.0, min_prob=0.1)
 
             # store the removed indices and the results
@@ -292,8 +291,7 @@ class Cascading(QThread):
             self.results.events.append(entry)
 
             # recompile grid
-            calculation_inputs = split_time_circuit_into_islands(numerical_circuit,
-                                                                 ignore_single_node_islands=self.options.ignore_single_node_islands)
+            calculation_inputs = nc.split_into_islands(ignore_single_node_islands=self.options.ignore_single_node_islands)
 
             it += 1
 

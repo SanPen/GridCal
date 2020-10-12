@@ -19,7 +19,7 @@ from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotCircuit, compile_snapshot_circuit, split_into_islands
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotData, compile_snapshot_circuit, split_into_islands
 from GridCal.Engine.Devices import DeviceType
 
 
@@ -85,7 +85,7 @@ def get_reliability_events(horizon, mttf, mttr, tpe: DeviceType):
     return events
 
 
-def get_reliability_scenario(nc: SnapshotCircuit, horizon=10000):
+def get_reliability_scenario(nc: SnapshotData, horizon=10000):
     """
     Get reliability events
     Args:
@@ -128,7 +128,7 @@ def get_reliability_scenario(nc: SnapshotCircuit, horizon=10000):
     return all_events
 
 
-def run_events(nc: SnapshotCircuit, events_list: list):
+def run_events(nc: SnapshotData, events_list: list):
 
     for t, tpe, i, state in events_list:
 

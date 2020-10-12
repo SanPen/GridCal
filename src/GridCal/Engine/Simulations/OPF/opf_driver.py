@@ -143,11 +143,11 @@ class OptimalPowerFlow(QThread):
         gn[gn == None] = 0
 
         # pack the results
-        self.results = OptimalPowerFlowResults(bus_names=numerical_circuit.bus_names,
-                                               branch_names=numerical_circuit.branch_names,
-                                               load_names=numerical_circuit.load_names,
-                                               generator_names=numerical_circuit.generator_names,
-                                               battery_names=numerical_circuit.battery_names,
+        self.results = OptimalPowerFlowResults(bus_names=numerical_circuit.bus_data.bus_names,
+                                               branch_names=numerical_circuit.branch_data.branch_names,
+                                               load_names=numerical_circuit.load_data.load_names,
+                                               generator_names=numerical_circuit.generator_data.generator_names,
+                                               battery_names=numerical_circuit.battery_data.battery_names,
                                                Sbus=None,
                                                voltage=problem.get_voltage(),
                                                load_shedding=ld,

@@ -18,7 +18,7 @@ from enum import Enum
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotCircuit, SnapshotCircuit
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotData, SnapshotData
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFVariation
@@ -52,7 +52,7 @@ def group_generators_by_technology(circuit: MultiCircuit):
     return groups
 
 
-def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: SnapshotCircuit, group_mode: PtdfGroupMode, power_amount):
+def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: SnapshotData, group_mode: PtdfGroupMode, power_amount):
     """
     Get the PTDF variations
     :param circuit: MultiCircuit instance
@@ -153,7 +153,7 @@ def get_ptdf_variations(circuit: MultiCircuit, numerical_circuit: SnapshotCircui
 
 
 def power_flow_worker(variation: int, nbus, nbr, n_tr, bus_names, branch_names, transformer_names, bus_types,
-                      calculation_inputs: List[SnapshotCircuit], options: PowerFlowOptions, dP, return_dict):
+                      calculation_inputs: List[SnapshotData], options: PowerFlowOptions, dP, return_dict):
     """
     Run asynchronous power flow
     :param variation: variation id

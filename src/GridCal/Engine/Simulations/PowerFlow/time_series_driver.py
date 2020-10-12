@@ -27,7 +27,7 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, power_flow_worker_args
-from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, split_time_circuit_into_islands, BranchImpedanceMode
+from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
 from GridCal.Engine.Simulations.Stochastic.latin_hypercube_sampling import lhs
 from GridCal.Gui.GuiFunctions import ResultsModel
 
@@ -605,8 +605,7 @@ class TimeSeries(QThread):
                                                  opf_results=self.opf_time_series_results)
 
         # do the topological computation
-        time_islands = split_time_circuit_into_islands(numeric_circuit=numerical_circuit,
-                                                       ignore_single_node_islands=self.options.ignore_single_node_islands)
+        time_islands = numerical_circuit.split_into_islands(ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         # initialize the grid time series results we will append the island results with another function
         time_series_results = TimeSeriesResults(n=numerical_circuit.nbus,
@@ -665,11 +664,11 @@ class TimeSeries(QThread):
                 # set the power values
                 # if the storage dispatch option is active, the batteries power is not included
                 # therefore, it shall be included after processing
-                V = calculation_input.Vbus[it, :]
+                V = calculation_input.Vbus[:, it]
                 Ysh = calculation_input.Yshunt_from_devices[:, it]
                 I = calculation_input.Ibus[:, it]
                 S = calculation_input.Sbus[:, it]
-                branch_rates = calculation_input.branch_rates[it, :]
+                branch_rates = calculation_input.Rates[:, it]
 
                 # add the controlled storage power if we are controlling the storage devices
                 if self.options.dispatch_storage:

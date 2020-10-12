@@ -19,7 +19,7 @@ That means that solves the OPF problem for a complete time series at once
 """
 
 from GridCal.Engine.basic_structures import MIPSolvers
-from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit, split_opf_time_circuit_into_islands
+from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
 from GridCal.ThirdParty.pulp import *
 
@@ -108,7 +108,7 @@ def add_ac_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem: LpPro
     """
 
     # do the topological computation
-    calc_inputs = split_opf_time_circuit_into_islands(numerical_circuit)
+    calc_inputs = numerical_circuit.split_into_islands()
 
     # generate the time indices to simulate
     if end_ == -1:

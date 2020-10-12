@@ -255,7 +255,7 @@ class ElementsDialogue(QtWidgets.QDialog):
         self.layout2 = QtWidgets.QHBoxLayout(self.frame2)
 
         self.layout2.addWidget(self.accept_btn)
-        self.layout2.addWidget(QtWidgets.QSpacerItem())
+        # self.layout2.addWidget(QtWidgets.QSpacerItem())
         self.layout2.addWidget(self.copy_btn)
 
         self.setLayout(self.layout)

@@ -19,33 +19,42 @@ import GridCal.Engine.Core.topology as tp
 
 class StaticGeneratorData:
 
-    def __init__(self, nstagen, nbus):
+    def __init__(self, nstagen, nbus, ntime=1):
         """
 
         :param nstagen:
         :param nbus:
         """
         self.nstagen = nstagen
+        self.ntime = ntime
 
         self.static_generator_names = np.empty(nstagen, dtype=object)
-        self.static_generator_active = np.zeros(nstagen, dtype=bool)
-        self.static_generator_s = np.zeros(nstagen, dtype=complex)
+
+        self.static_generator_active = np.zeros((nstagen, ntime), dtype=bool)
+        self.static_generator_s = np.zeros((nstagen, ntime), dtype=complex)
 
         self.C_bus_static_generator = sp.lil_matrix((nbus, nstagen), dtype=int)
 
-    def slice(self, stagen_idx, bus_idx):
+    def slice(self, elm_idx, bus_idx, time_idx=None):
         """
 
-        :param stagen_idx:
+        :param elm_idx:
         :param bus_idx:
+        :param time_idx: 
         :return:
         """
-        data = StaticGeneratorData(nstagen=len(stagen_idx), nbus=len(bus_idx))
-        data.static_generator_names = self.static_generator_names[stagen_idx]
-        data.static_generator_active = self.static_generator_active[stagen_idx]
-        data.static_generator_s = self.static_generator_s[stagen_idx]
+        if time_idx is None:
+            tidx = elm_idx
+        else:
+            tidx = np.ix_(elm_idx, time_idx)
 
-        data.C_bus_static_generator = self.C_bus_static_generator[np.ix_(bus_idx, stagen_idx)]
+        data = StaticGeneratorData(nstagen=len(elm_idx), nbus=len(bus_idx))
+        data.static_generator_names = self.static_generator_names[elm_idx]
+
+        data.static_generator_active = self.static_generator_active[tidx]
+        data.static_generator_s = self.static_generator_s[tidx]
+
+        data.C_bus_static_generator = self.C_bus_static_generator[np.ix_(bus_idx, elm_idx)]
 
         return data
 
@@ -57,36 +66,3 @@ class StaticGeneratorData:
 
     def __len__(self):
         return self.nstagen
-
-
-class StaticGeneratorTimeData(StaticGeneratorData):
-
-    def __init__(self, nstagen, nbus, ntime):
-        StaticGeneratorData.__init__(self, nstagen, nbus)
-        self.ntime = ntime
-
-        self.static_generator_active = np.zeros((ntime, nstagen), dtype=bool)
-        self.static_generator_s = np.zeros((ntime, nstagen), dtype=complex)
-
-    def slice_time(self, nstagen_idx, bus_idx, time_idx):
-        """
-
-        :param nstagen_idx:
-        :param bus_idx:
-        :param time_idx:
-        :return:
-        """
-        data = StaticGeneratorTimeData(nstagen=len(nstagen_idx), nbus=len(bus_idx), ntime=len(time_idx))
-
-        data.load_names = self.static_generator_names[nstagen_idx]
-
-        data.static_generator_active = self.static_generator_active[np.ix_(time_idx, nstagen_idx)]
-        data.static_generator_s = self.static_generator_s[np.ix_(time_idx, nstagen_idx)]
-
-        data.C_bus_static_generator = self.C_bus_static_generator[np.ix_(bus_idx, nstagen_idx)]
-
-        return data
-
-    def get_injections_per_bus(self):
-        return self.C_bus_static_generator * (self.static_generator_s * self.static_generator_active).T
-

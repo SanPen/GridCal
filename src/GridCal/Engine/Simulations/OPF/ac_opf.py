@@ -18,7 +18,7 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 
-from GridCal.Engine.Core.snapshot_opf_data import OpfSnapshotCircuit, split_into_opf_islands
+from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
 from GridCal.ThirdParty.pulp import *
 
@@ -105,7 +105,7 @@ def add_ac_nodal_power_balance(numerical_circuit, problem: LpProblem, dvm, dva, 
     """
 
     # do the topological computation
-    calculation_inputs = split_into_opf_islands(numerical_circuit)
+    calculation_inputs = numerical_circuit.split_into_islands()
 
     nodal_restrictions_P = np.empty(numerical_circuit.nbus, dtype=object)
     nodal_restrictions_Q = np.empty(numerical_circuit.nbus, dtype=object)
@@ -216,7 +216,7 @@ def add_branch_loading_restriction(problem: LpProblem,
 
 class OpfAc(Opf):
 
-    def __init__(self, numerical_circuit: OpfSnapshotCircuit, solver: MIPSolvers = MIPSolvers.CBC):
+    def __init__(self, numerical_circuit: SnapshotOpfData, solver: MIPSolvers = MIPSolvers.CBC):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
@@ -290,9 +290,9 @@ class OpfAc(Opf):
         set_fix_generation(problem=problem, Pg=Pg, P_fix=P_fix, enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the power injections per node
-        P, Q = get_power_injections(C_bus_gen=numerical_circuit.C_bus_gen, Pg=Pg,
-                                    C_bus_bat=numerical_circuit.C_bus_batt, Pb=Pb,
-                                    C_bus_load=numerical_circuit.C_bus_load,
+        P, Q = get_power_injections(C_bus_gen=numerical_circuit.generator_data.C_bus_gen, Pg=Pg,
+                                    C_bus_bat=numerical_circuit.battery_data.C_bus_batt, Pb=Pb,
+                                    C_bus_load=numerical_circuit.load_data.C_bus_load,
                                     PlSlack=load_slack, QlSlack=load_slack,
                                     Pl=Pl, Ql=Ql)
 

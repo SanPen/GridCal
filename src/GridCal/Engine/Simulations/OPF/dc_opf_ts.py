@@ -19,7 +19,7 @@ That means that solves the OPF problem for a complete time series at once
 """
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
 from GridCal.Engine.basic_structures import MIPSolvers
-from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit, split_opf_time_circuit_into_islands
+from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 
 from GridCal.ThirdParty.pulp import *
 
@@ -104,7 +104,7 @@ def add_dc_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem: LpPro
     """
 
     # do the topological computation
-    calc_inputs = split_opf_time_circuit_into_islands(numerical_circuit)
+    calc_inputs = numerical_circuit.split_into_islands(ignore_single_node_islands=True)
 
     # generate the time indices to simulate
     if end_ == -1:
@@ -319,11 +319,11 @@ class OpfDcTimeSeries(OpfTimeSeries):
                            enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the power injections
-        P = get_power_injections(C_bus_gen=self.numerical_circuit.C_bus_gen,
+        P = get_power_injections(C_bus_gen=self.numerical_circuit.generator_data.C_bus_gen,
                                  Pg=Pg,
-                                 C_bus_bat=self.numerical_circuit.C_bus_batt,
+                                 C_bus_bat=self.numerical_circuit.battery_data.C_bus_batt,
                                  Pb=Pb,
-                                 C_bus_load=self.numerical_circuit.C_bus_load,
+                                 C_bus_load=self.numerical_circuit.load_data.C_bus_load,
                                  LSlack=load_slack,
                                  Pl=Pl)
 

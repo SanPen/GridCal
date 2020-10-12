@@ -432,7 +432,7 @@ def get_acdc_pf_island(circuit: AcDcSnapshotCircuit, bus_idx) -> "AcDcSnapshotCi
     """
     Get the island corresponding to the given buses
     :param bus_idx: array of bus indices
-    :return: SnapshotCircuit
+    :return: SnapshotData
     """
 
     # find the indices of the devices of the island

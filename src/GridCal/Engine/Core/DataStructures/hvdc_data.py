@@ -19,23 +19,26 @@ import GridCal.Engine.Core.topology as tp
 
 class HvdcData:
 
-    def __init__(self, nhvdc, nbus):
+    def __init__(self, nhvdc, nbus, ntime=1):
         """
 
         :param nhvdc:
         :param nbus:
         """
         self.nhvdc = nhvdc
+        self.ntime = ntime
 
         self.hvdc_names = np.zeros(nhvdc, dtype=object)
         self.hvdc_active = np.zeros(nhvdc, dtype=bool)
-        self.hvdc_rate = np.zeros(nhvdc)
+
         self.hvdc_loss_factor = np.zeros(nhvdc)
 
-        self.hvdc_Pf = np.zeros(nhvdc)
-        self.hvdc_Pt = np.zeros(nhvdc)
-        self.hvdc_Vset_f = np.zeros(nhvdc)
-        self.hvdc_Vset_t = np.zeros(nhvdc)
+        self.hvdc_rate = np.zeros((nhvdc, ntime))
+        self.hvdc_Pf = np.zeros((nhvdc, ntime))
+        self.hvdc_Pt = np.zeros((nhvdc, ntime))
+        self.hvdc_Vset_f = np.zeros((nhvdc, ntime))
+        self.hvdc_Vset_t = np.zeros((nhvdc, ntime))
+
         self.hvdc_Qmin_f = np.zeros(nhvdc)
         self.hvdc_Qmax_f = np.zeros(nhvdc)
         self.hvdc_Qmin_t = np.zeros(nhvdc)
@@ -44,31 +47,39 @@ class HvdcData:
         self.C_hvdc_bus_f = sp.lil_matrix((nhvdc, nbus), dtype=int)  # this ons is just for splitting islands
         self.C_hvdc_bus_t = sp.lil_matrix((nhvdc, nbus), dtype=int)  # this ons is just for splitting islands
 
-    def slice(self, hvdc_idx, bus_idx):
+    def slice(self, elm_idx, bus_idx, time_idx=None):
         """
 
-        :param hvdc_idx:
+        :param elm_idx:
         :param bus_idx:
+        :param time_idx:
         :return:
         """
-        data = HvdcData(nhvdc=len(hvdc_idx), nbus=len(bus_idx))
 
-        data.hvdc_names = self.hvdc_names[hvdc_idx]
-        data.hvdc_active = self.hvdc_active[hvdc_idx]
-        data.hvdc_rate = self.hvdc_rate[hvdc_idx]
+        if time_idx is None:
+            tidx = elm_idx
+        else:
+            tidx = np.ix_(elm_idx, time_idx)
 
-        data.hvdc_Pf = self.hvdc_Pf[hvdc_idx]
-        data.hvdc_Pt = self.hvdc_Pt[hvdc_idx]
-        data.hvdc_Vset_f = self.hvdc_Vset_f[hvdc_idx]
-        data.hvdc_Vset_t = self.hvdc_Vset_t[hvdc_idx]
-        data.hvdc_loss_factor = self.hvdc_loss_factor[hvdc_idx]
-        data.hvdc_Qmin_f = self.hvdc_Qmin_f[hvdc_idx]
-        data.hvdc_Qmax_f = self.hvdc_Qmax_f[hvdc_idx]
-        data.hvdc_Qmin_t = self.hvdc_Qmin_t[hvdc_idx]
-        data.hvdc_Qmax_t = self.hvdc_Qmax_t[hvdc_idx]
+        data = HvdcData(nhvdc=len(elm_idx), nbus=len(bus_idx))
 
-        data.C_hvdc_bus_f = self.C_hvdc_bus_f[np.ix_(hvdc_idx, bus_idx)]
-        data.C_hvdc_bus_t = self.C_hvdc_bus_t[np.ix_(hvdc_idx, bus_idx)]
+        data.hvdc_names = self.hvdc_names[elm_idx]
+        data.hvdc_active = self.hvdc_active[elm_idx]
+
+        data.hvdc_rate = self.hvdc_rate[tidx]
+        data.hvdc_Pf = self.hvdc_Pf[tidx]
+        data.hvdc_Pt = self.hvdc_Pt[tidx]
+        data.hvdc_Vset_f = self.hvdc_Vset_f[tidx]
+        data.hvdc_Vset_t = self.hvdc_Vset_t[tidx]
+
+        data.hvdc_loss_factor = self.hvdc_loss_factor[elm_idx]
+        data.hvdc_Qmin_f = self.hvdc_Qmin_f[elm_idx]
+        data.hvdc_Qmax_f = self.hvdc_Qmax_f[elm_idx]
+        data.hvdc_Qmin_t = self.hvdc_Qmin_t[elm_idx]
+        data.hvdc_Qmax_t = self.hvdc_Qmax_t[elm_idx]
+
+        data.C_hvdc_bus_f = self.C_hvdc_bus_f[np.ix_(elm_idx, bus_idx)]
+        data.C_hvdc_bus_t = self.C_hvdc_bus_t[np.ix_(elm_idx, bus_idx)]
 
         return data
 
@@ -101,56 +112,7 @@ class HvdcData:
         return self.hvdc_Pf / self.hvdc_rate
 
     def get_losses(self):
-        return self.hvdc_Pf * self.hvdc_loss_factor
+        return (self.hvdc_Pf.T * self.hvdc_loss_factor).T
 
     def __len__(self):
         return self.nhvdc
-
-
-class HvdcTimeData(HvdcData):
-
-    def __init__(self, nhvdc, nbus, ntime):
-        HvdcData.__init__(self, nhvdc, nbus)
-        self.ntime = ntime
-
-        self.hvdc_active = np.zeros((ntime, nhvdc), dtype=bool)
-        self.hvdc_rate = np.zeros((ntime, nhvdc), dtype=float)
-        self.hvdc_Pf = np.zeros((ntime, nhvdc))
-        self.hvdc_Pt = np.zeros((ntime, nhvdc))
-        self.hvdc_Vset_f = np.zeros((ntime, nhvdc))
-        self.hvdc_Vset_t = np.zeros((ntime, nhvdc))
-
-    def slice_time(self, hvdc_idx, bus_idx, time_idx):
-        """
-
-        :param hvdc_idx:
-        :param bus_idx:
-        :param time_idx:
-        :return:
-        """
-        data = HvdcTimeData(nhvdc=len(hvdc_idx), nbus=len(bus_idx), ntime=len(time_idx))
-
-        data.hvdc_names = self.hvdc_names[hvdc_idx]
-
-        data.hvdc_active = self.hvdc_active[np.ix_(time_idx, hvdc_idx)]
-        data.hvdc_rate = self.hvdc_rate[np.ix_(time_idx, hvdc_idx)]
-        data.hvdc_Pf = self.hvdc_Pf[np.ix_(time_idx, hvdc_idx)]
-        data.hvdc_Pt = self.hvdc_Pt[np.ix_(time_idx, hvdc_idx)]
-        data.hvdc_Vset_f = self.hvdc_Vset_f[np.ix_(time_idx, hvdc_idx)]
-        data.hvdc_Vset_t = self.hvdc_Vset_t[np.ix_(time_idx, hvdc_idx)]
-
-        data.hvdc_loss_factor = self.hvdc_loss_factor[hvdc_idx]
-        data.hvdc_Qmin_f = self.hvdc_Qmin_f[hvdc_idx]
-        data.hvdc_Qmax_f = self.hvdc_Qmax_f[hvdc_idx]
-        data.hvdc_Qmin_t = self.hvdc_Qmin_t[hvdc_idx]
-        data.hvdc_Qmax_t = self.hvdc_Qmax_t[hvdc_idx]
-
-        data.C_hvdc_bus_f = self.C_hvdc_bus_f[np.ix_(hvdc_idx, bus_idx)]
-        data.C_hvdc_bus_t = self.C_hvdc_bus_t[np.ix_(hvdc_idx, bus_idx)]
-
-        return data
-
-    def get_injections_per_bus(self):
-        Sf = ((self.hvdc_active * self.hvdc_Pf) * self.C_hvdc_bus_f).T
-        St = ((self.hvdc_active * self.hvdc_Pt) * self.C_hvdc_bus_t).T
-        return Sf + St

@@ -21,7 +21,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOpt
 from GridCal.Gui.GuiFunctions import ResultsModel
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_coefficients_josep, sigma_function
 
 
@@ -65,7 +65,7 @@ class SigmaAnalysisResults:
 
             **b_idx**: bus original indices
 
-            **br_idx**: branch original indices
+            **elm_idx**: branch original indices
         """
         self.Sbus[b_idx] = results.Sbus
 
@@ -196,14 +196,13 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
     m = multi_circuit.get_branch_number()
     results = SigmaAnalysisResults(n)
 
-    numerical_circuit = compile_snapshot_circuit(circuit=multi_circuit,
-                                                 apply_temperature=options.apply_temperature_correction,
-                                                 branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-                                                 opf_results=None)
-    results.bus_names = numerical_circuit.bus_data.bus_names
+    nc = compile_snapshot_circuit(circuit=multi_circuit,
+                                  apply_temperature=options.apply_temperature_correction,
+                                  branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+                                  opf_results=None)
+    results.bus_names = nc.bus_data.bus_names
 
-    calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,
-                                            ignore_single_node_islands=options.ignore_single_node_islands)
+    calculation_inputs = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
 
     if len(calculation_inputs) > 1:
 

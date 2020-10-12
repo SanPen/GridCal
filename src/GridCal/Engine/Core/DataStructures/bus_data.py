@@ -17,71 +17,46 @@ import numpy as np
 
 class BusData:
 
-    def __init__(self, nbus):
+    def __init__(self, nbus, ntime=1):
         """
 
         :param nbus:
         """
         self.nbus = nbus
+        self.ntime = ntime
         self.bus_names = np.empty(nbus, dtype=object)
-        self.bus_active = np.ones(nbus, dtype=int)
-        self.Vbus = np.ones(nbus, dtype=complex)
+        self.bus_active = np.ones((nbus, ntime), dtype=int)
+        self.Vbus = np.ones((nbus, ntime), dtype=complex)
         self.bus_types = np.empty(nbus, dtype=int)
         self.bus_installed_power = np.zeros(nbus, dtype=float)
         self.bus_is_dc = np.empty(nbus, dtype=bool)
 
-    def slice(self, bus_idx):
+    def slice(self, elm_idx, time_idx=None):
+        """
+        Slice this data structure
+        :param elm_idx: array of bus indices
+        :param time_idx: array of time indices
+        :return: instance of BusData
         """
 
-        :param bus_idx:
-        :return:
-        """
-        data = BusData(nbus=len(bus_idx))
+        if time_idx is None:
+            tidx = elm_idx
+        else:
+            tidx = np.ix_(elm_idx, time_idx)
 
-        data.bus_names = self.bus_names[bus_idx]
-        data.bus_active = self.bus_active[bus_idx]
-        data.Vbus = self.Vbus[bus_idx]
-        data.bus_types = self.bus_types[bus_idx]
-        data.bus_installed_power = self.bus_installed_power[bus_idx]
-        data.bus_is_dc = self.bus_is_dc[bus_idx]
+        data = BusData(nbus=len(elm_idx))
+
+        data.bus_names = self.bus_names[elm_idx]
+
+        data.bus_active = self.bus_active[tidx]
+        data.Vbus = self.Vbus[tidx]
+
+        data.bus_types = self.bus_types[elm_idx]
+        data.bus_installed_power = self.bus_installed_power[elm_idx]
+        data.bus_is_dc = self.bus_is_dc[elm_idx]
 
         return data
 
     def __len__(self):
         return self.nbus
 
-
-class BusTimeData(BusData):
-
-    def __init__(self, nbus, ntime):
-        """
-
-        :param nbus:
-        :param ntime:
-        """
-        BusData.__init__(self, nbus)
-
-        self.ntime = ntime
-
-        self.bus_active = np.ones((ntime, nbus), dtype=int)
-        self.Vbus = np.ones((ntime, nbus), dtype=complex)
-
-    def slice_time(self, bus_idx, time_idx):
-        """
-
-        :param bus_idx:
-        :param time_idx:
-        :return:
-        """
-        data = BusData(nbus=len(bus_idx))
-
-        data.bus_names = self.bus_names[bus_idx]
-
-        data.bus_active = self.bus_active[np.ix_(time_idx, bus_idx)]
-        data.Vbus = self.Vbus[np.ix_(time_idx, bus_idx)]
-
-        data.bus_types = self.bus_types[bus_idx]
-        data.bus_installed_power = self.bus_installed_power[bus_idx]
-        data.bus_is_dc = self.bus_is_dc[bus_idx]
-
-        return data

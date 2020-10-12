@@ -226,8 +226,8 @@ class MainGUI(QMainWindow):
 
         self.ui.catalogueDataStructuresListView.setModel(get_list_model(self.grid_editor.catalogue_types))
 
-        pfo = SnapshotCircuit(nbus=1, nline=1, ndcline=1, ntr=1, nvsc=1, nhvdc=1,
-                             nload=1, ngen=1, nbatt=1, nshunt=1, nstagen=1, sbase=100)
+        pfo = SnapshotData(nbus=1, nline=1, ndcline=1, ntr=1, nvsc=1, nhvdc=1,
+                           nload=1, ngen=1, nbatt=1, nshunt=1, nstagen=1, sbase=100)
         self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
 
         # add the widgets
@@ -1482,7 +1482,7 @@ class MainGUI(QMainWindow):
                 filename += '.xlsx'
 
             numerical_circuit = compile_snapshot_circuit(circuit=self.circuit)
-            calculation_inputs = split_into_islands(numerical_circuit)
+            calculation_inputs = numerical_circuit.split_into_islands()
 
             writer = pd.ExcelWriter(filename)
 
@@ -4438,7 +4438,7 @@ class MainGUI(QMainWindow):
 
             numerical_circuit = compile_snapshot_circuit(circuit=self.circuit)
 
-            calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit)
+            calculation_inputs = numerical_circuit.split_into_islands()
 
             self.calculation_inputs_to_display = calculation_inputs
             return True

@@ -19,45 +19,58 @@ import GridCal.Engine.Core.topology as tp
 
 class BatteryData:
 
-    def __init__(self, nbatt, nbus):
+    def __init__(self, nbatt, nbus, ntime=1):
         """
 
         :param nbatt:
         :param nbus:
         """
         self.nbatt = nbatt
+        self.ntime = ntime
 
         self.battery_names = np.empty(nbatt, dtype=object)
-        self.battery_active = np.zeros(nbatt, dtype=bool)
+
         self.battery_controllable = np.zeros(nbatt, dtype=bool)
         self.battery_installed_p = np.zeros(nbatt)
-        self.battery_p = np.zeros(nbatt)
-        self.battery_pf = np.zeros(nbatt)
-        self.battery_v = np.zeros(nbatt)
+
+        self.battery_active = np.zeros((nbatt, ntime), dtype=bool)
+        self.battery_p = np.zeros((nbatt, ntime))
+        self.battery_pf = np.zeros((nbatt, ntime))
+        self.battery_v = np.zeros((nbatt, ntime))
+
         self.battery_qmin = np.zeros(nbatt)
         self.battery_qmax = np.zeros(nbatt)
 
         self.C_bus_batt = sp.lil_matrix((nbus, nbatt), dtype=int)
 
-    def slice(self, batt_idx, bus_idx):
+    def slice(self, elm_idx, bus_idx, time_idx=None):
         """
 
-        :param batt_idx:
+        :param elm_idx:
         :param bus_idx:
+        :param time_idx:
         :return:
         """
-        data = BatteryData(nbatt=len(batt_idx), nbus=len(bus_idx))
 
-        data.battery_names = self.battery_names[batt_idx]
-        data.battery_active = self.battery_active[batt_idx]
-        data.battery_controllable = self.battery_controllable[batt_idx]
-        data.battery_p = self.battery_p[batt_idx]
-        data.battery_pf = self.battery_pf[batt_idx]
-        data.battery_v = self.battery_v[batt_idx]
-        data.battery_qmin = self.battery_qmin[batt_idx]
-        data.battery_qmax = self.battery_qmax[batt_idx]
+        if time_idx is None:
+            tidx = elm_idx
+        else:
+            tidx = np.ix_(elm_idx, time_idx)
 
-        data.C_bus_batt = self.C_bus_batt[np.ix_(bus_idx, batt_idx)]
+        data = BatteryData(nbatt=len(elm_idx), nbus=len(bus_idx))
+
+        data.battery_names = self.battery_names[elm_idx]
+        data.battery_controllable = self.battery_controllable[elm_idx]
+
+        data.battery_active = self.battery_active[tidx]
+        data.battery_p = self.battery_p[tidx]
+        data.battery_pf = self.battery_pf[tidx]
+        data.battery_v = self.battery_v[tidx]
+
+        data.battery_qmin = self.battery_qmin[elm_idx]
+        data.battery_qmax = self.battery_qmax[elm_idx]
+
+        data.C_bus_batt = self.C_bus_batt[np.ix_(bus_idx, elm_idx)]
 
         return data
 
@@ -90,43 +103,66 @@ class BatteryData:
         return self.nbatt
 
 
-class BatteryTimeData(BatteryData):
+class BatteryOpfData(BatteryData):
 
-    def __init__(self, nbatt, nbus, ntime):
-        BatteryData.__init__(self, nbatt, nbus)
-
-        self.ntime = ntime
-
-        self.battery_active = np.zeros((ntime, nbatt), dtype=bool)
-        self.battery_p = np.zeros((ntime, nbatt))
-        self.battery_pf = np.zeros((ntime, nbatt))
-        self.battery_v = np.zeros((ntime, nbatt))
-
-    def slice_time(self, batt_idx, bus_idx, time_idx):
+    def __init__(self, nbatt, nbus, ntime=1):
         """
 
-        :param batt_idx:
+        :param nbatt: 
+        :param nbus: 
+        :param ntime: 
+        """
+        BatteryData.__init__(self, nbatt, nbus, ntime)
+
+        self.battery_dispatchable = np.zeros(nbatt, dtype=bool)
+        self.battery_pmax = np.zeros(nbatt)
+        self.battery_pmin = np.zeros(nbatt)
+        self.battery_enom = np.zeros(nbatt)
+        self.battery_min_soc = np.zeros(nbatt)
+        self.battery_max_soc = np.zeros(nbatt)
+        self.battery_soc_0 = np.zeros(nbatt)
+        self.battery_discharge_efficiency = np.zeros(nbatt)
+        self.battery_charge_efficiency = np.zeros(nbatt)
+        self.battery_cost = np.zeros((nbatt, ntime))
+
+    def slice(self, elm_idx, bus_idx, time_idx=None):
+        """
+
+        :param elm_idx:
         :param bus_idx:
         :param time_idx:
         :return:
         """
-        data = BatteryTimeData(nbatt=len(batt_idx), nbus=len(bus_idx), ntime=len(time_idx))
 
-        data.battery_names = self.battery_names[batt_idx]
+        if time_idx is None:
+            tidx = elm_idx
+        else:
+            tidx = np.ix_(elm_idx, time_idx)
 
-        data.battery_active = self.battery_active[np.ix_(time_idx, batt_idx)]
-        data.battery_p = self.battery_p[np.ix_(time_idx, batt_idx)]
-        data.battery_pf = self.battery_pf[np.ix_(time_idx, batt_idx)]
-        data.battery_v = self.battery_v[np.ix_(time_idx, batt_idx)]
+        data = BatteryOpfData(nbatt=len(elm_idx), nbus=len(bus_idx))
 
-        data.battery_controllable = self.battery_controllable[batt_idx]
+        data.battery_names = self.battery_names[elm_idx]
+        data.battery_controllable = self.battery_controllable[elm_idx]
+        data.battery_dispatchable = self.battery_dispatchable[elm_idx]
 
-        data.battery_qmin = self.battery_qmin[batt_idx]
-        data.battery_qmax = self.battery_qmax[batt_idx]
+        data.battery_pmax = self.battery_pmax[elm_idx]
+        data.battery_pmin = self.battery_pmin[elm_idx]
+        data.battery_enom = self.battery_enom[elm_idx]
+        data.battery_min_soc = self.battery_min_soc[elm_idx]
+        data.battery_max_soc = self.battery_max_soc[elm_idx]
+        data.battery_soc_0 = self.battery_soc_0[elm_idx]
+        data.battery_discharge_efficiency = self.battery_discharge_efficiency[elm_idx]
+        data.battery_charge_efficiency = self.battery_charge_efficiency[elm_idx]
 
-        data.C_bus_batt = self.C_bus_batt[np.ix_(bus_idx, batt_idx)]
+        data.battery_active = self.battery_active[tidx]
+        data.battery_p = self.battery_p[tidx]
+        data.battery_pf = self.battery_pf[tidx]
+        data.battery_v = self.battery_v[tidx]
+        data.battery_cost = self.battery_cost[tidx]
+
+        data.battery_qmin = self.battery_qmin[elm_idx]
+        data.battery_qmax = self.battery_qmax[elm_idx]
+
+        data.C_bus_batt = self.C_bus_batt[np.ix_(bus_idx, elm_idx)]
 
         return data
-
-    def get_injections_per_bus(self):
-        return self.C_bus_batt * (self.get_injections() * self.battery_active).T

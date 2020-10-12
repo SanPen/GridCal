@@ -25,7 +25,7 @@ from matplotlib import pyplot as plt
 from GridCal.Engine import *
 
 
-def make_ptdf(circuit: SnapshotCircuit, distribute_slack=True):
+def make_ptdf(circuit: SnapshotData, distribute_slack=True):
     """
 
     :param circuit:

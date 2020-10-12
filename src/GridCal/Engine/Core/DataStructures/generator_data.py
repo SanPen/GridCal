@@ -19,45 +19,58 @@ import GridCal.Engine.Core.topology as tp
 
 class GeneratorData:
 
-    def __init__(self, ngen, nbus):
+    def __init__(self, ngen, nbus, ntime=1):
         """
 
         :param ngen:
         :param nbus:
         """
         self.ngen = ngen
+        self.ntime = ntime
 
         self.generator_names = np.empty(ngen, dtype=object)
-        self.generator_active = np.zeros(ngen, dtype=bool)
+
         self.generator_controllable = np.zeros(ngen, dtype=bool)
         self.generator_installed_p = np.zeros(ngen)
-        self.generator_p = np.zeros(ngen)
-        self.generator_pf = np.zeros(ngen)
-        self.generator_v = np.zeros(ngen)
+
+        self.generator_active = np.zeros((ngen, ntime), dtype=bool)
+        self.generator_p = np.zeros((ngen, ntime))
+        self.generator_pf = np.zeros((ngen, ntime))
+        self.generator_v = np.zeros((ngen, ntime))
+
         self.generator_qmin = np.zeros(ngen)
         self.generator_qmax = np.zeros(ngen)
 
         self.C_bus_gen = sp.lil_matrix((nbus, ngen), dtype=int)
 
-    def slice(self, gen_idx, bus_idx):
+    def slice(self, elm_idx, bus_idx, time_idx=None):
         """
 
-        :param gen_idx:
+        :param elm_idx:
         :param bus_idx:
+        :param time_idx:
         :return:
         """
-        data = GeneratorData(ngen=len(gen_idx), nbus=len(bus_idx))
 
-        data.generator_names = self.generator_names[gen_idx]
-        data.generator_active = self.generator_active[gen_idx]
-        data.generator_controllable = self.generator_controllable[gen_idx]
-        data.generator_p = self.generator_p[gen_idx]
-        data.generator_pf = self.generator_pf[gen_idx]
-        data.generator_v = self.generator_v[gen_idx]
-        data.generator_qmin = self.generator_qmin[gen_idx]
-        data.generator_qmax = self.generator_qmax[gen_idx]
+        if time_idx is None:
+            tidx = elm_idx
+        else:
+            tidx = np.ix_(elm_idx, time_idx)
 
-        data.C_bus_gen = self.C_bus_gen[np.ix_(bus_idx, gen_idx)]
+        data = GeneratorData(ngen=len(elm_idx), nbus=len(bus_idx))
+
+        data.generator_names = self.generator_names[elm_idx]
+        data.generator_controllable = self.generator_controllable[elm_idx]
+
+        data.generator_active = self.generator_active[tidx]
+        data.generator_p = self.generator_p[tidx]
+        data.generator_pf = self.generator_pf[tidx]
+        data.generator_v = self.generator_v[tidx]
+
+        data.generator_qmin = self.generator_qmin[elm_idx]
+        data.generator_qmax = self.generator_qmax[elm_idx]
+
+        data.C_bus_gen = self.C_bus_gen[np.ix_(bus_idx, elm_idx)]
 
         return data
 
@@ -90,41 +103,54 @@ class GeneratorData:
         return self.ngen
 
 
-class GeneratorTimeData(GeneratorData):
+class GeneratorOpfData(GeneratorData):
 
-    def __init__(self, ngen, nbus, ntime):
-        GeneratorData.__init__(self, ngen, nbus)
-
-        self.ntime = ntime
-
-        self.generator_active = np.zeros((ntime, ngen), dtype=bool)
-        self.generator_p = np.zeros((ntime, ngen))
-        self.generator_pf = np.zeros((ntime, ngen))
-        self.generator_v = np.zeros((ntime, ngen))
-
-    def slice_time(self, gen_idx, bus_idx, time_idx):
+    def __init__(self, ngen, nbus, ntime=1):
         """
 
-        :param gen_idx:
+        :param ngen:
+        :param nbus:
+        :param ntime:
+        """
+        GeneratorData.__init__(self, ngen, nbus, ntime)
+
+        self.generator_dispatchable = np.zeros(ngen, dtype=bool)
+        self.generator_pmax = np.zeros(ngen)
+        self.generator_pmin = np.zeros(ngen)
+        self.generator_cost = np.zeros((ngen, ntime))
+
+    def slice(self, elm_idx, bus_idx, time_idx=None):
+        """
+
+        :param elm_idx:
         :param bus_idx:
         :param time_idx:
         :return:
         """
-        data = GeneratorTimeData(ngen=len(gen_idx), nbus=len(bus_idx), ntime=len(time_idx))
 
-        data.generator_names = self.generator_names[gen_idx]
-        data.generator_controllable = self.generator_controllable[gen_idx]
-        data.generator_qmin = self.generator_qmin[gen_idx]
-        data.generator_qmax = self.generator_qmax[gen_idx]
+        if time_idx is None:
+            tidx = elm_idx
+        else:
+            tidx = np.ix_(elm_idx, time_idx)
 
-        data.generator_active = self.generator_active[np.ix_(time_idx, gen_idx)]
-        data.generator_p = self.generator_p[np.ix_(time_idx, gen_idx)]
-        data.generator_pf = self.generator_pf[np.ix_(time_idx, gen_idx)]
-        data.generator_v = self.generator_v[np.ix_(time_idx, gen_idx)]
+        data = GeneratorOpfData(ngen=len(elm_idx), nbus=len(bus_idx))
 
-        data.C_bus_gen = self.C_bus_gen[np.ix_(bus_idx, gen_idx)]
+        data.generator_names = self.generator_names[elm_idx]
+        data.generator_controllable = self.generator_controllable[elm_idx]
+        data.generator_dispatchable = self.generator_dispatchable[elm_idx]
+
+        data.generator_pmax = self.generator_pmax[elm_idx]
+        data.generator_pmin = self.generator_pmin[elm_idx]
+
+        data.generator_active = self.generator_active[tidx]
+        data.generator_p = self.generator_p[tidx]
+        data.generator_pf = self.generator_pf[tidx]
+        data.generator_v = self.generator_v[tidx]
+        data.generator_cost = self.generator_cost[tidx]
+
+        data.generator_qmin = self.generator_qmin[elm_idx]
+        data.generator_qmax = self.generator_qmax[elm_idx]
+
+        data.C_bus_gen = self.C_bus_gen[np.ix_(bus_idx, elm_idx)]
 
         return data
-
-    def get_injections_per_bus(self):
-        return self.C_bus_gen * (self.get_injections() * self.generator_active).T

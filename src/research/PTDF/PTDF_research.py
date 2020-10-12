@@ -150,7 +150,7 @@ def compute_ptdf(Ybus, Yf, Yt, Cf, Ct, V, Ibus, Sbus, pq, pv):
     return PTDF, J
 
 
-def make_lodf(circuit: SnapshotCircuit, PTDF, correct_values=True):
+def make_lodf(circuit: SnapshotData, PTDF, correct_values=True):
     """
 
     :param circuit:

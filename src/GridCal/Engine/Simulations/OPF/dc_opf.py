@@ -19,7 +19,7 @@ That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
 import GridCal.ThirdParty.pulp as pl
-from GridCal.Engine.Core.snapshot_opf_data import OpfSnapshotCircuit, split_into_opf_islands
+# from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
 
 
@@ -85,7 +85,7 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     return pl.lpDot(C_bus_gen, Pg) + pl.lpDot(C_bus_bat, Pb) - pl.lpDot(C_bus_load, Pl - LSlack)
 
 
-def add_dc_nodal_power_balance(numerical_circuit: OpfSnapshotCircuit, problem: pl.LpProblem, theta, P):
+def add_dc_nodal_power_balance(numerical_circuit, problem: pl.LpProblem, theta, P):
     """
     Add the nodal power balance
     :param numerical_circuit: NumericalCircuit instance
@@ -96,7 +96,7 @@ def add_dc_nodal_power_balance(numerical_circuit: OpfSnapshotCircuit, problem: p
     """
 
     # do the topological computation
-    calculation_inputs = split_into_opf_islands(numerical_circuit)
+    calculation_inputs = numerical_circuit.split_into_islands()
 
     nodal_restrictions = np.empty(numerical_circuit.nbus, dtype=object)
 
@@ -179,7 +179,7 @@ def add_branch_loading_restriction(problem: pl.LpProblem, theta_f, theta_t, Bser
 
 class OpfDc(Opf):
 
-    def __init__(self, numerical_circuit: OpfSnapshotCircuit, solver: MIPSolvers = MIPSolvers.CBC):
+    def __init__(self, numerical_circuit, solver: MIPSolvers = MIPSolvers.CBC):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
@@ -246,9 +246,9 @@ class OpfDc(Opf):
         set_fix_generation(problem=problem, Pg=Pg, P_fix=P_fix, enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the nodal power injections
-        P = get_power_injections(C_bus_gen=self.numerical_circuit.C_bus_gen, Pg=Pg,
-                                 C_bus_bat=self.numerical_circuit.C_bus_batt, Pb=Pb,
-                                 C_bus_load=self.numerical_circuit.C_bus_load,
+        P = get_power_injections(C_bus_gen=self.numerical_circuit.generator_data.C_bus_gen, Pg=Pg,
+                                 C_bus_bat=self.numerical_circuit.battery_data.C_bus_batt, Pb=Pb,
+                                 C_bus_load=self.numerical_circuit.load_data.C_bus_load,
                                  LSlack=load_slack, Pl=Pl)
 
         # add the DC grid restrictions (with real slack losses)

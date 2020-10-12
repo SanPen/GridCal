@@ -24,7 +24,7 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Gui.GuiFunctions import ResultsModel
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
 
 def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
@@ -220,7 +220,7 @@ class LinearAnalysis:
         Run the PTDF and LODF
         """
         self.numerical_circuit = compile_snapshot_circuit(self.grid)
-        islands = split_into_islands(self.numerical_circuit)
+        islands = self.numerical_circuit.split_into_islands()
 
         self.results = LinearAnalysisResults(n_br=self.numerical_circuit.nbr,
                                              n_bus=self.numerical_circuit.nbus,
