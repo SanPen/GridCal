@@ -59,10 +59,10 @@ class ConsoleWidget(RichJupyterWidget):
 
 
 if __name__ == '__main__':
-    try:
-        from qtconsole.qt import QtWidgets
-    except:
-        from qtconsole.qtconsoleapp import QtWidgets
+    # try:
+    #     from qtconsole.qt import QtWidgets
+    # except:
+    from qtconsole.qtconsoleapp import QtWidgets
     app = QtWidgets.QApplication([])
     widget = ConsoleWidget()
     widget.show()

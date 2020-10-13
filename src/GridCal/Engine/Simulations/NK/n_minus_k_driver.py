@@ -174,7 +174,7 @@ class NMinusK(QThread):
 if __name__ == '__main__':
     import os
     import pandas as pd
-    from GridCal.Engine import FileOpen, SolverType
+    from GridCal.Engine import FileOpen, SolverType,PowerFlowOptions
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
@@ -185,9 +185,8 @@ if __name__ == '__main__':
 
     main_circuit = FileOpen(fname).open()
 
-    pf_options_ = PowerFlowOptions(solver_type=SolverType.LACPF)
-    options_ = NMinusKOptions(use_multi_threading=False)
-    simulation = NMinusK(grid=main_circuit, options=options_, pf_options=pf_options_)
+    options_ = NMinusKOptions()
+    simulation = NMinusK(grid=main_circuit, options=options_)
     simulation.run()
 
     otdf_ = simulation.get_otdf()

@@ -282,9 +282,6 @@ class PowerFlowResults:
         """
 
         :param result_type:
-        :param ax:
-        :param indices:
-        :param names:
         :return:
         """
 
