@@ -174,6 +174,281 @@ def parse_json_data(data) -> MultiCircuit:
     return circuit
 
 
+def parse_json_data_v3(data: dict, logger: Logger):
+    """
+    New Json parser
+    :param data:
+    :param logger:
+    :return:
+    """
+    devices = data['devices']
+    profiles = data['profiles']
+
+    if DeviceType.CircuitDevice.value in devices.keys():
+
+        dta = devices[DeviceType.CircuitDevice.value]
+        circuit = MultiCircuit(name=str(dta['name']),
+                               Sbase=float(dta['sbase']),
+                               fbase=float(dta['fbase']),
+                               idtag=str(dta['id']))
+
+        jcircuit = devices["Circuit"]
+        circuit.Sbase = jcircuit["sbase"]
+
+        # Countries
+        country_dict = dict()
+        if 'Country' in devices.keys():
+            elms = devices["Country"]
+            for jentry in elms:
+                elm = Country(idtag=str(jentry['id']),
+                              code=str(jentry['code']),
+                              name=str(jentry['name']))
+                circuit.countries.append(elm)
+                country_dict[elm.idtag] = elm
+        else:
+            elm = Country(idtag=None, code='Default', name='Default')
+            circuit.countries.append(elm)
+
+        # Areas
+        areas_dict = dict()
+        if 'Area' in devices.keys():
+            elms = devices["Area"]
+            for jentry in elms:
+                elm = Area(idtag=str(jentry['id']),
+                           code=str(jentry['code']),
+                           name=str(jentry['name']))
+                circuit.areas.append(elm)
+                areas_dict[elm.idtag] = elm
+        else:
+            elm = Area(idtag=None, code='Default', name='Default')
+            circuit.areas.append(elm)
+
+        # Zones
+        zones_dict = dict()
+        if 'Zone' in devices.keys():
+            elms = devices["Zone"]
+            for jentry in elms:
+                elm = Zone(idtag=str(jentry['id']),
+                           code=str(jentry['code']),
+                           name=str(jentry['name']))
+                circuit.zones.append(elm)
+                zones_dict[elm.idtag] = elm
+        else:
+            elm = Zone(idtag=None, code='Default', name='Default')
+            circuit.zones.append(elm)
+
+        # Substations
+        substations_dict = dict()
+        if 'Substation' in devices.keys():
+            elms = devices["Substation"]
+            for jentry in elms:
+                elm = Substation(idtag=str(jentry['id']),
+                                 code=str(jentry['code']),
+                                 name=str(jentry['name']))
+                circuit.substations.append(elm)
+                substations_dict[elm.idtag] = elm
+        else:
+            elm = Substation(idtag=None, code='Default', name='Default')
+            circuit.substations.append(elm)
+
+        # buses
+        bus_dict = dict()
+        if 'Bus' in devices.keys():
+            buses = devices["Bus"]
+            for jentry in buses:
+
+                area_id = str(jentry['area']) if 'area' in jentry.keys() else ''
+                zone_id = str(jentry['zone']) if 'zone' in jentry.keys() else ''
+                substation_id = str(jentry['substation']) if 'substation' in jentry.keys() else ''
+                country_id = str(jentry['country']) if 'country' in jentry.keys() else ''
+
+                if area_id in areas_dict.keys():
+                    area = areas_dict[area_id]
+                else:
+                    area = circuit.areas[0]
+
+                if zone_id in zones_dict.keys():
+                    zone = zones_dict[zone_id]
+                else:
+                    zone = circuit.zones[0]
+
+                if substation_id in substations_dict.keys():
+                    substation = substations_dict[substation_id]
+                else:
+                    substation = circuit.substations[0]
+
+                if country_id in country_dict.keys():
+                    country = country_dict[country_id]
+                else:
+                    country = circuit.countries[0]
+
+                bus = Bus(name=str(jentry['name']),
+                          idtag=str(jentry['id']),
+                          vnom=float(jentry['vnom']),
+                          vmin=float(jentry['vmin']),
+                          vmax=float(jentry['vmax']),
+                          r_fault=float(jentry['rf']),
+                          x_fault=float(jentry['xf']),
+                          xpos=float(jentry['x']),
+                          ypos=float(jentry['y']),
+                          height=float(jentry['h']),
+                          width=float(jentry['w']),
+                          active=bool(jentry['active']),
+                          is_slack=bool(jentry['is_slack']),
+                          area=area,
+                          zone=zone,
+                          substation=substation,
+                          country=country,
+                          longitude=float(jentry['lon']),
+                          latitude=float(jentry['lat']))
+
+                bus_dict[jentry['id']] = bus
+                circuit.add_bus(bus)
+
+        if 'Generator' in devices.keys():
+            generators = devices["Generator"]
+            for jentry in generators:
+                gen = Generator(name=str(jentry['name']),
+                                idtag=str(jentry['id']),
+                                active_power=float(jentry['p']),
+                                power_factor=float(jentry['pf']),
+                                voltage_module=float(jentry['vset']),
+                                is_controlled=bool(jentry['is_controlled']),
+                                Qmin=float(jentry['qmin']),
+                                Qmax=float(jentry['qmax']),
+                                Snom=float(jentry['snom']),
+                                active=bool(jentry['active']),
+                                p_min=float(jentry['pmin']),
+                                p_max=float(jentry['pmax']),
+                                op_cost=float(jentry['cost']),
+                                )
+                gen.bus = bus_dict[jentry['bus']]
+                circuit.add_generator(gen.bus, gen)
+
+        if 'Battery' in devices.keys():
+            batteries = devices["Battery"]
+            for jentry in batteries:
+                gen = Battery(name=str(jentry['name']),
+                              idtag=str(jentry['id']),
+                              active_power=float(jentry['p']),
+                              power_factor=float(jentry['pf']),
+                              voltage_module=float(jentry['vset']),
+                              is_controlled=bool(jentry['is_controlled']),
+                              Qmin=float(jentry['qmin']),
+                              Qmax=float(jentry['qmax']),
+                              Snom=float(jentry['snom']),
+                              active=bool(jentry['active']),
+                              p_min=float(jentry['pmin']),
+                              p_max=float(jentry['pmax']),
+                              op_cost=float(jentry['cost']),
+                              )
+                gen.bus = bus_dict[jentry['bus']]
+                circuit.add_battery(gen.bus, gen)
+
+        if 'Load' in devices.keys():
+            loads = devices["Load"]
+            for jentry in loads:
+                elm = Load(name=str(jentry['name']),
+                           idtag=str(jentry['id']),
+                           P=float(jentry['p']),
+                           Q=float(jentry['q']),
+                           active=bool(jentry['active']))
+                elm.bus = bus_dict[jentry['bus']]
+                circuit.add_load(elm.bus, elm)
+
+        if "Shunt" in devices.keys():
+            shunts = devices["Shunt"]
+            for jentry in shunts:
+                elm = Shunt(name=str(jentry['name']),
+                            idtag=str(jentry['id']),
+                            G=float(jentry['g']),
+                            B=float(jentry['b']),
+                            Bmax=float(jentry['b_max']),
+                            Bmin=float(jentry['b_min']),
+                            active=bool(jentry['active']),
+                            controlled=bool(jentry['controlled'])
+                            )
+                elm.bus = bus_dict[jentry['bus']]
+                circuit.add_shunt(elm.bus, elm)
+
+        if "Line" in devices.keys():
+            lines = devices["Line"]
+            for entry in lines:
+                elm = Line(bus_from=bus_dict[entry['bus_from']],
+                           bus_to=bus_dict[entry['bus_to']],
+                           name=str(entry['name']),
+                           idtag=str(entry['id']),
+                           r=float(entry['r']),
+                           x=float(entry['x']),
+                           b=float(entry['b']),
+                           rate=float(entry['rate']),
+                           active=entry['active'],
+                           length=float(entry['length']),
+                           temp_base=float(entry['base_temperature']),
+                           temp_oper=float(entry['operational_temperature']),
+                           alpha=float(entry['alpha'])
+                           )
+                circuit.add_line(elm)
+
+        if "Transformer2w" in devices.keys():
+
+            if "Transformer2w" in devices.keys():
+                transformers = devices["Transformer2w"]
+            else:
+                raise Exception('Transformer key not found')
+
+            for entry in transformers:
+
+                v1 = float(entry['Vnomf'])
+                v2 = float(entry['Vnomt'])
+
+                if v1 > v2:
+                    HV = v1
+                    LV = v2
+                else:
+                    HV = v2
+                    LV = v1
+
+                elm = Transformer2W(bus_from=bus_dict[entry['bus_from']],
+                                    bus_to=bus_dict[entry['bus_to']],
+                                    name=str(entry['name']),
+                                    idtag=str(entry['id']),
+                                    r=float(entry['r']),
+                                    x=float(entry['x']),
+                                    g=float(entry['g']),
+                                    b=float(entry['b']),
+                                    rate=float(entry['rate']),
+                                    HV=HV,
+                                    LV=LV,
+                                    active=bool(entry['active']),
+                                    tap=float(entry['tap_module']),
+                                    shift_angle=float(entry['tap_angle']),
+                                    bus_to_regulated=bool(entry['bus_to_regulated']),
+                                    vset=float(entry['vset']),
+                                    temp_base=float(entry['base_temperature']),
+                                    temp_oper=float(entry['operational_temperature']),
+                                    alpha=float(entry['alpha'])
+                                    )
+                circuit.add_transformer2w(elm)
+
+        if "VSC" in devices.keys():
+            vsc = devices["VSC"]
+
+            # TODO: call correct_buses_connection()
+
+        if "HVDC Line" in devices.keys():
+            hvdc = devices["HVDC Line"]
+
+        # fill x, y
+        circuit.fill_xy_from_lat_lon()
+
+        return circuit
+
+    else:
+        logger.add('The Json structure does not have a Circuit inside the devices!')
+        return MultiCircuit()
+
+
 def parse_json_data_v2(data: dict, logger: Logger):
     """
     New Json parser
@@ -415,6 +690,10 @@ def parse_json_data_v2(data: dict, logger: Logger):
 
         if "HVDC Line" in devices.keys():
             hvdc = devices["HVDC Line"]
+
+
+        # fill x, y
+        circuit.fill_xy_from_lat_lon()
 
         return circuit
 

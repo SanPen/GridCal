@@ -74,7 +74,8 @@ dependencies = ["PySide2>=5.13",  # for now, 5.14 breaks the UI generation for d
                 "pytest>=3.8",
                 "h5py>=2.9.0",
                 "numba>=0.46",
-                "folium"]
+                "folium",
+                'pyproj']
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.

@@ -7,7 +7,8 @@ from scipy.sparse import hstack, vstack
 from scipy.sparse.linalg import spsolve
 from enum import Enum
 
-from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
+from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import _create_J_with_numba
+# from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 
 
 class VCStopAt(Enum):
@@ -183,10 +184,17 @@ def cpf_p_jac(parametrization: VCParametrization, z, V, lam, Vprv, lamprv, pv, p
         dP_dV = z[r_[pv, pq, nb + pq]]
         dP_dlam = z[2 * nb]
 
+    else:
+        # pseudo arc length for any other case
+        nb = len(V)
+        dP_dV = z[r_[pv, pq, nb + pq]]
+        dP_dlam = z[2 * nb]
+
     return dP_dV, dP_dlam
 
 
-def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parametrization, tol, max_it, verbose):
+def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parametrization, tol, max_it,
+              pvpq_lookup, verbose):
     """
     Solves the corrector step of a continuation power flow using a full Newton method
     with selected parametrization scheme.
@@ -334,7 +342,8 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
         i += 1
         
         # evaluate Jacobian
-        J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+        # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+        J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
     
         dF_dlam = -r_[Sxfr[pvpq].real, Sxfr[pq].imag]
 
@@ -435,7 +444,7 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
 
 
 def corrector_new(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parametrization, tol, max_it,
-                  verbose, max_it_internal=10):
+                  pvpq_lookup, verbose, max_it_internal=10):
     """
     Solves the corrector step of a continuation power flow using a full Newton method
     with selected parametrization scheme.
@@ -586,7 +595,8 @@ def corrector_new(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, ste
         i += 1
 
         # evaluate Jacobian
-        J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+        # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+        J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
 
         dF_dlam = -r_[Sxfr[pvpq].real, Sxfr[pq].imag]
 
@@ -669,7 +679,8 @@ def corrector_new(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, ste
     return V, converged, i, lam, error
 
 
-def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, parametrization: VCParametrization):
+def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
+              parametrization: VCParametrization, pvpq_lookup):
     """
     Computes a prediction (approximation) to the next solution of the
     continuation power flow using a normalized tangent predictor.
@@ -711,8 +722,9 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv, parametri
     nj = npv+npq*2
 
     # compute Jacobian for the power flow equations
-    J = Jacobian(Ybus, V, Ibus, pq, pvpq)
-    
+    # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+    J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
+
     dF_dlam = -r_[Sxfr[pvpq].real, Sxfr[pq].imag]
 
     dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
@@ -815,6 +827,10 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
     z = zeros(2 * nb + 1)
     z[2 * nb] = 1.0
 
+    # generate lookup pvpq -> index pvpq (used in createJ)
+    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+    pvpq_lookup[pvpq] = np.arange(len(pvpq))
+
     # result arrays
     voltage_series = list()
     lambda_series = list()
@@ -835,7 +851,8 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
                                 z=z,
                                 Vprv=V_prev,
                                 lamprv=lam_prev,
-                                parametrization=approximation_order)
+                                parametrization=approximation_order,
+                                pvpq_lookup=pvpq_lookup)
 
         # save previous voltage, lambda before updating
         V_prev = V.copy()
@@ -857,6 +874,7 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
                                               parametrization=approximation_order,
                                               tol=tol,
                                               max_it=max_it,
+                                              pvpq_lookup=pvpq_lookup,
                                               verbose=verbose)
 
         # store series values

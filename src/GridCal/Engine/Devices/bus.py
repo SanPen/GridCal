@@ -16,6 +16,7 @@
 
 import numpy as np
 import pandas as pd
+import pyproj
 from matplotlib import pyplot as plt
 from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
@@ -646,3 +647,5 @@ class Bus(EditableDevice):
 
         if self.country is None:
             self.country = circuit.countries[0]
+
+
