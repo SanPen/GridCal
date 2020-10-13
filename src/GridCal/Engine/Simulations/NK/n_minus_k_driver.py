@@ -15,13 +15,12 @@
 import time
 import datetime
 import numpy as np
-import pandas as pd
 from itertools import combinations
 from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.NK.n_minus_k_results import NMinusKResults
 from GridCal.Engine.Simulations.PTDF.analytic_ptdf import LinearAnalysis
 
