@@ -128,7 +128,7 @@ class NMinusK(QThread):
                                          correct_values=self.options.correct_values)
         linear_analysis.run()
 
-        Pbus = self.numerical_circuit.get_injections(False).real
+        Pbus = self.numerical_circuit.get_injections(False).real[:, 0]
         PTDF = linear_analysis.results.PTDF
         LODF = linear_analysis.results.LODF
 
@@ -144,7 +144,7 @@ class NMinusK(QThread):
             #     results.loading[m, c] = results.Sbranch[m, c] / (self.numerical_circuit.branch_rates[m] + 1e-9)
 
             results.Sbranch[:, c] = flows_n[:] + LODF[:, c] * flows_n[c]
-            results.loading[:, c] = results.Sbranch[:, c] / (self.numerical_circuit.branch_rates[:] + 1e-9)
+            results.loading[:, c] = results.Sbranch[:, c] / (self.numerical_circuit.branch_rates + 1e-9)
 
             results.S[c, :] = Pbus
 

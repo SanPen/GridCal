@@ -21,7 +21,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PTDF.ptdf_analysis import get_ptdf_variations, power_flow_worker, PtdfGroupMode
 from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFResults
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
 ########################################################################################################################
 # Optimal Power flow classes
@@ -104,8 +104,7 @@ class PTDF(QThread):
                                                      branch_tolerance_mode=options.branch_impedance_tolerance_mode,
                                                      opf_results=self.opf_results)
 
-        calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,
-                                                ignore_single_node_islands=options.ignore_single_node_islands)
+        calculation_inputs = numerical_circuit.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
 
         # compute the variations
         delta_of_power_variations = get_ptdf_variations(circuit=circuit,
@@ -188,8 +187,7 @@ class PTDF(QThread):
                                                      branch_tolerance_mode=options.branch_impedance_tolerance_mode,
                                                      opf_results=self.opf_results)
 
-        calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,
-                                                ignore_single_node_islands=options.ignore_single_node_islands)
+        calculation_inputs = numerical_circuit.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
 
         # compute the variations
         delta_of_power_variations = get_ptdf_variations(circuit=circuit,

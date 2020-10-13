@@ -19,7 +19,6 @@ from PySide2.QtCore import QThread, Signal
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PTDF.analytic_ptdf import *
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
 
 ########################################################################################################################
 # Optimal Power flow classes

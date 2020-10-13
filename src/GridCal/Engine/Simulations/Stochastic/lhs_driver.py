@@ -24,7 +24,7 @@ from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import make_monte_
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, single_island_pf, \
                                                                    power_flow_worker_args, power_flow_post_process
-from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, split_time_circuit_into_islands, BranchImpedanceMode
+from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
 
 
 class LatinHypercubeSampling(QThread):
@@ -197,8 +197,7 @@ class LatinHypercubeSampling(QThread):
                                                  opf_results=self.opf_time_series_results)
 
         # do the topological computation
-        calculation_inputs = split_time_circuit_into_islands(numeric_circuit=numerical_circuit,
-                                                             ignore_single_node_islands=self.options.ignore_single_node_islands)
+        calculation_inputs = numerical_circuit.split_into_islands(ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         lhs_results = MonteCarloResults(n=numerical_circuit.nbus,
                                         m=numerical_circuit.nbr,
@@ -228,7 +227,7 @@ class LatinHypercubeSampling(QThread):
             # build the inputs
             monte_carlo_input = make_monte_carlo_input(numerical_island)
             mc_time_series = monte_carlo_input(self.sampling_points, use_latin_hypercube=True)
-            Vbus = numerical_island.Vbus[0, :]
+            Vbus = numerical_island.Vbus[:, 0]
 
             # short cut the indices
             bus_idx = numerical_island.original_bus_idx
@@ -245,7 +244,7 @@ class LatinHypercubeSampling(QThread):
                                        Vbus=Vbus,
                                        Sbus=S,
                                        Ibus=I,
-                                       branch_rates=numerical_island.branch_rates[0, :],
+                                       branch_rates=numerical_island.branch_rates,
                                        options=self.options,
                                        logger=self.logger)
 
@@ -274,7 +273,7 @@ class LatinHypercubeSampling(QThread):
             losses, flow_direction, Sbus = power_flow_post_process(numerical_island,
                                                                    Sbus=lhs_results.S_points.mean(axis=0)[bus_idx],
                                                                    V=lhs_results.V_points.mean(axis=0)[bus_idx],
-                                                                   branch_rates=numerical_island.branch_rates[0, :])
+                                                                   branch_rates=numerical_island.branch_rates)
 
             # apply the island averaged results
             avg_res.Sbus[bus_idx] = Sbus

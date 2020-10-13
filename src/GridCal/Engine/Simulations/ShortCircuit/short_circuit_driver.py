@@ -22,10 +22,10 @@ from GridCal.Engine.Simulations.ShortCircuit.short_circuit import short_circuit_
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowOptions
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotCircuit
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Devices import Branch, Bus
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Gui.GuiFunctions import ResultsModel
 
 ########################################################################################################################
@@ -209,6 +209,8 @@ class ShortCircuit(QRunnable):
 
         self.__cancel__ = False
 
+        self._is_running = False
+
     def get_steps(self):
         """
         Get time steps list of strings
@@ -272,7 +274,7 @@ class ShortCircuit(QRunnable):
 
         return br1, br2, middle_bus
 
-    def single_short_circuit(self, calculation_inputs: SnapshotCircuit, Vpf, Zf):
+    def single_short_circuit(self, calculation_inputs: SnapshotData, Vpf, Zf):
         """
         Run a power flow simulation for a single circuit
         @param calculation_inputs:
@@ -335,7 +337,7 @@ class ShortCircuit(QRunnable):
         return results
 
     @staticmethod
-    def compute_branch_results(calculation_inputs: SnapshotCircuit, V):
+    def compute_branch_results(calculation_inputs: SnapshotData, V):
         """
         Compute the power flows trough the branches
         @param calculation_inputs: instance of Circuit
@@ -344,8 +346,8 @@ class ShortCircuit(QRunnable):
         """
         If = calculation_inputs.Yf * V
         It = calculation_inputs.Yt * V
-        Sf = (calculation_inputs.C_branch_bus_f * V) * np.conj(If)
-        St = (calculation_inputs.C_branch_bus_t * V) * np.conj(It)
+        Sf = (calculation_inputs.Cf * V) * np.conj(If)
+        St = (calculation_inputs.Ct * V) * np.conj(It)
         losses = Sf - St
         Ibranch = np.maximum(If, It)
         Sbranch = np.maximum(Sf, St)
@@ -358,7 +360,7 @@ class ShortCircuit(QRunnable):
         Run a power flow for every circuit
         @return:
         """
-
+        self._is_running = True
         if len(self.options.branch_index) > 0:
 
             # if there are branch indices where to perform short circuits, modify the grid accordingly
@@ -389,8 +391,7 @@ class ShortCircuit(QRunnable):
                                                      branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
                                                      opf_results=self.opf_results)
 
-        calculation_inputs = split_into_islands(numeric_circuit=numerical_circuit,
-                                                ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
+        calculation_inputs = numerical_circuit.split_into_islands(ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
 
         results = ShortCircuitResults(n=numerical_circuit.nbus,
                                       m=numerical_circuit.nbr,
@@ -425,6 +426,10 @@ class ShortCircuit(QRunnable):
 
         self.results = results
         self.grid.short_circuit_results = results
+        self._is_running = False
 
     def cancel(self):
         self.__cancel__ = True
+
+    def isRunning(self):
+        return self._is_running

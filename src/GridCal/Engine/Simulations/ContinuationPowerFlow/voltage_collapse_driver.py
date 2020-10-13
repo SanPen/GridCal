@@ -25,7 +25,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import power_flow_po
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, VCStopAt, VCParametrization
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Gui.GuiFunctions import ResultsModel
 
@@ -283,21 +283,20 @@ class VoltageCollapse(QThread):
         print('Running voltage collapse...')
         nbus = self.circuit.get_bus_number()
 
-        numerical_circuit = compile_snapshot_circuit(circuit=self.circuit,
-                                                     apply_temperature=self.pf_options.apply_temperature_correction,
-                                                     branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
-                                                     opf_results=self.opf_results)
+        nc = compile_snapshot_circuit(circuit=self.circuit,
+                                      apply_temperature=self.pf_options.apply_temperature_correction,
+                                      branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
+                                      opf_results=self.opf_results)
 
-        numerical_input_islands = split_into_islands(numeric_circuit=numerical_circuit,
-                                                     ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
+        islands = nc.split_into_islands(ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
 
-        self.results = VoltageCollapseResults(nbus=numerical_circuit.nbus,
-                                              nbr=numerical_circuit.nbr,
-                                              bus_names=numerical_circuit.bus_names)
+        self.results = VoltageCollapseResults(nbus=nc.nbus,
+                                              nbr=nc.nbr,
+                                              bus_names=nc.bus_names)
 
-        self.results.bus_types = numerical_circuit.bus_types
+        self.results.bus_types = nc.bus_types
 
-        for nc, numerical_island in enumerate(numerical_input_islands):
+        for nc, numerical_island in enumerate(islands):
 
             self.progress_text.emit('Running voltage collapse at circuit ' + str(nc) + '...')
 

@@ -19,16 +19,20 @@ import GridCal.Engine.Core.topology as tp
 
 class BranchData:
 
-    def __init__(self, nbr, nbus):
+    def __init__(self, nbr, nbus, ntime=1):
         """
-
-        :param nbr:
-        :param nbus:
+        Branch data arrays
+        :param nbr: number of branches
+        :param nbus: number of buses
         """
         self.nbr = nbr
+        self.ntime = ntime
 
         self.branch_names = np.empty(self.nbr, dtype=object)
-        self.branch_active = np.zeros(self.nbr, dtype=int)
+
+        self.branch_active = np.zeros((nbr, ntime), dtype=int)
+        self.branch_rates = np.zeros((nbr, ntime), dtype=float)
+
         self.F = np.zeros(self.nbr, dtype=int)  # indices of the "from" buses
         self.T = np.zeros(self.nbr, dtype=int)  # indices of the "to" buses
 
@@ -41,73 +45,140 @@ class BranchData:
         self.X = np.zeros(self.nbr, dtype=float)
         self.G = np.zeros(self.nbr, dtype=float)
         self.B = np.zeros(self.nbr, dtype=float)
-        self.m = np.ones(self.nbr, dtype=float)
-        self.k = np.ones(self.nbr, dtype=float)
-        self.theta = np.zeros(self.nbr, dtype=float)
-        self.Beq = np.zeros(self.nbr, dtype=float)
-        self.G0 = np.zeros(self.nbr, dtype=float)
+        self.k = np.ones(nbr, dtype=float)
+
+        self.m = np.ones((nbr, ntime), dtype=float)
+        self.theta = np.zeros((nbr, ntime), dtype=float)
+        self.Beq = np.zeros((nbr, ntime), dtype=float)
+        self.G0 = np.zeros((nbr, ntime), dtype=float)
 
         self.tap_t = np.ones(self.nbr, dtype=float)
         self.tap_f = np.ones(self.nbr, dtype=float)
 
-        self.Pset = np.zeros(self.nbr)
-        self.Qset = np.zeros(self.nbr)
-        self.vf_set = np.ones(self.nbr)
-        self.vt_set = np.ones(self.nbr)
+        self.Pset = np.zeros((nbr, ntime))
+        self.Qset = np.zeros((nbr, ntime))
+        self.vf_set = np.ones((nbr, ntime))
+        self.vt_set = np.ones((nbr, ntime))
+
         self.Kdp = np.ones(self.nbr)
         self.control_mode = np.zeros(self.nbr, dtype=object)
 
-        self.branch_rates = np.zeros(self.nbr, dtype=float)
         self.C_branch_bus_f = sp.lil_matrix((self.nbr, nbus), dtype=int)  # connectivity branch with their "from" bus
         self.C_branch_bus_t = sp.lil_matrix((self.nbr, nbus), dtype=int)  # connectivity branch with their "to" bus
 
-    def slice(self, br_idx, bus_idx):
+    def slice(self, elm_idx, bus_idx, time_idx=None):
+        """
+        Slice this class
+        :param elm_idx: branch indices
+        :param bus_idx: bus indices
+        :param time_idx: array of time indices
+        :return: new BranchData instance
         """
 
-        :param br_idx:
-        :param bus_idx:
-        :return:
-        """
-        data = BranchData(nbr=len(br_idx), nbus=len(bus_idx))
+        if time_idx is None:
+            tidx = elm_idx
+        else:
+            tidx = np.ix_(elm_idx, time_idx)
 
-        data.branch_names = self.branch_names[br_idx]
-        data.branch_active = self.branch_active[br_idx]
-        data.F = self.F[br_idx]
-        data.T = self.T[br_idx]
+        data = BranchData(nbr=len(elm_idx), nbus=len(bus_idx))
 
-        data.R = self.R[br_idx]
-        data.X = self.X[br_idx]
-        data.G = self.G[br_idx]
-        data.B = self.B[br_idx]
-        data.m = self.m[br_idx]
-        data.k = self.k[br_idx]
-        data.theta = self.theta[br_idx]
-        data.Beq = self.Beq[br_idx]
-        data.G0 = self.G0[br_idx]
+        data.branch_names = self.branch_names[elm_idx]
+        data.F = self.F[elm_idx]
+        data.T = self.T[elm_idx]
+        data.R = self.R[elm_idx]
+        data.X = self.X[elm_idx]
+        data.G = self.G[elm_idx]
+        data.B = self.B[elm_idx]
+        data.k = self.k[elm_idx]
+        data.tap_t = self.tap_f[elm_idx]
+        data.tap_f = self.tap_t[elm_idx]
+        data.Kdp = self.Kdp[elm_idx]
+        data.control_mode = self.control_mode[elm_idx]
 
-        data.tap_t = self.tap_f[br_idx]
-        data.tap_f = self.tap_t[br_idx]
+        data.branch_active = self.branch_active[tidx]
+        data.branch_rates = self.branch_rates[tidx]
+        data.m = self.m[tidx]
+        data.theta = self.theta[tidx]
+        data.Beq = self.Beq[tidx]
+        data.G0 = self.G0[tidx]
+        data.Pset = self.Pset[tidx]
+        data.Qset = self.Qset[tidx]
+        data.vf_set = self.vf_set[tidx]
+        data.vt_set = self.vt_set[tidx]
 
-        data.Pset = self.Pset[br_idx]
-        data.Qset = self.Qset[br_idx]
-        data.vf_set = self.vf_set[br_idx]
-        data.vt_set = self.vt_set[br_idx]
-        data.Kdp = self.Kdp[br_idx]
-        data.control_mode = self.control_mode[br_idx]
-
-        data.branch_rates = self.branch_rates[br_idx]
-        data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(br_idx, bus_idx)]
-        data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(br_idx, bus_idx)]
+        data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(elm_idx, bus_idx)]
+        data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(elm_idx, bus_idx)]
 
         return data
 
     def get_island(self, bus_idx):
         """
-
-        :param bus_idx:
-        :return:
+        get the array of branch indices that belong to the islands given by the bus indices
+        :param bus_idx: array of bus indices
+        :return: array of island branch indices
         """
         return tp.get_elements_of_the_island(self.C_branch_bus_f + self.C_branch_bus_t, bus_idx)
 
     def __len__(self):
         return self.nbr
+
+
+class BranchOpfData(BranchData):
+
+    def __init__(self, nbr, nbus, ntime=1):
+        """
+
+        :param nbr:
+        :param nbus:
+        :param ntime:
+        """
+        BranchData.__init__(self, nbr, nbus, ntime)
+
+        self.branch_cost = np.zeros((nbr, ntime), dtype=float)
+
+    def slice(self, elm_idx, bus_idx, time_idx=None):
+        """
+        Slice this class
+        :param elm_idx: branch indices
+        :param bus_idx: bus indices
+        :param time_idx: array of time indices
+        :return: new BranchData instance
+        """
+
+        if time_idx is None:
+            tidx = elm_idx
+        else:
+            tidx = np.ix_(elm_idx, time_idx)
+
+        data = BranchOpfData(nbr=len(elm_idx), nbus=len(bus_idx))
+
+        data.branch_names = self.branch_names[elm_idx]
+        data.F = self.F[elm_idx]
+        data.T = self.T[elm_idx]
+        data.R = self.R[elm_idx]
+        data.X = self.X[elm_idx]
+        data.G = self.G[elm_idx]
+        data.B = self.B[elm_idx]
+        data.k = self.k[elm_idx]
+        data.tap_t = self.tap_f[elm_idx]
+        data.tap_f = self.tap_t[elm_idx]
+        data.Kdp = self.Kdp[elm_idx]
+        data.control_mode = self.control_mode[elm_idx]
+
+        data.branch_active = self.branch_active[tidx]
+        data.branch_rates = self.branch_rates[tidx]
+        data.m = self.m[tidx]
+        data.theta = self.theta[tidx]
+        data.Beq = self.Beq[tidx]
+        data.G0 = self.G0[tidx]
+        data.Pset = self.Pset[tidx]
+        data.Qset = self.Qset[tidx]
+        data.vf_set = self.vf_set[tidx]
+        data.vt_set = self.vt_set[tidx]
+
+        data.branch_cost = self.branch_cost[tidx]
+
+        data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(elm_idx, bus_idx)]
+        data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(elm_idx, bus_idx)]
+
+        return data

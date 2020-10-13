@@ -25,18 +25,17 @@ from matplotlib import pyplot as plt
 from GridCal.Engine import *
 
 
-def make_ptdf(circuit: SnapshotCircuit, distribute_slack=True):
+def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
     """
 
     :param circuit:
     :return:
     """
-    Bbus, Bf, reactances = circuit.get_linear_matrices()
 
-    n = circuit.nbus
+    n = Bbus.shape[0]
     nbi = n
     noref = np.arange(1, n)
-    noslack = circuit.pqpv
+    noslack = pqpv
 
     if distribute_slack:
         dP = np.ones((n, n)) * (-1 / (n - 1))
@@ -58,17 +57,17 @@ def make_ptdf(circuit: SnapshotCircuit, distribute_slack=True):
     return PTDF
 
 
-def make_lodf(circuit: SnapshotCircuit, PTDF, correct_values=True):
+def make_lodf(Cf, Ct, PTDF, correct_values=True):
     """
 
     :param circuit:
     :param PTDF: PTDF matrix in numpy array form
     :return:
     """
-    nl = circuit.nbr
+    nl = PTDF.shape[0]
 
     # compute the connectivity matrix
-    Cft = circuit.C_branch_bus_f - circuit.C_branch_bus_t
+    Cft = Cf - Ct
 
     H = PTDF * Cft.T
 
@@ -170,7 +169,7 @@ def multiple_failure(flows, LODF, failed_idx):
     # normal flows of the failed lines indicated by failed_idx
     F = flows[failed_idx]
 
-    # Affected flows after failing the lines indicated by failed_idx
+    # Affected flows of the failed lines that will be shared among the others
     Ff = np.linalg.solve(M, F)
 
     # flow delta in the line alpha after the multiple contingency of the lines indicated by failed_idx
@@ -211,8 +210,8 @@ def check_lodf(grid: MultiCircuit):
     islands = split_into_islands(nc)
     circuit = islands[0]
 
-    PTDF = make_ptdf(circuit, distribute_slack=False)
-    LODF = make_lodf(circuit, PTDF)
+    PTDF = make_ptdf(Bbus=circuit.Bbus, Bf=circuit.Bf, pqpv=circuit.pqpv, distribute_slack=False)
+    LODF = make_lodf(Cf=circuit.Cf, Ct=circuit.Ct, PTDF=PTDF)
 
     Pbus = circuit.get_injections(False).real
     flows_n = np.dot(PTDF, Pbus)
@@ -238,10 +237,10 @@ if __name__ == '__main__':
     pd.set_option('display.width', 1000)
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE14_from_raw.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
     # fname = 'helm_data1.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14 PQ only.gridcal'
     # fname = 'IEEE 14 PQ only full.gridcal'
@@ -259,8 +258,8 @@ if __name__ == '__main__':
     islands_ = split_into_islands(nc_)
     circuit_ = islands_[0]
 
-    H_ = make_ptdf(circuit_, distribute_slack=False)
-    LODF_ = make_lodf(circuit_, H_)
+    H_ = make_ptdf(Bbus=circuit_.Bbus, Bf=circuit_.Bf, pqpv=circuit_.pqpv, distribute_slack=False)
+    LODF_ = make_lodf(Cf=circuit_.Cf, Ct=circuit_.Ct, PTDF=H_)
 
     if H_.shape[0] < 50:
         print('PTDF:\n', H_)
@@ -269,9 +268,14 @@ if __name__ == '__main__':
     flows_n_, flows_n1_nr_, flows_n1_ = check_lodf(grid_)
 
     # in the case of the grid PGOC_6bus
+    # flows_multiple = multiple_failure(flows=flows_n_,
+    #                                   LODF=LODF_,
+    #                                   failed_idx=[1, 5])  # failed lines 2 and 6
+
     flows_multiple = multiple_failure(flows=flows_n_,
                                       LODF=LODF_,
-                                      failed_idx=[1, 5])  # failed lines 2 and 6
+                                      failed_idx=[1, 2])
+    print('Linear contingency flows:\n', flows_multiple)
 
     Pn1_nr_df = pd.DataFrame(data=flows_n1_nr_, index=nc_.branch_names, columns=nc_.branch_names)
     flows_n1_df = pd.DataFrame(data=flows_n1_, index=nc_.branch_names, columns=nc_.branch_names)

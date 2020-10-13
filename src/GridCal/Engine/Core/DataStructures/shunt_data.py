@@ -19,34 +19,44 @@ import GridCal.Engine.Core.topology as tp
 
 class ShuntData:
 
-    def __init__(self, nshunt, nbus):
+    def __init__(self, nshunt, nbus, ntime=1):
         """
 
         :param nshunt:
         :param nbus:
         """
         self.nshunt = nshunt
+        self.ntime = ntime
 
         self.shunt_names = np.empty(nshunt, dtype=object)
-        self.shunt_active = np.zeros(nshunt, dtype=bool)
-        self.shunt_admittance = np.zeros(nshunt, dtype=complex)
+
+        self.shunt_active = np.zeros((nshunt, ntime), dtype=bool)
+        self.shunt_admittance = np.zeros((nshunt, ntime), dtype=complex)
 
         self.C_bus_shunt = sp.lil_matrix((nbus, nshunt), dtype=int)
 
-    def slice(self, shunt_idx, bus_idx):
+    def slice(self, elm_idx, bus_idx, time_idx=None):
         """
 
-        :param shunt_idx:
+        :param elm_idx:
         :param bus_idx:
+        :param time_idx:
         :return:
         """
-        data = ShuntData(nshunt=len(shunt_idx), nbus=len(bus_idx))
 
-        data.shunt_names = self.shunt_names[shunt_idx]
-        data.shunt_active = self.shunt_active[shunt_idx]
-        data.shunt_admittance = self.shunt_admittance[shunt_idx]
+        if time_idx is None:
+            tidx = elm_idx
+        else:
+            tidx = np.ix_(elm_idx, time_idx)
 
-        data.C_bus_shunt = self.C_bus_shunt[np.ix_(bus_idx, shunt_idx)]
+        data = ShuntData(nshunt=len(elm_idx), nbus=len(bus_idx))
+
+        data.shunt_names = self.shunt_names[elm_idx]
+
+        data.shunt_active = self.shunt_active[tidx]
+        data.shunt_admittance = self.shunt_admittance[tidx]
+
+        data.C_bus_shunt = self.C_bus_shunt[np.ix_(bus_idx, elm_idx)]
 
         return data
 
@@ -58,3 +68,4 @@ class ShuntData:
 
     def __len__(self):
         return self.nshunt
+

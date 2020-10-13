@@ -98,10 +98,10 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
 
     # TODO: Fix the topology reduction with the GC example, see what is going on
     branches = circuit.get_branches()
-    for i in range(len(branches)):
+    for i, elm in enumerate(branches):
         # get the from and to bus indices
-        f = buses_dict[branches[i].bus_from]
-        t = buses_dict[branches[i].bus_to]
+        f = buses_dict[elm.bus_from]
+        t = buses_dict[elm.bus_to]
         graph.add_edge(f, t)
         C[i, f] = 1
         C[i, t] = -1
@@ -114,36 +114,33 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
     f = buses_dict[bus_f]
     t = buses_dict[bus_t]
 
-    removed_bus = None
-    removed_branch = None
-    updated_bus = None
     updated_branches = list()
 
     # get the number of paths
     n_paths = len(list(nx.all_simple_paths(graph, f, t)))
 
-    if n_paths == 1:
+    if n_paths == 1:  # if there is only one path, merge the buses
 
         # get the branches that are connected to the bus f
         adjacent_br_idx = get_branches_of_bus(C, f)
 
-        for k in adjacent_br_idx:
+        for k, modified_branch in enumerate(adjacent_br_idx):  # for each adjacent branch, reassign the removed bus
 
             # get the indices of the buses
-            f2 = buses_dict[branches[k].bus_from]
-            t2 = buses_dict[branches[k].bus_to]
+            f2 = buses_dict[modified_branch.bus_from]
+            t2 = buses_dict[modified_branch.bus_to]
 
             # re-assign the right bus
             if f2 == f:
-                branches[k].bus_from = bus_t
-            elif t2 == t:
-                branches[k].bus_to = bus_t
+                modified_branch.bus_from = bus_t
+            elif t2 == f:
+                modified_branch.bus_to = bus_t
 
             # copy the state of the removed branch
-            branches[k].active = branches[removed_br_idx].active
+            modified_branch.active = branches[removed_br_idx].active
 
             # remember the updated branches
-            updated_branches.append(branches[k])
+            updated_branches.append(modified_branch)
 
         # merge buses
         bus_t.merge(bus_f)
@@ -158,6 +155,8 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
     else:
         # remove the branch and that's it
         removed_branch = branches.pop(removed_br_idx)
+        removed_bus = None
+        updated_bus = None
 
     # return the removed branch and the possible removed bus
     return removed_branch, removed_bus, updated_bus, updated_branches

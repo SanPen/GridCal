@@ -19,34 +19,45 @@ import GridCal.Engine.Core.topology as tp
 
 class LoadData:
 
-    def __init__(self, nload, nbus):
+    def __init__(self, nload, nbus, ntime=1):
         """
 
         :param nload:
         :param nbus:
+        :param ntime:
         """
         self.nload = nload
+        self.ntime = ntime
 
         self.load_names = np.empty(nload, dtype=object)
-        self.load_active = np.zeros(nload, dtype=bool)
-        self.load_s = np.zeros(nload, dtype=complex)
+
+        self.load_active = np.zeros((nload, ntime), dtype=bool)
+        self.load_s = np.zeros((nload, ntime), dtype=complex)
 
         self.C_bus_load = sp.lil_matrix((nbus, nload), dtype=int)
 
-    def slice(self, load_idx, bus_idx):
+    def slice(self, elm_idx, bus_idx, time_idx=None):
         """
 
-        :param load_idx:
+        :param elm_idx:
         :param bus_idx:
+        :param time_idx:
         :return:
         """
-        data = LoadData(nload=len(load_idx), nbus=len(bus_idx))
 
-        data.load_names = self.load_names[load_idx]
-        data.load_active = self.load_active[load_idx]
-        data.load_s = self.load_s[load_idx]
+        if time_idx is None:
+            tidx = elm_idx
+        else:
+            tidx = np.ix_(elm_idx, time_idx)
 
-        data.C_bus_load = self.C_bus_load[np.ix_(bus_idx, load_idx)]
+        data = LoadData(nload=len(elm_idx), nbus=len(bus_idx))
+
+        data.load_names = self.load_names[elm_idx]
+
+        data.load_active = self.load_active[tidx]
+        data.load_s = self.load_s[tidx]
+
+        data.C_bus_load = self.C_bus_load[np.ix_(bus_idx, elm_idx)]
 
         return data
 
@@ -58,3 +69,43 @@ class LoadData:
 
     def __len__(self):
         return self.nload
+
+
+class LoadOpfData(LoadData):
+
+    def __init__(self, nload, nbus, ntime=1):
+        """
+
+        :param nload:
+        :param nbus:
+        :param ntime:
+        """
+        LoadData.__init__(self, nload, nbus, ntime)
+
+        self.load_cost = np.zeros((nload, ntime))
+
+    def slice(self, elm_idx, bus_idx, time_idx=None):
+        """
+
+        :param elm_idx:
+        :param bus_idx:
+        :param time_idx:
+        :return:
+        """
+
+        if time_idx is None:
+            tidx = elm_idx
+        else:
+            tidx = np.ix_(elm_idx, time_idx)
+
+        data = LoadData(nload=len(elm_idx), nbus=len(bus_idx))
+
+        data.load_names = self.load_names[elm_idx]
+
+        data.load_active = self.load_active[tidx]
+        data.load_s = self.load_s[tidx]
+        data.load_cost = self.load_cost[tidx]
+
+        data.C_bus_load = self.C_bus_load[np.ix_(bus_idx, elm_idx)]
+
+        return data

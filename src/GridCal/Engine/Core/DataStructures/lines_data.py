@@ -19,13 +19,14 @@ import GridCal.Engine.Core.topology as tp
 
 class LinesData:
 
-    def __init__(self, nline, nbus):
+    def __init__(self, nline, nbus, ntime=1):
         """
 
         :param nline:
         :param nbus:
         """
         self.nline = nline
+        self.ntime = ntime
 
         self.line_names = np.zeros(nline, dtype=object)
         self.line_R = np.zeros(nline, dtype=float)
@@ -34,21 +35,21 @@ class LinesData:
 
         self.C_line_bus = sp.lil_matrix((nline, nbus), dtype=int)  # this ons is just for splitting islands
 
-    def slice(self, line_idx, bus_idx):
+    def slice(self, elm_idx, bus_idx, time_idx=None):
         """
 
-        :param line_idx:
+        :param elm_idx:
         :param bus_idx:
         :return:
         """
 
-        data = LinesData(nline=len(line_idx), nbus=len(bus_idx))
+        data = LinesData(nline=len(elm_idx), nbus=len(bus_idx))
 
-        data.line_names = self.line_names[line_idx]
-        data.line_R = self.line_R[line_idx]
-        data.line_X = self.line_X[line_idx]
-        data.line_B = self.line_B[line_idx]
-        data.C_line_bus = self.C_line_bus[np.ix_(line_idx, bus_idx)]
+        data.line_names = self.line_names[elm_idx]
+        data.line_R = self.line_R[elm_idx]
+        data.line_X = self.line_X[elm_idx]
+        data.line_B = self.line_B[elm_idx]
+        data.C_line_bus = self.C_line_bus[np.ix_(elm_idx, bus_idx)]
 
         return data
 
@@ -62,3 +63,4 @@ class LinesData:
 
     def __len__(self):
         return self.nline
+
