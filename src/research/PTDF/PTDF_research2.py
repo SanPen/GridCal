@@ -25,18 +25,17 @@ from matplotlib import pyplot as plt
 from GridCal.Engine import *
 
 
-def make_ptdf(circuit: SnapshotCircuit, distribute_slack=True):
+def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
     """
 
     :param circuit:
     :return:
     """
-    Bbus, Bf, reactances = circuit.get_linear_matrices()
 
-    n = circuit.nbus
+    n = Bbus.shape[0]
     nbi = n
     noref = np.arange(1, n)
-    noslack = circuit.pqpv
+    noslack = pqpv
 
     if distribute_slack:
         dP = np.ones((n, n)) * (-1 / (n - 1))
@@ -58,17 +57,17 @@ def make_ptdf(circuit: SnapshotCircuit, distribute_slack=True):
     return PTDF
 
 
-def make_lodf(circuit: SnapshotCircuit, PTDF, correct_values=True):
+def make_lodf(Cf, Ct, PTDF, correct_values=True):
     """
 
     :param circuit:
     :param PTDF: PTDF matrix in numpy array form
     :return:
     """
-    nl = circuit.nbr
+    nl = PTDF.shape[0]
 
     # compute the connectivity matrix
-    Cft = circuit.C_branch_bus_f - circuit.C_branch_bus_t
+    Cft = Cf - Ct
 
     H = PTDF * Cft.T
 
@@ -211,8 +210,8 @@ def check_lodf(grid: MultiCircuit):
     islands = split_into_islands(nc)
     circuit = islands[0]
 
-    PTDF = make_ptdf(circuit, distribute_slack=False)
-    LODF = make_lodf(circuit, PTDF)
+    PTDF = make_ptdf(Bbus=circuit.Bbus, Bf=circuit.Bf, pqpv=circuit.pqpv, distribute_slack=False)
+    LODF = make_lodf(Cf=circuit.Cf, Ct=circuit.Ct, PTDF=PTDF)
 
     Pbus = circuit.get_injections(False).real
     flows_n = np.dot(PTDF, Pbus)
@@ -259,8 +258,8 @@ if __name__ == '__main__':
     islands_ = split_into_islands(nc_)
     circuit_ = islands_[0]
 
-    H_ = make_ptdf(circuit_, distribute_slack=False)
-    LODF_ = make_lodf(circuit_, H_)
+    H_ = make_ptdf(Bbus=circuit_.Bbus, Bf=circuit_.Bf, pqpv=circuit_.pqpv, distribute_slack=False)
+    LODF_ = make_lodf(Cf=circuit_.Cf, Ct=circuit_.Ct, PTDF=H_)
 
     if H_.shape[0] < 50:
         print('PTDF:\n', H_)

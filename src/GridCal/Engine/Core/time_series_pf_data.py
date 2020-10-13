@@ -21,22 +21,22 @@ from typing import List, Dict
 from GridCal.Engine.basic_structures import Logger
 import GridCal.Engine.Core.topology as tp
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotCircuit
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 from GridCal.Engine.Core.common_functions import compile_types, find_different_states
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
-from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
+# from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
+import GridCal.Engine.Core.DataStructures as ds
 
 
 sparse_type = get_sparse_type()
 
 
-class TimeCircuit:
+class TimeCircuit(SnapshotData):
 
-    def __init__(self, nbus, nline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, ntime, sbase, time_array,
-                 apply_temperature=False, branch_tolerance_mode: BranchImpedanceMode = BranchImpedanceMode.Specified):
+    def __init__(self, nbus, nline, ndcline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase, time_array):
         """
 
         :param nbus: number of buses
@@ -50,1040 +50,127 @@ class TimeCircuit:
         :param nshunt:
         """
 
-        self.nbus = nbus
-        self.nline = nline
-        self.ndcline = 0
-        self.ntr = ntr
-        self.nvsc = nvsc
-        self.nhvdc = nhvdc
-        self.nload = nload
-        self.ngen = ngen
-        self.nbatt = nbatt
-        self.nshunt = nshunt
-        self.nstagen = nstagen
-        self.ntime = ntime
-
-        self.Sbase = sbase
-
-        self.apply_temperature = apply_temperature
-        self.branch_tolerance_mode = branch_tolerance_mode
+        SnapshotData.__init__(self, nbus=nbus, nline=nline,
+                              ndcline=ndcline, ntr=ntr, nvsc=nvsc,
+                              nhvdc=nhvdc, nload=nload, ngen=ngen,
+                              nbatt=nbatt, nshunt=nshunt, nstagen=nstagen,
+                              sbase=sbase, ntime=len(time_array))
 
         self.time_array = time_array
 
-        # bus ----------------------------------------------------------------------------------------------------------
-        self.bus_names = np.empty(nbus, dtype=object)
-        self.bus_types = np.empty(nbus, dtype=int)
-        self.bus_installed_power = np.zeros(nbus, dtype=float)
+    @property
+    def Vbus(self):
 
-        self.bus_active = np.ones((ntime, nbus), dtype=int)
-        self.Vbus = np.ones((ntime, nbus), dtype=complex)
-        self.Vmin = np.ones(nbus)
-        self.Vmax = np.ones(nbus)
+        if self.Vbus_ is None:
+            self.Vbus_ = self.bus_data.Vbus.copy()
 
-        # branch common ------------------------------------------------------------------------------------------------
-        self.nbr = nline + ntr + nvsc  # exclude the HVDC model since it is not a real branch
+        return self.Vbus_
 
-        self.branch_names = np.empty(self.nbr, dtype=object)
-        self.branch_active = np.zeros((ntime, self.nbr), dtype=int)
-        self.F = np.zeros(self.nbr, dtype=int)  # indices of the "from" buses
-        self.T = np.zeros(self.nbr, dtype=int)  # indices of the "to" buses
-        self.branch_rates = np.zeros((ntime, self.nbr), dtype=float)
-        self.C_branch_bus_f = sp.lil_matrix((self.nbr, nbus), dtype=int)  # connectivity branch with their "from" bus
-        self.C_branch_bus_t = sp.lil_matrix((self.nbr, nbus), dtype=int)  # connectivity branch with their "to" bus
+    @property
+    def Sbus(self):
 
-        # lines --------------------------------------------------------------------------------------------------------
-        self.line_names = np.zeros(nline, dtype=object)
-        self.line_R = np.zeros(nline, dtype=float)
-        self.line_X = np.zeros(nline, dtype=float)
-        self.line_B = np.zeros(nline, dtype=float)
-        self.line_temp_base = np.zeros(nline, dtype=float)
-        self.line_temp_oper = np.zeros(nline, dtype=float)
-        self.line_alpha = np.zeros(nline, dtype=float)
-        self.line_impedance_tolerance = np.zeros(nline, dtype=float)
+        if self.Sbus_ is None:
+            self.Sbus_ = self.get_injections(normalize=True)
 
-        self.C_line_bus = sp.lil_matrix((nline, nbus), dtype=int)  # this ons is just for splitting islands
+        return self.Sbus_
 
-        # transformer 2W + 3W ------------------------------------------------------------------------------------------
-        self.tr_names = np.zeros(ntr, dtype=object)
-        self.tr_R = np.zeros(ntr, dtype=float)
-        self.tr_X = np.zeros(ntr, dtype=float)
-        self.tr_G = np.zeros(ntr, dtype=float)
-        self.tr_B = np.zeros(ntr)
+    @property
+    def Ibus(self):
 
-        self.tr_tap_f = np.ones(ntr)  # tap generated by the difference in nominal voltage at the form side
-        self.tr_tap_t = np.ones(ntr)  # tap generated by the difference in nominal voltage at the to side
-        self.tr_tap_mod = np.ones(ntr)  # normal tap module
-        self.tr_tap_ang = np.zeros(ntr)  # normal tap angle
-        self.tr_is_bus_to_regulated = np.zeros(ntr, dtype=bool)
-        self.tr_bus_to_regulated_idx = np.zeros(ntr, dtype=int)
-        self.tr_tap_position = np.zeros(ntr, dtype=int)
-        self.tr_min_tap = np.zeros(ntr, dtype=int)
-        self.tr_max_tap = np.zeros(ntr, dtype=int)
-        self.tr_tap_inc_reg_up = np.zeros(ntr)
-        self.tr_tap_inc_reg_down = np.zeros(ntr)
-        self.tr_vset = np.ones(ntr)
+        if self.Ibus_ is None:
+            self.Ibus_ = np.zeros((len(self.bus_data), self.ntime), dtype=complex)
 
-        self.C_tr_bus = sp.lil_matrix((ntr, nbus), dtype=int)  # this ons is just for splitting islands
+        return self.Ibus_
 
-        # hvdc line ----------------------------------------------------------------------------------------------------
-        self.hvdc_names = np.zeros(nhvdc, dtype=object)
+    @property
+    def Rates(self):
+        return self.branch_data.branch_rates
 
-        self.hvdc_active = np.zeros((ntime, nhvdc), dtype=bool)
-        self.hvdc_rate = np.zeros((ntime, nhvdc), dtype=float)
-
-        self.hvdc_Pf = np.zeros((ntime, nhvdc))
-        self.hvdc_Pt = np.zeros((ntime, nhvdc))
-
-        self.hvdc_Vset_f = np.zeros((ntime, nhvdc))
-        self.hvdc_Vset_t = np.zeros((ntime, nhvdc))
-
-        self.hvdc_loss_factor = np.zeros(nhvdc)
-        self.hvdc_Qmin_f = np.zeros(nhvdc)
-        self.hvdc_Qmax_f = np.zeros(nhvdc)
-        self.hvdc_Qmin_t = np.zeros(nhvdc)
-        self.hvdc_Qmax_t = np.zeros(nhvdc)
-
-        self.C_hvdc_bus_f = sp.lil_matrix((nhvdc, nbus), dtype=int)  # this ons is just for splitting islands
-        self.C_hvdc_bus_t = sp.lil_matrix((nhvdc, nbus), dtype=int)  # this ons is just for splitting islands
-
-        # vsc converter ------------------------------------------------------------------------------------------------
-        self.vsc_names = np.zeros(nvsc, dtype=object)
-        self.vsc_R1 = np.zeros(nvsc)
-        self.vsc_X1 = np.zeros(nvsc)
-        self.vsc_Gsw = np.zeros(nvsc)
-        self.vsc_Beq = np.zeros(nvsc)
-        self.vsc_m = np.zeros(nvsc)
-        self.vsc_theta = np.zeros(nvsc)
-
-        self.C_vsc_bus = sp.lil_matrix((nvsc, nbus), dtype=int)  # this ons is just for splitting islands
-
-        # load ---------------------------------------------------------------------------------------------------------
-        self.load_names = np.empty(nload, dtype=object)
-        self.load_active = np.zeros((ntime, nload), dtype=bool)
-        self.load_s = np.zeros((ntime, nload), dtype=complex)
-
-        self.C_bus_load = sp.lil_matrix((nbus, nload), dtype=int)
-
-        # static generators --------------------------------------------------------------------------------------------
-        self.static_generator_names = np.empty(nstagen, dtype=object)
-
-        self.static_generator_active = np.zeros((ntime, nstagen), dtype=bool)
-        self.static_generator_s = np.zeros((ntime, nstagen), dtype=complex)
-
-        self.C_bus_static_generator = sp.lil_matrix((nbus, nstagen), dtype=int)
-
-        # battery ------------------------------------------------------------------------------------------------------
-        self.battery_names = np.empty(nbatt, dtype=object)
-        self.battery_active = np.zeros((ntime, nbatt), dtype=bool)
-        self.battery_controllable = np.zeros(nbatt, dtype=bool)
-        self.battery_installed_p = np.zeros(nbatt)
-        self.battery_p = np.zeros((ntime, nbatt))
-        self.battery_pf = np.zeros((ntime, nbatt))
-        self.battery_v = np.zeros((ntime, nbatt))
-        self.battery_qmin = np.zeros(nbatt)
-        self.battery_qmax = np.zeros(nbatt)
-
-        self.C_bus_batt = sp.lil_matrix((nbus, nbatt), dtype=int)
-
-        # generator ----------------------------------------------------------------------------------------------------
-        self.generator_names = np.empty(ngen, dtype=object)
-        self.generator_active = np.zeros((ntime, ngen), dtype=bool)
-        self.generator_controllable = np.zeros(ngen, dtype=bool)
-        self.generator_installed_p = np.zeros(ngen)
-        self.generator_p = np.zeros((ntime, ngen))
-        self.generator_pf = np.zeros((ntime, ngen))
-        self.generator_v = np.zeros((ntime, ngen))
-        self.generator_qmin = np.zeros(ngen)
-        self.generator_qmax = np.zeros(ngen)
-
-        self.C_bus_gen = sp.lil_matrix((nbus, ngen), dtype=int)
-
-        # shunt --------------------------------------------------------------------------------------------------------
-        self.shunt_names = np.empty(nshunt, dtype=object)
-        self.shunt_active = np.zeros((ntime, nshunt), dtype=bool)
-        self.shunt_admittance = np.zeros((ntime, nshunt), dtype=complex)
-
-        self.C_bus_shunt = sp.lil_matrix((nbus, nshunt), dtype=int)
-
-        # --------------------------------------------------------------------------------------------------------------
-        # Compiled arrays
-        # --------------------------------------------------------------------------------------------------------------
-        self.Sbus = np.zeros((self.nbus, ntime), dtype=complex)
-        self.Ibus = np.zeros((self.nbus, ntime), dtype=complex)
-        self.Yshunt_from_devices = np.zeros((self.nbus, ntime), dtype=complex)
-
-        self.Qmax_bus = np.zeros((self.nbus, ntime))
-        self.Qmin_bus = np.zeros((self.nbus, ntime))
-
-        # only one Y matrix per time island, that is the guarantee we get by splitting the TimeCircuit in TimeIslands
-        self.Ybus = None
-        self.Yf = None
-        self.Yt = None
-        self.Yseries = None
-        self.Yshunt = None
-        self.B1 = None
-        self.B2 = None
-        self.Bpqpv = None
-        self.Bref = None
-
-        self.original_time_idx = np.arange(self.ntime)
-        self.original_bus_idx = np.arange(self.nbus)
-        self.original_branch_idx = np.arange(self.nbr)
-        self.original_tr_idx = np.arange(self.ntr)
-        self.original_gen_idx = np.arange(self.ngen)
-        self.original_bat_idx = np.arange(self.nbatt)
-
-        self.pq = list()
-        self.pv = list()
-        self.vd = list()
-        self.pqpv = list()
-
-        self.available_structures = ['Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries',
-                                     "B'", "B''", 'Types', 'Jacobian', 'Qmin', 'Qmax']
-
-    def consolidate(self):
+    def split_into_islands(self, ignore_single_node_islands=False) -> List["TimeCircuit"]:
         """
-        Consolidates the information of this object
-        :return:
-        """
-        self.C_branch_bus_f = self.C_branch_bus_f.tocsc()
-        self.C_branch_bus_t = self.C_branch_bus_t.tocsc()
-
-        self.C_line_bus = self.C_line_bus.tocsc()
-        self.C_tr_bus = self.C_tr_bus.tocsc()
-        self.C_hvdc_bus_f = self.C_hvdc_bus_f.tocsc()
-        self.C_hvdc_bus_t = self.C_hvdc_bus_t.tocsc()
-        self.C_vsc_bus = self.C_vsc_bus.tocsc()
-
-        self.C_bus_load = self.C_bus_load.tocsr()
-        self.C_bus_batt = self.C_bus_batt.tocsr()
-        self.C_bus_gen = self.C_bus_gen.tocsr()
-        self.C_bus_shunt = self.C_bus_shunt.tocsr()
-        self.C_bus_static_generator = self.C_bus_static_generator.tocsr()
-
-        self.bus_installed_power = self.C_bus_gen * self.generator_installed_p
-        self.bus_installed_power += self.C_bus_batt * self.battery_installed_p
-
-    def get_power_injections(self, normalize=True):
-        """
-        Compute the power
-        :return: Array of power injections
+        Split circuit into islands
+        :param numeric_circuit: NumericCircuit instance
+        :param ignore_single_node_islands: ignore islands composed of only one bus
+        :return: List[NumericCircuit]
         """
 
-        # load
-        Sbus = - self.C_bus_load * (self.load_s * self.load_active).T  # MW
+        circuit_islands = list()  # type: List[TimeCircuit]
 
-        # static generators
-        Sbus += self.C_bus_static_generator * (self.static_generator_s * self.static_generator_active).T  # MW
+        all_buses = np.arange(self.nbus)
+        all_time = np.arange(self.ntime)
 
-        # generators
-        Sbus += self.C_bus_gen * (self.get_generator_injections() * self.generator_active).T
+        # find the probable time slices
+        states = find_different_states(branch_active_prof=self.branch_data.branch_active)
 
-        # battery
-        Sbus += self.C_bus_batt * (self.get_battery_injections() * self.battery_active).T
-
-        # HVDC forced power
-        if self.nhvdc:
-            Sbus += ((self.hvdc_active * self.hvdc_Pf) * self.C_hvdc_bus_f).T
-            Sbus += ((self.hvdc_active * self.hvdc_Pt) * self.C_hvdc_bus_t).T
-
-        if normalize:
-            Sbus /= self.Sbase
-
-        return Sbus
-
-    def to_snapshots(self) -> List[SnapshotCircuit]:
-        """
-        Compile this time circuit to a list of snapshots
-        :return: List[SnapshotCircuit]
-        """
-        snapshots = [None] * self.ntime
-
-        for t in range(self.ntime):
-
-            # declare the numerical circuit
-            nc = SnapshotCircuit(nbus=self.nbus,
-                                 nline=self.nline,
-                                 ndcline=self.ndcline,
-                                 ntr=self.ntr,
-                                 nvsc=self.nvsc,
-                                 nhvdc=self.nhvdc,
-                                 nload=self.nload,
-                                 ngen=self.ngen,
-                                 nbatt=self.nbatt,
-                                 nshunt=self.nshunt,
-                                 nstagen=self.nstagen,
-                                 sbase=self.Sbase,
-                                 apply_temperature=self.apply_temperature,
-                                 branch_tolerance_mode=self.branch_tolerance_mode)
-
-            nc.original_bus_idx = np.arange(self.nbus)
-            nc.original_branch_idx = np.arange(self.nbr)
-            nc.original_tr_idx = np.arange(self.ntr)
-            nc.original_gen_idx = np.arange(self.ngen)
-            nc.original_bat_idx = np.arange(self.nbatt)
-
-            # bus ------------------------------------------------------------------------------------------------------
-            nc.bus_names = self.bus_names
-            nc.bus_active = self.bus_active[t]
-            nc.Vbus = self.Vbus[t]
-            nc.bus_types = self.bus_types
-
-            # branches common ------------------------------------------------------------------------------------------
-            nc.branch_names = self.branch_names
-            nc.branch_active = self.branch_active[t]
-            nc.F = self.F
-            nc.T = self.T
-            nc.branch_rates = self.branch_rates[t]
-            nc.C_branch_bus_f = self.C_branch_bus_f
-            nc.C_branch_bus_t = self.C_branch_bus_t
-
-            # lines ----------------------------------------------------------------------------------------------------
-            nc.line_names = self.line_names
-            nc.line_R = self.line_R
-            nc.line_X = self.line_X
-            nc.line_B = self.line_B
-            nc.line_temp_base = self.line_temp_base
-            nc.line_temp_oper = self.line_temp_oper
-            nc.line_alpha = self.line_alpha
-            nc.line_impedance_tolerance = self.line_impedance_tolerance
-
-            nc.C_line_bus = self.C_line_bus
-
-            # transformer 2W + 3W --------------------------------------------------------------------------------------
-            nc.tr_names = self.tr_names
-            nc.tr_R = self.tr_R
-            nc.tr_X = self.tr_X
-            nc.tr_G = self.tr_G
-            nc.tr_B = self.tr_B
-
-            nc.tr_tap_f = self.tr_tap_f
-            nc.tr_tap_t = self.tr_tap_t
-            nc.tr_tap_mod = self.tr_tap_mod
-            nc.tr_tap_ang = self.tr_tap_ang
-            nc.tr_is_bus_to_regulated = self.tr_is_bus_to_regulated
-            nc.tr_tap_position = self.tr_tap_position
-            nc.tr_min_tap = self.tr_min_tap
-            nc.tr_max_tap = self.tr_max_tap
-            nc.tr_tap_inc_reg_up = self.tr_tap_inc_reg_up
-            nc.tr_tap_inc_reg_down = self.tr_tap_inc_reg_down
-            nc.tr_vset = self.tr_vset
-
-            nc.C_tr_bus = self.C_tr_bus
-
-            # hvdc line ------------------------------------------------------------------------------------------------
-            nc.hvdc_names = self.hvdc_names
-            nc.hvdc_active = self.hvdc_active[t]
-            nc.hvdc_rate = self.hvdc_rate[t]
-
-            nc.hvdc_Pf = self.hvdc_Pf[t]
-            nc.hvdc_Pt = self.hvdc_Pt[t]
-
-            nc.hvdc_loss_factor = self.hvdc_loss_factor
-            nc.hvdc_Vset_f = self.hvdc_Vset_f
-            nc.hvdc_Vset_t = self.hvdc_Vset_t
-
-            nc.hvdc_Qmin_f = self.hvdc_Qmin_f
-            nc.hvdc_Qmax_f = self.hvdc_Qmax_f
-            nc.hvdc_Qmin_t = self.hvdc_Qmin_t
-            nc.hvdc_Qmax_t = self.hvdc_Qmax_t
-
-            nc.C_hvdc_bus_f = self.C_hvdc_bus_f
-            nc.C_hvdc_bus_f = self.C_hvdc_bus_t
-
-            # vsc converter --------------------------------------------------------------------------------------------
-            nc.vsc_names = self.vsc_names
-            nc.vsc_R1 = self.vsc_R1
-            nc.vsc_X1 = self.vsc_X1
-            nc.vsc_G0 = self.vsc_Gsw
-            nc.vsc_Beq = self.vsc_Beq
-            nc.vsc_m = self.vsc_m
-            nc.vsc_theta = self.vsc_theta
-
-            nc.C_vsc_bus = self.C_vsc_bus
-
-            # load -----------------------------------------------------------------------------------------------------
-            nc.load_names = self.load_names
-            nc.load_active = self.load_active[t]
-            nc.load_s = self.load_s[t]
-
-            nc.C_bus_load = self.C_bus_load
-
-            # static generators ----------------------------------------------------------------------------------------
-            nc.static_generator_names = self.static_generator_names
-            nc.static_generator_active = self.static_generator_active[t]
-            nc.static_generator_s = self.static_generator_s[t]
-
-            nc.C_bus_static_generator = self.C_bus_static_generator
-
-            # battery --------------------------------------------------------------------------------------------------
-            nc.battery_names = self.battery_names
-            nc.battery_active = self.battery_active[t]
-            nc.battery_controllable = self.battery_controllable
-            nc.battery_p = self.battery_p[t]
-            nc.battery_pf = self.battery_pf[t]
-            nc.battery_v = self.battery_v[t]
-            nc.battery_qmin = self.battery_qmin
-            nc.battery_qmax = self.battery_qmax
-
-            nc.C_bus_batt = self.C_bus_batt
-
-            # generator ------------------------------------------------------------------------------------------------
-            nc.generator_names = self.generator_names
-            nc.generator_active = self.generator_active[t]
-            nc.generator_controllable = self.generator_controllable
-            nc.generator_p = self.generator_p[t]
-            nc.generator_pf = self.generator_pf[t]
-            nc.generator_v = self.generator_v[t]
-            nc.generator_qmin = self.generator_qmin
-            nc.generator_qmax = self.generator_qmax
-
-            nc.C_bus_gen = self.C_bus_gen
-
-            # shunt ----------------------------------------------------------------------------------------------------
-            nc.shunt_names = self.shunt_names
-            nc.shunt_active = self.shunt_active[t]
-            nc.shunt_admittance = self.shunt_admittance[t]
-
-            nc.C_bus_shunt = self.C_bus_shunt
-
-            snapshots[t] = nc
-
-        return snapshots
-
-    def R_corrected(self):
-        """
-        Returns temperature corrected resistances (numpy array) based on a formula
-        provided by: NFPA 70-2005, National Electrical Code, Table 8, footnote #2; and
-        https://en.wikipedia.org/wiki/Electrical_resistivity_and_conductivity#Linear_approximation
-        (version of 2019-01-03 at 15:20 EST).
-        """
-        return self.line_R * (1.0 + self.line_alpha * (self.line_temp_oper - self.line_temp_base))
-
-    def re_calc_admittance_matrices(self, tap_module):
-        """
-
-        :param tap_module:
-        :return:
-        """
-        self.compute_admittance_matrices(newton_raphson=False,
-                                         linear_dc=False,
-                                         linear_ac=False,
-                                         fast_decoupled=False,
-                                         helm=False,
-                                         tap_module=tap_module)
-
-    def compute_admittance_matrices(self, newton_raphson=False, linear_dc=False, linear_ac=False, fast_decoupled=False,
-                                    helm=False, tap_module=None):
-        """
-        Compute the admittance matrices
-        :return: Ybus, Yseries, Yshunt
-        """
-
-        t = self.original_time_idx[0]
-
-        # form the connectivity matrices with the states applied -------------------------------------------------------
-        br_states_diag = sp.diags(self.branch_active[t, :])
-        Cf = br_states_diag * self.C_branch_bus_f
-        Ct = br_states_diag * self.C_branch_bus_t
-
-        # Declare the empty primitives ---------------------------------------------------------------------------------
-
-        # The composition order is and will be: Pi model, HVDC, VSC
-        if newton_raphson:
-            Ytt = np.empty(self.nbr, dtype=complex)
-            Yff = np.empty(self.nbr, dtype=complex)
-            Yft = np.empty(self.nbr, dtype=complex)
-            Ytf = np.empty(self.nbr, dtype=complex)
-        else:
-            Ytt = np.empty(0, dtype=complex)
-            Yff = np.empty(0, dtype=complex)
-            Yft = np.empty(0, dtype=complex)
-            Ytf = np.empty(0, dtype=complex)
-
-        # Branch primitives in vector form, for Yseries
-        if linear_ac or helm:
-            Ytts = np.empty(self.nbr, dtype=complex)
-            Yffs = np.empty(self.nbr, dtype=complex)
-            Yfts = np.empty(self.nbr, dtype=complex)
-            Ytfs = np.empty(self.nbr, dtype=complex)
-            ysh_br = np.empty(self.nbr, dtype=complex)
-        else:
-            Ytts = np.empty(0, dtype=complex)
-            Yffs = np.empty(0, dtype=complex)
-            Yfts = np.empty(0, dtype=complex)
-            Ytfs = np.empty(0, dtype=complex)
-            ysh_br = np.empty(0, dtype=complex)
-
-        # Arrays to compose the fast decoupled
-        if fast_decoupled:
-            reactances = np.empty(self.nbr)
-            susceptances = np.empty(self.nbr)
-            all_taps = np.ones(self.nbr, dtype=complex)
-
-        else:
-            reactances = np.empty(0)
-            susceptances = np.empty(0)
-            all_taps = np.ones(0, dtype=complex)
-
-        # line ---------------------------------------------------------------------------------------------------------
-        a = 0
-        b = self.nline
-
-        # use the specified of the temperature-corrected resistance
-        if self.apply_temperature:
-            line_R = self.R_corrected()
-        else:
-            line_R = self.line_R
-
-        # modify the branches impedance with the lower, upper tolerance values
-        if self.branch_tolerance_mode == BranchImpedanceMode.Lower:
-            line_R *= (1 - self.line_impedance_tolerance / 100.0)
-        elif self.branch_tolerance_mode == BranchImpedanceMode.Upper:
-            line_R *= (1 + self.line_impedance_tolerance / 100.0)
-
-        Ys_line = 1.0 / (line_R + 1.0j * self.line_X)
-        Ysh_line = 1.0j * self.line_B
-        Ys_line2 = Ys_line + Ysh_line / 2.0
-
-        # branch primitives in vector form for Ybus
-        if newton_raphson:
-            Ytt[a:b] = Ys_line2
-            Yff[a:b] = Ys_line2
-            Yft[a:b] = - Ys_line
-            Ytf[a:b] = - Ys_line
-
-        # branch primitives in vector form, for Yseries
-        if linear_ac or helm:
-            Ytts[a:b] = Ys_line
-            Yffs[a:b] = Ys_line
-            Yfts[a:b] = - Ys_line
-            Ytfs[a:b] = - Ys_line
-            ysh_br[a:b] = Ysh_line / 2.0
-
-        if fast_decoupled:
-            reactances[a:b] = self.line_X
-            susceptances[a:b] = self.line_B
-
-        # transformer models -------------------------------------------------------------------------------------------
-
-        a = self.nline
-        b = a + self.ntr
-
-        Ys_tr = 1.0 / (self.tr_R + 1.0j * self.tr_X)
-        Ysh_tr = 1.0j * self.tr_B
-        Ys_tr2 = Ys_tr + Ysh_tr / 2.0
-
-        if tap_module is None:
-            tap = self.tr_tap_mod * np.exp(1.0j * self.tr_tap_ang)
-        else:
-            tap = tap_module * np.exp(1.0j * self.tr_tap_ang)
-
-        # branch primitives in vector form for Ybus
-        if newton_raphson:
-            Ytt[a:b] = Ys_tr2 / (self.tr_tap_t * self.tr_tap_t)
-            Yff[a:b] = Ys_tr2 / (self.tr_tap_f * self.tr_tap_f * tap * np.conj(tap))
-            Yft[a:b] = - Ys_tr / (self.tr_tap_f * self.tr_tap_t * np.conj(tap))
-            Ytf[a:b] = - Ys_tr / (self.tr_tap_t * self.tr_tap_f * tap)
-
-        # branch primitives in vector form, for Yseries
-        if linear_ac or helm:
-            Ytts[a:b] = Ys_tr
-            Yffs[a:b] = Ys_tr / (tap * np.conj(tap))
-            Yfts[a:b] = - Ys_tr / np.conj(tap)
-            Ytfs[a:b] = - Ys_tr / tap
-            ysh_br[a:b] = Ysh_tr / 2.0
-
-        if fast_decoupled:
-            reactances[a:b] = self.tr_X
-            susceptances[a:b] = self.tr_B
-            all_taps[a:b] = tap
-
-        # VSC MODEL ----------------------------------------------------------------------------------------------------
-        a = self.nline + self.ntr
-        b = a + self.nvsc
-
-        Y_vsc = 1.0 / (self.vsc_R1 + 1.0j * self.vsc_X1)  # Y1
-
-        if newton_raphson:
-            Yff[a:b] = Y_vsc
-            Yft[a:b] = -self.vsc_m * np.exp(1.0j * self.vsc_theta) * Y_vsc
-            Ytf[a:b] = -self.vsc_m * np.exp(-1.0j * self.vsc_theta) * Y_vsc
-            Ytt[a:b] = self.vsc_Gsw + self.vsc_m * self.vsc_m * (Y_vsc + 1.0j * self.vsc_Beq)
-
-        if linear_ac or helm:
-            Yffs[a:b] = Y_vsc
-            Yfts[a:b] = -self.vsc_m * np.exp(1.0j * self.vsc_theta) * Y_vsc
-            Ytfs[a:b] = -self.vsc_m * np.exp(-1.0j * self.vsc_theta) * Y_vsc
-            Ytts[a:b] = self.vsc_m * self.vsc_m * (Y_vsc + 1.0j)
-
-        if fast_decoupled:
-            reactances[a:b] = self.vsc_X1
-            susceptances[a:b] = self.vsc_Beq
-            all_taps[a:b] = self.vsc_m * np.exp(1.0j * self.vsc_theta)
-
-        # HVDC LINE MODEL ----------------------------------------------------------------------------------------------
-        # does not apply since the HVDC-line model is the simplistic 2-generator model
-
-        # SHUNT --------------------------------------------------------------------------------------------------------
-        self.Yshunt_from_devices = self.C_bus_shunt * (self.shunt_admittance * self.shunt_active / self.Sbase).T
-
-        # form the admittance matrices ---------------------------------------------------------------------------------
-        if newton_raphson:
-            self.Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
-            self.Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
-            self.Ybus = sp.csc_matrix(Cf.T * self.Yf + Ct.T * self.Yt) + sp.diags(self.Yshunt_from_devices[:, 0])
-
-            self.Bpqpv = self.Ybus.imag[np.ix_(self.pqpv, self.pqpv)]
-            self.Bref = self.Ybus.imag[np.ix_(self.pqpv, self.vd)]
-
-        # form the admittance matrices of the series and shunt elements ------------------------------------------------
-        if linear_ac or helm:
-            Yfs = sp.diags(Yffs) * Cf + sp.diags(Yfts) * Ct
-            Yts = sp.diags(Ytfs) * Cf + sp.diags(Ytts) * Ct
-            self.Yseries = sp.csc_matrix(Cf.T * Yfs + Ct.T * Yts)
-            self.Yshunt = Cf.T * ysh_br + Ct.T * ysh_br + self.Yshunt_from_devices[:, 0]
-
-        # Form the matrices for fast decoupled -------------------------------------------------------------------------
-        if fast_decoupled:
-            b1 = 1.0 / (reactances + 1e-20)
-            b1_tt = sp.diags(b1)
-            B1f = b1_tt * Cf - b1_tt * Ct
-            B1t = -b1_tt * Cf + b1_tt * Ct
-            self.B1 = sparse_type(Cf.T * B1f + Ct.T * B1t)
-
-            b2 = b1 + susceptances
-            b2_ff = -(b2 / (all_taps * np.conj(all_taps))).real
-            b2_ft = -(b1 / np.conj(all_taps)).real
-            b2_tf = -(b1 / all_taps).real
-            b2_tt = - b2
-
-            B2f = -sp.diags(b2_ff) * Cf + sp.diags(b2_ft) * Ct
-            B2t = sp.diags(b2_tf) * Cf + -sp.diags(b2_tt) * Ct
-            self.B2 = sparse_type(Cf.T * B2f + Ct.T * B2t)
-
-    def get_generator_injections(self):
-        """
-        Compute the active and reactive power of non-controlled generators (assuming all)
-        :return:
-        """
-        pf2 = np.power(self.generator_pf, 2.0)
-        pf_sign = (self.generator_pf + 1e-20) / np.abs(self.generator_pf + 1e-20)
-        Q = pf_sign * self.generator_p * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
-        return self.generator_p + 1.0j * Q
-
-    def get_battery_injections(self):
-        """
-        Compute the active and reactive power of non-controlled batteries (assuming all)
-        :return:
-        """
-        pf2 = np.power(self.battery_pf, 2.0)
-        pf_sign = (self.battery_pf + 1e-20) / np.abs(self.battery_pf + 1e-20)
-        Q = pf_sign * self.battery_p * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
-        return self.battery_p + 1.0j * Q
-
-    def compute_injections(self):
-        """
-        Compute the power
-        :return: nothing, the results are stored in the class
-        """
-
-        # load
-        self.Sbus = - self.C_bus_load * (self.load_s * self.load_active).T  # MW
-
-        # static generators
-        self.Sbus += self.C_bus_static_generator * (self.static_generator_s * self.static_generator_active).T  # MW
-
-        # generators
-        self.Sbus += self.C_bus_gen * (self.get_generator_injections() * self.generator_active).T
-
-        # battery
-        self.Sbus += self.C_bus_batt * (self.get_battery_injections() * self.battery_active).T
-
-        # HVDC forced power
-        if self.nhvdc:
-            self.Sbus += ((self.hvdc_active * self.hvdc_Pf) * self.C_hvdc_bus_f).T
-            self.Sbus += ((self.hvdc_active * self.hvdc_Pt) * self.C_hvdc_bus_t).T
-
-        self.Sbus /= self.Sbase
-
-    def compute_reactive_power_limits(self):
-        """
-        Compute the reactive power limits per bus
-        """
-        # generators
-        self.Qmax_bus = self.C_bus_gen * (self.generator_qmax * self.generator_active).T
-        self.Qmin_bus = self.C_bus_gen * (self.generator_qmin * self.generator_active).T
-
-        if self.nbatt > 0:
-            # batteries
-            self.Qmax_bus += self.C_bus_batt * (self.battery_qmax * self.battery_active).T
-            self.Qmin_bus += self.C_bus_batt * (self.battery_qmin * self.battery_active).T
-
-        if self.nhvdc > 0:
-            # hvdc from
-            self.Qmax_bus += ((self.hvdc_Qmax_f * self.hvdc_active) * self.C_hvdc_bus_f).T
-            self.Qmin_bus += ((self.hvdc_Qmin_f * self.hvdc_active) * self.C_hvdc_bus_f).T
-
-            # hvdc to
-            self.Qmax_bus += ((self.hvdc_Qmax_t * self.hvdc_active) * self.C_hvdc_bus_t).T
-            self.Qmin_bus += ((self.hvdc_Qmin_t * self.hvdc_active) * self.C_hvdc_bus_t).T
-
-    def consolidate(self):
-        """
-        Computes the parameters given the filled-in information
-        """
-        self.compute_injections()
-
-        self.vd, self.pq, self.pv, self.pqpv = compile_types(Sbus=self.Sbus[:, 0], types=self.bus_types)
-
-        self.compute_admittance_matrices(newton_raphson=True,
-                                         linear_dc=True,
-                                         linear_ac=True,
-                                         fast_decoupled=True,
-                                         helm=True)
-
-        self.compute_reactive_power_limits()
-
-    def get_structure(self, structure_type) -> pd.DataFrame:
-        """
-        Get a DataFrame with the input.
-
-        Arguments:
-
-            **structure_type** (str): 'Vbus', 'Sbus', 'Ibus', 'Ybus', 'Yshunt', 'Yseries' or 'Types'
-
-        Returns:
-
-            pandas DataFrame
-
-        """
-
-        if structure_type == 'Vbus':
-
-            df = pd.DataFrame(data=self.Vbus, columns=['Voltage (p.u.)'], index=self.bus_names)
-
-        elif structure_type == 'Sbus':
-            df = pd.DataFrame(data=self.Sbus, columns=['Power (p.u.)'], index=self.bus_names)
-
-        elif structure_type == 'Ibus':
-            df = pd.DataFrame(data=self.Ibus, columns=['Current (p.u.)'], index=self.bus_names)
-
-        elif structure_type == 'Ybus':
-            df = pd.DataFrame(data=self.Ybus.toarray(), columns=self.bus_names, index=self.bus_names)
-
-        elif structure_type == 'Yshunt':
-            df = pd.DataFrame(data=self.Yshunt, columns=['Shunt admittance (p.u.)'], index=self.bus_names)
-
-        elif structure_type == 'Yseries':
-            df = pd.DataFrame(data=self.Yseries.toarray(), columns=self.bus_names, index=self.bus_names)
-
-        elif structure_type == "B'":
-            df = pd.DataFrame(data=self.B1.toarray(), columns=self.bus_names, index=self.bus_names)
-
-        elif structure_type == "B''":
-            df = pd.DataFrame(data=self.B2.toarray(), columns=self.bus_names, index=self.bus_names)
-
-        elif structure_type == 'Types':
-            df = pd.DataFrame(data=self.bus_types, columns=['Bus types'], index=self.bus_names)
-
-        elif structure_type == 'Qmin':
-            df = pd.DataFrame(data=self.Qmin_bus, columns=['Qmin'], index=self.bus_names)
-
-        elif structure_type == 'Qmax':
-            df = pd.DataFrame(data=self.Qmax_bus, columns=['Qmax'], index=self.bus_names)
-
-        elif structure_type == 'Jacobian':
-
-            J = Jacobian(self.Ybus, self.Vbus, self.Ibus, self.pq, self.pqpv)
-
-            """
-            J11 = dS_dVa[array([pvpq]).T, pvpq].real
-            J12 = dS_dVm[array([pvpq]).T, pq].real
-            J21 = dS_dVa[array([pq]).T, pvpq].imag
-            J22 = dS_dVm[array([pq]).T, pq].imag
-            """
-            npq = len(self.pq)
-            npv = len(self.pv)
-            npqpv = npq + npv
-            cols = ['dS/dVa'] * npqpv + ['dS/dVm'] * npq
-            rows = cols
-            df = pd.DataFrame(data=J.toarray(), columns=cols, index=rows)
-
-        else:
-
-            raise Exception('PF input: structure type not found')
-
-        return df
-
-
-def get_time_island(time_circuit: TimeCircuit, bus_idx, time_idx) -> "TimeCircuit":
-        """
-        Get the island corresponding to the given buses
-        :param bus_idx: array of bus indices
-        :param time_idx: array of time indices
-        :return: TimeCircuit
-        """
-
-        # find the indices of the devices of the island
-        line_idx = tp.get_elements_of_the_island(time_circuit.C_line_bus, bus_idx)
-        tr_idx = tp.get_elements_of_the_island(time_circuit.C_tr_bus, bus_idx)
-        vsc_idx = tp.get_elements_of_the_island(time_circuit.C_vsc_bus, bus_idx)
-        hvdc_idx = tp.get_elements_of_the_island(time_circuit.C_hvdc_bus_f + time_circuit.C_hvdc_bus_t, bus_idx)
-        br_idx = tp.get_elements_of_the_island(time_circuit.C_branch_bus_f + time_circuit.C_branch_bus_t, bus_idx)
-
-        load_idx = tp.get_elements_of_the_island(time_circuit.C_bus_load.T, bus_idx)
-        stagen_idx = tp.get_elements_of_the_island(time_circuit.C_bus_static_generator.T, bus_idx)
-        gen_idx = tp.get_elements_of_the_island(time_circuit.C_bus_gen.T, bus_idx)
-        batt_idx = tp.get_elements_of_the_island(time_circuit.C_bus_batt.T, bus_idx)
-        shunt_idx = tp.get_elements_of_the_island(time_circuit.C_bus_shunt.T, bus_idx)
-
-        nc = TimeCircuit(nbus=len(bus_idx),
-                         nline=len(line_idx),
-                         ntr=len(tr_idx),
-                         nvsc=len(vsc_idx),
-                         nhvdc=len(hvdc_idx),
-                         nload=len(load_idx),
-                         ngen=len(gen_idx),
-                         nbatt=len(batt_idx),
-                         nshunt=len(shunt_idx),
-                         nstagen=len(stagen_idx),
-                         ntime=len(time_idx),
-                         sbase=time_circuit.Sbase,
-                         time_array=time_circuit.time_array[time_idx],
-                         apply_temperature=time_circuit.apply_temperature,
-                         branch_tolerance_mode=time_circuit.branch_tolerance_mode)
-
-        nc.original_time_idx = time_idx
-        nc.original_bus_idx = bus_idx
-        nc.original_branch_idx = br_idx
-        nc.original_tr_idx = tr_idx
-        nc.original_gen_idx = gen_idx
-        nc.original_bat_idx = batt_idx
-
-        # bus ----------------------------------------------------------------------------------------------------------
-        nc.bus_names = time_circuit.bus_names[bus_idx]
-        nc.bus_active = time_circuit.bus_active[np.ix_(time_idx, bus_idx)]
-        nc.Vbus = time_circuit.Vbus[np.ix_(time_idx, bus_idx)]
-        nc.bus_types = time_circuit.bus_types[bus_idx]
-
-        # branch common ------------------------------------------------------------------------------------------------
-        nc.branch_names = time_circuit.branch_names[br_idx]
-        nc.branch_active = time_circuit.branch_active[np.ix_(time_idx, br_idx)]
-        nc.branch_rates = time_circuit.branch_rates[np.ix_(time_idx, br_idx)]
-        nc.F = time_circuit.F[br_idx]
-        nc.T = time_circuit.T[br_idx]
-        nc.C_branch_bus_f = time_circuit.C_branch_bus_f[np.ix_(br_idx, bus_idx)]
-        nc.C_branch_bus_t = time_circuit.C_branch_bus_t[np.ix_(br_idx, bus_idx)]
-
-        # lines --------------------------------------------------------------------------------------------------------
-        nc.line_names = time_circuit.line_names[line_idx]
-        nc.line_R = time_circuit.line_R[line_idx]
-        nc.line_X = time_circuit.line_X[line_idx]
-        nc.line_B = time_circuit.line_B[line_idx]
-        nc.line_temp_base = time_circuit.line_temp_base[line_idx]
-        nc.line_temp_oper = time_circuit.line_temp_oper[line_idx]
-        nc.line_alpha = time_circuit.line_alpha[line_idx]
-        nc.line_impedance_tolerance = time_circuit.line_impedance_tolerance[line_idx]
-
-        nc.C_line_bus = time_circuit.C_line_bus[np.ix_(line_idx, bus_idx)]
-
-        # transformer 2W + 3W ------------------------------------------------------------------------------------------
-        nc.tr_names = time_circuit.tr_names[tr_idx]
-        nc.tr_R = time_circuit.tr_R[tr_idx]
-        nc.tr_X = time_circuit.tr_X[tr_idx]
-        nc.tr_G = time_circuit.tr_G[tr_idx]
-        nc.tr_B = time_circuit.tr_B[tr_idx]
-
-        nc.tr_tap_f = time_circuit.tr_tap_f[tr_idx]
-        nc.tr_tap_t = time_circuit.tr_tap_t[tr_idx]
-        nc.tr_tap_mod = time_circuit.tr_tap_mod[tr_idx]
-        nc.tr_tap_ang = time_circuit.tr_tap_ang[tr_idx]
-        nc.tr_is_bus_to_regulated = time_circuit.tr_is_bus_to_regulated[tr_idx]
-        nc.tr_tap_position = time_circuit.tr_tap_position[tr_idx]
-        nc.tr_min_tap = time_circuit.tr_min_tap[tr_idx]
-        nc.tr_max_tap = time_circuit.tr_max_tap[tr_idx]
-        nc.tr_tap_inc_reg_up = time_circuit.tr_tap_inc_reg_up[tr_idx]
-        nc.tr_tap_inc_reg_down = time_circuit.tr_tap_inc_reg_down[tr_idx]
-        nc.tr_vset = time_circuit.tr_vset[tr_idx]
-
-        nc.C_tr_bus = time_circuit.C_tr_bus[np.ix_(tr_idx, bus_idx)]
-
-        # hvdc line ----------------------------------------------------------------------------------------------------
-        nc.hvdc_names = time_circuit.hvdc_names[hvdc_idx]
-
-        nc.hvdc_active = time_circuit.hvdc_active[np.ix_(time_idx, hvdc_idx)]
-        nc.hvdc_rate = time_circuit.hvdc_rate[np.ix_(time_idx, hvdc_idx)]
-
-        nc.hvdc_Pf = time_circuit.hvdc_Pf[np.ix_(time_idx, hvdc_idx)]
-        nc.hvdc_Pt = time_circuit.hvdc_Pt[np.ix_(time_idx, hvdc_idx)]
-
-        nc.hvdc_Vset_f = time_circuit.hvdc_Vset_f[np.ix_(time_idx, hvdc_idx)]
-        nc.hvdc_Vset_t = time_circuit.hvdc_Vset_t[np.ix_(time_idx, hvdc_idx)]
-
-        nc.hvdc_loss_factor = time_circuit.hvdc_loss_factor[hvdc_idx]
-        nc.hvdc_Qmin_f = time_circuit.hvdc_Qmin_f[hvdc_idx]
-        nc.hvdc_Qmax_f = time_circuit.hvdc_Qmax_f[hvdc_idx]
-        nc.hvdc_Qmin_t = time_circuit.hvdc_Qmin_t[hvdc_idx]
-        nc.hvdc_Qmax_t = time_circuit.hvdc_Qmax_t[hvdc_idx]
-
-        nc.C_hvdc_bus_f = time_circuit.C_hvdc_bus_f[np.ix_(hvdc_idx, bus_idx)]
-        nc.C_hvdc_bus_t = time_circuit.C_hvdc_bus_t[np.ix_(hvdc_idx, bus_idx)]
-
-        # vsc converter ------------------------------------------------------------------------------------------------
-        nc.vsc_names = time_circuit.vsc_names[vsc_idx]
-        nc.vsc_R1 = time_circuit.vsc_R1[vsc_idx]
-        nc.vsc_X1 = time_circuit.vsc_X1[vsc_idx]
-        nc.vsc_Gsw = time_circuit.vsc_Gsw[vsc_idx]
-        nc.vsc_Beq = time_circuit.vsc_Beq[vsc_idx]
-        nc.vsc_m = time_circuit.vsc_m[vsc_idx]
-        nc.vsc_theta = time_circuit.vsc_theta[vsc_idx]
-
-        nc.C_vsc_bus = time_circuit.C_vsc_bus[np.ix_(vsc_idx, bus_idx)]
-
-        # load ---------------------------------------------------------------------------------------------------------
-        nc.load_names = time_circuit.load_names[load_idx]
-        nc.load_active = time_circuit.load_active[np.ix_(time_idx, load_idx)]
-        nc.load_s = time_circuit.load_s[np.ix_(time_idx, load_idx)]
-
-        nc.C_bus_load = time_circuit.C_bus_load[np.ix_(bus_idx, load_idx)]
-
-        # static generators --------------------------------------------------------------------------------------------
-        nc.static_generator_names = time_circuit.static_generator_names[stagen_idx]
-        nc.static_generator_active = time_circuit.static_generator_active[np.ix_(time_idx, stagen_idx)]
-        nc.static_generator_s = time_circuit.static_generator_s[np.ix_(time_idx, stagen_idx)]
-
-        nc.C_bus_static_generator = time_circuit.C_bus_static_generator[np.ix_(bus_idx, stagen_idx)]
-
-        # battery ------------------------------------------------------------------------------------------------------
-        nc.battery_names = time_circuit.battery_names[batt_idx]
-        nc.battery_controllable = time_circuit.battery_controllable[batt_idx]
-
-        nc.battery_active = time_circuit.battery_active[np.ix_(time_idx, batt_idx)]
-        nc.battery_p = time_circuit.battery_p[np.ix_(time_idx, batt_idx)]
-        nc.battery_pf = time_circuit.battery_pf[np.ix_(time_idx, batt_idx)]
-        nc.battery_v = time_circuit.battery_v[np.ix_(time_idx, batt_idx)]
-
-        nc.battery_qmin = time_circuit.battery_qmin[batt_idx]
-        nc.battery_qmax = time_circuit.battery_qmax[batt_idx]
-
-        nc.C_bus_batt = time_circuit.C_bus_batt[np.ix_(bus_idx, batt_idx)]
-
-        # generator ----------------------------------------------------------------------------------------------------
-        nc.generator_names = time_circuit.generator_names[gen_idx]
-        nc.generator_controllable = time_circuit.generator_controllable[gen_idx]
-
-        nc.generator_active = time_circuit.generator_active[np.ix_(time_idx, gen_idx)]
-        nc.generator_p = time_circuit.generator_p[np.ix_(time_idx, gen_idx)]
-        nc.generator_pf = time_circuit.generator_pf[np.ix_(time_idx, gen_idx)]
-        nc.generator_v = time_circuit.generator_v[np.ix_(time_idx, gen_idx)]
-
-        nc.generator_qmin = time_circuit.generator_qmin[gen_idx]
-        nc.generator_qmax = time_circuit.generator_qmax[gen_idx]
-
-        nc.C_bus_gen = time_circuit.C_bus_gen[np.ix_(bus_idx, gen_idx)]
-
-        # shunt --------------------------------------------------------------------------------------------------------
-        nc.shunt_names = time_circuit.shunt_names[shunt_idx]
-        nc.shunt_active = time_circuit.shunt_active[np.ix_(time_idx, shunt_idx)]
-        nc.shunt_admittance = time_circuit.shunt_admittance[np.ix_(time_idx, shunt_idx)]
-
-        nc.C_bus_shunt = time_circuit.C_bus_shunt[np.ix_(bus_idx, shunt_idx)]
-
-        return nc
-
-
-def split_time_circuit_into_islands(numeric_circuit: TimeCircuit, ignore_single_node_islands=False) -> List[TimeCircuit]:
-    """
-    Split circuit into islands
-    :param numeric_circuit: NumericCircuit instance
-    :param ignore_single_node_islands: ignore islands composed of only one bus
-    :return: List[NumericCircuit]
-    """
-
-    circuit_islands = list()  # type: List[TimeCircuit]
-
-    all_buses = np.arange(numeric_circuit.nbus)
-    all_time = np.arange(numeric_circuit.ntime)
-
-    # find the probable time slices
-    states = find_different_states(branch_active_prof=numeric_circuit.branch_active)
-
-    if len(states) == 1:
-        # compute the adjacency matrix
-        A = tp.get_adjacency_matrix(C_branch_bus_f=numeric_circuit.C_branch_bus_f,
-                                    C_branch_bus_t=numeric_circuit.C_branch_bus_t,
-                                    branch_active=numeric_circuit.branch_active[0, :],
-                                    bus_active=numeric_circuit.bus_active[0, :])
-
-        # find the matching islands
-        idx_islands = tp.find_islands(A)
-
-        if len(idx_islands) == 1:  # only one state and only one island -> just copy the data --------------------------
-
-            numeric_circuit.consolidate()  # compute the internal magnitudes
-            return [numeric_circuit]
-
-        else:  # one state, many islands -> split by bus index, keep the time ------------------------------------------
-
-            for bus_idx in idx_islands:
-
-                if ignore_single_node_islands:
-
-                    if len(bus_idx) > 1:
-                        island = get_time_island(numeric_circuit, bus_idx, all_time)
-                        island.consolidate()  # compute the internal magnitudes
-                        circuit_islands.append(island)
-
-                else:
-                    island = get_time_island(numeric_circuit, bus_idx, all_time)
-                    island.consolidate()  # compute the internal magnitudes
-                    circuit_islands.append(island)
-
-            return circuit_islands
-
-    else:  # -----------------------------------------------------------------------------------------------------------
-
-        for t, t_array in states.items():
-
+        if len(states) == 1:
             # compute the adjacency matrix
-            A = tp.get_adjacency_matrix(C_branch_bus_f=numeric_circuit.C_branch_bus_f,
-                                        C_branch_bus_t=numeric_circuit.C_branch_bus_t,
-                                        branch_active=numeric_circuit.branch_active[t_array, :],
-                                        bus_active=numeric_circuit.bus_active[t_array, :])
+            A = tp.get_adjacency_matrix(C_branch_bus_f=self.Cf,
+                                        C_branch_bus_t=self.Ct,
+                                        branch_active=self.branch_data.branch_active[:, 0],
+                                        bus_active=self.bus_data.bus_active[:, 0])
 
             # find the matching islands
             idx_islands = tp.find_islands(A)
 
-            if len(idx_islands) == 1:  # many time states, one island -> slice only by time ----------------------------
+            if len(idx_islands) == 1:  # only one state and only one island -> just copy the data
 
-                island = get_time_island(numeric_circuit, all_buses, t_array)  # convert the circuit to an island
-                island.consolidate()  # compute the internal magnitudes
+                return [self]
 
-                circuit_islands.append(island)
-
-            else:  # any time states, many islands -> slice by both time and bus index ---------------------------------
+            else:  # one state, many islands -> split by bus index, keep the time
 
                 for bus_idx in idx_islands:
 
                     if ignore_single_node_islands:
 
                         if len(bus_idx) > 1:
-                            island = get_time_island(numeric_circuit, bus_idx, t_array)
-                            island.consolidate()  # compute the internal magnitudes
+                            island = self.get_island(bus_idx, all_time)
                             circuit_islands.append(island)
 
                     else:
-                        island = get_time_island(numeric_circuit, bus_idx, t_array)
-                        island.consolidate()  # compute the internal magnitudes
+                        island = self.get_island(bus_idx, all_time)
                         circuit_islands.append(island)
 
-        return circuit_islands
+                return circuit_islands
+
+        else:  # ------------------------------------------------------------------------------------------------------
+
+            for t, t_array in states.items():
+
+                # compute the adjacency matrix
+                A = tp.get_adjacency_matrix(C_branch_bus_f=self.Cf,
+                                            C_branch_bus_t=self.Ct,
+                                            branch_active=self.branch_data.branch_active[:, t_array],
+                                            bus_active=self.bus_data.bus_active[:, t_array])
+
+                # find the matching islands
+                idx_islands = tp.find_islands(A)
+
+                if len(idx_islands) == 1:  # many time states, one island -> slice only by time ------------------------
+
+                    island = self.get_island(all_buses, t_array)  # convert the circuit to an island
+
+                    circuit_islands.append(island)
+
+                else:  # any time states, many islands -> slice by both time and bus index -----------------------------
+
+                    for bus_idx in idx_islands:
+
+                        if ignore_single_node_islands:
+
+                            if len(bus_idx) > 1:
+                                island = self.get_island(bus_idx, t_array)
+                                circuit_islands.append(island)
+
+                        else:
+                            island = self.get_island(bus_idx, t_array)
+                            circuit_islands.append(island)
+
+            return circuit_islands
 
 
 def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                          branch_tolerance_mode=BranchImpedanceMode.Specified,
-                         opf_results: OptimalPowerFlowTimeSeriesResults = None) -> TimeCircuit:
+                         opf_results=None) -> TimeCircuit:
     """
     Compile the information of a circuit and generate the pertinent power flow islands
     :param circuit: Circuit instance
@@ -1094,272 +181,54 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
     """
 
     logger = Logger()
-
-    bus_dictionary = dict()
-
-    # Element count
-    nbus = len(circuit.buses)
-    nload = 0
-    ngen = 0
-    n_batt = 0
-    nshunt = 0
-    nstagen = 0
-    for bus in circuit.buses:
-        nload += len(bus.loads)
-        ngen += len(bus.controlled_generators)
-        n_batt += len(bus.batteries)
-        nshunt += len(bus.shunts)
-        nstagen += len(bus.static_generators)
-
-    nline = len(circuit.lines)
-    ntr2w = len(circuit.transformers2w)
-    nvsc = len(circuit.vsc_converters)
-    nhvdc = len(circuit.hvdc_lines)
-    ntime = len(circuit.time_profile)
-
-    # declare the numerical circuit
-    nc = TimeCircuit(nbus=nbus,
-                     nline=nline,
-                     ntr=ntr2w,
-                     nvsc=nvsc,
-                     nhvdc=nhvdc,
-                     nload=nload,
-                     ngen=ngen,
-                     nbatt=n_batt,
-                     nshunt=nshunt,
-                     nstagen=nstagen,
-                     ntime=ntime,
+    nc = TimeCircuit(nbus=0,
+                     nline=0,
+                     ndcline=0,
+                     ntr=0,
+                     nvsc=0,
+                     nhvdc=0,
+                     nload=0,
+                     ngen=0,
+                     nbatt=0,
+                     nshunt=0,
+                     nstagen=0,
                      sbase=circuit.Sbase,
-                     time_array=circuit.time_profile,
-                     apply_temperature=apply_temperature,
-                     branch_tolerance_mode=branch_tolerance_mode)
+                     time_array=circuit.time_profile)
 
-    # buses and it's connected elements (loads, generators, etc...)
-    i_ld = 0
-    i_gen = 0
-    i_batt = 0
-    i_sh = 0
-    i_stagen = 0
-    for i, bus in enumerate(circuit.buses):
+    ntime = nc.ntime
 
-        # bus parameters
-        nc.bus_names[i] = bus.name
-        nc.bus_active[:, i] = bus.active_prof
-        nc.bus_types[i] = bus.determine_bus_type().value
+    bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
 
-        nc.Vmin[i] = bus.Vmin
-        nc.Vmax[i] = bus.Vmax
+    nc.bus_data = ds.circuit_to_data.get_bus_data(circuit, time_series=True, ntime=ntime)
 
-        # Add buses dictionary entry
-        bus_dictionary[bus] = i
+    nc.load_data = ds.circuit_to_data.get_load_data(circuit, bus_dict, opf_results, time_series=True, ntime=ntime)
 
-        for elm in bus.loads:
-            nc.load_names[i_ld] = elm.name
-            nc.load_active[:, i_ld] = elm.active_prof
+    nc.static_generator_data = ds.circuit_to_data.get_static_generator_data(circuit, bus_dict, time_series=True, ntime=ntime)
 
-            if opf_results is None:
-                nc.load_s[:, i_ld] = elm.P_prof + 1j * elm.Q_prof
-            else:
-                nc.load_s[:, i_ld] = elm.P_prof + 1j * elm.Q_prof - opf_results.load_shedding[:, i_ld]
+    nc.generator_data = ds.circuit_to_data.get_generator_data(circuit, bus_dict, nc.bus_data.Vbus, logger, opf_results,
+                                                              time_series=True, ntime=ntime)
 
-            nc.C_bus_load[i, i_ld] = 1
-            i_ld += 1
+    nc.battery_data = ds.circuit_to_data.get_battery_data(circuit, bus_dict, nc.bus_data.Vbus, logger, opf_results,
+                                                          time_series=True, ntime=ntime)
 
-        for elm in bus.static_generators:
-            nc.static_generator_names[i_stagen] = elm.name
-            nc.static_generator_active[:, i_stagen] = elm.active_prof
-            nc.static_generator_s[:, i_stagen] = elm.P_prof + 1j * elm.Q_prof
+    nc.shunt_data = ds.circuit_to_data.get_shunt_data(circuit, bus_dict, time_series=True, ntime=ntime)
 
-            nc.C_bus_static_generator[i, i_stagen] = 1
-            i_stagen += 1
+    nc.line_data = ds.circuit_to_data.get_line_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode,
+                                                    time_series=True, ntime=ntime)
 
-        for elm in bus.controlled_generators:
+    nc.transformer_data = ds.circuit_to_data.get_transformer_data(circuit, bus_dict, time_series=True, ntime=ntime)
+    nc.vsc_data = ds.circuit_to_data.get_vsc_data(circuit, bus_dict, time_series=True, ntime=ntime)
 
-            nc.generator_names[i_gen] = elm.name
+    nc.dc_line_data = ds.circuit_to_data.get_dc_line_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode,
+                                                          time_series=True, ntime=ntime)
 
-            nc.generator_active[:, i_gen] = elm.active_prof
-            nc.generator_pf[:, i_gen] = elm.Pf_prof
-            nc.generator_v[:, i_gen] = elm.Vset_prof
-            nc.generator_qmin[i_gen] = elm.Qmin
-            nc.generator_qmax[i_gen] = elm.Qmax
-            nc.generator_controllable[i_gen] = elm.is_controlled
-            nc.generator_installed_p[i_gen] = elm.Snom
+    nc.branch_data = ds.circuit_to_data.get_branch_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode,
+                                                        time_series=True, ntime=ntime)
 
-            if opf_results is None:
-                nc.generator_p[:, i_gen] = elm.P_prof
-            else:
-                nc.generator_p[:, i_gen] = opf_results.generator_power[:, i_gen] - opf_results.generator_shedding[:, i_gen]
+    nc.hvdc_data = ds.circuit_to_data.get_hvdc_data(circuit, bus_dict, nc.bus_data.bus_types,
+                                                    time_series=True, ntime=ntime)
 
-            nc.C_bus_gen[i, i_gen] = 1
-
-            if nc.Vbus[0, i].real == 1.0:
-                nc.Vbus[:, i] = elm.Vset_prof + 1j * 0
-            elif elm.Vset != nc.Vbus[0, i]:
-                logger.append('Different set points at ' + bus.name + ': ' + str(elm.Vset) + ' !=' + str(nc.Vbus[0, i]))
-            i_gen += 1
-
-        for elm in bus.batteries:
-            nc.battery_names[i_batt] = elm.name
-
-            nc.battery_active[:, i_batt] = elm.active_prof
-
-            nc.battery_pf[:, i_batt] = elm.Pf_prof
-            nc.battery_v[:, i_batt] = elm.Vset_prof
-            nc.battery_qmin[i_batt] = elm.Qmin
-            nc.battery_qmax[i_batt] = elm.Qmax
-            nc.battery_controllable[i_batt] = elm.is_controlled
-            nc.battery_installed_p[i_batt] = elm.Snom
-
-            if opf_results is None:
-                nc.battery_p[:, i_batt] = elm.P_prof
-            else:
-                nc.battery_p[:, i_batt] = opf_results.battery_power[:, i_batt]
-
-            nc.C_bus_batt[i, i_batt] = 1
-            nc.Vbus[:, i] *= elm.Vset_prof
-            i_batt += 1
-
-        for elm in bus.shunts:
-            nc.shunt_names[i_sh] = elm.name
-            nc.shunt_active[:, i_sh] = elm.active_prof
-            nc.shunt_admittance[:, i_sh] = elm.G_prof + 1j * elm.B
-
-            nc.C_bus_shunt[i, i_sh] = 1
-            i_sh += 1
-
-    # Compile the lines
-    for i, elm in enumerate(circuit.lines):
-        # generic stuff
-        nc.branch_names[i] = elm.name
-        nc.branch_active[:, i] = elm.active_prof
-        nc.branch_rates[:, i] = elm.rate_prof
-        f = bus_dictionary[elm.bus_from]
-        t = bus_dictionary[elm.bus_to]
-        nc.C_branch_bus_f[i, f] = 1
-        nc.C_branch_bus_t[i, t] = 1
-        nc.F[i] = f
-        nc.T[i] = t
-
-        # impedance
-        nc.line_names[i] = elm.name
-        nc.line_R[i] = elm.R
-        nc.line_X[i] = elm.X
-        nc.line_B[i] = elm.B
-        nc.line_impedance_tolerance[i] = elm.tolerance
-        nc.C_line_bus[i, f] = 1
-        nc.C_line_bus[i, t] = 1
-
-        # Thermal correction
-        nc.line_temp_base[i] = elm.temp_base
-        nc.line_temp_oper[i] = elm.temp_oper
-        nc.line_alpha[i] = elm.alpha
-
-    # 2-winding transformers
-    for i, elm in enumerate(circuit.transformers2w):
-        ii = i + nline
-
-        # generic stuff
-        f = bus_dictionary[elm.bus_from]
-        t = bus_dictionary[elm.bus_to]
-
-        nc.branch_names[ii] = elm.name
-        nc.branch_active[:, ii] = elm.active_prof
-        nc.branch_rates[:, ii] = elm.rate_prof
-        nc.C_branch_bus_f[ii, f] = 1
-        nc.C_branch_bus_t[ii, t] = 1
-        nc.F[ii] = f
-        nc.T[ii] = t
-
-        # impedance
-        nc.tr_names[i] = elm.name
-        nc.tr_R[i] = elm.R
-        nc.tr_X[i] = elm.X
-        nc.tr_G[i] = elm.G
-        nc.tr_B[i] = elm.B
-
-        nc.C_tr_bus[i, f] = 1
-        nc.C_tr_bus[i, t] = 1
-
-        # tap changer
-        nc.tr_tap_mod[i] = elm.tap_module
-        nc.tr_tap_ang[i] = elm.angle
-        nc.tr_is_bus_to_regulated[i] = elm.bus_to_regulated
-        nc.tr_tap_position[i] = elm.tap_changer.tap
-        nc.tr_min_tap[i] = elm.tap_changer.min_tap
-        nc.tr_max_tap[i] = elm.tap_changer.max_tap
-        nc.tr_tap_inc_reg_up[i] = elm.tap_changer.inc_reg_up
-        nc.tr_tap_inc_reg_down[i] = elm.tap_changer.inc_reg_down
-        nc.tr_vset[i] = elm.vset
-
-        nc.tr_bus_to_regulated_idx[i] = t if elm.bus_to_regulated else f
-
-        # virtual taps for transformers where the connection voltage is off
-        nc.tr_tap_f[i], nc.tr_tap_t[i] = elm.get_virtual_taps()
-
-    # VSC
-    for i, elm in enumerate(circuit.vsc_converters):
-        ii = i + nline + ntr2w
-
-        # generic stuff
-        f = bus_dictionary[elm.bus_from]
-        t = bus_dictionary[elm.bus_to]
-
-        nc.branch_names[ii] = elm.name
-        nc.C_branch_bus_f[ii, f] = 1
-        nc.C_branch_bus_t[ii, t] = 1
-        nc.F[ii] = f
-        nc.T[ii] = t
-
-        nc.branch_active[:, ii] = elm.active_prof
-        nc.branch_rates[:, ii] = elm.rate_prof
-
-        # vsc values
-        nc.vsc_names[i] = elm.name
-        nc.vsc_R1[i] = elm.R1
-        nc.vsc_X1[i] = elm.X1
-        nc.vsc_Gsw[i] = elm.G0
-        nc.vsc_Beq[i] = elm.Beq
-        nc.vsc_m[i] = elm.m
-        nc.vsc_theta[i] = elm.theta
-
-        nc.C_vsc_bus[i, f] = 1
-        nc.C_vsc_bus[i, t] = 1
-
-    # HVDC
-    for i, elm in enumerate(circuit.hvdc_lines):
-        ii = i + nline + ntr2w + nvsc
-
-        # generic stuff
-        f = bus_dictionary[elm.bus_from]
-        t = bus_dictionary[elm.bus_to]
-
-        # hvdc values
-        nc.hvdc_names[i] = elm.name
-
-        nc.hvdc_active[:, i] = elm.active_prof
-        nc.hvdc_rate[:, i] = elm.rate_prof
-
-        nc.hvdc_Pf[:, i], nc.hvdc_Pt[:, i] = elm.get_from_and_to_power_profiles()
-
-        nc.hvdc_Vset_f[:, i] = elm.Vset_f_prof
-        nc.hvdc_Vset_t[:, i] = elm.Vset_t_prof
-
-        nc.hvdc_loss_factor[i] = elm.loss_factor
-        nc.hvdc_Qmin_f[i] = elm.Qmin_f
-        nc.hvdc_Qmax_f[i] = elm.Qmax_f
-        nc.hvdc_Qmin_t[i] = elm.Qmin_t
-        nc.hvdc_Qmax_t[i] = elm.Qmax_t
-
-        # hack the bus types to believe they are PV
-        nc.bus_types[f] = BusMode.PV.value
-        nc.bus_types[t] = BusMode.PV.value
-
-        # the the bus-hvdc line connectivity
-        nc.C_hvdc_bus_f[i, f] = 1
-        nc.C_hvdc_bus_t[i, t] = 1
-
-    # consolidate the information
-    nc.consolidate()
+    nc.consolidate_information()
 
     return nc
 

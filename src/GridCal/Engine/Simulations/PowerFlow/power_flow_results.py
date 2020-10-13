@@ -186,7 +186,7 @@ class PowerFlowResults:
 
             **b_idx**: bus original indices
 
-            **br_idx**: branch original indices
+            **elm_idx**: branch original indices
         """
         self.Sbus[b_idx] = results.Sbus
 
@@ -282,9 +282,6 @@ class PowerFlowResults:
         """
 
         :param result_type:
-        :param ax:
-        :param indices:
-        :param names:
         :return:
         """
 

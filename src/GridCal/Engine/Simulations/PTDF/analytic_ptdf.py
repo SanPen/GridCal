@@ -24,7 +24,7 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Gui.GuiFunctions import ResultsModel
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
 
 def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
@@ -220,33 +220,30 @@ class LinearAnalysis:
         Run the PTDF and LODF
         """
         self.numerical_circuit = compile_snapshot_circuit(self.grid)
-        islands = split_into_islands(self.numerical_circuit)
+        islands = self.numerical_circuit.split_into_islands()
 
         self.results = LinearAnalysisResults(n_br=self.numerical_circuit.nbr,
                                              n_bus=self.numerical_circuit.nbus,
-                                             br_names=self.numerical_circuit.branch_names,
-                                             bus_names=self.numerical_circuit.bus_names,
-                                             bus_types=self.numerical_circuit.bus_types)
+                                             br_names=self.numerical_circuit.branch_data.branch_names,
+                                             bus_names=self.numerical_circuit.bus_data.bus_names,
+                                             bus_types=self.numerical_circuit.bus_data.bus_types)
 
         # compute the PTDF per islands
         if len(islands) > 0:
             for island in islands:
 
-                # compute the linear-DC matrices
-                Bbus, Bf, reactances = island.get_linear_matrices()
-
                 if len(island.vd) > 0 and len(island.pqpv) > 0:  # no slacks will make it impossible to compute the PTDF analytically
 
                     # compute the PTDF of the island
-                    ptdf_island = make_ptdf(Bbus=Bbus,
-                                            Bf=Bf,
+                    ptdf_island = make_ptdf(Bbus=island.Bbus,
+                                            Bf=island.Bf,
                                             pqpv=island.pqpv,
                                             distribute_slack=self.distributed_slack)
 
                     if self.distributed_slack:
                         # the LODF requires a PTDF that does not have the distributed slack
-                        ptdf_island_no_dist = make_ptdf(Bbus=Bbus,
-                                                        Bf=Bf,
+                        ptdf_island_no_dist = make_ptdf(Bbus=island.Bbus,
+                                                        Bf=island.Bf,
                                                         pqpv=island.pqpv,
                                                         distribute_slack=False)
                     else:
@@ -256,8 +253,8 @@ class LinearAnalysis:
                     self.results.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
 
                     # compute the island LODF
-                    lodf_island = make_lodf(Cf=self.numerical_circuit.C_branch_bus_f,
-                                            Ct=self.numerical_circuit.C_branch_bus_t,
+                    lodf_island = make_lodf(Cf=self.numerical_circuit.branch_data.C_branch_bus_f,
+                                            Ct=self.numerical_circuit.branch_data.C_branch_bus_t,
                                             PTDF=ptdf_island_no_dist,
                                             correct_values=self.correct_values)
 
@@ -265,27 +262,24 @@ class LinearAnalysis:
 
         else:
 
-            # compute the linear-DC matrices
-            Bbus, Bf, reactances = islands[0].get_linear_matrices()
-
             # there is only 1 island, compute the PTDF
-            self.results.PTDF = make_ptdf(Bbus=Bbus,
-                                          Bf=Bf,
+            self.results.PTDF = make_ptdf(Bbus=islands[0].Bbus,
+                                          Bf=islands[0].Bf,
                                           pqpv=islands[0].pqpv,
                                           distribute_slack=self.distributed_slack)
 
             if self.distributed_slack:
                 # the LODF requires a PTDF that does not have the distributed slack
-                ptdf_island_no_dist = make_ptdf(Bbus=Bbus,
-                                                Bf=Bf,
+                ptdf_island_no_dist = make_ptdf(Bbus=islands[0].Bbus,
+                                                Bf=islands[0].Bf,
                                                 pqpv=islands[0].pqpv,
                                                 distribute_slack=False)
             else:
                 ptdf_island_no_dist = self.results.PTDF
 
             # the LODF algorithm doesn't seem to solve any circuit, hence there is no need of island splitting
-            self.results.LODF = make_lodf(Cf=self.numerical_circuit.C_branch_bus_f,
-                                          Ct=self.numerical_circuit.C_branch_bus_t,
+            self.results.LODF = make_lodf(Cf=self.numerical_circuit.branch_data.C_branch_bus_f,
+                                          Ct=self.numerical_circuit.branch_data.C_branch_bus_t,
                                           PTDF=ptdf_island_no_dist,
                                           correct_values=self.correct_values)
 

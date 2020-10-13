@@ -19,8 +19,7 @@ from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
-from GridCal.Engine.Core.time_series_pf_data import SeriesData
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotData, compile_snapshot_circuit, split_into_islands
 from GridCal.Engine.Devices import DeviceType
 
 
@@ -99,17 +98,29 @@ def get_reliability_scenario(nc: SnapshotData, horizon=10000):
     all_events = list()
 
     # branches
-    all_events += get_reliability_events(horizon, nc.branch_mttf, nc.branch_mttr, DeviceType.BranchDevice)
+    all_events += get_reliability_events(horizon,
+                                         nc.branch_data.branch_mttf,
+                                         nc.branch_data.branch_mttr, DeviceType.BranchDevice)
 
-    all_events += get_reliability_events(horizon, nc.generator_mttf, nc.generator_mttr, DeviceType.GeneratorDevice)
+    all_events += get_reliability_events(horizon,
+                                         nc.generator_data.generator_mttf,
+                                         nc.generator_data.generator_mttr, DeviceType.GeneratorDevice)
 
-    all_events += get_reliability_events(horizon, nc.battery_mttf, nc.battery_mttr, DeviceType.BatteryDevice)
+    all_events += get_reliability_events(horizon,
+                                         nc.battery_data.battery_mttf,
+                                         nc.battery_data.battery_mttr, DeviceType.BatteryDevice)
 
-    all_events += get_reliability_events(horizon, nc.static_gen_mttf, nc.static_gen_mttr, DeviceType.StaticGeneratorDevice)
+    all_events += get_reliability_events(horizon,
+                                         nc.static_generator_data.static_gen_mttf,
+                                         nc.static_generator_data.static_gen_mttr, DeviceType.StaticGeneratorDevice)
 
-    all_events += get_reliability_events(horizon, nc.load_mttf, nc.load_mttr, DeviceType.LoadDevice)
+    all_events += get_reliability_events(horizon,
+                                         nc.load_data.load_mttf,
+                                         nc.load_data.load_mttr, DeviceType.LoadDevice)
 
-    all_events += get_reliability_events(horizon, nc.shunt_mttf, nc.shunt_mttr, DeviceType.ShuntDevice)
+    all_events += get_reliability_events(horizon,
+                                         nc.shunt_data.shunt_mttf,
+                                         nc.shunt_data.shunt_mttr, DeviceType.ShuntDevice)
 
     # sort all
     all_events.sort(key=lambda tup: tup[0])
@@ -126,28 +137,28 @@ def run_events(nc: SnapshotData, events_list: list):
             pass
 
         elif tpe == DeviceType.BranchDevice:
-            nc.branch_active[i] = state
+            nc.branch_data.branch_active[i] = state
 
         elif tpe == DeviceType.GeneratorDevice:
-            nc.generator_active[i] = state
+            nc.generator_data.generator_active[i] = state
 
         elif tpe == DeviceType.StaticGeneratorDevice:
-            nc.static_gen_active[i] = state
+            nc.static_generator_data.static_gen_active[i] = state
 
         elif tpe == DeviceType.BatteryDevice:
-            nc.battery_active[i] = state
+            nc.battery_data.battery_active[i] = state
 
         elif tpe == DeviceType.ShuntDevice:
-            nc.shunt_active[i] = state
+            nc.shunt_data.shunt_active[i] = state
 
         elif tpe == DeviceType.LoadDevice:
-            nc.load_active[i] = state
+            nc.load_data.load_active[i] = state
 
         else:
             pass
 
         # compile the grid information
-        calculation_islands = nc.compute()
+        calculation_islands = split_into_islands(nc)
 
 
 class ReliabilityStudy(QThread):
@@ -189,7 +200,7 @@ class ReliabilityStudy(QThread):
         print('Running voltage collapse...')
 
         # compile the numerical circuit
-        numerical_circuit = self.circuit.compile_snapshot()
+        numerical_circuit = compile_snapshot_circuit(self.circuit)
 
         evt = get_reliability_scenario(numerical_circuit)
 
@@ -204,12 +215,11 @@ class ReliabilityStudy(QThread):
 
 
 if __name__ == '__main__':
-    from GridCal.Engine.All import MultiCircuit
+    from GridCal.Engine import *
 
     fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus with storage.xlsx'
 
-    circuit_ = MultiCircuit()
-    circuit_.load_file(fname)
+    circuit_ = FileOpen(fname).open()
 
     study = ReliabilityStudy(circuit=circuit_, pf_options=PowerFlowOptions())
 

@@ -21,7 +21,7 @@ from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, split_into_islands
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.NK.n_minus_k_results import NMinusKResults
 from GridCal.Engine.Simulations.PTDF.analytic_ptdf import LinearAnalysis
 
@@ -129,7 +129,7 @@ class NMinusK(QThread):
                                          correct_values=self.options.correct_values)
         linear_analysis.run()
 
-        Pbus = self.numerical_circuit.get_injections(False).real
+        Pbus = self.numerical_circuit.get_injections(False).real[:, 0]
         PTDF = linear_analysis.results.PTDF
         LODF = linear_analysis.results.LODF
 
@@ -145,7 +145,7 @@ class NMinusK(QThread):
             #     results.loading[m, c] = results.Sbranch[m, c] / (self.numerical_circuit.branch_rates[m] + 1e-9)
 
             results.Sbranch[:, c] = flows_n[:] + LODF[:, c] * flows_n[c]
-            results.loading[:, c] = results.Sbranch[:, c] / (self.numerical_circuit.branch_rates[:] + 1e-9)
+            results.loading[:, c] = results.Sbranch[:, c] / (self.numerical_circuit.branch_rates + 1e-9)
 
             results.S[c, :] = Pbus
 
@@ -175,7 +175,7 @@ class NMinusK(QThread):
 if __name__ == '__main__':
     import os
     import pandas as pd
-    from GridCal.Engine import FileOpen, SolverType
+    from GridCal.Engine import FileOpen, SolverType,PowerFlowOptions
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
@@ -186,9 +186,8 @@ if __name__ == '__main__':
 
     main_circuit = FileOpen(fname).open()
 
-    pf_options_ = PowerFlowOptions(solver_type=SolverType.LACPF)
-    options_ = NMinusKOptions(use_multi_threading=False)
-    simulation = NMinusK(grid=main_circuit, options=options_, pf_options=pf_options_)
+    options_ = NMinusKOptions()
+    simulation = NMinusK(grid=main_circuit, options=options_)
     simulation.run()
 
     otdf_ = simulation.get_otdf()

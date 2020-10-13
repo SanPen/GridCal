@@ -218,7 +218,7 @@ class PtdfTimeSeries(QThread):
 
         self.progress_text.emit('Computing branch flows...')
 
-        Pbus_0 = ts_numeric_circuit.get_power_injections().real[:, time_indices]
+        Pbus_0 = ts_numeric_circuit.Sbus.real[:, time_indices]
         self.results.Sbranch = ptdf_analysis.get_branch_time_series(Pbus_0)
 
         # compute post process
