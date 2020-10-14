@@ -100,6 +100,12 @@ def cpf_p(parametrization: VCParametrization, step, z, V, lam, V_prev, lamprv, p
         b = r_[Va[pvpq], Vm[pq], lam]
         c = r_[Va_prev[pvpq], Vm_prev[pq], lamprv]
         P = dot(a, b - c) - step
+    else:
+        # natural
+        if lam >= lamprv:
+            P = lam - lamprv - step
+        else:
+            P = lamprv - lam - step
 
     return P
 

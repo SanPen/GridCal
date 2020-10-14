@@ -391,11 +391,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 circuit.add_line(elm)
 
         if "Transformer2w" in devices.keys():
-
-            if "Transformer2w" in devices.keys():
-                transformers = devices["Transformer2w"]
-            else:
-                raise Exception('Transformer key not found')
+            transformers = devices["Transformer2w"]
 
             for entry in transformers:
 
@@ -430,6 +426,36 @@ def parse_json_data_v3(data: dict, logger: Logger):
                                     alpha=float(entry['alpha'])
                                     )
                 circuit.add_transformer2w(elm)
+
+        if "TransformerNw" in devices.keys():
+            transformers = devices["TransformerNw"]
+
+            for tentry in transformers:
+                for entry in tentry['windings']:
+                    v1 = float(entry['Vnomf'])
+                    v2 = float(entry['Vnomt'])
+
+                    if v1 > v2:
+                        HV = v1
+                        LV = v2
+                    else:
+                        HV = v2
+                        LV = v1
+
+                    elm = Transformer2W(bus_from=bus_dict[entry['bus_from']],
+                                        bus_to=bus_dict[entry['bus_to']],
+                                        name=str(tentry['name']),
+                                        idtag=str(entry['id']),
+                                        active=bool(tentry['active']),
+                                        r=float(entry['r']),
+                                        x=float(entry['x']),
+                                        g=float(entry['g']),
+                                        b=float(entry['b']),
+                                        rate=float(entry['rate']),
+                                        HV=HV,
+                                        LV=LV
+                                        )
+                    circuit.add_transformer2w(elm)
 
         if "VSC" in devices.keys():
             vsc = devices["VSC"]
