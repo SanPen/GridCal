@@ -1543,27 +1543,40 @@ class MultiCircuit:
         :param buses_selection: list of tuples index, bus object
         :return: indices of the corrected buses
         """
+        delta = 1e20
 
-        A = self.get_adjacent_matrix()
+        while delta > 10:
 
-        for k, bus in buses_selection:
-            idx = list(self.get_adjacent_buses(A, k))
+            A = self.get_adjacent_matrix()
 
-            # remove the elements already in the selection
-            for i in range(len(idx)-1, 0, -1):
-                if k == idx[i]:
-                    idx.pop(i)
+            for k, bus in buses_selection:
 
-            x = list()
-            y = list()
-            for i in idx:
-                x.append(self.buses[i].graphic_obj.x())
-                y.append(self.buses[i].graphic_obj.y())
-            x_m = np.mean(x)
-            y_m = np.mean(y)
+                idx = list(self.get_adjacent_buses(A, k))
 
-            bus.x = x_m
-            bus.y = y_m
+                # remove the elements already in the selection
+                for i in range(len(idx) - 1, 0, -1):
+                    if k == idx[i]:
+                        idx.pop(i)
+
+                x_arr = list()
+                y_arr = list()
+                for i in idx:
+                    x_arr.append(self.buses[i].graphic_obj.x())
+                    y_arr.append(self.buses[i].graphic_obj.y())
+
+                x_m = np.mean(x_arr)
+                y_m = np.mean(y_arr)
+
+                delta_i = np.sqrt((bus.x - x_m)**2 + (bus.y - y_m)**2)
+
+                if delta_i < delta:
+                    delta = delta_i
+
+                bus.x = x_m.copy()
+                bus.y = y_m.copy()
+                bus.graphic_obj.set_position(x=bus.x, y=bus.y)
+
+        print('Done!')
 
     def get_center_location(self):
         """
@@ -1755,3 +1768,28 @@ class MultiCircuit:
         tolerance = 1.0 / (10.0 ** exponent)
 
         return tolerance, exponent
+
+    def fill_xy_from_lat_lon(self, destructive=True, factor=0.01):
+        """
+        fill the x and y value from the latitude and longitude values
+        :param destructive: if true, the values are overwritten regardless, otherwise only if x and y are 0
+        :param factor: Explosion factor
+        """
+
+        n = len(self.buses)
+        lon = np.zeros(n)
+        lat = np.zeros(n)
+        for i, bus in enumerate(self.buses):
+            lon[i] = bus.longitude
+            lat[i] = bus.latitude
+
+        # perform the coordinate transformation
+        x, y = pyproj.Transformer.from_crs(4326, 25830, always_xy=True).transform(lon, lat)
+        x *= factor
+        y *= factor
+
+        # assign the values
+        for i, bus in enumerate(self.buses):
+            if destructive or (bus.x == 0.0 and bus.y == 0.0):
+                bus.x = x[i]
+                bus.y = -y[i]

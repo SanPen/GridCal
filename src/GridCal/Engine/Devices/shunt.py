@@ -39,7 +39,8 @@ class Shunt(EditableDevice):
 
     """
 
-    def __init__(self, name='shunt', idtag=None, G=0.0, B=0.0, G_prof=None, B_prof=None, active=True, mttf=0.0, mttr=0.0):
+    def __init__(self, name='shunt', idtag=None, G=0.0, B=0.0, G_prof=None, B_prof=None, active=True,
+                 controlled=False, Bmin=0.0, Bmax=0.0, mttf=0.0, mttr=0.0):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -49,11 +50,12 @@ class Shunt(EditableDevice):
                                 editable_headers={'name': GCProp('', str, 'Load name'),
                                                   'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
-                                                  'active': GCProp('', bool, 'Is the load active?'),
-                                                  'G': GCProp('MW', float,
-                                                              'Active power of the impedance component at V=1.0 p.u.'),
-                                                  'B': GCProp('MVAr', float,
-                                                              'Reactive power of the impedance component at V=1.0 p.u.'),
+                                                  'active': GCProp('', bool, 'Is the shunt active?'),
+                                                  'controlled': GCProp('', bool, 'Is the shunt controllable?'),
+                                                  'G': GCProp('MW', float, 'Active power of the impedance component at V=1.0 p.u.'),
+                                                  'B': GCProp('MVAr', float, 'Reactive power of the impedance component at V=1.0 p.u.'),
+                                                  'Bmin': GCProp('MVAr', float, 'Reactive power min control value at V=1.0 p.u.'),
+                                                  'Bmax': GCProp('MVAr', float, 'Reactive power max control value at V=1.0 p.u.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery')},
                                 non_editable_attributes=list(),
@@ -66,6 +68,8 @@ class Shunt(EditableDevice):
 
         self.active_prof = None
 
+        self.controlled = controlled
+
         self.mttf = mttf
 
         self.mttr = mttr
@@ -73,6 +77,8 @@ class Shunt(EditableDevice):
         # Impedance (MVA)
         self.G = G
         self.B = B
+        self.Bmin = Bmin
+        self.Bmax = Bmax
 
         # admittance profile
         self.G_prof = G_prof

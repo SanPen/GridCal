@@ -317,8 +317,8 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
             iter_ += 1
 
             # evaluate Jacobian
-            J = Jacobian(Ybus, V, Ibus, pq, pvpq)
-            # J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
+            # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+            J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
 
             # compute update step
             dx = linear_solver(J, f)

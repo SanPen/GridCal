@@ -26,7 +26,7 @@ from GridCal.Engine.IO.dgs_parser import dgs_to_circuit
 from GridCal.Engine.IO.matpower_parser import parse_matpower_file
 from GridCal.Engine.IO.dpx_parser import load_dpx
 from GridCal.Engine.IO.ipa_parser import load_iPA
-from GridCal.Engine.IO.json_parser import parse_json, parse_json_data_v2
+from GridCal.Engine.IO.json_parser import parse_json, parse_json_data_v2, parse_json_data_v3
 from GridCal.Engine.IO.psse_parser import PSSeParser
 from GridCal.Engine.IO.cim_parser import CIMImport
 from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, open_data_frames_from_zip
@@ -135,6 +135,8 @@ class FileOpen:
                         version = int(float(data['version']))
                         if version == 2:
                             self.circuit = parse_json_data_v2(data, self.logger)
+                        elif version == 3:
+                            self.circuit = parse_json_data_v3(data, self.logger)
                         else:
                             self.logger.append('Recognised as a gridCal compatible Json but the version is not supported')
                     else:
