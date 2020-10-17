@@ -187,6 +187,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
     if DeviceType.CircuitDevice.value in devices.keys():
 
         dta = devices[DeviceType.CircuitDevice.value]
+
         circuit = MultiCircuit(name=str(dta['name']),
                                Sbase=float(dta['sbase']),
                                fbase=float(dta['fbase']),

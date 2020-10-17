@@ -50,8 +50,10 @@ def compute_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a,
     :param Cf: Connectivity branch-bus "from" with the branch states computed
     :param Ct: Connectivity branch-bus "to" with the branch states computed
     :param G0:
-    :param Inom:
-    :param Yshunt_bus: array of shunts equivalent power per bus (p.u.)
+    :param a:
+    :param b:
+    :param c:
+    :param Yshunt_bus: array of shunts equivalent power per bus, from the shunt devices (p.u.)
     :return: Ybus, Yf, Yt
     """
 
@@ -59,8 +61,8 @@ def compute_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a,
     Gsw = G0 + a * np.power(If, 2) + b * If + c
 
     # SHUNT --------------------------------------------------------------------------------------------------------
-    yshunt_f = Cf * Yshunt_bus
-    yshunt_t = Ct * Yshunt_bus
+    # yshunt_f = Cf * Yshunt_bus
+    # yshunt_t = Ct * Yshunt_bus
 
     # form the admittance matrices ---------------------------------------------------------------------------------
 
@@ -70,15 +72,15 @@ def compute_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a,
     mp = k * m
 
     # compose the primitives
-    Yff = Gsw + (ys + bc2 + 1.0j * Beq + yshunt_f) / (mp * mp * mf * mf)
+    Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * mf * mf)
     Yft = -ys / (mp * np.exp(-1.0j * theta) * mf * mt)
     Ytf = -ys / (mp * np.exp(1.0j * theta) * mt * mf)
-    Ytt = (ys + bc2 + yshunt_t) / (mt * mt)
+    Ytt = (ys + bc2) / (mt * mt)
 
     # compose the matrices
     Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
     Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
-    Ybus = sp.csc_matrix(Cf.T * Yf + Ct.T * Yt)
+    Ybus = Cf.T * Yf + Ct.T * Yt + sp.diags(Yshunt_bus)
 
     return Ybus, Yf, Yt
 
