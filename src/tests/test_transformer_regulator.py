@@ -167,7 +167,8 @@ def test_gridcal_regulator():
     print()
 
     print("Branches:")
-    for b in grid.branches:
+    branches = grid.get_branches()
+    for b in grid.transformers2w:
         print(f" - {b}: R={round(b.R, 4)}pu, X={round(b.X, 4)}pu, X/R={round(b.X/b.R, 1)}, vset={b.vset}")
     print()
 
@@ -177,11 +178,12 @@ def test_gridcal_regulator():
     print()
 
     print("Losses:")
-    for i in range(len(grid.branches)):
-        print(f" - {grid.branches[i]}: losses={round(power_flow.results.losses[i], 3)} MVA")
+    for i in range(len(branches)):
+        print(f" - {branches[i]}: losses={round(power_flow.results.losses[i], 3)} MVA")
     print()
 
-    print(f"Voltage settings: {grid.numerical_circuit.branch_vset}")   # TODO: fix this
+    tr_vset = [tr.vset for tr in grid.transformers2w]
+    print(f"Voltage settings: {tr_vset}")
 
     equal = np.isclose(approx_volt, solution, atol=1e-3).all()
 

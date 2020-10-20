@@ -16,10 +16,7 @@ from pytest import approx
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices.branch import Branch
-from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.generator import Generator
-from GridCal.Engine.Devices.load import Load
+from GridCal.Engine.Devices import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
     PowerFlowOptions, PowerFlowDriver
 
@@ -52,14 +49,14 @@ def test_same_temp():
     B_MV_M32 = Bus(name="B_MV_M32",
                    vnom=10)  # kV
 
-    cable = Branch(bus_from=B_C3,
-                   bus_to=B_MV_M32,
-                   name="C_M32",
-                   r=0.784,
-                   x=0.174,
-                   temp_base=20,  # °C
-                   temp_oper=20,  # °C
-                   alpha=0.00323)  # Copper
+    cable = Line(bus_from=B_C3,
+                 bus_to=B_MV_M32,
+                 name="C_M32",
+                 r=0.784,
+                 x=0.174,
+                 temp_base=20,  # °C
+                 temp_oper=20,  # °C
+                 alpha=0.00323)  # Copper
 
     assert cable.R_corrected == 0.784
 
@@ -86,16 +83,16 @@ def test_corr_line_losses():
     grid.add_generator(Bus0, Generator(name="Utility"))
 
     # Create cable
-    cable = Branch(bus_from=Bus0,
-                   bus_to=Bus1,
-                   name="Cable0",
-                   r=0.784,
-                   x=0.174,
-                   temp_base=20,  # °C
-                   temp_oper=90,  # °C
-                   alpha=0.00323)  # Copper
+    cable = Line(bus_from=Bus0,
+                 bus_to=Bus1,
+                 name="Cable0",
+                 r=0.784,
+                 x=0.174,
+                 temp_base=20,  # °C
+                 temp_oper=90,  # °C
+                 alpha=0.00323)  # Copper
 
-    grid.add_branch(cable)
+    grid.add_line(cable)
 
     options = PowerFlowOptions(verbose=True,
                                apply_temperature_correction=True)
@@ -121,7 +118,7 @@ def test_corr_line_losses():
     print()
 
     print("Branches:")
-    for b in grid.branches:
+    for b in grid.lines:
         print(f" - {b}:")
         print(f"   R = {round(b.R, 4)} pu")
         print(f"   X = {round(b.X, 4)} pu")
@@ -134,18 +131,18 @@ def test_corr_line_losses():
     print()
 
     print("Losses:")
-    for i in range(len(grid.branches)):
-        print(f" - {grid.branches[i]}: losses={round(power_flow.results.losses[i], 3)} MVA")
+    for i in range(len(grid.lines)):
+        print(f" - {grid.lines[i]}: losses={round(power_flow.results.losses[i], 3)} MVA")
     print()
 
     print("Loadings (power):")
-    for i in range(len(grid.branches)):
-        print(f" - {grid.branches[i]}: loading={round(power_flow.results.Sbranch[i], 3)} MVA")
+    for i in range(len(grid.lines)):
+        print(f" - {grid.lines[i]}: loading={round(power_flow.results.Sbranch[i], 3)} MVA")
     print()
 
     print("Loadings (current):")
-    for i in range(len(grid.branches)):
-        print(f" - {grid.branches[i]}: loading={round(power_flow.results.Ibranch[i], 3)} pu")
+    for i in range(len(grid.lines)):
+        print(f" - {grid.lines[i]}: loading={round(power_flow.results.Ibranch[i], 3)} pu")
     print()
 
     assert approx_losses == solution

@@ -20,6 +20,7 @@ Version 4.0.0
 - Improved the transformer and line editors integrating the template selection
 - Improved filtering (bool values are recognised now)
 - Improved the PSS/e Raw file import
+- Improved the Continuation power flow with reactive power control
 - Replaced how all the GUI messages are handled
 - Replaced the empirical PTDF/OTDF by the analytical PTDF/LODF which are several orders of magnitude faster.
 - Fixed transformer editor Sbase conversion

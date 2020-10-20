@@ -17,6 +17,17 @@ about setting up python.
 Remember to update the program to the latest version once installed. You'll find an
 update script in the installation folder.
 
+**note**: On Linux, if you get a, `ImportError: libffi.so.6` error, it means that the
+libffi library version 6 is not present (happens for newer ubuntu distributions)
+The you may install it with the following commands:
+
+.. code:: text
+
+    wget http://mirrors.kernel.org/ubuntu/pool/main/libf/libffi/libffi6_3.2.1-8_amd64.deb
+
+    sudo apt install ./libffi6_3.2.1-8_amd64.deb
+
+
 Python Package Installation
 ---------------------------
 

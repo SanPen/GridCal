@@ -168,7 +168,7 @@ class ReliabilityStudy(QThread):
 
     def __init__(self, circuit: MultiCircuit, pf_options: PowerFlowOptions):
         """
-        VoltageCollapse constructor
+        ContinuationPowerFlow constructor
         @param circuit: NumericalCircuit instance
         @param pf_options: power flow options instance
         """

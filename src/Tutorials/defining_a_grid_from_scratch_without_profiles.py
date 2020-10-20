@@ -163,7 +163,6 @@ def main():
     v_df = pd.DataFrame(data=data, columns=headers, index=grid.bus_names)
     print('\n', v_df)
 
-
     # Let's do the same for the branch results
     headers = ['Loading (%)', 'Current(p.u.)', 'Power (MVA)']
     loading = np.abs(pf.results.loading) * 100

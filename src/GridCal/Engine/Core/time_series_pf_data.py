@@ -86,6 +86,15 @@ class TimeCircuit(SnapshotData):
     def Rates(self):
         return self.branch_data.branch_rates
 
+    @property
+    def vd(self):
+
+        if self.vd_ is None:
+            self.vd_, self.pq_, self.pv_, self.pqpv_ = compile_types(Sbus=self.Sbus[:, 0],
+                                                                     types=self.bus_data.bus_types)
+
+        return self.vd_
+
     def split_into_islands(self, ignore_single_node_islands=False) -> List["TimeCircuit"]:
         """
         Split circuit into islands

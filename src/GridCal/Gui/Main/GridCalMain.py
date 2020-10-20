@@ -31,7 +31,7 @@ from GridCal.Gui.GridEditorWidget.messages import *
 # Engine imports
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
-from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
+from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver import *
 from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReduction, TopologyReductionOptions, \
     DeleteAndReduce, NodeGroupsDriver
 from GridCal.Engine.Simulations.Topology.topology_driver import select_branches_to_reduce
@@ -2565,16 +2565,16 @@ class MainGUI(QMainWindow):
                                    VCStopAt.Full.value: VCStopAt.Full}
 
                 # declare voltage collapse options
-                vc_options = VoltageCollapseOptions(step=0.0001,
-                                                    approximation_order=VCParametrization.Natural,
-                                                    adapt_step=True,
-                                                    step_min=0.00001,
-                                                    step_max=0.2,
-                                                    error_tol=1e-3,
-                                                    tol=1e-6,
-                                                    max_it=20,
-                                                    stop_at=vc_stop_at_dict[mode],
-                                                    verbose=False)
+                vc_options = ContinuationPowerFlowOptions(step=0.0001,
+                                                          approximation_order=VCParametrization.Natural,
+                                                          adapt_step=True,
+                                                          step_min=0.00001,
+                                                          step_max=0.2,
+                                                          error_tol=1e-3,
+                                                          tol=1e-6,
+                                                          max_it=20,
+                                                          stop_at=vc_stop_at_dict[mode],
+                                                          verbose=False)
 
                 if use_alpha:
                     '''
@@ -2592,17 +2592,17 @@ class MainGUI(QMainWindow):
                         #  compose the base power
                         Sbase = self.power_flow.results.Sbus
 
-                        vc_inputs = VoltageCollapseInput(Sbase=Sbase,
-                                                         Vbase=self.power_flow.results.voltage,
-                                                         Starget=Sbase * alpha)
+                        vc_inputs = ContinuationPowerFlowInput(Sbase=Sbase,
+                                                               Vbase=self.power_flow.results.voltage,
+                                                               Starget=Sbase * alpha)
 
                         pf_options = self.get_selected_power_flow_options()
 
                         # create object
-                        self.voltage_stability = VoltageCollapse(circuit=self.circuit,
-                                                                 options=vc_options,
-                                                                 inputs=vc_inputs,
-                                                                 pf_options=pf_options)
+                        self.voltage_stability = ContinuationPowerFlow(circuit=self.circuit,
+                                                                       options=vc_options,
+                                                                       inputs=vc_inputs,
+                                                                       pf_options=pf_options)
 
                         # make connections
                         self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
@@ -2629,17 +2629,17 @@ class MainGUI(QMainWindow):
                         # get the power injections array to get the initial and end points
                         nc = compile_time_circuit(circuit=self.circuit)
                         Sprof = nc.get_power_injections()
-                        vc_inputs = VoltageCollapseInput(Sbase=Sprof[start_idx, :],
-                                                         Vbase=self.power_flow.results.voltage,
-                                                         Starget=Sprof[end_idx, :])
+                        vc_inputs = ContinuationPowerFlowInput(Sbase=Sprof[start_idx, :],
+                                                               Vbase=self.power_flow.results.voltage,
+                                                               Starget=Sprof[end_idx, :])
 
                         pf_options = self.get_selected_power_flow_options()
 
                         # create object
-                        self.voltage_stability = VoltageCollapse(circuit=self.circuit,
-                                                                 options=vc_options,
-                                                                 inputs=vc_inputs,
-                                                                 pf_options=pf_options)
+                        self.voltage_stability = ContinuationPowerFlow(circuit=self.circuit,
+                                                                       options=vc_options,
+                                                                       inputs=vc_inputs,
+                                                                       pf_options=pf_options)
 
                         # make connections
                         self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
@@ -3679,7 +3679,7 @@ class MainGUI(QMainWindow):
                               types=self.time_series.results.bus_types,
                               file_name=file_name)
 
-            elif current_study == VoltageCollapse.name:
+            elif current_study == ContinuationPowerFlow.name:
 
                 plot_function(circuit=self.circuit,
                               s_bus=self.voltage_stability.results.Sbus,
@@ -3852,7 +3852,7 @@ class MainGUI(QMainWindow):
                 else:
                     warning_msg('There seem to be no results :(')
 
-            elif study_name == VoltageCollapse.name:
+            elif study_name == ContinuationPowerFlow.name:
                 if self.voltage_stability.results is not None:
                     self.results_mdl = self.voltage_stability.results.mdl(result_type=study_type)
                 else:

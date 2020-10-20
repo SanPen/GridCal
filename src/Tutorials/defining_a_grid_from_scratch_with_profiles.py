@@ -32,7 +32,10 @@ def main():
     grid = MultiCircuit(name='lynn 5 bus')
 
     # let's create a master profile
-    time_array = pd.DatetimeIndex(start='1/1/2018', end='1/2/2018', freq='H')
+
+    st = datetime.datetime(2020, 1, 1)
+    dates = [st + datetime.timedelta(hours=i) for i in range(24)]
+    time_array = pd.to_datetime(dates)
     x = np.linspace(-np.pi, np.pi, len(time_array))
     y = np.abs(np.sin(x))
     df_0 = pd.DataFrame(data=y, index=time_array)  # complex values

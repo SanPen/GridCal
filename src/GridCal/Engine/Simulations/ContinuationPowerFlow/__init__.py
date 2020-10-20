@@ -13,4 +13,4 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import *
-from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
+from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver import *

@@ -91,9 +91,9 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.flow_direction = np.zeros((self.nt, m), dtype=float)
 
-        self.error = np.zeros(self.nt)
+        self.error_values = np.zeros(self.nt)
 
-        self.converged = np.ones(self.nt, dtype=bool)  # guilty assumption
+        self.converged_values = np.ones(self.nt, dtype=bool)  # guilty assumption
 
         self.overloads = [None] * self.nt
 
@@ -148,23 +148,9 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.flow_direction[t, :] = results.flow_direction
 
-        self.error[t] = results.error()
+        self.error_values[t] = results.error
 
-        self.converged[t] = results.converged()
-
-        # self.overloads[t] = results.overloads
-        #
-        # self.overvoltage[t] = results.overvoltage
-        #
-        # self.undervoltage[t] = results.undervoltage
-        #
-        # self.overloads_idx[t] = results.overloads_idx
-        #
-        # self.overvoltage_idx[t] = results.overvoltage_idx
-        #
-        # self.undervoltage_idx[t] = results.undervoltage_idx
-        #
-        # self.buses_useful_for_storage[t] = results.buses_useful_for_storage
+        self.converged_values[t] = results.converged
 
     @staticmethod
     def merge_if(df, arr, ind, cols):
@@ -217,10 +203,10 @@ class TimeSeriesResults(PowerFlowResults):
 
             self.flow_direction = results.flow_direction
 
-            if (results.error > self.error).any():
-                self.error += results.error
+            if (results.error_values > self.error_values).any():
+                self.error_values += results.error_values
 
-            self.converged = self.converged * results.converged
+            self.converged_values = self.converged_values * results.converged_values
 
         else:
             self.Sbranch[np.ix_(t_index, br_idx)] = results.Sbranch
@@ -235,10 +221,10 @@ class TimeSeriesResults(PowerFlowResults):
 
             self.flow_direction[np.ix_(t_index, br_idx)] = results.flow_direction
 
-            if (results.error > self.error[t_index]).any():
-                self.error[t_index] += results.error
+            if (results.error_values > self.error_values[t_index]).any():
+                self.error_values[t_index] += results.error_values
 
-            self.converged[t_index] = self.converged[t_index] * results.converged
+            self.converged_values[t_index] = self.converged_values[t_index] * results.converged_values
 
     def get_results_dict(self):
         """
@@ -396,7 +382,7 @@ class TimeSeriesResults(PowerFlowResults):
             title = 'Battery power'
 
         elif result_type == ResultTypes.SimulationError:
-            data = self.error.reshape(-1, 1)
+            data = self.error_values.reshape(-1, 1)
             y_label = 'p.u.'
             labels = ['Error']
             title = 'Error'

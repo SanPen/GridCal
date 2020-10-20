@@ -131,6 +131,7 @@ class PowerFlowResults:
 
                                   ResultTypes.BatteryPower]
 
+    @property
     def converged(self):
         """
         Check if converged in all modes
@@ -141,6 +142,7 @@ class PowerFlowResults:
             val *= conv.converged()
         return val
 
+    @property
     def error(self):
         """
         Check if converged in all modes
@@ -149,6 +151,17 @@ class PowerFlowResults:
         val = 0.0
         for conv in self.convergence_reports:
             val = max(val, conv.error())
+        return val
+
+    @property
+    def elapsed(self):
+        """
+        Check if converged in all modes
+        :return: True / False
+        """
+        val = 0.0
+        for conv in self.convergence_reports:
+            val = max(val, conv.elapsed())
         return val
 
     def copy(self):

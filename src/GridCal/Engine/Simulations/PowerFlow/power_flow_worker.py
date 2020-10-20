@@ -53,6 +53,9 @@ class ConvergenceReport:
     def error(self):
         return self.error_[-1]
 
+    def elapsed(self):
+        return self.elapsed_[-1]
+
     def to_dataframe(self):
         data = {'Method': self.methods_,
                 'Converged?': self.converged_,
@@ -289,7 +292,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
 
 
 def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
-                          voltage_solution, Sbus, Ibus, branch_rates, logger) -> "PowerFlowResults":
+                          voltage_solution, Sbus, Ibus, branch_rates, t=0, logger=Logger()) -> "PowerFlowResults":
     """
     Run a power flow simulation for a single circuit using the selected outer loop
     controls. This method shouldn't be called directly.
@@ -329,8 +332,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
 
     # copy the tap positions
     tap_positions = circuit.tr_tap_position.copy()
-
-    tap_module = circuit.tr_tap_mod
+    tap_module = circuit.branch_data.m[:, t]
 
     # control flags
     any_q_control_issue = True
@@ -436,8 +438,8 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                     any_q_control_issue = control_q_direct(V=voltage_solution,
                                                            Vset=np.abs(voltage_solution),
                                                            Q=Scalc.imag,
-                                                           Qmax=circuit.Qmax_bus,
-                                                           Qmin=circuit.Qmin_bus,
+                                                           Qmax=circuit.Qmax_bus[:, t],
+                                                           Qmin=circuit.Qmin_bus[:, t],
                                                            types=bus_types,
                                                            original_types=original_types,
                                                            verbose=options.verbose)
@@ -486,6 +488,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                                                         tap_inc_reg_up=circuit.tr_tap_inc_reg_up,
                                                         tap_inc_reg_down=circuit.tr_tap_inc_reg_down,
                                                         vset=circuit.tr_vset,
+                                                        tap_index_offset=circuit.nline,
                                                         verbose=options.verbose)
 
                 elif options.control_taps == TapsControlMode.Iterative:
@@ -505,7 +508,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
 
                 if not stable:
                     # recompute the admittance matrices based on the tap changes
-                    circuit.re_calc_admittance_matrices(tap_module)
+                    Ybus, Yf, Yt = circuit.re_calc_admittance_matrices(tap_module, t=t)
                 any_tap_control_issue = not stable
 
             else:
@@ -803,7 +806,7 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
     return Sbranch, Ibranch, Vbranch, loading, losses, flow_direction, Sbus
 
 
-def control_q_direct(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
+def control_q_direct(V, Vset, Q, Qmax, Qmin, types, original_types, verbose=False):
     """
     Change the buses type in order to control the generators reactive power.
 
@@ -905,13 +908,13 @@ def control_q_direct(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
 
             if Vm[i] != Vset[i]:
 
-                if Q[i] >= Qmax[i]:  # it is still a PQ bus but set Qi = Qimax .
+                if Q[i] >= Qmax[i]:  # it is still a PQ bus but set Q = Qmax .
                     Qnew[i] = Qmax[i]
 
-                elif Q[i] <= Qmin[i]:  # it is still a PQ bus and set Qi = Qimin .
+                elif Q[i] <= Qmin[i]:  # it is still a PQ bus and set Q = Qmin .
                     Qnew[i] = Qmin[i]
 
-                else:  # switch back to PV, set Vinew = Viset.
+                else:  # switch back to PV, set Vnew = Vset.
                     if verbose:
                         print('Bus', i, 'switched back to PV')
                     types_new[i] = BusMode.PV.value
@@ -924,14 +927,14 @@ def control_q_direct(V, Vset, Q, Qmax, Qmin, types, original_types, verbose):
 
         elif types[i] == BusMode.PV.value:
 
-            if Q[i] >= Qmax[i]:  # it is switched to PQ and set Qi = Qimax .
+            if Q[i] >= Qmax[i]:  # it is switched to PQ and set Q = Qmax .
                 if verbose:
                     print('Bus', i, 'switched to PQ: Q', Q[i], ' Qmax:', Qmax[i])
                 types_new[i] = BusMode.PQ.value
                 Qnew[i] = Qmax[i]
                 any_control_issue = True
 
-            elif Q[i] <= Qmin[i]:  # it is switched to PQ and set Qi = Qimin .
+            elif Q[i] <= Qmin[i]:  # it is switched to PQ and set Q = Qmin .
                 if verbose:
                     print('Bus', i, 'switched to PQ: Q', Q[i], ' Qmin:', Qmin[i])
                 types_new[i] = BusMode.PQ.value
@@ -1084,7 +1087,7 @@ def control_taps_iterative(voltage, T, bus_to_regulated_idx, tap_position, tap_m
 
 
 def control_taps_direct(voltage, T, bus_to_regulated_idx, tap_position, tap_module, min_tap, max_tap,
-                        tap_inc_reg_up, tap_inc_reg_down, vset, verbose=False):
+                        tap_inc_reg_up, tap_inc_reg_down, vset, tap_index_offset, verbose=False):
     """
     Change the taps and compute the continuous tap magnitude.
 
@@ -1120,51 +1123,53 @@ def control_taps_direct(voltage, T, bus_to_regulated_idx, tap_position, tap_modu
         **tap_position** (list): Tap position at each bus
     """
     stable = True
-    for i in bus_to_regulated_idx:  # traverse the indices of the branches that are regulated at the "to" bus
 
-        j = T[i]  # get the index of the "to" bus of the branch "i"
-        v = np.abs(voltage[j])
+    # traverse the indices of the branches that are regulated at the "to" bus
+    for k, bus_idx in enumerate(bus_to_regulated_idx):
+
+        j = T[bus_idx]  # get the index of the "to" bus of the branch "i"
+        v = np.abs(voltage[j])  # voltage at to "to" bus
         if verbose:
-            print("Bus", j, "regulated by branch", i, ": U=", round(v, 4), "pu, U_set=", vset[i])
+            print("Bus", j, "regulated by branch", bus_idx, ": U=", round(v, 4), "pu, U_set=", vset[k])
 
         tap_inc = tap_inc_reg_up
         if tap_inc_reg_up.all() != tap_inc_reg_down.all():
-            print("Error: tap_inc_reg_up and down are not equal for branch {}".format(i))
+            print("Error: tap_inc_reg_up and down are not equal for branch {}".format(bus_idx))
 
-        desired_module = v / vset[i] * tap_module[i]
-        desired_pos = round((desired_module - 1) / tap_inc[i])
+        desired_module = v / vset[k] * tap_module[tap_index_offset + k]
+        desired_pos = round((desired_module - 1) / tap_inc[k])
 
-        if desired_pos == tap_position[i]:
+        if desired_pos == tap_position[k]:
             continue
 
-        elif desired_pos > 0 and desired_pos > max_tap[i]:
+        elif desired_pos > 0 and desired_pos > max_tap[k]:
             if verbose:
-                print("Branch {}: Changing from tap {} to {} (module {} to {})".format(i,
-                                                                                       tap_position[i],
-                                                                                       max_tap[i],
-                                                                                       tap_module[i],
-                                                                                       1 + max_tap[i] * tap_inc[i]))
-            tap_position[i] = max_tap[i]
+                print("Branch {}: Changing from tap {} to {} (module {} to {})".format(bus_idx,
+                                                                                       tap_position[k],
+                                                                                       max_tap[k],
+                                                                                       tap_module[tap_index_offset + k],
+                                                                                       1 + max_tap[k] * tap_inc[k]))
+            tap_position[k] = max_tap[k]
 
-        elif desired_pos < 0 and desired_pos < min_tap[i]:
+        elif desired_pos < 0 and desired_pos < min_tap[k]:
             if verbose:
-                print("Branch {}: Changing from tap {} to {} (module {} to {})".format(i,
-                                                                                       tap_position[i],
-                                                                                       min_tap[i],
-                                                                                       tap_module[i],
-                                                                                       1 + min_tap[i] * tap_inc[i]))
-            tap_position[i] = min_tap[i]
+                print("Branch {}: Changing from tap {} to {} (module {} to {})".format(bus_idx,
+                                                                                       tap_position[k],
+                                                                                       min_tap[k],
+                                                                                       tap_module[tap_index_offset + k],
+                                                                                       1 + min_tap[k] * tap_inc[k]))
+            tap_position[k] = min_tap[k]
 
         else:
             if verbose:
-                print("Branch {}: Changing from tap {} to {} (module {} to {})".format(i,
-                                                                                       tap_position[i],
+                print("Branch {}: Changing from tap {} to {} (module {} to {})".format(bus_idx,
+                                                                                       tap_position[k],
                                                                                        desired_pos,
-                                                                                       tap_module[i],
-                                                                                       1 + desired_pos * tap_inc[i]))
-            tap_position[i] = desired_pos
+                                                                                       tap_module[tap_index_offset + k],
+                                                                                       1 + desired_pos * tap_inc[k]))
+            tap_position[k] = desired_pos
 
-        tap_module[i] = 1 + tap_position[i] * tap_inc[i]
+        tap_module[tap_index_offset + k] = 1 + tap_position[k] * tap_inc[k]
         stable = False
 
     return stable, tap_module, tap_position
@@ -1194,7 +1199,7 @@ def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, branch_rates,
                                     logger=logger)
 
     # did it worked?
-    worked = np.all(results.converged())
+    worked = np.all(results.converged)
 
     if not worked:
         logger.append('Did not converge, even after retry!, Error:' + str(results.error()))

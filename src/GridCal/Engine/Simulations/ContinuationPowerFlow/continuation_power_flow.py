@@ -6,7 +6,8 @@ from numpy import angle, exp, r_, linalg, Inf, dot, zeros, conj
 from scipy.sparse import hstack, vstack
 from scipy.sparse.linalg import spsolve
 from enum import Enum
-
+from GridCal.Engine.basic_structures import ReactivePowerControlMode, Logger
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import control_q_direct, compile_types
 from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import _create_J_with_numba
 # from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 
@@ -324,7 +325,8 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
     j8 = j6+1
     
     # evaluate F(x0, lam0), including Sxfr transfer/loading
-    mismatch = V * np.conj(Ybus * V) - Sbus - lam * Sxfr
+    Scalc = V * np.conj(Ybus * V)
+    mismatch = Scalc - Sbus - lam * Sxfr
     # F = r_[mismatch[pvpq].real, mismatch[pq].imag]
     
     # evaluate P(x0, lambda0)
@@ -420,7 +422,8 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
         lam += dx[j7:j8][0]
     
         # evaluate F(x, lam)
-        mismatch = V * conj(Ybus * V) - Sbus - lam*Sxfr
+        Scalc = V * conj(Ybus * V)
+        mismatch = Scalc - Sbus - lam*Sxfr
 
         # evaluate P(x, lambda)
         P = cpf_p(parametrization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
@@ -446,243 +449,7 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
         if not converged:
             print('\nNewton method corrector did not converge in  ', i, ' iterations.\n')
 
-    return V, converged, i, lam, normF
-
-
-def corrector_new(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parametrization, tol, max_it,
-                  pvpq_lookup, verbose, max_it_internal=10):
-    """
-    Solves the corrector step of a continuation power flow using a full Newton method
-    with selected parametrization scheme.
-
-    solves for bus voltages and lambda given the full system admittance
-    matrix (for all buses), the complex bus power injection vector (for
-    all buses), the initial vector of complex bus voltages, and column
-    vectors with the lists of bus indices for the swing bus, PV buses, and
-    PQ buses, respectively. The bus voltage vector contains the set point
-    for generator (including ref bus) buses, and the reference angle of the
-    swing bus, as well as an initial guess for remaining magnitudes and
-    angles.
-
-     Uses default options if this parameter is not given. Returns the
-     final complex voltages, a flag which indicates whether it converged or not,
-     the number of iterations performed, and the final lambda.
-
-    :param Ybus: Admittance matrix (CSC sparse)
-    :param Ibus: Bus current injections
-    :param Sbus: Bus power injections
-    :param V0:  Bus initial voltages
-    :param pv: list of pv nodes
-    :param pq: list of pq nodes
-    :param lam0: initial value of lambda (loading parameter)
-    :param Sxfr: [delP+j*delQ] transfer/loading vector for all buses
-    :param Vprv: final complex V corrector solution from previous continuation step
-    :param lamprv: final lambda corrector solution from previous continuation step
-    :param z: normalized predictor for all buses
-    :param step: continuation step size
-    :param parametrization:
-    :param tol:
-    :param max_it:
-    :param verbose:
-    :return: V, CONVERGED, I, LAM
-    """
-
-    """
-    # CPF_CORRECTOR  Solves the corrector step of a continuation power flow using a
-    #   full Newton method with selected parametrization scheme.
-    #   [V, CONVERGED, I, LAM] = CPF_CORRECTOR(YBUS, SBUS, V0, REF, PV, PQ, ...
-    #                 LAM0, SXFR, VPRV, LPRV, Z, STEP, parametrization, MPOPT)
-    #   solves for bus voltages and lambda given the full system admittance
-    #   matrix (for all buses), the complex bus power injection vector (for
-    #   all buses), the initial vector of complex bus voltages, and column
-    #   vectors with the lists of bus indices for the swing bus, PV buses, and
-    #   PQ buses, respectively. The bus voltage vector contains the set point
-    #   for generator (including ref bus) buses, and the reference angle of the
-    #   swing bus, as well as an initial guess for remaining magnitudes and
-    #   angles. MPOPT is a MATPOWER options struct which can be used to
-    #   set the termination tolerance, maximum number of iterations, and
-    #   output options (see MPOPTION for details). Uses default options if
-    #   this parameter is not given. Returns the final complex voltages, a
-    #   flag which indicates whether it converged or not, the number
-    #   of iterations performed, and the final lambda.
-    #
-    #   The extra continuation inputs are LAM0 (initial predicted lambda),
-    #   SXFR ([delP+j*delQ] transfer/loading vector for all buses), VPRV
-    #   (final complex V corrector solution from previous continuation step),
-    #   LAMPRV (final lambda corrector solution from previous continuation step),
-    #   Z (normalized predictor for all buses), and STEP (continuation step size).
-    #   The extra continuation output is LAM (final corrector lambda).
-    #
-    #   See also RUNCPF.
-
-    #   MATPOWER
-    #   Copyright (c) 1996-2015 by Power System Engineering Research Center (PSERC)
-    #   by Ray Zimmerman, PSERC Cornell,
-    #   Shrirang Abhyankar, Argonne National Laboratory,
-    #   and Alexander Flueck, IIT
-    #
-    #   Modified by Alexander J. Flueck, Illinois Institute of Technology
-    #   2001.02.22 - corrector.m (ver 1.0) based on newtonpf.m (MATPOWER 2.0)
-    #
-    #   Modified by Shrirang Abhyankar, Argonne National Laboratory
-    #   (Updated to be compatible with MATPOWER version 4.1)
-    #
-    #   $Id: cpf_corrector.m 2644 2015-03-11 19:34:22Z ray $
-    #
-    #   This file is part of MATPOWER.
-    #   Covered by the 3-clause BSD License (see LICENSE file for details).
-    #   See http://www.pserc.cornell.edu/matpower/ for more info.
-    """
-
-    # initialize
-    converged = False
-    i = 0
-    V = V0
-    Va = angle(V)
-    Vm = np.abs(V)
-    dVa = np.zeros_like(Va)
-    dVm = np.zeros_like(Vm)
-    lam = lam0  # set lam to initial lam0
-
-    # set up indexing for updating V
-    npv = len(pv)
-    npq = len(pq)
-    pvpq = r_[pv, pq]
-    nj = npv + npq * 2
-    nb = len(V)  # number of buses
-    j1 = 1
-
-    '''
-    # MATLAB code
-    j2 = npv           # j1:j2 - V angle of pv buses
-    j3 = j2 + 1
-    j4 = j2 + npq      # j3:j4 - V angle of pq buses
-    j5 = j4 + 1
-    j6 = j4 + npq      # j5:j6 - V mag of pq buses
-    j7 = j6 + 1
-    j8 = j6 + 1        # j7:j8 - lambda
-    '''
-
-    # j1:j2 - V angle of pv buses
-    j1 = 0
-    j2 = npv
-    # j3:j4 - V angle of pq buses
-    j3 = j2
-    j4 = j2 + npq
-    # j5:j6 - V mag of pq buses
-    j5 = j4
-    j6 = j4 + npq
-    j7 = j6
-    j8 = j6 + 1
-
-    # evaluate F(x0, lam0), including Sxfr transfer/loading
-    mismatch = V * conj(Ybus * V) - Sbus - lam * Sxfr
-    # F = r_[mismatch[pvpq].real, mismatch[pq].imag]
-
-    # evaluate P(x0, lambda0)
-    P = cpf_p(parametrization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
-
-    # augment F(x,lambda) with P(x,lambda)
-    F = r_[mismatch[pvpq].real, mismatch[pq].imag, P]
-
-    # check tolerance
-    last_error = linalg.norm(F, Inf)
-    error = 1e20
-
-    if last_error < tol:
-        converged = True
-        if verbose:
-            print('\nConverged!\n')
-
-    # do Newton iterations
-    while not converged and i < max_it:
-
-        # update iteration counter
-        i += 1
-
-        # evaluate Jacobian
-        # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
-        J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
-
-        dF_dlam = -r_[Sxfr[pvpq].real, Sxfr[pq].imag]
-
-        dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
-
-        # augment J with real/imag - Sxfr and z^T
-        '''
-        J = [   J   dF_dlam 
-              dP_dV dP_dlam ]
-        '''
-        J = vstack([hstack([J, dF_dlam.reshape(nj, 1)]),
-                    hstack([dP_dV, dP_dlam])], format="csc")
-
-        # compute update step
-        dx = -spsolve(J, F)
-
-        # reassign the solution vector
-        if npv:
-            dVa[pv] = dx[j1:j2]
-        if npq:
-            dVa[pq] = dx[j3:j4]
-            dVm[pq] = dx[j5:j6]
-
-        # update lambda
-        lam += dx[j7:j8][0]
-
-        # reset mu
-        mu_ = 1.0
-
-        print('iter', i)
-
-        it = 0
-        Vm = np.abs(V)
-        Va = np.angle(V)
-        while error >= last_error and it < max_it_internal:
-
-            # update voltage the Newton way (mu=1)
-
-            Vm_new = Vm + mu_ * dVm
-            Va_new = Va + mu_ * dVa
-            V_new = Vm_new * exp(1j * Va_new)
-
-            print('\t', mu_, error, last_error)
-
-            # evaluate F(x, lam)
-            mismatch = V_new * conj(Ybus * V_new) - Sbus - lam * Sxfr
-
-            # evaluate P(x, lambda)
-            P = cpf_p(parametrization, step, z, V_new, lam, Vprv, lamprv, pv, pq, pvpq)
-
-            # compose the mismatch vector
-            F = r_[mismatch[pv].real,
-                   mismatch[pq].real,
-                   mismatch[pq].imag,
-                   P]
-
-            # check for convergence
-            error = linalg.norm(F, Inf)
-
-            # modify mu
-            mu_ *= 0.25
-
-            it += 1
-
-        V = V_new.copy()
-        last_error = error
-
-        if verbose:
-            print('\n#3d        #10.3e', i, error)
-
-        if error < tol:
-            converged = True
-            if verbose:
-                print('\nNewton''s method corrector converged in ', i, ' iterations.\n')
-
-    if verbose:
-        if not converged:
-            print('\nNewton method corrector did not converge in  ', i, ' iterations.\n')
-
-    return V, converged, i, lam, error
+    return V, converged, i, lam, normF, Scalc
 
 
 def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
@@ -774,7 +541,10 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
 def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv, pq, step,
                     approximation_order: VCParametrization,
                     adapt_step, step_min, step_max, error_tol=1e-3, tol=1e-6, max_it=20,
-                    stop_at=VCStopAt.Nose, verbose=False, call_back_fx=None):
+                    stop_at=VCStopAt.Nose,
+                    controlQ=ReactivePowerControlMode.NoControl,
+                    Qmax_bus=None, Qmin_bus=None, original_bus_types=None,
+                    verbose=False, call_back_fx=None, logger=Logger()):
     """
     Runs a full AC continuation power flow using a normalized tangent
     predictor and selected approximation_order scheme.
@@ -829,6 +599,7 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
     normF = 0
     success = False
     pvpq = r_[pv, pq]
+    bus_types = original_bus_types.copy()
 
     z = zeros(2 * nb + 1)
     z[2 * nb] = 1.0
@@ -865,23 +636,23 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
         lam_prev = lam
 
         # correction
-        V, success, i, lam, normF = corrector(Ybus=Ybus,
-                                              Ibus=Ibus_base,
-                                              Sbus=Sbus_base,
-                                              V0=V0,
-                                              pv=pv,
-                                              pq=pq,
-                                              lam0=lam0,
-                                              Sxfr=Sxfr,
-                                              Vprv=V_prev,
-                                              lamprv=lam_prev,
-                                              z=z,
-                                              step=step,
-                                              parametrization=approximation_order,
-                                              tol=tol,
-                                              max_it=max_it,
-                                              pvpq_lookup=pvpq_lookup,
-                                              verbose=verbose)
+        V, success, i, lam, normF, Scalc = corrector(Ybus=Ybus,
+                                                     Ibus=Ibus_base,
+                                                     Sbus=Sbus_base,
+                                                     V0=V0,
+                                                     pv=pv,
+                                                     pq=pq,
+                                                     lam0=lam0,
+                                                     Sxfr=Sxfr,
+                                                     Vprv=V_prev,
+                                                     lamprv=lam_prev,
+                                                     z=z,
+                                                     step=step,
+                                                     parametrization=approximation_order,
+                                                     tol=tol,
+                                                     max_it=max_it,
+                                                     pvpq_lookup=pvpq_lookup,
+                                                     verbose=verbose)
 
         # store series values
         voltage_series.append(V)
@@ -892,6 +663,34 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
             if verbose:
                 print('Step: ', cont_steps, ' Lambda prev: ', lam_prev, ' Lambda: ', lam)
                 print(V)
+
+            # Check controls
+            if controlQ == ReactivePowerControlMode.Direct:
+                V, \
+                Qnew, \
+                types_new, \
+                any_q_control_issue = control_q_direct(V=V,
+                                                       Vset=np.abs(V),
+                                                       Q=Scalc.imag,
+                                                       Qmax=Qmax_bus,
+                                                       Qmin=Qmin_bus,
+                                                       types=bus_types,
+                                                       original_types=original_bus_types,
+                                                       verbose=verbose)
+            else:
+                # did not check Q limits
+                any_q_control_issue = False
+                types_new = bus_types
+                Qnew = Scalc.imag
+
+            # Check the actions of the Q-control
+            if any_q_control_issue:
+                bus_types = types_new
+                Sbus = Scalc.real + 1j * Qnew
+                vd, pq, pv, pqpv = compile_types(Sbus, types_new, logger)
+            else:
+                if verbose:
+                    print('Q controls Ok')
 
             if stop_at == VCStopAt.Full:
                 if abs(lam) < 1e-8:
@@ -924,7 +723,8 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
             if adapt_step and continuation:
 
                 # Adapt step size
-                cpf_error = linalg.norm(r_[angle(V[pq]), np.abs(V[pvpq]), lam] - r_[angle(V0[pq]), np.abs(V0[pvpq]), lam0], Inf)
+                fx = r_[angle(V[pq]), np.abs(V[pvpq]), lam] - r_[angle(V0[pq]), np.abs(V0[pvpq]), lam0]
+                cpf_error = linalg.norm(fx, Inf)
 
                 if cpf_error == 0:
                     cpf_error = 1e-20
@@ -987,16 +787,16 @@ if __name__ == '__main__':
     ####################################################################################################################
     # Voltage collapse
     ####################################################################################################################
-    vc_options = VoltageCollapseOptions(step=0.001,
-                                        approximation_order=VCParametrization.ArcLength,
-                                        adapt_step=True,
-                                        step_min=0.00001,
-                                        step_max=0.2,
-                                        error_tol=1e-3,
-                                        tol=1e-6,
-                                        max_it=20,
-                                        stop_at=VCStopAt.Full,
-                                        verbose=False)
+    vc_options = ContinuationPowerFlowOptions(step=0.001,
+                                              approximation_order=VCParametrization.ArcLength,
+                                              adapt_step=True,
+                                              step_min=0.00001,
+                                              step_max=0.2,
+                                              error_tol=1e-3,
+                                              tol=1e-6,
+                                              max_it=20,
+                                              stop_at=VCStopAt.Full,
+                                              verbose=False)
 
     # just for this test
     numeric_circuit = main_circuit.compile_snapshot()
@@ -1010,10 +810,10 @@ if __name__ == '__main__':
     unitary_vector = -1 + 2 * np.random.random(len(main_circuit.buses))
 
     # unitary_vector = random.random(len(grid.buses))
-    vc_inputs = VoltageCollapseInput(Sbase=Sbase,
-                                     Vbase=Vbase,
-                                     Starget=Sbase * (1 + unitary_vector))
-    vc = VoltageCollapse(circuit=main_circuit, options=vc_options, inputs=vc_inputs, pf_options=pf_options)
+    vc_inputs = ContinuationPowerFlowInput(Sbase=Sbase,
+                                           Vbase=Vbase,
+                                           Starget=Sbase * (1 + unitary_vector))
+    vc = ContinuationPowerFlow(circuit=main_circuit, options=vc_options, inputs=vc_inputs, pf_options=pf_options)
     vc.run()
     df = vc.results.plot()
 

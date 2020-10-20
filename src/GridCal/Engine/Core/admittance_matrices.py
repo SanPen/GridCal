@@ -60,12 +60,7 @@ def compute_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a,
     # compute G-switch
     Gsw = G0 + a * np.power(If, 2) + b * If + c
 
-    # SHUNT --------------------------------------------------------------------------------------------------------
-    # yshunt_f = Cf * Yshunt_bus
-    # yshunt_t = Ct * Yshunt_bus
-
-    # form the admittance matrices ---------------------------------------------------------------------------------
-
+    # form the admittance matrices
     ys = 1.0 / (R + 1.0j * X)  # series admittance
     bc2 = (G + 1j * B) / 2  # shunt admittance
     # k is already filled with the appropriate value for each type of branch
@@ -82,7 +77,7 @@ def compute_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a,
     Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
     Ybus = Cf.T * Yf + Ct.T * Yt + sp.diags(Yshunt_bus)
 
-    return Ybus, Yf, Yt
+    return Admittance(Ybus, Yf, Yt, Cf, Ct, Yff, Yft, Ytf, Ytt, Yshunt_bus, Gsw)
 
 
 def compute_split_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus):
@@ -180,3 +175,61 @@ def compute_linear_admittances(X, m, Cf, Ct):
     Bbus = Cf.T * Bf + Ct.T * Bt
 
     return Bbus, Bf
+
+
+class Admittance:
+
+    def __init__(self, Ybus, Yf, Yt, Cf, Ct, yff, yft, ytf, ytt, Yshunt_bus, Gsw):
+
+        self.Ybus = Ybus
+
+        self.Yf = Yf
+
+        self.Yt = Yt
+
+        self.Cf = Cf
+
+        self.Ct = Ct
+
+        self.yff = yff
+
+        self.yft = yft
+
+        self.ytf = ytf
+
+        self.ytt = ytt
+
+        self.Yshunt_bus = Yshunt_bus
+
+        self.Gsw = Gsw
+
+    def modify_taps(self, m, m2, idx=None):
+        """
+        Compute the new admittance matrix given the tap variation
+        :param m: previous tap
+        :param m2: new tap
+        :param idx: indices that apply, if none assumes that m and m2 length math yff etc...
+        :return: Ybus, Yf, Yt
+        """
+
+        if idx is None:
+            yff = ((self.yff - self.Gsw) * (m * m) / (m2 * m2)) + self.Gsw
+            yft = self.yft * m / m2
+            ytf = self.ytf * m / m2
+            ytt = self.ytt
+        else:
+            yff = self.yff.copy()
+            yft = self.yft.copy()
+            ytf = self.ytf.copy()
+            ytt = self.ytt.copy()
+
+            yff[idx] = ((yff[idx] - self.Gsw[idx]) * (m * m) / (m2 * m2)) + self.Gsw[idx]
+            yft[idx] = yft[idx] * m / m2
+            ytf[idx] = ytf[idx] * m / m2
+
+        # compose the matrices
+        Yf = sp.diags(yff) * self.Cf + sp.diags(yft) * self.Ct
+        Yt = sp.diags(ytf) * self.Cf + sp.diags(ytt) * self.Ct
+        Ybus = self.Cf.T * Yf + self.Ct.T * Yt + sp.diags(self.Yshunt_bus)
+
+        return Ybus, Yf, Yt

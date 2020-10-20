@@ -17,7 +17,7 @@ import numpy as np
 from GridCal.Engine import *
 # from GridCal.Engine.IO.file_handler import FileOpen
 # from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import \
-#     VoltageCollapseOptions, VoltageCollapseInput, VoltageCollapse
+#     ContinuationPowerFlowOptions, ContinuationPowerFlowInput, ContinuationPowerFlow
 from tests.conftest import ROOT_PATH
 
 
@@ -34,10 +34,11 @@ def test_voltage_collapse(root_path=ROOT_PATH):
     # PowerFlowDriver
     ####################################################################################################################
     print('\n\n')
-    vc_options = VoltageCollapseOptions()
+    vc_options = ContinuationPowerFlowOptions()
+    pf_options = PowerFlowOptions()
     # just for this test
     numeric_circuit = compile_snapshot_circuit(main_circuit)
-    islands = split_into_islands(numeric_circuit)
+    islands = numeric_circuit.split_into_islands()
     Sbase = np.zeros(len(main_circuit.buses), dtype=complex)
     Vbase = np.zeros(len(main_circuit.buses), dtype=complex)
     for c in islands:
@@ -45,11 +46,11 @@ def test_voltage_collapse(root_path=ROOT_PATH):
         Vbase[c.original_bus_idx] = c.Vbus
     unitary_vector = -1 + 2 * np.random.random(len(main_circuit.buses))
     # unitary_vector = random.random(len(grid.buses))
-    vc_inputs = VoltageCollapseInput(Sbase=Sbase,
-                                     Vbase=Vbase,
-                                     Starget=Sbase * (1 + unitary_vector))
-    vc = VoltageCollapse(circuit=main_circuit, options=vc_options,
-                         inputs=vc_inputs)
+    vc_inputs = ContinuationPowerFlowInput(Sbase=Sbase,
+                                           Vbase=Vbase,
+                                           Starget=Sbase * (1 + unitary_vector))
+
+    vc = ContinuationPowerFlow(circuit=main_circuit, options=vc_options, pf_options=pf_options, inputs=vc_inputs)
     vc.run()
     # vc.results.plot()
 
