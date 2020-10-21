@@ -292,7 +292,6 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
         # generate lookup pvpq -> index pvpq (used in createJ)
         pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
         pvpq_lookup[pvpq] = np.arange(len(pvpq))
-        # createJ = get_fastest_jacobian_function(pvpq, pq)
 
         # evaluate F(x0)
         Scalc = V * np.conj(Ybus * V - Ibus)

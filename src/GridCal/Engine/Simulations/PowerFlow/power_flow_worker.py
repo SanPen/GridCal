@@ -126,11 +126,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
         solvers = [options.solver_type]
 
     # set worked to false to enter in the loop
-    # worked = False
     solver_idx = 0
-    results = PowerFlowResults(n=0, m=0, n_tr=0, n_hvdc=0,
-                               bus_names=(), branch_names=(), transformer_names=(),
-                               hvdc_names=(), bus_types=())
 
     # set the initial value
     V = V0.copy()
@@ -286,7 +282,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
         solver_idx += 1
 
     if not converged:
-        logger.append('Did not converge, even after retry!, Error:' + str(results.error))
+        logger.append('Did not converge, even after retry!, Error:' + str(normF_final))
 
     return V_final, converged_final, normF_final, Scalc_final, it_final, el_final
 
@@ -546,7 +542,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     results.loading = loading
     results.losses = losses
     results.flow_direction = flow_direction
-    results.tap_module = tap_module
+    results.transformer_tap_module = tap_module[circuit.transformer_idx]
     results.convergence_reports.append(report)
     results.Qpv = Sbus.imag[pv]
 

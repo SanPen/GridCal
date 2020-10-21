@@ -232,57 +232,10 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
     :param z: normalized predictor for all buses
     :param step: continuation step size
     :param parametrization:
-    :param tol:
-    :param max_it:
-    :param verbose:
-    :return: V, CONVERGED, I, LAM
-    """
-
-    """
-    # CPF_CORRECTOR  Solves the corrector step of a continuation power flow using a
-    #   full Newton method with selected parametrization scheme.
-    #   [V, CONVERGED, I, LAM] = CPF_CORRECTOR(YBUS, SBUS, V0, REF, PV, PQ, ...
-    #                 LAM0, SXFR, VPRV, LPRV, Z, STEP, parametrization, MPOPT)
-    #   solves for bus voltages and lambda given the full system admittance
-    #   matrix (for all buses), the complex bus power injection vector (for
-    #   all buses), the initial vector of complex bus voltages, and column
-    #   vectors with the lists of bus indices for the swing bus, PV buses, and
-    #   PQ buses, respectively. The bus voltage vector contains the set point
-    #   for generator (including ref bus) buses, and the reference angle of the
-    #   swing bus, as well as an initial guess for remaining magnitudes and
-    #   angles. MPOPT is a MATPOWER options struct which can be used to
-    #   set the termination tolerance, maximum number of iterations, and
-    #   output options (see MPOPTION for details). Uses default options if
-    #   this parameter is not given. Returns the final complex voltages, a
-    #   flag which indicates whether it converged or not, the number
-    #   of iterations performed, and the final lambda.
-    #
-    #   The extra continuation inputs are LAM0 (initial predicted lambda),
-    #   SXFR ([delP+j*delQ] transfer/loading vector for all buses), VPRV
-    #   (final complex V corrector solution from previous continuation step),
-    #   LAMPRV (final lambda corrector solution from previous continuation step),
-    #   Z (normalized predictor for all buses), and STEP (continuation step size).
-    #   The extra continuation output is LAM (final corrector lambda).
-    #
-    #   See also RUNCPF.
-    
-    #   MATPOWER
-    #   Copyright (c) 1996-2015 by Power System Engineering Research Center (PSERC)
-    #   by Ray Zimmerman, PSERC Cornell,
-    #   Shrirang Abhyankar, Argonne National Laboratory,
-    #   and Alexander Flueck, IIT
-    #
-    #   Modified by Alexander J. Flueck, Illinois Institute of Technology
-    #   2001.02.22 - corrector.m (ver 1.0) based on newtonpf.m (MATPOWER 2.0)
-    #
-    #   Modified by Shrirang Abhyankar, Argonne National Laboratory
-    #   (Updated to be compatible with MATPOWER version 4.1)
-    #
-    #   $Id: cpf_corrector.m 2644 2015-03-11 19:34:22Z ray $
-    #
-    #   This file is part of MATPOWER.
-    #   Covered by the 3-clause BSD License (see LICENSE file for details).
-    #   See http://www.pserc.cornell.edu/matpower/ for more info.
+    :param tol: Tolerance (p.u.)
+    :param max_it: max iterations
+    :param verbose: print information?
+    :return: Voltage, converged, iterations, lambda, power error, calculated power
     """
 
     # initialize
@@ -416,19 +369,6 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
              Z : the normalized tangent prediction vector
     """
 
-    """    
-    %   MATPOWER
-    %   Copyright (c) 1996-2015 by Power System Engineering Research Center (PSERC)
-    %   by Shrirang Abhyankar, Argonne National Laboratory
-    %   and Ray Zimmerman, PSERC Cornell
-    %
-    %   $Id: cpf_predictor.m 2644 2015-03-11 19:34:22Z ray $
-    %
-    %   This file is part of MATPOWER.
-    %   Covered by the 3-clause BSD License (see LICENSE file for details).
-    %   See http://www.pserc.cornell.edu/matpower/ for more info.
-    """
-
     # sizes
     nb = len(V)
     npv = len(pv)
@@ -437,7 +377,6 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
     nj = npv+npq*2
 
     # compute Jacobian for the power flow equations
-    # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
     J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
 
     dF_dlam = -r_[Sxfr[pvpq].real, Sxfr[pq].imag]
