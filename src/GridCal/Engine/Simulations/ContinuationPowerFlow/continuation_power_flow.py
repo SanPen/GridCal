@@ -298,32 +298,13 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
     npq = len(pq)
     pvpq = r_[pv, pq]
     nj = npv + npq * 2
-    nb = len(V)         # number of buses
-    j1 = 1
 
-    '''
-    # MATLAB code
-    j2 = npv           # j1:j2 - V angle of pv buses
-    j3 = j2 + 1
-    j4 = j2 + npq      # j3:j4 - V angle of pq buses
-    j5 = j4 + 1
-    j6 = j4 + npq      # j5:j6 - V mag of pq buses
-    j7 = j6 + 1
-    j8 = j6 + 1        # j7:j8 - lambda
-    '''
-
-    # j1:j2 - V angle of pv buses
+    # j1:j2 - V angle of pv and pq buses
     j1 = 0
-    j2 = npv
-    # j3:j4 - V angle of pq buses
-    j3 = j2
-    j4 = j2 + npq
-    # j5:j6 - V mag of pq buses
-    j5 = j4
-    j6 = j4 + npq
-    j7 = j6
-    j8 = j6+1
-    
+    j2 = npv + npq
+    # j2:j3 - V mag of pq buses
+    j3 = j2 + npq
+
     # evaluate F(x0, lam0), including Sxfr transfer/loading
     Scalc = V * np.conj(Ybus * V)
     mismatch = Scalc - Sbus - lam * Sxfr
@@ -370,60 +351,21 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
     
         # update voltage
         if npv:
-            Va[pv] += dx[j1:j2]
-
+            Va[pvpq] += dx[j1:j2]
         if npq:
-            Va[pq] += dx[j3:j4]
-            Vm[pq] += dx[j5:j6]
+            Vm[pq] += dx[j2:j3]
 
-        '''
-        # compute the mismatch function f(x_new)
-        dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
-        Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
-        Fnew_prev = F + alpha * (F * J).dot(Fnew - F)
-        cond = (Fnew < Fnew_prev).any()  # condition to back track (no improvement at all)
-
-        if not cond:
-            back_track_counter += 1
-
-        l_iter = 0
-        while not cond and l_iter < 10 and mu_ > 0.01:
-            # line search back
-
-            # to divide mu by 4 is the simplest backtracking process
-            # TODO: implement the more complex mu backtrack from numerical recipes
-
-            # update voltage with a closer value to the last value in the Jacobian direction
-            mu_ *= 0.25
-            Vm -= mu_ * dVm
-            Va -= mu_ * dVa
-            Vnew = Vm * exp(1j * Va)
-
-            # compute the mismatch function f(x_new)
-            dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
-            Fnew = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
-            Fnew_prev = F + alpha * (F * J).dot(Fnew - F)
-            cond = (Fnew < Fnew_prev).any()
-
-            l_iter += 1
-            back_track_iterations += 1
-
-        # update calculation variables
-        V = Vnew
-        F = Fnew
-        '''
+        # update lambda
+        lam += dx[j3]
 
         # update Vm and Va again in case we wrapped around with a negative Vm
         V = Vm * exp(1j * Va)
         Vm = np.abs(V)
         Va = angle(V)
-    
-        # update lambda
-        lam += dx[j7:j8][0]
-    
+
         # evaluate F(x, lam)
         Scalc = V * conj(Ybus * V)
-        mismatch = Scalc - Sbus - lam*Sxfr
+        mismatch = Scalc - Sbus - lam * Sxfr
 
         # evaluate P(x, lambda)
         P = cpf_p(parametrization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
@@ -531,7 +473,7 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
     
     # prediction for next step
     Va0[pvpq] = Va_prev[pvpq] + step * z[pvpq]
-    Vm0[pq] = Vm_prev[pq] + step * z[nb + pq]
+    Vm0[pq] = Vm_prev[pq] + step * z[pq + nb]
     lam0 = lam + step * z[2 * nb]
     V0 = Vm0 * exp(1j * Va0)
         

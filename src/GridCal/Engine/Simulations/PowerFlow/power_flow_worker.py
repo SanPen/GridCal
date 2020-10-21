@@ -286,7 +286,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
         solver_idx += 1
 
     if not converged:
-        logger.append('Did not converge, even after retry!, Error:' + str(results.error()))
+        logger.append('Did not converge, even after retry!, Error:' + str(results.error))
 
     return V_final, converged_final, normF_final, Scalc_final, it_final, el_final
 
@@ -1202,7 +1202,7 @@ def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, branch_rates,
     worked = np.all(results.converged)
 
     if not worked:
-        logger.append('Did not converge, even after retry!, Error:' + str(results.error()))
+        logger.append('Did not converge, even after retry!, Error:' + str(results.error))
 
     return results
 
