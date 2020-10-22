@@ -12,18 +12,18 @@ from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import _create_J_w
 # from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 
 
-class VCStopAt(Enum):
+class CpfStopAt(Enum):
     Nose = 'Nose'
     Full = 'Full curve'
 
 
-class VCParametrization(Enum):
+class CpfParametrization(Enum):
     Natural = 'Natural'
     ArcLength = 'Arc Length'
     PseudoArcLength = 'Pseudo Arc Length'
 
 
-def cpf_p(parametrization: VCParametrization, step, z, V, lam, V_prev, lamprv, pv, pq, pvpq):
+def cpf_p(parametrization: CpfParametrization, step, z, V, lam, V_prev, lamprv, pv, pq, pvpq):
     """
     Computes the value of the Current Parametrization Function
     :param parametrization: Value of  option (1: Natural, 2:Arc-length, 3: pseudo arc-length)
@@ -76,13 +76,13 @@ def cpf_p(parametrization: VCParametrization, step, z, V, lam, V_prev, lamprv, p
 
     ## evaluate P(x0, lambda0)
     """
-    if parametrization == VCParametrization.Natural:        # natural
+    if parametrization == CpfParametrization.Natural:        # natural
         if lam >= lamprv:
             P = lam - lamprv - step
         else:
             P = lamprv - lam - step
 
-    elif parametrization == VCParametrization.ArcLength:    # arc length
+    elif parametrization == CpfParametrization.ArcLength:    # arc length
         Va = angle(V)
         Vm = np.abs(V)
         Va_prev = angle(V_prev)
@@ -91,7 +91,7 @@ def cpf_p(parametrization: VCParametrization, step, z, V, lam, V_prev, lamprv, p
         b = r_[Va_prev[pvpq], Vm_prev[pq], lamprv]
         P = np.sum(np.power(a - b, 2)) - np.power(step, 2)
 
-    elif parametrization == VCParametrization.PseudoArcLength:    # pseudo arc length
+    elif parametrization == CpfParametrization.PseudoArcLength:    # pseudo arc length
         nb = len(V)
         Va = angle(V)
         Vm = np.abs(V)
@@ -111,7 +111,7 @@ def cpf_p(parametrization: VCParametrization, step, z, V, lam, V_prev, lamprv, p
     return P
 
 
-def cpf_p_jac(parametrization: VCParametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
+def cpf_p_jac(parametrization: CpfParametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
     """
     Computes partial derivatives of Current Parametrization Function (CPF).
     :param parametrization:
@@ -165,7 +165,7 @@ def cpf_p_jac(parametrization: VCParametrization, z, V, lam, Vprv, lamprv, pv, p
     #   See http://www.pserc.cornell.edu/matpower/ for more info.
     """
 
-    if parametrization == VCParametrization.Natural:   # natural
+    if parametrization == CpfParametrization.Natural:   # natural
         npv = len(pv)
         npq = len(pq)
         dP_dV = zeros(npv + 2 * npq)
@@ -174,7 +174,7 @@ def cpf_p_jac(parametrization: VCParametrization, z, V, lam, Vprv, lamprv, pv, p
         else:
             dP_dlam = -1.0
 
-    elif parametrization == VCParametrization.ArcLength:  # arc length
+    elif parametrization == CpfParametrization.ArcLength:  # arc length
         Va = angle(V)
         Vm = np.abs(V)
         Vaprv = angle(Vprv)
@@ -186,7 +186,7 @@ def cpf_p_jac(parametrization: VCParametrization, z, V, lam, Vprv, lamprv, pv, p
         else:
             dP_dlam = 2.0 * (lam - lamprv)
 
-    elif parametrization == VCParametrization.PseudoArcLength:  # pseudo arc length
+    elif parametrization == CpfParametrization.PseudoArcLength:  # pseudo arc length
         nb = len(V)
         dP_dV = z[r_[pv, pq, nb + pq]]
         dP_dlam = z[2 * nb]
@@ -271,11 +271,11 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
     
     # check tolerance
     normF = linalg.norm(F, Inf)
+    converged = normF < tol
+    if verbose:
+        print('\nConverged!\n')
 
-    if normF < tol:
-        converged = True
-        if verbose:
-            print('\nConverged!\n')
+    dF_dlam = -r_[Sxfr[pvpq].real, Sxfr[pq].imag]
 
     # do Newton iterations
     while not converged and i < max_it:
@@ -284,10 +284,7 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
         i += 1
         
         # evaluate Jacobian
-        # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
         J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
-    
-        dF_dlam = -r_[Sxfr[pvpq].real, Sxfr[pq].imag]
 
         dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
     
@@ -300,16 +297,16 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
                     hstack([dP_dV, dP_dlam])], format="csc")
     
         # compute update step
-        dx = -spsolve(J, F)
+        dx = spsolve(J, F)
     
         # update voltage
         if npv:
-            Va[pvpq] += dx[j1:j2]
+            Va[pvpq] -= dx[j1:j2]
         if npq:
-            Vm[pq] += dx[j2:j3]
+            Vm[pq] -= dx[j2:j3]
 
         # update lambda
-        lam += dx[j3]
+        lam -= dx[j3]
 
         # update Vm and Va again in case we wrapped around with a negative Vm
         V = Vm * exp(1j * Va)
@@ -331,14 +328,12 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
     
         # check for convergence
         normF = linalg.norm(F, Inf)
-
         if verbose:
             print('\n#3d        #10.3e', i, normF)
-        
-        if normF < tol:
-            converged = True
-            if verbose:
-                print('\nNewton''s method corrector converged in ', i, ' iterations.\n')
+
+        converged = normF < tol
+        if verbose:
+            print('\nNewton''s method corrector converged in ', i, ' iterations.\n')
 
     if verbose:
         if not converged:
@@ -348,7 +343,7 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
 
 
 def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
-              parametrization: VCParametrization, pvpq_lookup):
+              parametrization: CpfParametrization, pvpq_lookup):
     """
     Computes a prediction (approximation) to the next solution of the
     continuation power flow using a normalized tangent predictor.
@@ -420,9 +415,9 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
 
 
 def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv, pq, step,
-                    approximation_order: VCParametrization,
+                    approximation_order: CpfParametrization,
                     adapt_step, step_min, step_max, error_tol=1e-3, tol=1e-6, max_it=20,
-                    stop_at=VCStopAt.Nose,
+                    stop_at=CpfStopAt.Nose,
                     controlQ=ReactivePowerControlMode.NoControl,
                     Qmax_bus=None, Qmin_bus=None, original_bus_types=None,
                     verbose=False, call_back_fx=None, logger=Logger()):
@@ -568,12 +563,15 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
             if any_q_control_issue:
                 bus_types = types_new
                 Sbus = Scalc.real + 1j * Qnew
+
+                Sxfr = Sbus_target - Sbus  # TODO: really?
+
                 vd, pq, pv, pqpv = compile_types(Sbus, types_new, logger)
             else:
                 if verbose:
                     print('Q controls Ok')
 
-            if stop_at == VCStopAt.Full:
+            if stop_at == CpfStopAt.Full:
                 if abs(lam) < 1e-8:
                     # traced the full continuation curve
                     if verbose:
@@ -587,11 +585,11 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
                     step = lam
 
                     # change to natural parametrization
-                    approximation_order = VCParametrization.Natural
+                    approximation_order = CpfParametrization.Natural
 
                     # disable step-adaptivity
                     adapt_step = 0
-            elif stop_at == VCStopAt.Nose:
+            elif stop_at == CpfStopAt.Nose:
 
                 if lam < lam_prev:
                     # reached the nose point
@@ -669,14 +667,14 @@ if __name__ == '__main__':
     # Voltage collapse
     ####################################################################################################################
     vc_options = ContinuationPowerFlowOptions(step=0.001,
-                                              approximation_order=VCParametrization.ArcLength,
+                                              approximation_order=CpfParametrization.ArcLength,
                                               adapt_step=True,
                                               step_min=0.00001,
                                               step_max=0.2,
                                               error_tol=1e-3,
                                               tol=1e-6,
                                               max_it=20,
-                                              stop_at=VCStopAt.Full,
+                                              stop_at=CpfStopAt.Full,
                                               verbose=False)
 
     # just for this test

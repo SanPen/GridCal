@@ -21,6 +21,7 @@ Version 4.0.0
 - Improved filtering (bool values are recognised now)
 - Improved the PSS/e Raw file import
 - Improved the Continuation power flow with reactive power control
+- Improved the speed of the power flow process, by delaying the admittance calculations until needed
 - Replaced how all the GUI messages are handled
 - Replaced the empirical PTDF/OTDF by the analytical PTDF/LODF which are several orders of magnitude faster.
 - Fixed transformer editor Sbase conversion
@@ -30,6 +31,7 @@ Version 4.0.0
 - Added tags to the sigma-plot
 - Added Substation, Zone, Area and Country objects to group better the buses.
 - Added better Json export file.
+- Added continuation power flow reactive power limits option for the generators.
 - Changed the power flow inner loops order. This changes the behaviour to the better when the controls are active.
 
 

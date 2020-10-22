@@ -202,7 +202,7 @@ class MainGUI(QMainWindow):
         self.ui.mip_solver_comboBox.setModel(get_list_model(list(self.mip_solvers_dict.keys())))
 
         # voltage collapse mode (full, nose)
-        self.ui.vc_stop_at_comboBox.setModel(get_list_model([VCStopAt.Nose.value, VCStopAt.Full.value]))
+        self.ui.vc_stop_at_comboBox.setModel(get_list_model([CpfStopAt.Nose.value, CpfStopAt.Full.value]))
         self.ui.vc_stop_at_comboBox.setCurrentIndex(0)
 
         # do not allow MP under windows because it crashes
@@ -2561,12 +2561,12 @@ class MainGUI(QMainWindow):
 
                 mode = self.ui.vc_stop_at_comboBox.currentText()
 
-                vc_stop_at_dict = {VCStopAt.Nose.value: VCStopAt.Nose,
-                                   VCStopAt.Full.value: VCStopAt.Full}
+                vc_stop_at_dict = {CpfStopAt.Nose.value: CpfStopAt.Nose,
+                                   CpfStopAt.Full.value: CpfStopAt.Full}
 
                 # declare voltage collapse options
                 vc_options = ContinuationPowerFlowOptions(step=0.0001,
-                                                          approximation_order=VCParametrization.Natural,
+                                                          approximation_order=CpfParametrization.Natural,
                                                           adapt_step=True,
                                                           step_min=0.00001,
                                                           step_max=0.2,

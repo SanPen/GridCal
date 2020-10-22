@@ -23,7 +23,7 @@ from PySide2.QtCore import QThread, Signal
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import power_flow_post_process, PowerFlowOptions
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, VCStopAt, VCParametrization
+from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, CpfStopAt, CpfParametrization
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.plot_config import LINEWIDTH
@@ -37,8 +37,8 @@ from GridCal.Gui.GuiFunctions import ResultsModel
 
 class ContinuationPowerFlowOptions:
 
-    def __init__(self, step=0.01, approximation_order=VCParametrization.Natural, adapt_step=True, step_min=0.0001,
-                 step_max=0.2, error_tol=1e-3, tol=1e-6, max_it=20, stop_at=VCStopAt.Nose, verbose=False):
+    def __init__(self, step=0.01, approximation_order=CpfParametrization.Natural, adapt_step=True, step_min=0.0001,
+                 step_max=0.2, error_tol=1e-3, tol=1e-6, max_it=20, stop_at=CpfStopAt.Nose, verbose=False):
         """
         Voltage collapse options
         @param step: Step length
