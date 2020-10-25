@@ -3456,6 +3456,15 @@ class MainGUI(QMainWindow):
         print('Done!!')
 
         if self.grid_generator_dialogue.applied:
+
+            if len(self.circuit.buses) > 0:
+                reply = QMessageBox.question(self, 'Message', 'Are you sure that you delete '
+                                                              'the current grid and replace it?',
+                                             QMessageBox.Yes, QMessageBox.No)
+
+                if reply == QMessageBox.No:
+                    return
+
             self.circuit = self.grid_generator_dialogue.circuit
 
             # create schematic
