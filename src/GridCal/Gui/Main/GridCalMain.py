@@ -27,6 +27,8 @@ from GridCal.Gui.GuiFunctions import *
 from GridCal.Gui.GIS.gis_dialogue import GISWindow
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.GridEditorWidget.messages import *
+from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
+from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 
 # Engine imports
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
@@ -56,7 +58,7 @@ from GridCal.Engine.IO.synchronization_driver import FileSyncThread
 from GridCal.Engine.Simulations.result_types import SimulationTypes
 from GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisDriver
 from GridCal.Engine.Devices.templates import get_transformer_catalogue, get_cables_catalogue, get_wires_catalogue
-from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
+
 
 import gc
 import os.path
@@ -277,6 +279,7 @@ class MainGUI(QMainWindow):
         # window pointers
         self.file_sync_window = None
         self.sigma_dialogue = None
+        self.grid_generator_dialogue = None
         self.analysis_dialogue = None
         self.profile_input_dialogue = None
         self.stuff_running_now = list()
@@ -388,6 +391,8 @@ class MainGUI(QMainWindow):
         self.ui.actionClear_stuff_running_right_now.triggered.connect(self.clear_stuff_running)
 
         self.ui.actionFind_node_groups.triggered.connect(self.run_find_node_groups)
+
+        self.ui.actiongrid_Generator.triggered.connect(self.grid_generator)
 
         # Buttons
 
@@ -3437,6 +3442,41 @@ class MainGUI(QMainWindow):
                                                    use_native_dialogues=self.use_native_dialogues)
             self.sigma_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
             self.sigma_dialogue.show()  # exec leaves the parent on hold
+
+    def grid_generator(self):
+        """
+
+        :return:
+        """
+        self.grid_generator_dialogue = GridGeneratorGUI(parent=self)
+        self.grid_generator_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
+        # self.grid_generator_dialogue.setWindowModality(Qt.ApplicationModal)
+        # self.grid_generator_dialogue.show()  # exec leaves the parent on hold
+        self.grid_generator_dialogue.exec_()
+        print('Done!!')
+
+        if self.grid_generator_dialogue.applied:
+            self.circuit = self.grid_generator_dialogue.circuit
+
+            # create schematic
+            self.create_schematic_from_api(explode_factor=1)
+
+            # set circuit name
+            self.grid_editor.name_label.setText("Random grid " + str(len(self.circuit.buses)) + ' buses')
+
+            # set base magnitudes
+            self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
+            self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
+            self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
+
+            # set circuit comments
+            self.ui.comments_textEdit.setText("Grid generated randomly using the RPGM algorithm.")
+
+            # update the drop down menus that display dates
+            self.update_date_dependent_combos()
+
+            # clear the results
+            self.clear_results()
 
     def set_cancel_state(self):
         """

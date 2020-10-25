@@ -6000,6 +6000,7 @@ points from time series</string>
      <string>File</string>
     </property>
     <addaction name="actionNew_project"/>
+    <addaction name="actiongrid_Generator"/>
     <addaction name="actionOpen_file"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_as"/>
@@ -6659,6 +6660,15 @@ points from time series</string>
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Finds the electrically related nodes by using their electrical distance and the DBSCAN clustering method&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actiongrid_Generator">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/automatic_layout.svg</normaloff>:/Icons/icons/automatic_layout.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Grid Generator</string>
    </property>
   </action>
  </widget>

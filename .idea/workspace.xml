@@ -23,13 +23,26 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed issue when exporting all the results">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="effectively implemented delayed evaluation of the admittances">
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/grid_generator_dialogue.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/gui.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/gui.ui" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/icons.qrc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/icons/automatic_layout.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/icons/color_grid.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/icons/run_cascade_step.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/icons_rc.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/matplotlibwidget.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/update_gui_file.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/SyntheticNetworks/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/SyntheticNetworks/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/SyntheticNetworks/rpgm_algo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContinuationPowerFlow/continuation_power_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContinuationPowerFlow/continuation_power_flow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContinuationPowerFlow/continuation_power_flow_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContinuationPowerFlow/continuation_power_flow_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,7 +89,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="ToolWindowDatabase.ShowToolbar" value="false" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../REE/smartplanning" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/GridCal/Gui" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
@@ -84,13 +97,14 @@
     <option name="mySaveCallSignatures" value="true" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCal/Gui" />
       <recent name="$PROJECT_DIR$/src/research/hvdc" />
       <recent name="$PROJECT_DIR$/src/research" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures" />
     </key>
   </component>
   <component name="RunManager" selected="Python.ExecuteGridCal">
@@ -116,7 +130,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="admittance_variations" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="grid_generator_dialogue" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -124,12 +138,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/research/admittance" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/research/admittance/admittance_variations.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/grid_generator_dialogue.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -138,7 +152,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="test_transformer_regulator" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="rpgm_algo" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -146,12 +160,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/ThirdParty/SyntheticNetworks" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/tests/test_transformer_regulator.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ThirdParty/SyntheticNetworks/rpgm_algo.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -160,52 +174,64 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests in test_branch_tolerance.py" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+    <configuration name="update_gui_file (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/Main" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_branch_tolerance.py&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests in tests" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+    <configuration name="update_gui_file" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/update_gui_file.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.test_transformer_regulator" />
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python.admittance_variations" />
-      <item itemvalue="Python tests.Nosetests in tests" />
-      <item itemvalue="Python tests.Nosetests in test_branch_tolerance.py" />
+      <item itemvalue="Python.rpgm_algo" />
+      <item itemvalue="Python.grid_generator_dialogue" />
+      <item itemvalue="Python.update_gui_file" />
+      <item itemvalue="Python.update_gui_file (1)" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.admittance_variations" />
-        <item itemvalue="Python.test_transformer_regulator" />
-        <item itemvalue="Python tests.Nosetests in tests" />
-        <item itemvalue="Python tests.Nosetests in test_branch_tolerance.py" />
+        <item itemvalue="Python.update_gui_file" />
+        <item itemvalue="Python.grid_generator_dialogue" />
+        <item itemvalue="Python.update_gui_file (1)" />
+        <item itemvalue="Python.rpgm_algo" />
       </list>
     </recent_temporary>
   </component>
@@ -377,14 +403,14 @@
       <workItem from="1603348011750" duration="4596000" />
       <workItem from="1603372713787" duration="4621000" />
       <workItem from="1603388444467" duration="733000" />
-      <workItem from="1603394599748" duration="608000" />
-    </task>
-    <task id="LOCAL-00001" summary="Trial">
-      <created>1589563536685</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1589563536685</updated>
+      <workItem from="1603394599748" duration="1508000" />
+      <workItem from="1603398871500" duration="26000" />
+      <workItem from="1603435070063" duration="1885000" />
+      <workItem from="1603444844448" duration="1616000" />
+      <workItem from="1603453637970" duration="660000" />
+      <workItem from="1603464211600" duration="1675000" />
+      <workItem from="1603530409284" duration="4004000" />
+      <workItem from="1603641294362" duration="8249000" />
     </task>
     <task id="LOCAL-00002" summary="Distribution Grid Tutorial File Creation">
       <created>1589567438818</created>
@@ -722,7 +748,14 @@
       <option name="project" value="LOCAL" />
       <updated>1603304491659</updated>
     </task>
-    <option name="localTasksCounter" value="50" />
+    <task id="LOCAL-00050" summary="effectively implemented delayed evaluation of the admittances">
+      <created>1603395502487</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1603395502488</updated>
+    </task>
+    <option name="localTasksCounter" value="51" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -756,7 +789,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="oddly working, although the indices od 'm' seem to be wrong" />
     <MESSAGE value="Fixed sides on Y formation&#10;Added k to the snapshot data" />
     <MESSAGE value="Added ASD research file" />
     <MESSAGE value="ASD in coefficients mode" />
@@ -781,7 +813,8 @@
     <MESSAGE value="Added reactive power control to the continuation power flow&#10;Renamed the VoltageCollapse class and similar classes to ContinuationPower flow" />
     <MESSAGE value="Minor improvements in the continuation power flow" />
     <MESSAGE value="Fixed issue when exporting all the results" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed issue when exporting all the results" />
+    <MESSAGE value="effectively implemented delayed evaluation of the admittances" />
+    <option name="LAST_COMMIT_MESSAGE" value="effectively implemented delayed evaluation of the admittances" />
   </component>
   <component name="WindowStateProjectService">
     <state x="454" y="211" width="1084" height="708" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1601397245915">
@@ -792,81 +825,77 @@
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="635" y="355" width="712" height="403" key="#com.intellij.fileTypes.FileTypeChooser/72.27.1848.1053@72.27.1848.1053" timestamp="1599508013675" />
-    <state x="419" y="526" width="1164" height="554" key="#xdebugger.evaluate" timestamp="1603303897465">
+    <state x="861" y="544" width="852" height="536" key="#xdebugger.evaluate" timestamp="1603650631173">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state x="419" y="526" width="1164" height="554" key="#xdebugger.evaluate/72.25.1848.1055@72.25.1848.1055" timestamp="1603303897465" />
+    <state x="861" y="544" width="852" height="536" key="#xdebugger.evaluate/72.25.1848.1055@72.25.1848.1055" timestamp="1603650631173" />
     <state x="912" y="330" width="824" height="750" key="#xdebugger.evaluate/72.27.1848.1053@72.27.1848.1053" timestamp="1602518898575" />
     <state x="741" y="411" width="500" height="291" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1" timestamp="1601757977996">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="741" y="411" width="500" height="291" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/72.27.1848.1053@72.27.1848.1053" timestamp="1601757977996" />
-    <state x="535" y="101" width="912" height="911" key="CommitChangelistDialog2" timestamp="1594919560466">
-      <screen x="72" y="27" width="1848" height="1053" />
-    </state>
-    <state x="535" y="101" width="912" height="911" key="CommitChangelistDialog2/72.27.1848.1053@72.27.1848.1053" timestamp="1594919560466" />
-    <state width="1093" height="618" key="DebuggerActiveHint" timestamp="1603304079296">
+    <state width="1304" height="618" key="DebuggerActiveHint" timestamp="1603649381057">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1093" height="618" key="DebuggerActiveHint/72.25.1848.1055@72.25.1848.1055" timestamp="1603304079296" />
+    <state width="1304" height="618" key="DebuggerActiveHint/72.25.1848.1055@72.25.1848.1055" timestamp="1603649381057" />
     <state width="1380" height="661" key="DebuggerActiveHint/72.27.1848.1053@72.27.1848.1053" timestamp="1602418456117" />
     <state x="486" y="27" width="874" height="926" key="FileChooserDialogImpl" timestamp="1601458952521">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="486" y="27" width="874" height="926" key="FileChooserDialogImpl/72.27.1848.1053@72.27.1848.1053" timestamp="1601458952521" />
-    <state width="634" height="342" key="GridCell.Tab.0.bottom" timestamp="1603353492332">
+    <state width="1806" height="328" key="GridCell.Tab.0.bottom" timestamp="1603651049249">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="634" height="342" key="GridCell.Tab.0.bottom/72.25.1848.1055@72.25.1848.1055" timestamp="1603353492332" />
+    <state width="1806" height="328" key="GridCell.Tab.0.bottom/72.25.1848.1055@72.25.1848.1055" timestamp="1603651049249" />
     <state width="1806" height="218" key="GridCell.Tab.0.bottom/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="634" height="342" key="GridCell.Tab.0.center" timestamp="1603353492331">
+    <state width="1806" height="328" key="GridCell.Tab.0.center" timestamp="1603651049249">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="634" height="342" key="GridCell.Tab.0.center/72.25.1848.1055@72.25.1848.1055" timestamp="1603353492331" />
+    <state width="1806" height="328" key="GridCell.Tab.0.center/72.25.1848.1055@72.25.1848.1055" timestamp="1603651049249" />
     <state width="1806" height="218" key="GridCell.Tab.0.center/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="634" height="342" key="GridCell.Tab.0.left" timestamp="1603353492331">
+    <state width="1806" height="328" key="GridCell.Tab.0.left" timestamp="1603651049248">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="634" height="342" key="GridCell.Tab.0.left/72.25.1848.1055@72.25.1848.1055" timestamp="1603353492331" />
+    <state width="1806" height="328" key="GridCell.Tab.0.left/72.25.1848.1055@72.25.1848.1055" timestamp="1603651049248" />
     <state width="1806" height="218" key="GridCell.Tab.0.left/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326961" />
-    <state width="634" height="342" key="GridCell.Tab.0.right" timestamp="1603353492332">
+    <state width="1806" height="328" key="GridCell.Tab.0.right" timestamp="1603651049249">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="634" height="342" key="GridCell.Tab.0.right/72.25.1848.1055@72.25.1848.1055" timestamp="1603353492332" />
+    <state width="1806" height="328" key="GridCell.Tab.0.right/72.25.1848.1055@72.25.1848.1055" timestamp="1603651049249" />
     <state width="1806" height="218" key="GridCell.Tab.0.right/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="1806" height="221" key="GridCell.Tab.1.bottom" timestamp="1603304111813">
+    <state width="1806" height="371" key="GridCell.Tab.1.bottom" timestamp="1603650638229">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="221" key="GridCell.Tab.1.bottom/72.25.1848.1055@72.25.1848.1055" timestamp="1603304111813" />
+    <state width="1806" height="371" key="GridCell.Tab.1.bottom/72.25.1848.1055@72.25.1848.1055" timestamp="1603650638229" />
     <state width="1806" height="218" key="GridCell.Tab.1.bottom/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="1806" height="221" key="GridCell.Tab.1.center" timestamp="1603304111813">
+    <state width="1806" height="371" key="GridCell.Tab.1.center" timestamp="1603650638228">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="221" key="GridCell.Tab.1.center/72.25.1848.1055@72.25.1848.1055" timestamp="1603304111813" />
+    <state width="1806" height="371" key="GridCell.Tab.1.center/72.25.1848.1055@72.25.1848.1055" timestamp="1603650638228" />
     <state width="1806" height="218" key="GridCell.Tab.1.center/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="1806" height="221" key="GridCell.Tab.1.left" timestamp="1603304111813">
+    <state width="1806" height="371" key="GridCell.Tab.1.left" timestamp="1603650638228">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="221" key="GridCell.Tab.1.left/72.25.1848.1055@72.25.1848.1055" timestamp="1603304111813" />
+    <state width="1806" height="371" key="GridCell.Tab.1.left/72.25.1848.1055@72.25.1848.1055" timestamp="1603650638228" />
     <state width="1806" height="218" key="GridCell.Tab.1.left/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="1806" height="221" key="GridCell.Tab.1.right" timestamp="1603304111813">
+    <state width="1806" height="371" key="GridCell.Tab.1.right" timestamp="1603650638228">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="221" key="GridCell.Tab.1.right/72.25.1848.1055@72.25.1848.1055" timestamp="1603304111813" />
+    <state width="1806" height="371" key="GridCell.Tab.1.right/72.25.1848.1055@72.25.1848.1055" timestamp="1603650638228" />
     <state width="1806" height="218" key="GridCell.Tab.1.right/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
     <state x="880" y="424" width="476" height="271" key="MultipleFileMergeDialog" timestamp="1601568905249">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="880" y="424" width="476" height="271" key="MultipleFileMergeDialog/72.27.1848.1053@72.27.1848.1053" timestamp="1601568905249" />
-    <state x="93" y="56" width="1668" height="961" key="SettingsEditor" timestamp="1602613600621">
+    <state x="93" y="56" width="992" height="737" key="SettingsEditor" timestamp="1603465284643">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state x="93" y="56" key="SettingsEditor/72.25.1848.1055@72.25.1848.1055" timestamp="1602613600621" />
+    <state x="93" y="56" width="992" height="737" key="SettingsEditor/72.25.1848.1055@72.25.1848.1055" timestamp="1603465284643" />
     <state x="93" y="58" width="1668" height="961" key="SettingsEditor/72.27.1848.1053@72.27.1848.1053" timestamp="1601461195083" />
-    <state x="303" y="283" width="800" height="561" key="Vcs.Push.Dialog.v2" timestamp="1603304498331">
+    <state x="303" y="283" width="800" height="561" key="Vcs.Push.Dialog.v2" timestamp="1603395507792">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state x="303" y="283" width="800" height="561" key="Vcs.Push.Dialog.v2/72.25.1848.1055@72.25.1848.1055" timestamp="1603304498331" />
+    <state x="303" y="283" width="800" height="561" key="Vcs.Push.Dialog.v2/72.25.1848.1055@72.25.1848.1055" timestamp="1603395507792" />
     <state x="303" y="285" width="800" height="660" key="Vcs.Push.Dialog.v2/72.27.1848.1053@72.27.1848.1053" timestamp="1602519674878" />
     <state width="1804" height="527" key="XDebugger.FullValuePopup" timestamp="1602936616551">
       <screen x="72" y="25" width="1848" height="1055" />
@@ -932,12 +961,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>942</line>
+          <line>947</line>
           <option name="timeStamp" value="161" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>916</line>
+          <line>921</line>
           <option name="timeStamp" value="162" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1012,12 +1041,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>4279</line>
+          <line>4319</line>
           <option name="timeStamp" value="303" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>2469</line>
+          <line>2474</line>
           <option name="timeStamp" value="308" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1110,6 +1139,21 @@
           <line>536</line>
           <option name="timeStamp" value="367" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/grid_generator_dialogue.py</url>
+          <line>172</line>
+          <option name="timeStamp" value="387" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
+          <line>3461</line>
+          <option name="timeStamp" value="388" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
+          <line>3464</line>
+          <option name="timeStamp" value="389" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
@@ -1119,6 +1163,7 @@
     <SUITE FILE_PATH="coverage/GridCal$defining_a_grid_from_scratch_without_profiles.coverage" NAME="defining_a_grid_from_scratch_without_profiles Coverage Results" MODIFIED="1602939036170" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Tutorials" />
     <SUITE FILE_PATH="coverage/GridCal$newton_current.coverage" NAME="newton_current Coverage Results" MODIFIED="1597481272992" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_flow" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_api_py.coverage" NAME="Nosetests in test_api.py Coverage Results" MODIFIED="1598803532944" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$rpgm_algo.coverage" NAME="rpgm_algo Coverage Results" MODIFIED="1603645665438" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/ThirdParty/SyntheticNetworks" />
     <SUITE FILE_PATH="coverage/GridCal$rectangular_nr1.coverage" NAME="rectangular_nr1 Coverage Results" MODIFIED="1602866013486" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_flow/rectangular" />
     <SUITE FILE_PATH="coverage/GridCal$defining_a_grid_from_scratch_with_profiles.coverage" NAME="defining_a_grid_from_scratch_with_profiles Coverage Results" MODIFIED="1598815125710" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Tutorials" />
     <SUITE FILE_PATH="coverage/GridCal$slicing_experiments.coverage" NAME="slicing_experiments Coverage Results" MODIFIED="1592246813513" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research" />
@@ -1138,6 +1183,7 @@
     <SUITE FILE_PATH="coverage/GridCal$matpower_parser.coverage" NAME="matpower_parser Coverage Results" MODIFIED="1600002676691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_ptdf_py.coverage" NAME="Nosetests in test_ptdf.py Coverage Results" MODIFIED="1602938587828" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_transformer_definition_py.coverage" NAME="Nosetests in test_transformer_definition.py Coverage Results" MODIFIED="1598803582526" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$grid_generator_dialogue.coverage" NAME="grid_generator_dialogue Coverage Results" MODIFIED="1603650116973" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator" />
     <SUITE FILE_PATH="coverage/GridCal$lightmap.coverage" NAME="lightmap Coverage Results" MODIFIED="1598594966764" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/map" />
     <SUITE FILE_PATH="coverage/GridCal$ACPTDF_research2.coverage" NAME="ACPTDF_research2 Coverage Results" MODIFIED="1601972012772" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research2_py.coverage" NAME="Nosetests in PTDF_research2.py Coverage Results" MODIFIED="1600161918846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
@@ -1147,6 +1193,7 @@
     <SUITE FILE_PATH="coverage/GridCal$dc_opf_ts.coverage" NAME="dc_opf_ts Coverage Results" MODIFIED="1602519229272" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
     <SUITE FILE_PATH="coverage/GridCal$analytic_ptdf_driver.coverage" NAME="analytic_ptdf_driver Coverage Results" MODIFIED="1600179811175" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$ACPTDF_research.coverage" NAME="ACPTDF_research Coverage Results" MODIFIED="1601989123437" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
+    <SUITE FILE_PATH="coverage/GridCal$update_gui_file__1_.coverage" NAME="update_gui_file (1) Coverage Results" MODIFIED="1603648023126" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$map_test_simple.coverage" NAME="map_test_simple Coverage Results" MODIFIED="1598595026624" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/map" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_ACPTDF_research_py.coverage" NAME="Nosetests in ACPTDF_research.py Coverage Results" MODIFIED="1601970337931" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$ACPTDF_research3.coverage" NAME="ACPTDF_research3 Coverage Results" MODIFIED="1601972014632" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
@@ -1157,13 +1204,13 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_power_flow_py.coverage" NAME="Nosetests in test_power_flow.py Coverage Results" MODIFIED="1602949161638" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$ptdf_ts_driver.coverage" NAME="ptdf_ts_driver Coverage Results" MODIFIED="1600186726130" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$PTDF_research.coverage" NAME="PTDF_research Coverage Results" MODIFIED="1600707513093" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1603395193934" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1603651049238" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$power_world_epc.coverage" NAME="power_world_epc Coverage Results" MODIFIED="1594141589251" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_world_format" />
     <SUITE FILE_PATH="coverage/GridCal$psse_parser.coverage" NAME="psse_parser Coverage Results" MODIFIED="1594285082315" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
     <SUITE FILE_PATH="coverage/GridCal$dc_opf.coverage" NAME="dc_opf Coverage Results" MODIFIED="1602504240684" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_load_all_grids_py.coverage" NAME="Nosetests in test_load_all_grids.py Coverage Results" MODIFIED="1598802785581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$update_gui_file.coverage" NAME="update_gui_file Coverage Results" MODIFIED="1601543248990" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$admittance_variations.coverage" NAME="admittance_variations Coverage Results" MODIFIED="1603050030453" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/admittance" />
+    <SUITE FILE_PATH="coverage/GridCal$update_gui_file.coverage" NAME="update_gui_file Coverage Results" MODIFIED="1603651043190" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator" />
     <SUITE FILE_PATH="coverage/GridCal$newton_line_search_acdc.coverage" NAME="newton_line_search_acdc Coverage Results" MODIFIED="1600113014752" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/hvdc" />
     <SUITE FILE_PATH="coverage/GridCal$v3_pv.coverage" NAME="v3_pv Coverage Results" MODIFIED="1597644265099" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_flow/asd/josep" />
   </component>

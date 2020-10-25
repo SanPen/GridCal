@@ -32,6 +32,7 @@ Version 4.0.0
 - Added Substation, Zone, Area and Country objects to group better the buses.
 - Added better Json export file.
 - Added continuation power flow reactive power limits option for the generators.
+- Added a quite good random grid generator from the project SyntheticNetworks
 - Changed the power flow inner loops order. This changes the behaviour to the better when the controls are active.
 
 

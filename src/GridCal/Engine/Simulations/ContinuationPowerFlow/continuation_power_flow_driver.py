@@ -37,8 +37,10 @@ from GridCal.Gui.GuiFunctions import ResultsModel
 
 class ContinuationPowerFlowOptions:
 
-    def __init__(self, step=0.01, approximation_order=CpfParametrization.Natural, adapt_step=True, step_min=0.0001,
-                 step_max=0.2, error_tol=1e-3, tol=1e-6, max_it=20, stop_at=CpfStopAt.Nose, verbose=False):
+    def __init__(self, step=0.01, approximation_order=CpfParametrization.Natural,
+                 adapt_step=True, step_min=0.0001,
+                 step_max=0.2, error_tol=1e-3, tol=1e-6, max_it=20,
+                 stop_at=CpfStopAt.Nose, verbose=False):
         """
         Voltage collapse options
         @param step: Step length
