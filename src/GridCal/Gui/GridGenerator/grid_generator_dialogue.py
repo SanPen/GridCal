@@ -57,7 +57,7 @@ class GridGeneratorGUI(QDialog):
 
         n = self.ui.nodes_spinBox.value()
         n0 = 10
-        r = 1. / 3.
+        r = self.ui.ratio_SpinBox.value()
         if n0 >= n:
             n0 = n - 1
 
@@ -122,7 +122,7 @@ class GridGeneratorGUI(QDialog):
 
             bus = Bus(name='Bus ' + str(i+1),
                       xpos=self.g.lat[i] * explosion_factor,
-                      ypos=self.g.lon[i] * explosion_factor)
+                      ypos=-self.g.lon[i] * explosion_factor)
 
             bus_dict[i] = bus
 
@@ -131,7 +131,7 @@ class GridGeneratorGUI(QDialog):
         # generate loads
         factor = np.random.random(load_buses_num)
         factor /= factor.sum()
-        pf = 0.8
+        pf = self.ui.power_factor_SpinBox.value()
         for k, i in enumerate(load_buses):
             bus = bus_dict[i]
             p = pmax * factor[k]
