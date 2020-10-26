@@ -23,7 +23,7 @@ from PySide2.QtCore import QThread, Signal
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import power_flow_post_process, PowerFlowOptions
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, VCStopAt, VCParametrization
+from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, CpfStopAt, CpfParametrization
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.plot_config import LINEWIDTH
@@ -35,10 +35,12 @@ from GridCal.Gui.GuiFunctions import ResultsModel
 ########################################################################################################################
 
 
-class VoltageCollapseOptions:
+class ContinuationPowerFlowOptions:
 
-    def __init__(self, step=0.01, approximation_order=VCParametrization.Natural, adapt_step=True, step_min=0.0001,
-                 step_max=0.2, error_tol=1e-3, tol=1e-6, max_it=20, stop_at=VCStopAt.Nose, verbose=False):
+    def __init__(self, step=0.01, approximation_order=CpfParametrization.Natural,
+                 adapt_step=True, step_min=0.0001,
+                 step_max=0.2, error_tol=1e-3, tol=1e-6, max_it=20,
+                 stop_at=CpfStopAt.Nose, verbose=False):
         """
         Voltage collapse options
         @param step: Step length
@@ -74,11 +76,11 @@ class VoltageCollapseOptions:
         self.verbose = verbose
 
 
-class VoltageCollapseInput:
+class ContinuationPowerFlowInput:
 
     def __init__(self, Sbase, Vbase, Starget):
         """
-        VoltageCollapseInput constructor
+        ContinuationPowerFlowInput constructor
         @param Sbase: Initial power array
         @param Vbase: Initial voltage array
         @param Starget: Final power array
@@ -90,11 +92,11 @@ class VoltageCollapseInput:
         self.Vbase = Vbase
 
 
-class VoltageCollapseResults:
+class ContinuationPowerFlowResults:
 
     def __init__(self, nbus, nbr, bus_names):
         """
-        VoltageCollapseResults instance
+        ContinuationPowerFlowResults instance
         :param nbus: number of buses
         :param nbr: number of branches
         :param bus_names: names of the buses
@@ -148,8 +150,8 @@ class VoltageCollapseResults:
     def apply_from_island(self, voltage_collapse_res, Sbranch, Ibranch, loading, losses, Sbus,
                           bus_original_idx, branch_original_idx, nbus_full):
         """
-        Apply the results of an island to this VoltageCollapseResults instance
-        :param voltage_collapse_res: VoltageCollapseResults instance of the island
+        Apply the results of an island to this ContinuationPowerFlowResults instance
+        :param voltage_collapse_res: ContinuationPowerFlowResults instance of the island
         :param bus_original_idx: indices of the buses in the complete grid
         :param branch_original_idx: indices of the branches in the complete grid
         :param nbus_full: total number of buses in the complete grid
@@ -227,19 +229,26 @@ class VoltageCollapseResults:
         return mdl
 
 
-class VoltageCollapse(QThread):
+class ContinuationPowerFlow(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
-    name = 'Voltage Stability'
+    name = 'Continuation Power Flow'
 
-    def __init__(self, circuit: MultiCircuit, options: VoltageCollapseOptions, inputs: VoltageCollapseInput,
-                 pf_options: PowerFlowOptions, opf_results=None):
+    def __init__(self, circuit: MultiCircuit,
+                 options: ContinuationPowerFlowOptions,
+                 inputs: ContinuationPowerFlowInput,
+                 pf_options: PowerFlowOptions,
+                 opf_results=None, t=0):
         """
-        VoltageCollapse constructor
-        @param circuit: NumericalCircuit instance
-        @param options:
+        ContinuationPowerFlow constructor
+        :param circuit: NumericalCircuit instance
+        :param options: ContinuationPowerFlowOptions instance
+        :param inputs: ContinuationPowerFlowInput instance
+        :param pf_options: PowerFlowOptions instance
+        :param opf_results:
         """
+
         QThread.__init__(self)
 
         # MultiCircuit instance
@@ -254,6 +263,8 @@ class VoltageCollapse(QThread):
 
         self.opf_results = opf_results
 
+        self.t = t
+
         self.results = list()
 
         self.__cancel__ = False
@@ -267,13 +278,13 @@ class VoltageCollapse(QThread):
         else:
             return list()
 
-    def progress_callback(self, l):
+    def progress_callback(self, lmbda):
         """
         Send progress report
-        :param l: lambda value
+        :param lmbda: lambda value
         :return: None
         """
-        self.progress_text.emit('Running voltage collapse lambda:' + "{0:.2f}".format(l) + '...')
+        self.progress_text.emit('Running continuation power flow (lambda:' + "{0:.2f}".format(lmbda) + ')...')
 
     def run(self):
         """
@@ -290,26 +301,27 @@ class VoltageCollapse(QThread):
 
         islands = nc.split_into_islands(ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
 
-        self.results = VoltageCollapseResults(nbus=nc.nbus,
-                                              nbr=nc.nbr,
-                                              bus_names=nc.bus_names)
+        self.results = ContinuationPowerFlowResults(nbus=nc.nbus,
+                                                    nbr=nc.nbr,
+                                                    bus_names=nc.bus_names)
 
         self.results.bus_types = nc.bus_types
 
-        for nc, numerical_island in enumerate(islands):
+        for nc, island in enumerate(islands):
 
             self.progress_text.emit('Running voltage collapse at circuit ' + str(nc) + '...')
 
-            if len(numerical_island.vd) > 0:
+            if len(island.vd) > 0:
+
                 Voltage_series, Lambda_series, \
-                normF, success = continuation_nr(Ybus=numerical_island.Ybus,
-                                                 Ibus_base=numerical_island.Ibus,
-                                                 Ibus_target=numerical_island.Ibus,
-                                                 Sbus_base=self.inputs.Sbase[numerical_island.original_bus_idx],
-                                                 Sbus_target=self.inputs.Starget[numerical_island.original_bus_idx],
-                                                 V=self.inputs.Vbase[numerical_island.original_bus_idx],
-                                                 pv=numerical_island.pv,
-                                                 pq=numerical_island.pq,
+                normF, success = continuation_nr(Ybus=island.Ybus,
+                                                 Ibus_base=island.Ibus,
+                                                 Ibus_target=island.Ibus,
+                                                 Sbus_base=self.inputs.Sbase[island.original_bus_idx],
+                                                 Sbus_target=self.inputs.Starget[island.original_bus_idx],
+                                                 V=self.inputs.Vbase[island.original_bus_idx],
+                                                 pv=island.pv,
+                                                 pq=island.pq,
                                                  step=self.options.step,
                                                  approximation_order=self.options.approximation_order,
                                                  adapt_step=self.options.adapt_step,
@@ -319,34 +331,40 @@ class VoltageCollapse(QThread):
                                                  tol=self.options.tol,
                                                  max_it=self.options.max_it,
                                                  stop_at=self.options.stop_at,
+                                                 controlQ=self.pf_options.control_Q,
+                                                 Qmax_bus=island.Qmax_bus[:, self.t],
+                                                 Qmin_bus=island.Qmin_bus[:, self.t],
+                                                 original_bus_types=island.bus_types,
                                                  verbose=False,
                                                  call_back_fx=self.progress_callback)
 
                 # nbus can be zero, because all the arrays are going to be overwritten
-                res = VoltageCollapseResults(nbus=numerical_island.nbus,
-                                             nbr=numerical_island.nbr,
-                                             bus_names=numerical_island.bus_names)
+                res = ContinuationPowerFlowResults(nbus=island.nbus,
+                                                   nbr=island.nbr,
+                                                   bus_names=island.bus_names)
                 res.voltages = np.array(Voltage_series)
                 res.lambdas = np.array(Lambda_series)
                 res.error = normF
                 res.converged = bool(success)
+
             else:
-                res = VoltageCollapseResults(nbus=numerical_island.nbus,
-                                             nbr=numerical_island.nbr,
-                                             bus_names=numerical_island.bus_names)
-                res.voltages = np.array([[0] * numerical_island.nbus])
-                res.lambdas = np.array([[0] * numerical_island.nbus])
+                res = ContinuationPowerFlowResults(nbus=island.nbus,
+                                                   nbr=island.nbr,
+                                                   bus_names=island.bus_names)
+                res.voltages = np.array([[0] * island.nbus])
+                res.lambdas = np.array([[0] * island.nbus])
                 res.error = [0]
                 res.converged = True
 
             if len(res.voltages) > 0:
+
                 # compute the island branch results
                 Sbranch, Ibranch, Vbranch, \
                 loading, losses, flow_direction, \
-                Sbus = power_flow_post_process(calculation_inputs=numerical_island,
-                                               Sbus=self.inputs.Starget[numerical_island.original_bus_idx],
+                Sbus = power_flow_post_process(calculation_inputs=island,
+                                               Sbus=self.inputs.Starget[island.original_bus_idx],
                                                V=res.voltages[-1],
-                                               branch_rates=numerical_island.branch_rates)
+                                               branch_rates=island.branch_rates)
 
                 # update results
                 self.results.apply_from_island(voltage_collapse_res=res,
@@ -355,8 +373,8 @@ class VoltageCollapse(QThread):
                                                loading=loading,
                                                losses=losses,
                                                Sbus=Sbus,
-                                               bus_original_idx=numerical_island.original_bus_idx,
-                                               branch_original_idx=numerical_island.original_branch_idx,
+                                               bus_original_idx=island.original_bus_idx,
+                                               branch_original_idx=island.original_branch_idx,
                                                nbus_full=nbus)
             else:
                 print('No voltage values!')

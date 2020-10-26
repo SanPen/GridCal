@@ -84,7 +84,7 @@ def test_api():
     ####################################################################################################################
     # Voltage collapse
     ####################################################################################################################
-    vc_options = VoltageCollapseOptions()
+    vc_options = ContinuationPowerFlowOptions()
     # just for this test
     numeric_circuit = compile_snapshot_circuit(main_circuit)
     numeric_inputs = split_into_islands(numeric_circuit)
@@ -95,11 +95,11 @@ def test_api():
         Sbase[c.original_bus_idx] = c.Sbus
         Vbase[c.original_bus_idx] = c.Vbus
     unitary_vector = -1 + 2 * np.random.random(len(main_circuit.buses))
-    vc_inputs = VoltageCollapseInput(Sbase=Sbase,
-                                     Vbase=Vbase,
-                                     Starget=Sbase * (1 + unitary_vector))
-    vc = VoltageCollapse(circuit=main_circuit, options=vc_options,
-                         inputs=vc_inputs, pf_options=pf_options)
+    vc_inputs = ContinuationPowerFlowInput(Sbase=Sbase,
+                                           Vbase=Vbase,
+                                           Starget=Sbase * (1 + unitary_vector))
+    vc = ContinuationPowerFlow(circuit=main_circuit, options=vc_options,
+                               inputs=vc_inputs, pf_options=pf_options)
     vc.run()
     mdl = vc.results.mdl()
     # mdl.plot()

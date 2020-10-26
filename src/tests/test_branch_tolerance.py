@@ -46,12 +46,12 @@ def test_tolerance_lf_higher():
     grid.add_generator(Bus0, Generator(name="Utility"))
 
     # Create cable (r and x should be in pu)
-    grid.add_branch(Line(bus_from=Bus0,
-                         bus_to=Bus1,
-                         name="Cable1",
-                         r=0.01,
-                         x=0.05,
-                         tolerance=10))
+    grid.add_line(Line(bus_from=Bus0,
+                       bus_to=Bus1,
+                       name="Cable1",
+                       r=0.01,
+                       x=0.05,
+                       tolerance=10))
 
     # Run non-linear power flow
     options = PowerFlowOptions(verbose=True,
@@ -138,12 +138,12 @@ def test_tolerance_lf_lower():
     grid.add_generator(Bus0, Generator(name="Utility"))
 
     # Create cable (r and x should be in pu)
-    grid.add_branch(Line(bus_from=Bus0,
-                         bus_to=Bus1,
-                         name="Cable1",
-                         r=0.01,
-                         x=0.05,
-                         tolerance=10))
+    grid.add_line(Line(bus_from=Bus0,
+                       bus_to=Bus1,
+                       name="Cable1",
+                       r=0.01,
+                       x=0.05,
+                       tolerance=10))
 
     # Run non-linear power flow
     options = PowerFlowOptions(verbose=True,

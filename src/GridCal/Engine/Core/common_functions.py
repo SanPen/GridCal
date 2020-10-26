@@ -27,6 +27,9 @@ def compile_types(Sbus, types, logger=Logger()):
     :return: ref, pq, pv, pqpv
     """
 
+    # check that Sbus is a 1D array
+    assert(len(Sbus.shape) == 1)
+
     pq = np.where(types == BusMode.PQ.value)[0]
     pv = np.where(types == BusMode.PV.value)[0]
     ref = np.where(types == BusMode.Slack.value)[0]

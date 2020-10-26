@@ -29,7 +29,7 @@ def __check__(fname):
     numerical_circuit = compile_snapshot_circuit(main_circuit, apply_temperature=False)
 
     # split into the possible islands
-    islands = split_into_islands(numerical_circuit)
+    islands = numerical_circuit.split_into_islands()
 
     # check the consistency of each island
     for island in islands:

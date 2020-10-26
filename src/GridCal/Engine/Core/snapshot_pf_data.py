@@ -109,9 +109,7 @@ class SnapshotData:
         self.Qmax_bus_ = None
         self.Qmin_bus_ = None
 
-        self.Ybus_ = None
-        self.Yf_ = None
-        self.Yt_ = None
+        self.Admittances = None
 
         # Admittance for HELM / AC linear
         self.Yseries_ = None
@@ -239,30 +237,40 @@ class SnapshotData:
         self.bus_data.bus_installed_power = self.generator_data.get_installed_power_per_bus()
         self.bus_data.bus_installed_power += self.battery_data.get_installed_power_per_bus()
 
-    def re_calc_admittance_matrices(self, tap_module):
+    def re_calc_admittance_matrices(self, tap_module, t=0, idx=None):
         """
-
-        :param tap_module:
+        Fast admittance recombination
+        :param tap_module: transformer taps (if idx is provided, must have the same length as idx,
+                           otherwise the length must be the number of branches)
+        :param t: time index, 0 by default
+        :param idx: Indices of the branches where the tap belongs,
+                    if None assumes that the tap sizes is equal to the number of branches
         :return:
         """
-        self.Ybus_, self.Yf_, self.Yt_ = ycalc.compute_admittances(R=self.branch_data.R,
-                                                                   X=self.branch_data.X,
-                                                                   G=self.branch_data.G,
-                                                                   B=self.branch_data.B,
-                                                                   k=self.branch_data.k,
-                                                                   m=tap_module,
-                                                                   mf=self.branch_data.tap_f,
-                                                                   mt=self.branch_data.tap_t,
-                                                                   theta=self.branch_data.theta,
-                                                                   Beq=self.branch_data.Beq,
-                                                                   Cf=self.Cf,
-                                                                   Ct=self.Ct,
-                                                                   G0=self.branch_data.G0,
-                                                                   If=np.zeros(len(self.branch_data)),
-                                                                   a=self.branch_data.a,
-                                                                   b=self.branch_data.b,
-                                                                   c=self.branch_data.c,
-                                                                   Yshunt_bus=self.Yshunt_from_devices)
+        if idx is None:
+            Ybus_, Yf_, Yt_ = self.Admittances.modify_taps(self.branch_data.m[:, t], tap_module)
+        else:
+            Ybus_, Yf_, Yt_ = self.Admittances.modify_taps(self.branch_data.m[np.ix_(idx, t)], tap_module)
+
+        self.Admittances.Ybus = Ybus_
+        self.Admittances.Yf = Yf_
+        self.Admittances.Yt = Yt_
+
+    @property
+    def line_idx(self):
+        return slice(0, self.nline, 1)
+
+    @property
+    def transformer_idx(self):
+        return slice(self.nline, self.nline + self.ntr, 1)
+
+    @property
+    def vsc_idx(self):
+        return slice(self.nline + self.ntr, self.nline + self.ntr + self.nvsc, 1)
+
+    @property
+    def dc_line_idx(self):
+        return slice(self.nline + self.ntr + self.nvsc, self.nline + self.ntr + self.nvsc + self.ndcline, 1)
 
     @property
     def Vbus(self):
@@ -433,43 +441,43 @@ class SnapshotData:
     def Ybus(self):
 
         # compute admittances on demand
-        if self.Ybus_ is None:
+        if self.Admittances is None:
 
-            self.Ybus_, self.Yf_, self.Yt_ = ycalc.compute_admittances(R=self.branch_data.R,
-                                                                       X=self.branch_data.X,
-                                                                       G=self.branch_data.G,
-                                                                       B=self.branch_data.B,
-                                                                       k=self.branch_data.k,
-                                                                       m=self.branch_data.m[:, 0],
-                                                                       mf=self.branch_data.tap_f,
-                                                                       mt=self.branch_data.tap_t,
-                                                                       theta=self.branch_data.theta[:, 0],
-                                                                       Beq=self.branch_data.Beq[:, 0],
-                                                                       Cf=self.Cf,
-                                                                       Ct=self.Ct,
-                                                                       G0=self.branch_data.G0[:, 0],
-                                                                       If=np.zeros(len(self.branch_data)),
-                                                                       a=self.branch_data.a,
-                                                                       b=self.branch_data.b,
-                                                                       c=self.branch_data.c,
-                                                                       Yshunt_bus=self.Yshunt_from_devices[:, 0])
-        return self.Ybus_
+            self.Admittances = ycalc.compute_admittances(R=self.branch_data.R,
+                                                         X=self.branch_data.X,
+                                                         G=self.branch_data.G,
+                                                         B=self.branch_data.B,
+                                                         k=self.branch_data.k,
+                                                         m=self.branch_data.m[:, 0],
+                                                         mf=self.branch_data.tap_f,
+                                                         mt=self.branch_data.tap_t,
+                                                         theta=self.branch_data.theta[:, 0],
+                                                         Beq=self.branch_data.Beq[:, 0],
+                                                         Cf=self.Cf,
+                                                         Ct=self.Ct,
+                                                         G0=self.branch_data.G0[:, 0],
+                                                         If=np.zeros(len(self.branch_data)),
+                                                         a=self.branch_data.a,
+                                                         b=self.branch_data.b,
+                                                         c=self.branch_data.c,
+                                                         Yshunt_bus=self.Yshunt_from_devices[:, 0])
+        return self.Admittances.Ybus
 
     @property
     def Yf(self):
 
-        if self.Yf_ is None:
+        if self.Admittances is None:
             x = self.Ybus  # call the constructor of Yf
 
-        return self.Yf_
+        return self.Admittances.Yf
 
     @property
     def Yt(self):
 
-        if self.Yt_ is None:
+        if self.Admittances is None:
             x = self.Ybus  # call the constructor of Yt
 
-        return self.Yt_
+        return self.Admittances.Yt
 
     @property
     def Yseries(self):

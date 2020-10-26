@@ -27,11 +27,13 @@ from GridCal.Gui.GuiFunctions import *
 from GridCal.Gui.GIS.gis_dialogue import GISWindow
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.GridEditorWidget.messages import *
+from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
+from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 
 # Engine imports
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import *
-from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import *
+from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver import *
 from GridCal.Engine.Simulations.Topology.topology_driver import TopologyReduction, TopologyReductionOptions, \
     DeleteAndReduce, NodeGroupsDriver
 from GridCal.Engine.Simulations.Topology.topology_driver import select_branches_to_reduce
@@ -56,7 +58,7 @@ from GridCal.Engine.IO.synchronization_driver import FileSyncThread
 from GridCal.Engine.Simulations.result_types import SimulationTypes
 from GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisDriver
 from GridCal.Engine.Devices.templates import get_transformer_catalogue, get_cables_catalogue, get_wires_catalogue
-from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
+
 
 import gc
 import os.path
@@ -202,7 +204,7 @@ class MainGUI(QMainWindow):
         self.ui.mip_solver_comboBox.setModel(get_list_model(list(self.mip_solvers_dict.keys())))
 
         # voltage collapse mode (full, nose)
-        self.ui.vc_stop_at_comboBox.setModel(get_list_model([VCStopAt.Nose.value, VCStopAt.Full.value]))
+        self.ui.vc_stop_at_comboBox.setModel(get_list_model([CpfStopAt.Nose.value, CpfStopAt.Full.value]))
         self.ui.vc_stop_at_comboBox.setCurrentIndex(0)
 
         # do not allow MP under windows because it crashes
@@ -277,6 +279,7 @@ class MainGUI(QMainWindow):
         # window pointers
         self.file_sync_window = None
         self.sigma_dialogue = None
+        self.grid_generator_dialogue = None
         self.analysis_dialogue = None
         self.profile_input_dialogue = None
         self.stuff_running_now = list()
@@ -388,6 +391,8 @@ class MainGUI(QMainWindow):
         self.ui.actionClear_stuff_running_right_now.triggered.connect(self.clear_stuff_running)
 
         self.ui.actionFind_node_groups.triggered.connect(self.run_find_node_groups)
+
+        self.ui.actiongrid_Generator.triggered.connect(self.grid_generator)
 
         # Buttons
 
@@ -2561,20 +2566,20 @@ class MainGUI(QMainWindow):
 
                 mode = self.ui.vc_stop_at_comboBox.currentText()
 
-                vc_stop_at_dict = {VCStopAt.Nose.value: VCStopAt.Nose,
-                                   VCStopAt.Full.value: VCStopAt.Full}
+                vc_stop_at_dict = {CpfStopAt.Nose.value: CpfStopAt.Nose,
+                                   CpfStopAt.Full.value: CpfStopAt.Full}
 
                 # declare voltage collapse options
-                vc_options = VoltageCollapseOptions(step=0.0001,
-                                                    approximation_order=VCParametrization.Natural,
-                                                    adapt_step=True,
-                                                    step_min=0.00001,
-                                                    step_max=0.2,
-                                                    error_tol=1e-3,
-                                                    tol=1e-6,
-                                                    max_it=20,
-                                                    stop_at=vc_stop_at_dict[mode],
-                                                    verbose=False)
+                vc_options = ContinuationPowerFlowOptions(step=0.0001,
+                                                          approximation_order=CpfParametrization.Natural,
+                                                          adapt_step=True,
+                                                          step_min=0.00001,
+                                                          step_max=0.2,
+                                                          error_tol=1e-3,
+                                                          tol=1e-6,
+                                                          max_it=20,
+                                                          stop_at=vc_stop_at_dict[mode],
+                                                          verbose=False)
 
                 if use_alpha:
                     '''
@@ -2592,17 +2597,17 @@ class MainGUI(QMainWindow):
                         #  compose the base power
                         Sbase = self.power_flow.results.Sbus
 
-                        vc_inputs = VoltageCollapseInput(Sbase=Sbase,
-                                                         Vbase=self.power_flow.results.voltage,
-                                                         Starget=Sbase * alpha)
+                        vc_inputs = ContinuationPowerFlowInput(Sbase=Sbase,
+                                                               Vbase=self.power_flow.results.voltage,
+                                                               Starget=Sbase * alpha)
 
                         pf_options = self.get_selected_power_flow_options()
 
                         # create object
-                        self.voltage_stability = VoltageCollapse(circuit=self.circuit,
-                                                                 options=vc_options,
-                                                                 inputs=vc_inputs,
-                                                                 pf_options=pf_options)
+                        self.voltage_stability = ContinuationPowerFlow(circuit=self.circuit,
+                                                                       options=vc_options,
+                                                                       inputs=vc_inputs,
+                                                                       pf_options=pf_options)
 
                         # make connections
                         self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
@@ -2629,17 +2634,17 @@ class MainGUI(QMainWindow):
                         # get the power injections array to get the initial and end points
                         nc = compile_time_circuit(circuit=self.circuit)
                         Sprof = nc.get_power_injections()
-                        vc_inputs = VoltageCollapseInput(Sbase=Sprof[start_idx, :],
-                                                         Vbase=self.power_flow.results.voltage,
-                                                         Starget=Sprof[end_idx, :])
+                        vc_inputs = ContinuationPowerFlowInput(Sbase=Sprof[start_idx, :],
+                                                               Vbase=self.power_flow.results.voltage,
+                                                               Starget=Sprof[end_idx, :])
 
                         pf_options = self.get_selected_power_flow_options()
 
                         # create object
-                        self.voltage_stability = VoltageCollapse(circuit=self.circuit,
-                                                                 options=vc_options,
-                                                                 inputs=vc_inputs,
-                                                                 pf_options=pf_options)
+                        self.voltage_stability = ContinuationPowerFlow(circuit=self.circuit,
+                                                                       options=vc_options,
+                                                                       inputs=vc_inputs,
+                                                                       pf_options=pf_options)
 
                         # make connections
                         self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
@@ -3438,6 +3443,50 @@ class MainGUI(QMainWindow):
             self.sigma_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
             self.sigma_dialogue.show()  # exec leaves the parent on hold
 
+    def grid_generator(self):
+        """
+
+        :return:
+        """
+        self.grid_generator_dialogue = GridGeneratorGUI(parent=self)
+        self.grid_generator_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
+        # self.grid_generator_dialogue.setWindowModality(Qt.ApplicationModal)
+        # self.grid_generator_dialogue.show()  # exec leaves the parent on hold
+        self.grid_generator_dialogue.exec_()
+        print('Done!!')
+
+        if self.grid_generator_dialogue.applied:
+
+            if len(self.circuit.buses) > 0:
+                reply = QMessageBox.question(self, 'Message', 'Are you sure that you delete '
+                                                              'the current grid and replace it?',
+                                             QMessageBox.Yes, QMessageBox.No)
+
+                if reply == QMessageBox.No:
+                    return
+
+            self.circuit = self.grid_generator_dialogue.circuit
+
+            # create schematic
+            self.create_schematic_from_api(explode_factor=1)
+
+            # set circuit name
+            self.grid_editor.name_label.setText("Random grid " + str(len(self.circuit.buses)) + ' buses')
+
+            # set base magnitudes
+            self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
+            self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
+            self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
+
+            # set circuit comments
+            self.ui.comments_textEdit.setText("Grid generated randomly using the RPGM algorithm.")
+
+            # update the drop down menus that display dates
+            self.update_date_dependent_combos()
+
+            # clear the results
+            self.clear_results()
+
     def set_cancel_state(self):
         """
         Cancel whatever's going on that can be cancelled
@@ -3679,7 +3728,7 @@ class MainGUI(QMainWindow):
                               types=self.time_series.results.bus_types,
                               file_name=file_name)
 
-            elif current_study == VoltageCollapse.name:
+            elif current_study == ContinuationPowerFlow.name:
 
                 plot_function(circuit=self.circuit,
                               s_bus=self.voltage_stability.results.Sbus,
@@ -3852,7 +3901,7 @@ class MainGUI(QMainWindow):
                 else:
                     warning_msg('There seem to be no results :(')
 
-            elif study_name == VoltageCollapse.name:
+            elif study_name == ContinuationPowerFlow.name:
                 if self.voltage_stability.results is not None:
                     self.results_mdl = self.voltage_stability.results.mdl(result_type=study_type)
                 else:
