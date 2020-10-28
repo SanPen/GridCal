@@ -95,7 +95,7 @@ class PowerFlowResults:
 
         self.flow_direction = np.zeros(m, dtype=float)
 
-        self.tap_module = np.zeros(n_tr, dtype=float)
+        self.transformer_tap_module = np.zeros(n_tr, dtype=float)
 
         self.losses = np.zeros(m, dtype=complex)
 
@@ -125,11 +125,8 @@ class PowerFlowResults:
                                   ResultTypes.BranchReactiveLosses,
                                   ResultTypes.BranchVoltage,
                                   ResultTypes.BranchAngles,
-
                                   ResultTypes.HvdcLosses,
-                                  ResultTypes.HvdcSentPower,
-
-                                  ResultTypes.BatteryPower]
+                                  ResultTypes.HvdcSentPower]
 
     @property
     def converged(self):
@@ -182,7 +179,7 @@ class PowerFlowResults:
         val.Vbranch = self.Vbranch.copy()
         val.loading = self.loading.copy()
         val.flow_direction = self.flow_direction.copy()
-        val.tap_module = self.tap_module.copy()
+        val.transformer_tap_module = self.transformer_tap_module.copy()
         val.losses = self.losses.copy()
         val.overloads = self.overloads.copy()
 
@@ -213,7 +210,7 @@ class PowerFlowResults:
 
         self.loading[br_idx] = results.loading
 
-        self.tap_module[tr_idx] = results.tap_module
+        self.transformer_tap_module[tr_idx] = results.transformer_tap_module
 
         self.losses[br_idx] = results.losses
 
@@ -336,7 +333,7 @@ class PowerFlowResults:
 
         elif result_type == ResultTypes.Transformer2WTapModule:
             labels = self.transformer_names
-            y = self.tap_module
+            y = self.transformer_tap_module
             y_label = '(p.u.)'
             title = 'Transformer tap module '
 
@@ -407,11 +404,7 @@ class PowerFlowResults:
             title = result_type.value
 
         else:
-            labels = []
-            n = 0
-            y = np.zeros(n)
-            y_label = ''
-            title = ''
+            raise Exception('Unsupported result type: ' + str(result_type))
 
         # assemble model
         mdl = ResultsModel(data=y, index=labels, columns=[result_type.value[0]],
@@ -444,7 +437,7 @@ class PowerFlowResults:
         la = self.losses.real
         lr = self.losses.imag
         ls = np.abs(self.losses)
-        tm = self.tap_module
+        tm = self.transformer_tap_module
 
         branch_data = np.c_[sr, si, sm, ld, la, lr, ls, tm]
         branch_cols = ['Real power (MW)', 'Imag power (MVAr)', 'Power module (MVA)', 'Loading(%)',

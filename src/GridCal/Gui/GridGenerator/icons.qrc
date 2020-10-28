@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="Icons">
+    <file>icons/automatic_layout.svg</file>
+    <file>icons/color_grid.svg</file>
+    <file>icons/run_cascade_step.svg</file>
+  </qresource>
+</RCC>

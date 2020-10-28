@@ -68,49 +68,25 @@ class ConvergenceReport:
         return df
 
 
-def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, Ybus, Yseries, Ysh_helm,
-          B1, B2, Bpqpv, Bref, pq, pv, ref, pqpv, tolerance, max_iter, acceleration_parameter=1e-5, logger=Logger()):
+def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus,
+          pq, pv, ref, pqpv, tolerance, max_iter, acceleration_parameter=1e-5, logger=Logger()):
     """
     Run a power flow simulation using the selected method (no outer loop controls).
-
-        **solver_type**:
-
-        **V0**: Voltage solution vector
-
-        **Sbus**: Power injections vector
-
-        **Ibus**: Current injections vector
-
-        **Ybus**: Admittance matrix
-
-        **Yseries**: Series elements' Admittance matrix
-
-        **Ysh++: Vector of shunt admittances that complements Yseries
-
-        **B1**: B' for the fast decoupled method
-
-        **B2**: B'' for the fast decoupled method
-
-        **Bpqpv**: PQ-PV, PQ-PV submatrix of the susceptance matrix (used in the DC power flow)
-
-        **Bref**: PQ-PV, Ref submatrix of the susceptance matrix (used in the DC power flow)
-
-        **pq**: list of pq nodes
-
-        **pv**: list of pv nodes
-
-        **ref**: list of slack nodes
-
-        **pqpv**: list of pq and pv nodes
-
-        **tolerance**: power error tolerance
-
-        **max_iter**: maximum iterations
-
-    Returns:
-
-        V0 (Voltage solution), converged (converged?), normF (error in power),
-        Scalc (Computed bus power), iterations, elapsed
+    :param circuit: SnapshotData circuit, this ensures on-demand admittances computation
+    :param options: PowerFlow options
+    :param report: Convergence report to fill in
+    :param V0: Array of initial voltages
+    :param Sbus: Array of power injections
+    :param Ibus: Array of current injections
+    :param pq: Array of pq nodes
+    :param pv: Array of pv nodes
+    :param ref: Array of slack nodes
+    :param pqpv: Array of (sorted) pq and pv nodes
+    :param tolerance: Solver tolerance
+    :param max_iter: Maximum number of iterations
+    :param acceleration_parameter: Acceleration parameter, where needed
+    :param logger: Logger
+    :return: V_final, converged_final, normF_final, Scalc_final, it_final, el_final
     """
 
     if options.retry_with_other_methods:
@@ -126,11 +102,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
         solvers = [options.solver_type]
 
     # set worked to false to enter in the loop
-    # worked = False
     solver_idx = 0
-    results = PowerFlowResults(n=0, m=0, n_tr=0, n_hvdc=0,
-                               bus_names=(), branch_names=(), transformer_names=(),
-                               hvdc_names=(), bus_types=())
 
     # set the initial value
     V = V0.copy()
@@ -153,11 +125,11 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
 
         # type HELM
         if solver_type == SolverType.HELM:
-            V, converged, normF, Scalc, it, el = helm_josep(Ybus=Ybus,
-                                                            Yseries=Yseries,
+            V, converged, normF, Scalc, it, el = helm_josep(Ybus=circuit.Ybus,
+                                                            Yseries=circuit.Yseries,
                                                             V0=V0,  # take V0 instead of V
                                                             S0=Sbus,
-                                                            Ysh0=Ysh_helm,
+                                                            Ysh0=circuit.Yshunt,
                                                             pq=pq,
                                                             pv=pv,
                                                             sl=ref,
@@ -169,9 +141,9 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
 
         # type DC
         elif solver_type == SolverType.DC:
-            V, converged, normF, Scalc, it, el = dcpf(Ybus=Ybus,
-                                                      Bpqpv=Bpqpv,
-                                                      Bref=Bref,
+            V, converged, normF, Scalc, it, el = dcpf(Ybus=circuit.Ybus,
+                                                      Bpqpv=circuit.Bpqpv,
+                                                      Bref=circuit.Bref,
                                                       Sbus=Sbus,
                                                       Ibus=Ibus,
                                                       V0=V0,
@@ -182,8 +154,8 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
 
         # LAC PF
         elif solver_type == SolverType.LACPF:
-            V, converged, normF, Scalc, it, el = lacpf(Y=Ybus,
-                                                       Ys=Yseries,
+            V, converged, normF, Scalc, it, el = lacpf(Y=circuit.Ybus,
+                                                       Ys=circuit.Yseries,
                                                        S=Sbus,
                                                        I=Ibus,
                                                        Vset=V0,
@@ -192,7 +164,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
 
         # Levenberg-Marquardt
         elif solver_type == SolverType.LM:
-            V, converged, normF, Scalc, it, el = levenberg_marquardt_pf(Ybus=Ybus,
+            V, converged, normF, Scalc, it, el = levenberg_marquardt_pf(Ybus=circuit.Ybus,
                                                                         Sbus=Sbus,
                                                                         V0=V,
                                                                         Ibus=Ibus,
@@ -206,9 +178,9 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
             V, converged, normF, Scalc, it, el = FDPF(Vbus=V0,
                                                       Sbus=Sbus,
                                                       Ibus=Ibus,
-                                                      Ybus=Ybus,
-                                                      B1=B1,
-                                                      B2=B2,
+                                                      Ybus=circuit.Ybus,
+                                                      B1=circuit.B1,
+                                                      B2=circuit.B2,
                                                       pq=pq,
                                                       pv=pv,
                                                       pqpv=pqpv,
@@ -218,7 +190,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
         # Newton-Raphson (full)
         elif solver_type == SolverType.NR:
             # Solve NR with the linear AC solution
-            V, converged, normF, Scalc, it, el = NR_LS(Ybus=Ybus,
+            V, converged, normF, Scalc, it, el = NR_LS(Ybus=circuit.Ybus,
                                                        Sbus=Sbus,
                                                        V0=V,
                                                        Ibus=Ibus,
@@ -231,7 +203,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
         # Newton-Raphson-Decpupled
         elif solver_type == SolverType.NRD:
             # Solve NR with the linear AC solution
-            V, converged, normF, Scalc, it, el = NRD_LS(Ybus=Ybus,
+            V, converged, normF, Scalc, it, el = NRD_LS(Ybus=circuit.Ybus,
                                                         Sbus=Sbus,
                                                         V0=V,
                                                         Ibus=Ibus,
@@ -243,7 +215,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
 
         # Newton-Raphson-Iwamoto
         elif solver_type == SolverType.IWAMOTO:
-            V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=Ybus,
+            V, converged, normF, Scalc, it, el = IwamotoNR(Ybus=circuit.Ybus,
                                                            Sbus=Sbus,
                                                            V0=V,
                                                            Ibus=Ibus,
@@ -255,7 +227,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
 
         # Newton-Raphson in current equations
         elif solver_type == SolverType.NRI:
-            V, converged, normF, Scalc, it, el = NR_I_LS(Ybus=Ybus,
+            V, converged, normF, Scalc, it, el = NR_I_LS(Ybus=circuit.Ybus,
                                                          Sbus_sp=Sbus,
                                                          V0=V,
                                                          Ibus_sp=Ibus,
@@ -286,7 +258,7 @@ def solve(options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus, 
         solver_idx += 1
 
     if not converged:
-        logger.append('Did not converge, even after retry!, Error:' + str(results.error()))
+        logger.append('Did not converge, even after retry!, Error:' + str(normF_final))
 
     return V_final, converged_final, normF_final, Scalc_final, it_final, el_final
 
@@ -374,18 +346,12 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
         else:
 
             # run the power flow method that shall be run
-            voltage_solution, converged, normF, Scalc, it, el = solve(options=options,
+            voltage_solution, converged, normF, Scalc, it, el = solve(circuit=circuit,
+                                                                      options=options,
                                                                       report=report,  # is modified here
                                                                       V0=voltage_solution,
                                                                       Sbus=Sbus,
                                                                       Ibus=Ibus,
-                                                                      Ybus=Ybus,
-                                                                      Yseries=circuit.Yseries,
-                                                                      Ysh_helm=circuit.Yshunt,
-                                                                      B1=circuit.B1,
-                                                                      B2=circuit.B2,
-                                                                      Bpqpv=circuit.Bpqpv,
-                                                                      Bref=circuit.Bref,
                                                                       pq=pq,
                                                                       pv=pv,
                                                                       ref=vd,
@@ -403,18 +369,12 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                     delta = slack_power * circuit.bus_installed_power / total_installed_power
 
                     # repeat power flow with the redistributed power
-                    voltage_solution, converged, normF, Scalc, it2, el2 = solve(options=options,
+                    voltage_solution, converged, normF, Scalc, it2, el2 = solve(circuit=circuit,
+                                                                                options=options,
                                                                                 report=report,  # is modified here
                                                                                 V0=voltage_solution,
                                                                                 Sbus=Sbus + delta,
                                                                                 Ibus=Ibus,
-                                                                                Ybus=Ybus,
-                                                                                Yseries=circuit.Yseries,
-                                                                                Ysh_helm=circuit.Yshunt,
-                                                                                B1=circuit.B1,
-                                                                                B2=circuit.B2,
-                                                                                Bpqpv=circuit.Bpqpv,
-                                                                                Bref=circuit.Bref,
                                                                                 pq=pq,
                                                                                 pv=pv,
                                                                                 ref=vd,
@@ -508,7 +468,9 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
 
                 if not stable:
                     # recompute the admittance matrices based on the tap changes
-                    Ybus, Yf, Yt = circuit.re_calc_admittance_matrices(tap_module, t=t)
+                    # the changes are stored internally, and passed o to the solvers
+                    circuit.re_calc_admittance_matrices(tap_module, t=t)
+
                 any_tap_control_issue = not stable
 
             else:
@@ -546,7 +508,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     results.loading = loading
     results.losses = losses
     results.flow_direction = flow_direction
-    results.tap_module = tap_module
+    results.transformer_tap_module = tap_module[circuit.transformer_idx]
     results.convergence_reports.append(report)
     results.Qpv = Sbus.imag[pv]
 
@@ -1202,7 +1164,7 @@ def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, branch_rates,
     worked = np.all(results.converged)
 
     if not worked:
-        logger.append('Did not converge, even after retry!, Error:' + str(results.error()))
+        logger.append('Did not converge, even after retry!, Error:' + str(results.error))
 
     return results
 

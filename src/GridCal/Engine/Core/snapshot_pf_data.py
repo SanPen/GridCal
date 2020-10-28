@@ -252,7 +252,9 @@ class SnapshotData:
         else:
             Ybus_, Yf_, Yt_ = self.Admittances.modify_taps(self.branch_data.m[np.ix_(idx, t)], tap_module)
 
-        return Ybus_, Yf_, Yt_
+        self.Admittances.Ybus = Ybus_
+        self.Admittances.Yf = Yf_
+        self.Admittances.Yt = Yt_
 
     @property
     def line_idx(self):

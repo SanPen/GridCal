@@ -27,6 +27,8 @@ from GridCal.Gui.GuiFunctions import *
 from GridCal.Gui.GIS.gis_dialogue import GISWindow
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.GridEditorWidget.messages import *
+from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
+from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 
 # Engine imports
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
@@ -56,7 +58,7 @@ from GridCal.Engine.IO.synchronization_driver import FileSyncThread
 from GridCal.Engine.Simulations.result_types import SimulationTypes
 from GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisDriver
 from GridCal.Engine.Devices.templates import get_transformer_catalogue, get_cables_catalogue, get_wires_catalogue
-from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
+
 
 import gc
 import os.path
@@ -202,7 +204,7 @@ class MainGUI(QMainWindow):
         self.ui.mip_solver_comboBox.setModel(get_list_model(list(self.mip_solvers_dict.keys())))
 
         # voltage collapse mode (full, nose)
-        self.ui.vc_stop_at_comboBox.setModel(get_list_model([VCStopAt.Nose.value, VCStopAt.Full.value]))
+        self.ui.vc_stop_at_comboBox.setModel(get_list_model([CpfStopAt.Nose.value, CpfStopAt.Full.value]))
         self.ui.vc_stop_at_comboBox.setCurrentIndex(0)
 
         # do not allow MP under windows because it crashes
@@ -277,6 +279,7 @@ class MainGUI(QMainWindow):
         # window pointers
         self.file_sync_window = None
         self.sigma_dialogue = None
+        self.grid_generator_dialogue = None
         self.analysis_dialogue = None
         self.profile_input_dialogue = None
         self.stuff_running_now = list()
@@ -388,6 +391,8 @@ class MainGUI(QMainWindow):
         self.ui.actionClear_stuff_running_right_now.triggered.connect(self.clear_stuff_running)
 
         self.ui.actionFind_node_groups.triggered.connect(self.run_find_node_groups)
+
+        self.ui.actiongrid_Generator.triggered.connect(self.grid_generator)
 
         # Buttons
 
@@ -2561,12 +2566,12 @@ class MainGUI(QMainWindow):
 
                 mode = self.ui.vc_stop_at_comboBox.currentText()
 
-                vc_stop_at_dict = {VCStopAt.Nose.value: VCStopAt.Nose,
-                                   VCStopAt.Full.value: VCStopAt.Full}
+                vc_stop_at_dict = {CpfStopAt.Nose.value: CpfStopAt.Nose,
+                                   CpfStopAt.Full.value: CpfStopAt.Full}
 
                 # declare voltage collapse options
                 vc_options = ContinuationPowerFlowOptions(step=0.0001,
-                                                          approximation_order=VCParametrization.Natural,
+                                                          approximation_order=CpfParametrization.Natural,
                                                           adapt_step=True,
                                                           step_min=0.00001,
                                                           step_max=0.2,
@@ -3437,6 +3442,50 @@ class MainGUI(QMainWindow):
                                                    use_native_dialogues=self.use_native_dialogues)
             self.sigma_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
             self.sigma_dialogue.show()  # exec leaves the parent on hold
+
+    def grid_generator(self):
+        """
+
+        :return:
+        """
+        self.grid_generator_dialogue = GridGeneratorGUI(parent=self)
+        self.grid_generator_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
+        # self.grid_generator_dialogue.setWindowModality(Qt.ApplicationModal)
+        # self.grid_generator_dialogue.show()  # exec leaves the parent on hold
+        self.grid_generator_dialogue.exec_()
+        print('Done!!')
+
+        if self.grid_generator_dialogue.applied:
+
+            if len(self.circuit.buses) > 0:
+                reply = QMessageBox.question(self, 'Message', 'Are you sure that you delete '
+                                                              'the current grid and replace it?',
+                                             QMessageBox.Yes, QMessageBox.No)
+
+                if reply == QMessageBox.No:
+                    return
+
+            self.circuit = self.grid_generator_dialogue.circuit
+
+            # create schematic
+            self.create_schematic_from_api(explode_factor=1)
+
+            # set circuit name
+            self.grid_editor.name_label.setText("Random grid " + str(len(self.circuit.buses)) + ' buses')
+
+            # set base magnitudes
+            self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
+            self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
+            self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
+
+            # set circuit comments
+            self.ui.comments_textEdit.setText("Grid generated randomly using the RPGM algorithm.")
+
+            # update the drop down menus that display dates
+            self.update_date_dependent_combos()
+
+            # clear the results
+            self.clear_results()
 
     def set_cancel_state(self):
         """
