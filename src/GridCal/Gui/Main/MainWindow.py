@@ -1814,6 +1814,7 @@ class Ui_mainWindow(object):
 
         self.alpha_doubleSpinBox = QDoubleSpinBox(self.frame_21)
         self.alpha_doubleSpinBox.setObjectName(u"alpha_doubleSpinBox")
+        self.alpha_doubleSpinBox.setMinimum(-99.000000000000000)
         self.alpha_doubleSpinBox.setValue(2.000000000000000)
 
         self.verticalLayout_10.addWidget(self.alpha_doubleSpinBox)

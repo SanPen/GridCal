@@ -20,7 +20,8 @@ Version 4.0.0
 - Improved the transformer and line editors integrating the template selection
 - Improved filtering (bool values are recognised now)
 - Improved the PSS/e Raw file import
-- Improved the Continuation power flow with reactive power control
+- Improved the Continuation power flow with reactive power control and overload stop criteria
+- Now you can select to collapse a selection of nodes with the continuation power flow
 - Improved the speed of the power flow process, by delaying the admittance calculations until needed
 - Replaced how all the GUI messages are handled
 - Replaced the empirical PTDF/OTDF by the analytical PTDF/LODF which are several orders of magnitude faster.

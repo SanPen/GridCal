@@ -14,6 +14,7 @@ from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import _create_J_w
 
 class CpfStopAt(Enum):
     Nose = 'Nose'
+    ExtraOverloads = 'Extra overloads'
     Full = 'Full curve'
 
 
@@ -21,6 +22,32 @@ class CpfParametrization(Enum):
     Natural = 'Natural'
     ArcLength = 'Arc Length'
     PseudoArcLength = 'Pseudo Arc Length'
+
+
+class CpfNumericResults:
+
+    def __init__(self):
+        self.V = list()
+        self.Sbus = list()
+        self.lmbda = list()
+        self.Sbranch = list()
+        self.loading = list()
+        self.losses = list()
+        self.normF = list()
+        self.success = list()
+
+    def add(self, v, sbus, Sbranch, lam, losses, loading, normf, converged):
+        self.V.append(v)
+        self.Sbus.append(sbus)
+        self.lmbda.append(lam)
+        self.Sbranch.append(Sbranch)
+        self.loading.append(loading)
+        self.losses.append(losses)
+        self.normF.append(normf)
+        self.success.append(converged)
+
+    def __len__(self):
+        return len(self.V)
 
 
 def cpf_p(parametrization: CpfParametrization, step, z, V, lam, V_prev, lamprv, pv, pq, pvpq):
@@ -414,13 +441,14 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
     return V0, lam0, z
 
 
-def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv, pq, step,
-                    approximation_order: CpfParametrization,
+def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_target, Sbus_base, Sbus_target,
+                    V, pv, pq, step, approximation_order: CpfParametrization,
                     adapt_step, step_min, step_max, error_tol=1e-3, tol=1e-6, max_it=20,
                     stop_at=CpfStopAt.Nose,
                     controlQ=ReactivePowerControlMode.NoControl,
                     Qmax_bus=None, Qmin_bus=None, original_bus_types=None,
-                    verbose=False, call_back_fx=None, logger=Logger()):
+                    base_overload_number=0,
+                    verbose=False, call_back_fx=None, logger=Logger()) -> CpfNumericResults:
     """
     Runs a full AC continuation power flow using a normalized tangent
     predictor and selected approximation_order scheme.
@@ -485,14 +513,13 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
     pvpq_lookup[pvpq] = np.arange(len(pvpq))
 
     # result arrays
-    voltage_series = list()
-    lambda_series = list()
+    results = CpfNumericResults()
 
     # Simulation
     while continuation:
         cont_steps += 1
 
-        # prediction for next step
+        # prediction for next step -------------------------------------------------------------------------------------
         V0, lam0, z = predictor(V=V,
                                 Ibus=Ibus_base,
                                 lam=lam,
@@ -511,7 +538,7 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
         V_prev = V.copy()
         lam_prev = lam
 
-        # correction
+        # correction ---------------------------------------------------------------------------------------------------
         V, success, i, lam, normF, Scalc = corrector(Ybus=Ybus,
                                                      Ibus=Ibus_base,
                                                      Sbus=Sbus_base,
@@ -530,9 +557,26 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
                                                      pvpq_lookup=pvpq_lookup,
                                                      verbose=verbose)
 
-        # store series values
-        voltage_series.append(V)
-        lambda_series.append(lam)
+        # branch values ------------------------------------------------------------------------------------------------
+        # Branches current, loading, etc
+        Vf = Cf * V
+        Vt = Ct * V
+        If = Yf * V
+        It = Yt * V
+        Sf = Vf * np.conj(If)
+        St = Vt * np.conj(It)
+
+        # Branch losses in MVA
+        losses = (Sf + St) * Sbase
+
+        # Branch power in MVA
+        Sbranch = Sf * Sbase
+
+        # Branch loading in p.u.
+        loading = Sbranch.real / (branch_rates + 1e-9)
+
+        # store series values ------------------------------------------------------------------------------------------
+        results.add(V, Scalc, Sbranch, lam, losses, loading, normF, success)
 
         if success:
 
@@ -596,8 +640,14 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
                     if verbose:
                         print('\nReached steady state loading limit in ', cont_steps, ' continuation steps\n')
                     continuation = False
+
+            elif stop_at == CpfStopAt.ExtraOverloads:
+                idx = np.where(np.abs(loading) > 1)[0]
+                if len(idx) > base_overload_number:
+                    continuation = False
+
             else:
-                raise Exception('Stop point ' + stop_at + ' not recognised.')
+                raise Exception('Stop point ' + stop_at.value + ' not recognised.')
 
             if adapt_step and continuation:
 
@@ -631,7 +681,7 @@ def continuation_nr(Ybus, Ibus_base, Ibus_target, Sbus_base, Sbus_target, V, pv,
             if verbose:
                 print('step ', cont_steps, ' : lambda = ', lam, ', corrector did not converge in ', i, ' iterations\n')
 
-    return voltage_series, lambda_series, normF, success
+    return results
 
 
 if __name__ == '__main__':
@@ -680,18 +730,18 @@ if __name__ == '__main__':
     # just for this test
     numeric_circuit = main_circuit.compile_snapshot()
     numeric_inputs = numeric_circuit.compute(ignore_single_node_islands=pf_options.ignore_single_node_islands)
-    Sbase = zeros(len(main_circuit.buses), dtype=complex)
-    Vbase = zeros(len(main_circuit.buses), dtype=complex)
+    Sbase_ = zeros(len(main_circuit.buses), dtype=complex)
+    Vbase_ = zeros(len(main_circuit.buses), dtype=complex)
     for c in numeric_inputs:
-        Sbase[c.original_bus_idx] = c.Sbus
-        Vbase[c.original_bus_idx] = c.Vbus
+        Sbase_[c.original_bus_idx] = c.Sbus
+        Vbase_[c.original_bus_idx] = c.Vbus
 
     unitary_vector = -1 + 2 * np.random.random(len(main_circuit.buses))
 
     # unitary_vector = random.random(len(grid.buses))
-    vc_inputs = ContinuationPowerFlowInput(Sbase=Sbase,
-                                           Vbase=Vbase,
-                                           Starget=Sbase * (1 + unitary_vector))
+    vc_inputs = ContinuationPowerFlowInput(Sbase=Sbase_,
+                                           Vbase=Vbase_,
+                                           Starget=Sbase_ * (1 + unitary_vector))
     vc = ContinuationPowerFlow(circuit=main_circuit, options=vc_options, inputs=vc_inputs, pf_options=pf_options)
     vc.run()
     df = vc.results.plot()

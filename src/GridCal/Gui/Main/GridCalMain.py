@@ -204,7 +204,8 @@ class MainGUI(QMainWindow):
         self.ui.mip_solver_comboBox.setModel(get_list_model(list(self.mip_solvers_dict.keys())))
 
         # voltage collapse mode (full, nose)
-        self.ui.vc_stop_at_comboBox.setModel(get_list_model([CpfStopAt.Nose.value, CpfStopAt.Full.value]))
+        self.ui.vc_stop_at_comboBox.setModel(get_list_model([CpfStopAt.Nose.value,
+                                                             CpfStopAt.ExtraOverloads.value]))
         self.ui.vc_stop_at_comboBox.setCurrentIndex(0)
 
         # do not allow MP under windows because it crashes
@@ -2541,15 +2542,28 @@ class MainGUI(QMainWindow):
         """
         use_alpha = self.ui.start_vs_from_default_radioButton.isChecked()
 
+        # direction vector
         alpha = self.ui.alpha_doubleSpinBox.value()
+        n = len(self.circuit.buses)
+
+        sel_buses = self.get_selected_buses()
+
+        # vector that multiplies the target power: The continuation direction
+        alpha_vec = np.ones(n)
+
+        if len(sel_buses) == 0:
+            # all nodes
+            alpha_vec *= alpha
+        else:
+            # pick the selected nodes
+            idx = np.array([x[0] for x in sel_buses])
+            alpha_vec[idx] = alpha_vec[idx] * alpha
 
         use_profiles = self.ui.start_vs_from_selected_radioButton.isChecked()
-
         start_idx = self.ui.vs_departure_comboBox.currentIndex()
-
         end_idx = self.ui.vs_target_comboBox.currentIndex()
 
-        return use_alpha, alpha, use_profiles, start_idx, end_idx
+        return use_alpha, alpha_vec, use_profiles, start_idx, end_idx
 
     def run_voltage_stability(self):
         """
@@ -2567,7 +2581,8 @@ class MainGUI(QMainWindow):
                 mode = self.ui.vc_stop_at_comboBox.currentText()
 
                 vc_stop_at_dict = {CpfStopAt.Nose.value: CpfStopAt.Nose,
-                                   CpfStopAt.Full.value: CpfStopAt.Full}
+                                   CpfStopAt.Full.value: CpfStopAt.Full,
+                                   CpfStopAt.ExtraOverloads.value: CpfStopAt.ExtraOverloads}
 
                 # declare voltage collapse options
                 vc_options = ContinuationPowerFlowOptions(step=0.0001,
@@ -2593,13 +2608,15 @@ class MainGUI(QMainWindow):
                         self.ui.progress_label.setText('Compiling the grid...')
                         QtGui.QGuiApplication.processEvents()
 
-                        n = len(self.circuit.buses)
                         #  compose the base power
                         Sbase = self.power_flow.results.Sbus
 
+                        base_overload_number = len(np.where(np.abs(self.power_flow.results.loading) > 1)[0])
+
                         vc_inputs = ContinuationPowerFlowInput(Sbase=Sbase,
                                                                Vbase=self.power_flow.results.voltage,
-                                                               Starget=Sbase * alpha)
+                                                               Starget=Sbase * alpha,
+                                                               base_overload_number=base_overload_number)
 
                         pf_options = self.get_selected_power_flow_options()
 
@@ -2633,10 +2650,10 @@ class MainGUI(QMainWindow):
 
                         # get the power injections array to get the initial and end points
                         nc = compile_time_circuit(circuit=self.circuit)
-                        Sprof = nc.get_power_injections()
-                        vc_inputs = ContinuationPowerFlowInput(Sbase=Sprof[start_idx, :],
+                        Sprof = nc.Sbus
+                        vc_inputs = ContinuationPowerFlowInput(Sbase=Sprof[:, start_idx],
                                                                Vbase=self.power_flow.results.voltage,
-                                                               Starget=Sprof[end_idx, :])
+                                                               Starget=Sprof[:, end_idx])
 
                         pf_options = self.get_selected_power_flow_options()
 
@@ -2671,13 +2688,11 @@ class MainGUI(QMainWindow):
             if self.voltage_stability.results.voltages is not None:
 
                 if self.ui.draw_schematic_checkBox.isChecked():
-                    V = self.voltage_stability.results.voltages[-1, :]
-
                     colour_the_schematic(circuit=self.circuit,
-                                         s_bus=self.voltage_stability.results.Sbus,
-                                         s_branch=self.voltage_stability.results.Sbranch,
-                                         voltages=V,
-                                         loadings=self.voltage_stability.results.loading,
+                                         s_bus=self.voltage_stability.results.Sbus[-1, :],
+                                         s_branch=self.voltage_stability.results.Sbranch[-1, :],
+                                         voltages=self.voltage_stability.results.voltages[-1, :],
+                                         loadings=self.voltage_stability.results.loading[-1, :],
                                          types=self.voltage_stability.results.bus_types)
                 self.update_available_results()
             else:
@@ -3731,10 +3746,10 @@ class MainGUI(QMainWindow):
             elif current_study == ContinuationPowerFlow.name:
 
                 plot_function(circuit=self.circuit,
-                              s_bus=self.voltage_stability.results.Sbus,
-                              s_branch=self.voltage_stability.results.Sbranch,
+                              s_bus=self.voltage_stability.results.Sbus[current_step, :],
+                              s_branch=self.voltage_stability.results.Sbranch[current_step, :],
                               voltages=self.voltage_stability.results.voltages[current_step, :],
-                              loadings=np.abs(self.voltage_stability.results.loading),
+                              loadings=np.abs(self.voltage_stability.results.loading[current_step, :]),
                               types=self.voltage_stability.results.bus_types,
                               file_name=file_name)
 

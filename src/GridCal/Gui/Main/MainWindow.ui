@@ -3478,6 +3478,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QDoubleSpinBox" name="alpha_doubleSpinBox">
+                 <property name="minimum">
+                  <double>-99.000000000000000</double>
+                 </property>
                  <property name="value">
                   <double>2.000000000000000</double>
                  </property>

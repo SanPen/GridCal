@@ -23,7 +23,7 @@ from PySide2.QtCore import QThread, Signal
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import power_flow_post_process, PowerFlowOptions
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, CpfStopAt, CpfParametrization
+from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, CpfStopAt, CpfParametrization, CpfNumericResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.plot_config import LINEWIDTH
@@ -78,12 +78,13 @@ class ContinuationPowerFlowOptions:
 
 class ContinuationPowerFlowInput:
 
-    def __init__(self, Sbase, Vbase, Starget):
+    def __init__(self, Sbase, Vbase, Starget, base_overload_number=0):
         """
         ContinuationPowerFlowInput constructor
         @param Sbase: Initial power array
         @param Vbase: Initial voltage array
         @param Starget: Final power array
+        @:param base_overload_number: number of overloads in the base situation
         """
         self.Sbase = Sbase
 
@@ -91,10 +92,12 @@ class ContinuationPowerFlowInput:
 
         self.Vbase = Vbase
 
+        self.base_overload_number = base_overload_number
+
 
 class ContinuationPowerFlowResults:
 
-    def __init__(self, nbus, nbr, bus_names):
+    def __init__(self, nval, nbus, nbr, bus_names, branch_names, bus_types):
         """
         ContinuationPowerFlowResults instance
         :param nbus: number of buses
@@ -106,27 +109,34 @@ class ContinuationPowerFlowResults:
 
         self.bus_names = bus_names
 
-        self.voltages = None
+        self.branch_names = branch_names
 
-        self.lambdas = None
+        self.voltages = np.zeros((nval, nbus), dtype=complex)
 
-        self.error = None
+        self.lambdas = np.zeros(nval)
 
-        self.converged = False
+        self.error = np.zeros(nval)
 
-        self.Sbranch = np.zeros(nbr, dtype=complex)
+        self.converged = np.zeros(nval, dtype=bool)
 
-        self.Ibranch = np.zeros(nbr, dtype=complex)
+        self.Sbranch = np.zeros((nval, nbr), dtype=complex)
 
-        self.loading = np.zeros(nbr, dtype=complex)
+        self.loading = np.zeros((nval, nbr))
 
-        self.losses = np.zeros(nbr, dtype=complex)
+        self.losses = np.zeros((nval, nbr), dtype=complex)
 
-        self.Sbus = np.zeros(nbus, dtype=complex)
+        self.Sbus = np.zeros((nval, nbus), dtype=complex)
 
-        self.bus_types = np.zeros(nbus, dtype=int)
+        self.bus_types = bus_types
 
-        self.available_results = [ResultTypes.BusVoltage]
+        self.available_results = [ResultTypes.BusVoltage,
+                                  ResultTypes.BusActivePower,
+                                  ResultTypes.BusReactivePower,
+                                  ResultTypes.BranchActivePower,
+                                  ResultTypes.BranchReactivePower,
+                                  ResultTypes.BranchActiveLosses,
+                                  ResultTypes.BranchReactiveLosses,
+                                  ResultTypes.BranchLoading]
 
     def get_results_dict(self):
         """
@@ -147,60 +157,26 @@ class ContinuationPowerFlowResults:
             json_str = json.dumps(self.get_results_dict())
             output_file.write(json_str)
 
-    def apply_from_island(self, voltage_collapse_res, Sbranch, Ibranch, loading, losses, Sbus,
-                          bus_original_idx, branch_original_idx, nbus_full):
+    def apply_from_island(self, results: CpfNumericResults, bus_original_idx, branch_original_idx):
         """
         Apply the results of an island to this ContinuationPowerFlowResults instance
-        :param voltage_collapse_res: ContinuationPowerFlowResults instance of the island
+        :param results: CpfNumericResults instance of the island
         :param bus_original_idx: indices of the buses in the complete grid
         :param branch_original_idx: indices of the branches in the complete grid
-        :param nbus_full: total number of buses in the complete grid
         """
 
-        if len(voltage_collapse_res.voltages) > 0:
+        nval = np.arange(len(results))
 
-            n_lambda, n_bus = voltage_collapse_res.voltages.shape
+        self.voltages[np.ix_(nval, bus_original_idx)] = results.V
+        self.Sbus[np.ix_(nval, bus_original_idx)] = results.Sbus
 
-            if self.voltages is None:
-                # fill a matrix with the values of the (eligibly) first island
-                self.voltages = np.zeros((n_lambda, nbus_full), dtype=complex)
-                self.voltages[:, bus_original_idx] = voltage_collapse_res.voltages
-                self.lambdas = voltage_collapse_res.lambdas
-            else:
-                # if the voltages are not none, that means that another island initialized the voltages.
-                # We know that the number of nodes is the total number of nodes, but the number of lambda-steps might
-                # be different. Hence we need to copy the new island voltages accordingly
-                l_prev = self.voltages.shape[0]
+        self.lambdas[nval] = results.lmbda
+        self.error[nval] = results.normF
+        self.converged[nval] = results.success
 
-                if n_lambda > l_prev:
-                    # now there are more rows than before, hence we need to extend
-                    voltages_before = self.voltages.copy()
-
-                    # re-initialize the voltages array
-                    self.voltages = np.zeros((n_lambda, nbus_full), dtype=complex)
-
-                    # copy the old voltages to the empty voltages array
-                    self.voltages[0:l_prev, :] = voltages_before
-
-                    # copy the new voltages
-                    self.voltages[:, bus_original_idx] = voltage_collapse_res.voltages
-
-                    # now there are more values of lambda, just use the new ones
-                    self.lambdas = voltage_collapse_res.lambdas
-
-                elif n_lambda < l_prev:
-                    # the number of lambda values in this island is lower, so just copy at the beginning
-                    self.voltages[0:n_lambda, bus_original_idx] = voltage_collapse_res.voltages
-                else:
-                    # same number of lambda values, just copy where needed
-                    self.voltages[:, bus_original_idx] = voltage_collapse_res.voltages
-
-            # set the branch values
-            self.Sbranch[branch_original_idx] = Sbranch
-            self.Ibranch[branch_original_idx] = Ibranch
-            self.loading[branch_original_idx] = loading
-            self.losses[branch_original_idx] = losses
-            self.Sbus[bus_original_idx] = Sbus
+        self.Sbranch[np.ix_(nval, branch_original_idx)] = results.Sbranch
+        self.loading[np.ix_(nval, branch_original_idx)] = results.loading
+        self.losses[np.ix_(nval, branch_original_idx)] = results.losses
 
     def mdl(self, result_type: ResultTypes = ResultTypes.BusVoltage) -> ResultsModel:
         """
@@ -208,18 +184,75 @@ class ContinuationPowerFlowResults:
         :param result_type:
         :return:
         """
-
-        labels = self.bus_names
         y_label = ''
         x_label = ''
         title = ''
         if result_type == ResultTypes.BusVoltage:
+            labels = self.bus_names
             y = abs(np.array(self.voltages))
             x = self.lambdas
             title = 'Bus voltage'
             y_label = '(p.u.)'
             x_label = 'Loading from the base situation ($\lambda$)'
+
+        elif result_type == ResultTypes.BusActivePower:
+            labels = self.bus_names
+            y = self.Sbus.real
+            x = self.lambdas
+            title = 'Bus active power'
+            y_label = '(p.u.)'
+            x_label = 'Loading from the base situation ($\lambda$)'
+
+        elif result_type == ResultTypes.BusReactivePower:
+            labels = self.bus_names
+            y = self.Sbus.imag
+            x = self.lambdas
+            title = 'Bus reactive power'
+            y_label = '(p.u.)'
+            x_label = 'Loading from the base situation ($\lambda$)'
+
+        elif result_type == ResultTypes.BranchActivePower:
+            labels = self.branch_names
+            y = self.Sbranch.real
+            x = self.lambdas
+            title = 'Branch active power'
+            y_label = 'MW'
+            x_label = 'Loading from the base situation ($\lambda$)'
+
+        elif result_type == ResultTypes.BranchReactivePower:
+            labels = self.branch_names
+            y = self.Sbranch.imag
+            x = self.lambdas
+            title = 'Branch reactive power'
+            y_label = 'MVAr'
+            x_label = 'Loading from the base situation ($\lambda$)'
+
+        elif result_type == ResultTypes.BranchActiveLosses:
+            labels = self.branch_names
+            y = self.losses.real
+            x = self.lambdas
+            title = 'Branch active power losses'
+            y_label = 'MW'
+            x_label = 'Loading from the base situation ($\lambda$)'
+
+        elif result_type == ResultTypes.BranchReactiveLosses:
+            labels = self.branch_names
+            y = self.losses.imag
+            x = self.lambdas
+            title = 'Branch reactive power losses'
+            y_label = 'MVAr'
+            x_label = 'Loading from the base situation ($\lambda$)'
+
+        elif result_type == ResultTypes.BranchLoading:
+            labels = self.branch_names
+            y = np.abs(self.loading) * 100.0
+            x = self.lambdas
+            title = 'Branch loading'
+            y_label = '%'
+            x_label = 'Loading from the base situation ($\lambda$)'
+
         else:
+            labels = self.bus_names
             x = self.lambdas
             y = self.voltages
 
@@ -301,83 +334,62 @@ class ContinuationPowerFlow(QThread):
 
         islands = nc.split_into_islands(ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
 
-        self.results = ContinuationPowerFlowResults(nbus=nc.nbus,
-                                                    nbr=nc.nbr,
-                                                    bus_names=nc.bus_names)
+        result_series = list()
 
-        self.results.bus_types = nc.bus_types
-
-        for nc, island in enumerate(islands):
+        for island in islands:
 
             self.progress_text.emit('Running voltage collapse at circuit ' + str(nc) + '...')
 
             if len(island.vd) > 0:
 
-                Voltage_series, Lambda_series, \
-                normF, success = continuation_nr(Ybus=island.Ybus,
-                                                 Ibus_base=island.Ibus,
-                                                 Ibus_target=island.Ibus,
-                                                 Sbus_base=self.inputs.Sbase[island.original_bus_idx],
-                                                 Sbus_target=self.inputs.Starget[island.original_bus_idx],
-                                                 V=self.inputs.Vbase[island.original_bus_idx],
-                                                 pv=island.pv,
-                                                 pq=island.pq,
-                                                 step=self.options.step,
-                                                 approximation_order=self.options.approximation_order,
-                                                 adapt_step=self.options.adapt_step,
-                                                 step_min=self.options.step_min,
-                                                 step_max=self.options.step_max,
-                                                 error_tol=self.options.error_tol,
-                                                 tol=self.options.tol,
-                                                 max_it=self.options.max_it,
-                                                 stop_at=self.options.stop_at,
-                                                 controlQ=self.pf_options.control_Q,
-                                                 Qmax_bus=island.Qmax_bus[:, self.t],
-                                                 Qmin_bus=island.Qmin_bus[:, self.t],
-                                                 original_bus_types=island.bus_types,
-                                                 verbose=False,
-                                                 call_back_fx=self.progress_callback)
+                results = continuation_nr(Ybus=island.Ybus,
+                                          Cf=island.Cf,
+                                          Ct=island.Ct,
+                                          Yf=island.Yf,
+                                          Yt=island.Yt,
+                                          branch_rates=island.branch_rates,
+                                          Sbase=island.Sbase,
+                                          Ibus_base=island.Ibus,
+                                          Ibus_target=island.Ibus,
+                                          Sbus_base=self.inputs.Sbase[island.original_bus_idx],
+                                          Sbus_target=self.inputs.Starget[island.original_bus_idx],
+                                          V=self.inputs.Vbase[island.original_bus_idx],
+                                          pv=island.pv,
+                                          pq=island.pq,
+                                          step=self.options.step,
+                                          approximation_order=self.options.approximation_order,
+                                          adapt_step=self.options.adapt_step,
+                                          step_min=self.options.step_min,
+                                          step_max=self.options.step_max,
+                                          error_tol=self.options.error_tol,
+                                          tol=self.options.tol,
+                                          max_it=self.options.max_it,
+                                          stop_at=self.options.stop_at,
+                                          controlQ=self.pf_options.control_Q,
+                                          Qmax_bus=island.Qmax_bus,
+                                          Qmin_bus=island.Qmin_bus,
+                                          original_bus_types=island.bus_types,
+                                          base_overload_number=self.inputs.base_overload_number,
+                                          verbose=False,
+                                          call_back_fx=self.progress_callback)
 
-                # nbus can be zero, because all the arrays are going to be overwritten
-                res = ContinuationPowerFlowResults(nbus=island.nbus,
-                                                   nbr=island.nbr,
-                                                   bus_names=island.bus_names)
-                res.voltages = np.array(Voltage_series)
-                res.lambdas = np.array(Lambda_series)
-                res.error = normF
-                res.converged = bool(success)
+                # store the result series
+                result_series.append(results)
 
-            else:
-                res = ContinuationPowerFlowResults(nbus=island.nbus,
-                                                   nbr=island.nbr,
-                                                   bus_names=island.bus_names)
-                res.voltages = np.array([[0] * island.nbus])
-                res.lambdas = np.array([[0] * island.nbus])
-                res.error = [0]
-                res.converged = True
+        # analyze the result series to compact all the results into one object
+        max_len = max([len(r) for r in result_series])
 
-            if len(res.voltages) > 0:
+        # declare results
+        self.results = ContinuationPowerFlowResults(nval=max_len, nbus=nc.nbus, nbr=nc.nbr,
+                                                    bus_names=nc.bus_names,
+                                                    branch_names=nc.branch_names,
+                                                    bus_types=nc.bus_types)
 
-                # compute the island branch results
-                Sbranch, Ibranch, Vbranch, \
-                loading, losses, flow_direction, \
-                Sbus = power_flow_post_process(calculation_inputs=island,
-                                               Sbus=self.inputs.Starget[island.original_bus_idx],
-                                               V=res.voltages[-1],
-                                               branch_rates=island.branch_rates)
+        for i in range(len(result_series)):
+            self.results.apply_from_island(result_series[i],
+                                           islands[i].original_bus_idx,
+                                           islands[i].original_branch_idx)
 
-                # update results
-                self.results.apply_from_island(voltage_collapse_res=res,
-                                               Sbranch=Sbranch,
-                                               Ibranch=Ibranch,
-                                               loading=loading,
-                                               losses=losses,
-                                               Sbus=Sbus,
-                                               bus_original_idx=island.original_bus_idx,
-                                               branch_original_idx=island.original_branch_idx,
-                                               nbus_full=nbus)
-            else:
-                print('No voltage values!')
         print('done!')
         self.progress_text.emit('Done!')
         self.done_signal.emit()
