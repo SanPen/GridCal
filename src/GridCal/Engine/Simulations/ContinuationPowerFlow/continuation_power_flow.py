@@ -500,8 +500,6 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
     V_prev = V       # V at previous step
     continuation = True
     cont_steps = 0
-    normF = 0
-    success = False
     pvpq = r_[pv, pq]
     bus_types = original_bus_types.copy()
 

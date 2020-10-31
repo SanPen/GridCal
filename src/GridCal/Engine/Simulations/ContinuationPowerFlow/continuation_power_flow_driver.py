@@ -340,7 +340,7 @@ class ContinuationPowerFlow(QThread):
 
             self.progress_text.emit('Running voltage collapse at circuit ' + str(nc) + '...')
 
-            if len(island.vd) > 0:
+            if len(island.vd) > 0 and len(island.pqpv) > 0:
 
                 results = continuation_nr(Ybus=island.Ybus,
                                           Cf=island.Cf,
@@ -386,9 +386,10 @@ class ContinuationPowerFlow(QThread):
                                                     bus_types=nc.bus_types)
 
         for i in range(len(result_series)):
-            self.results.apply_from_island(result_series[i],
-                                           islands[i].original_bus_idx,
-                                           islands[i].original_branch_idx)
+            if len(result_series[i]) > 0:
+                self.results.apply_from_island(result_series[i],
+                                               islands[i].original_bus_idx,
+                                               islands[i].original_branch_idx)
 
         print('done!')
         self.progress_text.emit('Done!')
