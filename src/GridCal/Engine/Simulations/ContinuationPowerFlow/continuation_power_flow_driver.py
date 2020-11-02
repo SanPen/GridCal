@@ -377,9 +377,12 @@ class ContinuationPowerFlow(QThread):
                 result_series.append(results)
 
         # analyze the result series to compact all the results into one object
-        max_len = max([len(r) for r in result_series])
+        if len(result_series) > 0:
+            max_len = max([len(r) for r in result_series])
+        else:
+            max_len = 0
 
-        # declare results
+            # declare results
         self.results = ContinuationPowerFlowResults(nval=max_len, nbus=nc.nbus, nbr=nc.nbr,
                                                     bus_names=nc.bus_names,
                                                     branch_names=nc.branch_names,

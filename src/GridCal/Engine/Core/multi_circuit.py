@@ -148,16 +148,20 @@ class MultiCircuit:
         self.transformer_types = list()  # type: List[TransformerType]
 
         # list of substations
-        self.substations = list()  # type: List[Substation]
+        self.default_substation = Substation('Default substation')
+        self.substations = [self.default_substation]  # type: List[Substation]
 
         # list of areas
-        self.areas = list()  # type: List[Area]
+        self.default_area = Area('Default area')
+        self.areas = [self.default_area]  # type: List[Area]
 
         # list of zones
-        self.zones = list()  # type: List[Zone]
+        self.default_zone = Zone('Default zone')
+        self.zones = [self.default_zone]  # type: List[Zone]
 
         # list of countries
-        self.countries = list()  # type: List[Country]
+        self.default_country = Country('Default country')
+        self.countries = [self.default_country]  # type: List[Country]
 
         # logger of events
         self.logger = Logger()
@@ -207,12 +211,6 @@ class MultiCircuit:
         self.profile_magnitudes = dict()
 
         self.device_type_name_dict = dict()
-
-        # add default objects
-        self.add_substation(Substation('Default'))
-        self.add_zone(Zone('Default'))
-        self.add_area(Area('Default'))
-        self.add_country(Country('Default'))
 
         '''
         self.type_name = 'Shunt'
@@ -912,6 +910,18 @@ class MultiCircuit:
         """
         if self.time_profile is not None:
             obj.create_profiles(self.time_profile)
+
+        if obj.substation is None:
+            obj.substation = self.default_substation
+
+        if obj.zone is None:
+            obj.zone = self.default_zone
+
+        if obj.area is None:
+            obj.area = self.default_area
+
+        if obj.country is None:
+            obj.country = self.default_country
 
         self.buses.append(obj)
 

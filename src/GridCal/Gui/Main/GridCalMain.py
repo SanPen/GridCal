@@ -2698,15 +2698,15 @@ class MainGUI(QMainWindow):
             self.remove_simulation(SimulationTypes.VoltageCollapse_run)
 
             if self.voltage_stability.results.voltages is not None:
-
-                if self.ui.draw_schematic_checkBox.isChecked():
-                    colour_the_schematic(circuit=self.circuit,
-                                         s_bus=self.voltage_stability.results.Sbus[-1, :],
-                                         s_branch=self.voltage_stability.results.Sbranch[-1, :],
-                                         voltages=self.voltage_stability.results.voltages[-1, :],
-                                         loadings=self.voltage_stability.results.loading[-1, :],
-                                         types=self.voltage_stability.results.bus_types)
-                self.update_available_results()
+                if self.voltage_stability.results.voltages.shape[0] > 0:
+                    if self.ui.draw_schematic_checkBox.isChecked():
+                        colour_the_schematic(circuit=self.circuit,
+                                             s_bus=self.voltage_stability.results.Sbus[-1, :],
+                                             s_branch=self.voltage_stability.results.Sbranch[-1, :],
+                                             voltages=self.voltage_stability.results.voltages[-1, :],
+                                             loadings=self.voltage_stability.results.loading[-1, :],
+                                             types=self.voltage_stability.results.bus_types)
+                    self.update_available_results()
             else:
                 info_msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
         else:
