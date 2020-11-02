@@ -109,7 +109,7 @@ class TimeCircuit(SnapshotData):
         all_time = np.arange(self.ntime)
 
         # find the probable time slices
-        states = find_different_states(branch_active_prof=self.branch_data.branch_active)
+        states = find_different_states(branch_active_prof=self.branch_data.branch_active.T)
 
         if len(states) == 1:
             # compute the adjacency matrix

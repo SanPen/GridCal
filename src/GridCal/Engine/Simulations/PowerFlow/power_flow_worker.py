@@ -95,7 +95,10 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
                        SolverType.IWAMOTO,
                        SolverType.LM,
                        SolverType.LACPF]
-        solver_list.remove(options.solver_type)
+
+        if options.solver_type in solver_list:
+            solver_list.remove(options.solver_type)
+
         solvers = [options.solver_type] + solver_list
     else:
         # No retry selected

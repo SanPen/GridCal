@@ -227,6 +227,78 @@ def cpf_p_jac(parametrization: CpfParametrization, z, V, lam, Vprv, lamprv, pv, 
     return dP_dV, dP_dlam
 
 
+def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
+              parametrization: CpfParametrization, pvpq_lookup):
+    """
+    Computes a prediction (approximation) to the next solution of the
+    continuation power flow using a normalized tangent predictor.
+    :param V: complex bus voltage vector at current solution
+    :param Ibus:
+    :param lam: scalar lambda value at current solution
+    :param Ybus: complex bus admittance matrix
+    :param Sxfr: complex vector of scheduled transfers (difference between bus injections in base and target cases)
+    :param pv: vector of indices of PV buses
+    :param pq: vector of indices of PQ buses
+    :param step: continuation step length
+    :param z: normalized tangent prediction vector from previous step
+    :param Vprv: complex bus voltage vector at previous solution
+    :param lamprv: scalar lambda value at previous solution
+    :param parametrization: Value of cpf parametrization option.
+    :return: V0 : predicted complex bus voltage vector
+             LAM0 : predicted lambda continuation parameter
+             Z : the normalized tangent prediction vector
+    """
+
+    # sizes
+    nb = len(V)
+    npv = len(pv)
+    npq = len(pq)
+    pvpq = r_[pv, pq]
+    nj = npv + npq * 2
+
+    # compute Jacobian for the power flow equations
+    J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
+
+    dF_dlam = -r_[Sxfr[pvpq].real, Sxfr[pq].imag]
+
+    dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
+
+    # linear operator for computing the tangent predictor
+    '''
+    J2 = [   J   dF_dlam
+           dP_dV dP_dlam ]
+    '''
+    J2 = vstack([hstack([J, dF_dlam.reshape(nj, 1)]),
+                 hstack([dP_dV, dP_dlam])], format="csc")
+
+    Va_prev = np.angle(V)
+    Vm_prev = np.abs(V)
+
+    # compute normalized tangent predictor
+    s = np.zeros(npv + 2 * npq + 1)
+
+    # increase in the direction of lambda
+    s[npv + 2 * npq] = 1
+
+    # tangent vector
+    z[r_[pvpq, nb + pq, 2 * nb]] = spsolve(J2, s)
+
+    # normalize_string tangent predictor  (dividing by the euclidean norm)
+    z /= linalg.norm(z)
+
+    Va0 = Va_prev
+    Vm0 = Vm_prev
+    # lam0 = lam
+
+    # prediction for next step
+    Va0[pvpq] = Va_prev[pvpq] + step * z[pvpq]
+    Vm0[pq] = Vm_prev[pq] + step * z[pq + nb]
+    lam0 = lam + step * z[2 * nb]
+    V0 = Vm0 * exp(1j * Va0)
+
+    return V0, lam0, z
+
+
 def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parametrization, tol, max_it,
               pvpq_lookup, verbose):
     """
@@ -344,14 +416,11 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
         Scalc = V * conj(Ybus * V)
         mismatch = Scalc - Sbus - lam * Sxfr
 
-        # evaluate P(x, lambda)
+        # evaluate the parametrization function P(x, lambda)
         P = cpf_p(parametrization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
     
         # compose the mismatch vector
-        F = r_[mismatch[pv].real,
-               mismatch[pq].real,
-               mismatch[pq].imag,
-               P]
+        F = r_[mismatch[pvpq].real, mismatch[pq].imag, P]
     
         # check for convergence
         normF = linalg.norm(F, Inf)
@@ -369,90 +438,23 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
     return V, converged, i, lam, normF, Scalc
 
 
-def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
-              parametrization: CpfParametrization, pvpq_lookup):
-    """
-    Computes a prediction (approximation) to the next solution of the
-    continuation power flow using a normalized tangent predictor.
-    :param V: complex bus voltage vector at current solution
-    :param Ibus:
-    :param lam: scalar lambda value at current solution
-    :param Ybus: complex bus admittance matrix
-    :param Sxfr: complex vector of scheduled transfers (difference between bus injections in base and target cases)
-    :param pv: vector of indices of PV buses
-    :param pq: vector of indices of PQ buses
-    :param step: continuation step length
-    :param z: normalized tangent prediction vector from previous step
-    :param Vprv: complex bus voltage vector at previous solution
-    :param lamprv: scalar lambda value at previous solution
-    :param parametrization: Value of cpf parametrization option.
-    :return: V0 : predicted complex bus voltage vector
-             LAM0 : predicted lambda continuation parameter
-             Z : the normalized tangent prediction vector
-    """
-
-    # sizes
-    nb = len(V)
-    npv = len(pv)
-    npq = len(pq)
-    pvpq = r_[pv, pq]
-    nj = npv+npq*2
-
-    # compute Jacobian for the power flow equations
-    J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
-
-    dF_dlam = -r_[Sxfr[pvpq].real, Sxfr[pq].imag]
-
-    dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
-    
-    # linear operator for computing the tangent predictor
-    '''
-    J2 = [   J   dF_dlam
-           dP_dV dP_dlam ]
-    '''
-    J2 = vstack([hstack([J,     dF_dlam.reshape(nj, 1)]),
-                 hstack([dP_dV, dP_dlam])], format="csc")
-
-    Va_prev = np.angle(V)
-    Vm_prev = np.abs(V)
-    
-    # compute normalized tangent predictor
-    s = np.zeros(npv + 2 * npq + 1)
-
-    # increase in the direction of lambda
-    s[npv + 2 * npq] = 1
-
-    # tangent vector
-    z[r_[pvpq, nb + pq, 2 * nb]] = spsolve(J2, s)
-
-    # normalize_string tangent predictor  (dividing by the euclidean norm)
-    z /= linalg.norm(z)
-    
-    Va0 = Va_prev
-    Vm0 = Vm_prev
-    # lam0 = lam
-    
-    # prediction for next step
-    Va0[pvpq] = Va_prev[pvpq] + step * z[pvpq]
-    Vm0[pq] = Vm_prev[pq] + step * z[pq + nb]
-    lam0 = lam + step * z[2 * nb]
-    V0 = Vm0 * exp(1j * Va0)
-        
-    return V0, lam0, z
-
-
 def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_target, Sbus_base, Sbus_target,
                     V, pv, pq, step, approximation_order: CpfParametrization,
                     adapt_step, step_min, step_max, error_tol=1e-3, tol=1e-6, max_it=20,
                     stop_at=CpfStopAt.Nose,
-                    controlQ=ReactivePowerControlMode.NoControl,
-                    Qmax_bus=None, Qmin_bus=None, original_bus_types=None,
+                    control_q=ReactivePowerControlMode.NoControl,
+                    qmax_bus=None, qmin_bus=None, original_bus_types=None,
                     base_overload_number=0,
                     verbose=False, call_back_fx=None, logger=Logger()) -> CpfNumericResults:
     """
     Runs a full AC continuation power flow using a normalized tangent
     predictor and selected approximation_order scheme.
     :param Ybus: Admittance matrix
+    :param Cf: Connectivity matrix of the branches and the "from" nodes
+    :param Ct: Connectivity matrix of the branches and the "to" nodes
+    :param Yf: Admittance matrix of the "from" nodes
+    :param Yt: Admittance matrix of the "to" nodes
+    :param branch_rates: array of branch rates to check the overload condition
     :param Ibus_base:
     :param Ibus_target:
     :param Sbus_base: Power array of the base solvable case
@@ -469,22 +471,25 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
     :param tol: Solutions tolerance
     :param max_it: Maximum iterations
     :param stop_at:  Value of Lambda to stop at. It can be a number or {'NOSE', 'FULL'}
+    :param control_q: Type of reactive power control
+    :param qmax_bus: Array of maximum reactive power per node
+    :param qmin_bus: Array of minimum reactive power per node
+    :param original_bus_types:
+    :param base_overload_number:
     :param verbose: Display additional intermediate information?
     :param call_back_fx: Function to call on every iteration passing the lambda parameter
-    :return: Voltage_series: List of all the voltage solutions from the base to the target
-             Lambda_series: Lambda values used in the continuation
+    :param logger: Logger instance
+    :return: CpfNumericResults instance
 
 
     Ported from MATPOWER
         Copyright (c) 1996-2015 by Power System Engineering Research Center (PSERC)
         by Ray Zimmerman, PSERC Cornell,
-        Shrirang Abhyankar, Argonne National Laboratory,
-        and Alexander Flueck, IIT
+        Shrirang Abhyankar, Argonne National Laboratory, and Alexander Flueck, IIT
 
         $Id: runcpf.m 2644 2015-03-11 19:34:22Z ray $
 
-        This file is part of MATPOWER.
-        Covered by the 3-clause BSD License (see LICENSE file for details).
+        MATPOWER is covered by the 3-clause BSD License (see LICENSE file for details).
         See http://www.pserc.cornell.edu/matpower/ for more info.
     """
 
@@ -555,43 +560,44 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
                                                      pvpq_lookup=pvpq_lookup,
                                                      verbose=verbose)
 
-        # branch values ------------------------------------------------------------------------------------------------
-        # Branches current, loading, etc
-        Vf = Cf * V
-        Vt = Ct * V
-        If = Yf * V
-        It = Yt * V
-        Sf = Vf * np.conj(If)
-        St = Vt * np.conj(It)
-
-        # Branch losses in MVA
-        losses = (Sf + St) * Sbase
-
-        # Branch power in MVA
-        Sbranch = Sf * Sbase
-
-        # Branch loading in p.u.
-        loading = Sbranch.real / (branch_rates + 1e-9)
-
-        # store series values ------------------------------------------------------------------------------------------
-        results.add(V, Scalc, Sbranch, lam, losses, loading, normF, success)
-
         if success:
+
+            # branch values --------------------------------------------------------------------------------------------
+            # Branches current, loading, etc
+            Vf = Cf * V
+            Vt = Ct * V
+            If = Yf * V
+            It = Yt * V
+            Sf = Vf * np.conj(If)
+            St = Vt * np.conj(It)
+
+            # Branch losses in MVA
+            losses = (Sf + St) * Sbase
+
+            # Branch power in MVA
+            Sbranch = Sf * Sbase
+
+            # Branch loading in p.u.
+            loading = Sbranch.real / (branch_rates + 1e-9)
+
+            # store series values --------------------------------------------------------------------------------------
+
+            results.add(V, Scalc, Sbranch, lam, losses, loading, normF, success)
 
             if verbose:
                 print('Step: ', cont_steps, ' Lambda prev: ', lam_prev, ' Lambda: ', lam)
                 print(V)
 
             # Check controls
-            if controlQ == ReactivePowerControlMode.Direct:
+            if control_q == ReactivePowerControlMode.Direct:
                 V, \
                 Qnew, \
                 types_new, \
                 any_q_control_issue = control_q_direct(V=V,
                                                        Vset=np.abs(V),
                                                        Q=Scalc.imag,
-                                                       Qmax=Qmax_bus,
-                                                       Qmin=Qmin_bus,
+                                                       Qmax=qmax_bus,
+                                                       Qmin=qmin_bus,
                                                        types=bus_types,
                                                        original_types=original_bus_types,
                                                        verbose=verbose)
@@ -614,6 +620,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
                     print('Q controls Ok')
 
             if stop_at == CpfStopAt.Full:
+
                 if abs(lam) < 1e-8:
                     # traced the full continuation curve
                     if verbose:
@@ -631,6 +638,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
 
                     # disable step-adaptivity
                     adapt_step = 0
+
             elif stop_at == CpfStopAt.Nose:
 
                 if lam < lam_prev:
@@ -640,6 +648,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
                     continuation = False
 
             elif stop_at == CpfStopAt.ExtraOverloads:
+                # look for overloads and determine if there are more overloads than in the base situation
                 idx = np.where(np.abs(loading) > 1)[0]
                 if len(idx) > base_overload_number:
                     continuation = False
@@ -673,9 +682,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
                 call_back_fx(lam)
 
         else:
-
             continuation = False
-
             if verbose:
                 print('step ', cont_steps, ' : lambda = ', lam, ', corrector did not converge in ', i, ' iterations\n')
 

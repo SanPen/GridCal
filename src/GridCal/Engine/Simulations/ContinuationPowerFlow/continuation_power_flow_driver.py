@@ -298,7 +298,7 @@ class ContinuationPowerFlow(QThread):
 
         self.t = t
 
-        self.results = list()
+        self.results = None
 
         self.__cancel__ = False
 
@@ -365,9 +365,9 @@ class ContinuationPowerFlow(QThread):
                                           tol=self.options.tol,
                                           max_it=self.options.max_it,
                                           stop_at=self.options.stop_at,
-                                          controlQ=self.pf_options.control_Q,
-                                          Qmax_bus=island.Qmax_bus,
-                                          Qmin_bus=island.Qmin_bus,
+                                          control_q=self.pf_options.control_Q,
+                                          qmax_bus=island.Qmax_bus,
+                                          qmin_bus=island.Qmin_bus,
                                           original_bus_types=island.bus_types,
                                           base_overload_number=self.inputs.base_overload_number,
                                           verbose=False,

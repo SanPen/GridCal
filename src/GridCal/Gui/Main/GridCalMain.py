@@ -2554,6 +2554,7 @@ class MainGUI(QMainWindow):
         if len(sel_buses) == 0:
             # all nodes
             alpha_vec *= alpha
+            idx = np.zeros(0, dtype=int)  # for completeness
         else:
             # pick the selected nodes
             idx = np.array([x[0] for x in sel_buses])
@@ -2563,7 +2564,7 @@ class MainGUI(QMainWindow):
         start_idx = self.ui.vs_departure_comboBox.currentIndex()
         end_idx = self.ui.vs_target_comboBox.currentIndex()
 
-        return use_alpha, alpha_vec, use_profiles, start_idx, end_idx
+        return use_alpha, alpha_vec, use_profiles, start_idx, end_idx, idx
 
     def run_voltage_stability(self):
         """
@@ -2573,35 +2574,46 @@ class MainGUI(QMainWindow):
 
         if len(self.circuit.buses) > 0:
 
-            if SimulationTypes.VoltageCollapse_run not in self.stuff_running_now:
+            if self.power_flow is not None:
 
-                # get the selected UI options
-                use_alpha, alpha, use_profiles, start_idx, end_idx = self.get_selected_voltage_stability()
+                if SimulationTypes.VoltageCollapse_run not in self.stuff_running_now:
 
-                mode = self.ui.vc_stop_at_comboBox.currentText()
+                    # get the selected UI options
+                    use_alpha, alpha, use_profiles, \
+                    start_idx, end_idx, sel_bus_idx = self.get_selected_voltage_stability()
 
-                vc_stop_at_dict = {CpfStopAt.Nose.value: CpfStopAt.Nose,
-                                   CpfStopAt.Full.value: CpfStopAt.Full,
-                                   CpfStopAt.ExtraOverloads.value: CpfStopAt.ExtraOverloads}
+                    if len(sel_bus_idx) > 0:
+                        if sum([self.circuit.buses[i].get_device_number() for i in sel_bus_idx]) == 0:
+                            warning_msg('You have selected a group of buses with no power injection.\n'
+                                        'this will result in an infinite continuation, since the loading variation '
+                                        'of buses with zero injection will be infinite.', 'Continuation Power Flow')
+                            return
 
-                # declare voltage collapse options
-                vc_options = ContinuationPowerFlowOptions(step=0.0001,
-                                                          approximation_order=CpfParametrization.Natural,
-                                                          adapt_step=True,
-                                                          step_min=0.00001,
-                                                          step_max=0.2,
-                                                          error_tol=1e-3,
-                                                          tol=1e-6,
-                                                          max_it=20,
-                                                          stop_at=vc_stop_at_dict[mode],
-                                                          verbose=False)
+                    mode = self.ui.vc_stop_at_comboBox.currentText()
 
-                if use_alpha:
-                    '''
-                    use the current power situation as start
-                    and a linear combination of the current situation as target
-                    '''
-                    if self.power_flow is not None:
+                    vc_stop_at_dict = {CpfStopAt.Nose.value: CpfStopAt.Nose,
+                                       CpfStopAt.Full.value: CpfStopAt.Full,
+                                       CpfStopAt.ExtraOverloads.value: CpfStopAt.ExtraOverloads}
+
+                    pf_options = self.get_selected_power_flow_options()
+
+                    # declare voltage collapse options
+                    vc_options = ContinuationPowerFlowOptions(step=0.0001,
+                                                              approximation_order=CpfParametrization.Natural,
+                                                              adapt_step=True,
+                                                              step_min=0.00001,
+                                                              step_max=0.2,
+                                                              error_tol=1e-3,
+                                                              tol=pf_options.tolerance,
+                                                              max_it=pf_options.max_iter,
+                                                              stop_at=vc_stop_at_dict[mode],
+                                                              verbose=False)
+
+                    if use_alpha:
+                        '''
+                        use the current power situation as start
+                        and a linear combination of the current situation as target
+                        '''
                         # lock the UI
                         self.LOCK()
 
@@ -2633,46 +2645,46 @@ class MainGUI(QMainWindow):
 
                         # thread start
                         self.voltage_stability.start()
-                    else:
-                        info_msg('Run a power flow simulation first.\n'
-                                 'The results are needed to initialize this simulation.')
 
-                elif use_profiles:
-                    '''
-                    Here the start and finish power states are taken from the profiles
-                    '''
-                    if start_idx > -1 and end_idx > -1:
+                    elif use_profiles:
+                        '''
+                        Here the start and finish power states are taken from the profiles
+                        '''
+                        if start_idx > -1 and end_idx > -1:
 
-                        # lock the UI
-                        self.LOCK()
+                            # lock the UI
+                            self.LOCK()
 
-                        self.power_flow.run_at(start_idx)
+                            self.power_flow.run_at(start_idx)
 
-                        # get the power injections array to get the initial and end points
-                        nc = compile_time_circuit(circuit=self.circuit)
-                        Sprof = nc.Sbus
-                        vc_inputs = ContinuationPowerFlowInput(Sbase=Sprof[:, start_idx],
-                                                               Vbase=self.power_flow.results.voltage,
-                                                               Starget=Sprof[:, end_idx])
+                            # get the power injections array to get the initial and end points
+                            nc = compile_time_circuit(circuit=self.circuit)
+                            Sprof = nc.Sbus
+                            vc_inputs = ContinuationPowerFlowInput(Sbase=Sprof[:, start_idx],
+                                                                   Vbase=self.power_flow.results.voltage,
+                                                                   Starget=Sprof[:, end_idx])
 
-                        pf_options = self.get_selected_power_flow_options()
+                            pf_options = self.get_selected_power_flow_options()
 
-                        # create object
-                        self.voltage_stability = ContinuationPowerFlow(circuit=self.circuit,
-                                                                       options=vc_options,
-                                                                       inputs=vc_inputs,
-                                                                       pf_options=pf_options)
+                            # create object
+                            self.voltage_stability = ContinuationPowerFlow(circuit=self.circuit,
+                                                                           options=vc_options,
+                                                                           inputs=vc_inputs,
+                                                                           pf_options=pf_options)
 
-                        # make connections
-                        self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
-                        self.voltage_stability.done_signal.connect(self.post_voltage_stability)
+                            # make connections
+                            self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
+                            self.voltage_stability.done_signal.connect(self.post_voltage_stability)
 
-                        # thread start
-                        self.voltage_stability.start()
-                    else:
-                        info_msg('Check the selected start and finnish time series indices.')
+                            # thread start
+                            self.voltage_stability.start()
+                        else:
+                            info_msg('Check the selected start and finnish time series indices.')
+                else:
+                    warning_msg('Another voltage collapse simulation is running...')
             else:
-                warning_msg('Another voltage collapse simulation is running...')
+                info_msg('Run a power flow simulation first.\n'
+                         'The results are needed to initialize this simulation.')
         else:
             pass
 

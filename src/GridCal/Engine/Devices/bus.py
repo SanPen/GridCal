@@ -631,6 +631,13 @@ class Bus(EditableDevice):
         """
         return self.loads + self.controlled_generators + self.batteries + self.static_generators + self.shunts
 
+    def get_device_number(self):
+        """
+        Return a list of all the connected objects
+        :return: list of connected objects
+        """
+        return len(self.loads) + len(self.controlled_generators) + len(self.batteries) + len(self.static_generators) + len(self.shunts)
+
     def ensure_area_objects(self, circuit):
         """
         Ensure that every grouping parameter has an object
