@@ -115,10 +115,10 @@ class EditorGraphicsView(QGraphicsView):
                 name = 'Bus ' + str(len(self.scene_.circuit.buses))
 
                 obj = Bus(name=name,
-                          area=self.scene_.circuit.default_area,
-                          zone=self.scene_.circuit.default_zone,
-                          substation=self.scene_.circuit.default_substation,
-                          country=self.scene_.circuit.default_country)
+                          area=self.scene_.circuit.areas[0],
+                          zone=self.scene_.circuit.zones[0],
+                          substation=self.scene_.circuit.substations[0],
+                          country=self.scene_.circuit.countries[0])
 
                 elm = BusGraphicItem(diagramScene=self.scene(), name=name, editor=self.editor, bus=obj)
                 obj.graphic_obj = elm

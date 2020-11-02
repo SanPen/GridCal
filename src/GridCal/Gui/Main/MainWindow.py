@@ -2257,8 +2257,8 @@ class Ui_mainWindow(object):
         self.node_distances_sigma_doubleSpinBox = QDoubleSpinBox(self.frame_39)
         self.node_distances_sigma_doubleSpinBox.setObjectName(u"node_distances_sigma_doubleSpinBox")
         self.node_distances_sigma_doubleSpinBox.setDecimals(6)
-        self.node_distances_sigma_doubleSpinBox.setSingleStep(0.001000000000000)
-        self.node_distances_sigma_doubleSpinBox.setValue(0.001000000000000)
+        self.node_distances_sigma_doubleSpinBox.setSingleStep(0.010000000000000)
+        self.node_distances_sigma_doubleSpinBox.setValue(0.750000000000000)
 
         self.verticalLayout_36.addWidget(self.node_distances_sigma_doubleSpinBox)
 

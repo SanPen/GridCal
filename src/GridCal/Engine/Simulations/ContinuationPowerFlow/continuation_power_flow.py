@@ -439,12 +439,11 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
 
 
 def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_target, Sbus_base, Sbus_target,
-                    V, pv, pq, step, approximation_order: CpfParametrization,
+                    V, distributed_slack, bus_installed_power,
+                    vd, pv, pq, step, approximation_order: CpfParametrization,
                     adapt_step, step_min, step_max, error_tol=1e-3, tol=1e-6, max_it=20,
-                    stop_at=CpfStopAt.Nose,
-                    control_q=ReactivePowerControlMode.NoControl,
-                    qmax_bus=None, qmin_bus=None, original_bus_types=None,
-                    base_overload_number=0,
+                    stop_at=CpfStopAt.Nose, control_q=ReactivePowerControlMode.NoControl,
+                    qmax_bus=None, qmin_bus=None, original_bus_types=None, base_overload_number=0,
                     verbose=False, call_back_fx=None, logger=Logger()) -> CpfNumericResults:
     """
     Runs a full AC continuation power flow using a normalized tangent
@@ -460,8 +459,11 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
     :param Sbus_base: Power array of the base solvable case
     :param Sbus_target: Power array of the case to be solved
     :param V: Voltage array of the base solved case
-    :param pv: Array of pv indices
-    :param pq: Array of pq indices
+    :param distributed_slack: Distribute the slack?
+    :param bus_installed_power: array of installed power per bus
+    :param vd: Array of slack bus indices
+    :param pv: Array of pv bus indices
+    :param pq: Array of pq bus indices
     :param step: Adaptation step
     :param approximation_order: order of the approximation {Natural, Arc, Pseudo arc}
     :param adapt_step: use adaptive step size?
@@ -474,8 +476,8 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
     :param control_q: Type of reactive power control
     :param qmax_bus: Array of maximum reactive power per node
     :param qmin_bus: Array of minimum reactive power per node
-    :param original_bus_types:
-    :param base_overload_number:
+    :param original_bus_types: array of bus types
+    :param base_overload_number: number of overloads in the base situation (used when stop_at=CpfStopAt.ExtraOverloads)
     :param verbose: Display additional intermediate information?
     :param call_back_fx: Function to call on every iteration passing the lambda parameter
     :param logger: Logger instance
@@ -559,6 +561,34 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
                                                      max_it=max_it,
                                                      pvpq_lookup=pvpq_lookup,
                                                      verbose=verbose)
+
+        if distributed_slack:
+            # Distribute the slack power
+            slack_power = Scalc[vd].real.sum()
+            total_installed_power = bus_installed_power.sum()
+
+            if total_installed_power > 0.0:
+                delta = slack_power * bus_installed_power / total_installed_power
+
+                # rerun with the slack distributed and replace the results
+                # also, initialize with the last voltage
+                V, success, i, lam, normF, Scalc = corrector(Ybus=Ybus,
+                                                             Ibus=Ibus_base,
+                                                             Sbus=Sbus_base + delta,
+                                                             V0=V,
+                                                             pv=pv,
+                                                             pq=pq,
+                                                             lam0=lam0,
+                                                             Sxfr=Sxfr,
+                                                             Vprv=V_prev,
+                                                             lamprv=lam_prev,
+                                                             z=z,
+                                                             step=step,
+                                                             parametrization=approximation_order,
+                                                             tol=tol,
+                                                             max_it=max_it,
+                                                             pvpq_lookup=pvpq_lookup,
+                                                             verbose=verbose)
 
         if success:
 

@@ -325,7 +325,6 @@ class ContinuationPowerFlow(QThread):
         @return:
         """
         print('Running voltage collapse...')
-        nbus = self.circuit.get_bus_number()
 
         nc = compile_snapshot_circuit(circuit=self.circuit,
                                       apply_temperature=self.pf_options.apply_temperature_correction,
@@ -354,6 +353,9 @@ class ContinuationPowerFlow(QThread):
                                           Sbus_base=self.inputs.Sbase[island.original_bus_idx],
                                           Sbus_target=self.inputs.Starget[island.original_bus_idx],
                                           V=self.inputs.Vbase[island.original_bus_idx],
+                                          distributed_slack=self.pf_options.distributed_slack,
+                                          bus_installed_power=island.bus_installed_power,
+                                          vd=island.vd,
                                           pv=island.pv,
                                           pq=island.pq,
                                           step=self.options.step,

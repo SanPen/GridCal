@@ -459,7 +459,8 @@ class NodeGroupsDriver(QThread):
 
         # compute the sample sigma
         self.sigma = np.std(self.X_train)
-        max_distance = self.sigma * self.sigmas
+        # max_distance = self.sigma * self.sigmas
+        max_distance = self.sigmas
 
         # construct groups
         self.progress_text.emit('Building groups with DBSCAN...')
