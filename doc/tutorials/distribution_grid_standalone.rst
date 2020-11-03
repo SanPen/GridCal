@@ -77,8 +77,8 @@ Open GridCal:
 Note: A transformer will be created between HV Bus and Bus 2 when nominal voltage values are different.
 Note: The name of an element may not change until you 'double click' the element on the diagram canvas after the change.
 
-Step 2: Create a Lines of Different Lengths
--------------------------------------------
+Step 2: Create Lines of Different Lengths
+-----------------------------------------
 
 1. Create 3 more Buses (Bus 3, Bus 4 and Bus 5) and create a branch between them.
 
@@ -113,7 +113,7 @@ Step 2: Create a Lines of Different Lengths
 
 Note: Element placing can be changed by 'clicking' the square on the right hand side of a bus.
 
-Step 3: Add more Lines and Buses
+Step 3: Add More Lines and Buses
 --------------------------------
 
 1. Add Bus 6 to the right of Bus 2.
@@ -352,8 +352,8 @@ The transformers used for the 4 loads (houses) a 10 to 0.4 kV transformer will b
 
 Note: In the new GridCal version, a transformer can be defined by just right clicking on the desired transformer and selecting the type from the drop down menu.
 
-Step 8: Defining Load Transformer
----------------------------------
+Step 8: Defining Other Transformers
+-----------------------------------
 
 Now that 'House trafo' has been created, other transformers can be set to the same type.
 

@@ -631,8 +631,6 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
             else:
                 mu_ = 1.0
 
-            print('mu:', mu_)
-
             Vm -= mu_ * dVm
             Va -= mu_ * dVa
             V = Vm * np.exp(1j * Va)

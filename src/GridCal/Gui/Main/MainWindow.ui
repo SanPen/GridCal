@@ -3478,6 +3478,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QDoubleSpinBox" name="alpha_doubleSpinBox">
+                 <property name="minimum">
+                  <double>-99.000000000000000</double>
+                 </property>
                  <property name="value">
                   <double>2.000000000000000</double>
                  </property>
@@ -4688,10 +4691,10 @@ points from time series</string>
                   <number>6</number>
                  </property>
                  <property name="singleStep">
-                  <double>0.001000000000000</double>
+                  <double>0.010000000000000</double>
                  </property>
                  <property name="value">
-                  <double>0.001000000000000</double>
+                  <double>0.750000000000000</double>
                  </property>
                 </widget>
                </item>
@@ -6000,12 +6003,12 @@ points from time series</string>
      <string>File</string>
     </property>
     <addaction name="actionNew_project"/>
-    <addaction name="actiongrid_Generator"/>
     <addaction name="actionOpen_file"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_as"/>
     <addaction name="separator"/>
     <addaction name="actionAdd_circuit"/>
+    <addaction name="actiongrid_Generator"/>
     <addaction name="separator"/>
     <addaction name="actionExport"/>
     <addaction name="actionExport_all_the_device_s_profiles"/>
@@ -6254,10 +6257,10 @@ points from time series</string>
      <normaloff>:/Icons/icons/continuation_power_flow.svg</normaloff>:/Icons/icons/continuation_power_flow.svg</iconset>
    </property>
    <property name="text">
-    <string>Voltage stability</string>
+    <string>Continuation power flow</string>
    </property>
    <property name="toolTip">
-    <string>Voltage collapse</string>
+    <string>Continuation power flow</string>
    </property>
    <property name="shortcut">
     <string>F7</string>
@@ -6592,6 +6595,9 @@ points from time series</string>
    <property name="toolTip">
     <string>Add circuit to the current circuit</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+N, Ctrl+O</string>
+   </property>
   </action>
   <action name="actionSync">
    <property name="checkable">
@@ -6669,6 +6675,9 @@ points from time series</string>
    </property>
    <property name="text">
     <string>Grid Generator</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
    </property>
   </action>
  </widget>

@@ -112,11 +112,10 @@ class Bus(EditableDevice):
                                                   'y': GCProp('px', float, 'y position in pixels.'),
                                                   'h': GCProp('px', float, 'height of the bus in pixels.'),
                                                   'w': GCProp('px', float, 'Width of the bus in pixels.'),
-                                                  'country': GCProp('', DeviceType.CountryDevice, 'Country of the bus'),
-                                                  'area': GCProp('', DeviceType.AreaDevice, 'Area of the bus'),
-                                                  'zone': GCProp('', DeviceType.ZoneDevice, 'Zone of the bus'),
-                                                  'substation': GCProp('', DeviceType.SubstationDevice,
-                                                                       'Substation of the bus.'),
+                                                  'country': GCProp('', Country, 'Country of the bus'),
+                                                  'area': GCProp('', Area, 'Area of the bus'),
+                                                  'zone': GCProp('', Zone, 'Zone of the bus'),
+                                                  'substation': GCProp('', Substation, 'Substation of the bus.'),
                                                   'longitude': GCProp('deg', float, 'longitude of the bus.'),
                                                   'latitude': GCProp('deg', float, 'latitude of the bus.')},
                                 non_editable_attributes=['idtag'],
@@ -630,6 +629,13 @@ class Bus(EditableDevice):
         :return: list of connected objects
         """
         return self.loads + self.controlled_generators + self.batteries + self.static_generators + self.shunts
+
+    def get_device_number(self):
+        """
+        Return a list of all the connected objects
+        :return: list of connected objects
+        """
+        return len(self.loads) + len(self.controlled_generators) + len(self.batteries) + len(self.static_generators) + len(self.shunts)
 
     def ensure_area_objects(self, circuit):
         """
