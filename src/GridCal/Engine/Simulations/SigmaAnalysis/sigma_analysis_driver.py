@@ -75,19 +75,18 @@ class SigmaAnalysisResults:
 
         self.sigma_im[b_idx] = results.sigma_im
 
-    def plot(self, fig, ax, npoints=1000):
+    def plot(self, fig, ax, n_points=1000):
         """
-        Plot the analysis
-        :param fig:
-        :param ax:
-        :param npoints:
-        :return:
+        Plot the sigma analysis
+        :param fig: Matplotlib figure. If None, one will be created
+        :param ax: Matplotlib Axis
+        :param n_points: number of points in the curve
         """
         if ax is None:
             fig = plt.figure(figsize=(8, 7))
             ax = fig.add_subplot(111)
 
-        sx = np.linspace(-0.25, np.max(self.sigma_re) + 0.1, npoints)
+        sx = np.linspace(-0.25, np.max(self.sigma_re) + 0.1, n_points)
         sy1 = np.sqrt(0.25 + sx)
         sy2 = -np.sqrt(0.25 + sx)
         names = self.bus_names
@@ -103,7 +102,7 @@ class SigmaAnalysisResults:
                             arrowprops=dict(arrowstyle="->"))
         annot.set_visible(False)
 
-        ax.set_title('Sigma plot')
+        ax.set_title('$\Sigma$ plot')
         ax.set_xlabel('$\sigma_{re}$')
         ax.set_ylabel('$\sigma_{im}$')
 

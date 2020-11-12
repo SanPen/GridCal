@@ -64,14 +64,17 @@ def get_load_data(circuit: MultiCircuit, bus_dict, opf_results=None, time_series
             if opf:
                 data.load_cost[k, :] = elm.Cost_prof
 
+            if opf_results is not None:
+                data.load_s[k, :] -= opf_results.load_shedding[:, k]
+
         else:
             data.load_s[k] = complex(elm.P, elm.Q)
 
             if opf:
                 data.load_cost[k] = elm.Cost
 
-        if opf_results is not None:
-            data.load_s[k] -= opf_results.load_shedding[k]
+            if opf_results is not None:
+                data.load_s[k] -= opf_results.load_shedding[k]
 
         data.C_bus_load[i, k] = 1
 
@@ -167,34 +170,36 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
         data.generator_controllable[k] = elm.is_controlled
         data.generator_installed_p[k] = elm.Snom
 
-        if opf_results is None:
+        if time_series:
+            data.generator_p[k] = elm.P_prof
+            data.generator_active[k] = elm.active_prof
+            data.generator_pf[k] = elm.Pf_prof
+            data.generator_v[k] = elm.Vset_prof
 
-            if time_series:
-                data.generator_p[k] = elm.P_prof
-                data.generator_active[k] = elm.active_prof
-                data.generator_pf[k] = elm.Pf_prof
-                data.generator_v[k] = elm.Vset_prof
+            if opf:
+                data.generator_dispatchable[k] = elm.enabled_dispatch
+                data.generator_pmax[k] = elm.Pmax
+                data.generator_pmin[k] = elm.Pmin
+                data.generator_cost[k] = elm.Cost_prof
+                data.generator_cost[k] = elm.Cost_prof
 
-                if opf:
-                    data.generator_dispatchable[k] = elm.enabled_dispatch
-                    data.generator_pmax[k] = elm.Pmax
-                    data.generator_pmin[k] = elm.Pmin
-                    data.generator_cost[k] = elm.Cost_prof
-                    data.generator_cost[k] = elm.Cost_prof
+            if opf_results is not None:
+                data.generator_p[k, :] = opf_results.generator_power[:, k] - opf_results.generator_shedding[:, k]
 
-            else:
-                data.generator_p[k] = elm.P
-                data.generator_active[k] = elm.active
-                data.generator_pf[k] = elm.Pf
-                data.generator_v[k] = elm.Vset
-
-                if opf:
-                    data.generator_dispatchable[k] = elm.enabled_dispatch
-                    data.generator_pmax[k] = elm.Pmax
-                    data.generator_pmin[k] = elm.Pmin
-                    data.generator_cost[k] = elm.Cost
         else:
-            data.generator_p[k] = opf_results.generators_power[k] - opf_results.generation_shedding[k]
+            data.generator_p[k] = elm.P
+            data.generator_active[k] = elm.active
+            data.generator_pf[k] = elm.Pf
+            data.generator_v[k] = elm.Vset
+
+            if opf:
+                data.generator_dispatchable[k] = elm.enabled_dispatch
+                data.generator_pmax[k] = elm.Pmax
+                data.generator_pmin[k] = elm.Pmin
+                data.generator_cost[k] = elm.Cost
+
+            if opf_results is not None:
+                data.generator_p[k] = opf_results.generator_power[k] - opf_results.generator_shedding[k]
 
         data.C_bus_gen[i, k] = 1
 
@@ -238,45 +243,47 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
         data.battery_controllable[k] = elm.is_controlled
         data.battery_installed_p[k] = elm.Snom
 
-        if opf_results is None:
+        if time_series:
+            data.battery_p[k, :] = elm.P_prof
+            data.battery_active[k, :] = elm.active_prof
+            data.battery_pf[k, :] = elm.Pf_prof
+            data.battery_v[k, :] = elm.Vset_prof
 
-            if time_series:
-                data.battery_p[k, :] = elm.P_prof
-                data.battery_active[k, :] = elm.active_prof
-                data.battery_pf[k, :] = elm.Pf_prof
-                data.battery_v[k, :] = elm.Vset_prof
+            if opf:
+                data.battery_dispatchable[k] = elm.enabled_dispatch
+                data.battery_pmax[k] = elm.Pmax
+                data.battery_pmin[k] = elm.Pmin
+                data.battery_enom[k] = elm.Enom
+                data.battery_min_soc[k] = elm.max_soc
+                data.battery_max_soc[k] = elm.max_soc
+                data.battery_soc_0[k] = elm.soc_0
+                data.battery_discharge_efficiency[k] = elm.discharge_efficiency
+                data.battery_charge_efficiency[k] = elm.charge_efficiency
+                data.battery_cost[k] = elm.Cost_prof
 
-                if opf:
-                    data.battery_dispatchable[k] = elm.enabled_dispatch
-                    data.battery_pmax[k] = elm.Pmax
-                    data.battery_pmin[k] = elm.Pmin
-                    data.battery_enom[k] = elm.Enom
-                    data.battery_min_soc[k] = elm.max_soc
-                    data.battery_max_soc[k] = elm.max_soc
-                    data.battery_soc_0[k] = elm.soc_0
-                    data.battery_discharge_efficiency[k] = elm.discharge_efficiency
-                    data.battery_charge_efficiency[k] = elm.charge_efficiency
-                    data.battery_cost[k] = elm.Cost_prof
+            if opf_results is not None:
+                data.battery_p[k, :] = opf_results.battery_power[:, k]
 
-            else:
-                data.battery_p[k] = elm.P
-                data.battery_active[k] = elm.active
-                data.battery_pf[k] = elm.Pf
-                data.battery_v[k] = elm.Vset
-
-                if opf:
-                    data.battery_dispatchable[k] = elm.enabled_dispatch
-                    data.battery_pmax[k] = elm.Pmax
-                    data.battery_pmin[k] = elm.Pmin
-                    data.battery_enom[k] = elm.Enom
-                    data.battery_min_soc[k] = elm.max_soc
-                    data.battery_max_soc[k] = elm.max_soc
-                    data.battery_soc_0[k] = elm.soc_0
-                    data.battery_discharge_efficiency[k] = elm.discharge_efficiency
-                    data.battery_charge_efficiency[k] = elm.charge_efficiency
-                    data.battery_cost[k] = elm.Cost
         else:
-            data.battery_p[k] = opf_results.battery_power[k]
+            data.battery_p[k] = elm.P
+            data.battery_active[k] = elm.active
+            data.battery_pf[k] = elm.Pf
+            data.battery_v[k] = elm.Vset
+
+            if opf:
+                data.battery_dispatchable[k] = elm.enabled_dispatch
+                data.battery_pmax[k] = elm.Pmax
+                data.battery_pmin[k] = elm.Pmin
+                data.battery_enom[k] = elm.Enom
+                data.battery_min_soc[k] = elm.max_soc
+                data.battery_max_soc[k] = elm.max_soc
+                data.battery_soc_0[k] = elm.soc_0
+                data.battery_discharge_efficiency[k] = elm.discharge_efficiency
+                data.battery_charge_efficiency[k] = elm.charge_efficiency
+                data.battery_cost[k] = elm.Cost
+
+            if opf_results is not None:
+                data.battery_p[k] = opf_results.battery_power[k]
 
         data.C_bus_batt[i, k] = 1
 

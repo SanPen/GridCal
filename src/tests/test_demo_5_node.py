@@ -15,6 +15,7 @@
 
 import numpy as np
 
+from GridCal.Engine.IO.file_handler import FileSave
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.branch import Branch
 from GridCal.Engine.Devices.bus import Bus
@@ -63,6 +64,8 @@ def test_demo_5_node(root_path=ROOT_PATH):
     grid.add_branch(Branch(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02))
     # grid.plot_graph()
     print('\n\n', grid.name)
+
+    FileSave(grid, 'demo_5_node.json').save()
 
     options = PowerFlowOptions(SolverType.NR, verbose=False)
 

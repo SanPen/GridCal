@@ -152,7 +152,8 @@ def sigma_function(coeff_matU, coeff_matX, order, V_slack):
     coeff_matX = coeff_matX / V0
     nbus = coeff_matU.shape[1]
     complex_type = nb.complex128
-    sigmes = np.zeros(nbus, dtype=complex_type)
+    # complex_type = complex
+    sigmas = np.zeros(nbus, dtype=complex_type)
 
     if order % 2 == 0:
         M = int(order / 2) - 1
@@ -172,9 +173,9 @@ def sigma_function(coeff_matU, coeff_matX, order, V_slack):
 
         lhs = np.linalg.solve(C, -a)
 
-        sigmes[d] = np.sum(lhs[M:]) / (np.sum(lhs[:M]) + 1)
+        sigmas[d] = np.sum(lhs[M:]) / (np.sum(lhs[:M]) + 1)
 
-    return sigmes
+    return sigmas
 
 
 @nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")
