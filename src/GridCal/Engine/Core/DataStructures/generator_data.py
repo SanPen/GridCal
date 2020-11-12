@@ -94,10 +94,10 @@ class GeneratorData:
         return self.C_bus_gen * self.generator_installed_p
 
     def get_qmax_per_bus(self):
-        return self.C_bus_gen * (self.generator_qmax * self.generator_active[:, 0])
+        return self.C_bus_gen * (self.generator_qmax * self.generator_active)
 
     def get_qmin_per_bus(self):
-        return self.C_bus_gen * (self.generator_qmin * self.generator_active[:, 0])
+        return self.C_bus_gen * (self.generator_qmin * self.generator_active)
 
     def __len__(self):
         return self.ngen

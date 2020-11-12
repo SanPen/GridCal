@@ -29,10 +29,10 @@ class HvdcData:
         self.ntime = ntime
 
         self.hvdc_names = np.zeros(nhvdc, dtype=object)
-        self.hvdc_active = np.zeros(nhvdc, dtype=bool)
 
         self.hvdc_loss_factor = np.zeros(nhvdc)
 
+        self.hvdc_active = np.zeros((nhvdc, ntime), dtype=bool)
         self.hvdc_rate = np.zeros((nhvdc, ntime))
         self.hvdc_Pf = np.zeros((nhvdc, ntime))
         self.hvdc_Pt = np.zeros((nhvdc, ntime))
@@ -92,21 +92,21 @@ class HvdcData:
         return tp.get_elements_of_the_island(self.C_hvdc_bus_f + self.C_hvdc_bus_t, bus_idx)
 
     def get_injections_per_bus(self):
-        F = (self.hvdc_active * self.hvdc_Pf) * self.C_hvdc_bus_f
-        T = (self.hvdc_active * self.hvdc_Pt) * self.C_hvdc_bus_t
+        F = self.C_hvdc_bus_f.T * (self.hvdc_active * self.hvdc_Pf)
+        T = self.C_hvdc_bus_t.T * (self.hvdc_active * self.hvdc_Pt)
         return F + T
 
     def get_qmax_from_per_bus(self):
-        return (self.hvdc_Qmax_f * self.hvdc_active) * self.C_hvdc_bus_f
+        return ((self.hvdc_Qmax_f * self.hvdc_active) * self.C_hvdc_bus_f).T
 
     def get_qmin_from_per_bus(self):
-        return (self.hvdc_Qmin_f * self.hvdc_active) * self.C_hvdc_bus_f
+        return ((self.hvdc_Qmax_f * self.hvdc_active) * self.C_hvdc_bus_f).T
 
     def get_qmax_to_per_bus(self):
-        return (self.hvdc_Qmax_t * self.hvdc_active) * self.C_hvdc_bus_t
+        return ((self.hvdc_Qmax_t * self.hvdc_active) * self.C_hvdc_bus_t).T
 
     def get_qmin_to_per_bus(self):
-        return (self.hvdc_Qmin_t * self.hvdc_active) * self.C_hvdc_bus_t
+        return ((self.hvdc_Qmin_t * self.hvdc_active) * self.C_hvdc_bus_t).T
 
     def get_loading(self):
         return self.hvdc_Pf / self.hvdc_rate

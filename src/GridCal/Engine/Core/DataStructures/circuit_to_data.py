@@ -2,8 +2,6 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.basic_structures import BusMode
-from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
-from GridCal.Engine.Core.common_functions import compile_types
 from GridCal.Engine.Devices.enumerations import ConverterControlType, TransformerControlType
 from GridCal.Engine.Core.DataStructures import *
 
@@ -695,8 +693,9 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, time_series=False,
         data.hvdc_Qmax_t[i] = elm.Qmax_t
 
         # hack the bus types to believe they are PV
-        bus_types[f] = BusMode.PV.value
-        bus_types[t] = BusMode.PV.value
+        if elm.active:
+            bus_types[f] = BusMode.PV.value
+            bus_types[t] = BusMode.PV.value
 
         # the the bus-hvdc line connectivity
         data.C_hvdc_bus_f[i, f] = 1
