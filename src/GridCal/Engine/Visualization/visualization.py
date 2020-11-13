@@ -57,6 +57,9 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
     :param loadings: Branches load
     :param types: Buses type
     :param losses: Branches losses
+    :param hvdc_sending_power:
+    :param hvdc_losses:
+    :param hvdc_loading:
     :param failed_br_idx: failed branches
     :param loading_label:
     :return:
@@ -126,8 +129,6 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
                     tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
                 branch.graphic_obj.setToolTipText(tooltip)
                 branch.graphic_obj.set_colour(color, w, style)
-                # if branch.graphic_obj.symbol is not None:
-                #     branch.graphic_obj.symbol.setBrush(color)
 
     if failed_br_idx is not None:
         for i in failed_br_idx:

@@ -718,7 +718,6 @@ def parse_json_data_v2(data: dict, logger: Logger):
         if "HVDC Line" in devices.keys():
             hvdc = devices["HVDC Line"]
 
-
         # fill x, y
         circuit.fill_xy_from_lat_lon()
 

@@ -684,6 +684,13 @@ class Transformer2W(EditableDevice):
 
         tap_f = tpe_f_v / bus_f_v
         tap_t = tpe_t_v / bus_t_v
+
+        if tap_f == 0.0:
+            tap_f = 1.0
+
+        if tap_t == 0.0:
+            tap_t = 1.0
+
         return tap_f, tap_t
 
     def apply_template(self, obj: TransformerType, Sbase, logger=Logger()):

@@ -1230,13 +1230,25 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
         if len(calculation_inputs[0].vd) > 0:
             # only one island
             # run circuit power flow
-            results = single_island_pf(circuit=calculation_inputs[0],
-                                       Vbus=calculation_inputs[0].Vbus,
-                                       Sbus=calculation_inputs[0].Sbus,
-                                       Ibus=calculation_inputs[0].Ibus,
-                                       branch_rates=calculation_inputs[0].Rates,
-                                       options=options,
-                                       logger=logger)
+            res = single_island_pf(circuit=calculation_inputs[0],
+                                   Vbus=calculation_inputs[0].Vbus,
+                                   Sbus=calculation_inputs[0].Sbus,
+                                   Ibus=calculation_inputs[0].Ibus,
+                                   branch_rates=calculation_inputs[0].Rates,
+                                   options=options,
+                                   logger=logger)
+
+            if calculation_inputs[0].nbus == nc.nbus:
+                # we can confidently say that the island is the only one
+                results = res
+            else:
+                # the island is the only valid subset, but does not contain all the buses
+                bus_original_idx = calculation_inputs[0].original_bus_idx
+                branch_original_idx = calculation_inputs[0].original_branch_idx
+                tr_original_idx = calculation_inputs[0].original_tr_idx
+
+                # merge the results from this island
+                results.apply_from_island(res, bus_original_idx, branch_original_idx, tr_original_idx)
 
         else:
             logger.append('There are no slack nodes')
