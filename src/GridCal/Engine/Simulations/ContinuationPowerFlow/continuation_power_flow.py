@@ -517,6 +517,9 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
     pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
     pvpq_lookup[pvpq] = np.arange(len(pvpq))
 
+    # compute total bus installed power
+    total_installed_power = bus_installed_power.sum()
+
     # result arrays
     results = CpfNumericResults()
 
@@ -565,7 +568,6 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
         if distributed_slack:
             # Distribute the slack power
             slack_power = Scalc[vd].real.sum()
-            total_installed_power = bus_installed_power.sum()
 
             if total_installed_power > 0.0:
                 delta = slack_power * bus_installed_power / total_installed_power
@@ -678,7 +680,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
                     continuation = False
 
             elif stop_at == CpfStopAt.ExtraOverloads:
-                # look for overloads and determine if there are more overloads than in the base situation
+                    # look for overloads and determine if there are more overloads than in the base situation
                 idx = np.where(np.abs(loading) > 1)[0]
                 if len(idx) > base_overload_number:
                     continuation = False

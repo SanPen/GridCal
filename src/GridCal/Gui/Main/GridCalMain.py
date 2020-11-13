@@ -2089,18 +2089,21 @@ class MainGUI(QMainWindow):
 
             magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
 
-            # get the enumeration univoque association with he device text
-            dev_type = self.circuit.device_type_name_dict[dev_type_text]
+            if len(magnitudes) > 0:
+                # get the enumeration univoque association with he device text
+                dev_type = self.circuit.device_type_name_dict[dev_type_text]
 
-            idx = self.ui.device_type_magnitude_comboBox.currentIndex()
-            magnitude = magnitudes[idx]
-            mtype = mag_types[idx]
+                idx = self.ui.device_type_magnitude_comboBox.currentIndex()
+                magnitude = magnitudes[idx]
+                mtype = mag_types[idx]
 
-            mdl = ProfilesModel(multi_circuit=self.circuit,
-                                device_type=dev_type,
-                                magnitude=magnitude,
-                                format=mtype,
-                                parent=self.ui.profiles_tableView)
+                mdl = ProfilesModel(multi_circuit=self.circuit,
+                                    device_type=dev_type,
+                                    magnitude=magnitude,
+                                    format=mtype,
+                                    parent=self.ui.profiles_tableView)
+            else:
+                mdl = None
 
             self.ui.profiles_tableView.setModel(mdl)
 
