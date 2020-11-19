@@ -391,7 +391,7 @@ class Transformer2W(EditableDevice):
         **template** (BranchTemplate, BranchTemplate()): Basic branch template
     """
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, HV=None, LV=None, name='Branch', idtag=None,
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, HV=None, LV=None, name='Branch', idtag=None, code='',
                  r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0.0, active=True, tolerance=0, cost=0.0,
                  mttf=0, mttr=0,
@@ -405,9 +405,11 @@ class Transformer2W(EditableDevice):
                                 name=name,
                                 idtag=idtag,
                                 active=active,
+                                code=code,
                                 device_type=DeviceType.Transformer2WDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the branch.'),
                                                   'idtag': GCProp('', str, 'Unique ID'),
+                                                  'code': GCProp('', str, 'Secondary ID'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
                                                                      'Name of the bus at the "from" side of the branch.'),
                                                   'bus_to': GCProp('', DeviceType.BusDevice,

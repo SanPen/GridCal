@@ -87,7 +87,7 @@ class Load(EditableDevice):
                                                   'mttr': GCProp('h', float, 'Mean time to recovery'),
                                                   'Cost': GCProp('e/MWh', float,
                                                                  'Cost of not served energy. Used in OPF.')},
-                                non_editable_attributes=list(),
+                                non_editable_attributes=['bus', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'P': 'P_prof',
                                                          'Q': 'Q_prof',

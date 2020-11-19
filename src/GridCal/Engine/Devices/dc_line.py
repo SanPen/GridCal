@@ -106,7 +106,7 @@ class DcLine(EditableDevice):
                                                                       '1 would be at the "to" side,\n'
                                                                       'therefore 0.5 is at the middle.'),
                                                   'template': GCProp('', DeviceType.SequenceLineDevice, '')},
-                                non_editable_attributes=['bus_from', 'bus_to', 'template'],
+                                non_editable_attributes=['bus_from', 'bus_to', 'template', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'rate': 'rate_prof',
                                                          'temp_oper': 'temp_oper_prof',

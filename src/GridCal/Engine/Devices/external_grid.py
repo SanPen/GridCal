@@ -75,7 +75,7 @@ class ExternalGrid(EditableDevice):
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery'),
                                                   },
-                                non_editable_attributes=list(),
+                                non_editable_attributes=['bus', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'Vm': 'Vm_prof',
                                                          'Va': 'Va_prof'})

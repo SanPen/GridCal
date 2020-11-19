@@ -58,7 +58,7 @@ class Shunt(EditableDevice):
                                                   'Bmax': GCProp('MVAr', float, 'Reactive power max control value at V=1.0 p.u.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery')},
-                                non_editable_attributes=list(),
+                                non_editable_attributes=['bus', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'G': 'G_prof',
                                                          'B': 'B_prof'})

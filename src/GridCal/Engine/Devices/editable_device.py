@@ -47,7 +47,7 @@ class EditableDevice:
                  editable_headers: Dict[str, GCProp],
                  non_editable_attributes: List[str],
                  properties_with_profile: Dict[str, Optional[Any]],
-                 idtag=None):
+                 idtag=None, code=''):
         """
         Class to generalize any editable device
         :param name: Asset's name
@@ -57,6 +57,7 @@ class EditableDevice:
         :param non_editable_attributes: list of non editable magnitudes
         :param properties_with_profile: dictionary of profile properties {'magnitude': profile_magnitude}
         :param idtag: unique ID, if not provided it is generated
+        :param code: alternative code to identify this object in other databases (i.e. psse number tec...)
         """
 
         if idtag is None:
@@ -65,6 +66,8 @@ class EditableDevice:
             self.idtag = idtag
 
         self.name = name
+
+        self.code = code
 
         self.active = active
 

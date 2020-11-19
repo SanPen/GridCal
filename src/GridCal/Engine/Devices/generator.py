@@ -103,7 +103,7 @@ class Generator(EditableDevice):
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery'),
                                                   'technology': GCProp('', GeneratorTechnologyType, 'Generator technology')},
-                                non_editable_attributes=list(),
+                                non_editable_attributes=['bus', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'P': 'P_prof',
                                                          'Pf': 'Pf_prof',

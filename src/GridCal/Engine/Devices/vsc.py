@@ -114,7 +114,7 @@ class VSC(EditableDevice):
                                                   'Vdc_set': GCProp('p.u.', float, 'DC voltage set point.'),
                                                   'Cost': GCProp('e/MWh', float, 'Cost of overloads. Used in OPF.'),
                                                   },
-                                non_editable_attributes=['bus_from', 'bus_to'],
+                                non_editable_attributes=['bus_from', 'bus_to', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'rate': 'rate_prof',
                                                          'Cost': 'Cost_prof'})

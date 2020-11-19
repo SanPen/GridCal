@@ -89,6 +89,7 @@ class Bus(EditableDevice):
                                 name=name,
                                 idtag=idtag,
                                 active=active,
+                                code=code,
                                 device_type=DeviceType.BusDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the bus'),
                                                   'idtag': GCProp('', str, 'Unique ID'),
@@ -152,8 +153,6 @@ class Bus(EditableDevice):
         self.zone = zone
 
         self.substation = substation
-
-        self.code = code
 
         # List of load s attached to this bus
         self.loads = list()

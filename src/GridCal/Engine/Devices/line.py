@@ -223,8 +223,8 @@ class Line(EditableDevice):
         **template** (BranchTemplate, BranchTemplate()): Basic branch template
     """
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Line', idtag=None, r=1e-20, x=1e-20, b=1e-20,
-                 rate=1.0, active=True, tolerance=0, cost=0.0,
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Line', idtag=None, code='',
+                 r=1e-20, x=1e-20, b=1e-20, rate=1.0, active=True, tolerance=0, cost=0.0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  length=1, temp_base=20, temp_oper=20, alpha=0.00330,
                  template=LineTemplate(), rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None):
@@ -234,8 +234,10 @@ class Line(EditableDevice):
                                 idtag=idtag,
                                 active=active,
                                 device_type=DeviceType.LineDevice,
+                                code=code,
                                 editable_headers={'name': GCProp('', str, 'Name of the line.'),
                                                   'idtag': GCProp('', str, 'Unique ID'),
+                                                  'code': GCProp('', str, 'Secondary ID'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
                                                                      'Name of the bus at the "from" side of the line.'),
                                                   'bus_to': GCProp('', DeviceType.BusDevice,
@@ -279,7 +281,7 @@ class Line(EditableDevice):
                                                                       '1 would be at the "to" side,\n'
                                                                       'therefore 0.5 is at the middle.'),
                                                   'template': GCProp('', DeviceType.SequenceLineDevice, '')},
-                                non_editable_attributes=['bus_from', 'bus_to', 'template'],
+                                non_editable_attributes=['bus_from', 'bus_to', 'template', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'rate': 'rate_prof',
                                                          'temp_oper': 'temp_oper_prof',
