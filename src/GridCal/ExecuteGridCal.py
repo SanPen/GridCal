@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+print('Loading GridCal...')
 import os
 import sys
 import matplotlib

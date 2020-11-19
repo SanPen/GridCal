@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>mainWindow</class>
+ <widget class="QMainWindow" name="mainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>570</width>
+    <height>354</height>
+   </rect>
+  </property>
+  <property name="baseSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>GridCal</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="icons.qrc">
+    <normaloff>:/Program icon/GridCal_icon.svg</normaloff>:/Program icon/GridCal_icon.svg</iconset>
+  </property>
+  <property name="iconSize">
+   <size>
+    <width>24</width>
+    <height>24</height>
+   </size>
+  </property>
+  <property name="documentMode">
+   <bool>false</bool>
+  </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Rounded</enum>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="textFormat">
+       <enum>Qt::PlainText</enum>
+      </property>
+      <property name="pixmap">
+       <pixmap resource="icons.qrc">:/Program icon/icons/GridCal_banner.svg</pixmap>
+      </property>
+      <property name="scaledContents">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <action name="actionOpen_file">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/loadc.svg</normaloff>:/Icons/icons/loadc.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Open file</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/savec.svg</normaloff>:/Icons/icons/savec.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Export schematic picture</string>
+   </property>
+  </action>
+  <action name="actionNew_project">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/new2c.svg</normaloff>:/Icons/icons/new2c.svg</iconset>
+   </property>
+   <property name="text">
+    <string>New project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionPower_flow">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/pf.svg</normaloff>:/Icons/icons/pf.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Power Flow</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
+   </property>
+  </action>
+  <action name="actionPower_Flow_Time_series">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/pf_ts.svg</normaloff>:/Icons/icons/pf_ts.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Power Flow: Time series</string>
+   </property>
+   <property name="toolTip">
+    <string>Power flow time series</string>
+   </property>
+   <property name="shortcut">
+    <string>F6</string>
+   </property>
+  </action>
+  <action name="actionBigger_nodes">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/plus (gray).svg</normaloff>:/Icons/icons/plus (gray).svg</iconset>
+   </property>
+   <property name="text">
+    <string>Expand</string>
+   </property>
+   <property name="toolTip">
+    <string>Expand distances</string>
+   </property>
+   <property name="shortcut">
+    <string>F3</string>
+   </property>
+  </action>
+  <action name="actionSmaller_nodes">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/minus (gray).svg</normaloff>:/Icons/icons/minus (gray).svg</iconset>
+   </property>
+   <property name="text">
+    <string>Shrink</string>
+   </property>
+   <property name="toolTip">
+    <string>Shrink distances</string>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
+   </property>
+  </action>
+  <action name="actionPower_flow_Stochastic">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/stochastic_power_flow.svg</normaloff>:/Icons/icons/stochastic_power_flow.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Stochastic power flow: Monte Carlo</string>
+   </property>
+   <property name="toolTip">
+    <string>Monte Carlo stochastic power flow</string>
+   </property>
+  </action>
+  <action name="actionVoltage_stability">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/continuation_power_flow.svg</normaloff>:/Icons/icons/continuation_power_flow.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Continuation power flow</string>
+   </property>
+   <property name="toolTip">
+    <string>Continuation power flow</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Program icon/GridCal_icon.svg</normaloff>:/Program icon/GridCal_icon.svg</iconset>
+   </property>
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionCenter_view">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/resize.svg</normaloff>:/Icons/icons/resize.svg</iconset>
+   </property>
+   <property name="text">
+    <string>center view</string>
+   </property>
+   <property name="toolTip">
+    <string>Center view</string>
+   </property>
+   <property name="shortcut">
+    <string>F4</string>
+   </property>
+  </action>
+  <action name="actionShort_Circuit">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/short_circuit.svg</normaloff>:/Icons/icons/short_circuit.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Short Circuit</string>
+   </property>
+  </action>
+  <action name="actionAutoatic_layout">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/automatic_layout.svg</normaloff>:/Icons/icons/automatic_layout.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Automatic grid layout</string>
+   </property>
+   <property name="toolTip">
+    <string>Automatic layout the of the grid</string>
+   </property>
+  </action>
+  <action name="actionLatin_Hypercube_Sampling">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/latin_hypercube2.svg</normaloff>:/Icons/icons/latin_hypercube2.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Stochastic power flow: Latin Hypercube</string>
+   </property>
+   <property name="toolTip">
+    <string>Latin Hypercube stochastic power flow</string>
+   </property>
+  </action>
+  <action name="actionBlackout_cascade">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/blackout.svg</normaloff>:/Icons/icons/blackout.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Blackout cascade</string>
+   </property>
+   <property name="toolTip">
+    <string>Run a simulation or step by step blackout cascade</string>
+   </property>
+  </action>
+  <action name="actionOPF">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/dcopf.svg</normaloff>:/Icons/icons/dcopf.svg</iconset>
+   </property>
+   <property name="text">
+    <string>OPF</string>
+   </property>
+   <property name="toolTip">
+    <string>Optimal power flow</string>
+   </property>
+   <property name="shortcut">
+    <string>F9</string>
+   </property>
+  </action>
+  <action name="actionOPF_time_series">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/dcopf_ts.svg</normaloff>:/Icons/icons/dcopf_ts.svg</iconset>
+   </property>
+   <property name="text">
+    <string>OPF time series</string>
+   </property>
+   <property name="toolTip">
+    <string>Optimal power flow time series</string>
+   </property>
+   <property name="shortcut">
+    <string>F10</string>
+   </property>
+  </action>
+  <action name="actionDetect_transformers">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/detect_tr.svg</normaloff>:/Icons/icons/detect_tr.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Detect transformers</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Detect transformers.&lt;/p&gt;&lt;p&gt;Use the nodes nominal voltage to determine which branches should be a transformer.&lt;/p&gt;&lt;p&gt;If a branch joins two nodes with different voltage levels, the branch should be a transformer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionAuto_rate_branches">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/rate_br.svg</normaloff>:/Icons/icons/rate_br.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Auto rate branches</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatic rating of the branches.&lt;/p&gt;&lt;p&gt;Use the branches calculated power to establish a rate, if the branch rate is unknown. A factor is available in the settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionExport_all_the_device_s_profiles">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Export all the device's profiles</string>
+   </property>
+  </action>
+  <action name="actionGrid_Reduction">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/grid_reduction.svg</normaloff>:/Icons/icons/grid_reduction.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Grid Reduction</string>
+   </property>
+   <property name="toolTip">
+    <string>Performs a topological grid reduction</string>
+   </property>
+  </action>
+  <action name="actionStorage_location_suggestion">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/storage_loc.svg</normaloff>:/Icons/icons/storage_loc.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Storage location suggestion</string>
+   </property>
+   <property name="toolTip">
+    <string>Suggest places where storage devices are useful</string>
+   </property>
+  </action>
+  <action name="actionLaunch_data_analysis_tool">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/bars.svg</normaloff>:/Icons/icons/bars.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Launch data analysis tool</string>
+   </property>
+   <property name="shortcut">
+    <string>F8</string>
+   </property>
+  </action>
+  <action name="actionOnline_documentation">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/new.svg</normaloff>:/Icons/icons/new.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Online documentation</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
+  </action>
+  <action name="actionExport_all_results">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/export_pickle.svg</normaloff>:/Icons/icons/export_pickle.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Export all results</string>
+   </property>
+   <property name="toolTip">
+    <string>Export all the results</string>
+   </property>
+  </action>
+  <action name="actionSave_as">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Save as</string>
+   </property>
+  </action>
+  <action name="actionDelete_selected">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/delete3.svg</normaloff>:/Icons/icons/delete3.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Delete selected</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete selected objects</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+  </action>
+  <action name="actionPTDF">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/ptdf.svg</normaloff>:/Icons/icons/ptdf.svg</iconset>
+   </property>
+   <property name="text">
+    <string>PTDF (Power Transfer Distribution Factors)</string>
+   </property>
+   <property name="toolTip">
+    <string>Power Transfer Distribution Factors</string>
+   </property>
+  </action>
+  <action name="actionOTDF">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/otdf.svg</normaloff>:/Icons/icons/otdf.svg</iconset>
+   </property>
+   <property name="text">
+    <string>N-1 / OTDF (Outage Transfer Distribution Factors)</string>
+   </property>
+   <property name="toolTip">
+    <string>N-1 / OTDF (Outage Transfer Distribution Factors)</string>
+   </property>
+  </action>
+  <action name="actionReset_console">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/undo.svg</normaloff>:/Icons/icons/undo.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Reset console</string>
+   </property>
+  </action>
+  <action name="actionOpf_to_Power_flow">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/dcopf2ts.svg</normaloff>:/Icons/icons/dcopf2ts.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Set OPF results to Power flow (non destructive)</string>
+   </property>
+   <property name="toolTip">
+    <string>Set the OPF resultsinto the power flow or time series simulations (non destructive)</string>
+   </property>
+  </action>
+  <action name="actionTry_to_fix_buses_location">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/move_bus.svg</normaloff>:/Icons/icons/move_bus.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Correct buses location</string>
+   </property>
+   <property name="toolTip">
+    <string>Set selected buses location closer to their neighbours</string>
+   </property>
+  </action>
+  <action name="actionSet_OPF_generation_to_profiles">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/dcopf2ts.svg</normaloff>:/Icons/icons/dcopf2ts.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Copy OPF generation to profiles (destructive)</string>
+   </property>
+   <property name="toolTip">
+    <string>Destructive copy of the OPF generation results to the input profiles</string>
+   </property>
+  </action>
+  <action name="actionPTDF_time_series">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/ptdf_ts.svg</normaloff>:/Icons/icons/ptdf_ts.svg</iconset>
+   </property>
+   <property name="text">
+    <string>PTDF time series power flow</string>
+   </property>
+   <property name="toolTip">
+    <string>Runs the PTDF based time series power flow</string>
+   </property>
+  </action>
+  <action name="actionShow_color_controls">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/map.svg</normaloff>:/Icons/icons/map.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Show color controls</string>
+   </property>
+  </action>
+  <action name="actionAdd_circuit">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/load_add.svg</normaloff>:/Icons/icons/load_add.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Add circuit</string>
+   </property>
+   <property name="toolTip">
+    <string>Add circuit to the current circuit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N, Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionSync">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/sync.svg</normaloff>:/Icons/icons/sync.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Sync</string>
+   </property>
+   <property name="toolTip">
+    <string>Sync with the file for colaborative editing of the grid</string>
+   </property>
+  </action>
+  <action name="actionDrawSchematic">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Draw schematic</string>
+   </property>
+  </action>
+  <action name="actionSigma_analysis">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/sigma.svg</normaloff>:/Icons/icons/sigma.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Sigma analysis</string>
+   </property>
+   <property name="toolTip">
+    <string>Perform HELM-Sigma analysis</string>
+   </property>
+  </action>
+  <action name="actionClear_stuff_running_right_now">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/clear_runs.svg</normaloff>:/Icons/icons/clear_runs.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Clear &quot;stuff running right now&quot;</string>
+   </property>
+  </action>
+  <action name="actionAdd_default_catalogue">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/CatalogueAdd.svg</normaloff>:/Icons/icons/CatalogueAdd.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Add default catalogue</string>
+   </property>
+  </action>
+  <action name="actionFind_node_groups">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/color_grid2.svg</normaloff>:/Icons/icons/color_grid2.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Find node groups</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Finds the electrically related nodes by using their electrical distance and the DBSCAN clustering method&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actiongrid_Generator">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/automatic_layout.svg</normaloff>:/Icons/icons/automatic_layout.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Grid Generator</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>

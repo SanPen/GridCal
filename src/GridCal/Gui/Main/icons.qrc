@@ -101,6 +101,7 @@
     <file>icons/pf_ts.svg</file>
   </qresource>
   <qresource prefix="Program icon">
+    <file>icons/GridCal_banner.svg</file>
     <file>GridCal_icon.svg</file>
   </qresource>
 </RCC>

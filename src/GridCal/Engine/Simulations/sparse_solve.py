@@ -79,10 +79,10 @@ preferred_type = SparseSolver.KLU
 if preferred_type not in available_sparse_solvers:
     if len(available_sparse_solvers) > 0:
         preferred_type = available_sparse_solvers[0]
-        print('Falling back to', preferred_type)
+        # print('Falling back to', preferred_type)
     else:
         raise Exception('No linear algebra solver!!!! GridCal cannot work without one.')
-print('Using', preferred_type)
+# print('Using', preferred_type)
 
 
 def get_sparse_type(solver_type: SparseSolver = preferred_type):
