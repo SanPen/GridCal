@@ -401,6 +401,15 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 v1 = float(entry['Vnomf'])
                 v2 = float(entry['Vnomt'])
 
+                bus_from = bus_dict[entry['bus_from']]
+                bus_to = bus_dict[entry['bus_to']]
+
+                if v1 == 0.0:
+                    v1 = bus_from.Vnom
+
+                if v2 == 0.0:
+                    v2 = bus_to.Vnom
+
                 if v1 > v2:
                     HV = v1
                     LV = v2
@@ -408,8 +417,8 @@ def parse_json_data_v3(data: dict, logger: Logger):
                     HV = v2
                     LV = v1
 
-                elm = Transformer2W(bus_from=bus_dict[entry['bus_from']],
-                                    bus_to=bus_dict[entry['bus_to']],
+                elm = Transformer2W(bus_from=bus_from,
+                                    bus_to=bus_to,
                                     name=str(entry['name']),
                                     idtag=str(entry['id']),
                                     code=str(entry['name_code']),

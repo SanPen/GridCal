@@ -156,7 +156,7 @@ class GridGeneratorGUI(QDialog):
         for f, t in self.g.edges:
             dx = (self.g.lat[f] - self.g.lat[t]) * explosion_factor
             dy = (self.g.lon[f] - self.g.lon[t]) * explosion_factor
-            m = np.sqrt(dx * dx + dy * dy)
+            m = np.sqrt(dx * dx + dy * dy) / 10.0  # divided by 10 to have more meaningful values
 
             b1 = bus_dict[f]
             b2 = bus_dict[t]

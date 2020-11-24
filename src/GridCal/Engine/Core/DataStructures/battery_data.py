@@ -94,10 +94,10 @@ class BatteryData:
         return self.C_bus_batt * self.battery_installed_p
 
     def get_qmax_per_bus(self):
-        return self.C_bus_batt * (self.battery_qmax * self.battery_active)
+        return self.C_bus_batt * (self.battery_qmax.reshape(-1, 1) * self.battery_active)
 
     def get_qmin_per_bus(self):
-        return self.C_bus_batt * (self.battery_qmin * self.battery_active)
+        return self.C_bus_batt * (self.battery_qmin.reshape(-1, 1) * self.battery_active)
 
     def __len__(self):
         return self.nbatt

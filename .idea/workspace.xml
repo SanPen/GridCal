@@ -23,16 +23,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed HVDC devices dimensionality">
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/banner.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/GridCal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/GridCal.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="minor improvements in the loading messages">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/sparse_solve.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/sparse_solve.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/battery_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/battery_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/generator_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/generator_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/json_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/json_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/grid_generator_dialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/grid_generator_dialogue.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -99,7 +95,7 @@
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.setup">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -213,8 +209,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.setup" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.setup" />
         <item itemvalue="Python tests.Nosetests in test_demo_5_node.py" />
         <item itemvalue="Python.update_gui_file (1)" />
         <item itemvalue="Python.update_gui_file" />
@@ -416,14 +412,12 @@
       <workItem from="1605202950098" duration="525000" />
       <workItem from="1605207988622" duration="5700000" />
       <workItem from="1605277853640" duration="409000" />
-      <workItem from="1605816946494" duration="1422000" />
-    </task>
-    <task id="LOCAL-00012" summary="Added more internal structures to the snapshot">
-      <created>1592486140338</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1592486140338</updated>
+      <workItem from="1605816946494" duration="1773000" />
+      <workItem from="1605963351851" duration="183000" />
+      <workItem from="1605964528636" duration="726000" />
+      <workItem from="1606038210682" duration="3271000" />
+      <workItem from="1606241809483" duration="641000" />
+      <workItem from="1606245884473" duration="1733000" />
     </task>
     <task id="LOCAL-00013" summary="Improved filter of boolean properties">
       <created>1593602294778</created>
@@ -761,7 +755,14 @@
       <option name="project" value="LOCAL" />
       <updated>1605215496447</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <task id="LOCAL-00061" summary="minor improvements in the loading messages">
+      <created>1605819487100</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1605819487101</updated>
+    </task>
+    <option name="localTasksCounter" value="62" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -795,7 +796,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="merged" />
     <MESSAGE value="Fixed the division by zero in the tolerance approximation" />
     <MESSAGE value="Research on multiple failure" />
     <MESSAGE value="Improved the results of the PTDF driver" />
@@ -820,7 +820,8 @@
     <MESSAGE value="Improved the sigma value usage in the Linear node grouping" />
     <MESSAGE value="Fixed the opf solution recycling" />
     <MESSAGE value="Fixed HVDC devices dimensionality" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed HVDC devices dimensionality" />
+    <MESSAGE value="minor improvements in the loading messages" />
+    <option name="LAST_COMMIT_MESSAGE" value="minor improvements in the loading messages" />
   </component>
   <component name="WindowStateProjectService">
     <state x="454" y="209" width="1084" height="708" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1604674419534">
@@ -832,10 +833,10 @@
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="635" y="355" width="712" height="403" key="#com.intellij.fileTypes.FileTypeChooser/72.27.1848.1053@72.27.1848.1053" timestamp="1599508013675" />
-    <state x="926" y="342" width="852" height="738" key="#xdebugger.evaluate" timestamp="1605214829958">
+    <state x="926" y="610" width="852" height="470" key="#xdebugger.evaluate" timestamp="1606246952036">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state x="926" y="342" width="852" height="738" key="#xdebugger.evaluate/72.25.1848.1055@72.25.1848.1055" timestamp="1605214829958" />
+    <state x="926" y="610" width="852" height="470" key="#xdebugger.evaluate/72.25.1848.1055@72.25.1848.1055" timestamp="1606246952036" />
     <state x="912" y="330" width="824" height="750" key="#xdebugger.evaluate/72.27.1848.1053@72.27.1848.1053" timestamp="1602518898575" />
     <state x="741" y="411" width="500" height="291" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1" timestamp="1601757977996">
       <screen x="72" y="27" width="1848" height="1053" />
@@ -851,45 +852,45 @@
     </state>
     <state x="486" y="25" width="424" height="491" key="FileChooserDialogImpl/72.25.1848.1055@72.25.1848.1055" timestamp="1604675074999" />
     <state x="486" y="27" width="874" height="926" key="FileChooserDialogImpl/72.27.1848.1053@72.27.1848.1053" timestamp="1601458952521" />
-    <state width="1806" height="365" key="GridCell.Tab.0.bottom" timestamp="1605819258992">
+    <state width="1806" height="365" key="GridCell.Tab.0.bottom" timestamp="1606246989053">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="365" key="GridCell.Tab.0.bottom/72.25.1848.1055@72.25.1848.1055" timestamp="1605819258992" />
+    <state width="1806" height="365" key="GridCell.Tab.0.bottom/72.25.1848.1055@72.25.1848.1055" timestamp="1606246989053" />
     <state width="1806" height="218" key="GridCell.Tab.0.bottom/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="1806" height="365" key="GridCell.Tab.0.center" timestamp="1605819258991">
+    <state width="1806" height="365" key="GridCell.Tab.0.center" timestamp="1606246989052">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="365" key="GridCell.Tab.0.center/72.25.1848.1055@72.25.1848.1055" timestamp="1605819258991" />
+    <state width="1806" height="365" key="GridCell.Tab.0.center/72.25.1848.1055@72.25.1848.1055" timestamp="1606246989052" />
     <state width="1806" height="218" key="GridCell.Tab.0.center/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="1806" height="365" key="GridCell.Tab.0.left" timestamp="1605819258991">
+    <state width="1806" height="365" key="GridCell.Tab.0.left" timestamp="1606246989052">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="365" key="GridCell.Tab.0.left/72.25.1848.1055@72.25.1848.1055" timestamp="1605819258991" />
+    <state width="1806" height="365" key="GridCell.Tab.0.left/72.25.1848.1055@72.25.1848.1055" timestamp="1606246989052" />
     <state width="1806" height="218" key="GridCell.Tab.0.left/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326961" />
-    <state width="1806" height="365" key="GridCell.Tab.0.right" timestamp="1605819258991">
+    <state width="1806" height="365" key="GridCell.Tab.0.right" timestamp="1606246989052">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="365" key="GridCell.Tab.0.right/72.25.1848.1055@72.25.1848.1055" timestamp="1605819258991" />
+    <state width="1806" height="365" key="GridCell.Tab.0.right/72.25.1848.1055@72.25.1848.1055" timestamp="1606246989052" />
     <state width="1806" height="218" key="GridCell.Tab.0.right/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="1806" height="304" key="GridCell.Tab.1.bottom" timestamp="1605215913416">
+    <state width="1806" height="304" key="GridCell.Tab.1.bottom" timestamp="1606246961956">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="304" key="GridCell.Tab.1.bottom/72.25.1848.1055@72.25.1848.1055" timestamp="1605215913416" />
+    <state width="1806" height="304" key="GridCell.Tab.1.bottom/72.25.1848.1055@72.25.1848.1055" timestamp="1606246961956" />
     <state width="1806" height="218" key="GridCell.Tab.1.bottom/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="1806" height="304" key="GridCell.Tab.1.center" timestamp="1605215913416">
+    <state width="1806" height="304" key="GridCell.Tab.1.center" timestamp="1606246961956">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="304" key="GridCell.Tab.1.center/72.25.1848.1055@72.25.1848.1055" timestamp="1605215913416" />
+    <state width="1806" height="304" key="GridCell.Tab.1.center/72.25.1848.1055@72.25.1848.1055" timestamp="1606246961956" />
     <state width="1806" height="218" key="GridCell.Tab.1.center/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="1806" height="304" key="GridCell.Tab.1.left" timestamp="1605215913416">
+    <state width="1806" height="304" key="GridCell.Tab.1.left" timestamp="1606246961956">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="304" key="GridCell.Tab.1.left/72.25.1848.1055@72.25.1848.1055" timestamp="1605215913416" />
+    <state width="1806" height="304" key="GridCell.Tab.1.left/72.25.1848.1055@72.25.1848.1055" timestamp="1606246961956" />
     <state width="1806" height="218" key="GridCell.Tab.1.left/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="1806" height="304" key="GridCell.Tab.1.right" timestamp="1605215913416">
+    <state width="1806" height="304" key="GridCell.Tab.1.right" timestamp="1606246961956">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="304" key="GridCell.Tab.1.right/72.25.1848.1055@72.25.1848.1055" timestamp="1605215913416" />
+    <state width="1806" height="304" key="GridCell.Tab.1.right/72.25.1848.1055@72.25.1848.1055" timestamp="1606246961956" />
     <state width="1806" height="218" key="GridCell.Tab.1.right/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
     <state x="183" y="145" width="1478" height="881" key="MergeDialog" timestamp="1605816964082">
       <screen x="72" y="25" width="1848" height="1055" />
@@ -899,15 +900,15 @@
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="880" y="424" width="476" height="271" key="MultipleFileMergeDialog/72.27.1848.1053@72.27.1848.1053" timestamp="1601568905249" />
-    <state x="93" y="56" width="992" height="737" key="SettingsEditor" timestamp="1603465284643">
+    <state x="93" y="56" width="992" height="737" key="SettingsEditor" timestamp="1605819396964">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state x="93" y="56" width="992" height="737" key="SettingsEditor/72.25.1848.1055@72.25.1848.1055" timestamp="1603465284643" />
+    <state x="93" y="56" width="992" height="737" key="SettingsEditor/72.25.1848.1055@72.25.1848.1055" timestamp="1605819396964" />
     <state x="93" y="58" width="1668" height="961" key="SettingsEditor/72.27.1848.1053@72.27.1848.1053" timestamp="1601461195083" />
-    <state x="303" y="283" width="800" height="561" key="Vcs.Push.Dialog.v2" timestamp="1605215498470">
+    <state x="303" y="283" width="800" height="561" key="Vcs.Push.Dialog.v2" timestamp="1605819488762">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state x="303" y="283" width="800" height="561" key="Vcs.Push.Dialog.v2/72.25.1848.1055@72.25.1848.1055" timestamp="1605215498470" />
+    <state x="303" y="283" width="800" height="561" key="Vcs.Push.Dialog.v2/72.25.1848.1055@72.25.1848.1055" timestamp="1605819488762" />
     <state x="303" y="285" width="800" height="660" key="Vcs.Push.Dialog.v2/72.27.1848.1053@72.27.1848.1053" timestamp="1602519674878" />
     <state width="1804" height="527" key="XDebugger.FullValuePopup" timestamp="1602936616551">
       <screen x="72" y="25" width="1848" height="1055" />
@@ -933,7 +934,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/json_parser.py</url>
-          <line>730</line>
+          <line>739</line>
           <option name="timeStamp" value="29" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1127,11 +1128,6 @@
           <option name="timeStamp" value="356" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/grid_generator_dialogue.py</url>
-          <line>172</line>
-          <option name="timeStamp" value="387" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
           <line>2588</line>
           <option name="timeStamp" value="397" />
@@ -1151,6 +1147,21 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/helm_power_flow.py</url>
           <line>177</line>
           <option name="timeStamp" value="407" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContinuationPowerFlow/continuation_power_flow_driver.py</url>
+          <line>343</line>
+          <option name="timeStamp" value="408" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py</url>
+          <line>613</line>
+          <option name="timeStamp" value="409" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py</url>
+          <line>308</line>
+          <option name="timeStamp" value="410" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1203,9 +1214,9 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_power_flow_py.coverage" NAME="Nosetests in test_power_flow.py Coverage Results" MODIFIED="1602949161638" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$ptdf_ts_driver.coverage" NAME="ptdf_ts_driver Coverage Results" MODIFIED="1600186726130" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$PTDF_research.coverage" NAME="PTDF_research Coverage Results" MODIFIED="1600707513093" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1605819258978" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1606246989041" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$power_world_epc.coverage" NAME="power_world_epc Coverage Results" MODIFIED="1594141589251" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_world_format" />
-    <SUITE FILE_PATH="coverage/GridCal$setup.coverage" NAME="setup Coverage Results" MODIFIED="1604674421806" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/GridCal$setup.coverage" NAME="setup Coverage Results" MODIFIED="1605819371563" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/GridCal$psse_parser.coverage" NAME="psse_parser Coverage Results" MODIFIED="1594285082315" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
     <SUITE FILE_PATH="coverage/GridCal$dc_opf.coverage" NAME="dc_opf Coverage Results" MODIFIED="1602504240684" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_load_all_grids_py.coverage" NAME="Nosetests in test_load_all_grids.py Coverage Results" MODIFIED="1598802785581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
