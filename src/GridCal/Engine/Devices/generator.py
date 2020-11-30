@@ -13,10 +13,73 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCal.Engine.Devices.editable_device import EditableDevice, GCProp
 from GridCal.Engine.Devices.enumerations import DeviceType, GeneratorTechnologyType
+
+
+def make_default_q_curve(Snom, Qmin, Qmax, n=3):
+    """
+    Compute the generator capability curve
+    :param Snom: Nominal power
+    :param Qmin: Minimum reactive power
+    :param Qmax: Maximum reactive power
+    :param n: number of points, at least 3
+    :return: Array of points [(P1, Qmin1, Qmax1), (P2, Qmin2, Qmax2), ...]
+    """
+    assert(n > 2)
+
+    pts = np.zeros((n, 3))
+    s2 = Snom * Snom
+
+    # Compute the intersections of the Qlimits with the natural curve
+    p0_max = np.sqrt(s2 - Qmax * Qmax)
+    p0_min = np.sqrt(s2 - Qmin * Qmin)
+    p0 = min(p0_max, p0_min)  # pick the lower limit as the starting point for sampling
+
+    pts[1:, 0] = np.linspace(p0, Snom, n - 1)
+    pts[0, 0] = 0
+    pts[0, 1] = Qmin
+    pts[0, 2] = Qmax
+
+    for i in range(1, n):
+        p2 = pts[i, 0] * pts[i, 0]  # P^2
+        q = np.sqrt(s2 - p2)  # point that naturally matches Q = sqrt(S^2 - P^2)
+
+        # assign the natural point if it does not violates the limits imposes, else set the limit
+        qmin = -q if -q > Qmin else Qmin
+        qmax = q if q < Qmax else Qmax
+
+        # Enforce that Qmax > Qmin
+        if qmax < qmin:
+            qmax = qmin
+        if qmin > qmax:
+            qmin = qmax
+
+        # Assign the points
+        pts[i, 1] = qmin
+        pts[i, 2] = qmax
+
+    return pts
+
+
+def get_q_limits(q_points, p):
+    """
+    Get the reactive power limits
+    :param q_points: Array of points [(P1, Qmin1, Qmax1), (P2, Qmin2, Qmax2), ...]
+    :param p: active power value (or array)
+    :return:
+    """
+    all_p = q_points[:, 0]
+    all_qmin = q_points[:, 1]
+    all_qmax = q_points[:, 2]
+
+    qmin = np.interp(p, all_p, all_qmin)
+    qmax = np.interp(p, all_p, all_qmax)
+
+    return qmin, qmax
 
 
 class Generator(EditableDevice):
@@ -67,12 +130,18 @@ class Generator(EditableDevice):
 
         **mttr** (float, 0.0): Mean time to recovery in hours
 
+        **technology** (GeneratorTechnologyType): Instance of technology to use
+
+        **q_points**: list of reactive capability curve points [(P1, Qmin1, Qmax1), (P2, Qmin2, Qmax2), ...]
+
+        **use_reactive_power_curve**: Use the reactive power curve? otherwise use the plain old limits
     """
 
     def __init__(self, name='gen', idtag=None, active_power=0.0, power_factor=0.8, voltage_module=1.0, is_controlled=True,
                  Qmin=-9999, Qmax=9999, Snom=9999, power_prof=None, power_factor_prof=None, vset_prof=None,
                  Cost_prof=None, active=True,  p_min=0.0, p_max=9999.0, op_cost=1.0, Sbase=100, enabled_dispatch=True,
-                 mttf=0.0, mttr=0.0, technology: GeneratorTechnologyType = GeneratorTechnologyType.CombinedCycle):
+                 mttf=0.0, mttr=0.0, technology: GeneratorTechnologyType = GeneratorTechnologyType.CombinedCycle,
+                 q_points=None, use_reactive_power_curve=False):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -95,6 +164,7 @@ class Generator(EditableDevice):
                                                   'Snom': GCProp('MVA', float, 'Nomnial power.'),
                                                   'Qmin': GCProp('MVAr', float, 'Minimum reactive power.'),
                                                   'Qmax': GCProp('MVAr', float, 'Maximum reactive power.'),
+                                                  'use_reactive_power_curve': GCProp('', bool, 'Use the reactive power capability curve?'),
                                                   'Pmin': GCProp('MW', float, 'Minimum active power. Used in OPF.'),
                                                   'Pmax': GCProp('MW', float, 'Maximum active power. Used in OPF.'),
                                                   'Cost': GCProp('e/MWh', float, 'Generation unitary cost. Used in OPF.'),
@@ -136,7 +206,7 @@ class Generator(EditableDevice):
         self.is_controlled = is_controlled
 
         # Nominal power in MVA (also the machine base)
-        self.Snom = Snom
+        self._Snom = Snom
 
         # Minimum dispatched power in MW
         self.Pmin = p_min
@@ -153,11 +223,20 @@ class Generator(EditableDevice):
         # voltage set profile for this load in p.u.
         self.Vset_prof = vset_prof
 
+        self.use_reactive_power_curve = use_reactive_power_curve
+
         # minimum reactive power in MVAr
-        self.Qmin = Qmin
+        self.qmin_set = Qmin
 
         # Maximum reactive power in MVAr
-        self.Qmax = Qmax
+        self.qmax_set = Qmax
+
+        if q_points is not None:
+            self.q_points = np.array(q_points)
+            self.custom_q_points = True
+        else:
+            self.q_points = make_default_q_curve(self.Snom, self.qmin_set, self.qmax_set)
+            self.custom_q_points = False
 
         # Cost of operation €/MW
         self.Cost = op_cost
@@ -239,8 +318,6 @@ class Generator(EditableDevice):
     def get_properties_dict(self):
         """
         Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID
         :return: json-compatible dictionary
         """
 
@@ -343,3 +420,56 @@ class Generator(EditableDevice):
 
             if show_fig:
                 plt.show()
+
+    @property
+    def Qmax(self):
+        """
+        Return the reactive power upper limit
+        :return: value
+        """
+        if self.use_reactive_power_curve:
+            all_p = self.q_points[:, 0]
+            all_qmax = self.q_points[:, 2]
+            return np.interp(self.P, all_p, all_qmax)
+        else:
+            return self.qmax_set
+
+    @Qmax.setter
+    def Qmax(self, val):
+        self.qmax_set = val
+
+    @property
+    def Qmin(self):
+        """
+        Return the reactive power lower limit
+        :return: value
+        """
+        if self.use_reactive_power_curve:
+            all_p = self.q_points[:, 0]
+            all_qmin = self.q_points[:, 1]
+            return np.interp(self.P, all_p, all_qmin)
+        else:
+            return self.qmin_set
+
+    @Qmin.setter
+    def Qmin(self, val):
+        self.qmin_set = val
+
+    @property
+    def Snom(self):
+        """
+        Return the reactive power lower limit
+        :return: value
+        """
+        return self._Snom
+
+    @Snom.setter
+    def Snom(self, val):
+        """
+        Set the generator nominal power
+        if the reactive power curve was generated automatically, then it is refreshed
+        :param val: float value
+        """
+        self._Snom = val
+        if not self.custom_q_points:
+            self.q_points = make_default_q_curve(self._Snom, self.qmin_set, self.qmax_set)

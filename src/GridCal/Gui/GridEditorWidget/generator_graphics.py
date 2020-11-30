@@ -16,9 +16,48 @@ import numpy as np
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 from PySide2.QtGui import *
+from GridCal.Engine.Devices.generator import Generator
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
-from GridCal.Gui.GuiFunctions import ObjectsModel
+from GridCal.Gui.GuiFunctions import ObjectsModel, PandasModel
 from GridCal.Gui.GridEditorWidget.messages import *
+from GridCal.Gui.GridEditorWidget.matplotlibwidget import MatplotlibWidget
+
+
+class GeneratorEditor(QDialog):
+
+    def __init__(self, generator: Generator):
+        """
+        Line Editor constructor
+        :param generator: Generator object to update
+        """
+        super(GeneratorEditor, self).__init__()
+
+        # keep pointer to the line object
+        self.generator = generator
+
+        self.selected_template = None
+
+        self.setObjectName("self")
+
+        self.setContextMenuPolicy(Qt.NoContextMenu)
+
+        self.layout = QVBoxLayout(self)
+
+        # create matplotlib object
+        self.plotter = MatplotlibWidget(parent=self)
+        self.layout.addWidget(self.plotter)
+
+        self.setLayout(self.layout)
+
+        self.plot_q_points()
+
+    def plot_q_points(self):
+        p = self.generator.q_points[:, 0]
+        qmin = self.generator.q_points[:, 1]
+        qmax = self.generator.q_points[:, 2]
+        self.plotter.plot(qmax, p, 'x-')
+        self.plotter.plot(qmin, p, 'x-')
+        self.plotter.redraw()
 
 
 class GeneratorGraphicItem(QGraphicsItemGroup):
@@ -171,6 +210,15 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         # plot the profiles
         self.api_object.plot_profiles(time=ts)
 
+    def edit(self):
+        """
+        Open the appropriate editor dialogue
+        :return:
+        """
+        dlg = GeneratorEditor(self.api_object)
+        if dlg.exec_():
+            pass
+
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
         mouse press: display the editor
@@ -180,4 +228,7 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
         mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
                            parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
         self.diagramScene.parent().object_editor_table.setModel(mdl)
+
+    def mouseDoubleClickEvent(self, event):
+        self.edit()
 

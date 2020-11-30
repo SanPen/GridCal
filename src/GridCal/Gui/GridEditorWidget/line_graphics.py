@@ -246,7 +246,6 @@ class LineEditor(QDialog):
             self.load_template(template)
 
 
-
 class LineGraphicItem(QGraphicsLineItem):
 
     def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5, branch: Line = None):
