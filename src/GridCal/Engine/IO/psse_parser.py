@@ -887,7 +887,8 @@ class PSSeBranch:
         name = str(i) + '_' + str(j) + '_' + str(self.CKT).replace("'", "").strip()
 
         branch = Line(bus_from=bus_from, bus_to=bus_to,
-                      idtag=name,
+                      idtag=None,
+                      code=name,
                       name=name,
                       r=self.R,
                       x=self.X,
@@ -1910,8 +1911,8 @@ class PSSeTransformer:
             bus_from = psse_bus_dict[self.I]
             bus_to = psse_bus_dict[self.J]
 
-            idtag = str(self.I) + '_' + str(self.J) + '_' + str(self.CKT)
-            idtag = idtag.strip().replace("'", "")
+            code = str(self.I) + '_' + str(self.J) + '_' + str(self.CKT)
+            code = code.strip().replace("'", "")
 
             """            
             PSS/e's randomness:            
@@ -1935,7 +1936,7 @@ class PSSeTransformer:
                     r *= zb
                     x *= zb
                 else:
-                    logger.append(idtag + ': SBASE1_2 is zero!!!')
+                    logger.append(code + ': SBASE1_2 is zero!!!')
 
             # adjust tap
             if self.CW == 2 or self.CW == 3:
@@ -1958,7 +1959,8 @@ class PSSeTransformer:
 
             elm = Transformer2W(bus_from=bus_from,
                                 bus_to=bus_to,
-                                idtag=idtag,
+                                idtag=None,
+                                code=code,
                                 name=self.NAME,
                                 HV=V1,
                                 LV=V2,
@@ -1980,7 +1982,7 @@ class PSSeTransformer:
             bus_1 = psse_bus_dict[abs(self.I)]
             bus_2 = psse_bus_dict[abs(self.J)]
             bus_3 = psse_bus_dict[abs(self.K)]
-            idtag = str(self.I) + '_' + str(self.J) + '_' + str(self.K) + '_' + str(self.CKT)
+            code = str(self.I) + '_' + str(self.J) + '_' + str(self.K) + '_' + str(self.CKT)
 
             if self.NOMV1 == 0:
                 V1 = bus_1.Vnom
@@ -2055,7 +2057,7 @@ class PSSeTransformer:
 
             elm1 = Transformer2W(bus_from=bus_1,
                                  bus_to=bus_2,
-                                 idtag=idtag + '_12',
+                                 idtag=code + '_12',
                                  name=self.NAME,
                                  HV=V1,
                                  LV=V2,
@@ -2069,7 +2071,7 @@ class PSSeTransformer:
 
             elm2 = Transformer2W(bus_from=bus_2,
                                  bus_to=bus_3,
-                                 idtag=idtag + '_23',
+                                 idtag=code + '_23',
                                  name=self.NAME,
                                  HV=V2,
                                  LV=V3,
@@ -2083,7 +2085,7 @@ class PSSeTransformer:
 
             elm3 = Transformer2W(bus_from=bus_3,
                                  bus_to=bus_1,
-                                 idtag=idtag + '_31',
+                                 idtag=code + '_31',
                                  name=self.NAME,
                                  HV=V1,
                                  LV=V3,

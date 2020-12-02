@@ -23,15 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed dimensionality when loading Qmin Qmax">
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/matplotlibwidget.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/generator/reactive_power_curve.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Implemented reactive power curves per generator">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/Illinois 200 Bus.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/Illinois 200 Bus.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/Pegasus 89 Bus.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/Pegasus 89 Bus.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/generator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/generator_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/generator_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/line_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/line_graphics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/psse_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/AnalysisDialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/AnalysisDialogue.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -98,7 +93,7 @@
       <recent name="$PROJECT_DIR$/src/research" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.reactive_power_curve">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -212,8 +207,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.reactive_power_curve" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.reactive_power_curve" />
         <item itemvalue="Python.setup" />
         <item itemvalue="Python tests.Nosetests in test_demo_5_node.py" />
         <item itemvalue="Python.update_gui_file (1)" />
@@ -426,14 +421,10 @@
       <workItem from="1606597380048" duration="598000" />
       <workItem from="1606652791183" duration="6749000" />
       <workItem from="1606685855107" duration="691000" />
-      <workItem from="1606723182684" duration="908000" />
-    </task>
-    <task id="LOCAL-00014" summary="Added tags to the sigma-plot&#10;Changes the power flow inner loops order">
-      <created>1593679323424</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1593679323424</updated>
+      <workItem from="1606723182684" duration="968000" />
+      <workItem from="1606840982015" duration="982000" />
+      <workItem from="1606847473373" duration="415000" />
+      <workItem from="1606930575174" duration="1961000" />
     </task>
     <task id="LOCAL-00015" summary="updated the docs">
       <created>1593679721703</created>
@@ -771,7 +762,14 @@
       <option name="project" value="LOCAL" />
       <updated>1606247680947</updated>
     </task>
-    <option name="localTasksCounter" value="63" />
+    <task id="LOCAL-00063" summary="Implemented reactive power curves per generator">
+      <created>1606724128904</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1606724128905</updated>
+    </task>
+    <option name="localTasksCounter" value="64" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -805,7 +803,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Research on multiple failure" />
     <MESSAGE value="Improved the results of the PTDF driver" />
     <MESSAGE value="OPF fixes" />
     <MESSAGE value="massive refactor to simplify the numerical classes" />
@@ -830,7 +827,8 @@
     <MESSAGE value="Fixed HVDC devices dimensionality" />
     <MESSAGE value="minor improvements in the loading messages" />
     <MESSAGE value="Fixed dimensionality when loading Qmin Qmax" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed dimensionality when loading Qmin Qmax" />
+    <MESSAGE value="Implemented reactive power curves per generator" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented reactive power curves per generator" />
   </component>
   <component name="WindowStateProjectService">
     <state x="454" y="209" width="1084" height="708" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1604674419534">
@@ -842,10 +840,10 @@
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="635" y="355" width="712" height="403" key="#com.intellij.fileTypes.FileTypeChooser/72.27.1848.1053@72.27.1848.1053" timestamp="1599508013675" />
-    <state x="926" y="610" width="852" height="470" key="#xdebugger.evaluate" timestamp="1606246952036">
+    <state x="926" y="610" width="852" height="470" key="#xdebugger.evaluate" timestamp="1606841295064">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state x="926" y="610" width="852" height="470" key="#xdebugger.evaluate/72.25.1848.1055@72.25.1848.1055" timestamp="1606246952036" />
+    <state x="926" y="610" width="852" height="470" key="#xdebugger.evaluate/72.25.1848.1055@72.25.1848.1055" timestamp="1606841295064" />
     <state x="912" y="330" width="824" height="750" key="#xdebugger.evaluate/72.27.1848.1053@72.27.1848.1053" timestamp="1602518898575" />
     <state x="741" y="411" width="500" height="291" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1" timestamp="1601757977996">
       <screen x="72" y="27" width="1848" height="1053" />
@@ -861,45 +859,45 @@
     </state>
     <state x="486" y="25" width="424" height="491" key="FileChooserDialogImpl/72.25.1848.1055@72.25.1848.1055" timestamp="1604675074999" />
     <state x="486" y="27" width="874" height="926" key="FileChooserDialogImpl/72.27.1848.1053@72.27.1848.1053" timestamp="1601458952521" />
-    <state width="1806" height="273" key="GridCell.Tab.0.bottom" timestamp="1606723746945">
+    <state width="1806" height="273" key="GridCell.Tab.0.bottom" timestamp="1606931265707">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="273" key="GridCell.Tab.0.bottom/72.25.1848.1055@72.25.1848.1055" timestamp="1606723746945" />
+    <state width="1806" height="273" key="GridCell.Tab.0.bottom/72.25.1848.1055@72.25.1848.1055" timestamp="1606931265707" />
     <state width="1806" height="218" key="GridCell.Tab.0.bottom/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="1806" height="273" key="GridCell.Tab.0.center" timestamp="1606723746945">
+    <state width="1806" height="273" key="GridCell.Tab.0.center" timestamp="1606931265706">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="273" key="GridCell.Tab.0.center/72.25.1848.1055@72.25.1848.1055" timestamp="1606723746945" />
+    <state width="1806" height="273" key="GridCell.Tab.0.center/72.25.1848.1055@72.25.1848.1055" timestamp="1606931265706" />
     <state width="1806" height="218" key="GridCell.Tab.0.center/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="1806" height="273" key="GridCell.Tab.0.left" timestamp="1606723746945">
+    <state width="1806" height="273" key="GridCell.Tab.0.left" timestamp="1606931265706">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="273" key="GridCell.Tab.0.left/72.25.1848.1055@72.25.1848.1055" timestamp="1606723746945" />
+    <state width="1806" height="273" key="GridCell.Tab.0.left/72.25.1848.1055@72.25.1848.1055" timestamp="1606931265706" />
     <state width="1806" height="218" key="GridCell.Tab.0.left/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326961" />
-    <state width="1806" height="273" key="GridCell.Tab.0.right" timestamp="1606723746945">
+    <state width="1806" height="273" key="GridCell.Tab.0.right" timestamp="1606931265707">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="273" key="GridCell.Tab.0.right/72.25.1848.1055@72.25.1848.1055" timestamp="1606723746945" />
+    <state width="1806" height="273" key="GridCell.Tab.0.right/72.25.1848.1055@72.25.1848.1055" timestamp="1606931265707" />
     <state width="1806" height="218" key="GridCell.Tab.0.right/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="1806" height="304" key="GridCell.Tab.1.bottom" timestamp="1606670032521">
+    <state width="1806" height="304" key="GridCell.Tab.1.bottom" timestamp="1606846635760">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="304" key="GridCell.Tab.1.bottom/72.25.1848.1055@72.25.1848.1055" timestamp="1606670032521" />
+    <state width="1806" height="304" key="GridCell.Tab.1.bottom/72.25.1848.1055@72.25.1848.1055" timestamp="1606846635760" />
     <state width="1806" height="218" key="GridCell.Tab.1.bottom/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="1806" height="304" key="GridCell.Tab.1.center" timestamp="1606670032521">
+    <state width="1806" height="304" key="GridCell.Tab.1.center" timestamp="1606846635760">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="304" key="GridCell.Tab.1.center/72.25.1848.1055@72.25.1848.1055" timestamp="1606670032521" />
+    <state width="1806" height="304" key="GridCell.Tab.1.center/72.25.1848.1055@72.25.1848.1055" timestamp="1606846635760" />
     <state width="1806" height="218" key="GridCell.Tab.1.center/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="1806" height="304" key="GridCell.Tab.1.left" timestamp="1606670032521">
+    <state width="1806" height="304" key="GridCell.Tab.1.left" timestamp="1606846635759">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="304" key="GridCell.Tab.1.left/72.25.1848.1055@72.25.1848.1055" timestamp="1606670032521" />
+    <state width="1806" height="304" key="GridCell.Tab.1.left/72.25.1848.1055@72.25.1848.1055" timestamp="1606846635759" />
     <state width="1806" height="218" key="GridCell.Tab.1.left/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
-    <state width="1806" height="304" key="GridCell.Tab.1.right" timestamp="1606670032521">
+    <state width="1806" height="304" key="GridCell.Tab.1.right" timestamp="1606846635760">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state width="1806" height="304" key="GridCell.Tab.1.right/72.25.1848.1055@72.25.1848.1055" timestamp="1606670032521" />
+    <state width="1806" height="304" key="GridCell.Tab.1.right/72.25.1848.1055@72.25.1848.1055" timestamp="1606846635760" />
     <state width="1806" height="218" key="GridCell.Tab.1.right/72.27.1848.1053@72.27.1848.1053" timestamp="1602521326962" />
     <state x="183" y="145" width="1478" height="881" key="MergeDialog" timestamp="1605816964082">
       <screen x="72" y="25" width="1848" height="1055" />
@@ -914,20 +912,20 @@
     </state>
     <state x="93" y="56" width="992" height="737" key="SettingsEditor/72.25.1848.1055@72.25.1848.1055" timestamp="1605819396964" />
     <state x="93" y="58" width="1668" height="961" key="SettingsEditor/72.27.1848.1053@72.27.1848.1053" timestamp="1601461195083" />
-    <state x="303" y="283" width="800" height="561" key="Vcs.Push.Dialog.v2" timestamp="1606247686100">
+    <state x="303" y="283" width="800" height="561" key="Vcs.Push.Dialog.v2" timestamp="1606724132577">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state x="303" y="283" width="800" height="561" key="Vcs.Push.Dialog.v2/72.25.1848.1055@72.25.1848.1055" timestamp="1606247686100" />
+    <state x="303" y="283" width="800" height="561" key="Vcs.Push.Dialog.v2/72.25.1848.1055@72.25.1848.1055" timestamp="1606724132577" />
     <state x="303" y="285" width="800" height="660" key="Vcs.Push.Dialog.v2/72.27.1848.1053@72.27.1848.1053" timestamp="1602519674878" />
     <state width="1804" height="527" key="XDebugger.FullValuePopup" timestamp="1602936616551">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
     <state width="1804" height="527" key="XDebugger.FullValuePopup/72.25.1848.1055@72.25.1848.1055" timestamp="1602936616551" />
     <state width="1804" height="526" key="XDebugger.FullValuePopup/72.27.1848.1053@72.27.1848.1053" timestamp="1600166196313" />
-    <state x="1266" y="469" width="373" height="173" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1605816951499">
+    <state x="1266" y="469" width="373" height="173" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1606930577757">
       <screen x="72" y="25" width="1848" height="1055" />
     </state>
-    <state x="1266" y="469" width="373" height="173" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/72.25.1848.1055@72.25.1848.1055" timestamp="1605816951499" />
+    <state x="1266" y="469" width="373" height="173" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/72.25.1848.1055@72.25.1848.1055" timestamp="1606930577757" />
     <state x="524" y="286" width="934" height="542" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1600160043394">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
@@ -1224,7 +1222,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_power_flow_py.coverage" NAME="Nosetests in test_power_flow.py Coverage Results" MODIFIED="1602949161638" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$ptdf_ts_driver.coverage" NAME="ptdf_ts_driver Coverage Results" MODIFIED="1600186726130" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$PTDF_research.coverage" NAME="PTDF_research Coverage Results" MODIFIED="1600707513093" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1606723657840" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1606931265677" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$power_world_epc.coverage" NAME="power_world_epc Coverage Results" MODIFIED="1594141589251" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_world_format" />
     <SUITE FILE_PATH="coverage/GridCal$setup.coverage" NAME="setup Coverage Results" MODIFIED="1605819371563" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/GridCal$psse_parser.coverage" NAME="psse_parser Coverage Results" MODIFIED="1594285082315" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />

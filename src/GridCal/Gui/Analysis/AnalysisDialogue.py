@@ -230,9 +230,9 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
             objects = self.circuit.lines
 
         elif object_type == DeviceType.Transformer2WDevice.value:
-            properties = ['R', 'X', 'G', 'B', 'rate']
-            types = [float, float, float, float, float]
-            log_scale = [False, False, False, False, False]
+            properties = ['R', 'X', 'G', 'B', 'tap_module', 'angle', 'rate']
+            types = [float, float, float, float, float, float, float]
+            log_scale = [False, False, False, False, False, False, False]
             objects = self.circuit.transformers2w
 
         elif object_type == DeviceType.BusDevice.value:
@@ -311,7 +311,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         fig.set_facecolor('white')
 
         if n > 0:
-            k = int(math.sqrt(p))
+            k = int(np.round(math.sqrt(p)))
             axs = [None] * p
 
             for j in range(p):
@@ -328,7 +328,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
                 print(extended_prop[j], r, '\n\t', l, '\n\t', u)
 
                 # plot
-                axs[j] = fig.add_subplot(k, k + 1, j + 1)
+                axs[j] = fig.add_subplot(k, k, j + 1)
                 axs[j].set_facecolor('white')
                 axs[j].hist(x, bins=100, range=r,
                             cumulative=False, bottom=None, histtype='bar',
