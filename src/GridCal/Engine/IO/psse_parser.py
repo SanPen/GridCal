@@ -88,6 +88,7 @@ class PSSeGrid:
         self.lines = list()
         self.transformers = list()
         self.hvdc_lines = list()
+        self.facts = list()
         self.areas = list()
         self.zones = list()
 
@@ -205,6 +206,11 @@ class PSSeGrid:
             else:
                 logger.add(
                     'The RAW file has a repeated line ' + str(branch.idtag) + 'and it is omitted from the model')
+
+        # Go through facts lines
+        for psse_elm in self.facts:
+            # since these may be shunt or series or both, pass the circuit so that the correct device is added
+            psse_elm.get_object(psse_bus_dict, self.SBASE, logger, circuit)
 
         return circuit
 
@@ -1044,7 +1050,7 @@ class PSSeTwoTerminalDCLine:
         bus1 = psse_bus_dict[abs(self.IPR)]
         bus2 = psse_bus_dict[abs(self.IPI)]
 
-        if self.MDC == 1:
+        if self.MDC == 1 or self.MDC == 0:
             # SETVL is in MW
             specified_power = self.SETVL
         elif self.MDC == 2:
@@ -1057,14 +1063,14 @@ class PSSeTwoTerminalDCLine:
         z_base = self.VSCHD * self.VSCHD / Sbase
         r_pu = self.RDC / z_base
 
-        Vset_f = float(self.TAPR)
-        Vset_t = float(self.TAPI)
+        Vset_f = 1.0
+        Vset_t = 1.0
 
-        name1 = self.NAME.replace("'", "").replace('/', '').strip()
+        name1 = self.NAME.replace("'", "").replace('"', "").replace('/', '').strip()
         idtag = str(self.IPR) + '_' + str(self.IPI) + '_1'
 
-        obj = HvdcLine(bus_from=bus1,
-                       bus_to=bus2,
+        obj = HvdcLine(bus_from=bus1,  # Rectifier as of PSSe
+                       bus_to=bus2,  # inverter as of PSSe
                        name=name1,
                        idtag=idtag,
                        Pset=specified_power,
@@ -1962,7 +1968,7 @@ class PSSeTransformer:
                                 b=b,
                                 rate=max(self.RATA1, self.RATB1, self.RATC1),
                                 tap=tap_mod,
-                                shift_angle=self.ANG1,
+                                shift_angle=np.deg2rad(self.ANG1),
                                 active=bool(self.STAT),
                                 mttf=0,
                                 mttr=0)
@@ -2093,6 +2099,219 @@ class PSSeTransformer:
 
         else:
             raise Exception(str(self.windings) + ' number of windings!')
+
+
+class PSSeFACTS:
+
+    def __init__(self, data, version, logger: list):
+        """
+
+        :param data:
+        :param version:
+        :param logger:
+
+        NAME The non-blank alphanumeric identifier assigned to this FACTS device. Each FACTS
+            device must have a unique NAME. NAME may be up to twelve characters and may
+            contain any combination of blanks, uppercase letters, numbers and special characters.
+            NAME must be enclosed in single or double quotes if it contains any blanks or
+            special characters. No default allowed.
+
+        I Sending end bus number, or extended bus name enclosed in single quotes (refer to
+            Extended Bus Names). No default allowed.
+
+        J Terminal end bus number, or extended bus name enclosed in single quotes; 0 for a
+            STATCON. J = 0 by default.
+
+        MODE Control mode:
+            For a STATCON (i.e., a FACTS devices with a shunt element but no series
+            element), J must be 0 and MODE must be either 0 or 1):
+            0 out-of-service (i.e., shunt link open)
+            1 shunt link operating.
+                For a FACTS device with a series element (i.e., J is not 0), MODE may be:
+                0 out-of-service (i.e., series and shunt links open)
+                1 series and shunt links operating.
+            2 series link bypassed (i.e., like a zero impedance line) and
+                shunt link operating as a STATCON.
+            3 series and shunt links operating with series link at constant
+                series impedance.
+            4 series and shunt links operating with series link at constant
+                series voltage.
+            5 master device of an IPFC with P and Q setpoints specified;
+                another FACTS device must be designated as the slave device
+                (i.e., its MODE is 6 or 8) of this IPFC.
+            6 slave device of an IPFC with P and Q setpoints specified;
+                the FACTS device specified in MNAME must be the master
+                device (i.e., its MODE is 5 or 7) of this IPFC. The Q setpoint is
+                ignored as the master device dictates the active power
+                exchanged between the two devices.
+            7 master device of an IPFC with constant series voltage setpoints
+                specified; another FACTS device must be designated as the slave
+                device (i.e., its MODE is 6 or 8) of this IPFC
+            8 slave device of an IPFC with constant series voltage setpoints
+                specified; the FACTS device specified in MNAME must be the
+                master device (i.e., its MODE is 5 or 7) of this IPFC. The complex
+                Vd + jVq setpoint is modified during power flow solutions to reflect
+                the active power exchange determined by the master device
+            MODE = 1 by default.
+
+        PDES Desired active power flow arriving at the terminal end bus; entered in MW.
+            PDES = 0.0 by default.
+        QDES Desired reactive power flow arriving at the terminal end bus; entered in MVAR.
+            QDES = 0.0 by default.
+
+        VSET Voltage setpoint at the sending end bus; entered in pu. VSET = 1.0 by default.
+
+        SHMX Maximum shunt current at the sending end bus; entered in MVA at unity voltage.
+            SHMX = 9999.0 by default.
+        TRMX Maximum bridge active power transfer; entered in MW. TRMX = 9999.0 by default.
+
+        VTMN Minimum voltage at the terminal end bus; entered in pu. VTMN = 0.9 by default.
+
+        VTMX Maximum voltage at the terminal end bus; entered in pu. VTMX = 1.1 by default.
+
+        VSMX Maximum series voltage; entered in pu. VSMX = 1.0 by default.
+
+        IMX Maximum series current, or zero for no series current limit; entered in MVA at unity
+            voltage. IMX = 0.0 by default.
+
+        LINX Reactance of the dummy series element used during power flow solutions; entered
+            in pu. LINX = 0.05 by default.
+
+        RMPCT Percent of the total Mvar required to hold the voltage at the bus controlled by the
+            shunt element of this FACTS device that are to be contributed by this shunt
+            element; RMPCT must be positive. RMPCT is needed only if REMOT specifies a
+            valid remote bus and there is more than one local or remote voltage controlling
+            device (plant, switched shunt, FACTS device shunt element, or VSC dc line
+            converter) controlling the voltage at bus REMOT to a setpoint, or REMOT is zero
+            but bus I is the controlled bus, local or remote, of one or more other setpoint mode
+            voltage controlling devices. RMPCT = 100.0 by default.
+            OWNER Owner number (1 through 9999). OWNER = 1 by default.
+
+        SET1, SET2
+            If MODE is 3, resistance and reactance respectively of the constant impedance,
+            entered in pu; if MODE is 4, the magnitude (in pu) and angle (in degrees) of the
+            constant series voltage with respect to the quantity indicated by VSREF; if MODE is
+            7 or 8, the real (Vd) and imaginary (Vq) components (in pu) of the constant series
+            voltage with respect to the quantity indicated by VSREF; for other values of MODE,
+            SET1 and SET2 are read, but not saved or used during power flow solutions.
+            SET1 = 0.0 and SET2 = 0.0 by default.
+
+        VSREF Series voltage reference code to indicate the series voltage reference of SET1 and
+            SET2 when MODE is 4, 7 or 8:
+                0 for sending end voltage
+                1 for series current.
+
+        VSREF = 0 by default.
+
+        REMOT Bus number, or extended bus name enclosed in single quotes (refer to Extended
+            Bus Names), of a remote Type 1 or 2 bus where voltage is to be regulated by the
+            shunt element of this FACTS device to the value specified by VSET. If bus REMOT
+            is other than a Type 1 or 2 bus, the shunt element regulates voltage at the sending
+            end bus to the value specified by VSET. REMOT is entered as zero if the shunt
+            element is to regulate voltage at the sending end bus and must be zero if the
+            sending end bus is a Type 3 (swing) bus. REMOT = 0 by default.
+
+        MNAME The name of the FACTS device that is the IPFC master device when this FACTS
+            device is the slave device of an IPFC (i.e., its MODE is specified as 6 or 8). MNAME
+            must be enclosed in single or double quotes if it contains any blanks or special characters.
+            MNAME is blank by default.
+        """
+
+        if version in [32, 33, 34]:
+            '''
+            ’NAME’,I,J,MODE,PDES,QDES,VSET,SHMX,TRMX,VTMN,VTMX,VSMX,IMX,LINX,
+            RMPCT,OWNER,SET1,SET2,VSREF,REMOT,’MNAME’
+            '''
+
+            self.NAME, self.I, self.J, self.MODE, self.PDES, self.QDES, self.VSET, self.SHMX, \
+                self.TRMX, self.VTMN, self.VTMX, self.VSMX, self.IMX, self.LINX, self.RMPCT, self.OWNER, \
+                self.SET1, self.SET2, self.VSREF, self.REMOT, self.MNAME = data[0]
+
+        elif version == 29:
+            '''
+            ’NAME’,I,J,MODE,PDES,QDES,VSET,SHMX,TRMX,VTMN,VTMX,VSMX,IMX,LINX,
+                RMPCT,OWNER,SET1,SET2,VSREF,REMOT,’MNAME’
+            '''
+
+            self.NAME, self.I, self.J, self.MODE, self.PDES, self.QDES, self.VSET, self.SHMX, \
+                self.TRMX, self.VTMN, self.VTMX, self.VSMX, self.IMX, self.LINX, self.RMPCT, self.OWNER, \
+                self.SET1, self.SET2, self.VSREF, self.REMOT, self.MNAME = data[0]
+        else:
+            logger.append('Version ' + str(version) + ' not implemented for DC Lines')
+
+    def get_object(self, psse_bus_dict, Sbase, logger: list, circuit: MultiCircuit):
+        """
+        GEt equivalent object
+        :param psse_bus_dict:
+        :param logger:
+        :param circuit:
+        :return:
+        """
+        bus1 = psse_bus_dict[abs(self.I)]
+
+        if abs(self.J) > 0:
+            bus2 = psse_bus_dict[abs(self.J)]
+        else:
+            bus2 = None
+
+        name1 = self.NAME.replace("'", "").replace('"', "").replace('/', '').strip()
+        idtag = str(self.I) + '_' + str(self.J) + '_1'
+
+        mode = int(self.MODE)
+
+        if mode == 0:
+            active = False
+        elif mode == 1 and abs(self.J) > 0:
+            # shunt link
+            logger.append('FACTS mode ' + str(mode) + ' not implemented')
+
+        elif mode == 2:
+            # only shunt device: STATCOM
+            logger.append('FACTS mode ' + str(mode) + ' not implemented')
+
+        elif mode == 3 and abs(self.J) > 0:
+            # series and shunt links operating with series link at constant series impedance
+            sh = Shunt(name='FACTS:' + name1, B=self.SHMX)
+            load_from = Load(name='FACTS:' + name1, P=-self.PDES, Q=-self.QDES)
+            load_to = Load(name='FACTS:' + name1, P=self.PDES, Q=self.QDES)
+            circuit.add_shunt(bus1, sh)
+            circuit.add_load(bus1, load_from)
+            circuit.add_load(bus2, load_to)
+
+        elif mode == 4 and abs(self.J) > 0:
+            # series and shunt links operating with series link at constant series voltage
+            logger.append('FACTS mode ' + str(mode) + ' not implemented')
+
+        elif mode == 5 and abs(self.J) > 0:
+            # master device of an IPFC with P and Q setpoints specified;
+            # another FACTS device must be designated as the slave device
+            # (i.e., its MODE is 6 or 8) of this IPFC.
+            logger.append('FACTS mode ' + str(mode) + ' not implemented')
+
+        elif mode == 6 and abs(self.J) > 0:
+            # 6 slave device of an IPFC with P and Q setpoints specified;
+            #  the FACTS device specified in MNAME must be the master
+            #  device (i.e., its MODE is 5 or 7) of this IPFC. The Q setpoint is
+            #  ignored as the master device dictates the active power
+            #  exchanged between the two devices.
+            logger.append('FACTS mode ' + str(mode) + ' not implemented')
+
+        elif mode == 7 and abs(self.J) > 0:
+            # master device of an IPFC with constant series voltage setpoints
+            # specified; another FACTS device must be designated as the slave
+            # device (i.e., its MODE is 6 or 8) of this IPFC
+            logger.append('FACTS mode ' + str(mode) + ' not implemented')
+
+        elif mode == 8 and abs(self.J) > 0:
+            # slave device of an IPFC with constant series voltage setpoints
+            # specified; the FACTS device specified in MNAME must be the
+            # master device (i.e., its MODE is 5 or 7) of this IPFC. The complex
+            # Vd + jVq setpoint is modified during power flow solutions to reflect
+            # the active power exchange determined by the master device
+            logger.append('FACTS mode ' + str(mode) + ' not implemented')
+
+        else:
+            return None
 
 
 class PSSeInterArea:
@@ -2275,7 +2494,9 @@ class PSSeParser:
         grid = PSSeGrid(interpret_line(sections[0]))
 
         if grid.REV not in self.versions:
-            logger.append('The PSSe version is not compatible. Compatible versions are:' + str(self.versions))
+            msg = 'The PSSe version is not compatible. Compatible versions are:'
+            msg += ', '.join([str(a) for a in self.versions])
+            logger.append(msg)
             return grid, logger
         else:
             version = grid.REV
@@ -2317,9 +2538,12 @@ class PSSeParser:
         meta_data['branch'] = [grid.lines, PSSeBranch, 1]
         meta_data['transformer'] = [grid.transformers, PSSeTransformer, 4]
         meta_data['two-terminal dc'] = [grid.hvdc_lines, PSSeTwoTerminalDCLine, 3]
+        meta_data['two-terminal dc line'] = [grid.hvdc_lines, PSSeTwoTerminalDCLine, 3]
         meta_data['vsc dc line'] = [grid.hvdc_lines, PSSeVscDCLine, 3]
+        meta_data['facts device'] = [grid.facts, PSSeFACTS, 1]
         meta_data['area data'] = [grid.areas, PSSeArea, 1]
         meta_data['area'] = [grid.areas, PSSeArea, 1]
+        meta_data['area interchange'] = [grid.areas, PSSeArea, 1]
         meta_data['inter-area transfer'] = [grid.areas, PSSeInterArea, 1]
         meta_data['zone'] = [grid.zones, PSSeZone, 1]
 
@@ -2337,7 +2561,7 @@ class PSSeParser:
 
                     lines_per_object2 = lines_per_object
 
-                    if version in [29, 30, 32, 33] and key == 'transformer':
+                    if version in self.versions and key == 'transformer':
                         # as you know the PSS/e raw format is nuts, that is why for v29 (onwards probably)
                         # the transformers may have 4 or 5 lines to define them
                         if (l + 1) < len(lines):
@@ -2385,7 +2609,7 @@ class PSSeParser:
 
 if __name__ == '__main__':
     fname = '/home/santi/Documentos/Private_Grids/Transformado.raw'
-
+    fname = r'C:\Users\penversa\Documents\Grids\Casos PSSe\201902271115 caso TReal Israel.raw'
     pss_parser = PSSeParser(fname)
 
     print()
