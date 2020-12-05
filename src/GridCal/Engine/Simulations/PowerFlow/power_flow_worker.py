@@ -1197,7 +1197,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                bus_names=nc.bus_data.bus_names,
                                branch_names=nc.branch_data.branch_names,
                                transformer_names=nc.transformer_data.tr_names,
-                               hvdc_names=nc.hvdc_data.hvdc_names,
+                               hvdc_names=nc.hvdc_data.names,
                                bus_types=nc.bus_data.bus_types)
 
     if len(calculation_inputs) > 1:

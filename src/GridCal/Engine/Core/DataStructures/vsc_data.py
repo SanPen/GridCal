@@ -28,21 +28,21 @@ class VscData:
         self.nvsc = nvsc
         self.ntime = ntime
 
-        self.vsc_names = np.zeros(nvsc, dtype=object)
-        self.vsc_R1 = np.zeros(nvsc)
-        self.vsc_X1 = np.zeros(nvsc)
-        self.vsc_G0 = np.zeros(nvsc)
-        self.vsc_Beq = np.zeros(nvsc)
-        self.vsc_m = np.zeros(nvsc)
-        self.vsc_theta = np.zeros(nvsc)
-        self.vsc_Inom = np.zeros(nvsc)
+        self.names = np.zeros(nvsc, dtype=object)
+        self.R1 = np.zeros(nvsc)
+        self.X1 = np.zeros(nvsc)
+        self.G0 = np.zeros(nvsc)
+        self.Beq = np.zeros(nvsc)
+        self.m = np.zeros(nvsc)
+        self.theta = np.zeros(nvsc)
+        self.Inom = np.zeros(nvsc)
 
-        self.vsc_Pset = np.zeros((nvsc, ntime))
-        self.vsc_Qset = np.zeros((nvsc, ntime))
-        self.vsc_Vac_set = np.ones((nvsc, ntime))
-        self.vsc_Vdc_set = np.ones((nvsc, ntime))
+        self.Pset = np.zeros((nvsc, ntime))
+        self.Qset = np.zeros((nvsc, ntime))
+        self.Vac_set = np.ones((nvsc, ntime))
+        self.Vdc_set = np.ones((nvsc, ntime))
 
-        self.vsc_control_mode = np.zeros(nvsc, dtype=object)
+        self.control_mode = np.zeros(nvsc, dtype=object)
 
         self.C_vsc_bus = sp.lil_matrix((nvsc, nbus), dtype=int)  # this ons is just for splitting islands
 
@@ -61,21 +61,21 @@ class VscData:
 
         nc = VscData(nvsc=len(elm_idx), nbus=len(bus_idx))
 
-        nc.vsc_names = self.vsc_names[elm_idx]
-        nc.vsc_R1 = self.vsc_R1[elm_idx]
-        nc.vsc_X1 = self.vsc_X1[elm_idx]
-        nc.vsc_G0 = self.vsc_G0[elm_idx]
-        nc.vsc_Beq = self.vsc_Beq[elm_idx]
-        nc.vsc_m = self.vsc_m[elm_idx]
-        nc.vsc_theta = self.vsc_theta[elm_idx]
-        nc.vsc_Inom = self.vsc_Inom[elm_idx]
+        nc.names = self.names[elm_idx]
+        nc.R1 = self.R1[elm_idx]
+        nc.X1 = self.X1[elm_idx]
+        nc.G0 = self.G0[elm_idx]
+        nc.Beq = self.Beq[elm_idx]
+        nc.m = self.m[elm_idx]
+        nc.theta = self.theta[elm_idx]
+        nc.Inom = self.Inom[elm_idx]
 
-        nc.vsc_Pset = self.vsc_Pset[tidx]
-        nc.vsc_Qset = self.vsc_Qset[tidx]
-        nc.vsc_Vac_set = self.vsc_Vac_set[tidx]
-        nc.vsc_Vdc_set = self.vsc_Vdc_set[tidx]
+        nc.Pset = self.Pset[tidx]
+        nc.Qset = self.Qset[tidx]
+        nc.Vac_set = self.Vac_set[tidx]
+        nc.Vdc_set = self.Vdc_set[tidx]
 
-        nc.vsc_control_mode = self.vsc_control_mode[elm_idx]
+        nc.control_mode = self.control_mode[elm_idx]
 
         nc.C_vsc_bus = self.C_vsc_bus[np.ix_(elm_idx, bus_idx)]
 

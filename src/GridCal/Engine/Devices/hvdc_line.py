@@ -419,7 +419,6 @@ class HvdcLine(EditableDevice):
              'active': self.active,
              'rate': self.rate,
              'length': self.length,
-
              'loss_factor': self.loss_factor,
              'vset_f': self.Vset_f,
              'vset_t': self.Vset_t,

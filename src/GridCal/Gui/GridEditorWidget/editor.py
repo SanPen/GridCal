@@ -884,10 +884,16 @@ class GridEditor(QSplitter):
         # delete from the schematic
         self.diagramScene.removeItem(line.graphic_obj)
 
-    def add_circuit_to_schematic(self, circuit: "MultiCircuit", explode_factor=1.0, prog_func=None, text_func=None):
+    def add_elements_to_schematic(self, buses, lines, dc_lines, transformers2w, hvdc_lines, vsc_converters,
+                                  explode_factor=1.0, prog_func=None, text_func=None):
         """
-        Add a complete circuit to the schematic scene
-        :param circuit: MultiCircuit instance
+        Add a elements to the schematic scene
+        :param buses: list of Bus objects
+        :param lines: list of Line objects
+        :param dc_lines: list of DcLine objects
+        :param transformers2w: list of Transformer Objects
+        :param hvdc_lines: list of HvdcLine objects
+        :param vsc_converters: list Vsc objects
         :param explode_factor: factor of "explosion": Separation of the nodes factor
         :param prog_func: progress report function
         :param text_func: Text report function
@@ -896,8 +902,8 @@ class GridEditor(QSplitter):
         if text_func is not None:
             text_func('Creating schematic buses')
 
-        nn = len(circuit.buses)
-        for i, bus in enumerate(circuit.buses):
+        nn = len(buses)
+        for i, bus in enumerate(buses):
 
             if prog_func is not None:
                 prog_func((i+1) / nn * 100.0)
@@ -908,8 +914,8 @@ class GridEditor(QSplitter):
         if text_func is not None:
             text_func('Creating schematic line devices')
 
-        nn = len(circuit.lines)
-        for i, branch in enumerate(circuit.lines):
+        nn = len(lines)
+        for i, branch in enumerate(lines):
 
             if prog_func is not None:
                 prog_func((i+1) / nn * 100.0)
@@ -920,8 +926,8 @@ class GridEditor(QSplitter):
         if text_func is not None:
             text_func('Creating schematic line devices')
 
-        nn = len(circuit.dc_lines)
-        for i, branch in enumerate(circuit.dc_lines):
+        nn = len(dc_lines)
+        for i, branch in enumerate(dc_lines):
 
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
@@ -932,8 +938,8 @@ class GridEditor(QSplitter):
         if text_func is not None:
             text_func('Creating schematic transformer devices')
 
-        nn = len(circuit.transformers2w)
-        for i, branch in enumerate(circuit.transformers2w):
+        nn = len(transformers2w)
+        for i, branch in enumerate(transformers2w):
 
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
@@ -944,8 +950,8 @@ class GridEditor(QSplitter):
         if text_func is not None:
             text_func('Creating schematic HVDC devices')
 
-        nn = len(circuit.hvdc_lines)
-        for i, branch in enumerate(circuit.hvdc_lines):
+        nn = len(hvdc_lines)
+        for i, branch in enumerate(hvdc_lines):
 
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
@@ -956,13 +962,103 @@ class GridEditor(QSplitter):
         if text_func is not None:
             text_func('Creating schematic VSC devices')
 
-        nn = len(circuit.vsc_converters)
-        for i, branch in enumerate(circuit.vsc_converters):
+        nn = len(vsc_converters)
+        for i, branch in enumerate(vsc_converters):
 
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
             branch.graphic_obj = self.add_api_vsc(branch)
+
+    def add_circuit_to_schematic(self, circuit: "MultiCircuit", explode_factor=1.0, prog_func=None, text_func=None):
+        """
+        Add a complete circuit to the schematic scene
+        :param circuit: MultiCircuit instance
+        :param explode_factor: factor of "explosion": Separation of the nodes factor
+        :param prog_func: progress report function
+        :param text_func: Text report function
+        """
+        # # first create the buses
+        # if text_func is not None:
+        #     text_func('Creating schematic buses')
+        #
+        # nn = len(circuit.buses)
+        # for i, bus in enumerate(circuit.buses):
+        #
+        #     if prog_func is not None:
+        #         prog_func((i+1) / nn * 100.0)
+        #
+        #     bus.graphic_obj = self.add_api_bus(bus, explode_factor)
+        #
+        # # --------------------------------------------------------------------------------------------------------------
+        # if text_func is not None:
+        #     text_func('Creating schematic line devices')
+        #
+        # nn = len(circuit.lines)
+        # for i, branch in enumerate(circuit.lines):
+        #
+        #     if prog_func is not None:
+        #         prog_func((i+1) / nn * 100.0)
+        #
+        #     branch.graphic_obj = self.add_api_line(branch)
+        #
+        # # --------------------------------------------------------------------------------------------------------------
+        # if text_func is not None:
+        #     text_func('Creating schematic line devices')
+        #
+        # nn = len(circuit.dc_lines)
+        # for i, branch in enumerate(circuit.dc_lines):
+        #
+        #     if prog_func is not None:
+        #         prog_func((i + 1) / nn * 100.0)
+        #
+        #     branch.graphic_obj = self.add_api_dc_line(branch)
+        #
+        # # --------------------------------------------------------------------------------------------------------------
+        # if text_func is not None:
+        #     text_func('Creating schematic transformer devices')
+        #
+        # nn = len(circuit.transformers2w)
+        # for i, branch in enumerate(circuit.transformers2w):
+        #
+        #     if prog_func is not None:
+        #         prog_func((i + 1) / nn * 100.0)
+        #
+        #     branch.graphic_obj = self.add_api_transformer(branch)
+        #
+        # # --------------------------------------------------------------------------------------------------------------
+        # if text_func is not None:
+        #     text_func('Creating schematic HVDC devices')
+        #
+        # nn = len(circuit.hvdc_lines)
+        # for i, branch in enumerate(circuit.hvdc_lines):
+        #
+        #     if prog_func is not None:
+        #         prog_func((i + 1) / nn * 100.0)
+        #
+        #     branch.graphic_obj = self.add_api_hvdc(branch)
+        #
+        # # --------------------------------------------------------------------------------------------------------------
+        # if text_func is not None:
+        #     text_func('Creating schematic VSC devices')
+        #
+        # nn = len(circuit.vsc_converters)
+        # for i, branch in enumerate(circuit.vsc_converters):
+        #
+        #     if prog_func is not None:
+        #         prog_func((i + 1) / nn * 100.0)
+        #
+        #     branch.graphic_obj = self.add_api_vsc(branch)
+
+        self.add_elements_to_schematic(buses=circuit.buses,
+                                       lines=circuit.lines,
+                                       dc_lines=circuit.dc_lines,
+                                       transformers2w=circuit.transformers2w,
+                                       hvdc_lines=circuit.hvdc_lines,
+                                       vsc_converters=circuit.vsc_converters,
+                                       explode_factor=explode_factor,
+                                       prog_func=prog_func,
+                                       text_func=text_func)
 
     def align_schematic(self):
         """

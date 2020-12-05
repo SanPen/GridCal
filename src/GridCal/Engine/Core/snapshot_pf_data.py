@@ -359,7 +359,7 @@ class SnapshotData:
 
     @property
     def hvdc_names(self):
-        return self.hvdc_data.hvdc_names
+        return self.hvdc_data.names
 
     @property
     def tr_tap_position(self):
@@ -407,7 +407,7 @@ class SnapshotData:
 
     @property
     def hvdc_Pf(self):
-        return self.hvdc_data.hvdc_Pf[:, 0]
+        return self.hvdc_data.Pf[:, 0]
 
     @property
     def hvdc_loading(self):

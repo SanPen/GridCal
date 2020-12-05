@@ -534,13 +534,19 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_28.addWidget(self.filter_pushButton)
 
-        self.highlight_by_property_pushButton = QPushButton(self.frame_54)
-        self.highlight_by_property_pushButton.setObjectName(u"highlight_by_property_pushButton")
+        self.highlight_selection_buses_pushButton = QPushButton(self.frame_54)
+        self.highlight_selection_buses_pushButton.setObjectName(u"highlight_selection_buses_pushButton")
         icon50 = QIcon()
-        icon50.addFile(u":/Icons/icons/highlight2.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.highlight_by_property_pushButton.setIcon(icon50)
+        icon50.addFile(u":/Icons/icons/highlight.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.highlight_selection_buses_pushButton.setIcon(icon50)
 
-        self.horizontalLayout_28.addWidget(self.highlight_by_property_pushButton)
+        self.horizontalLayout_28.addWidget(self.highlight_selection_buses_pushButton)
+
+        self.busViewerButton = QPushButton(self.frame_54)
+        self.busViewerButton.setObjectName(u"busViewerButton")
+        self.busViewerButton.setIcon(icon35)
+
+        self.horizontalLayout_28.addWidget(self.busViewerButton)
 
         self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -597,13 +603,13 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_25.addWidget(self.delete_and_reduce_pushButton)
 
-        self.highlight_selection_buses_pushButton = QPushButton(self.frame_9)
-        self.highlight_selection_buses_pushButton.setObjectName(u"highlight_selection_buses_pushButton")
+        self.highlight_by_property_pushButton = QPushButton(self.frame_9)
+        self.highlight_by_property_pushButton.setObjectName(u"highlight_by_property_pushButton")
         icon54 = QIcon()
-        icon54.addFile(u":/Icons/icons/highlight.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.highlight_selection_buses_pushButton.setIcon(icon54)
+        icon54.addFile(u":/Icons/icons/highlight2.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.highlight_by_property_pushButton.setIcon(icon54)
 
-        self.horizontalLayout_25.addWidget(self.highlight_selection_buses_pushButton)
+        self.horizontalLayout_25.addWidget(self.highlight_by_property_pushButton)
 
         self.clear_highlight_pushButton = QPushButton(self.frame_9)
         self.clear_highlight_pushButton.setObjectName(u"clear_highlight_pushButton")
@@ -3125,9 +3131,13 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.filter_pushButton.setText("")
 #if QT_CONFIG(tooltip)
-        self.highlight_by_property_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Highlight the schematic buses based on the values of the selected property", None))
+        self.highlight_selection_buses_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Highlight the buses of the selected elements", None))
 #endif // QT_CONFIG(tooltip)
-        self.highlight_by_property_pushButton.setText("")
+        self.highlight_selection_buses_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.busViewerButton.setToolTip(QCoreApplication.translate("mainWindow", u"open bus viewer", None))
+#endif // QT_CONFIG(tooltip)
+        self.busViewerButton.setText("")
 #if QT_CONFIG(tooltip)
         self.processTemplatesPushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Process templates", None))
 #endif // QT_CONFIG(tooltip)
@@ -3149,9 +3159,9 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.delete_and_reduce_pushButton.setText("")
 #if QT_CONFIG(tooltip)
-        self.highlight_selection_buses_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Highlight the buses of the selected elements", None))
+        self.highlight_by_property_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Highlight the schematic buses based on the values of the selected property", None))
 #endif // QT_CONFIG(tooltip)
-        self.highlight_selection_buses_pushButton.setText("")
+        self.highlight_by_property_pushButton.setText("")
 #if QT_CONFIG(tooltip)
         self.clear_highlight_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Clear the bus highlight", None))
 #endif // QT_CONFIG(tooltip)

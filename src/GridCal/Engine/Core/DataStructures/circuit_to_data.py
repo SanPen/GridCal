@@ -396,19 +396,19 @@ def get_vsc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
         t = bus_dict[elm.bus_to]
 
         # vsc values
-        nc.vsc_names[i] = elm.name
-        nc.vsc_R1[i] = elm.R1
-        nc.vsc_X1[i] = elm.X1
-        nc.vsc_G0[i] = elm.G0
-        nc.vsc_Beq[i] = elm.Beq
-        nc.vsc_m[i] = elm.m
-        nc.vsc_theta[i] = elm.theta
-        # nc.vsc_Inom[i] = (elm.rate / nc.Sbase) / np.abs(nc.Vbus[f])
-        nc.vsc_Pset[i] = elm.Pset
-        nc.vsc_Qset[i] = elm.Qset
-        nc.vsc_Vac_set[i] = elm.Vac_set
-        nc.vsc_Vdc_set[i] = elm.Vdc_set
-        nc.vsc_control_mode[i] = elm.control_mode
+        nc.names[i] = elm.name
+        nc.R1[i] = elm.R1
+        nc.X1[i] = elm.X1
+        nc.G0[i] = elm.G0
+        nc.Beq[i] = elm.Beq
+        nc.m[i] = elm.m
+        nc.theta[i] = elm.theta
+        # nc.Inom[i] = (elm.rate / nc.Sbase) / np.abs(nc.Vbus[f])
+        nc.Pset[i] = elm.Pset
+        nc.Qset[i] = elm.Qset
+        nc.Vac_set[i] = elm.Vac_set
+        nc.Vdc_set[i] = elm.Vdc_set
+        nc.control_mode[i] = elm.control_mode
 
         nc.C_vsc_bus[i, f] = 1
         nc.C_vsc_bus[i, t] = 1
@@ -671,26 +671,26 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, time_series=False,
         t = bus_dict[elm.bus_to]
 
         # hvdc values
-        data.hvdc_names[i] = elm.name
+        data.names[i] = elm.name
 
         if time_series:
-            data.hvdc_active[i, :] = elm.active_prof
-            data.hvdc_rate[i, :] = elm.rate_prof
-            data.hvdc_Pf[i, :], data.hvdc_Pt[i, :] = elm.get_from_and_to_power()
-            data.hvdc_Vset_f[i, :] = elm.Vset_f_prof
-            data.hvdc_Vset_t[i, :] = elm.Vset_t_prof
+            data.active[i, :] = elm.active_prof
+            data.rate[i, :] = elm.rate_prof
+            data.Pf[i, :], data.Pt[i, :] = elm.get_from_and_to_power()
+            data.Vset_f[i, :] = elm.Vset_f_prof
+            data.Vset_t[i, :] = elm.Vset_t_prof
         else:
-            data.hvdc_active[i] = elm.active
-            data.hvdc_rate[i] = elm.rate
-            data.hvdc_Pf[i], data.hvdc_Pt[i] = elm.get_from_and_to_power()
-            data.hvdc_Vset_f[i] = elm.Vset_f
-            data.hvdc_Vset_t[i] = elm.Vset_t
+            data.active[i] = elm.active
+            data.rate[i] = elm.rate
+            data.Pf[i], data.Pt[i] = elm.get_from_and_to_power()
+            data.Vset_f[i] = elm.Vset_f
+            data.Vset_t[i] = elm.Vset_t
 
-        data.hvdc_loss_factor[i] = elm.loss_factor
-        data.hvdc_Qmin_f[i] = elm.Qmin_f
-        data.hvdc_Qmax_f[i] = elm.Qmax_f
-        data.hvdc_Qmin_t[i] = elm.Qmin_t
-        data.hvdc_Qmax_t[i] = elm.Qmax_t
+        data.loss_factor[i] = elm.loss_factor
+        data.Qmin_f[i] = elm.Qmin_f
+        data.Qmax_f[i] = elm.Qmax_f
+        data.Qmin_t[i] = elm.Qmin_t
+        data.Qmax_t[i] = elm.Qmax_t
 
         # hack the bus types to believe they are PV
         if elm.active:

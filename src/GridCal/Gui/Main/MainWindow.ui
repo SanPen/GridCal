@@ -635,16 +635,30 @@ p, li { white-space: pre-wrap; }
                      </widget>
                     </item>
                     <item>
-                     <widget class="QPushButton" name="highlight_by_property_pushButton">
+                     <widget class="QPushButton" name="highlight_selection_buses_pushButton">
                       <property name="toolTip">
-                       <string>Highlight the schematic buses based on the values of the selected property</string>
+                       <string>Highlight the buses of the selected elements</string>
                       </property>
                       <property name="text">
                        <string/>
                       </property>
                       <property name="icon">
                        <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/highlight2.svg</normaloff>:/Icons/icons/highlight2.svg</iconset>
+                        <normaloff>:/Icons/icons/highlight.svg</normaloff>:/Icons/icons/highlight.svg</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="busViewerButton">
+                      <property name="toolTip">
+                       <string>open bus viewer</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
                       </property>
                      </widget>
                     </item>
@@ -759,16 +773,16 @@ p, li { white-space: pre-wrap; }
                      </widget>
                     </item>
                     <item>
-                     <widget class="QPushButton" name="highlight_selection_buses_pushButton">
+                     <widget class="QPushButton" name="highlight_by_property_pushButton">
                       <property name="toolTip">
-                       <string>Highlight the buses of the selected elements</string>
+                       <string>Highlight the schematic buses based on the values of the selected property</string>
                       </property>
                       <property name="text">
                        <string/>
                       </property>
                       <property name="icon">
                        <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/highlight.svg</normaloff>:/Icons/icons/highlight.svg</iconset>
+                        <normaloff>:/Icons/icons/highlight2.svg</normaloff>:/Icons/icons/highlight2.svg</iconset>
                       </property>
                      </widget>
                     </item>

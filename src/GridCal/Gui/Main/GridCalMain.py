@@ -29,6 +29,7 @@ from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.GridEditorWidget.messages import *
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
+from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
 
 # Engine imports
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
@@ -215,6 +216,7 @@ class MainGUI(QMainWindow):
         # list of pointers to the GIS windows
         self.gis_dialogues = list()
         self.files_to_delete_at_exit = list()
+        self.bus_viewer_windows = list()
 
         ################################################################################################################
         # Declare the schematic editor
@@ -484,6 +486,8 @@ class MainGUI(QMainWindow):
         self.ui.highlight_by_property_pushButton.clicked.connect(self.highlight_based_on_property)
 
         self.ui.plot_data_pushButton.clicked.connect(self.plot_results)
+
+        self.ui.busViewerButton.clicked.connect(self.bus_viewer)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -994,7 +998,6 @@ class MainGUI(QMainWindow):
 
         # add the widgets
         self.ui.schematic_layout.addWidget(self.grid_editor)
-        # self.ui.splitter_8.setStretchFactor(1, 15)
 
         # clear the results
         # self.ui.resultsPlot.clear()
@@ -4072,36 +4075,6 @@ class MainGUI(QMainWindow):
         else:
             warning_msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
 
-    # def item_results_plot(self):
-    #     """
-    #     Same as result_type_click but for the selected items
-    #     :return:
-    #     """
-    #     mdl = self.ui.result_element_selection_listView.model()
-    #     if mdl is not None:
-    #         indices = get_checked_indices(mdl)
-    #         self.result_type_click(qt_val=None, indices=indices)
-
-    # def check_all_result_objects(self):
-    #     """
-    #     Check all the result objects
-    #     :return:
-    #     """
-    #     mdl = self.ui.result_element_selection_listView.model()
-    #     if mdl is not None:
-    #         for row in range(mdl.rowCount()):
-    #             mdl.item(row).setCheckState(QtCore.Qt.Checked)
-
-    # def check_none_result_objects(self):
-    #     """
-    #     Check all the result objects
-    #     :return:
-    #     """
-    #     mdl = self.ui.result_element_selection_listView.model()
-    #     if mdl is not None:
-    #         for row in range(mdl.rowCount()):
-    #             mdl.item(row).setCheckState(QtCore.Qt.Unchecked)
-
     def set_state(self):
         """
         Set the selected profiles state in the grid
@@ -5326,6 +5299,59 @@ class MainGUI(QMainWindow):
         self.circuit.transformer_types += get_transformer_catalogue()
         self.circuit.underground_cable_types += get_cables_catalogue()
         self.circuit.wire_types += get_wires_catalogue()
+
+    def bus_viewer(self):
+        """
+        Launch bus viewer
+        """
+        model = self.ui.dataStructureTableView.model()
+
+        if model is not None:
+
+            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
+            objects = model.objects
+
+            if len(objects) > 0:
+
+                if len(sel_idx) > 0:
+
+                    unique = {idx.row() for idx in sel_idx}
+                    sel_obj = [objects[idx] for idx in unique][0]
+                    root_bus = None
+                    if isinstance(sel_obj, Bus):
+                        root_bus = sel_obj
+
+                    elif isinstance(sel_obj, Generator):
+                        root_bus = sel_obj.bus
+
+                    elif isinstance(sel_obj, Battery):
+                        root_bus = sel_obj.bus
+
+                    elif isinstance(sel_obj, Load):
+                        root_bus = sel_obj.bus
+
+                    elif isinstance(sel_obj, Shunt):
+                        root_bus = sel_obj.bus
+
+                    elif isinstance(sel_obj, Line):
+                        root_bus = sel_obj.bus_from
+
+                    elif isinstance(sel_obj, Transformer2W):
+                        root_bus = sel_obj.bus_from
+
+                    elif isinstance(sel_obj, DcLine):
+                        root_bus = sel_obj.bus_from
+
+                    elif isinstance(sel_obj, HvdcLine):
+                        root_bus = sel_obj.bus_from
+
+                    elif isinstance(sel_obj, VSC):
+                        root_bus = sel_obj.bus_from
+
+                    if root_bus is not None:
+                        window = BusViewerGUI(self.circuit, root_bus)
+                        self.bus_viewer_windows.append(window)
+                        window.show()
 
 
 def run(use_native_dialogues=True):

@@ -29,28 +29,30 @@ def make_default_q_curve(Snom, Qmin, Qmax, n=3):
     :param n: number of points, at least 3
     :return: Array of points [(P1, Qmin1, Qmax1), (P2, Qmin2, Qmax2), ...]
     """
-    assert(n > 2)
-
+    assert (n > 2)
     pts = np.zeros((n, 3))
     s2 = Snom * Snom
 
+    Qmax2 = Qmax if Qmax < Snom else Snom
+    Qmin2 = Qmin if Qmin > -Snom else -Snom
+
     # Compute the intersections of the Qlimits with the natural curve
-    p0_max = np.sqrt(s2 - Qmax * Qmax)
-    p0_min = np.sqrt(s2 - Qmin * Qmin)
+    p0_max = np.sqrt(s2 - Qmax2 * Qmax2)
+    p0_min = np.sqrt(s2 - Qmin2 * Qmin2)
     p0 = min(p0_max, p0_min)  # pick the lower limit as the starting point for sampling
 
     pts[1:, 0] = np.linspace(p0, Snom, n - 1)
     pts[0, 0] = 0
-    pts[0, 1] = Qmin
-    pts[0, 2] = Qmax
+    pts[0, 1] = Qmin2
+    pts[0, 2] = Qmax2
 
     for i in range(1, n):
         p2 = pts[i, 0] * pts[i, 0]  # P^2
         q = np.sqrt(s2 - p2)  # point that naturally matches Q = sqrt(S^2 - P^2)
 
         # assign the natural point if it does not violates the limits imposes, else set the limit
-        qmin = -q if -q > Qmin else Qmin
-        qmax = q if q < Qmax else Qmax
+        qmin = -q if -q > Qmin2 else Qmin2
+        qmax = q if q < Qmax2 else Qmax2
 
         # Enforce that Qmax > Qmin
         if qmax < qmin:
@@ -63,7 +65,6 @@ def make_default_q_curve(Snom, Qmin, Qmax, n=3):
         pts[i, 2] = qmax
 
     return pts
-
 
 def get_q_limits(q_points, p):
     """

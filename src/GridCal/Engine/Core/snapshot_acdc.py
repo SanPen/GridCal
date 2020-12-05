@@ -863,19 +863,19 @@ def compile_acdc_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False
     #     t = bus_dictionary[elm.bus_to]
     #
     #     # hvdc values
-    #     nc.hvdc_names[i] = elm.name
-    #     nc.hvdc_active[i] = elm.active
-    #     nc.hvdc_rate[i] = elm.rate
+    #     nc.names[i] = elm.name
+    #     nc.active[i] = elm.active
+    #     nc.rate[i] = elm.rate
     #
-    #     nc.hvdc_Pf[i], nc.hvdc_Pt[i] = elm.get_from_and_to_power()
+    #     nc.Pf[i], nc.Pt[i] = elm.get_from_and_to_power()
     #
-    #     nc.hvdc_loss_factor[i] = elm.loss_factor
-    #     nc.hvdc_Vset_f[i] = elm.Vset_f
-    #     nc.hvdc_Vset_t[i] = elm.Vset_t
-    #     nc.hvdc_Qmin_f[i] = elm.Qmin_f
-    #     nc.hvdc_Qmax_f[i] = elm.Qmax_f
-    #     nc.hvdc_Qmin_t[i] = elm.Qmin_t
-    #     nc.hvdc_Qmax_t[i] = elm.Qmax_t
+    #     nc.loss_factor[i] = elm.loss_factor
+    #     nc.Vset_f[i] = elm.Vset_f
+    #     nc.Vset_t[i] = elm.Vset_t
+    #     nc.Qmin_f[i] = elm.Qmin_f
+    #     nc.Qmax_f[i] = elm.Qmax_f
+    #     nc.Qmin_t[i] = elm.Qmin_t
+    #     nc.Qmax_t[i] = elm.Qmax_t
     #
     #     # hack the bus types to believe they are PV
     #     nc.bus_types[f] = BusMode.PV.value

@@ -900,6 +900,13 @@ class MultiCircuit:
         """
         return {b.name: b for b in self.buses}
 
+    def get_bus_index_dict(self):
+        """
+        Return dictionary of buses
+        :return: dictionary of buses {name:object}
+        """
+        return {b: i for i, b in enumerate(self.buses)}
+
     def add_bus(self, obj: Bus):
         """
         Add a :ref:`Bus<bus>` object to the grid.

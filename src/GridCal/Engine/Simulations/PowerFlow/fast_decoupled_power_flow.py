@@ -90,12 +90,13 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
                 if normP < tol and normQ < tol:
                     converged = True
 
+        F = r_[dP, dQ]  # concatenate again
+        normF = norm(F, Inf)
+
     else:
         converged = True
         iter_ = 0
-
-    F = r_[dP, dQ]  # concatenate again
-    normF = norm(F, Inf)
+        normF = 0
 
     end = time.time()
     elapsed = end - start
@@ -114,18 +115,18 @@ if __name__ == '__main__':
     islands = nc.compute()
     island = islands[0]
 
-    voltage, converged, normF, Scalc, iter_, elapsed = FDPF(Vbus=island.Vbus,
-                                                            Sbus=island.Sbus,
-                                                            Ibus=island.Ibus,
-                                                            Ybus=island.Ybus,
-                                                            B1=island.B1,
-                                                            B2=island.B2,
-                                                            pq=island.pq,
-                                                            pv=island.pv,
-                                                            pqpv=island.pqpv,
-                                                            tol=1e-9,
-                                                            max_it=100)
+    voltage_, converged_, normF_, Scalc_, iter_, elapsed_ = FDPF(Vbus=island.Vbus,
+                                                                 Sbus=island.Sbus,
+                                                                 Ibus=island.Ibus,
+                                                                 Ybus=island.Ybus,
+                                                                 B1=island.B1,
+                                                                 B2=island.B2,
+                                                                 pq=island.pq,
+                                                                 pv=island.pv,
+                                                                 pqpv=island.pqpv,
+                                                                 tol=1e-9,
+                                                                 max_it=100)
 
-    print(np.abs(voltage))
+    print(np.abs(voltage_))
     print('iter:', iter_)
-    print('Error:', normF)
+    print('Error:', normF_)

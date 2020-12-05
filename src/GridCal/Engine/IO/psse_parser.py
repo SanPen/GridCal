@@ -307,6 +307,7 @@ class PSSeBus:
 
         # Ensures unique name
         self.bus.name = self.bus.name.replace("'", "").strip()
+        self.bus.code = str(self.I)
 
 
 class PSSeLoad:
@@ -1070,8 +1071,12 @@ class PSSeTwoTerminalDCLine:
         name1 = self.NAME.replace("'", "").replace('"', "").replace('/', '').strip()
         idtag = str(self.IPR) + '_' + str(self.IPI) + '_1'
 
+        # set the HVDC line active
+        active = bus1.active and bus2.active
+
         obj = HvdcLine(bus_from=bus1,  # Rectifier as of PSSe
                        bus_to=bus2,  # inverter as of PSSe
+                       active=active,
                        name=name1,
                        idtag=idtag,
                        Pset=specified_power,
@@ -2593,13 +2598,15 @@ class PSSeParser:
                         objects_list.append(ObjectT(data, version, logger))
 
                     else:
-                        logger.append('Skipped:' + lines[l])
+                        if lines[l].strip() != '0':
+                            logger.append('Skipped:' + lines[l])
 
                     # add lines
                     l += lines_per_object2
 
             else:
-                logger.append('"' + key + '" is not in the data')
+                pass
+                # logger.append('"' + key + '" is not in the data')
 
         # add logs for the non parsed objects
         for key in sections_dict.keys():

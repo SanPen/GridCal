@@ -635,7 +635,7 @@ class TimeSeries(QThread):
                                         bus_names=calculation_input.bus_names,
                                         branch_names=calculation_input.branch_names,
                                         transformer_names=calculation_input.tr_names,
-                                        hvdc_names=calculation_input.hvdc_names,
+                                        hvdc_names=calculation_input.names,
                                         bus_types=numerical_circuit.bus_types,
                                         time_array=self.grid.time_profile[time_indices])
 
