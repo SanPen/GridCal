@@ -42,7 +42,7 @@ Version 4.0.0
 - Power Flow
     - Changed the power flow inner loops order. This changes the behaviour to the better when the controls are active.
     - Improved the speed of the power flow process, by delaying the admittance calculations until needed
-    - Fixed the line search in Newton-Rapson, now it is truly non-divergent.
+    - Fixed the line search in Newton-Raphson, now it is truly non-divergent.
 
 - Continuation Power Flow
     - Added reactive power limits option for the generators.
