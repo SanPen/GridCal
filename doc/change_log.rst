@@ -28,6 +28,8 @@ Version 4.0.0
     - Added tags to the sigma-plot
     - Added Substation, Zone, Area and Country objects to group better the buses.
     - Added a quite good random grid generator from the project SyntheticNetworks
+    - Added a bus viewer: It allows to visualize subsets of the grid. It is useful for very large grids
+      where the complete schematic is cumbersome.
 
 - I/O
     - Added better Json export file.
@@ -40,6 +42,7 @@ Version 4.0.0
 - Power Flow
     - Changed the power flow inner loops order. This changes the behaviour to the better when the controls are active.
     - Improved the speed of the power flow process, by delaying the admittance calculations until needed
+    - Fixed the line search in Newton-Rapson, now it is truly non-divergent.
 
 - Continuation Power Flow
     - Added reactive power limits option for the generators.

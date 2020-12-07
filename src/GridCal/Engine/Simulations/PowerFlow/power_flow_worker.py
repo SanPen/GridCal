@@ -69,7 +69,7 @@ class ConvergenceReport:
 
 
 def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus,
-          pq, pv, ref, pqpv, tolerance, max_iter, acceleration_parameter=1e-5, logger=Logger()):
+          pq, pv, ref, pqpv, tolerance, max_iter, acceleration_parameter=0.5, logger=Logger()):
     """
     Run a power flow simulation using the selected method (no outer loop controls).
     :param circuit: SnapshotData circuit, this ensures on-demand admittances computation

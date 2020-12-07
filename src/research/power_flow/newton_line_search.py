@@ -962,7 +962,7 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
 #  MAIN
 ########################################################################################################################
 if __name__ == "__main__":
-    from GridCal.Engine import PowerFlowOptions, PowerFlowDriver, SolverType, FileOpen, compile_snapshot_circuit, split_into_islands
+    from GridCal.Engine import *
     from matplotlib import pyplot as plt
     import pandas as pd
     import os
@@ -976,22 +976,23 @@ if __name__ == "__main__":
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'Illinois200Bus.xlsx')
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'Pegase 2869.xlsx')
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', '1354 Pegase.xlsx')
-    fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 14.xlsx')
+    # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 14.xlsx')
     # fname = '/home/santi/Documentos/Private_Grids/2026_INVIERNO_para Plexos_FINAL_9.raw'
+    fname = '/home/santi/Documentos/Private_Grids/201902271115 caso TReal Israel.raw'
 
     grid = FileOpen(file_name=fname).open()
     nc = compile_snapshot_circuit(grid)
-    islands = split_into_islands(nc)
+    islands = nc.split_into_islands(ignore_single_node_islands=True)
     circuit = islands[0]
 
     # declare figure
     fig = plt.figure(figsize=(12, 7))
     ax = fig.add_subplot(1, 1, 1)
 
-    circuit.Vbus = np.ones(len(circuit.Vbus), dtype=complex)
+    # circuit.Vbus = np.ones(len(circuit.Vbus), dtype=complex)
 
     print('Newton-Raphson-Line-search 1')
-    for acc in [1e-6]:  # [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 0.1]
+    for acc in [0.5]:  # [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 0.1]
         start_time = time.time()
 
         print('Ybus')

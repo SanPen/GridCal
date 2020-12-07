@@ -347,7 +347,12 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
                 back_track_counter += 1
 
             l_iter = 0
-            while not cond and l_iter < 10 and mu_ > 0.01:
+            while cond and l_iter < max_it and mu_ > tol:
+
+                # reset to the previous voltage
+                Va = np.angle(V)
+                Vm = np.abs(V)
+
                 # line search back
                 # update voltage with a closer value to the last value in the Jacobian direction
                 mu_ *= acceleration_parameter
@@ -399,7 +404,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
     return V, converged, norm_f, Scalc, iter_, elapsed
 
 
-def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0.05, error_registry=None):
+def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0.5, error_registry=None):
     """
     Solves the power flow using a full Newton's method with backtrack correction.
     @Author: Santiago Peñate Vera
@@ -411,7 +416,7 @@ def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=
     :param pq: Array with the indices of the PQ buses
     :param tol: Tolerance
     :param max_it: Maximum number of iterations
-    :param acceleration_parameter: parameter used to correct the "bad" iterations, should be be between 1e-3 ~ 0.5
+    :param acceleration_parameter: parameter used to correct the "bad" iterations, typically 0.5
     :param error_registry: list to store the error for plotting
     :return: Voltage solution, converged?, error, calculated power injections
     """
@@ -834,7 +839,7 @@ def condition_number(J):
     return cond
 
 
-def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
+def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15, acceleration_parameter=0.5):
     """
     Solves the power flow using a full Newton's method in current equations with current mismatch with line search
     Args:
@@ -846,6 +851,7 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
         pq: Array with the indices of the PQ buses
         tol: Tolerance
         max_it: Maximum number of iterations
+        acceleration_parameter: value used to correct bad iterations
     Returns:
         Voltage solution, converged?, error, calculated power injections
 
@@ -915,22 +921,23 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
         dI = np.conj(Sbus_sp / Vnew) - Icalc
         Fnew = np.r_[dI[pvpq].real, dI[pq].imag]
 
-        normFprev = np.linalg.norm(F + alpha * (F * J).dot(Fnew - F), np.Inf)
+        normFnew = np.linalg.norm(Fnew, np.Inf)
 
-        cond = normF < normFprev  # condition to back track (no improvement at all)
+        cond = normF < normFnew  # condition to back track (no improvement at all)
 
         if not cond:
             back_track_counter += 1
 
         l_iter = 0
-        while not cond and l_iter < 10 and mu_ > 0.01:
+        while cond and l_iter < max_it and mu_ > tol:
             # line search back
 
-            # to divide mu by 4 is the simplest backtracking process
-            # TODO: implement the more complex mu backtrack from numerical recipes
+            # reset voltage
+            Va = np.angle(V)
+            Vm = np.abs(V)
 
             # update voltage with a closer value to the last value in the Jacobian direction
-            mu_ *= 0.25
+            mu_ *= acceleration_parameter
             Vm -= mu_ * dVm
             Va -= mu_ * dVa
             Vnew = Vm * np.exp(1j * Va)
@@ -941,9 +948,7 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
             Fnew = np.r_[dI[pvpq].real, dI[pq].imag]
 
             normFnew = np.linalg.norm(Fnew, np.Inf)
-            normFnew_prev = np.linalg.norm(F + alpha * (F * J).dot(Fnew - F), np.Inf)
-
-            cond = normFnew < normFnew_prev
+            cond = normF < normFnew
 
             l_iter += 1
             back_track_iterations += 1
@@ -953,17 +958,13 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15):
         F = Fnew
 
         # check for convergence
-        normF = np.linalg.norm(F, np.Inf)
+        normF = normFnew
 
         if normF < tol:
             converged = 1
 
     end = time.time()
     elapsed = end - start
-
-    # print('iter_', iter_,
-    #       '  -  back_track_counter', back_track_counter,
-    #       '  -  back_track_iterations', back_track_iterations)
 
     Scalc = V * np.conj(Icalc)
 

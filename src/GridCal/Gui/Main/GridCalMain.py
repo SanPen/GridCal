@@ -1205,7 +1205,8 @@ class MainGUI(QMainWindow):
                     self.grid_editor.align_schematic()
 
                     for bus in buses:
-                        bus.graphic_obj.setSelected(True)
+                        if bus.graphic_obj is not None:
+                            bus.graphic_obj.setSelected(True)
 
     def update_date_dependent_combos(self):
         """
@@ -2299,8 +2300,9 @@ class MainGUI(QMainWindow):
                     # get the short circuit selected buses
                     sel_buses = list()
                     for i, bus in enumerate(self.circuit.buses):
-                        if bus.graphic_obj.sc_enabled is True:
-                            sel_buses.append(i)
+                        if bus.graphic_obj is not None:
+                            if bus.graphic_obj.sc_enabled is True:
+                                sel_buses.append(i)
 
                     if len(sel_buses) == 0:
                         warning_msg('You need to enable some buses for short circuit.'
@@ -3350,7 +3352,8 @@ class MainGUI(QMainWindow):
         else:
             # delete the markers
             for bus in self.circuit.buses:
-                bus.graphic_obj.delete_big_marker()
+                if bus.graphic_obj is not None:
+                    bus.graphic_obj.delete_big_marker()
 
     def post_run_find_node_groups(self):
         """
@@ -3371,9 +3374,10 @@ class MainGUI(QMainWindow):
             for i in group:
                 bus = self.circuit.buses[i]
                 if bus.active:
-                    r, g, b, a = colours[c]
-                    color = QColor(r * 255, g * 255, b * 255, a * 255)
-                    bus.graphic_obj.add_big_marker(color=color, tool_tip_text='Group ' + str(c))
+                    if bus.graphic_obj is not None:
+                        r, g, b, a = colours[c]
+                        color = QColor(r * 255, g * 255, b * 255, a * 255)
+                        bus.graphic_obj.add_big_marker(color=color, tool_tip_text='Group ' + str(c))
 
     def post_reduce_grid(self):
         """
@@ -4122,7 +4126,8 @@ class MainGUI(QMainWindow):
         Adapt the width of all the nodes to their names
         """
         for bus in self.circuit.buses:
-            bus.graphic_obj.adapt()
+            if bus.graphic_obj is not None:
+                bus.graphic_obj.adapt()
 
     def set_up_profile_sliders(self):
         """
@@ -4820,8 +4825,9 @@ class MainGUI(QMainWindow):
 
             print('Removing graphics...')
             for bus in self.delete_and_reduce_driver.buses_merged:
-                bus.graphic_obj.create_children_icons()
-                bus.graphic_obj.arrange_children()
+                if bus.graphic_obj is not None:
+                    bus.graphic_obj.create_children_icons()
+                    bus.graphic_obj.arrange_children()
 
             print('Reprinting schematic graphics...')
             self.create_schematic_from_api(explode_factor=1)
@@ -4927,7 +4933,8 @@ class MainGUI(QMainWindow):
         clear all the buses' "big marker"
         """
         for bus in self.circuit.buses:
-            bus.graphic_obj.delete_big_marker()
+            if bus.graphic_obj is not None:
+                bus.graphic_obj.delete_big_marker()
 
     def set_big_bus_marker(self, buses, color: QColor):
         """
@@ -4936,8 +4943,9 @@ class MainGUI(QMainWindow):
         :param color: colour to use
         """
         for bus in buses:
-            bus.graphic_obj.add_big_marker(color=color)
-            bus.graphic_obj.setSelected(True)
+            if bus.graphic_obj is not None:
+                bus.graphic_obj.add_big_marker(color=color)
+                bus.graphic_obj.setSelected(True)
 
     def highlight_selection_buses(self):
         """
@@ -5045,9 +5053,10 @@ class MainGUI(QMainWindow):
                     if mx != 0:
                         # color based on the value
                         for bus, value in zip(buses, values):
-                            r, g, b, a = cmap(value / mx)
-                            color = QColor(r * 255, g * 255, b * 255, a * 255)
-                            bus.graphic_obj.add_big_marker(color=color)
+                            if bus.graphic_obj is not None:
+                                r, g, b, a = cmap(value / mx)
+                                color = QColor(r * 255, g * 255, b * 255, a * 255)
+                                bus.graphic_obj.add_big_marker(color=color)
                     else:
                         info_msg('The maximum value is 0, so the coloring cannot be applied',
                                  'Highlight based on property')
@@ -5063,7 +5072,12 @@ class MainGUI(QMainWindow):
         Get the selected buses
         :return:
         """
-        return [(k, bus) for k, bus in enumerate(self.circuit.buses) if bus.graphic_obj.isSelected()]
+        lst = list()
+        for k, bus in enumerate(self.circuit.buses):
+            if bus.graphic_obj is not None:
+                if bus.graphic_obj.isSelected():
+                    lst.append((k, bus))
+        return lst
 
     def delete_selected_from_the_schematic(self):
         """
@@ -5103,7 +5117,8 @@ class MainGUI(QMainWindow):
         if len(selected_buses) > 0:
             self.circuit.try_to_fix_buses_location(buses_selection=selected_buses)
             for k, bus in selected_buses:
-                bus.graphic_obj.set_position(x=bus.x, y=bus.y)
+                if bus.graphic_obj is not None:
+                    bus.graphic_obj.set_position(x=bus.x, y=bus.y)
         else:
             info_msg('Select some elements from the schematic', 'Fix buses locations')
 
@@ -5235,7 +5250,8 @@ class MainGUI(QMainWindow):
             if issue.issue_type == SyncIssueType.Added and issue.device_type == DeviceType.BusDevice:
                 # add the bus directly with all the device it may contain
                 issue.their_elm.delete_children()
-                issue.their_elm.graphic_obj = self.grid_editor.add_api_bus(issue.their_elm)
+                if issue.their_elm.graphic_obj is not None:
+                    issue.their_elm.graphic_obj = self.grid_editor.add_api_bus(issue.their_elm)
                 self.circuit.add_bus(issue.their_elm)
 
         # create dictionary of buses
@@ -5259,10 +5275,11 @@ class MainGUI(QMainWindow):
                     issue.their_elm.bus_to = bus_dict[name_t]
 
                     # add the device
-                    issue.their_elm.graphic_obj = self.grid_editor.add_api_branch(issue.their_elm)
-                    issue.their_elm.bus_from.graphic_obj.update()
-                    issue.their_elm.bus_to.graphic_obj.update()
-                    issue.their_elm.graphic_obj.redraw()
+                    if issue.their_elm.graphic_obj is not None:
+                        issue.their_elm.graphic_obj = self.grid_editor.add_api_branch(issue.their_elm)
+                        issue.their_elm.bus_from.graphic_obj.update()
+                        issue.their_elm.bus_to.graphic_obj.update()
+                        issue.their_elm.graphic_obj.redraw()
                     self.circuit.add_branch(issue.their_elm)
 
                 elif issue.device_type == DeviceType.BusDevice:
@@ -5277,10 +5294,12 @@ class MainGUI(QMainWindow):
 
                     # add the device
                     bus.add_device(issue.their_elm)
-                    bus.graphic_obj.create_children_icons()
+                    if issue.their_elm.graphic_obj is not None:
+                        bus.graphic_obj.create_children_icons()
 
             elif issue.issue_type == SyncIssueType.Deleted:
-                issue.my_elm.graphic_obj.remove()
+                if issue.their_elm.graphic_obj is not None:
+                    issue.my_elm.graphic_obj.remove()
 
         # center nodes
         self.grid_editor.align_schematic()

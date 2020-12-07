@@ -68,8 +68,7 @@ class PowerFlowOptions:
 
         **ignore_single_node_islands** (bool, False): If True the islands of 1 node are ignored
 
-        **correction_parameter** (float, 1e-4): parameter used to correct the "bad" iterations,
-                                                should be be between 1e-4 ~ 0.5
+        **correction_parameter** (float, 1e-4): parameter used to correct the "bad" iterations, typically 0.5
     """
 
     def __init__(self,
@@ -90,7 +89,7 @@ class PowerFlowOptions:
                  q_steepness_factor=30,
                  distributed_slack=False,
                  ignore_single_node_islands=False,
-                 correction_parameter=1e-4):
+                 correction_parameter=0.5):
 
         self.solver_type = solver_type
 
