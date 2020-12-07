@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="Icons">
     <file>icons/automatic_layout.svg</file>
+    <file>icons/grid_icon.svg</file>
+    <file>icons/minus (gray).svg</file>
+    <file>icons/plus (gray).svg</file>
+    <file>icons/resize.svg</file>
   </qresource>
 </RCC>

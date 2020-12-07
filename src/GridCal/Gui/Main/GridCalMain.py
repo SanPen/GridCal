@@ -2253,7 +2253,7 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(SimulationTypes.PowerFlow_run)
 
-            if self.ui.draw_schematic_checkBox.isChecked():
+            if self.ui.draw_schematic_checkBox.isChecked() or len(self.bus_viewer_windows) > 0:
                 colour_the_schematic(circuit=self.circuit,
                                      s_bus=self.power_flow.results.Sbus,
                                      s_branch=self.power_flow.results.Sbranch,

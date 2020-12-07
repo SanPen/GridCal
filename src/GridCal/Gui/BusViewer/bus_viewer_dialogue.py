@@ -14,7 +14,7 @@ from GridCal.Engine.Devices import *
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
-class BusViewerGUI(QDialog):
+class BusViewerGUI(QMainWindow):
 
     def __init__(self, circuit: MultiCircuit, root_bus: Bus, parent=None, ):
         """
@@ -23,7 +23,7 @@ class BusViewerGUI(QDialog):
         :param root_bus:
         :param parent:
         """
-        QDialog.__init__(self, parent)
+        QMainWindow.__init__(self, parent)
         self.ui = Ui_BusViewerWindow()
         self.ui.setupUi(self)
 
@@ -44,7 +44,14 @@ class BusViewerGUI(QDialog):
         # create editor and show the root bus
         self.draw()
 
+        # button clicks
         self.ui.drawButton.clicked.connect(self.draw)
+
+        # toolbar clicks
+        self.ui.actiondraw.triggered.connect(self.draw)
+        self.ui.actionExpand_nodes.triggered.connect(self.bigger_nodes)
+        self.ui.actionScrink_nodes.triggered.connect(self.smaller_nodes)
+        self.ui.actionAdjust_to_window_size.triggered.connect(self.center_nodes)
 
     def msg(self, text, title="Warning"):
         """
@@ -60,6 +67,28 @@ class BusViewerGUI(QDialog):
         # msg.setDetailedText("The details are as follows:")
         msg.setStandardButtons(QMessageBox.Ok)
         retval = msg.exec_()
+
+    def bigger_nodes(self):
+        """
+        Move the nodes more separated
+        """
+        if self.grid_editor is not None:
+            self.grid_editor.bigger_nodes()
+
+    def smaller_nodes(self):
+        """
+        Move the nodes closer
+        """
+        if self.grid_editor is not None:
+            self.grid_editor.smaller_nodes()
+
+    def center_nodes(self):
+        """
+        Center the nodes in the screen
+        """
+        if self.grid_editor is not None:
+            # self.grid_editor.align_schematic()
+            self.grid_editor.center_nodes()
 
     def new_editor(self):
         """
@@ -177,7 +206,8 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     circuit_ = MultiCircuit()
-    window = BusViewerGUI(circuit=circuit_)
+    circuit_.add_bus(Bus('bus1'))
+    window = BusViewerGUI(circuit=circuit_, root_bus=circuit_.buses[0])
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())

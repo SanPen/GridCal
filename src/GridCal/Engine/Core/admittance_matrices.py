@@ -151,7 +151,7 @@ def compute_fast_decoupled_admittances(X, B, m, mf, mt, Cf, Ct):
     b2_tt = - b2 / (mt * mt)
 
     B2f = -sp.diags(b2_ff) * Cf + sp.diags(b2_ft) * Ct
-    B2t = sp.diags(b2_tf) * Cf + -sp.diags(b2_tt) * Ct
+    B2t = sp.diags(b2_tf) * Cf - sp.diags(b2_tt) * Ct
     B2 = Cf.T * B2f + Ct.T * B2t
 
     return B1, B2

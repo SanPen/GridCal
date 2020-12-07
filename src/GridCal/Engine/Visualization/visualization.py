@@ -44,13 +44,27 @@ def get_loading_color_map():
     return loading_cmap
 
 
-def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings,
-                         types=None, losses=None,
-                         hvdc_sending_power=None, hvdc_losses=None, hvdc_loading=None,
-                         failed_br_idx=None, loading_label='loading', file_name=None):
+def colour_sub_schematic(Sbase,
+                         buses,
+                         branches,
+                         hvdc_lines,
+                         s_bus,
+                         s_branch,
+                         voltages,
+                         loadings,
+                         types=None,
+                         losses=None,
+                         hvdc_sending_power=None,
+                         hvdc_losses=None,
+                         hvdc_loading=None,
+                         failed_br_idx=None,
+                         loading_label='loading'):
     """
-    Color the grid based on the results passed
-    :param circuit:
+    Color objects based on the results passed
+    :param Sbase:
+    :param buses: list of matching bus objects
+    :param branches: list of branches without HVDC
+    :param hvdc_lines: list of HVDC lines
     :param s_bus:  Buses power
     :param s_branch: Branches power
     :param voltages: Buses voltage
@@ -72,7 +86,6 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
     vabs = np.abs(voltages)
     vang = np.angle(voltages, deg=True)
     vnorm = (vabs - vmin) / vrng
-    Sbase = circuit.Sbase
 
     voltage_cmap = get_voltage_color_map()
     loading_cmap = get_loading_color_map()
@@ -87,25 +100,26 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
     '''
     bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage']
 
-    for i, bus in enumerate(circuit.buses):
-        if bus.active and bus.graphic_obj is not None:
-            r, g, b, a = voltage_cmap(vnorm[i])
-            bus.graphic_obj.set_tile_color(QtGui.QColor(r * 255, g * 255, b * 255, a * 255))
+    for i, bus in enumerate(buses):
+        if bus.graphic_obj is not None:
+            if bus.active:
+                r, g, b, a = voltage_cmap(vnorm[i])
+                bus.graphic_obj.set_tile_color(QtGui.QColor(r * 255, g * 255, b * 255, a * 255))
 
-            tooltip = str(i) + ': ' + bus.name + '\n'
-            tooltip += 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n'
-            tooltip += 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
-            if s_bus is not None:
-                tooltip += '\nS: ' + "{:10.4f}".format(s_bus[i] * Sbase) + ' [MVA]'
-            if types is not None:
-                tooltip += '\nType: ' + bus_types[types[i]]
-            bus.graphic_obj.setToolTip(tooltip)
+                tooltip = str(i) + ': ' + bus.name + '\n'
+                tooltip += 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n'
+                tooltip += 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
+                if s_bus is not None:
+                    tooltip += '\nS: ' + "{:10.4f}".format(s_bus[i] * Sbase) + ' [MVA]'
+                if types is not None:
+                    tooltip += '\nType: ' + bus_types[types[i]]
+                bus.graphic_obj.setToolTip(tooltip)
 
-        else:
-            bus.graphic_obj.set_tile_color(QtCore.Qt.gray)
+            else:
+                bus.graphic_obj.set_tile_color(QtCore.Qt.gray)
 
     # color branches
-    branches = circuit.get_branches_wo_hvdc()  # HVDC branches are coloured separately
+    # branches = circuit.get_branches_wo_hvdc()  # HVDC branches are coloured separately
 
     if s_branch is not None:
         lnorm = abs(loadings)
@@ -139,7 +153,7 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
                 branches[i].graphic_obj.set_pen(QtGui.QPen(color, w, style))
 
     if hvdc_sending_power is not None:
-        for i, elm in enumerate(circuit.hvdc_lines):
+        for i, elm in enumerate(hvdc_lines):
 
             if elm.graphic_obj is not None:
                 w = elm.graphic_obj.pen_width
@@ -159,6 +173,44 @@ def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadi
 
                 elm.graphic_obj.setToolTipText(tooltip)
                 elm.graphic_obj.set_colour(color, w, style)
+
+
+def colour_the_schematic(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings,
+                         types=None, losses=None,
+                         hvdc_sending_power=None, hvdc_losses=None, hvdc_loading=None,
+                         failed_br_idx=None, loading_label='loading'):
+    """
+    Color the grid based on the results passed
+    :param circuit:
+    :param s_bus:  Buses power
+    :param s_branch: Branches power
+    :param voltages: Buses voltage
+    :param loadings: Branches load
+    :param types: Buses type
+    :param losses: Branches losses
+    :param hvdc_sending_power:
+    :param hvdc_losses:
+    :param hvdc_loading:
+    :param failed_br_idx: failed branches
+    :param loading_label:
+    :return:
+    """
+
+    colour_sub_schematic(Sbase=circuit.Sbase,
+                         buses=circuit.buses,
+                         branches=circuit.get_branches_wo_hvdc(),
+                         hvdc_lines=circuit.hvdc_lines,
+                         s_bus=s_bus,
+                         s_branch=s_branch,
+                         voltages=voltages,
+                         loadings=loadings,
+                         types=types,
+                         losses=losses,
+                         hvdc_sending_power=hvdc_sending_power,
+                         hvdc_losses=hvdc_losses,
+                         hvdc_loading=hvdc_loading,
+                         failed_br_idx=failed_br_idx,
+                         loading_label=loading_label)
 
 
 def get_base_map(location, zoom_start=5):
