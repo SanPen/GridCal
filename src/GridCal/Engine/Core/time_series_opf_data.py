@@ -28,22 +28,27 @@ import GridCal.Engine.Core.DataStructures as ds
 
 class OpfTimeCircuit(TimeCircuit):
 
-    def __init__(self, nbus, nline, ndcline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase, time_array):
+    def __init__(self, nbus, nline, ndcline, ntr, nvsc, nupfc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase, time_array):
         """
-
         :param nbus: number of buses
         :param nline: number of lines
+        :param ndcline:
         :param ntr: number of transformers
         :param nvsc:
+        :param nupfc:
         :param nhvdc:
         :param nload:
         :param ngen:
         :param nbatt:
         :param nshunt:
+        :param nstagen:
+        :param sbase:
+        :param time_array:
         """
 
         TimeCircuit.__init__(self, nbus=nbus, nline=nline, ndcline=ndcline,
-                             ntr=ntr, nvsc=nvsc, nhvdc=nhvdc, nload=nload,
+                             ntr=ntr, nvsc=nvsc, nupfc=nupfc,
+                             nhvdc=nhvdc, nload=nload,
                              ngen=ngen, nbatt=nbatt, nshunt=nshunt,
                              nstagen=nstagen, sbase=sbase, time_array=time_array)
 
@@ -152,6 +157,7 @@ class OpfTimeCircuit(TimeCircuit):
         dc_line_idx = self.dc_line_data.get_island(bus_idx)
         tr_idx = self.transformer_data.get_island(bus_idx)
         vsc_idx = self.vsc_data.get_island(bus_idx)
+        upfc_idx = self.upfc_data.get_island(bus_idx)
         hvdc_idx = self.hvdc_data.get_island(bus_idx)
         br_idx = self.branch_data.get_island(bus_idx)
 
@@ -166,6 +172,7 @@ class OpfTimeCircuit(TimeCircuit):
                             ndcline=len(dc_line_idx),
                             ntr=len(tr_idx),
                             nvsc=len(vsc_idx),
+                            nupfc=len(upfc_idx),
                             nhvdc=len(hvdc_idx),
                             nload=len(load_idx),
                             ngen=len(gen_idx),
@@ -223,6 +230,7 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                         ndcline=0,
                         ntr=0,
                         nvsc=0,
+                        nupfc=0,
                         nhvdc=0,
                         nload=0,
                         ngen=0,

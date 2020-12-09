@@ -36,7 +36,7 @@ sparse_type = get_sparse_type()
 
 class TimeCircuit(SnapshotData):
 
-    def __init__(self, nbus, nline, ndcline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase, time_array):
+    def __init__(self, nbus, nline, ndcline, ntr, nvsc, nupfc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase, time_array):
         """
 
         :param nbus: number of buses
@@ -51,7 +51,7 @@ class TimeCircuit(SnapshotData):
         """
 
         SnapshotData.__init__(self, nbus=nbus, nline=nline,
-                              ndcline=ndcline, ntr=ntr, nvsc=nvsc,
+                              ndcline=ndcline, ntr=ntr, nvsc=nvsc, nupfc=nupfc,
                               nhvdc=nhvdc, nload=nload, ngen=ngen,
                               nbatt=nbatt, nshunt=nshunt, nstagen=nstagen,
                               sbase=sbase, ntime=len(time_array))
@@ -195,6 +195,7 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                      ndcline=0,
                      ntr=0,
                      nvsc=0,
+                     nupfc=0,
                      nhvdc=0,
                      nload=0,
                      ngen=0,

@@ -118,7 +118,9 @@ class MultiCircuit:
 
         self.hvdc_lines = list()  # type: List[HvdcLine]
 
-        self.vsc_converters = list()  # type: List[VSC]
+        self.vsc_devices = list()  # type: List[VSC]
+
+        self.upfc_devices = list()  # type List[UPFC]
 
         # array of branch indices in the master circuit
         self.branch_original_idx = list()
@@ -202,6 +204,7 @@ class MultiCircuit:
                                       Transformer2W(None, None),
                                       HvdcLine(None, None),
                                       VSC(None, None),
+                                      UPFC(None, None),
                                       Substation(),
                                       Zone(),
                                       Area(),
@@ -239,7 +242,7 @@ class MultiCircuit:
         GEt list of the branch lists
         :return:
         """
-        return [self.lines, self.transformers2w, self.hvdc_lines, self.vsc_converters, self.dc_lines]
+        return [self.lines, self.transformers2w, self.hvdc_lines, self.vsc_devices, self.dc_lines]
 
     def get_branch_number(self):
         """
@@ -277,7 +280,8 @@ class MultiCircuit:
         self.dc_lines = list()
         self.transformers2w = list()
         self.hvdc_lines = list()
-        self.vsc_converters = list()
+        self.vsc_devices = list()
+        self.upfc_devices = list()
 
         # array of branch indices in the master circuit
         self.branch_original_idx = list()
@@ -332,14 +336,14 @@ class MultiCircuit:
         Return all the branch objects
         :return: lines + transformers 2w + hvdc
         """
-        return self.lines + self.transformers2w + self.vsc_converters + self.dc_lines
+        return self.lines + self.transformers2w + self.vsc_devices + self.dc_lines + self.upfc_devices
 
     def get_branches(self):
         """
         Return all the branch objects
         :return: lines + transformers 2w + hvdc
         """
-        return self.lines + self.transformers2w + self.vsc_converters + self.hvdc_lines + self.dc_lines
+        return self.get_branches_wo_hvdc() + self.hvdc_lines
 
     def get_loads(self):
         """
@@ -487,8 +491,11 @@ class MultiCircuit:
         elif element_type == DeviceType.HVDCLineDevice:
             return self.hvdc_lines
 
+        elif element_type == DeviceType.UpfcDevice:
+            return self.upfc_devices
+
         elif element_type == DeviceType.VscDevice:
-            return self.vsc_converters
+            return self.vsc_devices
 
         elif element_type == DeviceType.BusDevice:
             return self.buses
@@ -621,8 +628,8 @@ class MultiCircuit:
         for branch in self.hvdc_lines:
             cpy.hvdc_lines.append(branch.copy(bus_dict))
 
-        for branch in self.vsc_converters:
-            cpy.vsc_converters.append(branch.copy(bus_dict))
+        for branch in self.vsc_devices:
+            cpy.vsc_devices.append(branch.copy(bus_dict))
 
         cpy.Sbase = self.Sbase
 
@@ -753,7 +760,7 @@ class MultiCircuit:
         self.lines = circ.lines
         self.transformers2w = circ.transformers2w
         self.hvdc_lines = circ.hvdc_lines
-        self.vsc_converters = circ.vsc_converters
+        self.vsc_devices = circ.vsc_devices
 
         self.name = circ.name
         self.Sbase = circ.Sbase
@@ -1002,7 +1009,17 @@ class MultiCircuit:
 
         if self.time_profile is not None:
             obj.create_profiles(self.time_profile)
-        self.vsc_converters.append(obj)
+        self.vsc_devices.append(obj)
+
+    def add_upfc(self, obj: UPFC):
+        """
+        Add a hvdc line object
+        :param obj: HvdcLine instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.upfc_devices.append(obj)
 
     def add_branch(self, obj):
         """
@@ -1027,6 +1044,9 @@ class MultiCircuit:
 
         elif obj.device_type == DeviceType.VscDevice:
             self.add_vsc(obj)
+
+        elif obj.device_type == DeviceType.UpfcDevice:
+            self.add_upfc(obj)
 
         elif obj.device_type == DeviceType.BranchDevice:
             # we need to convert it :D
@@ -1082,7 +1102,14 @@ class MultiCircuit:
         Delete VSC
         :param obj: VSC Instance
         """
-        self.vsc_converters.remove(obj)
+        self.vsc_devices.remove(obj)
+
+    def delete_upfc_converter(self, obj: UPFC):
+        """
+        Delete VSC
+        :param obj: VSC Instance
+        """
+        self.upfc_devices.remove(obj)
 
     def add_load(self, bus: Bus, api_obj=None):
         """
@@ -1686,7 +1713,7 @@ class MultiCircuit:
         self.lines += circuit.lines
         self.transformers2w += circuit.transformers2w
         self.hvdc_lines += circuit.hvdc_lines
-        self.vsc_converters += circuit.vsc_converters
+        self.vsc_devices += circuit.vsc_devices
         self.dc_lines += circuit.dc_lines
 
         return circuit.buses

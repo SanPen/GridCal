@@ -479,7 +479,7 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
 
                 branch = VSC(bus_from=f,
                              bus_to=t,
-                             name='VSC' + str(len(circuit.vsc_converters) + 1),
+                             name='VSC' + str(len(circuit.vsc_devices) + 1),
                              active=bool(table[i, e.BR_STATUS]),
                              r1=table[i, e.BR_R],
                              x1=table[i, e.BR_X],

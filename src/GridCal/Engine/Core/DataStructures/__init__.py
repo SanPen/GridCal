@@ -24,4 +24,5 @@ from GridCal.Engine.Core.DataStructures.shunt_data import *
 from GridCal.Engine.Core.DataStructures.static_generator_data import *
 from GridCal.Engine.Core.DataStructures.transformer_data import *
 from GridCal.Engine.Core.DataStructures.vsc_data import *
+from GridCal.Engine.Core.DataStructures.upfc_data import *
 import GridCal.Engine.Core.DataStructures.circuit_to_data

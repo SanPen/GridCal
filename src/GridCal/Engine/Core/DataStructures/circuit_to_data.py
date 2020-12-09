@@ -386,10 +386,10 @@ def get_vsc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
     :param bus_dict:
     :return:
     """
-    nc = VscData(nvsc=len(circuit.vsc_converters), nbus=len(circuit.buses), ntime=ntime)
+    nc = VscData(nvsc=len(circuit.vsc_devices), nbus=len(circuit.buses), ntime=ntime)
 
     # VSC
-    for i, elm in enumerate(circuit.vsc_converters):
+    for i, elm in enumerate(circuit.vsc_devices):
 
         # generic stuff
         f = bus_dict[elm.bus_from]
@@ -412,6 +412,43 @@ def get_vsc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
 
         nc.C_vsc_bus[i, f] = 1
         nc.C_vsc_bus[i, t] = 1
+
+    return nc
+
+
+def get_upfc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
+    """
+
+    :param circuit:
+    :param bus_dict:
+    :return:
+    """
+    nc = UpfcData(nelm=len(circuit.upfc_devices), nbus=len(circuit.buses), ntime=ntime)
+
+    # UPFC
+    for i, elm in enumerate(circuit.upfc_devices):
+
+        # generic stuff
+        f = bus_dict[elm.bus_from]
+        t = bus_dict[elm.bus_to]
+
+        # vsc values
+        nc.names[i] = elm.name
+        nc.Rl[i] = elm.Rl
+        nc.Xl[i] = elm.Xl
+        nc.Bl[i] = elm.Bl
+
+        nc.Rs[i] = elm.Rs
+        nc.Xs[i] = elm.Xs
+
+        nc.Rsh[i] = elm.Rsh
+        nc.Xsh[i] = elm.Xsh
+
+        nc.Pset[i] = elm.Pset
+        nc.Vsh[i] = elm.Vsh
+
+        nc.C_elm_bus[i, f] = 1
+        nc.C_elm_bus[i, t] = 1
 
     return nc
 
@@ -477,9 +514,10 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, apply_temperature,
     """
     nline = len(circuit.lines)
     ntr = len(circuit.transformers2w)
-    nvsc = len(circuit.vsc_converters)
+    nvsc = len(circuit.vsc_devices)
+    nupfc = len(circuit.upfc_devices)
     ndcline = len(circuit.dc_lines)
-    nbr = nline + ntr + nvsc + ndcline
+    nbr = nline + ntr + nvsc + ndcline + nupfc
 
     if opf:
         data = BranchOpfData(nbr=nbr, nbus=len(circuit.buses), ntime=ntime)
@@ -570,7 +608,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, apply_temperature,
             data.Vbus[t] = elm.vset
 
     # VSC
-    for i, elm in enumerate(circuit.vsc_converters):
+    for i, elm in enumerate(circuit.vsc_devices):
         ii = i + nline + ntr
 
         # generic stuff
@@ -649,6 +687,38 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, apply_temperature,
             data.R[i] *= (1 - elm.tolerance / 100.0)
         elif branch_tolerance_mode == BranchImpedanceMode.Upper:
             data.R[i] *= (1 + elm.tolerance / 100.0)
+
+    # UPFC
+    for i, elm in enumerate(circuit.upfc_devices):
+        ii = i + nline + ntr + nvsc + ndcline
+
+        # generic stuff
+        f = bus_dict[elm.bus_from]
+        t = bus_dict[elm.bus_to]
+
+        data.branch_names[ii] = elm.name
+
+        if time_series:
+            data.branch_active[ii, :] = elm.active_prof
+            data.branch_rates[ii, :] = elm.rate_prof
+            if opf:
+                data.branch_cost[ii, :] = elm.Cost_prof
+        else:
+            data.branch_active[ii] = elm.active
+            data.branch_rates[ii] = elm.rate
+            if opf:
+                data.branch_cost[ii] = elm.Cost
+
+        data.C_branch_bus_f[ii, f] = 1
+        data.C_branch_bus_t[ii, t] = 1
+        data.F[ii] = f
+        data.T[ii] = t
+
+        data.R[ii] = elm.Rl
+        data.X[ii] = elm.Xl
+        data.Beq[ii] = elm.Bl
+
+        data.Pset[ii] = elm.Pset
 
     return data
 

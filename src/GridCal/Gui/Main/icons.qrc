@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/upfc.svg</file>
+    <file>icons/to_upfc.svg</file>
     <file>icons/color_grid2.svg</file>
     <file>icons/vsc.svg</file>
     <file>icons/dc.svg</file>

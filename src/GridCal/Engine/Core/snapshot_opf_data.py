@@ -22,7 +22,7 @@ import GridCal.Engine.Core.DataStructures as ds
 
 class SnapshotOpfData(SnapshotData):
 
-    def __init__(self, nbus, nline, ndcline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase):
+    def __init__(self, nbus, nline, ndcline, ntr, nvsc, nupfc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase):
         """
 
         :param nbus:
@@ -39,7 +39,7 @@ class SnapshotOpfData(SnapshotData):
         :param sbase:
         """
         SnapshotData.__init__(self, nbus=nbus, nline=nline,
-                              ndcline=ndcline, ntr=ntr, nvsc=nvsc,
+                              ndcline=ndcline, ntr=ntr, nvsc=nvsc, nupfc=nupfc,
                               nhvdc=nhvdc, nload=nload, ngen=ngen,
                               nbatt=nbatt, nshunt=nshunt, nstagen=nstagen,
                               sbase=sbase, ntime=1)
@@ -199,6 +199,7 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
                          ndcline=0,
                          ntr=0,
                          nvsc=0,
+                         nupfc=0,
                          nhvdc=0,
                          nload=0,
                          ngen=0,

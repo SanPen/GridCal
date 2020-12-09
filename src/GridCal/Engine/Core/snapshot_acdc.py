@@ -627,7 +627,7 @@ def compile_acdc_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False
 
     nline = len(circuit.lines)
     ntr2w = len(circuit.transformers2w)
-    nvsc = len(circuit.vsc_converters)
+    nvsc = len(circuit.vsc_devices)
     # nhvdc = len(circuit.hvdc_lines)
     ndcline = len(circuit.dc_lines)
 
@@ -793,7 +793,7 @@ def compile_acdc_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False
         nc.C_tr_bus[i, t] = 1
 
     # VSC
-    for i, elm in enumerate(circuit.vsc_converters):
+    for i, elm in enumerate(circuit.vsc_devices):
         ii = i + nline + ntr2w
 
         # generic stuff

@@ -195,7 +195,7 @@ class BusViewerGUI(QMainWindow):
                                                    dc_lines=dc_lines,
                                                    transformers2w=transformers2w,
                                                    hvdc_lines=hvdc_lines,
-                                                   vsc_converters=vsc_converters,
+                                                   vsc_devices=vsc_converters,
                                                    explode_factor=1.0,
                                                    prog_func=None,
                                                    text_func=print)

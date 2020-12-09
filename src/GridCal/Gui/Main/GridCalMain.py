@@ -231,7 +231,7 @@ class MainGUI(QMainWindow):
 
         self.ui.catalogueDataStructuresListView.setModel(get_list_model(self.grid_editor.catalogue_types))
 
-        pfo = SnapshotData(nbus=1, nline=1, ndcline=1, ntr=1, nvsc=1, nhvdc=1,
+        pfo = SnapshotData(nbus=1, nline=1, ndcline=1, ntr=1, nvsc=1, nupfc=1, nhvdc=1,
                            nload=1, ngen=1, nbatt=1, nshunt=1, nstagen=1, sbase=100)
         self.ui.simulationDataStructuresListView.setModel(get_list_model(pfo.available_structures))
 
@@ -1667,7 +1667,11 @@ class MainGUI(QMainWindow):
 
         elif elm_type == DeviceType.VscDevice.value:
             elm = VSC(None, None)
-            elements = self.circuit.vsc_converters
+            elements = self.circuit.vsc_devices
+
+        elif elm_type == DeviceType.UpfcDevice.value:
+            elm = UPFC(None, None)
+            elements = self.circuit.upfc_devices
 
         elif elm_type == DeviceType.DCLineDevice.value:
             elm = DcLine(None, None)
@@ -5365,6 +5369,9 @@ class MainGUI(QMainWindow):
                         root_bus = sel_obj.bus_from
 
                     elif isinstance(sel_obj, VSC):
+                        root_bus = sel_obj.bus_from
+
+                    elif isinstance(sel_obj, UPFC):
                         root_bus = sel_obj.bus_from
 
                     if root_bus is not None:

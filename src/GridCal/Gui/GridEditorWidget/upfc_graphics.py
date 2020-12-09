@@ -14,36 +14,29 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
-from GridCal.Gui.GuiFunctions import get_list_model
 from GridCal.Gui.GridEditorWidget.generic_graphics import *
 from GridCal.Gui.GridEditorWidget.bus_graphics import TerminalItem
-from GridCal.Gui.GridEditorWidget.messages import *
 from GridCal.Gui.GuiFunctions import BranchObjectModel
-from GridCal.Engine.Devices.line import Line, SequenceLineType, Tower, UndergroundLineType
-from GridCal.Engine.Devices.branch import BranchType
+from GridCal.Engine.Devices.upfc import UPFC
+from GridCal.Engine.Devices.branch import Branch, BranchType
 from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brute
+from GridCal.Gui.GridEditorWidget.messages import *
 
 
-class LineEditor(QDialog):
+class UpfcEditor(QDialog):
 
-    def __init__(self, branch: Line, Sbase=100, templates=None, current_template=None):
+    def __init__(self, branch: UPFC, Sbase=100):
         """
         Line Editor constructor
         :param branch: Branch object to update
         :param Sbase: Base power in MVA
         """
-        super(LineEditor, self).__init__()
+        super(UpfcEditor, self).__init__()
 
         # keep pointer to the line object
         self.branch = branch
 
         self.Sbase = Sbase
-
-        self.templates = templates
-
-        self.current_template = current_template
-
-        self.selected_template = None
 
         self.setObjectName("self")
 
@@ -62,55 +55,19 @@ class LineEditor(QDialog):
 
         R = self.branch.R * Zbase
         X = self.branch.X * Zbase
+        G = self.branch.G * Ybase
         B = self.branch.B * Ybase
 
         I = self.branch.rate / Vf  # current in kA
-        length = self.branch.length
+
         # ------------------------------------------------------------------------------------------
-
-        # catalogue
-        self.catalogue_combo = QComboBox()
-        if self.templates is not None:
-            if len(self.templates) > 0:
-                self.catalogue_combo.setModel(get_list_model(self.templates))
-
-                if self.current_template is not None:
-                    try:
-                        idx = self.templates.index(self.current_template)
-                        self.catalogue_combo.setCurrentIndex(idx)
-
-                        if isinstance(self.current_template, SequenceLineType):
-                            I = self.current_template.rating
-                            R = self.current_template.R
-                            X = self.current_template.X
-                            B = self.current_template.B
-
-                        if isinstance(self.current_template, UndergroundLineType):
-                            I = self.current_template.rating
-                            R = self.current_template.R
-                            X = self.current_template.X
-                            B = self.current_template.B
-
-                        elif isinstance(self.current_template, Tower):
-                            I = self.current_template.rating
-                            R = self.current_template.R1
-                            X = self.current_template.X1
-                            B = self.current_template.Bsh1
-
-                    except:
-                        pass
-
-        # load template
-        self.load_template_btn = QPushButton()
-        self.load_template_btn.setText('Load template values')
-        self.load_template_btn.clicked.connect(self.load_template_btn_click)
 
         # line length
         self.l_spinner = QDoubleSpinBox()
         self.l_spinner.setMinimum(0)
         self.l_spinner.setMaximum(9999999)
         self.l_spinner.setDecimals(6)
-        self.l_spinner.setValue(length)
+        self.l_spinner.setValue(1)
 
         # Max current
         self.i_spinner = QDoubleSpinBox()
@@ -133,6 +90,13 @@ class LineEditor(QDialog):
         self.x_spinner.setDecimals(6)
         self.x_spinner.setValue(X)
 
+        # G
+        self.g_spinner = QDoubleSpinBox()
+        self.g_spinner.setMinimum(0)
+        self.g_spinner.setMaximum(9999999)
+        self.g_spinner.setDecimals(6)
+        self.g_spinner.setValue(G)
+
         # B
         self.b_spinner = QDoubleSpinBox()
         self.b_spinner.setMinimum(0)
@@ -145,13 +109,9 @@ class LineEditor(QDialog):
         self.accept_btn.setText('Accept')
         self.accept_btn.clicked.connect(self.accept_click)
 
-        # add all to the GUI
-        if templates is not None:
-            self.layout.addWidget(QLabel("Available templates"))
-            self.layout.addWidget(self.catalogue_combo)
-            self.layout.addWidget(self.load_template_btn)
-            self.layout.addWidget(QLabel(""))
+        # labels
 
+        # add all to the GUI
         self.layout.addWidget(QLabel("L: Line length [Km]"))
         self.layout.addWidget(self.l_spinner)
 
@@ -163,6 +123,9 @@ class LineEditor(QDialog):
 
         self.layout.addWidget(QLabel("X: Inductance [Ohm/Km]"))
         self.layout.addWidget(self.x_spinner)
+
+        self.layout.addWidget(QLabel("G: Conductance [S/Km]"))
+        self.layout.addWidget(self.g_spinner)
 
         self.layout.addWidget(QLabel("B: Susceptance [S/Km]"))
         self.layout.addWidget(self.b_spinner)
@@ -182,7 +145,7 @@ class LineEditor(QDialog):
         I = self.i_spinner.value()
         R = self.r_spinner.value() * l
         X = self.x_spinner.value() * l
-        # G = self.g_spinner.value() * l
+        G = self.g_spinner.value() * l
         B = self.b_spinner.value() * l
 
         Vf = self.branch.bus_from.Vnom
@@ -195,60 +158,16 @@ class LineEditor(QDialog):
 
         self.branch.R = np.round(R / Zbase, 6)
         self.branch.X = np.round(X / Zbase, 6)
+        self.branch.G = np.round(G / Ybase, 6)
         self.branch.B = np.round(B / Ybase, 6)
         self.branch.rate = Sn
 
-        if self.selected_template is not None:
-            self.branch.template = self.selected_template
-
         self.accept()
 
-    def load_template(self, template):
-        """
 
-        :param template:
-        :return:
-        """
-        if isinstance(template, SequenceLineType):
-            self.i_spinner.setValue(template.rating)
-            self.r_spinner.setValue(template.R)
-            self.x_spinner.setValue(template.X)
-            self.b_spinner.setValue(template.B)
+class UpfcGraphicItem(QGraphicsLineItem):
 
-            self.selected_template = template
-
-        elif isinstance(template, UndergroundLineType):
-            self.i_spinner.setValue(template.rating)
-            self.r_spinner.setValue(template.R)
-            self.x_spinner.setValue(template.X)
-            self.b_spinner.setValue(template.B)
-
-            self.selected_template = template
-
-        elif isinstance(template, Tower):
-            self.i_spinner.setValue(template.rating)
-            self.r_spinner.setValue(template.R1)
-            self.x_spinner.setValue(template.X1)
-            self.b_spinner.setValue(template.Bsh1)
-
-            self.selected_template = template
-
-    def load_template_btn_click(self):
-        """
-        Accept template values
-        """
-
-        if self.templates is not None:
-
-            idx = self.catalogue_combo.currentIndex()
-            template = self.templates[idx]
-
-            self.load_template(template)
-
-
-class LineGraphicItem(QGraphicsLineItem):
-
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5, branch: Line = None):
+    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, diagramScene, width=5, branch: UPFC = None):
         """
 
         :param fromPort:
@@ -289,11 +208,9 @@ class LineGraphicItem(QGraphicsLineItem):
             self.setToPort(toPort)
 
         # add transformer circles
-        self.symbol_type = BranchType.Line
-        self.symbol = None
-        self.c0 = None
-        self.c1 = None
-        self.c2 = None
+        h = 48
+        w = h
+        self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
         if self.api_object is not None:
             self.update_symbol()
 
@@ -312,69 +229,46 @@ class LineGraphicItem(QGraphicsLineItem):
         :return:
         """
         self.setPen(QPen(color, w, style))
+        self.symbol.setPen(QPen(color, w, style))
+        self.symbol.setBrush(color)
 
     def remove_symbol(self):
         """
         Remove all symbols
         """
-        for elm in [self.symbol, self.c1, self.c2, self.c0]:
+        for elm in [self.symbol]:
             if elm is not None:
                 try:
                     self.diagramScene.removeItem(elm)
-                    # sip.delete(elm)
-                    elm = None
                 except:
                     pass
 
     def update_symbol(self):
         """
         Make the branch symbol
-        :return:
         """
 
         # remove the symbol of the branch
         self.remove_symbol()
+        self.make_vsc_symbol()
 
-        if self.api_object.branch_type == BranchType.Switch:
-            self.make_switch_symbol()
-            self.symbol_type = BranchType.Switch
-
-        elif self.api_object.branch_type == BranchType.Reactance:
-            self.make_reactance_symbol()
-            self.symbol_type = BranchType.Switch
-
-        else:
-            # this is a line
-            self.symbol = None
-            self.c0 = None
-            self.c1 = None
-            self.c2 = None
-            self.symbol_type = BranchType.Line
-
-    def make_switch_symbol(self):
+    def make_vsc_symbol(self):
         """
-        Mathe the switch symbol
-        :return:
+        Make the VSC symbol
         """
-        h = 40.0
+        h = 48
         w = h
         self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
         self.symbol.setPen(QPen(self.color, self.width, self.style))
+
+        graphic = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self.symbol)
+        graphic.setBrush(QBrush(QPixmap(":/Icons/icons/upfc.svg")))
+        graphic.setPen(QPen(Qt.transparent, self.width, self.style))
+
         if self.api_object.active:
             self.symbol.setBrush(self.color)
         else:
             self.symbol.setBrush(QBrush(Qt.white))
-
-    def make_reactance_symbol(self):
-        """
-        Make the reactance symbol
-        :return:
-        """
-        h = 40.0
-        w = 2 * h
-        self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
-        self.symbol.setPen(QPen(self.color, self.width, self.style))
-        self.symbol.setBrush(self.color)
 
     def setToolTipText(self, toolTip: str):
         """
@@ -387,11 +281,6 @@ class LineGraphicItem(QGraphicsLineItem):
         if self.symbol is not None:
             self.symbol.setToolTip(toolTip)
 
-        if self.c0 is not None:
-            self.c0.setToolTip(toolTip)
-            self.c1.setToolTip(toolTip)
-            self.c2.setToolTip(toolTip)
-
     def contextMenuEvent(self, event):
         """
         Show context menu
@@ -400,35 +289,17 @@ class LineGraphicItem(QGraphicsLineItem):
         """
         if self.api_object is not None:
             menu = QMenu()
-            menu.addSection("Line")
 
-            pe = menu.addAction('Active')
-            pe.setCheckable(True)
-            pe.setChecked(self.api_object.active)
+            pe = menu.addAction('Enable/Disable')
+            pe_icon = QIcon()
+            if self.api_object.active:
+                pe_icon.addPixmap(QPixmap(":/Icons/icons/uncheck_all.svg"))
+            else:
+                pe_icon.addPixmap(QPixmap(":/Icons/icons/check_all.svg"))
+            pe.setIcon(pe_icon)
             pe.triggered.connect(self.enable_disable_toggle)
 
-
-            ra3 = menu.addAction('Editor')
-            edit_icon = QIcon()
-            edit_icon.addPixmap(QPixmap(":/Icons/icons/edit.svg"))
-            ra3.setIcon(edit_icon)
-            ra3.triggered.connect(self.edit)
-
-            # menu.addSeparator()
-
-            ra6 = menu.addAction('Plot profiles')
-            plot_icon = QIcon()
-            plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
-            ra6.setIcon(plot_icon)
-            ra6.triggered.connect(self.plot_profiles)
-
-            # menu.addSeparator()
-
-            re = menu.addAction('Reduce')
-            re_icon = QIcon()
-            re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
-            re.setIcon(re_icon)
-            re.triggered.connect(self.reduce)
+            menu.addSeparator()
 
             ra2 = menu.addAction('Delete')
             del_icon = QIcon()
@@ -436,30 +307,29 @@ class LineGraphicItem(QGraphicsLineItem):
             ra2.setIcon(del_icon)
             ra2.triggered.connect(self.remove)
 
-            menu.addSection('Convert to')
-            toxfo = menu.addAction('Transformer')
-            toxfo_icon = QIcon()
-            toxfo_icon.addPixmap(QPixmap(":/Icons/icons/to_transformer.svg"))
-            toxfo.setIcon(toxfo_icon)
-            toxfo.triggered.connect(self.to_transformer)
+            menu.addSeparator()
 
-            tohvdc = menu.addAction('HVDC')
-            tohvdc_icon = QIcon()
-            tohvdc_icon.addPixmap(QPixmap(":/Icons/icons/to_hvdc.svg"))
-            tohvdc.setIcon(tohvdc_icon)
-            tohvdc.triggered.connect(self.to_hvdc)
+            ra3 = menu.addAction('Edit')
+            edit_icon = QIcon()
+            edit_icon.addPixmap(QPixmap(":/Icons/icons/edit.svg"))
+            ra3.setIcon(edit_icon)
+            ra3.triggered.connect(self.edit)
 
-            tovsc = menu.addAction('VSC')
-            tovsc_icon = QIcon()
-            tovsc_icon.addPixmap(QPixmap(":/Icons/icons/to_vsc.svg"))
-            tovsc.setIcon(tovsc_icon)
-            tovsc.triggered.connect(self.to_vsc)
+            menu.addSeparator()
 
-            toupfc = menu.addAction('UPFC')
-            toupfc_icon = QIcon()
-            toupfc_icon.addPixmap(QPixmap(":/Icons/icons/to_upfc.svg"))
-            toupfc.setIcon(toupfc_icon)
-            toupfc.triggered.connect(self.to_upfc)
+            ra6 = menu.addAction('Plot profiles')
+            plot_icon = QIcon()
+            plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
+            ra6.setIcon(plot_icon)
+            ra6.triggered.connect(self.plot_profiles)
+
+            menu.addSeparator()
+
+            re = menu.addAction('Reduce')
+            re_icon = QIcon()
+            re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
+            re.setIcon(re_icon)
+            re.triggered.connect(self.reduce)
 
             menu.exec_(event.screenPos())
         else:
@@ -498,7 +368,7 @@ class LineGraphicItem(QGraphicsLineItem):
         Remove this object in the diagram and the API
         @return:
         """
-        ok = yes_no_question('Do you want to remove this line?', 'Remove line')
+        ok = yes_no_question('Do you want to remove this UPFC?', 'Remove UPFC')
 
         if ok:
             self.diagramScene.circuit.delete_branch(self.api_object)
@@ -508,8 +378,7 @@ class LineGraphicItem(QGraphicsLineItem):
         """
         Reduce this branch
         """
-
-        ok = yes_no_question('Do you want to reduce this line?', 'Reduce line')
+        ok = yes_no_question('Do you want to reduce this UPFC?', 'Remove UPFC')
 
         if ok:
             # get the index of the branch
@@ -539,9 +408,6 @@ class LineGraphicItem(QGraphicsLineItem):
                 for g in removed_bus.graphic_obj.shunt_children:
                     self.diagramScene.removeItem(g.nexus)  # remove the links between the bus and the children
                 self.diagramScene.removeItem(removed_bus.graphic_obj)  # remove the bus and all the children contained
-
-                #
-                # updated_bus.graphic_obj.update()
 
             for br in updated_branches:
                 # remove the branch from the schematic
@@ -676,38 +542,25 @@ class LineGraphicItem(QGraphicsLineItem):
             self.setZValue(-1)
 
             if self.api_object is not None:
+                # if the branch has a moveable symbol, move it
+                try:
+                    h = self.pos2.y() - self.pos1.y()
+                    b = self.pos2.x() - self.pos1.x()
+                    ang = np.arctan2(h, b)
+                    h2 = self.symbol.rect().height() / 2.0
+                    w2 = self.symbol.rect().width() / 2.0
+                    a = h2 * np.cos(ang) - w2 * np.sin(ang)
+                    b = w2 * np.sin(ang) + h2 * np.cos(ang)
 
-                # if the object branch type is different from the current displayed type, change it
-                if self.symbol_type != self.api_object.branch_type:
-                    self.update_symbol()
+                    center = (self.pos1 + self.pos2) * 0.5 - QPointF(a, b)
 
-                if self.api_object.branch_type == BranchType.Line:
-                    pass
+                    transform = QTransform()
+                    transform.translate(center.x(), center.y())
+                    transform.rotate(np.rad2deg(ang))
+                    self.symbol.setTransform(transform)
 
-                elif self.api_object.branch_type == BranchType.Branch:
-                    pass
-
-                else:
-
-                    # if the branch has a moveable symbol, move it
-                    try:
-                        h = self.pos2.y() - self.pos1.y()
-                        b = self.pos2.x() - self.pos1.x()
-                        ang = np.arctan2(h, b)
-                        h2 = self.symbol.rect().height() / 2.0
-                        w2 = self.symbol.rect().width() / 2.0
-                        a = h2 * np.cos(ang) - w2 * np.sin(ang)
-                        b = w2 * np.sin(ang) + h2 * np.cos(ang)
-
-                        center = (self.pos1 + self.pos2) * 0.5 - QPointF(a, b)
-
-                        transform = QTransform()
-                        transform.translate(center.x(), center.y())
-                        transform.rotate(np.rad2deg(ang))
-                        self.symbol.setTransform(transform)
-
-                    except Exception as ex:
-                        print(ex)
+                except Exception as ex:
+                    print(ex)
 
     def set_pen(self, pen):
         """
@@ -717,15 +570,8 @@ class LineGraphicItem(QGraphicsLineItem):
         """
         self.setPen(pen)
 
-        # Color the symbol only for switches
-        if self.api_object.branch_type == BranchType.Switch:
-            if self.symbol is not None:
-                self.symbol.setPen(pen)
-
-        elif self.api_object.branch_type == BranchType.Transformer:
-            if self.c1 is not None:
-                self.c1.setPen(pen)
-                self.c2.setPen(pen)
+        if self.symbol is not None:
+            self.symbol.setPen(pen)
 
     def edit(self):
         """
@@ -733,9 +579,8 @@ class LineGraphicItem(QGraphicsLineItem):
         :return:
         """
         Sbase = self.diagramScene.circuit.Sbase
-        templates = self.diagramScene.circuit.underground_cable_types + self.diagramScene.circuit.overhead_line_types
-        current_template = self.api_object.template
-        dlg = LineEditor(self.api_object, Sbase, templates, current_template)
+
+        dlg = UpfcEditor(self.api_object, Sbase)
         if dlg.exec_():
             pass
 
@@ -746,46 +591,6 @@ class LineGraphicItem(QGraphicsLineItem):
         """
         Sbase = self.diagramScene.circuit.Sbase
 
-        dlg = LineEditor(self.api_object, Sbase)
+        dlg = UpfcEditor(self.api_object, Sbase)
         if dlg.exec_():
             pass
-
-    def to_transformer(self):
-        """
-        Convert this object to transformer
-        :return:
-        """
-        ok = yes_no_question('Are you sure that you want to convert this line into a transformer?', 'Convert line')
-        if ok:
-            editor = self.diagramScene.parent()
-            editor.convert_line_to_transformer(self.api_object)
-
-    def to_hvdc(self):
-        """
-        Convert this object to HVDC
-        :return:
-        """
-        ok = yes_no_question('Are you sure that you want to convert this line into a HVDC line?', 'Convert line')
-        if ok:
-            editor = self.diagramScene.parent()
-            editor.convert_line_to_hvdc(self.api_object)
-
-    def to_vsc(self):
-        """
-        Convert this object to VSC
-        :return:
-        """
-        ok = yes_no_question('Are you sure that you want to convert this line into a VSC device?', 'Convert line')
-        if ok:
-            editor = self.diagramScene.parent()
-            editor.convert_line_to_vsc(self.api_object)
-
-    def to_upfc(self):
-        """
-        Convert this object to UPFC
-        :return:
-        """
-        ok = yes_no_question('Are you sure that you want to convert this line into a UPFC device?', 'Convert line')
-        if ok:
-            editor = self.diagramScene.parent()
-            editor.convert_line_to_upfc(self.api_object)

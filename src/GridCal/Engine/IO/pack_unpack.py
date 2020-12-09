@@ -66,6 +66,8 @@ def get_objects_dictionary():
                     'hvdc': HvdcLine(),
 
                     'vsc': VSC(None, None),
+
+                    'upfc': UPFC(None, None),
                     }
 
     return object_types
@@ -441,10 +443,13 @@ def data_frames_to_circuit(data: Dict):
             elif template_elm.device_type == DeviceType.HVDCLineDevice:
                 circuit.hvdc_lines = devices
 
+            elif template_elm.device_type == DeviceType.UpfcDevice:
+                circuit.upfc_devices = devices
+
             elif template_elm.device_type == DeviceType.VscDevice:
                 for dev in devices:
                     dev.correct_buses_connection()
-                circuit.vsc_converters = devices
+                circuit.vsc_devices = devices
 
             elif template_elm.device_type == DeviceType.TowerDevice:
                 circuit.overhead_line_types = devices

@@ -32,7 +32,7 @@ sparse_type = get_sparse_type()
 
 class SnapshotData:
 
-    def __init__(self, nbus, nline, ndcline, ntr, nvsc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase, ntime=1):
+    def __init__(self, nbus, nline, ndcline, ntr, nvsc, nupfc, nhvdc, nload, ngen, nbatt, nshunt, nstagen, sbase, ntime=1):
         """
 
         :param nbus:
@@ -54,7 +54,9 @@ class SnapshotData:
         self.ndcline = ndcline
         self.ntr = ntr
         self.nvsc = nvsc
+        self.nupfc = nupfc
         self.nhvdc = nhvdc
+
         self.nload = nload
         self.ngen = ngen
         self.nbatt = nbatt
@@ -73,8 +75,10 @@ class SnapshotData:
         self.line_data = ds.LinesData(nline=nline, nbus=nbus, ntime=ntime)
         self.dc_line_data = ds.DcLinesData(ndcline=ndcline, nbus=nbus, ntime=ntime)
         self.transformer_data = ds.TransformerData(ntr=ntr, nbus=nbus, ntime=ntime)
-        self.hvdc_data = ds.HvdcData(nhvdc=nhvdc, nbus=nbus, ntime=ntime)
         self.vsc_data = ds.VscData(nvsc=nvsc, nbus=nbus, ntime=ntime)
+        self.upfc_data = ds.UpfcData(nelm=nupfc, nbus=nbus, ntime=ntime)
+        self.hvdc_data = ds.HvdcData(nhvdc=nhvdc, nbus=nbus, ntime=ntime)
+
         self.load_data = ds.LoadData(nload=nload, nbus=nbus, ntime=ntime)
         self.static_generator_data = ds.StaticGeneratorData(nstagen=nstagen, nbus=nbus, ntime=ntime)
         self.battery_data = ds.BatteryData(nbatt=nbatt, nbus=nbus, ntime=ntime)
@@ -777,6 +781,7 @@ class SnapshotData:
         dc_line_idx = self.dc_line_data.get_island(bus_idx)
         tr_idx = self.transformer_data.get_island(bus_idx)
         vsc_idx = self.vsc_data.get_island(bus_idx)
+        upfc_idx = self.upfc_data.get_island(bus_idx)
         hvdc_idx = self.hvdc_data.get_island(bus_idx)
         br_idx = self.branch_data.get_island(bus_idx)
 
@@ -791,6 +796,7 @@ class SnapshotData:
                           ndcline=len(dc_line_idx),
                           ntr=len(tr_idx),
                           nvsc=len(vsc_idx),
+                          nupfc=len(upfc_idx),
                           nhvdc=len(hvdc_idx),
                           nload=len(load_idx),
                           ngen=len(gen_idx),
@@ -891,6 +897,7 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
                       ndcline=0,
                       ntr=0,
                       nvsc=0,
+                      nupfc=0,
                       nhvdc=0,
                       nload=0,
                       ngen=0,

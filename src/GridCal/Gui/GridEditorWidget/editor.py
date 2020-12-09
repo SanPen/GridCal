@@ -26,6 +26,7 @@ from GridCal.Engine.Devices.line import Line
 from GridCal.Engine.Devices.dc_line import DcLine
 from GridCal.Engine.Devices.transformer import Transformer2W
 from GridCal.Engine.Devices.vsc import VSC
+from GridCal.Engine.Devices.upfc import UPFC
 from GridCal.Engine.Devices.hvdc_line import HvdcLine
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.GridEditorWidget.bus_graphics import BusGraphicItem
@@ -34,6 +35,7 @@ from GridCal.Gui.GridEditorWidget.dc_line_graphics import DcLineGraphicItem
 from GridCal.Gui.GridEditorWidget.transformer2w_graphics import TransformerGraphicItem
 from GridCal.Gui.GridEditorWidget.hvdc_graphics import HvdcGraphicItem
 from GridCal.Gui.GridEditorWidget.vsc_graphics import VscGraphicItem
+from GridCal.Gui.GridEditorWidget.upfc_graphics import UpfcGraphicItem
 
 
 '''
@@ -389,7 +391,7 @@ class GridEditor(QSplitter):
                         if self.started_branch.bus_from.api_object.is_dc != self.started_branch.bus_to.api_object.is_dc:
                             # different DC status -> VSC
 
-                            name = 'VSC ' + str(len(self.circuit.vsc_converters) + 1)
+                            name = 'VSC ' + str(len(self.circuit.vsc_devices) + 1)
                             obj = VSC(bus_from=self.started_branch.bus_from.api_object,
                                       bus_to=self.started_branch.bus_to.api_object,
                                       name=name)
@@ -770,6 +772,22 @@ class GridEditor(QSplitter):
 
         return graphic_obj
 
+    def add_api_upfc(self, branch: UPFC):
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        """
+        terminal_from = branch.bus_from.graphic_obj.terminal
+        terminal_to = branch.bus_to.graphic_obj.terminal
+
+        graphic_obj = UpfcGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
+
+        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        terminal_from.hosting_connections.append(graphic_obj)
+        terminal_to.hosting_connections.append(graphic_obj)
+        graphic_obj.redraw()
+
+        return graphic_obj
     def add_api_transformer(self, branch: Transformer2W):
         """
         add API branch to the Scene
@@ -884,8 +902,41 @@ class GridEditor(QSplitter):
         # delete from the schematic
         self.diagramScene.removeItem(line.graphic_obj)
 
-    def add_elements_to_schematic(self, buses, lines, dc_lines, transformers2w, hvdc_lines, vsc_converters,
-                                  explode_factor=1.0, prog_func=None, text_func=None):
+    def convert_line_to_upfc(self, line: Line):
+        """
+        Convert a line to voltage source converter
+        :param line: Line instance
+        :return: Nothing
+        """
+        upfc = UPFC(bus_from=line.bus_from,
+                   bus_to=line.bus_to,
+                   name='UPFC',
+                   active=line.active,
+                   rate=line.rate,
+                   rl=line.R,
+                   xl=line.X,
+                   bl=line.B,
+                   active_prof=line.active_prof,
+                   rate_prof=line.rate_prof)
+
+        # add device to the circuit
+        self.circuit.add_upfc(upfc)
+
+        # add device to the schematic
+        upfc.graphic_obj = self.add_api_upfc(upfc)
+
+        # update position
+        upfc.graphic_obj.fromPort.update()
+        upfc.graphic_obj.toPort.update()
+
+        # delete the line from the circuit
+        self.circuit.delete_line(line)
+
+        # delete from the schematic
+        self.diagramScene.removeItem(line.graphic_obj)
+
+    def add_elements_to_schematic(self, buses, lines, dc_lines, transformers2w, hvdc_lines, vsc_devices,
+                                  upfc_devices, explode_factor=1.0, prog_func=None, text_func=None):
         """
         Add a elements to the schematic scene
         :param buses: list of Bus objects
@@ -893,7 +944,7 @@ class GridEditor(QSplitter):
         :param dc_lines: list of DcLine objects
         :param transformers2w: list of Transformer Objects
         :param hvdc_lines: list of HvdcLine objects
-        :param vsc_converters: list Vsc objects
+        :param vsc_devices: list Vsc objects
         :param explode_factor: factor of "explosion": Separation of the nodes factor
         :param prog_func: progress report function
         :param text_func: Text report function
@@ -962,13 +1013,25 @@ class GridEditor(QSplitter):
         if text_func is not None:
             text_func('Creating schematic VSC devices')
 
-        nn = len(vsc_converters)
-        for i, branch in enumerate(vsc_converters):
+        nn = len(vsc_devices)
+        for i, branch in enumerate(vsc_devices):
 
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
             branch.graphic_obj = self.add_api_vsc(branch)
+
+        # --------------------------------------------------------------------------------------------------------------
+        if text_func is not None:
+            text_func('Creating schematic UPFC devices')
+
+        nn = len(upfc_devices)
+        for i, branch in enumerate(upfc_devices):
+
+            if prog_func is not None:
+                prog_func((i + 1) / nn * 100.0)
+
+            branch.graphic_obj = self.add_api_upfc(branch)
 
     def add_circuit_to_schematic(self, circuit: "MultiCircuit", explode_factor=1.0, prog_func=None, text_func=None):
         """
@@ -978,84 +1041,14 @@ class GridEditor(QSplitter):
         :param prog_func: progress report function
         :param text_func: Text report function
         """
-        # # first create the buses
-        # if text_func is not None:
-        #     text_func('Creating schematic buses')
-        #
-        # nn = len(circuit.buses)
-        # for i, bus in enumerate(circuit.buses):
-        #
-        #     if prog_func is not None:
-        #         prog_func((i+1) / nn * 100.0)
-        #
-        #     bus.graphic_obj = self.add_api_bus(bus, explode_factor)
-        #
-        # # --------------------------------------------------------------------------------------------------------------
-        # if text_func is not None:
-        #     text_func('Creating schematic line devices')
-        #
-        # nn = len(circuit.lines)
-        # for i, branch in enumerate(circuit.lines):
-        #
-        #     if prog_func is not None:
-        #         prog_func((i+1) / nn * 100.0)
-        #
-        #     branch.graphic_obj = self.add_api_line(branch)
-        #
-        # # --------------------------------------------------------------------------------------------------------------
-        # if text_func is not None:
-        #     text_func('Creating schematic line devices')
-        #
-        # nn = len(circuit.dc_lines)
-        # for i, branch in enumerate(circuit.dc_lines):
-        #
-        #     if prog_func is not None:
-        #         prog_func((i + 1) / nn * 100.0)
-        #
-        #     branch.graphic_obj = self.add_api_dc_line(branch)
-        #
-        # # --------------------------------------------------------------------------------------------------------------
-        # if text_func is not None:
-        #     text_func('Creating schematic transformer devices')
-        #
-        # nn = len(circuit.transformers2w)
-        # for i, branch in enumerate(circuit.transformers2w):
-        #
-        #     if prog_func is not None:
-        #         prog_func((i + 1) / nn * 100.0)
-        #
-        #     branch.graphic_obj = self.add_api_transformer(branch)
-        #
-        # # --------------------------------------------------------------------------------------------------------------
-        # if text_func is not None:
-        #     text_func('Creating schematic HVDC devices')
-        #
-        # nn = len(circuit.hvdc_lines)
-        # for i, branch in enumerate(circuit.hvdc_lines):
-        #
-        #     if prog_func is not None:
-        #         prog_func((i + 1) / nn * 100.0)
-        #
-        #     branch.graphic_obj = self.add_api_hvdc(branch)
-        #
-        # # --------------------------------------------------------------------------------------------------------------
-        # if text_func is not None:
-        #     text_func('Creating schematic VSC devices')
-        #
-        # nn = len(circuit.vsc_converters)
-        # for i, branch in enumerate(circuit.vsc_converters):
-        #
-        #     if prog_func is not None:
-        #         prog_func((i + 1) / nn * 100.0)
-        #
-        #     branch.graphic_obj = self.add_api_vsc(branch)
 
         self.add_elements_to_schematic(buses=circuit.buses,
                                        lines=circuit.lines,
                                        dc_lines=circuit.dc_lines,
                                        transformers2w=circuit.transformers2w,
                                        hvdc_lines=circuit.hvdc_lines,
-                                       vsc_converters=circuit.vsc_converters,
+                                       vsc_devices=circuit.vsc_devices,
+                                       upfc_devices=circuit.upfc_devices,
                                        explode_factor=explode_factor,
                                        prog_func=prog_func,
                                        text_func=text_func)
