@@ -162,6 +162,7 @@ class BusViewerGUI(QMainWindow):
         transformers2w = list()
         hvdc_lines = list()
         vsc_converters = list()
+        upfc_devices = list()
 
         for obj in selected_branches:
 
@@ -182,6 +183,9 @@ class BusViewerGUI(QMainWindow):
             elif obj.device_type == DeviceType.VscDevice:
                 vsc_converters.append(obj)
 
+            elif obj.device_type == DeviceType.UpfcDevice:
+                upfc_devices.append(obj)
+
             elif obj.device_type == DeviceType.BranchDevice:
                 # we need to convert it :D
                 obj2 = convert_branch(obj)
@@ -196,6 +200,7 @@ class BusViewerGUI(QMainWindow):
                                                    transformers2w=transformers2w,
                                                    hvdc_lines=hvdc_lines,
                                                    vsc_devices=vsc_converters,
+                                                   upfc_devices=upfc_devices,
                                                    explode_factor=1.0,
                                                    prog_func=None,
                                                    text_func=print)

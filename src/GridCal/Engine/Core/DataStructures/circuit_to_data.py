@@ -423,7 +423,7 @@ def get_upfc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
     :param bus_dict:
     :return:
     """
-    nc = UpfcData(nelm=len(circuit.upfc_devices), nbus=len(circuit.buses), ntime=ntime)
+    data = UpfcData(nelm=len(circuit.upfc_devices), nbus=len(circuit.buses), ntime=ntime)
 
     # UPFC
     for i, elm in enumerate(circuit.upfc_devices):
@@ -433,24 +433,25 @@ def get_upfc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
         t = bus_dict[elm.bus_to]
 
         # vsc values
-        nc.names[i] = elm.name
-        nc.Rl[i] = elm.Rl
-        nc.Xl[i] = elm.Xl
-        nc.Bl[i] = elm.Bl
+        data.names[i] = elm.name
+        data.Rl[i] = elm.Rl
+        data.Xl[i] = elm.Xl
+        data.Bl[i] = elm.Bl
 
-        nc.Rs[i] = elm.Rs
-        nc.Xs[i] = elm.Xs
+        data.Rs[i] = elm.Rs
+        data.Xs[i] = elm.Xs
 
-        nc.Rsh[i] = elm.Rsh
-        nc.Xsh[i] = elm.Xsh
+        data.Rsh[i] = elm.Rsh
+        data.Xsh[i] = elm.Xsh
 
-        nc.Pset[i] = elm.Pset
-        nc.Vsh[i] = elm.Vsh
+        data.Pset[i] = elm.Pset
+        data.Qset[i] = elm.Qset
+        data.Vsh[i] = elm.Vsh
 
-        nc.C_elm_bus[i, f] = 1
-        nc.C_elm_bus[i, t] = 1
+        data.C_elm_bus[i, f] = 1
+        data.C_elm_bus[i, t] = 1
 
-    return nc
+    return data
 
 
 def get_dc_line_data(circuit: MultiCircuit, bus_dict,
@@ -463,7 +464,7 @@ def get_dc_line_data(circuit: MultiCircuit, bus_dict,
     :param branch_tolerance_mode:
     :return:
     """
-    nc = DcLinesData(ndcline=len(circuit.dc_lines), nbus=len(circuit.buses), ntime=ntime)
+    data = DcLinesData(ndcline=len(circuit.dc_lines), nbus=len(circuit.buses), ntime=ntime)
 
     # DC-lines
     for i, elm in enumerate(circuit.dc_lines):
@@ -473,30 +474,30 @@ def get_dc_line_data(circuit: MultiCircuit, bus_dict,
         t = bus_dict[elm.bus_to]
 
         # dc line values
-        nc.dc_line_names[i] = elm.name
+        data.dc_line_names[i] = elm.name
 
         if apply_temperature:
-            nc.dc_line_R[i] = elm.R_corrected
+            data.dc_line_R[i] = elm.R_corrected
         else:
-            nc.dc_line_R[i] = elm.R
+            data.dc_line_R[i] = elm.R
 
         if branch_tolerance_mode == BranchImpedanceMode.Lower:
-            nc.dc_line_R[i] *= (1 - elm.tolerance / 100.0)
+            data.dc_line_R[i] *= (1 - elm.tolerance / 100.0)
         elif branch_tolerance_mode == BranchImpedanceMode.Upper:
-            nc.dc_line_R[i] *= (1 + elm.tolerance / 100.0)
+            data.dc_line_R[i] *= (1 + elm.tolerance / 100.0)
 
-        nc.dc_line_impedance_tolerance[i] = elm.tolerance
-        nc.C_dc_line_bus[i, f] = 1
-        nc.C_dc_line_bus[i, t] = 1
-        nc.dc_F[i] = f
-        nc.dc_T[i] = t
+        data.dc_line_impedance_tolerance[i] = elm.tolerance
+        data.C_dc_line_bus[i, f] = 1
+        data.C_dc_line_bus[i, t] = 1
+        data.dc_F[i] = f
+        data.dc_T[i] = t
 
         # Thermal correction
-        nc.dc_line_temp_base[i] = elm.temp_base
-        nc.dc_line_temp_oper[i] = elm.temp_oper
-        nc.dc_line_alpha[i] = elm.alpha
+        data.dc_line_temp_base[i] = elm.temp_base
+        data.dc_line_temp_oper[i] = elm.temp_oper
+        data.dc_line_alpha[i] = elm.alpha
 
-    return nc
+    return data
 
 
 def get_branch_data(circuit: MultiCircuit, bus_dict, apply_temperature,

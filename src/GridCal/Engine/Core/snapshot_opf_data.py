@@ -219,6 +219,8 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
     nc.line_data = ds.circuit_to_data.get_line_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode)
     nc.transformer_data = ds.circuit_to_data.get_transformer_data(circuit, bus_dict)
     nc.vsc_data = ds.circuit_to_data.get_vsc_data(circuit, bus_dict)
+    nc.upfc_data = ds.circuit_to_data.get_upfc_data(circuit, bus_dict)
+
     nc.dc_line_data = ds.circuit_to_data.get_dc_line_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode)
     nc.branch_data = ds.circuit_to_data.get_branch_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode, opf=True)
     nc.hvdc_data = ds.circuit_to_data.get_hvdc_data(circuit, bus_dict, nc.bus_data.bus_types)

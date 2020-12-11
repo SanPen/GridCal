@@ -2278,14 +2278,28 @@ class PSSeFACTS:
 
         elif mode == 3 and abs(self.J) > 0:  # const Z
             # series and shunt links operating with series link at constant series impedance
-            sh = Shunt(name='FACTS:' + name1, B=self.SHMX)
-            load_from = Load(name='FACTS:' + name1, P=-self.PDES, Q=-self.QDES)
-            gen_to = Generator(name='FACTS:' + name1, active_power=self.PDES, voltage_module=self.VSET)
-            # branch = Line(bus_from=bus1, bus_to=bus2, name='FACTS:' + name1, x=self.LINX)
-            circuit.add_shunt(bus1, sh)
-            circuit.add_load(bus1, load_from)
-            circuit.add_generator(bus2, gen_to)
-            # circuit.add_line(branch)
+            # sh = Shunt(name='FACTS:' + name1, B=self.SHMX)
+            # load_from = Load(name='FACTS:' + name1, P=-self.PDES, Q=-self.QDES)
+            # gen_to = Generator(name='FACTS:' + name1, active_power=self.PDES, voltage_module=self.VSET)
+            # # branch = Line(bus_from=bus1, bus_to=bus2, name='FACTS:' + name1, x=self.LINX)
+            # circuit.add_shunt(bus1, sh)
+            # circuit.add_load(bus1, load_from)
+            # circuit.add_generator(bus2, gen_to)
+            # # circuit.add_line(branch)
+
+            elm = UPFC(name=name1,
+                       bus_from=bus1,
+                       bus_to=bus2,
+                       code=idtag,
+                       rs=self.SET1, xs=self.SET2,
+                       rl=0.0, xl=self.LINX, bl=0.0,
+                       rp=0.0, xp=1/self.SHMX,
+                       vp=self.VSET,
+                       Pset=self.PDES,
+                       Qset=self.QDES,
+                       rate=self.IMX + 1e-20)
+
+            circuit.add_upfc(elm)
 
         elif mode == 4 and abs(self.J) > 0:
             # series and shunt links operating with series link at constant series voltage

@@ -42,6 +42,7 @@ class UpfcData:
 
         self.Vsh = np.zeros((nelm, ntime))
         self.Pset = np.zeros((nelm, ntime))
+        self.Qset = np.zeros((nelm, ntime))
 
         self.C_elm_bus = sp.lil_matrix((nelm, nbus), dtype=int)  # this ons is just for splitting islands
 
@@ -59,25 +60,26 @@ class UpfcData:
         else:
             tidx = np.ix_(elm_idx, time_idx)
 
-        nc = UpfcData(nelm=len(elm_idx), nbus=len(bus_idx))
+        data = UpfcData(nelm=len(elm_idx), nbus=len(bus_idx))
 
-        nc.names = self.names[elm_idx]
-        nc.Rl = self.Rl[elm_idx]
-        nc.Xl = self.Xl[elm_idx]
-        nc.Bl = self.Bl[elm_idx]
+        data.names = self.names[elm_idx]
+        data.Rl = self.Rl[elm_idx]
+        data.Xl = self.Xl[elm_idx]
+        data.Bl = self.Bl[elm_idx]
 
-        nc.Rs = self.Rs[elm_idx]
-        nc.Xs = self.Xs[elm_idx]
+        data.Rs = self.Rs[elm_idx]
+        data.Xs = self.Xs[elm_idx]
 
-        nc.Rsh = self.Rsh[elm_idx]
-        nc.Xsh = self.Xsh[elm_idx]
+        data.Rsh = self.Rsh[elm_idx]
+        data.Xsh = self.Xsh[elm_idx]
 
-        nc.Pset = self.Pset[tidx]
-        nc.Vsh = self.Vsh[tidx]
+        data.Pset = self.Pset[tidx]
+        data.Qset = self.Qset[tidx]
+        data.Vsh = self.Vsh[tidx]
 
-        nc.C_elm_bus = self.C_elm_bus[np.ix_(elm_idx, bus_idx)]
+        data.C_elm_bus = self.C_elm_bus[np.ix_(elm_idx, bus_idx)]
 
-        return nc
+        return data
 
     def get_island(self, bus_idx):
         """

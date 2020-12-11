@@ -268,6 +268,8 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
     nc.transformer_data = ds.circuit_to_data.get_transformer_data(circuit, bus_dict, time_series=True, ntime=ntime)
     nc.vsc_data = ds.circuit_to_data.get_vsc_data(circuit, bus_dict, time_series=True, ntime=ntime)
 
+    nc.upfc_data = ds.circuit_to_data.get_upfc_data(circuit, bus_dict, time_series=True, ntime=ntime)
+
     nc.dc_line_data = ds.circuit_to_data.get_dc_line_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode,
                                                           time_series=True, ntime=ntime)
 

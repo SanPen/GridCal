@@ -213,7 +213,8 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
 
     nc.load_data = ds.circuit_to_data.get_load_data(circuit, bus_dict, opf_results, time_series=True, ntime=ntime)
 
-    nc.static_generator_data = ds.circuit_to_data.get_static_generator_data(circuit, bus_dict, time_series=True, ntime=ntime)
+    nc.static_generator_data = ds.circuit_to_data.get_static_generator_data(circuit, bus_dict,
+                                                                            time_series=True, ntime=ntime)
 
     nc.generator_data = ds.circuit_to_data.get_generator_data(circuit, bus_dict, nc.bus_data.Vbus, logger, opf_results,
                                                               time_series=True, ntime=ntime)
@@ -227,10 +228,13 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                                                     time_series=True, ntime=ntime)
 
     nc.transformer_data = ds.circuit_to_data.get_transformer_data(circuit, bus_dict, time_series=True, ntime=ntime)
+
     nc.vsc_data = ds.circuit_to_data.get_vsc_data(circuit, bus_dict, time_series=True, ntime=ntime)
 
     nc.dc_line_data = ds.circuit_to_data.get_dc_line_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode,
                                                           time_series=True, ntime=ntime)
+
+    nc.upfc_data = ds.circuit_to_data.get_upfc_data(circuit, bus_dict, time_series=True, ntime=ntime)
 
     nc.branch_data = ds.circuit_to_data.get_branch_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode,
                                                         time_series=True, ntime=ntime)

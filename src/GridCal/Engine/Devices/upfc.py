@@ -25,8 +25,8 @@ from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, G
 
 class UPFC(EditableDevice):
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='UPFC', idtag=None, active=True,
-                 rs=0.0, xs=0.00001, rl=0.0, xl=0.0, bl=0.0, rp=0.0, xp=0.0, vp=1.0, Pset = 0.0, rate=9999,
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='UPFC', code='', idtag=None, active=True,
+                 rs=0.0, xs=0.00001, rl=0.0, xl=0.0, bl=0.0, rp=0.0, xp=0.0, vp=1.0, Pset = 0.0, Qset=0.0, rate=9999,
                  mttf=0, mttr=0, cost=1200, cost_prof=None, rate_prof=None, active_prof=None):
         """
         Unified Power Flow Converter (UPFC)
@@ -57,9 +57,11 @@ class UPFC(EditableDevice):
                                 name=name,
                                 idtag=idtag,
                                 active=active,
+                                code=code,
                                 device_type=DeviceType.UpfcDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the branch.'),
                                                   'idtag': GCProp('', str, 'Unique ID'),
+                                                  'code': GCProp('', str, 'Secondary ID'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
                                                                      'Name of the bus at the "from" side of the branch.'),
                                                   'bus_to': GCProp('', DeviceType.BusDevice,
@@ -79,6 +81,7 @@ class UPFC(EditableDevice):
                                                   'Xsh': GCProp('p.u.', float, 'Shunt resistance.'),
                                                   'Vsh': GCProp('p.u.', float, 'Shunt voltage set point.'),
                                                   'Pset': GCProp('MW', float, 'Active power set point.'),
+                                                  'Qset': GCProp('MVAr', float, 'Active power set point.'),
                                                   'Cost': GCProp('e/MWh', float, 'Cost of overloads. Used in OPF.'),
                                                   },
                                 non_editable_attributes=['bus_from', 'bus_to', 'idtag'],
@@ -102,6 +105,7 @@ class UPFC(EditableDevice):
         self.Xsh = xp
         self.Vsh = vp
         self.Pset = Pset
+        self.Qset = Qset
 
         self.Cost = cost
         self.Cost_prof = cost_prof
@@ -117,7 +121,7 @@ class UPFC(EditableDevice):
         self.rate_prof = rate_prof
 
         # branch type: Line, Transformer, etc...
-        self.branch_type = BranchType.VSC
+        self.branch_type = BranchType.UPFC
 
     def get_properties_dict(self):
         """

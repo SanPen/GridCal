@@ -91,6 +91,7 @@ class SnapshotData:
         self.original_tr_idx = np.arange(self.ntr)
         self.original_dc_line_idx = np.arange(self.ndcline)
         self.original_vsc_idx = np.arange(self.nvsc)
+        self.original_upfc_idx = np.arange(self.nupfc)
         self.original_hvdc_idx = np.arange(self.nhvdc)
         self.original_gen_idx = np.arange(self.ngen)
         self.original_bat_idx = np.arange(self.nbatt)
@@ -231,6 +232,7 @@ class SnapshotData:
         self.hvdc_data.C_hvdc_bus_f = self.hvdc_data.C_hvdc_bus_f.tocsc()
         self.hvdc_data.C_hvdc_bus_t = self.hvdc_data.C_hvdc_bus_t.tocsc()
         self.vsc_data.C_vsc_bus = self.vsc_data.C_vsc_bus.tocsc()
+        self.upfc_data.C_elm_bus = self.upfc_data.C_elm_bus.tocsc()
 
         self.load_data.C_bus_load = self.load_data.C_bus_load.tocsr()
         self.battery_data.C_bus_batt = self.battery_data.C_bus_batt.tocsr()
@@ -812,6 +814,7 @@ class SnapshotData:
         nc.original_tr_idx = tr_idx
         nc.original_dc_line_idx = dc_line_idx
         nc.original_vsc_idx = vsc_idx
+        nc.original_upfc_idx = upfc_idx
         nc.original_hvdc_idx = hvdc_idx
         nc.original_gen_idx = gen_idx
         nc.original_bat_idx = batt_idx
@@ -918,6 +921,8 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
     nc.transformer_data = ds.circuit_to_data.get_transformer_data(circuit, bus_dict)
     nc.vsc_data = ds.circuit_to_data.get_vsc_data(circuit, bus_dict)
     nc.dc_line_data = ds.circuit_to_data.get_dc_line_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode)
+    nc.upfc_data = ds.circuit_to_data.get_upfc_data(circuit, bus_dict)
+
     nc.branch_data = ds.circuit_to_data.get_branch_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode)
     nc.hvdc_data = ds.circuit_to_data.get_hvdc_data(circuit, bus_dict, nc.bus_data.bus_types)
 

@@ -105,7 +105,7 @@ def find_islands(adj: csc_matrix):
 def get_elements_of_the_island(C_element_bus, island):
     """
     Get the branch indices of the island
-    :param C_branch_bus: CSC elements-buses connectivity matrix with the dimensions: elements x buses
+    :param C_element_bus: CSC elements-buses connectivity matrix with the dimensions: elements x buses
     :param island: array of bus indices of the island
     :return: array of indices of the elements that match that island
     """

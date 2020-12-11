@@ -242,7 +242,7 @@ class MultiCircuit:
         GEt list of the branch lists
         :return:
         """
-        return [self.lines, self.transformers2w, self.hvdc_lines, self.vsc_devices, self.dc_lines]
+        return [self.lines, self.transformers2w, self.hvdc_lines, self.vsc_devices, self.dc_lines, self.upfc_devices]
 
     def get_branch_number(self):
         """

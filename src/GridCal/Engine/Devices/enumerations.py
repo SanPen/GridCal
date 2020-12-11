@@ -21,6 +21,7 @@ class BranchType(Enum):
     Line = 'line'
     DCLine = 'DC-line'
     VSC = 'VSC'
+    UPFC = 'UPFC'
     Transformer = 'transformer'
     Reactance = 'reactance'
     Switch = 'switch'
