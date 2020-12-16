@@ -122,8 +122,10 @@ def colour_sub_schematic(Sbase,
     # branches = circuit.get_branches_wo_hvdc()  # HVDC branches are coloured separately
 
     if s_branch is not None:
-        lnorm = abs(loadings)
+
+        lnorm = np.abs(loadings)
         lnorm[lnorm == np.inf] = 0
+
         for i, branch in enumerate(branches):
             if branch.graphic_obj is not None:
                 w = branch.graphic_obj.pen_width

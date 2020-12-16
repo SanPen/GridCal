@@ -34,7 +34,7 @@ scipy.ALLOW_THREADS = True
 np.set_printoptions(precision=4, linewidth=100000)
 
 
-def determine_branch_indices(circuit: AcDcSnapshotCircuit):
+def determine_branch_indices(circuit: SnapshotData):
     """
     This function fills in the lists of indices to control different magnitudes
 
@@ -91,7 +91,7 @@ def determine_branch_indices(circuit: AcDcSnapshotCircuit):
     iPfdp = list()
     iVscL = list()  # indices of the converters
 
-    for k, tpe in enumerate(circuit.control_mode):
+    for k, tpe in enumerate(circuit.branch_data.control_mode):
 
         if tpe == TransformerControlType.fixed:
             pass
@@ -163,7 +163,7 @@ def determine_branch_indices(circuit: AcDcSnapshotCircuit):
     return iPfsh, iQfma, iBeqz, iBeqv, iVtma, iQtma, iPfdp, iVscL
 
 
-def compile_y(circuit: AcDcSnapshotCircuit, m, theta, Beq, If):
+def compile_y(circuit: SnapshotData, m, theta, Beq, If):
     """
     Compile the admittance matrices using the variable elements
     :param circuit: AcDcSnapshotCircuit instance
@@ -175,22 +175,22 @@ def compile_y(circuit: AcDcSnapshotCircuit, m, theta, Beq, If):
     """
 
     # form the connectivity matrices with the states applied -------------------------------------------------------
-    br_states_diag = sp.diags(circuit.branch_active)
-    Cf = br_states_diag * circuit.C_branch_bus_f
-    Ct = br_states_diag * circuit.C_branch_bus_t
+    br_states_diag = sp.diags(circuit.branch_data.branch_active)
+    Cf = br_states_diag * circuit.branch_data.C_branch_bus_f
+    Ct = br_states_diag * circuit.branch_data.C_branch_bus_t
 
     # compute G-switch
-    Gsw = circuit.G0 * np.power(If / circuit.Inom, 2.0)
+    Gsw = circuit.branch_data.G0 * np.power(If / circuit.branch_data.Inom, 2.0)
 
     # SHUNT --------------------------------------------------------------------------------------------------------
-    Yshunt_from_devices = circuit.C_bus_shunt * (circuit.shunt_admittance * circuit.shunt_active / circuit.Sbase)
+    Yshunt_from_devices = circuit.shunt_data.C_bus_shunt * (circuit.shunt_data.shunt_admittance * circuit.shunt_data.shunt_active / circuit.Sbase)
     yshunt_f = Cf * Yshunt_from_devices
     yshunt_t = Ct * Yshunt_from_devices
 
     # form the admittance matrices ---------------------------------------------------------------------------------
 
-    ys = 1.0 / (circuit.R + 1.0j * circuit.X)  # series impedance
-    bc2 = 1j * circuit.B / 2  # shunt conductance
+    ys = 1.0 / (circuit.branch_data.R + 1.0j * circuit.branch_data.X)  # series impedance
+    bc2 = 1j * circuit.branch_data.B / 2  # shunt conductance
     # mp = circuit.k * m  # k is already filled with the appropriate value for each type of branch
     mp = m
     tap = mp * np.exp(1.0j * theta)
@@ -338,7 +338,7 @@ def numerical_jacobian(f, x, args, dx=1e-8):
     return jac
 
 
-def nr_acdc_old(nc: AcDcSnapshotCircuit, tolerance=1e-6, max_iter=4):
+def nr_acdc_old(nc: SnapshotData, tolerance=1e-6, max_iter=4):
     """
 
     :param nc:
@@ -358,12 +358,12 @@ def nr_acdc_old(nc: AcDcSnapshotCircuit, tolerance=1e-6, max_iter=4):
     Va = np.angle(V)
     Vm = np.abs(V)
     Vmset = Vm.copy()
-    m = nc.m.copy()
-    theta = nc.theta.copy() * 0
-    Beq = nc.Beq.copy() * 0
-    Pset = nc.Pset / nc.Sbase
-    Qset = nc.Qset / nc.Sbase
-    Kdp = nc.Kdp
+    m = nc.branch_data.m.copy()
+    theta = nc.branch_data.theta.copy() * 0
+    Beq = nc.branch_data.Beq.copy() * 0
+    Pset = nc.branch_data.Pset / nc.Sbase
+    Qset = nc.branch_data.Qset / nc.Sbase
+    Kdp = nc.branch_data.Kdp
     pq = nc.pq.copy().astype(int)
     pvpq_orig = np.r_[nc.pv, pq].astype(int)
     pvpq_orig.sort()
@@ -419,13 +419,13 @@ def nr_acdc_old(nc: AcDcSnapshotCircuit, tolerance=1e-6, max_iter=4):
     # -------------------------------------------------------------------------
 
     # compute initial admittances
-    Ybus, Yf, Yt = compile_y(circuit=nc, m=m, theta=theta, Beq=Beq, If=nc.Inom)
+    Ybus, Yf, Yt = compile_y(circuit=nc, m=m, theta=theta, Beq=Beq, If=nc.branch_data.Inom)
 
     # compute branch flows
     If = Yf * V
     It = Yt * V
-    Vf = nc.C_branch_bus_f * V
-    Vt = nc.C_branch_bus_t * V
+    Vf = nc.branch_data.C_branch_bus_f * V
+    Vt = nc.branch_data.C_branch_bus_t * V
     Sf = Vf * np.conj(If)  # eq. (8)
     St = Vt * np.conj(It)  # eq. (9)
     gf = Sf - S0[nc.F]
@@ -458,7 +458,7 @@ def nr_acdc_old(nc: AcDcSnapshotCircuit, tolerance=1e-6, max_iter=4):
               misPfdp]  # return the complete mismatch function
 
     # compose the initial x value
-    x = np.r_[va[pvpq], vm[pq], theta[idx_pf], Beq[idx_qz], m[idx_vf], m[idx_vt], Beq[idx_qt]]
+    x = np.r_[Va[pvpq], Vm[pq], theta[iPfsh], Beq[iQfma], m[idx_vf], m[idx_vt], Beq[idx_qt]]
 
     # compute the error
     ff = np.r_[mis[pvpq_orig].real, mis[pq].imag]  # concatenate to form the mismatch function
@@ -504,7 +504,7 @@ def nr_acdc_old(nc: AcDcSnapshotCircuit, tolerance=1e-6, max_iter=4):
                                x,
                                args=(nc, pq, pvpq, idx_pf, idx_qz, idx_vf, idx_vt, idx_qt,
                                      Yf, Yt, S0, Pset, Qset, If,
-                                     va, vm, m, theta, Beq),
+                                     Va, Vm, m, theta, Beq),
                                dx=tolerance)
 
         print('J:')
@@ -526,8 +526,8 @@ def nr_acdc_old(nc: AcDcSnapshotCircuit, tolerance=1e-6, max_iter=4):
 
         # update the variables
         va1, vm1, theta1, Beq1, m1, m2, Beq2 = split_x(x, pq, pvpq, idx_pf, idx_qz, idx_vf, idx_vt, idx_qt)
-        va[pvpq] = va1
-        vm[pq] = vm1
+        Va[pvpq] = va1
+        Vm[pq] = vm1
         theta[idx_pf] = theta1
         Beq[idx_qz] = Beq1
         m[idx_vf] = m1
@@ -535,13 +535,13 @@ def nr_acdc_old(nc: AcDcSnapshotCircuit, tolerance=1e-6, max_iter=4):
         Beq[idx_qt] = Beq2
 
         # compose the voltage
-        V = vm * np.exp(1.0j * va)
+        V = Vm * np.exp(1.0j * Va)
 
         # compute branch flows
         If = Yf * V
         It = Yt * V
-        Vf = nc.C_branch_bus_f * V
-        Vt = nc.C_branch_bus_t * V
+        Vf = nc.branch_data.C_branch_bus_f * V
+        Vt = nc.branch_data.C_branch_bus_t * V
         Sf = Vf * np.conj(If)  # eq. (8)
         St = Vt * np.conj(It)  # eq. (9)
         gf = Sf - S0[nc.F]
@@ -575,7 +575,8 @@ def nr_acdc_old(nc: AcDcSnapshotCircuit, tolerance=1e-6, max_iter=4):
                        columns=['Type', 'P', 'Q', '∆P', '∆Q', 'Vm', 'Va'],
                        index=nc.bus_names))
     print('\nBranch values')
-    print(pd.DataFrame(data=np.c_[nc.F, nc.T, nc.control_mode, nc.Pset, nc.Qset, nc.vf_set, nc.vt_set,
+    print(pd.DataFrame(data=np.c_[nc.F, nc.T, nc.branch_data.control_mode, nc.branch_data.Pset, nc.branch_data.Qset,
+                                  nc.branch_data.vf_set, nc.branch_data.vt_set,
                                   vm[nc.F] - vm[nc.T], va[nc.F] - va[nc.T],
                                   Sf.real, Sf.imag, Sf.real, Sf.imag, m, theta, Beq],
                        columns=['from', 'to', 'Ctrl mode', 'Pset', 'Qset', 'Vfset', 'Vtset',
@@ -1168,7 +1169,7 @@ def calc_g(Ybus, Yf, Yt, Cf, Ct, F, V, S0, Kdp, Pset, Qset, Vmset, pvpq, pq,
     return g
 
 
-def nr_acdc(nc: AcDcSnapshotCircuit, tolerance=1e-6, max_iter=4):
+def nr_acdc(nc: SnapshotData, tolerance=1e-6, max_iter=4):
     """
 
     :param nc:
@@ -1286,7 +1287,7 @@ if __name__ == "__main__":
     ####################################################################################################################
     # Compile
     ####################################################################################################################
-    nc_ = compile_acdc_snapshot_circuit(grid)
+    nc_ = compile_snapshot_circuit(grid)
 
     res = nr_acdc(nc=nc_, tolerance=1e-4, max_iter=2)
 
