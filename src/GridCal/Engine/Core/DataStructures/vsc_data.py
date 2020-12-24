@@ -37,8 +37,8 @@ class VscData:
         self.theta = np.zeros(nvsc)
         self.Inom = np.zeros(nvsc)
 
-        self.Pset = np.zeros((nvsc, ntime))
-        self.Qset = np.zeros((nvsc, ntime))
+        self.Pfset = np.zeros((nvsc, ntime))
+        self.Qfset = np.zeros((nvsc, ntime))
         self.Vac_set = np.ones((nvsc, ntime))
         self.Vdc_set = np.ones((nvsc, ntime))
 
@@ -70,8 +70,8 @@ class VscData:
         nc.theta = self.theta[elm_idx]
         nc.Inom = self.Inom[elm_idx]
 
-        nc.Pset = self.Pset[tidx]
-        nc.Qset = self.Qset[tidx]
+        nc.Pfset = self.Pfset[tidx]
+        nc.Qfset = self.Qfset[tidx]
         nc.Vac_set = self.Vac_set[tidx]
         nc.Vdc_set = self.Vdc_set[tidx]
 

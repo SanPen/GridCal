@@ -404,8 +404,8 @@ def get_vsc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
         nc.m[i] = elm.m
         nc.theta[i] = elm.theta
         # nc.Inom[i] = (elm.rate / nc.Sbase) / np.abs(nc.Vbus[f])
-        nc.Pset[i] = elm.Pset
-        nc.Qset[i] = elm.Qset
+        nc.Pfset[i] = elm.Pfset
+        nc.Qfset[i] = elm.Qfset
         nc.Vac_set[i] = elm.Vac_set
         nc.Vdc_set[i] = elm.Vdc_set
         nc.control_mode[i] = elm.control_mode
@@ -444,8 +444,8 @@ def get_upfc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
         data.Rsh[i] = elm.Rsh
         data.Xsh[i] = elm.Xsh
 
-        data.Pset[i] = elm.Pset
-        data.Qset[i] = elm.Qset
+        data.Pset[i] = elm.Pfset
+        data.Qset[i] = elm.Qfset
         data.Vsh[i] = elm.Vsh
 
         data.C_elm_bus[i, f] = 1
@@ -500,12 +500,14 @@ def get_dc_line_data(circuit: MultiCircuit, bus_dict,
     return data
 
 
-def get_branch_data(circuit: MultiCircuit, bus_dict, apply_temperature,
-                    branch_tolerance_mode: BranchImpedanceMode, time_series=False, opf=False, ntime=1):
+def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
+                    branch_tolerance_mode: BranchImpedanceMode,
+                    time_series=False, opf=False, ntime=1):
     """
 
     :param circuit:
     :param bus_dict:
+    :param Vbus: Array of bus voltages to be modified
     :param apply_temperature:
     :param branch_tolerance_mode:
     :param time_series:
@@ -603,10 +605,10 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, apply_temperature,
         data.tap_f[ii], data.tap_t[ii] = elm.get_virtual_taps()
 
         if elm.control_mode == TransformerControlType.v_to:
-            data.Vbus[t] = elm.vset
+            Vbus[t] = elm.vset
 
         elif elm.control_mode == TransformerControlType.power_v_to:  # 2a:Vdc
-            data.Vbus[t] = elm.vset
+            Vbus[t] = elm.vset
 
     # VSC
     for i, elm in enumerate(circuit.vsc_devices):
@@ -641,17 +643,19 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, apply_temperature,
         data.m[ii] = elm.m
         data.k[ii] = 1.0  # 0.8660254037844386  # sqrt(3)/2
         data.theta[ii] = elm.theta
-        data.Pset[ii] = elm.Pset
-        data.Qset[ii] = elm.Qset
+        data.Pfset[ii] = elm.Pfset
+        data.Qfset[ii] = elm.Qfset
         data.Kdp[ii] = elm.kdp
         data.vf_set[ii] = elm.Vac_set
         data.vt_set[ii] = elm.Vdc_set
         data.control_mode[ii] = elm.control_mode
 
         if elm.control_mode == ConverterControlType.type_1_vac:  # 1d:Vac
-            data.Vbus[t] = elm.Vac_set
+            data.vf_set[t] = elm.Vac_set
+            Vbus[t] = elm.Vac_set
         elif elm.control_mode == ConverterControlType.type_2_vdc:  # 2a:Vdc
-            data.Vbus[f] = elm.Vdc_set
+            data.vt_set[f] = elm.Vdc_set
+            Vbus[f] = elm.Vdc_set
 
     # DC-lines
     for i, elm in enumerate(circuit.dc_lines):
@@ -680,14 +684,14 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, apply_temperature,
         data.T[ii] = t
 
         if apply_temperature:
-            data.R[i] = elm.R_corrected
+            data.R[ii] = elm.R_corrected
         else:
-            data.R[i] = elm.R
+            data.R[ii] = elm.R
 
         if branch_tolerance_mode == BranchImpedanceMode.Lower:
-            data.R[i] *= (1 - elm.tolerance / 100.0)
+            data.R[ii] *= (1 - elm.tolerance / 100.0)
         elif branch_tolerance_mode == BranchImpedanceMode.Upper:
-            data.R[i] *= (1 + elm.tolerance / 100.0)
+            data.R[ii] *= (1 + elm.tolerance / 100.0)
 
     # UPFC
     for i, elm in enumerate(circuit.upfc_devices):
@@ -719,7 +723,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, apply_temperature,
         data.X[ii] = elm.Xl
         data.Beq[ii] = elm.Bl
 
-        data.Pset[ii] = elm.Pset
+        data.Pfset[ii] = elm.Pfset
 
     return data
 

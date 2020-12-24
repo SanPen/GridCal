@@ -203,11 +203,11 @@ class HvdcLine(EditableDevice):
 
                                                   'rate': GCProp('MVA', float, 'Thermal rating power of the line.'),
 
-                                                  'Pset': GCProp('MW', float, 'Set power flow.'),
+                                                  'Pfset': GCProp('MW', float, 'Set power flow.'),
 
                                                   'loss_factor': GCProp('p.u.', float,
                                                                         'Losses factor.\n'
-                                                                        'The losses are computed as losses=Pset x Ploss'),
+                                                                        'The losses are computed as losses=Pfset x Ploss'),
 
                                                   'Vset_f': GCProp('p.u.', float, 'Set voltage at the from side'),
                                                   'Vset_t': GCProp('p.u.', float, 'Set voltage at the to side'),
@@ -239,7 +239,7 @@ class HvdcLine(EditableDevice):
                                 non_editable_attributes=['bus_from', 'bus_to', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'rate': 'rate_prof',
-                                                         'Pset': 'Pset_prof',
+                                                         'Pfset': 'Pset_prof',
                                                          'Vset_f': 'Vset_f_prof',
                                                          'Vset_t': 'Vset_t_prof',
                                                          'overload_cost': 'overload_cost_prof'})
@@ -336,7 +336,7 @@ class HvdcLine(EditableDevice):
         name='HVDC Line', 
         idtag=None, 
         active=True,
-        rate=1.0, Pset=0.0, 
+        rate=1.0, Pfset=0.0, 
         loss_factor=0.0, 
         Vset_f=1.0, 
         Vset_t=1.0, 

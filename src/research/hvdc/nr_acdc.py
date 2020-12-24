@@ -215,7 +215,7 @@ def split_x(x, pq, pvpq, idx_pf, idx_qz, idx_mvf, idx_mvt, idx_qt):
 
     a = b
     b += len(idx_qt)
-    Beq2 = x[a:b]  # Beq for Qflow = Qset
+    Beq2 = x[a:b]  # Beq for Qflow = Qfset
 
     return va, vm, theta1, Beq1, m1, m2, Beq2
 
@@ -230,7 +230,7 @@ def gx_function(x, args):
 
     '''
     args=(nc, pq, pvpq, idx_pf, idx_qz, idx_mvf, idx_mvt, idx_vf, idx_vt, idx_qt,
-          Yf, Yt, S0, Pset, Qset, If,
+          Yf, Yt, S0, Pfset, Qfset, If,
           va, vm, m, theta, Beq),
     '''
 
@@ -324,8 +324,8 @@ def nr_acdc(nc: AcDcSnapshotCircuit, tolerance=1e-6, max_iter=4):
     m = nc.m.copy()
     theta = nc.theta.copy() * 0
     Beq = nc.Beq.copy() * 0
-    Pset = nc.Pset / nc.Sbase
-    Qset = nc.Qset / nc.Sbase
+    Pset = nc.Pfset / nc.Sbase
+    Qset = nc.Qfset / nc.Sbase
     pq = nc.pq.copy().astype(int)
     pvpq_orig = np.r_[nc.pv, pq].astype(int)
     pvpq_orig.sort()
@@ -489,10 +489,10 @@ def nr_acdc(nc: AcDcSnapshotCircuit, tolerance=1e-6, max_iter=4):
                        columns=['Type', 'P', 'Q', '∆P', '∆Q', 'Vm', 'Va'],
                        index=nc.bus_names))
     print('\nBranch values')
-    print(pd.DataFrame(data=np.c_[nc.F, nc.T, nc.control_mode, nc.Pset, nc.Qset, nc.vf_set, nc.vt_set,
+    print(pd.DataFrame(data=np.c_[nc.F, nc.T, nc.control_mode, nc.Pfset, nc.Qfset, nc.vf_set, nc.vt_set,
                                   vm[nc.F] - vm[nc.T], va[nc.F] - va[nc.T],
                                   Sf.real, Sf.imag, Sf.real, Sf.imag, m, theta, Beq],
-                       columns=['from', 'to', 'Ctrl mode', 'Pset', 'Qset', 'Vfset', 'Vtset',
+                       columns=['from', 'to', 'Ctrl mode', 'Pfset', 'Qfset', 'Vfset', 'Vtset',
                                 '∆Vm', '∆Va', 'Pf', 'Qf', 'Pt', 'Qt', 'm', 'Ɵ', 'Beq'],
                        index=nc.branch_names))
     print('\nerror:', norm_f)

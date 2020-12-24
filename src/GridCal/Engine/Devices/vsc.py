@@ -32,7 +32,7 @@ class VSC(EditableDevice):
                  Beq=0.001, Beq_min=-0.1, Beq_max=0.1,
                  G0=1e-5, rate=1e-9, kdp=-0.05,
                  control_mode: ConverterControlType = ConverterControlType.type_1_free,
-                 Pset = 0.0, Qset=0.0, Vac_set=1.0, Vdc_set=1.0,
+                 Pfset = 0.0, Qfset=0.0, Vac_set=1.0, Vdc_set=1.0,
                  alpha1=0.0001, alpha2=0.015, alpha3=0.2,
                  mttf=0, mttr=0, cost=1200, cost_prof=None, rate_prof=None, active_prof=None):
         """
@@ -58,10 +58,10 @@ class VSC(EditableDevice):
         :param rate:
         :param kdp:
         :param control_mode:
-        :param Pset:
+        :param Pfset:
         :param Vac_set:
         :param Vdc_set:
-        :param Qset:
+        :param Qfset:
         :param alpha1:
         :param alpha2:
         :param alpha3:
@@ -108,8 +108,8 @@ class VSC(EditableDevice):
                                                   'theta_min': GCProp('rad', float, 'Min converter firing angle.'),
 
                                                   'kdp': GCProp('p.u./p.u.', float, 'Droop Power Voltage slope.'),
-                                                  'Pset': GCProp('MW', float, 'Active power set point.'),
-                                                  'Qset': GCProp('MVAr', float, 'Reactive power set point.'),
+                                                  'Pfset': GCProp('MW', float, 'Active power set point.'),
+                                                  'Qfset': GCProp('MVAr', float, 'Reactive power set point.'),
                                                   'Vac_set': GCProp('p.u.', float, 'AC voltage set point.'),
                                                   'Vdc_set': GCProp('p.u.', float, 'DC voltage set point.'),
                                                   'Cost': GCProp('e/MWh', float, 'Cost of overloads. Used in OPF.'),
@@ -159,8 +159,8 @@ class VSC(EditableDevice):
         self.Beq_min = Beq_min
         self.Beq_max = Beq_max
 
-        self.Pset = Pset
-        self.Qset = Qset
+        self.Pfset = Pfset
+        self.Qfset = Qfset
         self.Vac_set = Vac_set
         self.Vdc_set = Vdc_set
         self.control_mode = control_mode

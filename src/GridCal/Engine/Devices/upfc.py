@@ -80,8 +80,8 @@ class UPFC(EditableDevice):
                                                   'Rsh': GCProp('p.u.', float, 'Shunt resistance.'),
                                                   'Xsh': GCProp('p.u.', float, 'Shunt resistance.'),
                                                   'Vsh': GCProp('p.u.', float, 'Shunt voltage set point.'),
-                                                  'Pset': GCProp('MW', float, 'Active power set point.'),
-                                                  'Qset': GCProp('MVAr', float, 'Active power set point.'),
+                                                  'Pfset': GCProp('MW', float, 'Active power set point.'),
+                                                  'Qfset': GCProp('MVAr', float, 'Active power set point.'),
                                                   'Cost': GCProp('e/MWh', float, 'Cost of overloads. Used in OPF.'),
                                                   },
                                 non_editable_attributes=['bus_from', 'bus_to', 'idtag'],
@@ -150,7 +150,7 @@ class UPFC(EditableDevice):
              'rsh': self.Rsh,
              'xsh': self.Xsh,
              'Vsh': self.Vsh,
-             'Pset': self.Pset,
+             'Pfset': self.Pset,
 
              'profiles': {
                  'active': active_prof,

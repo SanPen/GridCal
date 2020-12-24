@@ -273,7 +273,8 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
     nc.dc_line_data = ds.circuit_to_data.get_dc_line_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode,
                                                           time_series=True, ntime=ntime)
 
-    nc.branch_data = ds.circuit_to_data.get_branch_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode,
+    nc.branch_data = ds.circuit_to_data.get_branch_data(circuit, bus_dict, nc.bus_data.Vbus,
+                                                        apply_temperature, branch_tolerance_mode,
                                                         time_series=True, opf=True, ntime=ntime)
 
     nc.hvdc_data = ds.circuit_to_data.get_hvdc_data(circuit, bus_dict, nc.bus_data.bus_types,

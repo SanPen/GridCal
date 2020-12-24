@@ -55,12 +55,16 @@ class BranchData:
         self.tap_t = np.ones(self.nbr, dtype=float)
         self.tap_f = np.ones(self.nbr, dtype=float)
 
-        self.Pset = np.zeros((nbr, ntime))
-        self.Qset = np.zeros((nbr, ntime))
+        self.Pfset = np.zeros((nbr, ntime))
+        self.Qfset = np.zeros((nbr, ntime))
+        self.Qtset = np.zeros((nbr, ntime))
         self.vf_set = np.ones((nbr, ntime))
         self.vt_set = np.ones((nbr, ntime))
 
         self.Kdp = np.ones(self.nbr)
+        self.alpha1 = np.zeros(self.nbr)  # converter losses parameter (alpha1)
+        self.alpha2 = np.zeros(self.nbr)  # converter losses parameter (alpha2)
+        self.alpha3 = np.zeros(self.nbr)  # converter losses parameter (alpha3)
         self.control_mode = np.zeros(self.nbr, dtype=object)
 
         self.C_branch_bus_f = sp.lil_matrix((self.nbr, nbus), dtype=int)  # connectivity branch with their "from" bus
@@ -93,6 +97,11 @@ class BranchData:
         data.tap_t = self.tap_f[elm_idx]
         data.tap_f = self.tap_t[elm_idx]
         data.Kdp = self.Kdp[elm_idx]
+
+        data.alpha1 = self.alpha1[elm_idx]
+        data.alpha2 = self.alpha2[elm_idx]
+        data.alpha3 = self.alpha3[elm_idx]
+
         data.control_mode = self.control_mode[elm_idx]
 
         data.branch_active = self.branch_active[tidx]
@@ -101,8 +110,9 @@ class BranchData:
         data.theta = self.theta[tidx]
         data.Beq = self.Beq[tidx]
         data.G0 = self.G0[tidx]
-        data.Pset = self.Pset[tidx]
-        data.Qset = self.Qset[tidx]
+        data.Pfset = self.Pfset[tidx]
+        data.Qfset = self.Qfset[tidx]
+        data.Qtset = self.Qtset[tidx]
         data.vf_set = self.vf_set[tidx]
         data.vt_set = self.vt_set[tidx]
 
@@ -171,8 +181,8 @@ class BranchOpfData(BranchData):
         data.theta = self.theta[tidx]
         data.Beq = self.Beq[tidx]
         data.G0 = self.G0[tidx]
-        data.Pset = self.Pset[tidx]
-        data.Qset = self.Qset[tidx]
+        data.Pfset = self.Pfset[tidx]
+        data.Qfset = self.Qfset[tidx]
         data.vf_set = self.vf_set[tidx]
         data.vt_set = self.vt_set[tidx]
 
