@@ -23,6 +23,7 @@ from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Iwamo
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import levenberg_marquardt_pf
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import NR_LS, NR_I_LS, NRD_LS
 from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
+from GridCal.Engine.Simulations.PowerFlow.jacobian_based_acdc_power_flow import NR_LS_ACDC
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
@@ -48,13 +49,22 @@ class ConvergenceReport:
         self.iterations_.append(iterations)
 
     def converged(self):
-        return self.converged_[-1]
+        if len(self.converged_) > 0:
+            return self.converged_[-1]
+        else:
+            return False
 
     def error(self):
-        return self.error_[-1]
+        if len(self.error_) > 0:
+            return self.error_[-1]
+        else:
+            return 0
 
     def elapsed(self):
-        return self.elapsed_[-1]
+        if len(self.elapsed_) > 0:
+            return self.elapsed_[-1]
+        else:
+            return 0
 
     def to_dataframe(self):
         data = {'Method': self.methods_,
@@ -192,16 +202,25 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
 
         # Newton-Raphson (full)
         elif solver_type == SolverType.NR:
-            # Solve NR with the linear AC solution
-            V, converged, normF, Scalc, it, el = NR_LS(Ybus=circuit.Ybus,
-                                                       Sbus=Sbus,
-                                                       V0=V,
-                                                       Ibus=Ibus,
-                                                       pv=pv,
-                                                       pq=pq,
-                                                       tol=tolerance,
-                                                       max_it=max_iter,
-                                                       acceleration_parameter=acceleration_parameter)
+
+            if circuit.any_control:
+                # Solve NR with the AC/DC algorithm
+                V, converged, normF, Scalc, it, el = NR_LS_ACDC(nc=circuit,
+                                                                tolerance=tolerance,
+                                                                max_iter=max_iter,
+                                                                acceleration_parameter=acceleration_parameter)
+
+            else:
+                # Solve NR with the AC algorithm
+                V, converged, normF, Scalc, it, el = NR_LS(Ybus=circuit.Ybus,
+                                                           Sbus=Sbus,
+                                                           V0=V,
+                                                           Ibus=Ibus,
+                                                           pv=pv,
+                                                           pq=pq,
+                                                           tol=tolerance,
+                                                           max_it=max_iter,
+                                                           acceleration_parameter=acceleration_parameter)
 
         # Newton-Raphson-Decpupled
         elif solver_type == SolverType.NRD:

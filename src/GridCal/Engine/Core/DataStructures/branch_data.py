@@ -48,7 +48,11 @@ class BranchData:
         self.k = np.ones(nbr, dtype=float)
 
         self.m = np.ones((nbr, ntime), dtype=float)
+        self.m_min = np.ones(nbr, dtype=float)
+        self.m_max = np.ones(nbr, dtype=float)
         self.theta = np.zeros((nbr, ntime), dtype=float)
+        self.theta_min = np.ones(nbr, dtype=float)
+        self.theta_max = np.ones(nbr, dtype=float)
         self.Beq = np.zeros((nbr, ntime), dtype=float)
         self.G0 = np.zeros((nbr, ntime), dtype=float)
 
@@ -107,7 +111,11 @@ class BranchData:
         data.branch_active = self.branch_active[tidx]
         data.branch_rates = self.branch_rates[tidx]
         data.m = self.m[tidx]
+        data.m_min = self.m_min[tidx]
+        data.m_max = self.m_max[tidx]
         data.theta = self.theta[tidx]
+        data.theta_min = self.theta_min[tidx]
+        data.theta_max = self.theta_max[tidx]
         data.Beq = self.Beq[tidx]
         data.G0 = self.G0[tidx]
         data.Pfset = self.Pfset[tidx]

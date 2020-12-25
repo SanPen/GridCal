@@ -15,148 +15,12 @@
 
 from scipy.sparse.linalg import spsolve
 import numpy as np
-from GridCal.Engine import compile_snapshot_circuit, SnapshotData, TransformerControlType, ConverterControlType, FileOpen
+# from GridCal.Engine import SnapshotData
 
 import os
 import time
 from scipy.sparse import lil_matrix, diags
 import scipy.sparse as sp
-
-
-def determine_branch_indices(circuit: SnapshotData):
-    """
-    This function fills in the lists of indices to control different magnitudes
-
-    :param circuit: Instance of AcDcSnapshotCircuit
-    :returns idx_sh, idx_qz, idx_vf, idx_vt, idx_qt
-
-    VSC Control modes:
-
-    in the paper's scheme:
-    from -> DC
-    to   -> AC
-
-    |   Mode    |   const.1 |   const.2 |   type    |
-    -------------------------------------------------
-    |   1       |   theta   |   Vac     |   I       |
-    |   2       |   Pf      |   Qac     |   I       |
-    |   3       |   Pf      |   Vac     |   I       |
-    -------------------------------------------------
-    |   4       |   Vdc     |   Qac     |   II      |
-    |   5       |   Vdc     |   Vac     |   II      |
-    -------------------------------------------------
-    |   6       | Vdc droop |   Qac     |   III     |
-    |   7       | Vdc droop |   Vac     |   III     |
-    -------------------------------------------------
-
-    Indices where each control goes:
-    mismatch  →  |  ∆Pf	Qf	Q@f Q@t	∆Qt
-    variable  →  |  Ɵsh	Beq	m	m	Beq
-    Indices   →  |  Ish	Iqz	Ivf	Ivt	Iqt
-    ------------------------------------
-    VSC 1	     |  -	1	-	1	-   |   AC voltage control (voltage “to”)
-    VSC 2	     |  1	1	-	-	1   |   Active and reactive power control
-    VSC 3	     |  1	1	-	1	-   |   Active power and AC voltage control
-    VSC 4	     |  -	-	1	-	1   |   Dc voltage and Reactive power flow control
-    VSC 5	     |  -	-	-	1	1   |   Ac and Dc voltage control
-    ------------------------------------
-    Transformer 0|	-	-	-	-	-   |   Fixed transformer
-    Transformer 1|	1	-	-	-	-   |   Phase shifter → controls power
-    Transformer 2|	-	-	1	-	-   |   Control the voltage at the “from” side
-    Transformer 3|	-	-	-	1	-   |   Control the voltage at the “to” side
-    Transformer 4|	1	-	1	-	-   |   Control the power flow and the voltage at the “from” side
-    Transformer 5|	1	-	-	1	-   |   Control the power flow and the voltage at the “to” side
-    ------------------------------------
-
-    """
-        
-    # indices in the global branch scheme
-    iPfsh = list()  # indices of the branches controlling Pf flow
-    iQfma = list()
-    iBeqz = list()  # indices of the branches when forcing the Qf flow to zero (aka "the zero condition")
-    iBeqv = list()  # indices of the branches when controlling Vf
-    iVtma = list()  # indices of the branches when controlling Vt
-    iQtma = list()  # indices of the branches controlling the Qt flow
-    iPfdp = list()
-    iVscL = list()  # indices of the converters
-
-    for k, tpe in enumerate(circuit.branch_data.control_mode):
-
-        if tpe == TransformerControlType.fixed:
-            pass
-
-        elif tpe == TransformerControlType.power:
-            iPfsh.append(k)
-
-        elif tpe == TransformerControlType.v_to:
-            iVtma.append(k)
-
-        elif tpe == TransformerControlType.power_v_to:
-            iPfsh.append(k)
-            iVtma.append(k)
-
-        # VSC ----------------------------------------------------------------------------------------------------------
-        elif tpe == ConverterControlType.type_1_free:  # 1a:Free
-            iBeqz.append(k)
-            iVscL.append(k)
-
-        elif tpe == ConverterControlType.type_1_pf:  # 1b:Pflow
-            iPfsh.append(k)
-            iBeqz.append(k)
-
-            iVscL.append(k)
-
-        elif tpe == ConverterControlType.type_1_qf:  # 1c:Qflow
-            iBeqz.append(k)
-            iQtma.append(k)
-
-            iVscL.append(k)
-
-        elif tpe == ConverterControlType.type_1_vac:  # 1d:Vac
-            iBeqz.append(k)
-            iVtma.append(k)
-
-            iVscL.append(k)
-
-        elif tpe == ConverterControlType.type_2_vdc:  # 2a:Vdc
-            iPfsh.append(k)
-            iBeqv.append(k)
-
-            iVscL.append(k)
-
-        elif tpe == ConverterControlType.type_2_vdc_pf:  # 2b:Vdc+Pflow
-            iPfsh.append(k)
-            iBeqv.append(k)
-
-            iVscL.append(k)
-
-        elif tpe == ConverterControlType.type_3:  # 3a:Droop
-            iPfsh.append(k)
-            iBeqz.append(k)
-            iPfdp.append(k)
-
-            iVscL.append(k)
-
-        elif tpe == ConverterControlType.type_4:  # 4a:Droop-slack
-            iPfdp.append(k)
-
-            iVscL.append(k)
-
-        elif tpe == 0:
-            pass  # required for the no-control case
-
-        else:
-            raise Exception('Unknown control type:' + str(tpe))
-
-    # FUBM- Saves the "from" bus identifier for Vf controlled by Beq
-    #  (Converters type II for Vdc control)
-    VfBeqbus = circuit.F[iBeqv]
-
-    # FUBM- Saves the "to"   bus identifier for Vt controlled by ma
-    #  (Converters and Transformers)
-    Vtmabus = circuit.T[iVtma]
-
-    return iPfsh, iQfma, iBeqz, iBeqv, iVtma, iQtma, iPfdp, iVscL, VfBeqbus, Vtmabus
 
 
 def compute_converter_losses(V, It, F, alpha1, alpha2, alpha3, iVscL):
@@ -179,7 +43,7 @@ def compute_converter_losses(V, It, F, alpha1, alpha2, alpha3, iVscL):
 
     # compute G-switch
     Gsw = np.zeros(len(F))
-    Gsw[iVscL] = PLoss_IEC / np.power(np.abs(V[F[iVscL]]), 2)  # FUBM- VSC Gsw
+    Gsw[iVscL] = PLoss_IEC / np.power(np.abs(V[F[iVscL]]), 2)
 
     return Gsw
 
@@ -219,18 +83,6 @@ def compile_y_acdc(branch_active, Cf, Ct, C_bus_shunt, shunt_admittance, shunt_a
     # mp = circuit.k * m  # k is already filled with the appropriate value for each type of branch
 
     tap = m * np.exp(1.0j * theta)
-
-    """
-    Beq= stat .* branch(:, BEQ);                                %%FUBM- VSC Equivalent Reactor for absorbing or supplying reactive power and zero constraint in DC side   
-    Gsw= stat .* branch(:, GSW);                                %%FUBM- VSC Switching losses
-    k2 = branch(:, K2);                                         %%FUBM- VSC constant depending of how many levels does the VSC is simulating. Default k2 for branches = 1, Default k2 for VSC = sqrt(3)/2
-    
-    Ytt = Ys + 1j*Bc/2;
-    Yff = Gsw+( (Ytt+1j*Beq) ./ ((k2.^2).*tap .* conj(tap))  ); %%FUBM- FUBM formulation
-    Yft = - Ys ./ ( k2.*conj(tap) );                            %%FUBM- FUBM formulation
-    Ytf = - Ys ./ ( k2.*tap );  
-    
-    """
 
     # compose the primitives
     Yff = Gsw + (ys + bc2 + 1.0j * Beq + yshunt_f) / (m * m)
@@ -671,8 +523,8 @@ def compute_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
     :param iVtma:
     :return:
     """
-
-    mis = V * np.conj(Ybus * V) - Sbus  # FUBM- F1(x0) & F2(x0) Power balance mismatch
+    Scalc = V * np.conj(Ybus * V)
+    mis = Scalc - Sbus  # FUBM- F1(x0) & F2(x0) Power balance mismatch
 
     misPbus = mis[pvpq].real  # FUBM- F1(x0) Power balance mismatch - Va
     misQbus = mis[pq].imag  # FUBM- F2(x0) Power balance mismatch - Vm
@@ -697,19 +549,21 @@ def compute_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
                misQtma,  # FUBM- F8(x0) Qt control    mismatch - ma
                misPfdp]  # FUBM- F9(x0) Pf control    mismatch - Theta_shift Droop
 
-    return df
+    return df, Scalc
 
 
-def nr_acdc(nc: SnapshotData, tolerance=1e-6, max_iter=4):
+def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, acceleration_parameter=0.05):
     """
-
-    :param nc:
-    :param tolerance:
-    :param max_iter:
+    Newton-Raphson Line search with the FUBM formulation
+    :param nc: SnapshotData instance
+    :param tolerance: maximum error allowed
+    :param max_iter: maximum number of iterations
     :return:
     """
+    start = time.time()
+
     # compute the indices of the converter/transformer variables from their control strategies
-    iPfsh, iQfma, iBeqz, iBeqv, iVtma, iQtma, iPfdp, iVscL, VfBeqbus, Vtmabus = determine_branch_indices(circuit=nc)
+    # iPfsh, iQfma, iBeqz, iBeqv, iVtma, iQtma, iPfdp, iVscL, VfBeqbus, Vtmabus = nc.determine_branch_indices()
 
     # initialize the variables
     nb = nc.nbus
@@ -720,8 +574,8 @@ def nr_acdc(nc: SnapshotData, tolerance=1e-6, max_iter=4):
     Vm = np.abs(V)
     Vmfset = nc.branch_data.vf_set[:, 0]
     m = nc.branch_data.m[:, 0].copy()
-    theta = nc.branch_data.theta[:, 0].copy() * 0
-    Beq = nc.branch_data.Beq[:, 0].copy() * 0
+    theta = nc.branch_data.theta[:, 0].copy()
+    Beq = nc.branch_data.Beq[:, 0].copy()
     Gsw = nc.branch_data.G0[:, 0]
     Pfset = nc.branch_data.Pfset[:, 0] / nc.Sbase
     Qfset = nc.branch_data.Qfset[:, 0] / nc.Sbase
@@ -740,7 +594,7 @@ def nr_acdc(nc: SnapshotData, tolerance=1e-6, max_iter=4):
 
     # the elements of PQ that exist in the control indices Ivf and Ivt must be passed from the PQ to the PV list
     # otherwise those variables would be in two sets of equations
-    i_ctrl_v = np.unique(np.r_[VfBeqbus, Vtmabus])
+    i_ctrl_v = np.unique(np.r_[nc.VfBeqbus, nc.Vtmabus])
     for val in pq:
         if val in i_ctrl_v:
             pq = pq[pq != val]
@@ -753,18 +607,17 @@ def nr_acdc(nc: SnapshotData, tolerance=1e-6, max_iter=4):
     npq = len(pq)
 
     # --------------------------------------------------------------------------
-
     # variables dimensions in Jacobian
     a0 = 0
     a1 = a0 + npq + npv
     a2 = a1 + npq
-    a3 = a2 + len(iPfsh)
-    a4 = a3 + len(iQfma)
-    a5 = a4 + len(iBeqz)
-    a6 = a5 + len(VfBeqbus)
-    a7 = a6 + len(Vtmabus)
-    a8 = a7 + len(iQtma)
-    a9 = a8 + len(iPfdp)
+    a3 = a2 + len(nc.iPfsh)
+    a4 = a3 + len(nc.iQfma)
+    a5 = a4 + len(nc.iBeqz)
+    a6 = a5 + len(nc.VfBeqbus)
+    a7 = a6 + len(nc.Vtmabus)
+    a8 = a7 + len(nc.iQtma)
+    a9 = a8 + len(nc.iPfdp)
     # -------------------------------------------------------------------------
     # compute initial admittances
     Ybus, Yf, Yt, tap = compile_y_acdc(branch_active=nc.branch_data.branch_active[:, 0],
@@ -778,56 +631,58 @@ def nr_acdc(nc: SnapshotData, tolerance=1e-6, max_iter=4):
                                        m=m, theta=theta, Beq=Beq, Gsw=Gsw)
 
     #  compute branch power flows
-    If = Yf * V  # complex current injected at "from" bus
-    It = Yt * V  # complex current injected at "to" bus
-    Sf = V[F] * np.conj(If)  # complex power injected at "from" bus
-    St = V[T] * np.conj(It)  # complex power injected at "to" bus
+    If = Yf * V  # FUBM- complex current injected at "from" bus, Yf(br, :) * V; For in-service branches
+    It = Yt * V  # FUBM- complex current injected at "to"   bus, Yt(br, :) * V; For in-service branches
+    Sf = V[F] * np.conj(If)  # FUBM- complex power injected at "from" bus
+    St = V[T] * np.conj(It)  # FUBM- complex power injected at "to"   bus
 
     # compute converter losses
     Gsw = compute_converter_losses(V=V, It=It, F=F,
                                    alpha1=nc.branch_data.alpha1,
                                    alpha2=nc.branch_data.alpha2,
                                    alpha3=nc.branch_data.alpha3,
-                                   iVscL=iVscL)
+                                   iVscL=nc.iVscL)
 
     # compute total mismatch
-    fx = compute_fx(Ybus=Ybus,
-                    V=V,
-                    Vm=Vm,
-                    Sbus=S0,
-                    Sf=Sf,
-                    St=St,
-                    Pfset=Pfset,
-                    Qfset=Qfset,
-                    Qtset=Qtset,
-                    Vmfset=Vmfset,
-                    Kdp=Kdp,
-                    F=F,
-                    pvpq=pvpq,
-                    pq=pq,
-                    iPfsh=iPfsh,
-                    iQfma=iQfma,
-                    iBeqz=iBeqz,
-                    iQtma=iQtma,
-                    iPfdp=iPfdp,
-                    VfBeqbus=VfBeqbus,
-                    Vtmabus=Vtmabus)
+    fx, Scalc = compute_fx(Ybus=Ybus,
+                           V=V,
+                           Vm=Vm,
+                           Sbus=S0,
+                           Sf=Sf,
+                           St=St,
+                           Pfset=Pfset,
+                           Qfset=Qfset,
+                           Qtset=Qtset,
+                           Vmfset=Vmfset,
+                           Kdp=Kdp,
+                           F=F,
+                           pvpq=pvpq,
+                           pq=pq,
+                           iPfsh=nc.iPfsh,
+                           iQfma=nc.iQfma,
+                           iBeqz=nc.iBeqz,
+                           iQtma=nc.iQtma,
+                           iPfdp=nc.iPfdp,
+                           VfBeqbus=nc.VfBeqbus,
+                           Vtmabus=nc.Vtmabus)
+
     norm_f = np.max(np.abs(fx))
 
     # -------------------------------------------------------------------------
     converged = norm_f < tolerance
     iterations = 0
+    back_track_counter = 0
     while not converged and iterations < max_iter:
 
         # compute the Jacobian
-        J = fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeqbus, Vtmabus,
+        J = fubm_jacobian(nb, nl, nc.iPfsh, nc.iPfdp, nc.iQfma, nc.iQtma, nc.iVtma, nc.iBeqz, nc.iBeqv,
+                          nc.VfBeqbus, nc.Vtmabus,
                           F, T, Ys, k2, tap, m, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq)
 
-        print("fx:\n", fx)
-        print("J:\n", J.toarray())
-
+        # solve the linear system
         dx = sp.linalg.spsolve(J, -fx)
 
+        # update the calculation variables (V, m, theta, Beq)
         dVa = dx[:a1]
         dVm = dx[a1:a2]
         dtheta_Pf = dx[a2:a3]
@@ -839,16 +694,36 @@ def nr_acdc(nc: SnapshotData, tolerance=1e-6, max_iter=4):
         dtheta_Pd = dx[a8:a9]
 
         # Assign the values
+        prev_Vm = Vm.copy()
+        prev_Va = Va.copy()
+        prev_m = m.copy()
+        prev_theta = theta.copy()
+        prev_Beq = Beq.copy()
+        prev_Scalc = Scalc.copy()
+
         mu = 1.0
         Va[pvpq] += dVa * mu
         Vm[pq] += dVm * mu
-        theta[iPfsh] += dtheta_Pf * mu
-        theta[iPfdp] += dtheta_Pd * mu
-        m[iQfma] += dma_Qf * mu
-        m[iQtma] += dma_Qt * mu
-        m[iVtma] += dma_Vt * mu
-        Beq[iBeqz] += dBeq_z * mu
-        Beq[iBeqv] += dBeq_v * mu
+        theta[nc.iPfsh] += dtheta_Pf * mu
+        theta[nc.iPfdp] += dtheta_Pd * mu
+        m[nc.iQfma] += dma_Qf * mu
+        m[nc.iQtma] += dma_Qt * mu
+        m[nc.iVtma] += dma_Vt * mu
+        Beq[nc.iBeqz] += dBeq_z * mu
+        Beq[nc.iBeqv] += dBeq_v * mu
+
+        for idx in nc.iVscL:
+            # correct m (tap modules)
+            if m[idx] < nc.branch_data.m_min[idx]:
+                m[idx] = nc.branch_data.m_min[idx]
+            elif m[idx] > nc.branch_data.m_max[idx]:
+                m[idx] = nc.branch_data.m_max[idx]
+
+            # correct theta (tap angles)
+            if theta[idx] < nc.branch_data.theta_min[idx]:
+                theta[idx] = nc.branch_data.theta_min[idx]
+            elif theta[idx] > nc.branch_data.theta_max[idx]:
+                theta[idx] = nc.branch_data.theta_max[idx]
 
         V = Vm * np.exp(1j * Va)
 
@@ -873,7 +748,7 @@ def nr_acdc(nc: SnapshotData, tolerance=1e-6, max_iter=4):
 
         #  compute branch power flows
         If = Yf * V  # complex current injected at "from" bus
-        It = Yt * V  # complex current injected at "to"   bus
+        It = Yt * V  # complex current injected at "to" bus
         Sf = V[F] * np.conj(If)  # complex power injected at "from" bus
         St = V[T] * np.conj(It)  # complex power injected at "to"   bus
 
@@ -882,40 +757,151 @@ def nr_acdc(nc: SnapshotData, tolerance=1e-6, max_iter=4):
                                        alpha1=nc.branch_data.alpha1,
                                        alpha2=nc.branch_data.alpha2,
                                        alpha3=nc.branch_data.alpha3,
-                                       iVscL=iVscL)
+                                       iVscL=nc.iVscL)
 
         # compute total mismatch
-        fx = compute_fx(Ybus=Ybus,
-                        V=V,
-                        Vm=Vm,
-                        Sbus=S0,
-                        Sf=Sf,
-                        St=St,
-                        Pfset=Pfset,
-                        Qfset=Qfset,
-                        Qtset=Qtset,
-                        Vmfset=Vmfset,
-                        Kdp=Kdp,
-                        F=F,
-                        pvpq=pvpq,
-                        pq=pq,
-                        iPfsh=iPfsh,
-                        iQfma=iQfma,
-                        iBeqz=iBeqz,
-                        iQtma=iQtma,
-                        iPfdp=iPfdp,
-                        VfBeqbus=VfBeqbus,
-                        Vtmabus=Vtmabus)
+        fx, Scalc = compute_fx(Ybus=Ybus,
+                               V=V,
+                               Vm=Vm,
+                               Sbus=S0,
+                               Sf=Sf,
+                               St=St,
+                               Pfset=Pfset,
+                               Qfset=Qfset,
+                               Qtset=Qtset,
+                               Vmfset=Vmfset,
+                               Kdp=Kdp,
+                               F=F,
+                               pvpq=pvpq,
+                               pq=pq,
+                               iPfsh=nc.iPfsh,
+                               iQfma=nc.iQfma,
+                               iBeqz=nc.iBeqz,
+                               iQtma=nc.iQtma,
+                               iPfdp=nc.iPfdp,
+                               VfBeqbus=nc.VfBeqbus,
+                               Vtmabus=nc.Vtmabus)
 
-        norm_f = np.max(np.abs(fx))
+        norm_f_new = np.max(np.abs(fx))
+
+        cond = norm_f_new > norm_f  # condition to back track (no improvement at all)
+
+        l_iter = 0
+        while cond and l_iter < max_iter and mu > tolerance:
+
+            # restore the previous values
+            Va = prev_Va.copy()
+            Vm = prev_Vm.copy()
+            m = prev_m.copy()
+            theta = prev_theta.copy()
+            Beq = prev_Beq.copy()
+
+            # reset to the previous voltage
+            mu *= acceleration_parameter
+            Va[pvpq] += dVa * mu
+            Vm[pq] += dVm * mu
+            theta[nc.iPfsh] += dtheta_Pf * mu
+            theta[nc.iPfdp] += dtheta_Pd * mu
+            m[nc.iQfma] += dma_Qf * mu
+            m[nc.iQtma] += dma_Qt * mu
+            m[nc.iVtma] += dma_Vt * mu
+            Beq[nc.iBeqz] += dBeq_z * mu
+            Beq[nc.iBeqv] += dBeq_v * mu
+
+            V = Vm * np.exp(1j * Va)
+
+            # compute initial admittances
+            Ybus, Yf, Yt, tap = compile_y_acdc(branch_active=nc.branch_data.branch_active[:, 0],
+                                               Cf=Cf, Ct=Ct,
+                                               C_bus_shunt=nc.shunt_data.C_bus_shunt,
+                                               shunt_admittance=nc.shunt_data.shunt_admittance[:, 0],
+                                               shunt_active=nc.shunt_data.shunt_active[:, 0],
+                                               ys=Ys,
+                                               B=Bc,
+                                               Sbase=nc.Sbase,
+                                               m=m, theta=theta, Beq=Beq, Gsw=Gsw)
+
+            #  compute branch power flows
+            If = Yf * V  # complex current injected at "from" bus
+            It = Yt * V  # complex current injected at "to" bus
+            Sf = V[F] * np.conj(If)  # complex power injected at "from" bus
+            St = V[T] * np.conj(It)  # complex power injected at "to"   bus
+
+            # compute converter losses
+            Gsw = compute_converter_losses(V=V, It=It, F=F,
+                                           alpha1=nc.branch_data.alpha1,
+                                           alpha2=nc.branch_data.alpha2,
+                                           alpha3=nc.branch_data.alpha3,
+                                           iVscL=nc.iVscL)
+
+            # compute total mismatch
+            fx, Scalc = compute_fx(Ybus=Ybus,
+                                   V=V,
+                                   Vm=Vm,
+                                   Sbus=S0,
+                                   Sf=Sf,
+                                   St=St,
+                                   Pfset=Pfset,
+                                   Qfset=Qfset,
+                                   Qtset=Qtset,
+                                   Vmfset=Vmfset,
+                                   Kdp=Kdp,
+                                   F=F,
+                                   pvpq=pvpq,
+                                   pq=pq,
+                                   iPfsh=nc.iPfsh,
+                                   iQfma=nc.iQfma,
+                                   iBeqz=nc.iBeqz,
+                                   iQtma=nc.iQtma,
+                                   iPfdp=nc.iPfdp,
+                                   VfBeqbus=nc.VfBeqbus,
+                                   Vtmabus=nc.Vtmabus)
+
+            norm_f_new = np.max(np.abs(fx))
+            cond = norm_f_new > norm_f  # condition to back track (no improvement at all)
+            back_track_counter += 1
+            l_iter += 1
+
+        if cond and l_iter > 0:
+            # this means that not even the backtracking was able to correct the solution so, restore and end
+            Va = prev_Va.copy()
+            Vm = prev_Vm.copy()
+            m = prev_m.copy()
+            theta = prev_theta.copy()
+            Beq = prev_Beq.copy()
+            V = Vm * np.exp(1j * Va)
+
+            end = time.time()
+            elapsed = end - start
+
+            # set the state for the next solver
+            nc.branch_data.m[:, 0] = m
+            nc.branch_data.theta[:, 0] = theta
+            nc.branch_data.Beq[:, 0] = Beq
+
+            return V, converged, norm_f, prev_Scalc, iterations, elapsed
+        else:
+            norm_f = norm_f_new
+
+        print('dx:', dx)
+        print('Va:', Va)
+        print('Vm:', Vm)
+        print('theta:', theta)
+        print('ma:', m)
+        print('Beq:', Beq)
+        print('norm_f:', norm_f)
 
         iterations += 1
         converged = norm_f <= tolerance
 
-    return norm_f, V, m, theta, Beq
+    end = time.time()
+    elapsed = end - start
+
+    return V, converged, norm_f, Scalc, iterations, elapsed
 
 
 if __name__ == "__main__":
+    from GridCal.Engine import FileOpen, compile_snapshot_circuit
     np.set_printoptions(precision=4, linewidth=100000)
     # np.set_printoptions(linewidth=10000)
 
@@ -930,5 +916,5 @@ if __name__ == "__main__":
     ####################################################################################################################
     nc_ = compile_snapshot_circuit(grid)
 
-    res = nr_acdc(nc=nc_, tolerance=1e-4, max_iter=20)
+    res = NR_LS_ACDC(nc=nc_, tolerance=1e-4, max_iter=20)
 

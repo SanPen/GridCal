@@ -26,6 +26,7 @@ from GridCal.Engine.Core.common_functions import compile_types
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
 import GridCal.Engine.Core.DataStructures as ds
 import GridCal.Engine.Core.admittance_matrices as ycalc
+from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType
 
 sparse_type = get_sparse_type()
 
@@ -66,6 +67,18 @@ class SnapshotData:
         self.nbr = nline + ntr + nvsc + ndcline
 
         self.Sbase = sbase
+
+        self.any_control = False
+        self.iPfsh = list()  # indices of the branches controlling Pf flow with theta sh
+        self.iQfma = list()  # indices of the branches controlling Qf with ma
+        self.iBeqz = list()  # indices of the branches when forcing the Qf flow to zero (aka "the zero condition")
+        self.iBeqv = list()  # indices of the branches when controlling Vf with Beq
+        self.iVtma = list()  # indices of the branches when controlling Vt with ma
+        self.iQtma = list()  # indices of the branches controlling the Qt flow with ma
+        self.iPfdp = list()  # indices of the drop converters controlling the power flow with theta sh
+        self.iVscL = list()  # indices of the converters
+        self.VfBeqbus = list()  # indices of the buses where Vf is controlled by Beq
+        self.Vtmabus = list()  # indices of the buses where Vt is controlled by ma
 
         # --------------------------------------------------------------------------------------------------------------
         # Data structures
@@ -243,6 +256,8 @@ class SnapshotData:
         self.bus_data.bus_installed_power = self.generator_data.get_installed_power_per_bus()
         self.bus_data.bus_installed_power += self.battery_data.get_installed_power_per_bus()
 
+        self.determine_control_indices()
+
     def re_calc_admittance_matrices(self, tap_module, t=0, idx=None):
         """
         Fast admittance recombination
@@ -261,6 +276,153 @@ class SnapshotData:
         self.Admittances.Ybus = Ybus_
         self.Admittances.Yf = Yf_
         self.Admittances.Yt = Yt_
+
+    def determine_control_indices(self):
+        """
+        This function fills in the lists of indices to control different magnitudes
+
+        :returns idx_sh, idx_qz, idx_vf, idx_vt, idx_qt, VfBeqbus, Vtmabus
+
+        VSC Control modes:
+
+        in the paper's scheme:
+        from -> DC
+        to   -> AC
+
+        |   Mode    |   const.1 |   const.2 |   type    |
+        -------------------------------------------------
+        |   1       |   theta   |   Vac     |   I       |
+        |   2       |   Pf      |   Qac     |   I       |
+        |   3       |   Pf      |   Vac     |   I       |
+        -------------------------------------------------
+        |   4       |   Vdc     |   Qac     |   II      |
+        |   5       |   Vdc     |   Vac     |   II      |
+        -------------------------------------------------
+        |   6       | Vdc droop |   Qac     |   III     |
+        |   7       | Vdc droop |   Vac     |   III     |
+        -------------------------------------------------
+
+        Indices where each control goes:
+        mismatch  →  |  ∆Pf	Qf	Q@f Q@t	∆Qt
+        variable  →  |  Ɵsh	Beq	m	m	Beq
+        Indices   →  |  Ish	Iqz	Ivf	Ivt	Iqt
+        ------------------------------------
+        VSC 1	     |  -	1	-	1	-   |   AC voltage control (voltage “to”)
+        VSC 2	     |  1	1	-	-	1   |   Active and reactive power control
+        VSC 3	     |  1	1	-	1	-   |   Active power and AC voltage control
+        VSC 4	     |  -	-	1	-	1   |   Dc voltage and Reactive power flow control
+        VSC 5	     |  -	-	-	1	1   |   Ac and Dc voltage control
+        ------------------------------------
+        Transformer 0|	-	-	-	-	-   |   Fixed transformer
+        Transformer 1|	1	-	-	-	-   |   Phase shifter → controls power
+        Transformer 2|	-	-	1	-	-   |   Control the voltage at the “from” side
+        Transformer 3|	-	-	-	1	-   |   Control the voltage at the “to” side
+        Transformer 4|	1	-	1	-	-   |   Control the power flow and the voltage at the “from” side
+        Transformer 5|	1	-	-	1	-   |   Control the power flow and the voltage at the “to” side
+        ------------------------------------
+
+        """
+
+        # indices in the global branch scheme
+        self.iPfsh = list()  # indices of the branches controlling Pf flow with theta sh
+        self.iQfma = list()  # indices of the branches controlling Qf with ma
+        self.iBeqz = list()  # indices of the branches when forcing the Qf flow to zero (aka "the zero condition")
+        self.iBeqv = list()  # indices of the branches when controlling Vf with Beq
+        self.iVtma = list()  # indices of the branches when controlling Vt with ma
+        self.iQtma = list()  # indices of the branches controlling the Qt flow with ma
+        self.iPfdp = list()  # indices of the drop converters controlling the power flow with theta sh
+        self.iVscL = list()  # indices of the converters
+
+        self.any_control = False
+
+        for k, tpe in enumerate(self.branch_data.control_mode):
+
+            if tpe == TransformerControlType.fixed:
+                pass
+
+            elif tpe == TransformerControlType.power:
+                self.iPfsh.append(k)
+                self.any_control = True
+
+            elif tpe == TransformerControlType.v_to:
+                self.iVtma.append(k)
+                self.any_control = True
+
+            elif tpe == TransformerControlType.power_v_to:
+                self.iPfsh.append(k)
+                self.iVtma.append(k)
+                self.any_control = True
+
+            # VSC ------------------------------------------------------------------------------------------------------
+            elif tpe == ConverterControlType.type_1_free:  # 1a:Free
+                self.iBeqz.append(k)
+
+                self.iVscL.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_1_pf:  # 1b:Pflow
+                self.iPfsh.append(k)
+                self.iBeqz.append(k)
+
+                self.iVscL.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_1_qf:  # 1c:Qflow
+                self.iBeqz.append(k)
+                self.iQtma.append(k)
+
+                self.iVscL.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_1_vac:  # 1d:Vac
+                self.iBeqz.append(k)
+                self.iVtma.append(k)
+
+                self.iVscL.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_2_vdc:  # 2a:Vdc
+                self.iPfsh.append(k)
+                self.iBeqv.append(k)
+
+                self.iVscL.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_2_vdc_pf:  # 2b:Vdc+Pflow
+                self.iPfsh.append(k)
+                self.iBeqv.append(k)
+
+                self.iVscL.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_3:  # 3a:Droop
+                self.iPfsh.append(k)
+                self.iBeqz.append(k)
+                self.iPfdp.append(k)
+
+                self.iVscL.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_4:  # 4a:Droop-slack
+                self.iPfdp.append(k)
+
+                self.iVscL.append(k)
+                self.any_control = True
+
+            elif tpe == 0:
+                pass  # required for the no-control case
+
+            else:
+                raise Exception('Unknown control type:' + str(tpe))
+
+        # FUBM- Saves the "from" bus identifier for Vf controlled by Beq
+        #  (Converters type II for Vdc control)
+        self.VfBeqbus = self.F[self.iBeqv]
+
+        # FUBM- Saves the "to"   bus identifier for Vt controlled by ma
+        #  (Converters and Transformers)
+        self.Vtmabus = self.T[self.iVtma]
+
 
     @property
     def line_idx(self):

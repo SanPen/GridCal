@@ -543,7 +543,6 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
             data.branch_active[i] = elm.active
             data.branch_rates[i] = elm.rate
 
-
             if opf:
                 data.branch_cost[i] = elm.Cost
 
@@ -641,11 +640,15 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.G0[ii] = elm.G0
         data.Beq[ii] = elm.Beq
         data.m[ii] = elm.m
+        data.m_max[ii] = elm.m_max
+        data.m_min[ii] = elm.m_min
         data.alpha1[ii] = elm.alpha1
         data.alpha2[ii] = elm.alpha2
         data.alpha3[ii] = elm.alpha3
         data.k[ii] = 1.0  # 0.8660254037844386  # sqrt(3)/2
         data.theta[ii] = elm.theta
+        data.theta_min[ii] = elm.theta_min
+        data.theta_max[ii] = elm.theta_max
         data.Pfset[ii] = elm.Pfset
         data.Qfset[ii] = elm.Qfset
         data.Kdp[ii] = elm.kdp

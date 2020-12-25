@@ -4,7 +4,7 @@ __author__ = 'spv86_000'
 # Copyright (c) 1996-2015 PSERC. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
-
+from numpy import intc, double
 """Defines constants for named column indices to branch matrix.
 
 Some examples of usage, after defining the constants using the line above,
@@ -102,7 +102,7 @@ ALPHA2 = 34
 ALPHA3 = 35  
 KDP = 36
 
-from numpy import intc, double
+
 branch_format_array = [intc,  # 0
                        intc,
                        double,

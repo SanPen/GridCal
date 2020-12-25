@@ -2,7 +2,7 @@ __author__ = 'spv86_000'
 # Copyright (c) 1996-2015 PSERC. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
-
+from numpy import intc, double
 """
 Defines constants for named column indices to gen matrix.
 
@@ -90,7 +90,7 @@ FIX_POWER_GEN = 26
 # it's P and Q components and combined with the appropriate MU_Pxxx and
 # MU_Qxxx values. Likewise for the lower Q limits.
 
-from numpy import intc, double
+
 
 gen_format_array = [intc,
                     double,

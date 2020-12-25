@@ -2,7 +2,13 @@ __author__ = 'spv86_000'
 # Copyright (c) 1996-2015 PSERC. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
+from numpy import ones, flatnonzero as find, intc, double, string_, where, delete, zeros, r_, where, delete
+from scipy.sparse import csr_matrix as sparse
 
+from .matpower_gen_definitions import GEN_BUS, GEN_STATUS
+from .matpower_storage_definitions import BUS_S, STO_STATUS, StorageDispatchMode
+
+from warnings import warn
 """
 Defines constants for named column indices to bus matrix.
 
@@ -87,13 +93,7 @@ COLLAPSED = 19
 DISPATCHABLE_BUS = 20
 FIX_POWER_BUS = 21
 
-from numpy import ones, flatnonzero as find, intc, double, string_, where, delete, zeros, r_, where, delete
-from scipy.sparse import csr_matrix as sparse
 
-from .matpower_gen_definitions import GEN_BUS, GEN_STATUS
-from .matpower_storage_definitions import BUS_S, STO_STATUS, StorageDispatchMode
-
-from warnings import warn
 
 bus_format_array = [intc,
                     intc,
