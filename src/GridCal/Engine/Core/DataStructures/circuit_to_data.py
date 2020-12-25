@@ -641,6 +641,9 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.G0[ii] = elm.G0
         data.Beq[ii] = elm.Beq
         data.m[ii] = elm.m
+        data.alpha1[ii] = elm.alpha1
+        data.alpha2[ii] = elm.alpha2
+        data.alpha3[ii] = elm.alpha3
         data.k[ii] = 1.0  # 0.8660254037844386  # sqrt(3)/2
         data.theta[ii] = elm.theta
         data.Pfset[ii] = elm.Pfset

@@ -107,6 +107,10 @@ class VSC(EditableDevice):
                                                   'theta_max': GCProp('rad', float, 'Max converter firing angle.'),
                                                   'theta_min': GCProp('rad', float, 'Min converter firing angle.'),
 
+                                                  'alpha1': GCProp('', float, 'Converter losses curve parameter (IEC 62751-2 loss Correction).'),
+                                                  'alpha2': GCProp('', float, 'Converter losses curve parameter (IEC 62751-2 loss Correction).'),
+                                                  'alpha3': GCProp('', float, 'Converter losses curve parameter (IEC 62751-2 loss Correction).'),
+
                                                   'kdp': GCProp('p.u./p.u.', float, 'Droop Power Voltage slope.'),
                                                   'Pfset': GCProp('MW', float, 'Active power set point.'),
                                                   'Qfset': GCProp('MVAr', float, 'Reactive power set point.'),

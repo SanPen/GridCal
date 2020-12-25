@@ -168,8 +168,9 @@ def compute_converter_losses(V, It, F, alpha1, alpha2, alpha3, iVscL):
     :return:
     """
     # FUBM- Standard IEC 62751-2 Ploss Correction for VSC losses
-    PLoss_IEC = alpha3[iVscL] * np.power(np.abs(It[iVscL]), 2)
-    PLoss_IEC += alpha2[iVscL] * np.power(np.abs(It[iVscL]), 2)
+    Ivsc = np.abs(It[iVscL])
+    PLoss_IEC = alpha3[iVscL] * np.power(Ivsc, 2)
+    PLoss_IEC += alpha2[iVscL] * np.power(Ivsc, 2)
     PLoss_IEC += alpha1[iVscL]
 
     # compute G-switch
@@ -212,11 +213,23 @@ def compile_y_acdc(branch_active, Cf, Ct, C_bus_shunt, shunt_admittance, shunt_a
     # form the admittance matrices ---------------------------------------------------------------------------------
     bc2 = 1j * B / 2  # shunt conductance
     # mp = circuit.k * m  # k is already filled with the appropriate value for each type of branch
-    mp = m
-    tap = mp * np.exp(1.0j * theta)
+
+    tap = m * np.exp(1.0j * theta)
+
+    """
+    Beq= stat .* branch(:, BEQ);                                %%FUBM- VSC Equivalent Reactor for absorbing or supplying reactive power and zero constraint in DC side   
+    Gsw= stat .* branch(:, GSW);                                %%FUBM- VSC Switching losses
+    k2 = branch(:, K2);                                         %%FUBM- VSC constant depending of how many levels does the VSC is simulating. Default k2 for branches = 1, Default k2 for VSC = sqrt(3)/2
+    
+    Ytt = Ys + 1j*Bc/2;
+    Yff = Gsw+( (Ytt+1j*Beq) ./ ((k2.^2).*tap .* conj(tap))  ); %%FUBM- FUBM formulation
+    Yft = - Ys ./ ( k2.*conj(tap) );                            %%FUBM- FUBM formulation
+    Ytf = - Ys ./ ( k2.*tap );  
+    
+    """
 
     # compose the primitives
-    Yff = Gsw + (ys + bc2 + 1.0j * Beq + yshunt_f) / (mp * mp)
+    Yff = Gsw + (ys + bc2 + 1.0j * Beq + yshunt_f) / (m * m)
     Yft = -ys / np.conj(tap)
     Ytf = -ys / tap
     Ytt = ys + bc2 + yshunt_t
@@ -803,20 +816,6 @@ def nr_acdc(nc: SnapshotData, tolerance=1e-6, max_iter=4):
     a8 = a7 + len(iQtma)
     a9 = a8 + len(iPfdp)
     # -------------------------------------------------------------------------
-
-    #  compute branch power flows
-    # br = find(branch(:, BR_STATUS].imag  # FUBM- in-service branches
-    If = nc.Yf * V  # FUBM- complex current injected at "from" bus, Yf(br, :) * V; For in-service branches
-    It = nc.Yt * V  # FUBM- complex current injected at "to"   bus, Yt(br, :) * V; For in-service branches
-    Sf = V[F] * np.conj(If)  # FUBM- complex power injected at "from" bus
-    St = V[T] * np.conj(It)  # FUBM- complex power injected at "to"   bus
-
-    Gsw = compute_converter_losses(V=V, It=It, F=F,
-                                   alpha1=nc.branch_data.alpha1,
-                                   alpha2=nc.branch_data.alpha2,
-                                   alpha3=nc.branch_data.alpha3,
-                                   iVscL=iVscL)
-
     # compute initial admittances
     Ybus, Yf, Yt, tap = compile_y_acdc(branch_active=nc.branch_data.branch_active[:, 0],
                                        Cf=Cf, Ct=Ct,
@@ -828,60 +827,141 @@ def nr_acdc(nc: SnapshotData, tolerance=1e-6, max_iter=4):
                                        Sbase=nc.Sbase,
                                        m=m, theta=theta, Beq=Beq, Gsw=Gsw)
 
-    g = compute_fx(Ybus=Ybus,
-                   V=V,
-                   Vm=Vm,
-                   Sbus=S0,
-                   Sf=Sf,
-                   St=St,
-                   Pfset=Pfset,
-                   Qfset=Qfset,
-                   Qtset=Qtset,
-                   Vmfset=Vmfset,
-                   Kdp=Kdp,
-                   F=F,
-                   pvpq=pvpq,
-                   pq=pq,
-                   iPfsh=iPfsh,
-                   iQfma=iQfma,
-                   iBeqz=iBeqz,
-                   iQtma=iQtma,
-                   iPfdp=iPfdp,
-                   VfBeqbus=VfBeqbus,
-                   Vtmabus=Vtmabus)
+    #  compute branch power flows
+    If = Yf * V  # FUBM- complex current injected at "from" bus, Yf(br, :) * V; For in-service branches
+    It = Yt * V  # FUBM- complex current injected at "to"   bus, Yt(br, :) * V; For in-service branches
+    Sf = V[F] * np.conj(If)  # FUBM- complex power injected at "from" bus
+    St = V[T] * np.conj(It)  # FUBM- complex power injected at "to"   bus
 
-    norm_f = np.max(np.abs(g))
+    # compute converter losses
+    Gsw = compute_converter_losses(V=V, It=It, F=F,
+                                   alpha1=nc.branch_data.alpha1,
+                                   alpha2=nc.branch_data.alpha2,
+                                   alpha3=nc.branch_data.alpha3,
+                                   iVscL=iVscL)
 
-    J = fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeqbus, Vtmabus,
-                      F, T, Ys, k2, tap, m, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq)
+    # compute total mismatch
+    fx = compute_fx(Ybus=Ybus,
+                    V=V,
+                    Vm=Vm,
+                    Sbus=S0,
+                    Sf=Sf,
+                    St=St,
+                    Pfset=Pfset,
+                    Qfset=Qfset,
+                    Qtset=Qtset,
+                    Vmfset=Vmfset,
+                    Kdp=Kdp,
+                    F=F,
+                    pvpq=pvpq,
+                    pq=pq,
+                    iPfsh=iPfsh,
+                    iQfma=iQfma,
+                    iBeqz=iBeqz,
+                    iQtma=iQtma,
+                    iPfdp=iPfdp,
+                    VfBeqbus=VfBeqbus,
+                    Vtmabus=Vtmabus)
+    norm_f = np.max(np.abs(fx))
 
-    print("fx:\n", g)
+    # -------------------------------------------------------------------------
+    converged = False
+    iterations = 0
+    norm_f = 0.0
+    while not converged and iterations < max_iter:
 
-    print("J:\n", J.toarray())
+        # compute the Jacobian
+        J = fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeqbus, Vtmabus,
+                          F, T, Ys, k2, tap, m, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq)
 
-    dx = sp.linalg.spsolve(J, -g)
+        print("fx:\n", fx)
+        print("J:\n", J.toarray())
 
-    dVa = dx[:a1]
-    dVm = dx[a1:a2]
-    dtheta_Pf = dx[a2:a3]
-    dma_Qf = dx[a3:a4]
-    dBeq_z = dx[a4:a5]
-    dBeq_v = dx[a5:a6]
-    dma_Vt = dx[a6:a7]
-    dma_Qt = dx[a7:a8]
-    dtheta_Pd = dx[a8:a9]
+        dx = sp.linalg.spsolve(J, -fx)
 
-    # Assign the values
-    mu = 1.0
-    Va[pvpq] += dVa * mu
-    Vm[pq] += dVm * mu
-    theta[iPfsh] += dtheta_Pf * mu
-    theta[iPfdp] += dtheta_Pd * mu
-    m[iQfma] += dma_Qf * mu
-    m[iQtma] += dma_Qt * mu
-    m[iVtma] += dma_Vt * mu
-    Beq[iBeqz] += dBeq_z * mu
-    Beq[iBeqv] += dBeq_v * mu
+        dVa = dx[:a1]
+        dVm = dx[a1:a2]
+        dtheta_Pf = dx[a2:a3]
+        dma_Qf = dx[a3:a4]
+        dBeq_z = dx[a4:a5]
+        dBeq_v = dx[a5:a6]
+        dma_Vt = dx[a6:a7]
+        dma_Qt = dx[a7:a8]
+        dtheta_Pd = dx[a8:a9]
+
+        # Assign the values
+        mu = 1.0
+        Va[pvpq] += dVa * mu
+        Vm[pq] += dVm * mu
+        theta[iPfsh] += dtheta_Pf * mu
+        theta[iPfdp] += dtheta_Pd * mu
+        m[iQfma] += dma_Qf * mu
+        m[iQtma] += dma_Qt * mu
+        m[iVtma] += dma_Vt * mu
+        Beq[iBeqz] += dBeq_z * mu
+        Beq[iBeqv] += dBeq_v * mu
+
+        V = Vm * np.exp(1j * Va)
+
+        print('dx:', dx)
+        print('Va:', Va)
+        print('Vm:', Vm)
+        print('theta:', theta)
+        print('ma:', m)
+        print('Beq:', Beq)
+        print('norm_f:', norm_f)
+
+        # compute initial admittances
+        Ybus, Yf, Yt, tap = compile_y_acdc(branch_active=nc.branch_data.branch_active[:, 0],
+                                           Cf=Cf, Ct=Ct,
+                                           C_bus_shunt=nc.shunt_data.C_bus_shunt,
+                                           shunt_admittance=nc.shunt_data.shunt_admittance[:, 0],
+                                           shunt_active=nc.shunt_data.shunt_active[:, 0],
+                                           ys=Ys,
+                                           B=Bc,
+                                           Sbase=nc.Sbase,
+                                           m=m, theta=theta, Beq=Beq, Gsw=Gsw)
+
+        #  compute branch power flows
+        If = Yf * V  # FUBM- complex current injected at "from" bus, Yf(br, :) * V; For in-service branches
+        It = Yt * V  # FUBM- complex current injected at "to"   bus, Yt(br, :) * V; For in-service branches
+        Sf = V[F] * np.conj(If)  # FUBM- complex power injected at "from" bus
+        St = V[T] * np.conj(It)  # FUBM- complex power injected at "to"   bus
+
+        # compute converter losses
+        Gsw = compute_converter_losses(V=V, It=It, F=F,
+                                       alpha1=nc.branch_data.alpha1,
+                                       alpha2=nc.branch_data.alpha2,
+                                       alpha3=nc.branch_data.alpha3,
+                                       iVscL=iVscL)
+
+        # compute total mismatch
+        fx = compute_fx(Ybus=Ybus,
+                        V=V,
+                        Vm=Vm,
+                        Sbus=S0,
+                        Sf=Sf,
+                        St=St,
+                        Pfset=Pfset,
+                        Qfset=Qfset,
+                        Qtset=Qtset,
+                        Vmfset=Vmfset,
+                        Kdp=Kdp,
+                        F=F,
+                        pvpq=pvpq,
+                        pq=pq,
+                        iPfsh=iPfsh,
+                        iQfma=iQfma,
+                        iBeqz=iBeqz,
+                        iQtma=iQtma,
+                        iPfdp=iPfdp,
+                        VfBeqbus=VfBeqbus,
+                        Vtmabus=Vtmabus)
+
+        norm_f = np.max(np.abs(fx))
+
+        iterations += 1
+        converged = norm_f <= tolerance
 
     return norm_f, V, m, theta, Beq
 
@@ -904,5 +984,5 @@ if __name__ == "__main__":
     ####################################################################################################################
     nc_ = compile_snapshot_circuit(grid)
 
-    res = nr_acdc(nc=nc_, tolerance=1e-4, max_iter=2)
+    res = nr_acdc(nc=nc_, tolerance=1e-4, max_iter=20)
 
