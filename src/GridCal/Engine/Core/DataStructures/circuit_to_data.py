@@ -599,7 +599,13 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.G[ii] = elm.G
         data.B[ii] = elm.B
         data.m[ii] = elm.tap_module
+        data.m_max[ii] = elm.tap_module_max
+        data.m_min[ii] = elm.tap_module_min
         data.theta[ii] = elm.angle
+        data.theta_min[ii] = elm.angle_min
+        data.theta_max[ii] = elm.angle_max
+        data.Pfset[ii] = elm.Pset
+
         data.control_mode[ii] = elm.control_mode
         data.tap_f[ii], data.tap_t[ii] = elm.get_virtual_taps()
 
@@ -645,7 +651,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.alpha1[ii] = elm.alpha1
         data.alpha2[ii] = elm.alpha2
         data.alpha3[ii] = elm.alpha3
-        data.k[ii] = 1.0  # 0.8660254037844386  # sqrt(3)/2
+        data.k[ii] = elm.k  # 0.8660254037844386  # sqrt(3)/2
         data.theta[ii] = elm.theta
         data.theta_min[ii] = elm.theta_min
         data.theta_max[ii] = elm.theta_max

@@ -52,6 +52,25 @@ they are typically not present in the input matrix
     19. C{MU_ANGMIN}   Kuhn-Tucker multiplier lower angle difference limit
     20. C{MU_ANGMAX}   Kuhn-Tucker multiplier upper angle difference limit
 
+(FUBM parameters)
+
+    21. VF_SET  
+    22. VT_SET  
+    23. MA_MAX 
+    24. MA_MIN 
+    25. CONV_A     
+    26. BEQ     
+    27. K2   
+    28. BEQ_MIN 
+    29. BEQ_MAX 
+    30. SH_MIN  
+    31. SH_MAX  
+    32. GSW 
+    33. ALPHA1 
+    34. ALPHA2 
+    35. ALPHA3   
+    36. KDP 
+
 @author: Ray Zimmerman (PSERC Cornell)
 @author: Richard Lincoln
 """
@@ -173,7 +192,7 @@ branch_headers = ["fbus",  # 0
                   'BEQ',
                   'K2',
                   'BEQ_MIN', 
-                  'BEQ_MAX', # 29 BEQ_MAX
+                  'BEQ_MAX',  # 29 BEQ_MAX
                   'SH_MIN', 
                   'SH_MAX', 
                   'GSW',

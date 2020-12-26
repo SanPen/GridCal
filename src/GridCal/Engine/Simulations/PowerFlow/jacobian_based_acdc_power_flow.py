@@ -492,7 +492,7 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
         sp.hstack((j71, j72, j73, j74, j75, j76, j77, j78, j79)),
         sp.hstack((j81, j82, j83, j84, j85, j86, j87, j88, j89)),
         sp.hstack((j91, j92, j93, j94, j95, j96, j97, j98, j99))
-    ))  # FUBM-Jacobian Matrix
+    ), format='csc')  # FUBM-Jacobian Matrix
 
     return J
 

@@ -294,11 +294,19 @@ def txt2mat(txt, line_splitter=';', col_splitter='\t', to_float=True):
     """
     lines = txt.strip().split('\n')
     # del lines[-1]
-    nrows = len(lines)
 
-    arr = None
-
+    # preprocess lines (remove the comments)
+    lines2 = list()
     for i, line in enumerate(lines):
+        if line.lstrip()[0] == '%':
+            print('skipping', line)
+        else:
+            lines2.append(line)
+
+    # convert the lines to data
+    nrows = len(lines2)
+    arr = None
+    for i, line in enumerate(lines2):
 
         if ';' in line:
             line2 = line.split(';')[0]
@@ -307,15 +315,16 @@ def txt2mat(txt, line_splitter=';', col_splitter='\t', to_float=True):
 
         vec = line2.strip().split()
 
+        # declare the container array based on the first line
         if arr is None:
             ncols = len(vec)
             if to_float:
                 arr = np.zeros((nrows, ncols))
             else:
                 arr = np.zeros((nrows, ncols), dtype=np.object)
-        # print('VEC:', vec)
+
+        # fill-in the data
         for j, val in enumerate(vec):
-            # print('[', val, ']')
             if to_float:
                 arr[i, j] = float(val)
             else:
@@ -340,6 +349,27 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
     else:
         master_time_array = None
 
+    # areas
+    area_idx_dict = dict()
+    if 'areas' in data.keys():
+        table = data['areas']
+
+        if table.shape[0] > 0:
+            # if there are areas declared, clean the default areas
+            circuit.areas = list()
+
+        for i in range(table.shape[0]):
+            area_idx = int(table[i, 0])
+            area_ref_bus_idx = table[i, 1]
+            a = Area(name='Area ' + str(area_idx),
+                     code=str(area_idx))
+            area_idx_dict[area_idx] = (a, area_ref_bus_idx)
+            circuit.add_area(a)
+
+            if i == 0:
+                # set the default area
+                circuit.default_area = circuit.areas[0]
+
     import GridCal.Engine.IO.matpower_bus_definitions as e
     # Buses
     table = data['bus']
@@ -358,16 +388,32 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
     if 'bus_names' in data.keys():
         names = data['bus_names']
     else:
-        names = ['bus ' + str(i+1) for i in range(n)]
+        names = ['bus ' + str(int(table[i, e.BUS_I])) for i in range(n)]
 
     # Buses
     bus_idx_dict = dict()
     for i in range(n):
         # Create bus
+        area_idx = int(table[i, e.BUS_AREA])
+        bus_idx = int(table[i, e.BUS_I])
+        is_slack = False
+
+        if area_idx in area_idx_dict.keys():
+            area, ref_idx = area_idx_dict[area_idx]
+            if ref_idx == bus_idx:
+                is_slack = True
+        else:
+            area = circuit.default_area
+
+        code = str(bus_idx)
+
         bus = Bus(name=names[i],
+                  code=code,
                   vnom=table[i, e.BASE_KV],
                   vmax=table[i, e.VMAX],
-                  vmin=table[i, e.VMIN])
+                  vmin=table[i, e.VMIN],
+                  area=area,
+                  is_slack=is_slack)
 
         # store the given bus index in relation to its real index in the table for later
         bus_idx_dict[table[i, e.BUS_I]] = i
@@ -436,26 +482,29 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
 
         if table.shape[1] == 37:  # FUBM model
 
+            # converter type (I, II, III)
             matpower_mode = table[i, e.CONV_A]
 
             if matpower_mode > 0:  # it is a converter
 
-                # this is by design of the matpower FUBM model, if it is a converter,
-                # the DC bus is always the from bus
+                # set the from bus as a DC bus
+                # this is by design of the matpower FUBM model,
+                # if it is a converter,
+                # the DC bus is always the "from" bus
                 f.is_dc = True
 
                 # determine the converter control mode
-                Pset = table[i, e.PF]
+                Pfset = table[i, e.PF]
                 Vac_set = table[i, e.VT_SET]
                 Vdc_set = table[i, e.VF_SET]
-                Qset = table[i, e.QF]
+                Qfset = table[i, e.QF]
                 m = table[i, e.TAP] if table[i, e.TAP] > 0 else 1.0
 
                 if matpower_mode == 1:
 
-                    if Pset != 0.0:
+                    if Pfset != 0.0:
                         control_mode = ConverterControlType.type_1_pf
-                    elif Qset != 0.0:
+                    elif Qfset != 0.0:
                         control_mode = ConverterControlType.type_1_qf
                     elif Vac_set != 0.0:
                         control_mode = ConverterControlType.type_1_vac
@@ -464,7 +513,7 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
 
                 elif matpower_mode == 2:
 
-                    if Pset == 0.0:
+                    if Pfset == 0.0:
                         control_mode = ConverterControlType.type_2_vdc
                     else:
                         control_mode = ConverterControlType.type_2_vdc_pf
@@ -474,6 +523,7 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
 
                 elif matpower_mode == 4:
                     control_mode = ConverterControlType.type_4
+
                 else:
                     control_mode = ConverterControlType.type_1_free
 
@@ -493,11 +543,11 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
                              Beq=table[i, e.BEQ],
                              Beq_max=table[i, e.BEQ_MAX],
                              Beq_min=table[i, e.BEQ_MIN],
-                             rate=table[i, e.RATE_A],
+                             rate=max(table[i, [e.RATE_A, e.RATE_B, e.RATE_C]]),
                              kdp=table[i, e.KDP],
                              control_mode=control_mode,
-                             Pfset=Pset,
-                             Qfset=Qset,
+                             Pfset=Pfset,
+                             Qfset=Qfset,
                              Vac_set=Vac_set,
                              Vdc_set=Vdc_set,
                              alpha1=table[i, e.ALPHA1],
@@ -627,6 +677,9 @@ def parse_matpower_file(filename, export=False) -> MultiCircuit:
                 data['bus_names'] = v
             else:
                 data['bus'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
+
+        elif key == "areas":
+            data['areas'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
 
         elif key == "gencost":
             data['gen_cost'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')

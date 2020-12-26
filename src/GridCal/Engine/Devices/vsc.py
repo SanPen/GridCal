@@ -30,7 +30,7 @@ class VSC(EditableDevice):
                  m=1.0, m_max=1.1, m_min=0.8,
                  theta=0.1, theta_max=6.28, theta_min=-6.28,
                  Beq=0.001, Beq_min=-0.1, Beq_max=0.1,
-                 G0=1e-5, rate=1e-9, kdp=-0.05,
+                 G0=1e-5, rate=1e-9, kdp=-0.05, k=1.0,
                  control_mode: ConverterControlType = ConverterControlType.type_1_free,
                  Pfset = 0.0, Qfset=0.0, Vac_set=1.0, Vdc_set=1.0,
                  alpha1=0.0001, alpha2=0.015, alpha3=0.2,
@@ -111,6 +111,8 @@ class VSC(EditableDevice):
                                                   'alpha2': GCProp('', float, 'Converter losses curve parameter (IEC 62751-2 loss Correction).'),
                                                   'alpha3': GCProp('', float, 'Converter losses curve parameter (IEC 62751-2 loss Correction).'),
 
+                                                  'k': GCProp('p.u./p.u.', float, 'Converter factor.'),
+
                                                   'kdp': GCProp('p.u./p.u.', float, 'Droop Power Voltage slope.'),
                                                   'Pfset': GCProp('MW', float, 'Active power set point.'),
                                                   'Qfset': GCProp('MVAr', float, 'Reactive power set point.'),
@@ -155,7 +157,7 @@ class VSC(EditableDevice):
         self.Beq = Beq
         self.m = m
         self.theta = theta
-
+        self.k = k
         self.m_max = m_max
         self.m_min = m_min
         self.theta_max = theta_max

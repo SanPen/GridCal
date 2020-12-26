@@ -393,9 +393,12 @@ class Transformer2W(EditableDevice):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, HV=None, LV=None, name='Branch', idtag=None, code='',
                  r=1e-20, x=1e-20, g=1e-20, b=1e-20,
-                 rate=1.0, tap=1.0, shift_angle=0.0, active=True, tolerance=0, cost=0.0,
+                 rate=1.0,
+                 tap=1.0, tap_module_max=1.2, tap_module_min=0.5,
+                 shift_angle=0.0, theta_max=6.28, theta_min=-6.28,
+                 active=True, tolerance=0, cost=0.0,
                  mttf=0, mttr=0,
-                 vset=1.0, bus_to_regulated=False,
+                 vset=1.0, Pset=0, bus_to_regulated=False,
                  temp_base=20, temp_oper=20, alpha=0.00330,
                  control_mode: TransformerControlType = TransformerControlType.fixed,
                  template: TransformerType = None,
@@ -430,14 +433,22 @@ class Transformer2W(EditableDevice):
                                                                       'Tolerance expected for the impedance values\n'
                                                                       '7% is expected for transformers\n'
                                                                       '0% for lines.'),
-                                                  'tap_module': GCProp('', float, 'Tap changer module, '
-                                                                       'it a value close to 1.0'),
+                                                  'tap_module': GCProp('', float,
+                                                                       'Tap changer module, it a value close to 1.0'),
+                                                  'tap_module_max': GCProp('', float,
+                                                                           'Tap changer module max value'),
+                                                  'tap_module_min': GCProp('', float,
+                                                                           'Tap changer module min value'),
                                                   'angle': GCProp('rad', float, 'Angle shift of the tap changer.'),
+                                                  'angle_max': GCProp('rad', float, 'Max angle.'),
+                                                  'angle_min': GCProp('rad', float, 'Min angle.'),
                                                   'control_mode': GCProp('', TransformerControlType,
                                                                          'Control type of the transformer'),
-                                                  'bus_to_regulated': GCProp('', bool, 'Is the bus tap regulated?'),
+                                                  # 'bus_to_regulated': GCProp('', bool, 'Is the bus tap regulated?'),
                                                   'vset': GCProp('p.u.', float, 'Objective voltage at the "to" side of '
                                                                  'the bus when regulating the tap.'),
+                                                  'Pset': GCProp('p.u.', float, 'Objective power at the "from" side of '
+                                                                                'when regulating the angle.'),
                                                   'temp_base': GCProp('ºC', float, 'Base temperature at which R was '
                                                                       'measured.'),
                                                   'temp_oper': GCProp('ºC', float, 'Operation temperature to modify R.'),
@@ -524,6 +535,11 @@ class Transformer2W(EditableDevice):
         # Tap angle
         self.angle = shift_angle
 
+        self.tap_module_max = tap_module_max
+        self.tap_module_min = tap_module_min
+        self.angle_max = theta_max
+        self.angle_min = theta_min
+
         # branch rating in MVA
         self.rate = rate
 
@@ -535,11 +551,16 @@ class Transformer2W(EditableDevice):
         # type template
         self.template = template
 
-        self.bus_to_regulated = bus_to_regulated
-
         self.vset = vset
+        self.Pset = Pset
 
         self.control_mode = control_mode
+
+        self.bus_to_regulated = bus_to_regulated
+
+        if bus_to_regulated and self.control_mode == TransformerControlType.fixed:
+            print(self.name, self.idtag, 'Overriding to V controller')
+            self.control_mode = TransformerControlType.v_to
 
         # converter for enumerations
         self.conv = {'branch': BranchType.Branch,
@@ -684,8 +705,8 @@ class Transformer2W(EditableDevice):
         # obtain the nominal voltages at the from and to sides
         tpe_f_v, tpe_t_v = self.get_from_to_nominal_voltages()
 
-        tap_f = tpe_f_v / bus_f_v
-        tap_t = tpe_t_v / bus_t_v
+        tap_f = tpe_f_v / bus_f_v if bus_f_v > 0 else 1.0
+        tap_t = tpe_t_v / bus_t_v if bus_t_v > 0 else 1.0
 
         if tap_f == 0.0:
             tap_f = 1.0

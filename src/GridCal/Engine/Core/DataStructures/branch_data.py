@@ -48,11 +48,11 @@ class BranchData:
         self.k = np.ones(nbr, dtype=float)
 
         self.m = np.ones((nbr, ntime), dtype=float)
-        self.m_min = np.ones(nbr, dtype=float)
-        self.m_max = np.ones(nbr, dtype=float)
+        self.m_min = 0.1 * np.ones(nbr, dtype=float)
+        self.m_max = 1.5 * np.ones(nbr, dtype=float)
         self.theta = np.zeros((nbr, ntime), dtype=float)
-        self.theta_min = np.ones(nbr, dtype=float)
-        self.theta_max = np.ones(nbr, dtype=float)
+        self.theta_min = - 6.28 * np.ones(nbr, dtype=float)
+        self.theta_max = 6.28 * np.ones(nbr, dtype=float)
         self.Beq = np.zeros((nbr, ntime), dtype=float)
         self.G0 = np.zeros((nbr, ntime), dtype=float)
 
