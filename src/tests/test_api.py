@@ -36,7 +36,7 @@ def test_api():
     power_flow.run()
     print('\n\n', main_circuit.name)
     print('\t|V|:', abs(power_flow.results.voltage))
-    print('\t|Sbranch|:', abs(power_flow.results.Sbranch))
+    print('\t|Sf|:', abs(power_flow.results.Sf))
     print('\t|loading|:', abs(power_flow.results.loading) * 100)
     print('\tReport')
     print(power_flow.results.get_report_dataframe())
@@ -51,7 +51,7 @@ def test_api():
     sc.run()
     print('\n\n', main_circuit.name)
     print('\t|V|:', abs(main_circuit.short_circuit_results.voltage))
-    print('\t|Sbranch|:', abs(main_circuit.short_circuit_results.Sbranch))
+    print('\t|Sf|:', abs(main_circuit.short_circuit_results.Sf))
     print('\t|loading|:',
           abs(main_circuit.short_circuit_results.loading) * 100)
     ####################################################################################################################

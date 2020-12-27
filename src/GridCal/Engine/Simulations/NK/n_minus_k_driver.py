@@ -140,8 +140,8 @@ class NMinusK(QThread):
         for c in range(nl):  # branch that fails (contingency)
 
             # for m in range(nl):  # branch to monitor
-            #     results.Sbranch[m, c] = flows_n[m] + LODF[m, c] * flows_n[c]
-            #     results.loading[m, c] = results.Sbranch[m, c] / (self.numerical_circuit.branch_rates[m] + 1e-9)
+            #     results.Sf[m, c] = flows_n[m] + LODF[m, c] * flows_n[c]
+            #     results.loading[m, c] = results.Sf[m, c] / (self.numerical_circuit.branch_rates[m] + 1e-9)
 
             results.Sbranch[:, c] = flows_n[:] + LODF[:, c] * flows_n[c]
             results.loading[:, c] = results.Sbranch[:, c] / (self.numerical_circuit.branch_rates + 1e-9)

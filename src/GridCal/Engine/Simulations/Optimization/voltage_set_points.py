@@ -108,7 +108,7 @@ class SetPointsOptimizationProblem(OptimizationProblem):
 
             # self.results.S_points[self.it, island.original_bus_idx] = island.Sbus
             # self.results.V_points[self.it, island.original_bus_idx] = res.voltage[island.original_bus_idx]
-            # self.results.I_points[self.it, island.original_branch_idx] = res.Ibranch[island.original_branch_idx]
+            # self.results.I_points[self.it, island.original_branch_idx] = res.If[island.original_branch_idx]
             # self.results.loading_points[self.it, island.original_branch_idx] = res.loading[island.original_branch_idx]
             # self.results.losses_points[self.it, island.original_branch_idx] = res.losses[island.original_branch_idx]
             losses[island.original_branch_idx] = res.losses[island.original_branch_idx]

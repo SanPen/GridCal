@@ -187,7 +187,7 @@ class MonteCarlo(QThread):
                         # store circuit results at the time index 't'
                         mc_results.S_points[t, numerical_island.original_bus_idx] = res.Sbus
                         mc_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
-                        mc_results.Sbr_points[t, numerical_island.original_branch_idx] = res.Sbranch
+                        mc_results.Sbr_points[t, numerical_island.original_branch_idx] = res.Sf
                         mc_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
                         mc_results.losses_points[t, numerical_island.original_branch_idx] = res.losses
 
@@ -222,7 +222,7 @@ class MonteCarlo(QThread):
             self.progress_signal.emit(max((std_dev_progress, it / self.max_mc_iter * 100)))
 
         # compute the averaged branch magnitudes
-        mc_results.sbranch = avg_res.Sbranch
+        mc_results.sbranch = avg_res.Sf
         mc_results.losses = avg_res.losses
 
         # print('V mc: ', mc_results.voltage)
@@ -338,7 +338,7 @@ class MonteCarlo(QThread):
 
                     batch_results.S_points[t, bus_idx] = res.Sbus
                     batch_results.V_points[t, bus_idx] = res.voltage
-                    batch_results.Sbr_points[t, br_idx] = res.Sbranch
+                    batch_results.Sbr_points[t, br_idx] = res.Sf
                     batch_results.loading_points[t, br_idx] = res.loading
                     batch_results.losses_points[t, br_idx] = res.losses
 
@@ -346,7 +346,7 @@ class MonteCarlo(QThread):
                 batch_results.compile()
 
                 # compute the island branch results
-                Sbranch, Ibranch, Vbranch, loading, \
+                Sfb, Stb, If, It, Vbranch, loading, \
                 losses, flow_direction, Sbus = power_flow_post_process(numerical_island,
                                                                        Sbus=batch_results.S_points.mean(axis=0)[bus_idx],
                                                                        V=batch_results.V_points.mean(axis=0)[bus_idx],
@@ -355,8 +355,10 @@ class MonteCarlo(QThread):
                 # apply the island averaged results
                 avg_res.Sbus[bus_idx] = Sbus
                 avg_res.voltage[bus_idx] = batch_results.voltage[bus_idx]
-                avg_res.Sbranch[br_idx] = Sbranch
-                avg_res.Ibranch[br_idx] = Ibranch
+                avg_res.Sf[br_idx] = Sfb
+                avg_res.St[br_idx] = Stb
+                avg_res.If[br_idx] = If
+                avg_res.It[br_idx] = It
                 avg_res.Vbranch[br_idx] = Vbranch
                 avg_res.loading[br_idx] = loading
                 avg_res.losses[br_idx] = losses

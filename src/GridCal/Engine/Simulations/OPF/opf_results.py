@@ -30,7 +30,7 @@ class OptimalPowerFlowResults:
 
         **load_shedding**: load shedding values
 
-        **Sbranch**: branch power values
+        **Sf**: branch power values
 
         **overloads**: branch overloading values
 

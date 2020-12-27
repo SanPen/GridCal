@@ -191,8 +191,8 @@ def main():
     # Let's do the same for the branch results
     headers = ['Loading (%)', 'Current(p.u.)', 'Power (MVA)']
     loading = np.abs(pf.results.loading) * 100
-    current = np.abs(pf.results.Ibranch)
-    power = np.abs(pf.results.Sbranch)
+    current = np.abs(pf.results.If)
+    power = np.abs(pf.results.Sf)
     data = np.c_[loading, current, power]
     br_df = pd.DataFrame(data=data, columns=headers, index=grid.branch_names)
     br_df.to_excel(writer, sheet_name='Br')

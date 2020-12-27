@@ -137,12 +137,12 @@ def test_corr_line_losses():
 
     print("Loadings (power):")
     for i in range(len(grid.lines)):
-        print(f" - {grid.lines[i]}: loading={round(power_flow.results.Sbranch[i], 3)} MVA")
+        print(f" - {grid.lines[i]}: loading={round(power_flow.results.Sf[i], 3)} MVA")
     print()
 
     print("Loadings (current):")
     for i in range(len(grid.lines)):
-        print(f" - {grid.lines[i]}: loading={round(power_flow.results.Ibranch[i], 3)} pu")
+        print(f" - {grid.lines[i]}: loading={round(power_flow.results.If[i], 3)} pu")
     print()
 
     assert approx_losses == solution

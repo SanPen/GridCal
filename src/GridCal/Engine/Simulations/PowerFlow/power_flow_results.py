@@ -19,6 +19,32 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Gui.GuiFunctions import ResultsModel
 
 
+class NumericPowerFlowResults:
+
+    def __init__(self, V, converged, norm_f, Scalc, ma=None, theta=None, Beq=None, iterations=0, elapsed=0):
+        """
+
+        :param V:
+        :param converged:
+        :param norm_f:
+        :param Scalc:
+        :param ma:
+        :param theta:
+        :param Beq:
+        :param iterations:
+        :param elapsed:
+        """
+        self.V = V
+        self.converged = converged
+        self.norm_f = norm_f
+        self.Scalc = Scalc
+        self.ma = ma
+        self.theta = theta
+        self.Beq = Beq
+        self.iterations = iterations
+        self.elapsed = elapsed
+
+
 class PowerFlowResults:
     """
     A **PowerFlowResults** object is create as an attribute of the
@@ -31,9 +57,9 @@ class PowerFlowResults:
 
         **voltage** (list): Voltage at each bus in complex per unit
 
-        **Sbranch** (list): Power through each branch in complex MVA
+        **Sf** (list): Power through each branch in complex MVA
 
-        **Ibranch** (list): Current through each branch in complex per unit
+        **If** (list): Current through each branch in complex per unit
 
         **loading** (list): Loading of each branch in per unit
 
@@ -85,9 +111,15 @@ class PowerFlowResults:
 
         self.undervoltage = np.zeros(n, dtype=complex)
 
-        self.Sbranch = np.zeros(m, dtype=complex)
+        self.Sf = np.zeros(m, dtype=complex)
+        self.St = np.zeros(m, dtype=complex)
 
-        self.Ibranch = np.zeros(m, dtype=complex)
+        self.If = np.zeros(m, dtype=complex)
+        self.It = np.zeros(m, dtype=complex)
+
+        self.ma = np.zeros(m, dtype=float)
+        self.theta = np.zeros(m, dtype=float)
+        self.Beq = np.zeros(m, dtype=float)
 
         self.Vbranch = np.zeros(m, dtype=complex)
 
@@ -115,10 +147,21 @@ class PowerFlowResults:
 
         self.available_results = [ResultTypes.BusVoltageModule,
                                   ResultTypes.BusVoltageAngle,
-                                  ResultTypes.BranchActivePower,
-                                  ResultTypes.BranchReactivePower,
-                                  ResultTypes.BranchActiveCurrent,
-                                  ResultTypes.BranchReactiveCurrent,
+
+                                  ResultTypes.BranchActivePowerFrom,
+                                  ResultTypes.BranchReactivePowerFrom,
+                                  ResultTypes.BranchActivePowerTo,
+                                  ResultTypes.BranchReactivePowerTo,
+
+                                  ResultTypes.BranchActiveCurrentFrom,
+                                  ResultTypes.BranchReactiveCurrentFrom,
+                                  ResultTypes.BranchActiveCurrentTo,
+                                  ResultTypes.BranchReactiveCurrentTo,
+
+                                  ResultTypes.BranchTapModule,
+                                  ResultTypes.BranchTapAngle,
+                                  ResultTypes.BranchBeq,
+
                                   ResultTypes.BranchLoading,
                                   ResultTypes.Transformer2WTapModule,
                                   ResultTypes.BranchActiveLosses,
@@ -174,8 +217,8 @@ class PowerFlowResults:
         val.voltage = self.voltage.copy()
         val.overvoltage = self.overvoltage.copy()
         val.undervoltage = self.undervoltage.copy()
-        val.Sbranch = self.Sbranch.copy()
-        val.Ibranch = self.Ibranch.copy()
+        val.Sf = self.Sf.copy()
+        val.If = self.If.copy()
         val.Vbranch = self.Vbranch.copy()
         val.loading = self.loading.copy()
         val.flow_direction = self.flow_direction.copy()
@@ -202,9 +245,9 @@ class PowerFlowResults:
 
         self.voltage[b_idx] = results.voltage
 
-        self.Sbranch[br_idx] = results.Sbranch
+        self.Sf[br_idx] = results.Sf
 
-        self.Ibranch[br_idx] = results.Ibranch
+        self.If[br_idx] = results.If
 
         self.Vbranch[br_idx] = results.Vbranch
 
@@ -315,19 +358,31 @@ class PowerFlowResults:
 
         elif result_type == ResultTypes.BranchPower:
             labels = self.branch_names
-            y = self.Sbranch
+            y = self.Sf
             y_label = '(MVA)'
             title = 'Branch power '
 
-        elif result_type == ResultTypes.BranchActivePower:
+        elif result_type == ResultTypes.BranchActivePowerFrom:
             labels = self.branch_names
-            y = self.Sbranch.real
+            y = self.Sf.real
             y_label = '(MW)'
             title = 'Branch active power '
 
-        elif result_type == ResultTypes.BranchReactivePower:
+        elif result_type == ResultTypes.BranchReactivePowerFrom:
             labels = self.branch_names
-            y = self.Sbranch.imag
+            y = self.Sf.imag
+            y_label = '(MVAr)'
+            title = 'Branch reactive power '
+
+        elif result_type == ResultTypes.BranchActivePowerTo:
+            labels = self.branch_names
+            y = self.St.real
+            y_label = '(MW)'
+            title = 'Branch active power '
+
+        elif result_type == ResultTypes.BranchReactivePowerTo:
+            labels = self.branch_names
+            y = self.St.imag
             y_label = '(MVAr)'
             title = 'Branch reactive power '
 
@@ -339,19 +394,31 @@ class PowerFlowResults:
 
         elif result_type == ResultTypes.BranchCurrent:
             labels = self.branch_names
-            y = self.Ibranch
+            y = self.If
             y_label = '(p.u.)'
             title = 'Branch current '
 
-        elif result_type == ResultTypes.BranchActiveCurrent:
+        elif result_type == ResultTypes.BranchActiveCurrentFrom:
             labels = self.branch_names
-            y = self.Ibranch.real
+            y = self.If.real
             y_label = '(p.u.)'
             title = 'Branch active current '
 
-        elif result_type == ResultTypes.BranchReactiveCurrent:
+        elif result_type == ResultTypes.BranchReactiveCurrentFrom:
             labels = self.branch_names
-            y = self.Ibranch.imag
+            y = self.If.imag
+            y_label = '(p.u.)'
+            title = 'Branch reactive current '
+
+        elif result_type == ResultTypes.BranchActiveCurrentTo:
+            labels = self.branch_names
+            y = self.It.real
+            y_label = '(p.u.)'
+            title = 'Branch active current '
+
+        elif result_type == ResultTypes.BranchReactiveCurrentTo:
+            labels = self.branch_names
+            y = self.It.imag
             y_label = '(p.u.)'
             title = 'Branch reactive current '
 
@@ -390,6 +457,24 @@ class PowerFlowResults:
             y = np.angle(self.Vbranch, deg=True)
             y_label = '(deg)'
             title = 'Branch voltage angle '
+
+        elif result_type == ResultTypes.BranchTapModule:
+            labels = self.branch_names
+            y = self.ma
+            y_label = '(p.u.)'
+            title = 'Branch tap module '
+
+        elif result_type == ResultTypes.BranchTapAngle:
+            labels = self.branch_names
+            y = self.theta
+            y_label = '(rad)'
+            title = 'Branch tap angle '
+
+        elif result_type == ResultTypes.BranchBeq:
+            labels = self.branch_names
+            y = self.Beq
+            y_label = '(p.u.)'
+            title = 'Branch Beq '
 
         elif result_type == ResultTypes.HvdcLosses:
             labels = self.hvdc_names
@@ -430,9 +515,9 @@ class PowerFlowResults:
         df_bus = pd.DataFrame(data=bus_data, columns=bus_cols)
 
         # branch results
-        sr = self.Sbranch.real
-        si = self.Sbranch.imag
-        sm = np.abs(self.Sbranch)
+        sr = self.Sf.real
+        si = self.Sf.imag
+        sm = np.abs(self.Sf)
         ld = np.abs(self.loading)
         la = self.losses.real
         lr = self.losses.imag

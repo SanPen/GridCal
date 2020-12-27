@@ -80,6 +80,52 @@ def compute_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a,
     return Admittance(Ybus, Yf, Yt, Cf, Ct, Yff, Yft, Ytf, Ytt, Yshunt_bus, Gsw)
 
 
+def compile_y_acdc(Cf, Ct, C_bus_shunt, shunt_admittance, shunt_active, ys, B, Sbase,
+                   m, theta, Beq, Gsw, mf, mt, ):
+    """
+    Compile the admittance matrices using the variable elements
+    :param Cf: Connectivity branch-bus "from" with the branch states computed
+    :param Ct: Connectivity branch-bus "to" with the branch states computed
+    :param C_bus_shunt:
+    :param shunt_admittance:
+    :param shunt_active:
+    :param ys:
+    :param B:
+    :param Sbase:
+    :param m: array of tap modules (for all branches, regardless of their type)
+    :param theta: array of tap angles (for all branches, regardless of their type)
+    :param Beq: Array of equivalent susceptance
+    :param Gsw: Array of branch (converter) losses
+    :param mf: array of virtual taps at the "from" side
+    :param mt: array of virtual taps at the "to" side
+    :return: Ybus, Yf, Yt, tap
+    """
+
+    # SHUNT --------------------------------------------------------------------------------------------------------
+    Yshunt_from_devices = C_bus_shunt * (shunt_admittance * shunt_active / Sbase)
+    yshunt_f = Cf * Yshunt_from_devices
+    yshunt_t = Ct * Yshunt_from_devices
+
+    # form the admittance matrices ---------------------------------------------------------------------------------
+    bc2 = 1j * B / 2  # shunt conductance
+    # mp = circuit.k * m  # k is already filled with the appropriate value for each type of branch
+
+    tap = m * np.exp(1.0j * theta)
+
+    # compose the primitives
+    Yff = Gsw + (ys + bc2 + 1.0j * Beq + yshunt_f) / (m * m * mf * mf)
+    Yft = -ys / (np.conj(tap) * mf * mt)
+    Ytf = -ys / (tap * mf * mt)
+    Ytt = ys + bc2 + yshunt_t / (mt * mt)
+
+    # compose the matrices
+    Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
+    Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
+    Ybus = sp.csc_matrix(Cf.T * Yf + Ct.T * Yt)
+
+    return Ybus, Yf, Yt, tap
+
+
 def compute_split_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus):
     """
     Compute the complete admittance matrices for the general power flow methods (Newton-Raphson based)

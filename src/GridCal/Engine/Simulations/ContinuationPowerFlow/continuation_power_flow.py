@@ -745,7 +745,7 @@ if __name__ == '__main__':
 
     print('\n\n', main_circuit.name)
     print('\t|V|:', abs(power_flow.results.voltage))
-    print('\t|Sbranch|:', abs(power_flow.results.Sbranch))
+    print('\t|Sf|:', abs(power_flow.results.Sf))
     print('\t|loading|:', abs(power_flow.results.loading) * 100)
     print('\tReport')
     print(power_flow.results.get_report_dataframe())

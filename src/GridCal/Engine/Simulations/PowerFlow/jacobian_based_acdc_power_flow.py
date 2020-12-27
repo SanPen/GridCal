@@ -15,12 +15,12 @@
 
 from scipy.sparse.linalg import spsolve
 import numpy as np
-# from GridCal.Engine import SnapshotData
-
 import os
 import time
 from scipy.sparse import lil_matrix, diags
 import scipy.sparse as sp
+from GridCal.Engine.Core.admittance_matrices import compile_y_acdc
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 
 
 def compute_converter_losses(V, It, F, alpha1, alpha2, alpha3, iVscL):
@@ -46,56 +46,6 @@ def compute_converter_losses(V, It, F, alpha1, alpha2, alpha3, iVscL):
     Gsw[iVscL] = PLoss_IEC / np.power(np.abs(V[F[iVscL]]), 2)
 
     return Gsw
-
-
-def compile_y_acdc(branch_active, Cf, Ct, C_bus_shunt, shunt_admittance, shunt_active, ys, B, Sbase,
-                   m, theta, Beq, Gsw):
-    """
-    Compile the admittance matrices using the variable elements
-    :param branch_active:
-    :param Cf:
-    :param Ct:
-    :param C_bus_shunt:
-    :param shunt_admittance:
-    :param shunt_active:
-    :param ys:
-    :param B:
-    :param Sbase:
-    :param m: array of tap modules (for all branches, regardless of their type)
-    :param theta: array of tap angles (for all branches, regardless of their type)
-    :param Beq: Array of equivalent susceptance
-    :param Gsw: Array of branch (converter) losses
-    :return: Ybus, Yf, Yt, tap
-    """
-
-    # form the connectivity matrices with the states applied -------------------------------------------------------
-    br_states_diag = sp.diags(branch_active)
-    Cf = br_states_diag * Cf
-    Ct = br_states_diag * Ct
-
-    # SHUNT --------------------------------------------------------------------------------------------------------
-    Yshunt_from_devices = C_bus_shunt * (shunt_admittance * shunt_active / Sbase)
-    yshunt_f = Cf * Yshunt_from_devices
-    yshunt_t = Ct * Yshunt_from_devices
-
-    # form the admittance matrices ---------------------------------------------------------------------------------
-    bc2 = 1j * B / 2  # shunt conductance
-    # mp = circuit.k * m  # k is already filled with the appropriate value for each type of branch
-
-    tap = m * np.exp(1.0j * theta)
-
-    # compose the primitives
-    Yff = Gsw + (ys + bc2 + 1.0j * Beq + yshunt_f) / (m * m)
-    Yft = -ys / np.conj(tap)
-    Ytf = -ys / tap
-    Ytt = ys + bc2 + yshunt_t
-
-    # compose the matrices
-    Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
-    Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
-    Ybus = sp.csc_matrix(Cf.T * Yf + Ct.T * Yt)
-
-    return Ybus, Yf, Yt, tap
 
 
 def dSbus_dV(Ybus, V):
@@ -159,7 +109,7 @@ def dSbr_dV(Yf, Yt, V, F, T, Cf, Ct):
     return dSf_dVa, dSf_dVm, dSt_dVa, dSt_dVm
 
 
-def d_dsh(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
+def derivatives_sh(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
     """
     This function computes the derivatives of Sbus, Sf and St w.r.t. Ɵsh
     - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
@@ -208,7 +158,7 @@ def d_dsh(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
     return dSbus_dPxsh.tocsc(), dSf_dshx2.tocsc(), dSt_dshx2.tocsc()
 
 
-def d_dma(nb, nl, iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
+def derivatives_ma(nb, nl, iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
     """
     Useful for the calculation of
     - dSbus_dQfma, dSf_dQfma, dSt_dQfma  -> wih iXxma=iQfma
@@ -262,7 +212,7 @@ def d_dma(nb, nl, iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
     return dSbus_dmax2.tocsc(), dSf_dmax2.tocsc(), dSt_dmax2.tocsc()
 
 
-def d_dBeq(nb, nl, iBeqx, F, T, V, ma, k2):
+def derivatives_Beq(nb, nl, iBeqx, F, T, V, ma, k2):
     """
     Compute the derivatives of:
     - dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz -> iBeqx=iBeqz
@@ -352,17 +302,17 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     dSf_dVa, dSf_dVm, dSt_dVa, dSt_dVm = dSbr_dV(Yf, Yt, V, F, T, Cf, Ct)
 
     # compose the derivatives w.r.t theta sh
-    dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh = d_dsh(nb, nl, iPfsh, F, T, Ys, k2, tap, V)
-    dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp = d_dsh(nb, nl, iPfdp, F, T, Ys, k2, tap, V)
+    dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh = derivatives_sh(nb, nl, iPfsh, F, T, Ys, k2, tap, V)
+    dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp = derivatives_sh(nb, nl, iPfdp, F, T, Ys, k2, tap, V)
 
     # compose the derivative w.r.t ma
-    dSbus_dQfma, dSf_dQfma, dSt_dQfma = d_dma(nb, nl, iQfma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
-    dSbus_dQtma, dSf_dQtma, dSt_dQtma = d_dma(nb, nl, iQtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
-    dSbus_dVtma, dSf_dVtma, dSt_dVtma = d_dma(nb, nl, iVtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
+    dSbus_dQfma, dSf_dQfma, dSt_dQfma = derivatives_ma(nb, nl, iQfma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
+    dSbus_dQtma, dSf_dQtma, dSt_dQtma = derivatives_ma(nb, nl, iQtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
+    dSbus_dVtma, dSf_dVtma, dSt_dVtma = derivatives_ma(nb, nl, iVtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
 
     # compose the derivatives w.r.t Beq
-    dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz = d_dBeq(nb, nl, iBeqz, F, T, V, ma, k2)
-    dSbus_dBeqv, dSf_dBeqv, dSt_dBeqv = d_dBeq(nb, nl, iBeqv, F, T, V, ma, k2)
+    dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz = derivatives_Beq(nb, nl, iBeqz, F, T, V, ma, k2)
+    dSbus_dBeqv, dSf_dBeqv, dSt_dBeqv = derivatives_Beq(nb, nl, iBeqv, F, T, V, ma, k2)
 
     # Voltage Droop Control Partials (it is more convenient to have them here...) --------------
 
@@ -552,12 +502,14 @@ def compute_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
     return df, Scalc
 
 
-def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, acceleration_parameter=0.05):
+def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceleration_parameter=0.05) -> NumericPowerFlowResults:
     """
     Newton-Raphson Line search with the FUBM formulation
     :param nc: SnapshotData instance
     :param tolerance: maximum error allowed
     :param max_iter: maximum number of iterations
+    :param mu_0:
+    :param acceleration_parameter:
     :return:
     """
     start = time.time()
@@ -620,15 +572,16 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, acceleration_para
     a9 = a8 + len(nc.iPfdp)
     # -------------------------------------------------------------------------
     # compute initial admittances
-    Ybus, Yf, Yt, tap = compile_y_acdc(branch_active=nc.branch_data.branch_active[:, 0],
-                                       Cf=Cf, Ct=Ct,
+    Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
                                        C_bus_shunt=nc.shunt_data.C_bus_shunt,
                                        shunt_admittance=nc.shunt_data.shunt_admittance[:, 0],
                                        shunt_active=nc.shunt_data.shunt_active[:, 0],
                                        ys=Ys,
                                        B=Bc,
                                        Sbase=nc.Sbase,
-                                       m=m, theta=theta, Beq=Beq, Gsw=Gsw)
+                                       m=m, theta=theta, Beq=Beq, Gsw=Gsw,
+                                       mf=nc.branch_data.tap_f,
+                                       mt=nc.branch_data.tap_t)
 
     #  compute branch power flows
     If = Yf * V  # FUBM- complex current injected at "from" bus, Yf(br, :) * V; For in-service branches
@@ -682,8 +635,8 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, acceleration_para
         # solve the linear system
         dx = sp.linalg.spsolve(J, -fx)
 
-        # update the calculation variables (V, m, theta, Beq)
-        dVa = dx[:a1]
+        # split the solution
+        dVa = dx[a0:a1]
         dVm = dx[a1:a2]
         dtheta_Pf = dx[a2:a3]
         dma_Qf = dx[a3:a4]
@@ -693,7 +646,7 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, acceleration_para
         dma_Qt = dx[a7:a8]
         dtheta_Pd = dx[a8:a9]
 
-        # Assign the values
+        # set the restoration values
         prev_Vm = Vm.copy()
         prev_Va = Va.copy()
         prev_m = m.copy()
@@ -701,103 +654,21 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, acceleration_para
         prev_Beq = Beq.copy()
         prev_Scalc = Scalc.copy()
 
-        mu = 1.0
-        Va[pvpq] += dVa * mu
-        Vm[pq] += dVm * mu
-        theta[nc.iPfsh] += dtheta_Pf * mu
-        theta[nc.iPfdp] += dtheta_Pd * mu
-        m[nc.iQfma] += dma_Qf * mu
-        m[nc.iQtma] += dma_Qt * mu
-        m[nc.iVtma] += dma_Vt * mu
-        Beq[nc.iBeqz] += dBeq_z * mu
-        Beq[nc.iBeqv] += dBeq_v * mu
-
-        for idx in nc.iVscL:
-            # correct m (tap modules)
-            if m[idx] < nc.branch_data.m_min[idx]:
-                m[idx] = nc.branch_data.m_min[idx]
-            elif m[idx] > nc.branch_data.m_max[idx]:
-                m[idx] = nc.branch_data.m_max[idx]
-
-            # correct theta (tap angles)
-            if theta[idx] < nc.branch_data.theta_min[idx]:
-                theta[idx] = nc.branch_data.theta_min[idx]
-            elif theta[idx] > nc.branch_data.theta_max[idx]:
-                theta[idx] = nc.branch_data.theta_max[idx]
-
-        V = Vm * np.exp(1j * Va)
-
-        print('dx:', dx)
-        print('Va:', Va)
-        print('Vm:', Vm)
-        print('theta:', theta)
-        print('ma:', m)
-        print('Beq:', Beq)
-        print('norm_f:', norm_f)
-
-        # compute initial admittances
-        Ybus, Yf, Yt, tap = compile_y_acdc(branch_active=nc.branch_data.branch_active[:, 0],
-                                           Cf=Cf, Ct=Ct,
-                                           C_bus_shunt=nc.shunt_data.C_bus_shunt,
-                                           shunt_admittance=nc.shunt_data.shunt_admittance[:, 0],
-                                           shunt_active=nc.shunt_data.shunt_active[:, 0],
-                                           ys=Ys,
-                                           B=Bc,
-                                           Sbase=nc.Sbase,
-                                           m=m, theta=theta, Beq=Beq, Gsw=Gsw)
-
-        #  compute branch power flows
-        If = Yf * V  # complex current injected at "from" bus
-        It = Yt * V  # complex current injected at "to" bus
-        Sf = V[F] * np.conj(If)  # complex power injected at "from" bus
-        St = V[T] * np.conj(It)  # complex power injected at "to"   bus
-
-        # compute converter losses
-        Gsw = compute_converter_losses(V=V, It=It, F=F,
-                                       alpha1=nc.branch_data.alpha1,
-                                       alpha2=nc.branch_data.alpha2,
-                                       alpha3=nc.branch_data.alpha3,
-                                       iVscL=nc.iVscL)
-
-        # compute total mismatch
-        fx, Scalc = compute_fx(Ybus=Ybus,
-                               V=V,
-                               Vm=Vm,
-                               Sbus=S0,
-                               Sf=Sf,
-                               St=St,
-                               Pfset=Pfset,
-                               Qfset=Qfset,
-                               Qtset=Qtset,
-                               Vmfset=Vmfset,
-                               Kdp=Kdp,
-                               F=F,
-                               pvpq=pvpq,
-                               pq=pq,
-                               iPfsh=nc.iPfsh,
-                               iQfma=nc.iQfma,
-                               iBeqz=nc.iBeqz,
-                               iQtma=nc.iQtma,
-                               iPfdp=nc.iPfdp,
-                               VfBeqbus=nc.VfBeqbus,
-                               Vtmabus=nc.Vtmabus)
-
-        norm_f_new = np.max(np.abs(fx))
-
-        cond = norm_f_new > norm_f  # condition to back track (no improvement at all)
-
+        mu = mu_0  # ideally 1.0
+        cond = True
         l_iter = 0
-        while cond and l_iter < max_iter and mu > tolerance:
+        norm_f_new = 0.0
+        while cond and l_iter < max_iter and mu > tolerance:  # backtracking: if all goes well it is only done 1 time
 
-            # restore the previous values
-            Va = prev_Va.copy()
-            Vm = prev_Vm.copy()
-            m = prev_m.copy()
-            theta = prev_theta.copy()
-            Beq = prev_Beq.copy()
+            # restore the previous values if we are backtracking (the first iteration is the normal NR procedure)
+            if l_iter > 0:
+                Va = prev_Va.copy()
+                Vm = prev_Vm.copy()
+                m = prev_m.copy()
+                theta = prev_theta.copy()
+                Beq = prev_Beq.copy()
 
-            # reset to the previous voltage
-            mu *= acceleration_parameter
+            # assign the new values
             Va[pvpq] += dVa * mu
             Vm[pq] += dVm * mu
             theta[nc.iPfsh] += dtheta_Pf * mu
@@ -810,16 +681,30 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, acceleration_para
 
             V = Vm * np.exp(1j * Va)
 
-            # compute initial admittances
-            Ybus, Yf, Yt, tap = compile_y_acdc(branch_active=nc.branch_data.branch_active[:, 0],
-                                               Cf=Cf, Ct=Ct,
+            for idx in nc.iVscL:
+                # correct m (tap modules)
+                if m[idx] < nc.branch_data.m_min[idx]:
+                    m[idx] = nc.branch_data.m_min[idx]
+                elif m[idx] > nc.branch_data.m_max[idx]:
+                    m[idx] = nc.branch_data.m_max[idx]
+
+                # correct theta (tap angles)
+                if theta[idx] < nc.branch_data.theta_min[idx]:
+                    theta[idx] = nc.branch_data.theta_min[idx]
+                elif theta[idx] > nc.branch_data.theta_max[idx]:
+                    theta[idx] = nc.branch_data.theta_max[idx]
+
+            # compute admittances
+            Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
                                                C_bus_shunt=nc.shunt_data.C_bus_shunt,
                                                shunt_admittance=nc.shunt_data.shunt_admittance[:, 0],
                                                shunt_active=nc.shunt_data.shunt_active[:, 0],
                                                ys=Ys,
                                                B=Bc,
                                                Sbase=nc.Sbase,
-                                               m=m, theta=theta, Beq=Beq, Gsw=Gsw)
+                                               m=m, theta=theta, Beq=Beq, Gsw=Gsw,
+                                               mf=nc.branch_data.tap_f,
+                                               mt=nc.branch_data.tap_t)
 
             #  compute branch power flows
             If = Yf * V  # complex current injected at "from" bus
@@ -859,10 +744,12 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, acceleration_para
 
             norm_f_new = np.max(np.abs(fx))
             cond = norm_f_new > norm_f  # condition to back track (no improvement at all)
+
+            mu *= acceleration_parameter
             back_track_counter += 1
             l_iter += 1
 
-        if cond and l_iter > 0:
+        if l_iter > 1:
             # this means that not even the backtracking was able to correct the solution so, restore and end
             Va = prev_Va.copy()
             Vm = prev_Vm.copy()
@@ -879,7 +766,7 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, acceleration_para
             nc.branch_data.theta[:, 0] = theta
             nc.branch_data.Beq[:, 0] = Beq
 
-            return V, converged, norm_f, prev_Scalc, iterations, elapsed
+            return NumericPowerFlowResults(V, converged, norm_f, prev_Scalc, m, theta, Beq, iterations, elapsed)
         else:
             norm_f = norm_f_new
 
@@ -897,7 +784,7 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, acceleration_para
     end = time.time()
     elapsed = end - start
 
-    return V, converged, norm_f, Scalc, iterations, elapsed
+    return NumericPowerFlowResults(V, converged, norm_f, Scalc, m, theta, Beq, iterations, elapsed)
 
 
 if __name__ == "__main__":

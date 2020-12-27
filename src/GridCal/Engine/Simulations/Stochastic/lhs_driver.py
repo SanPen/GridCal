@@ -148,7 +148,7 @@ class LatinHypercubeSampling(QThread):
                     # store circuit results at the time index 't'
                     lhs_results.S_points[t, numerical_island.original_bus_idx] = res.Sbus
                     lhs_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
-                    lhs_results.Sbr_points[t, numerical_island.original_branch_idx] = res.Sbranch
+                    lhs_results.Sbr_points[t, numerical_island.original_branch_idx] = res.Sf
                     lhs_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
                     lhs_results.losses_points[t, numerical_island.original_branch_idx] = res.losses
 
@@ -163,7 +163,7 @@ class LatinHypercubeSampling(QThread):
                 avg_res.apply_from_island(island_avg_res, b_idx=b_idx, br_idx=br_idx)
 
         # lhs_results the averaged branch magnitudes
-        lhs_results.sbranch = avg_res.Sbranch
+        lhs_results.sbranch = avg_res.Sf
         lhs_results.losses = avg_res.losses
         self.results = lhs_results
 
@@ -251,7 +251,7 @@ class LatinHypercubeSampling(QThread):
                 # Gather the results
                 lhs_results.S_points[t, bus_idx] = S
                 lhs_results.V_points[t, bus_idx] = res.voltage
-                lhs_results.Sbr_points[t, br_idx] = res.Sbranch
+                lhs_results.Sbr_points[t, br_idx] = res.Sf
                 lhs_results.loading_points[t, br_idx] = res.loading
                 lhs_results.losses_points[t, br_idx] = res.losses
 
@@ -269,7 +269,7 @@ class LatinHypercubeSampling(QThread):
             lhs_results.compile()
 
             # compute the island branch results
-            Sbranch, Ibranch, Vbranch, loading, \
+            Sfb, Stb, If, It, Vbranch, loading, \
             losses, flow_direction, Sbus = power_flow_post_process(numerical_island,
                                                                    Sbus=lhs_results.S_points.mean(axis=0)[bus_idx],
                                                                    V=lhs_results.V_points.mean(axis=0)[bus_idx],
@@ -278,8 +278,10 @@ class LatinHypercubeSampling(QThread):
             # apply the island averaged results
             avg_res.Sbus[bus_idx] = Sbus
             avg_res.voltage[bus_idx] = lhs_results.voltage[bus_idx]
-            avg_res.Sbranch[br_idx] = Sbranch
-            avg_res.Ibranch[br_idx] = Ibranch
+            avg_res.Sf[br_idx] = Sfb
+            avg_res.St[br_idx] = Stb
+            avg_res.If[br_idx] = If
+            avg_res.It[br_idx] = It
             avg_res.Vbranch[br_idx] = Vbranch
             avg_res.loading[br_idx] = loading
             avg_res.losses[br_idx] = losses

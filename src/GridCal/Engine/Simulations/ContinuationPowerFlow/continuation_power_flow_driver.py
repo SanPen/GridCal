@@ -132,8 +132,8 @@ class ContinuationPowerFlowResults:
         self.available_results = [ResultTypes.BusVoltage,
                                   ResultTypes.BusActivePower,
                                   ResultTypes.BusReactivePower,
-                                  ResultTypes.BranchActivePower,
-                                  ResultTypes.BranchReactivePower,
+                                  ResultTypes.BranchActivePowerFrom,
+                                  ResultTypes.BranchReactivePowerFrom,
                                   ResultTypes.BranchActiveLosses,
                                   ResultTypes.BranchReactiveLosses,
                                   ResultTypes.BranchLoading]
@@ -211,7 +211,7 @@ class ContinuationPowerFlowResults:
             y_label = '(p.u.)'
             x_label = 'Loading from the base situation ($\lambda$)'
 
-        elif result_type == ResultTypes.BranchActivePower:
+        elif result_type == ResultTypes.BranchActivePowerFrom:
             labels = self.branch_names
             y = self.Sbranch.real
             x = self.lambdas
@@ -219,7 +219,7 @@ class ContinuationPowerFlowResults:
             y_label = 'MW'
             x_label = 'Loading from the base situation ($\lambda$)'
 
-        elif result_type == ResultTypes.BranchReactivePower:
+        elif result_type == ResultTypes.BranchReactivePowerFrom:
             labels = self.branch_names
             y = self.Sbranch.imag
             x = self.lambdas

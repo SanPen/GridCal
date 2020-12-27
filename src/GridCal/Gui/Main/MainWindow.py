@@ -1226,10 +1226,52 @@ class Ui_mainWindow(object):
         self.frame_19.setFrameShadow(QFrame.Raised)
         self.gridLayout_22 = QGridLayout(self.frame_19)
         self.gridLayout_22.setObjectName(u"gridLayout_22")
+        self.outer_loop_spinBox = QSpinBox(self.frame_19)
+        self.outer_loop_spinBox.setObjectName(u"outer_loop_spinBox")
+        self.outer_loop_spinBox.setMinimum(1)
+        self.outer_loop_spinBox.setMaximum(9999)
+        self.outer_loop_spinBox.setValue(20)
+
+        self.gridLayout_22.addWidget(self.outer_loop_spinBox, 9, 1, 1, 1)
+
+        self.distributed_slack_checkBox = QCheckBox(self.frame_19)
+        self.distributed_slack_checkBox.setObjectName(u"distributed_slack_checkBox")
+
+        self.gridLayout_22.addWidget(self.distributed_slack_checkBox, 3, 0, 1, 2)
+
         self.label_6 = QLabel(self.frame_19)
         self.label_6.setObjectName(u"label_6")
 
-        self.gridLayout_22.addWidget(self.label_6, 7, 0, 1, 1)
+        self.gridLayout_22.addWidget(self.label_6, 8, 0, 1, 1)
+
+        self.max_iterations_spinBox = QSpinBox(self.frame_19)
+        self.max_iterations_spinBox.setObjectName(u"max_iterations_spinBox")
+        self.max_iterations_spinBox.setMinimum(1)
+        self.max_iterations_spinBox.setMaximum(300)
+        self.max_iterations_spinBox.setValue(20)
+
+        self.gridLayout_22.addWidget(self.max_iterations_spinBox, 8, 1, 1, 1)
+
+        self.label_49 = QLabel(self.frame_19)
+        self.label_49.setObjectName(u"label_49")
+
+        self.gridLayout_22.addWidget(self.label_49, 9, 0, 1, 1)
+
+        self.label_2 = QLabel(self.frame_19)
+        self.label_2.setObjectName(u"label_2")
+
+        self.gridLayout_22.addWidget(self.label_2, 0, 0, 1, 1)
+
+        self.solver_comboBox = QComboBox(self.frame_19)
+        self.solver_comboBox.setObjectName(u"solver_comboBox")
+
+        self.gridLayout_22.addWidget(self.solver_comboBox, 1, 0, 1, 2)
+
+        self.helm_retry_checkBox = QCheckBox(self.frame_19)
+        self.helm_retry_checkBox.setObjectName(u"helm_retry_checkBox")
+        self.helm_retry_checkBox.setChecked(True)
+
+        self.gridLayout_22.addWidget(self.helm_retry_checkBox, 2, 0, 1, 2)
 
         self.tolerance_spinBox = QSpinBox(self.frame_19)
         self.tolerance_spinBox.setObjectName(u"tolerance_spinBox")
@@ -1244,48 +1286,6 @@ class Ui_mainWindow(object):
 
         self.gridLayout_22.addWidget(self.label_5, 6, 0, 1, 1)
 
-        self.label_2 = QLabel(self.frame_19)
-        self.label_2.setObjectName(u"label_2")
-
-        self.gridLayout_22.addWidget(self.label_2, 0, 0, 1, 1)
-
-        self.max_iterations_spinBox = QSpinBox(self.frame_19)
-        self.max_iterations_spinBox.setObjectName(u"max_iterations_spinBox")
-        self.max_iterations_spinBox.setMinimum(1)
-        self.max_iterations_spinBox.setMaximum(300)
-        self.max_iterations_spinBox.setValue(20)
-
-        self.gridLayout_22.addWidget(self.max_iterations_spinBox, 7, 1, 1, 1)
-
-        self.label_49 = QLabel(self.frame_19)
-        self.label_49.setObjectName(u"label_49")
-
-        self.gridLayout_22.addWidget(self.label_49, 8, 0, 1, 1)
-
-        self.outer_loop_spinBox = QSpinBox(self.frame_19)
-        self.outer_loop_spinBox.setObjectName(u"outer_loop_spinBox")
-        self.outer_loop_spinBox.setMinimum(1)
-        self.outer_loop_spinBox.setMaximum(9999)
-        self.outer_loop_spinBox.setValue(20)
-
-        self.gridLayout_22.addWidget(self.outer_loop_spinBox, 8, 1, 1, 1)
-
-        self.solver_comboBox = QComboBox(self.frame_19)
-        self.solver_comboBox.setObjectName(u"solver_comboBox")
-
-        self.gridLayout_22.addWidget(self.solver_comboBox, 1, 0, 1, 2)
-
-        self.helm_retry_checkBox = QCheckBox(self.frame_19)
-        self.helm_retry_checkBox.setObjectName(u"helm_retry_checkBox")
-        self.helm_retry_checkBox.setChecked(True)
-
-        self.gridLayout_22.addWidget(self.helm_retry_checkBox, 2, 0, 1, 2)
-
-        self.distributed_slack_checkBox = QCheckBox(self.frame_19)
-        self.distributed_slack_checkBox.setObjectName(u"distributed_slack_checkBox")
-
-        self.gridLayout_22.addWidget(self.distributed_slack_checkBox, 3, 0, 1, 2)
-
         self.ignore_single_node_islands_checkBox = QCheckBox(self.frame_19)
         self.ignore_single_node_islands_checkBox.setObjectName(u"ignore_single_node_islands_checkBox")
 
@@ -1295,6 +1295,21 @@ class Ui_mainWindow(object):
         self.auto_precision_checkBox.setObjectName(u"auto_precision_checkBox")
 
         self.gridLayout_22.addWidget(self.auto_precision_checkBox, 5, 0, 1, 2)
+
+        self.label_11 = QLabel(self.frame_19)
+        self.label_11.setObjectName(u"label_11")
+
+        self.gridLayout_22.addWidget(self.label_11, 7, 0, 1, 1)
+
+        self.muSpinBox = QDoubleSpinBox(self.frame_19)
+        self.muSpinBox.setObjectName(u"muSpinBox")
+        self.muSpinBox.setDecimals(4)
+        self.muSpinBox.setMinimum(0.000100000000000)
+        self.muSpinBox.setMaximum(2.000000000000000)
+        self.muSpinBox.setSingleStep(0.100000000000000)
+        self.muSpinBox.setValue(1.000000000000000)
+
+        self.gridLayout_22.addWidget(self.muSpinBox, 7, 1, 1, 1)
 
 
         self.verticalLayout_4.addWidget(self.frame_19)
@@ -3305,28 +3320,28 @@ class Ui_mainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.main_console_tab), QCoreApplication.translate("mainWindow", u"Console", None))
         self.label_63.setText("")
         self.label_17.setText(QCoreApplication.translate("mainWindow", u"Power flow", None))
-        self.label_6.setText(QCoreApplication.translate("mainWindow", u"Numerical method max. iterations", None))
 #if QT_CONFIG(tooltip)
-        self.tolerance_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Exponent of the precission to use.</p><p>precision = 1x10^-factor</p><p>i.e.</p><p>factor=3</p><p>precision = 1e-3</p></body></html>", None))
+        self.outer_loop_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Maximum iterations for the outer loop that controls reactive power and transformer taps.", None))
 #endif // QT_CONFIG(tooltip)
-        self.tolerance_spinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e-", None))
-        self.label_5.setText(QCoreApplication.translate("mainWindow", u"Precision", None))
-        self.label_2.setText(QCoreApplication.translate("mainWindow", u"Solver", None))
+#if QT_CONFIG(tooltip)
+        self.distributed_slack_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>If active, the slack power is distributed among the generators according to their installed power &quot;Snom&quot;</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.distributed_slack_checkBox.setText(QCoreApplication.translate("mainWindow", u"Distributed slack", None))
+        self.label_6.setText(QCoreApplication.translate("mainWindow", u"Numerical method max. iterations", None))
 #if QT_CONFIG(tooltip)
         self.max_iterations_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Maximum numberof iterations to use.</p><p><br/></p><p>Tipical values: </p><p>Newton Raphson: 5</p><p>Levenberg-Marquards: 20</p><p>Fast decoupled: 10</p><p>Others: 20</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.label_49.setText(QCoreApplication.translate("mainWindow", u"Outer loop max. iterations", None))
-#if QT_CONFIG(tooltip)
-        self.outer_loop_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Maximum iterations for the outer loop that controls reactive power and transformer taps.", None))
-#endif // QT_CONFIG(tooltip)
+        self.label_2.setText(QCoreApplication.translate("mainWindow", u"Solver", None))
 #if QT_CONFIG(tooltip)
         self.helm_retry_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>If the selected method does not converge, try a list of methods that may help</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.helm_retry_checkBox.setText(QCoreApplication.translate("mainWindow", u"Retry with other methods if failed", None))
 #if QT_CONFIG(tooltip)
-        self.distributed_slack_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>If active, the slack power is distributed among the generators according to their installed power &quot;Snom&quot;</p></body></html>", None))
+        self.tolerance_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Exponent of the precission to use.</p><p>precision = 1x10^-factor</p><p>i.e.</p><p>factor=3</p><p>precision = 1e-3</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.distributed_slack_checkBox.setText(QCoreApplication.translate("mainWindow", u"Distributed slack", None))
+        self.tolerance_spinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e-", None))
+        self.label_5.setText(QCoreApplication.translate("mainWindow", u"Precision", None))
 #if QT_CONFIG(tooltip)
         self.ignore_single_node_islands_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If active, the islands of a single node are ignored.", None))
 #endif // QT_CONFIG(tooltip)
@@ -3335,6 +3350,10 @@ class Ui_mainWindow(object):
         self.auto_precision_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If active, GridCal finds a precission that suits the magnitude of the power injections so that the power flow is meaningful", None))
 #endif // QT_CONFIG(tooltip)
         self.auto_precision_checkBox.setText(QCoreApplication.translate("mainWindow", u"Automatic precision", None))
+        self.label_11.setText(QCoreApplication.translate("mainWindow", u"Acceleration", None))
+#if QT_CONFIG(tooltip)
+        self.muSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Factor by which multiply each jacobian result. In practice this is used to slow down troublesome solutions.", None))
+#endif // QT_CONFIG(tooltip)
         self.label_64.setText("")
         self.label_65.setText(QCoreApplication.translate("mainWindow", u"Time series", None))
 #if QT_CONFIG(tooltip)

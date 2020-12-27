@@ -43,7 +43,7 @@ def test_power_flow():
     power_flow.run()
     print('\n\n', main_circuit.name)
     print('\t|V|:', abs(power_flow.results.voltage))
-    print('\t|Sbranch|:', abs(power_flow.results.Sbranch))
+    print('\t|Sf|:', abs(power_flow.results.Sf))
     print('\t|loading|:', abs(power_flow.results.loading) * 100)
     print('\tReport')
     print(power_flow.results.get_report_dataframe())
@@ -86,7 +86,7 @@ def test_ieee_grids():
 
         v_gc = np.abs(power_flow.results.voltage)
         v_psse = df_v.values[:, 0]
-        p_gc = power_flow.results.Sbranch.real
+        p_gc = power_flow.results.Sf.real
         p_psse = df_p.values[:, 0]
         assert (np.allclose(v_gc, v_psse, atol=1e-3))
         assert (np.allclose(p_gc, p_psse, atol=1e-1))

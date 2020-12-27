@@ -24,7 +24,7 @@ from warnings import warn
 from scipy.sparse import csc_matrix, coo_matrix
 from scipy.sparse import hstack as hs, vstack as vs
 from scipy.sparse.linalg import spsolve, factorized
-
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 
 def epsilon(Sn, n, E):
     """
@@ -388,7 +388,7 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
 
 
 def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, use_pade=True,
-               verbose=False):
+               verbose=False) -> NumericPowerFlowResults:
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
     :param Ybus: Complete admittance matrix
@@ -411,7 +411,7 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
     n = Yseries.shape[0]
     if n < 2:
-        return V0, True, 0.0, S0, 0, 0.0
+        return NumericPowerFlowResults(V0, True, 0.0, S0, None, None, None, 0, 0.0)
 
     # compute the series of coefficients
     U, X, Q, iter_ = helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv,
@@ -444,7 +444,7 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
     elapsed = time.time() - start_time
 
-    return V, converged, norm_f, Scalc, iter_, elapsed
+    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, iter_, elapsed)
 
 
 if __name__ == '__main__':

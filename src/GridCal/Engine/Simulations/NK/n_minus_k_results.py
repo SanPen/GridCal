@@ -51,7 +51,7 @@ class NMinusKResults:
 
         self.available_results = [ResultTypes.OTDF,
                                   ResultTypes.BusActivePower,
-                                  ResultTypes.BranchActivePower,
+                                  ResultTypes.BranchActivePowerFrom,
                                   ResultTypes.BranchLoading]
 
     def get_steps(self):
@@ -128,7 +128,7 @@ class NMinusKResults:
             labels = self.bus_names
             # index = self.branch_names
 
-        elif result_type == ResultTypes.BranchActivePower:
+        elif result_type == ResultTypes.BranchActivePowerFrom:
             data = self.Sbranch.real
             y_label = 'MW'
             title = 'Branch active power '

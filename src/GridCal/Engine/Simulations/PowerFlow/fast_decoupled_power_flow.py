@@ -3,10 +3,12 @@ from numpy import angle, conj, exp, r_, Inf
 from numpy.linalg import norm
 from scipy.sparse.linalg import splu
 import time
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+
 np.set_printoptions(linewidth=320)
 
 
-def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
+def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> NumericPowerFlowResults:
     """
     Fast decoupled power flow
     :param Vbus:
@@ -101,7 +103,7 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100):
     end = time.time()
     elapsed = end - start
 
-    return voltage, converged, normF, Scalc, iter_, elapsed
+    return NumericPowerFlowResults(voltage, converged, normF, Scalc, None, None, None, iter_, elapsed)
 
 
 if __name__ == '__main__':

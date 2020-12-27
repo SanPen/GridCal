@@ -233,14 +233,14 @@ class StateEstimation(QRunnable):
                                                 pv=island.pv)
 
             # Compute the branches power and the slack buses power
-            Sbranch, Ibranch, Vbrnach, loading, \
+            Sfb, Stb, If, It, Vbrnach, loading, \
              losses, flow_direction, Sbus = power_flow_post_process(calculation_inputs=island, V=v_sol)
 
             # pack results into a SE results object
             results = StateEstimationResults(Sbus=Sbus,
                                              voltage=v_sol,
-                                             Sbranch=Sbranch,
-                                             Ibranch=Ibranch,
+                                             Sbranch=Sfb,
+                                             Ibranch=If,
                                              loading=loading,
                                              losses=losses,
                                              error=[err],

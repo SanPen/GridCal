@@ -67,7 +67,7 @@ class PtdfTimeSeriesResults:
         self.available_results = [
                                   # ResultTypes.BusVoltageModule,
                                   ResultTypes.BusActivePower,
-                                  ResultTypes.BranchActivePower,
+                                  ResultTypes.BranchActivePowerFrom,
                                   ResultTypes.BranchLoading
                                  ]
 
@@ -107,7 +107,7 @@ class PtdfTimeSeriesResults:
             y_label = '(MW)'
             title = 'Bus active power '
 
-        elif result_type == ResultTypes.BranchActivePower:
+        elif result_type == ResultTypes.BranchActivePowerFrom:
             labels = self.branch_names
             data = self.Sbranch.real
             y_label = '(MW)'
@@ -267,7 +267,7 @@ if __name__ == '__main__':
     fig = plt.figure()
     ax1 = fig.add_subplot(221)
     ax1.set_title('Newton-Raphson based flow')
-    ax1.plot(ts_driver.results.Sbranch.real)
+    ax1.plot(ts_driver.results.Sf.real)
 
     ax2 = fig.add_subplot(222)
     ax2.set_title('PTDF based flow')
@@ -275,7 +275,7 @@ if __name__ == '__main__':
 
     ax3 = fig.add_subplot(223)
     ax3.set_title('Difference')
-    diff = ts_driver.results.Sbranch.real - ptdf_driver.results.Sbranch.real
+    diff = ts_driver.results.Sf.real - ptdf_driver.results.Sbranch.real
     ax3.plot(diff)
 
     fig2 = plt.figure()

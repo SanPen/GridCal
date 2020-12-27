@@ -103,14 +103,14 @@ def test_tolerance_lf_higher():
     print("Loadings (power):")
     for i in range(len(branches)):
         print(
-            f" - {branches[i]}: loading={round(power_flow.results.Sbranch[i], 3)} MVA"
+            f" - {branches[i]}: loading={round(power_flow.results.Sf[i], 3)} MVA"
         )
     print()
 
     print("Loadings (current):")
     for i in range(len(branches)):
         print(
-            f" - {branches[i]}: loading={round(power_flow.results.Ibranch[i], 3)} pu"
+            f" - {branches[i]}: loading={round(power_flow.results.If[i], 3)} pu"
         )
     print()
 
@@ -195,14 +195,14 @@ def test_tolerance_lf_lower():
     print("Loadings (power):")
     for i in range(len(branches)):
         print(
-            f" - {branches[i]}: loading={round(power_flow.results.Sbranch[i], 3)} MVA"
+            f" - {branches[i]}: loading={round(power_flow.results.Sf[i], 3)} MVA"
         )
     print()
 
     print("Loadings (current):")
     for i in range(len(branches)):
         print(
-            f" - {branches[i]}: loading={round(power_flow.results.Ibranch[i], 3)} pu"
+            f" - {branches[i]}: loading={round(power_flow.results.If[i], 3)} pu"
         )
     print()
 

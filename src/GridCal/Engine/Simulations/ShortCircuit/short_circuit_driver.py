@@ -94,10 +94,10 @@ class ShortCircuitResults(PowerFlowResults):
 
         self.available_results = [ResultTypes.BusVoltageModule,
                                   ResultTypes.BusVoltageAngle,
-                                  ResultTypes.BranchActivePower,
-                                  ResultTypes.BranchReactivePower,
-                                  ResultTypes.BranchActiveCurrent,
-                                  ResultTypes.BranchReactiveCurrent,
+                                  ResultTypes.BranchActivePowerFrom,
+                                  ResultTypes.BranchReactivePowerFrom,
+                                  ResultTypes.BranchActiveCurrentFrom,
+                                  ResultTypes.BranchReactiveCurrentFrom,
                                   ResultTypes.BranchLoading,
                                   ResultTypes.BranchActiveLosses,
                                   ResultTypes.BranchReactiveLosses]
@@ -297,7 +297,7 @@ class ShortCircuit(QRunnable):
             # Compute the branches power
             Sbranch, Ibranch, loading, losses = self.compute_branch_results(calculation_inputs=calculation_inputs, V=V)
 
-            # voltage, Sbranch, loading, losses, error, converged, Qpv
+            # voltage, Sf, loading, losses, error, converged, Qpv
             results = ShortCircuitResults(n=calculation_inputs.nbus,
                                           m=calculation_inputs.nbr,
                                           n_tr=calculation_inputs.ntr,
@@ -318,7 +318,7 @@ class ShortCircuit(QRunnable):
             nbus = calculation_inputs.Ybus.shape[0]
             nbr = calculation_inputs.nbr
 
-            # voltage, Sbranch, loading, losses, error, converged, Qpv
+            # voltage, Sf, loading, losses, error, converged, Qpv
             results = ShortCircuitResults(n=calculation_inputs.nbus,
                                           m=calculation_inputs.nbr,
                                           n_tr=calculation_inputs.ntr,
@@ -342,7 +342,7 @@ class ShortCircuit(QRunnable):
         Compute the power flows trough the branches
         @param calculation_inputs: instance of Circuit
         @param V: Voltage solution array for the circuit buses
-        @return: Sbranch, Ibranch, loading, losses
+        @return: Sf, If, loading, losses
         """
         If = calculation_inputs.Yf * V
         It = calculation_inputs.Yt * V

@@ -19,12 +19,13 @@ import scipy.sparse as sp
 import numpy as np
 
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
 
 
-def dcpf(Ybus, Bpqpv, Bref, Sbus, Ibus, V0, ref, pvpq, pq, pv):
+def dcpf(Ybus, Bpqpv, Bref, Sbus, Ibus, V0, ref, pvpq, pq, pv) -> NumericPowerFlowResults:
     """
     Solves a DC power flow.
     :param Ybus: Normal circuit admittance matrix
@@ -81,10 +82,10 @@ def dcpf(Ybus, Bpqpv, Bref, Sbus, Ibus, V0, ref, pvpq, pq, pv):
     end = time.time()
     elapsed = end - start
 
-    return V, True, norm_f, Scalc, 1, elapsed
+    return NumericPowerFlowResults(V, True, norm_f, Scalc, None, None, None, 1, elapsed)
 
 
-def lacpf(Y, Ys, S, I, Vset, pq, pv):
+def lacpf(Y, Ys, S, I, Vset, pq, pv) -> NumericPowerFlowResults:
     """
     Linearized AC Load Flow
 
@@ -174,5 +175,5 @@ def lacpf(Y, Ys, S, I, Vset, pq, pv):
     end = time.time()
     elapsed = end - start
 
-    return voltages_vector, True, norm_f, s_calc, 1, elapsed
+    return NumericPowerFlowResults(voltages_vector, True, norm_f, s_calc, None, None, None, 1, elapsed)
 

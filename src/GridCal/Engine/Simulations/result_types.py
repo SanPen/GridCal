@@ -24,13 +24,23 @@ class ResultTypes(Enum):
     BusActivePower = 'Bus active power', DeviceType.BusDevice
     BusReactivePower = 'Bus reactive power', DeviceType.BusDevice
     BranchPower = 'Branch power', DeviceType.BranchDevice
-    BranchActivePower = 'Branch active power', DeviceType.BranchDevice
-    BranchReactivePower = 'Branch reactive power', DeviceType.BranchDevice
+    BranchActivePowerFrom = 'Branch active power "from"', DeviceType.BranchDevice
+    BranchReactivePowerFrom = 'Branch reactive power "from"', DeviceType.BranchDevice
+    BranchActivePowerTo = 'Branch active power "to"', DeviceType.BranchDevice
+    BranchReactivePowerTo = 'Branch reactive power "to"', DeviceType.BranchDevice
+
     BranchCurrent = 'Branch current', DeviceType.BranchDevice
-    BranchActiveCurrent = 'Branch active current', DeviceType.BranchDevice
-    BranchReactiveCurrent = 'Branch reactive current', DeviceType.BranchDevice
-    BranchLoading = 'Branch loading', DeviceType.BranchDevice
+    BranchActiveCurrentFrom = 'Branch active current "from"', DeviceType.BranchDevice
+    BranchReactiveCurrentFrom = 'Branch reactive current "from"', DeviceType.BranchDevice
+    BranchActiveCurrentTo = 'Branch active current "to"', DeviceType.BranchDevice
+    BranchReactiveCurrentTo = 'Branch reactive current "to"', DeviceType.BranchDevice
+
     BranchTapModule = 'Branch tap module', DeviceType.BranchDevice
+    BranchTapAngle = 'Branch tap angle', DeviceType.BranchDevice
+    BranchBeq = 'Branch Beq', DeviceType.BranchDevice
+
+    BranchLoading = 'Branch loading', DeviceType.BranchDevice
+    # BranchTapModule = 'Branch tap module', DeviceType.BranchDevice
     Transformer2WTapModule = 'Transformer tap module', DeviceType.Transformer2WDevice
     BranchVoltage = 'Branch voltage drop', DeviceType.BranchDevice
     BranchAngles = 'Branch voltage angles', DeviceType.BranchDevice

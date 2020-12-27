@@ -26,6 +26,7 @@ from GridCal.Engine.Sparse.csc import pack_4_by_4
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 from GridCal.Engine.Simulations.PowerFlow.numba_functions import calc_power_csr_numba, diag
 from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import _create_J_with_numba, get_fastest_jacobian_function
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
@@ -247,7 +248,8 @@ def calc_power(V, Ybus, Ibus):
     return S
 
 
-def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0.05, error_registry=None):
+def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, mu_0=1.0,
+          acceleration_parameter=0.05, error_registry=None) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with backtrack correction.
     @Author: Santiago Peñate Vera
@@ -259,6 +261,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
     :param pq: Array with the indices of the PQ buses
     :param tol: Tolerance
     :param max_it: Maximum number of iterations
+    :param mu_0: initial acceleration value
     :param acceleration_parameter: parameter used to correct the "bad" iterations, should be be between 1e-3 ~ 0.5
     :param error_registry: list to store the error for plotting
     :return: Voltage solution, converged?, error, calculated power injections
@@ -327,7 +330,7 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
             dVm[pq] = dx[j2:j3]
 
             # update voltage the Newton way (mu=1)
-            mu_ = 1.0
+            mu_ = mu_0
             Vm -= mu_ * dVm
             Va -= mu_ * dVa
             Vnew = Vm * np.exp(1.0j * Va)
@@ -401,10 +404,11 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0
     end = time.time()
     elapsed = end - start
 
-    return V, converged, norm_f, Scalc, iter_, elapsed
+    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, iter_, elapsed)
 
 
-def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0.5, error_registry=None):
+def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15,
+           acceleration_parameter=0.5, error_registry=None) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with backtrack correction.
     @Author: Santiago Peñate Vera
@@ -541,10 +545,10 @@ def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=
     # print('iter_', iter_, '  -  back_track_counter', back_track_counter,
     #       '  -  back_track_iterations', back_track_iterations)
 
-    return V, converged, norm_f, Scalc, iter_, elapsed
+    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, iter_, elapsed)
 
 
-def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
+def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
     Args:
@@ -659,10 +663,10 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False):
     end = time.time()
     elapsed = end - start
 
-    return V, converged, norm_f, Scalc, iter_, elapsed
+    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, iter_, elapsed)
 
 
-def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
+def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50) -> NumericPowerFlowResults:
     """
     Solves the power flow problem by the Levenberg-Marquardt power flow algorithm.
     It is usually better than Newton-Raphson, but it takes an order of magnitude more time to converge.
@@ -798,7 +802,7 @@ def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50):
     end = time.time()
     elapsed = end - start
 
-    return V, converged, normF, Scalc, iter_, elapsed
+    return NumericPowerFlowResults(V, converged, normF, Scalc, None, None, None, iter_, elapsed)
 
 
 def Jacobian_I(Ybus, V, pq, pvpq):
@@ -839,7 +843,7 @@ def condition_number(J):
     return cond
 
 
-def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15, acceleration_parameter=0.5):
+def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15, acceleration_parameter=0.5) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method in current equations with current mismatch with line search
     Args:
@@ -968,7 +972,7 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15, acceleration_par
 
     Scalc = V * np.conj(Icalc)
 
-    return V, converged, normF, Scalc, iter_, elapsed
+    return NumericPowerFlowResults(V, converged, normF, Scalc, None, None, None, iter_, elapsed)
 
 
 def F(V, Ybus, S, I, pq, pvpq):
@@ -1023,7 +1027,7 @@ def fx(x, Ybus, S, I, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm):
     return linear_solver(gx, g)
 
 
-def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
+def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with the backtrack improvement algorithm
     Args:
@@ -1132,4 +1136,4 @@ def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15):
     end = time.time()
     elapsed = end - start
 
-    return V, converged, normF, Scalc
+    return NumericPowerFlowResults(V, converged, normF, Scalc, None, None, None, iter_, elapsed)

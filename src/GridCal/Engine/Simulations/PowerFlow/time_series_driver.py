@@ -114,10 +114,10 @@ class TimeSeriesResults(PowerFlowResults):
                                   ResultTypes.BusVoltageAngle,
                                   ResultTypes.BusActivePower,
                                   ResultTypes.BusReactivePower,
-                                  ResultTypes.BranchActivePower,
-                                  ResultTypes.BranchReactivePower,
-                                  ResultTypes.BranchActiveCurrent,
-                                  ResultTypes.BranchReactiveCurrent,
+                                  ResultTypes.BranchActivePowerFrom,
+                                  ResultTypes.BranchReactivePowerFrom,
+                                  ResultTypes.BranchActiveCurrentFrom,
+                                  ResultTypes.BranchReactiveCurrentFrom,
                                   ResultTypes.BranchLoading,
                                   ResultTypes.BranchActiveLosses,
                                   ResultTypes.BranchReactiveLosses,
@@ -136,9 +136,9 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.S[t, :] = results.Sbus
 
-        self.Sbranch[t, :] = results.Sbranch
+        self.Sbranch[t, :] = results.Sf
 
-        self.Ibranch[t, :] = results.Ibranch
+        self.Ibranch[t, :] = results.If
 
         self.Vbranch[t, :] = results.Vbranch
 
@@ -190,10 +190,10 @@ class TimeSeriesResults(PowerFlowResults):
             self.S[np.ix_(t_index, b_idx)] = results.S
 
         # branch results
-        if self.Sbranch.shape == results.Sbranch.shape:
-            self.Sbranch = results.Sbranch
+        if self.Sbranch.shape == results.Sf.shape:
+            self.Sbranch = results.Sf
 
-            self.Ibranch = results.Ibranch
+            self.Ibranch = results.If
 
             self.Vbranch = results.Vbranch
 
@@ -209,9 +209,9 @@ class TimeSeriesResults(PowerFlowResults):
             self.converged_values = self.converged_values * results.converged_values
 
         else:
-            self.Sbranch[np.ix_(t_index, br_idx)] = results.Sbranch
+            self.Sbranch[np.ix_(t_index, br_idx)] = results.Sf
 
-            self.Ibranch[np.ix_(t_index, br_idx)] = results.Ibranch
+            self.Ibranch[np.ix_(t_index, br_idx)] = results.If
 
             self.Vbranch[np.ix_(t_index, br_idx)] = results.Vbranch
 
@@ -309,13 +309,13 @@ class TimeSeriesResults(PowerFlowResults):
             y_label = '(MVA)'
             title = 'Branch power '
 
-        elif result_type == ResultTypes.BranchActivePower:
+        elif result_type == ResultTypes.BranchActivePowerFrom:
             labels = self.branch_names
             data = self.Sbranch.real
             y_label = '(MW)'
             title = 'Branch power '
 
-        elif result_type == ResultTypes.BranchReactivePower:
+        elif result_type == ResultTypes.BranchReactivePowerFrom:
             labels = self.branch_names
             data = self.Sbranch.imag
             y_label = '(MVAr)'
@@ -327,13 +327,13 @@ class TimeSeriesResults(PowerFlowResults):
             y_label = '(kA)'
             title = 'Branch current '
 
-        elif result_type == ResultTypes.BranchActiveCurrent:
+        elif result_type == ResultTypes.BranchActiveCurrentFrom:
             labels = self.branch_names
             data = self.Ibranch.real
             y_label = '(p.u.)'
             title = 'Branch current '
 
-        elif result_type == ResultTypes.BranchReactiveCurrent:
+        elif result_type == ResultTypes.BranchReactiveCurrentFrom:
             labels = self.branch_names
             data = self.Ibranch.imag
             y_label = '(p.u.)'

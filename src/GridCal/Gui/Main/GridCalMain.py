@@ -832,7 +832,7 @@ class MainGUI(QMainWindow):
         print('\tapp.optimal_power_flow.load_shedding:\t the branch loading in %')
         print('\tapp.optimal_power_flow.losses:\t the branch losses in per unit')
         print('\tapp.optimal_power_flow.Sbus:\t the nodal power injections in MW')
-        print('\tapp.optimal_power_flow.Sbranch:\t the branch power flows')
+        print('\tapp.optimal_power_flow.Sf:\t the branch power flows')
         print('\tapp.optimal_power_flow.losses:\t the branch losses in MVA')
         print('\tapp.optimal_power_flow.short_circuit_power:\t Short circuit power in MVA of the grid nodes')
 
@@ -1572,7 +1572,7 @@ class MainGUI(QMainWindow):
 
                 for i, branch in enumerate(branches):
 
-                    S = self.power_flow.results.Sbranch[i]
+                    S = self.power_flow.results.Sf[i]
 
                     if branch.rate < 1e-3 or self.ui.rating_override_checkBox.isChecked():
                         r = np.round(abs(S) * factor, 1)
@@ -2134,6 +2134,7 @@ class MainGUI(QMainWindow):
         max_outer_iter = self.ui.outer_loop_spinBox.value()
 
         dispatch_storage = False
+        mu = self.ui.muSpinBox.value()
 
         if self.ui.helm_retry_checkBox.isChecked():
             retry_with_other_methods = True  # to set a value
@@ -2168,7 +2169,8 @@ class MainGUI(QMainWindow):
                                branch_impedance_tolerance_mode=branch_impedance_tolerance_mode,
                                q_steepness_factor=q_steepness_factor,
                                distributed_slack=distributed_slack,
-                               ignore_single_node_islands=ignore_single_node_islands)
+                               ignore_single_node_islands=ignore_single_node_islands,
+                               mu=mu)
 
         return ops
 
@@ -2260,15 +2262,19 @@ class MainGUI(QMainWindow):
 
             if self.ui.draw_schematic_checkBox.isChecked() or len(self.bus_viewer_windows) > 0:
                 colour_the_schematic(circuit=self.circuit,
-                                     s_bus=self.power_flow.results.Sbus,
-                                     s_branch=self.power_flow.results.Sbranch,
+                                     Sbus=self.power_flow.results.Sbus,
+                                     Sf=self.power_flow.results.Sf,
+                                     St=self.power_flow.results.St,
                                      voltages=self.power_flow.results.voltage,
                                      loadings=self.power_flow.results.loading,
                                      types=self.power_flow.results.bus_types,
                                      losses=self.power_flow.results.losses,
                                      hvdc_loading=self.power_flow.results.hvdc_loading,
                                      hvdc_sending_power=self.power_flow.results.hvdc_sent_power,
-                                     hvdc_losses=self.power_flow.results.hvdc_losses)
+                                     hvdc_losses=self.power_flow.results.hvdc_losses,
+                                     ma=self.power_flow.results.ma,
+                                     theta=self.power_flow.results.theta,
+                                     Beq=self.power_flow.results.Beq)
             self.update_available_results()
 
             # print convergence reports on the console
@@ -2371,8 +2377,8 @@ class MainGUI(QMainWindow):
             QtGui.QGuiApplication.processEvents()
             if self.ui.draw_schematic_checkBox.isChecked():
                 colour_the_schematic(circuit=self.circuit,
-                                     s_bus=self.short_circuit.results.Sbus,
-                                     s_branch=self.short_circuit.results.Sbranch,
+                                     Sbus=self.short_circuit.results.Sbus,
+                                     Sf=self.short_circuit.results.Sf,
                                      voltages=self.short_circuit.results.voltage,
                                      types=self.short_circuit.results.bus_types,
                                      loadings=self.short_circuit.results.loading)
@@ -2485,8 +2491,8 @@ class MainGUI(QMainWindow):
                 if self.ui.draw_schematic_checkBox.isChecked():
                     if self.ptdf_ts_analysis.results.S.shape[0] > 0:
                         colour_the_schematic(circuit=self.circuit,
-                                             s_bus=self.ptdf_ts_analysis.results.S.max(axis=0),
-                                             s_branch=self.ptdf_ts_analysis.results.Sbranch.max(axis=0),
+                                             Sbus=self.ptdf_ts_analysis.results.S.max(axis=0),
+                                             Sf=self.ptdf_ts_analysis.results.Sf.max(axis=0),
                                              voltages=self.ptdf_ts_analysis.results.voltage.max(axis=0),
                                              loadings=np.abs(self.ptdf_ts_analysis.results.loading).max(axis=0),
                                              types=None)
@@ -2713,8 +2719,8 @@ class MainGUI(QMainWindow):
                 if self.voltage_stability.results.voltages.shape[0] > 0:
                     if self.ui.draw_schematic_checkBox.isChecked():
                         colour_the_schematic(circuit=self.circuit,
-                                             s_bus=self.voltage_stability.results.Sbus[-1, :],
-                                             s_branch=self.voltage_stability.results.Sbranch[-1, :],
+                                             Sbus=self.voltage_stability.results.Sbus[-1, :],
+                                             Sf=self.voltage_stability.results.Sf[-1, :],
                                              voltages=self.voltage_stability.results.voltages[-1, :],
                                              loadings=self.voltage_stability.results.loading[-1, :],
                                              types=self.voltage_stability.results.bus_types)
@@ -2801,10 +2807,10 @@ class MainGUI(QMainWindow):
             if self.ui.draw_schematic_checkBox.isChecked():
                 voltage = self.time_series.results.voltage.max(axis=0)
                 loading = np.abs(self.time_series.results.loading).max(axis=0)
-                Sbranch = self.time_series.results.Sbranch.max(axis=0)
+                Sbranch = self.time_series.results.Sf.max(axis=0)
 
                 colour_the_schematic(circuit=self.circuit,
-                                     s_bus=None, s_branch=Sbranch, voltages=voltage, loadings=loading,
+                                     Sbus=None, Sf=Sbranch, voltages=voltage, loadings=loading,
                                      types=self.time_series.results.bus_types)
 
             self.update_available_results()
@@ -2868,9 +2874,9 @@ class MainGUI(QMainWindow):
                 colour_the_schematic(circuit=self.circuit,
                                      voltages=self.monte_carlo.results.voltage,
                                      loadings=self.monte_carlo.results.loading,
-                                     s_branch=self.monte_carlo.results.sbranch,
+                                     Sf=self.monte_carlo.results.sbranch,
                                      types=self.monte_carlo.results.bus_types,
-                                     s_bus=None)
+                                     Sbus=None)
             self.update_available_results()
 
         else:
@@ -2930,8 +2936,8 @@ class MainGUI(QMainWindow):
                                      voltages=self.latin_hypercube_sampling.results.voltage,
                                      loadings=self.latin_hypercube_sampling.results.loading,
                                      types=self.latin_hypercube_sampling.results.bus_types,
-                                     s_branch=self.latin_hypercube_sampling.results.sbranch,
-                                     s_bus=None)
+                                     Sf=self.latin_hypercube_sampling.results.sbranch,
+                                     Sbus=None)
             self.update_available_results()
 
         else:
@@ -3038,8 +3044,8 @@ class MainGUI(QMainWindow):
                                      voltages=results.voltage,
                                      loadings=results.loading,
                                      types=results.bus_types,
-                                     s_branch=results.sbranch,
-                                     s_bus=None,
+                                     Sf=results.sbranch,
+                                     Sbus=None,
                                      failed_br_idx=br_idx)
 
             # Set cascade table
@@ -3114,8 +3120,8 @@ class MainGUI(QMainWindow):
                                          voltages=self.optimal_power_flow.results.voltage,
                                          loadings=self.optimal_power_flow.results.loading,
                                          types=self.optimal_power_flow.results.bus_types,
-                                         s_branch=self.optimal_power_flow.results.Sbranch,
-                                         s_bus=self.optimal_power_flow.results.Sbus)
+                                         Sf=self.optimal_power_flow.results.Sf,
+                                         Sbus=self.optimal_power_flow.results.Sbus)
                 self.update_available_results()
 
             else:
@@ -3202,11 +3208,11 @@ class MainGUI(QMainWindow):
                 if self.ui.draw_schematic_checkBox.isChecked():
                     voltage = self.optimal_power_flow_time_series.results.voltage.max(axis=0)
                     loading = self.optimal_power_flow_time_series.results.loading.max(axis=0)
-                    Sbranch = self.optimal_power_flow_time_series.results.Sbranch.max(axis=0)
+                    Sbranch = self.optimal_power_flow_time_series.results.Sf.max(axis=0)
 
                     colour_the_schematic(circuit=self.circuit,
-                                         s_bus=None,
-                                         s_branch=Sbranch,
+                                         Sbus=None,
+                                         Sf=Sbranch,
                                          voltages=voltage,
                                          loadings=loading,
                                          types=self.optimal_power_flow_time_series.results.bus_types)
@@ -3747,8 +3753,8 @@ class MainGUI(QMainWindow):
             if current_study == PowerFlowDriver.name:
 
                 plot_function(circuit=self.circuit,
-                              s_bus=self.power_flow.results.Sbus,
-                              s_branch=self.power_flow.results.Sbranch,
+                              Sbus=self.power_flow.results.Sbus,
+                              Sf=self.power_flow.results.Sf,
                               voltages=self.power_flow.results.voltage,
                               loadings=np.abs(self.power_flow.results.loading),
                               types=self.power_flow.results.bus_types,
@@ -3759,11 +3765,11 @@ class MainGUI(QMainWindow):
 
                 voltage = self.time_series.results.voltage[current_step, :]
                 loading = self.time_series.results.loading[current_step, :]
-                Sbranch = self.time_series.results.Sbranch[current_step, :]
+                Sbranch = self.time_series.results.Sf[current_step, :]
 
                 plot_function(circuit=self.circuit,
-                              s_bus=None,
-                              s_branch=Sbranch,
+                              Sbus=None,
+                              Sf=Sbranch,
                               voltages=voltage,
                               loadings=np.abs(loading),
                               types=self.time_series.results.bus_types,
@@ -3772,8 +3778,8 @@ class MainGUI(QMainWindow):
             elif current_study == ContinuationPowerFlow.name:
 
                 plot_function(circuit=self.circuit,
-                              s_bus=self.voltage_stability.results.Sbus[current_step, :],
-                              s_branch=self.voltage_stability.results.Sbranch[current_step, :],
+                              Sbus=self.voltage_stability.results.Sbus[current_step, :],
+                              Sf=self.voltage_stability.results.Sf[current_step, :],
                               voltages=self.voltage_stability.results.voltages[current_step, :],
                               loadings=np.abs(self.voltage_stability.results.loading[current_step, :]),
                               types=self.voltage_stability.results.bus_types,
@@ -3784,9 +3790,9 @@ class MainGUI(QMainWindow):
                 plot_function(circuit=self.circuit,
                               voltages=self.monte_carlo.results.V_points[current_step, :],
                               loadings=np.abs(self.monte_carlo.results.loading_points[current_step, :]),
-                              s_branch=self.monte_carlo.results.Sbr_points[current_step, :],
+                              Sf=self.monte_carlo.results.Sbr_points[current_step, :],
                               types=self.monte_carlo.grid.bus_types,
-                              s_bus=self.monte_carlo.results.S_points[current_step, :],
+                              Sbus=self.monte_carlo.results.S_points[current_step, :],
                               file_name=file_name)
 
             elif current_study == LatinHypercubeSampling.name:
@@ -3794,15 +3800,15 @@ class MainGUI(QMainWindow):
                 plot_function(circuit=self.circuit,
                               voltages=self.latin_hypercube_sampling.results.V_points[current_step, :],
                               loadings=self.latin_hypercube_sampling.results.loading_points[current_step, :],
-                              s_branch=self.latin_hypercube_sampling.results.Sbr_points[current_step, :],
+                              Sf=self.latin_hypercube_sampling.results.Sbr_points[current_step, :],
                               types=self.latin_hypercube_sampling.results.bus_types,
-                              s_bus=self.latin_hypercube_sampling.results.S_points[current_step, :],
+                              Sbus=self.latin_hypercube_sampling.results.S_points[current_step, :],
                               file_name=file_name)
 
             elif current_study == ShortCircuit.name:
                 plot_function(circuit=self.circuit,
-                              s_bus=self.short_circuit.results.Sbus,
-                              s_branch=self.short_circuit.results.Sbranch,
+                              Sbus=self.short_circuit.results.Sbus,
+                              Sf=self.short_circuit.results.Sf,
                               voltages=self.short_circuit.results.voltage,
                               types=self.short_circuit.results.bus_types,
                               loadings=self.short_circuit.results.loading,
@@ -3814,19 +3820,19 @@ class MainGUI(QMainWindow):
                               voltages=self.optimal_power_flow.results.voltage,
                               loadings=self.optimal_power_flow.results.loading,
                               types=self.optimal_power_flow.results.bus_types,
-                              s_branch=self.optimal_power_flow.results.Sbranch,
-                              s_bus=self.optimal_power_flow.results.Sbus,
+                              Sf=self.optimal_power_flow.results.Sf,
+                              Sbus=self.optimal_power_flow.results.Sbus,
                               file_name=file_name)
 
             elif current_study == OptimalPowerFlowTimeSeries.name:
 
                 voltage = self.optimal_power_flow_time_series.results.voltage[current_step, :]
                 loading = self.optimal_power_flow_time_series.results.loading[current_step, :]
-                Sbranch = self.optimal_power_flow_time_series.results.Sbranch[current_step, :]
+                Sbranch = self.optimal_power_flow_time_series.results.Sf[current_step, :]
 
                 plot_function(circuit=self.circuit,
-                              s_bus=None,
-                              s_branch=Sbranch,
+                              Sbus=None,
+                              Sf=Sbranch,
                               voltages=voltage,
                               loadings=np.abs(loading),
                               types=self.optimal_power_flow_time_series.results.bus_types,
@@ -3839,8 +3845,8 @@ class MainGUI(QMainWindow):
                 Sbranch = self.ptdf_analysis.results.PTDF[:, current_step]
 
                 plot_function(circuit=self.circuit,
-                              s_bus=None,
-                              s_branch=Sbranch,
+                              Sbus=None,
+                              Sf=Sbranch,
                               voltages=voltage,
                               loadings=loading,
                               types=self.ptdf_analysis.results.bus_types,
@@ -3850,8 +3856,8 @@ class MainGUI(QMainWindow):
             elif current_study == PtdfTimeSeries.name:
 
                 plot_function(circuit=self.circuit,
-                              s_bus=self.ptdf_ts_analysis.results.S[current_step],
-                              s_branch=self.ptdf_ts_analysis.results.Sbranch[current_step],
+                              Sbus=self.ptdf_ts_analysis.results.S[current_step],
+                              Sf=self.ptdf_ts_analysis.results.Sf[current_step],
                               voltages=self.ptdf_ts_analysis.results.voltage[current_step],
                               loadings=np.abs(self.ptdf_ts_analysis.results.loading[current_step]),
                               types=self.ptdf_ts_analysis.results.bus_types,

@@ -173,7 +173,17 @@ class SnapshotData:
                                      'original_line_idx',
                                      'original_tr_idx',
                                      'original_gen_idx',
-                                     'original_bat_idx'
+                                     'original_bat_idx',
+                                     'iPfsh',
+                                     'iQfma',
+                                     'iBeqz',
+                                     'iBeqv',
+                                     'iVtma',
+                                     'iQtma',
+                                     'iPfdp',
+                                     'iVscL',
+                                     'VfBeqbus',
+                                     'Vtmabus'
                                      ]
 
     def get_injections(self, normalize=True):
@@ -926,6 +936,35 @@ class SnapshotData:
             rows = cols
             df = pd.DataFrame(data=J.toarray(), columns=cols, index=rows)
 
+        elif structure_type == 'iPfsh':
+            df = pd.DataFrame(data=self.iPfsh, columns=['iPfsh'], index=self.branch_data.branch_names[self.iPfsh])
+
+        elif structure_type == 'iQfma':
+            df = pd.DataFrame(data=self.iQfma, columns=['iQfma'], index=self.branch_data.branch_names[self.iQfma])
+
+        elif structure_type == 'iBeqz':
+            df = pd.DataFrame(data=self.iBeqz, columns=['iBeqz'], index=self.branch_data.branch_names[self.iBeqz])
+
+        elif structure_type == 'iBeqv':
+            df = pd.DataFrame(data=self.iBeqv, columns=['iBeqv'], index=self.branch_data.branch_names[self.iBeqv])
+
+        elif structure_type == 'iVtma':
+            df = pd.DataFrame(data=self.iVtma, columns=['iVtma'], index=self.branch_data.branch_names[self.iVtma])
+
+        elif structure_type == 'iQtma':
+            df = pd.DataFrame(data=self.iQtma, columns=['iQtma'], index=self.branch_data.branch_names[self.iQtma])
+
+        elif structure_type == 'iPfdp':
+            df = pd.DataFrame(data=self.iPfdp, columns=['iPfdp'], index=self.branch_data.branch_names[self.iPfdp])
+
+        elif structure_type == 'iVscL':
+            df = pd.DataFrame(data=self.iVscL, columns=['iVscL'], index=self.branch_data.branch_names[self.iVscL])
+
+        elif structure_type == 'VfBeqbus':
+            df = pd.DataFrame(data=self.VfBeqbus, columns=['VfBeqbus'], index=self.bus_data.bus_names[self.VfBeqbus])
+
+        elif structure_type == 'Vtmabus':
+            df = pd.DataFrame(data=self.Vtmabus, columns=['Vtmabus'], index=self.bus_data.bus_names[self.Vtmabus])
         else:
 
             raise Exception('PF input: structure type not found')

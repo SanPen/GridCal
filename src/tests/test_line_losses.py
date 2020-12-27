@@ -93,12 +93,12 @@ def test_line_losses_1():
 
     print("Loadings (power):")
     for i in range(len(branches)):
-        print(f" - {branches[i]}: loading={round(power_flow.results.Sbranch[i], 3)} MVA")
+        print(f" - {branches[i]}: loading={round(power_flow.results.Sf[i], 3)} MVA")
     print()
 
     print("Loadings (current):")
     for i in range(len(branches)):
-        print(f" - {branches[i]}: loading={round(power_flow.results.Ibranch[i], 3)} pu")
+        print(f" - {branches[i]}: loading={round(power_flow.results.If[i], 3)} pu")
     print()
 
     assert approx_losses == solution
@@ -177,12 +177,12 @@ def test_line_losses_2():
 
     print("Loadings (power):")
     for i in range(len(branches)):
-        print(f" - {branches[i]}: loading={round(power_flow.results.Sbranch[i], 3)} MVA")
+        print(f" - {branches[i]}: loading={round(power_flow.results.Sf[i], 3)} MVA")
     print()
 
     print("Loadings (current):")
     for i in range(len(branches)):
-        print(f" - {branches[i]}: loading={round(power_flow.results.Ibranch[i], 3)} pu")
+        print(f" - {branches[i]}: loading={round(power_flow.results.If[i], 3)} pu")
     print()
 
     assert approx_losses == solution
@@ -260,12 +260,12 @@ def test_line_losses_3():
 
     print("Loadings (power):")
     for i in range(len(branches)):
-        print(f" - {branches[i]}: loading={round(power_flow.results.Sbranch[i], 3)} MVA")
+        print(f" - {branches[i]}: loading={round(power_flow.results.Sf[i], 3)} MVA")
     print()
 
     print("Loadings (current):")
     for i in range(len(branches)):
-        print(f" - {branches[i]}: loading={round(power_flow.results.Ibranch[i], 3)} pu")
+        print(f" - {branches[i]}: loading={round(power_flow.results.If[i], 3)} pu")
     print()
 
     assert approx_losses == solution
