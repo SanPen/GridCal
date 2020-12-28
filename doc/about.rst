@@ -22,6 +22,18 @@ Cheers,
 
 Santiago
 
+Contact
+=======
+
+Submit any questions/comments to our form_.
+
+.. _form: https://docs.google.com/forms/d/e/1FAIpQLSfsaGvMAv8dKmFJELlZVARH2Ic0lPFi1sNi87b-941GOSCa1Q/viewform?usp=sf_link
+
+Join our Discord server_.
+
+.. _server: https://discord.gg/NfMhJ4Jv
+
+
 
 
 
