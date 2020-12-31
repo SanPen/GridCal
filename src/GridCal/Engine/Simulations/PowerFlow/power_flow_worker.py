@@ -23,7 +23,7 @@ from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Iwamo
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import levenberg_marquardt_pf
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import NR_LS, NR_I_LS, NRD_LS
 from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
-from GridCal.Engine.Simulations.PowerFlow.jacobian_based_acdc_power_flow import NR_LS_ACDC
+from GridCal.Engine.Simulations.PowerFlow.jacobian_based_acdc_power_flow import NR_LS_ACDC, levenberg_marquardt_acdc_pf
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
@@ -98,11 +98,18 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
     """
 
     if options.retry_with_other_methods:
-        solver_list = [SolverType.NR,
-                       SolverType.HELM,
-                       SolverType.IWAMOTO,
-                       SolverType.LM,
-                       SolverType.LACPF]
+        if circuit.any_control:
+            solver_list = [SolverType.NR,
+                           SolverType.LM,
+                           SolverType.HELM,
+                           SolverType.IWAMOTO,
+                           SolverType.LACPF]
+        else:
+            solver_list = [SolverType.NR,
+                           SolverType.HELM,
+                           SolverType.IWAMOTO,
+                           SolverType.LM,
+                           SolverType.LACPF]
 
         if options.solver_type in solver_list:
             solver_list.remove(options.solver_type)
@@ -172,14 +179,19 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
 
         # Levenberg-Marquardt
         elif solver_type == SolverType.LM:
-            solution = levenberg_marquardt_pf(Ybus=circuit.Ybus,
-                                              Sbus=Sbus,
-                                              V0=final_solution.V,
-                                              Ibus=Ibus,
-                                              pv=pv,
-                                              pq=pq,
-                                              tol=options.tolerance,
-                                              max_it=options.max_iter)
+            if circuit.any_control:
+                solution = levenberg_marquardt_acdc_pf(nc=circuit,
+                                                       tolerance=options.tolerance,
+                                                       max_iter=options.max_iter)
+            else:
+                solution = levenberg_marquardt_pf(Ybus=circuit.Ybus,
+                                                  Sbus=Sbus,
+                                                  V0=final_solution.V,
+                                                  Ibus=Ibus,
+                                                  pv=pv,
+                                                  pq=pq,
+                                                  tol=options.tolerance,
+                                                  max_it=options.max_iter)
 
         # Fast decoupled
         elif solver_type == SolverType.FASTDECOUPLED:
