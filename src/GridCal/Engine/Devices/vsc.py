@@ -31,7 +31,7 @@ class VSC(EditableDevice):
                  theta=0.1, theta_max=6.28, theta_min=-6.28,
                  Beq=0.001, Beq_min=-0.1, Beq_max=0.1,
                  G0=1e-5, rate=1e-9, kdp=-0.05, k=1.0,
-                 control_mode: ConverterControlType = ConverterControlType.type_1_free,
+                 control_mode: ConverterControlType = ConverterControlType.type_0_free,
                  Pfset = 0.0, Qfset=0.0, Vac_set=1.0, Vdc_set=1.0,
                  alpha1=0.0001, alpha2=0.015, alpha3=0.2,
                  mttf=0, mttr=0, cost=1200, cost_prof=None, rate_prof=None, active_prof=None):
@@ -86,7 +86,7 @@ class VSC(EditableDevice):
                                                                    'Name of the bus at the "to" side of the branch.'),
                                                   'active': GCProp('', bool, 'Is the branch active?'),
                                                   'rate': GCProp('MVA', float, 'Thermal rating power of the branch.'),
-                                                  'control_mode': GCProp('', ConverterControlType, 'Converter control mode'),
+
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
@@ -107,13 +107,19 @@ class VSC(EditableDevice):
                                                   'theta_max': GCProp('rad', float, 'Max converter firing angle.'),
                                                   'theta_min': GCProp('rad', float, 'Min converter firing angle.'),
 
-                                                  'alpha1': GCProp('', float, 'Converter losses curve parameter (IEC 62751-2 loss Correction).'),
-                                                  'alpha2': GCProp('', float, 'Converter losses curve parameter (IEC 62751-2 loss Correction).'),
-                                                  'alpha3': GCProp('', float, 'Converter losses curve parameter (IEC 62751-2 loss Correction).'),
+                                                  'alpha1': GCProp('', float,
+                                                                   'Converter losses curve parameter (IEC 62751-2 loss Correction).'),
+                                                  'alpha2': GCProp('', float,
+                                                                   'Converter losses curve parameter (IEC 62751-2 loss Correction).'),
+                                                  'alpha3': GCProp('', float,
+                                                                   'Converter losses curve parameter (IEC 62751-2 loss Correction).'),
 
-                                                  'k': GCProp('p.u./p.u.', float, 'Converter factor.'),
+                                                  'k': GCProp('p.u./p.u.', float, 'Converter factor, typically 0.866.'),
 
-                                                  'kdp': GCProp('p.u./p.u.', float, 'Droop Power Voltage slope.'),
+                                                  'control_mode': GCProp('', ConverterControlType,
+                                                                         'Converter control mode'),
+
+                                                  'kdp': GCProp('p.u./p.u.', float, 'Droop Power/Voltage slope.'),
                                                   'Pfset': GCProp('MW', float, 'Active power set point.'),
                                                   'Qfset': GCProp('MVAr', float, 'Reactive power set point.'),
                                                   'Vac_set': GCProp('p.u.', float, 'AC voltage set point.'),

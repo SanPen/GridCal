@@ -51,6 +51,11 @@ Version 4.0.0
     - Now you can select to collapse a selection of nodes.
     - Now you can set the direction of the continuation negative so that you actually increase the generation.
 
+- Seamless AC-DC simulation
+    - Added the FUBM model al the numeric circuit level
+    - Added FUBM version of the line-search Newton-Raphson method (not accelerated with numba for now)
+    - Integrated it with the GUI
+
 Version 3.7.1
 ^^^^^^^^^^^^^^^^^^^^^
 

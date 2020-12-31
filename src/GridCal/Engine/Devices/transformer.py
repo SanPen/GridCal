@@ -560,7 +560,7 @@ class Transformer2W(EditableDevice):
 
         if bus_to_regulated and self.control_mode == TransformerControlType.fixed:
             print(self.name, self.idtag, 'Overriding to V controller')
-            self.control_mode = TransformerControlType.v_to
+            self.control_mode = TransformerControlType.Vt
 
         # converter for enumerations
         self.conv = {'branch': BranchType.Branch,

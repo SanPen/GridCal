@@ -47,11 +47,11 @@ class BranchType(Enum):
 class TransformerControlType(Enum):
 
     fixed = '0:Fixed'
-    power = '1:power'
-    # v_from = '3:Control V from'
-    v_to = '4:Control V to'
-    # power_v_from = '5:Control Angle + V from'
-    power_v_to = '6:Control Angle + V to'
+    Pt = '1:Pt'
+    Qt = '2:Qt'
+    PtQt = '3:Pt+Qt'
+    Vt = '4:Vt'
+    PtVt = '5:Pt+Vt'
 
     def __str__(self):
         return str(self.value)
@@ -86,14 +86,14 @@ class ConverterControlType(Enum):
     # vdc_droop_qac = '6:VdcDroop+Qac'
     # vdc_droop_vac = '7:VdcDroop+Vac'
 
-    type_1_free = '1a:Free'
-    type_1_pf = '1b:Pflow'
-    type_1_qf = '1c:Qflow'
-    type_1_vac = '1d:Vac'
-    type_2_vdc = '2a:Vdc'
-    type_2_vdc_pf = '2b:Vdc+Pflow'
-    type_3 = '3a:Droop'
-    type_4 = '4a:Droop-slack'
+    type_0_free = '0:Free'
+    type_I_1 = '1:Vac'
+    type_I_2 = '2:Pdc+Qac'
+    type_I_3 = '3:Pdc+Vac'
+    type_II_4 = '4:Vdc+Qac'
+    type_II_5 = '5:Vdc+Vac'
+    type_III_6 = '6:Droop+Qac'
+    type_III_7 = '7:Droop+Vac'
 
     def __str__(self):
         return str(self.value)

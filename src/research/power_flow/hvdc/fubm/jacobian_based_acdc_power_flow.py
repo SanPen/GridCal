@@ -22,7 +22,6 @@ from scipy.sparse import lil_matrix, diags
 import scipy.sparse as sp
 from GridCal.Engine.Core.admittance_matrices import compile_y_acdc
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCal.Engine.Simulations.sparse_utils import sp_slice, csc_stack_2d_ff, sp_slice_rows
 
 
 def compute_converter_losses(V, It, F, alpha1, alpha2, alpha3, iVscL):
@@ -181,7 +180,7 @@ def dSbr_dV(Yf, Yt, V, F, T, Cf, Ct):
     dSt_dVa = 1j * (diagItc * CVt - diagVt * Ytc * diagVc)
     dSt_dVm = diagVt * np.conj(Yt * diagVnorm) + diagItc * CVnt
 
-    return dSf_dVa.tocsc(), dSf_dVm.tocsc(), dSt_dVa.tocsc(), dSt_dVm.tocsc()
+    return dSf_dVa, dSf_dVm, dSt_dVa, dSt_dVm
 
 
 def derivatives_sh(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
@@ -337,7 +336,7 @@ def derivatives_Beq(nb, nl, iBeqx, F, T, V, ma, k2):
     return dSbus_dBeqx.tocsc(), dSf_dBeqx.tocsc(), dSt_dBeqx.tocsc()
 
 
-def fubm_jacobianA(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeqbus, Vtmabus,
+def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeqbus, Vtmabus,
                   F, T, Ys, k2, tap, ma, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq):
     """
     Compute the FUBM jacobian
@@ -523,190 +522,6 @@ def fubm_jacobianA(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBe
     return J
 
 
-def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeqbus, Vtmabus,
-                  F, T, Ys, k2, tap, ma, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq):
-    """
-    Compute the FUBM jacobian
-    :param nb: number of buses
-    :param nl: Number of lines
-    :param iPfsh: indices of the Pf controlled branches
-    :param iPfdp: indices of the droop controlled branches
-    :param iQfma: indices of the Qf controlled branches
-    :param iQtma: Indices of the Qt controlled branches
-    :param iVtma: Indices of the Vt controlled branches
-    :param iBeqz: Indices of the Qf controlled branches
-    :param iBeqv: Indices of the Vf Controlled branches
-    :param F: Array of "from" bus indices
-    :param T: Array of "to" bus indices
-    :param Ys: Array of branch series admittances
-    :param k2: Array of branch converter losses
-    :param tap: Array of complex tap values {remember tap = ma * exp(1j * theta) }
-    :param ma: Array of tap modules
-    :param Bc: Array of branch full susceptances
-    :param Beq: Array of brach equivalent (variable) susceptances
-    :param Kdp: Array of branch converter droop constants
-    :param V: Array of complex bus voltages
-    :param Ybus: Admittance matrix
-    :param Yf: Admittances matrix of the branches with the "from" buses
-    :param Yt: Admittances matrix of the branches with the "to" buses
-    :param Cf: Connectivity matrix of the branches with the "from" buses
-    :param Ct: Connectivity matrix of the branches with the "to" buses
-    :param pvpq: Array of pv and then pq bus indices (not sorted)
-    :param pq: Array of PQ bus indices
-    :return: FUBM Jacobian matrix
-    """
-
-    # compose the derivatives of the power injections w.r.t Va and Vm
-    # dSbus_dVa, dSbus_dVm = dSbus_dV(Ybus, V)
-    dSbus_dVa, dSbus_dVm = dSbus_dV_with_numba(Ybus, V)
-
-    # compose the derivatives of the branch flow w.r.t Va and Vm
-    dSf_dVa, dSf_dVm, dSt_dVa, dSt_dVm = dSbr_dV(Yf, Yt, V, F, T, Cf, Ct)
-
-    # compose the derivatives w.r.t theta sh
-    dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh = derivatives_sh(nb, nl, iPfsh, F, T, Ys, k2, tap, V)
-    dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp = derivatives_sh(nb, nl, iPfdp, F, T, Ys, k2, tap, V)
-
-    # compose the derivative w.r.t ma
-    dSbus_dQfma, dSf_dQfma, dSt_dQfma = derivatives_ma(nb, nl, iQfma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
-    dSbus_dQtma, dSf_dQtma, dSt_dQtma = derivatives_ma(nb, nl, iQtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
-    dSbus_dVtma, dSf_dVtma, dSt_dVtma = derivatives_ma(nb, nl, iVtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
-
-    # compose the derivatives w.r.t Beq
-    dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz = derivatives_Beq(nb, nl, iBeqz, F, T, V, ma, k2)
-    dSbus_dBeqv, dSf_dBeqv, dSt_dBeqv = derivatives_Beq(nb, nl, iBeqv, F, T, V, ma, k2)
-
-    # Voltage Droop Control Partials (it is more convenient to have them here...) --------------
-
-    # Partials of Pfdp w.r.t. Va
-    dPfdp_dVa = -dSf_dVa.real
-
-    # Partials of Pfdp w.r.t. Vm
-    dVmf_dVm = lil_matrix((nl, nb))
-    dVmf_dVm[iPfdp, :] = Cf[iPfdp, :]
-    dPfdp_dVm = -dSf_dVm.real + diags(Kdp) * dVmf_dVm
-
-    # Partials of Pfdp w.r.t. ThetaSh for PST, VSCI and VSCII
-    dPfdp_dPfsh = -dSf_dPfsh.real
-
-    # Partials of Pfdp w.r.t. ma
-    dPfdp_dQfma = -dSf_dQfma.real
-    dPfdp_dQtma = -dSf_dQtma.real
-    dPfdp_dVtma = -dSf_dVtma.real
-
-    # Partials of Pfdp w.r.t. Beq
-    dPfdp_dBeqz = -dSf_dBeqz.real
-    dPfdp_dBeqv = -dSf_dBeqv.real
-
-    # Partials of Pfdp w.r.t. ThetaSh for VSCIII
-    dPfdp_dPfdp = -dSf_dPfdp.real
-
-    # Compose the Jacobian sub-matrices (slicing) ---------------
-
-    j11 = sp_slice(dSbus_dVa.real, pvpq, pvpq)  # avoid Slack
-    j12 = sp_slice(dSbus_dVm.real, pvpq, pq)  # avoid Slack
-    j13 = sp_slice_rows(dSbus_dPfsh.real, pvpq)  # avoid Slack
-    j14 = sp_slice_rows(dSbus_dQfma.real, pvpq)  # avoid Slack
-    j15 = sp_slice_rows(dSbus_dBeqz.real, pvpq)  # avoid Slack
-    j16 = sp_slice_rows(dSbus_dBeqv.real, pvpq)  # avoid Slack
-    j17 = sp_slice_rows(dSbus_dVtma.real, pvpq)  # avoid Slack
-    j18 = sp_slice_rows(dSbus_dQtma.real, pvpq)  # avoid Slack
-    j19 = sp_slice_rows(dSbus_dPfdp.real, pvpq)  # avoid Slack
-
-    j21 = sp_slice(dSbus_dVa.imag, pq, pvpq)  # avoid Slack and pv
-    j22 = sp_slice(dSbus_dVm.imag, pq, pq)  # avoid Slack and pv
-    j23 = sp_slice_rows(dSbus_dPfsh.imag, pq)  # avoid Slack and pv
-    j24 = sp_slice_rows(dSbus_dQfma.imag, pq)  # avoid Slack and pv
-    j25 = sp_slice_rows(dSbus_dBeqz.imag, pq)  # avoid Slack and pv
-    j26 = sp_slice_rows(dSbus_dBeqv.imag, pq)  # avoid Slack and pv
-    j27 = sp_slice_rows(dSbus_dVtma.imag, pq)  # avoid Slack and pv
-    j28 = sp_slice_rows(dSbus_dQtma.imag, pq)  # avoid Slack and pv
-    j29 = sp_slice_rows(dSbus_dPfdp.imag, pq)  # avoid Slack and pv
-
-    j31 = sp_slice(dSf_dVa.real, iPfsh, pvpq)  # Only Pf control elements iPfsh
-    j32 = sp_slice(dSf_dVm.real, iPfsh, pq)  # Only Pf control elements iPfsh
-    j33 = sp_slice_rows(dSf_dPfsh.real, iPfsh)  # Only Pf control elements iPfsh
-    j34 = sp_slice_rows(dSf_dQfma.real, iPfsh)  # Only Pf control elements iPfsh
-    j35 = sp_slice_rows(dSf_dBeqz.real, iPfsh)  # Only Pf control elements iPfsh
-    j36 = sp_slice_rows(dSf_dBeqv.real, iPfsh)  # Only Pf control elements iPfsh
-    j37 = sp_slice_rows(dSf_dVtma.real, iPfsh)  # Only Pf control elements iPfsh
-    j38 = sp_slice_rows(dSf_dQtma.real, iPfsh)  # Only Pf control elements iPfsh
-    j39 = sp_slice_rows(dSf_dPfdp.real, iPfsh)  # Only Pf control elements iPfsh
-
-    j41 = sp_slice(dSf_dVa.imag, iQfma, pvpq)  # Only Qf control elements iQfma
-    j42 = sp_slice(dSf_dVm.imag, iQfma, pq)  # Only Qf control elements iQfma
-    j43 = sp_slice_rows(dSf_dPfsh.imag, iQfma)  # Only Qf control elements iQfma
-    j44 = sp_slice_rows(dSf_dQfma.imag, iQfma)  # Only Qf control elements iQfma
-    j45 = sp_slice_rows(dSf_dBeqz.imag, iQfma)  # Only Qf control elements iQfma
-    j46 = sp_slice_rows(dSf_dBeqv.imag, iQfma)  # Only Qf control elements iQfma
-    j47 = sp_slice_rows(dSf_dVtma.imag, iQfma)  # Only Qf control elements iQfma
-    j48 = sp_slice_rows(dSf_dQtma.imag, iQfma)  # Only Qf control elements iQfma
-    j49 = sp_slice_rows(dSf_dPfdp.imag, iQfma)  # Only Qf control elements iQfma
-
-    j51 = sp_slice(dSf_dVa.imag, iBeqz, pvpq)  # Only Qf control elements iQfbeq
-    j52 = sp_slice(dSf_dVm.imag, iBeqz, pq)  # Only Qf control elements iQfbeq
-    j53 = sp_slice_rows(dSf_dPfsh.imag, iBeqz)  # Only Qf control elements iQfbeq
-    j54 = sp_slice_rows(dSf_dQfma.imag, iBeqz)  # Only Qf control elements iQfbeq
-    j55 = sp_slice_rows(dSf_dBeqz.imag, iBeqz)  # Only Qf control elements iQfbeq
-    j56 = sp_slice_rows(dSf_dBeqv.imag, iBeqz)  # Only Qf control elements iQfbeq
-    j57 = sp_slice_rows(dSf_dVtma.imag, iBeqz)  # Only Qf control elements iQfbeq
-    j58 = sp_slice_rows(dSf_dQtma.imag, iBeqz)  # Only Qf control elements iQfbeq
-    j59 = sp_slice_rows(dSf_dPfdp.imag, iBeqz)  # Only Qf control elements iQfbeq
-
-    j61 = sp_slice(dSbus_dVa.imag, VfBeqbus, pvpq)  # Only Vf control elements iVfbeq
-    j62 = sp_slice(dSbus_dVm.imag, VfBeqbus, pq)  # Only Vf control elements iVfbeq
-    j63 = sp_slice_rows(dSbus_dPfsh.imag, VfBeqbus)  # Only Vf control elements iVfbeq
-    j64 = sp_slice_rows(dSbus_dQfma.imag, VfBeqbus)  # Only Vf control elements iVfbeq
-    j65 = sp_slice_rows(dSbus_dBeqz.imag, VfBeqbus)  # Only Vf control elements iVfbeq
-    j66 = sp_slice_rows(dSbus_dBeqv.imag, VfBeqbus)  # Only Vf control elements iVfbeq
-    j67 = sp_slice_rows(dSbus_dVtma.imag, VfBeqbus)  # Only Vf control elements iVfbeq
-    j68 = sp_slice_rows(dSbus_dQtma.imag, VfBeqbus)  # Only Vf control elements iVfbeq
-    j69 = sp_slice_rows(dSbus_dPfdp.imag, VfBeqbus)  # Only Vf control elements iVfbeq
-
-    j71 = sp_slice(dSbus_dVa.imag, Vtmabus, pvpq)  # Only Vt control elements iVtma
-    j72 = sp_slice(dSbus_dVm.imag, Vtmabus, pq)  # Only Vt control elements iVtma
-    j73 = sp_slice_rows(dSbus_dPfsh.imag, Vtmabus)  # Only Vt control elements iVtma
-    j74 = sp_slice_rows(dSbus_dQfma.imag, Vtmabus)  # Only Vt control elements iVtma
-    j75 = sp_slice_rows(dSbus_dBeqz.imag, Vtmabus)  # Only Vt control elements iVtma
-    j76 = sp_slice_rows(dSbus_dBeqv.imag, Vtmabus)  # Only Vt control elements iVtma
-    j77 = sp_slice_rows(dSbus_dVtma.imag, Vtmabus)  # Only Vt control elements iVtma
-    j78 = sp_slice_rows(dSbus_dQtma.imag, Vtmabus)  # Only Vt control elements iVtma
-    j79 = sp_slice_rows(dSbus_dPfdp.imag, Vtmabus)  # Only Vt control elements iVtma
-
-    j81 = sp_slice(dSt_dVa.imag, iQtma, pvpq)  # Only Qt control elements iQtma
-    j82 = sp_slice(dSt_dVm.imag, iQtma, pq)  # Only Qt control elements iQtma
-    j83 = sp_slice_rows(dSt_dPfsh.imag, iQtma)  # Only Qt control elements iQtma
-    j84 = sp_slice_rows(dSt_dQfma.imag, iQtma)  # Only Qt control elements iQtma
-    j85 = sp_slice_rows(dSt_dBeqz.imag, iQtma)  # Only Qt control elements iQtma
-    j86 = sp_slice_rows(dSt_dBeqv.imag, iQtma)  # Only Qt control elements iQtma
-    j87 = sp_slice_rows(dSt_dVtma.imag, iQtma)  # Only Qt control elements iQtma
-    j88 = sp_slice_rows(dSt_dQtma.imag, iQtma)  # Only Qt control elements iQtma
-    j89 = sp_slice_rows(dSt_dPfdp.imag, iQtma)  # Only Droop control elements iPfdp
-
-    j91 = sp_slice(dPfdp_dVa, iPfdp, pvpq)  # Only Droop control elements iPfdp
-    j92 = sp_slice(dPfdp_dVm, iPfdp, pq)  # Only Droop control elements iPfdp
-    j93 = sp_slice_rows(dPfdp_dPfsh, iPfdp)  # Only Droop control elements iPfdp
-    j94 = sp_slice_rows(dPfdp_dQfma, iPfdp)  # Only Droop control elements iPfdp
-    j95 = sp_slice_rows(dPfdp_dBeqz, iPfdp)  # Only Droop control elements iPfdp
-    j96 = sp_slice_rows(dPfdp_dBeqv, iPfdp)  # Only Droop control elements iPfdp
-    j97 = sp_slice_rows(dPfdp_dVtma, iPfdp)  # Only Droop control elements iPfdp
-    j98 = sp_slice_rows(dPfdp_dQtma, iPfdp)  # Only Droop control elements iPfdp
-    j99 = sp_slice_rows(dPfdp_dPfdp, iPfdp)  # Only Droop control elements iPfdp
-
-    # Jacobian
-    J = csc_stack_2d_ff([j11, j12, j13, j14, j15, j16, j17, j18, j19,
-                         j21, j22, j23, j24, j25, j26, j27, j28, j29,
-                         j31, j32, j33, j34, j35, j36, j37, j38, j39,
-                         j41, j42, j43, j44, j45, j46, j47, j48, j49,
-                         j51, j52, j53, j54, j55, j56, j57, j58, j59,
-                         j61, j62, j63, j64, j65, j66, j67, j68, j69,
-                         j71, j72, j73, j74, j75, j76, j77, j78, j79,
-                         j81, j82, j83, j84, j85, j86, j87, j88, j89,
-                         j91, j92, j93, j94, j95, j96, j97, j98, j99], 9, 9)
-
-    return J
-
-
 def compute_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
                pvpq, pq, iPfsh, iQfma, iBeqz, iQtma, iPfdp, VfBeqbus, Vtmabus):
     """
@@ -762,8 +577,8 @@ def compute_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
     return df, Scalc
 
 
-def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceleration_parameter=0.05,
-               verbose=False) -> NumericPowerFlowResults:
+
+def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceleration_parameter=0.05) -> NumericPowerFlowResults:
     """
     Newton-Raphson Line search with the FUBM formulation
     :param nc: SnapshotData instance
@@ -889,17 +704,12 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
     while not converged and iterations < max_iter:
 
         # compute the Jacobian
-        # J = fubm_jacobian(nb, nl, nc.iPfsh, nc.iPfdp, nc.iQfma, nc.iQtma, nc.iVtma, nc.iBeqz, nc.iBeqv,
-        #                   nc.VfBeqbus, nc.Vtmabus,
-        #                   F, T, Ys, k2, tap, m, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq)
-
-        J = fubm_jacobianA(nb, nl, nc.iPfsh, nc.iPfdp, nc.iQfma, nc.iQtma, nc.iVtma, nc.iBeqz, nc.iBeqv,
-                           nc.VfBeqbus, nc.Vtmabus,
-                           F, T, Ys, k2, tap, m, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq)
+        J = fubm_jacobian(nb, nl, nc.iPfsh, nc.iPfdp, nc.iQfma, nc.iQtma, nc.iVtma, nc.iBeqz, nc.iBeqv,
+                          nc.VfBeqbus, nc.Vtmabus,
+                          F, T, Ys, k2, tap, m, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq)
 
         # solve the linear system
         dx = sp.linalg.spsolve(J, -fx)
-        # dxa = sp.linalg.spsolve(Ja, -fx)
 
         # split the solution
         dVa = dx[a0:a1]
@@ -1036,7 +846,6 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
         else:
             norm_f = norm_f_new
 
-        # if verbose:
         print('dx:', dx)
         print('Va:', Va)
         print('Vm:', Vm)
@@ -1070,5 +879,5 @@ if __name__ == "__main__":
     ####################################################################################################################
     nc_ = compile_snapshot_circuit(grid)
 
-    res = NR_LS_ACDC(nc=nc_, tolerance=1e-4, max_iter=20, verbose=True)
+    res = NR_LS_ACDC(nc=nc_, tolerance=1e-4, max_iter=20)
 

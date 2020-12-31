@@ -350,71 +350,83 @@ class SnapshotData:
             if tpe == TransformerControlType.fixed:
                 pass
 
-            elif tpe == TransformerControlType.power:
+            elif tpe == TransformerControlType.Pt:
                 self.iPfsh.append(k)
                 self.any_control = True
 
-            elif tpe == TransformerControlType.v_to:
+            elif tpe == TransformerControlType.Qt:
+                self.iQtma.append(k)
+                self.any_control = True
+
+            elif tpe == TransformerControlType.PtQt:
+                self.iPfsh.append(k)
+                self.iQtma.append(k)
+                self.any_control = True
+
+            elif tpe == TransformerControlType.Vt:
                 self.iVtma.append(k)
                 self.any_control = True
 
-            elif tpe == TransformerControlType.power_v_to:
+            elif tpe == TransformerControlType.PtVt:
                 self.iPfsh.append(k)
                 self.iVtma.append(k)
                 self.any_control = True
 
             # VSC ------------------------------------------------------------------------------------------------------
-            elif tpe == ConverterControlType.type_1_free:  # 1a:Free
+            elif tpe == ConverterControlType.type_0_free:  # 1a:Free
                 self.iBeqz.append(k)
 
                 self.iVscL.append(k)
                 self.any_control = True
 
-            elif tpe == ConverterControlType.type_1_pf:  # 1b:Pflow
+            elif tpe == ConverterControlType.type_I_1:  # 1:Vac
+                self.iVtma.append(k)
+                self.iBeqz.append(k)
+
+                self.iVscL.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_I_2:  # 2:Pdc+Qac
+
                 self.iPfsh.append(k)
+                self.iQtma.append(k)
                 self.iBeqz.append(k)
 
                 self.iVscL.append(k)
                 self.any_control = True
 
-            elif tpe == ConverterControlType.type_1_qf:  # 1c:Qflow
+            elif tpe == ConverterControlType.type_I_3:  # 3:Pdc+Vac
+                self.iPfsh.append(k)
+                self.iVtma.append(k)
                 self.iBeqz.append(k)
+
+                self.iVscL.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_II_4:  # 4:Vdc+Qac
+                self.iBeqv.append(k)
                 self.iQtma.append(k)
 
                 self.iVscL.append(k)
                 self.any_control = True
 
-            elif tpe == ConverterControlType.type_1_vac:  # 1d:Vac
-                self.iBeqz.append(k)
+            elif tpe == ConverterControlType.type_II_5:  # 5:Vdc+Vac
+                self.iBeqv.append(k)
                 self.iVtma.append(k)
 
                 self.iVscL.append(k)
                 self.any_control = True
 
-            elif tpe == ConverterControlType.type_2_vdc:  # 2a:Vdc
-                self.iPfsh.append(k)
-                self.iBeqv.append(k)
-
-                self.iVscL.append(k)
-                self.any_control = True
-
-            elif tpe == ConverterControlType.type_2_vdc_pf:  # 2b:Vdc+Pflow
-                self.iPfsh.append(k)
-                self.iBeqv.append(k)
-
-                self.iVscL.append(k)
-                self.any_control = True
-
-            elif tpe == ConverterControlType.type_3:  # 3a:Droop
-                self.iPfsh.append(k)
-                self.iBeqz.append(k)
+            elif tpe == ConverterControlType.type_III_6:  # 6:Droop+Qac
                 self.iPfdp.append(k)
+                self.iQtma.append(k)
 
                 self.iVscL.append(k)
                 self.any_control = True
 
-            elif tpe == ConverterControlType.type_4:  # 4a:Droop-slack
+            elif tpe == ConverterControlType.type_III_7:  # 4a:Droop-slack
                 self.iPfdp.append(k)
+                self.iVtma.append(k)
 
                 self.iVscL.append(k)
                 self.any_control = True
@@ -432,6 +444,15 @@ class SnapshotData:
         # FUBM- Saves the "to"   bus identifier for Vt controlled by ma
         #  (Converters and Transformers)
         self.Vtmabus = self.T[self.iVtma]
+
+        self.iPfsh = np.array(self.iPfsh, dtype=np.int)
+        self.iQfma = np.array(self.iQfma, dtype=np.int)
+        self.iBeqz = np.array(self.iBeqz, dtype=np.int)
+        self.iBeqv = np.array(self.iBeqv, dtype=np.int)
+        self.iVtma = np.array(self.iVtma, dtype=np.int)
+        self.iQtma = np.array(self.iQtma, dtype=np.int)
+        self.iPfdp = np.array(self.iPfdp, dtype=np.int)
+        self.iVscL = np.array(self.iVscL, dtype=np.int)
 
 
     @property

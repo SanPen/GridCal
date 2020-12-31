@@ -483,9 +483,9 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
         if table.shape[1] == 37:  # FUBM model
 
             # converter type (I, II, III)
-            matpower_mode = table[i, e.CONV_A]
+            matpower_converter_mode = table[i, e.CONV_A]
 
-            if matpower_mode > 0:  # it is a converter
+            if matpower_converter_mode > 0:  # it is a converter
 
                 # set the from bus as a DC bus
                 # this is by design of the matpower FUBM model,
@@ -495,37 +495,44 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
 
                 # determine the converter control mode
                 Pfset = table[i, e.PF]
+                Ptset = table[i, e.PT]
                 Vac_set = table[i, e.VT_SET]
                 Vdc_set = table[i, e.VF_SET]
                 Qfset = table[i, e.QF]
+                Qtset = table[i, e.QT]
                 m = table[i, e.TAP] if table[i, e.TAP] > 0 else 1.0
 
-                if matpower_mode == 1:
+                if matpower_converter_mode == 1:
 
                     if Pfset != 0.0:
-                        control_mode = ConverterControlType.type_1_pf
-                    elif Qfset != 0.0:
-                        control_mode = ConverterControlType.type_1_qf
-                    elif Vac_set != 0.0:
-                        control_mode = ConverterControlType.type_1_vac
+
+                        if Qtset != 0.0:
+                            control_mode = ConverterControlType.type_I_2
+
+                        elif Vac_set != 0.0:
+                            control_mode = ConverterControlType.type_I_3
+
+                        else:
+                            control_mode = ConverterControlType.type_I_1
+
                     else:
-                        control_mode = ConverterControlType.type_1_free
+                        control_mode = ConverterControlType.type_0_free
 
-                elif matpower_mode == 2:
+                elif matpower_converter_mode == 2:
 
-                    if Pfset == 0.0:
-                        control_mode = ConverterControlType.type_2_vdc
+                    if Vac_set == 0.0:
+                        control_mode = ConverterControlType.type_II_4
                     else:
-                        control_mode = ConverterControlType.type_2_vdc_pf
+                        control_mode = ConverterControlType.type_II_5
 
-                elif matpower_mode == 3:
-                    control_mode = ConverterControlType.type_3
+                elif matpower_converter_mode == 3:
+                    control_mode = ConverterControlType.type_III_6
 
-                elif matpower_mode == 4:
-                    control_mode = ConverterControlType.type_4
+                elif matpower_converter_mode == 4:
+                    control_mode = ConverterControlType.type_III_7
 
                 else:
-                    control_mode = ConverterControlType.type_1_free
+                    control_mode = ConverterControlType.type_0_free
 
                 branch = VSC(bus_from=f,
                              bus_to=t,
@@ -545,11 +552,12 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
                              Beq_min=table[i, e.BEQ_MIN],
                              rate=max(table[i, [e.RATE_A, e.RATE_B, e.RATE_C]]),
                              kdp=table[i, e.KDP],
+                             k=table[i, e.K2],
                              control_mode=control_mode,
                              Pfset=Pfset,
                              Qfset=Qfset,
-                             Vac_set=Vac_set,
-                             Vdc_set=Vdc_set,
+                             Vac_set=Vac_set if Vac_set > 0 else 1.0,
+                             Vdc_set=Vdc_set if Vdc_set > 0 else 1.0,
                              alpha1=table[i, e.ALPHA1],
                              alpha2=table[i, e.ALPHA2],
                              alpha3=table[i, e.ALPHA3])

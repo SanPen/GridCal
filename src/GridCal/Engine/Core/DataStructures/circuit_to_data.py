@@ -609,10 +609,10 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.control_mode[ii] = elm.control_mode
         data.tap_f[ii], data.tap_t[ii] = elm.get_virtual_taps()
 
-        if elm.control_mode == TransformerControlType.v_to:
+        if elm.control_mode == TransformerControlType.Vt:
             Vbus[t] = elm.vset
 
-        elif elm.control_mode == TransformerControlType.power_v_to:  # 2a:Vdc
+        elif elm.control_mode == TransformerControlType.PtVt:  # 2a:Vdc
             Vbus[t] = elm.vset
 
     # VSC
@@ -651,7 +651,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.alpha1[ii] = elm.alpha1
         data.alpha2[ii] = elm.alpha2
         data.alpha3[ii] = elm.alpha3
-        data.k[ii] = elm.k  # 0.8660254037844386  # sqrt(3)/2
+        data.k[ii] = elm.k  # 0.8660254037844386  # sqrt(3)/2 (do not confuse with k droop)
         data.theta[ii] = elm.theta
         data.theta_min[ii] = elm.theta_min
         data.theta_max[ii] = elm.theta_max
@@ -662,12 +662,32 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.vt_set[ii] = elm.Vdc_set
         data.control_mode[ii] = elm.control_mode
 
-        if elm.control_mode == ConverterControlType.type_1_vac:  # 1d:Vac
-            data.vf_set[t] = elm.Vac_set
+        '''
+        type_0_free = '0:Free'
+        type_I_1 = '1:Vac'
+        type_I_2 = '2:Pdc+Qac'
+        type_I_3 = '3:Pdc+Vac'
+        type_II_4 = '4:Vdc+Qac'
+        type_II_5 = '5:Vdc+Vac'
+        type_III_6 = '6:Droop+Qac'
+        type_III_7 = '7:Droop+Vac'
+        '''
+
+        if elm.control_mode == ConverterControlType.type_I_1:  # 1a:Vac
             Vbus[t] = elm.Vac_set
-        elif elm.control_mode == ConverterControlType.type_2_vdc:  # 2a:Vdc
-            data.vt_set[f] = elm.Vdc_set
+
+        elif elm.control_mode == ConverterControlType.type_I_3:  # 3:Pdc+Vac
+            Vbus[t] = elm.Vac_set
+
+        elif elm.control_mode == ConverterControlType.type_II_4:  # 4:Vdc+Qac
             Vbus[f] = elm.Vdc_set
+
+        elif elm.control_mode == ConverterControlType.type_II_5:  # 5:Vdc+Vac
+            Vbus[f] = elm.Vdc_set
+            Vbus[t] = elm.Vac_set
+
+        elif elm.control_mode == ConverterControlType.type_III_7:  # 7:Droop+Vac
+            Vbus[t] = elm.Vac_set
 
     # DC-lines
     for i, elm in enumerate(circuit.dc_lines):
