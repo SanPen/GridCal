@@ -282,3 +282,196 @@ def pack_4_by_4(A11: CscMat, A12: CscMat, A21: CscMat, A22: CscMat):
                                            A21.shape[0], A21.shape[1], A21.indices, A21.indptr, A21.data,
                                            A22.shape[0], A22.shape[1], A22.indices, A22.indptr, A22.data)
     return CscMat((Px, Pi, Pp), shape=(m, n))
+
+
+def sp_transpose(mat: csc_matrix):
+    """
+    Actual CSC transpose unlike scipy's
+    :param mat: CSC matrix
+    :return: CSC transposed matrix
+    """
+    Cm, Cn, Cp, Ci, Cx = csc_transpose(m=mat.shape[0],
+                                       n=mat.shape[1],
+                                       Ap=mat.indptr,
+                                       Ai=mat.indices,
+                                       Ax=mat.data)
+    return csc_matrix((Cx, Ci, Cp), shape=(Cm, Cn))
+
+
+def sp_slice_cols(mat: csc_matrix, cols: np.ndarray):
+    """
+    Slice columns
+    :param mat: Matrix to slice
+    :param cols: vector of columns
+    :return: New sliced matrix
+    """
+    new_indices, new_col_ptr, new_val, nrows, ncols = sp_submat_c_numba(nrows=mat.shape[0],
+                                                                        ptrs=mat.indptr,
+                                                                        indices=mat.indices,
+                                                                        values=mat.data,
+                                                                        cols=cols)
+    return csc_matrix((new_val, new_indices, new_col_ptr), shape=(nrows, ncols))
+
+
+def sp_slice_rows(mat: csc_matrix, rows: np.ndarray):
+    """
+    Slice rows
+    :param mat:
+    :param rows:
+    :return: CSC matrix
+    """
+    # mat2 = sp_transpose(mat)
+    # return sp_transpose(sp_slice_cols(mat2, rows))
+
+    return sp_transpose(sp_slice_cols(sp_transpose(mat), np.array(rows)))
+
+
+def sp_slice(mat: csc_matrix, rows, cols):
+    """
+    /*
+     * This function performs the trivial slicing of the CSC sparse matrix A
+     *
+     * Steps:
+     *  - Slice the columns with "sp_submat_c(A, cols)"
+     *  - convert to CSR with .t() {transpose}
+     *  - Slice the rows with sp_submat_c(B, rows), because it is a CSR now
+     *  - Convert the result back to CSC with the final .t()
+     * */
+    :param mat:
+    :param rows:
+    :param cols:
+    :return:
+    """
+    mat2 = sp_transpose(sp_slice_cols(mat, cols))
+    return sp_transpose(sp_slice_cols(mat2, rows))
+    # return sp_transpose(sp_slice_cols(sp_transpose(sp_slice_cols(mat, cols)), rows))
+
+
+def csc_stack_2d_ff(mats, m_rows=1, m_cols=1, row_major=True):
+    """
+    Assemble matrix from a list of matrices representing a "super matrix"
+
+    |mat11 | mat12 | mat13 |
+    |mat21 | mat22 | mat23 |
+
+    if row-major turns into:
+
+        mats = [mat11, mat12, mat13, mat21, mat22, mat23]
+
+    else: (it is column major)
+
+        mats = [mat11, mat21, mat12, mat22, mat31, mat32]
+
+    m_rows = 2
+    m_cols = 3
+
+    :param mats: array of CSC matrices arranged in row-major or column-major order into a list
+    :param m_rows: number of rows of the mats structure
+    :param m_cols: number of cols of the mats structure
+    :param row_major: mats is sorted in row major, else it is sorted in column major
+    :return: Final assembled matrix in CSC format
+    """
+
+    mats_data = List()
+    mats_indptr = List()
+    mats_indices = List()
+    mats_cols = List()
+    mats_rows = List()
+    for x in mats:
+        mats_data.append(x.data)
+        mats_indptr.append(x.indptr)
+        mats_indices.append(x.indices)
+        mats_cols.append(x.shape[1])
+        mats_rows.append(x.shape[0])
+
+    if row_major:
+        data, indices, indptr, nrows, ncols = csc_stack_2d_ff_row_major(mats_data,
+                                                                        mats_indptr,
+                                                                        mats_indices,
+                                                                        mats_cols,
+                                                                        mats_rows,
+                                                                        m_rows,
+                                                                        m_cols)
+    else:
+        data, indices, indptr, nrows, ncols = csc_stack_2d_ff_col_major(mats_data,
+                                                                        mats_indptr,
+                                                                        mats_indices,
+                                                                        mats_cols,
+                                                                        mats_rows,
+                                                                        m_rows,
+                                                                        m_cols)
+
+    return csc_matrix((data, indices, indptr), shape=(nrows, ncols))
+
+
+
+
+def csc_stack_2d_ff_old(mats, m_rows=1, m_cols=1):
+    """
+    Assemble matrix from a list of matrices representing a "super matrix"
+
+    |mat11 | mat12 | mat13 |
+    |mat21 | mat22 | mat23 |
+
+    turns into:
+
+    mats = [mat11, mat12, mat13, mat21, mat22, mat23]
+    m_rows = 2
+    m_cols = 3
+
+    :param mats: array of CSC matrices arranged in row-major order into a list
+    :param m_rows: number of rows of the mats structure
+    :param m_cols: number of cols of the mats structure
+    :return: Final assembled matrix
+    """
+
+    # pass 1: compute the number of non zero
+    nnz = 0
+    nrows = 0
+    ncols = 0
+    for r in range(m_rows):
+
+        nrows += mats[r * m_cols].shape[0]  # equivalent to mats[r, 0]
+
+        for c in range(m_cols):
+            mat = mats[r * m_cols + c]  # equivalent to mats[r, c]
+            nnz += mat.indptr[mat.shape[1]]
+
+            if r == 0:
+                ncols += mat.shape[1]
+
+    # pass 2: fill in the data
+    indptr = np.empty(ncols + 1, dtype=np.int32)
+    indices = np.empty(nnz, dtype=np.int32)
+    data = np.empty(nnz, dtype=np.float64)
+    cnt = 0
+    indptr[0] = 0
+    offset_col = 0
+    for c in range(m_cols):  # for each column of the array of matrices
+
+        n = mats[c].shape[1]  # equivalent to mats[0, c]
+
+        for j in range(n):  # for every column of the column of matrices
+
+            offset_row = 0
+
+            for r in range(m_rows):  # for each row of the array of rows
+
+                mat = mats[r * m_cols + c]  # equivalent to mats[r, c]
+                m = mat.shape[0]
+                Ap = mat.indptr
+                Ai = mat.indices
+                Ax = mat.data
+
+                for k in range(Ap[j], Ap[j + 1]):  # for every entry in the column from A
+                    indices[cnt] = Ai[k] + offset_row  # row index
+                    data[cnt] = Ax[k]
+                    cnt += 1
+
+                offset_row += m
+
+            indptr[offset_col + j + 1] = cnt
+        offset_col += n
+
+    # return nrows, ncols, indices, indptr, data
+    return csc_matrix((data, indices, indptr), shape=(nrows, ncols))

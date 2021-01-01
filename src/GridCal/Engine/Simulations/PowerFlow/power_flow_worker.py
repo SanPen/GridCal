@@ -23,7 +23,7 @@ from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Iwamo
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import levenberg_marquardt_pf
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import NR_LS, NR_I_LS, NRD_LS
 from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
-from GridCal.Engine.Simulations.PowerFlow.jacobian_based_acdc_power_flow import NR_LS_ACDC, levenberg_marquardt_acdc_pf
+from GridCal.Engine.Simulations.PowerFlow.jacobian_based_acdc_power_flow import NR_LS_ACDC, LM_ACDC
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
@@ -180,9 +180,9 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
         # Levenberg-Marquardt
         elif solver_type == SolverType.LM:
             if circuit.any_control:
-                solution = levenberg_marquardt_acdc_pf(nc=circuit,
-                                                       tolerance=options.tolerance,
-                                                       max_iter=options.max_iter)
+                solution = LM_ACDC(nc=circuit,
+                                   tolerance=options.tolerance,
+                                   max_iter=options.max_iter)
             else:
                 solution = levenberg_marquardt_pf(Ybus=circuit.Ybus,
                                                   Sbus=Sbus,

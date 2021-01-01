@@ -727,10 +727,7 @@ def csc_norm(n, Ap, Ax):
     return norm
 
 
-
-# @nb.njit("List(List(i8))(i8, i4[:], i4[:])")
 @nb.njit
-# @nb.njit("List(i8[:])(i8, i4[:], i4[:])")
 def find_islands(node_number, indptr, indices):
     """
     Method to get the islands of a graph
@@ -794,3 +791,205 @@ def find_islands(node_number, indptr, indices):
     # for island in islands:
     #     island.sort()
     return islands
+
+
+
+@nb.njit("Tuple((i4[:], i4[:], f8[:], i8, i8))(i8, i4[:], i4[:], f8[:], i8[:])")
+def sp_submat_c_numba(nrows, ptrs, indices, values, cols):
+    """
+    slice CSC columns
+    :param nrows: number of rows of the matrix
+    :param ptrs: row pointers
+    :param indices: column indices
+    :param values: data
+    :param cols: vector of columns to slice
+    :return: new_indices, new_col_ptr, new_val, nrows, ncols
+    """
+    # pass1: determine the number of non-zeros
+    nnz = 0
+    for j in cols:
+        for k in range(ptrs[j], ptrs[j+1]):
+            nnz += 1
+
+    # pass2: size the vector and perform the slicing
+    ncols = len(cols)
+    n = 0
+    p = 0
+
+    new_val = np.empty(nnz, dtype=nb.float64)
+    new_indices = np.empty(nnz, dtype=nb.int32)
+    new_col_ptr = np.empty(ncols + 1, dtype=nb.int32)
+
+    new_col_ptr[p] = 0
+
+    for j in cols:
+        for k in range(ptrs[j], ptrs[j + 1]):
+            new_val[n] = values[k]
+            new_indices[n] = indices[k]
+            n += 1
+
+        p += 1
+        new_col_ptr[p] = n
+
+    return new_indices, new_col_ptr, new_val, nrows, ncols
+
+
+@nb.njit(nogil=True, fastmath=True, cache=True)
+def csc_stack_2d_ff_row_major(mats_data, mats_indptr, mats_indices, mats_cols, mats_rows, m_rows=1, m_cols=1):
+    """
+    Assemble matrix from a list of matrices representing a "super matrix"
+
+    |mat11 | mat12 | mat13 |
+    |mat21 | mat22 | mat23 |
+
+    turns into:
+
+    mats = [mat11, mat12, mat13, mat21, mat22, mat23]
+    m_rows = 2
+    m_cols = 3
+
+    :param mats_data: array of numpy arrays with the data of each CSC matrix
+    :param mats_indptr: array of numpy arrays with the indptr of each CSC matrix
+    :param mats_indices: array of numpy arrays with the indices of each CSC matrix
+    :param mats_cols: array with the number of columns of each CSC matrix
+    :param mats_rows: array with the number of rows of each CSC matrix
+    :param m_rows: number of rows of the mats structure
+    :param m_cols: number of cols of the mats structure
+    :return: Final assembled matrix
+    """
+
+    '''
+    Row major: A(r,c) element is at A[c + r * n_columns]; 
+    Col major: A(r,c) element is at A[r + c * n_rows];    
+    '''
+
+    # pass 1: compute the number of non zero
+    nnz = 0
+    nrows = 0
+    ncols = 0
+    for r in range(m_rows):
+        nrows += mats_rows[r * m_cols]  # equivalent to mats[r, 0]
+        for c in range(m_cols):
+            col = mats_cols[c + r * m_cols]  # equivalent to mats[r, c]
+            nnz += mats_indptr[r * m_cols + c][col]
+            if r == 0:
+                ncols += col
+
+    # pass 2: fill in the data
+    indptr = np.empty(ncols + 1, dtype=np.int32)
+    indices = np.empty(nnz, dtype=np.int32)
+    data = np.empty(nnz, dtype=np.float64)
+    cnt = 0
+    indptr[0] = 0
+    offset_col = 0
+    for c in range(m_cols):  # for each column of the array of matrices
+
+        # number of columns
+        n = mats_cols[c]  # equivalent to mats[0, c]
+
+        if n > 0:
+            for j in range(n):  # for every column of the column of matrices
+
+                offset_row = 0
+
+                for r in range(m_rows):  # for each row of the array of rows
+
+                    # number of rows
+                    m = mats_rows[r * m_cols + c]  # equivalent to mats[r, c].shape[0]
+
+                    if m > 0:
+                        Ap = mats_indptr[r * m_cols + c]
+                        Ai = mats_indices[r * m_cols + c]
+                        Ax = mats_data[r * m_cols + c]
+
+                        for k in range(Ap[j], Ap[j + 1]):  # for every entry in the column from A
+                            indices[cnt] = Ai[k] + offset_row  # row index
+                            data[cnt] = Ax[k]
+                            cnt += 1
+
+                        offset_row += m
+
+                indptr[offset_col + j + 1] = cnt
+            offset_col += n
+
+    return data, indices, indptr, nrows, ncols
+
+
+@nb.njit(nogil=True, fastmath=True, cache=True)
+def csc_stack_2d_ff_col_major(mats_data, mats_indptr, mats_indices, mats_cols, mats_rows, m_rows=1, m_cols=1):
+    """
+    Assemble matrix from a list of matrices representing a "super matrix"
+
+    |mat11 | mat12 | mat13 |
+    |mat21 | mat22 | mat23 |
+
+    turns into:
+
+    mats = [mat11, mat12, mat13, mat21, mat22, mat23]
+    m_rows = 2
+    m_cols = 3
+
+    :param mats_data: array of numpy arrays with the data of each CSC matrix
+    :param mats_indptr: array of numpy arrays with the indptr of each CSC matrix
+    :param mats_indices: array of numpy arrays with the indices of each CSC matrix
+    :param mats_cols: array with the number of columns of each CSC matrix
+    :param mats_rows: array with the number of rows of each CSC matrix
+    :param m_rows: number of rows of the mats structure
+    :param m_cols: number of cols of the mats structure
+    :return: Final assembled matrix
+    """
+
+    '''
+    Col major: A(r,c) element is at A[r + c * n_rows];    
+    '''
+
+    # pass 1: compute the number of non zero
+    nnz = 0
+    nrows = 0
+    ncols = 0
+    for r in range(m_rows):
+        nrows += mats_rows[r]  # equivalent to mats[r, 0]
+        for c in range(m_cols):
+            col = mats_cols[r + c * m_rows]  # equivalent to mats[r, c]
+            nnz += mats_indptr[r + c * m_rows][col]
+            if r == 0:
+                ncols += col
+
+    # pass 2: fill in the data
+    indptr = np.empty(ncols + 1, dtype=np.int32)
+    indices = np.empty(nnz, dtype=np.int32)
+    data = np.empty(nnz, dtype=np.float64)
+    cnt = 0
+    indptr[0] = 0
+    offset_col = 0
+    for c in range(m_cols):  # for each column of the array of matrices
+
+        # number of columns
+        n = mats_cols[c * m_rows]  # equivalent to mats[0, c]
+
+        if n > 0:
+            for j in range(n):  # for every column of the column of matrices
+
+                offset_row = 0
+
+                for r in range(m_rows):  # for each row of the array of rows
+
+                    # number of rows
+                    m = mats_rows[r + c * m_rows]  # equivalent to mats[r, c].shape[0]
+
+                    if m > 0:
+                        Ap = mats_indptr[r + c * m_rows]
+                        Ai = mats_indices[r + c * m_rows]
+                        Ax = mats_data[r + c * m_rows]
+
+                        for k in range(Ap[j], Ap[j + 1]):  # for every entry in the column from A
+                            indices[cnt] = Ai[k] + offset_row  # row index
+                            data[cnt] = Ax[k]
+                            cnt += 1
+
+                        offset_row += m
+
+                indptr[offset_col + j + 1] = cnt
+            offset_col += n
+
+    return data, indices, indptr, nrows, ncols
