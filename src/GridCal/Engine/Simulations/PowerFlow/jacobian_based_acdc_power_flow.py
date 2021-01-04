@@ -37,7 +37,7 @@ def compute_converter_losses(V, It, F, alpha1, alpha2, alpha3, iVscL):
     :param iVscL:
     :return:
     """
-    # FUBM- Standard IEC 62751-2 Ploss Correction for VSC losses
+    # Standard IEC 62751-2 Ploss Correction for VSC losses
     Ivsc = np.abs(It[iVscL])
     PLoss_IEC = alpha3[iVscL] * np.power(Ivsc, 2)
     PLoss_IEC += alpha2[iVscL] * np.power(Ivsc, 2)
@@ -50,8 +50,8 @@ def compute_converter_losses(V, It, F, alpha1, alpha2, alpha3, iVscL):
     return Gsw
 
 
-@nb.jit(nopython=True, cache=False)
-def dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V):  # pragma: no cover
+@nb.jit(nopython=True, cache=True)
+def dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V):
     """
     Compute the power injection derivatives w.r.t the voltage module and angle
     :param Yx: data of Ybus in CSC format
@@ -68,7 +68,7 @@ def dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V):  # pragma: no cover
     dS_dVm = Yx.copy()
     dS_dVa = Yx.copy()
 
-    # pass 1
+    # pass 1: perform the matrix-vector products
     for j in range(n):  # for each column ...
         for k in range(Yp[j], Yp[j + 1]):  # for each row ...
             # row index
@@ -83,7 +83,7 @@ def dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V):  # pragma: no cover
             # Ybus * diag(V)
             dS_dVa[k] = Yx[k] * V[j]
 
-    # pass 2
+    # pass 2: finalize the operations
     for j in range(n):  # for each column ...
 
         # set buffer variable: this cannot be done in the pass1
@@ -295,6 +295,117 @@ def derivatives_sh(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
     return dSbus_dPxsh.tocsc(), dSf_dshx2.tocsc(), dSt_dshx2.tocsc()
 
 
+@nb.njit("Tuple((c16[:], i4[:], i4[:], c16[:], i4[:], i4[:], c16[:], i4[:], i4[:]))"
+         "(i8[:], i8[:], i8[:], c16[:], f8[:], c16[:], c16[:])", cache=True)
+def derivatives_sh_numba(iPxsh, F, T, Ys, k2, tap, V):
+    """
+    This function computes the derivatives of Sbus, Sf and St w.r.t. Ɵsh
+    - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
+    - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
+
+    :param nb: number of buses
+    :param nl: number of branches
+    :param iPxsh: array of indices {iPfsh or iPfdp}
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param Ys: Array of branch series admittances
+    :param k2: Array of "k2" parameters
+    :param tap: Array of branch complex taps (ma * exp(1j * theta_sh)
+    :param V: Array of complex voltages
+    :return:
+        - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
+        - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
+    """
+    ndev = len(iPxsh)
+
+    # dSbus_dPxsh = lil_matrix((nb, ndev), dtype=complex)
+    dSbus_dsh_data = np.empty(ndev * 2, dtype=np.complex128)
+    dSbus_dsh_indices = np.empty(ndev * 2, dtype=np.int32)
+    dSbus_dsh_indptr = np.empty(ndev + 1, dtype=np.int32)
+
+    # dSf_dsh = lil_matrix((nl, ndev), dtype=complex)
+    dSf_dsh_data = np.empty(ndev, dtype=np.complex128)
+    dSf_dsh_indices = np.empty(ndev, dtype=np.int32)
+    dSf_dsh_indptr = np.empty(ndev + 1, dtype=np.int32)
+
+    # dSt_dsh = lil_matrix((nl, ndev), dtype=complex)
+    dSt_dsh_data = np.empty(ndev, dtype=np.complex128)
+    dSt_dsh_indices = np.empty(ndev, dtype=np.int32)
+    dSt_dsh_indptr = np.empty(ndev + 1, dtype=np.int32)
+
+    for k, idx in enumerate(iPxsh):
+        f = F[idx]
+        t = T[idx]
+
+        # Partials of Ytt, Yff, Yft and Ytf w.r.t. Ɵ shift
+        yft_dsh = -Ys[idx] / (-1j * k2[idx] * np.conj(tap[idx]))
+        ytf_dsh = -Ys[idx] / (1j * k2[idx] * tap[idx])
+
+        # Partials of S w.r.t. Ɵ shift
+        val_f = V[f] * np.conj(yft_dsh * V[t])
+        val_t = V[t] * np.conj(ytf_dsh * V[f])
+
+        # dSbus_dPxsh[f, k] = val_f
+        # dSbus_dPxsh[t, k] = val_t
+        dSbus_dsh_data[2 * k] = val_f
+        dSbus_dsh_indices[2 * k] = f
+        dSbus_dsh_data[2 * k + 1] = val_t
+        dSbus_dsh_indices[2 * k + 1] = t
+        dSbus_dsh_indptr[k] = 2 * k
+
+        # Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)
+        # dSf_dshx2[idx, k] = val_f
+        dSf_dsh_data[k] = val_f
+        dSf_dsh_indices[k] = idx
+        dSf_dsh_indptr[k] = k
+
+        # Partials of St w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "to" bus)
+        # dSt_dshx2[idx, k] = val_t
+        dSt_dsh_data[k] = val_t
+        dSt_dsh_indices[k] = idx
+        dSt_dsh_indptr[k] = k
+
+    dSbus_dsh_indptr[ndev] = ndev * 2
+    dSf_dsh_indptr[ndev] = ndev
+    dSt_dsh_indptr[ndev] = ndev
+
+    return dSbus_dsh_data, dSbus_dsh_indices, dSbus_dsh_indptr, \
+            dSf_dsh_data, dSf_dsh_indices, dSf_dsh_indptr, \
+            dSt_dsh_data, dSt_dsh_indices, dSt_dsh_indptr
+
+
+def derivatives_sh_fast(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
+    """
+    This function computes the derivatives of Sbus, Sf and St w.r.t. Ɵsh
+    - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
+    - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
+
+    :param nb: number of buses
+    :param nl: number of branches
+    :param iPxsh: array of indices {iPfsh or iPfdp}
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param Ys: Array of branch series admittances
+    :param k2: Array of "k2" parameters
+    :param tap: Array of branch complex taps (ma * exp(1j * theta_sh)
+    :param V: Array of complex voltages
+    :return:
+        - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
+        - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
+    """
+    ndev = len(iPxsh)
+
+    dSbus_dsh_data, dSbus_dsh_indices, dSbus_dsh_indptr, \
+    dSf_dsh_data, dSf_dsh_indices, dSf_dsh_indptr, \
+    dSt_dsh_data, dSt_dsh_indices, dSt_dsh_indptr = derivatives_sh_numba(iPxsh, F, T, Ys, k2, tap, V)
+
+    dSbus_dsh = sp.csc_matrix((dSbus_dsh_data, dSbus_dsh_indices, dSbus_dsh_indptr), shape=(nb, ndev))
+    dSf_dsh = sp.csc_matrix((dSf_dsh_data, dSf_dsh_indices, dSf_dsh_indptr), shape=(nl, ndev))
+    dSt_dsh = sp.csc_matrix((dSt_dsh_data, dSt_dsh_indices, dSt_dsh_indptr), shape=(nl, ndev))
+
+    return dSbus_dsh, dSf_dsh, dSt_dsh
+
+
 def derivatives_ma(nb, nl, iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
     """
     Useful for the calculation of
@@ -344,9 +455,137 @@ def derivatives_ma(nb, nl, iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
         dSbus_dmax2[t, k] = val_t
 
         dSf_dmax2[idx, k] = val_f
-        dSt_dmax2[idx, k] = val_f
+        dSt_dmax2[idx, k] = val_t
 
     return dSbus_dmax2.tocsc(), dSf_dmax2.tocsc(), dSt_dmax2.tocsc()
+
+
+@nb.njit("Tuple((c16[:], i4[:], i4[:], c16[:], i4[:], i4[:], c16[:], i4[:], i4[:]))"
+         "(i8[:], i8[:], i8[:], c16[:], f8[:], c16[:], f8[:], f8[:], f8[:], c16[:])", cache=True)
+def derivatives_ma_numba(iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
+    """
+    Useful for the calculation of
+    - dSbus_dQfma, dSf_dQfma, dSt_dQfma  -> wih iXxma=iQfma
+    - dSbus_dQtma, dSf_dQtma, dSt_dQtma  -> wih iXxma=iQtma
+    - dSbus_dVtma, dSf_dVtma, dSt_dVtma  -> wih iXxma=iVtma
+
+    :param nb: Number of buses
+    :param nl: Number of branches
+    :param iXxma: Array of indices {iQfma, iQtma, iVtma}
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param Ys: Array of branch series admittances
+    :param k2: Array of "k2" parameters
+    :param tap: Array of branch complex taps (ma * exp(1j * theta_sh)
+    :param ma: Array of tap modules (this is to avoid extra calculations)
+    :param Bc: Array of branch total shunt susceptance values (sum of the two legs)
+    :param Beq: Array of regulation susceptance of the FUBM model
+    :param V:Array of complex voltages
+
+    :return:
+    - dSbus_dQfma, dSf_dQfma, dSt_dQfma  -> if iXxma=iQfma
+    - dSbus_dQtma, dSf_dQtma, dSt_dQtma  -> if iXxma=iQtma
+    - dSbus_dVtma, dSf_dVtma, dSt_dVtma  -> if iXxma=iVtma
+    """
+    # Declare the derivative
+    ndev = len(iXxma)
+    ndev2 = ndev * 2
+
+    # dSbus_dma = lil_matrix((nb, ndev), dtype=complex)
+    dSbus_dma_data = np.empty(ndev2, dtype=np.complex128)
+    dSbus_dma_indices = np.empty(ndev2, dtype=np.int32)
+    dSbus_dma_indptr = np.empty(ndev + 1, dtype=np.int32)
+
+    # dSf_dma = lil_matrix((nl, ndev), dtype=complex)
+    dSf_dma_data = np.empty(ndev, dtype=np.complex128)
+    dSf_dma_indices = np.empty(ndev, dtype=np.int32)
+    dSf_dma_indptr = np.empty(ndev + 1, dtype=np.int32)
+
+    # dSt_dma = lil_matrix((nl, ndev), dtype=complex)
+    dSt_dma_data = np.empty(ndev, dtype=np.complex128)
+    dSt_dma_indices = np.empty(ndev, dtype=np.int32)
+    dSt_dma_indptr = np.empty(ndev + 1, dtype=np.int32)
+
+    for k, idx in enumerate(iXxma):
+        f = F[idx]
+        t = T[idx]
+
+        YttB = Ys[idx] + 1j * Bc[idx] / 2 + 1j * Beq[idx]
+
+        # Partials of Ytt, Yff, Yft and Ytf w.r.t.ma
+        dyff_dma = -2 * YttB / (np.power(k2[idx], 2) * np.power(ma[idx], 3))
+        dyft_dma = Ys[idx] / (k2[idx] * ma[idx] * np.conj(tap[idx]))
+        dytf_dma = Ys[idx] / (k2[idx] * ma[idx] * tap[idx])
+
+        val_f = V[f] * np.conj(dyff_dma * V[f] + dyft_dma * V[t])
+        val_t = V[t] * np.conj(dytf_dma * V[f])
+
+        # Partials of S w.r.t.ma
+        # dSbus_dma[f, k] = val_f
+        # dSbus_dma[t, k] = val_t
+
+        dSbus_dma_data[2 * k] = val_f
+        dSbus_dma_indices[2 * k] = f
+        dSbus_dma_data[2 * k + 1] = val_t
+        dSbus_dma_indices[2 * k + 1] = t
+        dSbus_dma_indptr[k] = 2 * k
+
+        # dSf_dma[idx, k] = val_f
+        dSf_dma_data[k] = val_f
+        dSf_dma_indices[k] = idx
+        dSf_dma_indptr[k] = k
+
+        # dSt_dma[idx, k] = val_f
+        dSt_dma_data[k] = val_t
+        dSt_dma_indices[k] = idx
+        dSt_dma_indptr[k] = k
+
+    dSbus_dma_indptr[ndev] = ndev * 2
+    dSf_dma_indptr[ndev] = ndev
+    dSt_dma_indptr[ndev] = ndev
+
+    return dSbus_dma_data, dSbus_dma_indices, dSbus_dma_indptr, \
+           dSf_dma_data, dSf_dma_indices, dSf_dma_indptr, \
+           dSt_dma_data, dSt_dma_indices, dSt_dma_indptr
+
+
+def derivatives_ma_fast(nb, nl, iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
+    """
+    Useful for the calculation of
+    - dSbus_dQfma, dSf_dQfma, dSt_dQfma  -> wih iXxma=iQfma
+    - dSbus_dQtma, dSf_dQtma, dSt_dQtma  -> wih iXxma=iQtma
+    - dSbus_dVtma, dSf_dVtma, dSt_dVtma  -> wih iXxma=iVtma
+
+    :param nb: Number of buses
+    :param nl: Number of branches
+    :param iXxma: Array of indices {iQfma, iQtma, iVtma}
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param Ys: Array of branch series admittances
+    :param k2: Array of "k2" parameters
+    :param tap: Array of branch complex taps (ma * exp(1j * theta_sh)
+    :param ma: Array of tap modules (this is to avoid extra calculations)
+    :param Bc: Array of branch total shunt susceptance values (sum of the two legs)
+    :param Beq: Array of regulation susceptance of the FUBM model
+    :param V:Array of complex voltages
+
+    :return:
+    - dSbus_dQfma, dSf_dQfma, dSt_dQfma  -> if iXxma=iQfma
+    - dSbus_dQtma, dSf_dQtma, dSt_dQtma  -> if iXxma=iQtma
+    - dSbus_dVtma, dSf_dVtma, dSt_dVtma  -> if iXxma=iVtma
+    """
+    # Declare the derivative
+    ndev = len(iXxma)
+
+    dSbus_dma_data, dSbus_dma_indices, dSbus_dma_indptr, \
+    dSf_dma_data, dSf_dma_indices, dSf_dma_indptr, \
+    dSt_dma_data, dSt_dma_indices, dSt_dma_indptr = derivatives_ma_numba(iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
+
+    dSbus_dma = sp.csc_matrix((dSbus_dma_data, dSbus_dma_indices, dSbus_dma_indptr), shape=(nb, ndev))
+    dSf_dma = sp.csc_matrix((dSf_dma_data, dSf_dma_indices, dSf_dma_indptr), shape=(nl, ndev))
+    dSt_dma = sp.csc_matrix((dSt_dma_data, dSt_dma_indices, dSt_dma_indptr), shape=(nl, ndev))
+
+    return dSbus_dma, dSf_dma, dSt_dma
 
 
 def derivatives_Beq(nb, nl, iBeqx, F, T, V, ma, k2):
@@ -399,190 +638,102 @@ def derivatives_Beq(nb, nl, iBeqx, F, T, V, ma, k2):
     return dSbus_dBeqx.tocsc(), dSf_dBeqx.tocsc(), dSt_dBeqx.tocsc()
 
 
-def fubm_jacobianA(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeqbus, Vtmabus,
-                  F, T, Ys, k2, tap, ma, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq):
+@nb.njit("Tuple((c16[:], i4[:], i4[:], c16[:], i4[:], i4[:]))"
+         "(i8[:], i8[:], c16[:], f8[:], f8[:])", cache=True)
+def derivatives_Beq_numba(iBeqx, F, V, ma, k2):
     """
-    Compute the FUBM jacobian
-    :param nb: number of buses
-    :param nl: Number of lines
-    :param iPfsh: indices of the Pf controlled branches
-    :param iPfdp: indices of the droop controlled branches
-    :param iQfma: indices of the Qf controlled branches
-    :param iQtma: Indices of the Qt controlled branches
-    :param iVtma: Indices of the Vt controlled branches
-    :param iBeqz: Indices of the Qf controlled branches
-    :param iBeqv: Indices of the Vf Controlled branches
-    :param F: Array of "from" bus indices
-    :param T: Array of "to" bus indices
-    :param Ys: Array of branch series admittances
-    :param k2: Array of branch converter losses
-    :param tap: Array of complex tap values {remember tap = ma * exp(1j * theta) }
-    :param ma: Array of tap modules
-    :param Bc: Array of branch full susceptances
-    :param Beq: Array of brach equivalent (variable) susceptances
-    :param Kdp: Array of branch converter droop constants
-    :param V: Array of complex bus voltages
-    :param Ybus: Admittance matrix
-    :param Yf: Admittances matrix of the branches with the "from" buses
-    :param Yt: Admittances matrix of the branches with the "to" buses
-    :param Cf: Connectivity matrix of the branches with the "from" buses
-    :param Ct: Connectivity matrix of the branches with the "to" buses
-    :param pvpq: Array of pv and then pq bus indices (not sorted)
-    :param pq: Array of PQ bus indices
-    :return: FUBM Jacobian matrix
+    Compute the derivatives of:
+    - dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz -> iBeqx=iBeqz
+    - dSbus_dBeqv, dSf_dBeqv, dSt_dBeqv -> iBeqx=iBeqv
+
+    :param iBeqx: array of indices {iBeqz, iBeqv}
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param V:Array of complex voltages
+    :param ma: Array of branch taps modules
+    :param k2: Array of "k2" parameters
+
+    :return:
+    - dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz -> if iBeqx=iBeqz
+    - dSbus_dBeqv, dSf_dBeqv, dSt_dBeqv -> if iBeqx=iBeqv
     """
 
-    # compose the derivatives of the power injections w.r.t Va and Vm
-    # dSbus_dVa, dSbus_dVm = dSbus_dV(Ybus, V)
-    dSbus_dVa, dSbus_dVm = dSbus_dV_with_numba(Ybus, V)
+    ndev = len(iBeqx)
 
-    # compose the derivatives of the branch flow w.r.t Va and Vm
-    dSf_dVa, dSf_dVm, dSt_dVa, dSt_dVm = dSbr_dV(Yf, Yt, V, F, T, Cf, Ct)
+    dSbus_dBeq_data = np.empty(ndev, dtype=np.complex128)
+    dSbus_dBeq_indices = np.empty(ndev, dtype=np.int32)
+    dSbus_dBeq_indptr = np.empty(ndev + 1, dtype=np.int32)
 
-    # compose the derivatives w.r.t theta sh
-    dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh = derivatives_sh(nb, nl, iPfsh, F, T, Ys, k2, tap, V)
-    dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp = derivatives_sh(nb, nl, iPfdp, F, T, Ys, k2, tap, V)
+    dSf_dBeqx_data = np.empty(ndev, dtype=np.complex128)
+    dSf_dBeqx_indices = np.empty(ndev, dtype=np.int32)
+    dSf_dBeqx_indptr = np.empty(ndev + 1, dtype=np.int32)
 
-    # compose the derivative w.r.t ma
-    dSbus_dQfma, dSf_dQfma, dSt_dQfma = derivatives_ma(nb, nl, iQfma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
-    dSbus_dQtma, dSf_dQtma, dSt_dQtma = derivatives_ma(nb, nl, iQtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
-    dSbus_dVtma, dSf_dVtma, dSt_dVtma = derivatives_ma(nb, nl, iVtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
+    for k, idx in enumerate(iBeqx):
+        # k: 0, 1, 2, 3, 4, ...
+        # idx: actual branch index in the general branches schema
 
-    # compose the derivatives w.r.t Beq
-    dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz = derivatives_Beq(nb, nl, iBeqz, F, T, V, ma, k2)
-    dSbus_dBeqv, dSf_dBeqv, dSt_dBeqv = derivatives_Beq(nb, nl, iBeqv, F, T, V, ma, k2)
+        f = F[idx]
 
-    # Voltage Droop Control Partials (it is more convenient to have them here...) --------------
+        # Partials of Ytt, Yff, Yft and Ytf w.r.t.Beq
+        dyff_dBeq = 1j / np.power(k2[idx] * ma[idx], 2.0)
 
-    # Partials of Pfdp w.r.t. Va
-    dPfdp_dVa = -dSf_dVa.real
+        # Partials of S w.r.t.Beq
+        val_f = V[f] * np.conj(dyff_dBeq * V[f])
 
-    # Partials of Pfdp w.r.t. Vm
-    dVmf_dVm = lil_matrix((nl, nb))
-    dVmf_dVm[iPfdp, :] = Cf[iPfdp, :]
-    dPfdp_dVm = -dSf_dVm.real + diags(Kdp) * dVmf_dVm
+        # dSbus_dBeqx[f, k] = val_f
+        dSbus_dBeq_data[k] = val_f
+        dSbus_dBeq_indices[k] = f
+        dSbus_dBeq_indptr[k] = k
 
-    # Partials of Pfdp w.r.t. ThetaSh for PST, VSCI and VSCII
-    dPfdp_dPfsh = -dSf_dPfsh.real
+        # dSbus_dBeqx[t, k] = val_t
+        # (no need to store this one)
 
-    # Partials of Pfdp w.r.t. ma
-    dPfdp_dQfma = -dSf_dQfma.real
-    dPfdp_dQtma = -dSf_dQtma.real
-    dPfdp_dVtma = -dSf_dVtma.real
+        # Partials of Sf w.r.t.Beq
+        # dSf_dBeqx[idx, k] = val_f
+        dSf_dBeqx_data[k] = val_f
+        dSf_dBeqx_indices[k] = idx
+        dSf_dBeqx_indptr[k] = k
 
-    # Partials of Pfdp w.r.t. Beq
-    dPfdp_dBeqz = -dSf_dBeqz.real
-    dPfdp_dBeqv = -dSf_dBeqv.real
+        # Partials of St w.r.t.Beq
+        # dSt_dBeqx[idx, k] = val_t
+        # (no need to store this one)
 
-    # Partials of Pfdp w.r.t. ThetaSh for VSCIII
-    dPfdp_dPfdp = -dSf_dPfdp.real
+    dSbus_dBeq_indptr[ndev] = ndev
+    dSf_dBeqx_indptr[ndev] = ndev
 
-    # Compose the Jacobian sub-matrices (slicing) ---------------
+    return dSbus_dBeq_data, dSbus_dBeq_indices, dSbus_dBeq_indptr, dSf_dBeqx_data, dSf_dBeqx_indices, dSf_dBeqx_indptr
 
-    j11 = dSbus_dVa[np.ix_(pvpq, pvpq)].real  # avoid Slack
-    j12 = dSbus_dVm[np.ix_(pvpq, pq)].real  # avoid Slack
-    j13 = dSbus_dPfsh[pvpq, :].real  # avoid Slack
-    j14 = dSbus_dQfma[pvpq, :].real  # avoid Slack
-    j15 = dSbus_dBeqz[pvpq, :].real  # avoid Slack
-    j16 = dSbus_dBeqv[pvpq, :].real  # avoid Slack
-    j17 = dSbus_dVtma[pvpq, :].real  # avoid Slack
-    j18 = dSbus_dQtma[pvpq, :].real  # avoid Slack
-    j19 = dSbus_dPfdp[pvpq, :].real  # avoid Slack
 
-    j21 = dSbus_dVa[np.ix_(pq, pvpq)].imag  # avoid Slack and pv
-    j22 = dSbus_dVm[np.ix_(pq, pq)].imag  # avoid Slack and pv
-    j23 = dSbus_dPfsh[pq, :].imag  # avoid Slack and pv
-    j24 = dSbus_dQfma[pq, :].imag  # avoid Slack and pv
-    j25 = dSbus_dBeqz[pq, :].imag  # avoid Slack and pv
-    j26 = dSbus_dBeqv[pq, :].imag  # avoid Slack and pv
-    j27 = dSbus_dVtma[pq, :].imag  # avoid Slack and pv
-    j28 = dSbus_dQtma[pq, :].imag  # avoid Slack and pv
-    j29 = dSbus_dPfdp[pq, :].imag  # avoid Slack and pv
+def derivatives_Beq_fast(nb, nl, iBeqx, F, T, V, ma, k2):
+    """
+    Compute the derivatives of:
+    - dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz -> iBeqx=iBeqz
+    - dSbus_dBeqv, dSf_dBeqv, dSt_dBeqv -> iBeqx=iBeqv
 
-    j31 = dSf_dVa[np.ix_(iPfsh, pvpq)].real  # Only Pf control elements iPfsh
-    j32 = dSf_dVm[np.ix_(iPfsh, pq)].real  # Only Pf control elements iPfsh
-    j33 = dSf_dPfsh[iPfsh, :].real  # Only Pf control elements iPfsh
-    j34 = dSf_dQfma[iPfsh, :].real  # Only Pf control elements iPfsh
-    j35 = dSf_dBeqz[iPfsh, :].real  # Only Pf control elements iPfsh
-    j36 = dSf_dBeqv[iPfsh, :].real  # Only Pf control elements iPfsh
-    j37 = dSf_dVtma[iPfsh, :].real  # Only Pf control elements iPfsh
-    j38 = dSf_dQtma[iPfsh, :].real  # Only Pf control elements iPfsh
-    j39 = dSf_dPfdp[iPfsh, :].real  # Only Pf control elements iPfsh
+    :param nb: Number of buses
+    :param nl: Number of branches
+    :param iBeqx: array of indices {iBeqz, iBeqv}
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param V:Array of complex voltages
+    :param ma: Array of branch taps modules
+    :param k2: Array of "k2" parameters
 
-    j41 = dSf_dVa[np.ix_(iQfma, pvpq)].imag  # Only Qf control elements iQfma
-    j42 = dSf_dVm[np.ix_(iQfma, pq)].imag  # Only Qf control elements iQfma
-    j43 = dSf_dPfsh[iQfma, :].imag  # Only Qf control elements iQfma
-    j44 = dSf_dQfma[iQfma, :].imag  # Only Qf control elements iQfma
-    j45 = dSf_dBeqz[iQfma, :].imag  # Only Qf control elements iQfma
-    j46 = dSf_dBeqv[iQfma, :].imag  # Only Qf control elements iQfma
-    j47 = dSf_dVtma[iQfma, :].imag  # Only Qf control elements iQfma
-    j48 = dSf_dQtma[iQfma, :].imag  # Only Qf control elements iQfma
-    j49 = dSf_dPfdp[iQfma, :].imag  # Only Qf control elements iQfma
+    :return:
+    - dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz -> if iBeqx=iBeqz
+    - dSbus_dBeqv, dSf_dBeqv, dSt_dBeqv -> if iBeqx=iBeqv
+    """
 
-    j51 = dSf_dVa[np.ix_(iBeqz, pvpq)].imag  # Only Qf control elements iQfbeq
-    j52 = dSf_dVm[np.ix_(iBeqz, pq)].imag  # Only Qf control elements iQfbeq
-    j53 = dSf_dPfsh[iBeqz, :].imag  # Only Qf control elements iQfbeq
-    j54 = dSf_dQfma[iBeqz, :].imag  # Only Qf control elements iQfbeq
-    j55 = dSf_dBeqz[iBeqz, :].imag  # Only Qf control elements iQfbeq
-    j56 = dSf_dBeqv[iBeqz, :].imag  # Only Qf control elements iQfbeq
-    j57 = dSf_dVtma[iBeqz, :].imag  # Only Qf control elements iQfbeq
-    j58 = dSf_dQtma[iBeqz, :].imag  # Only Qf control elements iQfbeq
-    j59 = dSf_dPfdp[iBeqz, :].imag  # Only Qf control elements iQfbeq
+    ndev = len(iBeqx)
 
-    j61 = dSbus_dVa[np.ix_(VfBeqbus, pvpq)].imag  # Only Vf control elements iVfbeq
-    j62 = dSbus_dVm[np.ix_(VfBeqbus, pq)].imag  # Only Vf control elements iVfbeq
-    j63 = dSbus_dPfsh[VfBeqbus, :].imag  # Only Vf control elements iVfbeq
-    j64 = dSbus_dQfma[VfBeqbus, :].imag  # Only Vf control elements iVfbeq
-    j65 = dSbus_dBeqz[VfBeqbus, :].imag  # Only Vf control elements iVfbeq
-    j66 = dSbus_dBeqv[VfBeqbus, :].imag  # Only Vf control elements iVfbeq
-    j67 = dSbus_dVtma[VfBeqbus, :].imag  # Only Vf control elements iVfbeq
-    j68 = dSbus_dQtma[VfBeqbus, :].imag  # Only Vf control elements iVfbeq
-    j69 = dSbus_dPfdp[VfBeqbus, :].imag  # Only Vf control elements iVfbeq
+    dSbus_dBeq_data, dSbus_dBeq_indices, dSbus_dBeq_indptr, \
+    dSf_dBeqx_data, dSf_dBeqx_indices, dSf_dBeqx_indptr = derivatives_Beq_numba(iBeqx, F, V, ma, k2)
 
-    j71 = dSbus_dVa[np.ix_(Vtmabus, pvpq)].imag  # Only Vt control elements iVtma
-    j72 = dSbus_dVm[np.ix_(Vtmabus, pq)].imag  # Only Vt control elements iVtma
-    j73 = dSbus_dPfsh[Vtmabus, :].imag  # Only Vt control elements iVtma
-    j74 = dSbus_dQfma[Vtmabus, :].imag  # Only Vt control elements iVtma
-    j75 = dSbus_dBeqz[Vtmabus, :].imag  # Only Vt control elements iVtma
-    j76 = dSbus_dBeqv[Vtmabus, :].imag  # Only Vt control elements iVtma
-    j77 = dSbus_dVtma[Vtmabus, :].imag  # Only Vt control elements iVtma
-    j78 = dSbus_dQtma[Vtmabus, :].imag  # Only Vt control elements iVtma
-    j79 = dSbus_dPfdp[Vtmabus, :].imag  # Only Vt control elements iVtma
+    dSbus_dBeqx = sp.csc_matrix((dSbus_dBeq_data, dSbus_dBeq_indices, dSbus_dBeq_indptr), shape=(nb, ndev))
+    dSf_dBeqx = sp.csc_matrix((dSf_dBeqx_data, dSf_dBeqx_indices, dSf_dBeqx_indptr), shape=(nl, ndev))
+    dSt_dBeqx = sp.csc_matrix((nl, ndev), dtype=complex)
 
-    j81 = dSt_dVa[np.ix_(iQtma, pvpq)].imag  # Only Qt control elements iQtma
-    j82 = dSt_dVm[np.ix_(iQtma, pq)].imag  # Only Qt control elements iQtma
-    j83 = dSt_dPfsh[iQtma, :].imag  # Only Qt control elements iQtma
-    j84 = dSt_dQfma[iQtma, :].imag  # Only Qt control elements iQtma
-    j85 = dSt_dBeqz[iQtma, :].imag  # Only Qt control elements iQtma
-    j86 = dSt_dBeqv[iQtma, :].imag  # Only Qt control elements iQtma
-    j87 = dSt_dVtma[iQtma, :].imag  # Only Qt control elements iQtma
-    j88 = dSt_dQtma[iQtma, :].imag  # Only Qt control elements iQtma
-    j89 = dSt_dPfdp[iQtma, :].imag  # Only Droop control elements iPfdp
-
-    j91 = dPfdp_dVa[np.ix_(iPfdp, pvpq)]  # Only Droop control elements iPfdp
-    j92 = dPfdp_dVm[np.ix_(iPfdp, pq)]  # Only Droop control elements iPfdp
-    j93 = dPfdp_dPfsh[iPfdp, :]  # Only Droop control elements iPfdp
-    j94 = dPfdp_dQfma[iPfdp, :]  # Only Droop control elements iPfdp
-    j95 = dPfdp_dBeqz[iPfdp, :]  # Only Droop control elements iPfdp
-    j96 = dPfdp_dBeqv[iPfdp, :]  # Only Droop control elements iPfdp
-    j97 = dPfdp_dVtma[iPfdp, :]  # Only Droop control elements iPfdp
-    j98 = dPfdp_dQtma[iPfdp, :]  # Only Droop control elements iPfdp
-    j99 = dPfdp_dPfdp[iPfdp, :]  # Only Droop control elements iPfdp
-
-    # Jacobian
-    J = sp.vstack((
-        sp.hstack((j11, j12, j13, j14, j15, j16, j17, j18, j19)),
-        sp.hstack((j21, j22, j23, j24, j25, j26, j27, j28, j29)),
-        sp.hstack((j31, j32, j33, j34, j35, j36, j37, j38, j39)),
-        sp.hstack((j41, j42, j43, j44, j45, j46, j47, j48, j49)),
-        sp.hstack((j51, j52, j53, j54, j55, j56, j57, j58, j59)),
-        sp.hstack((j61, j62, j63, j64, j65, j66, j67, j68, j69)),
-        sp.hstack((j71, j72, j73, j74, j75, j76, j77, j78, j79)),
-        sp.hstack((j81, j82, j83, j84, j85, j86, j87, j88, j89)),
-        sp.hstack((j91, j92, j93, j94, j95, j96, j97, j98, j99))
-    ), format='csc')  # FUBM-Jacobian Matrix
-
-    return J
+    return dSbus_dBeqx, dSf_dBeqx, dSt_dBeqx
 
 
 def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeqbus, Vtmabus,
@@ -702,7 +853,9 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
 
     # compose the derivatives w.r.t theta sh
     if nPfsh > 0:
-        dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh = derivatives_sh(nb, nl, iPfsh, F, T, Ys, k2, tap, V)
+        # dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh = derivatives_sh(nb, nl, iPfsh, F, T, Ys, k2, tap, V)
+
+        dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh = derivatives_sh_fast(nb, nl, iPfsh, F, T, Ys, k2, tap, V)
 
         dPfdp_dPfsh = -dSf_dPfsh.real
 
@@ -733,7 +886,9 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
 
     # compose the derivative w.r.t ma
     if nQfma > 0:
-        dSbus_dQfma, dSf_dQfma, dSt_dQfma = derivatives_ma(nb, nl, iQfma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
+        # dSbus_dQfma, dSf_dQfma, dSt_dQfma = derivatives_ma(nb, nl, iQfma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
+
+        dSbus_dQfma, dSf_dQfma, dSt_dQfma = derivatives_ma_fast(nb, nl, iQfma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
 
         dPfdp_dQfma = -dSf_dQfma.real
 
@@ -764,7 +919,9 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
 
     # compose the derivatives w.r.t Beq
     if nBeqz > 0:
-        dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz = derivatives_Beq(nb, nl, iBeqz, F, T, V, ma, k2)
+        # dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz = derivatives_Beq(nb, nl, iBeqz, F, T, V, ma, k2)
+
+        dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz = derivatives_Beq_fast(nb, nl, iBeqz, F, T, V, ma, k2)
 
         dPfdp_dBeqz = -dSf_dBeqz.real
 
@@ -824,7 +981,9 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
             mats.append(j96)
 
     if nVtma > 0:
-        dSbus_dVtma, dSf_dVtma, dSt_dVtma = derivatives_ma(nb, nl, iVtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
+        # dSbus_dVtma, dSf_dVtma, dSt_dVtma = derivatives_ma(nb, nl, iVtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
+
+        dSbus_dVtma, dSf_dVtma, dSt_dVtma = derivatives_ma_fast(nb, nl, iVtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
 
         dPfdp_dVtma = -dSf_dVtma.real
 
@@ -854,7 +1013,8 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
             mats.append(j97)
 
     if nQtma > 0:
-        dSbus_dQtma, dSf_dQtma, dSt_dQtma = derivatives_ma(nb, nl, iQtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
+        # dSbus_dQtma, dSf_dQtma, dSt_dQtma = derivatives_ma(nb, nl, iQtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
+        dSbus_dQtma, dSf_dQtma, dSt_dQtma = derivatives_ma_fast(nb, nl, iQtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
 
         dPfdp_dQtma = -dSf_dQtma.real
 
@@ -884,7 +1044,9 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
             mats.append(j98)
 
     if nPfdp > 0:
-        dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp = derivatives_sh(nb, nl, iPfdp, F, T, Ys, k2, tap, V)
+        # dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp = derivatives_sh(nb, nl, iPfdp, F, T, Ys, k2, tap, V)
+
+        dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp = derivatives_sh_fast(nb, nl, iPfdp, F, T, Ys, k2, tap, V)
 
         dPfdp_dPfdp = -dSf_dPfdp.real
 
@@ -930,7 +1092,7 @@ def compute_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
     :param Pfset: Array of Pf set values per branch
     :param Qfset: Array of Qf set values per branch
     :param Qtset: Array of Qt set values per branch
-    :param Vmfset: Array of Vf set values per branch
+    :param Vmfset: Array of Vf module set values per branch
     :param Kdp: Array of branch droop value per branch
     :param F:
     :param T:
@@ -941,35 +1103,35 @@ def compute_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
     :param iBeqz:
     :param iQtma:
     :param iPfdp:
-    :param iBeqv:
-    :param iVtma:
+    :param VfBeqbus:
+    :param Vtmabus:
     :return:
     """
     Scalc = V * np.conj(Ybus * V)
-    mis = Scalc - Sbus  # FUBM- F1(x0) & F2(x0) Power balance mismatch
+    mis = Scalc - Sbus  # F1(x0) & F2(x0) Power balance mismatch
 
-    misPbus = mis[pvpq].real  # FUBM- F1(x0) Power balance mismatch - Va
-    misQbus = mis[pq].imag  # FUBM- F2(x0) Power balance mismatch - Vm
-    misPfsh = Sf[iPfsh].real - Pfset[iPfsh]  # FUBM- F3(x0) Pf control mismatch
-    misQfma = Sf[iQfma].imag - Qfset[iQfma]  # FUBM- F4(x0) Qf control mismatch
-    misBeqz = Sf[iBeqz].imag - 0  # FUBM- F5(x0) Qf control mismatch
-    misBeqv = mis[VfBeqbus].imag  # FUBM- F6(x0) Vf control mismatch
-    misVtma = mis[Vtmabus].imag  # FUBM- F7(x0) Vt control mismatch
-    misQtma = St[iQtma].imag - Qtset[iQtma]  # FUBM- F8(x0) Qt control mismatch
-    misPfdp = -Sf[iPfdp].real + Pfset[iPfdp] + Kdp[iPfdp] * (Vm[F[iPfdp]] - Vmfset[iPfdp])  # FUBM- F9(x0) Pf control mismatch, Droop Pf - Pfset = Kdp*(Vmf - Vmfset)
+    misPbus = mis[pvpq].real  # F1(x0) Power balance mismatch - Va
+    misQbus = mis[pq].imag  # F2(x0) Power balance mismatch - Vm
+    misPfsh = Sf[iPfsh].real - Pfset[iPfsh]  # F3(x0) Pf control mismatch
+    misQfma = Sf[iQfma].imag - Qfset[iQfma]  # F4(x0) Qf control mismatch
+    misBeqz = Sf[iBeqz].imag - 0  # F5(x0) Qf control mismatch
+    misBeqv = mis[VfBeqbus].imag  # F6(x0) Vf control mismatch
+    misVtma = mis[Vtmabus].imag  # F7(x0) Vt control mismatch
+    misQtma = St[iQtma].imag - Qtset[iQtma]  # F8(x0) Qt control mismatch
+    misPfdp = -Sf[iPfdp].real + Pfset[iPfdp] + Kdp[iPfdp] * (Vm[F[iPfdp]] - Vmfset[iPfdp])  # F9(x0) Pf control mismatch, Droop Pf - Pfset = Kdp*(Vmf - Vmfset)
     # -------------------------------------------------------------------------
 
     #  Create F vector
-    # FUBM----------------------------------------------------------------------
-    df = np.r_[misPbus,  # FUBM- F1(x0) Power balance mismatch - Va
-               misQbus,  # FUBM- F2(x0) Power balance mismatch - Vm
-               misPfsh,  # FUBM- F3(x0) Pf control    mismatch - Theta_shift
-               misQfma,  # FUBM- F4(x0) Qf control    mismatch - ma
-               misBeqz,  # FUBM- F5(x0) Qf control    mismatch - Beq
-               misBeqv,  # FUBM- F6(x0) Vf control    mismatch - Beq
-               misVtma,  # FUBM- F7(x0) Vt control    mismatch - ma
-               misQtma,  # FUBM- F8(x0) Qt control    mismatch - ma
-               misPfdp]  # FUBM- F9(x0) Pf control    mismatch - Theta_shift Droop
+    # FUBM ----------------------------------------------------------------------
+    df = np.r_[misPbus,  # F1(x0) Power balance mismatch - Va
+               misQbus,  # F2(x0) Power balance mismatch - Vm
+               misPfsh,  # F3(x0) Pf control    mismatch - Theta_shift
+               misQfma,  # F4(x0) Qf control    mismatch - ma
+               misBeqz,  # F5(x0) Qf control    mismatch - Beq
+               misBeqv,  # F6(x0) Vf control    mismatch - Beq
+               misVtma,  # F7(x0) Vt control    mismatch - ma
+               misQtma,  # F8(x0) Qt control    mismatch - ma
+               misPfdp]  # F9(x0) Pf control    mismatch - Theta_shift Droop
 
     return df, Scalc
 
@@ -1054,10 +1216,10 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
                                        mt=nc.branch_data.tap_t)
 
     #  compute branch power flows
-    If = Yf * V  # FUBM- complex current injected at "from" bus, Yf(br, :) * V; For in-service branches
-    It = Yt * V  # FUBM- complex current injected at "to"   bus, Yt(br, :) * V; For in-service branches
-    Sf = V[F] * np.conj(If)  # FUBM- complex power injected at "from" bus
-    St = V[T] * np.conj(It)  # FUBM- complex power injected at "to"   bus
+    If = Yf * V  # complex current injected at "from" bus, Yf(br, :) * V; For in-service branches
+    It = Yt * V  # complex current injected at "to"   bus, Yt(br, :) * V; For in-service branches
+    Sf = V[F] * np.conj(If)  # complex power injected at "from" bus
+    St = V[T] * np.conj(It)  # complex power injected at "to"   bus
 
     # compute converter losses
     Gsw = compute_converter_losses(V=V, It=It, F=F,
@@ -1480,10 +1642,10 @@ def LM_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, verbose=False) -> Nu
                                                mt=nc.branch_data.tap_t)
 
             #  compute branch power flows
-            If = Yf * V  # FUBM- complex current injected at "from" bus, Yf(br, :) * V; For in-service branches
-            It = Yt * V  # FUBM- complex current injected at "to"   bus, Yt(br, :) * V; For in-service branches
-            Sf = V[F] * np.conj(If)  # FUBM- complex power injected at "from" bus
-            St = V[T] * np.conj(It)  # FUBM- complex power injected at "to"   bus
+            If = Yf * V  # complex current injected at "from" bus, Yf(br, :) * V; For in-service branches
+            It = Yt * V  # complex current injected at "to"   bus, Yt(br, :) * V; For in-service branches
+            Sf = V[F] * np.conj(If)  # complex power injected at "from" bus
+            St = V[T] * np.conj(It)  # complex power injected at "to"   bus
 
             # compute converter losses
             Gsw = compute_converter_losses(V=V, It=It, F=F,
@@ -1547,9 +1709,10 @@ if __name__ == "__main__":
     # np.set_printoptions(linewidth=10000)
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/LineHVDCGrid.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE57+IEEE14 DC grid.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/fubm_case_57_14_2MTDC_ctrls.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/ACDC_example_grid.gridcal'
     fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/fubm_caseHVDC_vt.gridcal'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/3Bus_controlled_transformer.gridcal'
     grid = FileOpen(fname).open()
 
     ####################################################################################################################
@@ -1559,6 +1722,6 @@ if __name__ == "__main__":
 
     res = NR_LS_ACDC(nc=nc_, tolerance=1e-4, max_iter=20, verbose=True)
 
-    res2 = LM_ACDC(nc=nc_, tolerance=1e-4, max_iter=20, verbose=True)
+    # res2 = LM_ACDC(nc=nc_, tolerance=1e-4, max_iter=20, verbose=True)
 
     print()
