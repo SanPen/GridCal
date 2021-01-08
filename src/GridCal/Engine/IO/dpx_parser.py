@@ -201,7 +201,6 @@ __headers__['Branches']['ZN'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', '
                                  'TRECONF', 'TREPAIR', 'EQ', 'YEAR']
 
 
-
 def reformat(val):
     """
     Pick string and give it format
@@ -292,6 +291,7 @@ def repack(data_structures, logger=Logger(), verbose=False):
     Pack the values as DataFrames with headers where available
     :param data_structures: Raw data structures
     :param logger: logger (inherited)
+    :param verbose: print extra stuff
     :return:
     """
     for current_block in data_structures.keys():
@@ -405,7 +405,6 @@ def load_dpx(file_name,contraction_factor=1000) -> MultiCircuit:
 
                 circuit.add_bus(bus)
                 buses_id_dict[id_] = bus
-
 
         # Network Equivalent
         # __headers__['Nodes']['EQUIV'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'VMIN', 'VMAX', 'ZONE',

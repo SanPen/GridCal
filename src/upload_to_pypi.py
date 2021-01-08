@@ -16,4 +16,12 @@ import sys
 
 call([sys.executable, 'setup.py', 'sdist'])
 
-call(['twine', 'upload', 'dist/GridCal-' + str(__GridCal_VERSION__) + '.tar.gz'])
+call([sys.executable, 'setup.py', 'bdist_wheel'])
+
+name = 'GridCal-' + str(__GridCal_VERSION__) + '.tar.gz'
+fpath = os.path.join('dist', name)
+
+call([sys.executable, '-m', 'twine', 'check', fpath])
+
+call([sys.executable, '-m', 'twine', 'upload', '--repository', 'pypi', fpath])
+

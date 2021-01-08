@@ -303,8 +303,6 @@ def derivatives_sh_numba(iPxsh, F, T, Ys, k2, tap, V):
     - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
     - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
 
-    :param nb: number of buses
-    :param nl: number of branches
     :param iPxsh: array of indices {iPfsh or iPfdp}
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
@@ -370,8 +368,8 @@ def derivatives_sh_numba(iPxsh, F, T, Ys, k2, tap, V):
     dSt_dsh_indptr[ndev] = ndev
 
     return dSbus_dsh_data, dSbus_dsh_indices, dSbus_dsh_indptr, \
-            dSf_dsh_data, dSf_dsh_indices, dSf_dsh_indptr, \
-            dSt_dsh_data, dSt_dsh_indices, dSt_dsh_indptr
+           dSf_dsh_data, dSf_dsh_indices, dSf_dsh_indptr, \
+           dSt_dsh_data, dSt_dsh_indices, dSt_dsh_indptr
 
 
 def derivatives_sh_fast(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
@@ -469,8 +467,6 @@ def derivatives_ma_numba(iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
     - dSbus_dQtma, dSf_dQtma, dSt_dQtma  -> wih iXxma=iQtma
     - dSbus_dVtma, dSf_dVtma, dSt_dVtma  -> wih iXxma=iVtma
 
-    :param nb: Number of buses
-    :param nl: Number of branches
     :param iXxma: Array of indices {iQfma, iQtma, iVtma}
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
@@ -510,7 +506,7 @@ def derivatives_ma_numba(iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
         f = F[idx]
         t = T[idx]
 
-        YttB = Ys[idx] + 1j * Bc[idx] / 2 + 1j * Beq[idx]
+        YttB = Ys[idx] + 1j * (Bc[idx] / 2 + Beq[idx])
 
         # Partials of Ytt, Yff, Yft and Ytf w.r.t.ma
         dyff_dma = -2 * YttB / (np.power(k2[idx], 2) * np.power(ma[idx], 3))
@@ -523,7 +519,6 @@ def derivatives_ma_numba(iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
         # Partials of S w.r.t.ma
         # dSbus_dma[f, k] = val_f
         # dSbus_dma[t, k] = val_t
-
         dSbus_dma_data[2 * k] = val_f
         dSbus_dma_indices[2 * k] = f
         dSbus_dma_data[2 * k + 1] = val_t

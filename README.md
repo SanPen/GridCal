@@ -25,8 +25,8 @@ from the project's [documentation](https://gridcal.readthedocs.io).
 
 GridCal can be used in 2 ways:
 
-1. With a GUI;
-2. As a library.
+    1. From the user interface (GUI)
+    2. As a library.
 
 Executing `python3 -c "from GridCal.ExecuteGridCal import run; run()"` in a console
 should bring up the GUI under most platforms. For detailed instructions, follow the

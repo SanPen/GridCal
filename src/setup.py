@@ -19,25 +19,61 @@ from GridCal.__version__ import __GridCal_VERSION__
 here = os.path.abspath(os.path.dirname(__file__))
 
 # Get the long description from the README file
-if os.path.exists(os.path.join(here, '..', 'README.md')):
-    with open(os.path.join(here, '..', 'README.md'), encoding='utf-8') as f:
-        long_description = f.read()
-else:
-    long_description = ''
+# if os.path.exists(os.path.join(here, 'README.md')):
+#     with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
+#         long_description = f.read()
+#         print(long_description)
+# else:
+#     long_description = ''
 
-if os.path.exists(os.path.join(here, '..', 'doc', 'about.rst')):
-    with open(os.path.join(here, '..', 'doc', 'about.rst'), encoding='utf-8') as f:
-        description = f.read()
-else:
-    description = ''
-    print('Unable to read the description file')
+long_description = '''# GridCal
 
+This software aims to be a complete platform for power systems research and simulation.
+
+[Watch the video https](https://youtu.be/SY66WgLGo54)
+
+[Check out the documentation](https://gridcal.readthedocs.io)
+
+
+## Installation
+
+pip install GridCal
+
+For more options (including a standalone setup one), follow the
+[installation instructions]( https://gridcal.readthedocs.io/en/latest/getting_started/install.html)
+from the project's [documentation](https://gridcal.readthedocs.io)
+'''
+
+# if os.path.exists(os.path.join(here, 'about.txt')):
+#     with open(os.path.join(here, 'about.txt'), encoding='utf-8') as f:
+#         description = f.read()
+#         print(description)
+# else:
+#     description = ''
+#     print('Unable to read the description file')
+description = '''# About GridCal
+
+GridCal is a research oriented power systems software.
+
+Research oriented? How? Well, it is a fruit of research. It is designed to be modular.
+As a researcher I found that the available software (not even talking about commercial
+options) are hard to expand or adapt to achieve complex simulations. GridCal is
+designed to allow you to build and reuse modules, which eventually will boost your
+productivity and the possibilities that are at hand.
+
+So, I do really hope you enjoy it, and if you have comments, suggestions or just want
+to collaborate, do not hesitate to contact.
+
+Cheers,
+Santiago
+'''
 
 base_path = os.path.join('GridCal')
 
-packages = find_packages(exclude=['docs', 'test', 'research', 'tests'])
+packages = find_packages(exclude=['docs', 'test', 'research', 'tests', 'Tutorials'])
 
 package_data = {'GridCal': ['*.md',
+                            '*.rst',
                             'data/cables.csv',
                             'data/transformers.csv',
                             'data/wires.csv'],
@@ -55,7 +91,9 @@ package_data = {'GridCal': ['*.md',
                 'GridCal.ThirdParty.pulp.solverdir.cbc.osx.64': ['*', '*.*'],
                 }
 
-dependencies = ["PySide2>=5.13",  # for now, 5.14 breaks the UI generation for development
+dependencies = ['setuptools>=41.0.1',
+                'wheel>=0.33.4',
+                "PySide2>=5.15",  # for now, 5.14 breaks the UI generation for development
                 "numpy>=1.14.0",
                 "scipy>=1.0.0",
                 "networkx>=2.1",
@@ -102,6 +140,8 @@ setup(
     # https://packaging.python.org/en/latest/single_source_version.html
     version=__GridCal_VERSION__,  # Required
 
+    license='GPL v3',
+
     # This is a one-line description or tag-line of what your project does. This
     # corresponds to the "Summary" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#summary
@@ -127,7 +167,7 @@ setup(
     #
     # This field corresponds to the "Description-Content-Type" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#description-content-type-optional
-    # long_description_content_type='text/markdown',  # Optional (see note above)
+    long_description_content_type='text/markdown',  # Optional (see note above)
 
     # This should be a valid link to your project's main homepage.
     #
