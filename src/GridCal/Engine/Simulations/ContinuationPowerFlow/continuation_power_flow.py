@@ -30,17 +30,19 @@ class CpfNumericResults:
         self.V = list()
         self.Sbus = list()
         self.lmbda = list()
-        self.Sbranch = list()
+        self.Sf = list()
+        self.St = list()
         self.loading = list()
         self.losses = list()
         self.normF = list()
         self.success = list()
 
-    def add(self, v, sbus, Sbranch, lam, losses, loading, normf, converged):
+    def add(self, v, sbus, Sf, St, lam, losses, loading, normf, converged):
         self.V.append(v)
         self.Sbus.append(sbus)
         self.lmbda.append(lam)
-        self.Sbranch.append(Sbranch)
+        self.Sf.append(Sf)
+        self.St.append(St)
         self.loading.append(loading)
         self.losses.append(losses)
         self.normF.append(normf)
@@ -598,23 +600,20 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
             # Branches current, loading, etc
             Vf = Cf * V
             Vt = Ct * V
-            If = Yf * V
-            It = Yt * V
-            Sf = Vf * np.conj(If)
-            St = Vt * np.conj(It)
+            If = Yf * V  # in p.u.
+            It = Yt * V  # in p.u.
+            Sf = Vf * np.conj(If) * Sbase  # in MVA
+            St = Vt * np.conj(It) * Sbase  # in MVA
 
             # Branch losses in MVA
-            losses = (Sf + St) * Sbase
-
-            # Branch power in MVA
-            Sbranch = Sf * Sbase
+            losses = Sf + St
 
             # Branch loading in p.u.
-            loading = Sbranch.real / (branch_rates + 1e-9)
+            loading = Sf.real / (branch_rates + 1e-9)
 
             # store series values --------------------------------------------------------------------------------------
 
-            results.add(V, Scalc, Sbranch, lam, losses, loading, normF, success)
+            results.add(V, Scalc, Sf, St, lam, losses, loading, normF, success)
 
             if verbose:
                 print('Step: ', cont_steps, ' Lambda prev: ', lam_prev, ' Lambda: ', lam)

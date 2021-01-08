@@ -119,7 +119,8 @@ class ContinuationPowerFlowResults:
 
         self.converged = np.zeros(nval, dtype=bool)
 
-        self.Sbranch = np.zeros((nval, nbr), dtype=complex)
+        self.Sf = np.zeros((nval, nbr), dtype=complex)
+        self.St = np.zeros((nval, nbr), dtype=complex)
 
         self.loading = np.zeros((nval, nbr))
 
@@ -134,6 +135,8 @@ class ContinuationPowerFlowResults:
                                   ResultTypes.BusReactivePower,
                                   ResultTypes.BranchActivePowerFrom,
                                   ResultTypes.BranchReactivePowerFrom,
+                                  ResultTypes.BranchActivePowerTo,
+                                  ResultTypes.BranchReactivePowerTo,
                                   ResultTypes.BranchActiveLosses,
                                   ResultTypes.BranchReactiveLosses,
                                   ResultTypes.BranchLoading]
@@ -174,7 +177,9 @@ class ContinuationPowerFlowResults:
         self.error[nval] = results.normF
         self.converged[nval] = results.success
 
-        self.Sbranch[np.ix_(nval, branch_original_idx)] = results.Sbranch
+        self.Sf[np.ix_(nval, branch_original_idx)] = results.Sf
+        self.St[np.ix_(nval, branch_original_idx)] = results.St
+
         self.loading[np.ix_(nval, branch_original_idx)] = results.loading
         self.losses[np.ix_(nval, branch_original_idx)] = results.losses
 
@@ -213,17 +218,33 @@ class ContinuationPowerFlowResults:
 
         elif result_type == ResultTypes.BranchActivePowerFrom:
             labels = self.branch_names
-            y = self.Sbranch.real
+            y = self.Sf.real
             x = self.lambdas
-            title = 'Branch active power'
+            title = 'Branch active power (from)'
             y_label = 'MW'
             x_label = 'Loading from the base situation ($\lambda$)'
 
         elif result_type == ResultTypes.BranchReactivePowerFrom:
             labels = self.branch_names
-            y = self.Sbranch.imag
+            y = self.Sf.imag
             x = self.lambdas
-            title = 'Branch reactive power'
+            title = 'Branch reactive power (from)'
+            y_label = 'MVAr'
+            x_label = 'Loading from the base situation ($\lambda$)'
+
+        elif result_type == ResultTypes.BranchActivePowerTo:
+            labels = self.branch_names
+            y = self.St.real
+            x = self.lambdas
+            title = 'Branch active power (to)'
+            y_label = 'MW'
+            x_label = 'Loading from the base situation ($\lambda$)'
+
+        elif result_type == ResultTypes.BranchReactivePowerTo:
+            labels = self.branch_names
+            y = self.St.imag
+            x = self.lambdas
+            title = 'Branch reactive power (to)'
             y_label = 'MVAr'
             x_label = 'Loading from the base situation ($\lambda$)'
 

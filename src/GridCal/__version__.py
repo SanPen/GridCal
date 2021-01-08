@@ -1,5 +1,8 @@
 # do not forget to keep a three-number version!!!
-__GridCal_VERSION__ = "4.0.0a1"
+import datetime
+_current_year_ = datetime.datetime.now().year
+
+__GridCal_VERSION__ = "4.0.0a3"
 
 url = 'https://github.com/SanPen/GridCal'
 
@@ -14,7 +17,7 @@ about_msg += "GridCal is licensed under the GNU general public license V.3. "
 about_msg += 'See the license file for more details. \n\n'
 about_msg += "The source of GridCal can be found at:\n" + url + "\n\n"
 
-about_msg += 'Copyright (C) 2015-2020\nSantiago Peñate Vera\n'
+about_msg += 'Copyright (C) 2015-' + str(_current_year_) + '\nSantiago Peñate Vera\n'
 about_msg += 'Michel Lavoie (Transformer automation)\n'
 about_msg += 'Bengt Lüers (Better testing)\n'
 about_msg += 'Josep Fanals Batllori (HELM)\n'

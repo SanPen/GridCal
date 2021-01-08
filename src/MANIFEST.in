@@ -1,2 +1,3 @@
 
 recursive-include GridCal/ThirdParty *.*
+include LICENSE.txt

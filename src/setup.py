@@ -94,7 +94,7 @@ package_data = {'GridCal': ['*.md',
 dependencies = ['setuptools>=41.0.1',
                 'wheel>=0.33.4',
                 "PySide2>=5.15",  # for now, 5.14 breaks the UI generation for development
-                "numpy>=1.14.0",
+                "numpy>=1.19.0",
                 "scipy>=1.0.0",
                 "networkx>=2.1",
                 "pandas>=0.22",
@@ -105,14 +105,14 @@ dependencies = ['setuptools>=41.0.1',
                 "pyDOE>=0.3.8",
                 "pySOT>=0.2.1",
                 "openpyxl>=2.4.9",
-                "smopy>=0.0.6",
-                "chardet>=3.0.4",
+                "smopy>=0.0.6",  # to render tiles
+                "chardet>=3.0.4",  # for the psse files character detection
                 "scikit-learn>=0.18",
                 "geopy>=1.16",
                 "pytest>=3.8",
                 "h5py>=2.9.0",
-                "numba>=0.46",
-                "folium",
+                "numba>=0.46",  # to compile routines natively
+                "folium",  # to render web maps
                 'pyproj']
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
@@ -177,7 +177,7 @@ setup(
 
     # This should be your name or the name of the organization which owns the
     # project.
-    author='Santiago Peñate Vera and Michel Lavoie',  # Optional
+    author='Santiago Peñate Vera et. al.',  # Optional
 
     # This should be a valid email address corresponding to the author listed
     # above.
@@ -191,7 +191,6 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 5 - Production/Stable',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers and electrical engineers',
@@ -232,7 +231,7 @@ setup(
     # and refuse to install the project if the version does not match. If you
     # do not support Python 2, you can simplify this to '>=3.5' or similar, see
     # https://packaging.python.org/guides/distributing-packages-using-setuptools/#python-requires
-    python_requires='>=3.7',
+    python_requires='>=3.6',
 
     # This field lists other packages that your project depends on to run.
     # Any package you put here will be installed by pip when your project is

@@ -30,6 +30,7 @@ from GridCal.Gui.GridEditorWidget.messages import *
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
+from GridCal.update import check_version
 
 # Engine imports
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
@@ -364,6 +365,8 @@ class MainGUI(QMainWindow):
         self.ui.actionLaunch_data_analysis_tool.triggered.connect(self.display_grid_analysis)
 
         self.ui.actionOnline_documentation.triggered.connect(self.show_online_docs)
+
+        self.ui.actionLicense.triggered.connect(self.show_license)
 
         self.ui.actionExport_all_results.triggered.connect(self.export_all)
 
@@ -761,15 +764,36 @@ class MainGUI(QMainWindow):
         :return:
         """
 
-        QMessageBox.about(self, "About GridCal", about_msg)
+        version_code, latest_version = check_version()
+
+        if version_code == 1:
+            addendum = '\nThere is a newer version: ' + latest_version
+        elif version_code == -1:
+            addendum = '\nThis version is newer than the version available\nin the repositories (' + latest_version + ')'
+        elif version_code == 0:
+            addendum = '\nGridCal is up to date.'
+        elif version_code == -2:
+            addendum = '\nIt was impossible to check for a newer version'
+        else:
+            addendum = ''
+
+        QMessageBox.about(self, "About GridCal", about_msg + addendum)
 
     @staticmethod
-    def show_online_docs(self):
+    def show_online_docs():
         """
         Open the online documentation in a web browser
         """
         import webbrowser
         webbrowser.open('https://gridcal.readthedocs.io/en/latest/', new=2)
+
+    @staticmethod
+    def show_license(self):
+        """
+        Open the gplv3 in a web browser
+        """
+        import webbrowser
+        webbrowser.open('https://www.gnu.org/licenses/gpl-3.0.en.html', new=2)
 
     @staticmethod
     def print_console_help():
