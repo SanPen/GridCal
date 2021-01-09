@@ -2837,9 +2837,13 @@ class MainGUI(QMainWindow):
                 voltage = self.time_series.results.voltage.max(axis=0)
                 loading = np.abs(self.time_series.results.loading).max(axis=0)
                 Sbranch = self.time_series.results.Sf.max(axis=0)
+                Sbus = self.time_series.results.S.max(axis=0)
 
                 colour_the_schematic(circuit=self.circuit,
-                                     Sbus=None, Sf=Sbranch, voltages=voltage, loadings=loading,
+                                     Sbus=Sbus,
+                                     Sf=Sbranch,
+                                     voltages=voltage,
+                                     loadings=loading,
                                      types=self.time_series.results.bus_types)
 
             self.update_available_results()
@@ -3792,15 +3796,12 @@ class MainGUI(QMainWindow):
 
             elif current_study == TimeSeries.name:
 
-                voltage = self.time_series.results.voltage[current_step, :]
-                loading = self.time_series.results.loading[current_step, :]
-                Sbranch = self.time_series.results.Sf[current_step, :]
-
                 plot_function(circuit=self.circuit,
-                              Sbus=None,
-                              Sf=Sbranch,
-                              voltages=voltage,
-                              loadings=np.abs(loading),
+                              Sbus=self.time_series.results.S[current_step, :],
+                              Sf=self.time_series.results.Sf[current_step, :],
+                              St=self.time_series.results.St[current_step, :],
+                              voltages=self.time_series.results.voltage[current_step, :],
+                              loadings=np.abs(self.time_series.results.loading[current_step, :]),
                               types=self.time_series.results.bus_types,
                               file_name=file_name)
 
@@ -3855,15 +3856,11 @@ class MainGUI(QMainWindow):
 
             elif current_study == OptimalPowerFlowTimeSeries.name:
 
-                voltage = self.optimal_power_flow_time_series.results.voltage[current_step, :]
-                loading = self.optimal_power_flow_time_series.results.loading[current_step, :]
-                Sbranch = self.optimal_power_flow_time_series.results.Sf[current_step, :]
-
                 plot_function(circuit=self.circuit,
-                              Sbus=None,
-                              Sf=Sbranch,
-                              voltages=voltage,
-                              loadings=np.abs(loading),
+                              Sbus=self.optimal_power_flow_time_series.results.Sbus[current_step, :],
+                              Sf=self.optimal_power_flow_time_series.results.Sf[current_step, :],
+                              voltages=self.optimal_power_flow_time_series.results.voltage[current_step, :],
+                              loadings=np.abs(self.optimal_power_flow_time_series.results.loading[current_step, :]),
                               types=self.optimal_power_flow_time_series.results.bus_types,
                               file_name=file_name)
 

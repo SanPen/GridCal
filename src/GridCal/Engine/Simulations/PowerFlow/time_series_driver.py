@@ -73,7 +73,9 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.S = np.zeros((self.nt, n), dtype=complex)
 
-        self.Sbranch = np.zeros((self.nt, m), dtype=complex)
+        self.Sf = np.zeros((self.nt, m), dtype=complex)
+
+        self.St = np.zeros((self.nt, m), dtype=complex)
 
         self.Ibranch = np.zeros((self.nt, m), dtype=complex)
 
@@ -136,7 +138,8 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.S[t, :] = results.Sbus
 
-        self.Sbranch[t, :] = results.Sf
+        self.Sf[t, :] = results.Sf
+        self.St[t, :] = results.St
 
         self.Ibranch[t, :] = results.If
 
@@ -190,8 +193,9 @@ class TimeSeriesResults(PowerFlowResults):
             self.S[np.ix_(t_index, b_idx)] = results.S
 
         # branch results
-        if self.Sbranch.shape == results.Sf.shape:
-            self.Sbranch = results.Sf
+        if self.Sf.shape == results.Sf.shape:
+            self.Sf = results.Sf
+            self.St = results.St
 
             self.Ibranch = results.If
 
@@ -209,7 +213,8 @@ class TimeSeriesResults(PowerFlowResults):
             self.converged_values = self.converged_values * results.converged_values
 
         else:
-            self.Sbranch[np.ix_(t_index, br_idx)] = results.Sf
+            self.Sf[np.ix_(t_index, br_idx)] = results.Sf
+            self.St[np.ix_(t_index, br_idx)] = results.St
 
             self.Ibranch[np.ix_(t_index, br_idx)] = results.If
 
@@ -235,8 +240,8 @@ class TimeSeriesResults(PowerFlowResults):
                 'Va': np.angle(self.voltage).tolist(),
                 'P': self.S.real.tolist(),
                 'Q': self.S.imag.tolist(),
-                'Sbr_real': self.Sbranch.real.tolist(),
-                'Sbr_imag': self.Sbranch.imag.tolist(),
+                'Sbr_real': self.Sf.real.tolist(),
+                'Sbr_imag': self.Sf.imag.tolist(),
                 'Ibr_real': self.Ibranch.real.tolist(),
                 'Ibr_imag': self.Ibranch.imag.tolist(),
                 'loading': np.abs(self.loading).tolist(),
@@ -305,19 +310,19 @@ class TimeSeriesResults(PowerFlowResults):
 
         elif result_type == ResultTypes.BranchPower:
             labels = self.branch_names
-            data = self.Sbranch
+            data = self.Sf
             y_label = '(MVA)'
             title = 'Branch power '
 
         elif result_type == ResultTypes.BranchActivePowerFrom:
             labels = self.branch_names
-            data = self.Sbranch.real
+            data = self.Sf.real
             y_label = '(MW)'
             title = 'Branch power '
 
         elif result_type == ResultTypes.BranchReactivePowerFrom:
             labels = self.branch_names
-            data = self.Sbranch.imag
+            data = self.Sf.imag
             y_label = '(MVAr)'
             title = 'Branch power '
 

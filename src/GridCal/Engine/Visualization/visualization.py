@@ -116,7 +116,7 @@ def colour_sub_schematic(Sbase,
                 tooltip += 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n'
                 tooltip += 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
                 if Sbus is not None:
-                    tooltip += '\nS: ' + "{:10.4f}".format(Sbus[i] * Sbase) + ' [MVA]'
+                    tooltip += '\nS: ' + "{:10.4f}".format(Sbus[i]) + ' [MVA]'
                 if types is not None:
                     tooltip += '\nType: ' + bus_types[types[i]]
                 bus.graphic_obj.setToolTip(tooltip)
@@ -206,7 +206,8 @@ def colour_the_schematic(circuit: MultiCircuit, Sbus, Sf, voltages, loadings,
                          failed_br_idx=None, loading_label='loading',
                          ma=None,
                          theta=None,
-                         Beq=None):
+                         Beq=None,
+                         file_name=None):
     """
     Color the grid based on the results passed
     :param circuit:
@@ -222,6 +223,10 @@ def colour_the_schematic(circuit: MultiCircuit, Sbus, Sf, voltages, loadings,
     :param hvdc_loading:
     :param failed_br_idx: failed branches
     :param loading_label:
+    :param ma
+    :param theta
+    :param Beq
+    :param file_name: Completely ignore this. It exist for interface compatibility
     :return:
     """
 
