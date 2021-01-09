@@ -807,7 +807,7 @@ class SnapshotData:
     def compute_reactive_power_limits(self):
         """
         compute the reactive power limits in place
-        :return: Qmax_bus, Qmin_bus
+        :return: Qmax_bus, Qmin_bus in per unit
         """
         # generators
         Qmax_bus = self.generator_data.get_qmax_per_bus()
@@ -831,7 +831,7 @@ class SnapshotData:
         Qmax_bus[Qmax_bus == 0] = 1e20
         Qmin_bus[Qmin_bus == 0] = -1e20
 
-        return Qmax_bus, Qmin_bus
+        return Qmax_bus / self.Sbase, Qmin_bus / self.Sbase
 
     def get_structure(self, structure_type) -> pd.DataFrame:
         """
@@ -940,6 +940,11 @@ class SnapshotData:
                               columns=['original_gen_idx'],
                               index=self.generator_data.generator_names)
 
+        elif structure_type == 'original_bat_idx':
+            df = pd.DataFrame(data=self.original_bat_idx,
+                              columns=['original_bat_idx'],
+                              index=self.battery_data.battery_names)
+
         elif structure_type == 'Jacobian':
 
             J = Jacobian(self.Ybus, self.Vbus, self.Ibus, self.pq, self.pqpv)
@@ -988,7 +993,7 @@ class SnapshotData:
             df = pd.DataFrame(data=self.Vtmabus, columns=['Vtmabus'], index=self.bus_data.bus_names[self.Vtmabus])
         else:
 
-            raise Exception('PF input: structure type not found')
+            raise Exception('PF input: structure type not found' +  str(structure_type))
 
         return df
 

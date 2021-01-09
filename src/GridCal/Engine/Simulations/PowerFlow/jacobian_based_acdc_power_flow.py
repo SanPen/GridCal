@@ -1377,7 +1377,6 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
             cond = norm_f_new > norm_f  # condition to back track (no improvement at all)
 
             mu *= acceleration_parameter
-            back_track_counter += 1
             l_iter += 1
 
         if l_iter > 1:
@@ -1397,7 +1396,7 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
             nc.branch_data.theta[:, 0] = theta
             nc.branch_data.Beq[:, 0] = Beq
 
-            return NumericPowerFlowResults(V, converged, norm_f, prev_Scalc, m, theta, Beq, iterations, elapsed)
+            return NumericPowerFlowResults(V, converged, norm_f_new, prev_Scalc, m, theta, Beq, iterations, elapsed)
         else:
             norm_f = norm_f_new
 

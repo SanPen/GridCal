@@ -7,7 +7,8 @@ from scipy.sparse import hstack, vstack
 from scipy.sparse.linalg import spsolve
 from enum import Enum
 from GridCal.Engine.basic_structures import ReactivePowerControlMode, Logger
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import control_q_direct, compile_types
+from GridCal.Engine.Simulations.PowerFlow.discrete_controls import control_q_direct
+from GridCal.Engine.Core.common_functions import compile_types
 from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import _create_J_with_numba
 # from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 

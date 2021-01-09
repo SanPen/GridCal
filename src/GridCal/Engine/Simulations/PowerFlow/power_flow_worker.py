@@ -185,13 +185,16 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
                                    max_iter=options.max_iter)
             else:
                 solution = levenberg_marquardt_pf(Ybus=circuit.Ybus,
-                                                  Sbus=Sbus,
+                                                  Sbus_=Sbus,
                                                   V0=final_solution.V,
                                                   Ibus=Ibus,
-                                                  pv=pv,
-                                                  pq=pq,
+                                                  pv_=pv,
+                                                  pq_=pq,
+                                                  Qmin=circuit.Qmin_bus[0, :],
+                                                  Qmax=circuit.Qmax_bus[0, :],
                                                   tol=options.tolerance,
-                                                  max_it=options.max_iter)
+                                                  max_it=options.max_iter,
+                                                  control_q=options.control_Q)
 
         # Fast decoupled
         elif solver_type == SolverType.FASTDECOUPLED:
@@ -220,15 +223,18 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
             else:
                 # Solve NR with the AC algorithm
                 solution = NR_LS(Ybus=circuit.Ybus,
-                                 Sbus=Sbus,
+                                 Sbus_=Sbus,
                                  V0=final_solution.V,
                                  Ibus=Ibus,
-                                 pv=pv,
-                                 pq=pq,
+                                 pv_=pv,
+                                 pq_=pq,
+                                 Qmin=circuit.Qmin_bus[0, :],
+                                 Qmax=circuit.Qmax_bus[0, :],
                                  tol=options.tolerance,
                                  max_it=options.max_iter,
                                  mu_0=options.mu,
-                                 acceleration_parameter=options.backtracking_parameter)
+                                 acceleration_parameter=options.backtracking_parameter,
+                                 control_q=options.control_Q)
 
         # Newton-Raphson-Decpupled
         elif solver_type == SolverType.NRD:
@@ -246,13 +252,16 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
         # Newton-Raphson-Iwamoto
         elif solver_type == SolverType.IWAMOTO:
             solution = IwamotoNR(Ybus=circuit.Ybus,
-                                 Sbus=Sbus,
+                                 Sbus_=Sbus,
                                  V0=final_solution.V,
                                  Ibus=Ibus,
-                                 pv=pv,
-                                 pq=pq,
+                                 pv_=pv,
+                                 pq_=pq,
+                                 Qmin=circuit.Qmin_bus[0, :],
+                                 Qmax=circuit.Qmax_bus[0, :],
                                  tol=options.tolerance,
                                  max_it=options.max_iter,
+                                 control_q=options.control_Q,
                                  robust=True)
 
         # Newton-Raphson in current equations
@@ -302,70 +311,26 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     """
     Run a power flow simulation for a single circuit using the selected outer loop
     controls. This method shouldn't be called directly.
-
-    Arguments:
-
-        **circuit**: CalculationInputs instance
-
-        **solver_type**: type of power flow to use first
-
-        **voltage_solution**: vector of initial voltages
-
-        **Sbus**: vector of power injections
-
-        **Ibus**: vector of current injections
-
-        **Ysh**: vector of admittance injections from the shunt devices (the legs of the PI branch are included already)
-
-        **Sinstalled**: vector of installed power per bus in MVA
-
-        **t**: (optional) time step
-
-    Return:
-
-        PowerFlowResults instance
+    :param circuit: CalculationInputs instance
+    :param options:
+    :param voltage_solution: vector of initial voltages
+    :param Sbus: vector of power injections
+    :param Ibus: vector of current injections
+    :param branch_rates:
+    :param t: time step
+    :param logger:
+    :return: PowerFlowResults instance
     """
 
     # get the original types and compile this class' own lists of node types for thread independence
-    original_types = circuit.bus_types.copy()
     bus_types = circuit.bus_types.copy()
-    # vd, pq, pv, pqpv = compile_types(Sbus, original_types, logger)
 
-    vd = circuit.vd.copy()
-    pq = circuit.pq.copy()
-    pv = circuit.pv.copy()
-    pqpv = circuit.pqpv.copy()
-
-    # copy the tap positions
-    tap_positions = circuit.tr_tap_position.copy()
-    tap_module = circuit.branch_data.m[:, t]
-
-    # control flags
-    any_q_control_issue = True
-    any_tap_control_issue = True
-
-    # outer loop max iterations
-    control_max_iter = options.max_outer_loop_iter
-
-    # The control iterations are either the number of tap_regulated transformers or 10, the larger of the two
-    # if self.options.control_Q == ReactivePowerControlMode.Iterative:
-    #     control_max_iter = 999  # TODO: Discuss what to do with these options
-    # else:
-    #     control_max_iter = 10
-    #
-    # # Alter the outer loop max iterations if the transformer tap control is active
-    # for k in circuit.bus_to_regulated_idx:   # indices of the branches that are regulated at the bus "to"
-    #     control_max_iter = max(control_max_iter, circuit.max_tap[k] + circuit.min_tap[k])
-
-    # For the iterate_pv_control logic:
-    Vset = voltage_solution.copy()  # Origin voltage set-points
-    Scalc = Sbus
+    # vd = circuit.vd.copy()
+    # pq = circuit.pq.copy()
+    # pv = circuit.pv.copy()
+    # pqpv = circuit.pqpv.copy()
 
     report = ConvergenceReport()
-
-    # modify the Ybus to include the shunts
-    Ybus = circuit.Ybus  # + sp.diags(Ysh)
-
     solution = NumericPowerFlowResults(V=voltage_solution,
                                        converged=False,
                                        norm_f=1e200,
@@ -377,151 +342,48 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                                        elapsed=0)
 
     # this the "outer-loop"
-    outer_it = 0
-    while (any_q_control_issue or any_tap_control_issue) and outer_it < control_max_iter:
+    if len(circuit.vd) == 0:
+        voltage_solution = np.zeros(len(Sbus), dtype=complex)
+        normF = 0
+        Scalc = Sbus.copy()
+        any_q_control_issue = False
+        converged = True
+        logger.append('Not solving power flow because there is no slack bus')
+    else:
 
-        if len(circuit.vd) == 0:
-            voltage_solution = np.zeros(len(Sbus), dtype=complex)
-            normF = 0
-            Scalc = Sbus.copy()
-            any_q_control_issue = False
-            converged = True
-            logger.append('Not solving power flow because there is no slack bus')
-        else:
+        # run the power flow method that shall be run
+        solution = solve(circuit=circuit,
+                         options=options,
+                         report=report,  # is modified here
+                         V0=voltage_solution,
+                         Sbus=Sbus,
+                         Ibus=Ibus,
+                         pq=circuit.pq,
+                         pv=circuit.pv,
+                         ref=circuit.vd,
+                         pqpv=circuit.pqpv,
+                         logger=logger)
 
-            # run the power flow method that shall be run
-            solution = solve(circuit=circuit,
-                             options=options,
-                             report=report,  # is modified here
-                             V0=voltage_solution,
-                             Sbus=Sbus,
-                             Ibus=Ibus,
-                             pq=pq,
-                             pv=pv,
-                             ref=vd,
-                             pqpv=pqpv,
-                             logger=logger)
+        if options.distributed_slack:
+            # Distribute the slack power
+            slack_power = Sbus[circuit.vd].real.sum()
+            total_installed_power = circuit.bus_installed_power.sum()
 
-            if options.distributed_slack:
-                # Distribute the slack power
-                slack_power = Scalc[vd].real.sum()
-                total_installed_power = circuit.bus_installed_power.sum()
+            if total_installed_power > 0.0:
+                delta = slack_power * circuit.bus_installed_power / total_installed_power
 
-                if total_installed_power > 0.0:
-                    delta = slack_power * circuit.bus_installed_power / total_installed_power
-
-                    # repeat power flow with the redistributed power
-                    solution = solve(circuit=circuit,
-                                     options=options,
-                                     report=report,  # is modified here
-                                     V0=voltage_solution,
-                                     Sbus=Sbus + delta,
-                                     Ibus=Ibus,
-                                     pq=pq,
-                                     pv=pv,
-                                     ref=vd,
-                                     pqpv=pqpv,
-                                     logger=logger)
-
-                    # increase the metrics with the second run numbers
-                    # it += it2
-                    # el += el2
-
-            if solution.converged:
-
-                # Check controls
-                if options.control_Q == ReactivePowerControlMode.Direct:
-
-                    solution.V, \
-                    Qnew, \
-                    types_new, \
-                    any_q_control_issue = control_q_direct(V=solution.V,
-                                                           Vset=np.abs(solution.V),
-                                                           Q=Scalc.imag,
-                                                           Qmax=circuit.Qmax_bus[:, t],
-                                                           Qmin=circuit.Qmin_bus[:, t],
-                                                           types=bus_types,
-                                                           original_types=original_types,
-                                                           verbose=options.verbose)
-
-                elif options.control_Q == ReactivePowerControlMode.Iterative:
-
-                    Qnew, \
-                    types_new, \
-                    any_q_control_issue = control_q_iterative(V=solution.V,
-                                                              Vset=Vset,
-                                                              Q=Scalc.imag,
-                                                              Qmax=circuit.Qmax_bus,
-                                                              Qmin=circuit.Qmin_bus,
-                                                              types=bus_types,
-                                                              original_types=original_types,
-                                                              verbose=options.verbose,
-                                                              k=options.q_steepness_factor)
-
-                else:
-                    # did not check Q limits
-                    any_q_control_issue = False
-                    types_new = bus_types
-                    Qnew = Scalc.imag
-
-                # Check the actions of the Q-control
-                if any_q_control_issue:
-                    bus_types = types_new
-                    Sbus = Sbus.real + 1j * Qnew
-                    vd, pq, pv, pqpv = compile_types(Sbus, types_new, logger)
-                else:
-                    if options.verbose:
-                        print('Q controls Ok')
-
-                # control the transformer taps
-                stable = True
-                if options.control_taps == TapsControlMode.Direct:
-
-                    stable, tap_module, \
-                    tap_positions = control_taps_direct(voltage=solution.V,
-                                                        T=circuit.T,
-                                                        bus_to_regulated_idx=circuit.tr_bus_to_regulated_idx,
-                                                        tap_position=tap_positions,
-                                                        tap_module=tap_module,
-                                                        min_tap=circuit.tr_min_tap,
-                                                        max_tap=circuit.tr_max_tap,
-                                                        tap_inc_reg_up=circuit.tr_tap_inc_reg_up,
-                                                        tap_inc_reg_down=circuit.tr_tap_inc_reg_down,
-                                                        vset=circuit.tr_vset,
-                                                        tap_index_offset=circuit.nline,
-                                                        verbose=options.verbose)
-
-                elif options.control_taps == TapsControlMode.Iterative:
-
-                    stable, tap_module, \
-                    tap_positions = control_taps_iterative(voltage=solution.V,
-                                                           T=circuit.T,
-                                                           bus_to_regulated_idx=circuit.tr_bus_to_regulated_idx,
-                                                           tap_position=tap_positions,
-                                                           tap_module=tap_module,
-                                                           min_tap=circuit.tr_min_tap,
-                                                           max_tap=circuit.tr_max_tap,
-                                                           tap_inc_reg_up=circuit.tr_tap_inc_reg_up,
-                                                           tap_inc_reg_down=circuit.tr_tap_inc_reg_down,
-                                                           vset=circuit.tr_vset,
-                                                           verbose=options.verbose)
-
-                if not stable:
-                    # recompute the admittance matrices based on the tap changes
-                    # the changes are stored internally, and passed o to the solvers
-                    circuit.re_calc_admittance_matrices(tap_module, t=t)
-
-                any_tap_control_issue = not stable
-
-            else:
-                any_q_control_issue = False
-                any_tap_control_issue = False
-
-        # increment the outer control iterations counter
-        outer_it += 1
-
-    if options.verbose:
-        print("Stabilized in {} iteration(s) (outer control loop)".format(outer_it))
+                # repeat power flow with the redistributed power
+                solution = solve(circuit=circuit,
+                                 options=options,
+                                 report=report,  # is modified here
+                                 V0=solution.V,
+                                 Sbus=Sbus + delta,
+                                 Ibus=Ibus,
+                                 pq=circuit.pq,
+                                 pv=circuit.pv,
+                                 ref=circuit.vd,
+                                 pqpv=circuit.pqpv,
+                                 logger=logger)
 
     # Compute the branches power and the slack buses power
     Sfb, Stb, If, It, Vbranch, loading, losses, \
@@ -540,7 +402,8 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                                transformer_names=circuit.tr_names,
                                hvdc_names=circuit.hvdc_names,
                                bus_types=bus_types)
-    results.Sbus = solution.Scalc
+
+    results.Sbus = solution.Scalc * circuit.Sbase  # MVA
     results.voltage = solution.V
     results.Sf = Sfb  # in MVA already
     results.St = Stb  # in MVA already
@@ -555,7 +418,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     results.flow_direction = flow_direction
     results.transformer_tap_module = solution.ma[circuit.transformer_idx]
     results.convergence_reports.append(report)
-    results.Qpv = Sbus.imag[pv]
+    results.Qpv = Sbus.imag[circuit.pv]
 
     # compile HVDC results
     results.hvdc_sent_power = circuit.hvdc_Pf
@@ -563,198 +426,6 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     results.hvdc_losses = circuit.hvdc_losses
 
     return results
-
-
-def get_q_increment(V1, V2, k):
-    """
-    Logistic function to get the Q increment gain using the difference
-    between the current voltage (V1) and the target voltage (V2).
-
-    The gain varies between 0 (at V1 = V2) and inf (at V2 - V1 = inf).
-
-    The default steepness factor k was set through trial an error. Other values may
-    be specified as a :ref:`PowerFlowOptions<pf_options>`.
-
-    Arguments:
-
-        **V1** (float): Current voltage
-
-        **V2** (float): Target voltage
-
-        **k** (float, 30): Steepness factor
-
-    Returns:
-
-        Q increment gain
-    """
-
-    return 2 * (1 / (1 + np.exp(-k * np.abs(V2 - V1))) - 0.5)
-
-
-def control_q_iterative(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, k):
-    """
-    Change the buses type in order to control the generators reactive power using
-    iterative changes in Q to reach Vset.
-
-    Arguments:
-
-        **V** (list): array of voltages (all buses)
-
-        **Vset** (list): Array of set points (all buses)
-
-        **Q** (list): Array of reactive power (all buses)
-
-        **Qmin** (list): Array of minimal reactive power (all buses)
-
-        **Qmax** (list): Array of maximal reactive power (all buses)
-
-        **types** (list): Array of types (all buses)
-
-        **original_types** (list): Types as originally intended (all buses)
-
-        **verbose** (list): output messages via the console
-
-        **k** (float, 30): Steepness factor
-
-    Return:
-
-        **Qnew** (list): New reactive power values
-
-        **types_new** (list): Modified types array
-
-        **any_control_issue** (bool): Was there any control issue?
-    """
-
-    if verbose:
-        print('Q control logic (iterative)')
-
-    n = len(V)
-    Vm = abs(V)
-    Qnew = Q.copy()
-    types_new = types.copy()
-    any_control_issue = False
-    precision = 4
-    inc_prec = int(1.5 * precision)
-
-    for i in range(n):
-
-        if types[i] == BusMode.Slack.value:
-            pass
-
-        elif types[i] == BusMode.PQ.value and original_types[i] == BusMode.PV.value:
-
-            gain = get_q_increment(Vm[i], abs(Vset[i]), k)
-
-            if round(Vm[i], precision) < round(abs(Vset[i]), precision):
-                increment = round(abs(Qmax[i] - Q[i]) * gain, inc_prec)
-
-                if increment > 0 and Q[i] + increment < Qmax[i]:
-                    # I can push more VAr, so let's do so
-                    Qnew[i] = Q[i] + increment
-                    if verbose:
-                        print("Bus {} gain = {} (V = {}, Vset = {})".format(i,
-                                                                            round(gain, precision),
-                                                                            round(Vm[i], precision),
-                                                                            abs(Vset[i])))
-                        print("Bus {} increment = {} (Q = {}, Qmax = {})".format(i,
-                                                                                 round(increment, inc_prec),
-                                                                                 round(Q[i], precision),
-                                                                                 round(abs(Qmax[i]), precision),
-                                                                                 ))
-                        print("Bus {} raising its Q from {} to {} (V = {}, Vset = {})".format(i,
-                                                                                              round(Q[i], precision),
-                                                                                              round(Qnew[i], precision),
-                                                                                              round(Vm[i], precision),
-                                                                                              abs(Vset[i]),
-                                                                                              ))
-                    any_control_issue = True
-
-                else:
-                    if verbose:
-                        print("Bus {} stable enough (inc = {}, Q = {}, Qmax = {}, V = {}, Vset = {})".format(i,
-                                                                                                             round(
-                                                                                                                 increment,
-                                                                                                                 inc_prec),
-                                                                                                             round(Q[i],
-                                                                                                                   precision),
-                                                                                                             round(abs(
-                                                                                                                 Qmax[
-                                                                                                                     i]),
-                                                                                                                   precision),
-                                                                                                             round(
-                                                                                                                 Vm[i],
-                                                                                                                 precision),
-                                                                                                             abs(Vset[
-                                                                                                                     i]),
-                                                                                                             )
-                              )
-
-            elif round(Vm[i], precision) > round(abs(Vset[i]), precision):
-                increment = round(abs(Qmin[i] - Q[i]) * gain, inc_prec)
-
-                if increment > 0 and Q[i] - increment > Qmin[i]:
-                    # I can pull more VAr, so let's do so
-                    Qnew[i] = Q[i] - increment
-                    if verbose:
-                        print("Bus {} increment = {} (Q = {}, Qmin = {})".format(i,
-                                                                                 round(increment, inc_prec),
-                                                                                 round(Q[i], precision),
-                                                                                 round(abs(Qmin[i]), precision),
-                                                                                 )
-                              )
-                        print("Bus {} gain = {} (V = {}, Vset = {})".format(i,
-                                                                            round(gain, precision),
-                                                                            round(Vm[i], precision),
-                                                                            abs(Vset[i]),
-                                                                            )
-                              )
-                        print("Bus {} lowering its Q from {} to {} (V = {}, Vset = {})".format(i,
-                                                                                               round(Q[i], precision),
-                                                                                               round(Qnew[i],
-                                                                                                     precision),
-                                                                                               round(Vm[i], precision),
-                                                                                               abs(Vset[i]),
-                                                                                               )
-                              )
-                    any_control_issue = True
-
-                else:
-                    if verbose:
-                        print("Bus {} stable enough (inc = {}, Q = {}, Qmin = {}, V = {}, Vset = {})".format(i,
-                                                                                                             round(
-                                                                                                                 increment,
-                                                                                                                 inc_prec),
-                                                                                                             round(Q[i],
-                                                                                                                   precision),
-                                                                                                             round(abs(
-                                                                                                                 Qmin[
-                                                                                                                     i]),
-                                                                                                                   precision),
-                                                                                                             round(
-                                                                                                                 Vm[i],
-                                                                                                                 precision),
-                                                                                                             abs(Vset[
-                                                                                                                     i]),
-                                                                                                             )
-                              )
-
-            else:
-                if verbose:
-                    print("Bus {} stable (V = {}, Vset = {})".format(i,
-                                                                     round(Vm[i], precision),
-                                                                     abs(Vset[i]),
-                                                                     )
-                          )
-
-        elif types[i] == BusMode.PV.value:
-            # If it's still in PV mode (first run), change it to PQ mode
-            types_new[i] = BusMode.PQ.value
-            Qnew[i] = 0
-            if verbose:
-                print("Bus {} switching to PQ control, with a Q of 0".format(i))
-            any_control_issue = True
-
-    return Qnew, types_new, any_control_issue
 
 
 def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_rates):
@@ -809,375 +480,6 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
     loading = Sfb / (branch_rates + 1e-9)
 
     return Sfb, Stb, If, It, Vbranch, loading, losses, flow_direction, Sbus
-
-
-def control_q_direct(V, Vset, Q, Qmax, Qmin, types, original_types, verbose=False):
-    """
-    Change the buses type in order to control the generators reactive power.
-
-    Arguments:
-
-        **pq** (list): array of pq indices
-
-        **pv** (list): array of pq indices
-
-        **ref** (list): array of pq indices
-
-        **V** (list): array of voltages (all buses)
-
-        **Vset** (list): Array of set points (all buses)
-
-        **Q** (list): Array of reactive power (all buses)
-
-        **types** (list): Array of types (all buses)
-
-        **original_types** (list): Types as originally intended (all buses)
-
-        **verbose** (bool): output messages via the console
-
-    Returns:
-
-        **Vnew** (list): New voltage values
-
-        **Qnew** (list): New reactive power values
-
-        **types_new** (list): Modified types array
-
-        **any_control_issue** (bool): Was there any control issue?
-
-    ON PV-PQ BUS TYPE SWITCHING LOGIC IN POWER FLOW COMPUTATION
-    Jinquan Zhao
-
-    1) Bus i is a PQ bus in the previous iteration and its
-       reactive power was fixed at its lower limit:
-
-        If its voltage magnitude Vi ≥ Viset, then
-
-            it is still a PQ bus at current iteration and set Qi = Qimin .
-
-            If Vi < Viset , then
-
-                compare Qi with the upper and lower limits.
-
-                If Qi ≥ Qimax , then
-                    it is still a PQ bus but set Qi = Qimax .
-                If Qi ≤ Qimin , then
-                    it is still a PQ bus and set Qi = Qimin .
-                If Qimin < Qi < Qi max , then
-                    it is switched to PV bus, set Vinew = Viset.
-
-    2) Bus i is a PQ bus in the previous iteration and
-       its reactive power was fixed at its upper limit:
-
-        If its voltage magnitude Vi ≤ Viset , then:
-            bus i still a PQ bus and set Q i = Q i max.
-
-            If Vi > Viset , then
-
-                Compare between Qi and its upper/lower limits
-
-                If Qi ≥ Qimax , then
-                    it is still a PQ bus and set Q i = Qimax .
-                If Qi ≤ Qimin , then
-                    it is still a PQ bus but let Qi = Qimin in current iteration.
-                If Qimin < Qi < Qimax , then
-                    it is switched to PV bus and set Vinew = Viset
-
-    3) Bus i is a PV bus in the previous iteration.
-
-        Compare Q i with its upper and lower limits.
-
-        If Qi ≥ Qimax , then
-            it is switched to PQ and set Qi = Qimax .
-        If Qi ≤ Qimin , then
-            it is switched to PQ and set Qi = Qimin .
-        If Qi min < Qi < Qimax , then
-            it is still a PV bus.
-    """
-
-    if verbose:
-        print('Q control logic (fast)')
-
-    n = len(V)
-    Vm = abs(V)
-    Qnew = Q.copy()
-    Vnew = V.copy()
-    types_new = types.copy()
-    any_control_issue = False
-    for i in range(n):
-
-        if types[i] == BusMode.Slack.value:
-            pass
-
-        elif types[i] == BusMode.PQ.value and original_types[i] == BusMode.PV.value:
-
-            if Vm[i] != Vset[i]:
-
-                if Q[i] >= Qmax[i]:  # it is still a PQ bus but set Q = Qmax .
-                    Qnew[i] = Qmax[i]
-
-                elif Q[i] <= Qmin[i]:  # it is still a PQ bus and set Q = Qmin .
-                    Qnew[i] = Qmin[i]
-
-                else:  # switch back to PV, set Vnew = Vset.
-                    if verbose:
-                        print('Bus', i, 'switched back to PV')
-                    types_new[i] = BusMode.PV.value
-                    Vnew[i] = complex(Vset[i], 0)
-
-                any_control_issue = True
-
-            else:
-                pass  # The voltages are equal
-
-        elif types[i] == BusMode.PV.value:
-
-            if Q[i] >= Qmax[i]:  # it is switched to PQ and set Q = Qmax .
-                if verbose:
-                    print('Bus', i, 'switched to PQ: Q', Q[i], ' Qmax:', Qmax[i])
-                types_new[i] = BusMode.PQ.value
-                Qnew[i] = Qmax[i]
-                any_control_issue = True
-
-            elif Q[i] <= Qmin[i]:  # it is switched to PQ and set Q = Qmin .
-                if verbose:
-                    print('Bus', i, 'switched to PQ: Q', Q[i], ' Qmin:', Qmin[i])
-                types_new[i] = BusMode.PQ.value
-                Qnew[i] = Qmin[i]
-                any_control_issue = True
-
-            else:  # it is still a PV bus.
-                pass
-
-        else:
-            pass
-
-    return Vnew, Qnew, types_new, any_control_issue
-
-
-def tap_up(tap, max_tap):
-    """
-    Go to the next upper tap position
-    """
-    if tap + 1 <= max_tap:
-        return tap + 1
-    else:
-        return tap
-
-
-def tap_down(tap, min_tap):
-    """
-    Go to the next upper tap position
-    """
-    if tap - 1 >= min_tap:
-        return tap - 1
-    else:
-        return tap
-
-
-def control_taps_iterative(voltage, T, bus_to_regulated_idx, tap_position, tap_module, min_tap, max_tap,
-                           tap_inc_reg_up, tap_inc_reg_down, vset, verbose=False):
-    """
-    Change the taps and compute the continuous tap magnitude.
-
-    Arguments:
-
-        **voltage** (list): array of bus voltages solution
-
-        **T** (list): array of indices of the "to" buses of each branch
-
-        **bus_to_regulated_idx** (list): array with the indices of the branches that regulate the bus "to"
-
-        **tap_position** (list): array of branch tap positions
-
-        **tap_module** (list): array of branch tap modules
-
-        **min_tap** (list): array of minimum tap positions
-
-        **max_tap** (list): array of maximum tap positions
-
-        **tap_inc_reg_up** (list): array of tap increment when regulating up
-
-        **tap_inc_reg_down** (list): array of tap increment when regulating down
-
-        **vset** (list): array of set voltages to control
-
-    Returns:
-
-        **stable** (bool): Is the system stable (i.e.: are controllers stable)?
-
-        **tap_magnitude** (list): Tap module at each bus in per unit
-
-        **tap_position** (list): Tap position at each bus
-    """
-
-    stable = True
-    for i in bus_to_regulated_idx:  # traverse the indices of the branches that are regulated at the "to" bus
-
-        j = T[i]  # get the index of the "to" bus of the branch "i"
-        v = np.abs(voltage[j])
-        if verbose:
-            print("Bus", j, "regulated by branch", i, ": U =", round(v, 4), "pu, U_set =", vset[i])
-
-        if tap_position[i] > 0:
-
-            if vset[i] > v + tap_inc_reg_up[i] / 2:
-                if tap_position[i] == min_tap[i]:
-                    if verbose:
-                        print("Branch", i, ": Already at lowest tap (", tap_position[i], "), skipping")
-                else:
-                    tap_position[i] = tap_down(tap_position[i], min_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_up[i]
-                    if verbose:
-                        print("Branch", i, ": Lowering from tap ", tap_position[i])
-                    stable = False
-
-            elif vset[i] < v - tap_inc_reg_up[i] / 2:
-                if tap_position[i] == max_tap[i]:
-                    if verbose:
-                        print("Branch", i, ": Already at highest tap (", tap_position[i], "), skipping")
-                else:
-                    tap_position[i] = tap_up(tap_position[i], max_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_up[i]
-                    if verbose:
-                        print("Branch", i, ": Raising from tap ", tap_position[i])
-                    stable = False
-
-        elif tap_position[i] < 0:
-            if vset[i] > v + tap_inc_reg_down[i] / 2:
-                if tap_position[i] == min_tap[i]:
-                    if verbose:
-                        print("Branch", i, ": Already at lowest tap (", tap_position[i], "), skipping")
-                else:
-                    tap_position[i] = tap_down(tap_position[i], min_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_down[i]
-                    if verbose:
-                        print("Branch", i, ": Lowering from tap", tap_position[i])
-                    stable = False
-
-            elif vset[i] < v - tap_inc_reg_down[i] / 2:
-                if tap_position[i] == max_tap[i]:
-                    print("Branch", i, ": Already at highest tap (", tap_position[i], "), skipping")
-                else:
-                    tap_position[i] = tap_up(tap_position[i], max_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_down[i]
-                    if verbose:
-                        print("Branch", i, ": Raising from tap", tap_position[i])
-                    stable = False
-
-        else:
-            if vset[i] > v + tap_inc_reg_up[i] / 2:
-                if tap_position[i] == min_tap[i]:
-                    if verbose:
-                        print("Branch", i, ": Already at lowest tap (", tap_position[i], "), skipping")
-                else:
-                    tap_position[i] = tap_down(tap_position[i], min_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_down[i]
-                    if verbose:
-                        print("Branch", i, ": Lowering from tap ", tap_position[i])
-                    stable = False
-
-            elif vset[i] < v - tap_inc_reg_down[i] / 2:
-                if tap_position[i] == max_tap[i]:
-                    if verbose:
-                        print("Branch", i, ": Already at highest tap (", tap_position[i], "), skipping")
-                else:
-                    tap_position[i] = tap_up(tap_position[i], max_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_up[i]
-                    if verbose:
-                        print("Branch", i, ": Raising from tap ", tap_position[i])
-                    stable = False
-
-    return stable, tap_module, tap_position
-
-
-def control_taps_direct(voltage, T, bus_to_regulated_idx, tap_position, tap_module, min_tap, max_tap,
-                        tap_inc_reg_up, tap_inc_reg_down, vset, tap_index_offset, verbose=False):
-    """
-    Change the taps and compute the continuous tap magnitude.
-
-    Arguments:
-
-        **voltage** (list): array of bus voltages solution
-
-        **T** (list): array of indices of the "to" buses of each branch
-
-        **bus_to_regulated_idx** (list): array with the indices of the branches
-        that regulate the bus "to"
-
-        **tap_position** (list): array of branch tap positions
-
-        **tap_module** (list): array of branch tap modules
-
-        **min_tap** (list): array of minimum tap positions
-
-        **max_tap** (list): array of maximum tap positions
-
-        **tap_inc_reg_up** (list): array of tap increment when regulating up
-
-        **tap_inc_reg_down** (list): array of tap increment when regulating down
-
-        **vset** (list): array of set voltages to control
-
-    Returns:
-
-        **stable** (bool): Is the system stable (i.e.: are controllers stable)?
-
-        **tap_magnitude** (list): Tap module at each bus in per unit
-
-        **tap_position** (list): Tap position at each bus
-    """
-    stable = True
-
-    # traverse the indices of the branches that are regulated at the "to" bus
-    for k, bus_idx in enumerate(bus_to_regulated_idx):
-
-        j = T[bus_idx]  # get the index of the "to" bus of the branch "i"
-        v = np.abs(voltage[j])  # voltage at to "to" bus
-        if verbose:
-            print("Bus", j, "regulated by branch", bus_idx, ": U=", round(v, 4), "pu, U_set=", vset[k])
-
-        tap_inc = tap_inc_reg_up
-        if tap_inc_reg_up.all() != tap_inc_reg_down.all():
-            print("Error: tap_inc_reg_up and down are not equal for branch {}".format(bus_idx))
-
-        desired_module = v / vset[k] * tap_module[tap_index_offset + k]
-        desired_pos = round((desired_module - 1) / tap_inc[k])
-
-        if desired_pos == tap_position[k]:
-            continue
-
-        elif desired_pos > 0 and desired_pos > max_tap[k]:
-            if verbose:
-                print("Branch {}: Changing from tap {} to {} (module {} to {})".format(bus_idx,
-                                                                                       tap_position[k],
-                                                                                       max_tap[k],
-                                                                                       tap_module[tap_index_offset + k],
-                                                                                       1 + max_tap[k] * tap_inc[k]))
-            tap_position[k] = max_tap[k]
-
-        elif desired_pos < 0 and desired_pos < min_tap[k]:
-            if verbose:
-                print("Branch {}: Changing from tap {} to {} (module {} to {})".format(bus_idx,
-                                                                                       tap_position[k],
-                                                                                       min_tap[k],
-                                                                                       tap_module[tap_index_offset + k],
-                                                                                       1 + min_tap[k] * tap_inc[k]))
-            tap_position[k] = min_tap[k]
-
-        else:
-            if verbose:
-                print("Branch {}: Changing from tap {} to {} (module {} to {})".format(bus_idx,
-                                                                                       tap_position[k],
-                                                                                       desired_pos,
-                                                                                       tap_module[tap_index_offset + k],
-                                                                                       1 + desired_pos * tap_inc[k]))
-            tap_position[k] = desired_pos
-
-        tap_module[tap_index_offset + k] = 1 + tap_position[k] * tap_inc[k]
-        stable = False
-
-    return stable, tap_module, tap_position
 
 
 def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, branch_rates,

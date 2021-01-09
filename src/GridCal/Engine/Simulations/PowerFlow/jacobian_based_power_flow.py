@@ -27,6 +27,8 @@ from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_
 from GridCal.Engine.Simulations.PowerFlow.numba_functions import calc_power_csr_numba, diag
 from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import _create_J_with_numba, get_fastest_jacobian_function
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+from GridCal.Engine.basic_structures import ReactivePowerControlMode
+from GridCal.Engine.Simulations.PowerFlow.discrete_controls import control_q_inside_method
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
@@ -208,7 +210,7 @@ def Jacobian_cartesian(Ybus, V, Ibus, pq, pvpq):
 
 def Jacobian_decoupled(Ybus, V, Ibus, pq, pvpq):
     """
-    Computes the decouped Jacobian matrices
+    Computes the decoupled Jacobian matrices
     Args:
         Ybus: Admittance matrix
         V: Array of nodal voltages
@@ -235,21 +237,21 @@ def Jacobian_decoupled(Ybus, V, Ibus, pq, pvpq):
 
 def calc_power(V, Ybus, Ibus):
     """
-
-    :param V:
-    :param Ybus:
-    :param Ibus:
-    :return:
+    Compute the power from a voltage solution
+    :param V: Voltages Vector
+    :param Ybus: Admittance Matrix
+    :param Ibus: Currents vector
+    :return: Power injections
     """
     # S = V * np.conj(Ybus * V - Ibus)
     # Y = Ybus.tocsr()
-    S = calc_power_csr_numba(n=V.shape[0], Yp=Ybus.indptr, Yj=Ybus.indices, Yx=Ybus.data, V=V, I=Ibus, n_par=500)
+    # return S
+    return calc_power_csr_numba(n=V.shape[0], Yp=Ybus.indptr, Yj=Ybus.indices, Yx=Ybus.data, V=V, I=Ibus, n_par=500)
 
-    return S
 
-
-def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, mu_0=1.0,
-          acceleration_parameter=0.05, error_registry=None) -> NumericPowerFlowResults:
+def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
+          acceleration_parameter=0.05, error_registry=None,
+          control_q=ReactivePowerControlMode.NoControl) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with backtrack correction.
     @Author: Santiago Peñate Vera
@@ -257,22 +259,23 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, mu_0=1.0,
     :param Sbus: Array of nodal power injections
     :param V0: Array of nodal voltages (initial solution)
     :param Ibus: Array of nodal current injections
-    :param pv: Array with the indices of the PV buses
-    :param pq: Array with the indices of the PQ buses
+    :param pv_: Array with the indices of the PV buses
+    :param pq_: Array with the indices of the PQ buses
+    :param Qmin: array of lower reactive power limits per bus
+    :param Qmax: array of upper reactive power limits per bus
     :param tol: Tolerance
     :param max_it: Maximum number of iterations
     :param mu_0: initial acceleration value
     :param acceleration_parameter: parameter used to correct the "bad" iterations, should be be between 1e-3 ~ 0.5
     :param error_registry: list to store the error for plotting
+    :param control_q: Control reactive power
     :return: Voltage solution, converged?, error, calculated power injections
     """
     start = time.time()
 
     # initialize
-    back_track_counter = 0
-    back_track_iterations = 0
-    converged = 0
     iter_ = 0
+    Sbus = Sbus_.copy()
     V = V0
     Va = np.angle(V)
     Vm = np.abs(V)
@@ -280,35 +283,32 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, mu_0=1.0,
     dVm = np.zeros_like(Vm)
 
     # set up indexing for updating V
+    pq = pq_.copy()
+    pv = pv_.copy()
     pvpq = np.r_[pv, pq]
     npv = len(pv)
     npq = len(pq)
+    npvpq = npv + npq
 
-    # j1:j2 - V angle of pv and pq buses
-    j1 = 0
-    j2 = npv + npq
-    # j2:j3 - V mag of pq buses
-    j3 = j2 + npq
+    # j1 = 0
+    # j2 = npv + npq  # j1:j2 - V angle of pv and pq buses
+    # j3 = j2 + npq  # j2:j3 - V mag of pq buses
 
-    if (npq + npv) > 0:
+    if npvpq > 0:
 
         # generate lookup pvpq -> index pvpq (used in createJ)
         pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
-        pvpq_lookup[pvpq] = np.arange(len(pvpq))
+        pvpq_lookup[pvpq] = np.arange(npvpq)
 
         # evaluate F(x0)
         Scalc = V * np.conj(Ybus * V - Ibus)
         dS = Scalc - Sbus  # compute the mismatch
         f = np.r_[dS[pvpq].real, dS[pq].imag]
-
-        # check tolerance
-        norm_f = 0.5 * f.dot(f)
+        norm_f = np.linalg.norm(f, np.inf)
+        converged = norm_f < tol
 
         if error_registry is not None:
             error_registry.append(norm_f)
-
-        if norm_f < tol:
-            converged = 1
 
         # to be able to compare
         Ybus.sort_indices()
@@ -326,75 +326,81 @@ def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, mu_0=1.0,
             dx = linear_solver(J, f)
 
             # reassign the solution vector
-            dVa[pvpq] = dx[j1:j2]
-            dVm[pq] = dx[j2:j3]
+            dVa[pvpq] = dx[:npvpq]
+            dVm[pq] = dx[npvpq:]
 
-            # update voltage the Newton way (mu=1)
-            mu_ = mu_0
-            Vm -= mu_ * dVm
-            Va -= mu_ * dVa
-            Vnew = Vm * np.exp(1.0j * Va)
+            # set the restoration values
+            prev_Vm = Vm.copy()
+            prev_Va = Va.copy()
 
-            # compute the mismatch function f(x_new)
-            Scalc = Vnew * np.conj(Ybus * Vnew - Ibus)
-            dS = Scalc - Sbus  # complex power mismatch
-            f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
-            norm_f_new = 0.5 * f_new.dot(f_new)
-
-            if error_registry is not None:
-                error_registry.append(norm_f_new)
-
-            cond = norm_f_new > norm_f  # condition to back track (no improvement at all)
-
-            if not cond:
-                back_track_counter += 1
-
+            # set the values and correct with an adaptive mu if needed
+            mu = mu_0  # ideally 1.0
+            cond = True
             l_iter = 0
-            while cond and l_iter < max_it and mu_ > tol:
+            norm_f_new = 0.0
+            while cond and l_iter < max_it and mu > tol:
 
-                # reset to the previous voltage
-                Va = np.angle(V)
-                Vm = np.abs(V)
+                # restore the previous values if we are backtracking (the first iteration is the normal NR procedure)
+                if l_iter > 0:
+                    Va = prev_Va.copy()
+                    Vm = prev_Vm.copy()
 
-                # line search back
-                # update voltage with a closer value to the last value in the Jacobian direction
-                mu_ *= acceleration_parameter
-                Vm -= mu_ * dVm
-                Va -= mu_ * dVa
-                Vnew = Vm * np.exp(1.0j * Va)
+                # update voltage the Newton way
+                Vm -= mu * dVm
+                Va -= mu * dVa
+                V = Vm * np.exp(1.0j * Va)
 
                 # compute the mismatch function f(x_new)
-                Scalc = Vnew * np.conj(Ybus * Vnew - Ibus)
+                Scalc = V * np.conj(Ybus * V - Ibus)
                 dS = Scalc - Sbus  # complex power mismatch
-                f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
-
-                norm_f_new = 0.5 * f_new.dot(f_new)
+                f = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
+                norm_f_new = np.linalg.norm(f, np.inf)
 
                 cond = norm_f_new > norm_f
-
-                if error_registry is not None:
-                    error_registry.append(norm_f_new)
-
+                mu *= acceleration_parameter
                 l_iter += 1
-                back_track_iterations += 1
 
-            # update calculation variables
-            V = Vnew
-            f = f_new
+            if l_iter > 1:
+                # this means that not even the backtracking was able to correct the solution so, restore and end
+                Va = prev_Va.copy()
+                Vm = prev_Vm.copy()
+                V = Vm * np.exp(1.0j * Va)
 
-            # check for convergence
-            if l_iter == 0:
-                # no correction loop executed, hence compute the error fresh
-                norm_f = 0.5 * f_new.dot(f_new)
+                end = time.time()
+                elapsed = end - start
+                return NumericPowerFlowResults(V, converged, norm_f_new, Scalc, None, None, None, iter_, elapsed)
             else:
-                # pick the latest computer error in the correction loop
                 norm_f = norm_f_new
+
+            # review reactive power limits
+            # it is only worth checking Q limits with a low error
+            # since with higher errors, the Q values may be far from realistic
+            # finally, the Q control only makes sense if there are pv nodes
+            if control_q != ReactivePowerControlMode.NoControl and norm_f < 1e-2 and npv > 0:
+
+                # check and adjust the reactive power
+                # this function passes pv buses to pq when the limits are violated,
+                # but not pq to pv because that is unstable
+                n_changes, Scalc, Sbus, pv, pq, pvpq = control_q_inside_method(Scalc, Sbus, pv, pq, pvpq, Qmin, Qmax)
+
+                if n_changes > 0:
+
+                    # adjust internal variables to the new pq|pv values
+                    npv = len(pv)
+                    npq = len(pq)
+                    npvpq = npv + npq
+                    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+                    pvpq_lookup[pvpq] = np.arange(npvpq)
+
+                    # recompute the error based on the new Sbus
+                    dS = Scalc - Sbus  # complex power mismatch
+                    f = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
+                    norm_f = np.linalg.norm(f, np.inf)
 
             if error_registry is not None:
                 error_registry.append(norm_f)
 
-            if norm_f < tol:
-                converged = 1
+            converged = norm_f < tol
 
     else:
         norm_f = 0
@@ -548,7 +554,8 @@ def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15,
     return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, iter_, elapsed)
 
 
-def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False) -> NumericPowerFlowResults:
+def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
+              control_q=ReactivePowerControlMode.NoControl, robust=False) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
     Args:
@@ -570,6 +577,7 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False) -> Num
     start = time.time()
 
     # initialize
+    Sbus = Sbus_.copy()
     converged = 0
     iter_ = 0
     V = V0
@@ -579,17 +587,14 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False) -> Num
     dVm = np.zeros_like(Vm)
 
     # set up indexing for updating V
+    pq = pq_.copy()
+    pv = pv_.copy()
     pvpq = np.r_[pv, pq]
     npv = len(pv)
     npq = len(pq)
+    npvpq = npv + npq
 
-    # j1:j2 - V angle of pv buses
-    j1 = 0
-    j2 = npv + npq
-    # j2:j3 - V mag of pq buses
-    j3 = j2 + npq
-
-    if (npq + npv) > 0:
+    if npvpq > 0:
 
         # generate lookup pvpq -> index pvpq (used in createJ)
         pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
@@ -623,10 +628,13 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False) -> Num
                 print(J)
                 converged = False
                 iter_ = max_it + 1  # exit condition
+                end = time.time()
+                elapsed = end - start
+                return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, iter_, elapsed)
 
             # reassign the solution vector
-            dVa[pvpq] = dx[j1:j2]
-            dVm[pq] = dx[j2:j3]
+            dVa[pvpq] = dx[:npvpq]
+            dVm[pq] = dx[npvpq:]
             dV = dVm * np.exp(1j * dVa)  # voltage mismatch
 
             # update voltage
@@ -654,7 +662,34 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False) -> Num
 
             # check for convergence
             norm_f = np.linalg.norm(f, np.Inf)
+
+            # review reactive power limits
+            # it is only worth checking Q limits with a low error
+            # since with higher errors, the Q values may be far from realistic
+            # finally, the Q control only makes sense if there are pv nodes
+            if control_q != ReactivePowerControlMode.NoControl and norm_f < 1e-2 and npv > 0:
+
+                # check and adjust the reactive power
+                # this function passes pv buses to pq when the limits are violated,
+                # but not pq to pv because that is unstable
+                n_changes, Scalc, Sbus, pv, pq, pvpq = control_q_inside_method(Scalc, Sbus, pv, pq, pvpq, Qmin, Qmax)
+
+                if n_changes > 0:
+                    # adjust internal variables to the new pq|pv values
+                    npv = len(pv)
+                    npq = len(pq)
+                    npvpq = npv + npq
+                    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+                    pvpq_lookup[pvpq] = np.arange(npvpq)
+
+                    # recompute the error based on the new Sbus
+                    dS = Scalc - Sbus  # complex power mismatch
+                    f = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
+                    norm_f = np.linalg.norm(f, np.inf)
+
+            # check convergence
             converged = norm_f < tol
+
     else:
         norm_f = 0
         converged = True
@@ -666,19 +701,23 @@ def IwamotoNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, robust=False) -> Num
     return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, iter_, elapsed)
 
 
-def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50) -> NumericPowerFlowResults:
+def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=50,
+                           control_q=ReactivePowerControlMode.NoControl) -> NumericPowerFlowResults:
     """
     Solves the power flow problem by the Levenberg-Marquardt power flow algorithm.
     It is usually better than Newton-Raphson, but it takes an order of magnitude more time to converge.
     Args:
         Ybus: Admittance matrix
-        Sbus: Array of nodal power injections
+        Sbus_: Array of nodal power injections
         V0: Array of nodal voltages (initial solution)
         Ibus: Array of nodal current injections
-        pv: Array with the indices of the PV buses
-        pq: Array with the indices of the PQ buses
+        pv_: Array with the indices of the PV buses
+        pq_: Array with the indices of the PQ buses
+        Qmin:
+        Qmax:
         tol: Tolerance
         max_it: Maximum number of iterations
+        control_q: Type of reactive power control
     Returns:
         Voltage solution, converged?, error, calculated power injections
 
@@ -687,6 +726,7 @@ def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50) -> Nume
     start = time.time()
 
     # initialize
+    Sbus = Sbus_.copy()
     V = V0
     Va = np.angle(V)
     Vm = np.abs(V)
@@ -694,17 +734,14 @@ def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50) -> Nume
     dVm = np.zeros_like(Vm)
 
     # set up indexing for updating V
+    pq = pq_.copy()
+    pv = pv_.copy()
     pvpq = np.r_[pv, pq]
     npv = len(pv)
     npq = len(pq)
+    npvpq = npq + npv
 
-    # j1:j2 - V angle of pv and pq buses
-    j1 = 0
-    j2 = npv + npq
-    # j2:j3 - V mag of pq buses
-    j3 = j2 + npq
-
-    if (npq + npv) > 0:
+    if npvpq > 0:
         normF = 100000
         update_jacobian = True
         converged = False
@@ -770,8 +807,8 @@ def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50) -> Nume
                 nu = 2.0
 
                 # reassign the solution vector
-                dVa[pvpq] = dx[j1:j2]
-                dVm[pq] = dx[j2:j3]
+                dVa[pvpq] = dx[:npvpq]
+                dVm[pq] = dx[npvpq:]
 
                 # update Vm and Va again in case we wrapped around with a negative Vm
                 Vm -= dVm
@@ -788,6 +825,35 @@ def levenberg_marquardt_pf(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=50) -> Nume
             ds = Sbus - Scalc
             e = np.r_[ds[pvpq].real, ds[pq].imag]
             normF = 0.5 * np.dot(e, e)
+
+            # review reactive power limits
+            # it is only worth checking Q limits with a low error
+            # since with higher errors, the Q values may be far from realistic
+            # finally, the Q control only makes sense if there are pv nodes
+            if control_q != ReactivePowerControlMode.NoControl and normF < 1e-2 and npv > 0:
+
+                # check and adjust the reactive power
+                # this function passes pv buses to pq when the limits are violated,
+                # but not pq to pv because that is unstable
+                n_changes, Scalc, Sbus, pv, pq, pvpq = control_q_inside_method(Scalc, Sbus, pv, pq, pvpq, Qmin, Qmax)
+
+                if n_changes > 0:
+                    # adjust internal variables to the new pq|pv values
+                    npv = len(pv)
+                    npq = len(pq)
+                    npvpq = npv + npq
+                    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+                    pvpq_lookup[pvpq] = np.arange(npvpq)
+
+                    nn = 2 * npq + npv
+                    ii = np.linspace(0, nn - 1, nn)
+                    Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csc_matrix identity
+
+                    # recompute the error based on the new Sbus
+                    ds = Sbus - Scalc
+                    e = np.r_[ds[pvpq].real, ds[pq].imag]
+                    normF = 0.5 * np.dot(e, e)
+
             converged = normF < tol
             f_prev = f
 

@@ -147,6 +147,8 @@ class PowerFlowResults:
 
         self.available_results = [ResultTypes.BusVoltageModule,
                                   ResultTypes.BusVoltageAngle,
+                                  ResultTypes.BusActivePower,
+                                  ResultTypes.BusReactivePower,
 
                                   ResultTypes.BranchActivePowerFrom,
                                   ResultTypes.BranchReactivePowerFrom,
@@ -349,6 +351,18 @@ class PowerFlowResults:
             y = np.angle(self.voltage, deg=True)
             y_label = '(deg)'
             title = 'Bus voltage '
+
+        elif result_type == ResultTypes.BusActivePower:
+            labels = self.bus_names
+            y = self.Sbus.real
+            y_label = '(MW)'
+            title = 'Bus Active power '
+
+        elif result_type == ResultTypes.BusReactivePower:
+            labels = self.bus_names
+            y = self.Sbus.imag
+            y_label = '(MVAr)'
+            title = 'Bus Reactive power '
 
         elif result_type == ResultTypes.BusVoltagePolar:
             labels = self.bus_names
