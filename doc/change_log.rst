@@ -10,51 +10,59 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
-Version 4.0.0
-^^^^^^^^^^^^^^^^^^^^^
+Version 4.0.0 (multi-terminal DC Grids)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - General
-    - Massive re-write of all the structures and the engine in order to have a more flexible approach to the devices
-      and how the information is passed from the asset manager (the circuit) to the simulations.
-      Hence the version jump attends to that massive effort.
-    - Revamp of the context menus
-    - Improved the transformer and line editors integrating the template selection
+    - Massive re-write of all the structures and the engine in order to have a more flexible
+      approach to the devices and how the information is passed from the asset manager
+      (the circuit) to the simulations. Hence the version jump attends to that massive effort.
+    - Revamp of the context menus.
+    - Improved the transformer and line editors integrating the template selection.
     - Improved filtering (bool values are recognised now)
-    - Replaced how all the GUI messages are handled
-    - Fixed transformer editor Sbase conversion
-    - Added HVDC line model
-    - Added VSC branch model
-    - Added DC line model
-    - Added tags to the sigma-plot
+    - Replaced how all the GUI messages are handled.
+    - Fixed transformer editor Sbase conversion.
+    - Added HVDC line model.
+    - Added VSC branch model.
+    - Added DC line model.
+    - Added tags to the sigma-plot.
     - Added Substation, Zone, Area and Country objects to group better the buses.
-    - Added a quite good random grid generator from the project SyntheticNetworks
-    - Added a bus viewer: It allows to visualize subsets of the grid. It is useful for very large grids
-      where the complete schematic is cumbersome.
+    - Added a quite good random grid generator from the project SyntheticNetworks.
+    - Added a bus viewer: It allows to visualize subsets of the grid.
+      It is useful for very large grids where the complete schematic is cumbersome.
 
 - I/O
     - Added better Json export file.
-    - Improved the PSS/e Raw file import
+    - Improved the PSS/e Raw file import.
 
 - Linear Analysis
     - Replaced the empirical PTDF/OTDF by the analytical PTDF/LODF which are several orders of magnitude faster.
     - Added linear grouping based on PTDF + DBScan clustering.
 
 - Power Flow
-    - Changed the power flow inner loops order. This changes the behaviour to the better when the controls are active.
-    - Improved the speed of the power flow process, by delaying the admittance calculations until needed
+    - Improved the speed of the power flow process, by delaying the matrices and vector
+      calculations until needed by any method.
     - Fixed the line search in Newton-Raphson, now it is truly non-divergent.
+    - Removed the outer loop completely. Now the outer loop controls are performed inside the
+      numerical methods that allow it (NR, LM, etc...) This is much faster.
+    - Now the reactive power control only converts PQ->PV, and not the other way around. This renders into
+      a more stable process.
+    - Seamless AC-DC simulation:
+        - Added the FUBM model al the numeric circuit level
+        - Added FUBM version of the line-search Newton-Raphson method (not accelerated with numba for now)
+        - Integrated it with the GUI.
+        - The advanced controls such a transformer power set-points are simulated using the FUBM logic.
+
 
 - Continuation Power Flow
     - Added reactive power limits option for the generators.
-    - Improved reactive power control and overload stop criteria
+    - Added overload stop criteria.
     - Added distributed slack.
-    - Now you can select to collapse a selection of nodes.
-    - Now you can set the direction of the continuation negative so that you actually increase the generation.
+    - Now you can select to collapse a selection of nodes, from the GUI as well.
+    - Now you can set the direction of the continuation negative so that you actually
+      increase the generation. This allows the use of the CPF as an exploration tool.
 
-- Seamless AC-DC simulation
-    - Added the FUBM model al the numeric circuit level
-    - Added FUBM version of the line-search Newton-Raphson method (not accelerated with numba for now)
-    - Integrated it with the GUI
+
 
 Version 3.7.1
 ^^^^^^^^^^^^^^^^^^^^^

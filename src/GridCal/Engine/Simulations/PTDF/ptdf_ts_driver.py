@@ -58,7 +58,7 @@ class PtdfTimeSeriesResults:
 
         self.S = np.zeros((self.nt, n), dtype=float)
 
-        self.Sbranch = np.zeros((self.nt, m), dtype=float)
+        self.Sf = np.zeros((self.nt, m), dtype=float)
 
         self.loading = np.zeros((self.nt, m), dtype=float)
 
@@ -79,8 +79,8 @@ class PtdfTimeSeriesResults:
         data = {'V': self.voltage.tolist(),
                 'P': self.S.real.tolist(),
                 'Q': self.S.imag.tolist(),
-                'Sbr_real': self.Sbranch.real.tolist(),
-                'Sbr_imag': self.Sbranch.imag.tolist(),
+                'Sbr_real': self.Sf.real.tolist(),
+                'Sbr_imag': self.Sf.imag.tolist(),
                 'loading': np.abs(self.loading).tolist()}
         return data
 
@@ -109,7 +109,7 @@ class PtdfTimeSeriesResults:
 
         elif result_type == ResultTypes.BranchActivePowerFrom:
             labels = self.branch_names
-            data = self.Sbranch.real
+            data = self.Sf.real
             y_label = '(MW)'
             title = 'Branch power '
 
@@ -219,10 +219,10 @@ class PtdfTimeSeries(QThread):
         self.progress_text.emit('Computing branch flows...')
 
         Pbus_0 = ts_numeric_circuit.Sbus.real[:, time_indices]
-        self.results.Sbranch = ptdf_analysis.get_branch_time_series(Pbus_0)
+        self.results.Sf = ptdf_analysis.get_branch_time_series(Pbus_0)
 
         # compute post process
-        self.results.loading = self.results.Sbranch / (ptdf_analysis.numerical_circuit.branch_rates + 1e-9)
+        self.results.loading = self.results.Sf / (ptdf_analysis.numerical_circuit.branch_rates + 1e-9)
         self.results.S = Pbus_0.T
 
         self.elapsed = time.time() - a
@@ -271,11 +271,11 @@ if __name__ == '__main__':
 
     ax2 = fig.add_subplot(222)
     ax2.set_title('PTDF based flow')
-    ax2.plot(ptdf_driver.results.Sbranch.real)
+    ax2.plot(ptdf_driver.results.Sf.real)
 
     ax3 = fig.add_subplot(223)
     ax3.set_title('Difference')
-    diff = ts_driver.results.Sf.real - ptdf_driver.results.Sbranch.real
+    diff = ts_driver.results.Sf.real - ptdf_driver.results.Sf.real
     ax3.plot(diff)
 
     fig2 = plt.figure()

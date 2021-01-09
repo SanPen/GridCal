@@ -145,7 +145,7 @@ class MainGUI(QMainWindow):
         self.q_control_modes_dict = OrderedDict()
         self.q_control_modes_dict['No control'] = ReactivePowerControlMode.NoControl
         self.q_control_modes_dict['Direct'] = ReactivePowerControlMode.Direct
-        self.q_control_modes_dict['Iterative'] = ReactivePowerControlMode.Iterative
+        # self.q_control_modes_dict['Iterative'] = ReactivePowerControlMode.Iterative
         lst = list(self.q_control_modes_dict.keys())
         mdl = get_list_model(lst)
         self.ui.reactive_power_control_mode_comboBox.setModel(mdl)
@@ -154,7 +154,7 @@ class MainGUI(QMainWindow):
         self.taps_control_modes_dict = OrderedDict()
         self.taps_control_modes_dict['No control'] = TapsControlMode.NoControl
         self.taps_control_modes_dict['Direct'] = TapsControlMode.Direct
-        self.taps_control_modes_dict['Iterative'] = TapsControlMode.Iterative
+        # self.taps_control_modes_dict['Iterative'] = TapsControlMode.Iterative
         lst = list(self.taps_control_modes_dict.keys())
         mdl = get_list_model(lst)
         self.ui.taps_control_mode_comboBox.setModel(mdl)
@@ -2147,7 +2147,7 @@ class MainGUI(QMainWindow):
         solver_type = self.solvers_dict[self.ui.solver_comboBox.currentText()]
 
         q_control_mode = self.q_control_modes_dict[self.ui.reactive_power_control_mode_comboBox.currentText()]
-        q_steepness_factor = self.ui.q_steepness_factor_spinBox.value()
+        q_steepness_factor = 1.0
         taps_control_mode = self.taps_control_modes_dict[self.ui.taps_control_mode_comboBox.currentText()]
 
         exponent = self.ui.tolerance_spinBox.value()
@@ -2155,7 +2155,7 @@ class MainGUI(QMainWindow):
 
         max_iter = self.ui.max_iterations_spinBox.value()
 
-        max_outer_iter = self.ui.outer_loop_spinBox.value()
+        max_outer_iter = 1000  # not used anymore
 
         dispatch_storage = False
         mu = self.ui.muSpinBox.value()

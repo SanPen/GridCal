@@ -548,9 +548,6 @@ def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15,
     end = time.time()
     elapsed = end - start
 
-    # print('iter_', iter_, '  -  back_track_counter', back_track_counter,
-    #       '  -  back_track_iterations', back_track_iterations)
-
     return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, iter_, elapsed)
 
 
@@ -560,18 +557,17 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
     Args:
         Ybus: Admittance matrix
-        Sbus: Array of nodal power injections
+        Sbus_: Array of nodal power injections
         V0: Array of nodal voltages (initial solution)
         Ibus: Array of nodal current injections
-        pv: Array with the indices of the PV buses
-        pq: Array with the indices of the PQ buses
+        pv_: Array with the indices of the PV buses
+        pq_: Array with the indices of the PQ buses
         tol: Tolerance
         max_it: Maximum number of iterations
-        robust: Boolean variable for the use of the Iwamoto optimal step factor.
+        robust: use of the Iwamoto optimal step factor?.
     Returns:
         Voltage solution, converged?, error, calculated power injections
 
-    @author: Ray Zimmerman (PSERC Cornell)
     @Author: Santiago Penate Vera
     """
     start = time.time()
@@ -607,9 +603,7 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
 
         # check tolerance
         norm_f = np.linalg.norm(f, np.Inf)
-
-        if norm_f < tol:
-            converged = 1
+        converged = norm_f < tol
 
         # do Newton iterations
         while not converged and iter_ < max_it:
@@ -618,7 +612,6 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
 
             # evaluate Jacobian
             # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
-            # Ybus, V, pvpq, pq, pvpq_lookup, npv, npq
             J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
 
             # compute update step
@@ -632,7 +625,7 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
                 elapsed = end - start
                 return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, iter_, elapsed)
 
-            # reassign the solution vector
+            # assign the solution vector
             dVa[pvpq] = dx[:npvpq]
             dVm[pq] = dx[npvpq:]
             dV = dVm * np.exp(1j * dVa)  # voltage mismatch
@@ -1058,7 +1051,7 @@ def F(V, Ybus, S, I, pq, pvpq):
     return np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
 
 
-def fx(x, Ybus, S, I, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm):
+def compute_fx(x, Ybus, S, I, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm):
     """
 
     :param x:
@@ -1142,10 +1135,7 @@ def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15) -> NumericPowerFl
 
     # check tolerance
     normF = np.linalg.norm(F, np.Inf)
-
-    if normF < tol:
-        converged = 1
-
+    converged = normF < tol
     dt = 1.0
 
     # Compose x
@@ -1162,17 +1152,17 @@ def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15) -> NumericPowerFl
         x[j5:j6] = Vm[pq]
 
         # Compute the Runge-Kutta steps
-        k1 = fx(x,
-                Ybus, Sbus, Ibus, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm)
+        k1 = compute_fx(x,
+                        Ybus, Sbus, Ibus, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm)
 
-        k2 = fx(x + 0.5 * dt * k1,
-                Ybus, Sbus, Ibus, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm)
+        k2 = compute_fx(x + 0.5 * dt * k1,
+                        Ybus, Sbus, Ibus, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm)
 
-        k3 = fx(x + 0.5 * dt * k2,
-                Ybus, Sbus, Ibus, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm)
+        k3 = compute_fx(x + 0.5 * dt * k2,
+                        Ybus, Sbus, Ibus, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm)
 
-        k4 = fx(x + dt * k3,
-                Ybus, Sbus, Ibus, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm)
+        k4 = compute_fx(x + dt * k3,
+                        Ybus, Sbus, Ibus, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm)
 
         x -= dt * (k1 + 2.0 * k2 + 2.0 * k3 + k4) / 6.0
 
@@ -1195,9 +1185,7 @@ def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15) -> NumericPowerFl
             dt = min(dt * 1.015, 0.75)
 
         print(dt)
-
-        if normF < tol:
-            converged = 1
+        converged = normF < tol
 
     end = time.time()
     elapsed = end - start
