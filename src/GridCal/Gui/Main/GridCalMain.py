@@ -30,7 +30,7 @@ from GridCal.Gui.GridEditorWidget.messages import *
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
-from GridCal.update import check_version
+from GridCal.update import check_version, get_upgrade_command
 
 # Engine imports
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import *
@@ -768,6 +768,11 @@ class MainGUI(QMainWindow):
 
         if version_code == 1:
             addendum = '\nThere is a newer version: ' + latest_version
+
+            cmd = get_upgrade_command(latest_version)
+            command = ' '.join(cmd)
+            addendum += '\n\nTerminal command to update:\n' + command
+
         elif version_code == -1:
             addendum = '\nThis version is newer than the version available\nin the repositories (' + latest_version + ')'
         elif version_code == 0:

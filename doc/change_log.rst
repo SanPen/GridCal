@@ -30,6 +30,7 @@ Version 4.0.0 (multi-terminal DC Grids)
     - Added a quite good random grid generator from the project SyntheticNetworks.
     - Added a bus viewer: It allows to visualize subsets of the grid.
       It is useful for very large grids where the complete schematic is cumbersome.
+    - Added update check and command in the GUI about box.
 
 - I/O
     - Added better Json export file.
