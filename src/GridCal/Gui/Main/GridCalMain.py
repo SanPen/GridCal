@@ -69,17 +69,14 @@ import sys
 import datetime
 from collections import OrderedDict
 from multiprocessing import cpu_count
-from geopy.geocoders import Nominatim
 from PySide2 import QtWidgets
 from matplotlib.colors import LinearSegmentedColormap
 
 try:
     from pandas.plotting import register_matplotlib_converters
-
     register_matplotlib_converters()
 except:
     from pandas.tseries import converter
-
     converter.register()
 
 __author__ = 'Santiago Peñate Vera'

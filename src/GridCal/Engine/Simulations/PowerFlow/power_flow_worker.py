@@ -219,7 +219,8 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
                                       tolerance=options.tolerance,
                                       max_iter=options.max_iter,
                                       acceleration_parameter=options.backtracking_parameter,
-                                      mu_0=options.mu)
+                                      mu_0=options.mu,
+                                      control_q=options.control_Q)
             else:
                 # Solve NR with the AC algorithm
                 solution = NR_LS(Ybus=circuit.Ybus,

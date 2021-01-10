@@ -62,7 +62,7 @@ class OptimalPowerFlowResults:
 
         self.generation_shedding = generation_shedding
 
-        self.Sbranch = Sbranch
+        self.Sf = Sbranch
 
         self.bus_types = bus_types
 
@@ -105,7 +105,7 @@ class OptimalPowerFlowResults:
                                        Sbus=self.Sbus,
                                        voltage=self.voltage,
                                        load_shedding=self.load_shedding,
-                                       Sbranch=self.Sbranch,
+                                       Sbranch=self.Sf,
                                        overloads=self.overloads,
                                        loading=self.loading,
                                        generation_shedding=self.generation_shedding,
@@ -126,7 +126,7 @@ class OptimalPowerFlowResults:
 
         self.load_shedding = np.zeros(n, dtype=float)
 
-        self.Sbranch = np.zeros(m, dtype=complex)
+        self.Sf = np.zeros(m, dtype=complex)
 
         self.loading = np.zeros(m, dtype=complex)
 
@@ -159,7 +159,7 @@ class OptimalPowerFlowResults:
 
         elif result_type == ResultTypes.BranchPower:
             labels = self.branch_names
-            y = self.Sbranch.real
+            y = self.Sf.real
             y_label = '(MW)'
             title = 'Branch power'
 

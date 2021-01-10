@@ -120,7 +120,7 @@ class OptimalPowerFlowTimeSeriesResults:
 
         self.Sbus[t, :] = res.Sbus
 
-        self.Sbranch[t, :] = res.Sbranch
+        self.Sbranch[t, :] = res.Sf
 
     def mdl(self, result_type) -> "ResultsModel":
         """
