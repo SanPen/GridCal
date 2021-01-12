@@ -595,7 +595,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
 
     # compile HVDC results (available for the complete grid since HVDC line as formulated are split objects
     # Pt is the "generation" at the sending point
-    results.hvdc_sent_power = nc.hvdc_Pt
+    results.hvdc_sent_power = -nc.hvdc_Pf
     results.hvdc_loading = nc.hvdc_loading
     results.hvdc_losses = nc.hvdc_losses
 

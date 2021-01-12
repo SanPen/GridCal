@@ -1259,13 +1259,14 @@ class Ui_mainWindow(object):
         self.max_iterations_spinBox = QSpinBox(self.frame_19)
         self.max_iterations_spinBox.setObjectName(u"max_iterations_spinBox")
         self.max_iterations_spinBox.setMinimum(1)
-        self.max_iterations_spinBox.setMaximum(300)
-        self.max_iterations_spinBox.setValue(20)
+        self.max_iterations_spinBox.setMaximum(1000)
+        self.max_iterations_spinBox.setValue(40)
 
         self.gridLayout_22.addWidget(self.max_iterations_spinBox, 8, 1, 1, 1)
 
         self.ignore_single_node_islands_checkBox = QCheckBox(self.frame_19)
         self.ignore_single_node_islands_checkBox.setObjectName(u"ignore_single_node_islands_checkBox")
+        self.ignore_single_node_islands_checkBox.setChecked(True)
 
         self.gridLayout_22.addWidget(self.ignore_single_node_islands_checkBox, 4, 0, 1, 2)
 
@@ -1297,7 +1298,7 @@ class Ui_mainWindow(object):
         self.muSpinBox.setObjectName(u"muSpinBox")
         self.muSpinBox.setDecimals(4)
         self.muSpinBox.setMinimum(0.000100000000000)
-        self.muSpinBox.setMaximum(2.000000000000000)
+        self.muSpinBox.setMaximum(1.000000000000000)
         self.muSpinBox.setSingleStep(0.100000000000000)
         self.muSpinBox.setValue(1.000000000000000)
 

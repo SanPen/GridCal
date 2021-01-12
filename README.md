@@ -126,6 +126,13 @@ Some of the features you'll find already are:
 
 [Check out the documentation](https://gridcal.readthedocs.io) to learn more and to get started.
 
+# Collaborators
+
+- Michel Lavoie (Transformer automation)
+- Bengt Lüers (Better testing)
+- Josep Fanals Batllori (HELM)
+- Manuel Navarro Catalán (Better documentation)
+- Paul Schultz (Grid Generator)
 
 # Contact
 

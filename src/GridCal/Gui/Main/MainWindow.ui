@@ -2038,10 +2038,10 @@ p, li { white-space: pre-wrap; }
                      <number>1</number>
                     </property>
                     <property name="maximum">
-                     <number>300</number>
+                     <number>1000</number>
                     </property>
                     <property name="value">
-                     <number>20</number>
+                     <number>40</number>
                     </property>
                    </widget>
                   </item>
@@ -2052,6 +2052,9 @@ p, li { white-space: pre-wrap; }
                     </property>
                     <property name="text">
                      <string>Ignore single node islands</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -2113,7 +2116,7 @@ p, li { white-space: pre-wrap; }
                      <double>0.000100000000000</double>
                     </property>
                     <property name="maximum">
-                     <double>2.000000000000000</double>
+                     <double>1.000000000000000</double>
                     </property>
                     <property name="singleStep">
                      <double>0.100000000000000</double>
