@@ -714,6 +714,11 @@ class TimeSeries(QThread):
                                                   time_indices,
                                                   'TS')
 
+        # set the HVDC results here since the HVDC is not a branch in this modality
+        time_series_results.hvdc_sent_power = numerical_circuit.hvdc_Pt
+        time_series_results.hvdc_loading = numerical_circuit.hvdc_loading
+        time_series_results.hvdc_losses = numerical_circuit.hvdc_losses
+
         return time_series_results
 
     def run_single_thread_clustering(self, time_indices) -> TimeSeriesResults:

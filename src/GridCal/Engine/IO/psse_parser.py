@@ -2266,6 +2266,12 @@ class PSSeFACTS:
 
         mode = int(self.MODE)
 
+        if '*' in str(self.SET2):
+            self.SET2 = 0.0
+
+        if '*' in str(self.SET1):
+            self.SET1 = 0.0
+
         if mode == 0:
             active = False
         elif mode == 1 and abs(self.J) > 0:
@@ -2293,7 +2299,7 @@ class PSSeFACTS:
                        code=idtag,
                        rs=self.SET1, xs=self.SET2,
                        rl=0.0, xl=self.LINX, bl=0.0,
-                       rp=0.0, xp=1/self.SHMX,
+                       rp=0.0, xp=1/self.SHMX if self.SHMX > 0 else 0.0,
                        vp=self.VSET,
                        Pset=self.PDES,
                        Qset=self.QDES,

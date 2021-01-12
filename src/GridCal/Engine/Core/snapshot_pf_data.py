@@ -231,7 +231,8 @@ class SnapshotData:
         self.nbatt = len(self.battery_data)
         self.nshunt = len(self.shunt_data)
         self.nstagen = len(self.static_generator_data)
-        self.nbr = self.nline + self.ntr + self.nvsc + self.ndcline
+        self.nupfc = len(self.upfc_data)
+        self.nbr = self.nline + self.ntr + self.nvsc + self.ndcline + self.nupfc
 
         self.original_bus_idx = np.arange(self.nbus)
         self.original_branch_idx = np.arange(self.nbr)
@@ -607,6 +608,10 @@ class SnapshotData:
     @property
     def hvdc_Pf(self):
         return self.hvdc_data.Pf[:, 0]
+
+    @property
+    def hvdc_Pt(self):
+        return self.hvdc_data.Pt[:, 0]
 
     @property
     def hvdc_loading(self):

@@ -95,6 +95,22 @@ class TimeCircuit(SnapshotData):
 
         return self.vd_
 
+    @property
+    def hvdc_Pf(self):
+        return self.hvdc_data.Pf
+
+    @property
+    def hvdc_Pt(self):
+        return self.hvdc_data.Pt
+
+    @property
+    def hvdc_loading(self):
+        return self.hvdc_data.get_loading()
+
+    @property
+    def hvdc_losses(self):
+        return self.hvdc_data.get_losses()
+
     def split_into_islands(self, ignore_single_node_islands=False) -> List["TimeCircuit"]:
         """
         Split circuit into islands

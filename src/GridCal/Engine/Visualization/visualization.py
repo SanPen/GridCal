@@ -150,7 +150,7 @@ def colour_sub_schematic(Sbase,
                 if St is not None:
                     tooltip += '\nPower (to):\t' + "{:10.4f}".format(St[i]) + ' [MVA]'
                 if losses is not None:
-                    tooltip += '\nLosses:\t' + "{:10.4f}".format(losses[i]) + ' [MVA]'
+                    tooltip += '\nLosses:\t\t' + "{:10.4f}".format(losses[i]) + ' [MVA]'
 
                 if branch.device_type == DeviceType.Transformer2WDevice:
                     if ma is not None:
@@ -194,7 +194,7 @@ def colour_sub_schematic(Sbase,
                 tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(abs(hvdc_loading[i]) * 100) + ' [%]'
 
                 if hvdc_losses is not None:
-                    tooltip += '\nLosses: ' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
+                    tooltip += '\nLosses: \t' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
 
                 elm.graphic_obj.setToolTipText(tooltip)
                 elm.graphic_obj.set_colour(color, w, style)

@@ -421,10 +421,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     results.convergence_reports.append(report)
     results.Qpv = Sbus.imag[circuit.pv]
 
-    # compile HVDC results
-    results.hvdc_sent_power = circuit.hvdc_Pf
-    results.hvdc_loading = circuit.hvdc_loading
-    results.hvdc_losses = circuit.hvdc_losses
+    # HVDC results are gathered in the multi island power flow function due to their nature
 
     return results
 
@@ -595,6 +592,12 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
 
         else:
             logger.append('There are no slack nodes')
+
+    # compile HVDC results (available for the complete grid since HVDC line as formulated are split objects
+    # Pt is the "generation" at the sending point
+    results.hvdc_sent_power = nc.hvdc_Pt
+    results.hvdc_loading = nc.hvdc_loading
+    results.hvdc_losses = nc.hvdc_losses
 
     return results
 

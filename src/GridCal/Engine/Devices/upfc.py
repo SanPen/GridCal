@@ -104,8 +104,8 @@ class UPFC(EditableDevice):
         self.Rsh = rp
         self.Xsh = xp
         self.Vsh = vp
-        self.Pset = Pset
-        self.Qset = Qset
+        self.Pfset = Pset
+        self.Qfset = Qset
 
         self.Cost = cost
         self.Cost_prof = cost_prof

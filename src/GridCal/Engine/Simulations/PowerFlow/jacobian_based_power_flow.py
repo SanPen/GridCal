@@ -335,10 +335,10 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
 
             # set the values and correct with an adaptive mu if needed
             mu = mu_0  # ideally 1.0
-            cond = True
+            back_track_condition = True
             l_iter = 0
             norm_f_new = 0.0
-            while cond and l_iter < max_it and mu > tol:
+            while back_track_condition and l_iter < max_it and mu > tol:
 
                 # restore the previous values if we are backtracking (the first iteration is the normal NR procedure)
                 if l_iter > 0:
@@ -356,11 +356,11 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                 f = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
                 norm_f_new = np.linalg.norm(f, np.inf)
 
-                cond = norm_f_new > norm_f
+                back_track_condition = norm_f_new > norm_f
                 mu *= acceleration_parameter
                 l_iter += 1
 
-            if l_iter > 1:
+            if l_iter > 1 and back_track_condition:
                 # this means that not even the backtracking was able to correct the solution so, restore and end
                 Va = prev_Va.copy()
                 Vm = prev_Vm.copy()
@@ -743,8 +743,7 @@ def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max
         lbmda = 0
         f_prev = 1e9  # very large number
         nn = 2 * npq + npv
-        ii = np.linspace(0, nn-1, nn)
-        Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csc_matrix identity
+        Idn = sp.diags(np.ones(nn))  # csc_matrix identity
 
         # generate lookup pvpq -> index pvpq (used in createJ)
         pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
