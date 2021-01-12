@@ -143,7 +143,7 @@ Other arguments in the Bus() object that can be added are:
     Bus(self, name="Bus", idtag=None, code='', vnom=10, vmin=0.9, vmax=1.1, r_fault=0.0, x_fault=0.0, xpos=0, ypos=0, height=0, width=0, active=True, is_slack=False, is_dc=False, area=None, zone=None, substation=None, country=None, longitude=0.0, latitude=0.0)
 
 3.
-^^^^^^^^^^^^^^^^
+^^
 Adding a bus named bus1 to grid, and making it a slack bus:
 
 .. code-block:: python
@@ -266,13 +266,118 @@ To add a branch, that has  branch object as a parameter:
 
 Running a Power Flow
 --------------------
+Once a grid has been loaded/created Power Flow analysis can be run like this:
+
+.. code-block:: python
+
+    pf_options = PowerFlowOptions(solver_type=SolverType.NR,  # Base method to use
+                              verbose=False,  # Verbose option where available
+                              tolerance=1e-6,  # power error in p.u.
+                              max_iter=25,  # maximum iteration number
+                              control_q=True  # if to control the reactive power
+                              )
+    pf = PowerFlowDriver(grid, pf_options)
+    pf.run()
+
+
+Some of the Arguments/Options that can be added to the Power Flow method are:
+
+    - **solver_type** (:ref:`SolverType<solver_type>`, SolverType.NR) -  Solver type.
+    - **retry_with_other_methods** (bool, True) - Use a battery of methods to tackle the problem if the main solver fails.
+    - **verbose** (bool, False) - Print additional details in the logger.
+    - **initialize_with_existing_solution** (bool, True) -  *To be detailed*.
+    - **tolerance** (float, 1e-6): Solution tolerance for the power flow numerical methods.
+    - **max_iter** (int, 25): Maximum number of iterations for the power flow numerical method.
+    - **max_outer_loop_iter** (int, 100): Maximum number of iterations for the controls outer loop.
+    - **control_q** (:ref:`ReactivePowerControlMode<q_control>`, ReactivePowerControlMode.NoControl): Control mode for the PV nodes reactive power limits.
+    -  **control_taps** (:ref:`TapsControlMode<taps_control>`, TapsControlMode.NoControl): Control mode for the transformer taps equipped with a voltage regulator (as part of the outer loop).
+    - **multi_core** (bool, False): Use multi-core processing? applicable for time series.
+    - **dispatch_storage** (bool, False): Dispatch storage?
+    - **control_p** (bool, False): Control active power (optimization dispatch).
+    - **apply_temperature_correction** (bool, False): Apply the temperature correction to the resistance of the branches?
+    - **branch_impedance_tolerance_mode** (BranchImpedanceMode, BranchImpedanceMode.Specified): Type of modification of the branches impedance.
+    - **q_steepness_factor** (float, 30): Steepness factor :math:`k` for the :ref:`ReactivePowerControlMode<q_control>` iterative control.
+    - **distributed_slack** (bool, False): Applies the redistribution of the slack power proportionally among the controlled generators.
+    - **ignore_single_node_islands** (bool, False): If True the islands of 1 node are ignored.
+    - **backtracking_parameter** (float, 1e-4): parameter used to correct the "bad" iterations, typically 0.5.
+
+
 
 Running a Time Series Power Flow
 --------------------------------
+Once a grid has been loaded/created Time Series Power Flow analysis can be run like this:
 
-Visualize Results
------------------
+.. code-block:: python
 
+    ts = TimeSeries(grid=grid,
+                options=pf_options,
+                opf_time_series_results=None,
+                start_=0,
+                end_=None)
+    ts.run()
+
+Some of the Arguments/Options that can be added to the Power Flow method are:
+    - **grid: MultiCircuit**: grid object to which the analysis will be run.
+    - **options: PowerFlowOptions**: power flow options that will be selected.
+    - **opf_time_series_results=None**:
+    - **start_=0**: start time.
+    - **end_=None**: end time.
+    - **use_clustering=False**: clustering selection.
+    - **cluster_number=10**: clustering number.
+
+
+Results
+-------
+Once the analysis have been run. There are different options to export and/or display results. You will have to manually pick the results you want to display and how. However, this gives great flexibility.
+
+
+First, import Pandas and NumPy libraries:
+
+.. code-block:: python
+
+    import numpy as np
+    import pandas as pd
+
+Assuming you have done a Power Flow study and the result is stored in 'pf'. Then you can export:
+
+1. To Excel
+^^^^^^^^^^^
+
+.. code-block:: python
+
+    Results = pd.ExcelWriter('Results.xlsx')
+    # Create Headers
+    headers = ['Vm (p.u.)', 'Va (Deg)', 'Vre', 'Vim']
+    # Choose variables to display
+    Vm = np.abs(pf.results.voltage)
+    Va = np.angle(pf.results.voltage, deg=True)
+    Vre = pf.results.voltage.real
+    Vim = pf.results.voltage.imag
+    data = np.c_[Vm, Va, Vre, Vim]
+    # Create Data Frame
+    v_df = pd.DataFrame(data=data, columns=headers, index=grid.bus_names)
+    # Export Results
+    v_df.to_excel(Results, sheet_name='V')
+
+
+2. To CSV
+^^^^^^^^^
+
+.. code-block:: python
+
+    Results = pd.CSVWriter('Results.csv')
+    # Create Headers
+    headers = ['Vm (p.u.)', 'Va (Deg)', 'Vre', 'Vim']
+    # Choose variables to display
+    Vm = np.abs(pf.results.voltage)
+    Va = np.angle(pf.results.voltage, deg=True)
+    Vre = pf.results.voltage.real
+    Vim = pf.results.voltage.imag
+    data = np.c_[Vm, Va, Vre, Vim]
+    # Create Data Frame
+    v_df = pd.DataFrame(data=data, columns=headers, index=grid.bus_names)
+    # Export Results
+    v_df.to_csv(Results, sheet_name='V')
 
 
 Further functions can be found the in the source code. In order to see how to create the distribution grid example using the library look here
