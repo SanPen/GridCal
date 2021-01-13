@@ -23,14 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added collaborators to the readme">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added HVDC result types">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_opf_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_opf_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/time_series_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/time_series_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/result_types.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/result_types.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/bus.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -497,14 +492,8 @@
       <workItem from="1610361361653" duration="2537000" />
       <workItem from="1610443844292" duration="11810000" />
       <workItem from="1610483657934" duration="2851000" />
-      <workItem from="1610523527219" duration="5525000" />
-    </task>
-    <task id="LOCAL-00038" summary="Research on multiple failure">
-      <created>1601472144681</created>
-      <option name="number" value="00038" />
-      <option name="presentableId" value="LOCAL-00038" />
-      <option name="project" value="LOCAL" />
-      <updated>1601472144681</updated>
+      <workItem from="1610523527219" duration="5604000" />
+      <workItem from="1610548268156" duration="3210000" />
     </task>
     <task id="LOCAL-00039" summary="Improved the results of the PTDF driver">
       <created>1601568887067</created>
@@ -842,7 +831,14 @@
       <option name="project" value="LOCAL" />
       <updated>1610474116837</updated>
     </task>
-    <option name="localTasksCounter" value="87" />
+    <task id="LOCAL-00087" summary="Added HVDC result types">
+      <created>1610531910348</created>
+      <option name="number" value="00087" />
+      <option name="presentableId" value="LOCAL-00087" />
+      <option name="project" value="LOCAL" />
+      <updated>1610531910349</updated>
+    </task>
+    <option name="localTasksCounter" value="88" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -876,7 +872,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed dimensionality when loading Qmin Qmax" />
     <MESSAGE value="Implemented reactive power curves per generator" />
     <MESSAGE value="Implemented PSSe parser&#10;Improved the grid AnalysisDialogue.py" />
     <MESSAGE value="Improved PSSe parsing&#10;Added BusViewer dialogue" />
@@ -901,7 +896,8 @@
     <MESSAGE value="Added Q control to the ACDC NR&#10;Fixed some bugs" />
     <MESSAGE value="Fixed some bugs regarding HVDC" />
     <MESSAGE value="Added collaborators to the readme" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added collaborators to the readme" />
+    <MESSAGE value="Added HVDC result types" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added HVDC result types" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -424,6 +424,7 @@ class Bus(EditableDevice):
              'type': self.determine_bus_type().value,
              'phases': 'ps',
              'name': self.name,
+             'name_code': self.code,
              'active': self.active,
              'is_slack': self.is_slack,
              'vnom': self.Vnom,
