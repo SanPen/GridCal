@@ -22,6 +22,8 @@ A video tutorial can be found here_.
 
 Note: this tutorial was made with GridCal v 4.0.0
 
+However, we will do this using using the GridCal GUI.
+
 Step 0: System Overview
 -----------------------
 The system grid is supposed to look like the figure below.
@@ -38,7 +40,7 @@ The system featurese:
 
 Solution file of the grid system can be found in _GitHub.
 
-.. _GitHub:
+.. _GitHub: https://github.com/SanPen/GridCal/blob/devel/Grids_and_profiles/grids/Some%20distribution%20grid%20(Video).gridcal
 
 
 

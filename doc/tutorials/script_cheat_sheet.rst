@@ -138,21 +138,203 @@ Adding a bus named bus1 to grid, and making it a slack bus:
     grid.add_bus(bus1)
 
 Other arguments in the Bus() object that can be added are:
+    - **name** (str, "Bus"): Name of the bus.
+    - **vnom** (float, 10.0): Nominal voltage in kV.
+    - **vmin** (float, 0.9): Minimum per unit voltage.
+    - **vmax** (float, 1.1): Maximum per unit voltage.
+    - **r_fault** (float, 0.0): Resistance of the fault in per unit (SC only).
+    - **x_fault** (float, 0.0): Reactance of the fault in per unit (SC only).
+    - **xpos** (int, 0): X position in pixels (GUI only).
+    - **ypos** (int, 0): Y position in pixels (GUI only).
+    - **height** (int, 0): Height of the graphic object (GUI only).
+    - **width** (int, 0): Width of the graphic object (GUI only).
+    - **active** (bool, True): Is the bus active?
+    - **is_slack** (bool, False): Is this bus a slack bus?
+    - **area** (str, "Default"): Name of the area.
+    - **zone** (str, "Default"): Name of the zone.
+    - **substation** (str, "Default"): Name of the substation.
+
+**Note:** if the arguments of the object are not explicitly selected, then GridCal will set them to the default values (above).
+
+3. Add Load
+^^^^^^^^^^^
+Adding a load named l2 to bus 2:
+
 .. code-block:: python
 
-    Bus(self, name="Bus", idtag=None, code='', vnom=10, vmin=0.9, vmax=1.1, r_fault=0.0, x_fault=0.0, xpos=0, ypos=0, height=0, width=0, active=True, is_slack=False, is_dc=False, area=None, zone=None, substation=None, country=None, longitude=0.0, latitude=0.0)
+    l2 = Load(name='Load',
+          G=0, B=0,  # admittance of the ZIP model in MVA at the nominal voltage
+          Ir=0, Ii=0,  # Current of the ZIP model in MVA at the nominal voltage
+          P=40, Q=20,  # Power of the ZIP model in MVA
+          active=True,  # Is active?
+          mttf=0.0,  # Mean time to failure
+          mttr=0.0  # Mean time to recovery
+          )
+    grid.add_load(bus2, l2)
 
-3.
-^^
-Adding a bus named bus1 to grid, and making it a slack bus:
+Other arguments in the Load() object that can be added are:
+    - **name** (str, "Load"): Name of the load.
+    - **G** (float, 0.0): Conductance in equivalent MW.
+    - **B** (float, 0.0): Susceptance in equivalent MVAr.
+    - **Ir** (float, 0.0): Real current in equivalent MW.
+    - **Ii** (float, 0.0): Imaginary current in equivalent MVAr.
+    - **P** (float, 0.0): Active power in MW.
+    - **Q** (float, 0.0): Reactive power in MVAr.
+    - **G_prof** (DataFrame, None): Pandas DataFrame with the conductance profile in equivalent MW.
+    - **B_prof** (DataFrame, None): Pandas DataFrame with the susceptance profile in equivalent MVAr
+    - **Ir_prof** (DataFrame, None): Pandas DataFrame with the real current profile in equivalent MW.
+    - **Ii_prof** (DataFrame, None): Pandas DataFrame with the imaginary current profile in equivalent MVAr.
+    - **P_prof** (DataFrame, None): Pandas DataFrame with the active power profile in equivalent MW.
+    - **Q_prof** (DataFrame, None): Pandas DataFrame with the reactive power profile in equivalent MVAr.
+    - **active** (bool, True): Is the load active?
+    - **mttf** (float, 0.0): Mean time to failure in hours.
+    - **mttr** (float, 0.0): Mean time to recovery in hours.
+
+**Note:** if the arguments of the object are not explicitly selected, then GridCal will set them to the default values (above).
+**Note:** in GridCal, loads, generators, etc are stored within each bus.
+**Note:** (+) to act as a load, (-) to act as a generator.
+**Note:** this is a ZIP load model.
+
+4. Add Generator
+^^^^^^^^^^^^^^^^
+Adding a generator named g1 to bus 1:
 
 .. code-block:: python
-    bus1 = Bus('Bus 1', vnom=20)
-    bus1.is_slack = True
-    grid.add_bus(bus1)
 
-Other arguments in the Bus() object that can be added are:
+    g1 = Generator(name='gen',
+               active_power=0.0,  # Active power in MW, since this generator is used to set the slack , is 0
+               voltage_module=1.0,  # Voltage set point to control
+               Qmin=-9999,  # minimum reactive power in MVAr
+               Qmax=9999,  # Maximum reactive power in MVAr
+               Snom=9999,  # Nominal power in MVA
+               power_prof=None,  # power profile
+               vset_prof=None,  # voltage set point profile
+               active=True  # Is active?
+               )
+    grid.add_generator(bus1, g1)
 
+Other arguments in the Load() object that can be added are:
+    - **name** (str, "gen"): Name of the generator.
+    - **active_power** (float, 0.0): Active power in MW.
+    - **power_factor** (float, 0.8): Power factor.
+    - **voltage_module** (float, 1.0): Voltage setpoint in per unit.
+    - **is_controlled** (bool, True): Is the generator voltage controlled?
+    - **Qmin** (float, -9999): Minimum reactive power in MVAr.
+    - **Qmax** (float, 9999): Maximum reactive power in MVAr.
+    - **Snom** (float, 9999): Nominal apparent power in MVA.
+    - **power_prof** (DataFrame, None): Pandas DataFrame with the active power profile in MW.
+    - **power_factor_prof** (DataFrame, None): Pandas DataFrame with the power factor profile.
+    - **vset_prof** (DataFrame, None): Pandas DataFrame with the voltage setpoint profile in per unit.
+    - **active** (bool, True): Is the generator active?
+    - **p_min** (float, 0.0): Minimum dispatchable power in MW.
+    - **p_max** (float, 9999): Maximum dispatchable power in MW.
+    - **op_cost** (float, 1.0): Operational cost in Eur (or other currency) per MW.
+    - **Sbase** (float, 100): Nominal apparent power in MVA.
+    - **enabled_dispatch** (bool, True): Is the generator enabled for OPF?
+    - **mttf** (float, 0.0): Mean time to failure in hours.
+    - **mttr** (float, 0.0): Mean time to recovery in hours.
+    - **technology** (GeneratorTechnologyType): Instance of technology to use.
+    - **q_points**: list of reactive capability curve points [(P1, Qmin1, Qmax1), (P2, Qmin2, Qmax2), ...].
+    - **use_reactive_power_curve**: Use the reactive power curve? otherwise use the plain old limits.
+
+**Note:** if the arguments of the object are not explicitly selected, then GridCal will set them to the default values (above).
+
+4. Add Line
+^^^^^^^^^^^
+Adding a line from bus 1 to bus 2 named Line12:
+
+.. code-block:: python
+    Line12 = Line(bus_from=bus1,
+             bus_to=bus2,
+             name='Line 1-2',
+             r=0.05,  # resistance of the pi model in per unit
+             x=0.11,  # reactance of the pi model in per unit
+             g=1e-20,  # conductance of the pi model in per unit
+             b=0.02,  # susceptance of the pi model in per unit
+             rate=50,  # Rate in MVA
+             tap=1.0,  # Tap value (value close to 1)
+             shift_angle=0,  # Tap angle in radians
+             active=True,  # is the branch active?
+             mttf=0,  # Mean time to failure
+             mttr=0,  # Mean time to recovery
+             branch_type=BranchType.Line,  # Branch type tag
+             length=1,  # Length in km (to be used with templates)
+             template=BranchTemplate()  # Branch template (The default one is void)
+             )
+    grid.add_line(Line12)
+
+
+Other arguments in the Line() object that can be added are:
+    - **bus_from** (:ref:`Bus`): "From" :ref:`bus<Bus>` object.
+    - **bus_to** (:ref:`Bus`): "To" :ref:`bus<Bus>` object.
+    - **name** (str, "Branch"): Name of the branch.
+    - **r** (float, 1e-20): Branch resistance in per unit.
+    - **x** (float, 1e-20): Branch reactance in per unit.
+    - **g** (float, 1e-20): Branch shunt conductance in per unit.
+    - **rate** (float, 1.0): Branch rate in MVA.
+    - **tap** (float, 1.0): Branch tap module.
+    - **shift_angle** (int, 0): Tap shift angle in radians.
+    - **active** (bool, True): Is the branch active?
+    - **tolerance** (float, 0): Tolerance specified for the branch impedance in %.
+    - **mttf** (float, 0.0): Mean time to failure in hours.
+    - **mttr** (float, 0.0): Mean time to recovery in hours.
+    - **r_fault** (float, 0.0): Mid-line fault resistance in per unit (SC only).
+    - **x_fault** (float, 0.0): Mid-line fault reactance in per unit (SC only).
+    - **fault_pos** (float, 0.0): Mid-line fault position in per unit (0.0 = `bus_from`, 0.5 = middle, 1.0 = `bus_to`).
+    - **branch_type** (BranchType, BranchType.Line): Device type enumeration (ex.: :class:`GridCal.Engine.Devices.transformer.TransformerType`).
+    - **length** (float, 0.0): Length of the branch in km.
+    - **vset** (float, 1.0): Voltage set-point of the voltage controlled bus in per unit.
+    - **temp_base** (float, 20.0): Base temperature at which `r` is measured in °C.
+    - **temp_oper** (float, 20.0): Operating temperature in °C.
+    - **alpha** (float, 0.0033): Thermal constant of the material in °C.
+    - **bus_to_regulated** (bool, False): Is the `bus_to` voltage regulated by this branch?
+    - **template** (BranchTemplate, BranchTemplate()): Basic branch template.
+
+**Note:** if the arguments of the object are not explicitly selected, then GridCal will set them to the default values (above).
+**Note:** branch is a legacy model, try to use line or transformer instead.
+
+4. Add Transformer
+^^^^^^^^^^^^^^^^^^
+Adding a transformer named Transformer1:
+
+.. code-block:: python
+    Transformer1 = (hv_nominal_voltage=0,
+                    lv_nominal_voltage=0,
+                    nominal_power=0.001,
+                    copper_losses=0,
+                    iron_losses=0,
+                    no_load_current=0,
+                    short_circuit_voltage=0,
+                    gr_hv1=0.5, gx_hv1=0.5,
+                    name='TransformerType',
+                    tpe=BranchType.Transformer,
+                    idtag=None)
+    grid.add_transformer2w(Transformer1)
+
+
+Other arguments in the Transformer2w() object that can be added are:
+
+**hv_nominal_voltage** (float, 0.0): Primary side nominal voltage in kV (tied to the Branch's `bus_from`)
+
+        **lv_nominal_voltage** (float, 0.0): Secondary side nominal voltage in kV (tied to the Branch's `bus_to`)
+
+        **nominal_power** (float, 0.0): Transformer nominal apparent power in MVA
+
+        **copper_losses** (float, 0.0): Copper losses in kW (also known as short circuit power)
+
+        **iron_losses** (float, 0.0): Iron losses in kW (also known as no-load power)
+
+        **no_load_current** (float, 0.0): No load current in %
+
+        **short_circuit_voltage** (float, 0.0): Short circuit voltage in %
+
+        **gr_hv1** (float, 0.5): Resistive contribution to the primary side in per unit (at the Branch's `bus_from`)
+
+        **gx_hv1** (float, 0.5): Reactive contribution to the primary side in per unit (at the Branch's `bus_from`)
+
+        **name** (str, "TransformerType"): Name of the type
+
+        **tpe** (BranchType, BranchType.Transformer): Device type enumeration
 
 View GridCal Model
 ------------------
@@ -380,5 +562,7 @@ Assuming you have done a Power Flow study and the result is stored in 'pf'. Then
     v_df.to_csv(Results, sheet_name='V')
 
 
-Further functions can be found the in the source code. In order to see how to create the distribution grid example using the library look here
+Further functions can be found the in the source code. In order to see a complete distribution grid example using the library look here_.
+
+.. _here: https://gridcal.readthedocs.io/en/latest/tutorials/five_node_grid.html
 
