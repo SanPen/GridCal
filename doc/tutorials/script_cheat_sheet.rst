@@ -244,6 +244,7 @@ Other arguments in the Load() object that can be added are:
 Adding a line from bus 1 to bus 2 named Line12:
 
 .. code-block:: python
+
     Line12 = Line(bus_from=bus1,
              bus_to=bus2,
              name='Line 1-2',
@@ -298,6 +299,7 @@ Other arguments in the Line() object that can be added are:
 Adding a transformer named Transformer1:
 
 .. code-block:: python
+
     Transformer1 = (hv_nominal_voltage=0,
                     lv_nominal_voltage=0,
                     nominal_power=0.001,
@@ -314,27 +316,17 @@ Adding a transformer named Transformer1:
 
 Other arguments in the Transformer2w() object that can be added are:
 
-**hv_nominal_voltage** (float, 0.0): Primary side nominal voltage in kV (tied to the Branch's `bus_from`)
-
-        **lv_nominal_voltage** (float, 0.0): Secondary side nominal voltage in kV (tied to the Branch's `bus_to`)
-
-        **nominal_power** (float, 0.0): Transformer nominal apparent power in MVA
-
-        **copper_losses** (float, 0.0): Copper losses in kW (also known as short circuit power)
-
-        **iron_losses** (float, 0.0): Iron losses in kW (also known as no-load power)
-
-        **no_load_current** (float, 0.0): No load current in %
-
-        **short_circuit_voltage** (float, 0.0): Short circuit voltage in %
-
-        **gr_hv1** (float, 0.5): Resistive contribution to the primary side in per unit (at the Branch's `bus_from`)
-
-        **gx_hv1** (float, 0.5): Reactive contribution to the primary side in per unit (at the Branch's `bus_from`)
-
-        **name** (str, "TransformerType"): Name of the type
-
-        **tpe** (BranchType, BranchType.Transformer): Device type enumeration
+    - **hv_nominal_voltage** (float, 0.0): Primary side nominal voltage in kV (tied to the Branch's `bus_from`).
+    - **lv_nominal_voltage** (float, 0.0): Secondary side nominal voltage in kV (tied to the Branch's `bus_to`).
+    - **nominal_power** (float, 0.0): Transformer nominal apparent power in MVA.
+    - **copper_losses** (float, 0.0): Copper losses in kW (also known as short circuit power).
+    - **iron_losses** (float, 0.0): Iron losses in kW (also known as no-load power).
+    - **no_load_current** (float, 0.0): No load current in %.
+    - **short_circuit_voltage** (float, 0.0): Short circuit voltage in %.
+    - **gr_hv1** (float, 0.5): Resistive contribution to the primary side in per unit (at the Branch's `bus_from`).
+    - **gx_hv1** (float, 0.5): Reactive contribution to the primary side in per unit (at the Branch's `bus_from`).
+    - **name** (str, "TransformerType"): Name of the type.
+    - **tpe** (BranchType, BranchType.Transformer): Device type enumeration.
 
 View GridCal Model
 ------------------
