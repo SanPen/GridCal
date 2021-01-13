@@ -16,4 +16,3 @@ GridCal.Engine.Simulations.Topology.topology\_driver module
    :members:
    :undoc-members:
    :show-inheritance:
-

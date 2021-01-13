@@ -161,6 +161,14 @@ GridCal.Engine.Devices.underground\_line module
    :undoc-members:
    :show-inheritance:
 
+GridCal.Engine.Devices.upfc module
+----------------------------------
+
+.. automodule:: GridCal.Engine.Devices.upfc
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GridCal.Engine.Devices.vsc module
 ---------------------------------
 
@@ -176,4 +184,3 @@ GridCal.Engine.Devices.wire module
    :members:
    :undoc-members:
    :show-inheritance:
-

@@ -12,4 +12,5 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   GridCal.ThirdParty.SyntheticNetworks
    GridCal.ThirdParty.pulp

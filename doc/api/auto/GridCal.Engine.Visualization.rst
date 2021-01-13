@@ -16,4 +16,3 @@ GridCal.Engine.Visualization.visualization module
    :members:
    :undoc-members:
    :show-inheritance:
-

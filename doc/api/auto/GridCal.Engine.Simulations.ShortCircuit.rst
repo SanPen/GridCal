@@ -24,4 +24,3 @@ GridCal.Engine.Simulations.ShortCircuit.short\_circuit\_driver module
    :members:
    :undoc-members:
    :show-inheritance:
-

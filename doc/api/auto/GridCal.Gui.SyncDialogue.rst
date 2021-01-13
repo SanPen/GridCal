@@ -40,4 +40,3 @@ GridCal.Gui.SyncDialogue.update\_gui\_file module
    :members:
    :undoc-members:
    :show-inheritance:
-

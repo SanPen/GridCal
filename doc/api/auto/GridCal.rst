@@ -28,3 +28,10 @@ GridCal.ExecuteGridCal module
    :undoc-members:
    :show-inheritance:
 
+GridCal.update module
+---------------------
+
+.. automodule:: GridCal.update
+   :members:
+   :undoc-members:
+   :show-inheritance:

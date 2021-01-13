@@ -46,4 +46,3 @@ GridCal.Engine.plot\_config module
    :members:
    :undoc-members:
    :show-inheritance:
-

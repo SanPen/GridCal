@@ -24,4 +24,3 @@ GridCal.Engine.Simulations.NK.n\_minus\_k\_results module
    :members:
    :undoc-members:
    :show-inheritance:
-

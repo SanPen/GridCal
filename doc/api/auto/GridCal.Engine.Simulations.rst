@@ -43,4 +43,3 @@ GridCal.Engine.Simulations.sparse\_solve module
    :members:
    :undoc-members:
    :show-inheritance:
-

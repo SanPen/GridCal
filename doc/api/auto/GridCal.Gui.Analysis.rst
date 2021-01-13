@@ -40,4 +40,3 @@ GridCal.Gui.Analysis.update\_gui\_file module
    :members:
    :undoc-members:
    :show-inheritance:
-

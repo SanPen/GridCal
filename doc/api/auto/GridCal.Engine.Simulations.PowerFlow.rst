@@ -9,6 +9,14 @@ GridCal.Engine.Simulations.PowerFlow package
 Submodules
 ----------
 
+GridCal.Engine.Simulations.PowerFlow.discrete\_controls module
+--------------------------------------------------------------
+
+.. automodule:: GridCal.Engine.Simulations.PowerFlow.discrete_controls
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GridCal.Engine.Simulations.PowerFlow.fast\_decoupled\_power\_flow module
 ------------------------------------------------------------------------
 
@@ -29,6 +37,14 @@ GridCal.Engine.Simulations.PowerFlow.high\_speed\_jacobian module
 -----------------------------------------------------------------
 
 .. automodule:: GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+GridCal.Engine.Simulations.PowerFlow.jacobian\_based\_acdc\_power\_flow module
+------------------------------------------------------------------------------
+
+.. automodule:: GridCal.Engine.Simulations.PowerFlow.jacobian_based_acdc_power_flow
    :members:
    :undoc-members:
    :show-inheritance:
@@ -104,4 +120,3 @@ GridCal.Engine.Simulations.PowerFlow.time\_series\_driver module
    :members:
    :undoc-members:
    :show-inheritance:
-

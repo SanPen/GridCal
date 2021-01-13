@@ -184,4 +184,3 @@ GridCal.Engine.IO.zip\_interface module
    :members:
    :undoc-members:
    :show-inheritance:
-

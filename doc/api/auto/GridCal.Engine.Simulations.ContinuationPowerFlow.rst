@@ -17,11 +17,10 @@ GridCal.Engine.Simulations.ContinuationPowerFlow.continuation\_power\_flow modul
    :undoc-members:
    :show-inheritance:
 
-GridCal.Engine.Simulations.ContinuationPowerFlow.voltage\_collapse\_driver module
----------------------------------------------------------------------------------
+GridCal.Engine.Simulations.ContinuationPowerFlow.continuation\_power\_flow\_driver module
+-----------------------------------------------------------------------------------------
 
-.. automodule:: GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver
+.. automodule:: GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver
    :members:
    :undoc-members:
    :show-inheritance:
-

@@ -6,8 +6,24 @@ GridCal.Engine.Core package
    :undoc-members:
    :show-inheritance:
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   GridCal.Engine.Core.DataStructures
+
 Submodules
 ----------
+
+GridCal.Engine.Core.admittance\_matrices module
+-----------------------------------------------
+
+.. automodule:: GridCal.Engine.Core.admittance_matrices
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 GridCal.Engine.Core.common\_functions module
 --------------------------------------------
@@ -21,14 +37,6 @@ GridCal.Engine.Core.multi\_circuit module
 -----------------------------------------
 
 .. automodule:: GridCal.Engine.Core.multi_circuit
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-GridCal.Engine.Core.snapshot\_acdc module
------------------------------------------
-
-.. automodule:: GridCal.Engine.Core.snapshot_acdc
    :members:
    :undoc-members:
    :show-inheritance:
@@ -72,4 +80,3 @@ GridCal.Engine.Core.topology module
    :members:
    :undoc-members:
    :show-inheritance:
-

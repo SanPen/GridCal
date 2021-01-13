@@ -13,8 +13,10 @@ Subpackages
    :maxdepth: 4
 
    GridCal.Gui.Analysis
+   GridCal.Gui.BusViewer
    GridCal.Gui.GIS
    GridCal.Gui.GridEditorWidget
+   GridCal.Gui.GridGenerator
    GridCal.Gui.LoadDesigner
    GridCal.Gui.Main
    GridCal.Gui.ProfilesInput
@@ -48,4 +50,3 @@ GridCal.Gui.GuiFunctions module
    :members:
    :undoc-members:
    :show-inheritance:
-

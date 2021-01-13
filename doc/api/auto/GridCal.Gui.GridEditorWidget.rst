@@ -81,6 +81,14 @@ GridCal.Gui.GridEditorWidget.load\_graphics module
    :undoc-members:
    :show-inheritance:
 
+GridCal.Gui.GridEditorWidget.matplotlibwidget module
+----------------------------------------------------
+
+.. automodule:: GridCal.Gui.GridEditorWidget.matplotlibwidget
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GridCal.Gui.GridEditorWidget.messages module
 --------------------------------------------
 
@@ -121,6 +129,14 @@ GridCal.Gui.GridEditorWidget.transformer2w\_graphics module
    :undoc-members:
    :show-inheritance:
 
+GridCal.Gui.GridEditorWidget.upfc\_graphics module
+--------------------------------------------------
+
+.. automodule:: GridCal.Gui.GridEditorWidget.upfc_graphics
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GridCal.Gui.GridEditorWidget.vsc\_graphics module
 -------------------------------------------------
 
@@ -128,4 +144,3 @@ GridCal.Gui.GridEditorWidget.vsc\_graphics module
    :members:
    :undoc-members:
    :show-inheritance:
-

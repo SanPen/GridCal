@@ -41,6 +41,14 @@ GridCal.Gui.Main.MainWindow module
    :undoc-members:
    :show-inheritance:
 
+GridCal.Gui.Main.banner module
+------------------------------
+
+.. automodule:: GridCal.Gui.Main.banner
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GridCal.Gui.Main.grid\_paint\_driver module
 -------------------------------------------
 
@@ -72,4 +80,3 @@ GridCal.Gui.Main.update\_gui\_file module
    :members:
    :undoc-members:
    :show-inheritance:
-

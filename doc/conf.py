@@ -30,7 +30,7 @@ version = __GridCal_VERSION__
 release = __GridCal_VERSION__
 
 def setup(app):
-    app.add_stylesheet('style.css')
+    app.add_css_file('style.css')
 
 # -- General configuration ---------------------------------------------------
 

@@ -24,4 +24,3 @@ GridCal.Engine.Simulations.Dynamics.transient\_stability\_driver module
    :members:
    :undoc-members:
    :show-inheritance:
-

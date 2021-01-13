@@ -96,4 +96,3 @@ GridCal.Engine.Simulations.OPF.simple\_dispatch\_ts module
    :members:
    :undoc-members:
    :show-inheritance:
-

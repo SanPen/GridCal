@@ -24,4 +24,3 @@ GridCal.Engine.Simulations.Optimization.voltage\_set\_points module
    :members:
    :undoc-members:
    :show-inheritance:
-

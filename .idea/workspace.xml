@@ -23,9 +23,45 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added HVDC result types">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed the PTDF distributed slack">
+      <change beforePath="$PROJECT_DIR$/.idea/GridCal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/GridCal.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/bus.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Core.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Core.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Devices.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Devices.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.IO.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.IO.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Replacements.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Replacements.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.ContinuationPowerFlow.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.ContinuationPowerFlow.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Dynamics.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Dynamics.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.NK.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.NK.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.OPF.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.OPF.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Optimization.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Optimization.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.PTDF.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.PTDF.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.PowerFlow.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.PowerFlow.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.ShortCircuit.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.ShortCircuit.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.SigmaAnalysis.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.SigmaAnalysis.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.StateEstimation.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.StateEstimation.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Stochastic.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Stochastic.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Topology.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Topology.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Sparse.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Sparse.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Visualization.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Visualization.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.Analysis.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.Analysis.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.GIS.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.GIS.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.GridEditorWidget.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.GridEditorWidget.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.LoadDesigner.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.LoadDesigner.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.Main.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.Main.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.ProfilesInput.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.ProfilesInput.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.SigmaAnalysis.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.SigmaAnalysis.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.SyncDialogue.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.SyncDialogue.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.TowerBuilder.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.TowerBuilder.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solver_interfaces.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solver_interfaces.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/conf.py" beforeDir="false" afterPath="$PROJECT_DIR$/doc/conf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,7 +131,7 @@
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.GridCalMain">
+  <component name="RunManager" selected="Shell Script.build_docs.sh">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -132,28 +168,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="update" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/update.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -206,20 +220,33 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="build_docs.sh" type="ShConfigurationType" temporary="true">
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/src/build_docs.sh" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="/bin/bash" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="EXECUTE_IN_TERMINAL" value="true" />
+      <envs />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python.upload_to_pypi" />
-      <item itemvalue="Python.update" />
       <item itemvalue="Python.GridCalMain" />
       <item itemvalue="Python.update_gui_file" />
+      <item itemvalue="Python.upload_to_pypi" />
+      <item itemvalue="Shell Script.build_docs.sh" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Shell Script.build_docs.sh" />
         <item itemvalue="Python.GridCalMain" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.upload_to_pypi" />
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.update" />
       </list>
     </recent_temporary>
   </component>

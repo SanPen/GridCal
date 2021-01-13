@@ -16,4 +16,3 @@ GridCal.Engine.Simulations.SigmaAnalysis.sigma\_analysis\_driver module
    :members:
    :undoc-members:
    :show-inheritance:
-
