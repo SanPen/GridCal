@@ -9,7 +9,7 @@
     <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoredPackages">
         <value>
-          <list size="11">
+          <list size="12">
             <item index="0" class="java.lang.String" itemvalue="tabulate" />
             <item index="1" class="java.lang.String" itemvalue="GridCal" />
             <item index="2" class="java.lang.String" itemvalue="pytest" />
@@ -21,6 +21,7 @@
             <item index="8" class="java.lang.String" itemvalue="matplotlib" />
             <item index="9" class="java.lang.String" itemvalue="bokeh" />
             <item index="10" class="java.lang.String" itemvalue="numpy" />
+            <item index="11" class="java.lang.String" itemvalue="Cython" />
           </list>
         </value>
       </option>

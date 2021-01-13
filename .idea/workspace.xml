@@ -23,45 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed the PTDF distributed slack">
-      <change beforePath="$PROJECT_DIR$/.idea/GridCal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/GridCal.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Core.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Core.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Devices.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Devices.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.IO.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.IO.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Replacements.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Replacements.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.ContinuationPowerFlow.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.ContinuationPowerFlow.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Dynamics.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Dynamics.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.NK.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.NK.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.OPF.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.OPF.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Optimization.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Optimization.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.PTDF.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.PTDF.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.PowerFlow.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.PowerFlow.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.ShortCircuit.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.ShortCircuit.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.SigmaAnalysis.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.SigmaAnalysis.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.StateEstimation.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.StateEstimation.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Stochastic.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Stochastic.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Topology.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.Topology.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Simulations.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Sparse.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Sparse.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Visualization.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.Visualization.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Engine.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.Analysis.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.Analysis.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.GIS.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.GIS.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.GridEditorWidget.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.GridEditorWidget.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.LoadDesigner.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.LoadDesigner.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.Main.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.Main.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.ProfilesInput.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.ProfilesInput.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.SigmaAnalysis.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.SigmaAnalysis.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.SyncDialogue.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.SyncDialogue.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.TowerBuilder.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.TowerBuilder.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.Gui.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solver_interfaces.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.pulp.solver_interfaces.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.ThirdParty.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api/auto/GridCal.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api/auto/GridCal.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/conf.py" beforeDir="false" afterPath="$PROJECT_DIR$/doc/conf.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improved docs">
+      <change beforePath="$PROJECT_DIR$/requirements-dev.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements-dev.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements_venv.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements_venv.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -522,13 +487,6 @@
       <workItem from="1610523527219" duration="5604000" />
       <workItem from="1610548268156" duration="3210000" />
     </task>
-    <task id="LOCAL-00039" summary="Improved the results of the PTDF driver">
-      <created>1601568887067</created>
-      <option name="number" value="00039" />
-      <option name="presentableId" value="LOCAL-00039" />
-      <option name="project" value="LOCAL" />
-      <updated>1601568887067</updated>
-    </task>
     <task id="LOCAL-00040" summary="OPF fixes">
       <created>1601742371045</created>
       <option name="number" value="00040" />
@@ -865,7 +823,14 @@
       <option name="project" value="LOCAL" />
       <updated>1610531910349</updated>
     </task>
-    <option name="localTasksCounter" value="88" />
+    <task id="LOCAL-00088" summary="Improved docs">
+      <created>1610557091360</created>
+      <option name="number" value="00088" />
+      <option name="presentableId" value="LOCAL-00088" />
+      <option name="project" value="LOCAL" />
+      <updated>1610557091360</updated>
+    </task>
+    <option name="localTasksCounter" value="89" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -899,7 +864,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Implemented reactive power curves per generator" />
     <MESSAGE value="Implemented PSSe parser&#10;Improved the grid AnalysisDialogue.py" />
     <MESSAGE value="Improved PSSe parsing&#10;Added BusViewer dialogue" />
     <MESSAGE value="Improved bus viewer: now it colours too" />
@@ -924,7 +888,8 @@
     <MESSAGE value="Fixed some bugs regarding HVDC" />
     <MESSAGE value="Added collaborators to the readme" />
     <MESSAGE value="Added HVDC result types" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added HVDC result types" />
+    <MESSAGE value="Improved docs" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved docs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
