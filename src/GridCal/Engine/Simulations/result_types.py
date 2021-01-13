@@ -48,8 +48,10 @@ class ResultTypes(Enum):
     BranchReactiveLosses = 'Branch reactive losses', DeviceType.BranchDevice
     BatteryPower = 'Battery power', DeviceType.BatteryDevice
     BatteryEnergy = 'Battery energy', DeviceType.BatteryDevice
+
     HvdcLosses = 'HVDC losses', DeviceType.HVDCLineDevice
-    HvdcSentPower = 'HVDC sent power', DeviceType.HVDCLineDevice
+    HvdcPowerFrom = 'HVDC power "from"', DeviceType.HVDCLineDevice
+    HvdcPowerTo = 'HVDC power "to"', DeviceType.HVDCLineDevice
 
     # MonteCarlo
     BusVoltageAverage = 'Bus voltage avg', DeviceType.BusDevice

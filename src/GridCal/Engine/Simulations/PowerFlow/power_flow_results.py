@@ -133,7 +133,9 @@ class PowerFlowResults:
 
         self.hvdc_losses = np.zeros(self.n_hvdc)
 
-        self.hvdc_sent_power = np.zeros(self.n_hvdc)
+        self.hvdc_Pf = np.zeros(self.n_hvdc)
+
+        self.hvdc_Pt = np.zeros(self.n_hvdc)
 
         self.hvdc_loading = np.zeros(self.n_hvdc)
 
@@ -170,8 +172,10 @@ class PowerFlowResults:
                                   ResultTypes.BranchReactiveLosses,
                                   ResultTypes.BranchVoltage,
                                   ResultTypes.BranchAngles,
+
                                   ResultTypes.HvdcLosses,
-                                  ResultTypes.HvdcSentPower]
+                                  ResultTypes.HvdcPowerFrom,
+                                  ResultTypes.HvdcPowerTo]
 
     @property
     def converged(self):
@@ -248,6 +252,8 @@ class PowerFlowResults:
         self.voltage[b_idx] = results.voltage
 
         self.Sf[br_idx] = results.Sf
+
+        self.St[br_idx] = results.St
 
         self.If[br_idx] = results.If
 
@@ -496,9 +502,15 @@ class PowerFlowResults:
             y_label = '(MW)'
             title = result_type.value
 
-        elif result_type == ResultTypes.HvdcSentPower:
+        elif result_type == ResultTypes.HvdcPowerFrom:
             labels = self.hvdc_names
-            y = self.hvdc_sent_power
+            y = self.hvdc_Pf
+            y_label = '(MW)'
+            title = result_type.value
+
+        elif result_type == ResultTypes.HvdcPowerTo:
+            labels = self.hvdc_names
+            y = self.hvdc_Pt
             y_label = '(MW)'
             title = result_type.value
 

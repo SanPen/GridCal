@@ -2296,7 +2296,7 @@ class MainGUI(QMainWindow):
                                      types=self.power_flow.results.bus_types,
                                      losses=self.power_flow.results.losses,
                                      hvdc_loading=self.power_flow.results.hvdc_loading,
-                                     hvdc_sending_power=self.power_flow.results.hvdc_sent_power,
+                                     hvdc_sending_power=self.power_flow.results.hvdc_Pf,
                                      hvdc_losses=self.power_flow.results.hvdc_losses,
                                      ma=self.power_flow.results.ma,
                                      theta=self.power_flow.results.theta,

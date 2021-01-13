@@ -87,7 +87,9 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.hvdc_losses = np.zeros((self.nt, self.n_hvdc))
 
-        self.hvdc_sent_power = np.zeros((self.nt, self.n_hvdc))
+        self.hvdc_Pf = np.zeros((self.nt, self.n_hvdc))
+
+        self.hvdc_Pt = np.zeros((self.nt, self.n_hvdc))
 
         self.hvdc_loading = np.zeros((self.nt, self.n_hvdc))
 
@@ -116,6 +118,7 @@ class TimeSeriesResults(PowerFlowResults):
                                   ResultTypes.BusVoltageAngle,
                                   ResultTypes.BusActivePower,
                                   ResultTypes.BusReactivePower,
+
                                   ResultTypes.BranchActivePowerFrom,
                                   ResultTypes.BranchReactivePowerFrom,
                                   ResultTypes.BranchActiveCurrentFrom,
@@ -125,7 +128,11 @@ class TimeSeriesResults(PowerFlowResults):
                                   ResultTypes.BranchReactiveLosses,
                                   ResultTypes.BranchVoltage,
                                   ResultTypes.BranchAngles,
-                                  ResultTypes.SimulationError]
+                                  ResultTypes.SimulationError,
+
+                                  ResultTypes.HvdcLosses,
+                                  ResultTypes.HvdcPowerFrom,
+                                  ResultTypes.HvdcPowerTo]
 
     def set_at(self, t, results: PowerFlowResults):
         """
@@ -391,6 +398,24 @@ class TimeSeriesResults(PowerFlowResults):
             y_label = 'p.u.'
             labels = ['Error']
             title = 'Error'
+
+        elif result_type == ResultTypes.HvdcLosses:
+            labels = self.hvdc_names
+            data = self.hvdc_losses
+            y_label = '(MW)'
+            title = result_type.value
+
+        elif result_type == ResultTypes.HvdcPowerFrom:
+            labels = self.hvdc_names
+            data = self.hvdc_Pf
+            y_label = '(MW)'
+            title = result_type.value
+
+        elif result_type == ResultTypes.HvdcPowerTo:
+            labels = self.hvdc_names
+            data = self.hvdc_Pt
+            y_label = '(MW)'
+            title = result_type.value
 
         else:
             raise Exception('Result type not understood:' + str(result_type))
@@ -715,7 +740,8 @@ class TimeSeries(QThread):
                                                   'TS')
 
         # set the HVDC results here since the HVDC is not a branch in this modality
-        time_series_results.hvdc_sent_power = -numerical_circuit.hvdc_Pf
+        time_series_results.hvdc_Pf = -numerical_circuit.hvdc_Pf
+        time_series_results.hvdc_Pt = -numerical_circuit.hvdc_Pt
         time_series_results.hvdc_loading = numerical_circuit.hvdc_loading
         time_series_results.hvdc_losses = numerical_circuit.hvdc_losses
 

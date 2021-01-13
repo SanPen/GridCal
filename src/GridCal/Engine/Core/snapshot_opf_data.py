@@ -129,6 +129,7 @@ class SnapshotOpfData(SnapshotData):
         vsc_idx = self.vsc_data.get_island(bus_idx)
         hvdc_idx = self.hvdc_data.get_island(bus_idx)
         br_idx = self.branch_data.get_island(bus_idx)
+        upfc_idx = self.upfc_data.get_island(bus_idx)
 
         load_idx = self.load_data.get_island(bus_idx)
         stagen_idx = self.static_generator_data.get_island(bus_idx)
@@ -147,6 +148,7 @@ class SnapshotOpfData(SnapshotData):
                              nbatt=len(batt_idx),
                              nshunt=len(shunt_idx),
                              nstagen=len(stagen_idx),
+                             nupfc=len(upfc_idx),
                              sbase=self.Sbase)
 
         # set the original indices
