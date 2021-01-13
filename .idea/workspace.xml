@@ -23,10 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improved docs">
-      <change beforePath="$PROJECT_DIR$/requirements-dev.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements-dev.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements_venv.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements_venv.txt" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Requirements for readthedocs">
+      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/bus.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,7 +95,7 @@
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     </key>
   </component>
-  <component name="RunManager" selected="Shell Script.build_docs.sh">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -487,13 +486,6 @@
       <workItem from="1610523527219" duration="5604000" />
       <workItem from="1610548268156" duration="3210000" />
     </task>
-    <task id="LOCAL-00040" summary="OPF fixes">
-      <created>1601742371045</created>
-      <option name="number" value="00040" />
-      <option name="presentableId" value="LOCAL-00040" />
-      <option name="project" value="LOCAL" />
-      <updated>1601742371045</updated>
-    </task>
     <task id="LOCAL-00041" summary="massive refactor to simplify the numerical classes">
       <created>1601756416035</created>
       <option name="number" value="00041" />
@@ -830,7 +822,14 @@
       <option name="project" value="LOCAL" />
       <updated>1610557091360</updated>
     </task>
-    <option name="localTasksCounter" value="89" />
+    <task id="LOCAL-00089" summary="Requirements for readthedocs">
+      <created>1610557431259</created>
+      <option name="number" value="00089" />
+      <option name="presentableId" value="LOCAL-00089" />
+      <option name="project" value="LOCAL" />
+      <updated>1610557431259</updated>
+    </task>
+    <option name="localTasksCounter" value="90" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -864,7 +863,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Implemented PSSe parser&#10;Improved the grid AnalysisDialogue.py" />
     <MESSAGE value="Improved PSSe parsing&#10;Added BusViewer dialogue" />
     <MESSAGE value="Improved bus viewer: now it colours too" />
     <MESSAGE value="Fixed the line search in Newton-Rapson" />
@@ -889,7 +887,8 @@
     <MESSAGE value="Added collaborators to the readme" />
     <MESSAGE value="Added HVDC result types" />
     <MESSAGE value="Improved docs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved docs" />
+    <MESSAGE value="Requirements for readthedocs" />
+    <option name="LAST_COMMIT_MESSAGE" value="Requirements for readthedocs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
