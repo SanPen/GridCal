@@ -66,6 +66,7 @@ def make_default_q_curve(Snom, Qmin, Qmax, n=3):
 
     return pts
 
+
 def get_q_limits(q_points, p):
     """
     Get the reactive power limits
@@ -326,6 +327,7 @@ class Generator(EditableDevice):
              'type': 'generator',
              'phases': 'ps',
              'name': self.name,
+             'name_code': self.code,
              'bus': self.bus.idtag,
              'active': self.active,
              'is_controlled': self.is_controlled,
@@ -337,7 +339,8 @@ class Generator(EditableDevice):
              'qmax': self.Qmax,
              'pmin': self.Pmin,
              'pmax': self.Pmax,
-             'cost': self.Cost
+             'cost': self.Cost,
+             'technology': "",
              }
 
         return d

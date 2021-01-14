@@ -315,6 +315,7 @@ class DcLine(EditableDevice):
              'type': 'dc_line',
              'phases': 'ps',
              'name': self.name,
+             'name_code': self.code,
              'bus_from': self.bus_from.idtag,
              'bus_to': self.bus_to.idtag,
              'active': self.active,
@@ -324,7 +325,8 @@ class DcLine(EditableDevice):
              'length': self.length,
              'base_temperature': self.temp_base,
              'operational_temperature': self.temp_oper,
-             'alpha': self.alpha}
+             'alpha': self.alpha,
+             'locations': []}
 
         return d
 

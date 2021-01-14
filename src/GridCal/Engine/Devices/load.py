@@ -171,6 +171,7 @@ class Load(EditableDevice):
              'type': 'load',
              'phases': 'ps',
              'name': self.name,
+             'name_code': self.code,
              'bus': self.bus.idtag,
              'active': self.active,
 

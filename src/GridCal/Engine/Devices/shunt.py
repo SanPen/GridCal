@@ -102,8 +102,6 @@ class Shunt(EditableDevice):
     def get_properties_dict(self):
         """
         Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID
         :return:
         """
 
@@ -111,10 +109,15 @@ class Shunt(EditableDevice):
                 'type': 'shunt',
                 'phases': 'ps',
                 'name': self.name,
+                'name_code': self.code,
                 'bus': self.bus.idtag,
                 'active': self.active,
                 'g': self.G,
-                'b': self.B
+                'b': self.B,
+                'bmax': self.Bmax,
+                'bmin': self.Bmin,
+                'id_impedance_table': "",
+                'technology': ""
                 }
         return data
 

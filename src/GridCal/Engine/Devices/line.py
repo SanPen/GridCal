@@ -507,6 +507,7 @@ class Line(EditableDevice):
              'type': 'line',
              'phases': 'ps',
              'name': self.name,
+             'name_code': self.code,
              'bus_from': self.bus_from.idtag,
              'bus_to': self.bus_to.idtag,
              'active': self.active,
@@ -515,10 +516,12 @@ class Line(EditableDevice):
              'r': self.R,
              'x': self.X,
              'b': self.B,
+
              'length': self.length,
              'base_temperature': self.temp_base,
              'operational_temperature': self.temp_oper,
-             'alpha': self.alpha
+             'alpha': self.alpha,
+             'locations': []
              }
 
         return d

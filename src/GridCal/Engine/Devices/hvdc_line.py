@@ -411,23 +411,29 @@ class HvdcLine(EditableDevice):
         """
 
         d = {'id': self.idtag,
-             'type': 'branch',
+             'type': 'hvdc',
              'phases': 'ps',
              'name': self.name,
+             'name_code': self.code,
              'bus_from': self.bus_from.idtag,
              'bus_to': self.bus_to.idtag,
              'active': self.active,
              'rate': self.rate,
+             'r': 0,
              'length': self.length,
              'loss_factor': self.loss_factor,
-             'vset_f': self.Vset_f,
-             'vset_t': self.Vset_t,
-             'pset': self.Pset,
+             'vset_from': self.Vset_f,
+             'vset_to': self.Vset_t,
+             'Pset': self.Pset,
              'min_firing_angle_f': self.min_firing_angle_f,
              'max_firing_angle_f': self.max_firing_angle_f,
              'min_firing_angle_t': self.min_firing_angle_t,
              'max_firing_angle_t': self.max_firing_angle_t,
-             'overload_cost': self.overload_cost
+             'overload_cost': self.overload_cost,
+             'base_temperature': 20,
+             'operational_temperature': 20,
+             'alpha': 0.00330,
+             'locations': []
              }
 
         return d
@@ -442,17 +448,23 @@ class HvdcLine(EditableDevice):
             active_prof = self.active_prof.tolist()
             rate_prof = self.rate_prof.tolist()
             pset_prof = self.Pset_prof.tolist()
+            vset_prof_f = self.Vset_f_prof
+            vset_prof_t = self.Vset_t_prof
             cost_prof = self.overload_cost_prof.tolist()
         else:
             active_prof = list()
             rate_prof = list()
             pset_prof = list()
             cost_prof = list()
+            vset_prof_f = list()
+            vset_prof_t = list()
 
         return {'id': self.idtag,
                 'active': active_prof,
                 'rate': rate_prof,
-                'pset': pset_prof,
+                'Pset': pset_prof,
+                'vset_from': vset_prof_f,
+                'vset_to': vset_prof_t,
                 'overload_cost': cost_prof}
 
     def get_units_dict(self):

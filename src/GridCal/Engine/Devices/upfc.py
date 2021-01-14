@@ -129,6 +129,35 @@ class UPFC(EditableDevice):
         :return:
         """
 
+        d = {'id': self.idtag,
+             'type': 'upfc',
+             'phases': 'ps',
+             'name': self.name,
+             'name_code': self.code,
+             'bus_from': self.bus_from.idtag,
+             'bus_to': self.bus_to.idtag,
+             'active': self.active,
+
+             'rate': self.rate,
+             'rl': self.Rl,
+             'xl': self.Xl,
+             'bl': self.Bl,
+             'rs': self.Rs,
+             'xs': self.Xs,
+             'rsh': self.Rsh,
+             'xsh': self.Xsh,
+             'vsh': self.Vsh,
+             'Pfset': self.Pfset,
+             'Qfset': self.Qfset
+             }
+
+        return d
+
+    def get_profiles_dict(self):
+        """
+
+        :return:
+        """
         if self.active_prof is not None:
             active_prof = self.active_prof.tolist()
             rate_prof = self.rate_prof.tolist()
@@ -136,28 +165,9 @@ class UPFC(EditableDevice):
             active_prof = list()
             rate_prof = list()
 
-        d = {'id': self.idtag,
-             'type': 'line',
-             'phases': 'ps',
-             'name': self.name,
-             'bus_from': self.bus_from.idtag,
-             'bus_to': self.bus_to.idtag,
-             'active': self.active,
-
-             'rate': self.rate,
-             'rs': self.Rs,
-             'xs': self.Xs,
-             'rsh': self.Rsh,
-             'xsh': self.Xsh,
-             'Vsh': self.Vsh,
-             'Pfset': self.Pset,
-
-             'profiles': {
-                 'active': active_prof,
-                 'rate': rate_prof}
-             }
-
-        return d
+        return {'id': self.idtag,
+                'active': active_prof,
+                'rate': rate_prof}
 
     def get_units_dict(self):
         """

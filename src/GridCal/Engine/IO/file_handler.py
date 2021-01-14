@@ -167,17 +167,20 @@ class FileOpen:
 
 class FileSave:
 
-    def __init__(self, circuit: MultiCircuit, file_name, text_func=None, progress_func=None):
+    def __init__(self, circuit: MultiCircuit, file_name, text_func=None, progress_func=None, simulation_drivers=list()):
         """
         File saver
         :param circuit: MultiCircuit
         :param file_name: file name to save to
         :param text_func: Pointer to the text function
         :param progress_func: Pointer to the progress function
+        :param simulation_drivers: List of Simulation Drivers
         """
         self.circuit = circuit
 
         self.file_name = file_name
+
+        self.simulation_drivers = simulation_drivers
 
         self.text_func = text_func
 
@@ -259,7 +262,7 @@ class FileSave:
         :return:logger with information
         """
 
-        logger = save_json_file(self.file_name, self.circuit)
+        logger = save_json_file(self.file_name, self.circuit, self.simulation_drivers)
         return logger
 
     def save_cim(self):
@@ -330,11 +333,12 @@ class FileSaveThread(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
 
-    def __init__(self, circuit: MultiCircuit, file_name):
+    def __init__(self, circuit: MultiCircuit, file_name, simulation_drivers=list()):
         """
         Constructor
         :param circuit: MultiCircuit instance
         :param file_name: name of the file where to save
+        :param simulation_drivers: List of Simulation Drivers
         """
         QThread.__init__(self)
 
@@ -343,6 +347,8 @@ class FileSaveThread(QThread):
         self.file_name = file_name
 
         self.valid = False
+
+        self.simulation_drivers = simulation_drivers
 
         self.logger = Logger()
 
@@ -356,7 +362,6 @@ class FileSaveThread(QThread):
         @return:
         """
 
-        # try:
         path, fname = os.path.split(self.file_name)
 
         self.progress_text.emit('Flushing ' + fname + ' into ' + fname + '...')
@@ -366,7 +371,8 @@ class FileSaveThread(QThread):
         file_handler = FileSave(self.circuit,
                                 self.file_name,
                                 text_func=self.progress_text.emit,
-                                progress_func=self.progress_signal.emit)
+                                progress_func=self.progress_signal.emit,
+                                simulation_drivers=self.simulation_drivers)
 
         self.logger = file_handler.save()
 
@@ -374,11 +380,6 @@ class FileSaveThread(QThread):
 
         # post events
         self.progress_text.emit('Done!')
-
-        # except:
-        #     self.valid = False
-        #     exc_type, exc_value, exc_traceback = sys.exc_info()
-        #     self.logger.append(str(exc_traceback) + '\n' + str(exc_value))
 
         self.done_signal.emit()
 

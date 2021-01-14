@@ -33,7 +33,7 @@ Version 4.0.0 (multi-terminal DC Grids)
     - Added update check and command in the GUI about box.
 
 - I/O
-    - Added better Json export file.
+    - Added better Json export file (v3.1 of the specification).
     - Improved the PSS/e Raw file import.
 
 - Linear Analysis

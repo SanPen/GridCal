@@ -752,15 +752,15 @@ def parse_json(file_name) -> MultiCircuit:
     return parse_json_data(data)
 
 
-def save_json_file(file_path, circuit: MultiCircuit):
+def save_json_file(file_path, circuit: MultiCircuit, simulation_drivers=list()):
     """
     Save JSON file
     :param file_path: file path 
     :param circuit: GridCal MultiCircuit element
+    :param simulation_drivers: List of Simulation Drivers
     """
     elements = dict()
     element_profiles = dict()
-    key = 0
     units_dict = dict()
     logger = Logger()
 
@@ -810,11 +810,60 @@ def save_json_file(file_path, circuit: MultiCircuit):
             add_to_dict(d=element_profiles, d2=elm.get_profiles_dict(), key=elm.device_type.value)
             add_to_dict2(d=units_dict, d2=elm.get_units_dict(), key=elm.device_type.value)
 
-    data = {'version': '2.0',
+    # results
+    results = dict()
+    for driver in simulation_drivers:
+        if driver is not None:
+
+            if driver.name == 'Power Flow':
+
+                bus_data = dict()
+                for i, elm in enumerate(circuit.buses):
+                    bus_data[elm.idtag] = {'vm': np.abs(driver.results.voltage[i]),
+                                           'va': np.angle(driver.results.voltage[i])}
+
+                branch_data = dict()
+                for i, elm in enumerate(circuit.get_branches_wo_hvdc()):
+                    branch_data[elm.idtag] = {'p': driver.results.Sf[i].real,
+                                              'q': driver.results.Sf[i].imag,
+                                              'losses': driver.results.losses[i].real}
+
+                for i, elm in enumerate(circuit.hvdc_lines):
+                    branch_data[elm.idtag] = {'p': driver.results.hvdc_Pf[i].real,
+                                              'q': 0,
+                                              'losses': driver.results.hvdc_losses[i].real}
+
+                results["power_flow"] = {'bus': bus_data,
+                                         'branch': branch_data}
+
+            elif driver.name == 'Time Series':
+
+                bus_data = dict()
+                for i, elm in enumerate(circuit.buses):
+                    bus_data[elm.idtag] = {'vm': np.abs(driver.results.voltage[:, i]).tolist(),
+                                           'va': np.angle(driver.results.voltage[:, i]).tolist()}
+
+                branch_data = dict()
+                for i, elm in enumerate(circuit.get_branches_wo_hvdc()):
+                    branch_data[elm.idtag] = {'p': driver.results.Sf[:, i].real.tolist(),
+                                              'q': driver.results.Sf[:, i].imag.tolist(),
+                                              'losses': driver.results.losses[:, i].real.tolist()}
+
+                for i, elm in enumerate(circuit.hvdc_lines):
+                    branch_data[elm.idtag] = {'p': driver.results.hvdc_Pf[:, i].real,
+                                              'q': 0,
+                                              'losses': driver.results.hvdc_losses[:, i].real}
+
+                results["time_series"] = {'bus': bus_data,
+                                          'branch': branch_data}
+
+    data = {'version': '3',
+            'review': '1',
             'software': 'GridCal',
             'units': units_dict,
             'devices': elements,
-            'profiles': element_profiles}
+            'profiles': element_profiles,
+            'results': results}
 
     data_str = json.dumps(data, indent=True)
 

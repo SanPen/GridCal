@@ -568,15 +568,8 @@ class MainGUI(QMainWindow):
         if not self.any_thread_running():
             self.LOCK(False)
 
-    def any_thread_running(self):
-        """
-        Checks if any thread is running
-        :return: True/False
-        """
-        val = False
+    def get_simulation_threads(self):
 
-        # this list cannot be created only once, because the None will be copied
-        # instead of being a pointer to the future value like it would in a typed language
         all_threads = [self.power_flow,
                        self.short_circuit,
                        self.monte_carlo,
@@ -588,16 +581,38 @@ class MainGUI(QMainWindow):
                        self.optimal_power_flow_time_series,
                        self.transient_stability,
                        self.topology_reduction,
-                       self.open_file_thread_object,
-                       self.save_file_thread_object,
                        self.ptdf_analysis,
                        self.ptdf_ts_analysis,
-                       self.otdf_analysis,
+                       self.otdf_analysis]
+
+        return all_threads
+
+    def get_process_threads(self):
+
+        all_threads = [self.open_file_thread_object,
+                       self.save_file_thread_object,
                        self.painter,
                        self.delete_and_reduce_driver,
                        self.export_all_thread_object,
                        self.find_node_groups_driver,
                        self.file_sync_thread]
+        return all_threads
+
+    def get_all_threads(self):
+
+        all_threads = self.get_simulation_threads() + self.get_process_threads()
+        return all_threads
+
+    def any_thread_running(self):
+        """
+        Checks if any thread is running
+        :return: True/False
+        """
+        val = False
+
+        # this list cannot be created only once, because the None will be copied
+        # instead of being a pointer to the future value like it would in a typed language
+        all_threads = self.get_all_threads()
 
         for thr in all_threads:
             if thr is not None:
@@ -1324,7 +1339,9 @@ class MainGUI(QMainWindow):
                     if ok:
                         self.save_file_thread_object.quit()
 
-            self.save_file_thread_object = FileSaveThread(self.circuit, filename)
+            simulation_drivers = self.get_simulation_threads()
+
+            self.save_file_thread_object = FileSaveThread(self.circuit, filename, simulation_drivers)
 
             # make connections
             self.save_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)

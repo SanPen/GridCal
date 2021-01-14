@@ -238,10 +238,20 @@ class VSC(EditableDevice):
             active_prof = list()
             rate_prof = list()
 
+        modes = {ConverterControlType.type_0_free: 0,
+                 ConverterControlType.type_I_1: 1,
+                 ConverterControlType.type_I_2: 2,
+                 ConverterControlType.type_I_3: 3,
+                 ConverterControlType.type_II_4: 4,
+                 ConverterControlType.type_II_5: 5,
+                 ConverterControlType.type_III_6: 6,
+                 ConverterControlType.type_III_7: 7}
+
         d = {'id': self.idtag,
-             'type': 'line',
+             'type': 'vsc',
              'phases': 'ps',
              'name': self.name,
+             'name_code': self.code,
              'bus_from': self.bus_from.idtag,
              'bus_to': self.bus_to.idtag,
              'active': self.active,
@@ -249,18 +259,51 @@ class VSC(EditableDevice):
              'rate': self.rate,
              'r': self.R1,
              'x': self.X1,
+             'g': self.G0,
+
+             'm': self.m,
+             'm_min': self.m_min,
+             'm_max': self.m_max,
+
+             'theta': self.theta,
+             'theta_min': self.theta_min,
+             'theta_max': self.theta_max,
+
              'Beq': self.Beq,
-             'G0': self.G0,
+             'Beq_min': self.Beq_min,
+             'Beq_max': self.Beq_max,
 
-             'tap_module': self.m,
-             'firing_angle': self.theta,
+             'alpha1': self.alpha1,
+             'alpha2': self.alpha2,
+             'alpha3': self.alpha3,
 
-             'profiles': {
-                 'active': active_prof,
-                 'rate': rate_prof}
+             'k': self.k,
+             'kdp': self.kdp,
+             'Pfset': self.Pfset,
+             'Qfset': self.Qfset,
+             'vac_set': self.Vac_set,
+             'vdc_set': self.Vdc_set,
+
+             'mode': modes[self.control_mode]
              }
 
         return d
+
+    def get_profiles_dict(self):
+        """
+
+        :return:
+        """
+        if self.active_prof is not None:
+            active_prof = self.active_prof.tolist()
+            rate_prof = self.rate_prof.tolist()
+        else:
+            active_prof = list()
+            rate_prof = list()
+
+        return {'id': self.idtag,
+                'active': active_prof,
+                'rate': rate_prof}
 
     def get_units_dict(self):
         """

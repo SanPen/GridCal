@@ -247,8 +247,6 @@ class Battery(Generator):
     def get_properties_dict(self):
         """
         Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID
         :return: json-compatible dictionary
         """
 
@@ -256,6 +254,7 @@ class Battery(Generator):
                 'type': 'battery',
                 'phases': 'ps',
                 'name': self.name,
+                'name_code': self.code,
                 'bus': self.bus.idtag,
                 'active': self.active,
 
@@ -277,6 +276,7 @@ class Battery(Generator):
                 'min_soc_charge': self.min_soc_charge,
                 'charge_per_cycle': self.charge_per_cycle,
                 'discharge_per_cycle': self.discharge_per_cycle,
+                'technology': ""
                 }
 
         return data

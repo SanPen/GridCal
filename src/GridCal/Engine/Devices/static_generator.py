@@ -92,18 +92,18 @@ class StaticGenerator(EditableDevice):
     def get_properties_dict(self):
         """
         Get json dictionary
-        :param id: ID: Id for this object
-        :param bus_dict: Dictionary of buses [object] -> ID
         :return:
         """
 
         data = {'id': self.idtag,
                 'phases': 'ps',
                 'name': self.name,
+                'name_code': self.code,
                 'bus': self.bus.idtag,
                 'active': self.active,
                 'P': self.P,
-                'Q': self.Q
+                'Q': self.Q,
+                'technology': ""
                 }
 
         return data

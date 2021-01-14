@@ -800,31 +800,61 @@ class Transformer2W(EditableDevice):
         # get the nominal voltages
         v_from, v_to = self.get_from_to_nominal_voltages()
 
+        '''
+        TransformerControlType(Enum):
+        fixed = '0:Fixed'
+        Pt = '1:Pt'
+        Qt = '2:Qt'
+        PtQt = '3:Pt+Qt'
+        Vt = '4:Vt'
+        PtVt = '5:Pt+Vt'
+        
+        '''
+        control_modes = {TransformerControlType.fixed: 0,
+                         TransformerControlType.Vt: 1,
+                         TransformerControlType.Pt: 2,
+                         TransformerControlType.PtVt: 3,
+                         TransformerControlType.Qt: 4,
+                         TransformerControlType.PtQt: 5}
+
         d = {'id': self.idtag,
              'type': 'transformer',
              'phases': 'ps',
              'name': self.name,
+             'name_code': self.code,
              'bus_from': self.bus_from.idtag,
              'bus_to': self.bus_to.idtag,
-             'v_from': v_from,
-             'v_to': v_to,
              'active': self.active,
              'rate': self.rate,
+             'Vnomf': v_from,
+             'Vnomt': v_to,
              'r': self.R,
              'x': self.X,
              'g': self.G,
              'b': self.B,
              'tap_module': self.tap_module,
+             'min_tap_module': self.tap_module_min,
+             'max_tap_module': self.tap_module_max,
+             'id_tap_module_table': "",
+
              'tap_angle': self.angle,
-             'tap_position': self.tap_changer.tap,
-             'min_tap_position': self.tap_changer.min_tap,
-             'max_tap_position': self.tap_changer.max_tap,
-             'tap_inc_reg_down': self.tap_changer.inc_reg_down,
-             'tap_inc_reg_up': self.tap_changer.inc_reg_up,
-             'virtual_tap_from': tap_f,
-             'virtual_tap_to': tap_t,
-             'bus_to_regulated': self.bus_to_regulated,
+             'min_tap_angle': self.angle_min,
+             'max_tap_angle': self.angle_max,
+             'id_tap_angle_table': "",
+
+             'control_mode': control_modes[self.control_mode],
+
+             # 'min_tap_position': self.tap_changer.min_tap,
+             # 'max_tap_position': self.tap_changer.max_tap,
+             # 'tap_inc_reg_down': self.tap_changer.inc_reg_down,
+             # 'tap_inc_reg_up': self.tap_changer.inc_reg_up,
+             # 'virtual_tap_from': tap_f,
+             # 'virtual_tap_to': tap_t,
+             # 'bus_to_regulated': self.bus_to_regulated,
+
              'vset': self.vset,
+             'pset': self.Pset,
+
              'base_temperature': self.temp_base,
              'operational_temperature': self.temp_oper,
              'alpha': self.alpha
