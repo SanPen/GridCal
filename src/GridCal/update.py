@@ -13,6 +13,7 @@ def find_latest_version():
     latest_version = latest_version.replace(' ', '').split(',')[-1]
     return latest_version
 
+
 def check_version():
     """
     Check package version
@@ -30,9 +31,14 @@ def check_version():
     pipy_version = pkg_resources.parse_version(latest_version)
     gc_version = pkg_resources.parse_version(__GridCal_VERSION__)
 
-    if pipy_version.release is None:
+    if pipy_version is None:
         # could not connect
         return -2, '0.0.0'
+    else:
+        if hasattr(pipy_version, 'release'):
+            if pipy_version.release is None:
+                # could not connect
+                return -2, '0.0.0'
 
     if pipy_version == gc_version:
         # same version, we're up to date

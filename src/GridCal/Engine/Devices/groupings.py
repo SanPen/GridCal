@@ -34,6 +34,7 @@ class GenericAreaGroup(EditableDevice):
         """
         EditableDevice.__init__(self,
                                 name=name,
+                                code=code,
                                 idtag=idtag,
                                 active=True,
                                 device_type=device_type,
@@ -44,7 +45,6 @@ class GenericAreaGroup(EditableDevice):
                                 non_editable_attributes=['idtag'],
                                 properties_with_profile={})
 
-        self.code = code
         self.latitude = latitude
         self.longitude = longitude
 

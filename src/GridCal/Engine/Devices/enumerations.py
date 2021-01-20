@@ -147,6 +147,10 @@ class DeviceType(Enum):
     ZoneDevice = 'Zone'
     CountryDevice = 'Country'
 
+    Technology = 'Technology'
+    TechnologyGroup = 'Technology Group'
+    TechnologyCategory = 'Technology Category'
+
     def __str__(self):
         return self.value
 

@@ -366,7 +366,6 @@ class Battery(Generator):
         :param P: proposed power in MW
         :param dt: time increment in hours
         :param charge_if_needed: True / False
-        :param store_values: Store the values into the internal arrays?
         :return: Amount of power actually processed in MW
         """
 
