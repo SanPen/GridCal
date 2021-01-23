@@ -2682,7 +2682,7 @@ class MainGUI(QMainWindow):
                         QtGui.QGuiApplication.processEvents()
 
                         #  compose the base power
-                        Sbase = self.power_flow.results.Sbus
+                        Sbase = self.power_flow.results.Sbus / self.circuit.Sbase
 
                         base_overload_number = len(np.where(np.abs(self.power_flow.results.loading) > 1)[0])
 

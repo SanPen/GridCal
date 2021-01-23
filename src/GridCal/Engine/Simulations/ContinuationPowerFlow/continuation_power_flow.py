@@ -2,7 +2,6 @@
 # The license is the same BSD-style that is provided in LICENSE_MATPOWER
 
 import numpy as np
-from numpy import angle, exp, r_, linalg, Inf, dot, zeros, conj
 from scipy.sparse import hstack, vstack
 from scipy.sparse.linalg import spsolve
 from enum import Enum
@@ -10,7 +9,6 @@ from GridCal.Engine.basic_structures import ReactivePowerControlMode, Logger
 from GridCal.Engine.Simulations.PowerFlow.discrete_controls import control_q_direct
 from GridCal.Engine.Core.common_functions import compile_types
 from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import _create_J_with_numba
-# from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 
 
 class CpfStopAt(Enum):
@@ -113,24 +111,24 @@ def cpf_p(parametrization: CpfParametrization, step, z, V, lam, V_prev, lamprv, 
             P = lamprv - lam - step
 
     elif parametrization == CpfParametrization.ArcLength:    # arc length
-        Va = angle(V)
+        Va = np.angle(V)
         Vm = np.abs(V)
-        Va_prev = angle(V_prev)
+        Va_prev = np.angle(V_prev)
         Vm_prev = np.abs(V_prev)
-        a = r_[Va[pvpq], Vm[pq], lam]
-        b = r_[Va_prev[pvpq], Vm_prev[pq], lamprv]
+        a = np.r_[Va[pvpq], Vm[pq], lam]
+        b = np.r_[Va_prev[pvpq], Vm_prev[pq], lamprv]
         P = np.sum(np.power(a - b, 2)) - np.power(step, 2)
 
     elif parametrization == CpfParametrization.PseudoArcLength:    # pseudo arc length
         nb = len(V)
-        Va = angle(V)
+        Va = np.angle(V)
         Vm = np.abs(V)
-        Va_prev = angle(V_prev)
+        Va_prev = np.angle(V_prev)
         Vm_prev = np.abs(V_prev)
-        a = z[r_[pv, pq, nb + pq, 2 * nb]]
-        b = r_[Va[pvpq], Vm[pq], lam]
-        c = r_[Va_prev[pvpq], Vm_prev[pq], lamprv]
-        P = dot(a, b - c) - step
+        a = z[np.r_[pv, pq, nb + pq, 2 * nb]]
+        b = np.r_[Va[pvpq], Vm[pq], lam]
+        c = np.r_[Va_prev[pvpq], Vm_prev[pq], lamprv]
+        P = np.dot(a, b - c) - step
     else:
         # natural
         if lam >= lamprv:
@@ -198,18 +196,18 @@ def cpf_p_jac(parametrization: CpfParametrization, z, V, lam, Vprv, lamprv, pv, 
     if parametrization == CpfParametrization.Natural:   # natural
         npv = len(pv)
         npq = len(pq)
-        dP_dV = zeros(npv + 2 * npq)
+        dP_dV = np.zeros(npv + 2 * npq)
         if lam >= lamprv:
             dP_dlam = 1.0
         else:
             dP_dlam = -1.0
 
     elif parametrization == CpfParametrization.ArcLength:  # arc length
-        Va = angle(V)
+        Va = np.angle(V)
         Vm = np.abs(V)
-        Vaprv = angle(Vprv)
+        Vaprv = np.angle(Vprv)
         Vmprv = np.abs(Vprv)
-        dP_dV = 2.0 * (r_[Va[pvpq], Vm[pq]] - r_[Vaprv[pvpq], Vmprv[pq]])
+        dP_dV = 2.0 * (np.r_[Va[pvpq], Vm[pq]] - np.r_[Vaprv[pvpq], Vmprv[pq]])
 
         if lam == lamprv:   # first step
             dP_dlam = 1.0   # avoid singular Jacobian that would result from [dP_dV, dP_dlam] = 0
@@ -218,13 +216,13 @@ def cpf_p_jac(parametrization: CpfParametrization, z, V, lam, Vprv, lamprv, pv, 
 
     elif parametrization == CpfParametrization.PseudoArcLength:  # pseudo arc length
         nb = len(V)
-        dP_dV = z[r_[pv, pq, nb + pq]]
+        dP_dV = z[np.r_[pv, pq, nb + pq]]
         dP_dlam = z[2 * nb]
 
     else:
         # pseudo arc length for any other case
         nb = len(V)
-        dP_dV = z[r_[pv, pq, nb + pq]]
+        dP_dV = z[np.r_[pv, pq, nb + pq]]
         dP_dlam = z[2 * nb]
 
     return dP_dV, dP_dlam
@@ -256,13 +254,13 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
     nb = len(V)
     npv = len(pv)
     npq = len(pq)
-    pvpq = r_[pv, pq]
+    pvpq = np.r_[pv, pq]
     nj = npv + npq * 2
 
     # compute Jacobian for the power flow equations
     J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
 
-    dF_dlam = -r_[Sxfr[pvpq].real, Sxfr[pq].imag]
+    dF_dlam = -np.r_[Sxfr[pvpq].real, Sxfr[pq].imag]
 
     dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
 
@@ -284,10 +282,10 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
     s[npv + 2 * npq] = 1
 
     # tangent vector
-    z[r_[pvpq, nb + pq, 2 * nb]] = spsolve(J2, s)
+    z[np.r_[pvpq, nb + pq, 2 * nb]] = spsolve(J2, s)
 
     # normalize_string tangent predictor  (dividing by the euclidean norm)
-    z /= linalg.norm(z)
+    z /= np.linalg.norm(z)
 
     Va0 = Va_prev
     Vm0 = Vm_prev
@@ -297,13 +295,13 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
     Va0[pvpq] = Va_prev[pvpq] + step * z[pvpq]
     Vm0[pq] = Vm_prev[pq] + step * z[pq + nb]
     lam0 = lam + step * z[2 * nb]
-    V0 = Vm0 * exp(1j * Va0)
+    V0 = Vm0 * np.exp(1j * Va0)
 
     return V0, lam0, z
 
 
 def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parametrization, tol, max_it,
-              pvpq_lookup, verbose):
+              pvpq_lookup, verbose, mu_0=1.0, acceleration_parameter=0.5):
     """
     Solves the corrector step of a continuation power flow using a full Newton method
     with selected parametrization scheme.
@@ -343,14 +341,17 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
     # initialize
     i = 0
     V = V0
-    Va = angle(V)
+    Va = np.angle(V)
     Vm = np.abs(V)
     lam = lam0             # set lam to initial lam0
-    
+    dVa = np.zeros_like(Va)
+    dVm = np.zeros_like(Vm)
+    dlam = 0
+
     # set up indexing for updating V
     npv = len(pv)
     npq = len(pq)
-    pvpq = r_[pv, pq]
+    pvpq = np.r_[pv, pq]
     nj = npv + npq * 2
 
     # j1:j2 - V angle of pv and pq buses
@@ -362,21 +363,21 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
     # evaluate F(x0, lam0), including Sxfr transfer/loading
     Scalc = V * np.conj(Ybus * V)
     mismatch = Scalc - Sbus - lam * Sxfr
-    # F = r_[mismatch[pvpq].real, mismatch[pq].imag]
+    # F = np.r_[mismatch[pvpq].real, mismatch[pq].imag]
     
     # evaluate P(x0, lambda0)
     P = cpf_p(parametrization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
     
     # augment F(x,lambda) with P(x,lambda)
-    F = r_[mismatch[pvpq].real, mismatch[pq].imag, P]
+    F = np.r_[mismatch[pvpq].real, mismatch[pq].imag, P]
     
     # check tolerance
-    normF = linalg.norm(F, Inf)
+    normF = np.linalg.norm(F, np.Inf)
     converged = normF < tol
     if verbose:
         print('\nConverged!\n')
 
-    dF_dlam = -r_[Sxfr[pvpq].real, Sxfr[pq].imag]
+    dF_dlam = -np.r_[Sxfr[pvpq].real, Sxfr[pq].imag]
 
     # do Newton iterations
     while not converged and i < max_it:
@@ -399,31 +400,65 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
     
         # compute update step
         dx = spsolve(J, F)
-    
-        # update the variables from the solution
-        Va[pvpq] -= dx[j1:j2]
-        Vm[pq] -= dx[j2:j3]
-        lam -= dx[j3]
+        dVa[pvpq] = dx[j1:j2]
+        dVm[pq] = dx[j2:j3]
+        dlam = dx[j3]
 
-        # update Vm and Va again in case we wrapped around with a negative Vm
-        V = Vm * exp(1j * Va)
-        Vm = np.abs(V)
-        Va = angle(V)
+        # set the restoration values
+        prev_Vm = Vm.copy()
+        prev_Va = Va.copy()
+        prev_lam = lam
 
-        # evaluate F(x, lam)
-        Scalc = V * conj(Ybus * V)
-        mismatch = Scalc - Sbus - lam * Sxfr
+        # set the values and correct with an adaptive mu if needed
+        mu = mu_0  # ideally 1.0
+        back_track_condition = True
+        l_iter = 0
+        normF_new = 0.0
+        while back_track_condition and l_iter < max_it and mu > tol:
 
-        # evaluate the parametrization function P(x, lambda)
-        P = cpf_p(parametrization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
+            # restore the previous values if we are backtracking (the first iteration is the normal NR procedure)
+            if l_iter > 0:
+                Va = prev_Va.copy()
+                Vm = prev_Vm.copy()
+                lam = prev_lam
     
-        # compose the mismatch vector
-        F = r_[mismatch[pvpq].real, mismatch[pq].imag, P]
-    
-        # check for convergence
-        normF = linalg.norm(F, Inf)
-        if verbose:
-            print('\n#3d        #10.3e', i, normF)
+            # update the variables from the solution
+            Va -= mu * dVa
+            Vm -= mu * dVm
+            lam -= mu * dlam
+
+            # update Vm and Va again in case we wrapped around with a negative Vm
+            V = Vm * np.exp(1j * Va)
+
+            # evaluate F(x, lam)
+            Scalc = V * np.conj(Ybus * V)
+            mismatch = Scalc - Sbus - lam * Sxfr
+
+            # evaluate the parametrization function P(x, lambda)
+            P = cpf_p(parametrization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
+
+            # compose the mismatch vector
+            F = np.r_[mismatch[pvpq].real, mismatch[pq].imag, P]
+
+            # check for convergence
+            normF_new = np.linalg.norm(F, np.Inf)
+
+            back_track_condition = normF_new > normF
+            mu *= acceleration_parameter
+            l_iter += 1
+
+            if verbose:
+                print('\n#3d        #10.3e', i, normF)
+
+        if l_iter > 1 and back_track_condition:
+            # this means that not even the backtracking was able to correct the solution so, restore and end
+            Va = prev_Va.copy()
+            Vm = prev_Vm.copy()
+            V = Vm * np.exp(1.0j * Va)
+
+            return V, converged, i, lam, normF, Scalc
+        else:
+            normF = normF_new
 
         converged = normF < tol
         if verbose:
@@ -505,10 +540,10 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
     V_prev = V       # V at previous step
     continuation = True
     cont_steps = 0
-    pvpq = r_[pv, pq]
+    pvpq = np.r_[pv, pq]
     bus_types = original_bus_types.copy()
 
-    z = zeros(2 * nb + 1)
+    z = np.zeros(2 * nb + 1)
     z[2 * nb] = 1.0
 
     # generate lookup pvpq -> index pvpq (used in createJ)
@@ -688,8 +723,8 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
             if adapt_step and continuation:
 
                 # Adapt step size
-                fx = r_[angle(V[pq]), np.abs(V[pvpq]), lam] - r_[angle(V0[pq]), np.abs(V0[pvpq]), lam0]
-                cpf_error = linalg.norm(fx, Inf)
+                fx = np.r_[np.angle(V[pq]), np.abs(V[pvpq]), lam] - np.r_[np.angle(V0[pq]), np.abs(V0[pvpq]), lam0]
+                cpf_error = np.linalg.norm(fx, np.Inf)
 
                 if cpf_error == 0:
                     cpf_error = 1e-20
@@ -721,9 +756,10 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
 if __name__ == '__main__':
 
     from GridCal.Engine import *
+    from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
-    # fname = os.path.join('..', '..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
-    fname = os.path.join('..', '..', '..', '..', 'Grids_and_profiles', 'grids', 'lynn5buspv.xlsx')
+    fname = os.path.join('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids', 'IEEE_14.xlsx')
+    # fname = os.path.join('..', '..', '..', '..', 'Grids_and_profiles', 'grids', 'lynn5buspv.xlsx')
 
     print('Reading...')
     main_circuit = FileOpen(fname).open()
@@ -762,20 +798,22 @@ if __name__ == '__main__':
                                               verbose=False)
 
     # just for this test
-    numeric_circuit = main_circuit.compile_snapshot()
-    numeric_inputs = numeric_circuit.compute(ignore_single_node_islands=pf_options.ignore_single_node_islands)
-    Sbase_ = zeros(len(main_circuit.buses), dtype=complex)
-    Vbase_ = zeros(len(main_circuit.buses), dtype=complex)
+    numeric_circuit = compile_snapshot_circuit(main_circuit)
+    numeric_inputs = numeric_circuit.split_into_islands(ignore_single_node_islands=pf_options.ignore_single_node_islands)
+    Sbase_ = np.zeros(len(main_circuit.buses), dtype=complex)
+    Vbase_ = np.zeros(len(main_circuit.buses), dtype=complex)
     for c in numeric_inputs:
         Sbase_[c.original_bus_idx] = c.Sbus
         Vbase_[c.original_bus_idx] = c.Vbus
 
+    np.random.seed(42)
     unitary_vector = -1 + 2 * np.random.random(len(main_circuit.buses))
 
     # unitary_vector = random.random(len(grid.buses))
     vc_inputs = ContinuationPowerFlowInput(Sbase=Sbase_,
                                            Vbase=Vbase_,
-                                           Starget=Sbase_ * (1 + unitary_vector))
+                                           Starget=Sbase_ * 2,  # (1 + unitary_vector)
+                                           )
     vc = ContinuationPowerFlow(circuit=main_circuit, options=vc_options, inputs=vc_inputs, pf_options=pf_options)
     vc.run()
     df = vc.results.plot()
