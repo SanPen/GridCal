@@ -59,6 +59,7 @@ Version 4.0.0 (multi-terminal DC Grids)
     - Added reactive power limits option for the generators.
     - Added overload stop criteria.
     - Added distributed slack.
+    - Added back-tracking mechanism to the corrector step.
     - Now you can select to collapse a selection of nodes, from the GUI as well.
     - Now you can set the direction of the continuation negative so that you actually
       increase the generation. This allows the use of the CPF as an exploration tool.

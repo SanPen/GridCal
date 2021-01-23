@@ -202,8 +202,8 @@
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.GridCalMain" />
       <item itemvalue="Python.upload_to_pypi" />
-      <item itemvalue="Shell Script.build_docs.sh" />
       <item itemvalue="Python.continuation_power_flow" />
+      <item itemvalue="Shell Script.build_docs.sh" />
     </list>
     <recent_temporary>
       <list>
