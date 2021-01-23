@@ -277,13 +277,13 @@ def get_base_map(location, zoom_start=5):
     return my_map, marker_cluster
 
 
-def plot_html_map(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, types, losses=None, failed_br_idx=None,
+def plot_html_map(circuit: MultiCircuit, Sbus, Sf, voltages, loadings, types, losses=None, failed_br_idx=None,
                   loading_label='loading', file_name='map.html'):
     """
     Color the grid based on the results passed
     :param circuit:
-    :param s_bus:  Buses power
-    :param s_branch: Branches power
+    :param Sbus:  Buses power
+    :param Sf: Branches power
     :param voltages: Buses voltage
     :param loadings: Branches load
     :param types: Buses type
@@ -323,8 +323,8 @@ def plot_html_map(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, ty
         tooltip = str(i) + ': ' + bus.name + '\n' \
                   + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n' \
                   + 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
-        if s_bus is not None:
-            tooltip += '\nS: ' + "{:10.4f}".format(s_bus[i] * Sbase) + ' [MVA]'
+        if Sbus is not None:
+            tooltip += '\nS: ' + "{:10.4f}".format(Sbus[i] * Sbase) + ' [MVA]'
         if types is not None:
             tooltip += '\nType: ' + bus_types[types[i]]
 
@@ -353,8 +353,8 @@ def plot_html_map(circuit: MultiCircuit, s_bus, s_branch, voltages, loadings, ty
             # compose the tooltip
             tooltip = str(i) + ': ' + branch.name
             tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
-            if s_branch is not None:
-                tooltip += '\nPower: ' + "{:10.4f}".format(s_branch[i]) + ' [MVA]'
+            if Sf is not None:
+                tooltip += '\nPower: ' + "{:10.4f}".format(Sf[i]) + ' [MVA]'
             if losses is not None:
                 tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
 
