@@ -7,8 +7,7 @@ __pycache__
 
 
  /**/.idea/*
-.idea
-idea
+.idea/*
 .idea/inspectionProfiles
 
 /build

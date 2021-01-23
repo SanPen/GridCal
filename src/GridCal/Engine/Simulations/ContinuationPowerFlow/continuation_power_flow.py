@@ -341,7 +341,6 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
     """
 
     # initialize
-    converged = False
     i = 0
     V = V0
     Va = angle(V)
@@ -401,13 +400,9 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
         # compute update step
         dx = spsolve(J, F)
     
-        # update voltage
-        if npv:
-            Va[pvpq] -= dx[j1:j2]
-        if npq:
-            Vm[pq] -= dx[j2:j3]
-
-        # update lambda
+        # update the variables from the solution
+        Va[pvpq] -= dx[j1:j2]
+        Vm[pq] -= dx[j2:j3]
         lam -= dx[j3]
 
         # update Vm and Va again in case we wrapped around with a negative Vm
@@ -622,11 +617,13 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
 
             # Check controls
             if control_q == ReactivePowerControlMode.Direct:
+                Vm = np.abs(V)
                 V, \
                 Qnew, \
                 types_new, \
                 any_q_control_issue = control_q_direct(V=V,
-                                                       Vset=np.abs(V),
+                                                       Vm=Vm,
+                                                       Vset=Vm,
                                                        Q=Scalc.imag,
                                                        Qmax=qmax_bus,
                                                        Qmin=qmin_bus,

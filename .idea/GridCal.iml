@@ -9,14 +9,13 @@
       <excludeFolder url="file://$MODULE_DIR$/src/dist" />
       <excludeFolder url="file://$MODULE_DIR$/src/research" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.7 (development)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.8 (development)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">
     <option name="renderExternalDocumentation" value="true" />
   </component>
   <component name="TestRunnerService">
-    <option name="projectConfiguration" value="Nosetests" />
     <option name="PROJECT_TEST_RUNNER" value="Nosetests" />
   </component>
 </module>
