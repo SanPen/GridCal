@@ -143,8 +143,8 @@ class NMinusK(QThread):
             #     results.Sf[m, c] = flows_n[m] + LODF[m, c] * flows_n[c]
             #     results.loading[m, c] = results.Sf[m, c] / (self.numerical_circuit.branch_rates[m] + 1e-9)
 
-            results.Sbranch[:, c] = flows_n[:] + LODF[:, c] * flows_n[c]
-            results.loading[:, c] = results.Sbranch[:, c] / (self.numerical_circuit.branch_rates + 1e-9)
+            results.Sf[:, c] = flows_n[:] + LODF[:, c] * flows_n[c]
+            results.loading[:, c] = results.Sf[:, c] / (self.numerical_circuit.branch_rates + 1e-9)
 
             results.S[c, :] = Pbus
 
@@ -195,7 +195,7 @@ if __name__ == '__main__':
     br_names = [b.name for b in main_circuit.branches]
     br_names2 = ['#' + b.name for b in main_circuit.branches]
     w = pd.ExcelWriter('OTDF IEEE30.xlsx')
-    pd.DataFrame(data=simulation.results.Sbranch.real,
+    pd.DataFrame(data=simulation.results.Sf.real,
                  columns=br_names,
                  index=['base'] + br_names2).to_excel(w, sheet_name='branch power')
     pd.DataFrame(data=otdf_,

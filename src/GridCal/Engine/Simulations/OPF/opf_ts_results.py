@@ -65,7 +65,7 @@ class OptimalPowerFlowTimeSeriesResults:
 
         self.shadow_prices = np.zeros((nt, n), dtype=float)
 
-        self.Sbranch = np.zeros((nt, m), dtype=complex)
+        self.Sf = np.zeros((nt, m), dtype=complex)
 
         self.bus_types = np.zeros(n, dtype=int)
 
@@ -120,7 +120,7 @@ class OptimalPowerFlowTimeSeriesResults:
 
         self.Sbus[t, :] = res.Sbus
 
-        self.Sbranch[t, :] = res.Sf
+        self.Sf[t, :] = res.Sf
 
     def mdl(self, result_type) -> "ResultsModel":
         """
@@ -149,7 +149,7 @@ class OptimalPowerFlowTimeSeriesResults:
 
         elif result_type == ResultTypes.BranchPower:
             labels = self.branch_names
-            y = self.Sbranch.real
+            y = self.Sf.real
             y_label = '(MW)'
             title = 'Branch power '
 

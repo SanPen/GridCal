@@ -3255,11 +3255,11 @@ class MainGUI(QMainWindow):
                 if self.ui.draw_schematic_checkBox.isChecked():
                     voltage = self.optimal_power_flow_time_series.results.voltage.max(axis=0)
                     loading = self.optimal_power_flow_time_series.results.loading.max(axis=0)
-                    Sbranch = self.optimal_power_flow_time_series.results.Sf.max(axis=0)
+                    Sf = self.optimal_power_flow_time_series.results.Sf.max(axis=0)
 
                     colour_the_schematic(circuit=self.circuit,
                                          Sbus=None,
-                                         Sf=Sbranch,
+                                         Sf=Sf,
                                          voltages=voltage,
                                          loadings=loading,
                                          types=self.optimal_power_flow_time_series.results.bus_types)

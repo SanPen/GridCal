@@ -154,7 +154,7 @@ class OptimalPowerFlow(QThread):
                                                generation_shedding=np.zeros_like(gn),
                                                battery_power=bt,
                                                controlled_generation_power=gn,
-                                               Sbranch=Sbr,
+                                               Sf=Sbr,
                                                overloads=problem.get_overloads(),
                                                loading=problem.get_loading(),
                                                converged=bool(problem.converged()),

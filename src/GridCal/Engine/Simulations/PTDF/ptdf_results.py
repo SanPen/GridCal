@@ -101,7 +101,7 @@ class PTDFResults:
         :param i: variation index
         :return: array of sensitivities from -1 to 1
         """
-        delta = (self.pf_results[i].Sbranch.real - self.default_pf_results.Sf.real)
+        delta = (self.pf_results[i].Sf.real - self.default_pf_results.Sf.real)
         # self.variations[i].original_power is the power increment
         return delta / (self.variations[i].original_power + 1e-20)
 

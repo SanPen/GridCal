@@ -43,7 +43,7 @@ class NMinusKResults:
 
         self.S = np.zeros((m, n), dtype=complex)
 
-        self.Sbranch = np.zeros((m, m), dtype=complex)
+        self.Sf = np.zeros((m, m), dtype=complex)
 
         self.loading = np.zeros((m, m), dtype=complex)
 
@@ -66,8 +66,8 @@ class NMinusKResults:
                 'Va': np.angle(self.voltage).tolist(),
                 'P': self.S.real.tolist(),
                 'Q': self.S.imag.tolist(),
-                'Sbr_real': self.Sbranch.real.tolist(),
-                'Sbr_imag': self.Sbranch.imag.tolist(),
+                'Sbr_real': self.Sf.real.tolist(),
+                'Sbr_imag': self.Sf.imag.tolist(),
                 'loading': np.abs(self.loading).tolist()}
         return data
 
@@ -129,7 +129,7 @@ class NMinusKResults:
             # index = self.branch_names
 
         elif result_type == ResultTypes.BranchActivePowerFrom:
-            data = self.Sbranch.real
+            data = self.Sf.real
             y_label = 'MW'
             title = 'Branch active power '
             labels = ['# ' + x for x in self.branch_names]

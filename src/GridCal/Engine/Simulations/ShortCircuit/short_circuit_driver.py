@@ -128,9 +128,9 @@ class ShortCircuitResults(PowerFlowResults):
 
         self.undervoltage = np.zeros(n, dtype=complex)
 
-        self.Sbranch = np.zeros(m, dtype=complex)
+        self.Sf = np.zeros(m, dtype=complex)
 
-        self.Ibranch = np.zeros(m, dtype=complex)
+        self.If = np.zeros(m, dtype=complex)
 
         self.loading = np.zeros(m, dtype=complex)
 
@@ -162,9 +162,9 @@ class ShortCircuitResults(PowerFlowResults):
 
         self.undervoltage[b_idx] = results.undervoltage
 
-        self.Sbranch[br_idx] = results.Sbranch
+        self.Sf[br_idx] = results.Sf
 
-        self.Ibranch[br_idx] = results.Ibranch
+        self.If[br_idx] = results.If
 
         self.loading[br_idx] = results.loading
 
@@ -295,7 +295,7 @@ class ShortCircuit(QRunnable):
                                           baseMVA=calculation_inputs.Sbase)
 
             # Compute the branches power
-            Sbranch, Ibranch, loading, losses = self.compute_branch_results(calculation_inputs=calculation_inputs, V=V)
+            Sf, If, loading, losses = self.compute_branch_results(calculation_inputs=calculation_inputs, V=V)
 
             # voltage, Sf, loading, losses, error, converged, Qpv
             results = ShortCircuitResults(n=calculation_inputs.nbus,
@@ -308,8 +308,8 @@ class ShortCircuit(QRunnable):
 
             results.Sbus = calculation_inputs.Sbus
             results.voltage = V
-            results.Sbranch = Sbranch
-            results.Ibranch = Ibranch
+            results.Sf = Sf
+            results.If = If
             results.losses = losses
             results.SCpower = SCpower
 
@@ -329,8 +329,8 @@ class ShortCircuit(QRunnable):
 
             results.Sbus = calculation_inputs.Sbus
             results.voltage = np.zeros(nbus, dtype=complex)
-            results.Sbranch = np.zeros(nbr, dtype=complex)
-            results.Ibranch = np.zeros(nbr, dtype=complex)
+            results.Sf = np.zeros(nbr, dtype=complex)
+            results.If = np.zeros(nbr, dtype=complex)
             results.losses = np.zeros(nbr, dtype=complex)
             results.SCpower = np.zeros(nbus, dtype=complex)
 
@@ -349,11 +349,11 @@ class ShortCircuit(QRunnable):
         Sf = (calculation_inputs.Cf * V) * np.conj(If)
         St = (calculation_inputs.Ct * V) * np.conj(It)
         losses = Sf - St
-        Ibranch = np.maximum(If, It)
-        Sbranch = np.maximum(Sf, St)
-        loading = Sbranch * calculation_inputs.Sbase / (calculation_inputs.branch_rates + 1e-20)
+        # Ibranch = np.maximum(If, It)
+        # Sbranch = np.maximum(Sf, St)
+        loading = Sf * calculation_inputs.Sbase / (calculation_inputs.branch_rates + 1e-20)
 
-        return Sbranch, Ibranch, loading, losses
+        return Sf, If, loading, losses
 
     def run(self):
         """

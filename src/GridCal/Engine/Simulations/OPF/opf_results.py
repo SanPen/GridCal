@@ -44,7 +44,7 @@ class OptimalPowerFlowResults:
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names,
                  Sbus=None, voltage=None, load_shedding=None, generation_shedding=None,
                  battery_power=None, controlled_generation_power=None,
-                 Sbranch=None, overloads=None, loading=None, losses=None, converged=None, bus_types=None):
+                 Sf=None, overloads=None, loading=None, losses=None, converged=None, bus_types=None):
 
         self.name = 'OPF'
 
@@ -62,7 +62,7 @@ class OptimalPowerFlowResults:
 
         self.generation_shedding = generation_shedding
 
-        self.Sf = Sbranch
+        self.Sf = Sf
 
         self.bus_types = bus_types
 
@@ -105,7 +105,7 @@ class OptimalPowerFlowResults:
                                        Sbus=self.Sbus,
                                        voltage=self.voltage,
                                        load_shedding=self.load_shedding,
-                                       Sbranch=self.Sf,
+                                       Sf=self.Sf,
                                        overloads=self.overloads,
                                        loading=self.loading,
                                        generation_shedding=self.generation_shedding,
