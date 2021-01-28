@@ -103,9 +103,9 @@ This assumes you have a GridCal file open, defined and unsaved in your code.
 
 .. code-block:: python
 
-    grid = FileSave(**Models_path**).save()
+    grid = FileSave(**gridyouwanttosave**, "**FileName**").save()
 
-You can save files with the following extensions:
+This will save the file in the location where you are running the script. You can save files with the following extensions:
     - .xls
     - .xlsx
     - .gridcal
@@ -300,33 +300,36 @@ Adding a transformer named Transformer1:
 
 .. code-block:: python
 
-    Transformer1 = (hv_nominal_voltage=0,
-                    lv_nominal_voltage=0,
-                    nominal_power=0.001,
-                    copper_losses=0,
-                    iron_losses=0,
-                    no_load_current=0,
-                    short_circuit_voltage=0,
-                    gr_hv1=0.5, gx_hv1=0.5,
-                    name='TransformerType',
-                    tpe=BranchType.Transformer,
-                    idtag=None)
+    Transformer1 = Transformer2W(bus_from=HVBus, bus_to=Bus1, name='Transformer 1', HV=20, LV=10)
     grid.add_transformer2w(Transformer1)
-
 
 Other arguments in the Transformer2w() object that can be added are:
 
-    - **hv_nominal_voltage** (float, 0.0): Primary side nominal voltage in kV (tied to the Branch's `bus_from`).
-    - **lv_nominal_voltage** (float, 0.0): Secondary side nominal voltage in kV (tied to the Branch's `bus_to`).
-    - **nominal_power** (float, 0.0): Transformer nominal apparent power in MVA.
-    - **copper_losses** (float, 0.0): Copper losses in kW (also known as short circuit power).
-    - **iron_losses** (float, 0.0): Iron losses in kW (also known as no-load power).
-    - **no_load_current** (float, 0.0): No load current in %.
-    - **short_circuit_voltage** (float, 0.0): Short circuit voltage in %.
-    - **gr_hv1** (float, 0.5): Resistive contribution to the primary side in per unit (at the Branch's `bus_from`).
-    - **gx_hv1** (float, 0.5): Reactive contribution to the primary side in per unit (at the Branch's `bus_from`).
-    - **name** (str, "TransformerType"): Name of the type.
-    - **tpe** (BranchType, BranchType.Transformer): Device type enumeration.
+    - **bus_from** (:ref:`Bus`): "From" :ref:`bus<Bus>` object.
+    - **bus_to** (:ref:`Bus`): "To" :ref:`bus<Bus>` object.
+    - **name** (str, "Branch"): Name of the branch.
+    - **r** (float, 1e-20): Branch resistance in per unit.
+    - **x** (float, 1e-20): Branch reactance in per unit.
+    - **g** (float, 1e-20): Branch shunt conductance in per unit.
+    - **b** (float, 1e-20): Branch shunt susceptance in per unit.
+    - **rate** (float, 1.0): Branch rate in MVA.
+    - **tap** (float, 1.0): Branch tap module.
+    - **shift_angle** (int, 0): Tap shift angle in radians.
+    - **active** (bool, True): Is the branch active?
+    - **tolerance** (float, 0): Tolerance specified for the branch impedance in %.
+    - **mttf** (float, 0.0): Mean time to failure in hours.
+    - **mttr** (float, 0.0): Mean time to recovery in hours.
+    - **r_fault** (float, 0.0): Mid-line fault resistance in per unit (SC only).
+    - **x_fault** (float, 0.0): Mid-line fault reactance in per unit (SC only).
+    - **fault_pos** (float, 0.0): Mid-line fault position in per unit (0.0 = `bus_from`, 0.5 = middle, 1.0 = `bus_to`).
+    - **branch_type** (BranchType, BranchType.Line): Device type enumeration (ex.: :class:`GridCal.Engine.Devices.transformer.TransformerType`).
+    - **length** (float, 0.0): Length of the branch in km.
+    - **vset** (float, 1.0): Voltage set-point of the voltage controlled bus in per unit.
+    - **temp_base** (float, 20.0): Base temperature at which `r` is measured in °C.
+    - **temp_oper** (float, 20.0): Operating temperature in °C.
+    - **alpha** (float, 0.0033): Thermal constant of the material in °C.
+    - **bus_to_regulated** (bool, False): Is the `bus_to` voltage regulated by this branch?
+    - **template** (BranchTemplate, BranchTemplate()): Basic branch template.
 
 View GridCal Model
 ------------------
