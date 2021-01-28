@@ -52,10 +52,11 @@ def compute_converter_losses(V, It, F, alpha1, alpha2, alpha3, iVscL):
 
     Gsw = np.zeros(len(F))
     for i in iVscL:
-        Ivsc2 = np.power(np.abs(It[i]), 2)
+        Ivsc = np.abs(It[i])
+        Ivsc2 = Ivsc * Ivsc
 
         # Standard IEC 62751-2 Ploss Correction for VSC losses
-        PLoss_IEC = alpha3[i] * Ivsc2 + alpha2[i] * Ivsc2 + alpha1[i]
+        PLoss_IEC = alpha3[i] * Ivsc2 + alpha2[i] * Ivsc + alpha1[i]
 
         # compute G-switch
         Gsw[i] = PLoss_IEC / np.power(np.abs(V[F[i]]), 2)
