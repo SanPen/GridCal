@@ -38,12 +38,14 @@ from PySide2.QtCore import QThread, Signal
 
 class FileOpen:
 
-    def __init__(self, file_name):
+    def __init__(self, file_name, cim_tp_file_name='', cim_eq_file_name=''):
         """
         File open handler
         :param file_name: name of the file
         """
         self.file_name = file_name
+        self.cim_tp_file_name = cim_tp_file_name
+        self.cim_eq_file_name = cim_eq_file_name
 
         self.circuit = MultiCircuit()
 
@@ -155,7 +157,8 @@ class FileOpen:
 
             elif file_extension.lower() == '.xml':
                 parser = CIMImport()
-                self.circuit = parser.load_cim_file(self.file_name)
+                self.circuit = parser.load_cim_file(equipment_file=self.cim_eq_file_name,
+                                                    topology_file=self.cim_tp_file_name)
                 self.logger += parser.logger
 
         else:
@@ -291,6 +294,9 @@ class FileOpenThread(QThread):
 
         self.file_name = file_name
 
+        self.cim_tp_file_name = ""
+        self.cim_eq_file_name = ""
+
         self.valid = False
 
         self.logger = Logger()
@@ -311,7 +317,9 @@ class FileOpenThread(QThread):
 
         self.logger = Logger()
 
-        file_handler = FileOpen(file_name=self.file_name)
+        file_handler = FileOpen(file_name=self.file_name,
+                                cim_tp_file_name=self.cim_tp_file_name,
+                                cim_eq_file_name=self.cim_eq_file_name)
 
         self.circuit = file_handler.open(text_func=self.progress_text.emit,
                                          progress_func=self.progress_signal.emit)

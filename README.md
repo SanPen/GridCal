@@ -65,7 +65,7 @@ tests under [src/tests](https://github.com/SanPen/GridCal/tree/master/src/tests)
 
 It is pure Python, it works for Windows, Linux and OSX.
 
-Some of the features you'll find already are:
+Some features you'll find already are:
 
 - Compatible with other formats:
   - **Import** (Drag & Drop)
@@ -82,10 +82,10 @@ Some of the features you'll find already are:
     - CIM (Common Information Model v16)
 
 - **Power flow**:
-  - Robust Newton Raphson in power and current equations.
+  - State of the art multi-terminal AC/DC Newton Raphson in power and current equations.
   - Newton Raphson Iwamoto (optimal acceleration).
   - Fast Decoupled Power Flow
-  - Levenberg-Marquardt (Works very well with large ill-conditioned grids)
+  - AC/DC multi-terminal Levenberg-Marquardt (Works very well with large ill-conditioned grids)
   - Holomorphic Embedding Power Flow (Unicorn under investigation...)
   - DC approximation.
   - Linear AC approximation.

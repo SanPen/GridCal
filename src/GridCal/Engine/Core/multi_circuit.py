@@ -1050,8 +1050,12 @@ class MultiCircuit:
 
         elif obj.device_type == DeviceType.BranchDevice:
             # we need to convert it :D
-            obj2 = convert_branch(obj)
-            self.add_branch(obj2)  # call this again, but this time it is not a Branch object
+            if obj.branch_type == BranchType.Line or obj.branch_type == BranchType.Transformer:
+                obj2 = convert_branch(obj)
+                self.add_branch(obj2)  # call this again, but this time it is not a Branch object
+            else:
+                print('Omitting branch ' + obj.name)
+                # self.add_branch(obj)
         else:
             raise Exception('Unrecognized branch type ' + obj.device_type.value)
 

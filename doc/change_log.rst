@@ -35,6 +35,8 @@ Version 4.0.0 (multi-terminal DC Grids)
 - I/O
     - Added better Json export file (v3.1 of the specification).
     - Improved the PSS/e Raw file import.
+    - Implemented the ability to load several files to load TP and EQ CIM files together.
+
 
 - Linear Analysis
     - Replaced the empirical PTDF/OTDF by the analytical PTDF/LODF which are several orders of magnitude faster.

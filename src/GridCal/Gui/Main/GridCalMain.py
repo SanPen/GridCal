@@ -1116,23 +1116,23 @@ class MainGUI(QMainWindow):
         if self.use_native_dialogues:
             options |= QFileDialog.DontUseNativeDialog
 
-        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
-                                                                        caption='Open file',
-                                                                        dir=self.project_directory,
-                                                                        filter=files_types,
-                                                                        options=options)
+        filenames, type_selected = QtWidgets.QFileDialog.getOpenFileNames(parent=self,
+                                                                         caption='Open file',
+                                                                         dir=self.project_directory,
+                                                                         filter=files_types,
+                                                                         options=options)
 
-        if len(filename) > 0:
-            self.open_file_now(filename, post_function)
+        if len(filenames) > 0:
+            self.open_file_now(filenames, post_function)
 
-    def open_file_now(self, filename, post_function=None):
+    def open_file_now(self, filenames, post_function=None):
         """
 
-        :param filename:
+        :param filenames: list of file names (may be more than one because of CIM TP and EQ files)
         :param post_function:
         :return:
         """
-        self.file_name = filename
+        self.file_name = filenames[0]
 
         # store the working directory
         self.project_directory = os.path.dirname(self.file_name)
@@ -1143,19 +1143,49 @@ class MainGUI(QMainWindow):
         # create thread
         self.open_file_thread_object = FileOpenThread(file_name=self.file_name)
 
-        # make connections
-        self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
-        self.open_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
-        self.open_file_thread_object.done_signal.connect(self.UNLOCK)
-        if post_function is None:
-            self.open_file_thread_object.done_signal.connect(self.post_open_file)
-        else:
-            self.open_file_thread_object.done_signal.connect(post_function)
+        error = False
+        if len(filenames) == 2:  # parse two CIM files
+            if filenames[0].lower().endswith('.xml'):
+                msg = ''
+                if '_TP' in filenames[0]:
+                    self.open_file_thread_object.cim_tp_file_name = filenames[0]
 
-        # thread start
-        self.open_file_thread_object.start()
+                    if '_EQ' in filenames[1]:
+                        self.open_file_thread_object.cim_eq_file_name = filenames[1]
+                    else:
+                        error = True
+                        msg += 'Equipment file missing (_TP...)'
 
-        self.stuff_running_now.append('file_open')
+                elif '_TP' in filenames[1]:
+
+                    self.open_file_thread_object.cim_tp_file_name = filenames[1]
+
+                    if '_EQ' in filenames[0]:
+                        self.open_file_thread_object.cim_eq_file_name = filenames[0]
+                    else:
+                        error = True
+                        msg += 'Equipment file missing (_TP...)'
+                else:
+                    error = True
+                    msg = 'Topology file missing (_TP...)'
+
+                if error:
+                    error_msg(msg, title="CIM import")
+
+        if not error:
+            # make connections
+            self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
+            self.open_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
+            self.open_file_thread_object.done_signal.connect(self.UNLOCK)
+            if post_function is None:
+                self.open_file_thread_object.done_signal.connect(self.post_open_file)
+            else:
+                self.open_file_thread_object.done_signal.connect(post_function)
+
+            # thread start
+            self.open_file_thread_object.start()
+
+            self.stuff_running_now.append('file_open')
 
     def post_open_file(self):
         """

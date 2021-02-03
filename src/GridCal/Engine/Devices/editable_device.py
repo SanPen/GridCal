@@ -63,7 +63,7 @@ class EditableDevice:
         if idtag is None:
             self.idtag = uuid.uuid4().hex
         else:
-            self.idtag = idtag
+            self.idtag = idtag.replace('_', '').replace('-', '')
 
         self.name = name
 
