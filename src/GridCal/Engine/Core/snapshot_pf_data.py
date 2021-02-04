@@ -75,7 +75,8 @@ class SnapshotData:
         self.iBeqv = list()  # indices of the branches when controlling Vf with Beq
         self.iVtma = list()  # indices of the branches when controlling Vt with ma
         self.iQtma = list()  # indices of the branches controlling the Qt flow with ma
-        self.iPfdp = list()  # indices of the drop converters controlling the power flow with theta sh
+        self.iPfdp = list()  # indices of the drop-Vm converters controlling the power flow with theta sh
+        self.iPfdp_va = list()  # indices of the drop-Va converters controlling the power flow with theta sh
         self.iVscL = list()  # indices of the converters
         self.VfBeqbus = list()  # indices of the buses where Vf is controlled by Beq
         self.Vtmabus = list()  # indices of the buses where Vt is controlled by ma
@@ -432,6 +433,20 @@ class SnapshotData:
                 self.iVscL.append(k)
                 self.any_control = True
 
+            elif tpe == ConverterControlType.type_III_8:  # 6:Droop+Qac
+                self.iPfdp_va.append(k)
+                self.iQtma.append(k)
+
+                self.iVscL.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_III_9:  # 4a:Droop-slack
+                self.iPfdp_va.append(k)
+                self.iVtma.append(k)
+
+                self.iVscL.append(k)
+                self.any_control = True
+
             elif tpe == 0:
                 pass  # required for the no-control case
 
@@ -453,8 +468,8 @@ class SnapshotData:
         self.iVtma = np.array(self.iVtma, dtype=np.int)
         self.iQtma = np.array(self.iQtma, dtype=np.int)
         self.iPfdp = np.array(self.iPfdp, dtype=np.int)
+        self.iPfdp_va = np.array(self.iPfdp_va, dtype=np.int)
         self.iVscL = np.array(self.iVscL, dtype=np.int)
-
 
     @property
     def line_idx(self):

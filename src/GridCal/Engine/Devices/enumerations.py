@@ -94,6 +94,8 @@ class ConverterControlType(Enum):
     type_II_5 = '5:Vdc+Vac'
     type_III_6 = '6:Droop+Qac'
     type_III_7 = '7:Droop+Vac'
+    type_III_8 = '8:DroopVa+Qac'
+    type_III_9 = '9:DroopVa+Vac'
 
     def __str__(self):
         return str(self.value)

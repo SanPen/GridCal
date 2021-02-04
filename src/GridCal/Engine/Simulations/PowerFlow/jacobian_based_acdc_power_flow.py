@@ -208,17 +208,10 @@ def dSf_dV(Yf, V, F, Cf, Vc, diagVc, diagVnorm, diagV):
     :return: dSf_dVa, dSf_dVm
     """
     Yfc = np.conj(Yf)
-    # Vc = np.conj(V)
     Ifc = Yfc * Vc  # conjugate  of "from"  current
 
     diagIfc = diags(Ifc)
-    Vf = V[F]
-    diagVf = diags(Vf)
-    # diagVc = diags(Vc)
-
-    # Vnorm = V / np.abs(V)
-    # diagVnorm = diags(Vnorm)
-    # diagV = diags(V)
+    diagVf = diags(V[F])
 
     CVf = Cf * diagV
     CVnf = Cf * diagVnorm
@@ -239,17 +232,10 @@ def dSt_dV(Yt, V, T, Ct, Vc, diagVc, diagVnorm, diagV):
     :return: dSf_dVa, dSf_dVm, dSt_dVa, dSt_dVm
     """
     Ytc = np.conj(Yt)
-    # Vc = np.conj(V)
     Itc = Ytc * Vc  # conjugate of "to" current
 
     diagItc = diags(Itc)
-    Vt = V[T]
-    diagVt = diags(Vt)
-    # diagVc = diags(Vc)
-
-    # Vnorm = V / np.abs(V)
-    # diagVnorm = diags(Vnorm)
-    # diagV = diags(V)
+    diagVt = diags(V[T])
 
     CVt = Ct * diagV
     CVnt = Ct * diagVnorm
@@ -444,9 +430,9 @@ def derivatives_ma(nb, nl, iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
     - dSbus_dVtma, dSf_dVtma, dSt_dVtma  -> if iXxma=iVtma
     """
     # Declare the derivative
-    dSbus_dmax2 = lil_matrix((nb, len(iXxma)), dtype=complex)
-    dSf_dmax2 = lil_matrix((nl, len(iXxma)), dtype=complex)
-    dSt_dmax2 = lil_matrix((nl, len(iXxma)), dtype=complex)
+    dSbus_dmax = lil_matrix((nb, len(iXxma)), dtype=complex)
+    dSf_dmax = lil_matrix((nl, len(iXxma)), dtype=complex)
+    dSt_dmax = lil_matrix((nl, len(iXxma)), dtype=complex)
 
     for k, idx in enumerate(iXxma):
         f = F[idx]
@@ -463,13 +449,14 @@ def derivatives_ma(nb, nl, iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
         # Partials of S w.r.t.ma
         val_f = V[f] * np.conj(dyff_dma * V[f] + dyft_dma * V[t])
         val_t = V[t] * np.conj(dytf_dma * V[f] + dytt_dma * V[t])
-        dSbus_dmax2[f, k] = val_f
-        dSbus_dmax2[t, k] = val_t
 
-        dSf_dmax2[idx, k] = val_f
-        dSt_dmax2[idx, k] = val_t
+        dSbus_dmax[f, k] = val_f
+        dSbus_dmax[t, k] = val_t
 
-    return dSbus_dmax2.tocsc(), dSf_dmax2.tocsc(), dSt_dmax2.tocsc()
+        dSf_dmax[idx, k] = val_f
+        dSt_dmax[idx, k] = val_t
+
+    return dSbus_dmax.tocsc(), dSf_dmax.tocsc(), dSt_dmax.tocsc()
 
 
 @nb.njit("Tuple((c16[:], i4[:], i4[:], c16[:], i4[:], i4[:], c16[:], i4[:], i4[:]))"
@@ -524,8 +511,9 @@ def derivatives_ma_numba(iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
 
         # Partials of Ytt, Yff, Yft and Ytf w.r.t.ma
         dyff_dma = -2 * YttB / (np.power(k2[idx], 2) * np.power(ma[idx], 3))
-        dyft_dma = Ys[idx] / (k2[idx] * ma[idx] * np.conj(tap[idx]))
-        dytf_dma = Ys[idx] / (k2[idx] * ma[idx] * tap[idx])
+        vv = Ys[idx] / (k2[idx] * ma[idx])
+        dyft_dma = vv / np.conj(tap[idx])
+        dytf_dma = vv / tap[idx]
 
         val_f = V[f] * np.conj(dyff_dma * V[f] + dyft_dma * V[t])
         val_t = V[t] * np.conj(dytf_dma * V[f])
@@ -745,14 +733,14 @@ def derivatives_Beq_fast(nb, nl, iBeqx, F, T, V, ma, k2):
     return dSbus_dBeqx, dSf_dBeqx, dSt_dBeqx
 
 
-def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeqbus, Vtmabus,
-                  F, T, Ys, k2, tap, ma, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq):
+def fubm_jacobian(nb, nl, iPfsh, iPfdp, iPfdp_va, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeqbus, Vtmabus,
+                  F, T, Ys, k2, tap, ma, Bc, Beq, Kdp, Kdp_va, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq):
     """
     Compute the FUBM jacobian in a dynamic fashion by only computing the derivatives that are needed
     :param nb: number of buses
     :param nl: Number of lines
     :param iPfsh: indices of the Pf controlled branches
-    :param iPfdp: indices of the droop controlled branches
+    :param iPfdp: indices of the droop-v controlled branches
     :param iQfma: indices of the Qf controlled branches
     :param iQtma: Indices of the Qt controlled branches
     :param iVtma: Indices of the Vt controlled branches
@@ -779,6 +767,7 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     """
     nPfsh = len(iPfsh)
     nPfdp = len(iPfdp)
+    nPfdp_va = len(iPfdp_va)
     nQfma = len(iQfma)
     nQtma = len(iQtma)
     nVtma = len(iVtma)
@@ -786,6 +775,9 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     nBeqv = len(iBeqv)
     npq = len(pq)
     npvpq = len(pvpq)
+    iDroop = np.r_[iPfdp, iPfdp_va].astype(int)
+    iDroop.sort()
+    nDroop = len(iDroop)
 
     # compose the derivatives of the power injections w.r.t Va and Vm
     dSbus_dVa, dSbus_dVm = dSbus_dV_with_numba(Ybus, V)
@@ -803,7 +795,7 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
 
     # compose the number of columns and rows of the jacobian super structure "mats"
     cols = bool(npvpq) + bool(npq) + bool(nPfsh) + bool(nQfma) + bool(nBeqz)
-    cols += bool(nBeqv) + bool(nVtma) + bool(nQtma) + bool(nPfdp)
+    cols += bool(nBeqv) + bool(nVtma) + bool(nQtma) + bool(nDroop)
     rows = cols
 
     j11 = sp_slice(dSbus_dVa.real, pvpq, pvpq)
@@ -827,9 +819,15 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     if nQtma:
         j81 = sp_slice(dSt_dVa.imag, iQtma, pvpq)
         mats.append(j81)
-    if nPfdp:
+    if nDroop:
+        # handles Droop-Vm and Droop-Va modes at once
         dPfdp_dVa = -dSf_dVa.real
-        j91 = sp_slice(dPfdp_dVa, iPfdp, pvpq)
+
+        if nPfdp_va:
+            # add the effect of the Droop-Va
+            dPfdp_dVa += diags(Kdp_va) * Cf
+
+        j91 = sp_slice(dPfdp_dVa, iDroop, pvpq)
         mats.append(j91)
 
     j12 = sp_slice(dSbus_dVm.real, pvpq, pq)
@@ -853,17 +851,19 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     if nQtma:
         j82 = sp_slice(dSt_dVm.imag, iQtma, pq)
         mats.append(j82)
-    if nPfdp:
-        dVmf_dVm = lil_matrix((nl, nb))
-        dVmf_dVm[iPfdp, :] = Cf[iPfdp, :]
-        dPfdp_dVm = -dSf_dVm.real + diags(Kdp) * dVmf_dVm
-        j92 = sp_slice(dPfdp_dVm, iPfdp, pq)
+    if nDroop:
+        # handles Droop-Vm and Droop-Va modes at once
+        dPfdp_dVm = -dSf_dVm.real
+
+        if nPfdp:
+            # add the effect of the Droop-Vm
+            dPfdp_dVm += diags(Kdp) * Cf
+
+        j92 = sp_slice(dPfdp_dVm, iDroop, pq)
         mats.append(j92)
 
     # compose the derivatives w.r.t theta sh
     if nPfsh > 0:
-        # dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh = derivatives_sh(nb, nl, iPfsh, F, T, Ys, k2, tap, V)
-
         dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh = derivatives_sh_fast(nb, nl, iPfsh, F, T, Ys, k2, tap, V)
 
         dPfdp_dPfsh = -dSf_dPfsh.real
@@ -889,14 +889,12 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
         if nQtma:
             j83 = sp_slice_rows(dSt_dPfsh.imag, iQtma)
             mats.append(j83)
-        if nPfdp:
-            j93 = sp_slice_rows(dPfdp_dPfsh, iPfdp)
+        if nDroop:
+            j93 = sp_slice_rows(dPfdp_dPfsh, iDroop)
             mats.append(j93)
 
     # compose the derivative w.r.t ma
     if nQfma > 0:
-        # dSbus_dQfma, dSf_dQfma, dSt_dQfma = derivatives_ma(nb, nl, iQfma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
-
         dSbus_dQfma, dSf_dQfma, dSt_dQfma = derivatives_ma_fast(nb, nl, iQfma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
 
         dPfdp_dQfma = -dSf_dQfma.real
@@ -922,14 +920,12 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
         if nQtma:
             j84 = sp_slice_rows(dSt_dQfma.imag, iQtma)
             mats.append(j84)
-        if nPfdp:
-            j94 = sp_slice_rows(dPfdp_dQfma, iPfdp)
+        if nDroop:
+            j94 = sp_slice_rows(dPfdp_dQfma, iDroop)
             mats.append(j94)
 
     # compose the derivatives w.r.t Beq
     if nBeqz > 0:
-        # dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz = derivatives_Beq(nb, nl, iBeqz, F, T, V, ma, k2)
-
         dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz = derivatives_Beq_fast(nb, nl, iBeqz, F, T, V, ma, k2)
 
         dPfdp_dBeqz = -dSf_dBeqz.real
@@ -955,8 +951,8 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
         if nQtma:
             j85 = sp_slice_rows(dSt_dBeqz.imag, iQtma)
             mats.append(j85)
-        if nPfdp:
-            j95 = sp_slice_rows(dPfdp_dBeqz, iPfdp)
+        if nDroop:
+            j95 = sp_slice_rows(dPfdp_dBeqz, iDroop)
             mats.append(j95)
 
     if nBeqv > 0:
@@ -985,13 +981,11 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
         if nQtma:
             j86 = sp_slice_rows(dSt_dBeqv.imag, iQtma)
             mats.append(j86)
-        if nPfdp:
-            j96 = sp_slice_rows(dPfdp_dBeqv, iPfdp)
+        if nDroop:
+            j96 = sp_slice_rows(dPfdp_dBeqv, iDroop)
             mats.append(j96)
 
     if nVtma > 0:
-        # dSbus_dVtma, dSf_dVtma, dSt_dVtma = derivatives_ma(nb, nl, iVtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
-
         dSbus_dVtma, dSf_dVtma, dSt_dVtma = derivatives_ma_fast(nb, nl, iVtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
 
         dPfdp_dVtma = -dSf_dVtma.real
@@ -1017,12 +1011,11 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
         if nQtma:
             j87 = sp_slice_rows(dSt_dVtma.imag, iQtma)
             mats.append(j87)
-        if nPfdp:
-            j97 = sp_slice_rows(dPfdp_dVtma, iPfdp)
+        if nDroop:
+            j97 = sp_slice_rows(dPfdp_dVtma, iDroop)
             mats.append(j97)
 
     if nQtma > 0:
-        # dSbus_dQtma, dSf_dQtma, dSt_dQtma = derivatives_ma(nb, nl, iQtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
         dSbus_dQtma, dSf_dQtma, dSt_dQtma = derivatives_ma_fast(nb, nl, iQtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
 
         dPfdp_dQtma = -dSf_dQtma.real
@@ -1048,14 +1041,12 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
         if nQtma:
             j88 = sp_slice_rows(dSt_dQtma.imag, iQtma)
             mats.append(j88)
-        if nPfdp:
-            j98 = sp_slice_rows(dPfdp_dQtma, iPfdp)
+        if nDroop:
+            j98 = sp_slice_rows(dPfdp_dQtma, iDroop)
             mats.append(j98)
 
-    if nPfdp > 0:
-        # dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp = derivatives_sh(nb, nl, iPfdp, F, T, Ys, k2, tap, V)
-
-        dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp = derivatives_sh_fast(nb, nl, iPfdp, F, T, Ys, k2, tap, V)
+    if nDroop > 0:
+        dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp = derivatives_sh_fast(nb, nl, iDroop, F, T, Ys, k2, tap, V)
 
         dPfdp_dPfdp = -dSf_dPfdp.real
 
@@ -1080,8 +1071,8 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
         if nQtma:
             j89 = sp_slice_rows(dSt_dPfdp.imag, iQtma)
             mats.append(j89)
-        if nPfdp:
-            j99 = sp_slice_rows(dPfdp_dPfdp, iPfdp)
+        if nDroop:
+            j99 = sp_slice_rows(dPfdp_dPfdp, iDroop)
             mats.append(j99)
 
     # compose Jacobian from the submatrices
@@ -1090,8 +1081,8 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     return J
 
 
-def compute_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
-               pvpq, pq, iPfsh, iQfma, iBeqz, iQtma, iPfdp, VfBeqbus, Vtmabus):
+def compute_fx(Ybus, V, Vm, Va, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, Kdp_va, F, T,
+               pvpq, pq, iPfsh, iQfma, iBeqz, iQtma, iPfdp, iPfdp_va, VfBeqbus, Vtmabus):
     """
     Compute the increments vector
     :param Ybus: Admittance matrix
@@ -1104,7 +1095,6 @@ def compute_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
     :param Vmfset: Array of Vf module set values per branch
     :param Kdp: Array of branch droop value per branch
     :param F:
-    :param T:
     :param pvpq:
     :param pq:
     :param iPfsh:
@@ -1112,6 +1102,7 @@ def compute_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
     :param iBeqz:
     :param iQtma:
     :param iPfdp:
+    :param iPfdp_va:
     :param VfBeqbus:
     :param Vtmabus:
     :return:
@@ -1128,6 +1119,9 @@ def compute_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
     misVtma = mis[Vtmabus].imag  # F7(x0) Vt control mismatch
     misQtma = St[iQtma].imag - Qtset[iQtma]  # F8(x0) Qt control mismatch
     misPfdp = -Sf[iPfdp].real + Pfset[iPfdp] + Kdp[iPfdp] * (Vm[F[iPfdp]] - Vmfset[iPfdp])  # F9(x0) Pf control mismatch, Droop Pf - Pfset = Kdp*(Vmf - Vmfset)
+    # misPfdp_va = -Sf[iPfdp_va].real + Pfset[iPfdp_va] + Kdp_va[iPfdp_va] * (Va[F[iPfdp_va]] - Va[T[iPfdp_va]])
+    misPfdp_va = -Sf[iPfdp_va].real + Kdp_va[iPfdp_va] * (Va[F[iPfdp_va]] - Va[T[iPfdp_va]])
+
     # -------------------------------------------------------------------------
 
     #  Create F vector
@@ -1140,7 +1134,8 @@ def compute_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
                misBeqv,  # F6(x0) Vf control    mismatch - Beq
                misVtma,  # F7(x0) Vt control    mismatch - ma
                misQtma,  # F8(x0) Qt control    mismatch - ma
-               misPfdp]  # F9(x0) Pf control    mismatch - Theta_shift Droop
+               misPfdp,  # F9(x0) Pf droop control based on dVm
+               misPfdp_va]  # F10(x0) Pf droop control based on dVa
 
     return df, Scalc
 
@@ -1179,6 +1174,7 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
     Qmin = nc.Qmin_bus[t, :]
     Qmax = nc.Qmax_bus[t, :]
     Kdp = nc.branch_data.Kdp
+    Kdp_va = nc.branch_data.Kdp_va
     k2 = nc.branch_data.k
     Cf = nc.Cf
     Ct = nc.Ct
@@ -1216,6 +1212,8 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
     a7 = a6 + len(nc.Vtmabus)
     a8 = a7 + len(nc.iQtma)
     a9 = a8 + len(nc.iPfdp)
+    a10 = a9 + len(nc.iPfdp_va)
+
     # -------------------------------------------------------------------------
     # compute initial admittances
     Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
@@ -1246,6 +1244,7 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
     fx, Scalc = compute_fx(Ybus=Ybus,
                            V=V,
                            Vm=Vm,
+                           Va=Va,
                            Sbus=S0,
                            Sf=Sf,
                            St=St,
@@ -1254,7 +1253,9 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
                            Qtset=Qtset,
                            Vmfset=Vmfset,
                            Kdp=Kdp,
+                           Kdp_va=Kdp_va,
                            F=F,
+                           T=T,
                            pvpq=pvpq,
                            pq=pq,
                            iPfsh=nc.iPfsh,
@@ -1262,6 +1263,7 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
                            iBeqz=nc.iBeqz,
                            iQtma=nc.iQtma,
                            iPfdp=nc.iPfdp,
+                           iPfdp_va=nc.iPfdp_va,
                            VfBeqbus=nc.VfBeqbus,
                            Vtmabus=nc.Vtmabus)
 
@@ -1273,13 +1275,11 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
     while not converged and iterations < max_iter:
 
         # compute the Jacobian
-        J = fubm_jacobian(nb, nl, nc.iPfsh, nc.iPfdp, nc.iQfma, nc.iQtma, nc.iVtma, nc.iBeqz, nc.iBeqv,
+        J = fubm_jacobian(nb, nl, nc.iPfsh, nc.iPfdp, nc.iPfdp_va,
+                          nc.iQfma, nc.iQtma, nc.iVtma, nc.iBeqz, nc.iBeqv,
                           nc.VfBeqbus, nc.Vtmabus,
-                          F, T, Ys, k2, tap, m, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq)
-
-        # J = fubm_jacobianA(nb, nl, nc.iPfsh, nc.iPfdp, nc.iQfma, nc.iQtma, nc.iVtma, nc.iBeqz, nc.iBeqv,
-        #                    nc.VfBeqbus, nc.Vtmabus,
-        #                    F, T, Ys, k2, tap, m, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq)
+                          F, T, Ys, k2, tap, m, Bc, Beq, Kdp, Kdp_va,
+                          V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq)
 
         # solve the linear system
         dx = sp.linalg.spsolve(J, -fx)
@@ -1293,7 +1293,7 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
         dBeq_v = dx[a5:a6]
         dma_Vt = dx[a6:a7]
         dma_Qt = dx[a7:a8]
-        dtheta_Pd = dx[a8:a9]
+        dtheta_Pd = dx[a8:a10]
 
         # set the restoration values
         prev_Vm = Vm.copy()
@@ -1358,6 +1358,7 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
             fx, Scalc = compute_fx(Ybus=Ybus,
                                    V=V,
                                    Vm=Vm,
+                                   Va=Va,
                                    Sbus=S0,
                                    Sf=Sf,
                                    St=St,
@@ -1366,7 +1367,9 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
                                    Qtset=Qtset,
                                    Vmfset=Vmfset,
                                    Kdp=Kdp,
+                                   Kdp_va=Kdp_va,
                                    F=F,
+                                   T=T,
                                    pvpq=pvpq,
                                    pq=pq,
                                    iPfsh=nc.iPfsh,
@@ -1374,6 +1377,7 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
                                    iBeqz=nc.iBeqz,
                                    iQtma=nc.iQtma,
                                    iPfdp=nc.iPfdp,
+                                   iPfdp_va=nc.iPfdp_va,
                                    VfBeqbus=nc.VfBeqbus,
                                    Vtmabus=nc.Vtmabus)
 
@@ -1444,11 +1448,13 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
                         a7 = a6 + len(nc.Vtmabus)
                         a8 = a7 + len(nc.iQtma)
                         a9 = a8 + len(nc.iPfdp)
+                        a10 = a9 + len(nc.iPfdp_va)
 
                         # recompute the mismatch, based on the new S0
                         fx, Scalc = compute_fx(Ybus=Ybus,
                                                V=V,
                                                Vm=Vm,
+                                               Va=Va,
                                                Sbus=S0,
                                                Sf=Sf,
                                                St=St,
@@ -1457,7 +1463,9 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
                                                Qtset=Qtset,
                                                Vmfset=Vmfset,
                                                Kdp=Kdp,
+                                               Kdp_va=Kdp_va,
                                                F=F,
+                                               T=T,
                                                pvpq=pvpq,
                                                pq=pq,
                                                iPfsh=nc.iPfsh,
@@ -1465,6 +1473,7 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
                                                iBeqz=nc.iBeqz,
                                                iQtma=nc.iQtma,
                                                iPfdp=nc.iPfdp,
+                                               iPfdp_va=nc.iPfdp_va,
                                                VfBeqbus=nc.VfBeqbus,
                                                Vtmabus=nc.Vtmabus)
                         norm_f_new = np.max(np.abs(fx))
@@ -1518,6 +1527,7 @@ def LM_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, verbose=False) -> Nu
     Qfset = nc.branch_data.Qfset[:, 0] / nc.Sbase
     Qtset = nc.branch_data.Qfset[:, 0] / nc.Sbase
     Kdp = nc.branch_data.Kdp
+    Kdp_va = nc.branch_data.Kdp_va
     k2 = nc.branch_data.k
     Cf = nc.Cf
     Ct = nc.Ct
@@ -1556,6 +1566,8 @@ def LM_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, verbose=False) -> Nu
         a7 = a6 + len(nc.Vtmabus)
         a8 = a7 + len(nc.iQtma)
         a9 = a8 + len(nc.iPfdp)
+        a10 = a9 + len(nc.iPfdp_va)
+
         # -------------------------------------------------------------------------
         # compute initial admittances
         Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
@@ -1586,6 +1598,7 @@ def LM_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, verbose=False) -> Nu
         dz, Scalc = compute_fx(Ybus=Ybus,
                                V=V,
                                Vm=Vm,
+                               Va=Va,
                                Sbus=S0,
                                Sf=Sf,
                                St=St,
@@ -1594,7 +1607,9 @@ def LM_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, verbose=False) -> Nu
                                Qtset=Qtset,
                                Vmfset=Vmfset,
                                Kdp=Kdp,
+                               Kdp_va=Kdp_va,
                                F=F,
+                               T=T,
                                pvpq=pvpq,
                                pq=pq,
                                iPfsh=nc.iPfsh,
@@ -1602,6 +1617,7 @@ def LM_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, verbose=False) -> Nu
                                iBeqz=nc.iBeqz,
                                iQtma=nc.iQtma,
                                iPfdp=nc.iPfdp,
+                               iPfdp_va=nc.iPfdp_va,
                                VfBeqbus=nc.VfBeqbus,
                                Vtmabus=nc.Vtmabus)
 
@@ -1622,9 +1638,11 @@ def LM_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, verbose=False) -> Nu
 
             # evaluate Jacobian
             if update_jacobian:
-                H = fubm_jacobian(nb, nl, nc.iPfsh, nc.iPfdp, nc.iQfma, nc.iQtma, nc.iVtma, nc.iBeqz, nc.iBeqv,
+                H = fubm_jacobian(nb, nl, nc.iPfsh, nc.iPfdp, nc.iPfdp_va,
+                                  nc.iQfma, nc.iQtma, nc.iVtma, nc.iBeqz, nc.iBeqv,
                                   nc.VfBeqbus, nc.Vtmabus,
-                                  F, T, Ys, k2, tap, m, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq)
+                                  F, T, Ys, k2, tap, m, Bc, Beq, Kdp, Kdp_va,
+                                  V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq)
 
                 if iter_ == 0:
                     # compute this identity only once
@@ -1676,7 +1694,7 @@ def LM_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, verbose=False) -> Nu
                 dBeq_v = dx[a5:a6]
                 dma_Vt = dx[a6:a7]
                 dma_Qt = dx[a7:a8]
-                dtheta_Pd = dx[a8:a9]
+                dtheta_Pd = dx[a8:a10]  # both droop controls
 
                 # assign the new values
                 Va[pvpq] -= dVa
@@ -1724,6 +1742,7 @@ def LM_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, verbose=False) -> Nu
             dz, Scalc = compute_fx(Ybus=Ybus,
                                    V=V,
                                    Vm=Vm,
+                                   Va=Va,
                                    Sbus=S0,
                                    Sf=Sf,
                                    St=St,
@@ -1732,7 +1751,9 @@ def LM_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, verbose=False) -> Nu
                                    Qtset=Qtset,
                                    Vmfset=Vmfset,
                                    Kdp=Kdp,
+                                   Kdp_va=Kdp_va,
                                    F=F,
+                                   T=T,
                                    pvpq=pvpq,
                                    pq=pq,
                                    iPfsh=nc.iPfsh,
@@ -1740,6 +1761,7 @@ def LM_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, verbose=False) -> Nu
                                    iBeqz=nc.iBeqz,
                                    iQtma=nc.iQtma,
                                    iPfdp=nc.iPfdp,
+                                   iPfdp_va=nc.iPfdp_va,
                                    VfBeqbus=nc.VfBeqbus,
                                    Vtmabus=nc.Vtmabus)
             norm_f = np.max(np.abs(dz))

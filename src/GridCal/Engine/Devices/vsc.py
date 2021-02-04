@@ -30,7 +30,7 @@ class VSC(EditableDevice):
                  m=1.0, m_max=1.1, m_min=0.8,
                  theta=0.1, theta_max=6.28, theta_min=-6.28,
                  Beq=0.001, Beq_min=-0.1, Beq_max=0.1,
-                 G0=1e-5, rate=1e-9, kdp=-0.05, k=1.0,
+                 G0=1e-5, rate=1e-9, kdp=-0.05, kdp_va=103.0, k=1.0,
                  control_mode: ConverterControlType = ConverterControlType.type_0_free,
                  Pfset = 0.0, Qfset=0.0, Vac_set=1.0, Vdc_set=1.0,
                  alpha1=0.0001, alpha2=0.015, alpha3=0.2,
@@ -50,18 +50,19 @@ class VSC(EditableDevice):
         :param theta:
         :param theta_max:
         :param theta_min:
-        :param G0:
         :param Beq:
         :param Beq_min:
         :param Beq_max:
-        :param Inom:
+        :param G0:
         :param rate:
         :param kdp:
+        :param kdp_va:
+        :param k:
         :param control_mode:
         :param Pfset:
+        :param Qfset:
         :param Vac_set:
         :param Vdc_set:
-        :param Qfset:
         :param alpha1:
         :param alpha2:
         :param alpha3:
@@ -119,7 +120,8 @@ class VSC(EditableDevice):
                                                   'control_mode': GCProp('', ConverterControlType,
                                                                          'Converter control mode'),
 
-                                                  'kdp': GCProp('p.u./p.u.', float, 'Droop Power/Voltage slope.'),
+                                                  'kdp': GCProp('p.u./p.u.', float, 'Droop Power/Voltage module slope.'),
+                                                  'kdp_va': GCProp('p.u./p.u.', float, 'Droop Power/Voltage angle slope.'),
                                                   'Pfset': GCProp('MW', float, 'Active power set point.'),
                                                   'Qfset': GCProp('MVAr', float, 'Reactive power set point.'),
                                                   'Vac_set': GCProp('p.u.', float, 'AC voltage set point.'),
@@ -178,6 +180,7 @@ class VSC(EditableDevice):
         self.control_mode = control_mode
 
         self.kdp = kdp
+        self.kdp_va = kdp_va
         self.alpha1 = alpha1
         self.alpha2 = alpha2
         self.alpha3 = alpha3
@@ -245,7 +248,9 @@ class VSC(EditableDevice):
                  ConverterControlType.type_II_4: 4,
                  ConverterControlType.type_II_5: 5,
                  ConverterControlType.type_III_6: 6,
-                 ConverterControlType.type_III_7: 7}
+                 ConverterControlType.type_III_7: 7,
+                 ConverterControlType.type_III_8: 8,
+                 ConverterControlType.type_III_9: 9}
 
         d = {'id': self.idtag,
              'type': 'vsc',

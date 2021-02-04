@@ -657,7 +657,8 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.theta_max[ii] = elm.theta_max
         data.Pfset[ii] = elm.Pfset
         data.Qfset[ii] = elm.Qfset
-        data.Kdp[ii] = elm.kdp
+
+        # Kdp is assigned below
         data.vf_set[ii] = elm.Vac_set
         data.vt_set[ii] = elm.Vdc_set
         data.control_mode[ii] = elm.control_mode
@@ -686,8 +687,19 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
             Vbus[f] = elm.Vdc_set
             Vbus[t] = elm.Vac_set
 
+        elif elm.control_mode == ConverterControlType.type_III_6:  # 7:Droop+Vac
+            data.Kdp[ii] = elm.kdp
+
         elif elm.control_mode == ConverterControlType.type_III_7:  # 7:Droop+Vac
             Vbus[t] = elm.Vac_set
+            data.Kdp[ii] = elm.kdp
+
+        elif elm.control_mode == ConverterControlType.type_III_8:  # 9:DroopVa+Vac
+            data.Kdp_va[ii] = elm.kdp_va
+
+        elif elm.control_mode == ConverterControlType.type_III_9:  # 9:DroopVa+Vac
+            Vbus[t] = elm.Vac_set
+            data.Kdp_va[ii] = elm.kdp_va
 
     # DC-lines
     for i, elm in enumerate(circuit.dc_lines):

@@ -66,6 +66,7 @@ class BranchData:
         self.vt_set = np.ones((nbr, ntime))
 
         self.Kdp = np.ones(self.nbr)
+        self.Kdp_va = np.ones(self.nbr)
         self.alpha1 = np.zeros(self.nbr)  # converter losses parameter (alpha1)
         self.alpha2 = np.zeros(self.nbr)  # converter losses parameter (alpha2)
         self.alpha3 = np.zeros(self.nbr)  # converter losses parameter (alpha3)
@@ -101,6 +102,7 @@ class BranchData:
         data.tap_t = self.tap_f[elm_idx]
         data.tap_f = self.tap_t[elm_idx]
         data.Kdp = self.Kdp[elm_idx]
+        data.Kdp_va = self.Kdp_va[elm_idx]
 
         data.alpha1 = self.alpha1[elm_idx]
         data.alpha2 = self.alpha2[elm_idx]
