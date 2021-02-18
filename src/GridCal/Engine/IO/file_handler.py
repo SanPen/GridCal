@@ -38,14 +38,12 @@ from PySide2.QtCore import QThread, Signal
 
 class FileOpen:
 
-    def __init__(self, file_name, cim_tp_file_name='', cim_eq_file_name=''):
+    def __init__(self, file_name):
         """
         File open handler
         :param file_name: name of the file
         """
         self.file_name = file_name
-        self.cim_tp_file_name = cim_tp_file_name
-        self.cim_eq_file_name = cim_eq_file_name
 
         self.circuit = MultiCircuit()
 
@@ -60,110 +58,122 @@ class FileOpen:
         """
         self.logger = Logger()
 
-        if os.path.exists(self.file_name):
-            name, file_extension = os.path.splitext(self.file_name)
-            # print(name, file_extension)
-            if file_extension.lower() in ['.xls', '.xlsx']:
+        if isinstance(self.file_name, list):
 
-                data_dictionary = load_from_xls(self.file_name)
+            for f in self.file_name:
+                name, file_extension = os.path.splitext(f)
+                if file_extension.lower() != '.xml':
+                    raise Exception('Loading multiple files that are not XML (xml is for CIM)')
 
-                # Pass the table-like data dictionary to objects in this circuit
-                if 'version' not in data_dictionary.keys():
+            parser = CIMImport()
+            self.circuit = parser.load_cim_file(self.file_name)
+            self.logger += parser.logger
 
-                    interpret_data_v1(self.circuit, data_dictionary)
+        else:
 
-                elif data_dictionary['version'] == 2.0:
-                    interprete_excel_v2(self.circuit, data_dictionary)
+            if os.path.exists(self.file_name):
+                name, file_extension = os.path.splitext(self.file_name)
+                # print(name, file_extension)
+                if file_extension.lower() in ['.xls', '.xlsx']:
 
-                elif data_dictionary['version'] == 3.0:
-                    interpret_excel_v3(self.circuit, data_dictionary)
+                    data_dictionary = load_from_xls(self.file_name)
 
-                elif data_dictionary['version'] == 4.0:
+                    # Pass the table-like data dictionary to objects in this circuit
+                    if 'version' not in data_dictionary.keys():
+
+                        interpret_data_v1(self.circuit, data_dictionary)
+
+                    elif data_dictionary['version'] == 2.0:
+                        interprete_excel_v2(self.circuit, data_dictionary)
+
+                    elif data_dictionary['version'] == 3.0:
+                        interpret_excel_v3(self.circuit, data_dictionary)
+
+                    elif data_dictionary['version'] == 4.0:
+                        if data_dictionary is not None:
+                            self.circuit = data_frames_to_circuit(data_dictionary)
+                        else:
+                            self.logger.add("Error while reading the file :(")
+                            return None
+
+                    else:
+                        self.logger.add('The file could not be processed')
+
+                elif file_extension.lower() == '.gridcal':
+
+                    # open file content
+                    data_dictionary = open_data_frames_from_zip(self.file_name,
+                                                                text_func=text_func,
+                                                                progress_func=progress_func)
+                    # interpret file content
                     if data_dictionary is not None:
                         self.circuit = data_frames_to_circuit(data_dictionary)
                     else:
                         self.logger.add("Error while reading the file :(")
                         return None
 
-                else:
-                    self.logger.add('The file could not be processed')
+                elif file_extension.lower() == '.sqlite':
 
-            elif file_extension.lower() == '.gridcal':
+                    # open file content
+                    data_dictionary = open_data_frames_from_sqlite(self.file_name,
+                                                                   text_func=text_func,
+                                                                   progress_func=progress_func)
+                    # interpret file content
+                    if data_dictionary is not None:
+                        self.circuit = data_frames_to_circuit(data_dictionary)
+                    else:
+                        self.logger.add("Error while reading the file :(")
+                        return None
 
-                # open file content
-                data_dictionary = open_data_frames_from_zip(self.file_name,
-                                                            text_func=text_func,
-                                                            progress_func=progress_func)
-                # interpret file content
-                if data_dictionary is not None:
-                    self.circuit = data_frames_to_circuit(data_dictionary)
-                else:
-                    self.logger.add("Error while reading the file :(")
-                    return None
+                elif file_extension.lower() == '.dgs':
+                    self.circuit = dgs_to_circuit(self.file_name)
 
-            elif file_extension.lower() == '.sqlite':
+                elif file_extension.lower() == '.m':
+                    self.circuit = parse_matpower_file(self.file_name)
 
-                # open file content
-                data_dictionary = open_data_frames_from_sqlite(self.file_name,
-                                                               text_func=text_func,
-                                                               progress_func=progress_func)
-                # interpret file content
-                if data_dictionary is not None:
-                    self.circuit = data_frames_to_circuit(data_dictionary)
-                else:
-                    self.logger.add("Error while reading the file :(")
-                    return None
+                elif file_extension.lower() == '.dpx':
+                    self.circuit, log = load_dpx(self.file_name)
+                    self.logger += log
 
-            elif file_extension.lower() == '.dgs':
-                self.circuit = dgs_to_circuit(self.file_name)
+                elif file_extension.lower() == '.json':
 
-            elif file_extension.lower() == '.m':
-                self.circuit = parse_matpower_file(self.file_name)
+                    # the json file can be the GridCal one or the iPA one...
+                    data = json.load(open(self.file_name))
 
-            elif file_extension.lower() == '.dpx':
-                self.circuit, log = load_dpx(self.file_name)
-                self.logger += log
-
-            elif file_extension.lower() == '.json':
-
-                # the json file can be the GridCal one or the iPA one...
-                data = json.load(open(self.file_name))
-
-                if isinstance(data, dict):
-                    if 'Red' in data.keys():
-                        self.circuit = load_iPA(self.file_name)
-                    elif sum([x in data.keys() for x in ['version', 'software', 'units', 'devices', 'profiles']]) == 5:
-                        # version 2 of the json parser
-                        version = int(float(data['version']))
-                        if version == 2:
-                            self.circuit = parse_json_data_v2(data, self.logger)
-                        elif version == 3:
-                            self.circuit = parse_json_data_v3(data, self.logger)
+                    if isinstance(data, dict):
+                        if 'Red' in data.keys():
+                            self.circuit = load_iPA(self.file_name)
+                        elif sum([x in data.keys() for x in ['version', 'software', 'units', 'devices', 'profiles']]) == 5:
+                            # version 2 of the json parser
+                            version = int(float(data['version']))
+                            if version == 2:
+                                self.circuit = parse_json_data_v2(data, self.logger)
+                            elif version == 3:
+                                self.circuit = parse_json_data_v3(data, self.logger)
+                            else:
+                                self.logger.append('Recognised as a gridCal compatible Json but the version is not supported')
                         else:
-                            self.logger.append('Recognised as a gridCal compatible Json but the version is not supported')
+                            self.logger.append('Unknown json format')
+
+                    elif type(data) == list():
+                        self.circuit = parse_json(self.file_name)
+
                     else:
                         self.logger.append('Unknown json format')
 
-                elif type(data) == list():
-                    self.circuit = parse_json(self.file_name)
+                elif file_extension.lower() == '.raw':
+                    parser = PSSeParser(self.file_name)
+                    self.circuit = parser.circuit
+                    self.logger += parser.logger
 
-                else:
-                    self.logger.append('Unknown json format')
+                elif file_extension.lower() == '.xml':
+                    parser = CIMImport()
+                    self.circuit = parser.load_cim_file(self.file_name)
+                    self.logger += parser.logger
 
-            elif file_extension.lower() == '.raw':
-                parser = PSSeParser(self.file_name)
-                self.circuit = parser.circuit
-                self.logger += parser.logger
-
-            elif file_extension.lower() == '.xml':
-                parser = CIMImport()
-                self.circuit = parser.load_cim_file(equipment_file=self.cim_eq_file_name,
-                                                    topology_file=self.cim_tp_file_name)
-                self.logger += parser.logger
-
-        else:
-            # warn('The file does not exist.')
-            self.logger.append(self.file_name + ' does not exist.')
+            else:
+                # warn('The file does not exist.')
+                self.logger.append(self.file_name + ' does not exist.')
 
         return self.circuit
 
@@ -294,9 +304,6 @@ class FileOpenThread(QThread):
 
         self.file_name = file_name
 
-        self.cim_tp_file_name = ""
-        self.cim_eq_file_name = ""
-
         self.valid = False
 
         self.logger = Logger()
@@ -317,9 +324,7 @@ class FileOpenThread(QThread):
 
         self.logger = Logger()
 
-        file_handler = FileOpen(file_name=self.file_name,
-                                cim_tp_file_name=self.cim_tp_file_name,
-                                cim_eq_file_name=self.cim_eq_file_name)
+        file_handler = FileOpen(file_name=self.file_name)
 
         self.circuit = file_handler.open(text_func=self.progress_text.emit,
                                          progress_func=self.progress_signal.emit)

@@ -238,8 +238,16 @@ class OpfDc(Opf):
         # declare problem
         problem = pl.LpProblem(name='DC_OPF')
 
+        # add generator bound restrictions
+        # pl.lpAddRestrictions2(problem, lhs=Pg_min, rhs=Pg, name='Pg_min', op='<=')
+        # pl.lpAddRestrictions2(problem, lhs=Pg, rhs=Pg_max, name='Pg_max', op='<=')
+        # pl.lpAddRestrictions2(problem, lhs=Pb_min, rhs=Pb, name='Pb_min', op='<=')
+        # pl.lpAddRestrictions2(problem, lhs=Pb, rhs=Pb_max, name='Pb_max', op='<=')
+
         # add the objective function
-        problem += add_objective_function(Pg, Pb, load_slack, branch_rating_slack1, branch_rating_slack2,
+        problem += add_objective_function(Pg, Pb, load_slack,
+                                          branch_rating_slack1,
+                                          branch_rating_slack2,
                                           cost_g, cost_b, cost_l, cost_br)
 
         # set the fixed generation values
