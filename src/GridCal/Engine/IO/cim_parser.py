@@ -1131,11 +1131,10 @@ class CIMImport:
 
         return found
 
-    def load_cim_file(self, cim_files, topology_file=None):
+    def load_cim_file(self, cim_files):
         """
         Load CIM file
-        :param cim_files: list of CIM files
-        :param topology_file: Secondary CIM file that may contain the terminals-connectivity node relations
+        :param cim_files: list of CIM files (.xml)
         """
 
         # declare GridCal circuit
@@ -1149,24 +1148,25 @@ class CIMImport:
         if isinstance(cim_files, list):
 
             # load topology files first
-            for f in cim_files:
-                name, file_extension = os.path.splitext(f)
-                if 'TP' in name:
-                    print('loading', f)
-                    cim.parse_file(f)
+            # for f in cim_files:
+            #     name, file_extension = os.path.splitext(f)
+            #     if 'TP' in name or 'BDTP' in name or 'BDEQ' in name:
+            #         print('loading', f)
+            #         cim.parse_file(f)
+            #
+            # # then load non topology files
+            # for f in cim_files:
+            #     name, file_extension = os.path.splitext(f)
+            #     if 'TP' not in name:
+            #         print('loading', f)
+            #         cim.parse_file(f)
 
-            # then load non topology files
             for f in cim_files:
                 name, file_extension = os.path.splitext(f)
-                if 'TP' not in name:
-                    print('loading', f)
-                    cim.parse_file(f)
+                print('loading', f)
+                cim.parse_file(f)
         else:
             cim.parse_file(cim_files)
-
-        # if additionally there is a topology file, parse it as well
-        if topology_file is not None:
-            cim.parse_file(topology_file)
 
         # set of used classes
         recognised = set()
@@ -1304,19 +1304,30 @@ class CIMImport:
 
                     pli = elm.properties['PerLengthImpedance']
 
+                    try:
+                        l = float(elm.properties['length'])
+                    except KeyError:
+                        l = 0.0
+
                     if pli in PLSI_dict:
                         r, x, r0, x0, g, b, g0, b0 = self.try_properties(PLSI_dict[pli].properties, prop_lst, prop_def)
                         template = PLSI_dict[pli].template
+
+                        r = r * l
+                        x = x * l
+                        g = g * l
+                        b = b * l
+
                     else:
                         self.logger.append(elm.id + ' refers to missing PerLengthImpedance')
                         continue
                 else:
                     r, x, r0, x0, g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)
 
-                try:
-                    l = float(elm.properties['length'])
-                except KeyError:
-                    l = 0.0
+                    try:
+                        l = float(elm.properties['length'])
+                    except KeyError:
+                        l = 0.0
 
                 try:
                     Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
@@ -1340,10 +1351,11 @@ class CIMImport:
                     Zbase = (Vnom * Vnom) / Sbase
                     Ybase = 1.0 / Zbase
 
-                    R = r * l / Zbase
-                    X = x * l / Zbase
-                    G = g * l / Ybase
-                    B = b * l / Ybase
+                    # at this point r, x, g, b are the complete values for all the line length
+                    R = r / Zbase
+                    X = x / Zbase
+                    G = g / Ybase
+                    B = b / Ybase
 
                     if len(elm.current_limit) > 0:
                         rate = float(elm.current_limit[0].properties['value']) * Vnom * sqrt(3)
@@ -1687,7 +1699,8 @@ if __name__ == '__main__':
     import os
     from GridCal.Engine import FileOpen, FileSave
 
-    folder = r'C:\Users\penversa\Documents\Grids\CGMES'
+    # folder = r'C:\Users\penversa\Documents\Grids\CGMES'
+    folder = '/home/santi/Documentos/Private_Grids/CGMES'
 
     cimfiles = ['20210203T1830Z_2D_REN_EQ_001.xml',
                 '20210203T1830Z_2D_REN_TP_001.xml',
@@ -1695,7 +1708,7 @@ if __name__ == '__main__':
     cimfiles = [os.path.join(folder, f) for f in cimfiles]
 
     boundary_profiles = [
-                         # '20200301T0000Z__ENTSOE_EQBD_001.xml',
+                         '20200301T0000Z__ENTSOE_EQBD_001.xml',
                          '20200301T0000Z__ENTSOE_TPBD_001.xml']
     boundary_profiles = [os.path.join(folder, f) for f in boundary_profiles]
 

@@ -1117,10 +1117,10 @@ class MainGUI(QMainWindow):
             options |= QFileDialog.DontUseNativeDialog
 
         filenames, type_selected = QtWidgets.QFileDialog.getOpenFileNames(parent=self,
-                                                                         caption='Open file',
-                                                                         dir=self.project_directory,
-                                                                         filter=files_types,
-                                                                         options=options)
+                                                                          caption='Open file',
+                                                                          dir=self.project_directory,
+                                                                          filter=files_types,
+                                                                          options=options)
 
         if len(filenames) > 0:
             self.open_file_now(filenames, post_function)
@@ -1141,51 +1141,21 @@ class MainGUI(QMainWindow):
         self.LOCK()
 
         # create thread
-        self.open_file_thread_object = FileOpenThread(file_name=self.file_name)
+        self.open_file_thread_object = FileOpenThread(file_name=filenames)
 
-        error = False
-        if len(filenames) == 2:  # parse two CIM files
-            if filenames[0].lower().endswith('.xml'):
-                msg = ''
-                if '_TP' in filenames[0]:
-                    self.open_file_thread_object.cim_tp_file_name = filenames[0]
+        # make connections
+        self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
+        self.open_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
+        self.open_file_thread_object.done_signal.connect(self.UNLOCK)
+        if post_function is None:
+            self.open_file_thread_object.done_signal.connect(self.post_open_file)
+        else:
+            self.open_file_thread_object.done_signal.connect(post_function)
 
-                    if '_EQ' in filenames[1]:
-                        self.open_file_thread_object.cim_eq_file_name = filenames[1]
-                    else:
-                        error = True
-                        msg += 'Equipment file missing (_TP...)'
+        # thread start
+        self.open_file_thread_object.start()
 
-                elif '_TP' in filenames[1]:
-
-                    self.open_file_thread_object.cim_tp_file_name = filenames[1]
-
-                    if '_EQ' in filenames[0]:
-                        self.open_file_thread_object.cim_eq_file_name = filenames[0]
-                    else:
-                        error = True
-                        msg += 'Equipment file missing (_TP...)'
-                else:
-                    error = True
-                    msg = 'Topology file missing (_TP...)'
-
-                if error:
-                    error_msg(msg, title="CIM import")
-
-        if not error:
-            # make connections
-            self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
-            self.open_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
-            self.open_file_thread_object.done_signal.connect(self.UNLOCK)
-            if post_function is None:
-                self.open_file_thread_object.done_signal.connect(self.post_open_file)
-            else:
-                self.open_file_thread_object.done_signal.connect(post_function)
-
-            # thread start
-            self.open_file_thread_object.start()
-
-            self.stuff_running_now.append('file_open')
+        self.stuff_running_now.append('file_open')
 
     def post_open_file(self):
         """
