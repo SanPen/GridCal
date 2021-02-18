@@ -23,34 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Implemented DroopVa (Pmode3) (bis)">
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/CIM2Matpower.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/PostProcess_mpc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/PreProcess_CIM_files.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/Topology_BusBranch.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/Topology_NodeBreaker.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/CIM2Matpower.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/LICENSE" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/Matlab_files/cim_read.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/Matlab_files/mpc_bb2nodal.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/Matlab_files/mpc_nodal2bb.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/PostProcess_mpc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/PreProcess_CIM_files.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/Topology_BusBranch.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/Topology_NodeBreaker.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/test/UCTE10_20090319_imported.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/test/UCTE10_20090319_imported.mat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/test/UCTE10_20090319_modified_EQ.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/test/UCTE10_20090319_modified_SV.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/test/UCTE10_20090319_modified_TP.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/test/test.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/PGD/all2.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/PGD/data_10PQ.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed CIM related process">
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/cim_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/file_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/file_handler.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -122,7 +97,7 @@
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.cim_parser">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -242,8 +217,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.cim_parser" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.cim_parser" />
         <item itemvalue="Python.all2" />
         <item itemvalue="Python.test" />
         <item itemvalue="Python.jacobian_based_acdc_power_flow" />
@@ -539,14 +514,7 @@
       <workItem from="1612967094152" duration="3240000" />
       <workItem from="1612990692898" duration="2488000" />
       <workItem from="1613070270280" duration="908000" />
-      <workItem from="1613665857916" duration="2215000" />
-    </task>
-    <task id="LOCAL-00046" summary="fixed bug in the new admittance formulation">
-      <created>1602937069053</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1602937069053</updated>
+      <workItem from="1613665857916" duration="4747000" />
     </task>
     <task id="LOCAL-00047" summary="Added reactive power control to the continuation power flow&#10;Renamed the VoltageCollapse class and similar classes to ContinuationPower flow">
       <created>1603222460861</created>
@@ -884,7 +852,14 @@
       <option name="project" value="LOCAL" />
       <updated>1611514508283</updated>
     </task>
-    <option name="localTasksCounter" value="95" />
+    <task id="LOCAL-00095" summary="Fixed CIM related process">
+      <created>1613668361431</created>
+      <option name="number" value="00095" />
+      <option name="presentableId" value="LOCAL-00095" />
+      <option name="project" value="LOCAL" />
+      <updated>1613668361431</updated>
+    </task>
+    <option name="localTasksCounter" value="96" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -918,7 +893,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Some fixes" />
     <MESSAGE value="Early working FUBM models with improved derivatives" />
     <MESSAGE value="Working NR with FUBM for the simple HVDC example" />
     <MESSAGE value="Early FUBM integration&#10;investigation needed about the configuration" />
@@ -943,7 +917,8 @@
     <MESSAGE value="changed gitignore" />
     <MESSAGE value="fixed CPF (Sbus was in MW and not in p.u.)" />
     <MESSAGE value="Replaced several Sbranch by Sf" />
-    <option name="LAST_COMMIT_MESSAGE" value="Replaced several Sbranch by Sf" />
+    <MESSAGE value="Fixed CIM related process" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed CIM related process" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1291,28 +1266,23 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/cim_parser.py</url>
-          <line>1157</line>
-          <option name="timeStamp" value="553" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/cim_parser.py</url>
-          <line>1154</line>
-          <option name="timeStamp" value="554" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/cim_parser.py</url>
-          <line>1171</line>
+          <line>1176</line>
           <option name="timeStamp" value="555" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/cim_parser.py</url>
-          <line>1174</line>
+          <line>1179</line>
           <option name="timeStamp" value="556" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/cim_parser.py</url>
-          <line>1365</line>
+          <line>1370</line>
           <option name="timeStamp" value="559" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/cim_parser.py</url>
+          <line>1165</line>
+          <option name="timeStamp" value="560" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1366,7 +1336,7 @@
     <SUITE FILE_PATH="coverage/GridCal$bus_viewer_dialogue.coverage" NAME="bus_viewer_dialogue Coverage Results" MODIFIED="1607344567552" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/BusViewer" />
     <SUITE FILE_PATH="coverage/GridCal$rpgm_algo.coverage" NAME="rpgm_algo Coverage Results" MODIFIED="1603645665438" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/ThirdParty/SyntheticNetworks" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_transformer_definition_py.coverage" NAME="Nosetests in test_transformer_definition.py Coverage Results" MODIFIED="1609501439117" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$cim_parser.coverage" NAME="cim_parser Coverage Results" MODIFIED="1613668150634" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
+    <SUITE FILE_PATH="coverage/GridCal$cim_parser.coverage" NAME="cim_parser Coverage Results" MODIFIED="1613669654417" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
     <SUITE FILE_PATH="coverage/GridCal$PTDF_research3.coverage" NAME="PTDF_research3 Coverage Results" MODIFIED="1601466744244" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$slicing_experiments.coverage" NAME="slicing_experiments Coverage Results" MODIFIED="1592246813513" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research" />
     <SUITE FILE_PATH="coverage/GridCal$map_test_simple.coverage" NAME="map_test_simple Coverage Results" MODIFIED="1598595026624" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/map" />
@@ -1382,7 +1352,7 @@
     <SUITE FILE_PATH="coverage/GridCal$PTDF_research2.coverage" NAME="PTDF_research2 Coverage Results" MODIFIED="1602138084850" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$ptdf_ts_driver.coverage" NAME="ptdf_ts_driver Coverage Results" MODIFIED="1600186726130" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$lightmap.coverage" NAME="lightmap Coverage Results" MODIFIED="1598594966764" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/map" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1613665947581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1613670733618" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_admittance_matrix_test.coverage" NAME="Nosetests for tests.admittance_matrix_test Coverage Results" MODIFIED="1602926351044" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_reverse_transformer_definition_py.coverage" NAME="Nosetests in test_reverse_transformer_definition.py Coverage Results" MODIFIED="1609501285838" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$analytic_ptdf_driver.coverage" NAME="analytic_ptdf_driver Coverage Results" MODIFIED="1600179811175" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PTDF" />

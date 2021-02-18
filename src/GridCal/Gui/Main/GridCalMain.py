@@ -1141,7 +1141,7 @@ class MainGUI(QMainWindow):
         self.LOCK()
 
         # create thread
-        self.open_file_thread_object = FileOpenThread(file_name=filenames)
+        self.open_file_thread_object = FileOpenThread(file_name=filenames if len(filenames) > 1 else filenames[0])
 
         # make connections
         self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)

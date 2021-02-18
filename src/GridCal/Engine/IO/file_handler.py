@@ -66,7 +66,7 @@ class FileOpen:
                     raise Exception('Loading multiple files that are not XML (xml is for CIM)')
 
             parser = CIMImport()
-            self.circuit = parser.load_cim_file(self.file_name)
+            self.circuit = parser.load_cim_file(self.file_name, text_func, progress_func)
             self.logger += parser.logger
 
         else:
@@ -318,9 +318,12 @@ class FileOpenThread(QThread):
         """
         self.circuit = MultiCircuit()
 
-        path, fname = os.path.split(self.file_name)
-
-        self.progress_text.emit('Loading ' + fname + '...')
+        if isinstance(self.file_name, list):
+            path, fname = os.path.split(self.file_name[0])
+            self.progress_text.emit('Loading ' + fname + '...')
+        else:
+            path, fname = os.path.split(self.file_name)
+            self.progress_text.emit('Loading ' + fname + '...')
 
         self.logger = Logger()
 

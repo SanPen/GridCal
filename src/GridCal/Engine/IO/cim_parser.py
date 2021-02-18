@@ -395,7 +395,7 @@ class CIMCircuit:
                         pass
                         # print('Not found ', prop, ref)
 
-    def parse_file(self, file_name, classes_=None):
+    def parse_file(self, file_name, classes_=None, progress_func=None):
         """
         Parse CIM file and add all the recognised objects
         :param file_name:  file name or path
@@ -1131,7 +1131,7 @@ class CIMImport:
 
         return found
 
-    def load_cim_file(self, cim_files):
+    def load_cim_file(self, cim_files, text_func=None, progress_func=None):
         """
         Load CIM file
         :param cim_files: list of CIM files (.xml)
@@ -1144,27 +1144,32 @@ class CIMImport:
         # declare CIM circuit to process the file(s)
         cim = CIMCircuit()
 
-        # parse main file
+        # parse files
         if isinstance(cim_files, list):
 
-            # load topology files first
-            # for f in cim_files:
-            #     name, file_extension = os.path.splitext(f)
-            #     if 'TP' in name or 'BDTP' in name or 'BDEQ' in name:
-            #         print('loading', f)
-            #         cim.parse_file(f)
-            #
-            # # then load non topology files
-            # for f in cim_files:
-            #     name, file_extension = os.path.splitext(f)
-            #     if 'TP' not in name:
-            #         print('loading', f)
-            #         cim.parse_file(f)
+            # sort the files
+            lst = list()
+            nn = len(cim_files)
+            for i in range(nn-1, -1, -1):
+                f = cim_files[i]
+                if 'TP' in f or 'TPDB' in f:
+                    lst.append(cim_files.pop(i))
 
-            for f in cim_files:
+            nn = len(cim_files)
+            for i in range(nn-1, -1, -1):
+                f = cim_files[i]
+                if 'EQBD' in f:
+                    lst.append(cim_files.pop(i))
+
+            lst2 = lst + cim_files
+
+            for f in lst2:
                 name, file_extension = os.path.splitext(f)
-                print('loading', f)
-                cim.parse_file(f)
+                if text_func is None:
+                    print('loading', f)
+                else:
+                    text_func('Loading ' + name)
+                cim.parse_file(f, progress_func=progress_func)
         else:
             cim.parse_file(cim_files)
 
@@ -1555,126 +1560,138 @@ class CIMImport:
         cim_loads = ['ConformLoad', 'EnergyConsumer', 'NonConformLoad']
         if self.any_in_dict(cim.elements_by_type, cim_loads):
             for elm in self.get_elements(cim.elements_by_type, cim_loads):
-                T1 = T_dict[elm.terminals[0].id]
-                B1 = self.terminal_node[T1][0]
 
-                # Active and reactive power values
+                if len(elm.terminals) > 0:
 
-                if elm.tpe == 'ConformLoad':
-                    if len(elm.load_response_characteristics) > 0:
-                        p = float(elm.load_response_characteristics[0].properties['pConstantPower'])
-                        q = float(elm.load_response_characteristics[0].properties['qConstantPower'])
-                        name = elm.load_response_characteristics[0].properties['name']
+                    T1 = T_dict[elm.terminals[0].id]
+                    B1 = self.terminal_node[T1][0]
+
+                    # Active and reactive power values
+
+                    if elm.tpe == 'ConformLoad':
+                        if len(elm.load_response_characteristics) > 0:
+                            p = float(elm.load_response_characteristics[0].properties['pConstantPower'])
+                            q = float(elm.load_response_characteristics[0].properties['qConstantPower'])
+                            name = elm.load_response_characteristics[0].properties['name']
+                        else:
+                            p, q = self.try_properties(elm.properties, ['pfixed', 'qfixed'])
+                            name = elm.properties['name']
+
+                    elif elm.tpe == 'NonConformLoad':
+                        if len(elm.load_response_characteristics) > 0:
+                            p = float(elm.load_response_characteristics[0].properties['pConstantPower'])
+                            q = float(elm.load_response_characteristics[0].properties['qConstantPower'])
+                            name = elm.load_response_characteristics[0].properties['name']
+                        else:
+                            p, q = self.try_properties(elm.properties, ['pfixed', 'qfixed'])
+                            name = elm.properties['name']
+
                     else:
-                        p, q = self.try_properties(elm.properties, ['pfixed', 'qfixed'])
-                        name = elm.properties['name']
+                        p = self.try_properties(elm.properties, ['pfixed'])[0]
+                        q = 0
+                        name = 'Some load'
 
-                elif elm.tpe == 'NonConformLoad':
-                    if len(elm.load_response_characteristics) > 0:
-                        p = float(elm.load_response_characteristics[0].properties['pConstantPower'])
-                        q = float(elm.load_response_characteristics[0].properties['qConstantPower'])
-                        name = elm.load_response_characteristics[0].properties['name']
-                    else:
-                        p, q = self.try_properties(elm.properties, ['pfixed', 'qfixed'])
-                        name = elm.properties['name']
+                    load = Load(idtag=rfid2uuid(elm.id),
+                                name=name,
+                                G=0, B=0,
+                                Ir=0, Ii=0,
+                                P=p, Q=q)
+                    circuit.add_load(B1, load)
 
+                    # add class to recognised objects
+                    recognised.add(elm.tpe)
                 else:
-                    p = self.try_properties(elm.properties, ['pfixed'])[0]
-                    q = 0
-                    name = 'Some load'
-
-                load = Load(idtag=rfid2uuid(elm.id),
-                            name=name,
-                            G=0, B=0,
-                            Ir=0, Ii=0,
-                            P=p, Q=q)
-                circuit.add_load(B1, load)
-
-                # add class to recognised objects
-                recognised.add(elm.tpe)
+                    self.logger.append(elm.id + ' has no terminals')
 
         # shunts
         if 'ShuntCompensator' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['ShuntCompensator']:
-                T1 = T_dict[elm.terminals[0].id]
-                B1 = self.terminal_node[T1][0]
 
-                prop_lst = ['gPerSection', 'bPerSection', 'g0PerSection', 'b0PerSection']
-                prop_def = [0.0, 0.0, 0.0, 0.0]
-                g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)
-                
-                name = elm.properties['name']
+                if len(elm.terminals) > 0:
+                    T1 = T_dict[elm.terminals[0].id]
+                    B1 = self.terminal_node[T1][0]
 
-                # self.add_shunt(Shunt(name, T1, g, b, g0, b0))
+                    prop_lst = ['gPerSection', 'bPerSection', 'g0PerSection', 'b0PerSection']
+                    prop_def = [0.0, 0.0, 0.0, 0.0]
+                    g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)
 
-                sh = Shunt(idtag=rfid2uuid(elm.id),
-                           name=name,
-                           G=g,
-                           B=b)
-                circuit.add_shunt(B1, sh)
+                    name = elm.properties['name']
 
-                # add class to recognised objects
-                recognised.add(elm.tpe)
+                    # self.add_shunt(Shunt(name, T1, g, b, g0, b0))
+
+                    sh = Shunt(idtag=rfid2uuid(elm.id),
+                               name=name,
+                               G=g,
+                               B=b)
+                    circuit.add_shunt(B1, sh)
+
+                    # add class to recognised objects
+                    recognised.add(elm.tpe)
+                else:
+                    self.logger.append(elm.id + ' has no terminals')
 
         # Generators
         if 'SynchronousMachine' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['SynchronousMachine']:
-                T1 = T_dict[elm.terminals[0].id]
-                B1 = self.terminal_node[T1][0]
+                if len(elm.terminals) > 0:
+                    T1 = T_dict[elm.terminals[0].id]
+                    B1 = self.terminal_node[T1][0]
 
-                # nominal voltage and set voltage
-                if len(elm.base_voltage) > 0:
+                    # nominal voltage and set voltage
+                    if len(elm.base_voltage) > 0:
+                        try:
+                            Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
+                        except KeyError:
+                            Vnom = 1.0
+                            self.logger.append(elm.id + ' has no nominalVoltage property.')
+                    else:
+                        try:
+                            Vnom = float(elm.properties['ratedU'])
+                        except KeyError:
+                            Vnom = 1.0
+                            self.logger.append(elm.id + ' has no ratedU property.')
+
                     try:
-                        Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
+                        Vset = float(elm.regulating_control[0].properties['targetValue'])
                     except KeyError:
-                        Vnom = 1.0
-                        self.logger.append(elm.id + ' has no nominalVoltage property.')
+                        Vset = Vnom
+                    except IndexError:
+                        Vset = Vnom
+
+                    if Vnom <= 0:
+                        # p.u. set voltage for the model
+                        vset = 1.0
+                    else:
+                        # p.u. set voltage for the model
+                        vset = Vset / Vnom
+
+                    # active power
+                    if len(elm.generating_unit) > 0:
+                        try:
+                            p = float(elm.generating_unit[0].properties['initialP'])
+                        except KeyError:
+                            self.logger.append('No active power initialP value for ' + elm.id)
+                            p = 0.0
+                    else:
+                        try:
+                            p = float(elm.properties['p'])
+                        except KeyError:
+                            p = 0.0
+                            self.logger.append('No active power p value for ' + elm.id)
+
+                    name = elm.properties['name']
+                    # self.add_generator(Generator(name, T1, p, vset))
+
+                    gen = Generator(idtag=rfid2uuid(elm.id),
+                                    name=name,
+                                    active_power=p,
+                                    voltage_module=vset)
+                    circuit.add_generator(B1, gen)
+
+                    # add class to recognised objects
+                    recognised.add(elm.tpe)
                 else:
-                    try:
-                        Vnom = float(elm.properties['ratedU'])
-                    except KeyError:
-                        Vnom = 1.0
-                        self.logger.append(elm.id + ' has no ratedU property.')
-
-                try:
-                    Vset = float(elm.regulating_control[0].properties['targetValue'])
-                except KeyError:
-                    Vset = Vnom
-                except IndexError:
-                    Vset = Vnom
-
-                if Vnom <= 0:
-                    # p.u. set voltage for the model
-                    vset = 1.0
-                else:
-                    # p.u. set voltage for the model
-                    vset = Vset / Vnom
-
-                # active power
-                if len(elm.generating_unit) > 0:
-                    try:
-                        p = float(elm.generating_unit[0].properties['initialP'])
-                    except KeyError:
-                        self.logger.append('No active power initialP value for ' + elm.id)
-                        p = 0.0
-                else:
-                    try:
-                        p = float(elm.properties['p'])
-                    except KeyError:
-                        p = 0.0
-                        self.logger.append('No active power p value for ' + elm.id)
-
-                name = elm.properties['name']
-                # self.add_generator(Generator(name, T1, p, vset))
-
-                gen = Generator(idtag=rfid2uuid(elm.id),
-                                name=name,
-                                active_power=p,
-                                voltage_module=vset)
-                circuit.add_generator(B1, gen)
-
-                # add class to recognised objects
-                recognised.add(elm.tpe)
+                    self.logger.append(elm.id + ' has no terminals')
 
         # Slacks (External networks)
         cim_slack = ['EquivalentNetwork', 'EquivalentInjection']
