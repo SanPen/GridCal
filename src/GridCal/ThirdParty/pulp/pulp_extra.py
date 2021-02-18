@@ -156,6 +156,10 @@ def lpMakeVars(name, shape, lower=None, upper=None):
                 for i in range(shape):
                     var[i] = LpVariable(name + '_' + str(i), lowBound=lower[i], upBound=None)
 
+        elif lower is None and upper is None:
+            for i in range(shape):
+                var[i] = LpVariable(name + '_' + str(i), lowBound=None, upBound=None)
+
         else:
 
             if type(lower) in (float, int) and type(upper) in (float, int):
@@ -173,6 +177,7 @@ def lpMakeVars(name, shape, lower=None, upper=None):
             elif type(lower) not in (float, int) and type(upper) not in (float, int):
                 for i in range(shape):
                     var[i] = LpVariable(name + '_' + str(i), lowBound=lower[i], upBound=upper[i])
+
 
             else:
                 raise Exception('Cannot handle the indices...')

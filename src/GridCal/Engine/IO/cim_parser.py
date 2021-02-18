@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-
+import chardet
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
@@ -29,6 +29,10 @@ def index_find(string, start, end):
     :return: string between start and end
     """
     return string.partition(start)[2].partition(end)[0]
+
+
+def rfid2uuid(val):
+    return val.replace('-', '').replace('_', '')
 
 
 class GeneralContainer:
@@ -304,79 +308,92 @@ class CIMCircuit:
         :return:
         """
 
-        # for every element
-        for element in self.elements:
+        ref_elements = dict()
+        for element_type_name, elements in self.elements_by_type.items():
+            for element in elements:
+                ref_elements[rfid2uuid(element.id)] = element
 
-            # for each property in the element
-            # for prop in element.properties.keys():
-            for prop, ref_code in element.properties.items():
+        # find cross references
+        for element_type_name, elements in self.elements_by_type.items():
 
-                # if the value of the property is in the object ID references...
-                if ref_code in self.elm_dict.keys():
+            # for every element
+            for element in elements:
 
-                    # replace the reference by the corresponding object properties
-                    obj_idx = self.elm_dict[ref_code]
-                    ref_obj = self.elements[obj_idx]
-                    # element.properties[prop] = ref_obj
+                # for each property in the element
+                # for prop in element.properties.keys():
+                for prop, ref_code in element.properties.items():
 
-                    # add the element type to the recognised types because it is in the referenced dictionary
-                    recognised.add(element.tpe)
+                    ref_code2 = rfid2uuid(ref_code)
 
-                    # A terminal points at an equipment with the property ConductingEquipment
-                    # A terminal points at a bus (topological node) with the property TopologicalNode
-                    if prop in ['ConductingEquipment', 'TopologicalNode', 'ConnectivityNode']:
-                        ref_obj.terminals.append(element)
-                        recognised.add(prop)
+                    # if the value of the property is in the object ID references...
+                    if ref_code2 in ref_elements.keys():
 
-                    if prop in ['BaseVoltage', 'VoltageLevel']:
-                        element.base_voltage.append(ref_obj)
-                        recognised.add(prop)
+                        # replace the reference by the corresponding object properties
+                        # obj_idx = self.elm_dict[ref_code]
+                        # ref_obj = self.elements[obj_idx]
 
-                    if prop in ['EquipmentContainer']:
-                        element.containers.append(ref_obj)
-                        recognised.add(ref_obj.tpe)
+                        ref_obj = ref_elements[ref_code2]
 
-                    # the winding points at the transformer with the property PowerTransformer
-                    if ref_obj.tpe == 'PowerTransformer':
-                        if prop in ['PowerTransformer']:
-                            ref_obj.windings.append(element)
+                        # element.properties[prop] = ref_obj
+
+                        # add the element type to the recognised types because it is in the referenced dictionary
+                        recognised.add(element.tpe)
+
+                        # A terminal points at an equipment with the property ConductingEquipment
+                        # A terminal points at a bus (topological node) with the property TopologicalNode
+                        if prop in ['ConductingEquipment', 'TopologicalNode', 'ConnectivityNode']:
+                            ref_obj.terminals.append(element)
                             recognised.add(prop)
-                        recognised.add(ref_obj.tpe)
 
-                    # The tap changer points at the winding with the property TransformerWinding
-                    if ref_obj.tpe in ['TransformerWinding', 'PowerTransformerEnd']:
-                        if prop in ['TransformerWinding', 'PowerTransformerEnd']:
-                            ref_obj.tap_changers.append(element)
-                            recognised.add(prop)
-                        recognised.add(ref_obj.tpe)
-
-                    # the synchronous generator references 3 types of objects
-                    if element.tpe == 'SynchronousMachine':
-                        if prop in ['BaseVoltage']:
+                        if prop in ['BaseVoltage', 'VoltageLevel']:
                             element.base_voltage.append(ref_obj)
                             recognised.add(prop)
-                        if prop in ['RegulatingControl']:
-                            element.regulating_control.append(ref_obj)
-                            recognised.add(prop)
-                        if prop in ['GeneratingUnit']:
-                            element.generating_unit.append(ref_obj)
-                            recognised.add(prop)
-                        recognised.add(element.tpe)
 
-                    # a Conform load points at LoadResponseCharacteristic with the property LoadResponse
-                    if element.tpe == 'ConformLoad':
-                        if prop in ['LoadResponse']:
-                            element.load_response_characteristics.append(ref_obj)
-                            recognised.add(prop)
-                        recognised.add(element.tpe)
+                        if prop in ['EquipmentContainer']:
+                            element.containers.append(ref_obj)
+                            recognised.add(ref_obj.tpe)
 
-                    if element.tpe == 'ACLineSegment':
-                        if prop in ['CurrentLimit']:
-                            element.current_limit.append(ref_obj)
+                        # the winding points at the transformer with the property PowerTransformer
+                        if ref_obj.tpe == 'PowerTransformer':
+                            if prop in ['PowerTransformer']:
+                                ref_obj.windings.append(element)
+                                recognised.add(prop)
+                            recognised.add(ref_obj.tpe)
 
-                else:
-                    pass
-                    # print('Not found ', prop, ref)
+                        # The tap changer points at the winding with the property TransformerWinding
+                        if ref_obj.tpe in ['TransformerWinding', 'PowerTransformerEnd']:
+                            if prop in ['TransformerWinding', 'PowerTransformerEnd']:
+                                ref_obj.tap_changers.append(element)
+                                recognised.add(prop)
+                            recognised.add(ref_obj.tpe)
+
+                        # the synchronous generator references 3 types of objects
+                        if element.tpe == 'SynchronousMachine':
+                            if prop in ['BaseVoltage']:
+                                element.base_voltage.append(ref_obj)
+                                recognised.add(prop)
+                            if prop in ['RegulatingControl']:
+                                element.regulating_control.append(ref_obj)
+                                recognised.add(prop)
+                            if prop in ['GeneratingUnit']:
+                                element.generating_unit.append(ref_obj)
+                                recognised.add(prop)
+                            recognised.add(element.tpe)
+
+                        # a Conform load points at LoadResponseCharacteristic with the property LoadResponse
+                        if element.tpe == 'ConformLoad':
+                            if prop in ['LoadResponse']:
+                                element.load_response_characteristics.append(ref_obj)
+                                recognised.add(prop)
+                            recognised.add(element.tpe)
+
+                        if element.tpe == 'ACLineSegment':
+                            if prop in ['CurrentLimit']:
+                                element.current_limit.append(ref_obj)
+
+                    else:
+                        pass
+                        # print('Not found ', prop, ref)
 
     def parse_file(self, file_name, classes_=None):
         """
@@ -392,8 +409,11 @@ class CIMCircuit:
 
         disabled = False
 
+        # make a guess of the file encoding
+        detection = chardet.detect(open(file_name, "rb").read())
+
         # Read text file line by line
-        with open(file_name, 'r') as file_pointer:
+        with open(file_name, 'r', encoding=detection['encoding']) as file_pointer:
 
             for line in file_pointer:
 
@@ -444,7 +464,7 @@ class CIMCircuit:
                                 if element.id in self.elm_dict.keys():
                                     idx = self.elm_dict[element.id]
                                     self.elements[idx].merge(element)
-                                    # print('Merging!')
+
                                 else:
                                     self.elm_dict[element.id] = len(self.elements)
                                     self.elements.append(element)
@@ -453,7 +473,6 @@ class CIMCircuit:
                                     self.elements_by_type[tpe] = list()
 
                                 self.elements_by_type[tpe].append(element)
-
                                 recording = False
 
                     else:
@@ -1073,9 +1092,9 @@ class CIMImport:
 
                 try:
                     val = float(val)
-                except:
+                except TypeError:
                     pass  # val is a string
-            except:
+            except KeyError:
                 # property not found
                 if defaults is None:
                     print(prop, 'not found')
@@ -1094,7 +1113,7 @@ class CIMImport:
             try:
                 lst = dict[k]
                 elm += lst
-            except:
+            except KeyError:
                 pass
 
         return elm
@@ -1107,17 +1126,18 @@ class CIMImport:
             try:
                 lst = dict[k]
                 found = True
-            except:
+            except KeyError:
                 pass
 
         return found
 
-    def load_cim_file(self, equipment_file, topology_file=None):
+    def load_cim_file(self, cim_files, topology_file=None):
         """
         Load CIM file
-        :param equipment_file: Main CIM file
+        :param cim_files: list of CIM files
         :param topology_file: Secondary CIM file that may contain the terminals-connectivity node relations
         """
+
         # declare GridCal circuit
         circuit = MultiCircuit()
         EPS = 1e-16
@@ -1126,7 +1146,23 @@ class CIMImport:
         cim = CIMCircuit()
 
         # parse main file
-        cim.parse_file(equipment_file)
+        if isinstance(cim_files, list):
+
+            # load topology files first
+            for f in cim_files:
+                name, file_extension = os.path.splitext(f)
+                if 'TP' in name:
+                    print('loading', f)
+                    cim.parse_file(f)
+
+            # then load non topology files
+            for f in cim_files:
+                name, file_extension = os.path.splitext(f)
+                if 'TP' not in name:
+                    print('loading', f)
+                    cim.parse_file(f)
+        else:
+            cim.parse_file(cim_files)
 
         # if additionally there is a topology file, parse it as well
         if topology_file is not None:
@@ -1155,11 +1191,10 @@ class CIMImport:
         if 'Terminal' in cim.elements_by_type.keys():
 
             for elm in cim.elements_by_type['Terminal']:
-                if 'name' in elm.properties:
-                    name = elm.properties['name']
-                else:
-                    name = elm.id
-
+                # if 'name' in elm.properties:
+                #     name = elm.properties['name']
+                # else:
+                #     name = elm.id
                 # T = Bus(name=name)
                 T_dict[elm.id] = elm
                 # circuit.add_bus(T)
@@ -1175,14 +1210,19 @@ class CIMImport:
         cim_nodes = ['TopologicalNode', 'ConnectivityNode']
         if self.any_in_dict(cim.elements_by_type, cim_nodes):
             for elm in self.get_elements(cim.elements_by_type, cim_nodes):
-                name = elm.properties['name']
+                try:
+                    name = elm.properties['name']
+                except KeyError:
+                    name = ''
 
                 if len(elm.base_voltage) > 0:
                     Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
                 else:
                     Vnom = 0
 
-                CN = Bus(name=name, vnom=Vnom)
+                CN = Bus(idtag=rfid2uuid(elm.id),
+                         name=name,
+                         vnom=Vnom)
                 CN_dict[elm.id] = CN
                 circuit.add_bus(CN)
 
@@ -1200,8 +1240,10 @@ class CIMImport:
 
                 # get the terminals associated to the connectivity node and register the associations
                 for term in elm.terminals:
-                    T = T_dict[term.id]
-                    self.add_node_terminal_relation(CN, T)
+                    try:
+                        self.add_node_terminal_relation(CN, T_dict[term.id])
+                    except KeyError:
+                        self.logger.append('Terminal id {0} not found'.format(term.id))
 
                 # add class to recognised objects
                 recognised.add(elm.tpe)
@@ -1241,6 +1283,7 @@ class CIMImport:
         prop_lst = ['r', 'x', 'r0', 'x0', 'gch', 'bch', 'g0ch', 'b0ch']
         if 'ACLineSegment' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['ACLineSegment']:
+
                 if len(elm.terminals) == 2:
                         T1 = T_dict[elm.terminals[0].id]
                         T2 = T_dict[elm.terminals[1].id]
@@ -1249,13 +1292,18 @@ class CIMImport:
                 else:
                     self.logger.append(elm.id + ' has missing terminals')
                     continue
-                name = elm.properties['name']
-                
+
+                try:
+                    name = elm.properties['name']
+                except KeyError:
+                    name = ''
+
                 prop_def = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
                 template = BranchTemplate()
-                if 'PerLengthImpedance' in elm.properties and 'length' in elm.properties:
+                if 'PerLengthImpedance' in elm.properties:
+
                     pli = elm.properties['PerLengthImpedance']
-                    l =  float(elm.properties['length'])
+
                     if pli in PLSI_dict:
                         r, x, r0, x0, g, b, g0, b0 = self.try_properties(PLSI_dict[pli].properties, prop_lst, prop_def)
                         template = PLSI_dict[pli].template
@@ -1264,11 +1312,20 @@ class CIMImport:
                         continue
                 else:
                     r, x, r0, x0, g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)
+
+                try:
                     l = float(elm.properties['length'])
+                except KeyError:
+                    l = 0.0
+
                 try:
                     Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
-                except:
+                except KeyError:
                     Vnom = 1.0
+                    self.logger.append(elm.id + ' has no nominalVoltage property')
+                except IndexError:
+                    Vnom = 1.0
+                    self.logger.append(elm.id + ' has no BaseVoltage')
 
                 if Vnom <= 0:
                     self.logger.append(elm.id + ' has a zero base voltage. This causes a failure in the file loading')
@@ -1294,23 +1351,20 @@ class CIMImport:
                         rate = 0
 
                 # create AcLineSegment (Line)
-                line = Branch(bus_from=B1,
-                              bus_to=B2,
-                              name=name,
-                              r=R,
-                              x=X,
-                              g=G,
-                              b=B,
-                              rate=rate,
-                              tap=1.0,
-                              shift_angle=0.0,
-                              active=True,
-                              mttf=0,
-                              mttr=0,
-                              branch_type=BranchType.Line,
-                              template=template)
+                line = Line(idtag=rfid2uuid(elm.id),
+                            bus_from=B1,
+                            bus_to=B2,
+                            name=name,
+                            r=R,
+                            x=X,
+                            b=B,
+                            rate=rate,
+                            active=True,
+                            mttf=0,
+                            mttr=0,
+                            template=template)
 
-                circuit.add_branch(line)
+                circuit.add_line(line)
 
                 # add class to recognised objects
                 recognised.add(elm.tpe)
@@ -1352,7 +1406,7 @@ class CIMImport:
                         try:
                             r = float(elm.windings[i].properties['r'])
                             x = float(elm.windings[i].properties['x'])
-                        except Exception as e:
+                        except KeyError:
                             r = 0
                             x = 0
                             self.logger.append('No impedance components in ' + elm.windings[i].id)
@@ -1360,7 +1414,7 @@ class CIMImport:
                         try:
                             g = float(elm.windings[i].properties['g'])
                             b = float(elm.windings[i].properties['b'])
-                        except Exception as e:
+                        except KeyError:
                             g = 0
                             b = 0
                             self.logger.append('No shunt components in ' + elm.windings[i].id)
@@ -1370,7 +1424,7 @@ class CIMImport:
                             x0 = float(elm.windings[i].properties['x0'])
                             g0 = float(elm.windings[i].properties['g0'])
                             b0 = float(elm.windings[i].properties['b0'])
-                        except Exception as e:
+                        except KeyError:
                             r0 = 0
                             x0 = 0
                             g0 = 0
@@ -1379,7 +1433,7 @@ class CIMImport:
 
                         try:
                             S = float(elm.windings[i].properties['ratedS'])
-                        except Exception as e:
+                        except KeyError:
                             self.logger.append('No ratedS ' + elm.windings[i].id)
                             S = 1.0
                             
@@ -1387,11 +1441,11 @@ class CIMImport:
 
                         try:
                             V = float(elm.windings[i].properties['ratedU'])
-                        except Exception as e:
+                        except KeyError:
                             self.logger.append('No ratedU in ' + elm.windings[i].id + ' this is mandatory')
                             try:
                                 V = float(elm.windings[i].base_voltage[0].properties['nominalVoltage'])
-                            except Exception as e2:
+                            except KeyError:
                                 self.logger.append('No voltage in ' + elm.windings[i].id + ', this causes an error')
                                 V = 1.0
 
@@ -1419,20 +1473,20 @@ class CIMImport:
                     # sum the taps
                     tap_m = taps[0] * taps[1]
 
-                    line = Branch(bus_from=B1,
-                                  bus_to=B2,
-                                  name=name,
-                                  r=R,
-                                  x=X,
-                                  g=G,
-                                  b=B,
-                                  rate=RATE,
-                                  tap=tap_m,
-                                  shift_angle=0,
-                                  active=True,
-                                  mttf=0,
-                                  mttr=0,
-                                  branch_type=BranchType.Transformer)
+                    line = Transformer2W(idtag=rfid2uuid(elm.id),
+                                         bus_from=B1,
+                                         bus_to=B2,
+                                         name=name,
+                                         r=R,
+                                         x=X,
+                                         g=G,
+                                         b=B,
+                                         rate=RATE,
+                                         tap=tap_m,
+                                         shift_angle=0,
+                                         active=True,
+                                         mttf=0,
+                                         mttr=0)
 
                     circuit.add_branch(line)
                 else:
@@ -1464,7 +1518,8 @@ class CIMImport:
                 else:
                     state = True
 
-                line = Branch(bus_from=B1,
+                line = Branch(idtag=rfid2uuid(elm.id),
+                              bus_from=B1,
                               bus_to=B2,
                               name=name,
                               r=EPS,
@@ -1485,7 +1540,7 @@ class CIMImport:
                 recognised.add(elm.tpe)
 
         # Loads
-        cim_loads = ['ConformLoad', 'EnergyConsumer']
+        cim_loads = ['ConformLoad', 'EnergyConsumer', 'NonConformLoad']
         if self.any_in_dict(cim.elements_by_type, cim_loads):
             for elm in self.get_elements(cim.elements_by_type, cim_loads):
                 T1 = T_dict[elm.terminals[0].id]
@@ -1502,12 +1557,22 @@ class CIMImport:
                         p, q = self.try_properties(elm.properties, ['pfixed', 'qfixed'])
                         name = elm.properties['name']
 
+                elif elm.tpe == 'NonConformLoad':
+                    if len(elm.load_response_characteristics) > 0:
+                        p = float(elm.load_response_characteristics[0].properties['pConstantPower'])
+                        q = float(elm.load_response_characteristics[0].properties['qConstantPower'])
+                        name = elm.load_response_characteristics[0].properties['name']
+                    else:
+                        p, q = self.try_properties(elm.properties, ['pfixed', 'qfixed'])
+                        name = elm.properties['name']
+
                 else:
                     p = self.try_properties(elm.properties, ['pfixed'])[0]
                     q = 0
                     name = 'Some load'
 
-                load = Load(name=name,
+                load = Load(idtag=rfid2uuid(elm.id),
+                            name=name,
                             G=0, B=0,
                             Ir=0, Ii=0,
                             P=p, Q=q)
@@ -1530,7 +1595,10 @@ class CIMImport:
 
                 # self.add_shunt(Shunt(name, T1, g, b, g0, b0))
 
-                sh = Shunt(name=name, G=g, B=b)
+                sh = Shunt(idtag=rfid2uuid(elm.id),
+                           name=name,
+                           G=g,
+                           B=b)
                 circuit.add_shunt(B1, sh)
 
                 # add class to recognised objects
@@ -1544,41 +1612,51 @@ class CIMImport:
 
                 # nominal voltage and set voltage
                 if len(elm.base_voltage) > 0:
-                    Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
+                    try:
+                        Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
+                    except KeyError:
+                        Vnom = 1.0
+                        self.logger.append(elm.id + ' has no nominalVoltage property.')
                 else:
-                    Vnom = float(elm.properties['ratedU'])
+                    try:
+                        Vnom = float(elm.properties['ratedU'])
+                    except KeyError:
+                        Vnom = 1.0
+                        self.logger.append(elm.id + ' has no ratedU property.')
 
-                if len(elm.regulating_control) > 0:
+                try:
                     Vset = float(elm.regulating_control[0].properties['targetValue'])
-                else:
+                except KeyError:
+                    Vset = Vnom
+                except IndexError:
                     Vset = Vnom
 
                 if Vnom <= 0:
                     # p.u. set voltage for the model
                     vset = 1.0
-                    #self.logger.append(elm.id + ': the nominal voltage is zero.')
                 else:
                     # p.u. set voltage for the model
                     vset = Vset / Vnom
 
                 # active power
                 if len(elm.generating_unit) > 0:
-                    if 'initialP' in elm.generating_unit[0].properties.keys():
+                    try:
                         p = float(elm.generating_unit[0].properties['initialP'])
-                    else:
+                    except KeyError:
                         self.logger.append('No active power initialP value for ' + elm.id)
                         p = 0.0
                 else:
-                    if 'p' in elm.properties.keys():
-                        p = float(elm.properties('p'))
-                    else:
+                    try:
+                        p = float(elm.properties['p'])
+                    except KeyError:
                         p = 0.0
                         self.logger.append('No active power p value for ' + elm.id)
 
                 name = elm.properties['name']
                 # self.add_generator(Generator(name, T1, p, vset))
 
-                gen = Generator(name=name,
+                gen = Generator(idtag=rfid2uuid(elm.id),
+                                name=name,
                                 active_power=p,
                                 voltage_module=vset)
                 circuit.add_generator(B1, gen)
@@ -1606,32 +1684,26 @@ class CIMImport:
 
 
 if __name__ == '__main__':
+    import os
+    from GridCal.Engine import FileOpen, FileSave
 
-    grid = MultiCircuit()
-    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_300BUS.xls'
-    # fname = 'Pegasus 89 Bus.xlsx'
-    # fname = 'Illinois200Bus.xlsx'
-    # fname = 'IEEE_30_new.xlsx'
-    # fname = 'lynn5buspq.xlsx'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_30_new.xlsx'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/UnderDevelopment/GridCal/IEEE30_new.xlsx'
-    # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE 30 Bus with storage.xlsx'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE_14.xlsx'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.xlsx'
-    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_14.xls'
-    # fname = '/Data/Doctorado/spv_phd/GridCal_project/GridCal/IEEE_39Bus(Islands).xls'
-    # fname = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\IEEE_30_new.xlsx'
-    # fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\Australia.xml'
-    # fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\IEEE 57.xml'
-    # fname = 'D:\GitHub\GridCal\Grids_and_profiles\grids\Test_IPA_5_bus_feeder.xlsx'
-    fname = 'C:\\Users\\spenate\\Desktop\\pruebaExportMAPANGA18Test.xml'
+    folder = r'C:\Users\penversa\Documents\Grids\CGMES'
+
+    cimfiles = ['20210203T1830Z_2D_REN_EQ_001.xml',
+                '20210203T1830Z_2D_REN_TP_001.xml',
+                '20210203T1830Z_2D_REN_SV_001.xml']
+    cimfiles = [os.path.join(folder, f) for f in cimfiles]
+
+    boundary_profiles = [
+                         # '20200301T0000Z__ENTSOE_EQBD_001.xml',
+                         '20200301T0000Z__ENTSOE_TPBD_001.xml']
+    boundary_profiles = [os.path.join(folder, f) for f in boundary_profiles]
+
+    fnames = cimfiles + boundary_profiles
+
     print('Reading...')
-    logger = grid.load_file(fname)
+    file_open = FileOpen(fnames)
+    grid = file_open.open()
 
-    for entry in logger:
-        print(entry)
-
-    # grid.save_cim('D:\GitHub\GridCal\Grids_and_profiles\grids\Test_IPA_5_bus_feeder.xml')
-
-    # grid.save_cim('/home/santi/Documentos/GitHub/GridCal/UnderDevelopment/GridCal/IEEE_14_GridCal.xml')
-    # grid.save_cim('C:\\Users\\spenate\\Documents\\PROYECTOS\\SCADA_microgrid\\CIM\\newton\\IEEE_30_Bus.xml')
+    file_save = FileSave(grid, os.path.join(folder, '20210203T1830Z_2D_REN.gridcal'))
+    file_save.save()
