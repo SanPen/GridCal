@@ -640,6 +640,9 @@ class TimeSeries(QThread):
         # For every island, run the time series
         for island_index, calculation_input in enumerate(time_islands):
 
+            # fill in Vbus, Sbus Ibus
+            # calculation_input.consolidate()
+
             # Are we dispatching storage? if so, generate a dictionary of battery -> bus index
             # to be able to set the batteries values into the vector S
             batteries = list()
@@ -680,8 +683,9 @@ class TimeSeries(QThread):
                 # set the power values
                 # if the storage dispatch option is active, the batteries power is not included
                 # therefore, it shall be included after processing
+                # TODO: for some reason .Vbus is not properly called, and the parent Vbus property is called instead
                 V = calculation_input.Vbus[:, it]
-                Ysh = calculation_input.Yshunt_from_devices[:, it]
+                # Ysh = calculation_input.Yshunt_from_devices[:, it]
                 I = calculation_input.Ibus[:, it]
                 S = calculation_input.Sbus[:, it]
                 branch_rates = calculation_input.Rates[:, it]

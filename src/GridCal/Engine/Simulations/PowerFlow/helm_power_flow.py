@@ -19,12 +19,14 @@
 import pandas as pd
 import numpy as np
 import numba as nb
+from numba.np.linalg import solve_impl
 import time
 from warnings import warn
 from scipy.sparse import csc_matrix, coo_matrix
 from scipy.sparse import hstack as hs, vstack as vs
 from scipy.sparse.linalg import spsolve, factorized
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+
 
 def epsilon(Sn, n, E):
     """
@@ -73,7 +75,7 @@ def epsilon(Sn, n, E):
     return estim, E
 
 
-@nb.njit("(c16[:])(i8, c16[:, :], f8)")
+# @nb.njit("(c16[:])(i8, c16[:, :], f8)")
 def pade4all(order, coeff_mat, s=1.0):
     """
     Computes the "order" Padè approximant of the coefficients at the approximation point s
@@ -88,7 +90,8 @@ def pade4all(order, coeff_mat, s=1.0):
     """
     nbus = coeff_mat.shape[1]
 
-    complex_type = nb.complex128
+    # complex_type = nb.complex128
+    complex_type = np.complex128
 
     voltages = np.zeros(nbus, dtype=complex_type)
 

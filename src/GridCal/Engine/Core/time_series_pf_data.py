@@ -58,6 +58,11 @@ class TimeCircuit(SnapshotData):
 
         self.time_array = time_array
 
+    def consolidate(self):
+        self.Vbus_ = self.bus_data.Vbus.copy()
+        self.Sbus_ = self.get_injections(normalize=True)
+        self.Ibus_ = np.zeros((len(self.bus_data), self.ntime), dtype=complex)
+
     @property
     def Vbus(self):
 
@@ -111,10 +116,78 @@ class TimeCircuit(SnapshotData):
     def hvdc_losses(self):
         return self.hvdc_data.get_losses()
 
+    def get_island(self, bus_idx, time_idx=None) -> "TimeCircuit":
+        """
+        Get the island corresponding to the given buses
+        :param bus_idx: array of bus indices
+        :param time_idx: array of time indices (or None for all time indices)
+        :return: SnapshotData
+        """
+
+        # find the indices of the devices of the island
+        line_idx = self.line_data.get_island(bus_idx)
+        dc_line_idx = self.dc_line_data.get_island(bus_idx)
+        tr_idx = self.transformer_data.get_island(bus_idx)
+        vsc_idx = self.vsc_data.get_island(bus_idx)
+        upfc_idx = self.upfc_data.get_island(bus_idx)
+        hvdc_idx = self.hvdc_data.get_island(bus_idx)
+        br_idx = self.branch_data.get_island(bus_idx)
+
+        load_idx = self.load_data.get_island(bus_idx)
+        stagen_idx = self.static_generator_data.get_island(bus_idx)
+        gen_idx = self.generator_data.get_island(bus_idx)
+        batt_idx = self.battery_data.get_island(bus_idx)
+        shunt_idx = self.shunt_data.get_island(bus_idx)
+
+        nc = TimeCircuit(nbus=len(bus_idx),
+                         nline=len(line_idx),
+                         ndcline=len(dc_line_idx),
+                         ntr=len(tr_idx),
+                         nvsc=len(vsc_idx),
+                         nupfc=len(upfc_idx),
+                         nhvdc=len(hvdc_idx),
+                         nload=len(load_idx),
+                         ngen=len(gen_idx),
+                         nbatt=len(batt_idx),
+                         nshunt=len(shunt_idx),
+                         nstagen=len(stagen_idx),
+                         sbase=self.Sbase,
+                         time_array=self.time_array[time_idx])
+
+        # set the original indices
+        nc.original_bus_idx = bus_idx
+        nc.original_branch_idx = br_idx
+        nc.original_line_idx = line_idx
+        nc.original_tr_idx = tr_idx
+        nc.original_dc_line_idx = dc_line_idx
+        nc.original_vsc_idx = vsc_idx
+        nc.original_upfc_idx = upfc_idx
+        nc.original_hvdc_idx = hvdc_idx
+        nc.original_gen_idx = gen_idx
+        nc.original_bat_idx = batt_idx
+        nc.original_load_idx = load_idx
+        nc.original_stagen_idx = stagen_idx
+        nc.original_shunt_idx = shunt_idx
+
+        # slice data
+        nc.bus_data = self.bus_data.slice(bus_idx, time_idx)
+        nc.branch_data = self.branch_data.slice(br_idx, bus_idx, time_idx)
+        nc.line_data = self.line_data.slice(line_idx, bus_idx, time_idx)
+        nc.transformer_data = self.transformer_data.slice(tr_idx, bus_idx, time_idx)
+        nc.hvdc_data = self.hvdc_data.slice(hvdc_idx, bus_idx, time_idx)
+        nc.vsc_data = self.vsc_data.slice(vsc_idx, bus_idx, time_idx)
+        nc.dc_line_data = self.dc_line_data.slice(dc_line_idx, bus_idx, time_idx)
+        nc.load_data = self.load_data.slice(load_idx, bus_idx, time_idx)
+        nc.static_generator_data = self.static_generator_data.slice(stagen_idx, bus_idx, time_idx)
+        nc.battery_data = self.battery_data.slice(batt_idx, bus_idx, time_idx)
+        nc.generator_data = self.generator_data.slice(gen_idx, bus_idx, time_idx)
+        nc.shunt_data = self.shunt_data.slice(shunt_idx, bus_idx, time_idx)
+
+        return nc
+
     def split_into_islands(self, ignore_single_node_islands=False) -> List["TimeCircuit"]:
         """
         Split circuit into islands
-        :param numeric_circuit: NumericCircuit instance
         :param ignore_single_node_islands: ignore islands composed of only one bus
         :return: List[NumericCircuit]
         """

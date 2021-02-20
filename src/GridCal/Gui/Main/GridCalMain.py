@@ -397,6 +397,10 @@ class MainGUI(QMainWindow):
 
         self.ui.actiongrid_Generator.triggered.connect(self.grid_generator)
 
+        self.ui.actionImportPlexosNodeLoad.triggered.connect(self.import_plexos_node_load)
+
+        self.ui.actionImportPlexosGeneratorGeneration.triggered.connect(self.import_plexos_generator_generation)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -706,10 +710,10 @@ class MainGUI(QMainWindow):
                         reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
 
                         if reply == QMessageBox.Yes:
-                            self.open_file_now(filename=file_name)
+                            self.open_file_now(filenames=file_name)
                     else:
                         # Just open the file
-                        self.open_file_now(filename=file_name)
+                        self.open_file_now(filenames=file_name)
 
                 else:
                     error_msg('The file type ' + file_extension.lower() + ' is not accepted :(')
@@ -1124,6 +1128,28 @@ class MainGUI(QMainWindow):
 
         if len(filenames) > 0:
             self.open_file_now(filenames, post_function)
+
+    def select_csv_file(self):
+        """
+
+        :return:
+        """
+        files_types = "CSV (*.csv)"
+
+        options = QFileDialog.Options()
+        if self.use_native_dialogues:
+            options |= QFileDialog.DontUseNativeDialog
+
+        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
+                                                                        caption='Open CSV file',
+                                                                        dir=self.project_directory,
+                                                                        filter=files_types,
+                                                                        options=options)
+
+        if len(filename) > 0:
+            return filename
+        else:
+            return None
 
     def open_file_now(self, filenames, post_function=None):
         """
@@ -5424,6 +5450,37 @@ class MainGUI(QMainWindow):
                         window = BusViewerGUI(self.circuit, root_bus)
                         self.bus_viewer_windows.append(window)
                         window.show()
+
+    def import_plexos_node_load(self):
+        """
+        Open and parse Plexos load file
+        """
+        fname = self.select_csv_file()
+
+        if fname:
+            df = pd.read_csv(fname, index_col=0)
+            logger = self.circuit.import_plexos_load_profiles(df=df)
+            self.update_date_dependent_combos()
+
+            if len(logger) > 0:
+                dlg = LogsDialogue('Plexos load import', logger)
+                dlg.exec_()
+
+    def import_plexos_generator_generation(self):
+        """
+        Open and parse Plexos generation file
+        :return:
+        """
+        fname = self.select_csv_file()
+
+        if fname:
+            df = pd.read_csv(fname, index_col=0)
+            logger = self.circuit.import_plexos_generation_profiles(df=df)
+            self.update_date_dependent_combos()
+
+            if len(logger) > 0:
+                dlg = LogsDialogue('Plexos generation import', logger)
+                dlg.exec_()
 
 
 def run(use_native_dialogues=True):

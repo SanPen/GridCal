@@ -1841,3 +1841,60 @@ class MultiCircuit:
             if destructive or (bus.x == 0.0 and bus.y == 0.0):
                 bus.x = x[i]
                 bus.y = -y[i]
+
+    def import_plexos_load_profiles(self, df: pd.DataFrame):
+        """
+
+        :param df:
+        :return: Logger
+        """
+        logger = Logger()
+        nn = df.shape[0]
+        if self.get_time_number() != nn:
+            self.format_profiles(df.index.values)
+
+        df.columns = [val.split('_')[0] for val in df.columns.values]
+
+        bus_by_code = {bus.code: bus for bus in self.buses}
+
+        for col_name in df.columns.values:
+            try:
+                bus = bus_by_code[col_name]
+                for i, load in enumerate(bus.loads):
+                    if i == 0:
+                        load.P_prof = df[col_name].values
+                        load.Q_prof = load.P_prof * 0.8
+                    else:
+                        load.P_prof = np.zeros(nn)
+                        load.Q_prof = np.zeros(nn)
+            except KeyError:
+                logger.append("[" + col_name + '] Missing in the model')
+
+        return logger
+
+    def import_plexos_generation_profiles(self, df: pd.DataFrame):
+        """
+
+        :param df:
+        :return: Logger
+        """
+        logger = Logger()
+        nn = df.shape[0]
+        if self.get_time_number() != nn:
+            self.format_profiles(df.index.values)
+
+        df.columns = [val.replace('GEN_', '') for val in df.columns.values]
+
+        generators = self.get_generators()
+        gen_by_name = {gen.name: gen for gen in generators}
+
+        for col_name in df.columns.values:
+            try:
+                gen = gen_by_name[col_name]
+                gen.P_prof = df[col_name].values
+            except KeyError:
+                logger.append("[" + col_name + '] Missing in the model')
+                gen.P_prof = np.zeros(nn)
+                gen.Q_prof = np.zeros(nn)
+
+        return logger

@@ -6001,6 +6001,19 @@ points from time series</string>
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuSpecial_imports_2">
+     <property name="title">
+      <string>Special imports</string>
+     </property>
+     <widget class="QMenu" name="menuPlexos_results_2">
+      <property name="title">
+       <string>Plexos results</string>
+      </property>
+      <addaction name="actionImportPlexosNodeLoad"/>
+      <addaction name="actionImportPlexosGeneratorGeneration"/>
+     </widget>
+     <addaction name="menuPlexos_results_2"/>
+    </widget>
     <addaction name="actionNew_project"/>
     <addaction name="actionOpen_file"/>
     <addaction name="actionSave"/>
@@ -6008,6 +6021,7 @@ points from time series</string>
     <addaction name="separator"/>
     <addaction name="actionAdd_circuit"/>
     <addaction name="actiongrid_Generator"/>
+    <addaction name="menuSpecial_imports_2"/>
     <addaction name="separator"/>
     <addaction name="actionExport"/>
     <addaction name="actionExport_all_the_device_s_profiles"/>
@@ -6687,6 +6701,24 @@ points from time series</string>
    </property>
    <property name="text">
     <string>License</string>
+   </property>
+  </action>
+  <action name="actionImportPlexosNodeLoad">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/load.svg</normaloff>:/Icons/icons/load.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Node load</string>
+   </property>
+  </action>
+  <action name="actionImportPlexosGeneratorGeneration">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/load.svg</normaloff>:/Icons/icons/load.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Generator generation</string>
    </property>
   </action>
  </widget>
