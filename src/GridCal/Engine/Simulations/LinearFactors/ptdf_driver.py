@@ -19,8 +19,8 @@ from PySide2.QtCore import QThread, Signal
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.Simulations.PTDF.ptdf_analysis import get_ptdf_variations, power_flow_worker, PtdfGroupMode
-from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFResults
+from GridCal.Engine.Simulations.LinearFactors.ptdf_analysis import get_ptdf_variations, power_flow_worker, PtdfGroupMode
+from GridCal.Engine.Simulations.LinearFactors.ptdf_results import PTDFResults
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
 ########################################################################################################################

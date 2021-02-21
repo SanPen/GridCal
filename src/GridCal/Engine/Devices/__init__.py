@@ -31,3 +31,4 @@ from GridCal.Engine.Devices.underground_line import *
 from GridCal.Engine.Devices.wire import *
 from GridCal.Engine.Devices.measurement import *
 from GridCal.Engine.Devices.groupings import *
+from GridCal.Engine.Devices.templates import *

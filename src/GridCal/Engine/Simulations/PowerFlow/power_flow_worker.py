@@ -15,21 +15,19 @@
 
 import pandas as pd
 import numpy as np
-import scipy.sparse as sp
-from GridCal.Engine.basic_structures import BusMode, ReactivePowerControlMode, SolverType, TapsControlMode, Logger
-from GridCal.Engine.Simulations.PowerFlow.linearized_power_flow import dcpf, lacpf
-from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_josep
-from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import IwamotoNR
-from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import levenberg_marquardt_pf
-from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import NR_LS, NR_I_LS, NRD_LS
-from GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow import FDPF
-from GridCal.Engine.Simulations.PowerFlow.jacobian_based_acdc_power_flow import NR_LS_ACDC, LM_ACDC
+import GridCal.Engine.basic_structures as bs
+
+import GridCal.Engine.Simulations.PowerFlow.linearized_power_flow as aclin
+import GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow as acjb
+import GridCal.Engine.Simulations.PowerFlow.jacobian_based_acdc_power_flow as acdcjb
+import GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow as acfd
+import GridCal.Engine.Simulations.PowerFlow.helm_power_flow as hl
+
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.common_functions import compile_types
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
 
@@ -80,7 +78,7 @@ class ConvergenceReport:
 
 
 def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus,
-          pq, pv, ref, pqpv, logger=Logger()) -> NumericPowerFlowResults:
+          pq, pv, ref, pqpv, logger=bs.Logger()) -> NumericPowerFlowResults:
     """
     Run a power flow simulation using the selected method (no outer loop controls).
     :param circuit: SnapshotData circuit, this ensures on-demand admittances computation
@@ -99,17 +97,17 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
 
     if options.retry_with_other_methods:
         if circuit.any_control:
-            solver_list = [SolverType.NR,
-                           SolverType.LM,
-                           SolverType.HELM,
-                           SolverType.IWAMOTO,
-                           SolverType.LACPF]
+            solver_list = [bs.SolverType.NR,
+                           bs.SolverType.LM,
+                           bs.SolverType.HELM,
+                           bs.SolverType.IWAMOTO,
+                           bs.SolverType.LACPF]
         else:
-            solver_list = [SolverType.NR,
-                           SolverType.HELM,
-                           SolverType.IWAMOTO,
-                           SolverType.LM,
-                           SolverType.LACPF]
+            solver_list = [bs.SolverType.NR,
+                           bs.SolverType.HELM,
+                           bs.SolverType.IWAMOTO,
+                           bs.SolverType.LM,
+                           bs.SolverType.LACPF]
 
         if options.solver_type in solver_list:
             solver_list.remove(options.solver_type)
@@ -139,142 +137,146 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
         solver_type = solvers[solver_idx]
 
         # type HELM
-        if solver_type == SolverType.HELM:
-            solution = helm_josep(Ybus=circuit.Ybus,
-                                  Yseries=circuit.Yseries,
-                                  V0=V0,  # take V0 instead of V
-                                  S0=Sbus,
-                                  Ysh0=circuit.Yshunt,
-                                  pq=pq,
-                                  pv=pv,
-                                  sl=ref,
-                                  pqpv=pqpv,
-                                  tolerance=options.tolerance,
-                                  max_coeff=options.max_iter,
-                                  use_pade=True,
-                                  verbose=False)
+        if solver_type == bs.SolverType.HELM:
+            solution = hl.helm_josep(Ybus=circuit.Ybus,
+                                     Yseries=circuit.Yseries,
+                                     V0=V0,  # take V0 instead of V
+                                     S0=Sbus,
+                                     Ysh0=circuit.Yshunt,
+                                     pq=pq,
+                                     pv=pv,
+                                     sl=ref,
+                                     pqpv=pqpv,
+                                     tolerance=options.tolerance,
+                                     max_coeff=options.max_iter,
+                                     use_pade=True,
+                                     verbose=False)
 
         # type DC
-        elif solver_type == SolverType.DC:
-            solution = dcpf(Ybus=circuit.Ybus,
-                            Bpqpv=circuit.Bpqpv,
-                            Bref=circuit.Bref,
-                            Sbus=Sbus,
-                            Ibus=Ibus,
-                            V0=V0,
-                            ref=ref,
-                            pvpq=pqpv,
-                            pq=pq,
-                            pv=pv)
+        elif solver_type == bs.SolverType.DC:
+            solution = aclin.dcpf(Ybus=circuit.Ybus,
+                                  Bpqpv=circuit.Bpqpv,
+                                  Bref=circuit.Bref,
+                                  Sbus=Sbus,
+                                  Ibus=Ibus,
+                                  V0=V0,
+                                  ref=ref,
+                                  pvpq=pqpv,
+                                  pq=pq,
+                                  pv=pv)
 
         # LAC PF
-        elif solver_type == SolverType.LACPF:
-            solution = lacpf(Y=circuit.Ybus,
-                             Ys=circuit.Yseries,
-                             S=Sbus,
-                             I=Ibus,
-                             Vset=V0,
-                             pq=pq,
-                             pv=pv)
+        elif solver_type == bs.SolverType.LACPF:
+            solution = aclin.lacpf(Y=circuit.Ybus,
+                                   Ys=circuit.Yseries,
+                                   S=Sbus,
+                                   I=Ibus,
+                                   Vset=V0,
+                                   pq=pq,
+                                   pv=pv)
 
         # Levenberg-Marquardt
-        elif solver_type == SolverType.LM:
+        elif solver_type == bs.SolverType.LM:
             if circuit.any_control:
-                solution = LM_ACDC(nc=circuit,
-                                   tolerance=options.tolerance,
-                                   max_iter=options.max_iter)
+                solution = acdcjb.LM_ACDC(nc=circuit,
+                                          Vbus=V0,
+                                          Sbus=Sbus,
+                                          tolerance=options.tolerance,
+                                          max_iter=options.max_iter)
             else:
-                solution = levenberg_marquardt_pf(Ybus=circuit.Ybus,
-                                                  Sbus_=Sbus,
-                                                  V0=final_solution.V,
-                                                  Ibus=Ibus,
-                                                  pv_=pv,
-                                                  pq_=pq,
-                                                  Qmin=circuit.Qmin_bus[0, :],
-                                                  Qmax=circuit.Qmax_bus[0, :],
-                                                  tol=options.tolerance,
-                                                  max_it=options.max_iter,
-                                                  control_q=options.control_Q)
+                solution = acjb.levenberg_marquardt_pf(Ybus=circuit.Ybus,
+                                                       Sbus_=Sbus,
+                                                       V0=final_solution.V,
+                                                       Ibus=Ibus,
+                                                       pv_=pv,
+                                                       pq_=pq,
+                                                       Qmin=circuit.Qmin_bus[0, :],
+                                                       Qmax=circuit.Qmax_bus[0, :],
+                                                       tol=options.tolerance,
+                                                       max_it=options.max_iter,
+                                                       control_q=options.control_Q)
 
         # Fast decoupled
-        elif solver_type == SolverType.FASTDECOUPLED:
-            solution = FDPF(Vbus=V0,
-                            Sbus=Sbus,
-                            Ibus=Ibus,
-                            Ybus=circuit.Ybus,
-                            B1=circuit.B1,
-                            B2=circuit.B2,
-                            pq=pq,
-                            pv=pv,
-                            pqpv=pqpv,
-                            tol=options.tolerance,
-                            max_it=options.max_iter)
+        elif solver_type == bs.SolverType.FASTDECOUPLED:
+            solution = acfd.FDPF(Vbus=V0,
+                                 Sbus=Sbus,
+                                 Ibus=Ibus,
+                                 Ybus=circuit.Ybus,
+                                 B1=circuit.B1,
+                                 B2=circuit.B2,
+                                 pq=pq,
+                                 pv=pv,
+                                 pqpv=pqpv,
+                                 tol=options.tolerance,
+                                 max_it=options.max_iter)
 
         # Newton-Raphson (full)
-        elif solver_type == SolverType.NR:
+        elif solver_type == bs.SolverType.NR:
 
             if circuit.any_control:
                 # Solve NR with the AC/DC algorithm
-                solution = NR_LS_ACDC(nc=circuit,
-                                      tolerance=options.tolerance,
-                                      max_iter=options.max_iter,
-                                      acceleration_parameter=options.backtracking_parameter,
-                                      mu_0=options.mu,
-                                      control_q=options.control_Q)
+                solution = acdcjb.NR_LS_ACDC(nc=circuit,
+                                             Vbus=V0,
+                                             Sbus=Sbus,
+                                             tolerance=options.tolerance,
+                                             max_iter=options.max_iter,
+                                             acceleration_parameter=options.backtracking_parameter,
+                                             mu_0=options.mu,
+                                             control_q=options.control_Q)
             else:
                 # Solve NR with the AC algorithm
-                solution = NR_LS(Ybus=circuit.Ybus,
-                                 Sbus_=Sbus,
-                                 V0=final_solution.V,
-                                 Ibus=Ibus,
-                                 pv_=pv,
-                                 pq_=pq,
-                                 Qmin=circuit.Qmin_bus[0, :],
-                                 Qmax=circuit.Qmax_bus[0, :],
-                                 tol=options.tolerance,
-                                 max_it=options.max_iter,
-                                 mu_0=options.mu,
-                                 acceleration_parameter=options.backtracking_parameter,
-                                 control_q=options.control_Q)
+                solution = acjb.NR_LS(Ybus=circuit.Ybus,
+                                      Sbus_=Sbus,
+                                      V0=final_solution.V,
+                                      Ibus=Ibus,
+                                      pv_=pv,
+                                      pq_=pq,
+                                      Qmin=circuit.Qmin_bus[0, :],
+                                      Qmax=circuit.Qmax_bus[0, :],
+                                      tol=options.tolerance,
+                                      max_it=options.max_iter,
+                                      mu_0=options.mu,
+                                      acceleration_parameter=options.backtracking_parameter,
+                                      control_q=options.control_Q)
 
         # Newton-Raphson-Decpupled
-        elif solver_type == SolverType.NRD:
+        elif solver_type == bs.SolverType.NRD:
             # Solve NR with the linear AC solution
-            solution = NRD_LS(Ybus=circuit.Ybus,
-                              Sbus=Sbus,
-                              V0=final_solution.V,
-                              Ibus=Ibus,
-                              pv=pv,
-                              pq=pq,
-                              tol=options.tolerance,
-                              max_it=options.max_iter,
-                              acceleration_parameter=options.backtracking_parameter)
+            solution = acjb.NRD_LS(Ybus=circuit.Ybus,
+                                   Sbus=Sbus,
+                                   V0=final_solution.V,
+                                   Ibus=Ibus,
+                                   pv=pv,
+                                   pq=pq,
+                                   tol=options.tolerance,
+                                   max_it=options.max_iter,
+                                   acceleration_parameter=options.backtracking_parameter)
 
         # Newton-Raphson-Iwamoto
-        elif solver_type == SolverType.IWAMOTO:
-            solution = IwamotoNR(Ybus=circuit.Ybus,
-                                 Sbus_=Sbus,
-                                 V0=final_solution.V,
-                                 Ibus=Ibus,
-                                 pv_=pv,
-                                 pq_=pq,
-                                 Qmin=circuit.Qmin_bus[0, :],
-                                 Qmax=circuit.Qmax_bus[0, :],
-                                 tol=options.tolerance,
-                                 max_it=options.max_iter,
-                                 control_q=options.control_Q,
-                                 robust=True)
+        elif solver_type == bs.SolverType.IWAMOTO:
+            solution = acjb.IwamotoNR(Ybus=circuit.Ybus,
+                                      Sbus_=Sbus,
+                                      V0=final_solution.V,
+                                      Ibus=Ibus,
+                                      pv_=pv,
+                                      pq_=pq,
+                                      Qmin=circuit.Qmin_bus[0, :],
+                                      Qmax=circuit.Qmax_bus[0, :],
+                                      tol=options.tolerance,
+                                      max_it=options.max_iter,
+                                      control_q=options.control_Q,
+                                      robust=True)
 
         # Newton-Raphson in current equations
-        elif solver_type == SolverType.NRI:
-            solution = NR_I_LS(Ybus=circuit.Ybus,
-                               Sbus_sp=Sbus,
-                               V0=final_solution.V,
-                               Ibus_sp=Ibus,
-                               pv=pv,
-                               pq=pq,
-                               tol=options.tolerance,
-                               max_it=options.max_iter)
+        elif solver_type == bs.SolverType.NRI:
+            solution = acjb.NR_I_LS(Ybus=circuit.Ybus,
+                                    Sbus_sp=Sbus,
+                                    V0=final_solution.V,
+                                    Ibus_sp=Ibus,
+                                    pv=pv,
+                                    pq=pq,
+                                    tol=options.tolerance,
+                                    max_it=options.max_iter)
 
         else:
             # for any other method, raise exception
@@ -308,7 +310,8 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
 
 
 def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
-                          voltage_solution, Sbus, Ibus, branch_rates, t=0, logger=Logger()) -> "PowerFlowResults":
+                          voltage_solution, Sbus, Ibus, branch_rates, t=0,
+                          logger=bs.Logger()) -> "PowerFlowResults":
     """
     Run a power flow simulation for a single circuit using the selected outer loop
     controls. This method shouldn't be called directly.
@@ -481,7 +484,7 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
 
 
 def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, branch_rates,
-                     options: PowerFlowOptions, logger: Logger) -> "PowerFlowResults":
+                     options: PowerFlowOptions, logger: bs.Logger) -> "PowerFlowResults":
     """
     Run a power flow for a circuit. In most cases, the **run** method should be used instead.
     :param circuit: SnapshotData instance
@@ -513,7 +516,7 @@ def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, branch_rates,
 
 
 def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_results=None,
-                    logger=Logger()) -> "PowerFlowResults":
+                    logger=bs.Logger()) -> "PowerFlowResults":
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param multi_circuit: MultiCircuit instance
@@ -627,6 +630,6 @@ def power_flow_worker_args(args):
                            Ibus=Ibus,
                            branch_rates=branch_rates,
                            options=options,
-                           logger=Logger())
+                           logger=bs.Logger())
 
     return t, res

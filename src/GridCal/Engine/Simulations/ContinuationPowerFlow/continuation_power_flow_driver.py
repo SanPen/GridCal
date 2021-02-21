@@ -283,7 +283,7 @@ class ContinuationPowerFlowResults:
         return mdl
 
 
-class ContinuationPowerFlow(QThread):
+class ContinuationPowerFlowDriver(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
@@ -295,7 +295,7 @@ class ContinuationPowerFlow(QThread):
                  pf_options: PowerFlowOptions,
                  opf_results=None, t=0):
         """
-        ContinuationPowerFlow constructor
+        ContinuationPowerFlowDriver constructor
         :param circuit: NumericalCircuit instance
         :param options: ContinuationPowerFlowOptions instance
         :param inputs: ContinuationPowerFlowInput instance

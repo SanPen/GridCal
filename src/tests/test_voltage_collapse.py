@@ -16,8 +16,8 @@ import os
 import numpy as np
 from GridCal.Engine import *
 # from GridCal.Engine.IO.file_handler import FileOpen
-# from GridCal.Engine.Simulations.ContinuationPowerFlow.voltage_collapse_driver import \
-#     ContinuationPowerFlowOptions, ContinuationPowerFlowInput, ContinuationPowerFlow
+# from GridCal.Engine.Simulations.ContinuationPowerFlowDriver.voltage_collapse_driver import \
+#     ContinuationPowerFlowOptions, ContinuationPowerFlowInput, ContinuationPowerFlowDriver
 from tests.conftest import ROOT_PATH
 
 
@@ -50,7 +50,7 @@ def test_voltage_collapse(root_path=ROOT_PATH):
                                            Vbase=Vbase,
                                            Starget=Sbase * (1 + unitary_vector))
 
-    vc = ContinuationPowerFlow(circuit=main_circuit, options=vc_options, pf_options=pf_options, inputs=vc_inputs)
+    vc = ContinuationPowerFlowDriver(circuit=main_circuit, options=vc_options, pf_options=pf_options, inputs=vc_inputs)
     vc.run()
     # vc.results.plot()
 

@@ -47,7 +47,7 @@ def test_api():
     print('Short Circuit')
     sc_options = ShortCircuitOptions(bus_index=[16])
     # grid, options, pf_options:, pf_results:
-    sc = ShortCircuit(grid=main_circuit, options=sc_options, pf_options=pf_options, pf_results=power_flow.results)
+    sc = ShortCircuitDriver(grid=main_circuit, options=sc_options, pf_options=pf_options, pf_results=power_flow.results)
     sc.run()
     print('\n\n', main_circuit.name)
     print('\t|V|:', abs(main_circuit.short_circuit_results.voltage))
@@ -98,8 +98,8 @@ def test_api():
     vc_inputs = ContinuationPowerFlowInput(Sbase=Sbase,
                                            Vbase=Vbase,
                                            Starget=Sbase * (1 + unitary_vector))
-    vc = ContinuationPowerFlow(circuit=main_circuit, options=vc_options,
-                               inputs=vc_inputs, pf_options=pf_options)
+    vc = ContinuationPowerFlowDriver(circuit=main_circuit, options=vc_options,
+                                     inputs=vc_inputs, pf_options=pf_options)
     vc.run()
     mdl = vc.results.mdl()
     # mdl.plot()

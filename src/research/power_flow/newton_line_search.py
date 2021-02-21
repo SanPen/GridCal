@@ -274,7 +274,7 @@ def NR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, mu0=0.05, error_registry=No
     return V, converged, norm_f, Scalc, elapsed
 
 
-def NR_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0.05, error_registry=None):
+def NR_LS1(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=0.05, error_registry=None):
     """
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
     Args:
@@ -999,16 +999,16 @@ if __name__ == "__main__":
         print(circuit.Ybus.toarray())
 
         error_data1 = list()
-        V1, converged_, err, S, el = NR_LS(Ybus=circuit.Ybus,
-                                           Sbus=circuit.Sbus,
-                                           V0=circuit.Vbus,
-                                           Ibus=circuit.Ibus,
-                                           pv=circuit.pv,
-                                           pq=circuit.pq,
-                                           tol=1e-20,
-                                           max_it=20,
-                                           acceleration_parameter=acc,
-                                           error_registry=error_data1)
+        V1, converged_, err, S, el = NR_LS1(Ybus=circuit.Ybus,
+                                            Sbus=circuit.Sbus,
+                                            V0=circuit.Vbus,
+                                            Ibus=circuit.Ibus,
+                                            pv=circuit.pv,
+                                            pq=circuit.pq,
+                                            tol=1e-20,
+                                            max_it=20,
+                                            acceleration_parameter=acc,
+                                            error_registry=error_data1)
         print("--- %s seconds ---" % (time.time() - start_time))
         print('error: \t', err)
         ax.plot(error_data1, lw=2, label='NRLS 1:' + str(acc))
@@ -1052,73 +1052,73 @@ if __name__ == "__main__":
     # print("--- %s seconds ---" % (time.time() - start_time))
     # print('error: \t', err)
 
-    print('\nRunge kutta ---')
-    start_time = time.time()
-    error_data3 = list()
-    V1, converged_, err, S, el = runge_kutta_nr(Ybus=circuit.Ybus,
-                                                Sbus=circuit.Sbus,
-                                                V0=circuit.Vbus,
-                                                Ibus=circuit.Ibus,
-                                                pv=circuit.pv,
-                                                pq=circuit.pq,
-                                                tol=1e-15,
-                                                max_it=30,
-                                                error_registry=error_data3)
-    ax.plot(error_data3, lw=2, linestyle='--', label='runge-kutta')
+    # print('\nRunge kutta ---')
+    # start_time = time.time()
+    # error_data3 = list()
+    # V1, converged_, err, S, el = runge_kutta_nr(Ybus=circuit.Ybus,
+    #                                             Sbus=circuit.Sbus,
+    #                                             V0=circuit.Vbus,
+    #                                             Ibus=circuit.Ibus,
+    #                                             pv=circuit.pv,
+    #                                             pq=circuit.pq,
+    #                                             tol=1e-15,
+    #                                             max_it=30,
+    #                                             error_registry=error_data3)
+    # ax.plot(error_data3, lw=2, linestyle='--', label='runge-kutta')
+    #
+    # print("--- %s seconds ---" % (time.time() - start_time))
+    # print('error: \t', err)
+    #
+    # ax.set_yscale('log')
+    # ax.set_xlabel('Evaluations of $f(x)$')
+    # ax.set_ylabel('Error')
+    # ax.legend()
 
-    print("--- %s seconds ---" % (time.time() - start_time))
-    print('error: \t', err)
 
-    ax.set_yscale('log')
-    ax.set_xlabel('Evaluations of $f(x)$')
-    ax.set_ylabel('Error')
-    ax.legend()
-
-
-    print('\nHELM ---')
-    start_time = time.time()
-    n_coeff = 30
-
-    # compute the series of coefficients
-    U, X, Q, iter_, norm_f = helm_coefficients_josep(Ybus=circuit.Ybus,
-                                                     Yseries=circuit.Yseries,
-                                                     V0=circuit.Vbus,
-                                                     S0=circuit.Sbus,
-                                                     Ysh0=circuit.Ysh_helm,
-                                                     pv=circuit.pv,
-                                                     pq=circuit.pq,
-                                                     sl=circuit.ref,
-                                                     pqpv=circuit.pqpv,
-                                                     tolerance=1e-15,
-                                                     max_coeff=n_coeff,
-                                                     verbose=False)
-
-    V = circuit.Vbus.copy()
-    Sbus = circuit.Sbus
-    Ybus = circuit.Ybus
-    pv = circuit.pv
-    pq = circuit.pq
-    error_data4 = list()
-    for c in range(n_coeff):
-        V[circuit.pqpv] = U[:c, :].sum(axis=0)
-        # evaluate F(x0)
-        Scalc = V * np.conj(Ybus * V)
-        mis = Scalc - Sbus  # compute the mismatch
-        f = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]
-
-        # check tolerance
-        norm_f = np.linalg.norm(f, np.Inf)
-        error_data4.append(norm_f)
-
-    ax.plot(error_data4, lw=2, linestyle='--', label='HELM')
-
-    print("--- %s seconds ---" % (time.time() - start_time))
-    print('error: \t', err)
-
-    ax.set_yscale('log')
-    ax.set_xlabel('Evaluations of $f(x)$')
-    ax.set_ylabel('Error')
-    ax.legend()
+    # print('\nHELM ---')
+    # start_time = time.time()
+    # n_coeff = 30
+    #
+    # # compute the series of coefficients
+    # U, X, Q, iter_, norm_f = helm_coefficients_josep(Ybus=circuit.Ybus,
+    #                                                  Yseries=circuit.Yseries,
+    #                                                  V0=circuit.Vbus,
+    #                                                  S0=circuit.Sbus,
+    #                                                  Ysh0=circuit.Ysh_helm,
+    #                                                  pv=circuit.pv,
+    #                                                  pq=circuit.pq,
+    #                                                  sl=circuit.ref,
+    #                                                  pqpv=circuit.pqpv,
+    #                                                  tolerance=1e-15,
+    #                                                  max_coeff=n_coeff,
+    #                                                  verbose=False)
+    #
+    # V = circuit.Vbus.copy()
+    # Sbus = circuit.Sbus
+    # Ybus = circuit.Ybus
+    # pv = circuit.pv
+    # pq = circuit.pq
+    # error_data4 = list()
+    # for c in range(n_coeff):
+    #     V[circuit.pqpv] = U[:c, :].sum(axis=0)
+    #     # evaluate F(x0)
+    #     Scalc = V * np.conj(Ybus * V)
+    #     mis = Scalc - Sbus  # compute the mismatch
+    #     f = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]
+    #
+    #     # check tolerance
+    #     norm_f = np.linalg.norm(f, np.Inf)
+    #     error_data4.append(norm_f)
+    #
+    # ax.plot(error_data4, lw=2, linestyle='--', label='HELM')
+    #
+    # print("--- %s seconds ---" % (time.time() - start_time))
+    # print('error: \t', err)
+    #
+    # ax.set_yscale('log')
+    # ax.set_xlabel('Evaluations of $f(x)$')
+    # ax.set_ylabel('Error')
+    # ax.legend()
     # check against the standard NR power flow used in GridCal
     # print('\nNR implemented in GridCal ---')
     # options = PowerFlowOptions(SolverType.NR, verbose=False, tolerance=1e-9, control_q=False)

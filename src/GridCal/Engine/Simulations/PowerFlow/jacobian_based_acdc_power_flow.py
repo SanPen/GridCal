@@ -1145,7 +1145,8 @@ def compute_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
     return df, Scalc
 
 
-def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceleration_parameter=0.05,
+def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
+               tolerance=1e-6, max_iter=4, mu_0=1.0, acceleration_parameter=0.05,
                verbose=False, t=0, control_q=ReactivePowerControlMode.NoControl) -> NumericPowerFlowResults:
     """
     Newton-Raphson Line search with the FUBM formulation
@@ -1164,8 +1165,8 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
     # initialize the variables
     nb = nc.nbus
     nl = nc.nbr
-    V = nc.Vbus
-    S0 = nc.Sbus
+    V = Vbus
+    S0 = Sbus
     Va = np.angle(V)
     Vm = np.abs(V)
     Vmfset = nc.branch_data.vf_set[:, t]
@@ -1490,7 +1491,8 @@ def NR_LS_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, mu_0=1.0, acceler
     return NumericPowerFlowResults(V, converged, norm_f, Scalc, m, theta, Beq, iterations, elapsed)
 
 
-def LM_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, verbose=False) -> NumericPowerFlowResults:
+def LM_ACDC(nc: "SnapshotData", Vbus, Sbus,
+            tolerance=1e-6, max_iter=4, verbose=False) -> NumericPowerFlowResults:
     """
     Solves the power flow problem by the Levenberg-Marquardt power flow algorithm.
     It is usually better than Newton-Raphson, but it takes an order of magnitude more time to converge.
@@ -1505,8 +1507,8 @@ def LM_ACDC(nc: "SnapshotData", tolerance=1e-6, max_iter=4, verbose=False) -> Nu
     # initialize the variables
     nb = nc.nbus
     nl = nc.nbr
-    V = nc.Vbus
-    S0 = nc.Sbus
+    V = Vbus
+    S0 = Sbus
     Va = np.angle(V)
     Vm = np.abs(V)
     Vmfset = nc.branch_data.vf_set[:, 0]

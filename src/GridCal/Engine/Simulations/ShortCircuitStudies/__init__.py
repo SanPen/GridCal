@@ -12,10 +12,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit import *
+from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_driver import *
 
-from GridCal.Engine.Simulations.PTDF.ptdf_driver import *
-from GridCal.Engine.Simulations.PTDF.ptdf_analysis import *
-from GridCal.Engine.Simulations.PTDF.ptdf_results import *
-from GridCal.Engine.Simulations.PTDF.ptdf_ts_driver import *
-from GridCal.Engine.Simulations.PTDF.analytic_ptdf import *
-from GridCal.Engine.Simulations.PTDF.analytic_ptdf_driver import *

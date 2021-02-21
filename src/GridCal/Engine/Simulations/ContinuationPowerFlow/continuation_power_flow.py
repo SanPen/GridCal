@@ -814,7 +814,7 @@ if __name__ == '__main__':
                                            Vbase=Vbase_,
                                            Starget=Sbase_ * 2,  # (1 + unitary_vector)
                                            )
-    vc = ContinuationPowerFlow(circuit=main_circuit, options=vc_options, inputs=vc_inputs, pf_options=pf_options)
+    vc = ContinuationPowerFlowDriver(circuit=main_circuit, options=vc_options, inputs=vc_inputs, pf_options=pf_options)
     vc.run()
     df = vc.results.plot()
 

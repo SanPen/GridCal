@@ -21,7 +21,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import SnapshotData, SnapshotData
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.Simulations.PTDF.ptdf_results import PTDFVariation
+from GridCal.Engine.Simulations.LinearFactors.ptdf_results import PTDFVariation
 
 
 class PtdfGroupMode(Enum):

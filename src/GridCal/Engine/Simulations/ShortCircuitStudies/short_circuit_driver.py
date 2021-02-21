@@ -18,7 +18,7 @@ from scipy.sparse.linalg import inv
 from PySide2.QtCore import QRunnable
 
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Simulations.ShortCircuit.short_circuit import short_circuit_3p
+from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit import short_circuit_3p
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowOptions
@@ -176,7 +176,7 @@ class ShortCircuitResults(PowerFlowResults):
             self.buses_useful_for_storage = b_idx[results.buses_useful_for_storage]
 
 
-class ShortCircuit(QRunnable):
+class ShortCircuitDriver(QRunnable):
     # progress_signal = pyqtSignal(float)
     # progress_text = pyqtSignal(str)
     # done_signal = pyqtSignal()

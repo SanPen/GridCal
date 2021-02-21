@@ -22,7 +22,7 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.NK.n_minus_k_results import NMinusKResults
-from GridCal.Engine.Simulations.PTDF.analytic_ptdf import LinearAnalysis
+from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf import LinearAnalysis
 
 
 def enumerate_states_n_k(m, k=1):

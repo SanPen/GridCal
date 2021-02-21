@@ -18,7 +18,7 @@ from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.PTDF.analytic_ptdf import *
+from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf import *
 
 ########################################################################################################################
 # Optimal Power flow classes

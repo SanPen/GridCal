@@ -17,11 +17,10 @@ from GridCal.Engine.Simulations.ContinuationPowerFlow import *
 from GridCal.Engine.Simulations.Dynamics import *
 from GridCal.Engine.Simulations.Stochastic import *
 from GridCal.Engine.Simulations.PowerFlow import *
-from GridCal.Engine.Simulations.ShortCircuit import *
+from GridCal.Engine.Simulations.ShortCircuitStudies import *
 from GridCal.Engine.Simulations.StateEstimation import *
-
 from GridCal.Engine.Simulations.OPF import *
-from GridCal.Engine.Simulations.PTDF import *
+from GridCal.Engine.Simulations.LinearFactors import *
 from GridCal.Engine.Simulations.sparse_solve import *
 from GridCal.Engine.Simulations.NK import *
 from GridCal.Engine.Simulations.Topology import *
