@@ -1301,6 +1301,12 @@ p, li { white-space: pre-wrap; }
               <property name="layoutDirection">
                <enum>Qt::LeftToRight</enum>
               </property>
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::ContiguousSelection</enum>
+              </property>
              </widget>
             </item>
             <item>
@@ -1748,8 +1754,14 @@ p, li { white-space: pre-wrap; }
             </item>
             <item>
              <widget class="QTableView" name="resultsTableView">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::ContiguousSelection</enum>
+              </property>
               <property name="selectionBehavior">
-               <enum>QAbstractItemView::SelectColumns</enum>
+               <enum>QAbstractItemView::SelectItems</enum>
               </property>
              </widget>
             </item>

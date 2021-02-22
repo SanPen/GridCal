@@ -112,13 +112,17 @@ def colour_sub_schematic(Sbase,
                 r, g, b, a = voltage_cmap(vnorm[i])
                 bus.graphic_obj.set_tile_color(QtGui.QColor(r * 255, g * 255, b * 255, a * 255))
 
-                tooltip = str(i) + ': ' + bus.name + '\n'
-                tooltip += 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n'
-                tooltip += 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
-                if Sbus is not None:
-                    tooltip += '\nS: ' + "{:10.4f}".format(Sbus[i]) + ' [MVA]'
+                tooltip = str(i) + ': ' + bus.name
                 if types is not None:
-                    tooltip += '\nType: ' + bus_types[types[i]]
+                    tooltip += ': ' + bus_types[types[i]]
+                tooltip += '\n'
+
+                tooltip += "%-10s %10.4f < %10.4fº [p.u.]\n" % ("V", vabs[i], vang[i])
+                tooltip += "%-10s %10.4f < %10.4fº [kV]\n" % ("V", vabs[i], vang[i])
+
+                if Sbus is not None:
+                    tooltip += "%-10s %10.4f [MVA]\n" % ("S", Sbus[i])
+
                 bus.graphic_obj.setToolTip(tooltip)
 
             else:
@@ -147,22 +151,27 @@ def colour_sub_schematic(Sbase,
                 tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
                 if Sf is not None:
                     tooltip += '\nPower (from):\t' + "{:10.4f}".format(Sf[i]) + ' [MVA]'
+
                 if St is not None:
                     tooltip += '\nPower (to):\t' + "{:10.4f}".format(St[i]) + ' [MVA]'
+
                 if losses is not None:
                     tooltip += '\nLosses:\t\t' + "{:10.4f}".format(losses[i]) + ' [MVA]'
 
                 if branch.device_type == DeviceType.Transformer2WDevice:
                     if ma is not None:
                         tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
+
                     if theta is not None:
                         tooltip += '\ntap angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
 
                 if branch.device_type == DeviceType.VscDevice:
                     if ma is not None:
                         tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
+
                     if theta is not None:
                         tooltip += '\nfiring angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
+
                     if Beq is not None:
                         tooltip += '\nBeq:\t' + "{:10.4f}".format(Beq[i])
 

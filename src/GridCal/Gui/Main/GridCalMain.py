@@ -3797,6 +3797,7 @@ class MainGUI(QMainWindow):
                 plot_function(circuit=self.circuit,
                               Sbus=self.power_flow.results.Sbus,
                               Sf=self.power_flow.results.Sf,
+                              St=self.power_flow.results.St,
                               voltages=self.power_flow.results.voltage,
                               loadings=np.abs(self.power_flow.results.loading),
                               types=self.power_flow.results.bus_types,
