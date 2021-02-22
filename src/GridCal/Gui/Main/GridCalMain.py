@@ -1730,15 +1730,15 @@ class MainGUI(QMainWindow):
             raise Exception('elm_type not understood: ' + elm_type)
 
         if elm_type == 'Branches':
-            mdl = dev.BranchObjectModel(elements, elm.editable_headers,
-                                        parent=self.ui.dataStructureTableView, editable=True,
-                                        non_editable_attributes=elm.non_editable_attributes)
+            mdl = BranchObjectModel(elements, elm.editable_headers,
+                                    parent=self.ui.dataStructureTableView, editable=True,
+                                    non_editable_attributes=elm.non_editable_attributes)
         else:
 
-            mdl = dev.ObjectsModel(elements, elm.editable_headers,
-                                   parent=self.ui.dataStructureTableView, editable=True,
-                                   non_editable_attributes=elm.non_editable_attributes,
-                                   dictionary_of_lists=dictionary_of_lists)
+            mdl = ObjectsModel(elements, elm.editable_headers,
+                               parent=self.ui.dataStructureTableView, editable=True,
+                               non_editable_attributes=elm.non_editable_attributes,
+                               dictionary_of_lists=dictionary_of_lists)
         self.type_objects_list = elements
         self.ui.dataStructureTableView.setModel(mdl)
         self.ui.property_comboBox.clear()
@@ -4165,7 +4165,7 @@ class MainGUI(QMainWindow):
                                                  object_types=self.grid_editor.object_types,
                                                  circuit=self.circuit,
                                                  use_native_dialogues=self.use_native_dialogues)
-        self.analysis_dialogue.resize(1.61 * 600.0, 600.0)
+        self.analysis_dialogue.resize(int(1.61 * 600.0), 600)
         self.analysis_dialogue.show()
 
     def adjust_all_node_width(self):

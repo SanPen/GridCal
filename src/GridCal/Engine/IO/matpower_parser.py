@@ -139,12 +139,12 @@ def parse_matpower_file_old(filename, export=False):
 
         structures[key] = table2
 
-    bus = np.array(structures['bus'], dtype=np.float)
-    branch = np.array(structures['branch'], dtype=np.float)
-    gen = np.array(structures['gen'], dtype=np.float)
+    bus = np.array(structures['bus'], dtype=float)
+    branch = np.array(structures['branch'], dtype=float)
+    gen = np.array(structures['gen'], dtype=float)
 
     if 'gencost' in structures.keys():
-        gencost = np.array(structures['gencost'], dtype=np.float)
+        gencost = np.array(structures['gencost'], dtype=float)
 
     # refactor indices: Pass to zero indexing
     bus_dict = dict()

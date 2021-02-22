@@ -90,8 +90,11 @@ class ExportAllThread(QThread):
                         if mdl is not None:
                             with StringIO() as buffer:
                                 filename = driver.results.name + ' ' + result_name + '.csv'
-                                mdl.save_to_csv(buffer)
-                                myzip.writestr(filename, buffer.getvalue())
+                                try:
+                                    mdl.save_to_csv(buffer)
+                                    myzip.writestr(filename, buffer.getvalue())
+                                except ValueError:
+                                    self.logger.append('Value error for ' + filename)
                         else:
                             self.logger.add_info('No results for ' + driver.results.name + ' - ' + result_name)
 

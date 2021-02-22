@@ -90,7 +90,7 @@ def _make_bus_list(case):
     """Creates a list ob bus arrays for PYPOWER."""
     # Needs *case* to create/update the mapping bus: bus_id mapping
     # PYPOWER bus description has 13 (or +4) entries
-    bus_list = np.zeros((len(case.buses), 13), dtype=np.float64)
+    bus_list = np.zeros((len(case.buses), 13), dtype=float)
 
     case.bus_ids = {}
 
@@ -125,7 +125,7 @@ def _make_bus_names(case):
 def _make_gen_list(generators, bus_ids):
     """Creates a list of generators for PYPOWER."""
     # PYPOWER gen description has 21 (+4) entries
-    gen_list = np.zeros((len(generators), 21), dtype=np.float64)
+    gen_list = np.zeros((len(generators), 21), dtype=float)
 
     for i, gen in enumerate(generators):
         _fill_gen_array(gen_list[i], gen, bus_ids)
@@ -161,7 +161,7 @@ def _fill_gen_array(gen_array, gen, bus_ids):
 def _make_branch_list(branches, bus_ids):
     """Creates a list of branches for PYPOWER."""
     # PYPOWER branch description has 17 (+4) entries
-    branch_list = np.zeros((len(branches), 17), dtype=np.float64)
+    branch_list = np.zeros((len(branches), 17), dtype=float)
 
     for i, branch in enumerate(branches):
         _fill_branch_array(branch_list[i], branch, bus_ids)

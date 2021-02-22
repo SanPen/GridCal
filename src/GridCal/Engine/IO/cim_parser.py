@@ -1716,8 +1716,8 @@ if __name__ == '__main__':
     import os
     from GridCal.Engine import FileOpen, FileSave
 
-    # folder = r'C:\Users\penversa\Documents\Grids\CGMES'
-    folder = '/home/santi/Documentos/Private_Grids/CGMES'
+    folder = r'C:\Users\penversa\Documents\Grids\CGMES'
+    # folder = '/home/santi/Documentos/Private_Grids/CGMES'
 
     cimfiles = ['20210203T1830Z_2D_REN_EQ_001.xml',
                 '20210203T1830Z_2D_REN_TP_001.xml',
