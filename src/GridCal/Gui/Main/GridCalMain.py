@@ -67,13 +67,8 @@ from collections import OrderedDict
 from multiprocessing import cpu_count
 from PySide2 import QtWidgets
 from matplotlib.colors import LinearSegmentedColormap
+from pandas.plotting import register_matplotlib_converters
 
-try:
-    from pandas.plotting import register_matplotlib_converters
-    register_matplotlib_converters()
-except:
-    from pandas.tseries import converter
-    converter.register()
 
 __author__ = 'Santiago Peñate Vera'
 
@@ -89,7 +84,7 @@ This class is the handler of the main gui of GridCal.
 
 class MainGUI(QMainWindow):
 
-    def __init__(self, parent=None, use_native_dialogues=True):
+    def __init__(self, parent=None, use_native_dialogues=False):
         """
 
         @param parent:
@@ -101,6 +96,9 @@ class MainGUI(QMainWindow):
         self.ui.setupUi(self)
         self.setWindowTitle('GridCal ' + __GridCal_VERSION__)
         self.setAcceptDrops(True)
+
+        # configure matplotlib for pandas time series
+        register_matplotlib_converters()
 
         self.use_native_dialogues = use_native_dialogues
 
@@ -4066,18 +4064,24 @@ class MainGUI(QMainWindow):
 
                 # get the unique columns in the selected cells
                 cols = np.zeros(len(obj_idx), dtype=int)
+                rows = np.zeros(len(obj_idx), dtype=int)
+
                 for i in range(len(obj_idx)):
                     cols[i] = obj_idx[i].column()
-                cols = np.unique(cols)
+                    rows[i] = obj_idx[i].row()
 
-                # plot selection only
-                self.results_mdl.plot(ax=ax)
+                cols = np.unique(cols)
+                rows = np.unique(rows)
+
             else:
                 # plot all
                 cols = None
+                rows = None
 
             # none selected, plot all
-            self.results_mdl.plot(ax=ax, selected_col_idx=cols)
+            self.results_mdl.plot(ax=ax,
+                                  selected_col_idx=cols,
+                                  selected_rows=rows)
 
             plt.show()
 

@@ -277,7 +277,7 @@ def get_base_map(location, zoom_start=5):
     return my_map, marker_cluster
 
 
-def plot_html_map(circuit: MultiCircuit, Sbus, Sf, voltages, loadings, types, losses=None, failed_br_idx=None,
+def plot_html_map(circuit: MultiCircuit, Sbus, Sf, voltages, loadings, types, losses=None, St=None, failed_br_idx=None,
                   loading_label='loading', file_name='map.html'):
     """
     Color the grid based on the results passed

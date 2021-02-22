@@ -683,7 +683,6 @@ class TimeSeries(QThread):
                 # set the power values
                 # if the storage dispatch option is active, the batteries power is not included
                 # therefore, it shall be included after processing
-                # TODO: for some reason .Vbus is not properly called, and the parent Vbus property is called instead
                 V = calculation_input.Vbus[:, it]
                 # Ysh = calculation_input.Yshunt_from_devices[:, it]
                 I = calculation_input.Ibus[:, it]

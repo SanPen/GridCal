@@ -566,6 +566,174 @@ def NR_LS2(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15, acceleration_parameter=
     return V, converged, norm_f, Scalc, elapsed
 
 
+def NR_LS3(Ybus, Sbus, V0, Ibus, pv, pq, vd, tol, bus_installed_power,
+           max_it=15, acceleration_parameter=0.05, error_registry=None, correct_slack=True):
+    """
+    Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
+    Args:
+        Ybus: Admittance matrix
+        Sbus: Array of nodal power injections
+        V0: Array of nodal voltages (initial solution)
+        Ibus: Array of nodal current injections
+        pv: Array with the indices of the PV buses
+        pq: Array with the indices of the PQ buses
+        tol: Tolerance
+        max_it: Maximum number of iterations
+        acceleration_parameter: parameter used to correct the "bad" iterations, should be be between 1e-3 ~ 0.5
+        error_registry: list to store the error for plotting
+    Returns:
+        Voltage solution, converged?, error, calculated power injections
+
+    @Author: Santiago Penate Vera
+    """
+    start = time.time()
+
+    # initialize
+    back_track_counter = 0
+    back_track_iterations = 0
+    alpha = 1e-4
+    converged = 0
+    iter_ = 0
+    V = V0
+    Va = angle(V)
+    Vm = abs(V)
+    dVa = zeros_like(Va)
+    dVm = zeros_like(Vm)
+    slack_corrected = False
+
+    # set up indexing for updating V
+    pvpq = r_[pv, pq]
+    npv = len(pv)
+    npq = len(pq)
+
+    # j1:j2 - V angle of pv buses
+    j1 = 0
+    j2 = npv
+    # j3:j4 - V angle of pq buses
+    j3 = j2
+    j4 = j2 + npq
+    # j5:j6 - V mag of pq buses
+    j5 = j4
+    j6 = j4 + npq
+
+    # evaluate F(x0)
+    Scalc = V * conj(Ybus * V - Ibus)
+    dS = Scalc - Sbus  # compute the mismatch
+    f = r_[dS[pv].real, dS[pq].real, dS[pq].imag]
+
+    # check tolerance
+    norm_f = linalg.norm(f, Inf)
+
+    if error_registry is not None:
+        error_registry.append(norm_f)
+
+    if norm_f < tol:
+        converged = 1
+
+    # do Newton iterations
+    while not converged and iter_ < max_it:
+        # update iteration counter
+        iter_ += 1
+
+        # evaluate Jacobian
+        J = Jacobian(Ybus, V, Ibus, pq, pvpq)
+
+        # compute update step
+        dx = spsolve(J, f)
+
+        # reassign the solution vector
+        if npv:
+            dVa[pv] = dx[j1:j2]
+        if npq:
+            dVa[pq] = dx[j3:j4]
+            dVm[pq] = dx[j5:j6]
+
+        # update voltage the Newton way (mu=1)
+        mu_ = 1.0
+        Vm -= mu_ * dVm
+        Va -= mu_ * dVa
+        Vnew = Vm * exp(1j * Va)
+
+        # compute the mismatch function f(x_new)
+        dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
+        f_new = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+        norm_f_prev = linalg.norm(f + alpha * (f * J).dot(f_new - f), Inf)
+
+        if error_registry is not None:
+            error_registry.append(norm_f_prev)
+
+        cond = norm_f < norm_f_prev  # condition to back track (no improvement at all)
+
+        if not cond:
+            back_track_counter += 1
+
+        l_iter = 0
+        while not cond and l_iter < 10 and mu_ > 0.01:
+            # line search back
+
+            # to divide mu by 4 is the simplest backtracking process
+            # TODO: implement the more complex mu backtrack from numerical recipes
+
+            # update voltage with a closer value to the last value in the Jacobian direction
+            mu_ *= acceleration_parameter
+            Vm -= mu_ * dVm
+            Va -= mu_ * dVa
+            Vnew = Vm * exp(1j * Va)
+
+            # compute the mismatch function f(x_new)
+            dS = Vnew * conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
+            f_new = r_[dS[pv].real, dS[pq].real, dS[pq].imag]  # concatenate to form the mismatch function
+
+            norm_f_new = linalg.norm(f_new, Inf)
+            norm_f_new_prev = linalg.norm(f + alpha * (f * J).dot(f_new - f), Inf)
+
+            cond = norm_f_new < norm_f_new_prev
+
+            if error_registry is not None:
+                error_registry.append(norm_f_new_prev)
+
+            l_iter += 1
+            back_track_iterations += 1
+
+        # update calculation variables
+        V = Vnew
+        f = f_new
+
+        # correct slack
+        if correct_slack:
+            if norm_f <= 0.01 and not slack_corrected:
+                Svd = V[vd] * np.conj(Ybus[vd, :].dot(V))
+                slack_power = Svd.real.sum()
+                total_installed_power = bus_installed_power.sum()
+                if total_installed_power > 0.0:
+                    delta = slack_power * bus_installed_power / total_installed_power
+                    Sbus += delta
+                    slack_corrected = True
+                    print('Corrected slack!', delta.sum() * 100, 'MW')
+
+        # check for convergence
+        norm_f = linalg.norm(f, Inf)
+
+        if error_registry is not None:
+            error_registry.append(norm_f)
+
+        if norm_f < tol:
+            converged = 1
+
+    end = time.time()
+    elapsed = end - start
+
+    print('iter_', iter_, '  -  back_track_counter', back_track_counter,
+          '  -  back_track_iterations', back_track_iterations)
+
+    if slack_corrected:
+        Svd = V[vd] * np.conj(Ybus[vd, :].dot(V))
+        slack_power = Svd.real.sum()
+        print('Final slack', slack_power.real * 100, 'MW')
+
+    return V, converged, norm_f, Scalc, elapsed
+
+
 def F(V, Ybus, S, I, pq, pv):
     """
 
@@ -962,7 +1130,7 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
 #  MAIN
 ########################################################################################################################
 if __name__ == "__main__":
-    from GridCal.Engine import *
+    from GridCal.Engine import FileOpen, compile_snapshot_circuit
     from matplotlib import pyplot as plt
     import pandas as pd
     import os
@@ -991,24 +1159,28 @@ if __name__ == "__main__":
 
     # circuit.Vbus = np.ones(len(circuit.Vbus), dtype=complex)
 
-    print('Newton-Raphson-Line-search 1')
+    print('Newton-Raphson-Line-search 3')
     for acc in [0.5]:  # [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 0.1]
         start_time = time.time()
 
-        print('Ybus')
-        print(circuit.Ybus.toarray())
+        # print('Ybus')
+        # print(circuit.Ybus.toarray())
 
         error_data1 = list()
-        V1, converged_, err, S, el = NR_LS1(Ybus=circuit.Ybus,
+        V1, converged_, err, S, el = NR_LS3(Ybus=circuit.Ybus,
                                             Sbus=circuit.Sbus,
                                             V0=circuit.Vbus,
                                             Ibus=circuit.Ibus,
                                             pv=circuit.pv,
                                             pq=circuit.pq,
-                                            tol=1e-20,
-                                            max_it=20,
+                                            vd=circuit.vd,
+                                            bus_installed_power=circuit.bus_installed_power / circuit.Sbase,
+                                            tol=1e-10,
+                                            max_it=50,
                                             acceleration_parameter=acc,
-                                            error_registry=error_data1)
+                                            error_registry=error_data1,
+                                            correct_slack=True)
+
         print("--- %s seconds ---" % (time.time() - start_time))
         print('error: \t', err)
         ax.plot(error_data1, lw=2, label='NRLS 1:' + str(acc))
@@ -1139,4 +1311,4 @@ if __name__ == "__main__":
     print()
     # print(df)
 
-    plt.show()
+    # plt.show()

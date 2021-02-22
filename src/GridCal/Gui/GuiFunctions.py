@@ -14,6 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
+import numba as nb
 import pandas as pd
 from PySide2.QtWidgets import *
 from PySide2 import QtCore, QtWidgets, QtGui
@@ -1381,8 +1382,6 @@ class ResultsModel(QtCore.QAbstractTableModel):
     def copy_to_clipboard(self):
         """
         Copy profiles to clipboard
-        Args:
-            mode: 'real', 'imag', 'abs'
         """
         n = len(self.cols_c)
 
@@ -1390,13 +1389,15 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
             index, columns, data = self.get_data()
 
-            # header first
-            txt = '\t' + '\t'.join(columns) + '\n'
+            # # header first
+            # txt = '\t' + '\t'.join(columns) + '\n'
+            #
+            # # data
+            # for t, index_value in enumerate(index):
+            #     if data[t, :].sum() != 0.0:
+            #         txt += str(index_value) + '\t' + '\t'.join(data[t, :].astype(str)) + '\n'
 
-            # data
-            for t, index_value in enumerate(index):
-                if data[t, :].sum() != 0.0:
-                    txt += str(index_value) + '\t' + '\t'.join(data[t, :].astype(str)) + '\n'
+            txt = fast_data_to_text(data, columns, index)
 
             # copy to clipboard
             cb = QApplication.clipboard()
@@ -1407,7 +1408,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
             # there are no elements
             pass
 
-    def plot(self, ax=None, selected_col_idx=None):
+    def plot(self, ax=None, selected_col_idx=None, selected_rows=None):
         """
         Plot the data model
         :param ax: Matplotlib axis
@@ -1420,6 +1421,10 @@ class ResultsModel(QtCore.QAbstractTableModel):
             columns = [columns[i] for i in selected_col_idx]
             data = data[:, selected_col_idx]
 
+        if selected_rows is not None:
+            index = [index[i] for i in selected_rows]
+            data = data[selected_rows, :]
+
         if ax is None:
             fig = plt.figure(figsize=(12, 6))
             ax = fig.add_subplot(111)
@@ -1428,6 +1433,18 @@ class ResultsModel(QtCore.QAbstractTableModel):
         ax.set_ylabel(self.ylabel, fontsize=11)
         df.plot(ax=ax)
 
+
+nb.njit()
+def fast_data_to_text(data, columns, index):
+    # header first
+    txt = '\t' + '\t'.join(columns) + '\n'
+
+    # data
+    for t, index_value in enumerate(index):
+        if data[t, :].sum() != 0.0:
+            txt += str(index_value) + '\t' + '\t'.join(data[t, :].astype(str)) + '\n'
+
+    return txt
 
 def get_list_model(lst, checks=False):
     """

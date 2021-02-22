@@ -17,25 +17,30 @@ Version 4.0.0 (multi-terminal DC Grids)
     - Massive re-write of all the structures and the engine in order to have a more flexible
       approach to the devices and how the information is passed from the asset manager
       (the circuit) to the simulations. Hence the version jump attends to that massive effort.
-    - Revamp of the context menus.
-    - Improved the transformer and line editors integrating the template selection.
-    - Improved filtering (bool values are recognised now)
-    - Replaced how all the GUI messages are handled.
     - Fixed transformer editor Sbase conversion.
     - Added HVDC line model.
     - Added VSC branch model.
     - Added DC line model.
     - Added tags to the sigma-plot.
     - Added Substation, Zone, Area and Country objects to group better the buses.
+
+
+- GUI
+    - Way faster clipboard export
+    - Ability to select columns and rows when plotting the results
+    - Added update check and command in the GUI about box.
     - Added a quite good random grid generator from the project SyntheticNetworks.
     - Added a bus viewer: It allows to visualize subsets of the grid.
-      It is useful for very large grids where the complete schematic is cumbersome.
-    - Added update check and command in the GUI about box.
+      It is useful for very large grids where the complete schematic is cumbersome or slow.
+    - Revamp of the context menus.
+    - Improved the transformer and line editors integrating the template selection.
+    - Improved filtering (bool values are recognised now)
+    - Replaced how all the GUI messages are handled.
 
 - I/O
     - Added better Json export file (v3.1 of the specification).
     - Improved the PSS/e Raw file import.
-    - Implemented the ability to load several files to load TP and EQ CIM files together.
+    - Implemented the ability to load several files to load a bunch of .xml CIM files together.
 
 
 - Linear Analysis
