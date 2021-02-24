@@ -121,7 +121,8 @@ def colour_sub_schematic(Sbase,
                 tooltip += "%-10s %10.4f < %10.4fº [kV]\n" % ("V", vabs[i], vang[i])
 
                 if Sbus is not None:
-                    tooltip += "%-10s %10.4f [MVA]\n" % ("S", Sbus[i])
+                    tooltip += "%-10s %10.4f [MW]\n" % ("P", Sbus[i].real)
+                    tooltip += "%-10s %10.4f [MVAr]\n" % ("Q", Sbus[i].imag)
 
                 bus.graphic_obj.setToolTip(tooltip)
 

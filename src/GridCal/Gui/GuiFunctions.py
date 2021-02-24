@@ -1413,6 +1413,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
         Plot the data model
         :param ax: Matplotlib axis
         :param selected_col_idx: list of selected column indices
+        :param selected_rows: list of rows to plot
         """
 
         index, columns, data = self.get_data()
@@ -1428,6 +1429,10 @@ class ResultsModel(QtCore.QAbstractTableModel):
         if ax is None:
             fig = plt.figure(figsize=(12, 6))
             ax = fig.add_subplot(111)
+
+        if 'voltage' in self.title.lower():
+            data[data == 0] = 'nan'  # to avoid plotting the zeros
+
         df = pd.DataFrame(data=data, index=index, columns=columns)
         ax.set_title(self.title, fontsize=14)
         ax.set_ylabel(self.ylabel, fontsize=11)
