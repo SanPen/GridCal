@@ -156,7 +156,7 @@ class OptimalPowerFlowTimeSeries(QThread):
                                           prog_func=self.progress_signal.emit)
 
         else:
-            self.logger.append('Solver not supported in this mode: ' + str(self.options.solver))
+            self.logger.add_error('Solver not supported in this mode', str(self.options.solver))
             return
 
         if not remote:

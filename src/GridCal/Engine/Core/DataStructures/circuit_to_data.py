@@ -204,7 +204,7 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
         if Vbus[i, 0].real == 1.0:
             Vbus[i, :] = complex(elm.Vset, 0)
         elif elm.Vset != Vbus[i, 0]:
-            logger.append('Different set points at ' + elm.bus.name + ': ' + str(elm.Vset) + ' !=' + str(Vbus[i, 0]))
+            logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
 
     return data
 
@@ -288,7 +288,7 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
         if Vbus[i, 0].real == 1.0:
             Vbus[i, :] = complex(elm.Vset, 0)
         elif elm.Vset != Vbus[i, 0]:
-            logger.append('Different set points at ' + elm.bus.name + ': ' + str(elm.Vset) + ' !=' + str(Vbus[i, 0]))
+            logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
 
     return data
 

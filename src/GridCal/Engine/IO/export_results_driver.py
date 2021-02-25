@@ -94,7 +94,7 @@ class ExportAllThread(QThread):
                                     mdl.save_to_csv(buffer)
                                     myzip.writestr(filename, buffer.getvalue())
                                 except ValueError:
-                                    self.logger.append('Value error for ' + filename)
+                                    self.logger.add_error('Value error', filename)
                         else:
                             self.logger.add_info('No results for ' + driver.results.name + ' - ' + result_name)
 

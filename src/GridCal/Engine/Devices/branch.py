@@ -683,7 +683,7 @@ class Branch(EditableDevice):
             # this is the default template that does nothing
             pass
         else:
-            logger.append(self.name + ' the object type template was not recognised')
+            logger.add_error('Template not recognised', self.name)
 
     def get_save_data(self):
         """

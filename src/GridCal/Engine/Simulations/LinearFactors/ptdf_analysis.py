@@ -204,7 +204,7 @@ def power_flow_worker(variation: int, nbus, nbr, n_tr, bus_names, branch_names, 
                                          tr_idx=calculation_input.original_tr_idx)
 
         else:
-            logger.append('There are no slack nodes in the island ' + str(i))
+            logger.add_info('No slack nodes in the island', str(i))
 
     return_dict[variation] = (pf_results, logger)
 

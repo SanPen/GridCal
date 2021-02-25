@@ -295,7 +295,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
         solver_idx += 1
 
     if not final_solution.converged:
-        logger.append('Did not converge, even after retry!, Error:' + str(final_solution.norm_f))
+        logger.add_error('Did not converge, even after retry!', 'Error', str(final_solution.norm_f), options.tolerance)
 
     if final_solution.ma is None:
         final_solution.ma = circuit.branch_data.m[:, 0]
@@ -352,7 +352,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
         Scalc = Sbus.copy()
         any_q_control_issue = False
         converged = True
-        logger.append('Not solving power flow because there is no slack bus')
+        logger.add_error('Not solving power flow because there is no slack bus')
     else:
 
         # run the power flow method that shall be run
@@ -509,8 +509,8 @@ def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, branch_rates,
     # did it worked?
     worked = np.all(results.converged)
 
-    if not worked:
-        logger.append('Did not converge, even after retry!, Error:' + str(results.error))
+    # if not worked:
+    #     logger.add_error('Did not converge, even after retry!', 'Error', str(results.error), options.tolerance)
 
     return results
 
@@ -567,7 +567,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                 results.apply_from_island(res, bus_original_idx, branch_original_idx, tr_original_idx)
 
             else:
-                logger.append('There are no slack nodes in the island ' + str(i))
+                logger.add_error('No slack nodes in the island', str(i))
     else:
 
         if len(calculation_inputs[0].vd) > 0:
@@ -594,7 +594,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                 results.apply_from_island(res, bus_original_idx, branch_original_idx, tr_original_idx)
 
         else:
-            logger.append('There are no slack nodes')
+            logger.add_error('There are no slack nodes')
 
     # compile HVDC results (available for the complete grid since HVDC line as formulated are split objects
     # Pt is the "generation" at the sending point

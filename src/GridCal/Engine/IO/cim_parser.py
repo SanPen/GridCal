@@ -600,7 +600,7 @@ class CIMExport:
                     base_voltage = base_voltages_dict[Vnom]
 
                     if bus.Vnom <= 0.0:
-                        self.logger.append(bus.name + ' has zero nominal voltage, this produces an invalid file because of the per-unit conversion')
+                        self.logger.add_error('Zero nominal voltage', bus.name)
 
                     # generate model
                     model = GeneralContainer(id=conn_node_id, tpe='ConnectivityNode',
@@ -825,15 +825,18 @@ class CIMExport:
 
             #  warnings
             if branch.rate <= 0.0:
-                self.logger.append(branch.name + ": The rate is 0, this will cause a problem when loading.")
+                # self.logger.append(branch.name + ": The rate is 0, this will cause a problem when loading.")
+                self.logger.add_error('The rate is 0', branch.name)
                 raise Exception(branch.name + ": The rate is 0, this will cause a problem when loading.")
 
             if branch.bus_from.Vnom <= 0.0:
-                self.logger.append(branch.name + ": The voltage at the from side is 0, this will cause a problem when loading.")
+                # self.logger.append(branch.name + ": The voltage at the from side is 0, this will cause a problem when loading.")
+                self.logger.add_error('Vfrom is zero', branch.name)
                 raise Exception(branch.name + ": The voltage at the from side, this will cause a problem when loading.")
 
             if branch.bus_to.Vnom <= 0.0:
-                self.logger.append(branch.name + ": The voltage at the to side, this will cause a problem when loading.")
+                # self.logger.append(branch.name + ": The voltage at the to side, this will cause a problem when loading.")
+                self.logger.add_error('Vto is zero', branch.name)
                 raise Exception(branch.name + ": The voltage at the to side, this will cause a problem when loading.")
 
             # W1 (from)
@@ -985,7 +988,8 @@ class CIMExport:
 
             elif branch.branch_type == BranchType.Reactance:
 
-                self.logger.append('Reactance CIM export not implemented yet, exported as a branch')
+                # self.logger.append('Reactance CIM export not implemented yet, exported as a branch')
+                self.logger.add_warning('Reactance CIM export not implemented yet, exported as a branch', branch.name)
 
                 conn_node_id = 'Reactance_' + str(i)
                 Zbase = (branch.bus_from.Vnom ** 2) / self.circuit.Sbase
@@ -1208,7 +1212,7 @@ class CIMImport:
                 recognised.add(elm.tpe)
 
         else:
-            self.logger.append('There are no Terminals!!!!!')
+            self.logger.add_error('There are no Terminals!!!!!')
 
         # ConnectivityNodes
         CN_dict = dict()
@@ -1234,7 +1238,7 @@ class CIMImport:
                 # add class to recognised objects
                 recognised.add(elm.tpe)
         else:
-            self.logger.append('There are no TopologicalNodes nor ConnectivityNodes!!!!!')
+            self.logger.add_error('There are no TopologicalNodes nor ConnectivityNodes!!!!!')
 
         # CN_T: build the connectivity nodes - terminals relations structure
         if self.any_in_dict(cim.elements_by_type, cim_nodes):
@@ -1248,12 +1252,12 @@ class CIMImport:
                     try:
                         self.add_node_terminal_relation(CN, T_dict[term.id])
                     except KeyError:
-                        self.logger.append('Terminal id {0} not found'.format(term.id))
+                        self.logger.add_error('Terminal ID not found', term.id)
 
                 # add class to recognised objects
                 recognised.add(elm.tpe)
         else:
-            self.logger.append('No topological nodes: The grid MUST have topological Nodes')
+            self.logger.add_error('No topological nodes: The grid MUST have topological Nodes')
 
         # BusBarSections
         if 'BusbarSection' in cim.elements_by_type.keys():
@@ -1265,7 +1269,7 @@ class CIMImport:
                 # add class to recognised objects
                 recognised.add(elm.tpe)
         else:
-            self.logger.append("No BusbarSections: There is no chance to reduce the grid")
+            self.logger.add_error("No BusbarSections: There is no chance to reduce the grid")
 
         # PerLengthSequenceImpedance
         PLSI_dict = dict()
@@ -1295,7 +1299,7 @@ class CIMImport:
                         B1 = self.terminal_node[T1][0]
                         B2 = self.terminal_node[T2][0]
                 else:
-                    self.logger.append(elm.id + ' has missing terminals')
+                    self.logger.add_error('Missing terminals', elm.id)
                     continue
 
                 try:
@@ -1324,7 +1328,7 @@ class CIMImport:
                         b = b * l
 
                     else:
-                        self.logger.append(elm.id + ' refers to missing PerLengthImpedance')
+                        self.logger.add_error('Refers to missing PerLengthImpedance', elm.id)
                         continue
                 else:
                     r, x, r0, x0, g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)
@@ -1338,13 +1342,13 @@ class CIMImport:
                     Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
                 except KeyError:
                     Vnom = 1.0
-                    self.logger.append(elm.id + ' has no nominalVoltage property')
+                    self.logger.add_error('No nominalVoltage property', elm.id)
                 except IndexError:
                     Vnom = 1.0
-                    self.logger.append(elm.id + ' has no BaseVoltage')
+                    self.logger.add_error('No BaseVoltage', elm.id)
 
                 if Vnom <= 0:
-                    self.logger.append(elm.id + ' has a zero base voltage. This causes a failure in the file loading')
+                    self.logger.add_error('Zero base voltage. This causes a failure in the file loading', elm.id)
                     R = 1e-20
                     X = 1e-20
                     G = 1e-20
@@ -1401,7 +1405,7 @@ class CIMImport:
                         T1 = T_dict[elm.terminals[0].id]
                         T2 = T_dict[elm.terminals[1].id]
                     else:
-                        self.logger.append(elm.id + ' has missing terminals')
+                        self.logger.add_error('Missing terminals', elm.id)
                         continue
 
                     B1 = self.terminal_node[T1][0]
@@ -1426,7 +1430,7 @@ class CIMImport:
                         except KeyError:
                             r = 0
                             x = 0
-                            self.logger.append('No impedance components in ' + elm.windings[i].id)
+                            self.logger.add_error('No impedance components', elm.windings[i].id)
                             
                         try:
                             g = float(elm.windings[i].properties['g'])
@@ -1434,7 +1438,7 @@ class CIMImport:
                         except KeyError:
                             g = 0
                             b = 0
-                            self.logger.append('No shunt components in ' + elm.windings[i].id)
+                            self.logger.add_error('No shunt components ', elm.windings[i].id)
 
                         try:
                             r0 = float(elm.windings[i].properties['r0'])
@@ -1446,12 +1450,12 @@ class CIMImport:
                             x0 = 0
                             g0 = 0
                             b0 = 0
-                            self.logger.append('No zero sequence components in ' + elm.id)
+                            self.logger.add_error('No zero sequence components', elm.id)
 
                         try:
                             S = float(elm.windings[i].properties['ratedS'])
                         except KeyError:
-                            self.logger.append('No ratedS ' + elm.windings[i].id)
+                            self.logger.add_error('No ratedS', elm.windings[i].id)
                             S = 1.0
                             
                         RATE += S
@@ -1459,11 +1463,11 @@ class CIMImport:
                         try:
                             V = float(elm.windings[i].properties['ratedU'])
                         except KeyError:
-                            self.logger.append('No ratedU in ' + elm.windings[i].id + ' this is mandatory')
+                            self.logger.add_error('No ratedU', elm.windings[i].id)
                             try:
                                 V = float(elm.windings[i].base_voltage[0].properties['nominalVoltage'])
                             except KeyError:
-                                self.logger.append('No voltage in ' + elm.windings[i].id + ', this causes an error')
+                                self.logger.add_error('No voltage', elm.windings[i].id)
                                 V = 1.0
 
                         if len(elm.windings[i].tap_changers) > 0:
@@ -1507,7 +1511,7 @@ class CIMImport:
 
                     circuit.add_branch(line)
                 else:
-                    self.logger.append(elm.tpe + ':' + name + ' does not have 2 windings associated.')
+                    self.logger.add_error('Does not have 2 windings associated', elm.tpe + ':' + name)
 
                 # add class to recognised objects
                 recognised.add(elm.tpe)
@@ -1522,7 +1526,7 @@ class CIMImport:
                         B1 = self.terminal_node[T1][0]
                         B2 = self.terminal_node[T2][0]
                 else:
-                    self.logger.append(elm.id + ' has missing terminals')
+                    self.logger.add_error('Missing terminals', elm.id)
                     continue
 
                 if 'name' in elm.properties:
@@ -1601,7 +1605,7 @@ class CIMImport:
                     # add class to recognised objects
                     recognised.add(elm.tpe)
                 else:
-                    self.logger.append(elm.id + ' has no terminals')
+                    self.logger.add_error('Missing terminals', elm.id)
 
         # shunts
         if 'ShuntCompensator' in cim.elements_by_type.keys():
@@ -1628,7 +1632,7 @@ class CIMImport:
                     # add class to recognised objects
                     recognised.add(elm.tpe)
                 else:
-                    self.logger.append(elm.id + ' has no terminals')
+                    self.logger.add_error('Missing terminals', elm.id)
 
         # Generators
         if 'SynchronousMachine' in cim.elements_by_type.keys():
@@ -1643,13 +1647,13 @@ class CIMImport:
                             Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
                         except KeyError:
                             Vnom = 1.0
-                            self.logger.append(elm.id + ' has no nominalVoltage property.')
+                            self.logger.add_error('no nominalVoltage property', elm.id)
                     else:
                         try:
                             Vnom = float(elm.properties['ratedU'])
                         except KeyError:
                             Vnom = 1.0
-                            self.logger.append(elm.id + ' has no ratedU property.')
+                            self.logger.add_error('no ratedU property', elm.id)
 
                     try:
                         Vset = float(elm.regulating_control[0].properties['targetValue'])
@@ -1670,14 +1674,14 @@ class CIMImport:
                         try:
                             p = float(elm.generating_unit[0].properties['initialP'])
                         except KeyError:
-                            self.logger.append('No active power initialP value for ' + elm.id)
+                            self.logger.add_error('No active power initialP value', elm.id)
                             p = 0.0
                     else:
                         try:
                             p = float(elm.properties['p'])
                         except KeyError:
                             p = 0.0
-                            self.logger.append('No active power p value for ' + elm.id)
+                            self.logger.add_error('No active power p value', elm.id)
 
                     name = elm.properties['name']
                     # self.add_generator(Generator(name, T1, p, vset))
@@ -1691,7 +1695,7 @@ class CIMImport:
                     # add class to recognised objects
                     recognised.add(elm.tpe)
                 else:
-                    self.logger.append(elm.id + ' has no terminals')
+                    self.logger.add_error('Missing terminals', elm.id)
 
         # Slacks (External networks)
         cim_slack = ['EquivalentNetwork', 'EquivalentInjection']
@@ -1702,12 +1706,12 @@ class CIMImport:
                     B1 = self.terminal_node[T1][0]
                     B1.is_slack = True
                 else:
-                    self.logger.append(str(elm) + ' ' + ' has no terminals')
+                    self.logger.add_error('Missing terminals', elm.id)
 
         # log the unused types
         for tpe in cim.elements_by_type.keys():
             if tpe not in recognised:
-                self.logger.append(tpe + ' was not explicitly used in parsing the file.')
+                self.logger.add_info('Not explicitly used in parsing the file', tpe)
 
         return circuit
 

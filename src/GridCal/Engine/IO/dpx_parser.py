@@ -278,10 +278,10 @@ def read_dpx_data(file_name):
 
                     else:
                         # append an entry to the logger
-                        logger.append('Unknown block: ' + current_block)
+                        logger.add_warning('Unknown block', current_block)
 
                 else:
-                    logger.append('Unrecognized line: ' + line)
+                    logger.add_warning('Unrecognized line', line)
 
     return structures_dict, logger
 
@@ -356,15 +356,16 @@ def repack(data_structures, logger=Logger(), verbose=False):
             pass
 
         else:
-            logger.append('Block ' + current_block + ' unknown')
+            logger.add_warning('Unknown block', current_block)
 
     return data_structures, logger
 
 
-def load_dpx(file_name,contraction_factor=1000) -> MultiCircuit:
+def load_dpx(file_name, contraction_factor=1000) -> MultiCircuit:
     """
     Read DPX file
     :param file_name: file name
+    :param contraction_factor: contraction factor
     :return: MultiCircuit
     """
 
@@ -533,7 +534,7 @@ def load_dpx(file_name,contraction_factor=1000) -> MultiCircuit:
                 buses_id_dict[id_] = bus
 
         else:
-            logger.append(tpe + ' not recognised under Nodes')
+            logger.add_error('Not recognised under Nodes', tpe)
 
     # create branches
     for tpe in data_structures['Branches']:
@@ -721,7 +722,7 @@ def load_dpx(file_name,contraction_factor=1000) -> MultiCircuit:
                     r = 1e-20
                     x = 1e-20
                     s = 1e-20
-                    logger.append('The ' + tpe + ' type ' + eq_id + ' was not found.')
+                    logger.add_error('Not found.', tpe + ':' + eq_id)
 
                 br = Branch(bus_from=b1, bus_to=b2, name=name, r=r, x=x, rate=s, branch_type=BranchType.Transformer)
                 circuit.add_branch(br)

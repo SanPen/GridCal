@@ -357,7 +357,7 @@ def data_frames_to_circuit(data: Dict):
                                         parent_bus.add_device(devices[i])
 
                                 else:
-                                    circuit.logger.append('Bus not found: ' + str(df[prop].values[i]))
+                                    circuit.logger.add_error('Bus not found', str(df[prop].values[i]))
 
                             elif dtype in [DeviceType.TransformerTypeDevice,  # template types mostly
                                            DeviceType.SequenceLineDevice,
@@ -370,7 +370,7 @@ def data_frames_to_circuit(data: Dict):
                                     setattr(devices[i], prop, val)
 
                                 else:
-                                    circuit.logger.append(dtype.value + ' type not found: ' + str(df[prop].values[i]))
+                                    circuit.logger.add_error(dtype.value + ' type not found', str(df[prop].values[i]))
 
                             else:
                                 # regular types (int, str, float, etc...)
@@ -397,11 +397,11 @@ def data_frames_to_circuit(data: Dict):
                                     setattr(devices[i], prop_prof, profile.astype(dtype))
 
                             else:
-                                circuit.logger.append(prop + ' profile was not found in the data')
+                                circuit.logger.add_error('Profile was not found in the data', prop)
 
                     else:
-                        circuit.logger.append(prop + ' of object type ' + str(template_elm.device_type) +
-                                              ' not found in the input data')
+                        circuit.logger.add_error(prop + ' of object type ' + str(template_elm.device_type) +
+                                                 ' not found in the input data')
             else:
                 # no objects of this type
                 pass
@@ -467,7 +467,7 @@ def data_frames_to_circuit(data: Dict):
                 circuit.wire_types = devices
 
         else:
-            circuit.logger.append('The data does not contain information about the objects of type ' + str(key))
+            circuit.logger.add_error('The data does not contain information about the type', str(key))
 
     # fill in wires into towers ----------------------------------------------------------------------------------------
     if 'tower_wires' in data.keys():

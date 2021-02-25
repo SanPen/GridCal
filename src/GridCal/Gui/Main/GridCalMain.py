@@ -4510,8 +4510,8 @@ class MainGUI(QMainWindow):
                             self.circuit.get_branches()[i].apply_template(branch_type, Sbase=self.circuit.Sbase)
 
                         else:
-                            logger.append(str(branch_type) + '->' + self.circuit.get_branches()[i].name + '[' + str(i)
-                                          + ']: The type does not match the branch type!')
+                            logger.add_error('The branch does not match the type ' + str(branch_type),
+                                             self.circuit.get_branches()[i].name)
 
                     if len(logger) > 0:
                         dlg = LogsDialogue('Assign branch template', logger)

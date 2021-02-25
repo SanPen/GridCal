@@ -2525,7 +2525,7 @@ class PSSeParser:
         if grid.REV not in self.versions:
             msg = 'The PSSe version is not compatible. Compatible versions are:'
             msg += ', '.join([str(a) for a in self.versions])
-            logger.append(msg)
+            logger.add_error(msg)
             return grid, logger
         else:
             version = grid.REV
@@ -2621,7 +2621,7 @@ class PSSeParser:
 
                     else:
                         if lines[l].strip() != '0':
-                            logger.append('Skipped:' + lines[l])
+                            logger.add_info('Skipped', lines[l])
 
                     # add lines
                     l += lines_per_object2
@@ -2633,7 +2633,7 @@ class PSSeParser:
         # add logs for the non parsed objects
         for key in sections_dict.keys():
             if key not in meta_data.keys():
-                logger.append(key + ' is not implemented in the parser.')
+                logger.add_warning('Not implemented in the parser', key)
 
         return grid, logger
 

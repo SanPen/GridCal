@@ -151,15 +151,15 @@ class FileOpen:
                             elif version == 3:
                                 self.circuit = parse_json_data_v3(data, self.logger)
                             else:
-                                self.logger.append('Recognised as a gridCal compatible Json but the version is not supported')
+                                self.logger.add_error('Recognised as a gridCal compatible Json but the version is not supported')
                         else:
-                            self.logger.append('Unknown json format')
+                            self.logger.add_error('Unknown json format')
 
                     elif type(data) == list():
                         self.circuit = parse_json(self.file_name)
 
                     else:
-                        self.logger.append('Unknown json format')
+                        self.logger.add_error('Unknown json format')
 
                 elif file_extension.lower() == '.raw':
                     parser = PSSeParser(self.file_name)
@@ -173,7 +173,7 @@ class FileOpen:
 
             else:
                 # warn('The file does not exist.')
-                self.logger.append(self.file_name + ' does not exist.')
+                self.logger.add_error('Does not exist', self.file_name)
 
         return self.circuit
 
@@ -221,7 +221,7 @@ class FileSave:
 
         else:
             logger = Logger()
-            logger.append('File path extension not understood\n' + self.file_name)
+            logger.add_error('File path extension not understood', self.file_name)
 
         return logger
 

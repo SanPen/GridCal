@@ -18,7 +18,7 @@ from datetime import datetime
 from PySide2 import QtCore, QtGui, QtWidgets
 
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Gui.GuiFunctions import ObjectsModel
+from GridCal.Gui.GuiFunctions import ObjectsModel, get_tree_model
 
 
 def get_list_model(lst, checks=False):
@@ -127,55 +127,93 @@ class NewProfilesStructureDialogue(QtWidgets.QDialog):
 
         return steps, step_length, step_unit, time_base.toPython()
 
+#
+# class LogsModel(QtCore.QAbstractTableModel):
+#
+#     def __init__(self, logs: Logger, parent=None):
+#
+#         QtCore.QAbstractTableModel.__init__(self, parent)
+#
+#         self.logs = logs
+#
+#     def flags(self, index):
+#         return QtCore.Qt.ItemIsEnabled
+#
+#     def rowCount(self, parent=None):
+#         return len(self.logs)
+#
+#     def columnCount(self, parent=None):
+#         return 2
+#
+#     def headerData(self, section, orientation, role=None):
+#         """
+#
+#         :param section:
+#         :param orientation:
+#         :param role:
+#         :return:
+#         """
+#         if role == QtCore.Qt.DisplayRole and orientation == QtCore.Qt.Horizontal:
+#             if section == 0:
+#                 return "Severity"
+#             elif section == 1:
+#                 return "Message"
+#         return None
+#
+#     def data(self, index, role=None):
+#         """
+#
+#         :param index:
+#         :param role:
+#         :return:
+#         """
+#         if index.isValid() and role == QtCore.Qt.DisplayRole:
+#
+#             if index.column() == 0:
+#                 return str(self.logs.severity[index.row()])
+#
+#             elif index.column() == 1:
+#                 return str(self.logs.messages[index.row()])
+#
+#         return None
 
-class LogsModel(QtCore.QAbstractTableModel):
 
-    def __init__(self, logs: Logger, parent=None):
+def fill_tree_from_logs(logger: Logger):
 
-        QtCore.QAbstractTableModel.__init__(self, parent)
+    d = logger.to_dict()
+    editable = False
+    model = QtGui.QStandardItemModel()
+    model.setHorizontalHeaderLabels(['Time', 'Element', 'Value', 'Expected value'])
+    parent = model.invisibleRootItem()
 
-        self.logs = logs
+    for severity, messages_dict in d.items():
+        severity_child = QtGui.QStandardItem(severity)
 
-    def flags(self, index):
-        return QtCore.Qt.ItemIsEnabled
+        for message, data_list in messages_dict.items():
+            message_child = QtGui.QStandardItem(message)
 
-    def rowCount(self, parent=None):
-        return len(self.logs)
+            for time, elm, value, expected_value in data_list:
+                time_child = QtGui.QStandardItem(time)
+                time_child.setEditable(editable)
 
-    def columnCount(self, parent=None):
-        return 2
+                elm_child = QtGui.QStandardItem(elm)
+                elm_child.setEditable(editable)
 
-    def headerData(self, section, orientation, role=None):
-        """
+                value_child = QtGui.QStandardItem(value)
+                value_child.setEditable(editable)
 
-        :param section:
-        :param orientation:
-        :param role:
-        :return:
-        """
-        if role == QtCore.Qt.DisplayRole and orientation == QtCore.Qt.Horizontal:
-            if section == 0:
-                return "Severity"
-            elif section == 1:
-                return "Message"
-        return None
+                expected_val_child = QtGui.QStandardItem(expected_value)
+                expected_val_child.setEditable(editable)
 
-    def data(self, index, role=None):
-        """
+                message_child.appendRow([time_child, elm_child, value_child, expected_val_child])
 
-        :param index:
-        :param role:
-        :return:
-        """
-        if index.isValid() and role == QtCore.Qt.DisplayRole:
+            message_child.setEditable(editable)
+            severity_child.appendRow(message_child)
 
-            if index.column() == 0:
-                return str(self.logs.severity[index.row()])
+        severity_child.setEditable(editable)
+        parent.appendRow(severity_child)
 
-            elif index.column() == 1:
-                return str(self.logs.messages[index.row()])
-
-        return None
+    return model
 
 
 class LogsDialogue(QtWidgets.QDialog):
@@ -189,11 +227,9 @@ class LogsDialogue(QtWidgets.QDialog):
         self.layout = QtWidgets.QVBoxLayout(self)
 
         # logs_list
-        self.logs_table = QtWidgets.QTableView()
-        model = LogsModel(logs)
+        self.logs_table = QtWidgets.QTreeView()
+        model = fill_tree_from_logs(logs)
         self.logs_table.setModel(model)
-        for i in range(model.columnCount()):
-            self.logs_table.horizontalHeader().setSectionResizeMode(i, QtWidgets.QHeaderView.Stretch)
 
         # accept button
         self.accept_btn = QtWidgets.QPushButton()

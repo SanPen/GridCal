@@ -16,9 +16,8 @@
 from enum import Enum
 import pandas as pd
 import numpy as np
-from numpy import complex, double, sqrt, zeros, ones, nan_to_num, exp, conj, ndarray, vstack, power, delete, where, \
-    r_, Inf, linalg, maximum, array, nan, shape, arange, sort, interp, iscomplexobj, c_, argwhere, floor
-
+import datetime
+from typing import List, Dict
 
 from GridCal.Engine.plot_config import LINEWIDTH, plt
 
@@ -221,19 +220,19 @@ class CDF:
         # Create the CDF of the data
         # sort the data:
         if type(data) is pd.DataFrame:
-            self.arr = sort(ndarray.flatten(data.values))
+            self.arr = np.sort(np.ndarray.flatten(data.values))
 
         else:
-            self.arr = sort(data, axis=0)
+            self.arr = np.sort(data, axis=0)
 
-        self.iscomplex = iscomplexobj(self.arr)
+        self.iscomplex = np.iscomplexobj(self.arr)
 
         # calculate the proportional values of samples
         n = len(data)
         if n > 1:
-            self.prob = arange(n, dtype=float) / (n - 1)
+            self.prob = np.arange(n, dtype=float) / (n - 1)
         else:
-            self.prob = arange(n, dtype=float)
+            self.prob = np.arange(n, dtype=float)
 
         # iterator index
         self.idx = 0
@@ -273,7 +272,7 @@ class CDF:
         @param other:
         @return: A CDF object with the sum of other CDF to this CDF
         """
-        return CDF(array([a + b for a in self.arr for b in other]))
+        return CDF(np.array([a + b for a in self.arr for b in other]))
 
     def __sub__(self, other):
         """
@@ -281,7 +280,7 @@ class CDF:
         @param other:
         @return: A CDF object with the subtraction a a CDF to this CDF
         """
-        return CDF(array([a - b for a in self.arr for b in other]))
+        return CDF(np.array([a - b for a in self.arr for b in other]))
 
     def get_sample(self, npoints=1):
         """
@@ -292,11 +291,11 @@ class CDF:
         """
         pt = np.random.uniform(0, 1, npoints)
         if self.iscomplex:
-            a = interp(pt, self.prob, self.arr.real)
-            b = interp(pt, self.prob, self.arr.imag)
+            a = np.interp(pt, self.prob, self.arr.real)
+            b = np.interp(pt, self.prob, self.arr.imag)
             return a + 1j * b
         else:
-            return interp(pt, self.prob, self.arr)
+            return np.interp(pt, self.prob, self.arr)
 
     def get_at(self, prob):
         """
@@ -306,11 +305,11 @@ class CDF:
         @return: Corresponding CDF value
         """
         if self.iscomplex:
-            a = interp(prob, self.prob, self.arr.real)
-            b = interp(prob, self.prob, self.arr.imag)
+            a = np.interp(prob, self.prob, self.arr.real)
+            b = np.interp(prob, self.prob, self.arr.imag)
             return a + 1j * b
         else:
-            return interp(prob, self.prob, self.arr)
+            return np.interp(prob, self.prob, self.arr)
 
     def plot(self, ax=None):
         """
@@ -345,22 +344,22 @@ class StatisticalCharacterization:
         @return:
         """
         # Arrays where to store the statistical laws for sampling
-        self.gen_P_laws = list()
-        self.load_P_laws = list()
-        self.load_Q_laws = list()
+        self.gen_P_laws = list()  # List[CDF]
+        self.load_P_laws = list()  # List[CDF]
+        self.load_Q_laws = list()  # List[CDF]
 
         # Create a CDF for every profile
-        rows, cols = shape(gen_P)
+        rows, cols = np.shape(gen_P)
         for i in range(cols):
             cdf = CDF(gen_P[:, i])
             self.gen_P_laws.append(cdf)
 
-        rows, cols = shape(load_P)
+        rows, cols = np.shape(load_P)
         for i in range(cols):
             cdf = CDF(load_P[:, i])
             self.load_P_laws.append(cdf)
 
-        rows, cols = shape(load_Q)
+        rows, cols = np.shape(load_Q)
         for i in range(cols):
             cdf = CDF(load_Q[:, i])
             self.load_Q_laws.append(cdf)
@@ -399,11 +398,11 @@ class StatisticalCharacterization:
             PG[k] = self.gen_P_laws[i].get_sample(npoints)
             k += 1
 
-        P = array(P)
-        Q = array(Q)
+        P = np.array(P)
+        Q = np.array(Q)
         S = P + 1j * Q
 
-        PG = array(PG)
+        PG = np.array(PG)
 
         return PG.transpose(), S.transpose()
 
@@ -418,11 +417,12 @@ class StatisticalCharacterization:
             ax = fig.add_subplot(111)
 
         for cdf in self.gen_P_laws:
-            ax.plot(cdf.prob, cdf.data_sorted, color='r', marker='x')
+            ax.plot(cdf.prob, cdf.arr, color='r', marker='x')
         for cdf in self.load_P_laws:
-            ax.plot(cdf.prob, cdf.data_sorted, color='g', marker='x')
+            ax.plot(cdf.prob, cdf.arr, color='g', marker='x')
         for cdf in self.load_Q_laws:
-            ax.plot(cdf.prob, cdf.data_sorted, color='b', marker='x')
+            ax.plot(cdf.prob, cdf.arr, color='b', marker='x')
+
         ax.set_xlabel('$p(x)$')
         ax.set_ylabel('$x$')
 
@@ -502,6 +502,7 @@ def get_time_groups(t_array: pd.DatetimeIndex, grouping: TimeGrouping):
 
     last = -1
 
+    i = 0
     for i, t in enumerate(t_array):
 
         if grouping == TimeGrouping.Monthly:
@@ -525,8 +526,9 @@ def get_time_groups(t_array: pd.DatetimeIndex, grouping: TimeGrouping):
                 groups.append(i)
 
     # add the last index if it is not already there
-    if i != groups[len(groups) - 1]:
-        groups.append(i)
+    if len(t_array) > 0:
+        if i != groups[len(groups) - 1]:
+            groups.append(i)
 
     return groups
 
@@ -550,12 +552,34 @@ class LogSeverity(Enum):
             return s
 
 
+class LogEntry:
+
+    def __init__(self, msg="", severity: LogSeverity = LogSeverity.Information, device="", value="", expected_value=""):
+
+        self.time = "{date:%H:%M:%S}".format(date=datetime.datetime.now())  # might use %Y/%m/%d %H:%M:%S
+        self.msg = str(msg)
+        self.severity = severity
+        self.device = device
+        self.value = value
+        self.expected_value = str(expected_value)
+
+    def to_list(self):
+        return [self.time, self.severity.value, self.msg, self.device, self.value, self.expected_value]
+
+    def __str__(self):
+        return "{0} {1}: {2} {3} {4} {5}".format(self.time,
+                                                 self.severity.value,
+                                                 self.msg,
+                                                 self.device,
+                                                 self.value,
+                                                 self.expected_value)
+
+
 class Logger:
 
     def __init__(self):
 
-        self.messages = list()
-        self.severity = list()
+        self.entries = list()  # List[LogEntry]
 
     def append(self, txt):
         """
@@ -563,37 +587,100 @@ class Logger:
         :param txt:
         :return:
         """
-        self.messages.append(txt)
-        self.severity.append(LogSeverity.Information)
+        self.entries.append(LogEntry(txt))
 
     def has_logs(self):
-        return len(self.messages) > 0
+        return len(self.entries) > 0
 
-    def add_info(self, msg, severity: LogSeverity = LogSeverity.Information):
+    def add_info(self, msg, device="", value="", expected_value=""):
+        """
+
+        :param msg:
+        :param device:
+        :param value:
+        :param expected_value
+        :return:
+        """
+        self.entries.append(LogEntry(msg, LogSeverity.Information, device, value, expected_value))
+
+    def add_warning(self, msg, device="", value="", expected_value=""):
+        """
+
+        :param msg:
+        :param device:
+        :param value:
+        :param expected_value
+        :return:
+        """
+        self.entries.append(LogEntry(msg, LogSeverity.Warning, device, value, expected_value))
+
+    def add_error(self, msg, device="", value="", expected_value=""):
+        """
+
+        :param msg:
+        :param device:
+        :param value:
+        :param expected_value
+        :return:
+        """
+        self.entries.append(LogEntry(msg, LogSeverity.Error, device, value, expected_value))
+
+    def add(self, msg, severity: LogSeverity = LogSeverity.Error, device="", value="", expected_value=""):
         """
 
         :param msg:
         :param severity:
+        :param device:
+        :param value:
+        :param expected_value
         :return:
         """
-        self.messages.append(msg)
-        self.severity.append(severity)
+        self.entries.append(LogEntry(msg, severity, device, value, expected_value))
 
-    def add(self, msg, severity: LogSeverity = LogSeverity.Error):
+    def to_dict(self):
         """
+        Get the logs sorted by severity and message
+        :return: Dictionary[Dictionary[List[time, device, value, expected value]]]
+        """
+        by_severity = dict()
 
-        :param msg:
-        :param severity:
+        for e in self.entries:
+
+            if e.severity.value not in by_severity.keys():
+                by_severity[e.severity.value] = dict()
+
+            by_msg = by_severity[e.severity.value]
+
+            if e.msg in by_msg.keys():
+                # add msg to existing msg list
+                by_msg[e.msg].append((e.time, e.device, e.value, e.expected_value))
+            else:
+                # add msg entry for the first time
+                by_msg[e.msg] = [(e.time, e.device, e.value, e.expected_value)]
+
+        return by_severity
+
+    def to_df(self):
+        """
+        Get DataFrame
         :return:
         """
-        self.messages.append(msg)
-        self.severity.append(severity)
+        data = [e.to_list() for e in self.entries]
+        df = pd.DataFrame(data=data, columns=['Time', 'Severity', 'Message', 'Device', 'Value', 'Expected value'])
+        df.set_index('Time', inplace=True)
+        return df
+
+    def to_csv(self, fname):
+        self.to_df().to_csv(fname)
+
+    def to_xlsx(self, fname):
+        self.to_df().to_excel(fname)
 
     def __str__(self):
 
         val = ''
-        for m, s in zip(self.messages, self.severity):
-            val += str(s) + ': ' + m + '\n'
+        for e in self.entries:
+            val += str(e) + '\n'
         return val
 
     def __getitem__(self, key):
@@ -602,7 +689,7 @@ class Logger:
         :param key: integer
         :return: message, severity
         """
-        return self.messages[key], self.severity[key]
+        return self.entries[key]
 
     def __setitem__(self, idx, value):
         """
@@ -611,7 +698,7 @@ class Logger:
         :param value: string message
         :return: Nothing
         """
-        self.messages[idx] = value
+        self.entries[idx] = value
 
     def __iadd__(self, other: "Logger"):
         """
@@ -621,12 +708,11 @@ class Logger:
         """
 
         if other is not None:
-            self.messages += other.messages
-            self.severity += other.severity
+            self.entries += other.entries
         return self
 
     def __len__(self):
-        return len(self.messages)
+        return len(self.entries)
 
 
 if __name__ == '__main__':

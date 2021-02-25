@@ -758,7 +758,7 @@ class Transformer2W(EditableDevice):
                 if obj != self.template:
                     self.template = obj
                 else:
-                    logger.append(self.name + ' the object type template was not recognised')
+                    logger.add_error('Template not recognised', self.name)
             else:
                 self.template = obj
 

@@ -1832,6 +1832,7 @@ class MultiCircuit:
             lat[i] = bus.latitude
 
         # perform the coordinate transformation
+        import pyproj
         x, y = pyproj.Transformer.from_crs(4326, 25830, always_xy=True).transform(lon, lat)
         x *= factor
         y *= factor
@@ -1841,6 +1842,36 @@ class MultiCircuit:
             if destructive or (bus.x == 0.0 and bus.y == 0.0):
                 bus.x = x[i]
                 bus.y = -y[i]
+
+    def fill_lat_lon_from_xy(self, destructive=True, factor=1.0, offset_x=0, offset_y=0):
+        """
+        Convert the coordinates to some random lat lon
+        :param destructive:
+        :param factor:
+        :param offset_x:
+        :param offset_y:
+        :return:
+        """
+        n = len(self.buses)
+        x = np.zeros(n)
+        y = np.zeros(n)
+        for i, bus in enumerate(self.buses):
+            x[i] = bus.x * factor + offset_x
+            y[i] = bus.y * factor + offset_y
+
+        import pyproj
+        proj_latlon = pyproj.Proj(proj='latlong', datum='WGS84')
+        proj_xy = pyproj.Proj(proj="utm", zone=33, datum='WGS84')
+        lonlat = pyproj.transform(proj_xy, proj_latlon, x, y)
+
+        lon = lonlat[0]
+        lat = lonlat[1]
+
+        # assign the values
+        for i, bus in enumerate(self.buses):
+            if destructive or (bus.x == 0.0 and bus.y == 0.0):
+                bus.latitude = lat[i]
+                bus.longitude = lon[i]
 
     def import_plexos_load_profiles(self, df: pd.DataFrame):
         """
@@ -1868,7 +1899,7 @@ class MultiCircuit:
                         load.P_prof = np.zeros(nn)
                         load.Q_prof = np.zeros(nn)
             except KeyError:
-                logger.append("[" + col_name + '] Missing in the model')
+                logger.add_error("Missing in the model", col_name)
 
         return logger
 
@@ -1893,7 +1924,7 @@ class MultiCircuit:
                 gen = gen_by_name[col_name]
                 gen.P_prof = df[col_name].values
             except KeyError:
-                logger.append("[" + col_name + '] Missing in the model')
+                logger.add_error("Missing in the model", col_name)
                 gen.P_prof = np.zeros(nn)
                 gen.Q_prof = np.zeros(nn)
 

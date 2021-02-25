@@ -1518,6 +1518,7 @@ def get_tree_model(d, top='Results'):
     fill_model_from_dict(model.invisibleRootItem(), d)
     return model
 
+
 def get_tree_item_path(item: QtGui.QStandardItem):
     """
 

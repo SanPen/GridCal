@@ -336,7 +336,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             circuit.add_bus(obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
-        circuit.logger.append('No buses in the file!')
+        circuit.logger.add_warning('No buses in the file!')
 
     # add the loads ################################################################################################
     if 'load' in data.keys():
@@ -394,7 +394,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             bus.loads.append(obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
-        circuit.logger.append('No loads in the file!')
+        circuit.logger.add_warning('No loads in the file!')
 
     # add the controlled generators ################################################################################
     if 'controlled_generator' in data.keys():
@@ -436,7 +436,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             bus.controlled_generators.append(obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
-        circuit.logger.append('No controlled generator in the file!')
+        circuit.logger.add_warning('No controlled generator in the file!')
 
     # add the batteries ############################################################################################
     if 'battery' in data.keys():
@@ -477,7 +477,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             bus.batteries.append(obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
-        circuit.logger.append('No battery in the file!')
+        circuit.logger.add_warning('No battery in the file!')
 
     # add the static generators ####################################################################################
     if 'static_generator' in data.keys():
@@ -518,7 +518,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             bus.static_generators.append(obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
-        circuit.logger.append('No static generator in the file!')
+        circuit.logger.add_warning('No static generator in the file!')
 
     # add the shunts ###############################################################################################
     if 'shunt' in data.keys():
@@ -548,7 +548,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             bus.shunts.append(obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
-        circuit.logger.append('No shunt in the file!')
+        circuit.logger.add_warning('No shunt in the file!')
 
     # Add the wires ################################################################################################
     if 'wires' in data.keys():
@@ -560,7 +560,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             set_object_attributes(obj, hdr, vals[i, :])
             circuit.add_wire(obj)
     else:
-        circuit.logger.append('No wires in the file!')
+        circuit.logger.add_warning('No wires in the file!')
 
     # Add the overhead_line_types ##################################################################################
     if 'overhead_line_types' in data.keys():
@@ -584,7 +584,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
         else:
             pass
     else:
-        circuit.logger.append('No overhead_line_types in the file!')
+        circuit.logger.add_warning('No overhead_line_types in the file!')
 
     # Add the wires ################################################################################################
     if 'underground_cable_types' in data.keys():
@@ -597,7 +597,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
         #     circuit.underground_cable_types.append(obj)
         #     branch_types[str(obj)] = obj
     else:
-        circuit.logger.append('No underground_cable_types in the file!')
+        circuit.logger.add_warning('No underground_cable_types in the file!')
 
     # Add the sequence line types ##################################################################################
     if 'sequence_line_types' in data.keys():
@@ -610,7 +610,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             circuit.add_sequence_line(obj)
             branch_types[str(obj)] = obj
     else:
-        circuit.logger.append('No sequence_line_types in the file!')
+        circuit.logger.add_warning('No sequence_line_types in the file!')
 
     # Add the transformer types ####################################################################################
     if 'transformer_types' in data.keys():
@@ -623,7 +623,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             circuit.add_transformer_type(obj)
             branch_types[str(obj)] = obj
     else:
-        circuit.logger.append('No transformer_types in the file!')
+        circuit.logger.add_warning('No transformer_types in the file!')
 
     # Add the branches #############################################################################################
     if 'branch' in data.keys():
@@ -659,7 +659,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             obj.ensure_profiles_exist(circuit.time_profile)
 
     else:
-        circuit.logger.append('No branches in the file!')
+        circuit.logger.add_warning('No branches in the file!')
 
     # Other actions ################################################################################################
     circuit.logger += circuit.apply_all_branch_types()
@@ -741,7 +741,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             circuit.add_bus(obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
-        circuit.logger.append('No buses in the file!')
+        circuit.logger.add_warning('No buses in the file!')
 
     # add the loads ################################################################################################
     if 'load' in data.keys():
@@ -787,7 +787,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             bus.loads.append(obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
-        circuit.logger.append('No loads in the file!')
+        circuit.logger.add_warning('No loads in the file!')
 
     # add the controlled generators ################################################################################
     if 'generator' in data.keys():
@@ -842,7 +842,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             bus.controlled_generators.append(obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
-        circuit.logger.append('No controlled generator in the file!')
+        circuit.logger.add_warning('No controlled generator in the file!')
 
     # add the batteries ############################################################################################
     if 'battery' in data.keys():
@@ -889,7 +889,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             bus.batteries.append(obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
-        circuit.logger.append('No battery in the file!')
+        circuit.logger.add_warning('No battery in the file!')
 
     # add the static generators ####################################################################################
     if 'static_generator' in data.keys():
@@ -940,7 +940,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             bus.static_generators.append(obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
-        circuit.logger.append('No static generator in the file!')
+        circuit.logger.add_warning('No static generator in the file!')
 
     # add the shunts ###############################################################################################
     if 'shunt' in data.keys():
@@ -991,7 +991,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             bus.shunts.append(obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
-        circuit.logger.append('No shunt in the file!')
+        circuit.logger.add_warning('No shunt in the file!')
 
     # Add the wires ################################################################################################
     if 'wires' in data.keys():
@@ -1003,7 +1003,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             set_object_attributes(obj, hdr, vals[i, :])
             circuit.add_wire(obj)
     else:
-        circuit.logger.append('No wires in the file!')
+        circuit.logger.add_warning('No wires in the file!')
 
     # Add the overhead_line_types ##################################################################################
     if 'overhead_line_types' in data.keys():
@@ -1041,7 +1041,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
         else:
             pass
     else:
-        circuit.logger.append('No overhead_line_types in the file!')
+        circuit.logger.add_warning('No overhead_line_types in the file!')
 
     # Add the wires ################################################################################################
     if 'underground_cable_types' in data.keys():
@@ -1054,7 +1054,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
         #     circuit.underground_cable_types.append(obj)
         #     branch_types[str(obj)] = obj
     else:
-        circuit.logger.append('No underground_cable_types in the file!')
+        circuit.logger.add_warning('No underground_cable_types in the file!')
 
     # Add the sequence line types ##################################################################################
     if 'sequence_line_types' in data.keys():
@@ -1067,7 +1067,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             circuit.add_sequence_line(obj)
             branch_types[str(obj)] = obj
     else:
-        circuit.logger.append('No sequence_line_types in the file!')
+        circuit.logger.add_warning('No sequence_line_types in the file!')
 
     # Add the transformer types ####################################################################################
     if 'transformer_types' in data.keys():
@@ -1080,7 +1080,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             circuit.add_transformer_type(obj)
             branch_types[str(obj)] = obj
     else:
-        circuit.logger.append('No transformer_types in the file!')
+        circuit.logger.add_warning('No transformer_types in the file!')
 
     # Add the branches #############################################################################################
     if 'branch' in data.keys():
@@ -1128,10 +1128,10 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             template_name = str(obj.template)
             if template_name in branch_types.keys():
                 obj.template = branch_types[template_name]
-                print(template_name, 'updtaed!')
+                circuit.logger.add_info('Updated template', template_name)
 
     else:
-        circuit.logger.append('No branches in the file!')
+        circuit.logger.add_warning('No branches in the file!')
 
     # Other actions ################################################################################################
     circuit.logger += circuit.apply_all_branch_types()
