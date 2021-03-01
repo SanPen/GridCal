@@ -232,7 +232,8 @@ class LinearAnalysis:
         if len(islands) > 0:
             for island in islands:
 
-                if len(island.vd) > 0 and len(island.pqpv) > 0:  # no slacks will make it impossible to compute the PTDF analytically
+                # no slacks will make it impossible to compute the PTDF analytically
+                if len(island.vd) > 0 and len(island.pqpv) > 0:
 
                     # compute the PTDF of the island
                     ptdf_island = make_ptdf(Bbus=island.Bbus,
@@ -240,24 +241,16 @@ class LinearAnalysis:
                                             pqpv=island.pqpv,
                                             distribute_slack=self.distributed_slack)
 
-                    if self.distributed_slack:
-                        # the LODF requires a PTDF that does not have the distributed slack
-                        ptdf_island_no_dist = make_ptdf(Bbus=island.Bbus,
-                                                        Bf=island.Bf,
-                                                        pqpv=island.pqpv,
-                                                        distribute_slack=False)
-                    else:
-                        ptdf_island_no_dist = ptdf_island
-
                     # assign the PTDF to the matrix
                     self.results.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
 
                     # compute the island LODF
                     lodf_island = make_lodf(Cf=island.Cf,
                                             Ct=island.Ct,
-                                            PTDF=ptdf_island_no_dist,
+                                            PTDF=ptdf_island,
                                             correct_values=self.correct_values)
 
+                    # assign the LODF to the matrix
                     self.results.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
 
         else:
@@ -268,19 +261,10 @@ class LinearAnalysis:
                                           pqpv=islands[0].pqpv,
                                           distribute_slack=self.distributed_slack)
 
-            if self.distributed_slack:
-                # the LODF requires a PTDF that does not have the distributed slack
-                ptdf_island_no_dist = make_ptdf(Bbus=islands[0].Bbus,
-                                                Bf=islands[0].Bf,
-                                                pqpv=islands[0].pqpv,
-                                                distribute_slack=False)
-            else:
-                ptdf_island_no_dist = self.results.PTDF
-
-            # the LODF algorithm doesn't seem to solve any circuit, hence there is no need of island splitting
+            # compute the LODF upon the PTDF
             self.results.LODF = make_lodf(Cf=islands[0].Cf,
                                           Ct=islands[0].Ct,
-                                          PTDF=ptdf_island_no_dist,
+                                          PTDF=self.results.PTDF,
                                           correct_values=self.correct_values)
 
     def get_branch_time_series(self, Sbus):
