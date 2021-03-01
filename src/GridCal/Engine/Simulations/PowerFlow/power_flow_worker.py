@@ -567,7 +567,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                 results.apply_from_island(res, bus_original_idx, branch_original_idx, tr_original_idx)
 
             else:
-                logger.add_error('No slack nodes in the island', str(i))
+                logger.add_info('No slack nodes in the island', str(i))
     else:
 
         if len(calculation_inputs[0].vd) > 0:

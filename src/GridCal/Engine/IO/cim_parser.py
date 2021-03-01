@@ -825,17 +825,14 @@ class CIMExport:
 
             #  warnings
             if branch.rate <= 0.0:
-                # self.logger.append(branch.name + ": The rate is 0, this will cause a problem when loading.")
                 self.logger.add_error('The rate is 0', branch.name)
                 raise Exception(branch.name + ": The rate is 0, this will cause a problem when loading.")
 
             if branch.bus_from.Vnom <= 0.0:
-                # self.logger.append(branch.name + ": The voltage at the from side is 0, this will cause a problem when loading.")
                 self.logger.add_error('Vfrom is zero', branch.name)
                 raise Exception(branch.name + ": The voltage at the from side, this will cause a problem when loading.")
 
             if branch.bus_to.Vnom <= 0.0:
-                # self.logger.append(branch.name + ": The voltage at the to side, this will cause a problem when loading.")
                 self.logger.add_error('Vto is zero', branch.name)
                 raise Exception(branch.name + ": The voltage at the to side, this will cause a problem when loading.")
 
@@ -987,8 +984,6 @@ class CIMExport:
                 text_file.write(model.get_xml(1))
 
             elif branch.branch_type == BranchType.Reactance:
-
-                # self.logger.append('Reactance CIM export not implemented yet, exported as a branch')
                 self.logger.add_warning('Reactance CIM export not implemented yet, exported as a branch', branch.name)
 
                 conn_node_id = 'Reactance_' + str(i)

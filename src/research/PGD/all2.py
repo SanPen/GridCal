@@ -7,6 +7,7 @@ from numpy.linalg import norm
 
 pd.options.display.precision = 2
 pd.set_option('display.precision', 2)
+np.random.seed(42)
 
 df_b = pd.read_excel('data_10PQ.xlsx', sheet_name="buses")
 df_l = pd.read_excel('data_10PQ.xlsx', sheet_name="lines")
@@ -234,9 +235,9 @@ def fun_C(SSk, SSp, SSq, VVk, VVp, VVq, IIk, IIp, IIq):
 
 
 # DEFINITION OF NUMBER OF ITERATIONS, CAN CHANGE ARBITRARILY
-n_gg = 20  # outer
-n_mm = 20  # intermediate
-n_kk = 20  # inner
+n_gg = 5  # outer
+n_mm = 8  # intermediate
+n_kk = 10  # inner
 
 
 for gg in range(n_gg):  # outer loop
@@ -342,32 +343,32 @@ for gg in range(n_gg):  # outer loop
 V_map = np.multiply.outer(np.multiply.outer(VVp[0], VVk[0]), VVq[0])  # the tridimensional representation I am looking for
 for i in range(1, len(VVk)):
     V_map += np.multiply.outer(np.multiply.outer(VVp[i], VVk[i]), VVq[i])  # the tridimensional representation I am looking for
-writer = pd.ExcelWriter('Map_V.xlsx')
-for i in range(n_buses):
-    V_map_df = pd.DataFrame(V_map[:][i][:])
-    V_map_df.to_excel(writer, sheet_name=str(i))  
-writer.save()
+# writer = pd.ExcelWriter('Map_V.xlsx')
+# for i in range(n_buses):
+#     V_map_df = pd.DataFrame(V_map[:][i][:])
+#     V_map_df.to_excel(writer, sheet_name=str(i))
+# writer.save()
 
 # CHART OF CURRENTS
 I_map = np.multiply.outer(np.multiply.outer(IIp[0], IIk[0]), IIq[0])
 for i in range(1, len(IIk)):
     I_map += np.multiply.outer(np.multiply.outer(IIp[i], IIk[i]), IIq[i])
-writer = pd.ExcelWriter('Map_I.xlsx')
-for i in range(n_buses):
-    I_map_df = pd.DataFrame(I_map[:][i][:])
-    I_map_df.to_excel(writer, sheet_name=str(i))
-writer.save()
+# writer = pd.ExcelWriter('Map_I.xlsx')
+# for i in range(n_buses):
+#     I_map_df = pd.DataFrame(I_map[:][i][:])
+#     I_map_df.to_excel(writer, sheet_name=str(i))
+# writer.save()
 
 
 # CHART OF POWERS
 S_map = np.multiply.outer(np.multiply.outer(SSp[0], SSk[0]), SSq[0])
 for i in range(1, len(SSk)):
     S_map += np.multiply.outer(np.multiply.outer(SSp[i], SSk[i]), SSq[i])
-writer = pd.ExcelWriter('Map_S.xlsx')
-for i in range(n_buses):
-    S_map_df = pd.DataFrame(S_map[:][i][:])
-    S_map_df.to_excel(writer, sheet_name=str(i))
-writer.save()
+# writer = pd.ExcelWriter('Map_S.xlsx')
+# for i in range(n_buses):
+#     S_map_df = pd.DataFrame(S_map[:][i][:])
+#     S_map_df.to_excel(writer, sheet_name=str(i))
+# writer.save()
 
 print(np.shape(SSk))
 print(n_buses)

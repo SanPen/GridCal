@@ -101,17 +101,16 @@ class HvdcData:
         return self.get_injections_per_bus()
 
     def get_qmax_from_per_bus(self):
-        # self.C_bus_gen * (self.generator_qmax.reshape(-1, 1) * self.generator_active)
-        return ((self.Qmax_f * self.active) * self.C_hvdc_bus_f).T.sum(axis=1).reshape(-1, 1)
+        return self.C_hvdc_bus_f.T * (self.Qmax_f * self.active)
 
     def get_qmin_from_per_bus(self):
-        return ((self.Qmax_f * self.active) * self.C_hvdc_bus_f).T.sum(axis=1).reshape(-1, 1)
+        return self.C_hvdc_bus_f.T * (self.Qmin_f * self.active)
 
     def get_qmax_to_per_bus(self):
-        return ((self.Qmax_t * self.active) * self.C_hvdc_bus_t).T.sum(axis=1).reshape(-1, 1)
+        return self.C_hvdc_bus_t.T * (self.Qmax_t * self.active)
 
     def get_qmin_to_per_bus(self):
-        return ((self.Qmin_t * self.active) * self.C_hvdc_bus_t).T.sum(axis=1).reshape(-1, 1)
+        return self.C_hvdc_bus_t.T * (self.Qmin_t * self.active)
 
     def get_loading(self):
         return self.Pf / self.rate

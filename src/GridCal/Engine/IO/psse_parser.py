@@ -135,7 +135,7 @@ class PSSeGrid:
 
         for area in self.areas:
             if area.ISW not in slack_buses:
-                logger.add('The area slack bus ' + str(area.ISW) + ' is not a slack bus')
+                logger.add_error('The area slack bus is not marked as slack', str(area.ISW))
 
         # Go through loads
         for psse_load in self.loads:
@@ -175,8 +175,8 @@ class PSSeGrid:
                 already_there.add(branch.idtag)
 
             else:
-                logger.add(
-                    'The RAW file has a repeated line ' + str(branch.idtag) + 'and it is omitted from the model')
+                logger.add_warning('The RAW file has a repeated line device and it is omitted from the model',
+                                   str(branch.idtag))
 
         # Go through Transformers
         for psse_banch in self.transformers:
@@ -190,7 +190,8 @@ class PSSeGrid:
                     already_there.add(branch.idtag)
 
                 else:
-                    print('The RAW file has a repeated transformer', branch.idtag, 'and it is omitted from the model')
+                    logger.add_warning('The RAW file has a repeated transformer and it is omitted from the model',
+                                       branch.idtag)
 
         # Go through hvdc lines
         for psse_banch in self.hvdc_lines:
@@ -204,8 +205,8 @@ class PSSeGrid:
                 already_there.add(branch.idtag)
 
             else:
-                logger.add(
-                    'The RAW file has a repeated line ' + str(branch.idtag) + 'and it is omitted from the model')
+                logger.add_warning('The RAW file has a repeated HVDC line device and it is omitted from the model',
+                                   str(branch.idtag))
 
         # Go through facts lines
         for psse_elm in self.facts:
@@ -217,7 +218,7 @@ class PSSeGrid:
 
 class PSSeBus:
 
-    def __init__(self, data, version, logger: list):
+    def __init__(self, data, version, logger: Logger):
         """
         I: Bus number (1 through 999997). No default allowed.
         NAME Alphanumeric identifier assigned to bus I. NAME may be up to twelve characters
@@ -288,7 +289,7 @@ class PSSeBus:
                 self.bus.shunts.append(sh)
 
         else:
-            logger.append('Bus not implemented for version ' + str(version))
+            logger.add_warning('Bus not implemented for version', str(version))
 
         # set type
         if self.IDE in bustype.keys():
@@ -312,7 +313,7 @@ class PSSeBus:
 
 class PSSeLoad:
 
-    def __init__(self, data, version, logger: list):
+    def __init__(self, data, version, logger: Logger):
         """
         I: Bus number, or extended bus name enclosed in single quotes (refer to Extended Bus
             Names). No default allowed.
@@ -367,26 +368,27 @@ class PSSeLoad:
             self.PL, self.QL, self.IP, self.IQ, self.YP, self.YQ, self.OWNER = data[0]
 
         else:
-            logger.append('Load not implemented for version ' + str(version))
+            logger.add_warning('Load not implemented for version', str(version))
 
-    def get_object(self, bus: Bus, logger: list):
+    def get_object(self, bus: Bus, logger: Logger):
         """
         Return Newton Load object
         Returns:
             Newton Load object
         """
+        name = str(self.I) + '_' + self.ID.replace("'", "")
+        name = name.strip()
 
         # GL and BL come in MW and MVAr
         vv = bus.Vnom ** 2.0
 
         if vv == 0:
-            logger.append('Voltage equal to zero in shunt conversion!!!')
+            logger.add_error('Voltage equal to zero in shunt conversion', name)
 
         g, b = self.YP, self.YQ
         ir, ii = self.IP, self.IQ
         p, q = self.PL, self.QL
-        name = str(self.I) + '_' + self.ID.replace("'", "")
-        name = name.strip()
+
         elm = Load(name=name,
                    idtag=name,
                    active=bool(self.STATUS),
@@ -397,7 +399,7 @@ class PSSeLoad:
 
 class PSSeSwitchedShunt:
 
-    def __init__(self, data, version, logger: list):
+    def __init__(self, data, version, logger: Logger):
         """
         I Bus number, or extended bus name enclosed in single quotes (refer to Extended
             Bus Names). No default allowed.
@@ -499,21 +501,23 @@ class PSSeSwitchedShunt:
             self.I, self.MODSW, self.ADJM, self.STAT, self.VSWHI, self.VSWLO, \
             self.SWREM, self.RMPCT, self.RMIDNT, self.BINIT, *var = data[0]
         else:
-            logger.append('Shunt not implemented for the version ' + str(version))
+            logger.add_warning('Shunt not implemented for the version', str(version))
 
-    def get_object(self, bus: Bus, logger: list):
+    def get_object(self, bus: Bus, logger: Logger):
         """
         Return Newton Load object
         Returns:
             Newton Load object
         """
+        name = str(self.I).replace("'", "")
+        name = name.strip()
 
         # GL and BL come in MW and MVAr
         # THey must be in siemens
         vv = bus.Vnom ** 2.0
 
         if vv == 0:
-            logger.append('Voltage equal to zero in shunt conversion!!!')
+            logger.add_error('Voltage equal to zero in shunt conversion', name)
 
         g = 0.0
         if self.MODSW in [1, 2]:
@@ -521,7 +525,7 @@ class PSSeSwitchedShunt:
         else:
             b = self.BINIT
 
-        elm = Shunt(name='Switched shunt ' + str(self.I),
+        elm = Shunt(name='Switched shunt ' + name,
                     G=g, B=b,
                     active=bool(self.STAT))
 
@@ -530,7 +534,7 @@ class PSSeSwitchedShunt:
 
 class PSSeShunt:
 
-    def __init__(self, data, version, logger: list):
+    def __init__(self, data, version, logger: Logger):
         """
         I: Bus number, or extended bus name enclosed in single quotes (refer to Extended
             Bus Names). No default allowed.
@@ -556,27 +560,27 @@ class PSSeShunt:
         if version in [33, 32]:
             self.I, self.ID, self.STATUS, self.GL, self.BL = data[0]
         else:
-            logger.append('Shunt not implemented for the version ' + str(version))
+            logger.add_warning('Shunt not implemented for the version', str(version))
 
-    def get_object(self, bus: Bus, logger: list):
+    def get_object(self, bus: Bus, logger: Logger):
         """
         Return Newton Load object
         Returns:
             Newton Load object
         """
+        name = str(self.I) + '_' + str(self.ID).replace("'", "")
+        name = name.strip()
 
         # GL and BL come in MW and MVAr
         # They must be in siemens
         vv = bus.Vnom * bus.Vnom
 
         if vv == 0:
-            logger.append('Voltage equal to zero in shunt conversion!!!')
+            logger.add_error('Voltage equal to zero in shunt conversion', name)
 
         g = self.GL
         b = self.BL
 
-        name = str(self.I) + '_' + str(self.ID).replace("'", "")
-        name = name.strip()
         elm = Shunt(name=name,
                     idtag=name,
                     G=g, B=b,
@@ -587,7 +591,7 @@ class PSSeShunt:
 
 class PSSeGenerator:
 
-    def __init__(self, data, version, logger: list):
+    def __init__(self, data, version, logger: Logger):
         """
         I: Bus number, or extended bus name enclosed in single quotes (refer to Extended
             Bus Names). No default allowed.
@@ -717,7 +721,7 @@ class PSSeGenerator:
             self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, *var = data[0]
 
         else:
-            logger.append('Generator not implemented for version ' + str(version))
+            logger.add_warning('Generator not implemented for version', str(version))
 
     def get_object(self, logger: list):
         """
@@ -742,7 +746,7 @@ class PSSeGenerator:
 
 class PSSeInductionMachine:
 
-    def __init__(self, data, version, logger: list):
+    def __init__(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -764,7 +768,7 @@ class PSSeInductionMachine:
 
             self.XAMULT = data[2]
         else:
-            logger.append('Induction machine not implemented for version ' + str(version))
+            logger.add_warning('Induction machine not implemented for version', str(version))
 
     def get_object(self, logger: list):
         """
@@ -784,7 +788,7 @@ class PSSeInductionMachine:
 
 class PSSeBranch:
 
-    def __init__(self, data, version, logger: list):
+    def __init__(self, data, version, logger: Logger):
         """
         I: Branch from bus number, or extended bus name enclosed in single quotes (refer to
             Extended Bus Names). No default allowed.
@@ -870,9 +874,9 @@ class PSSeBranch:
 
         else:
 
-            logger.append('Branch not implemented for version ' + str(version))
+            logger.add_warning('Branch not implemented for version', str(version))
 
-    def get_object(self, psse_bus_dict, Sbase, logger: list):
+    def get_object(self, psse_bus_dict, Sbase, logger: Logger):
         """
         Return Newton branch object
         Args:
@@ -904,7 +908,7 @@ class PSSeBranch:
 
 class PSSeTwoTerminalDCLine:
 
-    def __init__(self, data, version, logger: list):
+    def __init__(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -1040,9 +1044,9 @@ class PSSeTwoTerminalDCLine:
 
             self.NAME = str(self.I)
         else:
-            logger.append('Version ' + str(version) + ' not implemented for DC Lines')
+            logger.add_warning('Version not implemented for DC Lines', str(version))
 
-    def get_object(self, psse_bus_dict, Sbase, logger: list):
+    def get_object(self, psse_bus_dict, Sbase, logger: Logger):
         """
         GEt equivalent object
         :param psse_bus_dict:
@@ -1092,7 +1096,7 @@ class PSSeTwoTerminalDCLine:
 
 class PSSeVscDCLine:
 
-    def __init__(self, data, version, logger: list):
+    def __init__(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -1239,9 +1243,9 @@ class PSSeVscDCLine:
             self.SMAX2, self.IMAX2, self.PWF2, self.MAXQ2, self.MINQ2, self.REMOT2, self.RMPCT2 = data[2]
 
         else:
-            logger.append('Version ' + str(version) + ' not implemented for DC Lines')
+            logger.add_warning('Version not implemented for VSC-DC Lines', str(version))
 
-    def get_object(self, psse_bus_dict, Sbase, logger: list):
+    def get_object(self, psse_bus_dict, Sbase, logger: Logger):
         """
         GEt equivalent object
         :param psse_bus_dict:
@@ -1274,7 +1278,7 @@ class PSSeVscDCLine:
 
 class PSSeTransformer:
 
-    def __init__(self, data, version, logger: list):
+    def __init__(self, data, version, logger: Logger):
         """
         I The bus number, or extended bus name enclosed in single quotes (refer to
             Extended Bus Names), of the bus to which Winding 1 is connected. The trans-
@@ -1874,9 +1878,9 @@ class PSSeTransformer:
                 self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3 = data[4]
 
         else:
-            logger.append('Transformer not implemented for version ' + str(version))
+            logger.add_warning('Transformer not implemented for version', str(version))
 
-    def get_object(self, psse_bus_dict, sbase, logger: list):
+    def get_object(self, psse_bus_dict, sbase, logger: Logger):
         """
         Return Newton branch object
         Args:
@@ -1941,7 +1945,7 @@ class PSSeTransformer:
                     r *= zb
                     x *= zb
                 else:
-                    logger.append(code + ': SBASE1_2 is zero!!!')
+                    logger.add_error('Transformer SBASE1_2 is zero', code)
 
             # adjust tap
             if self.CW == 2 or self.CW == 3:
@@ -2110,7 +2114,7 @@ class PSSeTransformer:
 
 class PSSeFACTS:
 
-    def __init__(self, data, version, logger: list):
+    def __init__(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -2244,9 +2248,9 @@ class PSSeFACTS:
                 self.TRMX, self.VTMN, self.VTMX, self.VSMX, self.IMX, self.LINX, self.RMPCT, self.OWNER, \
                 self.SET1, self.SET2, self.VSREF, self.REMOT, self.MNAME = data[0]
         else:
-            logger.append('Version ' + str(version) + ' not implemented for DC Lines')
+            logger.add_warning('Version not implemented for DC Lines', str(version))
 
-    def get_object(self, psse_bus_dict, Sbase, logger: list, circuit: MultiCircuit):
+    def get_object(self, psse_bus_dict, Sbase, logger: Logger, circuit: MultiCircuit):
         """
         GEt equivalent object
         :param psse_bus_dict:
@@ -2276,11 +2280,11 @@ class PSSeFACTS:
             active = False
         elif mode == 1 and abs(self.J) > 0:
             # shunt link
-            logger.append('FACTS mode ' + str(mode) + ' not implemented')
+            logger.add_warning('FACTS mode not implemented', str(mode))
 
         elif mode == 2:
             # only shunt device: STATCOM
-            logger.append('FACTS mode ' + str(mode) + ' not implemented')
+            logger.add_warning('FACTS mode not implemented', str(mode))
 
         elif mode == 3 and abs(self.J) > 0:  # const Z
             # series and shunt links operating with series link at constant series impedance
@@ -2309,13 +2313,13 @@ class PSSeFACTS:
 
         elif mode == 4 and abs(self.J) > 0:
             # series and shunt links operating with series link at constant series voltage
-            logger.append('FACTS mode ' + str(mode) + ' not implemented')
+            logger.add_warning('FACTS mode not implemented', str(mode))
 
         elif mode == 5 and abs(self.J) > 0:
             # master device of an IPFC with P and Q setpoints specified;
             # another FACTS device must be designated as the slave device
             # (i.e., its MODE is 6 or 8) of this IPFC.
-            logger.append('FACTS mode ' + str(mode) + ' not implemented')
+            logger.add_warning('FACTS mode not implemented', str(mode))
 
         elif mode == 6 and abs(self.J) > 0:
             # 6 slave device of an IPFC with P and Q setpoints specified;
@@ -2323,13 +2327,13 @@ class PSSeFACTS:
             #  device (i.e., its MODE is 5 or 7) of this IPFC. The Q setpoint is
             #  ignored as the master device dictates the active power
             #  exchanged between the two devices.
-            logger.append('FACTS mode ' + str(mode) + ' not implemented')
+            logger.add_warning('FACTS mode not implemented', str(mode))
 
         elif mode == 7 and abs(self.J) > 0:
             # master device of an IPFC with constant series voltage setpoints
             # specified; another FACTS device must be designated as the slave
             # device (i.e., its MODE is 6 or 8) of this IPFC
-            logger.append('FACTS mode ' + str(mode) + ' not implemented')
+            logger.add_warning('FACTS mode not implemented', str(mode))
 
         elif mode == 8 and abs(self.J) > 0:
             # slave device of an IPFC with constant series voltage setpoints
@@ -2337,7 +2341,7 @@ class PSSeFACTS:
             # master device (i.e., its MODE is 5 or 7) of this IPFC. The complex
             # Vd + jVq setpoint is modified during power flow solutions to reflect
             # the active power exchange determined by the master device
-            logger.append('FACTS mode ' + str(mode) + ' not implemented')
+            logger.add_warning('FACTS mode not implemented', str(mode))
 
         else:
             return None
@@ -2345,7 +2349,7 @@ class PSSeFACTS:
 
 class PSSeInterArea:
 
-    def __init__(self, data, version, logger: list):
+    def __init__(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -2363,12 +2367,12 @@ class PSSeInterArea:
 
             self.ARNAME = self.ARNAME.replace("'", "").strip()
         else:
-            logger.append('Areas not defined for version ' + str(version))
+            logger.add_warning('Areas not defined for version', str(version))
 
 
 class PSSeArea:
 
-    def __init__(self, data, version, logger: list):
+    def __init__(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -2386,12 +2390,12 @@ class PSSeArea:
 
             self.ARNAME = self.ARNAME.replace("'", "").strip()
         else:
-            logger.append('Areas not defined for version ' + str(version))
+            logger.add_warning('Areas not defined for version', str(version))
 
 
 class PSSeZone:
 
-    def __init__(self, data, version, logger: list):
+    def __init__(self, data, version, logger: Logger):
         """
 
         :param data:
@@ -2409,7 +2413,7 @@ class PSSeZone:
 
             self.ZONAME = self.ZONAME.replace("'", "").strip()
         else:
-            logger.append('Zones not defined for version ' + str(version))
+            logger.add_warning('Zones not defined for version', str(version))
 
 
 def interpret_line(line, splitter=','):
@@ -2628,7 +2632,6 @@ class PSSeParser:
 
             else:
                 pass
-                # logger.append('"' + key + '" is not in the data')
 
         # add logs for the non parsed objects
         for key in sections_dict.keys():

@@ -224,25 +224,40 @@ class LogsDialogue(QtWidgets.QDialog):
         super(LogsDialogue, self).__init__()
         self.setObjectName("self")
         self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
-        self.layout = QtWidgets.QVBoxLayout(self)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+
+        self.logs = logs
 
         # logs_list
         self.logs_table = QtWidgets.QTreeView()
         model = fill_tree_from_logs(logs)
         self.logs_table.setModel(model)
+        self.logs_table.setFirstColumnSpanned(0, QtCore.QModelIndex(), True)
+        self.logs_table.setFirstColumnSpanned(1, QtCore.QModelIndex(), True)
+        self.logs_table.setAnimated(True)
 
         # accept button
         self.accept_btn = QtWidgets.QPushButton()
         self.accept_btn.setText('Accept')
         self.accept_btn.clicked.connect(self.accept_click)
 
+        self.save_btn = QtWidgets.QPushButton()
+        self.save_btn.setText('Save')
+        self.save_btn.clicked.connect(self.save_click)
+
+        self.btn_frame = QtWidgets.QFrame()
+        self.btn_layout = QtWidgets.QHBoxLayout(self.btn_frame)
+        self.btn_spacer = QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Expanding)
+        self.btn_layout.addWidget(self.save_btn)
+        self.btn_layout.addSpacerItem(self.btn_spacer)
+        self.btn_layout.addWidget(self.accept_btn)
+        self.btn_frame.setLayout(self.btn_layout)
+
         # add all to the GUI
-        self.layout.addWidget(QtWidgets.QLabel("Logs"))
-        self.layout.addWidget(self.logs_table)
+        self.main_layout.addWidget(self.logs_table)
+        self.main_layout.addWidget(self.btn_frame)
 
-        self.layout.addWidget(self.accept_btn)
-
-        self.setLayout(self.layout)
+        self.setLayout(self.main_layout)
 
         self.setWindowTitle(name)
 
@@ -250,7 +265,30 @@ class LogsDialogue(QtWidgets.QDialog):
         self.resize(int(1.61 * h), h)
 
     def accept_click(self):
+        """
+        Accept and close
+        """
         self.accept()
+
+    def save_click(self):
+        """
+        Save the logs to excel or CSV
+        """
+        file, filter = QtWidgets.QFileDialog.getSaveFileName(self, "Export results", '',
+                                                             filter="CSV (*.csv);;Excel files (*.xlsx)",)
+
+        if file != '':
+            if 'xlsx' in filter:
+                f = file
+                if not f.endswith('.xlsx'):
+                    f += '.xlsx'
+                self.logs.to_xlsx(f)
+
+            if 'csv' in filter:
+                f = file
+                if not f.endswith('.csv'):
+                    f += '.csv'
+                self.logs.to_csv(f)
 
 
 class ElementsDialogue(QtWidgets.QDialog):

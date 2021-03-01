@@ -245,7 +245,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
                 results.apply_from_island(island_results, bus_original_idx)
 
             else:
-                logger.add_error('No slack nodes in the island', str(i))
+                logger.add_info('No slack nodes in the island', str(i))
     else:
 
         if len(calculation_inputs[0].vd) > 0:
