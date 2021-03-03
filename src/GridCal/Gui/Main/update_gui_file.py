@@ -30,8 +30,8 @@ if __name__ == '__main__':
             print('pyside2-rcc failed :(')
 
     #  update files
-    file_names_ui = ['MainWindow.ui', 'ConsoleLog.ui', 'banner.ui']
-    file_names = ['MainWindow.py', 'ConsoleLog.py', 'banner.py']
+    file_names_ui = ['MainWindow.ui', 'ConsoleLog.ui']
+    file_names = ['MainWindow.py', 'ConsoleLog.py']
 
     for filename, filename_ui in zip(file_names, file_names_ui):
 

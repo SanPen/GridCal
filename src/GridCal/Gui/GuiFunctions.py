@@ -21,10 +21,11 @@ from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtGui import *
 from warnings import warn
 from enum import EnumMeta
-from GridCal.Engine.Devices import DeviceType, BranchTemplate, BranchType, Bus, Area, Substation, Zone, Country
-from GridCal.Engine.Simulations.result_types import ResultTypes
 from collections import defaultdict
 from matplotlib import pyplot as plt
+from GridCal.Engine.Devices import DeviceType, BranchTemplate, BranchType, Bus, Area, Substation, Zone, Country
+from GridCal.Engine.Simulations.result_types import ResultTypes
+from GridCal.Engine.basic_structures import CDF
 
 
 class TreeDelegate(QItemDelegate):
@@ -1304,7 +1305,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
         """
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
-                if self.c > 0:
+                if len(self.cols_c) > p_int:
                     return self.cols_c[p_int]
             elif orientation == QtCore.Qt.Vertical:
                 if self.index_c is None:
@@ -1328,7 +1329,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
     def is_complex(self):
         return self.data_c.dtype == complex
 
-    def get_data(self, ):
+    def get_data(self):
         """
         Returns: index, columns, data
         """
@@ -1351,6 +1352,24 @@ class ResultsModel(QtCore.QAbstractTableModel):
         else:
             # there are no elements
             return self.index_c, list(), self.data_c
+
+    def convert_to_cdf(self):
+        """
+        Convert the data in-place to CDF based
+        :return:
+        """
+
+        # calculate the proportional values of samples
+        n = self.data_c.shape[0]
+        if n > 1:
+            self.index_c = np.arange(n, dtype=float) / (n - 1)
+        else:
+            self.index_c = np.arange(n, dtype=float)
+
+        for i in range(self.data_c.shape[1]):
+            self.data_c[:, i] = np.sort(self.data_c[:, i], axis=0)
+
+        self.xlabel = 'Probability of value<=x'
 
     def save_to_excel(self, file_name):
         """
@@ -1389,15 +1408,28 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
             index, columns, data = self.get_data()
 
-            # # header first
-            # txt = '\t' + '\t'.join(columns) + '\n'
-            #
-            # # data
-            # for t, index_value in enumerate(index):
-            #     if data[t, :].sum() != 0.0:
-            #         txt += str(index_value) + '\t' + '\t'.join(data[t, :].astype(str)) + '\n'
-
             txt = fast_data_to_text(data, columns, index)
+
+            # copy to clipboard
+            cb = QApplication.clipboard()
+            cb.clear(mode=cb.Clipboard)
+            cb.setText(txt, mode=cb.Clipboard)
+
+        else:
+            # there are no elements
+            pass
+
+    def copy_numpy_to_clipboard(self):
+        """
+        Copy profiles to clipboard
+        """
+        n = len(self.cols_c)
+
+        if n > 0:
+
+            index, columns, data = self.get_data()
+
+            txt = fast_data_to_numpy_text(data)
 
             # copy to clipboard
             cb = QApplication.clipboard()
@@ -1433,13 +1465,19 @@ class ResultsModel(QtCore.QAbstractTableModel):
         if 'voltage' in self.title.lower():
             data[data == 0] = 'nan'  # to avoid plotting the zeros
 
+        if len(columns) > 15:
+            plot_legend = False
+        else:
+            plot_legend = True
+
         df = pd.DataFrame(data=data, index=index, columns=columns)
         ax.set_title(self.title, fontsize=14)
         ax.set_ylabel(self.ylabel, fontsize=11)
-        df.plot(ax=ax)
+        ax.set_xlabel(self.xlabel, fontsize=11)
+        df.plot(ax=ax, legend=plot_legend)
 
 
-nb.njit()
+# @nb.njit()
 def fast_data_to_text(data, columns, index):
     # header first
     txt = '\t' + '\t'.join(columns) + '\n'
@@ -1447,9 +1485,35 @@ def fast_data_to_text(data, columns, index):
     # data
     for t, index_value in enumerate(index):
         if data[t, :].sum() != 0.0:
-            txt += str(index_value) + '\t' + '\t'.join(data[t, :].astype(str)) + '\n'
+            txt += str(index_value) + '\t' + '\t'.join([str(x) for x in data[t, :]]) + '\n'
 
     return txt
+
+
+# @nb.njit()
+def fast_data_to_numpy_text(data):
+
+    if len(data.shape) == 1:
+        txt = '[' + ', '.join(['{0:.6f}'.format(x) for x in data]) + ']'
+
+    elif len(data.shape) == 2:
+
+        if data.shape[1] > 1:
+            # header first
+            txt = '['
+
+            # data
+            for t in range(data.shape[0]):
+                txt += '[' + ', '.join(['{0:.6f}'.format(x) for x in data[t, :]]) + '],\n'
+
+            txt += ']'
+        else:
+            txt = '[' + ', '.join(['{0:.6f}'.format(x) for x in data[:, 0]]) + ']'
+    else:
+        txt = '[]'
+
+    return txt
+
 
 def get_list_model(lst, checks=False):
     """

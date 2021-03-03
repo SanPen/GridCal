@@ -36,6 +36,9 @@ Version 4.0.0 (multi-terminal DC Grids)
     - Improved the transformer and line editors integrating the template selection.
     - Improved filtering (bool values are recognised now)
     - Replaced how all the GUI messages are handled.
+    - Added button in the results to copy text data in numpy format
+    - Added check that converts the results into CDF
+    - Improved the logger window, which now allows to save logs report.
 
 - I/O
     - Added better Json export file (v3.1 of the specification).

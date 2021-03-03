@@ -1690,7 +1690,7 @@ p, li { white-space: pre-wrap; }
                <item>
                 <widget class="QPushButton" name="copy_results_pushButton">
                  <property name="toolTip">
-                  <string>Copy to clipboard</string>
+                  <string>Copy to data frame to clipboard</string>
                  </property>
                  <property name="text">
                   <string/>
@@ -1698,6 +1698,20 @@ p, li { white-space: pre-wrap; }
                  <property name="icon">
                   <iconset resource="icons.qrc">
                    <normaloff>:/Icons/icons/copy.svg</normaloff>:/Icons/icons/copy.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="copy_numpy_button">
+                 <property name="toolTip">
+                  <string>Copy data in numpy format to clipboard</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/array.svg</normaloff>:/Icons/icons/array.svg</iconset>
                  </property>
                 </widget>
                </item>
@@ -1712,6 +1726,20 @@ p, li { white-space: pre-wrap; }
                  <property name="icon">
                   <iconset resource="icons.qrc">
                    <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="results_as_cdf_checkBox">
+                 <property name="statusTip">
+                  <string>Results as cummulative density functions</string>
+                 </property>
+                 <property name="text">
+                  <string>CDF</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/cdf.svg</normaloff>:/Icons/icons/cdf.svg</iconset>
                  </property>
                 </widget>
                </item>

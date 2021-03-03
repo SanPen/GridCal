@@ -895,6 +895,8 @@ class Ui_mainWindow(object):
         self.profiles_tableView = QTableView(self.tab_7)
         self.profiles_tableView.setObjectName(u"profiles_tableView")
         self.profiles_tableView.setLayoutDirection(Qt.LeftToRight)
+        self.profiles_tableView.setAlternatingRowColors(True)
+        self.profiles_tableView.setSelectionMode(QAbstractItemView.ContiguousSelection)
 
         self.verticalLayout_14.addWidget(self.profiles_tableView)
 
@@ -1117,11 +1119,27 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.copy_results_pushButton)
 
+        self.copy_numpy_button = QPushButton(self.frame_8)
+        self.copy_numpy_button.setObjectName(u"copy_numpy_button")
+        icon73 = QIcon()
+        icon73.addFile(u":/Icons/icons/array.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.copy_numpy_button.setIcon(icon73)
+
+        self.horizontalLayout_2.addWidget(self.copy_numpy_button)
+
         self.saveResultsButton = QPushButton(self.frame_8)
         self.saveResultsButton.setObjectName(u"saveResultsButton")
         self.saveResultsButton.setIcon(icon3)
 
         self.horizontalLayout_2.addWidget(self.saveResultsButton)
+
+        self.results_as_cdf_checkBox = QCheckBox(self.frame_8)
+        self.results_as_cdf_checkBox.setObjectName(u"results_as_cdf_checkBox")
+        icon74 = QIcon()
+        icon74.addFile(u":/Icons/icons/cdf.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.results_as_cdf_checkBox.setIcon(icon74)
+
+        self.horizontalLayout_2.addWidget(self.results_as_cdf_checkBox)
 
         self.units_label = QLabel(self.frame_8)
         self.units_label.setObjectName(u"units_label")
@@ -1159,9 +1177,9 @@ class Ui_mainWindow(object):
         self.verticalLayout_22 = QVBoxLayout(self.main_console_tab)
         self.verticalLayout_22.setObjectName(u"verticalLayout_22")
         self.verticalLayout_22.setContentsMargins(0, 0, 0, 0)
-        icon73 = QIcon()
-        icon73.addFile(u":/Icons/icons/console.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.tabWidget.addTab(self.main_console_tab, icon73, "")
+        icon75 = QIcon()
+        icon75.addFile(u":/Icons/icons/console.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.tabWidget.addTab(self.main_console_tab, icon75, "")
         self.SettingsTab = QWidget()
         self.SettingsTab.setObjectName(u"SettingsTab")
         self.gridLayout_8 = QGridLayout(self.SettingsTab)
@@ -2742,9 +2760,9 @@ class Ui_mainWindow(object):
 
         self.gridLayout_8.addWidget(self.frame_7, 0, 0, 1, 1)
 
-        icon74 = QIcon()
-        icon74.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.tabWidget.addTab(self.SettingsTab, icon74, "")
+        icon76 = QIcon()
+        icon76.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.tabWidget.addTab(self.SettingsTab, icon76, "")
 
         self.verticalLayout.addWidget(self.tabWidget)
 
@@ -3302,13 +3320,21 @@ class Ui_mainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.GridTab), QCoreApplication.translate("mainWindow", u"Model", None))
         self.label_16.setText(QCoreApplication.translate("mainWindow", u"Studies with results", None))
 #if QT_CONFIG(tooltip)
-        self.copy_results_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Copy to clipboard", None))
+        self.copy_results_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Copy to data frame to clipboard", None))
 #endif // QT_CONFIG(tooltip)
         self.copy_results_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.copy_numpy_button.setToolTip(QCoreApplication.translate("mainWindow", u"Copy data in numpy format to clipboard", None))
+#endif // QT_CONFIG(tooltip)
+        self.copy_numpy_button.setText("")
 #if QT_CONFIG(tooltip)
         self.saveResultsButton.setToolTip(QCoreApplication.translate("mainWindow", u"Export data", None))
 #endif // QT_CONFIG(tooltip)
         self.saveResultsButton.setText("")
+#if QT_CONFIG(statustip)
+        self.results_as_cdf_checkBox.setStatusTip(QCoreApplication.translate("mainWindow", u"Results as cummulative density functions", None))
+#endif // QT_CONFIG(statustip)
+        self.results_as_cdf_checkBox.setText(QCoreApplication.translate("mainWindow", u"CDF", None))
         self.units_label.setText("")
 #if QT_CONFIG(tooltip)
         self.plot_data_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Plot the data in a separated window", None))

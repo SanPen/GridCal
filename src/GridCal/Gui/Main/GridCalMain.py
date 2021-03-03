@@ -466,6 +466,7 @@ class MainGUI(QMainWindow):
         self.ui.view_next_simulation_step_pushButton.clicked.connect(self.colour_next_simulation_step)
 
         self.ui.copy_results_pushButton.clicked.connect(self.copy_results_data)
+        self.ui.copy_numpy_button.clicked.connect(self.copy_results_data_as_numpy)
 
         self.ui.undo_pushButton.clicked.connect(self.undo)
 
@@ -4044,6 +4045,10 @@ class MainGUI(QMainWindow):
                     warning_msg('There seem to be no results :(')
 
             if self.results_mdl is not None:
+
+                if self.ui.results_as_cdf_checkBox.isChecked():
+                    self.results_mdl.convert_to_cdf()
+
                 # set the table model
                 self.ui.resultsTableView.setModel(self.results_mdl)
                 self.ui.units_label.setText(self.results_mdl.units)
@@ -4132,6 +4137,17 @@ class MainGUI(QMainWindow):
         mdl = self.ui.resultsTableView.model()
         if mdl is not None:
             mdl.copy_to_clipboard()
+            print('Copied!')
+        else:
+            warning_msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
+
+    def copy_results_data_as_numpy(self):
+        """
+        Copy the current displayed profiles to the clipboard
+        """
+        mdl = self.ui.resultsTableView.model()
+        if mdl is not None:
+            mdl.copy_numpy_to_clipboard()
             print('Copied!')
         else:
             warning_msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
