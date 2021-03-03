@@ -328,7 +328,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
                 print(extended_prop[j], r, '\n\t', l, '\n\t', u)
 
                 # plot
-                axs[j] = fig.add_subplot(k, k, j + 1)
+                axs[j] = fig.add_subplot(k, k + 1, j + 1)
                 axs[j].set_facecolor('white')
                 axs[j].hist(x, bins=100, range=r,
                             cumulative=False, bottom=None, histtype='bar',

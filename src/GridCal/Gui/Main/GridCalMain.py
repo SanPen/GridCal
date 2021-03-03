@@ -150,6 +150,9 @@ class MainGUI(QMainWindow):
         mdl = get_list_model(lst)
         self.ui.taps_control_mode_comboBox.setModel(mdl)
 
+        self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite',
+                                    '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.zip', '.dpx']
+
         # ptdf grouping modes
         self.ptdf_group_modes = OrderedDict()
 
@@ -699,25 +702,27 @@ class MainGUI(QMainWindow):
         if event.mimeData().hasUrls:
             events = event.mimeData().urls()
             if len(events) > 0:
-                file_name = events[0].toLocalFile()
-                name, file_extension = os.path.splitext(file_name)
-                accepted = ['.gridcal', '.xlsx', '.xls', '.sqlite',
-                            '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.dpx']
-                if file_extension.lower() in accepted:
 
-                    if len(self.circuit.buses) > 0:
-                        quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
-                                   "\n If the process is cancelled the grid will remain."
-                        reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
+                file_names = list()
 
-                        if reply == QMessageBox.Yes:
-                            self.open_file_now(filenames=file_name)
+                for event in events:
+                    file_name = event.toLocalFile()
+                    name, file_extension = os.path.splitext(file_name)
+                    if file_extension.lower() in self.accepted_extensions:
+                        file_names.append(file_name)
                     else:
-                        # Just open the file
-                        self.open_file_now(filenames=file_name)
+                        error_msg('The file type ' + file_extension.lower() + ' is not accepted :(')
 
+                if len(self.circuit.buses) > 0:
+                    quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
+                               "\n If the process is cancelled the grid will remain."
+                    reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
+
+                    if reply == QMessageBox.Yes:
+                        self.open_file_now(filenames=file_names)
                 else:
-                    error_msg('The file type ' + file_extension.lower() + ' is not accepted :(')
+                    # Just open the file
+                    self.open_file_now(filenames=file_names)
 
     def add_simulation(self, val: restpes.SimulationTypes):
         """
@@ -1074,7 +1079,7 @@ class MainGUI(QMainWindow):
         Open file from a Qt thread to remain responsive
         """
 
-        files_types = "Formats (*.gridcal *.xlsx *.xls *.sqlite *.dgs *.m *.raw *.RAW *.json *.xml *.dpx)"
+        files_types = "Formats (*.gridcal *.xlsx *.xls *.sqlite *.dgs *.m *.raw *.RAW *.json *.xml *.zip *.dpx)"
         # files_types = ''
         # call dialog to select the file
 

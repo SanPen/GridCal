@@ -13,8 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from io import StringIO
+from io import StringIO, TextIOWrapper
 import os
+import chardet
 from random import randint, seed
 import pandas as pd
 import zipfile
@@ -65,7 +66,7 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
     print('All DataFrames flushed to zip!')
 
 
-def open_data_frames_from_zip(file_name_zip, text_func=None, progress_func=None):
+def get_frames_from_zip(file_name_zip, text_func=None, progress_func=None):
     """
     Open the csv files from a zip file
     :param file_name_zip: name of the zip file
@@ -125,24 +126,99 @@ def open_data_frames_from_zip(file_name_zip, text_func=None, progress_func=None)
     return data
 
 
+def get_xml_content(file_ptr):
+    """
+    Reads the content of a file
+    :param file_ptr: File pointer (from file or zip file)
+    :return: list of text lines
+    """
+    # xml files always have the encoding declared, find it out
+    first_line = file_ptr.readline()
+
+    if b'encoding' in first_line:
+        encoding = first_line.split()[2].split(b'=')[1].replace(b'"', b'').replace(b'?>', b'').decode()
+    else:
+        try:
+            detection = chardet.detect(first_line)
+            encoding = detection['encoding']
+        except:
+            encoding = 'utf-8'
+
+    # sequential back to the start
+    file_ptr.seek(0)
+
+    # read all the lines
+    with TextIOWrapper(file_ptr, encoding=encoding) as fle:
+        text_lines = [l for l in fle]
+
+    return text_lines
+
+
+def get_xml_from_zip(file_name_zip, text_func=None, progress_func=None):
+    """
+    Get the .xml files from a zip file
+    :param file_name_zip: name of the zip file
+    :param text_func: pointer to function that prints the names
+    :param progress_func: pointer to function that prints the progress 0~100
+    :return: list of xml file contents
+    """
+
+    # open the zip file
+    try:
+        zip_file_pointer = zipfile.ZipFile(file_name_zip)
+    except zipfile.BadZipFile:
+        return None
+
+    names = zip_file_pointer.namelist()
+
+    n = len(names)
+    data = dict()
+
+    # for each file in the zip file...
+    for i, file_name in enumerate(names):
+
+        # split the file name into name and extension
+        name, extension = os.path.splitext(file_name)
+
+        if text_func is not None:
+            text_func('Unpacking ' + name + ' from ' + file_name_zip)
+
+        if progress_func is not None:
+            progress_func((i + 1) / n * 100)
+
+        if extension == '.xml':
+            file_ptr = zip_file_pointer.open(file_name)
+
+            text_lines = get_xml_content(file_ptr)
+
+            data[name] = text_lines
+
+    return data
+
+
 if __name__ == '__main__':
 
     # Generate some random values to put in the csv file.
-    seed(42)  # Causes random numbers always be the same for testing.
-    data = [[randint(0, 100) for _ in range(10)] for _ in range(10)]
-    df1 = pd.DataFrame(data)
+    # seed(42)  # Causes random numbers always be the same for testing.
+    # data = [[randint(0, 100) for _ in range(10)] for _ in range(10)]
+    # df1 = pd.DataFrame(data)
+    #
+    # seed(44)  # Causes random numbers always be the same for testing.
+    # data = [[randint(0, 100) for _ in range(10)] for _ in range(10)]
+    # df2 = pd.DataFrame(data)
+    #
+    # # save
+    # save_data_frames_to_zip({'Data1': df1, 'Data2': df2}, 'some_file.gridcal')
+    #
+    # # read and print
+    # df_list = get_frames_from_zip(file_name_zip='some_file.gridcal')
+    #
+    # for name, df in df_list.items():
+    #     print()
+    #     print(name)
+    #     print(df)
 
-    seed(44)  # Causes random numbers always be the same for testing.
-    data = [[randint(0, 100) for _ in range(10)] for _ in range(10)]
-    df2 = pd.DataFrame(data)
+    fname = r'C:\Users\penversa\Documents\Grids\CGMES\TYNDP_2025\2025NT_ES_model_003.zip'
+    data = get_xml_from_zip(fname)
 
-    # save
-    save_data_frames_to_zip({'Data1': df1, 'Data2': df2}, 'some_file.gridcal')
-
-    # read and print
-    df_list = open_data_frames_from_zip(file_name_zip='some_file.gridcal')
-
-    for name, df in df_list.items():
-        print()
-        print(name)
-        print(df)
+    print()

@@ -29,7 +29,7 @@ from GridCal.Engine.IO.ipa_parser import load_iPA
 from GridCal.Engine.IO.json_parser import parse_json, parse_json_data_v2, parse_json_data_v3
 from GridCal.Engine.IO.psse_parser import PSSeParser
 from GridCal.Engine.IO.cim_parser import CIMImport
-from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, open_data_frames_from_zip
+from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, get_frames_from_zip
 from GridCal.Engine.IO.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
@@ -62,11 +62,11 @@ class FileOpen:
 
             for f in self.file_name:
                 name, file_extension = os.path.splitext(f)
-                if file_extension.lower() != '.xml':
-                    raise Exception('Loading multiple files that are not XML (xml is for CIM)')
+                if file_extension.lower() not in ['.xml', '.zip']:
+                    raise Exception('Loading multiple files that are not XML/Zip (xml or zip is for CIM)')
 
-            parser = CIMImport()
-            self.circuit = parser.load_cim_file(self.file_name, text_func, progress_func)
+            parser = CIMImport(text_func=text_func, progress_func=progress_func)
+            self.circuit = parser.load_cim_file(self.file_name)
             self.logger += parser.logger
 
         else:
@@ -102,9 +102,9 @@ class FileOpen:
                 elif file_extension.lower() == '.gridcal':
 
                     # open file content
-                    data_dictionary = open_data_frames_from_zip(self.file_name,
-                                                                text_func=text_func,
-                                                                progress_func=progress_func)
+                    data_dictionary = get_frames_from_zip(self.file_name,
+                                                          text_func=text_func,
+                                                          progress_func=progress_func)
                     # interpret file content
                     if data_dictionary is not None:
                         self.circuit = data_frames_to_circuit(data_dictionary)
@@ -143,7 +143,8 @@ class FileOpen:
                     if isinstance(data, dict):
                         if 'Red' in data.keys():
                             self.circuit = load_iPA(self.file_name)
-                        elif sum([x in data.keys() for x in ['version', 'software', 'units', 'devices', 'profiles']]) == 5:
+                        elif sum([x in data.keys() for x in ['version', 'software', 'units',
+                                                             'devices', 'profiles']]) == 5:
                             # version 2 of the json parser
                             version = int(float(data['version']))
                             if version == 2:
@@ -151,7 +152,8 @@ class FileOpen:
                             elif version == 3:
                                 self.circuit = parse_json_data_v3(data, self.logger)
                             else:
-                                self.logger.add_error('Recognised as a gridCal compatible Json but the version is not supported')
+                                self.logger.add_error('Recognised as a gridCal compatible Json '
+                                                      'but the version is not supported')
                         else:
                             self.logger.add_error('Unknown json format')
 
@@ -166,9 +168,9 @@ class FileOpen:
                     self.circuit = parser.circuit
                     self.logger += parser.logger
 
-                elif file_extension.lower() == '.xml':
-                    parser = CIMImport()
-                    self.circuit = parser.load_cim_file(self.file_name)
+                elif file_extension.lower() in ['.xml', '.zip']:
+                    parser = CIMImport(text_func=text_func,  progress_func=progress_func)
+                    self.circuit = parser.load_cim_file(self.file_name)  # file_name might be a list of files
                     self.logger += parser.logger
 
             else:

@@ -15,9 +15,11 @@
 
 import chardet
 from GridCal.Engine.basic_structures import Logger
+from GridCal.Engine.IO.zip_interface import get_xml_from_zip, get_xml_content
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
 from math import sqrt
+from typing import Set, Dict, List
 
 
 def index_find(string, start, end):
@@ -33,6 +35,100 @@ def index_find(string, start, end):
 
 def rfid2uuid(val):
     return val.replace('-', '').replace('_', '')
+
+
+def read_cim_files(cim_files):
+    """
+    Reads a list of .zip or xml into a dictionary of file name -> list of text lines
+    :param cim_files: list of file names
+    :return: dictionary of file name -> list of text lines
+    """
+    # read files and sort them in the preferred reading order
+    data = dict()
+
+    if isinstance(cim_files, list):
+
+        for f in cim_files:
+            _, file_extension = os.path.splitext(f)
+            name = os.path.basename(f)
+
+            if file_extension == '.xml':
+                file_ptr = open(f, 'rb')
+                data[name] = get_xml_content(file_ptr)
+                file_ptr.close()
+            elif file_extension == '.zip':
+                # read the content of a zip file
+                d = get_xml_from_zip(file_name_zip=f)
+                for key, value in d.items():
+                    data[key] = value
+    else:
+        name, file_extension = os.path.splitext(cim_files)
+
+        if file_extension == '.xml':
+            file_ptr = open(cim_files, 'rb')
+            data[name] = get_xml_content(file_ptr)
+            file_ptr.close()
+
+        elif file_extension == '.zip':
+            # read the content of a zip file
+            d = get_xml_from_zip(file_name_zip=cim_files)
+            for key, value in d.items():
+                data[key] = value
+
+    return data
+
+
+def sort_cim_files(file_names):
+    """
+    Sorts the CIM files in the preferred reading order
+    :param file_names: lis of file names
+    :return: sorted list of file names
+    """
+    # sort the files
+    lst = list()
+    nn = len(file_names)
+    for i in range(nn - 1, -1, -1):
+        f = file_names[i]
+        if 'TP' in f or 'TPDB' in f:
+            lst.append(file_names.pop(i))
+
+    nn = len(file_names)
+    for i in range(nn - 1, -1, -1):
+        f = file_names[i]
+        if 'EQBD' in f:
+            lst.append(file_names.pop(i))
+
+    lst2 = lst + file_names
+
+    return lst2
+
+
+def get_elements(dict: Dict, keys):
+
+    elm = list()
+
+    for k in keys:
+        try:
+            lst = dict[k]
+            elm += lst
+        except KeyError:
+            pass
+
+    return elm
+
+
+def any_in_dict(dict: Dict, keys):
+
+    found = False
+
+    for k in keys:
+        try:
+            lst = dict[k]
+            found = True
+        except KeyError:
+            pass
+
+    return found
 
 
 class GeneralContainer:
@@ -53,14 +149,42 @@ class GeneralContainer:
         # pick the object id
         self.id = id
 
+        self.uuid = rfid2uuid(id)
+
         # list of properties which are considered as resources
         self.resources = resources
 
-        self.terminals = list()
+        self.terminals = set()
 
-        self.base_voltage = list()
+        self.base_voltage = set()
 
-        self.containers = list()
+        self.containers = set()
+
+    def get_base_voltage(self):
+
+        if len(self.base_voltage) > 0:
+            return list(self.base_voltage)[0]
+        else:
+            return None
+
+    def get_terminals(self):
+        return list(self.terminals)
+
+    def get_containers(self):
+        return list(self.containers)
+
+    def __repr__(self):
+        return self.id
+
+    def __hash__(self):
+        # alternatively, return hash(repr(self))
+        return int(self.uuid, 16)  # hex string to int
+
+    def __lt__(self, other):
+        return self.__hash__() < other.__hash__()
+
+    def __eq__(self, other):
+        return self.id == other.id
 
     def parse_line(self, line):
         """
@@ -167,8 +291,6 @@ class ACLineSegment(GeneralContainer):
     def __init__(self, id, tpe):
         GeneralContainer.__init__(self, id, tpe)
 
-        self.base_voltage = list()
-
         self.current_limit = list()
 
 
@@ -201,8 +323,6 @@ class SynchronousMachine(GeneralContainer):
     def __init__(self, id, tpe):
         GeneralContainer.__init__(self, id, tpe)
 
-        self.base_voltage = list()
-
         self.regulating_control = list()
 
         self.generating_unit = list()
@@ -210,13 +330,16 @@ class SynchronousMachine(GeneralContainer):
 
 class CIMCircuit:
 
-    def __init__(self):
+    def __init__(self, text_func=None, progress_func=None):
         """
         CIM circuit constructor
         """
         self.elements = list()
         self.elm_dict = dict()
         self.elements_by_type = dict()
+
+        self.text_func = text_func
+        self.progress_func = progress_func
 
         # classes to read, theo others are ignored
         self.classes = ["ACLineSegment",
@@ -264,6 +387,14 @@ class CIMCircuit:
                         "VoltageLevel",
                         "VoltageLimit"
                         ]
+
+    def emit_text(self, val):
+        if self.text_func is not None:
+            self.text_func(val)
+
+    def emit_progress(self, val):
+        if self.progress_func is not None:
+            self.progress_func(val)
 
     def clear(self):
         """
@@ -342,15 +473,15 @@ class CIMCircuit:
                         # A terminal points at an equipment with the property ConductingEquipment
                         # A terminal points at a bus (topological node) with the property TopologicalNode
                         if prop in ['ConductingEquipment', 'TopologicalNode', 'ConnectivityNode']:
-                            ref_obj.terminals.append(element)
+                            ref_obj.terminals.add(element)
                             recognised.add(prop)
 
                         if prop in ['BaseVoltage', 'VoltageLevel']:
-                            element.base_voltage.append(ref_obj)
+                            element.base_voltage.add(ref_obj)
                             recognised.add(prop)
 
                         if prop in ['EquipmentContainer']:
-                            element.containers.append(ref_obj)
+                            element.containers.add(ref_obj)
                             recognised.add(ref_obj.tpe)
 
                         # the winding points at the transformer with the property PowerTransformer
@@ -395,12 +526,8 @@ class CIMCircuit:
                         pass
                         # print('Not found ', prop, ref)
 
-    def parse_file(self, file_name, classes_=None, progress_func=None):
-        """
-        Parse CIM file and add all the recognised objects
-        :param file_name:  file name or path
-        :return:
-        """
+    def parse_xml_text(self, text_lines, classes_=None):
+
         if classes_ is None:
             classes = self.classes
         else:
@@ -409,82 +536,94 @@ class CIMCircuit:
 
         disabled = False
 
+        n_lines = len(text_lines)
+
+        for line_idx, line in enumerate(text_lines):
+
+            if '<!--' in line:
+                disabled = True
+
+            if not disabled:
+
+                # determine if the line opens or closes and object
+                # and of which type of the ones pre-specified
+                start_rec, end_rec, tpe = self.check_type(line, classes)
+
+                if tpe != "":
+                    # a recognisable object was found
+
+                    if start_rec:
+
+                        id = index_find(line, '"', '">').replace('#', '')
+
+                        # start recording object
+                        if tpe == 'PowerTransformer':
+                            element = PowerTransformer(id, tpe)
+
+                        elif tpe == 'ACLineSegment':
+                            element = ACLineSegment(id, tpe)
+
+                        elif tpe == 'TransformerWinding':
+                            element = Winding(id, tpe)
+
+                        elif tpe == 'PowerTransformerEnd':
+                            element = Winding(id, tpe)
+
+                        elif tpe == 'ConformLoad':
+                            element = ConformLoad(id, tpe)
+
+                        elif tpe == 'SynchronousMachine':
+                            element = SynchronousMachine(id, tpe)
+
+                        else:
+                            element = GeneralContainer(id, tpe)
+
+                        recording = True
+
+                    if end_rec:
+                        # stop recording object
+                        if recording:
+
+                            if element.id in self.elm_dict.keys():
+                                idx = self.elm_dict[element.id]
+                                self.elements[idx].merge(element)
+
+                            else:
+                                self.elm_dict[element.id] = len(self.elements)
+                                self.elements.append(element)
+
+                            if tpe not in self.elements_by_type.keys():
+                                self.elements_by_type[tpe] = list()
+
+                            self.elements_by_type[tpe].append(element)
+                            recording = False
+
+                else:
+                    # process line
+                    if recording:
+                        element.parse_line(line)
+            else:
+                # the line is a comment
+                if '-->' in line:
+                    disabled = False
+
+            self.emit_progress((line_idx + 1) / n_lines * 100.0)
+
+    def parse_file(self, file_name, classes_=None):
+        """
+        Parse CIM file and add all the recognised objects
+        :param file_name:  file name or path
+        :return:
+        """
+
         # make a guess of the file encoding
         detection = chardet.detect(open(file_name, "rb").read())
 
         # Read text file line by line
         with open(file_name, 'r', encoding=detection['encoding']) as file_pointer:
+            text_lines = [l for l in file_pointer]
 
-            for line in file_pointer:
-
-                if '<!--' in line:
-                    disabled = True
-
-                if not disabled:
-
-                    # determine if the line opens or closes and object
-                    # and of which type of the ones pre-specified
-                    start_rec, end_rec, tpe = self.check_type(line, classes)
-
-                    if tpe != "":
-                        # a recognisable object was found
-
-                        if start_rec:
-
-                            id = index_find(line, '"', '">').replace('#', '')
-
-                            # start recording object
-                            if tpe == 'PowerTransformer':
-                                element = PowerTransformer(id, tpe)
-
-                            elif tpe == 'ACLineSegment':
-                                element = ACLineSegment(id, tpe)
-
-                            elif tpe == 'TransformerWinding':
-                                element = Winding(id, tpe)
-
-                            elif tpe == 'PowerTransformerEnd':
-                                element = Winding(id, tpe)
-
-                            elif tpe == 'ConformLoad':
-                                element = ConformLoad(id, tpe)
-
-                            elif tpe == 'SynchronousMachine':
-                                element = SynchronousMachine(id, tpe)
-
-                            else:
-                                element = GeneralContainer(id, tpe)
-
-                            recording = True
-
-                        if end_rec:
-                            # stop recording object
-                            if recording:
-
-                                if element.id in self.elm_dict.keys():
-                                    idx = self.elm_dict[element.id]
-                                    self.elements[idx].merge(element)
-
-                                else:
-                                    self.elm_dict[element.id] = len(self.elements)
-                                    self.elements.append(element)
-
-                                if tpe not in self.elements_by_type.keys():
-                                    self.elements_by_type[tpe] = list()
-
-                                self.elements_by_type[tpe].append(element)
-                                recording = False
-
-                    else:
-                        # process line
-                        if recording:
-                            element.parse_line(line)
-                else:
-                    # the line is a comment
-                    # print('#', line.replace('\n', ''))
-
-                    if '-->' in line:
-                        disabled = False
+        self.parse_xml_text(text_lines, classes_=classes_)
 
 
 class CIMExport:
@@ -1043,7 +1182,7 @@ class CIMExport:
 
 class CIMImport:
 
-    def __init__(self):
+    def __init__(self, text_func=None, progress_func=None):
 
         self.logger = Logger()
 
@@ -1052,9 +1191,20 @@ class CIMImport:
         self.node_terminal = dict()
         self.terminal_node = dict()
 
+        self.text_func = text_func
+        self.progress_func = progress_func
+
         self.needs_compiling = True
 
         self.topology = None
+
+    def emit_text(self, val):
+        if self.text_func is not None:
+            self.text_func(val)
+
+    def emit_progress(self, val):
+        if self.progress_func is not None:
+            self.progress_func(val)
 
     def add_node_terminal_relation(self, connectivity_node, terminal):
         """
@@ -1097,6 +1247,7 @@ class CIMImport:
                 # property not found
                 if defaults is None:
                     print(prop, 'not found')
+                    val = None
                 else:
                     val = defaults[i]
 
@@ -1104,81 +1255,14 @@ class CIMImport:
 
         return res
 
-    def get_elements(self, dict, keys):
-
-        elm = list()
-
-        for k in keys:
-            try:
-                lst = dict[k]
-                elm += lst
-            except KeyError:
-                pass
-
-        return elm
-
-    def any_in_dict(self, dict, keys):
-
-        found = False
-
-        for k in keys:
-            try:
-                lst = dict[k]
-                found = True
-            except KeyError:
-                pass
-
-        return found
-
-    def load_cim_file(self, cim_files, text_func=None, progress_func=None):
-        """
-        Load CIM file
-        :param cim_files: list of CIM files (.xml)
+    def parse_model(self, cim: CIMCircuit, circuit: MultiCircuit, recognised: Set):
         """
 
-        # declare GridCal circuit
-        circuit = MultiCircuit()
-        EPS = 1e-16
-
-        # declare CIM circuit to process the file(s)
-        cim = CIMCircuit()
-
-        # parse files
-        if isinstance(cim_files, list):
-
-            # sort the files
-            lst = list()
-            nn = len(cim_files)
-            for i in range(nn-1, -1, -1):
-                f = cim_files[i]
-                if 'TP' in f or 'TPDB' in f:
-                    lst.append(cim_files.pop(i))
-
-            nn = len(cim_files)
-            for i in range(nn-1, -1, -1):
-                f = cim_files[i]
-                if 'EQBD' in f:
-                    lst.append(cim_files.pop(i))
-
-            lst2 = lst + cim_files
-
-            for f in lst2:
-                name, file_extension = os.path.splitext(f)
-                if text_func is None:
-                    print('loading', f)
-                else:
-                    text_func('Loading ' + name)
-                cim.parse_file(f, progress_func=progress_func)
-        else:
-            cim.parse_file(cim_files)
-
-        # set of used classes
-        recognised = set()
-
-        # replace CIM references in the CIM objects
-        cim.find_references(recognised=recognised)
-
-        # Model
+        :param cim:
+        :param circuit:
+        :param recognised:
+        :return:
+        """
         if 'Model' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['Model']:
                 if 'description' in elm.properties.keys():
@@ -1190,8 +1274,8 @@ class CIMImport:
                 # add class to recognised objects
                 recognised.add(elm.tpe)
 
-        # Terminals
-        T_dict = dict()
+    def parse_terminals(self, cim: CIMCircuit, T_dict: Dict, recognised: Set):
+
         if 'Terminal' in cim.elements_by_type.keys():
 
             for elm in cim.elements_by_type['Terminal']:
@@ -1209,18 +1293,27 @@ class CIMImport:
         else:
             self.logger.add_error('There are no Terminals!!!!!')
 
-        # ConnectivityNodes
-        CN_dict = dict()
+    def parse_connectivity_nodes(self, cim: CIMCircuit, circuit: MultiCircuit, CN_dict: Dict, T_dict: Dict,
+                                 recognised: Set):
+        """
+
+        :param cim:
+        :param circuit:
+        :param CN_dict:
+        :param T_dict:
+        :param recognised:
+        :return:
+        """
         cim_nodes = ['TopologicalNode', 'ConnectivityNode']
-        if self.any_in_dict(cim.elements_by_type, cim_nodes):
-            for elm in self.get_elements(cim.elements_by_type, cim_nodes):
+        if any_in_dict(cim.elements_by_type, cim_nodes):
+            for elm in get_elements(cim.elements_by_type, cim_nodes):
                 try:
                     name = elm.properties['name']
                 except KeyError:
                     name = ''
 
                 if len(elm.base_voltage) > 0:
-                    Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
+                    Vnom = float(elm.get_base_voltage().properties['nominalVoltage'])
                 else:
                     Vnom = 0
 
@@ -1236,14 +1329,14 @@ class CIMImport:
             self.logger.add_error('There are no TopologicalNodes nor ConnectivityNodes!!!!!')
 
         # CN_T: build the connectivity nodes - terminals relations structure
-        if self.any_in_dict(cim.elements_by_type, cim_nodes):
-            for elm in self.get_elements(cim.elements_by_type, cim_nodes):
+        if any_in_dict(cim.elements_by_type, cim_nodes):
+            for elm in get_elements(cim.elements_by_type, cim_nodes):
 
                 # get the connectivity node
                 CN = CN_dict[elm.id]
 
                 # get the terminals associated to the connectivity node and register the associations
-                for term in elm.terminals:
+                for term in elm.get_terminals():
                     try:
                         self.add_node_terminal_relation(CN, T_dict[term.id])
                     except KeyError:
@@ -1254,10 +1347,18 @@ class CIMImport:
         else:
             self.logger.add_error('No topological nodes: The grid MUST have topological Nodes')
 
-        # BusBarSections
+    def parse_bus_bars(self, cim: CIMCircuit, T_dict: Dict, recognised: Set):
+        """
+
+        :param cim:
+        :param T_dict:
+        :param recognised:
+        :return:
+        """
         if 'BusbarSection' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['BusbarSection']:
-                T1 = T_dict[elm.terminals[0].id]  # get the terminal of the bus bar section
+                term = elm.get_terminals()
+                T1 = T_dict[term[0].id]  # get the terminal of the bus bar section
                 CN = self.terminal_node[T1][0]  # get the connectivity node of the terminal
                 CN.is_bus = True  # the connectivity node has a BusbarSection attached, hence it is a real bus
 
@@ -1266,35 +1367,52 @@ class CIMImport:
         else:
             self.logger.add_error("No BusbarSections: There is no chance to reduce the grid")
 
-        # PerLengthSequenceImpedance
-        PLSI_dict = dict()
+    def parse_per_length_sequence_impedance(self, cim: CIMCircuit, circuit: MultiCircuit,
+                                            PLSI_dict: Dict, recognised: Set):
+        """
+
+        :param cim:
+        :param PLSI_dict:
+        :param recognised:
+        :return:
+        """
         if 'PerLengthSequenceImpedance' in cim.elements_by_type.keys():
             prop_lst = ['r', 'x', 'r0', 'x0', 'gch', 'bch', 'g0ch', 'b0ch']
-            prop_def = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]             
-            for elm in cim.elements_by_type['PerLengthSequenceImpedance']:          
-                r, x, r0, x0, g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)              
+            prop_def = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+            for elm in cim.elements_by_type['PerLengthSequenceImpedance']:
+                r, x, r0, x0, g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)
                 obj = SequenceLineType(name=elm.id, R=r, X=x, G=g, B=b, R0=r0, X0=x0, G0=g0, B0=b0)
                 circuit.add_sequence_line(obj)
                 elm.template = obj
-                
+
                 PLSI_dict[elm.id] = elm
 
                 # add class to recognised objects
-                recognised.add(elm.tpe) 
+                recognised.add(elm.tpe)
             sl = circuit.get_catalogue_dict_by_name('Sequence lines')
 
-        # Lines
+    def parse_ac_line_segment(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, PLSI_dict: Dict,
+                              recognised: Set):
+        """
+
+        :param cim:
+        :param circuit:
+        :param T_dict:
+        :param PLSI_dict:
+        :param recognised:
+        :return:
+        """
         prop_lst = ['r', 'x', 'r0', 'x0', 'gch', 'bch', 'g0ch', 'b0ch']
         if 'ACLineSegment' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['ACLineSegment']:
-
-                if len(elm.terminals) == 2:
-                        T1 = T_dict[elm.terminals[0].id]
-                        T2 = T_dict[elm.terminals[1].id]
-                        B1 = self.terminal_node[T1][0]
-                        B2 = self.terminal_node[T2][0]
+                term = elm.get_terminals()
+                if len(term) == 2:
+                    T1 = T_dict[term[0].id]
+                    T2 = T_dict[term[1].id]
+                    B1 = self.terminal_node[T1][0]
+                    B2 = self.terminal_node[T2][0]
                 else:
-                    self.logger.add_error('Missing terminals', elm.id)
+                    self.logger.add_error('Number of terminals different of 2', elm.id, len(term))
                     continue
 
                 try:
@@ -1334,7 +1452,7 @@ class CIMImport:
                         l = 0.0
 
                 try:
-                    Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
+                    Vnom = float(elm.get_base_voltage().properties['nominalVoltage'])
                 except KeyError:
                     Vnom = 1.0
                     self.logger.add_error('No nominalVoltage property', elm.id)
@@ -1385,7 +1503,15 @@ class CIMImport:
                 # add class to recognised objects
                 recognised.add(elm.tpe)
 
-        # PowerTransformer
+    def parse_power_transformer(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, recognised: Set):
+        """
+
+        :param cim:
+        :param circuit:
+        :param T_dict:
+        :param recognised:
+        :return:
+        """
         if 'PowerTransformer' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['PowerTransformer']:
 
@@ -1393,14 +1519,15 @@ class CIMImport:
 
                 if len(elm.windings) == 2:
 
-                    if len(elm.windings[0].terminals) > 0:
-                        T1 = T_dict[elm.windings[0].terminals[0].id]
-                        T2 = T_dict[elm.windings[1].terminals[0].id]
-                    elif len(elm.terminals) == 2:
-                        T1 = T_dict[elm.terminals[0].id]
-                        T2 = T_dict[elm.terminals[1].id]
+                    if len(elm.windings[0].get_terminals()) > 0:
+                        T1 = T_dict[elm.windings[0].get_terminals()[0].id]
+                        T2 = T_dict[elm.windings[1].get_terminals()[0].id]
+                    elif len(elm.get_terminals()) == 2:
+                        term = elm.get_terminals()
+                        T1 = T_dict[term[0].id]
+                        T2 = T_dict[term[1].id]
                     else:
-                        self.logger.add_error('Missing terminals', elm.id)
+                        self.logger.add_error('Incorrect number of terminals', elm.id, len(elm.windings[0].get_terminals()))
                         continue
 
                     B1 = self.terminal_node[T1][0]
@@ -1426,7 +1553,7 @@ class CIMImport:
                             r = 0
                             x = 0
                             self.logger.add_error('No impedance components', elm.windings[i].id)
-                            
+
                         try:
                             g = float(elm.windings[i].properties['g'])
                             b = float(elm.windings[i].properties['b'])
@@ -1452,7 +1579,7 @@ class CIMImport:
                         except KeyError:
                             self.logger.add_error('No ratedS', elm.windings[i].id)
                             S = 1.0
-                            
+
                         RATE += S
 
                         try:
@@ -1511,17 +1638,27 @@ class CIMImport:
                 # add class to recognised objects
                 recognised.add(elm.tpe)
 
-        # Switches
+    def parse_switches(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, recognised: Set, EPS):
+        """
+
+        :param cim:
+        :param circuit:
+        :param T_dict:
+        :param recognised:
+        :param EPS:
+        :return:
+        """
         cim_switches = ['Switch', 'Disconnector', 'Breaker', 'LoadBreakSwitch']
-        if self.any_in_dict(cim.elements_by_type, cim_switches):
-            for elm in self.get_elements(cim.elements_by_type, cim_switches):
-                if len(elm.terminals) == 2:
-                        T1 = T_dict[elm.terminals[0].id]
-                        T2 = T_dict[elm.terminals[1].id]
-                        B1 = self.terminal_node[T1][0]
-                        B2 = self.terminal_node[T2][0]
+        if any_in_dict(cim.elements_by_type, cim_switches):
+            for elm in get_elements(cim.elements_by_type, cim_switches):
+                term = elm.get_terminals()
+                if len(term) == 2:
+                    T1 = T_dict[term[0].id]
+                    T2 = T_dict[term[1].id]
+                    B1 = self.terminal_node[T1][0]
+                    B2 = self.terminal_node[T2][0]
                 else:
-                    self.logger.add_error('Missing terminals', elm.id)
+                    self.logger.add_error('Incorrect number of terminals', elm.id, len(term))
                     continue
 
                 if 'name' in elm.properties:
@@ -1555,14 +1692,21 @@ class CIMImport:
                 # add class to recognised objects
                 recognised.add(elm.tpe)
 
-        # Loads
+    def parse_loads(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, recognised: Set):
+        """
+
+        :param cim:
+        :param circuit:
+        :param T_dict:
+        :param recognised:
+        :return:
+        """
         cim_loads = ['ConformLoad', 'EnergyConsumer', 'NonConformLoad']
-        if self.any_in_dict(cim.elements_by_type, cim_loads):
-            for elm in self.get_elements(cim.elements_by_type, cim_loads):
-
-                if len(elm.terminals) > 0:
-
-                    T1 = T_dict[elm.terminals[0].id]
+        if any_in_dict(cim.elements_by_type, cim_loads):
+            for elm in get_elements(cim.elements_by_type, cim_loads):
+                term = elm.get_terminals()
+                if len(term) > 0:
+                    T1 = T_dict[term[0].id]
                     B1 = self.terminal_node[T1][0]
 
                     # Active and reactive power values
@@ -1574,7 +1718,10 @@ class CIMImport:
                             name = elm.load_response_characteristics[0].properties['name']
                         else:
                             p, q = self.try_properties(elm.properties, ['pfixed', 'qfixed'])
-                            name = elm.properties['name']
+                            try:
+                                name = elm.properties['name']
+                            except KeyError:
+                                name = 'ConformLoad@{}'.format(B1.name)
 
                     elif elm.tpe == 'NonConformLoad':
                         if len(elm.load_response_characteristics) > 0:
@@ -1583,7 +1730,10 @@ class CIMImport:
                             name = elm.load_response_characteristics[0].properties['name']
                         else:
                             p, q = self.try_properties(elm.properties, ['pfixed', 'qfixed'])
-                            name = elm.properties['name']
+                            try:
+                                name = elm.properties['name']
+                            except KeyError:
+                                name = 'NonConformLoad@{}'.format(B1.name)
 
                     else:
                         p = self.try_properties(elm.properties, ['pfixed'])[0]
@@ -1592,29 +1742,43 @@ class CIMImport:
 
                     load = Load(idtag=rfid2uuid(elm.id),
                                 name=name,
-                                G=0, B=0,
-                                Ir=0, Ii=0,
-                                P=p, Q=q)
+                                G=0,
+                                B=0,
+                                Ir=0,
+                                Ii=0,
+                                P=p if p is not None else 0,
+                                Q=q if q is not None else 0)
                     circuit.add_load(B1, load)
 
                     # add class to recognised objects
                     recognised.add(elm.tpe)
                 else:
-                    self.logger.add_error('Missing terminals', elm.id)
+                    self.logger.add_error('Incorrect number of terminals', elm.id, len(term))
 
-        # shunts
+    def parse_shunts(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, recognised: Set):
+        """
+
+        :param cim:
+        :param circuit:
+        :param T_dict:
+        :param recognised:
+        :return:
+        """
         if 'ShuntCompensator' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['ShuntCompensator']:
-
-                if len(elm.terminals) > 0:
-                    T1 = T_dict[elm.terminals[0].id]
+                term = elm.get_terminals()
+                if len(term) > 0:
+                    T1 = T_dict[term[0].id]
                     B1 = self.terminal_node[T1][0]
 
                     prop_lst = ['gPerSection', 'bPerSection', 'g0PerSection', 'b0PerSection']
                     prop_def = [0.0, 0.0, 0.0, 0.0]
                     g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)
 
-                    name = elm.properties['name']
+                    try:
+                        name = elm.properties['name']
+                    except KeyError:
+                        name = 'ShuntCompensator@{}'.format(B1.name)
 
                     # self.add_shunt(Shunt(name, T1, g, b, g0, b0))
 
@@ -1627,19 +1791,28 @@ class CIMImport:
                     # add class to recognised objects
                     recognised.add(elm.tpe)
                 else:
-                    self.logger.add_error('Missing terminals', elm.id)
+                    self.logger.add_error('Incorrect number of terminals', elm.id, len(term))
 
-        # Generators
+    def parse_generators(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, recognised: Set):
+        """
+
+        :param cim:
+        :param circuit:
+        :param T_dict:
+        :param recognised:
+        :return:
+        """
         if 'SynchronousMachine' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['SynchronousMachine']:
-                if len(elm.terminals) > 0:
-                    T1 = T_dict[elm.terminals[0].id]
+                term = elm.get_terminals()
+                if len(term) > 0:
+                    T1 = T_dict[term[0].id]
                     B1 = self.terminal_node[T1][0]
 
                     # nominal voltage and set voltage
                     if len(elm.base_voltage) > 0:
                         try:
-                            Vnom = float(elm.base_voltage[0].properties['nominalVoltage'])
+                            Vnom = float(elm.get_base_voltage().properties['nominalVoltage'])
                         except KeyError:
                             Vnom = 1.0
                             self.logger.add_error('no nominalVoltage property', elm.id)
@@ -1678,8 +1851,10 @@ class CIMImport:
                             p = 0.0
                             self.logger.add_error('No active power p value', elm.id)
 
-                    name = elm.properties['name']
-                    # self.add_generator(Generator(name, T1, p, vset))
+                    try:
+                        name = elm.properties['name']
+                    except KeyError:
+                        name = 'Generator@{}'.format(B1.name)
 
                     gen = Generator(idtag=rfid2uuid(elm.id),
                                     name=name,
@@ -1690,18 +1865,100 @@ class CIMImport:
                     # add class to recognised objects
                     recognised.add(elm.tpe)
                 else:
-                    self.logger.add_error('Missing terminals', elm.id)
+                    self.logger.add_error('Incorrect number of terminals', elm.id, len(term))
+
+    def parse_slacks(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, recognised: Set):
+        """
+
+        :param cim:
+        :param circuit:
+        :param T_dict:
+        :param recognised:
+        :return:
+        """
+        cim_slack = ['EquivalentNetwork', 'EquivalentInjection']
+        if any_in_dict(cim.elements_by_type, cim_slack):
+            for elm in get_elements(cim.elements_by_type, cim_slack):
+                term = elm.get_terminals()
+                if len(term) > 0:
+                    T1 = T_dict[term[0].id]
+                    try:
+                        B1 = self.terminal_node[T1][0]
+                        B1.is_slack = True
+                    except KeyError:
+                        self.logger.add_error('Missing node from terminal', T1.id)
+                else:
+                    self.logger.add_error('Incorrect number of terminals', elm.id, len(term))
+
+    def load_cim_file(self, cim_files):
+        """
+        Load CIM file
+        :param cim_files: list of CIM files (.xml)
+        """
+
+        # declare GridCal circuit
+        circuit = MultiCircuit()
+        EPS = 1e-16
+
+        # declare CIM circuit to process the file(s)
+        cim = CIMCircuit(text_func=self.text_func, progress_func=self.progress_func)
+
+        # import the cim files' content into a dictionary
+        data = read_cim_files(cim_files)
+
+        lst2 = sort_cim_files(list(data.keys()))
+        # Parse the files
+        for f in lst2:
+            name, file_extension = os.path.splitext(f)
+            self.emit_text('Parsing xml structure of ' + name)
+
+            cim.parse_xml_text(text_lines=data[f])
+
+        # set of used classes
+        recognised = set()
+
+        # replace CIM references in the CIM objects
+        self.emit_text('Looking for references')
+        cim.find_references(recognised=recognised)
+
+        # Model
+        self.parse_model(cim, circuit, recognised)
+
+        # Terminals
+        T_dict = dict()
+        self.parse_terminals(cim, T_dict, recognised)
+
+        # ConnectivityNodes
+        CN_dict = dict()
+        self.parse_connectivity_nodes(cim, circuit, CN_dict, T_dict, recognised)
+
+        # BusBarSections
+        self.parse_bus_bars(cim, T_dict, recognised)
+
+        # PerLengthSequenceImpedance
+        PLSI_dict = dict()
+        self.parse_per_length_sequence_impedance(cim, circuit, PLSI_dict, recognised)
+
+        # Lines
+        self.parse_ac_line_segment(cim, circuit, T_dict, PLSI_dict, recognised)
+
+        # PowerTransformer
+        self.parse_power_transformer(cim, circuit, T_dict, recognised)
+
+        # Switches
+        self.parse_switches(cim, circuit, T_dict, recognised, EPS)
+
+        # Loads
+        self.parse_loads(cim, circuit, T_dict, recognised)
+
+        # shunts
+        self.parse_shunts(cim, circuit, T_dict, recognised)
+
+        # Generators
+        self.parse_generators(cim, circuit, T_dict, recognised)
 
         # Slacks (External networks)
-        cim_slack = ['EquivalentNetwork', 'EquivalentInjection']
-        if self.any_in_dict(cim.elements_by_type, cim_slack):
-            for elm in self.get_elements(cim.elements_by_type, cim_slack):
-                if len(elm.terminals) > 0:
-                    T1 = T_dict[elm.terminals[0].id]
-                    B1 = self.terminal_node[T1][0]
-                    B1.is_slack = True
-                else:
-                    self.logger.add_error('Missing terminals', elm.id)
+        self.parse_slacks(cim, circuit, T_dict, recognised)
 
         # log the unused types
         for tpe in cim.elements_by_type.keys():
@@ -1734,5 +1991,4 @@ if __name__ == '__main__':
     file_open = FileOpen(fnames)
     grid = file_open.open()
 
-    file_save = FileSave(grid, os.path.join(folder, '20210203T1830Z_2D_REN.gridcal'))
-    file_save.save()
+    FileSave(grid, os.path.join(folder, '20210203T1830Z_2D_REN.gridcal')).save()
