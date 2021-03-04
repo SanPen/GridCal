@@ -12,14 +12,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-
+import os
 import chardet
+import pandas as pd
+from math import sqrt
+from typing import Set, Dict, List
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.IO.zip_interface import get_xml_from_zip, get_xml_content
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices import *
-from math import sqrt
-from typing import Set, Dict, List
+import GridCal.Engine.Devices as gcdev
+
 
 
 def index_find(string, start, end):
@@ -131,50 +133,56 @@ def any_in_dict(dict: Dict, keys):
     return found
 
 
+def str2num(val: str):
+    """
+    Try to convert to number, else keep as string
+    :param val: String value
+    :return: int, float or string
+    """
+    # if "." in val:
+    #     try:
+    #         return float(val)
+    #     except ValueError:
+    #         return val
+    # elif val.isdigit():
+    #     return int(val)
+    # else:
+    #     return val
+    try:
+        return int(val)
+    except ValueError:
+        try:
+            return float(val)
+        except ValueError:
+            return val
+
+
 class GeneralContainer:
 
-    def __init__(self, id, tpe, resources=list(), class_replacements=dict()):
+    def __init__(self, rfid, tpe):
         """
         General CIM object container
-        :param header: object xml header
+        :param rfid: RFID
         :param tpe: type of the object (class)
         """
+
+        # dictionary of properties read from the xml
         self.properties = dict()
 
-        self.class_replacements = class_replacements
+        # dictionary of objects that reference this object
+        self.references_to_me = dict()
 
         # store the object type
         self.tpe = tpe
 
         # pick the object id
-        self.id = id
+        self.rfid = rfid
+        self.uuid = rfid2uuid(rfid)
 
-        self.uuid = rfid2uuid(id)
-
-        # list of properties which are considered as resources
-        self.resources = resources
-
-        self.terminals = set()
-
-        self.base_voltage = set()
-
-        self.containers = set()
-
-    def get_base_voltage(self):
-
-        if len(self.base_voltage) > 0:
-            return list(self.base_voltage)[0]
-        else:
-            return None
-
-    def get_terminals(self):
-        return list(self.terminals)
-
-    def get_containers(self):
-        return list(self.containers)
+        self.name = ''
 
     def __repr__(self):
-        return self.id
+        return self.rfid
 
     def __hash__(self):
         # alternatively, return hash(repr(self))
@@ -184,12 +192,23 @@ class GeneralContainer:
         return self.__hash__() < other.__hash__()
 
     def __eq__(self, other):
-        return self.id == other.id
+        return self.rfid == other.rfid
 
-    def parse_line(self, line):
+    def add_reference(self, obj: "GeneralContainer"):
+        """
+        Adds a categorized reference to this object
+        :param obj:
+        :return:
+        """
+        if obj.tpe in self.references_to_me.keys():
+            self.references_to_me[obj.tpe].add(obj)
+        else:
+            self.references_to_me[obj.tpe] = {obj}
+
+    def parse_line(self, xml_line):
         """
         Parse xml line that eligibly belongs to this object
-        :param line: xml text line
+        :param xml_line: xml text line
         """
 
         # the parsers are lists of 2 sets of separators
@@ -200,10 +219,10 @@ class GeneralContainer:
 
         for L1, L2 in parsers:
             # try to parse the property
-            prop = index_find(line, L1[0], L1[1]).strip()
+            prop = index_find(xml_line, L1[0], L1[1]).strip()
 
             # try to parse the value
-            val = index_find(line, L2[0], L2[1])
+            val = index_find(xml_line, L2[0], L2[1])
 
             # remove the pound
             if len(val) > 0:
@@ -212,10 +231,11 @@ class GeneralContainer:
 
             val = val.replace('\n', '')
 
-            if prop != "":
-                # if val not in ["", "\n"]:
-                # if val not in [ "\n"]:
+            if prop != "" and val != "":
                 self.properties[prop] = val
+
+                if hasattr(self, prop):
+                    setattr(self, prop, str2num(val))
 
     def merge(self, other):
         """
@@ -226,7 +246,7 @@ class GeneralContainer:
 
     def print(self):
         print('Type:' + self.tpe)
-        print('Id:' + self.id)
+        print('Id:' + self.rfid)
 
         for key in self.properties.keys():
             val = self.properties[key]
@@ -239,7 +259,7 @@ class GeneralContainer:
                 print(key, ':', val)
 
     def __str__(self):
-        return self.tpe + ':' + self.id
+        return self.tpe + ':' + self.rfid
 
     def get_xml(self, level=0):
 
@@ -263,7 +283,7 @@ class GeneralContainer:
         l2 = '  ' * (level + 1)  # middle tabbing
 
         # header
-        xml = l1 + '<cim:' + self.tpe + ' rdf:ID="' + self.id + '">\n'
+        xml = l1 + '<cim:' + self.tpe + ' rdf:ID="' + self.rfid + '">\n'
 
         # properties
         for prop, value in self.properties.items():
@@ -286,57 +306,513 @@ class GeneralContainer:
         return xml
 
 
+class BaseVoltage(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.nominalVoltage = 0
+
+
+class Terminal(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.TopologicalNode = None
+        self.ConductingEquipment = None  # pointer to the Bus
+        self.name = ''
+        self.connected = True
+
+
+class TopologicalNode(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.ConnectivityNodeContainer = None
+
+
+class BusbarSection(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.EquipmentContainer = None
+
+
+class Substation(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.name = ''
+        self.Region = None
+
+
+class OperationalLimitSet(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.name = ''
+        self.Terminal = None
+
+
+class OperationalLimitType(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.name = ''
+        self.limitType = ''
+        self.direction = ''
+
+
+class GeographicalRegion(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+
+class SubGeographicalRegion(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.Region = None
+
+
+class VoltageLevel(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.Substation = None
+        self.BaseVoltage = None
+        self.highVoltageLimit = 0
+        self.lowVoltageLimit = 0
+
+
+class VoltageLimit(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.OperationalLimitType = None
+        self.OperationalLimitSet = None
+        self.value = 0
+
+
+class CurrentLimit(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.OperationalLimitType = None
+        self.OperationalLimitSet = None
+        self.value = 0
+
+
+class EquivalentNetwork(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+
+class EquivalentInjection(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.regulationCapability = False
+        self.BaseVoltage = None
+        self.EquipmentContainer = None
+        self.name = ''
+        self.p = 0
+        self.q = 0
+
+
+class Breaker(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.normalOpen = True
+        self.retained = True
+        self.EquipmentContainer = None
+        self.open = False
+
+
+class Switch(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.normalOpen = True
+        self.retained = True
+        self.EquipmentContainer = None
+        self.open = False
+        self.description = ''
+        self.aggregate = False
+        self.name = ''
+
+
+class cimLine(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+
 class ACLineSegment(GeneralContainer):
 
-    def __init__(self, id, tpe):
-        GeneralContainer.__init__(self, id, tpe)
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
 
-        self.current_limit = list()
+        self.BaseVoltage = None
+        self.current_limit = None
+        self.bch = 0
+        self.gch = 0
+        self.r = 0
+        self.x = 0
+
+
+class PowerTransformerEnd(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.BaseVoltage = None
+        self.b = 0
+        self.g = 0
+        self.r = 0
+        self.x = 0
+        self.ratedS = 0
+        self.ratedU = 0
+        self.PowerTransformer = None
+        self.endNumber = 0
+        self.connectionKind = ""
+        self.Terminal = None
 
 
 class PowerTransformer(GeneralContainer):
 
-    def __init__(self, id, tpe):
-        GeneralContainer.__init__(self, id, tpe)
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
 
-        self.windings = list()
+        self.EquipmentContainer = None
 
 
 class Winding(GeneralContainer):
 
-    def __init__(self, id, tpe):
-        GeneralContainer.__init__(self, id, tpe)
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
 
         self.tap_changers = list()
 
 
+class EnergyConsumer(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.LoadResponse = None
+        self.EquipmentContainer = None
+        self.name = ''
+        self.p = 0
+        self.q = 0
+
+
 class ConformLoad(GeneralContainer):
 
-    def __init__(self, id, tpe):
-        GeneralContainer.__init__(self, id, tpe)
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
 
-        self.load_response_characteristics = list()
+        self.LoadGroup = None
+        self.LoadResponse = None
+        self.EquipmentContainer = None
+        self.p = 0
+        self.q = 0
+
+
+class NonConformLoad(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.name = ''
+        self.EquipmentContainer = None
+        self.LoadResponse = None
+        self.LoadGroup = None
+
+
+class NonConformLoadGroup(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.name = ''
+
+
+class LoadResponseCharacteristic(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.exponentModel = True
+        self.pVoltageExponent = 0
+        self.qVoltageExponent = 0
+
+
+class RegulatingControl(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.mode = ''
+        self.Terminal = None
+        self.discrete = False
+        self.enabled = True
+        self.targetDeadband = 0
+        self.targetValue = 0
+        self.targetValueUnitMultiplier = ''
+
+
+class RatioTapChanger(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.stepVoltageIncrement = 0
+        self.tculControlMode = ''
+        self.TransformerEnd = None
+        self.RatioTapChangerTable = None
+        self.highStep = 0
+        self.lowStep = 0
+        self.ltcFlag = False
+        self.neutralStep = 0
+        self.neutralU = 0
+        self.normalStep = 0
+        self.TapChangerControl = None
+        self.name = ''
+        self.controlEnabled = True
+        self.step = 0
+
+
+class GeneratingUnit(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.initialP = 0
+        self.longPF = 0
+        self.maxOperatingP = 0
+        self.minOperatingP = 0
+        self.nominalP = 0
+        self.shortPF = 0
+        self.EquipmentContainer = None
+        self.description = ''
+        self.normalPF = 0
 
 
 class SynchronousMachine(GeneralContainer):
 
-    def __init__(self, id, tpe):
-        GeneralContainer.__init__(self, id, tpe)
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
 
-        self.regulating_control = list()
+        self.qPercent = 0
+        self.type = ''
+        self.InitialReactiveCapabilityCurve = None
+        self.ratedS = 0
+        self.GeneratingUnit = None
+        self.RegulatingControl = None
+        self.EquipmentContainer = None
+        self.operatingMode = ''
+        self.referencePriority = ''
+        self.p = 0
+        self.q = 0
+        self.controlEnabled = True
 
-        self.generating_unit = list()
+
+class HydroGenerationUnit(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.name = ''
+        self.description = ''
+        self.maxOperatingP = 0
+        self.minOperatingP = ''
+        self.EquipmentContainer = None
+        self.initialP = 0
+        self.longPF = 0
+        self.shortPF = 0
+        self.nominalP = 0
+
+
+class HydroPowerPlant(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.name = ''
+        self.hydroPlantStorageType = ''
+
+
+class LinearShuntCompensator(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.name = ''
+        self.EquipmentContainer = None
+        self.bPerSection = 0
+        self.gPerSection = 0
+        self.maximumSections = 0
+        self.nomU = 0
+        self.normalSections = 0
+
+
+class NuclearGeneratingUnit(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.name = ''
+        self.description = ''
+        self.maxOperatingP = 0
+        self.minOperatingP = 0
+        self.EquipmentContainer = None
+        self.initialP = 0
+        self.longPF = 0
+        self.shortPF = 0
+        self.nominalP = 0
+        self.variableCost = 0
+
+
+class RatioTapChangerTable(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.name = ''
+
+
+class RatioTapChangerTablePoint(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.ratio = 0
+        self.step = 0
+        self.RatioTapChangerTable = None
+
+
+class ReactiveCapabilityCurve(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.name = ''
+        self.curveStyle = ''
+        self.xUnit = ''
+        self.y1Unit = ''
+        self.y2Unit = ''
+
+
+class StaticVarCompensator(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.name = ''
+        self.EquipmentContainer = None
+        self.slope = 0
+        self.inductiveRating = 0
+        self.capacitiveRating = 0
+        self.voltageSetPoint = 0
+        self.sVCControlMode = ''
+        self.RegulatingControl = None
+
+
+class TapChangerControl(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.name = ''
+        self.Terminal = None
+        self.mode = ''
+
+
+class ThermalGenerationUnit(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.name = ''
+        self.description = ''
+        self.maxOperatingP = 0
+        self.minOperatingP = 0
+        self.EquipmentContainer = None
+        self.initialP = 0
+        self.longPF = 0
+        self.shortPF = 0
+        self.nominalP = 0
+
+
+class WindGenerationUnit(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.name = ''
+        self.description = ''
+        self.maxOperatingP = 0
+        self.minOperatingP = 0
+        self.EquipmentContainer = None
+        self.initialP = 0
+        self.longPF = 0
+        self.shortPF = 0
+        self.nominalP = 0
+        self.variableCost = 0
+        self.windGenUnitType = ''
+
+
+class FullModel(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.scenarioTime = ''
+        self.created = ''
+        self.version = ''
+        self.profile = ''
+        self.modelingAuthoritySet = ''
+        self.DependentOn = ''
+
+
+class TieFlow(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.ControlArea = None
+        self.Terminal = None
+        self.positiveFlowIn = True
 
 
 class CIMCircuit:
 
-    def __init__(self, text_func=None, progress_func=None):
+    def __init__(self, text_func=None, progress_func=None, logger=Logger()):
         """
         CIM circuit constructor
         """
         self.elements = list()
         self.elm_dict = dict()
         self.elements_by_type = dict()
+
+        self.logger = logger
 
         self.text_func = text_func
         self.progress_func = progress_func
@@ -361,6 +837,7 @@ class CIMCircuit:
                         "EquipmentContainer",
                         "GeneratingUnit",
                         "GeographicalRegion",
+                        "SubGeographicalRegion",
                         "IEC61970CIMVersion",
                         "Line",
                         "LoadBreakSwitch",
@@ -435,148 +912,113 @@ class CIMCircuit:
 
     def find_references(self, recognised=set()):
         """
-        Replaces the references of the classes given
+        Replaces the references in the "actual" properties of the objects
+        :return: Nothing, it is done in place
+        """
+
+        # find cross references
+        for class_name, elements in self.elements_by_type.items():
+            for element in elements:  # for every element of the type
+                for prop, value in element.properties.items():  # for every registered property
+                    if len(value) > 0:  # if the property value is something
+                        if value[0] == '_':  # the value is an RFID reference
+                            if hasattr(element, prop):  # if the object has the property to cross reference
+                                if value in self.elm_dict.keys():  # if the reference was found ...
+                                    ref = self.elm_dict[value]
+                                    setattr(element, prop, ref)  # set the referenced object in the property
+                                    ref.add_reference(element)  # register the inverse reference
+                                else:
+                                    setattr(element, prop, None)  # I want to know that it was not found
+                                    self.logger.add_error(prop + ' reference not found for ' + class_name,
+                                                          element.rfid, '', value)
+
+    def parse_xml_text(self, text_lines):
+        """
+        Fill the XML into the objects
+        :param text_lines:
         :return:
         """
 
-        ref_elements = dict()
-        for element_type_name, elements in self.elements_by_type.items():
-            for element in elements:
-                ref_elements[rfid2uuid(element.id)] = element
+        class_dict = {'GeneralContainer': GeneralContainer,
+                      'Terminal': Terminal,
+                      'BaseVoltage': BaseVoltage,
+                      'TopologicalNode': TopologicalNode,
+                      'BusbarSection': BusbarSection,
+                      'Substation': Substation,
+                      'OperationalLimitSet': OperationalLimitSet,
+                      'GeographicalRegion': GeographicalRegion,
+                      'SubGeographicalRegion': SubGeographicalRegion,
+                      'VoltageLevel': VoltageLevel,
+                      'CurrentLimit': CurrentLimit,
+                      'VoltageLimit': VoltageLimit,
+                      'EquivalentInjection': EquivalentInjection,
+                      'EquivalentNetwork': EquivalentNetwork,
+                      'Breaker': Breaker,
+                      'Switch': Switch,
+                      'Line': cimLine,
+                      'ACLineSegment': ACLineSegment,
+                      'PowerTransformerEnd': PowerTransformerEnd,
+                      'PowerTransformer': PowerTransformer,
+                      'Winding': Winding,
+                      'EnergyConsumer': EnergyConsumer,
+                      'ConformLoad': ConformLoad,
+                      'NonConformLoad': NonConformLoad,
+                      'LoadResponseCharacteristic': LoadResponseCharacteristic,
+                      'RegulatingControl': RegulatingControl,
+                      'RatioTapChanger': RatioTapChanger,
+                      'GeneratingUnit': GeneratingUnit,
+                      'SynchronousMachine': SynchronousMachine,
+                      'HydroGenerationUnit': HydroGenerationUnit,
+                      'HydroPowerPlant': HydroPowerPlant,
+                      'LinearShuntCompensator': LinearShuntCompensator,
+                      'NuclearGeneratingUnit': NuclearGeneratingUnit,
+                      'RatioTapChangerTable': RatioTapChangerTable,
+                      'RatioTapChangerTablePoint': RatioTapChangerTablePoint,
+                      'ReactiveCapabilityCurve': ReactiveCapabilityCurve,
+                      'StaticVarCompensator': StaticVarCompensator,
+                      'TapChangerControl': TapChangerControl,
+                      'ThermalGenerationUnit': ThermalGenerationUnit,
+                      'WindGenerationUnit': WindGenerationUnit,
+                      'FullModel': FullModel,
+                      'TieFlow': TieFlow}
 
-        # find cross references
-        for element_type_name, elements in self.elements_by_type.items():
+        classes = self.classes
 
-            # for every element
-            for element in elements:
+        # add the classes that may be missing from the classes dict
+        classes = set(classes)
+        for cls in class_dict.keys():
+            classes.add(cls)
+        classes = list(classes)
 
-                # for each property in the element
-                # for prop in element.properties.keys():
-                for prop, ref_code in element.properties.items():
-
-                    ref_code2 = rfid2uuid(ref_code)
-
-                    # if the value of the property is in the object ID references...
-                    if ref_code2 in ref_elements.keys():
-
-                        # replace the reference by the corresponding object properties
-                        # obj_idx = self.elm_dict[ref_code]
-                        # ref_obj = self.elements[obj_idx]
-
-                        ref_obj = ref_elements[ref_code2]
-
-                        # element.properties[prop] = ref_obj
-
-                        # add the element type to the recognised types because it is in the referenced dictionary
-                        recognised.add(element.tpe)
-
-                        # A terminal points at an equipment with the property ConductingEquipment
-                        # A terminal points at a bus (topological node) with the property TopologicalNode
-                        if prop in ['ConductingEquipment', 'TopologicalNode', 'ConnectivityNode']:
-                            ref_obj.terminals.add(element)
-                            recognised.add(prop)
-
-                        if prop in ['BaseVoltage', 'VoltageLevel']:
-                            element.base_voltage.add(ref_obj)
-                            recognised.add(prop)
-
-                        if prop in ['EquipmentContainer']:
-                            element.containers.add(ref_obj)
-                            recognised.add(ref_obj.tpe)
-
-                        # the winding points at the transformer with the property PowerTransformer
-                        if ref_obj.tpe == 'PowerTransformer':
-                            if prop in ['PowerTransformer']:
-                                ref_obj.windings.append(element)
-                                recognised.add(prop)
-                            recognised.add(ref_obj.tpe)
-
-                        # The tap changer points at the winding with the property TransformerWinding
-                        if ref_obj.tpe in ['TransformerWinding', 'PowerTransformerEnd']:
-                            if prop in ['TransformerWinding', 'PowerTransformerEnd']:
-                                ref_obj.tap_changers.append(element)
-                                recognised.add(prop)
-                            recognised.add(ref_obj.tpe)
-
-                        # the synchronous generator references 3 types of objects
-                        if element.tpe == 'SynchronousMachine':
-                            if prop in ['BaseVoltage']:
-                                element.base_voltage.append(ref_obj)
-                                recognised.add(prop)
-                            if prop in ['RegulatingControl']:
-                                element.regulating_control.append(ref_obj)
-                                recognised.add(prop)
-                            if prop in ['GeneratingUnit']:
-                                element.generating_unit.append(ref_obj)
-                                recognised.add(prop)
-                            recognised.add(element.tpe)
-
-                        # a Conform load points at LoadResponseCharacteristic with the property LoadResponse
-                        if element.tpe == 'ConformLoad':
-                            if prop in ['LoadResponse']:
-                                element.load_response_characteristics.append(ref_obj)
-                                recognised.add(prop)
-                            recognised.add(element.tpe)
-
-                        if element.tpe == 'ACLineSegment':
-                            if prop in ['CurrentLimit']:
-                                element.current_limit.append(ref_obj)
-
-                    else:
-                        pass
-                        # print('Not found ', prop, ref)
-
-    def parse_xml_text(self, text_lines, classes_=None):
-
-        if classes_ is None:
-            classes = self.classes
-        else:
-            classes = classes_
         recording = False
-
         disabled = False
 
         n_lines = len(text_lines)
 
-        for line_idx, line in enumerate(text_lines):
+        for line_idx, xml_line in enumerate(text_lines):
 
-            if '<!--' in line:
+            if '<!--' in xml_line:
                 disabled = True
 
             if not disabled:
 
                 # determine if the line opens or closes and object
                 # and of which type of the ones pre-specified
-                start_rec, end_rec, tpe = self.check_type(line, classes)
+                start_rec, end_rec, tpe = self.check_type(xml_line, classes)
 
                 if tpe != "":
                     # a recognisable object was found
 
                     if start_rec:
 
-                        id = index_find(line, '"', '">').replace('#', '')
+                        id = index_find(xml_line, '"', '">').replace('#', '')
 
                         # start recording object
-                        if tpe == 'PowerTransformer':
-                            element = PowerTransformer(id, tpe)
-
-                        elif tpe == 'ACLineSegment':
-                            element = ACLineSegment(id, tpe)
-
-                        elif tpe == 'TransformerWinding':
-                            element = Winding(id, tpe)
-
-                        elif tpe == 'PowerTransformerEnd':
-                            element = Winding(id, tpe)
-
-                        elif tpe == 'ConformLoad':
-                            element = ConformLoad(id, tpe)
-
-                        elif tpe == 'SynchronousMachine':
-                            element = SynchronousMachine(id, tpe)
-
+                        if tpe in class_dict.keys():
+                            CLS = class_dict[tpe]
                         else:
-                            element = GeneralContainer(id, tpe)
+                            CLS = GeneralContainer
+                        element = CLS(id, tpe)
 
                         recording = True
 
@@ -584,12 +1026,12 @@ class CIMCircuit:
                         # stop recording object
                         if recording:
 
-                            if element.id in self.elm_dict.keys():
-                                idx = self.elm_dict[element.id]
-                                self.elements[idx].merge(element)
+                            if element.rfid in self.elm_dict.keys():
+                                found_element = self.elm_dict[element.rfid]
+                                found_element.merge(element)
 
                             else:
-                                self.elm_dict[element.id] = len(self.elements)
+                                self.elm_dict[element.rfid] = element
                                 self.elements.append(element)
 
                             if tpe not in self.elements_by_type.keys():
@@ -601,15 +1043,15 @@ class CIMCircuit:
                 else:
                     # process line
                     if recording:
-                        element.parse_line(line)
+                        element.parse_line(xml_line)
             else:
                 # the line is a comment
-                if '-->' in line:
+                if '-->' in xml_line:
                     disabled = False
 
             self.emit_progress((line_idx + 1) / n_lines * 100.0)
 
-    def parse_file(self, file_name, classes_=None):
+    def parse_file(self, file_name):
         """
         Parse CIM file and add all the recognised objects
         :param file_name:  file name or path
@@ -623,7 +1065,72 @@ class CIMCircuit:
         with open(file_name, 'r', encoding=detection['encoding']) as file_pointer:
             text_lines = [l for l in file_pointer]
 
-        self.parse_xml_text(text_lines, classes_=classes_)
+        self.parse_xml_text(text_lines)
+
+    def get_data_frames_dictionary(self):
+        """
+        Get dictionary of DataFrames
+        :return: dictionary of DataFrames
+        """
+        dfs = dict()
+        for class_name, elements in self.elements_by_type.items():
+            values = list()
+            for element in elements:  # for every element of the type
+                d = element.properties
+                d['rfid'] = element.rfid
+                values.append(d)
+
+            try:
+                df = pd.DataFrame(values)
+                dfs[class_name] = df
+            except:
+                print('Error making DataFrame out of', class_name)
+
+        return dfs
+
+    def to_excel(self, fname):
+        """
+
+        :param fname:
+        :return:
+        """
+        dfs = self.get_data_frames_dictionary()
+
+        buses = dfs['BusbarSection']
+        buses.columns = ['bus_' + c for c in buses.columns.values]
+
+        vl = dfs['VoltageLevel']
+        vl.columns = ['vl_' + c for c in vl.columns.values]
+
+        bv = dfs['BaseVoltage']
+        bv.columns = ['bv_' + c for c in bv.columns.values]
+
+        se = dfs['Substation']
+        se.columns = ['se_' + c for c in se.columns.values]
+
+        prov = dfs['SubGeographicalRegion']
+        prov.columns = ['prov_' + c for c in prov.columns.values]
+
+        country = dfs['GeographicalRegion']
+        country.columns = ['country_' + c for c in country.columns.values]
+
+        # bus to substation composition
+        A = pd.merge(buses, vl, left_on='bus_EquipmentContainer', right_on='vl_rfid', how='outer')
+        B = pd.merge(A, se, left_on='vl_Substation', right_on='se_rfid', how='outer')
+        C = pd.merge(B, bv, left_on='vl_BaseVoltage', right_on='bv_rfid', how='outer')
+        D = pd.merge(C, prov, left_on='se_Region', right_on='prov_rfid', how='outer')
+        E = pd.merge(D, country, left_on='prov_Region', right_on='country_rfid', how='outer')
+
+
+        dfs['bus_merge'] = D
+
+        writer = pd.ExcelWriter(fname)
+        for class_name, df in dfs.items():
+            try:
+                df.to_excel(writer, sheet_name=class_name, index=False)
+            except:
+                print('Error exporting', class_name)
+        writer.save()
 
 
 class CIMExport:
@@ -649,7 +1156,7 @@ class CIMExport:
         text_file.write('<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cim="http://iec.ch/TC57/2009/CIM-schema-cim14#">\n')
 
         # Model
-        model = GeneralContainer(id=self.circuit.name, tpe='Model')
+        model = GeneralContainer(rfid=self.circuit.name, tpe='Model')
         model.properties['name'] = self.circuit.name
         model.properties['version'] = 1
         model.properties['description'] = self.circuit.comments
@@ -687,7 +1194,7 @@ class CIMExport:
 
             base_voltages_dict[V] = conn_node_id
 
-            model = GeneralContainer(id=conn_node_id, tpe='BaseVoltage')
+            model = GeneralContainer(rfid=conn_node_id, tpe='BaseVoltage')
             model.properties['name'] = conn_node_id
             model.properties['nominalVoltage'] = V
             text_file.write(model.get_xml(1))
@@ -703,7 +1210,7 @@ class CIMExport:
             substation_id = substation + '_' + str(substation_idx)
             substation_idx += 1
 
-            model = GeneralContainer(id=substation_id, tpe='Substation', resources=['Location', 'SubGeographicalRegion'])
+            model = GeneralContainer(rfid=substation_id, tpe='Substation', resources=['Location', 'SubGeographicalRegion'])
             model.properties['name'] = substation
             model.properties['aliasName'] = substation
             model.properties['PSRType'] = ''
@@ -718,7 +1225,7 @@ class CIMExport:
 
                 base_voltage = base_voltages_dict[voltage_level]
 
-                model = GeneralContainer(id=voltage_level_id, tpe='VoltageLevel', resources=['BaseVoltage', 'Substation'])
+                model = GeneralContainer(rfid=voltage_level_id, tpe='VoltageLevel', resources=['BaseVoltage', 'Substation'])
                 model.properties['name'] = substation
                 model.properties['aliasName'] = substation
                 model.properties['BaseVoltage'] = base_voltage
@@ -742,7 +1249,7 @@ class CIMExport:
                         self.logger.add_error('Zero nominal voltage', bus.name)
 
                     # generate model
-                    model = GeneralContainer(id=conn_node_id, tpe='ConnectivityNode',
+                    model = GeneralContainer(rfid=conn_node_id, tpe='ConnectivityNode',
                                              resources=['BaseVoltage', 'VoltageLevel', 'ConnectivityNodeContainer'],
                                              class_replacements={'name': 'IdentifiedObject',
                                                                  'aliasName': 'IdentifiedObject'}
@@ -759,7 +1266,7 @@ class CIMExport:
                         id2 = conn_node_id + '_LOAD_' + str(il)
                         id3 = id2 + '_LRC'
 
-                        model = GeneralContainer(id=id2, tpe='ConformLoad',
+                        model = GeneralContainer(rfid=id2, tpe='ConformLoad',
                                                  resources=['BaseVoltage', 'LoadResponse', 'VoltageLevel'],
                                                  class_replacements={'name': 'IdentifiedObject',
                                                                      'aliasName': 'IdentifiedObject',
@@ -775,7 +1282,7 @@ class CIMExport:
                         model.properties['normallyInService'] = elm.active
                         text_file.write(model.get_xml(1))
 
-                        model = GeneralContainer(id=id3, tpe='LoadResponseCharacteristic', resources=[])
+                        model = GeneralContainer(rfid=id3, tpe='LoadResponseCharacteristic', resources=[])
                         model.properties['name'] = elm.name
                         model.properties['exponentModel'] = 'false'
                         model.properties['pConstantCurrent'] = elm.Ir
@@ -791,7 +1298,7 @@ class CIMExport:
                         text_file.write(model.get_xml(1))
 
                         # Terminal 1 (from)
-                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal',
+                        model = GeneralContainer(rfid=id2 + '_T', tpe='Terminal',
                                                  resources=terminal_resources,
                                                  class_replacements={'name': 'IdentifiedObject',
                                                                      'aliasName': 'IdentifiedObject'})
@@ -806,7 +1313,7 @@ class CIMExport:
 
                         id2 = conn_node_id + '_StatGen_' + str(il)
 
-                        model = GeneralContainer(id=id2, tpe='ConformLoad',
+                        model = GeneralContainer(rfid=id2, tpe='ConformLoad',
                                                  resources=['BaseVoltage', 'LoadResponse', 'VoltageLevel'],
                                                  class_replacements={'name': 'IdentifiedObject',
                                                                      'aliasName': 'IdentifiedObject',
@@ -822,7 +1329,7 @@ class CIMExport:
                         text_file.write(model.get_xml(1))
 
                         # Terminal 1 (from)
-                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal',
+                        model = GeneralContainer(rfid=id2 + '_T', tpe='Terminal',
                                                  resources=terminal_resources,
                                                  class_replacements={'name': 'IdentifiedObject',
                                                                      'aliasName': 'IdentifiedObject'}
@@ -840,7 +1347,7 @@ class CIMExport:
                         id3 = id2 + '_GU'
                         id4 = id2 + '_RC'
 
-                        model = GeneralContainer(id=id2, tpe='SynchronousMachine',
+                        model = GeneralContainer(rfid=id2, tpe='SynchronousMachine',
                                                  resources=['BaseVoltage', 'RegulatingControl',
                                                             'GeneratingUnit', 'VoltageLevel'],
                                                  class_replacements={'name': 'IdentifiedObject',
@@ -859,18 +1366,18 @@ class CIMExport:
                         model.properties['normallyInService'] = elm.active
                         text_file.write(model.get_xml(1))
 
-                        model = GeneralContainer(id=id3, tpe='RegulatingControl', resources=[])
+                        model = GeneralContainer(rfid=id3, tpe='RegulatingControl', resources=[])
                         model.properties['name'] = elm.name
                         model.properties['targetValue'] = elm.Vset * bus.Vnom
                         text_file.write(model.get_xml(1))
 
-                        model = GeneralContainer(id=id4, tpe='GeneratingUnit', resources=[])
+                        model = GeneralContainer(rfid=id4, tpe='GeneratingUnit', resources=[])
                         model.properties['name'] = elm.name
                         model.properties['initialP'] = elm.P
                         text_file.write(model.get_xml(1))
 
                         # Terminal 1 (from)
-                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal',
+                        model = GeneralContainer(rfid=id2 + '_T', tpe='Terminal',
                                                  resources=terminal_resources,
                                                  class_replacements={'name': 'IdentifiedObject',
                                                                      'aliasName': 'IdentifiedObject'}
@@ -886,7 +1393,7 @@ class CIMExport:
 
                         id2 = conn_node_id + '_Shunt_' + str(il)
 
-                        model = GeneralContainer(id=id2, tpe='ShuntCompensator',
+                        model = GeneralContainer(rfid=id2, tpe='ShuntCompensator',
                                                  resources=['BaseVoltage', 'VoltageLevel'],
                                                  class_replacements={'name': 'IdentifiedObject',
                                                                      'aliasName': 'IdentifiedObject',
@@ -904,7 +1411,7 @@ class CIMExport:
                         text_file.write(model.get_xml(1))
 
                         # Terminal 1 (from)
-                        model = GeneralContainer(id=id2 + '_T', tpe='Terminal',
+                        model = GeneralContainer(rfid=id2 + '_T', tpe='Terminal',
                                                  resources=terminal_resources,
                                                  class_replacements={'name': 'IdentifiedObject',
                                                                      'aliasName': 'IdentifiedObject'}
@@ -919,7 +1426,7 @@ class CIMExport:
                     if bus.is_slack:
                         equivalent_network_id = conn_node_id + '_EqNetwork'
 
-                        model = GeneralContainer(id=equivalent_network_id, tpe='EquivalentNetwork',
+                        model = GeneralContainer(rfid=equivalent_network_id, tpe='EquivalentNetwork',
                                                  resources=['BaseVoltage', 'VoltageLevel'],
                                                  class_replacements={'name': 'IdentifiedObject',
                                                                      'aliasName': 'IdentifiedObject'})
@@ -930,7 +1437,7 @@ class CIMExport:
                         text_file.write(model.get_xml(1))
 
                         # Terminal 1 (from)
-                        model = GeneralContainer(id=equivalent_network_id + '_T', tpe='Terminal',
+                        model = GeneralContainer(rfid=equivalent_network_id + '_T', tpe='Terminal',
                                                  resources=terminal_resources,
                                                  class_replacements={'name': 'IdentifiedObject',
                                                                      'aliasName': 'IdentifiedObject'}
@@ -952,7 +1459,7 @@ class CIMExport:
 
             conn_node_id = 'Transformer_' + str(i)
 
-            model = GeneralContainer(id=conn_node_id, tpe='PowerTransformer',
+            model = GeneralContainer(rfid=conn_node_id, tpe='PowerTransformer',
                                      resources=[],
                                      class_replacements={'name': 'IdentifiedObject',
                                                          'aliasName': 'IdentifiedObject',
@@ -979,7 +1486,7 @@ class CIMExport:
             winding_power_rate = branch.rate / 2
             Zbase = (branch.bus_from.Vnom ** 2) / winding_power_rate
             Ybase = 1 / Zbase
-            model = GeneralContainer(id=conn_node_id + "_W1", tpe='PowerTransformerEnd',
+            model = GeneralContainer(rfid=conn_node_id + "_W1", tpe='PowerTransformerEnd',
                                      resources=winding_resources,
                                      class_replacements={'name': 'IdentifiedObject',
                                                          'aliasName': 'IdentifiedObject',
@@ -1007,7 +1514,7 @@ class CIMExport:
             # W2 (To)
             Zbase = (branch.bus_to.Vnom ** 2) / winding_power_rate
             Ybase = 1 / Zbase
-            model = GeneralContainer(id=conn_node_id + "_W2", tpe='PowerTransformerEnd',
+            model = GeneralContainer(rfid=conn_node_id + "_W2", tpe='PowerTransformerEnd',
                                      resources=winding_resources,
                                      class_replacements={'name': 'IdentifiedObject',
                                                          'aliasName': 'IdentifiedObject',
@@ -1038,7 +1545,7 @@ class CIMExport:
                 Vnom = branch.bus_to.Vnom
                 SVI = (Vnom - Vnom * branch.tap_module) * 100.0 / Vnom
 
-                model = GeneralContainer(id=conn_node_id + 'Tap_2', tpe='RatioTapChanger', resources=tap_changer_resources)
+                model = GeneralContainer(rfid=conn_node_id + 'Tap_2', tpe='RatioTapChanger', resources=tap_changer_resources)
                 model.properties['TransformerWinding'] = conn_node_id + "_W2"
                 model.properties['name'] = branch.name + 'tap changer'
                 model.properties['neutralU'] = Vnom
@@ -1052,7 +1559,7 @@ class CIMExport:
 
 
             # Terminal 1 (from)
-            model = GeneralContainer(id=conn_node_id + '_T1', tpe='Terminal',
+            model = GeneralContainer(rfid=conn_node_id + '_T1', tpe='Terminal',
                                      resources=terminal_resources,
                                      class_replacements={'name': 'IdentifiedObject',
                                                          'aliasName': 'IdentifiedObject'}
@@ -1065,7 +1572,7 @@ class CIMExport:
             text_file.write(model.get_xml(1))
 
             # Terminal 2 (to)
-            model = GeneralContainer(id=conn_node_id + '_T2', tpe='Terminal',
+            model = GeneralContainer(rfid=conn_node_id + '_T2', tpe='Terminal',
                                      resources=terminal_resources,
                                      class_replacements={'name': 'IdentifiedObject',
                                                          'aliasName': 'IdentifiedObject'}
@@ -1079,7 +1586,7 @@ class CIMExport:
 
         for i, branch in enumerate(self.circuit.lines):
 
-            if branch.branch_type == BranchType.Line or branch.branch_type == BranchType.Branch:
+            if branch.branch_type == gcdev.BranchType.Line or branch.branch_type == gcdev.BranchType.Branch:
 
                 conn_node_id = 'Branch_' + str(i)
                 Zbase = (branch.bus_from.Vnom ** 2) / self.circuit.Sbase
@@ -1089,7 +1596,7 @@ class CIMExport:
                 else:
                     Ybase = 1 / Zbase
 
-                model = GeneralContainer(id=conn_node_id, tpe='ACLineSegment',
+                model = GeneralContainer(rfid=conn_node_id, tpe='ACLineSegment',
                                          resources=['BaseVoltage'],
                                          class_replacements={'name': 'IdentifiedObject',
                                                              'aliasName': 'IdentifiedObject',
@@ -1111,10 +1618,10 @@ class CIMExport:
                 model.properties['value'] = branch.rate / (branch.bus_from.Vnom * sqrt(3))  # kA
                 text_file.write(model.get_xml(1))
 
-            elif branch.branch_type == BranchType.Switch:
+            elif branch.branch_type == gcdev.BranchType.Switch:
 
                 conn_node_id = 'Switch_' + str(i)
-                model = GeneralContainer(id=conn_node_id, tpe='Switch', resources=['BaseVoltage'])
+                model = GeneralContainer(rfid=conn_node_id, tpe='Switch', resources=['BaseVoltage'])
                 model.properties['name'] = branch.name
                 model.properties['aliasName'] = branch.name
                 model.properties['BaseVoltage'] = base_voltages_dict[branch.bus_from.Vnom]
@@ -1122,7 +1629,7 @@ class CIMExport:
                 model.properties['open'] = not branch.active
                 text_file.write(model.get_xml(1))
 
-            elif branch.branch_type == BranchType.Reactance:
+            elif branch.branch_type == gcdev.BranchType.Reactance:
                 self.logger.add_warning('Reactance CIM export not implemented yet, exported as a branch', branch.name)
 
                 conn_node_id = 'Reactance_' + str(i)
@@ -1133,7 +1640,7 @@ class CIMExport:
                 else:
                     Ybase = 1 / Zbase
 
-                model = GeneralContainer(id=conn_node_id, tpe='ACLineSegment', resources=['BaseVoltage'])
+                model = GeneralContainer(rfid=conn_node_id, tpe='ACLineSegment', resources=['BaseVoltage'])
                 model.properties['name'] = branch.name
                 model.properties['aliasName'] = branch.name
                 model.properties['BaseVoltage'] = base_voltages_dict[branch.bus_from.Vnom]
@@ -1149,7 +1656,7 @@ class CIMExport:
                 text_file.write(model.get_xml(1))
 
             # Terminal 1 (from)
-            model = GeneralContainer(id=conn_node_id + '_T1', tpe='Terminal',
+            model = GeneralContainer(rfid=conn_node_id + '_T1', tpe='Terminal',
                                      resources=terminal_resources,
                                      class_replacements={'name': 'IdentifiedObject',
                                                          'aliasName': 'IdentifiedObject'}
@@ -1162,7 +1669,7 @@ class CIMExport:
             text_file.write(model.get_xml(1))
 
             # Terminal 2 (to)
-            model = GeneralContainer(id=conn_node_id + '_T2', tpe='Terminal',
+            model = GeneralContainer(rfid=conn_node_id + '_T2', tpe='Terminal',
                                      resources=terminal_resources,
                                      class_replacements={'name': 'IdentifiedObject',
                                                          'aliasName': 'IdentifiedObject'}
@@ -1185,6 +1692,8 @@ class CIMImport:
     def __init__(self, text_func=None, progress_func=None):
 
         self.logger = Logger()
+
+        self.cim = CIMCircuit(logger=self.logger)
 
         # relations between connectivity nodes and terminals
         # node_terminal[some_node] = list of terminals
@@ -1282,9 +1791,9 @@ class CIMImport:
                 # if 'name' in elm.properties:
                 #     name = elm.properties['name']
                 # else:
-                #     name = elm.id
+                #     name = elm.rfid
                 # T = Bus(name=name)
-                T_dict[elm.id] = elm
+                T_dict[elm.rfid] = elm
                 # circuit.add_bus(T)
 
                 # add class to recognised objects
@@ -1312,15 +1821,15 @@ class CIMImport:
                 except KeyError:
                     name = ''
 
-                if len(elm.base_voltage) > 0:
+                if len(elm.BaseVoltage) > 0:
                     Vnom = float(elm.get_base_voltage().properties['nominalVoltage'])
                 else:
                     Vnom = 0
 
-                CN = Bus(idtag=rfid2uuid(elm.id),
-                         name=name,
-                         vnom=Vnom)
-                CN_dict[elm.id] = CN
+                CN = gcdev.Bus(idtag=rfid2uuid(elm.rfid),
+                               name=name,
+                               vnom=Vnom)
+                CN_dict[elm.rfid] = CN
                 circuit.add_bus(CN)
 
                 # add class to recognised objects
@@ -1333,14 +1842,14 @@ class CIMImport:
             for elm in get_elements(cim.elements_by_type, cim_nodes):
 
                 # get the connectivity node
-                CN = CN_dict[elm.id]
+                CN = CN_dict[elm.rfid]
 
                 # get the terminals associated to the connectivity node and register the associations
                 for term in elm.get_terminals():
                     try:
-                        self.add_node_terminal_relation(CN, T_dict[term.id])
+                        self.add_node_terminal_relation(CN, T_dict[term.rfid])
                     except KeyError:
-                        self.logger.add_error('Terminal ID not found', term.id)
+                        self.logger.add_error('Terminal ID not found', term.rfid)
 
                 # add class to recognised objects
                 recognised.add(elm.tpe)
@@ -1358,7 +1867,7 @@ class CIMImport:
         if 'BusbarSection' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['BusbarSection']:
                 term = elm.get_terminals()
-                T1 = T_dict[term[0].id]  # get the terminal of the bus bar section
+                T1 = T_dict[term[0].rfid]  # get the terminal of the bus bar section
                 CN = self.terminal_node[T1][0]  # get the connectivity node of the terminal
                 CN.is_bus = True  # the connectivity node has a BusbarSection attached, hence it is a real bus
 
@@ -1381,11 +1890,11 @@ class CIMImport:
             prop_def = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
             for elm in cim.elements_by_type['PerLengthSequenceImpedance']:
                 r, x, r0, x0, g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)
-                obj = SequenceLineType(name=elm.id, R=r, X=x, G=g, B=b, R0=r0, X0=x0, G0=g0, B0=b0)
+                obj = gcdev.SequenceLineType(name=elm.rfid, R=r, X=x, G=g, B=b, R0=r0, X0=x0, G0=g0, B0=b0)
                 circuit.add_sequence_line(obj)
                 elm.template = obj
 
-                PLSI_dict[elm.id] = elm
+                PLSI_dict[elm.rfid] = elm
 
                 # add class to recognised objects
                 recognised.add(elm.tpe)
@@ -1407,12 +1916,12 @@ class CIMImport:
             for elm in cim.elements_by_type['ACLineSegment']:
                 term = elm.get_terminals()
                 if len(term) == 2:
-                    T1 = T_dict[term[0].id]
-                    T2 = T_dict[term[1].id]
+                    T1 = T_dict[term[0].rfid]
+                    T2 = T_dict[term[1].rfid]
                     B1 = self.terminal_node[T1][0]
                     B2 = self.terminal_node[T2][0]
                 else:
-                    self.logger.add_error('Number of terminals different of 2', elm.id, len(term))
+                    self.logger.add_error('Number of terminals different of 2', elm.rfid, len(term))
                     continue
 
                 try:
@@ -1421,7 +1930,7 @@ class CIMImport:
                     name = ''
 
                 prop_def = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-                template = BranchTemplate()
+                template = gcdev.BranchTemplate()
                 if 'PerLengthImpedance' in elm.properties:
 
                     pli = elm.properties['PerLengthImpedance']
@@ -1441,7 +1950,7 @@ class CIMImport:
                         b = b * l
 
                     else:
-                        self.logger.add_error('Refers to missing PerLengthImpedance', elm.id)
+                        self.logger.add_error('Refers to missing PerLengthImpedance', elm.rfid)
                         continue
                 else:
                     r, x, r0, x0, g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)
@@ -1455,13 +1964,13 @@ class CIMImport:
                     Vnom = float(elm.get_base_voltage().properties['nominalVoltage'])
                 except KeyError:
                     Vnom = 1.0
-                    self.logger.add_error('No nominalVoltage property', elm.id)
+                    self.logger.add_error('No nominalVoltage property', elm.rfid)
                 except IndexError:
                     Vnom = 1.0
-                    self.logger.add_error('No BaseVoltage', elm.id)
+                    self.logger.add_error('No BaseVoltage', elm.rfid)
 
                 if Vnom <= 0:
-                    self.logger.add_error('Zero base voltage. This causes a failure in the file loading', elm.id)
+                    self.logger.add_error('Zero base voltage. This causes a failure in the file loading', elm.rfid)
                     R = 1e-20
                     X = 1e-20
                     G = 1e-20
@@ -1485,18 +1994,18 @@ class CIMImport:
                         rate = 0
 
                 # create AcLineSegment (Line)
-                line = Line(idtag=rfid2uuid(elm.id),
-                            bus_from=B1,
-                            bus_to=B2,
-                            name=name,
-                            r=R,
-                            x=X,
-                            b=B,
-                            rate=rate,
-                            active=True,
-                            mttf=0,
-                            mttr=0,
-                            template=template)
+                line = gcdev.Line(idtag=rfid2uuid(elm.rfid),
+                                  bus_from=B1,
+                                  bus_to=B2,
+                                  name=name,
+                                  r=R,
+                                  x=X,
+                                  b=B,
+                                  rate=rate,
+                                  active=True,
+                                  mttf=0,
+                                  mttr=0,
+                                  template=template)
 
                 circuit.add_line(line)
 
@@ -1520,14 +2029,14 @@ class CIMImport:
                 if len(elm.windings) == 2:
 
                     if len(elm.windings[0].get_terminals()) > 0:
-                        T1 = T_dict[elm.windings[0].get_terminals()[0].id]
-                        T2 = T_dict[elm.windings[1].get_terminals()[0].id]
+                        T1 = T_dict[elm.windings[0].get_terminals()[0].rfid]
+                        T2 = T_dict[elm.windings[1].get_terminals()[0].rfid]
                     elif len(elm.get_terminals()) == 2:
                         term = elm.get_terminals()
-                        T1 = T_dict[term[0].id]
-                        T2 = T_dict[term[1].id]
+                        T1 = T_dict[term[0].rfid]
+                        T2 = T_dict[term[1].rfid]
                     else:
-                        self.logger.add_error('Incorrect number of terminals', elm.id, len(elm.windings[0].get_terminals()))
+                        self.logger.add_error('Incorrect number of terminals', elm.rfid, len(elm.windings[0].get_terminals()))
                         continue
 
                     B1 = self.terminal_node[T1][0]
@@ -1552,7 +2061,7 @@ class CIMImport:
                         except KeyError:
                             r = 0
                             x = 0
-                            self.logger.add_error('No impedance components', elm.windings[i].id)
+                            self.logger.add_error('No impedance components', elm.windings[i].rfid)
 
                         try:
                             g = float(elm.windings[i].properties['g'])
@@ -1560,7 +2069,7 @@ class CIMImport:
                         except KeyError:
                             g = 0
                             b = 0
-                            self.logger.add_error('No shunt components ', elm.windings[i].id)
+                            self.logger.add_error('No shunt components ', elm.windings[i].rfid)
 
                         try:
                             r0 = float(elm.windings[i].properties['r0'])
@@ -1572,12 +2081,12 @@ class CIMImport:
                             x0 = 0
                             g0 = 0
                             b0 = 0
-                            self.logger.add_error('No zero sequence components', elm.id)
+                            self.logger.add_error('No zero sequence components', elm.rfid)
 
                         try:
                             S = float(elm.windings[i].properties['ratedS'])
                         except KeyError:
-                            self.logger.add_error('No ratedS', elm.windings[i].id)
+                            self.logger.add_error('No ratedS', elm.windings[i].rfid)
                             S = 1.0
 
                         RATE += S
@@ -1585,11 +2094,11 @@ class CIMImport:
                         try:
                             V = float(elm.windings[i].properties['ratedU'])
                         except KeyError:
-                            self.logger.add_error('No ratedU', elm.windings[i].id)
+                            self.logger.add_error('No ratedU', elm.windings[i].rfid)
                             try:
                                 V = float(elm.windings[i].base_voltage[0].properties['nominalVoltage'])
                             except KeyError:
-                                self.logger.add_error('No voltage', elm.windings[i].id)
+                                self.logger.add_error('No voltage', elm.windings[i].rfid)
                                 V = 1.0
 
                         if len(elm.windings[i].tap_changers) > 0:
@@ -1616,20 +2125,20 @@ class CIMImport:
                     # sum the taps
                     tap_m = taps[0] * taps[1]
 
-                    line = Transformer2W(idtag=rfid2uuid(elm.id),
-                                         bus_from=B1,
-                                         bus_to=B2,
-                                         name=name,
-                                         r=R,
-                                         x=X,
-                                         g=G,
-                                         b=B,
-                                         rate=RATE,
-                                         tap=tap_m,
-                                         shift_angle=0,
-                                         active=True,
-                                         mttf=0,
-                                         mttr=0)
+                    line = gcdev.Transformer2W(idtag=rfid2uuid(elm.rfid),
+                                               bus_from=B1,
+                                               bus_to=B2,
+                                               name=name,
+                                               r=R,
+                                               x=X,
+                                               g=G,
+                                               b=B,
+                                               rate=RATE,
+                                               tap=tap_m,
+                                               shift_angle=0,
+                                               active=True,
+                                               mttf=0,
+                                               mttr=0)
 
                     circuit.add_branch(line)
                 else:
@@ -1653,12 +2162,12 @@ class CIMImport:
             for elm in get_elements(cim.elements_by_type, cim_switches):
                 term = elm.get_terminals()
                 if len(term) == 2:
-                    T1 = T_dict[term[0].id]
-                    T2 = T_dict[term[1].id]
+                    T1 = T_dict[term[0].rfid]
+                    T2 = T_dict[term[1].rfid]
                     B1 = self.terminal_node[T1][0]
                     B2 = self.terminal_node[T2][0]
                 else:
-                    self.logger.add_error('Incorrect number of terminals', elm.id, len(term))
+                    self.logger.add_error('Incorrect number of terminals', elm.rfid, len(term))
                     continue
 
                 if 'name' in elm.properties:
@@ -1671,21 +2180,21 @@ class CIMImport:
                 else:
                     state = True
 
-                line = Branch(idtag=rfid2uuid(elm.id),
-                              bus_from=B1,
-                              bus_to=B2,
-                              name=name,
-                              r=EPS,
-                              x=EPS,
-                              g=EPS,
-                              b=EPS,
-                              rate=EPS,
-                              tap=0,
-                              shift_angle=0,
-                              active=state,
-                              mttf=0,
-                              mttr=0,
-                              branch_type=BranchType.Switch)
+                line = gcdev.Branch(idtag=rfid2uuid(elm.rfid),
+                                    bus_from=B1,
+                                    bus_to=B2,
+                                    name=name,
+                                    r=EPS,
+                                    x=EPS,
+                                    g=EPS,
+                                    b=EPS,
+                                    rate=EPS,
+                                    tap=0,
+                                    shift_angle=0,
+                                    active=state,
+                                    mttf=0,
+                                    mttr=0,
+                                    branch_type=gcdev.BranchType.Switch)
 
                 circuit.add_branch(line)
 
@@ -1706,7 +2215,7 @@ class CIMImport:
             for elm in get_elements(cim.elements_by_type, cim_loads):
                 term = elm.get_terminals()
                 if len(term) > 0:
-                    T1 = T_dict[term[0].id]
+                    T1 = T_dict[term[0].rfid]
                     B1 = self.terminal_node[T1][0]
 
                     # Active and reactive power values
@@ -1740,20 +2249,20 @@ class CIMImport:
                         q = 0
                         name = 'Some load'
 
-                    load = Load(idtag=rfid2uuid(elm.id),
-                                name=name,
-                                G=0,
-                                B=0,
-                                Ir=0,
-                                Ii=0,
-                                P=p if p is not None else 0,
-                                Q=q if q is not None else 0)
+                    load = gcdev.Load(idtag=rfid2uuid(elm.rfid),
+                                      name=name,
+                                      G=0,
+                                      B=0,
+                                      Ir=0,
+                                      Ii=0,
+                                      P=p if p is not None else 0,
+                                      Q=q if q is not None else 0)
                     circuit.add_load(B1, load)
 
                     # add class to recognised objects
                     recognised.add(elm.tpe)
                 else:
-                    self.logger.add_error('Incorrect number of terminals', elm.id, len(term))
+                    self.logger.add_error('Incorrect number of terminals', elm.rfid, len(term))
 
     def parse_shunts(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, recognised: Set):
         """
@@ -1768,7 +2277,7 @@ class CIMImport:
             for elm in cim.elements_by_type['ShuntCompensator']:
                 term = elm.get_terminals()
                 if len(term) > 0:
-                    T1 = T_dict[term[0].id]
+                    T1 = T_dict[term[0].rfid]
                     B1 = self.terminal_node[T1][0]
 
                     prop_lst = ['gPerSection', 'bPerSection', 'g0PerSection', 'b0PerSection']
@@ -1782,16 +2291,16 @@ class CIMImport:
 
                     # self.add_shunt(Shunt(name, T1, g, b, g0, b0))
 
-                    sh = Shunt(idtag=rfid2uuid(elm.id),
-                               name=name,
-                               G=g,
-                               B=b)
+                    sh = gcdev.Shunt(idtag=rfid2uuid(elm.rfid),
+                                     name=name,
+                                     G=g,
+                                     B=b)
                     circuit.add_shunt(B1, sh)
 
                     # add class to recognised objects
                     recognised.add(elm.tpe)
                 else:
-                    self.logger.add_error('Incorrect number of terminals', elm.id, len(term))
+                    self.logger.add_error('Incorrect number of terminals', elm.rfid, len(term))
 
     def parse_generators(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, recognised: Set):
         """
@@ -1806,7 +2315,7 @@ class CIMImport:
             for elm in cim.elements_by_type['SynchronousMachine']:
                 term = elm.get_terminals()
                 if len(term) > 0:
-                    T1 = T_dict[term[0].id]
+                    T1 = T_dict[term[0].rfid]
                     B1 = self.terminal_node[T1][0]
 
                     # nominal voltage and set voltage
@@ -1815,13 +2324,13 @@ class CIMImport:
                             Vnom = float(elm.get_base_voltage().properties['nominalVoltage'])
                         except KeyError:
                             Vnom = 1.0
-                            self.logger.add_error('no nominalVoltage property', elm.id)
+                            self.logger.add_error('no nominalVoltage property', elm.rfid)
                     else:
                         try:
                             Vnom = float(elm.properties['ratedU'])
                         except KeyError:
                             Vnom = 1.0
-                            self.logger.add_error('no ratedU property', elm.id)
+                            self.logger.add_error('no ratedU property', elm.rfid)
 
                     try:
                         Vset = float(elm.regulating_control[0].properties['targetValue'])
@@ -1842,30 +2351,30 @@ class CIMImport:
                         try:
                             p = float(elm.generating_unit[0].properties['initialP'])
                         except KeyError:
-                            self.logger.add_error('No active power initialP value', elm.id)
+                            self.logger.add_error('No active power initialP value', elm.rfid)
                             p = 0.0
                     else:
                         try:
                             p = float(elm.properties['p'])
                         except KeyError:
                             p = 0.0
-                            self.logger.add_error('No active power p value', elm.id)
+                            self.logger.add_error('No active power p value', elm.rfid)
 
                     try:
                         name = elm.properties['name']
                     except KeyError:
                         name = 'Generator@{}'.format(B1.name)
 
-                    gen = Generator(idtag=rfid2uuid(elm.id),
-                                    name=name,
-                                    active_power=p,
-                                    voltage_module=vset)
+                    gen = gcdev.Generator(idtag=rfid2uuid(elm.rfid),
+                                          name=name,
+                                          active_power=p,
+                                          voltage_module=vset)
                     circuit.add_generator(B1, gen)
 
                     # add class to recognised objects
                     recognised.add(elm.tpe)
                 else:
-                    self.logger.add_error('Incorrect number of terminals', elm.id, len(term))
+                    self.logger.add_error('Incorrect number of terminals', elm.rfid, len(term))
 
     def parse_slacks(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, recognised: Set):
         """
@@ -1881,14 +2390,14 @@ class CIMImport:
             for elm in get_elements(cim.elements_by_type, cim_slack):
                 term = elm.get_terminals()
                 if len(term) > 0:
-                    T1 = T_dict[term[0].id]
+                    T1 = T_dict[term[0].rfid]
                     try:
                         B1 = self.terminal_node[T1][0]
                         B1.is_slack = True
                     except KeyError:
-                        self.logger.add_error('Missing node from terminal', T1.id)
+                        self.logger.add_error('Missing node from terminal', T1.rfid)
                 else:
-                    self.logger.add_error('Incorrect number of terminals', elm.id, len(term))
+                    self.logger.add_error('Incorrect number of terminals', elm.rfid, len(term))
 
     def load_cim_file(self, cim_files):
         """
@@ -1901,7 +2410,7 @@ class CIMImport:
         EPS = 1e-16
 
         # declare CIM circuit to process the file(s)
-        cim = CIMCircuit(text_func=self.text_func, progress_func=self.progress_func)
+        self.cim = CIMCircuit(text_func=self.text_func, progress_func=self.progress_func, logger=self.logger)
 
         # import the cim files' content into a dictionary
         data = read_cim_files(cim_files)
@@ -1912,56 +2421,17 @@ class CIMImport:
             name, file_extension = os.path.splitext(f)
             self.emit_text('Parsing xml structure of ' + name)
 
-            cim.parse_xml_text(text_lines=data[f])
+            self.cim.parse_xml_text(text_lines=data[f])
 
         # set of used classes
         recognised = set()
 
         # replace CIM references in the CIM objects
         self.emit_text('Looking for references')
-        cim.find_references(recognised=recognised)
-
-        # Model
-        self.parse_model(cim, circuit, recognised)
-
-        # Terminals
-        T_dict = dict()
-        self.parse_terminals(cim, T_dict, recognised)
-
-        # ConnectivityNodes
-        CN_dict = dict()
-        self.parse_connectivity_nodes(cim, circuit, CN_dict, T_dict, recognised)
-
-        # BusBarSections
-        self.parse_bus_bars(cim, T_dict, recognised)
-
-        # PerLengthSequenceImpedance
-        PLSI_dict = dict()
-        self.parse_per_length_sequence_impedance(cim, circuit, PLSI_dict, recognised)
-
-        # Lines
-        self.parse_ac_line_segment(cim, circuit, T_dict, PLSI_dict, recognised)
-
-        # PowerTransformer
-        self.parse_power_transformer(cim, circuit, T_dict, recognised)
-
-        # Switches
-        self.parse_switches(cim, circuit, T_dict, recognised, EPS)
-
-        # Loads
-        self.parse_loads(cim, circuit, T_dict, recognised)
-
-        # shunts
-        self.parse_shunts(cim, circuit, T_dict, recognised)
-
-        # Generators
-        self.parse_generators(cim, circuit, T_dict, recognised)
-
-        # Slacks (External networks)
-        self.parse_slacks(cim, circuit, T_dict, recognised)
+        self.cim.find_references(recognised=recognised)
 
         # log the unused types
-        for tpe in cim.elements_by_type.keys():
+        for tpe in self.cim.elements_by_type.keys():
             if tpe not in recognised:
                 self.logger.add_info('Not explicitly used in parsing the file', tpe)
 
@@ -1972,23 +2442,35 @@ if __name__ == '__main__':
     import os
     from GridCal.Engine import FileOpen, FileSave
 
-    folder = r'C:\Users\penversa\Documents\Grids\CGMES'
-    # folder = '/home/santi/Documentos/Private_Grids/CGMES'
+    # folder = r'C:\Users\penversa\Documents\Grids\CGMES'
+    # # folder = '/home/santi/Documentos/Private_Grids/CGMES'
+    #
+    # cimfiles = ['20210203T1830Z_2D_REN_EQ_001.xml',
+    #             '20210203T1830Z_2D_REN_TP_001.xml',
+    #             '20210203T1830Z_2D_REN_SV_001.xml']
+    # cimfiles = [os.path.join(folder, f) for f in cimfiles]
+    #
+    # boundary_profiles = [
+    #                      '20200301T0000Z__ENTSOE_EQBD_001.xml',
+    #                      '20200301T0000Z__ENTSOE_TPBD_001.xml']
+    # boundary_profiles = [os.path.join(folder, f) for f in boundary_profiles]
+    #
+    # fnames = cimfiles + boundary_profiles
 
-    cimfiles = ['20210203T1830Z_2D_REN_EQ_001.xml',
-                '20210203T1830Z_2D_REN_TP_001.xml',
-                '20210203T1830Z_2D_REN_SV_001.xml']
-    cimfiles = [os.path.join(folder, f) for f in cimfiles]
-
-    boundary_profiles = [
-                         '20200301T0000Z__ENTSOE_EQBD_001.xml',
-                         '20200301T0000Z__ENTSOE_TPBD_001.xml']
-    boundary_profiles = [os.path.join(folder, f) for f in boundary_profiles]
-
-    fnames = cimfiles + boundary_profiles
+    folder = r'C:\Users\penversa\Documents\Grids\CGMES\TYNDP_2025'
+    files = [
+             '2025NT_FR_model_004.zip',
+             '2025NT_ES_model_003.zip',
+             '2025NT_PT_model_003.zip',
+             '20191017T0918Z_ENTSO-E_BD_1130.zip'
+             ]
+    fnames = [os.path.join(folder, f) for f in files]
 
     print('Reading...')
-    file_open = FileOpen(fnames)
-    grid = file_open.open()
+    # file_open = FileOpen(fnames)
+    # grid = file_open.open()
+    # FileSave(grid, os.path.join(folder, '20210203T1830Z_2D_REN.gridcal')).save()
 
-    FileSave(grid, os.path.join(folder, '20210203T1830Z_2D_REN.gridcal')).save()
+    parser = CIMImport(text_func=print)
+    parser.load_cim_file(fnames)
+    parser.cim.to_excel('All_data.xlsx')
