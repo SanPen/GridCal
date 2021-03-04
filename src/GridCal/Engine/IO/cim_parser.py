@@ -23,7 +23,6 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 import GridCal.Engine.Devices as gcdev
 
 
-
 def index_find(string, start, end):
     """
     version of substring that matches
