@@ -157,6 +157,7 @@ def str2num(val: str):
             return val
 
 
+
 class GeneralContainer:
 
     def __init__(self, rfid, tpe):
@@ -306,6 +307,53 @@ class GeneralContainer:
         return xml
 
 
+class MonoPole(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+    def get_node(self):
+        """
+        Get the TopologyNodes of this branch
+        :return: two TopologyNodes or nothing
+        """
+        try:
+            terminals = list(self.references_to_me['Terminal'])
+
+            if len(terminals) == 1:
+                n1 = terminals[0].TopologicalNode
+                return n1
+            else:
+                return None
+
+        except KeyError:
+            return None
+
+
+class DiPole(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+    def get_nodes(self):
+        """
+        Get the TopologyNodes of this branch
+        :return: two TopologyNodes or nothing
+        """
+        try:
+            terminals = list(self.references_to_me['Terminal'])
+
+            if len(terminals) == 2:
+                n1 = terminals[0].TopologicalNode
+                n2 = terminals[1].TopologicalNode
+                return n1, n2
+            else:
+                return None, None
+
+        except KeyError:
+            return None, None
+
+
 class BaseVoltage(GeneralContainer):
 
     def __init__(self, rfid, tpe):
@@ -324,13 +372,31 @@ class Terminal(GeneralContainer):
         self.name = ''
         self.connected = True
 
+    def get_voltage(self):
+        """
+        Get the voltage of this terminal
+        :return: Voltage or None
+        """
+        if self.TopologicalNode is not None:
+            return self.TopologicalNode.get_voltage()
+        else:
+            return None
+
 
 class TopologicalNode(GeneralContainer):
 
     def __init__(self, rfid, tpe):
         GeneralContainer.__init__(self, rfid, tpe)
 
+        self.BaseVoltage = None
         self.ConnectivityNodeContainer = None
+
+    def get_voltage(self):
+
+        if self.BaseVoltage is not None:
+            return self.BaseVoltage.nominalVoltage
+        else:
+            return None
 
 
 class BusbarSection(GeneralContainer):
@@ -433,21 +499,39 @@ class EquivalentInjection(GeneralContainer):
         self.q = 0
 
 
-class Breaker(GeneralContainer):
+class Breaker(DiPole):
 
     def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+        DiPole.__init__(self, rfid, tpe)
 
         self.normalOpen = True
         self.retained = True
         self.EquipmentContainer = None
         self.open = False
 
+    def get_nodes(self):
+        """
+        Get the TopologyNodes of this branch
+        :return: two TopologyNodes or nothing
+        """
+        try:
+            terminals = list(self.references_to_me['Terminal'])
 
-class Switch(GeneralContainer):
+            if len(terminals) == 2:
+                n1 = terminals[0].TopologicalNode
+                n2 = terminals[1].TopologicalNode
+                return n1, n2
+            else:
+                return None, None
+
+        except KeyError:
+            return None, None
+
+
+class Switch(DiPole):
 
     def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+        DiPole.__init__(self, rfid, tpe)
 
         self.normalOpen = True
         self.retained = True
@@ -457,17 +541,35 @@ class Switch(GeneralContainer):
         self.aggregate = False
         self.name = ''
 
+    def get_nodes(self):
+        """
+        Get the TopologyNodes of this branch
+        :return: two TopologyNodes or nothing
+        """
+        try:
+            terminals = list(self.references_to_me['Terminal'])
 
-class cimLine(GeneralContainer):
+            if len(terminals) == 2:
+                n1 = terminals[0].TopologicalNode
+                n2 = terminals[1].TopologicalNode
+                return n1, n2
+            else:
+                return None, None
+
+        except KeyError:
+            return None, None
+
+
+class Line(GeneralContainer):
 
     def __init__(self, rfid, tpe):
         GeneralContainer.__init__(self, rfid, tpe)
 
 
-class ACLineSegment(GeneralContainer):
+class ACLineSegment(DiPole):
 
     def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+        DiPole.__init__(self, rfid, tpe)
 
         self.BaseVoltage = None
         self.current_limit = None
@@ -475,6 +577,57 @@ class ACLineSegment(GeneralContainer):
         self.gch = 0
         self.r = 0
         self.x = 0
+
+
+
+    def get_voltage(self):
+
+        if self.BaseVoltage is not None:
+            return self.BaseVoltage.nominalVoltage
+        else:
+            if 'Terminal' in self.references_to_me.keys():
+                tps = list(self.references_to_me['Terminal'])
+
+                if len(tps) > 0:
+                    tp = tps[0]
+
+                    return tp.get_voltage()
+                else:
+                    return None
+            else:
+                return None
+
+    def get_pu_values(self, Sbase=100):
+        """
+        Get the per-unit values of the equivalent PI model
+        :param Sbase: Sbase in MVA
+        :return: R, X, Gch, Bch
+        """
+        if self.BaseVoltage is not None:
+            Vnom = self.get_voltage()
+
+            if Vnom is not None:
+
+                Zbase = (Vnom * Vnom) / Sbase
+                Ybase = 1.0 / Zbase
+
+                # at this point r, x, g, b are the complete values for all the line length
+                R = self.r / Zbase
+                X = self.x / Zbase
+                G = self.gch / Ybase
+                B = self.bch / Ybase
+            else:
+                R = 0
+                X = 0
+                G = 0
+                B = 0
+        else:
+            R = 0
+            X = 0
+            G = 0
+            B = 0
+
+        return R, X, G, B
 
 
 class PowerTransformerEnd(GeneralContainer):
@@ -494,13 +647,76 @@ class PowerTransformerEnd(GeneralContainer):
         self.connectionKind = ""
         self.Terminal = None
 
+    def get_pu_values(self):
+        """
+        Get the per-unit values of the equivalent PI model
+        :return: R, X, Gch, Bch
+        """
+        if self.ratedS > 0 and self.ratedU > 0:
+            Vnom = self.ratedU
+            Sbase = self.ratedS
+            Zbase = (Vnom * Vnom) / Sbase
+            Ybase = 1.0 / Zbase
 
-class PowerTransformer(GeneralContainer):
+            # at this point r, x, g, b are the complete values for all the line length
+            R = self.r / Zbase
+            X = self.x / Zbase
+            G = self.g / Ybase
+            B = self.b / Ybase
+        else:
+            R = 0
+            X = 0
+            G = 0
+            B = 0
+
+        return R, X, G, B
+
+
+class PowerTransformer(DiPole):
 
     def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+        DiPole.__init__(self, rfid, tpe)
 
         self.EquipmentContainer = None
+
+    def get_nodes(self):
+        """
+        Get the TopologyNodes of this branch
+        :return: two TopologyNodes or nothing
+        """
+        try:
+            terminals = list(self.references_to_me['Terminal'])
+
+            if len(terminals) == 2:
+                n1 = terminals[0].TopologicalNode
+                n2 = terminals[1].TopologicalNode
+                return n1, n2
+            else:
+                return None, None
+
+        except KeyError:
+            return None, None
+
+    def get_pu_values(self):
+
+        try:
+            windings = self.references_to_me['PowerTransformerEnd']
+
+            if len(windings) == 2:
+                R, X, G, B = 0, 0, 0, 0
+                for winding in windings:
+                    r, x, g, b = winding.get_pu_values()
+                    R += r
+                    X += x
+                    G += g
+                    B += b
+            else:
+                R, X, G, B = 0, 0, 0, 0
+
+        except KeyError:
+            R, X, G, B = 0, 0, 0, 0
+
+        return R, X, G, B
 
 
 class Winding(GeneralContainer):
@@ -523,10 +739,10 @@ class EnergyConsumer(GeneralContainer):
         self.q = 0
 
 
-class ConformLoad(GeneralContainer):
+class ConformLoad(MonoPole):
 
     def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+        MonoPole.__init__(self, rfid, tpe)
 
         self.LoadGroup = None
         self.LoadResponse = None
@@ -535,10 +751,10 @@ class ConformLoad(GeneralContainer):
         self.q = 0
 
 
-class NonConformLoad(GeneralContainer):
+class NonConformLoad(MonoPole):
 
     def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+        MonoPole.__init__(self, rfid, tpe)
 
         self.name = ''
         self.EquipmentContainer = None
@@ -910,7 +1126,7 @@ class CIMCircuit:
         # otherwise, this is neither the beginning nor the end of an object
         return False, False, ""
 
-    def find_references(self, recognised=set()):
+    def find_references(self):
         """
         Replaces the references in the "actual" properties of the objects
         :return: Nothing, it is done in place
@@ -955,7 +1171,7 @@ class CIMCircuit:
                       'EquivalentNetwork': EquivalentNetwork,
                       'Breaker': Breaker,
                       'Switch': Switch,
-                      'Line': cimLine,
+                      'Line': Line,
                       'ACLineSegment': ACLineSegment,
                       'PowerTransformerEnd': PowerTransformerEnd,
                       'PowerTransformer': PowerTransformer,
@@ -1121,8 +1337,7 @@ class CIMCircuit:
         D = pd.merge(C, prov, left_on='se_Region', right_on='prov_rfid', how='outer')
         E = pd.merge(D, country, left_on='prov_Region', right_on='country_rfid', how='outer')
 
-
-        dfs['bus_merge'] = D
+        dfs['bus_merge'] = E
 
         writer = pd.ExcelWriter(fname)
         for class_name, df in dfs.items():
@@ -2423,17 +2638,9 @@ class CIMImport:
 
             self.cim.parse_xml_text(text_lines=data[f])
 
-        # set of used classes
-        recognised = set()
-
         # replace CIM references in the CIM objects
         self.emit_text('Looking for references')
-        self.cim.find_references(recognised=recognised)
-
-        # log the unused types
-        for tpe in self.cim.elements_by_type.keys():
-            if tpe not in recognised:
-                self.logger.add_info('Not explicitly used in parsing the file', tpe)
+        self.cim.find_references()
 
         return circuit
 
@@ -2459,8 +2666,8 @@ if __name__ == '__main__':
 
     folder = r'C:\Users\penversa\Documents\Grids\CGMES\TYNDP_2025'
     files = [
-             '2025NT_FR_model_004.zip',
-             '2025NT_ES_model_003.zip',
+             # '2025NT_FR_model_004.zip',
+             # '2025NT_ES_model_003.zip',
              '2025NT_PT_model_003.zip',
              '20191017T0918Z_ENTSO-E_BD_1130.zip'
              ]
