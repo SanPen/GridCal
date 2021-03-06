@@ -22,7 +22,7 @@ def test_all_grids():
     current_path = os.path.dirname(__file__)
 
     # navigate to the grids folder
-    grids_path = os.path.join(current_path, '..', '..', 'Grids_and_profiles', 'grids')
+    grids_path = os.path.join(current_path, 'data', 'grids')
 
     files = os.listdir(grids_path)
     failed = list()

@@ -17,8 +17,8 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.transformer import Transformer2W, TapChanger, TransformerType
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.generator import Generator
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import \
-    PowerFlowOptions, ReactivePowerControlMode, SolverType, TapsControlMode
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType, TapsControlMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 
 
@@ -238,8 +238,7 @@ def test_pv_2():
                          hv_nominal_voltage=100,  # kV
                          lv_nominal_voltage=10,  # kV
                          nominal_power=s,
-                         copper_losses=complex_impedance(z,
-                                                         xr).real * s * 1000 / Sbase,
+                         copper_losses=complex_impedance(z, xr).real * s * 1000 / Sbase,
                          iron_losses=125,  # kW
                          no_load_current=0.5,  # %
                          short_circuit_voltage=z)
@@ -252,8 +251,7 @@ def test_pv_2():
                          hv_nominal_voltage=10,  # kV
                          lv_nominal_voltage=0.6,  # kV
                          nominal_power=s,
-                         copper_losses=complex_impedance(z,
-                                                         xr).real * s * 1000 / Sbase,
+                         copper_losses=complex_impedance(z, xr).real * s * 1000 / Sbase,
                          iron_losses=6.25,  # kW
                          no_load_current=0.5,  # %
                          short_circuit_voltage=z)
@@ -266,8 +264,7 @@ def test_pv_2():
                          template=SS,
                          bus_to_regulated=True,
                          vset=1.005)
-    X_C3.tap_changer = TapChanger(taps_up=16, taps_down=16, max_reg=1.1,
-                                  min_reg=0.9)
+    X_C3.tap_changer = TapChanger(taps_up=16, taps_down=16, max_reg=1.1, min_reg=0.9)
     X_C3.tap_changer.set_tap(X_C3.tap_module)
     grid.add_branch(X_C3)
 
@@ -286,9 +283,6 @@ def test_pv_2():
     print()
 
     options = PowerFlowOptions(SolverType.NR,
-                               verbose=True,
-                               initialize_with_existing_solution=True,
-                               multi_core=True,
                                control_q=ReactivePowerControlMode.Direct,
                                control_taps=TapsControlMode.Direct,
                                tolerance=1e-6,

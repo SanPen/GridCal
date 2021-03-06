@@ -23,7 +23,7 @@ from scipy.sparse.linalg import spsolve
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Gui.GuiFunctions import ResultsModel
+from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
 

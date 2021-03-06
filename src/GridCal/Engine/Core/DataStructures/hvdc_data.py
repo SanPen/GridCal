@@ -101,16 +101,32 @@ class HvdcData:
         return self.get_injections_per_bus()
 
     def get_qmax_from_per_bus(self):
-        return self.C_hvdc_bus_f.T * (self.Qmax_f * self.active)
+        """
+        Max reactive power in the From Bus
+        :return: (nbus, nt) Qmax From
+        """
+        return self.C_hvdc_bus_f.T * (self.Qmax_f * self.active.T).T
 
     def get_qmin_from_per_bus(self):
-        return self.C_hvdc_bus_f.T * (self.Qmin_f * self.active)
+        """
+        Min reactive power in the From Bus
+        :return: (nbus, nt) Qmin From
+        """
+        return self.C_hvdc_bus_f.T * (self.Qmin_f * self.active.T).T
 
     def get_qmax_to_per_bus(self):
-        return self.C_hvdc_bus_t.T * (self.Qmax_t * self.active)
+        """
+        Max reactive power in the To Bus
+        :return: (nbus, nt) Qmax To
+        """
+        return self.C_hvdc_bus_t.T * (self.Qmax_t * self.active.T).T
 
     def get_qmin_to_per_bus(self):
-        return self.C_hvdc_bus_t.T * (self.Qmin_t * self.active)
+        """
+        Min reactive power in the To Bus
+        :return: (nbus, nt) Qmin To
+        """
+        return self.C_hvdc_bus_t.T * (self.Qmin_t * self.active.T).T
 
     def get_loading(self):
         return self.Pf / self.rate

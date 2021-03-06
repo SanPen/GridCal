@@ -179,7 +179,6 @@ class LatinHypercubeSampling(QThread):
         Run the monte carlo simulation
         @return:
         """
-        # print('LHS run')
         self.__cancel__ = False
 
         # initialize the grid time series results
@@ -217,8 +216,6 @@ class LatinHypercubeSampling(QThread):
                                    hvdc_names=numerical_circuit.hvdc_names,
                                    bus_types=numerical_circuit.bus_types)
 
-        it = 0
-
         # For every island, run the time series
         for island_index, numerical_island in enumerate(calculation_inputs):
 
@@ -255,8 +252,7 @@ class LatinHypercubeSampling(QThread):
                 lhs_results.loading_points[t, br_idx] = res.loading
                 lhs_results.losses_points[t, br_idx] = res.losses
 
-                it += 1
-                self.progress_signal.emit(it / self.sampling_points * 100)
+                self.progress_signal.emit(t / self.sampling_points * 100)
 
                 if self.__cancel__:
                     break

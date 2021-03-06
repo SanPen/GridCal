@@ -20,7 +20,7 @@ import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from GridCal.Engine.basic_structures import CDF
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Gui.GuiFunctions import ResultsModel
+from GridCal.Engine.Simulations.results_model import ResultsModel
 
 
 class MonteCarloResults:

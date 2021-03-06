@@ -59,7 +59,7 @@ Version 4.0.0 (multi-terminal DC Grids)
     - Now the reactive power control only converts PQ->PV, and not the other way around. This renders into
       a more stable process.
     - Seamless AC-DC simulation:
-        - Added the FUBM model al the numeric circuit level
+        - Added the FUBM model at the numeric circuit level
         - Added FUBM version of the line-search Newton-Raphson method (not accelerated with numba for now)
         - Integrated it with the GUI.
         - The advanced controls such a transformer power set-points are simulated using the FUBM logic.

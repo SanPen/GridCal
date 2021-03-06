@@ -56,7 +56,7 @@ import GridCal.Engine.grid_analysis as grid_analysis
 import GridCal.Engine.IO.export_results_driver as exprtdrv
 import GridCal.Engine.IO.file_handler as filedrv
 import GridCal.Engine.IO.synchronization_driver as syncdrv
-
+from GridCal.Engine.Simulations.results_model import ResultsModel
 
 import gc
 import os.path
@@ -3837,7 +3837,7 @@ class MainGUI(QMainWindow):
                               voltages=self.monte_carlo.results.V_points[current_step, :],
                               loadings=np.abs(self.monte_carlo.results.loading_points[current_step, :]),
                               Sf=self.monte_carlo.results.Sbr_points[current_step, :],
-                              types=self.monte_carlo.grid.bus_types,
+                              types=self.monte_carlo.results.bus_types,
                               Sbus=self.monte_carlo.results.S_points[current_step, :],
                               file_name=file_name)
 

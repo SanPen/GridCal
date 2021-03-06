@@ -18,8 +18,7 @@ from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.load import Load
 from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.line import Line
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import \
-    PowerFlowOptions, PowerFlowDriver
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
 
 
 def test_line_losses_1():

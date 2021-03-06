@@ -15,40 +15,11 @@
 import os
 import pandas as pd
 import numpy as np
-from pathlib import Path
 
 from GridCal.Engine.IO.file_handler import FileOpen
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import \
-    PowerFlowOptions, ReactivePowerControlMode, SolverType
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
-
-
-def test_power_flow():
-    fname = Path(__file__).parent.parent.parent / \
-            'Grids_and_profiles' / 'grids' / 'IEEE 30 Bus with storage.xlsx'
-
-    print('Reading...')
-    main_circuit = FileOpen(fname).open()
-    options = PowerFlowOptions(SolverType.NR, verbose=False,
-                               initialize_with_existing_solution=False,
-                               multi_core=False, dispatch_storage=True,
-                               control_q=ReactivePowerControlMode.NoControl,
-                               control_p=True)
-    # exit()
-    ####################################################################################################################
-    # PowerFlowDriver
-    ####################################################################################################################
-    print('\n\n')
-    power_flow = PowerFlowDriver(main_circuit, options)
-    power_flow.run()
-    print('\n\n', main_circuit.name)
-    print('\t|V|:', abs(power_flow.results.voltage))
-    print('\t|Sf|:', abs(power_flow.results.Sf))
-    print('\t|loading|:', abs(power_flow.results.loading) * 100)
-    print('\tReport')
-    print(power_flow.results.get_report_dataframe())
-
-    assert power_flow.results.error < 1e-3
 
 
 def test_ieee_grids():
@@ -57,7 +28,7 @@ def test_ieee_grids():
     This test checks 2 things:
     - PSS/e import fidelity
     - PSS/e vs GridCal results
-    :return: Nothing, fails if not ok
+    :return: Nothing if ok, fails if not
     """
 
     files = [
@@ -66,34 +37,43 @@ def test_ieee_grids():
              ('IEEE 118 Bus v2.raw', 'IEEE 118 Bus.sav.xlsx'),
             ]
 
-    options = PowerFlowOptions(SolverType.NR, verbose=False,
-                               initialize_with_existing_solution=False,
-                               multi_core=False, dispatch_storage=True,
-                               control_q=ReactivePowerControlMode.NoControl,
-                               control_p=True)
+    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM]:
 
-    for f1, f2 in files:
-        print(f1, end=' ')
+        print(solver_type)
 
-        fname = os.path.join('data', f1)
-        main_circuit = FileOpen(fname).open()
-        power_flow = PowerFlowDriver(main_circuit, options)
-        power_flow.run()
+        options = PowerFlowOptions(solver_type,
+                                   verbose=False,
+                                   initialize_with_existing_solution=False,
+                                   multi_core=False,
+                                   dispatch_storage=True,
+                                   control_q=ReactivePowerControlMode.NoControl,
+                                   control_p=True,
+                                   retry_with_other_methods=False)
 
-        # load the associated results file
-        df_v = pd.read_excel(os.path.join('data', f2), sheet_name='Vabs', index_col=0)
-        df_p = pd.read_excel(os.path.join('data', f2), sheet_name='Pbranch', index_col=0)
+        for f1, f2 in files:
+            print(f1, end=' ')
 
-        v_gc = np.abs(power_flow.results.voltage)
-        v_psse = df_v.values[:, 0]
-        p_gc = power_flow.results.Sf.real
-        p_psse = df_p.values[:, 0]
-        assert (np.allclose(v_gc, v_psse, atol=1e-3))
-        assert (np.allclose(p_gc, p_psse, atol=1e-1))
+            fname = os.path.join('data', 'grids', f1)
+            main_circuit = FileOpen(fname).open()
+            power_flow = PowerFlowDriver(main_circuit, options)
+            power_flow.run()
 
-        print('ok')
+            # load the associated results file
+            df_v = pd.read_excel(os.path.join('data', 'results',  f2), sheet_name='Vabs', index_col=0)
+            df_p = pd.read_excel(os.path.join('data', 'results', f2), sheet_name='Pbranch', index_col=0)
+
+            v_gc = np.abs(power_flow.results.voltage)
+            v_psse = df_v.values[:, 0]
+            p_gc = power_flow.results.Sf.real
+            p_psse = df_p.values[:, 0]
+
+            v_ok = np.allclose(v_gc, v_psse, atol=1e-3)
+            flow_ok = np.allclose(p_gc, p_psse, atol=1e-0)
+            assert (v_ok)
+            assert (flow_ok)
+
+        print(solver_type, 'ok')
 
 
 if __name__ == '__main__':
-    # test_ieee_grids()
-    test_power_flow()
+    test_ieee_grids()
