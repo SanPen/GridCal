@@ -141,7 +141,7 @@ class HandleItem(QGraphicsEllipseItem):
         """
         if change == self.ItemPositionChange:
             x, y = value.x(), value.y()
-            # TODO: make this a signal?
+
             # This cannot be a signal because this is not a QObject
             for cb in self.posChangeCallbacks:
                 res = cb(x, y)

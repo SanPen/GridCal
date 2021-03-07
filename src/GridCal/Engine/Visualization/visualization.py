@@ -98,8 +98,11 @@ def colour_sub_schematic(Sbase,
     vang = np.angle(voltages, deg=True)
     vnorm = (vabs - vmin) / vrng
 
-    Pabs = np.abs(Sbus)
-    Pnorm = Pabs / Pabs.max()
+    if Sbus is not None:
+        Pabs = np.abs(Sbus)
+        Pnorm = Pabs / Pabs.max()
+    else:
+        Pnorm = np.zeros(len(buses))
 
     voltage_cmap = get_voltage_color_map()
     loading_cmap = get_loading_color_map()
@@ -136,8 +139,8 @@ def colour_sub_schematic(Sbase,
                 bus.graphic_obj.setToolTip(tooltip)
 
                 if use_flow_based_width:
-                    w = int(np.floor(min_bus_width + Pnorm[i] * (max_bus_width - min_bus_width)))
-                    bus.graphic_obj.set_height(w)
+                    h = int(np.floor(min_bus_width + Pnorm[i] * (max_bus_width - min_bus_width)))
+                    bus.graphic_obj.change_size(bus.graphic_obj.w, h)
 
             else:
                 bus.graphic_obj.set_tile_color(QtCore.Qt.gray)
