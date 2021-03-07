@@ -24,7 +24,7 @@ from scipy.optimize import fmin_bfgs, minimize
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
-from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
+from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import StochasticPowerFlowResults
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import make_monte_carlo_input
 
 ########################################################################################################################
@@ -75,7 +75,7 @@ class SetPointsOptimizationProblem(OptimizationProblem):
         self.info = str(self.dim) + "Generators voltage set points optimization"
 
         # results
-        self.results = MonteCarloResults(n, m, self.max_eval, name='Set point optimization')
+        self.results = StochasticPowerFlowResults(n, m, self.max_eval, name='Set point optimization')
 
         self.all_f = list()
 

@@ -18,7 +18,7 @@ from GridCal.Engine.Simulations.Stochastic.latin_hypercube_sampling import lhs
 from GridCal.Engine.Simulations.PowerFlow.time_Series_input import TimeSeriesInput
 
 
-class MonteCarloInput:
+class StochasticPowerFlowInput:
 
     def __init__(self, n, Scdf, Icdf, Ycdf):
         """

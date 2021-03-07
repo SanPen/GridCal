@@ -21,8 +21,8 @@ from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
-from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
-from GridCal.Engine.Simulations.Stochastic.lhs_driver import LatinHypercubeSampling
+from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_results import StochasticPowerFlowResults
+from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_driver import StochasticPowerFlowDriver
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, TimeCircuit
 
@@ -156,7 +156,7 @@ class Cascading(QThread):
         return idx, criteria
 
     @staticmethod
-    def remove_probability_based(numerical_circuit: TimeCircuit, results: MonteCarloResults, max_val, min_prob):
+    def remove_probability_based(numerical_circuit: TimeCircuit, results: StochasticPowerFlowResults, max_val, min_prob):
         """
         Remove branches based on their chance of overload
         :param numerical_circuit:
@@ -211,7 +211,9 @@ class Cascading(QThread):
             model_simulator = PowerFlowDriver(self.grid, self.options)
 
         elif self.cascade_type is CascadeType.LatinHypercube:
-            model_simulator = LatinHypercubeSampling(self.grid, self.options, sampling_points=self.n_lhs_samples)
+            model_simulator = StochasticPowerFlowDriver(self.grid,
+                                                        self.options,
+                                                        sampling_points=self.n_lhs_samples)
 
         else:
             model_simulator = PowerFlowDriver(self.grid, self.options)
@@ -262,7 +264,9 @@ class Cascading(QThread):
             model_simulator = PowerFlowDriver(self.grid, self.options)
 
         elif self.cascade_type is CascadeType.LatinHypercube:
-            model_simulator = LatinHypercubeSampling(self.grid, self.options, sampling_points=self.n_lhs_samples)
+            model_simulator = StochasticPowerFlowDriver(self.grid,
+                                                        self.options,
+                                                        sampling_points=self.n_lhs_samples)
 
         else:
             model_simulator = PowerFlowDriver(self.grid, self.options)

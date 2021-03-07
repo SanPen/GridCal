@@ -185,7 +185,12 @@ class BusGraphicItem(QGraphicsRectItem):
         """
         self.change_size(self.w, self.h)
 
-    def change_size(self, w, h):
+    def set_height(self, h):
+
+        self.setRect(0.0, 0.0, self.w, h)
+        self.h = h
+
+    def change_size(self, w, h=None):
         """
         Resize block function
         @param w:
@@ -193,7 +198,9 @@ class BusGraphicItem(QGraphicsRectItem):
         @return:
         """
         # Limit the block size to the minimum size:
-        h = self.min_h
+        if h is None:
+            h = self.min_h
+
         if w < self.min_w:
             w = self.min_w
 

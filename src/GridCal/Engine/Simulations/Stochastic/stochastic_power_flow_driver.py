@@ -13,14 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
-
+from enum import Enum
 import multiprocessing
 from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
-from GridCal.Engine.Simulations.Stochastic.monte_carlo_input import MonteCarloInput
+from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_results import StochasticPowerFlowResults
+from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_input import StochasticPowerFlowInput
 from GridCal.Engine.Core.time_series_pf_data import TimeCircuit
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import CDF
@@ -32,6 +32,12 @@ from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, Branch
 ########################################################################################################################
 # Monte Carlo classes
 ########################################################################################################################
+
+
+class StochasticPowerFlowType(Enum):
+
+    MonteCarlo = 'Monte Carlo'
+    LatinHypercube = 'Latin Hypercube'
 
 
 def make_monte_carlo_input(numerical_input_island: TimeCircuit):
@@ -50,24 +56,26 @@ def make_monte_carlo_input(numerical_input_island: TimeCircuit):
         Icdf[i] = CDF(numerical_input_island.Ibus[i, :])
         Ycdf[i] = CDF(numerical_input_island.Yshunt_from_devices[i, :])
 
-    return MonteCarloInput(n, Scdf, Icdf, Ycdf)
+    return StochasticPowerFlowInput(n, Scdf, Icdf, Ycdf)
 
 
-class MonteCarlo(QThread):
+class StochasticPowerFlowDriver(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
-    name = 'Monte Carlo'
+    name = 'Stochastic Power Flow'
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, mc_tol=1e-3, batch_size=100, max_mc_iter=10000,
-                 opf_time_series_results=None):
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, mc_tol=1e-3, batch_size=100, sampling_points=10000,
+                 opf_time_series_results=None,
+                 simulation_type: StochasticPowerFlowType = StochasticPowerFlowType.LatinHypercube):
         """
         Monte Carlo simulation constructor
         :param grid: MultiGrid instance
         :param options: Power flow options
         :param mc_tol: monte carlo std.dev tolerance
         :param batch_size: size of the batch
-        :param max_mc_iter: maximum monte carlo iterations in case of not reach the precission
+        :param sampling_points: maximum monte carlo iterations in case of not reach the precission
+        :param simulation_type: Type of sampling method
         """
         QThread.__init__(self)
 
@@ -80,7 +88,10 @@ class MonteCarlo(QThread):
         self.mc_tol = mc_tol
 
         self.batch_size = batch_size
-        self.max_mc_iter = max_mc_iter
+
+        self.sampling_points = sampling_points
+
+        self.simulation_type = simulation_type
 
         self.results = None
 
@@ -103,14 +114,14 @@ class MonteCarlo(QThread):
         """
         """
         t, _ = res
-        progress = (t + 1) / self.max_mc_iter * 100
+        progress = (t + 1) / self.sampling_points * 100
         self.progress_signal.emit(progress)
         self.returned_results.append(res)
 
     def run_multi_thread(self):
         """
         Run the monte carlo simulation
-        @return: MonteCarloResults instance
+        @return: StochasticPowerFlowResults instance
         """
 
         self.__cancel__ = False
@@ -127,7 +138,7 @@ class MonteCarlo(QThread):
         n = len(self.circuit.buses)
         m = self.circuit.get_branch_number()
 
-        mc_results = MonteCarloResults(n, m, name='Monte Carlo')
+        mc_results = StochasticPowerFlowResults(n, m, name='Monte Carlo')
         avg_res = PowerFlowResults()
         avg_res.initialize(n, m)
 
@@ -144,11 +155,11 @@ class MonteCarlo(QThread):
 
         self.progress_signal.emit(0.0)
 
-        while (std_dev_progress < 100.0) and (it < self.max_mc_iter) and not self.__cancel__:
+        while (std_dev_progress < 100.0) and (it < self.sampling_points) and not self.__cancel__:
 
             self.progress_text.emit('Running Monte Carlo: Variance: ' + str(v_variance))
 
-            mc_results = MonteCarloResults(n, m, self.batch_size, name='Monte Carlo')
+            mc_results = StochasticPowerFlowResults(n, m, self.batch_size, name='Monte Carlo')
 
             # for each partition of the profiles...
             for t_key, calc_inputs in calc_inputs_dict.items():
@@ -219,7 +230,7 @@ class MonteCarlo(QThread):
             std_dev_progress = 100 * self.mc_tol / err
             if std_dev_progress > 100:
                 std_dev_progress = 100
-            self.progress_signal.emit(max((std_dev_progress, it / self.max_mc_iter * 100)))
+            self.progress_signal.emit(max((std_dev_progress, it / self.sampling_points * 100)))
 
         # compute the averaged branch magnitudes
         mc_results.sbranch = avg_res.Sf
@@ -234,7 +245,7 @@ class MonteCarlo(QThread):
 
         return mc_results
 
-    def run_single_thread(self):
+    def run_single_thread_mc(self):
 
         self.__cancel__ = False
 
@@ -256,13 +267,13 @@ class MonteCarlo(QThread):
         calculation_inputs = numerical_circuit.split_into_islands(
             ignore_single_node_islands=self.options.ignore_single_node_islands)
 
-        mc_results = MonteCarloResults(n=numerical_circuit.nbus,
-                                       m=numerical_circuit.nbr,
-                                       p=self.max_mc_iter,
-                                       bus_names=numerical_circuit.bus_names,
-                                       branch_names=numerical_circuit.branch_names,
-                                       bus_types=numerical_circuit.bus_types,
-                                       name='Monte Carlo')
+        mc_results = StochasticPowerFlowResults(n=numerical_circuit.nbus,
+                                                m=numerical_circuit.nbr,
+                                                p=self.sampling_points,
+                                                bus_names=numerical_circuit.bus_names,
+                                                branch_names=numerical_circuit.branch_names,
+                                                bus_types=numerical_circuit.bus_types,
+                                                name='Monte Carlo')
 
         avg_res = PowerFlowResults(n=numerical_circuit.nbus,
                                    m=numerical_circuit.nbr,
@@ -284,7 +295,7 @@ class MonteCarlo(QThread):
             # set the time series as sampled in the circuit
             # build the inputs
             monte_carlo_input = make_monte_carlo_input(numerical_island)
-            mc_time_series = monte_carlo_input(self.max_mc_iter,
+            mc_time_series = monte_carlo_input(self.sampling_points,
                                                use_latin_hypercube=False)
             Vbus = numerical_island.Vbus[:, 0]
 
@@ -293,7 +304,7 @@ class MonteCarlo(QThread):
             br_idx = numerical_island.original_branch_idx
 
             # run the time series
-            for t in range(self.max_mc_iter):
+            for t in range(self.sampling_points):
 
                 # set the power values from a Monte carlo point at 't'
                 Y, I, S = mc_time_series.get_at(t)
@@ -331,7 +342,7 @@ class MonteCarlo(QThread):
                     std_dev_progress = 100 * self.mc_tol / err
                     if std_dev_progress > 100:
                         std_dev_progress = 100
-                    self.progress_signal.emit(max((std_dev_progress, t / self.max_mc_iter * 100)))
+                    self.progress_signal.emit(max((std_dev_progress, t / self.sampling_points * 100)))
 
                 if self.__cancel__:
                     break
@@ -371,6 +382,124 @@ class MonteCarlo(QThread):
 
         return mc_results
 
+    def run_single_thread_lhs(self):
+        """
+        Run the monte carlo simulation with Latin Hypercube sampling
+        @return:
+        """
+        self.__cancel__ = False
+
+        # initialize the grid time series results
+        # we will append the island results with another function
+
+        # batch_size = self.sampling_points
+
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Running Latin Hypercube Sampling...')
+
+        # compile the multi-circuit
+        numerical_circuit = compile_time_circuit(circuit=self.circuit,
+                                                 apply_temperature=False,
+                                                 branch_tolerance_mode=BranchImpedanceMode.Specified,
+                                                 opf_results=self.opf_time_series_results)
+
+        # do the topological computation
+        calculation_inputs = numerical_circuit.split_into_islands(ignore_single_node_islands=self.options.ignore_single_node_islands)
+
+        lhs_results = StochasticPowerFlowResults(n=numerical_circuit.nbus,
+                                                 m=numerical_circuit.nbr,
+                                                 p=self.sampling_points,
+                                                 bus_names=numerical_circuit.bus_names,
+                                                 branch_names=numerical_circuit.branch_names,
+                                                 bus_types=numerical_circuit.bus_types,
+                                                 name='Latin Hypercube')
+
+        avg_res = PowerFlowResults(n=numerical_circuit.nbus,
+                                   m=numerical_circuit.nbr,
+                                   n_tr=numerical_circuit.ntr,
+                                   n_hvdc=numerical_circuit.nhvdc,
+                                   bus_names=numerical_circuit.bus_names,
+                                   branch_names=numerical_circuit.branch_names,
+                                   transformer_names=numerical_circuit.tr_names,
+                                   hvdc_names=numerical_circuit.hvdc_names,
+                                   bus_types=numerical_circuit.bus_types)
+
+        # For every island, run the time series
+        for island_index, numerical_island in enumerate(calculation_inputs):
+
+            # try:
+            # set the time series as sampled in the circuit
+            # build the inputs
+            monte_carlo_input = make_monte_carlo_input(numerical_island)
+            mc_time_series = monte_carlo_input(self.sampling_points, use_latin_hypercube=True)
+            Vbus = numerical_island.Vbus[:, 0]
+
+            # short cut the indices
+            bus_idx = numerical_island.original_bus_idx
+            br_idx = numerical_island.original_branch_idx
+
+            # run the time series
+            for t in range(self.sampling_points):
+
+                # set the power values from a Monte carlo point at 't'
+                Y, I, S = mc_time_series.get_at(t)
+
+                # Run the set monte carlo point at 't'
+                res = single_island_pf(circuit=numerical_island,
+                                       Vbus=Vbus,
+                                       Sbus=S,
+                                       Ibus=I,
+                                       branch_rates=numerical_island.branch_rates,
+                                       options=self.options,
+                                       logger=self.logger)
+
+                # Gather the results
+                lhs_results.S_points[t, bus_idx] = S
+                lhs_results.V_points[t, bus_idx] = res.voltage
+                lhs_results.Sbr_points[t, br_idx] = res.Sf
+                lhs_results.loading_points[t, br_idx] = res.loading
+                lhs_results.losses_points[t, br_idx] = res.losses
+
+                self.progress_signal.emit(t / self.sampling_points * 100)
+
+                if self.__cancel__:
+                    break
+
+            if self.__cancel__:
+                break
+
+            # compile MC results
+            self.progress_text.emit('Compiling results...')
+            lhs_results.compile()
+
+            # compute the island branch results
+            Sfb, Stb, If, It, Vbranch, loading, \
+            losses, flow_direction, Sbus = power_flow_post_process(numerical_island,
+                                                                   Sbus=lhs_results.S_points.mean(axis=0)[bus_idx],
+                                                                   V=lhs_results.V_points.mean(axis=0)[bus_idx],
+                                                                   branch_rates=numerical_island.branch_rates)
+
+            # apply the island averaged results
+            avg_res.Sbus[bus_idx] = Sbus
+            avg_res.voltage[bus_idx] = lhs_results.voltage[bus_idx]
+            avg_res.Sf[br_idx] = Sfb
+            avg_res.St[br_idx] = Stb
+            avg_res.If[br_idx] = If
+            avg_res.It[br_idx] = It
+            avg_res.Vbranch[br_idx] = Vbranch
+            avg_res.loading[br_idx] = loading
+            avg_res.losses[br_idx] = losses
+            avg_res.flow_direction[br_idx] = flow_direction
+
+        self.results = lhs_results
+
+        # send the finnish signal
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
+
+        return lhs_results
+
     def run(self):
         """
         Run the monte carlo simulation
@@ -382,7 +511,10 @@ class MonteCarlo(QThread):
         if self.options.multi_thread:
             self.results = self.run_multi_thread()
         else:
-            self.results = self.run_single_thread()
+            if self.simulation_type == StochasticPowerFlowType.MonteCarlo:
+                self.results = self.run_single_thread_mc()
+            elif self.simulation_type == StochasticPowerFlowType.LatinHypercube:
+                self.results = self.run_single_thread_lhs()
 
         # send the finnish signal
         self.progress_signal.emit(0.0)

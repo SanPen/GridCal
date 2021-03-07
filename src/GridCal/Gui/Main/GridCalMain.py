@@ -12,7 +12,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-
+import gc
+import os.path
+import platform
+import sys
+import datetime as dtelib
+from collections import OrderedDict
+from multiprocessing import cpu_count
+from PySide2 import QtWidgets
+from matplotlib.colors import LinearSegmentedColormap
+from pandas.plotting import register_matplotlib_converters
 
 # GUI imports
 from GridCal.__version__ import __GridCal_VERSION__, about_msg
@@ -45,8 +54,7 @@ import GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_driver as sc
 import GridCal.Engine.Simulations.NK.n_minus_k_driver as nmkdrv
 import GridCal.Engine.Simulations.OPF.opf_ts_driver as opftsdrv
 import GridCal.Engine.Simulations.PowerFlow.power_flow_driver as pfdrv
-import GridCal.Engine.Simulations.Stochastic.monte_carlo_driver as mcdrv
-import GridCal.Engine.Simulations.Stochastic.lhs_driver as lhsdrv
+import GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_driver as mcdrv
 import GridCal.Engine.Simulations.PowerFlow.time_series_driver as pftsdrv
 import GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver as cpfdrv
 import GridCal.Engine.Simulations.Topology.topology_driver as tpdrv
@@ -57,17 +65,6 @@ import GridCal.Engine.IO.export_results_driver as exprtdrv
 import GridCal.Engine.IO.file_handler as filedrv
 import GridCal.Engine.IO.synchronization_driver as syncdrv
 from GridCal.Engine.Simulations.results_model import ResultsModel
-
-import gc
-import os.path
-import platform
-import sys
-import datetime
-from collections import OrderedDict
-from multiprocessing import cpu_count
-from PySide2 import QtWidgets
-from matplotlib.colors import LinearSegmentedColormap
-from pandas.plotting import register_matplotlib_converters
 
 
 __author__ = 'Santiago Peñate Vera'
@@ -165,6 +162,13 @@ class MainGUI(QMainWindow):
                               'spring_layout'])
         self.ui.automatic_layout_comboBox.setModel(mdl)
 
+        # list of stochastic power flow methods
+        self.stochastic_pf_methods_dict = OrderedDict()
+        self.stochastic_pf_methods_dict[mcdrv.StochasticPowerFlowType.LatinHypercube.value] = mcdrv.StochasticPowerFlowType.LatinHypercube
+        self.stochastic_pf_methods_dict[mcdrv.StochasticPowerFlowType.MonteCarlo.value] = mcdrv.StochasticPowerFlowType.MonteCarlo
+        mdl = get_list_model(list(self.stochastic_pf_methods_dict.keys()))
+        self.ui.stochastic_pf_method_comboBox.setModel(mdl)
+
         # list of styles
         plt_styles = plt.style.available
         self.ui.plt_style_comboBox.setModel(get_list_model(plt_styles))
@@ -255,7 +259,7 @@ class MainGUI(QMainWindow):
         # threads
         self.power_flow = None
         self.short_circuit = None
-        self.monte_carlo = None
+        self.stochastic_pf = None
         self.time_series = None
         self.voltage_stability = None
         self.latin_hypercube_sampling = None
@@ -331,8 +335,6 @@ class MainGUI(QMainWindow):
 
         self.ui.actionPower_flow_Stochastic.triggered.connect(self.run_stochastic)
 
-        self.ui.actionLatin_Hypercube_Sampling.triggered.connect(self.run_lhs)
-
         self.ui.actionBlackout_cascade.triggered.connect(self.view_cascade_menu)
 
         self.ui.actionOPF.triggered.connect(self.run_opf)
@@ -381,7 +383,7 @@ class MainGUI(QMainWindow):
 
         self.ui.actionDrawSchematic.triggered.connect(self.draw_schematic)
 
-        self.ui.actionSigma_analysis.triggered.connect(self.sigma_analisys)
+        self.ui.actionSigma_analysis.triggered.connect(self.sigma_analysis)
 
         self.ui.actionAdd_default_catalogue.triggered.connect(self.add_default_catalogue)
 
@@ -574,7 +576,7 @@ class MainGUI(QMainWindow):
         """
         all_threads = [self.power_flow,
                        self.short_circuit,
-                       self.monte_carlo,
+                       self.stochastic_pf,
                        self.time_series,
                        self.voltage_stability,
                        self.latin_hypercube_sampling,
@@ -893,17 +895,17 @@ class MainGUI(QMainWindow):
         print('\tapp.voltage_stability.continuation_power:\t Power values for every power multiplication factor.')
 
         print('\n\nMonte Carlo power flow results:')
-        print('\tapp.monte_carlo.V_avg:\t nodal voltage average result.')
-        print('\tapp.monte_carlo.I_avg:\t branch current average result.')
-        print('\tapp.monte_carlo.Loading_avg:\t branch loading average result.')
-        print('\tapp.monte_carlo.Losses_avg:\t branch losses average result.')
-        print('\tapp.monte_carlo.V_std:\t nodal voltage standard deviation result.')
-        print('\tapp.monte_carlo.I_std:\t branch current standard deviation result.')
-        print('\tapp.monte_carlo.Loading_std:\t branch loading standard deviation result.')
-        print('\tapp.monte_carlo.Losses_std:\t branch losses standard deviation result.')
-        print('\tapp.monte_carlo.V_avg_series:\t nodal voltage average series.')
-        print('\tapp.monte_carlo.V_std_series:\t branch current standard deviation series.')
-        print('\tapp.monte_carlo.error_series:\t Monte Carlo error series (the convergence value).')
+        print('\tapp.stochastic_pf.V_avg:\t nodal voltage average result.')
+        print('\tapp.stochastic_pf.I_avg:\t branch current average result.')
+        print('\tapp.stochastic_pf.Loading_avg:\t branch loading average result.')
+        print('\tapp.stochastic_pf.Losses_avg:\t branch losses average result.')
+        print('\tapp.stochastic_pf.V_std:\t nodal voltage standard deviation result.')
+        print('\tapp.stochastic_pf.I_std:\t branch current standard deviation result.')
+        print('\tapp.stochastic_pf.Loading_std:\t branch loading standard deviation result.')
+        print('\tapp.stochastic_pf.Losses_std:\t branch losses standard deviation result.')
+        print('\tapp.stochastic_pf.V_avg_series:\t nodal voltage average series.')
+        print('\tapp.stochastic_pf.V_std_series:\t branch current standard deviation series.')
+        print('\tapp.stochastic_pf.error_series:\t Monte Carlo error series (the convergence value).')
         print('The same for app.latin_hypercube_sampling')
 
     def clc(self):
@@ -922,7 +924,7 @@ class MainGUI(QMainWindow):
 
         """
         if self.console is not None:
-            dte = datetime.datetime.now().strftime("%b %d %Y %H:%M:%S")
+            dte = dtelib.datetime.now().strftime("%b %d %Y %H:%M:%S")
             self.console.print_text('\n' + dte + '->' + msg_)
         else:
             print(msg_)
@@ -1099,8 +1101,8 @@ class MainGUI(QMainWindow):
 
     def select_csv_file(self):
         """
-
-        :return:
+        Select a CSV file
+        :return: csv file path
         """
         files_types = "CSV (*.csv)"
 
@@ -1121,10 +1123,10 @@ class MainGUI(QMainWindow):
 
     def open_file_now(self, filenames, post_function=None):
         """
-
+        Open a file without questions
         :param filenames: list of file names (may be more than one because of CIM TP and EQ files)
-        :param post_function:
-        :return:
+        :param post_function: function callback
+        :return: Nothing
         """
         self.file_name = filenames[0]
 
@@ -1248,7 +1250,6 @@ class MainGUI(QMainWindow):
         update the drop down menus that display dates
         """
         if self.circuit.time_profile is not None:
-            # print('Profiles available')
             mdl = get_list_model(self.circuit.time_profile)
             # setup profile sliders
             self.set_up_profile_sliders()
@@ -1814,8 +1815,6 @@ class MainGUI(QMainWindow):
         Create new profiles structure
         :return:
         """
-        # print('new_profiles_structure')
-
         dlg = NewProfilesStructureDialogue()
         if dlg.exec_():
             steps, step_length, step_unit, time_base = dlg.get_values()
@@ -2128,7 +2127,6 @@ class MainGUI(QMainWindow):
         Display profile
         """
         if self.circuit.time_profile is not None:
-            # print('display_profiles')
 
             dev_type_text = self.ui.profile_device_type_comboBox.currentText()
 
@@ -2290,7 +2288,6 @@ class MainGUI(QMainWindow):
 
         """
         # update the results in the circuit structures
-        # print('Post power flow')
         if self.power_flow.results is not None:
             self.ui.progress_label.setText('Colouring power flow results in the grid...')
             QtGui.QGuiApplication.processEvents()
@@ -2311,7 +2308,13 @@ class MainGUI(QMainWindow):
                                          hvdc_losses=self.power_flow.results.hvdc_losses,
                                          ma=self.power_flow.results.ma,
                                          theta=self.power_flow.results.theta,
-                                         Beq=self.power_flow.results.Beq)
+                                         Beq=self.power_flow.results.Beq,
+                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                         max_bus_width=self.ui.max_node_size_spinBox.value()
+                                         )
             self.update_available_results()
 
             # print convergence reports on the console
@@ -2418,7 +2421,13 @@ class MainGUI(QMainWindow):
                                          Sf=self.short_circuit.results.Sf,
                                          voltages=self.short_circuit.results.voltage,
                                          types=self.short_circuit.results.bus_types,
-                                         loadings=self.short_circuit.results.loading)
+                                         loadings=self.short_circuit.results.loading,
+                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                         max_bus_width=self.ui.max_node_size_spinBox.value()
+                                         )
             self.update_available_results()
         else:
             error_msg('Something went wrong, There are no power short circuit results.')
@@ -2532,7 +2541,13 @@ class MainGUI(QMainWindow):
                                                  Sf=self.ptdf_ts_analysis.results.Sf.max(axis=0),
                                                  voltages=self.ptdf_ts_analysis.results.voltage.max(axis=0),
                                                  loadings=np.abs(self.ptdf_ts_analysis.results.loading).max(axis=0),
-                                                 types=None)
+                                                 types=None,
+                                                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                                 min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                                 max_bus_width=self.ui.max_node_size_spinBox.value()
+                                                 )
                     else:
                         info_msg('Cannot colour because the PTDF results have zero time steps :/')
 
@@ -2760,7 +2775,13 @@ class MainGUI(QMainWindow):
                                                  Sf=self.voltage_stability.results.Sf[-1, :],
                                                  voltages=self.voltage_stability.results.voltages[-1, :],
                                                  loadings=self.voltage_stability.results.loading[-1, :],
-                                                 types=self.voltage_stability.results.bus_types)
+                                                 types=self.voltage_stability.results.bus_types,
+                                                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                                 min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                                 max_bus_width=self.ui.max_node_size_spinBox.value()
+                                                 )
                     self.update_available_results()
             else:
                 info_msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
@@ -2855,7 +2876,13 @@ class MainGUI(QMainWindow):
                                          Sf=Sbranch,
                                          voltages=voltage,
                                          loadings=loading,
-                                         types=self.time_series.results.bus_types)
+                                         types=self.time_series.results.bus_types,
+                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                         max_bus_width=self.ui.max_node_size_spinBox.value()
+                                         )
 
             self.update_available_results()
 
@@ -2884,18 +2911,24 @@ class MainGUI(QMainWindow):
                     self.ui.progress_label.setText('Compiling the grid...')
                     QtGui.QGuiApplication.processEvents()
 
-                    options = self.get_selected_power_flow_options()
+                    pf_options = self.get_selected_power_flow_options()
+
+                    simulation_type = self.stochastic_pf_methods_dict[self.ui.stochastic_pf_method_comboBox.currentText()]
 
                     tol = 10 ** (-1 * self.ui.tolerance_stochastic_spinBox.value())
                     max_iter = self.ui.max_iterations_stochastic_spinBox.value()
-                    self.monte_carlo = mcdrv.MonteCarlo(self.circuit, options, mc_tol=tol, batch_size=100,
-                                                        max_mc_iter=max_iter)
+                    self.stochastic_pf = mcdrv.StochasticPowerFlowDriver(self.circuit,
+                                                                         pf_options,
+                                                                         mc_tol=tol,
+                                                                         batch_size=100,
+                                                                         sampling_points=max_iter,
+                                                                         simulation_type=simulation_type)
 
-                    self.monte_carlo.progress_signal.connect(self.ui.progressBar.setValue)
-                    self.monte_carlo.progress_text.connect(self.ui.progress_label.setText)
-                    self.monte_carlo.done_signal.connect(self.post_stochastic)
+                    self.stochastic_pf.progress_signal.connect(self.ui.progressBar.setValue)
+                    self.stochastic_pf.progress_text.connect(self.ui.progress_label.setText)
+                    self.stochastic_pf.done_signal.connect(self.post_stochastic)
 
-                    self.monte_carlo.start()
+                    self.stochastic_pf.start()
                 else:
                     warning_msg('There are no time series.')
 
@@ -2910,80 +2943,23 @@ class MainGUI(QMainWindow):
         Actions to perform after the Monte Carlo simulation is finished
         @return:
         """
-        if not self.monte_carlo.__cancel__:
+        if not self.stochastic_pf.__cancel__:
 
             self.remove_simulation(restpes.SimulationTypes.MonteCarlo_run)
 
             if self.ui.draw_schematic_checkBox.isChecked():
                 viz.colour_the_schematic(circuit=self.circuit,
-                                         voltages=self.monte_carlo.results.voltage,
-                                         loadings=self.monte_carlo.results.loading,
-                                         Sf=self.monte_carlo.results.sbranch,
-                                         types=self.monte_carlo.results.bus_types,
-                                         Sbus=None)
-            self.update_available_results()
-
-        else:
-            pass
-
-        if len(self.stuff_running_now) == 0:
-            self.UNLOCK()
-
-    def run_lhs(self):
-        """
-        Run a Monte Carlo simulation with Latin-Hypercube sampling
-        @return:
-        """
-
-        if len(self.circuit.buses) > 0:
-
-            if restpes.SimulationTypes.LatinHypercube_run not in self.stuff_running_now:
-
-                if self.circuit.time_profile is not None:
-
-                    self.add_simulation(restpes.SimulationTypes.LatinHypercube_run)
-
-                    self.LOCK()
-
-                    self.ui.progress_label.setText('Compiling the grid...')
-                    QtGui.QGuiApplication.processEvents()
-
-                    options = self.get_selected_power_flow_options()
-
-                    sampling_points = self.ui.lhs_samples_number_spinBox.value()
-
-                    self.latin_hypercube_sampling = lhsdrv.LatinHypercubeSampling(self.circuit,
-                                                                                  options,
-                                                                                  sampling_points)
-
-                    self.latin_hypercube_sampling.progress_signal.connect(self.ui.progressBar.setValue)
-                    self.latin_hypercube_sampling.progress_text.connect(self.ui.progress_label.setText)
-                    self.latin_hypercube_sampling.done_signal.connect(self.post_lhs)
-
-                    self.latin_hypercube_sampling.start()
-                else:
-                    warning_msg('There are no time series.')
-            else:
-                warning_msg('Another latin hypercube is being sampled...')
-        else:
-            pass
-
-    def post_lhs(self):
-        """
-        Actions to perform after the Monte Carlo simulation is finished
-        @return:
-        """
-
-        self.remove_simulation(restpes.SimulationTypes.LatinHypercube_run)
-
-        if not self.latin_hypercube_sampling.__cancel__:
-            if self.ui.draw_schematic_checkBox.isChecked():
-                viz.colour_the_schematic(circuit=self.circuit,
-                                         voltages=self.latin_hypercube_sampling.results.voltage,
-                                         loadings=self.latin_hypercube_sampling.results.loading,
-                                         types=self.latin_hypercube_sampling.results.bus_types,
-                                         Sf=self.latin_hypercube_sampling.results.sbranch,
-                                         Sbus=None)
+                                         voltages=self.stochastic_pf.results.voltage,
+                                         loadings=self.stochastic_pf.results.loading,
+                                         Sf=self.stochastic_pf.results.sbranch,
+                                         types=self.stochastic_pf.results.bus_types,
+                                         Sbus=None,
+                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                         max_bus_width=self.ui.max_node_size_spinBox.value()
+                                         )
             self.update_available_results()
 
         else:
@@ -3024,8 +3000,6 @@ class MainGUI(QMainWindow):
         """
         Run a cascading to blackout simulation
         """
-        # print('run_cascade')
-
         if len(self.circuit.buses) > 0:
 
             if restpes.SimulationTypes.Cascade_run not in self.stuff_running_now:
@@ -3041,7 +3015,7 @@ class MainGUI(QMainWindow):
                 options.solver_type = bs.SolverType.LM
 
                 max_isl = self.ui.cascading_islands_spinBox.value()
-                n_lsh_samples = self.ui.lhs_samples_number_spinBox.value()
+                n_lsh_samples = self.ui.max_iterations_stochastic_spinBox.value()
 
                 self.cascade = blkout.Cascading(self.circuit.copy(), options,
                                                 max_additional_islands=max_isl,
@@ -3083,7 +3057,7 @@ class MainGUI(QMainWindow):
                 br_idx = np.r_[br_idx, self.cascade.results.events[i].removed_idx]
 
             # pick the results at the designated cascade step
-            results = self.cascade.results.events[idx].pf_results  # MonteCarloResults object
+            results = self.cascade.results.events[idx].pf_results  # StochasticPowerFlowResults object
 
             # print grid
             if self.ui.draw_schematic_checkBox.isChecked():
@@ -3093,7 +3067,13 @@ class MainGUI(QMainWindow):
                                          types=results.bus_types,
                                          Sf=results.sbranch,
                                          Sbus=None,
-                                         failed_br_idx=br_idx)
+                                         failed_br_idx=br_idx,
+                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                         max_bus_width=self.ui.max_node_size_spinBox.value()
+                                         )
 
             # Set cascade table
             self.ui.cascade_tableView.setModel(PandasModel(self.cascade.get_table()))
@@ -3168,7 +3148,13 @@ class MainGUI(QMainWindow):
                                              loadings=self.optimal_power_flow.results.loading,
                                              types=self.optimal_power_flow.results.bus_types,
                                              Sf=self.optimal_power_flow.results.Sf,
-                                             Sbus=self.optimal_power_flow.results.Sbus)
+                                             Sbus=self.optimal_power_flow.results.Sbus,
+                                             use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                             min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                             max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                             min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                             max_bus_width=self.ui.max_node_size_spinBox.value()
+                                             )
                 self.update_available_results()
 
             else:
@@ -3183,7 +3169,6 @@ class MainGUI(QMainWindow):
     def run_opf_time_series(self):
         """
         OPF Time Series run
-        :return:
         """
         if len(self.circuit.buses) > 0:
 
@@ -3240,7 +3225,6 @@ class MainGUI(QMainWindow):
     def post_opf_time_series(self):
         """
         Post OPF Time Series
-        :return:
         """
         if self.optimal_power_flow_time_series is not None:
 
@@ -3262,7 +3246,13 @@ class MainGUI(QMainWindow):
                                              Sf=Sf,
                                              voltages=voltage,
                                              loadings=loading,
-                                             types=self.optimal_power_flow_time_series.results.bus_types)
+                                             types=self.optimal_power_flow_time_series.results.bus_types,
+                                             use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                             min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                             max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                             min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                             max_bus_width=self.ui.max_node_size_spinBox.value()
+                                             )
 
                 self.update_available_results()
 
@@ -3278,7 +3268,6 @@ class MainGUI(QMainWindow):
     def copy_opf_to_time_series(self):
         """
         Copy the OPF generation values to the Time series object and execute a time series simulation
-        :return:
         """
         if len(self.circuit.buses) > 0:
 
@@ -3379,8 +3368,7 @@ class MainGUI(QMainWindow):
 
     def run_find_node_groups(self):
         """
-
-        :return:
+        Run the node groups algorithm
         """
         if self.ui.actionFind_node_groups.isChecked():
 
@@ -3421,8 +3409,6 @@ class MainGUI(QMainWindow):
         self.UNLOCK()
         print('\nGroups:')
 
-        # print(self.find_node_groups_driver.distances)
-
         for group in self.find_node_groups_driver.groups_by_name:
             print(group)
 
@@ -3452,7 +3438,6 @@ class MainGUI(QMainWindow):
             self.UNLOCK()
 
     def storage_location(self):
-
         """
         Add storage markers to the schematic
         """
@@ -3519,10 +3504,9 @@ class MainGUI(QMainWindow):
         else:
             pass
 
-    def sigma_analisys(self):
+    def sigma_analysis(self):
         """
-
-        :return:
+        Run the sigma analysis
         """
         if len(self.circuit.buses) > 0:
 
@@ -3540,15 +3524,11 @@ class MainGUI(QMainWindow):
 
     def grid_generator(self):
         """
-
-        :return:
+        Open the grid generator window
         """
         self.grid_generator_dialogue = GridGeneratorGUI(parent=self)
         self.grid_generator_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
-        # self.grid_generator_dialogue.setWindowModality(Qt.ApplicationModal)
-        # self.grid_generator_dialogue.show()  # exec leaves the parent on hold
         self.grid_generator_dialogue.exec_()
-        print('Done!!')
 
         if self.grid_generator_dialogue.applied:
 
@@ -3584,24 +3564,9 @@ class MainGUI(QMainWindow):
 
     def set_cancel_state(self):
         """
-        Cancel whatever's going on that can be cancelled
+        Cancel what ever's going on that can be cancelled
         @return:
         """
-
-        '''
-        self.power_flow = None
-        self.short_circuit = None
-        self.monte_carlo = None
-        self.time_series = None
-        self.voltage_stability = None
-        self.latin_hypercube_sampling = None
-        self.cascade = None
-        self.optimal_power_flow = None
-        self.optimal_power_flow_time_series = None
-        self.transient_stability = None
-        self.topology_reduction = None
-
-        '''
 
         reply = QMessageBox.question(self, 'Message', 'Are you sure that you want to cancel the simulation?',
                                      QMessageBox.Yes, QMessageBox.No)
@@ -3612,17 +3577,14 @@ class MainGUI(QMainWindow):
             if self.power_flow is not None:
                 self.power_flow.cancel()
 
-            if self.monte_carlo is not None:
-                self.monte_carlo.cancel()
+            if self.stochastic_pf is not None:
+                self.stochastic_pf.cancel()
 
             if self.time_series is not None:
                 self.time_series.cancel()
 
             if self.voltage_stability is not None:
                 self.voltage_stability.cancel()
-
-            if self.latin_hypercube_sampling is not None:
-                self.latin_hypercube_sampling.cancel()
 
             if self.optimal_power_flow_time_series is not None:
                 self.optimal_power_flow_time_series.cancel()
@@ -3654,13 +3616,9 @@ class MainGUI(QMainWindow):
             if self.time_series.results is not None:
                 lst.append(self.time_series)
 
-        if self.monte_carlo is not None:
-            if self.monte_carlo.results is not None:
-                lst.append(self.monte_carlo)
-
-        if self.latin_hypercube_sampling is not None:
-            if self.latin_hypercube_sampling.results is not None:
-                lst.append(self.latin_hypercube_sampling)
+        if self.stochastic_pf is not None:
+            if self.stochastic_pf.results is not None:
+                lst.append(self.stochastic_pf)
 
         if self.short_circuit is not None:
             if self.short_circuit.results is not None:
@@ -3737,7 +3695,7 @@ class MainGUI(QMainWindow):
         """
         self.power_flow = None
         self.short_circuit = None
-        self.monte_carlo = None
+        self.stochastic_pf = None
         self.time_series = None
         self.voltage_stability = None
         self.optimal_power_flow = None
@@ -3753,11 +3711,8 @@ class MainGUI(QMainWindow):
         self.ui.simulation_data_island_comboBox.clear()
 
         self.available_results_dict = dict()
-        # self.ui.result_listView.setModel(None)
         self.ui.resultsTableView.setModel(None)
-        # self.ui.result_type_listView.setModel(None)
         self.ui.available_results_to_color_comboBox.model().clear()
-        # self.ui.result_element_selection_listView.setModel(None)
         self.ui.results_treeView.setModel(None)
 
         self.ui.catalogueTableView.setModel(None)
@@ -3787,7 +3742,7 @@ class MainGUI(QMainWindow):
         else:
 
             if not self.ui.draw_schematic_checkBox.isChecked():
-                print('The schematic drawing is disabled')
+                # The schematic drawing is disabled
                 return None
 
             plot_function = viz.colour_the_schematic
@@ -3797,6 +3752,11 @@ class MainGUI(QMainWindow):
 
             current_study = self.ui.available_results_to_color_comboBox.currentText()
             current_step = self.ui.simulation_results_step_comboBox.currentIndex()
+            use_flow_based_width = self.ui.branch_width_based_on_flow_checkBox.isChecked()
+            min_branch_width = self.ui.min_branch_size_spinBox.value()
+            max_branch_width = self.ui.max_branch_size_spinBox.value()
+            min_bus_width = self.ui.min_node_size_spinBox.value()
+            max_bus_width = self.ui.max_node_size_spinBox.value()
 
             if current_study == pfdrv.PowerFlowDriver.name:
 
@@ -3808,6 +3768,11 @@ class MainGUI(QMainWindow):
                               loadings=np.abs(self.power_flow.results.loading),
                               types=self.power_flow.results.bus_types,
                               losses=self.power_flow.results.losses,
+                              use_flow_based_width=use_flow_based_width,
+                              min_branch_width=min_branch_width,
+                              max_branch_width=max_branch_width,
+                              min_bus_width=min_bus_width,
+                              max_bus_width=max_bus_width,
                               file_name=file_name)
 
             elif current_study == pftsdrv.TimeSeries.name:
@@ -3819,6 +3784,11 @@ class MainGUI(QMainWindow):
                               voltages=self.time_series.results.voltage[current_step, :],
                               loadings=np.abs(self.time_series.results.loading[current_step, :]),
                               types=self.time_series.results.bus_types,
+                              use_flow_based_width=use_flow_based_width,
+                              min_branch_width=min_branch_width,
+                              max_branch_width=max_branch_width,
+                              min_bus_width=min_bus_width,
+                              max_bus_width=max_bus_width,
                               file_name=file_name)
 
             elif current_study == cpfdrv.ContinuationPowerFlowDriver.name:
@@ -3829,26 +3799,26 @@ class MainGUI(QMainWindow):
                               voltages=self.voltage_stability.results.voltages[current_step, :],
                               loadings=np.abs(self.voltage_stability.results.loading[current_step, :]),
                               types=self.voltage_stability.results.bus_types,
+                              use_flow_based_width=use_flow_based_width,
+                              min_branch_width=min_branch_width,
+                              max_branch_width=max_branch_width,
+                              min_bus_width=min_bus_width,
+                              max_bus_width=max_bus_width,
                               file_name=file_name)
 
-            elif current_study == mcdrv.MonteCarlo.name:
+            elif current_study == mcdrv.StochasticPowerFlowDriver.name:
 
                 plot_function(circuit=self.circuit,
-                              voltages=self.monte_carlo.results.V_points[current_step, :],
-                              loadings=np.abs(self.monte_carlo.results.loading_points[current_step, :]),
-                              Sf=self.monte_carlo.results.Sbr_points[current_step, :],
-                              types=self.monte_carlo.results.bus_types,
-                              Sbus=self.monte_carlo.results.S_points[current_step, :],
-                              file_name=file_name)
-
-            elif current_study == lhsdrv.LatinHypercubeSampling.name:
-
-                plot_function(circuit=self.circuit,
-                              voltages=self.latin_hypercube_sampling.results.V_points[current_step, :],
-                              loadings=self.latin_hypercube_sampling.results.loading_points[current_step, :],
-                              Sf=self.latin_hypercube_sampling.results.Sbr_points[current_step, :],
-                              types=self.latin_hypercube_sampling.results.bus_types,
-                              Sbus=self.latin_hypercube_sampling.results.S_points[current_step, :],
+                              voltages=self.stochastic_pf.results.V_points[current_step, :],
+                              loadings=np.abs(self.stochastic_pf.results.loading_points[current_step, :]),
+                              Sf=self.stochastic_pf.results.Sbr_points[current_step, :],
+                              types=self.stochastic_pf.results.bus_types,
+                              Sbus=self.stochastic_pf.results.S_points[current_step, :],
+                              use_flow_based_width=use_flow_based_width,
+                              min_branch_width=min_branch_width,
+                              max_branch_width=max_branch_width,
+                              min_bus_width=min_bus_width,
+                              max_bus_width=max_bus_width,
                               file_name=file_name)
 
             elif current_study == scdrv.ShortCircuitDriver.name:
@@ -3858,6 +3828,11 @@ class MainGUI(QMainWindow):
                               voltages=self.short_circuit.results.voltage,
                               types=self.short_circuit.results.bus_types,
                               loadings=self.short_circuit.results.loading,
+                              use_flow_based_width=use_flow_based_width,
+                              min_branch_width=min_branch_width,
+                              max_branch_width=max_branch_width,
+                              min_bus_width=min_bus_width,
+                              max_bus_width=max_bus_width,
                               file_name=file_name)
 
             elif current_study == opfdrv.OptimalPowerFlow.name:
@@ -3868,6 +3843,11 @@ class MainGUI(QMainWindow):
                               types=self.optimal_power_flow.results.bus_types,
                               Sf=self.optimal_power_flow.results.Sf,
                               Sbus=self.optimal_power_flow.results.Sbus,
+                              use_flow_based_width=use_flow_based_width,
+                              min_branch_width=min_branch_width,
+                              max_branch_width=max_branch_width,
+                              min_bus_width=min_bus_width,
+                              max_bus_width=max_bus_width,
                               file_name=file_name)
 
             elif current_study == opftsdrv.OptimalPowerFlowTimeSeries.name:
@@ -3878,6 +3858,11 @@ class MainGUI(QMainWindow):
                               voltages=self.optimal_power_flow_time_series.results.voltage[current_step, :],
                               loadings=np.abs(self.optimal_power_flow_time_series.results.loading[current_step, :]),
                               types=self.optimal_power_flow_time_series.results.bus_types,
+                              use_flow_based_width=use_flow_based_width,
+                              min_branch_width=min_branch_width,
+                              max_branch_width=max_branch_width,
+                              min_bus_width=min_bus_width,
+                              max_bus_width=max_bus_width,
                               file_name=file_name)
 
             elif current_study == ptdfdrv.LinearAnalysisDriver.name:
@@ -3893,6 +3878,11 @@ class MainGUI(QMainWindow):
                               loadings=loading,
                               types=self.ptdf_analysis.results.bus_types,
                               loading_label='Sensitivity',
+                              use_flow_based_width=use_flow_based_width,
+                              min_branch_width=min_branch_width,
+                              max_branch_width=max_branch_width,
+                              min_bus_width=min_bus_width,
+                              max_bus_width=max_bus_width,
                               file_name=file_name)
 
             elif current_study == ptdftsdrv.PtdfTimeSeries.name:
@@ -3903,6 +3893,11 @@ class MainGUI(QMainWindow):
                               voltages=self.ptdf_ts_analysis.results.voltage[current_step],
                               loadings=np.abs(self.ptdf_ts_analysis.results.loading[current_step]),
                               types=self.ptdf_ts_analysis.results.bus_types,
+                              use_flow_based_width=use_flow_based_width,
+                              min_branch_width=min_branch_width,
+                              max_branch_width=max_branch_width,
+                              min_bus_width=min_bus_width,
+                              max_bus_width=max_bus_width,
                               file_name=file_name)
 
             elif current_study == 'Transient stability':
@@ -3996,15 +3991,9 @@ class MainGUI(QMainWindow):
                 else:
                     warning_msg('There seem to be no results :(')
 
-            elif study_name == mcdrv.MonteCarlo.name:
-                if self.monte_carlo.results is not None:
-                    self.results_mdl = self.monte_carlo.results.mdl(result_type=study_type)
-                else:
-                    warning_msg('There seem to be no results :(')
-
-            elif study_name == lhsdrv.LatinHypercubeSampling.name:
-                if self.latin_hypercube_sampling.results is not None:
-                    self.results_mdl = self.latin_hypercube_sampling.results.mdl(result_type=study_type)
+            elif study_name == mcdrv.StochasticPowerFlowDriver.name:
+                if self.stochastic_pf.results is not None:
+                    self.results_mdl = self.stochastic_pf.results.mdl(result_type=study_type)
                 else:
                     warning_msg('There seem to be no results :(')
 
@@ -4155,7 +4144,6 @@ class MainGUI(QMainWindow):
     def set_state(self):
         """
         Set the selected profiles state in the grid
-        :return:
         """
         idx = self.ui.profile_time_selection_comboBox.currentIndex()
 
@@ -4205,7 +4193,6 @@ class MainGUI(QMainWindow):
     def set_up_profile_sliders(self):
         """
         Set up profiles
-        :return:
         """
         if self.circuit.time_profile is not None:
             t = len(self.circuit.time_profile) - 1
@@ -4229,17 +4216,14 @@ class MainGUI(QMainWindow):
 
     def explosion_factor_change(self):
         """
-        Chenge the node explosion factor
+        Change the node explosion factor
         """
         if self.grid_editor is not None:
             self.grid_editor.expand_factor = self.ui.explosion_factor_doubleSpinBox.value()
 
-            print('Explosion factor changed to:', self.grid_editor.expand_factor)
-
     def profile_sliders_changed(self):
         """
         Correct sliders if they change
-        :return:
         """
         start = self.ui.profile_start_slider.value()
         end = self.ui.profile_end_slider.value()
@@ -4258,7 +4242,6 @@ class MainGUI(QMainWindow):
     def add_to_catalogue(self):
         """
         Add object to the catalogue
-        :return:
         """
         something_happened = False
         if len(self.ui.catalogueDataStructuresListView.selectedIndexes()) > 0:
@@ -4361,7 +4344,6 @@ class MainGUI(QMainWindow):
     def delete_from_catalogue(self):
         """
         Delete element from catalogue
-        :return:
         """
         something_happened = False
         preserved = 0
@@ -4582,19 +4564,17 @@ class MainGUI(QMainWindow):
         """
         self.recompile_circuits_for_display()
         self.ui.simulation_data_island_comboBox.clear()
-        self.ui.simulation_data_island_comboBox.addItems(
-            ['Island ' + str(i) for i, circuit in enumerate(self.calculation_inputs_to_display)])
+        lst = ['Island ' + str(i) for i, circuit in enumerate(self.calculation_inputs_to_display)]
+        self.ui.simulation_data_island_comboBox.addItems(lst)
         if len(self.calculation_inputs_to_display) > 0:
             self.ui.simulation_data_island_comboBox.setCurrentIndex(0)
 
     def plot_style_change(self):
         """
         Change the style
-        :return:
         """
         style = self.ui.plt_style_comboBox.currentText()
         plt.style.use(style)
-        print('Style changed to', style)
 
     def copy_profiles(self):
         """
@@ -4612,7 +4592,6 @@ class MainGUI(QMainWindow):
         """
         Paste clipboard data into the profile
         """
-        print('Paste')
 
         mdl = self.ui.profiles_tableView.model()
         if mdl is not None:
@@ -4626,7 +4605,6 @@ class MainGUI(QMainWindow):
                 col_idx = 0
 
             mdl.paste_from_clipboard(row_idx=row_idx, col_idx=col_idx)
-            print('Pasted!')
         else:
             warning_msg('There is no profile displayed, please display one', 'Paste profile to clipboard')
 
@@ -4655,7 +4633,6 @@ class MainGUI(QMainWindow):
         """
         Display a list of elements that comes from a filter
         :param elements:
-        :return:
         """
         if len(elements) > 0:
 
@@ -4852,7 +4829,7 @@ class MainGUI(QMainWindow):
                     if len(sel_idx) > 0:
 
                         reply = QMessageBox.question(self, 'Message',
-                                                     'Are you sure that you want to delete and reduce the selected elements?',
+                                                     'Do you want to reduce and delete the selected elements?',
                                                      QMessageBox.Yes, QMessageBox.No)
 
                         if reply == QMessageBox.Yes:
@@ -4895,13 +4872,11 @@ class MainGUI(QMainWindow):
         """
         if self.delete_and_reduce_driver is not None:
 
-            print('Removing graphics...')
             for bus in self.delete_and_reduce_driver.buses_merged:
                 if bus.graphic_obj is not None:
                     bus.graphic_obj.create_children_icons()
                     bus.graphic_obj.arrange_children()
 
-            print('Reprinting schematic graphics...')
             self.create_schematic_from_api(explode_factor=1)
 
             self.clear_results()
@@ -5281,7 +5256,6 @@ class MainGUI(QMainWindow):
         """
         Actions to perform upon synchronization
         """
-        # print('Sync event performed!!')
 
         if self.file_sync_thread.version_conflict:
             # version conflict and changes
@@ -5331,7 +5305,6 @@ class MainGUI(QMainWindow):
 
         # add the rest of the devices
         for issue in self.file_sync_thread.issues:
-            print(issue)
 
             if issue.issue_type == bs.SyncIssueType.Conflict:
                 if issue.accepted():

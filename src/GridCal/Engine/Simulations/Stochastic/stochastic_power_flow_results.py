@@ -23,7 +23,7 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
 
 
-class MonteCarloResults:
+class StochasticPowerFlowResults:
 
     def __init__(self, n, m, p, bus_names, branch_names, bus_types, name='Monte Carlo'):
         """
@@ -94,8 +94,8 @@ class MonteCarloResults:
 
     def append_batch(self, mcres):
         """
-        Append a batch (a MonteCarloResults object) to this object
-        @param mcres: MonteCarloResults object
+        Append a batch (a StochasticPowerFlowResults object) to this object
+        @param mcres: StochasticPowerFlowResults object
         @return:
         """
         self.S_points = np.vstack((self.S_points, mcres.S_points))
