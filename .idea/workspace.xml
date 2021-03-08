@@ -23,15 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Implemented the dictionary to export objects">
-      <change afterPath="$PROJECT_DIR$/src/research/genetic_algorithms/binary_ga.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/IDONE.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/demo_Rosenbrock.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/demo_sum_of_int.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/example_25dRosenbrock.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/example_5dRosenbrock.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added binary GA and iDONE research">
+      <change beforePath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/IDONE.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/IDONE.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/demo_Rosenbrock.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/demo_Rosenbrock.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/demo_sum_of_int.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/genetic_algorithms/iDone/demo_sum_of_int.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -541,14 +536,7 @@
       <workItem from="1615149317630" duration="2383000" />
       <workItem from="1615204786738" duration="14175000" />
       <workItem from="1615222878585" duration="631000" />
-      <workItem from="1615225347261" duration="5567000" />
-    </task>
-    <task id="LOCAL-00058" summary="Improved the sigma value usage in the Linear node grouping">
-      <created>1604338098674</created>
-      <option name="number" value="00058" />
-      <option name="presentableId" value="LOCAL-00058" />
-      <option name="project" value="LOCAL" />
-      <updated>1604338098674</updated>
+      <workItem from="1615225347261" duration="7478000" />
     </task>
     <task id="LOCAL-00059" summary="Fixed the opf solution recycling">
       <created>1605209935857</created>
@@ -886,7 +874,14 @@
       <option name="project" value="LOCAL" />
       <updated>1615219974455</updated>
     </task>
-    <option name="localTasksCounter" value="107" />
+    <task id="LOCAL-00107" summary="Added binary GA and iDONE research">
+      <created>1615232143948</created>
+      <option name="number" value="00107" />
+      <option name="presentableId" value="LOCAL-00107" />
+      <option name="project" value="LOCAL" />
+      <updated>1615232143948</updated>
+    </task>
+    <option name="localTasksCounter" value="108" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -920,7 +915,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Slight performance improvement by converting the fubm derivatives to numba" />
     <MESSAGE value="Worked out issues with uploading to pipy" />
     <MESSAGE value="Added pipy version check" />
     <MESSAGE value="- Removed the outer loop controls&#10;- Added Q control to the AC only NR, LM and Iwamoto algorithms&#10;- in-loop Q control seems to work fine" />
@@ -945,7 +939,8 @@
     <MESSAGE value="Merged MC and LHS&#10;Added flow based width" />
     <MESSAGE value="some bug fixes" />
     <MESSAGE value="Implemented the dictionary to export objects" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implemented the dictionary to export objects" />
+    <MESSAGE value="Added binary GA and iDONE research" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added binary GA and iDONE research" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1276,11 +1271,23 @@
           <line>388</line>
           <option name="timeStamp" value="584" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/research/genetic_algorithms/iDone/IDONE.py</url>
+          <line>178</line>
+          <option name="timeStamp" value="587" />
+        </line-breakpoint>
       </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/GridCal$demo_sum_of_int.coverage" NAME="demo_sum_of_int Coverage Results" MODIFIED="1615231620804" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms/iDone" />
+    <SUITE FILE_PATH="coverage/GridCal$demo_sum_of_int.coverage" NAME="demo_sum_of_int Coverage Results" MODIFIED="1615233946002" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms/iDone" />
     <SUITE FILE_PATH="coverage/GridCal$jacobian_based_acdc_power_flow.coverage" NAME="jacobian_based_acdc_power_flow Coverage Results" MODIFIED="1612124610302" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow" />
     <SUITE FILE_PATH="coverage/GridCal$test_demo_5_node.coverage" NAME="test_demo_5_node Coverage Results" MODIFIED="1614631204068" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$PTDF_research.coverage" NAME="PTDF_research Coverage Results" MODIFIED="1600707513093" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />

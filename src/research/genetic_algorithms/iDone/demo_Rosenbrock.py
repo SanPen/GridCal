@@ -22,7 +22,7 @@ def test_Rosenbrock(d, max_evals=500):
 		result = rosen(x)/scaling
 		return result
 
-	solX, solY, model, logfile = IDONE.IDONE_minimize(f, x0, lb, ub, max_evals)
+	solX, solY, model, logfile = IDONE.minimize(f, x0, lb, ub, max_evals)
 	print("Solution found: ")
 	print(f"X = {solX}")
 	print(f"Y = {solY}")

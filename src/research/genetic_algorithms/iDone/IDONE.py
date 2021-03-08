@@ -17,186 +17,234 @@ import math
 import random
 import time
 import numpy as np
-from scipy.optimize import minimize, Bounds
+import scipy.optimize as opt
 
 
-def IDONE_minimize(obj, x0, lb, ub, max_evals):
+class ModelData:
+
+	def __init__(self, W, B):
+
+		self.W = None
+		self.B = None
+
+
+def ReLU(x):
+	"""
+	Rectified Linear Unit
+	:param x:
+	:return:
+	"""
+	return np.maximum(0, x)
+
+
+def ReLUderiv(x):
+	"""
+	Derivative of Rectified Linear Unit
+	:param x:
+	:return:
+	"""
+	return (x > 0) + 0.5 * (x == 0)
+
+
+def Z(x, W, B):
+	"""
+	Transform input into model basis functions Z=ReLU(W*x+B)
+	:param x:
+	:return:
+	"""
+	x = np.asarray(x)
+	x = x.reshape(-1, 1)
+	temp = np.matmul(W, x)
+	temp = temp + B
+	temp = np.asarray(temp)
+	Zx = ReLU(temp)
+	return Zx
+
+
+def Zderiv(x, W, B):
+	"""
+	Derivative of basis functions w.r.t. x
+	:param x:
+	:return:
+	"""
+	x = np.asarray(x)
+	x = x.reshape(-1, 1)
+	temp = np.matmul(W, x)
+	temp = temp + B
+	temp = np.asarray(temp)
+	dZx = ReLUderiv(temp)
+	return dZx
+
+
+def initialize_model(x0, d, lb, ub):
+	"""
+	Initialize the surrogate model
+	:param x0: initial guess
+	:param d: number of dimensions
+	:param lb: lower bounds
+	:param ub: upper bounds
+	:return:
+	- next_X: candidate solution presented by the algorithm
+	- model: updated model
 	"""
 
-	:param obj:
-	:param x0:
-	:param lb:
-	:param ub:
-	:param max_evals:
+	next_X = np.copy(x0)
+
+	# Define basis functions Z=ReLU(W*x+B)
+	W = []  # Basis function weights
+	B = []  # Basis function bias
+
+	# Add a constant basis function independent on the variable x, giving the model an offset
+	W.append([0] * d)
+	B.append([1])
+
+	# Add basis functions dependent on one variable
+	for k in range(d):
+		for i in range(lb[k], ub[k] + 1):
+			if i == lb[k]:
+				temp = [0] * d
+				temp[k] = 1
+				W.append(np.copy(temp))
+				B.append([-i])
+			elif i == ub[k]:
+				temp = [0] * d
+				temp[k] = -1
+				W.append(np.copy(temp))
+				B.append([i])
+			else:
+				temp = [0] * d
+				temp[k] = -1
+				W.append(np.copy(temp))
+				B.append([i])
+				temp = [0] * d
+				temp[k] = 1
+				W.append(np.copy(temp))
+				B.append([-i])
+
+	# Add basis functions dependent on two subsequent variables: remove for basic IDONE
+	for k in range(1, d):
+		for i in range(lb[k] - ub[k - 1], ub[k] - lb[k - 1] + 1):
+			if i == lb[k] - ub[k - 1]:
+				temp = [0] * d
+				temp[k] = 1
+				temp[k - 1] = -1
+				W.append(np.copy(temp))
+				B.append([-i])
+			elif i == ub[k] - lb[k - 1]:
+				temp = [0] * d
+				temp[k] = -1
+				temp[k - 1] = 1
+				W.append(np.copy(temp))
+				B.append([i])
+			else:
+				temp = [0] * d
+				temp[k] = -1
+				temp[k - 1] = 1
+				W.append(np.copy(temp))
+				B.append([i])
+				temp = [0] * d
+				temp[k] = 1
+				temp[k - 1] = -1
+				W.append(np.copy(temp))
+				B.append([-i])
+
+	W = np.asarray(W)
+	B = np.asarray(B)
+
+	D = len(B)  # Number of basis functions
+	c = np.ones((D, 1))  # Model weights, to be trained with recursive least squares (RLS)
+	c[0] = 0  # Start out with no model offset
+	reg = 1e-8  # Regularization parameter. 1e-8 is good for the noiseless case, change to something like 1e-3 if there is noise.
+	P = np.diag(np.ones(D)) / reg  # RLS covariance matrix
+	model = {'W': W,
+			 'B': B,
+			 'ReLU': ReLU,
+			 'ReLUderiv': ReLUderiv,
+			 'Z': Z,
+			 'Zderiv': Zderiv,
+			 'D': D,
+			 'c': c,
+			 'reg': reg,
+			 'P': P}  # Store model variables in a dictionary
+
+	return next_X, model
+
+
+def out(x2, model):
+	"""
+	Define model output for any new input x2
+	:param x2:
+	:return:
+	"""
+	return np.matmul(np.transpose(model['c']), model['Z'](x2, model['W'], model['B'])).item(0, 0)
+
+
+def deriv(x2, model):
+	"""
+	Define model output derivative for any new input x2 (used in the optimization step)
+	:param x2:
+	:return:
+	"""
+	c = np.transpose(model['c'])
+	temp = np.reshape(model['Zderiv'](x2, model['W'], model['B']), (model['Zderiv'](x2, model['W'], model['B'])).shape[0])
+	temp = np.matmul(np.diag(temp), model['W'])
+	result = np.transpose(np.matmul(c, temp))
+	return result
+
+
+def update_model(x, y, model):
+	"""
+	Update the model when a new data point (x,y) comes in
+	:param x:
+	:param y:
+	:param model:
+	:return:
+	"""
+	Zx = model['Z'](x, model['W'], model['B'])
+
+	# Recursive least squares algorithm
+	temp = np.matmul(model['P'], Zx)
+	g = temp / (1 + np.matmul(np.transpose(Zx), temp))
+	model['P'] = model['P'] - np.matmul(g, np.transpose(temp))
+	model['c'] = model['c'] + (y - np.matmul(np.transpose(Zx), model['c'])) * g  # Only here, output y is used (to update the model weights)
+	model['out'] = out
+	model['outderiv'] = deriv
+	return model
+
+
+def scale(y, y0=None):
+	# Uncomment to add a scaling factor
+	# if abs(y0)>1e-8:
+	# y = (y-y0)/abs(y0)
+	# else:
+	# y = (y-y0)
+	return y
+
+
+def inv_scale(y, y0=None):
+	# if abs(y0)>1e-8:
+	# y = y*abs(y0)+y0
+	# else:
+	# y = y+y0
+	return y
+
+
+def minimize(obj, x0, lb, ub, max_evals):
+	"""
+	IDONE minimize function 
+	:param obj: Objective function
+	:param x0: Initial guess
+	:param lb: Variables' lower bound
+	:param ub: Variables' upper bound
+	:param max_evals: maximum number of evaluations
 	:return:
 	"""
 	d = len(x0)  # dimension, number of variables
 	current_time = time.time()  # time when starting the algorithm
 	next_X = []  # candidate solution presented by the algorithm
 
-	def initializeModel():
-		"""
-		Initialize the surrogate model
-		:return:
-		"""
-		next_X = np.copy(x0)
-		
-		def ReLU(x):  # Rectified Linear Unit
-			"""
-
-			:param x:
-			:return:
-			"""
-			return np.maximum(0, x)
-
-		def ReLUderiv(x):  # Derivative of Rectified Linear Unit
-			"""
-
-			:param x:
-			:return:
-			"""
-			return (x > 0) + 0.5 * (x == 0)
-		
-		# Define basis functions Z=ReLU(W*x+B)
-		W = []  # Basis function weights
-		B = []  # Basis function bias
-		
-		# Add a constant basis function independent on the variable x, giving the model an offset
-		W.append([0] * d)
-		B.append([1])
-		
-		# Add basis functions dependent on one variable
-		for k in range(d): 
-			for i in range(lb[k], ub[k] + 1):
-				if i == lb[k]:
-					temp = [0]*d
-					temp[k] = 1
-					W.append(np.copy(temp))
-					B.append([-i])
-				elif i == ub[k]:
-					temp = [0]*d
-					temp[k] = -1
-					W.append(np.copy(temp))
-					B.append([i])
-				else:
-					temp = [0]*d
-					temp[k] = -1
-					W.append(np.copy(temp))
-					B.append([i])
-					temp = [0]*d
-					temp[k] = 1
-					W.append(np.copy(temp))
-					B.append([-i])
-					
-		# Add basis functions dependent on two subsequent variables: remove for basic IDONE
-		for k in range(1, d):
-			for i in range(lb[k]-ub[k-1], ub[k]-lb[k-1]+1):
-				if i == lb[k]-ub[k-1]:
-					temp = [0] * d
-					temp[k] = 1
-					temp[k-1] = -1
-					W.append(np.copy(temp))
-					B.append([-i])
-				elif i == ub[k]-lb[k-1]:
-					temp = [0] * d
-					temp[k] = -1
-					temp[k-1] = 1
-					W.append(np.copy(temp))
-					B.append([i])
-				else:
-					temp = [0] * d
-					temp[k] = -1
-					temp[k-1] = 1
-					W.append(np.copy(temp))
-					B.append([i])
-					temp = [0]*d
-					temp[k] = 1
-					temp[k-1] = -1
-					W.append(np.copy(temp))
-					B.append([-i])
-				
-		W = np.asarray(W)	
-		B = np.asarray(B)	
-		
-		# Transform input into model basis functions Z=ReLU(W*x+B)
-		def Z(x): 
-			x = np.asarray(x)
-			x = x.reshape(-1, 1)
-			temp = np.matmul(W, x)
-			temp = temp + B
-			temp = np.asarray(temp)
-			Zx = ReLU(temp)
-			return Zx
-		
-		# Derivative of basis functions w.r.t. x
-		def Zderiv(x):
-			x = np.asarray(x)
-			x = x.reshape(-1, 1)
-			temp = np.matmul(W, x)
-			temp = temp + B
-			temp = np.asarray(temp)
-			dZx = ReLUderiv(temp)
-			return dZx
-		
-		D = len(B)  # Number of basis functions
-		c = np.ones((D, 1))  # Model weights, to be trained with recursive least squares (RLS)
-		c[0] = 0  # Start out with no model offset
-		reg = 1e-8  # Regularization parameter. 1e-8 is good for the noiseless case, change to something like 1e-3 if there is noise.
-		P = np.diag(np.ones(D)) / reg  # RLS covariance matrix
-		model = {'W': W,
-				 'B': B,
-				 'ReLU': ReLU,
-				 'ReLUderiv': ReLUderiv,
-				 'Z': Z,
-				 'Zderiv': Zderiv,
-				 'D': D,
-				 'c': c,
-				 'reg': reg,
-				 'P': P}  # Store model variables in a dictionary
-		
-		return next_X, model
-
-	def updateModel(x,y, model):
-		"""
-		Update the model when a new data point (x,y) comes in
-		:param x:
-		:param y:
-		:param model:
-		:return:
-		"""
-		Zx = model['Z'](x)			
-		# Recursive least squares algorithm
-		temp = np.matmul(model['P'], Zx)
-		g = temp/(1+np.matmul(np.transpose(Zx), temp))
-		model['P'] = model['P'] - np.matmul(g, np.transpose(temp))
-		model['c'] = model['c'] + ( y-np.matmul( np.transpose(Zx), model['c'])) * g  # Only here, output y is used (to update the model weights)
-
-		def out(x2):
-			"""
-			Define model output for any new input x2
-			:param x2:
-			:return:
-			"""
-			return np.matmul(np.transpose(model['c']), model['Z'](x2)).item(0, 0)
-
-		def deriv(x2):
-			"""
-			Define model output derivative for any new input x2 (used in the optimization step)
-			:param x2:
-			:return:
-			"""
-			c = np.transpose(model['c'])			
-			temp = np.reshape(model['Zderiv'](x2),(model['Zderiv'](x2)).shape[0])
-			temp = np.matmul(np.diag(temp), model['W'])
-			result = np.transpose(np.matmul( c, temp  ))
-			return result
-
-		model['out'] = out
-		model['outderiv'] = deriv
-		return model
-
 	# Start actual algorithm
-	next_X, model = initializeModel()
+	next_X, model = initialize_model(x0, d, lb, ub)
 	best_X = np.copy(next_X)  # Best candidate solution found so far
 	best_y = 9999999  # Best objective function value found so far
 	
@@ -210,24 +258,10 @@ def IDONE_minimize(obj, x0, lb, ub, max_evals):
 			# Scale with respect to initial y value, causing the optimum to lie below 0.
 			# This is better for exploitation and prevents the algorithm from getting stuck at the boundary.
 			y0 = y
-			def scale(y):
-			#Uncomment to add a scaling factor
-				# if abs(y0)>1e-8:
-					# y = (y-y0)/abs(y0)
-				# else:
-					# y = (y-y0)
-				return y
-
-			def inv_scale(y):
-				# if abs(y0)>1e-8:
-					# y = y*abs(y0)+y0
-				# else:
-					# y = y+y0
-				return y
 					
-			y = scale(y)
+			y = scale(y, y0)
 		else:
-			y = scale(obj(x))  # Evaluate the objective and scale it
+			y = scale(obj(x), 0)  # Evaluate the objective and scale it
 
 		# Keep track of the best found objective value and candidate solution so far
 		if y < best_y:
@@ -236,17 +270,18 @@ def IDONE_minimize(obj, x0, lb, ub, max_evals):
 
 		# Update the surrogate model
 		time_start = time.time() 
-		model = updateModel(x, y, model)
+		model = update_model(x, y, model)
 		update_time = time.time()-time_start  # Time used to update the model
 		
 		# Minimization of the surrogate model
 		time_start = time.time()
-		temp = minimize(fun=model['out'],
-						x0=x,
-						method='L-BFGS-B',
-						bounds=Bounds(lb, ub),
-						jac=model['outderiv'],
-						options={'maxiter': 20, 'maxfun': 20})
+		temp = opt.minimize(fun=model['out'],
+							x0=x,
+							args=(model,),
+							method='L-BFGS-B',
+							bounds=opt.Bounds(lb, ub),
+							jac=model['outderiv'],
+							options={'maxiter': 20, 'maxfun': 20})
 
 		minimization_time = time.time()-time_start  # Time used to find the minimum of the model
 		next_X = np.copy(temp.x)
@@ -257,13 +292,15 @@ def IDONE_minimize(obj, x0, lb, ub, max_evals):
 		np.clip(next_X, lb, ub)
 		
 		# Check if minimizer really gives better result
-		if model['out'](next_X) > model['out'](x) + 1e-8:
+		if model['out'](next_X, model) > model['out'](x, model) + 1e-8:
 			print('Warning: minimization of the surrogate model in IDONE yielded a worse solution, maybe something went wrong.')
 		
 		# Exploration step (else the algorithm gets stuck in the local minimum of the surrogate model)
 		next_X_before_exploration = np.copy(next_X)
 		next_X = np.copy(next_X)
-		if ii<max_evals-2:  # Skip exploration before the last iteration, to end at the exact minimum of the surrogate model.
+
+		# Skip exploration before the last iteration, to end at the exact minimum of the surrogate model.
+		if ii < max_evals-2:
 			for j in range(d):
 				r = random.random()
 				a = next_X[j]
@@ -299,12 +336,12 @@ def IDONE_minimize(obj, x0, lb, ub, max_evals):
 			print('Current time: ', time.time(), file=f)
 			print('Evaluated data point and evaluation:						   ', np.copy(x).astype(int),  ', ',  inv_scale(y), file=f)
 			print('Best found data point and evaluation so far:				   ', np.copy(best_X).astype(int),  ', ',  inv_scale(best_y), file=f)
-			print('Best data point according to the model and predicted value:    ', next_X_before_exploration, ', ', inv_scale(model['out'](next_X_before_exploration)), file=f)
-			print('Suggested next data point and predicted value:			       ', next_X,   ', ',  inv_scale(model['out'](next_X)), file=f)
+			print('Best data point according to the model and predicted value:    ', next_X_before_exploration, ', ', inv_scale(model['out'](next_X_before_exploration, model)), file=f)
+			print('Suggested next data point and predicted value:			       ', next_X,   ', ',  inv_scale(model['out'](next_X, model)), file=f)
 			if ii >= max_evals-1:
 				print('Model parameters: ', np.transpose(model['c']), file=f)
 	
-	return best_X, inv_scale(best_y), model, filename
+	return best_X, inv_scale(best_y, None), model, filename
 
 
 def read_log(filename):
