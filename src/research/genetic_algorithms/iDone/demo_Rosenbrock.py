@@ -23,15 +23,15 @@ def test_Rosenbrock(d, max_evals=500):
 	ub = 10 * np.ones(d, dtype=int)  # Upper bound
 	x0 = np.round(np.random.rand(d) * (ub - lb) + lb)  # Random initial guess
 
-	solX, solY, model, logfile = IDONE.minimize(f, x0, lb, ub, max_evals, args=(ub, lb))
+	solX, solY, model, log = IDONE.minimize(f, x0, lb, ub, max_evals, args=(ub, lb))
 	print("Solution found: ")
 	print(f"X = {solX}")
 	print(f"Y = {solY}")
-	return solX, solY, model, logfile
+	return solX, solY, model, log
 
 
-d = 50  # Change this number to optimize the Rosenbrock function for different numbers of variables
-solX_, solY_, model_, logfile_ = test_Rosenbrock(d)
+d = 10  # Change this number to optimize the Rosenbrock function for different numbers of variables
+solX_, solY_, model_, log_ = test_Rosenbrock(d, 1000)
 
 # Visualise the results
-IDONE.plot_results(logfile_)
+log_.plot()

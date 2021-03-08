@@ -60,6 +60,53 @@ class ModelData:
 		self.c = self.c + (y - np.matmul(np.transpose(Zx), self.c)) * g
 
 
+class ModelLogEntry:
+
+	def __init__(self, iteration, update_time, minimization_time, x, y, best_y, c):
+		self.iteration = iteration
+		self.update_time = update_time
+		self.minimization_time = minimization_time
+		self.current_time = time.time()
+		self.solution = x
+		self.function_value = y
+		self.best_function_value = best_y
+		self.model_parameters = c
+
+
+class ModelLog:
+
+	def __init__(self):
+		self.entries = list()
+
+	def add(self, entry: ModelLogEntry):
+		self.entries.append(entry)
+
+	def add_entry(self, iteration, update_time, minimization_time, x, y, best_y, c):
+		self.add(ModelLogEntry(iteration, update_time, minimization_time, x, y, best_y, c))
+
+	def plot(self):
+		"""
+		Plot the best found objective values at each iteration
+		:return:
+		"""
+		import matplotlib.pyplot as plt
+		n = len(self.entries)
+		x = np.zeros(n)
+		y = np.zeros(n)
+		y2 = np.zeros(n)
+		for i, entry in enumerate(self.entries):
+			x[i] = entry.iteration
+			y[i] = entry.function_value
+			y2[i] = entry.best_function_value
+
+		plt.plot(x, y)
+		plt.plot(x, y2, 'r')
+		plt.xlabel('Iteration')
+		plt.ylabel('Objective')
+		plt.grid()
+		plt.show()
+
+
 def ReLU(x):
 	"""
 	Rectified Linear Unit
@@ -197,8 +244,8 @@ def initialize_model(x0, d, lb, ub, reg=1e-8):
 def f_out(x2, model: ModelData):
 	"""
 	Define model output for any new input x2
-	:param x2:
-	:param model:
+	:param x2: candidate solution
+	:param model: ModelData instance
 	:return:
 	"""
 	return np.matmul(np.transpose(model.c), Z(x2, model.W, model.B)).item(0, 0)
@@ -207,8 +254,8 @@ def f_out(x2, model: ModelData):
 def f_out_derivative(x2, model: ModelData):
 	"""
 	Define model output derivative for any new input x2 (used in the optimization step)
-	:param x2:
-	:param model:
+	:param x2: candidate solution
+	:param model: ModelData instance
 	:return:
 	"""
 	c = np.transpose(model.c)
@@ -253,7 +300,8 @@ def minimize(f_obj, x0, lb, ub, max_eval, reg=1e-8, args=()):
 	- log filename
 	"""
 	current_time = time.time()  # time when starting the algorithm
-	filename = 'log_IDONE_' + str(current_time) + ".log"
+
+	log = ModelLog()
 
 	d = len(x0)  # dimension, number of variables
 
@@ -295,7 +343,7 @@ def minimize(f_obj, x0, lb, ub, max_eval, reg=1e-8, args=()):
 		temp = opt.minimize(fun=f_out,
 							x0=x,
 							args=(model_data,),
-							method='L-BFGS-B',
+							method='L-BFGS-B',  # Methods: 'SLSQP', 'L-BFGS-B'
 							bounds=opt.Bounds(lb, ub),
 							jac=f_out_derivative,
 							options={'maxiter': 20, 'maxfun': 20})
@@ -344,19 +392,9 @@ def minimize(f_obj, x0, lb, ub, max_eval, reg=1e-8, args=()):
 		# 	next_X = np.round(np.random.rand(d)*(ub-lb) + lb)
 		
 		# Save data to log file
-		with open(filename, 'a') as f:
-			print('\n\n IDONE iteration: ', ii, file=f)
-			print('Time spent training the model:				 ', update_time, file=f)
-			print('Time spent finding the minimum of the model: ', minimization_time, file=f)
-			print('Current time: ', time.time(), file=f)
-			print('Evaluated data point and evaluation:						   ', np.copy(x).astype(int),  ', ',  inv_scale(y), file=f)
-			print('Best found data point and evaluation so far:				   ', np.copy(best_X).astype(int),  ', ',  inv_scale(best_y), file=f)
-			print('Best data point according to the model and predicted value:    ', next_X_before_exploration, ', ', inv_scale(f_out(next_X_before_exploration, model_data)), file=f)
-			print('Suggested next data point and predicted value:			       ', next_X,   ', ', inv_scale(f_out(next_X, model_data)), file=f)
-			if ii >= max_eval-1:
-				print('Model parameters: ', np.transpose(model_data.c), file=f)
+		log.add_entry(ii, update_time, minimization_time, next_X, y, best_y, model_data.c)
 	
-	return best_X, inv_scale(best_y, None), model_data, filename
+	return best_X, inv_scale(best_y, None), model_data, log
 
 
 def read_log(filename):

@@ -20,16 +20,16 @@ def test_sum_of_integers(d, max_eval=100):
 	ub = np.ones(d, dtype=int)  # Upper bound
 	x0 = np.round(np.random.rand(d) * (ub - lb) + lb)  # Random initial guess
 
-	solX, solY, model, logfile = IDONE.minimize(f, x0, lb, ub, max_eval, args=())
+	solX, solY, model, log = IDONE.minimize(f, x0, lb, ub, max_eval, args=())
 	print("Solution found: ")
 	print(f"X = {solX}")
 	print(f"Y = {solY}")
-	return solX, solY, model, logfile
+	return solX, solY, model, log
 
 
 d = 80  # Change this number to optimize the function for different numbers of variables
 max_eval_ = 5 * d
-solX_, solY_, model_, logfile_ = test_sum_of_integers(d, max_eval_)
+solX_, solY_, model_, log_ = test_sum_of_integers(d, max_eval_)
 
 # Visualise the results
-IDONE.plot_results(logfile_)
+log_.plot()
