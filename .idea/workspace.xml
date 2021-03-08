@@ -23,11 +23,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Merged MC and LHS&#10;Added flow based width">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Visualization/visualization.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Visualization/visualization.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/terminal_item.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/terminal_item.py" afterDir="false" />
-    </list>
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="some bug fixes" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -532,14 +528,7 @@
       <workItem from="1615041123911" duration="1962000" />
       <workItem from="1615059870734" duration="6829000" />
       <workItem from="1615109282574" duration="8660000" />
-      <workItem from="1615149317630" duration="1980000" />
-    </task>
-    <task id="LOCAL-00055" summary="Some security improvements to the Cpf">
-      <created>1604162196454</created>
-      <option name="number" value="00055" />
-      <option name="presentableId" value="LOCAL-00055" />
-      <option name="project" value="LOCAL" />
-      <updated>1604162196454</updated>
+      <workItem from="1615149317630" duration="2383000" />
     </task>
     <task id="LOCAL-00056" summary="Fixed bug in the Cpf function">
       <created>1604315323516</created>
@@ -877,7 +866,14 @@
       <option name="project" value="LOCAL" />
       <updated>1615120808896</updated>
     </task>
-    <option name="localTasksCounter" value="104" />
+    <task id="LOCAL-00104" summary="some bug fixes">
+      <created>1615151615834</created>
+      <option name="number" value="00104" />
+      <option name="presentableId" value="LOCAL-00104" />
+      <option name="project" value="LOCAL" />
+      <updated>1615151615834</updated>
+    </task>
+    <option name="localTasksCounter" value="105" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -911,7 +907,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added ACDC levenberg marquadt" />
     <MESSAGE value="60% faster ACDC power flow by dynamic Jacobian composition" />
     <MESSAGE value="Slight performance improvement by converting the fubm derivatives to numba" />
     <MESSAGE value="Worked out issues with uploading to pipy" />
@@ -936,7 +931,8 @@
     <MESSAGE value="Vastly improved the logger by allowing it to categorize the records" />
     <MESSAGE value="Fixed Monte Carlo&#10;Fixed HVDC Qmin, Qmax" />
     <MESSAGE value="Merged MC and LHS&#10;Added flow based width" />
-    <option name="LAST_COMMIT_MESSAGE" value="Merged MC and LHS&#10;Added flow based width" />
+    <MESSAGE value="some bug fixes" />
+    <option name="LAST_COMMIT_MESSAGE" value="some bug fixes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
