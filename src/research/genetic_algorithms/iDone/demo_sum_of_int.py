@@ -20,7 +20,7 @@ def test_sum_of_integers(d, max_eval=100):
 	ub = np.ones(d, dtype=int)  # Upper bound
 	x0 = np.round(np.random.rand(d) * (ub - lb) + lb)  # Random initial guess
 
-	solX, solY, model, logfile = IDONE.minimize(f, x0, lb, ub, max_eval)
+	solX, solY, model, logfile = IDONE.minimize(f, x0, lb, ub, max_eval, args=())
 	print("Solution found: ")
 	print(f"X = {solX}")
 	print(f"Y = {solY}")

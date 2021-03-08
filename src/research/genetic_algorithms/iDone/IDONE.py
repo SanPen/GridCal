@@ -11,6 +11,8 @@
 # and max_evals is the maximum number of objective evaluations.
 
 # from: https://bitbucket.org/lbliek2/idone/src/master/
+# Article: Black-box combinatorial optimization using models with integer-valued minima
+# 	 By Laurens Bliek, Sicco Verwer, Mathijs de Weerdt
 
 import os
 import math
@@ -30,7 +32,8 @@ class ModelData:
 		:param D: Number of basis functions
 		:param c: Model weights, to be trained with recursive least squares (RLS)
 		:param P: RLS covariance matrix
-		:param reg: Regularization parameter. 1e-8 is good for the noiseless case, change to something like 1e-3 if there is noise.
+		:param reg: Regularization parameter.
+					1e-8 is good for the noiseless case, change to something like 1e-3 if there is noise.
 		"""
 		self.W = W
 		self.B = B
@@ -83,11 +86,8 @@ def Z(x, W, B):
 	:param B: Basis function bias
 	:return:
 	"""
-	x = np.asarray(x)
 	x = x.reshape(-1, 1)
-	temp = np.matmul(W, x)
-	temp = temp + B
-	temp = np.asarray(temp)
+	temp = np.matmul(W, x) + B
 	Zx = ReLU(temp)
 	return Zx
 
@@ -100,11 +100,8 @@ def Zderiv(x, W, B):
 	:param B: Basis function bias
 	:return:
 	"""
-	x = np.asarray(x)
 	x = x.reshape(-1, 1)
-	temp = np.matmul(W, x)
-	temp = temp + B
-	temp = np.asarray(temp)
+	temp = np.matmul(W, x) + B
 	dZx = ReLUderiv(temp)
 	return dZx
 
@@ -238,7 +235,7 @@ def inv_scale(y, y0=None):
 	return y
 
 
-def minimize(f_obj, x0, lb, ub, max_eval, reg=1e-8):
+def minimize(f_obj, x0, lb, ub, max_eval, reg=1e-8, args=()):
 	"""
 	IDONE minimize function 
 	:param f_obj: Objective function
@@ -248,6 +245,7 @@ def minimize(f_obj, x0, lb, ub, max_eval, reg=1e-8):
 	:param max_eval: maximum number of evaluations
 	:param reg: Regularization parameter. 
 				1e-8 is good for the noiseless case, change to something like 1e-3 if there is noise.
+	:param args: arguments of f_obj
 	:return:
 	- best_X
 	- inv_scale(best_y, None)
@@ -272,7 +270,7 @@ def minimize(f_obj, x0, lb, ub, max_eval, reg=1e-8):
 		x = np.copy(next_X).astype(int)
 
 		if ii == 0:
-			y = f_obj(x)  # Evaluate the objective
+			y = f_obj(x, *args)  # Evaluate the objective
 			
 			# Scale with respect to initial y value, causing the optimum to lie below 0.
 			# This is better for exploitation and prevents the algorithm from getting stuck at the boundary.
@@ -280,7 +278,7 @@ def minimize(f_obj, x0, lb, ub, max_eval, reg=1e-8):
 					
 			y = scale(y, y0)
 		else:
-			y = scale(f_obj(x), 0)  # Evaluate the objective and scale it
+			y = scale(f_obj(x, *args), 0)  # Evaluate the objective and scale it
 
 		# Keep track of the best found objective value and candidate solution so far
 		if y < best_y:
@@ -304,11 +302,10 @@ def minimize(f_obj, x0, lb, ub, max_eval, reg=1e-8):
 
 		minimization_time = time.time()-time_start  # Time used to find the minimum of the model
 		next_X = np.copy(temp.x)
-		next_X = np.round(next_X)  # Round to nearest integer point
-		next_X = [int(x) for x in next_X]
+		next_X = np.round(next_X).astype(int)  # Round to nearest integer point
 
 		# Just to be sure, clip to the bounds
-		np.clip(next_X, lb, ub)
+		next_X = np.clip(next_X, lb, ub)
 		
 		# Check if minimizer really gives better result
 		if f_out(next_X, model_data) > f_out(x, model_data) + 1e-8:
