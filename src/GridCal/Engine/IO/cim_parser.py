@@ -23,7 +23,6 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 import GridCal.Engine.Devices as gcdev
 
 
-
 def index_find(string, start, end):
     """
     version of substring that matches
@@ -97,7 +96,7 @@ def sort_cim_files(file_names):
     nn = len(file_names)
     for i in range(nn - 1, -1, -1):
         f = file_names[i]
-        if 'EQBD' in f:
+        if 'EQ' in f or 'EQBD' in f:
             lst.append(file_names.pop(i))
 
     lst2 = lst + file_names
@@ -139,15 +138,6 @@ def str2num(val: str):
     :param val: String value
     :return: int, float or string
     """
-    # if "." in val:
-    #     try:
-    #         return float(val)
-    #     except ValueError:
-    #         return val
-    # elif val.isdigit():
-    #     return int(val)
-    # else:
-    #     return val
     try:
         return int(val)
     except ValueError:
@@ -155,7 +145,6 @@ def str2num(val: str):
             return float(val)
         except ValueError:
             return val
-
 
 
 class GeneralContainer:
@@ -577,8 +566,6 @@ class ACLineSegment(DiPole):
         self.gch = 0
         self.r = 0
         self.x = 0
-
-
 
     def get_voltage(self):
 
@@ -2666,9 +2653,9 @@ if __name__ == '__main__':
 
     folder = r'C:\Users\penversa\Documents\Grids\CGMES\TYNDP_2025'
     files = [
-             # '2025NT_FR_model_004.zip',
+             '2025NT_FR_model_004.zip',
              # '2025NT_ES_model_003.zip',
-             '2025NT_PT_model_003.zip',
+             # '2025NT_PT_model_003.zip',
              '20191017T0918Z_ENTSO-E_BD_1130.zip'
              ]
     fnames = [os.path.join(folder, f) for f in files]
