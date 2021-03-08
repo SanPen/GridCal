@@ -16,7 +16,7 @@ import os
 import chardet
 import pandas as pd
 from math import sqrt
-from typing import Set, Dict, List
+from typing import Set, Dict, List, Tuple
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.IO.zip_interface import get_xml_from_zip, get_xml_content
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -295,13 +295,22 @@ class GeneralContainer:
 
         return xml
 
+    def get_dict(self):
+        """
+        Get dictionary with the data
+        :return: Dictionary
+        """
+        return {'rfid': self.rfid,
+                'uuid': self.uuid,
+                'name': self.name}
+
 
 class MonoPole(GeneralContainer):
 
     def __init__(self, rfid, tpe):
         GeneralContainer.__init__(self, rfid, tpe)
 
-    def get_node(self):
+    def get_topological_node(self):
         """
         Get the TopologyNodes of this branch
         :return: two TopologyNodes or nothing
@@ -318,16 +327,40 @@ class MonoPole(GeneralContainer):
         except KeyError:
             return None
 
+    def get_bus(self):
+        """
+        Get the associated bus
+        :return:
+        """
+        tp = self.get_topological_node()
+        if tp is None:
+            return None
+        else:
+            return tp.get_bus()
+
+    def get_dict(self):
+        """
+        Get dictionary with the data
+        :return: Dictionary
+        """
+        tp = self.get_topological_node()
+        bus = tp.get_bus() if tp is not None else None
+
+        d = super().get_dict()
+        d['TopologicalNode'] = '' if tp is None else tp.uuid
+        d['BusbarSection'] = '' if bus is None else bus.uuid
+        return d
+
 
 class DiPole(GeneralContainer):
 
     def __init__(self, rfid, tpe):
         GeneralContainer.__init__(self, rfid, tpe)
 
-    def get_nodes(self):
+    def get_topological_nodes(self) -> Tuple["TopologicalNode", "TopologicalNode"]:
         """
         Get the TopologyNodes of this branch
-        :return: two TopologyNodes or nothing
+        :return: (TopologyNodes, TopologyNodes) or (None, None)
         """
         try:
             terminals = list(self.references_to_me['Terminal'])
@@ -341,6 +374,32 @@ class DiPole(GeneralContainer):
 
         except KeyError:
             return None, None
+
+    def get_buses(self) -> Tuple["BusbarSection", "BusbarSection"]:
+        """
+        Get the associated bus
+        :return: (BusbarSection, BusbarSection) or (None, None)
+        """
+        t1, t2 = self.get_topological_nodes()
+        b1 = t1.get_bus() if t1 is not None else None
+        b2 = t2.get_bus() if t2 is not None else None
+        return b1, b2
+
+    def get_dict(self):
+        """
+        Get dictionary with the data
+        :return: Dictionary
+        """
+        t1, t2 = self.get_topological_nodes()
+        b1 = t1.get_bus() if t1 is not None else None
+        b2 = t2.get_bus() if t2 is not None else None
+
+        d = super().get_dict()
+        d['TopologicalNode1'] = '' if t1 is None else t1.uuid
+        d['TopologicalNode2'] = '' if t2 is None else t2.uuid
+        d['BusbarSection1'] = '' if b1 is None else b1.uuid
+        d['BusbarSection2'] = '' if b2 is None else b2.uuid
+        return d
 
 
 class BaseVoltage(GeneralContainer):
@@ -372,6 +431,25 @@ class Terminal(GeneralContainer):
             return None
 
 
+class ConnectivityNode(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.TopologicalNode = None
+        self.ConnectivityNodeContainer = None
+        self.name = ''
+        self.shortName = ''
+        self.description = ''
+        self.fromEndName = ''
+        self.fromEndNameTSO = ''
+        self.fromEndIsoCode = ''
+        self.toEndName = ''
+        self.toEndNameTSO = ''
+        self.toEndIsoCode = ''
+        self.boundaryPoint = ''
+
+
 class TopologicalNode(GeneralContainer):
 
     def __init__(self, rfid, tpe):
@@ -387,6 +465,29 @@ class TopologicalNode(GeneralContainer):
         else:
             return None
 
+    def get_bus(self):
+        """
+        Get an associated BusBar, if any
+        :return: BusbarSection or None is not fond
+        """
+        try:
+            terms = self.references_to_me['Terminal']
+            for term in terms:
+                if isinstance(term.ConductingEquipment, BusbarSection):
+                    return term.ConductingEquipment
+
+        except KeyError:
+            return None
+
+    def get_dict(self):
+
+        d = super().get_dict()
+
+        v = self.get_voltage()
+        d['Vnom'] = v if v is not None else ''
+
+        return d
+
 
 class BusbarSection(GeneralContainer):
 
@@ -394,6 +495,70 @@ class BusbarSection(GeneralContainer):
         GeneralContainer.__init__(self, rfid, tpe)
 
         self.EquipmentContainer = None
+
+    def get_topological_nodes(self):
+        """
+        Get the associated TopologicalNode instances
+        :return: list of TopologicalNode instances
+        """
+        try:
+            terms = self.references_to_me['Terminal']
+            return [term.TopologicalNode for term in terms]
+        except KeyError:
+            return list()
+
+    def get_topological_node(self):
+        """
+        Get the first TopologicalNode found
+        :return: first TopologicalNode found
+        """
+        try:
+            terms = self.references_to_me['Terminal']
+            for term in terms:
+                return term.TopologicalNode
+        except KeyError:
+            return list()
+
+    def get_dict(self):
+
+        d = super().get_dict()
+
+        voltage_level = self.EquipmentContainer
+
+        if voltage_level is not None:
+            d['Vnom'] = voltage_level.BaseVoltage.nominalVoltage
+            d['VoltageLevel'] = voltage_level.uuid
+            substation = voltage_level.Substation
+
+            if substation is not None:
+                d['Substation'] = substation.uuid
+                province = substation.Region
+
+                if province is not None:
+                    d['SubGeographicalRegion'] = province.uuid
+                    country = province.Region
+
+                    if country is not None:
+                        d['GeographicalRegion'] = country.uuid
+                    else:
+                        d['GeographicalRegion'] = ''
+
+                else:
+                    d['SubGeographicalRegion'] = ''
+                    d['GeographicalRegion'] = ''
+
+            else:
+                d['Substation'] = ''
+                d['SubGeographicalRegion'] = ''
+                d['GeographicalRegion'] = ''
+
+        else:
+            d['VoltageLevel'] = ''
+            d['Substation'] = ''
+            d['SubGeographicalRegion'] = ''
+            d['GeographicalRegion'] = ''
+
+        return d
 
 
 class Substation(GeneralContainer):
@@ -616,6 +781,21 @@ class ACLineSegment(DiPole):
 
         return R, X, G, B
 
+    def get_dict(self):
+        d = super().get_dict()
+        R, X, G, B = self.get_pu_values(Sbase=100)
+        v = self.get_voltage()
+        d['r'] = self.r
+        d['x'] = self.x
+        d['g'] = self.gch
+        d['b'] = self.bch
+        d['r_pu'] = R
+        d['x_pu'] = X
+        d['g_pu'] = G
+        d['b_pu'] = B
+        d['Vnom'] = v if v is not None else ''
+        return d
+
 
 class PowerTransformerEnd(GeneralContainer):
 
@@ -634,22 +814,30 @@ class PowerTransformerEnd(GeneralContainer):
         self.connectionKind = ""
         self.Terminal = None
 
-    def get_pu_values(self):
+    def get_voltage(self):
+
+        if self.ratedU > 0:
+            return self.ratedU
+        else:
+            if self.BaseVoltage is not None:
+                return self.BaseVoltage.nominalVoltage
+            else:
+                return None
+
+    def get_pu_values(self, Sbase_system=100):
         """
         Get the per-unit values of the equivalent PI model
         :return: R, X, Gch, Bch
         """
         if self.ratedS > 0 and self.ratedU > 0:
-            Vnom = self.ratedU
-            Sbase = self.ratedS
-            Zbase = (Vnom * Vnom) / Sbase
+            Zbase = (self.ratedU * self.ratedU) / self.ratedS
             Ybase = 1.0 / Zbase
-
+            machine_to_sys = Sbase_system / self.ratedS
             # at this point r, x, g, b are the complete values for all the line length
-            R = self.r / Zbase
-            X = self.x / Zbase
-            G = self.g / Ybase
-            B = self.b / Ybase
+            R = self.r / Zbase * machine_to_sys
+            X = self.x / Zbase * machine_to_sys
+            G = self.g / Ybase * machine_to_sys
+            B = self.b / Ybase * machine_to_sys
         else:
             R = 0
             X = 0
@@ -657,6 +845,23 @@ class PowerTransformerEnd(GeneralContainer):
             B = 0
 
         return R, X, G, B
+
+    def get_dict(self):
+        d = super().get_dict()
+        R, X, G, B = self.get_pu_values()
+
+        d['ratedS'] = self.ratedS
+        d['ratedU'] = self.ratedU
+        d['endNumber'] = self.endNumber
+        d['r'] = self.r
+        d['x'] = self.x
+        d['g'] = self.g
+        d['b'] = self.b
+        d['r_pu'] = R
+        d['x_pu'] = X
+        d['g_pu'] = G
+        d['b_pu'] = B
+        return d
 
 
 class PowerTransformer(DiPole):
@@ -666,26 +871,31 @@ class PowerTransformer(DiPole):
 
         self.EquipmentContainer = None
 
-    def get_nodes(self):
+    def get_windings_number(self):
         """
-        Get the TopologyNodes of this branch
-        :return: two TopologyNodes or nothing
+        Get the number of windings
+        :return: # number of associated windings
         """
         try:
-            terminals = list(self.references_to_me['Terminal'])
-
-            if len(terminals) == 2:
-                n1 = terminals[0].TopologicalNode
-                n2 = terminals[1].TopologicalNode
-                return n1, n2
-            else:
-                return None, None
-
+            return len(self.references_to_me['PowerTransformerEnd'])
         except KeyError:
-            return None, None
+            return 0
+
+    def get_windings(self):
+        """
+        Get list of windings
+        :return: list of winding objects
+        """
+        try:
+            return list(self.references_to_me['PowerTransformerEnd'])
+        except KeyError:
+            return list()
 
     def get_pu_values(self):
-
+        """
+        Get the transformer p.u. values
+        :return:
+        """
         try:
             windings = self.references_to_me['PowerTransformerEnd']
 
@@ -704,6 +914,28 @@ class PowerTransformer(DiPole):
             R, X, G, B = 0, 0, 0, 0
 
         return R, X, G, B
+
+    def get_voltages(self):
+        """
+
+        :return:
+        """
+        return [x.get_voltage() for x in self.get_windings()]
+
+    def get_dict(self):
+        d = super().get_dict()
+        R, X, G, B = self.get_pu_values()
+        voltages = self.get_voltages()
+        n_windings = self.get_windings_number()
+        d['r_pu'] = R
+        d['x_pu'] = X
+        d['g_pu'] = G
+        d['b_pu'] = B
+        d['windings_number'] = n_windings
+        for i in range(n_windings):
+            v = voltages[i]
+            d['V' + str(i+1)] = v if v is not None else ''
+        return d
 
 
 class Winding(GeneralContainer):
@@ -736,6 +968,14 @@ class ConformLoad(MonoPole):
         self.EquipmentContainer = None
         self.p = 0
         self.q = 0
+
+    def get_dict(self):
+
+        d = super().get_dict()
+        d['p'] = self.p
+        d['q'] = self.q
+
+        return d
 
 
 class NonConformLoad(MonoPole):
@@ -818,10 +1058,10 @@ class GeneratingUnit(GeneralContainer):
         self.normalPF = 0
 
 
-class SynchronousMachine(GeneralContainer):
+class SynchronousMachine(MonoPole):
 
     def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+        MonoPole.__init__(self, rfid, tpe)
 
         self.qPercent = 0
         self.type = ''
@@ -836,47 +1076,27 @@ class SynchronousMachine(GeneralContainer):
         self.q = 0
         self.controlEnabled = True
 
+    def get_dict(self):
+        """
+
+        :return:
+        """
+        d = super().get_dict()
+
+        d['GeneratingUnit'] = self.GeneratingUnit.uuid if self.GeneratingUnit is not None else ''
+
+        d['p'] = self.p
+        d['q'] = self.q
+
+        d['qPercent'] = self.qPercent
+        d['ratedS'] = self.ratedS
+        d['controlEnabled'] = self.controlEnabled
+        d['type'] = self.type
+
+        return d
+
 
 class HydroGenerationUnit(GeneralContainer):
-
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
-
-        self.name = ''
-        self.description = ''
-        self.maxOperatingP = 0
-        self.minOperatingP = ''
-        self.EquipmentContainer = None
-        self.initialP = 0
-        self.longPF = 0
-        self.shortPF = 0
-        self.nominalP = 0
-
-
-class HydroPowerPlant(GeneralContainer):
-
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
-
-        self.name = ''
-        self.hydroPlantStorageType = ''
-
-
-class LinearShuntCompensator(GeneralContainer):
-
-    def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
-
-        self.name = ''
-        self.EquipmentContainer = None
-        self.bPerSection = 0
-        self.gPerSection = 0
-        self.maximumSections = 0
-        self.nomU = 0
-        self.normalSections = 0
-
-
-class NuclearGeneratingUnit(GeneralContainer):
 
     def __init__(self, rfid, tpe):
         GeneralContainer.__init__(self, rfid, tpe)
@@ -890,7 +1110,109 @@ class NuclearGeneratingUnit(GeneralContainer):
         self.longPF = 0
         self.shortPF = 0
         self.nominalP = 0
+
+    def get_dict(self):
+        """
+
+        :return:
+        """
+        d = super().get_dict()
+
+        d['EquipmentContainer'] = self.EquipmentContainer.uuid if self.EquipmentContainer is not None else ''
+        d['maxOperatingP'] = self.maxOperatingP
+        d['minOperatingP'] = self.minOperatingP
+        d['initialP'] = self.initialP
+        d['nominalP'] = self.nominalP
+        d['longPF'] = self.longPF
+        d['shortPF'] = self.shortPF
+
+        return d
+
+
+class HydroPowerPlant(GeneralContainer):
+
+    def __init__(self, rfid, tpe):
+        GeneralContainer.__init__(self, rfid, tpe)
+
+        self.name = ''
+        self.hydroPlantStorageType = ''
+
+    def get_dict(self):
+        """
+
+        :return:
+        """
+        d = super().get_dict()
+
+        d['hydroPlantStorageType'] = self.hydroPlantStorageType
+
+        return d
+
+
+class LinearShuntCompensator(MonoPole):
+
+    def __init__(self, rfid, tpe):
+        MonoPole.__init__(self, rfid, tpe)
+
+        self.name = ''
+        self.EquipmentContainer = None
+        self.bPerSection = 0
+        self.gPerSection = 0
+        self.maximumSections = 0
+        self.nomU = 0
+        self.normalSections = 0
+
+    def get_dict(self):
+        """
+
+        :return:
+        """
+        d = super().get_dict()
+
+        d['EquipmentContainer'] = self.EquipmentContainer.uuid if self.EquipmentContainer is not None else ''
+
+        d['bPerSection'] = self.bPerSection
+        d['gPerSection'] = self.gPerSection
+        d['maximumSections'] = self.maximumSections
+        d['nomU'] = self.nomU
+        d['normalSections'] = self.normalSections
+
+        return d
+
+
+class NuclearGeneratingUnit(MonoPole):
+
+    def __init__(self, rfid, tpe):
+        MonoPole.__init__(self, rfid, tpe)
+
+        self.name = ''
+        self.description = ''
+        self.maxOperatingP = 0
+        self.minOperatingP = 0
+        self.EquipmentContainer = None
+        self.initialP = 0
+        self.longPF = 0
+        self.shortPF = 0
+        self.nominalP = 0
         self.variableCost = 0
+
+    def get_dict(self):
+        """
+
+        :return:
+        """
+        d = super().get_dict()
+
+        d['EquipmentContainer'] = self.EquipmentContainer.uuid if self.EquipmentContainer is not None else ''
+        d['maxOperatingP'] = self.maxOperatingP
+        d['minOperatingP'] = self.minOperatingP
+        d['initialP'] = self.initialP
+        d['nominalP'] = self.nominalP
+        d['longPF'] = self.longPF
+        d['shortPF'] = self.shortPF
+        d['variableCost'] = self.variableCost
+
+        return d
 
 
 class RatioTapChangerTable(GeneralContainer):
@@ -910,6 +1232,19 @@ class RatioTapChangerTablePoint(GeneralContainer):
         self.step = 0
         self.RatioTapChangerTable = None
 
+    def get_dict(self):
+        """
+
+        :return:
+        """
+        d = super().get_dict()
+
+        d['RatioTapChangerTable'] = self.RatioTapChangerTable.uuid if self.RatioTapChangerTable is not None else ''
+        d['ratio'] = self.ratio
+        d['step'] = self.step
+
+        return d
+
 
 class ReactiveCapabilityCurve(GeneralContainer):
 
@@ -923,10 +1258,10 @@ class ReactiveCapabilityCurve(GeneralContainer):
         self.y2Unit = ''
 
 
-class StaticVarCompensator(GeneralContainer):
+class StaticVarCompensator(MonoPole):
 
     def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+        MonoPole.__init__(self, rfid, tpe)
 
         self.name = ''
         self.EquipmentContainer = None
@@ -936,6 +1271,23 @@ class StaticVarCompensator(GeneralContainer):
         self.voltageSetPoint = 0
         self.sVCControlMode = ''
         self.RegulatingControl = None
+
+    def get_dict(self):
+        """
+
+        :return:
+        """
+        d = super().get_dict()
+
+        d['EquipmentContainer'] = self.EquipmentContainer.uuid if self.EquipmentContainer is not None else ''
+        d['RegulatingControl'] = self.RegulatingControl.uuid if self.RegulatingControl is not None else ''
+        d['slope'] = self.slope
+        d['inductiveRating'] = self.inductiveRating
+        d['capacitiveRating'] = self.capacitiveRating
+        d['voltageSetPoint'] = self.voltageSetPoint
+        d['sVCControlMode'] = self.sVCControlMode
+
+        return d
 
 
 class TapChangerControl(GeneralContainer):
@@ -948,10 +1300,10 @@ class TapChangerControl(GeneralContainer):
         self.mode = ''
 
 
-class ThermalGenerationUnit(GeneralContainer):
+class ThermalGenerationUnit(MonoPole):
 
     def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+        MonoPole.__init__(self, rfid, tpe)
 
         self.name = ''
         self.description = ''
@@ -963,11 +1315,28 @@ class ThermalGenerationUnit(GeneralContainer):
         self.shortPF = 0
         self.nominalP = 0
 
+    def get_dict(self):
+        """
 
-class WindGenerationUnit(GeneralContainer):
+        :return:
+        """
+        d = super().get_dict()
+
+        d['EquipmentContainer'] = self.EquipmentContainer.uuid if self.EquipmentContainer is not None else ''
+        d['maxOperatingP'] = self.maxOperatingP
+        d['minOperatingP'] = self.minOperatingP
+        d['initialP'] = self.initialP
+        d['nominalP'] = self.nominalP
+        d['longPF'] = self.longPF
+        d['shortPF'] = self.shortPF
+
+        return d
+
+
+class WindGenerationUnit(MonoPole):
 
     def __init__(self, rfid, tpe):
-        GeneralContainer.__init__(self, rfid, tpe)
+        MonoPole.__init__(self, rfid, tpe)
 
         self.name = ''
         self.description = ''
@@ -980,6 +1349,26 @@ class WindGenerationUnit(GeneralContainer):
         self.nominalP = 0
         self.variableCost = 0
         self.windGenUnitType = ''
+
+    def get_dict(self):
+        """
+
+        :return:
+        """
+        d = super().get_dict()
+
+        d['EquipmentContainer'] = self.EquipmentContainer.uuid if self.EquipmentContainer is not None else ''
+        d['maxOperatingP'] = self.maxOperatingP
+        d['minOperatingP'] = self.minOperatingP
+        d['initialP'] = self.initialP
+        d['nominalP'] = self.nominalP
+        d['longPF'] = self.longPF
+        d['shortPF'] = self.shortPF
+        d['variableCost'] = self.variableCost
+        d['windGenUnitType'] = self.windGenUnitType
+        d['description'] = self.description
+
+        return d
 
 
 class FullModel(GeneralContainer):
@@ -994,6 +1383,22 @@ class FullModel(GeneralContainer):
         self.modelingAuthoritySet = ''
         self.DependentOn = ''
 
+    def get_dict(self):
+        """
+
+        :return:
+        """
+        d = super().get_dict()
+
+        d['scenarioTime'] = self.scenarioTime
+        d['created'] = self.created
+        d['version'] = self.version
+        d['profile'] = self.profile
+        d['modelingAuthoritySet'] = self.modelingAuthoritySet
+        d['DependentOn'] = self.longDependentOnPF
+
+        return d
+
 
 class TieFlow(GeneralContainer):
 
@@ -1003,6 +1408,19 @@ class TieFlow(GeneralContainer):
         self.ControlArea = None
         self.Terminal = None
         self.positiveFlowIn = True
+
+    def get_dict(self):
+        """
+
+        :return:
+        """
+        d = super().get_dict()
+
+        d['ControlArea'] = self.ControlArea.uuid if self.ControlArea is not None else ''
+        d['Terminal'] = self.Terminal.uuid if self.Terminal is not None else ''
+        d['positiveFlowIn'] = self.positiveFlowIn
+
+        return d
 
 
 class CIMCircuit:
@@ -1148,6 +1566,7 @@ class CIMCircuit:
                       'TopologicalNode': TopologicalNode,
                       'BusbarSection': BusbarSection,
                       'Substation': Substation,
+                      'ConnectivityNode': ConnectivityNode,
                       'OperationalLimitSet': OperationalLimitSet,
                       'GeographicalRegion': GeographicalRegion,
                       'SubGeographicalRegion': SubGeographicalRegion,
@@ -1277,11 +1696,7 @@ class CIMCircuit:
         """
         dfs = dict()
         for class_name, elements in self.elements_by_type.items():
-            values = list()
-            for element in elements:  # for every element of the type
-                d = element.properties
-                d['rfid'] = element.rfid
-                values.append(d)
+            values = [element.get_dict() for element in elements]
 
             try:
                 df = pd.DataFrame(values)
@@ -1297,37 +1712,17 @@ class CIMCircuit:
         :param fname:
         :return:
         """
+        if self.text_func is not None:
+            self.text_func('Saving to excel')
+
         dfs = self.get_data_frames_dictionary()
 
-        buses = dfs['BusbarSection']
-        buses.columns = ['bus_' + c for c in buses.columns.values]
-
-        vl = dfs['VoltageLevel']
-        vl.columns = ['vl_' + c for c in vl.columns.values]
-
-        bv = dfs['BaseVoltage']
-        bv.columns = ['bv_' + c for c in bv.columns.values]
-
-        se = dfs['Substation']
-        se.columns = ['se_' + c for c in se.columns.values]
-
-        prov = dfs['SubGeographicalRegion']
-        prov.columns = ['prov_' + c for c in prov.columns.values]
-
-        country = dfs['GeographicalRegion']
-        country.columns = ['country_' + c for c in country.columns.values]
-
-        # bus to substation composition
-        A = pd.merge(buses, vl, left_on='bus_EquipmentContainer', right_on='vl_rfid', how='outer')
-        B = pd.merge(A, se, left_on='vl_Substation', right_on='se_rfid', how='outer')
-        C = pd.merge(B, bv, left_on='vl_BaseVoltage', right_on='bv_rfid', how='outer')
-        D = pd.merge(C, prov, left_on='se_Region', right_on='prov_rfid', how='outer')
-        E = pd.merge(D, country, left_on='prov_Region', right_on='country_rfid', how='outer')
-
-        dfs['bus_merge'] = E
+        keys = list(dfs.keys())
+        keys.sort()
 
         writer = pd.ExcelWriter(fname)
-        for class_name, df in dfs.items():
+        for class_name in keys:
+            df = dfs[class_name]
             try:
                 df.to_excel(writer, sheet_name=class_name, index=False)
             except:
@@ -2651,11 +3046,12 @@ if __name__ == '__main__':
     #
     # fnames = cimfiles + boundary_profiles
 
-    folder = r'C:\Users\penversa\Documents\Grids\CGMES\TYNDP_2025'
+    # folder = r'C:\Users\penversa\Documents\Grids\CGMES\TYNDP_2025'
+    folder = '/home/santi/Documentos/Private_Grids/CGMES/TYNDP_2025'
     files = [
              '2025NT_FR_model_004.zip',
-             # '2025NT_ES_model_003.zip',
-             # '2025NT_PT_model_003.zip',
+             '2025NT_ES_model_003.zip',
+             '2025NT_PT_model_003.zip',
              '20191017T0918Z_ENTSO-E_BD_1130.zip'
              ]
     fnames = [os.path.join(folder, f) for f in files]
