@@ -29,7 +29,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf import LinearAnalysis
 from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf_driver import LinearAnalysisOptions
-from GridCal.Gui.GuiFunctions import ResultsModel
+from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 
 

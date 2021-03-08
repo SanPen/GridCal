@@ -53,7 +53,7 @@ class ResultTypes(Enum):
     HvdcPowerFrom = 'HVDC power "from"', DeviceType.HVDCLineDevice
     HvdcPowerTo = 'HVDC power "to"', DeviceType.HVDCLineDevice
 
-    # MonteCarlo
+    # StochasticPowerFlowDriver
     BusVoltageAverage = 'Bus voltage avg', DeviceType.BusDevice
     BusVoltageStd = 'Bus voltage std', DeviceType.BusDevice
     BusVoltageCDF = 'Bus voltage CDF', DeviceType.BusDevice

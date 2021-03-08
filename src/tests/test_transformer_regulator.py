@@ -21,8 +21,8 @@ from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.static_generator import StaticGenerator
 from GridCal.Engine.Devices.transformer import TransformerType
 from GridCal.Engine.Devices.enumerations import BranchType
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import \
-    PowerFlowOptions, ReactivePowerControlMode, SolverType, TapsControlMode
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType, TapsControlMode
 from GridCal.Engine.Simulations.PowerFlow import PowerFlowDriver
 
 

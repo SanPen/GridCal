@@ -18,8 +18,8 @@ from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Devices.generator import Generator
 from GridCal.Engine.Devices.static_generator import StaticGenerator
 from GridCal.Engine.Devices.transformer import TransformerType, Transformer2W
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import \
-    PowerFlowOptions, ReactivePowerControlMode, SolverType
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 
 

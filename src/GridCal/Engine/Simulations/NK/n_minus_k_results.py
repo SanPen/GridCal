@@ -16,7 +16,7 @@
 import json
 import numpy as np
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Gui.GuiFunctions import ResultsModel
+from GridCal.Engine.Simulations.results_model import ResultsModel
 
 
 class NMinusKResults:

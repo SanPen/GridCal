@@ -1,0 +1,580 @@
+{
+ "version": "3",
+ "review": "1",
+ "software": "GridCal",
+ "units": {
+  "Circuit": {
+   "time": "Milliseconds since 1/1/1970 (Unix time in ms)"
+  },
+  "Substation": {},
+  "Zone": {},
+  "Area": {},
+  "Country": {},
+  "Bus": {
+   "vnom": "kV",
+   "vmin": "p.u.",
+   "vmax": "p.u.",
+   "rf": "p.u.",
+   "xf": "p.u.",
+   "x": "px",
+   "y": "px",
+   "h": "px",
+   "w": "px",
+   "lat": "degrees",
+   "lon": "degrees",
+   "alt": "m"
+  },
+  "Generator": {
+   "p": "MW",
+   "vset": "p.u.",
+   "pf": "p.u.",
+   "snom": "MVA",
+   "enom": "MWh",
+   "qmin": "MVAr",
+   "qmax": "MVAr",
+   "pmin": "MW",
+   "pmax": "MW",
+   "cost": "\u20ac/MWh"
+  },
+  "Load": {
+   "g": "MVAr at V=1 p.u.",
+   "b": "MVAr at V=1 p.u.",
+   "ir": "MVAr at V=1 p.u.",
+   "ii": "MVAr at V=1 p.u.",
+   "p": "MW",
+   "q": "MVAr"
+  },
+  "Line": {
+   "rate": "MW",
+   "r": "p.u.",
+   "x": "p.u.",
+   "b": "p.u.",
+   "length": "km",
+   "base_temperature": "\u00baC",
+   "operational_temperature": "\u00baC",
+   "alpha": "1/\u00baC"
+  }
+ },
+ "devices": {
+  "Circuit": {
+   "id": "d01de8d82fdf40a986ce231f70c8dc43",
+   "phases": "ps",
+   "name": "",
+   "sbase": 100,
+   "fbase": 50.0,
+   "model_version": 2,
+   "user_name": "173354033944478:santi",
+   "comments": ""
+  },
+  "Substation": [
+   {
+    "id": "415ba58161fa46429333343b57fbb3fd",
+    "name": "Default substation",
+    "code": ""
+   }
+  ],
+  "Zone": [
+   {
+    "id": "cd0ca5393e38462ebee82e4f5cc05a42",
+    "name": "Default zone",
+    "code": ""
+   }
+  ],
+  "Area": [
+   {
+    "id": "6e49c17a16d54ee59b605226c5f46ce8",
+    "name": "Default area",
+    "code": ""
+   }
+  ],
+  "Country": [
+   {
+    "id": "1862825d41444f398acea4d638a044c2",
+    "name": "Default country",
+    "code": ""
+   }
+  ],
+  "Bus": [
+   {
+    "id": "9a4d7a29bdb94bcb98515d0329d06407",
+    "type": 2,
+    "phases": "ps",
+    "name": "Bus 1",
+    "name_code": "",
+    "active": true,
+    "is_slack": false,
+    "vnom": 20,
+    "vmin": 0.9,
+    "vmax": 1.1,
+    "rf": 0.0,
+    "xf": 0.0,
+    "x": 0,
+    "y": 0,
+    "h": 0,
+    "w": 0,
+    "lat": 0.0,
+    "lon": 0.0,
+    "alt": 0.0,
+    "country": "1862825d41444f398acea4d638a044c2",
+    "area": "6e49c17a16d54ee59b605226c5f46ce8",
+    "zone": "cd0ca5393e38462ebee82e4f5cc05a42",
+    "substation": "415ba58161fa46429333343b57fbb3fd"
+   },
+   {
+    "id": "7c84a3de15da42bfb44c8a8758d89848",
+    "type": 1,
+    "phases": "ps",
+    "name": "Bus 2",
+    "name_code": "",
+    "active": true,
+    "is_slack": false,
+    "vnom": 20,
+    "vmin": 0.9,
+    "vmax": 1.1,
+    "rf": 0.0,
+    "xf": 0.0,
+    "x": 0,
+    "y": 0,
+    "h": 0,
+    "w": 0,
+    "lat": 0.0,
+    "lon": 0.0,
+    "alt": 0.0,
+    "country": "1862825d41444f398acea4d638a044c2",
+    "area": "6e49c17a16d54ee59b605226c5f46ce8",
+    "zone": "cd0ca5393e38462ebee82e4f5cc05a42",
+    "substation": "415ba58161fa46429333343b57fbb3fd"
+   },
+   {
+    "id": "44f297bd375a4b689d7ffe3b3f85e11f",
+    "type": 1,
+    "phases": "ps",
+    "name": "Bus 3",
+    "name_code": "",
+    "active": true,
+    "is_slack": false,
+    "vnom": 20,
+    "vmin": 0.9,
+    "vmax": 1.1,
+    "rf": 0.0,
+    "xf": 0.0,
+    "x": 0,
+    "y": 0,
+    "h": 0,
+    "w": 0,
+    "lat": 0.0,
+    "lon": 0.0,
+    "alt": 0.0,
+    "country": "1862825d41444f398acea4d638a044c2",
+    "area": "6e49c17a16d54ee59b605226c5f46ce8",
+    "zone": "cd0ca5393e38462ebee82e4f5cc05a42",
+    "substation": "415ba58161fa46429333343b57fbb3fd"
+   },
+   {
+    "id": "ac61d91ceba64eafbe945cae80e3dbce",
+    "type": 1,
+    "phases": "ps",
+    "name": "Bus 4",
+    "name_code": "",
+    "active": true,
+    "is_slack": false,
+    "vnom": 20,
+    "vmin": 0.9,
+    "vmax": 1.1,
+    "rf": 0.0,
+    "xf": 0.0,
+    "x": 0,
+    "y": 0,
+    "h": 0,
+    "w": 0,
+    "lat": 0.0,
+    "lon": 0.0,
+    "alt": 0.0,
+    "country": "1862825d41444f398acea4d638a044c2",
+    "area": "6e49c17a16d54ee59b605226c5f46ce8",
+    "zone": "cd0ca5393e38462ebee82e4f5cc05a42",
+    "substation": "415ba58161fa46429333343b57fbb3fd"
+   },
+   {
+    "id": "83aa7f1486e54d07af486e2d433dfb7d",
+    "type": 1,
+    "phases": "ps",
+    "name": "Bus 5",
+    "name_code": "",
+    "active": true,
+    "is_slack": false,
+    "vnom": 20,
+    "vmin": 0.9,
+    "vmax": 1.1,
+    "rf": 0.0,
+    "xf": 0.0,
+    "x": 0,
+    "y": 0,
+    "h": 0,
+    "w": 0,
+    "lat": 0.0,
+    "lon": 0.0,
+    "alt": 0.0,
+    "country": "1862825d41444f398acea4d638a044c2",
+    "area": "6e49c17a16d54ee59b605226c5f46ce8",
+    "zone": "cd0ca5393e38462ebee82e4f5cc05a42",
+    "substation": "415ba58161fa46429333343b57fbb3fd"
+   }
+  ],
+  "Generator": [
+   {
+    "id": "f8238253f81b4c4e849ba8313096e0aa",
+    "type": "generator",
+    "phases": "ps",
+    "name": "Slack Generator",
+    "name_code": "",
+    "bus": "9a4d7a29bdb94bcb98515d0329d06407",
+    "active": true,
+    "is_controlled": true,
+    "p": 0.0,
+    "pf": 0.8,
+    "vset": 1.0,
+    "snom": 9999,
+    "qmin": -9999,
+    "qmax": 9999,
+    "pmin": 0.0,
+    "pmax": 9999.0,
+    "cost": 1.0,
+    "technology": ""
+   }
+  ],
+  "Load": [
+   {
+    "id": "7364b81facca49eabba7327299f7c196",
+    "type": "load",
+    "phases": "ps",
+    "name": "load 2",
+    "name_code": "",
+    "bus": "7c84a3de15da42bfb44c8a8758d89848",
+    "active": true,
+    "g": 0.0,
+    "b": 0.0,
+    "ir": 0.0,
+    "ii": 0.0,
+    "p": 40,
+    "q": 20
+   },
+   {
+    "id": "e161fd2e179d494b81f9842016d23f99",
+    "type": "load",
+    "phases": "ps",
+    "name": "load 3",
+    "name_code": "",
+    "bus": "44f297bd375a4b689d7ffe3b3f85e11f",
+    "active": true,
+    "g": 0.0,
+    "b": 0.0,
+    "ir": 0.0,
+    "ii": 0.0,
+    "p": 25,
+    "q": 15
+   },
+   {
+    "id": "b71f9edc2bed467f915cc82f1e41f7e4",
+    "type": "load",
+    "phases": "ps",
+    "name": "load 4",
+    "name_code": "",
+    "bus": "ac61d91ceba64eafbe945cae80e3dbce",
+    "active": true,
+    "g": 0.0,
+    "b": 0.0,
+    "ir": 0.0,
+    "ii": 0.0,
+    "p": 40,
+    "q": 20
+   },
+   {
+    "id": "9c2d0a75dd4c409d88e7adb5c723a7e8",
+    "type": "load",
+    "phases": "ps",
+    "name": "load 5",
+    "name_code": "",
+    "bus": "83aa7f1486e54d07af486e2d433dfb7d",
+    "active": true,
+    "g": 0.0,
+    "b": 0.0,
+    "ir": 0.0,
+    "ii": 0.0,
+    "p": 50,
+    "q": 20
+   }
+  ],
+  "Line": [
+   {
+    "id": "e66a3cb843984d34b81f4935b53a91cb",
+    "type": "line",
+    "phases": "ps",
+    "name": "line 1-2",
+    "name_code": "",
+    "bus_from": "9a4d7a29bdb94bcb98515d0329d06407",
+    "bus_to": "7c84a3de15da42bfb44c8a8758d89848",
+    "active": true,
+    "rate": 1.0,
+    "r": 0.05,
+    "x": 0.11,
+    "b": 0.02,
+    "length": 1,
+    "base_temperature": 20,
+    "operational_temperature": 20,
+    "alpha": 0.0033,
+    "locations": []
+   },
+   {
+    "id": "8b066ae0287e41bebce04402228ba157",
+    "type": "line",
+    "phases": "ps",
+    "name": "line 1-3",
+    "name_code": "",
+    "bus_from": "9a4d7a29bdb94bcb98515d0329d06407",
+    "bus_to": "44f297bd375a4b689d7ffe3b3f85e11f",
+    "active": true,
+    "rate": 1.0,
+    "r": 0.05,
+    "x": 0.11,
+    "b": 0.02,
+    "length": 1,
+    "base_temperature": 20,
+    "operational_temperature": 20,
+    "alpha": 0.0033,
+    "locations": []
+   },
+   {
+    "id": "ef0b61905324471fa49d5a6b0374e39f",
+    "type": "line",
+    "phases": "ps",
+    "name": "line 1-5",
+    "name_code": "",
+    "bus_from": "9a4d7a29bdb94bcb98515d0329d06407",
+    "bus_to": "83aa7f1486e54d07af486e2d433dfb7d",
+    "active": true,
+    "rate": 1.0,
+    "r": 0.03,
+    "x": 0.08,
+    "b": 0.02,
+    "length": 1,
+    "base_temperature": 20,
+    "operational_temperature": 20,
+    "alpha": 0.0033,
+    "locations": []
+   },
+   {
+    "id": "da0f41519f4c48d0a54109c810c554a2",
+    "type": "line",
+    "phases": "ps",
+    "name": "line 2-3",
+    "name_code": "",
+    "bus_from": "7c84a3de15da42bfb44c8a8758d89848",
+    "bus_to": "44f297bd375a4b689d7ffe3b3f85e11f",
+    "active": true,
+    "rate": 1.0,
+    "r": 0.04,
+    "x": 0.09,
+    "b": 0.02,
+    "length": 1,
+    "base_temperature": 20,
+    "operational_temperature": 20,
+    "alpha": 0.0033,
+    "locations": []
+   },
+   {
+    "id": "78cc85f9963d45c4b2b8b616afef2240",
+    "type": "line",
+    "phases": "ps",
+    "name": "line 2-5",
+    "name_code": "",
+    "bus_from": "7c84a3de15da42bfb44c8a8758d89848",
+    "bus_to": "83aa7f1486e54d07af486e2d433dfb7d",
+    "active": true,
+    "rate": 1.0,
+    "r": 0.04,
+    "x": 0.09,
+    "b": 0.02,
+    "length": 1,
+    "base_temperature": 20,
+    "operational_temperature": 20,
+    "alpha": 0.0033,
+    "locations": []
+   },
+   {
+    "id": "f1631fe260b84713be660e890ca6d286",
+    "type": "line",
+    "phases": "ps",
+    "name": "line 3-4",
+    "name_code": "",
+    "bus_from": "44f297bd375a4b689d7ffe3b3f85e11f",
+    "bus_to": "ac61d91ceba64eafbe945cae80e3dbce",
+    "active": true,
+    "rate": 1.0,
+    "r": 0.06,
+    "x": 0.13,
+    "b": 0.03,
+    "length": 1,
+    "base_temperature": 20,
+    "operational_temperature": 20,
+    "alpha": 0.0033,
+    "locations": []
+   },
+   {
+    "id": "303336e47fcf4aa7aa57f1cc4645aba4",
+    "type": "line",
+    "phases": "ps",
+    "name": "line 4-5",
+    "name_code": "",
+    "bus_from": "ac61d91ceba64eafbe945cae80e3dbce",
+    "bus_to": "83aa7f1486e54d07af486e2d433dfb7d",
+    "active": true,
+    "rate": 1.0,
+    "r": 0.04,
+    "x": 0.09,
+    "b": 0.02,
+    "length": 1,
+    "base_temperature": 20,
+    "operational_temperature": 20,
+    "alpha": 0.0033,
+    "locations": []
+   }
+  ]
+ },
+ "profiles": {
+  "Circuit": {
+   "time": []
+  },
+  "Substation": [
+   {
+    "id": "415ba58161fa46429333343b57fbb3fd"
+   }
+  ],
+  "Zone": [
+   {
+    "id": "cd0ca5393e38462ebee82e4f5cc05a42"
+   }
+  ],
+  "Area": [
+   {
+    "id": "6e49c17a16d54ee59b605226c5f46ce8"
+   }
+  ],
+  "Country": [
+   {
+    "id": "1862825d41444f398acea4d638a044c2"
+   }
+  ],
+  "Bus": [
+   {
+    "id": "9a4d7a29bdb94bcb98515d0329d06407",
+    "active": []
+   },
+   {
+    "id": "7c84a3de15da42bfb44c8a8758d89848",
+    "active": []
+   },
+   {
+    "id": "44f297bd375a4b689d7ffe3b3f85e11f",
+    "active": []
+   },
+   {
+    "id": "ac61d91ceba64eafbe945cae80e3dbce",
+    "active": []
+   },
+   {
+    "id": "83aa7f1486e54d07af486e2d433dfb7d",
+    "active": []
+   }
+  ],
+  "Generator": [
+   {
+    "id": "f8238253f81b4c4e849ba8313096e0aa",
+    "active": [],
+    "p": [],
+    "v": [],
+    "pf": []
+   }
+  ],
+  "Load": [
+   {
+    "id": "7364b81facca49eabba7327299f7c196",
+    "active": [],
+    "p": [],
+    "q": [],
+    "ir": [],
+    "ii": [],
+    "g": [],
+    "b": []
+   },
+   {
+    "id": "e161fd2e179d494b81f9842016d23f99",
+    "active": [],
+    "p": [],
+    "q": [],
+    "ir": [],
+    "ii": [],
+    "g": [],
+    "b": []
+   },
+   {
+    "id": "b71f9edc2bed467f915cc82f1e41f7e4",
+    "active": [],
+    "p": [],
+    "q": [],
+    "ir": [],
+    "ii": [],
+    "g": [],
+    "b": []
+   },
+   {
+    "id": "9c2d0a75dd4c409d88e7adb5c723a7e8",
+    "active": [],
+    "p": [],
+    "q": [],
+    "ir": [],
+    "ii": [],
+    "g": [],
+    "b": []
+   }
+  ],
+  "Line": [
+   {
+    "id": "e66a3cb843984d34b81f4935b53a91cb",
+    "active": [],
+    "rate": []
+   },
+   {
+    "id": "8b066ae0287e41bebce04402228ba157",
+    "active": [],
+    "rate": []
+   },
+   {
+    "id": "ef0b61905324471fa49d5a6b0374e39f",
+    "active": [],
+    "rate": []
+   },
+   {
+    "id": "da0f41519f4c48d0a54109c810c554a2",
+    "active": [],
+    "rate": []
+   },
+   {
+    "id": "78cc85f9963d45c4b2b8b616afef2240",
+    "active": [],
+    "rate": []
+   },
+   {
+    "id": "f1631fe260b84713be660e890ca6d286",
+    "active": [],
+    "rate": []
+   },
+   {
+    "id": "303336e47fcf4aa7aa57f1cc4645aba4",
+    "active": [],
+    "rate": []
+   }
+  ]
+ },
+ "results": {}
+}
