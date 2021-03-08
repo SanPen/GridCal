@@ -15,7 +15,7 @@
 
 import numpy as np
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowResults
-from GridCal.Gui.GuiFunctions import ResultsModel
+from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Simulations.result_types import ResultTypes
 
 

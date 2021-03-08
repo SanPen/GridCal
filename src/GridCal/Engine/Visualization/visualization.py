@@ -63,7 +63,12 @@ def colour_sub_schematic(Sbase,
                          loading_label='loading',
                          ma=None,
                          theta=None,
-                         Beq=None):
+                         Beq=None,
+                         use_flow_based_width=False,
+                         min_branch_width=5,
+                         max_branch_width=5,
+                         min_bus_width=20,
+                         max_bus_width=20):
     """
     Color objects based on the results passed
     :param Sbase:
@@ -93,6 +98,12 @@ def colour_sub_schematic(Sbase,
     vang = np.angle(voltages, deg=True)
     vnorm = (vabs - vmin) / vrng
 
+    if Sbus is not None:
+        Pabs = np.abs(Sbus)
+        Pnorm = Pabs / Pabs.max()
+    else:
+        Pnorm = np.zeros(len(buses))
+
     voltage_cmap = get_voltage_color_map()
     loading_cmap = get_loading_color_map()
 
@@ -105,6 +116,7 @@ def colour_sub_schematic(Sbase,
     STO_DISPATCH = 5
     '''
     bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage']
+    max_flow = 1
 
     for i, bus in enumerate(buses):
         if bus.graphic_obj is not None:
@@ -126,20 +138,34 @@ def colour_sub_schematic(Sbase,
 
                 bus.graphic_obj.setToolTip(tooltip)
 
+                if use_flow_based_width:
+                    h = int(np.floor(min_bus_width + Pnorm[i] * (max_bus_width - min_bus_width)))
+                    bus.graphic_obj.change_size(bus.graphic_obj.w, h)
+
             else:
                 bus.graphic_obj.set_tile_color(QtCore.Qt.gray)
 
     # color branches
-    # branches = circuit.get_branches_wo_hvdc()  # HVDC branches are coloured separately
-
     if Sf is not None:
 
         lnorm = np.abs(loadings)
         lnorm[lnorm == np.inf] = 0
+        Sfabs = np.abs(Sf)
+        max_flow = Sfabs.max()
+
+        if hvdc_sending_power is not None:
+            max_flow = max(max_flow, np.abs(hvdc_sending_power).max())
+
+        Sfnorm = Sfabs / max_flow
 
         for i, branch in enumerate(branches):
             if branch.graphic_obj is not None:
-                w = branch.graphic_obj.pen_width
+
+                if use_flow_based_width:
+                    w = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
+                else:
+                    w = branch.graphic_obj.pen_width
+
                 if branch.active:
                     style = QtCore.Qt.SolidLine
                     r, g, b, a = loading_cmap(lnorm[i])
@@ -150,8 +176,8 @@ def colour_sub_schematic(Sbase,
 
                 tooltip = str(i) + ': ' + branch.name
                 tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
-                if Sf is not None:
-                    tooltip += '\nPower (from):\t' + "{:10.4f}".format(Sf[i]) + ' [MVA]'
+
+                tooltip += '\nPower (from):\t' + "{:10.4f}".format(Sf[i]) + ' [MVA]'
 
                 if St is not None:
                     tooltip += '\nPower (to):\t' + "{:10.4f}".format(St[i]) + ' [MVA]'
@@ -188,10 +214,18 @@ def colour_sub_schematic(Sbase,
                 branches[i].graphic_obj.set_pen(QtGui.QPen(color, w, style))
 
     if hvdc_sending_power is not None:
+
+        hvdc_sending_power_norm = np.abs(hvdc_sending_power) / max_flow
+
         for i, elm in enumerate(hvdc_lines):
 
             if elm.graphic_obj is not None:
-                w = elm.graphic_obj.pen_width
+
+                if use_flow_based_width:
+                    w = int(np.floor(min_branch_width + hvdc_sending_power_norm[i] * (max_branch_width - min_branch_width)))
+                else:
+                    w = elm.graphic_obj.pen_width
+
                 if elm.active:
                     style = QtCore.Qt.SolidLine
                     r, g, b, a = loading_cmap(abs(hvdc_loading[i]))
@@ -203,8 +237,11 @@ def colour_sub_schematic(Sbase,
                 tooltip = str(i) + ': ' + elm.name
                 tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(abs(hvdc_loading[i]) * 100) + ' [%]'
 
+                tooltip += '\nPower (from):\t' + "{:10.4f}".format(hvdc_sending_power[i]) + ' [MW]'
+
                 if hvdc_losses is not None:
-                    tooltip += '\nLosses: \t' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
+                    tooltip += '\nPower (to):\t' + "{:10.4f}".format(-hvdc_sending_power[i] + hvdc_losses[i]) + ' [MW]'
+                    tooltip += '\nLosses: \t\t' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
 
                 elm.graphic_obj.setToolTipText(tooltip)
                 elm.graphic_obj.set_colour(color, w, style)
@@ -217,6 +254,11 @@ def colour_the_schematic(circuit: MultiCircuit, Sbus, Sf, voltages, loadings,
                          ma=None,
                          theta=None,
                          Beq=None,
+                         use_flow_based_width=False,
+                         min_branch_width=1,
+                         max_branch_width=1,
+                         min_bus_width=20,
+                         max_bus_width=20,
                          file_name=None):
     """
     Color the grid based on the results passed
@@ -258,7 +300,13 @@ def colour_the_schematic(circuit: MultiCircuit, Sbus, Sf, voltages, loadings,
                          loading_label=loading_label,
                          ma=ma,
                          theta=theta,
-                         Beq=Beq)
+                         Beq=Beq,
+                         use_flow_based_width=use_flow_based_width,
+                         min_branch_width=min_branch_width,
+                         max_branch_width=max_branch_width,
+                         min_bus_width=min_bus_width,
+                         max_bus_width=max_bus_width,
+                         )
 
 
 def get_base_map(location, zoom_start=5):
@@ -287,8 +335,16 @@ def get_base_map(location, zoom_start=5):
     return my_map, marker_cluster
 
 
-def plot_html_map(circuit: MultiCircuit, Sbus, Sf, voltages, loadings, types, losses=None, St=None, failed_br_idx=None,
-                  loading_label='loading', file_name='map.html'):
+def plot_html_map(circuit: MultiCircuit, Sbus, Sf, voltages, loadings, types, losses=None,
+                  St=None,
+                  failed_br_idx=None,
+                  loading_label='loading',
+                  use_flow_based_width=False,
+                  min_width=5,
+                  max_width=5,
+                  min_bus_width=20,
+                  max_bus_width=20,
+                  file_name='map.html'):
     """
     Color the grid based on the results passed
     :param circuit:

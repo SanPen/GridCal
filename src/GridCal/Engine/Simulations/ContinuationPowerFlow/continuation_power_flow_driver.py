@@ -27,7 +27,7 @@ from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow im
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.plot_config import LINEWIDTH
-from GridCal.Gui.GuiFunctions import ResultsModel
+from GridCal.Engine.Simulations.results_model import ResultsModel
 
 
 ########################################################################################################################

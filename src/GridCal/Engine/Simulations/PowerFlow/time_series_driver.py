@@ -29,7 +29,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOpt
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, power_flow_worker_args
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
 from GridCal.Engine.Simulations.Stochastic.latin_hypercube_sampling import lhs
-from GridCal.Gui.GuiFunctions import ResultsModel
+from GridCal.Engine.Simulations.results_model import ResultsModel
 
 
 class TimeSeriesResults(PowerFlowResults):
@@ -77,8 +77,6 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.St = np.zeros((self.nt, m), dtype=complex)
 
-        self.Ibranch = np.zeros((self.nt, m), dtype=complex)
-
         self.Vbranch = np.zeros((self.nt, m), dtype=complex)
 
         self.loading = np.zeros((self.nt, m), dtype=complex)
@@ -121,8 +119,6 @@ class TimeSeriesResults(PowerFlowResults):
 
                                   ResultTypes.BranchActivePowerFrom,
                                   ResultTypes.BranchReactivePowerFrom,
-                                  ResultTypes.BranchActiveCurrentFrom,
-                                  ResultTypes.BranchReactiveCurrentFrom,
                                   ResultTypes.BranchLoading,
                                   ResultTypes.BranchActiveLosses,
                                   ResultTypes.BranchReactiveLosses,
@@ -147,8 +143,6 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.Sf[t, :] = results.Sf
         self.St[t, :] = results.St
-
-        self.Ibranch[t, :] = results.If
 
         self.Vbranch[t, :] = results.Vbranch
 
@@ -204,8 +198,6 @@ class TimeSeriesResults(PowerFlowResults):
             self.Sf = results.Sf
             self.St = results.St
 
-            self.Ibranch = results.If
-
             self.Vbranch = results.Vbranch
 
             self.loading = results.loading
@@ -222,8 +214,6 @@ class TimeSeriesResults(PowerFlowResults):
         else:
             self.Sf[np.ix_(t_index, br_idx)] = results.Sf
             self.St[np.ix_(t_index, br_idx)] = results.St
-
-            self.Ibranch[np.ix_(t_index, br_idx)] = results.If
 
             self.Vbranch[np.ix_(t_index, br_idx)] = results.Vbranch
 
@@ -247,12 +237,11 @@ class TimeSeriesResults(PowerFlowResults):
                 'Va': np.angle(self.voltage).tolist(),
                 'P': self.S.real.tolist(),
                 'Q': self.S.imag.tolist(),
-                'Sbr_real': self.Sf.real.tolist(),
-                'Sbr_imag': self.Sf.imag.tolist(),
-                'Ibr_real': self.Ibranch.real.tolist(),
-                'Ibr_imag': self.Ibranch.imag.tolist(),
+                'Sf_real': self.Sf.real.tolist(),
+                'Sf_imag': self.Sf.imag.tolist(),
                 'loading': np.abs(self.loading).tolist(),
-                'losses': np.abs(self.losses).tolist()}
+                'losses_real': np.real(self.losses).tolist(),
+                'losses_imag': np.imag(self.losses).tolist()}
         return data
 
     def save(self, fname):
@@ -279,15 +268,15 @@ class TimeSeriesResults(PowerFlowResults):
             bus_overvoltage_frequency[self.overvoltage_idx[i]] += 1
             buses_selected_for_storage_frequency[self.buses_useful_for_storage[i]] += 1
 
-        return branch_overload_frequency, bus_undervoltage_frequency, bus_overvoltage_frequency, \
+        return branch_overload_frequency, \
+                bus_undervoltage_frequency, \
+                bus_overvoltage_frequency, \
                 buses_selected_for_storage_frequency
 
     def mdl(self, result_type: ResultTypes) -> "ResultsModel":
         """
 
         :param result_type:
-        :param indices:
-        :param names:
         :return:
         """
 
@@ -332,24 +321,6 @@ class TimeSeriesResults(PowerFlowResults):
             data = self.Sf.imag
             y_label = '(MVAr)'
             title = 'Branch power '
-
-        elif result_type == ResultTypes.BranchCurrent:
-            labels = self.branch_names
-            data = self.Ibranch
-            y_label = '(kA)'
-            title = 'Branch current '
-
-        elif result_type == ResultTypes.BranchActiveCurrentFrom:
-            labels = self.branch_names
-            data = self.Ibranch.real
-            y_label = '(p.u.)'
-            title = 'Branch current '
-
-        elif result_type == ResultTypes.BranchReactiveCurrentFrom:
-            labels = self.branch_names
-            data = self.Ibranch.imag
-            y_label = '(p.u.)'
-            title = 'Branch current '
 
         elif result_type == ResultTypes.BranchLoading:
             labels = self.branch_names
@@ -480,8 +451,6 @@ def time_series_worker(n, m, time_profile, namespace, options: PowerFlowOptions,
     :param n:
     :param m:
     :param time_profile:
-    :param buses:
-    :param numerical_circuit:
     :param options:
     :param time_indices:  array of time indices to consider
     :param logger:
@@ -743,10 +712,10 @@ class TimeSeries(QThread):
                                                   'TS')
 
         # set the HVDC results here since the HVDC is not a branch in this modality
-        time_series_results.hvdc_Pf = -numerical_circuit.hvdc_Pf
-        time_series_results.hvdc_Pt = -numerical_circuit.hvdc_Pt
-        time_series_results.hvdc_loading = numerical_circuit.hvdc_loading
-        time_series_results.hvdc_losses = numerical_circuit.hvdc_losses
+        time_series_results.hvdc_Pf = -numerical_circuit.hvdc_Pf.T
+        time_series_results.hvdc_Pt = -numerical_circuit.hvdc_Pt.T
+        time_series_results.hvdc_loading = numerical_circuit.hvdc_loading.T
+        time_series_results.hvdc_losses = numerical_circuit.hvdc_losses.T
 
         return time_series_results
 

@@ -19,7 +19,7 @@ import pandas as pd
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults
-from GridCal.Gui.GuiFunctions import ResultsModel
+from GridCal.Engine.Simulations.results_model import ResultsModel
 
 
 class PTDFVariation:

@@ -24,7 +24,7 @@ from poap.controller import ThreadController, BasicWorkerThread
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf
-from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import MonteCarloResults
+from GridCal.Engine.Simulations.Stochastic.monte_carlo_results import StochasticPowerFlowResults
 from GridCal.Engine.Simulations.Stochastic.monte_carlo_driver import make_monte_carlo_input
 
 ########################################################################################################################
@@ -70,7 +70,7 @@ class VoltageOptimizationProblem(OptimizationProblem):
         self.info = str(self.dim) + "Voltage collapse optimization"
 
         # results
-        self.results = MonteCarloResults(n, m, self.max_eval, name='Voltage optimization')
+        self.results = StochasticPowerFlowResults(n, m, self.max_eval, name='Voltage optimization')
 
         # compile circuits
         self.numerical_circuit = self.circuit.compile_snapshot()
