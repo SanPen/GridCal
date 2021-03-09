@@ -5222,6 +5222,7 @@ class MainGUI(QMainWindow):
         Toggle file sync on/off
         """
         if self.ui.actionSync.isChecked():
+
             # attempt to start synchronizing
             if os.path.exists(self.file_name):
                 sleep_time = self.ui.sync_interval_spinBox.value()  # seconds to sleep
@@ -5248,9 +5249,12 @@ class MainGUI(QMainWindow):
             # attempt to stop the synchronization
             if self.file_sync_thread.isRunning():
                 self.file_sync_thread.cancel()
+                self.file_sync_thread.quit()
 
                 # enable the regular save button
                 self.enable_manual_file_operations(True)
+
+            self.UNLOCK()
 
     def post_file_sync(self):
         """

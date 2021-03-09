@@ -309,8 +309,9 @@ def derivatives_sh(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
     return dSbus_dPxsh.tocsc(), dSf_dshx2.tocsc(), dSt_dshx2.tocsc()
 
 
-@nb.njit("Tuple((c16[:], i4[:], i4[:], c16[:], i4[:], i4[:], c16[:], i4[:], i4[:]))"
-         "(i8[:], i8[:], i8[:], c16[:], f8[:], c16[:], c16[:])", cache=True)
+# @nb.njit("Tuple((c16[:], i4[:], i4[:], c16[:], i4[:], i4[:], c16[:], i4[:], i4[:]))"
+#          "(i8[:], i8[:], i8[:], c16[:], f8[:], c16[:], c16[:])", cache=True)
+@nb.njit()
 def derivatives_sh_numba(iPxsh, F, T, Ys, k2, tap, V):
     """
     This function computes the derivatives of Sbus, Sf and St w.r.t. Ɵsh
@@ -472,8 +473,9 @@ def derivatives_ma(nb, nl, iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
     return dSbus_dmax2.tocsc(), dSf_dmax2.tocsc(), dSt_dmax2.tocsc()
 
 
-@nb.njit("Tuple((c16[:], i4[:], i4[:], c16[:], i4[:], i4[:], c16[:], i4[:], i4[:]))"
-         "(i8[:], i8[:], i8[:], c16[:], f8[:], c16[:], f8[:], f8[:], f8[:], c16[:])", cache=True)
+# @nb.njit("Tuple((c16[:], i4[:], i4[:], c16[:], i4[:], i4[:], c16[:], i4[:], i4[:]))"
+#          "(i8[:], i8[:], i8[:], c16[:], f8[:], c16[:], f8[:], f8[:], f8[:], c16[:])", cache=True)
+@nb.njit()
 def derivatives_ma_numba(iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
     """
     Useful for the calculation of
@@ -647,8 +649,9 @@ def derivatives_Beq(nb, nl, iBeqx, F, T, V, ma, k2):
     return dSbus_dBeqx.tocsc(), dSf_dBeqx.tocsc(), dSt_dBeqx.tocsc()
 
 
-@nb.njit("Tuple((c16[:], i4[:], i4[:], c16[:], i4[:], i4[:]))"
-         "(i8[:], i8[:], c16[:], f8[:], f8[:])", cache=True)
+# @nb.njit("Tuple((c16[:], i4[:], i4[:], c16[:], i4[:], i4[:]))"
+#          "(i8[:], i8[:], c16[:], f8[:], f8[:])", cache=True)
+@nb.njit()
 def derivatives_Beq_numba(iBeqx, F, V, ma, k2):
     """
     Compute the derivatives of:

@@ -154,7 +154,8 @@ def colour_sub_schematic(Sbase,
         max_flow = Sfabs.max()
 
         if hvdc_sending_power is not None:
-            max_flow = max(max_flow, np.abs(hvdc_sending_power).max())
+            if len(hvdc_sending_power) > 0:
+                max_flow = max(max_flow, np.abs(hvdc_sending_power).max())
 
         Sfnorm = Sfabs / max_flow
 

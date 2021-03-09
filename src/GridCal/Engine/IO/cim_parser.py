@@ -12,8 +12,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-
+import os
 import chardet
+import pandas as pd
+from math import sqrt
+from typing import Set, Dict, List, Tuple
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.IO.zip_interface import get_xml_from_zip, get_xml_content
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
