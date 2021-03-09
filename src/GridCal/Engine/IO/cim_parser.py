@@ -3046,12 +3046,12 @@ if __name__ == '__main__':
     #
     # fnames = cimfiles + boundary_profiles
 
-    # folder = r'C:\Users\penversa\Documents\Grids\CGMES\TYNDP_2025'
-    folder = '/home/santi/Documentos/Private_Grids/CGMES/TYNDP_2025'
+    folder = r'C:\Users\penversa\Documents\Grids\CGMES\TYNDP_2025'
+
     files = [
-             '2025NT_FR_model_004.zip',
+             # '2025NT_FR_model_004.zip',
              '2025NT_ES_model_003.zip',
-             '2025NT_PT_model_003.zip',
+             # '2025NT_PT_model_003.zip',
              '20191017T0918Z_ENTSO-E_BD_1130.zip'
              ]
     fnames = [os.path.join(folder, f) for f in files]
@@ -3063,4 +3063,4 @@ if __name__ == '__main__':
 
     parser = CIMImport(text_func=print)
     parser.load_cim_file(fnames)
-    parser.cim.to_excel('All_data.xlsx')
+    parser.cim.to_excel('Spain_data.xlsx')
