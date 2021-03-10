@@ -1128,30 +1128,31 @@ class MainGUI(QMainWindow):
         :param post_function: function callback
         :return: Nothing
         """
-        self.file_name = filenames[0]
+        if len(filenames) > 0:
+            self.file_name = filenames[0]
 
-        # store the working directory
-        self.project_directory = os.path.dirname(self.file_name)
+            # store the working directory
+            self.project_directory = os.path.dirname(self.file_name)
 
-        # lock the ui
-        self.LOCK()
+            # lock the ui
+            self.LOCK()
 
-        # create thread
-        self.open_file_thread_object = filedrv.FileOpenThread(file_name=filenames if len(filenames) > 1 else filenames[0])
+            # create thread
+            self.open_file_thread_object = filedrv.FileOpenThread(file_name=filenames if len(filenames) > 1 else filenames[0])
 
-        # make connections
-        self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
-        self.open_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
-        self.open_file_thread_object.done_signal.connect(self.UNLOCK)
-        if post_function is None:
-            self.open_file_thread_object.done_signal.connect(self.post_open_file)
-        else:
-            self.open_file_thread_object.done_signal.connect(post_function)
+            # make connections
+            self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
+            self.open_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
+            self.open_file_thread_object.done_signal.connect(self.UNLOCK)
+            if post_function is None:
+                self.open_file_thread_object.done_signal.connect(self.post_open_file)
+            else:
+                self.open_file_thread_object.done_signal.connect(post_function)
 
-        # thread start
-        self.open_file_thread_object.start()
+            # thread start
+            self.open_file_thread_object.start()
 
-        self.stuff_running_now.append('file_open')
+            self.stuff_running_now.append('file_open')
 
     def post_open_file(self):
         """
