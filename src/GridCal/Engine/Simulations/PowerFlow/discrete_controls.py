@@ -336,8 +336,9 @@ def control_q_direct(V, Vm, Vset, Q, Qmax, Qmin, types, original_types, verbose=
     return Vnew, Qnew, types_new, any_control_issue
 
 
-@nb.njit("Tuple((u8, c16[:], c16[:], i8[:], i8[:], i8[:]))"
-         "(c16[:], c16[:], i8[:], i8[:], i8[:], f8[:], f8[:])", cache=True)
+# @nb.njit("Tuple((u8, c16[:], c16[:], i8[:], i8[:], i8[:]))"
+#          "(c16[:], c16[:], i8[:], i8[:], i8[:], f8[:], f8[:])", cache=True)
+@nb.njit()
 def control_q_inside_method(Scalc, Sbus, pv, pq, pvpq, Qmin, Qmax):
     """
     Control of reactive power within the numerical method
