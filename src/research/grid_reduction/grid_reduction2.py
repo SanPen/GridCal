@@ -7,7 +7,8 @@ pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
 
-file_name = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\Reduction Model 2.xlsx'
+# file_name = 'D:\\GitHub\\GridCal\\Grids_and_profiles\\grids\\Reduction Model 2.xlsx'
+file_name = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Reduction Model 2.xlsx'
 
 from GridCal.Engine import MultiCircuit, BranchType, FileOpen
 
@@ -16,15 +17,15 @@ circuit = FileOpen(file_name).open()
 
 # form C
 threshold = 1e-5
-m = len(circuit.branches)
+m = circuit.get_branch_number()
 n = len(circuit.buses)
 C = lil_matrix((m, n), dtype=int)
 buses_dict = {bus: i for i, bus in enumerate(circuit.buses)}
 branches_to_keep_idx = list()
 branches_to_remove_idx = list()
 states = np.zeros(m, dtype=int)
-br_idx = [None] * m
-for i in range(len(circuit.branches)):
+br_idx = [0] * m
+for i in range(m):
     # get the from and to bus indices
     f = buses_dict[circuit.branches[i].bus_from]
     t = buses_dict[circuit.branches[i].bus_to]

@@ -71,6 +71,11 @@ def select_branches_to_reduce(circuit: MultiCircuit, rx_criteria=True, rx_thresh
                     print(i, '->', rx, '<', rx_threshold)
                     branches_to_remove_idx.append(i)
 
+            elif branches[i].branch_type == BranchType.Switch:
+
+                # add switches
+                branches_to_remove_idx.append(i)
+
             else:
                 # Add the branch because it was selected and there is no further criteria
                 branches_to_remove_idx.append(i)
