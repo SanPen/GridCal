@@ -179,7 +179,11 @@ class NewProfilesStructureDialogue(QtWidgets.QDialog):
 
 
 def fill_tree_from_logs(logger: Logger):
-
+    """
+    Fill logger tree
+    :param logger: Logger instance
+    :return: QStandardItemModel instance
+    """
     d = logger.to_dict()
     editable = False
     model = QtGui.QStandardItemModel()
@@ -189,10 +193,17 @@ def fill_tree_from_logs(logger: Logger):
     for severity, messages_dict in d.items():
         severity_child = QtGui.QStandardItem(severity)
 
+        # print(severity)
+
         for message, data_list in messages_dict.items():
             message_child = QtGui.QStandardItem(message)
 
+            # print('\t', message)
+
             for time, elm, value, expected_value in data_list:
+
+                # print('\t', '\t', time, elm, value, expected_value)
+
                 time_child = QtGui.QStandardItem(time)
                 time_child.setEditable(editable)
 
