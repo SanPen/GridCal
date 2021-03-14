@@ -81,9 +81,9 @@ class VSC(EditableDevice):
                                 editable_headers={'name': GCProp('', str, 'Name of the branch.'),
                                                   'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
-                                                                     'Name of the bus at the "from" side of the branch.'),
+                                                                     'Name of the bus at the "DC" side of the branch.'),
                                                   'bus_to': GCProp('', DeviceType.BusDevice,
-                                                                   'Name of the bus at the "to" side of the branch.'),
+                                                                   'Name of the bus at the "AC" side of the branch.'),
                                                   'active': GCProp('', bool, 'Is the branch active?'),
                                                   'rate': GCProp('MVA', float, 'Thermal rating power of the branch.'),
 
@@ -120,8 +120,8 @@ class VSC(EditableDevice):
                                                                          'Converter control mode'),
 
                                                   'kdp': GCProp('p.u./p.u.', float, 'Droop Power/Voltage slope.'),
-                                                  'Pfset': GCProp('MW', float, 'Active power set point.'),
-                                                  'Qfset': GCProp('MVAr', float, 'Reactive power set point.'),
+                                                  'Pdc_set': GCProp('MW', float, 'DC power set point.'),
+                                                  'Qac_set': GCProp('MVAr', float, 'AC Reactive power set point.'),
                                                   'Vac_set': GCProp('p.u.', float, 'AC voltage set point.'),
                                                   'Vdc_set': GCProp('p.u.', float, 'DC voltage set point.'),
                                                   'Cost': GCProp('e/MWh', float, 'Cost of overloads. Used in OPF.'),
@@ -139,7 +139,7 @@ class VSC(EditableDevice):
         if bus_to is not None and bus_from is not None:
             # connectivity:
             # for the later primitives to make sense, the "bus from" must be AC and the "bus to" must be DC
-            if bus_from.is_dc and not bus_to.is_dc:  # correct sense
+            if bus_from.is_dc and not bus_to.is_dc:  # this is the correct sense
                 self.bus_from = bus_from
                 self.bus_to = bus_to
             elif not bus_from.is_dc and bus_to.is_dc:  # opposite sense, revert
@@ -171,8 +171,8 @@ class VSC(EditableDevice):
         self.Beq_min = Beq_min
         self.Beq_max = Beq_max
 
-        self.Pfset = Pfset
-        self.Qfset = Qfset
+        self.Pdc_set = Pfset
+        self.Qac_set = Qfset
         self.Vac_set = Vac_set
         self.Vdc_set = Vdc_set
         self.control_mode = control_mode
@@ -279,8 +279,8 @@ class VSC(EditableDevice):
 
              'k': self.k,
              'kdp': self.kdp,
-             'Pfset': self.Pfset,
-             'Qfset': self.Qfset,
+             'Pfset': self.Pdc_set,
+             'Qfset': self.Qac_set,
              'vac_set': self.Vac_set,
              'vdc_set': self.Vdc_set,
 

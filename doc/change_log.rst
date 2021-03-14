@@ -26,19 +26,23 @@ Version 4.0.0 (multi-terminal DC Grids)
 
 
 - GUI
-    - Way faster clipboard export
+
     - Ability to select columns and rows when plotting the results
     - Added update check and command in the GUI about box.
     - Added a quite good random grid generator from the project SyntheticNetworks.
     - Added a bus viewer: It allows to visualize subsets of the grid.
       It is useful for very large grids where the complete schematic is cumbersome or slow.
+    - Added check that converts the results into CDF.
+    - Added schematic branch width based on the line flow.
+
     - Revamp of the context menus.
-    - Improved the transformer and line editors integrating the template selection.
-    - Improved filtering (bool values are recognised now)
+
     - Replaced how all the GUI messages are handled.
     - Added button in the results to copy text data in numpy format
-    - Added check that converts the results into CDF
+
     - Improved the logger window, which now allows to save logs report.
+    - Improved the transformer and line editors integrating the template selection.
+    - Improved filtering (bool values are recognised now)
 
 - I/O
     - Added better Json export file (v3.1 of the specification).
@@ -64,6 +68,8 @@ Version 4.0.0 (multi-terminal DC Grids)
         - Integrated it with the GUI.
         - The advanced controls such a transformer power set-points are simulated using the FUBM logic.
 
+- Stochastic Power Flow
+    - Merged Monte Carlo and Latin Hypercube in the same simulation driver.
 
 - Continuation Power Flow
     - Added reactive power limits option for the generators.

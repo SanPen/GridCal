@@ -107,7 +107,7 @@ class EditableDevice:
     def get_save_data(self):
         """
         Return the data that matches the edit_headers
-        :return:
+        :return: list with data
         """
 
         data = list()

@@ -21,17 +21,20 @@ from numba.typed import List
 import math
 
 
-@nb.njit("i4[:](i8)")
+# @nb.njit("i4[:](i8)")
+@nb.njit()
 def ialloc(n):
     return np.zeros(n, dtype=nb.int32)
 
 
-@nb.njit("f8[:](i8)")
+# @nb.njit("f8[:](i8)")
+@nb.njit()
 def xalloc(n):
     return np.zeros(n, dtype=nb.float64)
 
 
-@nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:], i8))(i8, i8, i8)")
+# @nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:], i8))(i8, i8, i8)")
+@nb.njit()
 def csc_spalloc_f(m, n, nzmax):
     """
     Allocate a sparse matrix (triplet form or compressed-column form).
@@ -48,19 +51,22 @@ def csc_spalloc_f(m, n, nzmax):
     return m, n, Aindptr, Aindices, Adata, Anzmax
 
 
-@nb.njit("(f8[:], f8[:], i8)")
+# @nb.njit("(f8[:], f8[:], i8)")
+@nb.njit()
 def _copy_f(src, dest, length):
     for i in range(length):
         dest[i] = src[i]
 
 
-@nb.njit("(i4[:], i4[:], i8)")
+# @nb.njit("(i4[:], i4[:], i8)")
+@nb.njit()
 def _copy_i(src, dest, length):
     for i in range(length):
         dest[i] = src[i]
 
 
-@nb.njit("i8(i4[:], i4[:], i8)")
+# @nb.njit("i8(i4[:], i4[:], i8)")
+@nb.njit()
 def csc_cumsum_i(p, c, n):
     """
     p [0..n] = cumulative sum of c [0..n-1], and then copy p [0..n-1] into c
@@ -82,7 +88,8 @@ def csc_cumsum_i(p, c, n):
     return int(nz2)               # return sum (c [0..n-1])
 
 
-@nb.njit("Tuple((i4[:], f8[:], i8))(i8, i4[:], i4[:], f8[:], i8)")
+# @nb.njit("Tuple((i4[:], f8[:], i8))(i8, i4[:], i4[:], f8[:], i8)")
+@nb.njit()
 def csc_sprealloc_f(An, Aindptr, Aindices, Adata, nzmax):
     """
     Change the max # of entries a sparse matrix can hold.
@@ -110,7 +117,8 @@ def csc_sprealloc_f(An, Aindptr, Aindices, Adata, nzmax):
     return Ainew, Axnew, nzmax
 
 
-@nb.njit("i8(i4[:], i4[:], f8[:], i8, f8, i4[:], f8[:], i8, i4[:], i8)")
+# @nb.njit("i8(i4[:], i4[:], f8[:], i8, f8, i4[:], f8[:], i8, i4[:], i8)")
+@nb.njit()
 def csc_scatter_f(Ap, Ai, Ax, j, beta, w, x, mark, Ci, nz):
     """
     Scatters and sums a sparse vector A(:,j) into a dense vector, x = x + beta * A(:,j)
@@ -139,7 +147,8 @@ def csc_scatter_f(Ap, Ai, Ax, j, beta, w, x, mark, Ci, nz):
     return nz
 
 
-@nb.njit("i8(i4[:], i4[:], f8[:], i8, f8, i4[:], f8[:], i8, i4[:], i8)")
+# @nb.njit("i8(i4[:], i4[:], f8[:], i8, f8, i4[:], f8[:], i8, i4[:], i8)")
+@nb.njit()
 def csc_scatter_ff(Aindptr, Aindices, Adata, j, beta, w, x, mark, Ci, nz):
     """
     Scatters and sums a sparse vector A(:,j) into a dense vector, x = x + beta * A(:,j)
@@ -168,7 +177,8 @@ def csc_scatter_ff(Aindptr, Aindices, Adata, j, beta, w, x, mark, Ci, nz):
     return nz
 
 
-@nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i8, i8, i4[:], i4[:], f8[:], f8, f8)")
+# @nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i8, i8, i4[:], i4[:], f8[:], f8, f8)")
+@nb.njit()
 def csc_add_ff(Am, An, Aindptr, Aindices, Adata,
                Bm, Bn, Bindptr, Bindices, Bdata, alpha, beta):
     """
@@ -207,8 +217,9 @@ def csc_add_ff(Am, An, Aindptr, Aindices, Adata,
     return Cm, Cn, Cp, Ci, Cx  # success; free workspace, return C
 
 
-@nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:], i8))(i8, i8, i4[:], i4[:], f8[:], i8, i8, i4[:], i4[:], f8[:])",
-         parallel=False, nogil=True, fastmath=False, cache=True)  # fastmath=True breaks the code
+# @nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:], i8))(i8, i8, i4[:], i4[:], f8[:], i8, i8, i4[:], i4[:], f8[:])",
+#          parallel=False, nogil=True, fastmath=False, cache=True)  # fastmath=True breaks the code
+@nb.njit()
 def csc_multiply_ff(Am, An, Ap, Ai, Ax,
                     Bm, Bn, Bp, Bi, Bx):
     """
@@ -294,7 +305,8 @@ def csc_multiply_ff(Am, An, Ap, Ai, Ax,
     return Cm, Cn, Cp, Cinew, Cxnew, Cnzmax
 
 
-@nb.njit("f8[:](i8, i8, i4[:], i4[:], f8[:], f8[:])", parallel=False)
+# @nb.njit("f8[:](i8, i8, i4[:], i4[:], f8[:], f8[:])", parallel=False)
+@nb.njit()
 def csc_mat_vec_ff(m, n, Ap, Ai, Ax, x):
     """
     Sparse matrix times dense column vector, y = A * x.
@@ -316,7 +328,8 @@ def csc_mat_vec_ff(m, n, Ap, Ai, Ax, x):
     return y
 
 
-@nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i8)")
+# @nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i8)")
+@nb.njit()
 def coo_to_csc(m, n, Ti, Tj, Tx, nz):
     """
     C = compressed-column form of a triplet matrix T. The columns of C are
@@ -345,7 +358,8 @@ def coo_to_csc(m, n, Ti, Tj, Tx, nz):
     return Cm, Cn, Cp, Ci, Cx
 
 
-@nb.njit("void(i8, i8, i4[:], i4[:], f8[:], i4[:], i4[:], f8[:])")
+# @nb.njit("void(i8, i8, i4[:], i4[:], f8[:], i4[:], i4[:], f8[:])")
+@nb.njit()
 def csc_to_csr(m, n, Ap, Ai, Ax, Bp, Bi, Bx):
     """
     Convert a CSC Matrix into a CSR Matrix
@@ -425,7 +439,8 @@ def csc_transpose(m, n, Ap, Ai, Ax):
     return Cm, Cn, Cp, Ci, Cx
 
 
-@nb.njit("i4(i4, i4, i4[:])")
+# @nb.njit("i4(i4, i4, i4[:])")
+@nb.njit()
 def binary_find(N, x, array):
     """
     Binary search
@@ -713,7 +728,8 @@ def csc_stack_4_by_4_ff(am, an, Ai, Ap, Ax,
     return m, n, indices, indptr, data
 
 
-@nb.njit("f8(i8, i4[:], f8[:])")
+# @nb.njit("f8(i8, i4[:], f8[:])")
+@nb.njit()
 def csc_norm(n, Ap, Ax):
     """
     Computes the 1-norm of a sparse matrix = max (sum (abs (A))), largest

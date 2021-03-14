@@ -2558,7 +2558,7 @@ class Ui_mainWindow(object):
 
         self.branch_width_based_on_flow_checkBox = QCheckBox(self.frame_58)
         self.branch_width_based_on_flow_checkBox.setObjectName(u"branch_width_based_on_flow_checkBox")
-        self.branch_width_based_on_flow_checkBox.setChecked(True)
+        self.branch_width_based_on_flow_checkBox.setChecked(False)
 
         self.gridLayout.addWidget(self.branch_width_based_on_flow_checkBox, 11, 0, 1, 1)
 

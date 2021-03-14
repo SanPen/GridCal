@@ -75,7 +75,7 @@ class SequenceLineType(EditableDevice):
 
         self.rating = rating
 
-        # impedances and admittances per unit of length
+        # impudence and admittance per unit of length
         self.R = R
         self.X = X
         self.G = G

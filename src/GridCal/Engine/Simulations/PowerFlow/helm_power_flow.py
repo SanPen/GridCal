@@ -138,7 +138,8 @@ def pade4all(order, coeff_mat, s=1.0):
     return voltages
 
 
-@nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, c16[:])")
+# @nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, c16[:])")
+@nb.njit()
 def sigma_function(coeff_matU, coeff_matX, order, V_slack):
     """
 
@@ -181,7 +182,8 @@ def sigma_function(coeff_matU, coeff_matX, order, V_slack):
     return sigmas
 
 
-@nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")
+# @nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")
+@nb.njit()
 def conv1_old(A, B, c, indices):
     """
     Performs the convolution of A* and B
@@ -198,7 +200,8 @@ def conv1_old(A, B, c, indices):
     return suma
 
 
-@nb.njit("(c16[:])(c16[:, :], c16[:, :], i8)")
+# @nb.njit("(c16[:])(c16[:, :], c16[:, :], i8)")
+@nb.njit()
 def conv1(A, B, c):
     """
     Performs the convolution of A* and B
@@ -215,7 +218,8 @@ def conv1(A, B, c):
     return suma
 
 
-@nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")
+# @nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")
+@nb.njit()
 def conv2(A, B, c, indices):
     """
     Performs the convolution of A and B
@@ -232,7 +236,8 @@ def conv2(A, B, c, indices):
     return suma
 
 
-@nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")
+# @nb.njit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")
+@nb.njit()
 def conv3(A, B, c, indices):
     """
     Performs the convolution of A and B*

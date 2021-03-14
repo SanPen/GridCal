@@ -19,7 +19,8 @@ import numpy as np
 from scipy.sparse import csc_matrix
 
 
-@nb.njit("c16[:](i8, i4[:], i4[:], c16[:], c16[:], c16[:], i8)", parallel=True)
+# @nb.njit("c16[:](i8, i4[:], i4[:], c16[:], c16[:], c16[:], i8)", parallel=True)
+@nb.njit()
 def calc_power_csr_numba(n, Yp, Yj, Yx, V, I, n_par=500):
     """
     Compute the power vector from the CSR admittance matrix
@@ -54,7 +55,8 @@ def calc_power_csr_numba(n, Yp, Yj, Yx, V, I, n_par=500):
     return S
 
 
-@nb.njit("Tuple((i4[:], i4[:], c16[:]))(i8, c16[:])")
+# @nb.njit("Tuple((i4[:], i4[:], c16[:]))(i8, c16[:])")
+@nb.njit()
 def csc_diagonal_from_array(m, array):
     """
 

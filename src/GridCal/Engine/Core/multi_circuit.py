@@ -15,7 +15,7 @@
 
 import sys
 import os
-from typing import List
+from typing import List, Dict, Tuple
 from uuid import getnode as get_mac, uuid4
 from datetime import timedelta
 import networkx as nx
@@ -121,6 +121,8 @@ class MultiCircuit:
         self.vsc_devices = list()  # type: List[VSC]
 
         self.upfc_devices = list()  # type List[UPFC]
+
+        self.switch_devices = list()  # type List[Switch]
 
         # array of branch indices in the master circuit
         self.branch_original_idx = list()
@@ -1013,13 +1015,23 @@ class MultiCircuit:
 
     def add_upfc(self, obj: UPFC):
         """
-        Add a hvdc line object
-        :param obj: HvdcLine instance
+        Add a UPFC object
+        :param obj: UPFC instance
         """
 
         if self.time_profile is not None:
             obj.create_profiles(self.time_profile)
         self.upfc_devices.append(obj)
+
+    def add_switch(self, obj: Switch):
+        """
+        Add a Switch object
+        :param obj: Switch instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.switch_devices.append(obj)
 
     def add_branch(self, obj):
         """
@@ -1048,6 +1060,9 @@ class MultiCircuit:
         elif obj.device_type == DeviceType.UpfcDevice:
             self.add_upfc(obj)
 
+        elif obj.device_type == DeviceType.SwitchDevice:
+            self.add_switch(obj)
+
         elif obj.device_type == DeviceType.BranchDevice:
             # we need to convert it :D
             if obj.branch_type == BranchType.Line or obj.branch_type == BranchType.Transformer:
@@ -1055,7 +1070,6 @@ class MultiCircuit:
                 self.add_branch(obj2)  # call this again, but this time it is not a Branch object
             else:
                 print('Omitting branch ' + obj.name)
-                # self.add_branch(obj)
         else:
             raise Exception('Unrecognized branch type ' + obj.device_type.value)
 

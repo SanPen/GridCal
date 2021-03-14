@@ -37,8 +37,8 @@ class VscData:
         self.theta = np.zeros(nvsc)
         self.Inom = np.zeros(nvsc)
 
-        self.Pfset = np.zeros((nvsc, ntime))
-        self.Qfset = np.zeros((nvsc, ntime))
+        self.Pfset = np.zeros((nvsc, ntime))  # DC active power
+        self.Qtset = np.zeros((nvsc, ntime))  # AC reactive power
         self.Vac_set = np.ones((nvsc, ntime))
         self.Vdc_set = np.ones((nvsc, ntime))
 

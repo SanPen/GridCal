@@ -404,8 +404,8 @@ def get_vsc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
         nc.m[i] = elm.m
         nc.theta[i] = elm.theta
         # nc.Inom[i] = (elm.rate / nc.Sbase) / np.abs(nc.Vbus[f])
-        nc.Pfset[i] = elm.Pfset
-        nc.Qfset[i] = elm.Qfset
+        nc.Pfset[i] = elm.Pdc_set
+        nc.Qtset[i] = elm.Qac_set
         nc.Vac_set[i] = elm.Vac_set
         nc.Vdc_set[i] = elm.Vdc_set
         nc.control_mode[i] = elm.control_mode
@@ -655,8 +655,8 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.theta[ii] = elm.theta
         data.theta_min[ii] = elm.theta_min
         data.theta_max[ii] = elm.theta_max
-        data.Pfset[ii] = elm.Pfset
-        data.Qfset[ii] = elm.Qfset
+        data.Pfset[ii] = elm.Pdc_set
+        data.Qtset[ii] = elm.Qac_set
         data.Kdp[ii] = elm.kdp
         data.vf_set[ii] = elm.Vac_set
         data.vt_set[ii] = elm.Vdc_set
