@@ -385,7 +385,8 @@ def csc_to_csr(m, n, Ap, Ai, Ax, Bp, Bi, Bx):
         last = temp
 
 
-@nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:])")
+# @nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:])")
+@nb.njit()
 def csc_transpose(m, n, Ap, Ai, Ax):
     """
     Transpose matrix
@@ -490,7 +491,8 @@ def csc_sub_matrix(Am, Anz, Ap, Ai, Ax, rows, cols):
     return n, Bp, Bi[:n], Bx[:n]
 
 
-@nb.njit("Tuple((i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i4[:])")
+# @nb.njit("Tuple((i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i4[:])")
+@nb.njit()
 def csc_sub_matrix_cols(Am, Anz, Ap, Ai, Ax, cols):
     """
     Get SCS arbitrary sub-matrix with all the rows
@@ -585,7 +587,8 @@ def csc_to_dense(m, n, indptr, indices, data):
     return val
 
 
-@nb.njit("Tuple((i4[:], i4[:], f8[:]))(i8, f8)")
+# @nb.njit("Tuple((i4[:], i4[:], f8[:]))(i8, f8)")
+@nb.njit()
 def csc_diagonal(m, value=1.0):
     """
     Build CSC diagonal matrix of the given value
@@ -605,7 +608,8 @@ def csc_diagonal(m, value=1.0):
     return indices, indptr, data
 
 
-@nb.njit("Tuple((i4[:], i4[:], f8[:]))(i8, f8[:])")
+# @nb.njit("Tuple((i4[:], i4[:], f8[:]))(i8, f8[:])")
+@nb.njit()
 def csc_diagonal_from_array(m, array):
     """
 
@@ -625,12 +629,13 @@ def csc_diagonal_from_array(m, array):
     return indices, indptr, data
 
 
-@nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:]))"
-         "(i8, i8, i4[:], i4[:], f8[:], "
-         "i8, i8, i4[:], i4[:], f8[:], "
-         "i8, i8, i4[:], i4[:], f8[:], "
-         "i8, i8, i4[:], i4[:], f8[:])",
-         parallel=False, nogil=True, fastmath=True, cache=True)
+# @nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:]))"
+#          "(i8, i8, i4[:], i4[:], f8[:], "
+#          "i8, i8, i4[:], i4[:], f8[:], "
+#          "i8, i8, i4[:], i4[:], f8[:], "
+#          "i8, i8, i4[:], i4[:], f8[:])",
+#          parallel=False, nogil=True, fastmath=True, cache=True)
+@nb.njit()
 def csc_stack_4_by_4_ff(am, an, Ai, Ap, Ax,
                         bm, bn, Bi, Bp, Bx,
                         cm, cn, Ci, Cp, Cx,
@@ -727,7 +732,7 @@ def csc_norm(n, Ap, Ax):
     return norm
 
 
-@nb.njit
+@nb.njit()
 def find_islands(node_number, indptr, indices):
     """
     Method to get the islands of a graph
@@ -794,7 +799,8 @@ def find_islands(node_number, indptr, indices):
 
 
 
-@nb.njit("Tuple((i4[:], i4[:], f8[:], i8, i8))(i8, i4[:], i4[:], f8[:], i8[:])")
+# @nb.njit("Tuple((i4[:], i4[:], f8[:], i8, i8))(i8, i4[:], i4[:], f8[:], i8[:])")
+@nb.njit()
 def sp_submat_c_numba(nrows, ptrs, indices, values, cols):
     """
     slice CSC columns
