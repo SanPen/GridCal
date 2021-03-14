@@ -18,17 +18,17 @@ import json
 from GridCal.Engine.basic_structures import Logger
 
 from GridCal.Engine.IO.json_parser import save_json_file
-from GridCal.Engine.IO.cim_parser import CIMExport
+from GridCal.Engine.IO.cim.cim_parser import CIMExport
 from GridCal.Engine.IO.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
 from GridCal.Engine.IO.pack_unpack import create_data_frames, data_frames_to_circuit
-from GridCal.Engine.IO.matpower_parser import interpret_data_v1
+from GridCal.Engine.IO.matpower.matpower_parser import interpret_data_v1
 from GridCal.Engine.IO.dgs_parser import dgs_to_circuit
-from GridCal.Engine.IO.matpower_parser import parse_matpower_file
+from GridCal.Engine.IO.matpower.matpower_parser import parse_matpower_file
 from GridCal.Engine.IO.dpx_parser import load_dpx
 from GridCal.Engine.IO.ipa_parser import load_iPA
 from GridCal.Engine.IO.json_parser import parse_json, parse_json_data_v2, parse_json_data_v3
 from GridCal.Engine.IO.psse_parser import PSSeParser
-from GridCal.Engine.IO.cim_parser import CIMImport
+from GridCal.Engine.IO.cim.cim_parser import CIMImport
 from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, get_frames_from_zip
 from GridCal.Engine.IO.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -129,7 +129,8 @@ class FileOpen:
                     self.circuit = dgs_to_circuit(self.file_name)
 
                 elif file_extension.lower() == '.m':
-                    self.circuit = parse_matpower_file(self.file_name)
+                    self.circuit, log = parse_matpower_file(self.file_name)
+                    self.logger += log
 
                 elif file_extension.lower() == '.dpx':
                     self.circuit, log = load_dpx(self.file_name)

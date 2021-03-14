@@ -14,12 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 """
-import pandas as pd
-import numpy as np
-import os
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices import *
+import GridCal.Engine.IO.matpower.matpower_branch_definitions as matpower_branches
+import GridCal.Engine.IO.matpower.matpower_bus_definitions as matpower_buses
+import GridCal.Engine.IO.matpower.matpower_gen_definitions as matpower_gen
 
 
 def find_between(s, first, last):
@@ -333,23 +333,13 @@ def txt2mat(txt, line_splitter=';', col_splitter='\t', to_float=True):
     return np.array(arr)
 
 
-def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
+def parse_areas_data(circuit: MultiCircuit, data, logger: Logger):
     """
-    Pass the loaded table-like data to the  structures
-    :param circuit:
-    :param data: Data dictionary
-    :return:
+    Parse Matpower / FUBM Matpower area data into GridCal
+    :param circuit: MultiCircuit instance
+    :param data: data dictionary
+    :return: area index -> object dictionary
     """
-
-    circuit.clear()
-
-    # time profile
-    if 'master_time' in data.keys():
-        master_time_array = data['master_time']
-    else:
-        master_time_array = None
-
-    # areas
     area_idx_dict = dict()
     if 'areas' in data.keys():
         table = data['areas']
@@ -361,8 +351,7 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
         for i in range(table.shape[0]):
             area_idx = int(table[i, 0])
             area_ref_bus_idx = table[i, 1]
-            a = Area(name='Area ' + str(area_idx),
-                     code=str(area_idx))
+            a = Area(name='Area ' + str(area_idx), code=str(area_idx))
             area_idx_dict[area_idx] = (a, area_ref_bus_idx)
             circuit.add_area(a)
 
@@ -370,7 +359,18 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
                 # set the default area
                 circuit.default_area = circuit.areas[0]
 
-    import GridCal.Engine.IO.matpower_bus_definitions as e
+    return area_idx_dict
+
+
+def parse_buses_data(circuit: MultiCircuit, data, area_idx_dict, logger: Logger):
+    """
+    Parse Matpower / FUBM Matpower bus data into GridCal
+    :param circuit: MultiCircuit instance
+    :param data: data dictionary
+    :param area_idx_dict: area index -> object dictionary
+    :return: bus index -> object dictionary
+    """
+
     # Buses
     table = data['bus']
 
@@ -388,14 +388,14 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
     if 'bus_names' in data.keys():
         names = data['bus_names']
     else:
-        names = ['bus ' + str(int(table[i, e.BUS_I])) for i in range(n)]
+        names = ['bus ' + str(int(table[i, matpower_buses.BUS_I])) for i in range(n)]
 
     # Buses
     bus_idx_dict = dict()
     for i in range(n):
         # Create bus
-        area_idx = int(table[i, e.BUS_AREA])
-        bus_idx = int(table[i, e.BUS_I])
+        area_idx = int(table[i, matpower_buses.BUS_AREA])
+        bus_idx = int(table[i, matpower_buses.BUS_I])
         is_slack = False
 
         if area_idx in area_idx_dict.keys():
@@ -409,38 +409,49 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
 
         bus = Bus(name=names[i],
                   code=code,
-                  vnom=table[i, e.BASE_KV],
-                  vmax=table[i, e.VMAX],
-                  vmin=table[i, e.VMIN],
+                  vnom=table[i, matpower_buses.BASE_KV],
+                  vmax=table[i, matpower_buses.VMAX],
+                  vmin=table[i, matpower_buses.VMIN],
                   area=area,
                   is_slack=is_slack)
 
         # store the given bus index in relation to its real index in the table for later
-        bus_idx_dict[table[i, e.BUS_I]] = i
+        bus_idx_dict[table[i, matpower_buses.BUS_I]] = i
 
         # determine if the bus is set as slack manually
-        tpe = table[i, e.BUS_TYPE]
-        if tpe == e.REF:
+        tpe = table[i, matpower_buses.BUS_TYPE]
+        if tpe == matpower_buses.REF:
             bus.is_slack = True
         else:
             bus.is_slack = False
 
         # Add the load
-        if table[i, e.PD] != 0 or table[i, e.QD] != 0:
-            load = Load(P=table[i, e.PD], Q=table[i, e.QD])
+        if table[i, matpower_buses.PD] != 0 or table[i, matpower_buses.QD] != 0:
+            load = Load(P=table[i, matpower_buses.PD], Q=table[i, matpower_buses.QD])
             load.bus = bus
             bus.loads.append(load)
 
         # Add the shunt
-        if table[i, e.GS] != 0 or table[i, e.BS] != 0:
-            shunt = Shunt(G=table[i, e.GS], B=table[i, e.BS])
+        if table[i, matpower_buses.GS] != 0 or table[i, matpower_buses.BS] != 0:
+            shunt = Shunt(G=table[i, matpower_buses.GS], B=table[i, matpower_buses.BS])
             shunt.bus = bus
             bus.shunts.append(shunt)
 
         # Add the bus to the circuit buses
         circuit.add_bus(bus)
 
-    import GridCal.Engine.IO.matpower_gen_definitions as e
+    return bus_idx_dict
+
+
+def parse_generators(circuit: MultiCircuit, data, bus_idx_dict, logger: Logger):
+    """
+    Parse Matpower / FUBM Matpower generator data into GridCal
+    :param circuit: MultiCircuit instance
+    :param data: data dictionary
+    :param bus_idx_dict: bus index -> object dictionary
+    :return:
+    """
+
     # Generators
     table = data['gen']
     n = len(table)
@@ -457,33 +468,46 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
     else:
         names = ['gen ' + str(i) for i in range(n)]
     for i in range(len(table)):
-        bus_idx = bus_idx_dict[int(table[i, e.GEN_BUS])]
+        bus_idx = bus_idx_dict[int(table[i, matpower_gen.GEN_BUS])]
         gen = Generator(name=names[i],
-                        active_power=table[i, e.PG],
-                        voltage_module=table[i, e.VG],
-                        Qmax=table[i, e.QMAX],
-                        Qmin=table[i, e.QMIN])
+                        active_power=table[i, matpower_gen.PG],
+                        voltage_module=table[i, matpower_gen.VG],
+                        Qmax=table[i, matpower_gen.QMAX],
+                        Qmin=table[i, matpower_gen.QMIN])
 
         # Add the generator to the bus
         gen.bus = circuit.buses[bus_idx]
         circuit.buses[bus_idx].controlled_generators.append(gen)
 
-    import GridCal.Engine.IO.matpower_branch_definitions as e
+
+def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logger):
+    """
+    Parse Matpower / FUBM Matpower branch data into GridCal
+    :param circuit: MultiCircuit instance
+    :param data: data dictionary
+    :param bus_idx_dict: bus index -> object dictionary
+    :return: Nothing
+    """
+
     # Branches
     table = data['branch']
     n = len(table)
+
+    if table.shape[1] == 37:  # FUBM model
+        logger.add_info('It is a FUBM model')
+
     if 'branch_names' in data.keys():
         names = data['branch_names']
     else:
         names = ['branch ' + str(i) for i in range(n)]
     for i in range(len(table)):
-        f = circuit.buses[bus_idx_dict[int(table[i, e.F_BUS])]]
-        t = circuit.buses[bus_idx_dict[int(table[i, e.T_BUS])]]
+        f = circuit.buses[bus_idx_dict[int(table[i, matpower_branches.F_BUS])]]
+        t = circuit.buses[bus_idx_dict[int(table[i, matpower_branches.T_BUS])]]
 
         if table.shape[1] == 37:  # FUBM model
 
             # converter type (I, II, III)
-            matpower_converter_mode = table[i, e.CONV_A]
+            matpower_converter_mode = table[i, matpower_branches.CONV_A]
 
             if matpower_converter_mode > 0:  # it is a converter
 
@@ -494,13 +518,13 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
                 f.is_dc = True
 
                 # determine the converter control mode
-                Pfset = table[i, e.PF]
-                Ptset = table[i, e.PT]
-                Vac_set = table[i, e.VT_SET]
-                Vdc_set = table[i, e.VF_SET]
-                Qfset = table[i, e.QF]
-                Qtset = table[i, e.QT]
-                m = table[i, e.TAP] if table[i, e.TAP] > 0 else 1.0
+                Pfset = table[i, matpower_branches.PF]
+                Ptset = table[i, matpower_branches.PT]
+                Vac_set = table[i, matpower_branches.VT_SET]
+                Vdc_set = table[i, matpower_branches.VF_SET]
+                Qfset = table[i, matpower_branches.QF]
+                Qtset = table[i, matpower_branches.QT]
+                m = table[i, matpower_branches.TAP] if table[i, matpower_branches.TAP] > 0 else 1.0
 
                 if matpower_converter_mode == 1:
 
@@ -534,90 +558,98 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
                 else:
                     control_mode = ConverterControlType.type_0_free
 
+                rate = max(table[i, [matpower_branches.RATE_A, matpower_branches.RATE_B, matpower_branches.RATE_C]])
+
                 branch = VSC(bus_from=f,
                              bus_to=t,
                              name='VSC' + str(len(circuit.vsc_devices) + 1),
-                             active=bool(table[i, e.BR_STATUS]),
-                             r1=table[i, e.BR_R],
-                             x1=table[i, e.BR_X],
+                             active=bool(table[i, matpower_branches.BR_STATUS]),
+                             r1=table[i, matpower_branches.BR_R],
+                             x1=table[i, matpower_branches.BR_X],
                              m=m,
-                             m_max=table[i, e.MA_MAX],
-                             m_min=table[i, e.MA_MIN],
-                             theta=table[i, e.SHIFT],
-                             theta_max=np.deg2rad(table[i, e.ANGMAX]),
-                             theta_min=np.deg2rad(table[i, e.ANGMIN]),
-                             G0=table[i, e.GSW],
-                             Beq=table[i, e.BEQ],
-                             Beq_max=table[i, e.BEQ_MAX],
-                             Beq_min=table[i, e.BEQ_MIN],
-                             rate=max(table[i, [e.RATE_A, e.RATE_B, e.RATE_C]]),
-                             kdp=table[i, e.KDP],
-                             k=table[i, e.K2],
+                             m_max=table[i, matpower_branches.MA_MAX],
+                             m_min=table[i, matpower_branches.MA_MIN],
+                             theta=table[i, matpower_branches.SHIFT],
+                             theta_max=np.deg2rad(table[i, matpower_branches.ANGMAX]),
+                             theta_min=np.deg2rad(table[i, matpower_branches.ANGMIN]),
+                             G0=table[i, matpower_branches.GSW],
+                             Beq=table[i, matpower_branches.BEQ],
+                             Beq_max=table[i, matpower_branches.BEQ_MAX],
+                             Beq_min=table[i, matpower_branches.BEQ_MIN],
+                             rate=rate,
+                             kdp=table[i, matpower_branches.KDP],
+                             k=table[i, matpower_branches.K2],
                              control_mode=control_mode,
                              Pfset=Pfset,
                              Qfset=Qfset,
                              Vac_set=Vac_set if Vac_set > 0 else 1.0,
                              Vdc_set=Vdc_set if Vdc_set > 0 else 1.0,
-                             alpha1=table[i, e.ALPHA1],
-                             alpha2=table[i, e.ALPHA2],
-                             alpha3=table[i, e.ALPHA3])
+                             alpha1=table[i, matpower_branches.ALPHA1],
+                             alpha2=table[i, matpower_branches.ALPHA2],
+                             alpha3=table[i, matpower_branches.ALPHA3])
                 circuit.add_vsc(branch)
+
+                logger.add_info('Branch as converter', 'Branch {}'.format(str(i+1)))
 
             else:
 
-                if f.Vnom != t.Vnom or (table[i, e.TAP] != 1.0 and table[i, e.TAP] != 0) or table[i, e.SHIFT] != 0.0:
+                if f.Vnom != t.Vnom or (table[i, matpower_branches.TAP] != 1.0 and table[i, matpower_branches.TAP] != 0) or table[i, matpower_branches.SHIFT] != 0.0:
 
                     branch = Transformer2W(bus_from=f,
                                            bus_to=t,
                                            name=names[i],
-                                           r=table[i, e.BR_R],
-                                           x=table[i, e.BR_X],
+                                           r=table[i, matpower_branches.BR_R],
+                                           x=table[i, matpower_branches.BR_X],
                                            g=0,
-                                           b=table[i, e.BR_B],
-                                           rate=table[i, e.RATE_A],
-                                           tap=table[i, e.TAP],
-                                           shift_angle=table[i, e.SHIFT],
-                                           active=bool(table[i, e.BR_STATUS]))
+                                           b=table[i, matpower_branches.BR_B],
+                                           rate=table[i, matpower_branches.RATE_A],
+                                           tap=table[i, matpower_branches.TAP],
+                                           shift_angle=table[i, matpower_branches.SHIFT],
+                                           active=bool(table[i, matpower_branches.BR_STATUS]))
                     circuit.add_transformer2w(branch)
+                    logger.add_info('Branch as 2w transformer', 'Branch {}'.format(str(i + 1)))
 
                 else:
                     branch = Line(bus_from=f,
                                   bus_to=t,
                                   name=names[i],
-                                  r=table[i, e.BR_R],
-                                  x=table[i, e.BR_X],
-                                  b=table[i, e.BR_B],
-                                  rate=table[i, e.RATE_A],
-                                  active=bool(table[i, e.BR_STATUS]))
+                                  r=table[i, matpower_branches.BR_R],
+                                  x=table[i, matpower_branches.BR_X],
+                                  b=table[i, matpower_branches.BR_B],
+                                  rate=table[i, matpower_branches.RATE_A],
+                                  active=bool(table[i, matpower_branches.BR_STATUS]))
                     circuit.add_line(branch)
+                    logger.add_info('Branch as line', 'Branch {}'.format(str(i + 1)))
 
         else:
 
-            if f.Vnom != t.Vnom or (table[i, e.TAP] != 1.0 and table[i, e.TAP] != 0) or table[i, e.SHIFT] != 0.0:
+            if f.Vnom != t.Vnom or (table[i, matpower_branches.TAP] != 1.0 and table[i, matpower_branches.TAP] != 0) or table[i, matpower_branches.SHIFT] != 0.0:
 
                 branch = Transformer2W(bus_from=f,
                                        bus_to=t,
                                        name=names[i],
-                                       r=table[i, e.BR_R],
-                                       x=table[i, e.BR_X],
+                                       r=table[i, matpower_branches.BR_R],
+                                       x=table[i, matpower_branches.BR_X],
                                        g=0,
-                                       b=table[i, e.BR_B],
-                                       rate=table[i, e.RATE_A],
-                                       tap=table[i, e.TAP],
-                                       shift_angle=table[i, e.SHIFT],
-                                       active=bool(table[i, e.BR_STATUS]))
+                                       b=table[i, matpower_branches.BR_B],
+                                       rate=table[i, matpower_branches.RATE_A],
+                                       tap=table[i, matpower_branches.TAP],
+                                       shift_angle=table[i, matpower_branches.SHIFT],
+                                       active=bool(table[i, matpower_branches.BR_STATUS]))
                 circuit.add_transformer2w(branch)
+                logger.add_info('Branch as 2w transformer', 'Branch {}'.format(str(i + 1)))
 
             else:
                 branch = Line(bus_from=f,
                               bus_to=t,
                               name=names[i],
-                              r=table[i, e.BR_R],
-                              x=table[i, e.BR_X],
-                              b=table[i, e.BR_B],
-                              rate=table[i, e.RATE_A],
-                              active=bool(table[i, e.BR_STATUS]))
+                              r=table[i, matpower_branches.BR_R],
+                              x=table[i, matpower_branches.BR_X],
+                              b=table[i, matpower_branches.BR_B],
+                              rate=table[i, matpower_branches.RATE_A],
+                              active=bool(table[i, matpower_branches.BR_STATUS]))
                 circuit.add_line(branch)
+                logger.add_info('Branch as line', 'Branch {}'.format(str(i + 1)))
 
     # convert normal lines into DC-lines if needed
     for line in circuit.lines:
@@ -637,6 +669,36 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
 
             # delete the line from the circuit
             circuit.delete_line(line)
+            logger.add_info('Converted to DC line', line.name)
+
+
+def interpret_data_v1(circuit: MultiCircuit, data, logger: Logger) -> MultiCircuit:
+    """
+    Pass the loaded table-like data to the  structures
+    :param circuit:
+    :param data: Data dictionary
+    :return:
+    """
+
+    circuit.clear()
+
+    # time profile
+    if 'master_time' in data.keys():
+        master_time_array = data['master_time']
+    else:
+        master_time_array = None
+
+    # areas
+    area_idx_dict = parse_areas_data(circuit, data, logger)
+
+    # parse buses
+    bus_idx_dict = parse_buses_data(circuit, data, area_idx_dict, logger)
+
+    # parse generators
+    parse_generators(circuit, data, bus_idx_dict, logger)
+
+    # parse branches
+    parse_branches_data(circuit, data, bus_idx_dict, logger)
 
     # add the profiles
     if master_time_array is not None:
@@ -645,7 +707,7 @@ def interpret_data_v1(circuit: MultiCircuit, data) -> MultiCircuit:
     return circuit
 
 
-def parse_matpower_file(filename, export=False) -> MultiCircuit:
+def parse_matpower_file(filename, export=False) -> [MultiCircuit, Logger]:
     """
 
     Args:
@@ -656,9 +718,11 @@ def parse_matpower_file(filename, export=False) -> MultiCircuit:
 
     """
 
+    logger = Logger()
+
     # open the file as text
     with open(filename, 'r') as myfile:
-        text = myfile.read() #.replace('\n', '')
+        text = myfile.read()
 
     # split the file into its case variables (the case variables always start with 'mpc.')
     chunks = text.split('mpc.')
@@ -698,9 +762,12 @@ def parse_matpower_file(filename, export=False) -> MultiCircuit:
         elif key == "branch":
             data['branch'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
 
-    circuit = interpret_data_v1(circuit, data)
+    if 'bus' in data.keys():
+        circuit = interpret_data_v1(circuit, data, logger)
+    else:
+        logger.add_error('No bus data')
 
-    return circuit
+    return circuit, logger
 
 
 if __name__ == '__main__':
