@@ -140,6 +140,7 @@ class DeviceType(Enum):
     UnderGroundLineDevice = 'Underground line'
     TowerDevice = 'Tower'
     TransformerTypeDevice = 'Transformer type'
+    SwitchDevice = 'Switch'
 
     GenericArea = 'Generic Area'
     SubstationDevice = 'Substation'
