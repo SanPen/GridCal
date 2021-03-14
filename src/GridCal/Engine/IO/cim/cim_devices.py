@@ -683,6 +683,9 @@ class ACLineSegment(DiPole):
 
         return R, X, G, B
 
+    def get_rate(self):
+        return 1e-20
+
     def get_dict(self):
         d = super().get_dict()
         R, X, G, B = self.get_pu_values(Sbase=100)
@@ -799,7 +802,7 @@ class PowerTransformer(DiPole):
         :return:
         """
         try:
-            windings = self.references_to_me['PowerTransformerEnd']
+            windings = self.get_windings()
 
             if len(windings) == 2:
                 R, X, G, B = 0, 0, 0, 0
@@ -823,6 +826,15 @@ class PowerTransformer(DiPole):
         :return:
         """
         return [x.get_voltage() for x in self.get_windings()]
+
+    def get_rate(self):
+
+        rating = 0
+        for winding in self.get_windings():
+            if winding.ratedS > rating:
+                rating = winding.ratedS
+
+        return rating
 
     def get_dict(self):
         d = super().get_dict()
@@ -879,6 +891,9 @@ class ConformLoad(MonoPole):
 
         return d
 
+    def get_pq(self):
+        return self.p, self.q
+
 
 class NonConformLoad(MonoPole):
 
@@ -889,6 +904,9 @@ class NonConformLoad(MonoPole):
         self.EquipmentContainer = None
         self.LoadResponse = None
         self.LoadGroup = None
+
+    def get_pq(self):
+        return 0, 0
 
 
 class NonConformLoadGroup(GeneralContainer):

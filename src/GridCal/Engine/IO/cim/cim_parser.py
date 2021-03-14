@@ -91,13 +91,13 @@ def sort_cim_files(file_names):
     return lst2
 
 
-def get_elements(dict: Dict, keys):
+def get_elements(d: Dict, keys):
 
     elm = list()
 
     for k in keys:
         try:
-            lst = dict[k]
+            lst = d[k]
             elm += lst
         except KeyError:
             pass
@@ -105,13 +105,13 @@ def get_elements(dict: Dict, keys):
     return elm
 
 
-def any_in_dict(dict: Dict, keys):
+def any_in_dict(d: Dict, keys):
 
     found = False
 
     for k in keys:
         try:
-            lst = dict[k]
+            lst = d[k]
             found = True
         except KeyError:
             pass
@@ -119,6 +119,28 @@ def any_in_dict(dict: Dict, keys):
     return found
 
 
+def try_buses(b1, b2, bus_duct):
+
+    try:
+        B1 = bus_duct[b1]
+    except KeyError:
+        B1 = None
+
+    try:
+        B2 = bus_duct[b2]
+    except KeyError:
+        B2 = None
+
+    return B1, B2
+
+
+def try_bus(b1, bus_duct):
+    try:
+        B1 = bus_duct[b1]
+    except KeyError:
+        B1 = None
+
+    return B1
 
 
 class CIMExport:
@@ -705,61 +727,11 @@ class CIMImport:
         if self.progress_func is not None:
             self.progress_func(val)
 
-    def add_node_terminal_relation(self, connectivity_node, terminal):
-        """
-        Add the relation between a Connectivity Node and a Terminal
-        :param terminal:
-        :param connectivity_node:
-        :return:
-        """
-        if connectivity_node in self.node_terminal.keys():
-            self.node_terminal[connectivity_node].append(terminal)
-        else:
-            self.node_terminal[connectivity_node] = [terminal]
-
-        if terminal in self.terminal_node.keys():
-            self.terminal_node[terminal].append(connectivity_node)
-        else:
-            self.terminal_node[terminal] = [connectivity_node]
-
-    def try_properties(self, dictionary, properties, defaults = None):
-        """
-
-        :param dictionary:
-        :param properties:
-        :return:
-        """
-        res = [None] * len(properties)
-
-        for i in range(len(properties)):
-
-            prop = properties[i]
-
-            try:
-                val = dictionary[prop]
-
-                try:
-                    val = float(val)
-                except TypeError:
-                    pass  # val is a string
-            except KeyError:
-                # property not found
-                if defaults is None:
-                    print(prop, 'not found')
-                    val = None
-                else:
-                    val = defaults[i]
-
-            res[i] = val
-
-        return res
-
-    def parse_model(self, cim: CIMCircuit, circuit: MultiCircuit, recognised: Set):
+    def parse_model(self, cim: CIMCircuit, circuit: MultiCircuit):
         """
 
         :param cim:
         :param circuit:
-        :param recognised:
         :return:
         """
         if 'Model' in cim.elements_by_type.keys():
@@ -770,477 +742,164 @@ class CIMImport:
                 if 'name' in elm.properties.keys():
                     circuit.name = elm.properties['name']
 
-                # add class to recognised objects
-                recognised.add(elm.tpe)
-
-    def parse_terminals(self, cim: CIMCircuit, T_dict: Dict, recognised: Set):
-
-        if 'Terminal' in cim.elements_by_type.keys():
-
-            for elm in cim.elements_by_type['Terminal']:
-                # if 'name' in elm.properties:
-                #     name = elm.properties['name']
-                # else:
-                #     name = elm.rfid
-                # T = Bus(name=name)
-                T_dict[elm.rfid] = elm
-                # circuit.add_bus(T)
-
-                # add class to recognised objects
-                recognised.add(elm.tpe)
-
-        else:
-            self.logger.add_error('There are no Terminals!!!!!')
-
-    def parse_connectivity_nodes(self, cim: CIMCircuit, circuit: MultiCircuit, CN_dict: Dict, T_dict: Dict,
-                                 recognised: Set):
+    def parse_bus_bars(self, cim: CIMCircuit, circuit: MultiCircuit):
         """
 
         :param cim:
         :param circuit:
-        :param CN_dict:
-        :param T_dict:
-        :param recognised:
         :return:
         """
-        cim_nodes = ['TopologicalNode', 'ConnectivityNode']
-        if any_in_dict(cim.elements_by_type, cim_nodes):
-            for elm in get_elements(cim.elements_by_type, cim_nodes):
-                try:
-                    name = elm.properties['name']
-                except KeyError:
-                    name = ''
 
-                if len(elm.BaseVoltage) > 0:
-                    Vnom = float(elm.get_base_voltage().properties['nominalVoltage'])
-                else:
-                    Vnom = 0
+        busbar_dict = dict()
 
-                CN = gcdev.Bus(idtag=cimdev.rfid2uuid(elm.rfid),
-                               name=name,
-                               vnom=Vnom)
-                CN_dict[elm.rfid] = CN
-                circuit.add_bus(CN)
-
-                # add class to recognised objects
-                recognised.add(elm.tpe)
-        else:
-            self.logger.add_error('There are no TopologicalNodes nor ConnectivityNodes!!!!!')
-
-        # CN_T: build the connectivity nodes - terminals relations structure
-        if any_in_dict(cim.elements_by_type, cim_nodes):
-            for elm in get_elements(cim.elements_by_type, cim_nodes):
-
-                # get the connectivity node
-                CN = CN_dict[elm.rfid]
-
-                # get the terminals associated to the connectivity node and register the associations
-                for term in elm.get_terminals():
-                    try:
-                        self.add_node_terminal_relation(CN, T_dict[term.rfid])
-                    except KeyError:
-                        self.logger.add_error('Terminal ID not found', term.rfid)
-
-                # add class to recognised objects
-                recognised.add(elm.tpe)
-        else:
-            self.logger.add_error('No topological nodes: The grid MUST have topological Nodes')
-
-    def parse_bus_bars(self, cim: CIMCircuit, T_dict: Dict, recognised: Set):
-        """
-
-        :param cim:
-        :param T_dict:
-        :param recognised:
-        :return:
-        """
         if 'BusbarSection' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['BusbarSection']:
-                term = elm.get_terminals()
-                T1 = T_dict[term[0].rfid]  # get the terminal of the bus bar section
-                CN = self.terminal_node[T1][0]  # get the connectivity node of the terminal
-                CN.is_bus = True  # the connectivity node has a BusbarSection attached, hence it is a real bus
 
-                # add class to recognised objects
-                recognised.add(elm.tpe)
+                obj = gcdev.Bus(name=elm.name,
+                                idtag=elm.uuid)
+
+                circuit.add_bus(obj)
+
+                busbar_dict[elm] = obj
         else:
             self.logger.add_error("No BusbarSections: There is no chance to reduce the grid")
 
-    def parse_per_length_sequence_impedance(self, cim: CIMCircuit, circuit: MultiCircuit,
-                                            PLSI_dict: Dict, recognised: Set):
-        """
+        return busbar_dict
 
-        :param cim:
-        :param PLSI_dict:
-        :param recognised:
-        :return:
-        """
-        if 'PerLengthSequenceImpedance' in cim.elements_by_type.keys():
-            prop_lst = ['r', 'x', 'r0', 'x0', 'gch', 'bch', 'g0ch', 'b0ch']
-            prop_def = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-            for elm in cim.elements_by_type['PerLengthSequenceImpedance']:
-                r, x, r0, x0, g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)
-                obj = gcdev.SequenceLineType(name=elm.rfid, R=r, X=x, G=g, B=b, R0=r0, X0=x0, G0=g0, B0=b0)
-                circuit.add_sequence_line(obj)
-                elm.template = obj
-
-                PLSI_dict[elm.rfid] = elm
-
-                # add class to recognised objects
-                recognised.add(elm.tpe)
-            sl = circuit.get_catalogue_dict_by_name('Sequence lines')
-
-    def parse_ac_line_segment(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, PLSI_dict: Dict,
-                              recognised: Set):
+    def parse_ac_line_segment(self, cim: CIMCircuit, circuit: MultiCircuit, busbar_dict):
         """
 
         :param cim:
         :param circuit:
-        :param T_dict:
-        :param PLSI_dict:
-        :param recognised:
+        :param busbar_dict:
         :return:
         """
-        prop_lst = ['r', 'x', 'r0', 'x0', 'gch', 'bch', 'g0ch', 'b0ch']
+
         if 'ACLineSegment' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['ACLineSegment']:
-                term = elm.get_terminals()
-                if len(term) == 2:
-                    T1 = T_dict[term[0].rfid]
-                    T2 = T_dict[term[1].rfid]
-                    B1 = self.terminal_node[T1][0]
-                    B2 = self.terminal_node[T2][0]
+
+                b1, b2 = elm.get_buses()
+
+                B1, B2 = try_buses(b1, b2, busbar_dict)
+
+                if B1 is not None and B2 is not None:
+                    R, X, G, B = elm.get_pu_values()
+                    rate = elm.get_rate()
+
+                    # create AcLineSegment (Line)
+                    line = gcdev.Line(idtag=elm.uuid,
+                                      bus_from=B1,
+                                      bus_to=B2,
+                                      name=elm.name,
+                                      r=R,
+                                      x=X,
+                                      b=B,
+                                      rate=rate,
+                                      active=True,
+                                      mttf=0,
+                                      mttr=0)
+
+                    circuit.add_line(line)
                 else:
-                    self.logger.add_error('Number of terminals different of 2', elm.rfid, len(term))
-                    continue
+                    self.logger.add_error('Bus not found', elm.name)
 
-                try:
-                    name = elm.properties['name']
-                except KeyError:
-                    name = ''
-
-                prop_def = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-                template = gcdev.BranchTemplate()
-                if 'PerLengthImpedance' in elm.properties:
-
-                    pli = elm.properties['PerLengthImpedance']
-
-                    try:
-                        l = float(elm.properties['length'])
-                    except KeyError:
-                        l = 0.0
-
-                    if pli in PLSI_dict:
-                        r, x, r0, x0, g, b, g0, b0 = self.try_properties(PLSI_dict[pli].properties, prop_lst, prop_def)
-                        template = PLSI_dict[pli].template
-
-                        r = r * l
-                        x = x * l
-                        g = g * l
-                        b = b * l
-
-                    else:
-                        self.logger.add_error('Refers to missing PerLengthImpedance', elm.rfid)
-                        continue
-                else:
-                    r, x, r0, x0, g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)
-
-                    try:
-                        l = float(elm.properties['length'])
-                    except KeyError:
-                        l = 0.0
-
-                try:
-                    Vnom = float(elm.get_base_voltage().properties['nominalVoltage'])
-                except KeyError:
-                    Vnom = 1.0
-                    self.logger.add_error('No nominalVoltage property', elm.rfid)
-                except IndexError:
-                    Vnom = 1.0
-                    self.logger.add_error('No BaseVoltage', elm.rfid)
-
-                if Vnom <= 0:
-                    self.logger.add_error('Zero base voltage. This causes a failure in the file loading', elm.rfid)
-                    R = 1e-20
-                    X = 1e-20
-                    G = 1e-20
-                    B = 1e-20
-                    rate = 0
-                else:
-                    Sbase = circuit.Sbase
-
-                    Zbase = (Vnom * Vnom) / Sbase
-                    Ybase = 1.0 / Zbase
-
-                    # at this point r, x, g, b are the complete values for all the line length
-                    R = r / Zbase
-                    X = x / Zbase
-                    G = g / Ybase
-                    B = b / Ybase
-
-                    if len(elm.current_limit) > 0:
-                        rate = float(elm.current_limit[0].properties['value']) * Vnom * sqrt(3)
-                    else:
-                        rate = 0
-
-                # create AcLineSegment (Line)
-                line = gcdev.Line(idtag=cimdev.rfid2uuid(elm.rfid),
-                                  bus_from=B1,
-                                  bus_to=B2,
-                                  name=name,
-                                  r=R,
-                                  x=X,
-                                  b=B,
-                                  rate=rate,
-                                  active=True,
-                                  mttf=0,
-                                  mttr=0,
-                                  template=template)
-
-                circuit.add_line(line)
-
-                # add class to recognised objects
-                recognised.add(elm.tpe)
-
-    def parse_power_transformer(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, recognised: Set):
+    def parse_power_transformer(self, cim: CIMCircuit, circuit: MultiCircuit, busbar_dict):
         """
 
         :param cim:
         :param circuit:
-        :param T_dict:
-        :param recognised:
+        :param busbar_dict:
         :return:
         """
         if 'PowerTransformer' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['PowerTransformer']:
+                b1, b2 = elm.get_buses()
+                B1, B2 = try_buses(b1, b2, busbar_dict)
 
-                name = elm.properties['name']
+                if B1 is not None and B2 is not None:
+                    R, X, G, B = elm.get_pu_values()
+                    rate = elm.get_rate()
 
-                if len(elm.windings) == 2:
+                    voltages = elm.get_voltages()
+                    voltages.sort()
 
-                    if len(elm.windings[0].get_terminals()) > 0:
-                        T1 = T_dict[elm.windings[0].get_terminals()[0].rfid]
-                        T2 = T_dict[elm.windings[1].get_terminals()[0].rfid]
-                    elif len(elm.get_terminals()) == 2:
-                        term = elm.get_terminals()
-                        T1 = T_dict[term[0].rfid]
-                        T2 = T_dict[term[1].rfid]
+                    if len(voltages) == 2:
+                        lv, hv = voltages
                     else:
-                        self.logger.add_error('Incorrect number of terminals', elm.rfid, len(elm.windings[0].get_terminals()))
-                        continue
-
-                    B1 = self.terminal_node[T1][0]
-                    B2 = self.terminal_node[T2][0]
-
-                    # reset the values for the new object
-                    R = 0
-                    X = 0
-                    G = 0
-                    B = 0
-                    R0 = 0
-                    X0 = 0
-                    G0 = 0
-                    B0 = 0
-                    taps = [None] * 2
-                    RATE = 0
-                    # convert every winding to per unit and add it into a PI model
-                    for i in range(2):
-                        try:
-                            r = float(elm.windings[i].properties['r'])
-                            x = float(elm.windings[i].properties['x'])
-                        except KeyError:
-                            r = 0
-                            x = 0
-                            self.logger.add_error('No impedance components', elm.windings[i].rfid)
-
-                        try:
-                            g = float(elm.windings[i].properties['g'])
-                            b = float(elm.windings[i].properties['b'])
-                        except KeyError:
-                            g = 0
-                            b = 0
-                            self.logger.add_error('No shunt components ', elm.windings[i].rfid)
-
-                        try:
-                            r0 = float(elm.windings[i].properties['r0'])
-                            x0 = float(elm.windings[i].properties['x0'])
-                            g0 = float(elm.windings[i].properties['g0'])
-                            b0 = float(elm.windings[i].properties['b0'])
-                        except KeyError:
-                            r0 = 0
-                            x0 = 0
-                            g0 = 0
-                            b0 = 0
-                            self.logger.add_error('No zero sequence components', elm.rfid)
-
-                        try:
-                            S = float(elm.windings[i].properties['ratedS'])
-                        except KeyError:
-                            self.logger.add_error('No ratedS', elm.windings[i].rfid)
-                            S = 1.0
-
-                        RATE += S
-
-                        try:
-                            V = float(elm.windings[i].properties['ratedU'])
-                        except KeyError:
-                            self.logger.add_error('No ratedU', elm.windings[i].rfid)
-                            try:
-                                V = float(elm.windings[i].base_voltage[0].properties['nominalVoltage'])
-                            except KeyError:
-                                self.logger.add_error('No voltage', elm.windings[i].rfid)
-                                V = 1.0
-
-                        if len(elm.windings[i].tap_changers) > 0:
-                            Vnom = float(elm.windings[i].tap_changers[0].properties['neutralU'])
-                            tap_dir = float(elm.windings[i].tap_changers[0].properties['normalStep'])
-                            Vinc = float(elm.windings[i].tap_changers[0].properties['stepVoltageIncrement'])
-                            taps[i] = (Vnom + tap_dir * Vnom * (Vinc / 100.0)) / Vnom
-                        else:
-                            taps[i] = 1.0
-
-                        Zbase = (V * V) / S
-                        Ybase = 1.0 / Zbase
-
-                        R += r / Zbase
-                        R0 += r0 / Zbase
-                        X += x / Zbase
-                        X0 += x0 / Zbase
-
-                        G += g / Ybase
-                        G0 += g0 / Ybase
-                        B += b / Ybase
-                        B0 += b0 / Ybase
-
-                    # sum the taps
-                    tap_m = taps[0] * taps[1]
+                        lv = 1
+                        hv = 1
+                        self.logger.add_error('Could not parse transformer nominal voltages', self.name)
 
                     line = gcdev.Transformer2W(idtag=cimdev.rfid2uuid(elm.rfid),
                                                bus_from=B1,
                                                bus_to=B2,
-                                               name=name,
+                                               name=elm.name,
                                                r=R,
                                                x=X,
                                                g=G,
                                                b=B,
-                                               rate=RATE,
-                                               tap=tap_m,
+                                               rate=rate,
+                                               tap=1.0,
                                                shift_angle=0,
                                                active=True,
-                                               mttf=0,
-                                               mttr=0)
+                                               HV=hv,
+                                               LV=lv)
 
                     circuit.add_branch(line)
                 else:
-                    self.logger.add_error('Does not have 2 windings associated', elm.tpe + ':' + name)
+                    self.logger.add_error('Bus not found', elm.name)
 
-                # add class to recognised objects
-                recognised.add(elm.tpe)
-
-    def parse_switches(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, recognised: Set, EPS):
+    def parse_switches(self, cim: CIMCircuit, circuit: MultiCircuit, busbar_dict):
         """
 
         :param cim:
         :param circuit:
-        :param T_dict:
-        :param recognised:
-        :param EPS:
+        :param busbar_dict:
         :return:
         """
+        EPS = 1e-20
         cim_switches = ['Switch', 'Disconnector', 'Breaker', 'LoadBreakSwitch']
         if any_in_dict(cim.elements_by_type, cim_switches):
             for elm in get_elements(cim.elements_by_type, cim_switches):
-                term = elm.get_terminals()
-                if len(term) == 2:
-                    T1 = T_dict[term[0].rfid]
-                    T2 = T_dict[term[1].rfid]
-                    B1 = self.terminal_node[T1][0]
-                    B2 = self.terminal_node[T2][0]
-                else:
-                    self.logger.add_error('Incorrect number of terminals', elm.rfid, len(term))
-                    continue
+                b1, b2 = elm.get_buses()
+                B1, B2 = try_buses(b1, b2, busbar_dict)
 
-                if 'name' in elm.properties:
-                    name = elm.properties['name']
-                else:
-                    name = 'Some switch'
-
-                if 'open' in elm.properties:
-                    state = not bool(elm.properties['open'])
-                else:
+                if B1 is not None and B2 is not None:
                     state = True
+                    line = gcdev.Switch(idtag=elm.uuid,
+                                        bus_from=B1,
+                                        bus_to=B2,
+                                        name=elm.name,
+                                        r=EPS,
+                                        x=EPS,
+                                        rate=EPS,
+                                        active=state)
 
-                line = gcdev.Branch(idtag=cimdev.rfid2uuid(elm.rfid),
-                                    bus_from=B1,
-                                    bus_to=B2,
-                                    name=name,
-                                    r=EPS,
-                                    x=EPS,
-                                    g=EPS,
-                                    b=EPS,
-                                    rate=EPS,
-                                    tap=0,
-                                    shift_angle=0,
-                                    active=state,
-                                    mttf=0,
-                                    mttr=0,
-                                    branch_type=gcdev.BranchType.Switch)
+                    circuit.add_switch(line)
+                else:
+                    self.logger.add_error('Bus not found', elm.name)
 
-                circuit.add_branch(line)
-
-                # add class to recognised objects
-                recognised.add(elm.tpe)
-
-    def parse_loads(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, recognised: Set):
+    def parse_loads(self, cim: CIMCircuit, circuit: MultiCircuit, busbar_dict):
         """
 
         :param cim:
         :param circuit:
-        :param T_dict:
-        :param recognised:
+        :param busbar_dict:
         :return:
         """
         cim_loads = ['ConformLoad', 'EnergyConsumer', 'NonConformLoad']
         if any_in_dict(cim.elements_by_type, cim_loads):
             for elm in get_elements(cim.elements_by_type, cim_loads):
-                term = elm.get_terminals()
-                if len(term) > 0:
-                    T1 = T_dict[term[0].rfid]
-                    B1 = self.terminal_node[T1][0]
 
-                    # Active and reactive power values
+                b1 = elm.get_bus()
+                B1 = try_bus(b1, busbar_dict)
 
-                    if elm.tpe == 'ConformLoad':
-                        if len(elm.load_response_characteristics) > 0:
-                            p = float(elm.load_response_characteristics[0].properties['pConstantPower'])
-                            q = float(elm.load_response_characteristics[0].properties['qConstantPower'])
-                            name = elm.load_response_characteristics[0].properties['name']
-                        else:
-                            p, q = self.try_properties(elm.properties, ['pfixed', 'qfixed'])
-                            try:
-                                name = elm.properties['name']
-                            except KeyError:
-                                name = 'ConformLoad@{}'.format(B1.name)
+                if B1 is not None:
 
-                    elif elm.tpe == 'NonConformLoad':
-                        if len(elm.load_response_characteristics) > 0:
-                            p = float(elm.load_response_characteristics[0].properties['pConstantPower'])
-                            q = float(elm.load_response_characteristics[0].properties['qConstantPower'])
-                            name = elm.load_response_characteristics[0].properties['name']
-                        else:
-                            p, q = self.try_properties(elm.properties, ['pfixed', 'qfixed'])
-                            try:
-                                name = elm.properties['name']
-                            except KeyError:
-                                name = 'NonConformLoad@{}'.format(B1.name)
+                    p, q = elm.get_pq()
 
-                    else:
-                        p = self.try_properties(elm.properties, ['pfixed'])[0]
-                        q = 0
-                        name = 'Some load'
-
-                    load = gcdev.Load(idtag=cimdev.rfid2uuid(elm.rfid),
-                                      name=name,
+                    load = gcdev.Load(idtag=elm.uuid,
+                                      name=elm.name,
                                       G=0,
                                       B=0,
                                       Ir=0,
@@ -1248,146 +907,56 @@ class CIMImport:
                                       P=p if p is not None else 0,
                                       Q=q if q is not None else 0)
                     circuit.add_load(B1, load)
-
-                    # add class to recognised objects
-                    recognised.add(elm.tpe)
                 else:
-                    self.logger.add_error('Incorrect number of terminals', elm.rfid, len(term))
+                    self.logger.add_error('Bus not found', elm.name)
 
-    def parse_shunts(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, recognised: Set):
+    def parse_shunts(self, cim: CIMCircuit, circuit: MultiCircuit, busbar_dict):
         """
 
         :param cim:
         :param circuit:
-        :param T_dict:
-        :param recognised:
+        :param busbar_dict:
         :return:
         """
         if 'ShuntCompensator' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['ShuntCompensator']:
-                term = elm.get_terminals()
-                if len(term) > 0:
-                    T1 = T_dict[term[0].rfid]
-                    B1 = self.terminal_node[T1][0]
+                b1 = elm.get_bus()
+                B1 = try_bus(b1, busbar_dict)
 
-                    prop_lst = ['gPerSection', 'bPerSection', 'g0PerSection', 'b0PerSection']
-                    prop_def = [0.0, 0.0, 0.0, 0.0]
-                    g, b, g0, b0 = self.try_properties(elm.properties, prop_lst, prop_def)
-
-                    try:
-                        name = elm.properties['name']
-                    except KeyError:
-                        name = 'ShuntCompensator@{}'.format(B1.name)
-
-                    # self.add_shunt(Shunt(name, T1, g, b, g0, b0))
-
-                    sh = gcdev.Shunt(idtag=cimdev.rfid2uuid(elm.rfid),
-                                     name=name,
+                if B1 is not None:
+                    g = 0
+                    b = 0
+                    sh = gcdev.Shunt(idtag=elm.uuid,
+                                     name=elm.name,
                                      G=g,
                                      B=b)
                     circuit.add_shunt(B1, sh)
-
-                    # add class to recognised objects
-                    recognised.add(elm.tpe)
                 else:
-                    self.logger.add_error('Incorrect number of terminals', elm.rfid, len(term))
+                    self.logger.add_error('Bus not found', elm.name)
 
-    def parse_generators(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, recognised: Set):
+    def parse_generators(self, cim: CIMCircuit, circuit: MultiCircuit, busbar_dict):
         """
 
         :param cim:
         :param circuit:
-        :param T_dict:
-        :param recognised:
+        :param busbar_dict:
         :return:
         """
         if 'SynchronousMachine' in cim.elements_by_type.keys():
             for elm in cim.elements_by_type['SynchronousMachine']:
-                term = elm.get_terminals()
-                if len(term) > 0:
-                    T1 = T_dict[term[0].rfid]
-                    B1 = self.terminal_node[T1][0]
+                b1 = elm.get_bus()
+                B1 = try_bus(b1, busbar_dict)
 
-                    # nominal voltage and set voltage
-                    if len(elm.base_voltage) > 0:
-                        try:
-                            Vnom = float(elm.get_base_voltage().properties['nominalVoltage'])
-                        except KeyError:
-                            Vnom = 1.0
-                            self.logger.add_error('no nominalVoltage property', elm.rfid)
-                    else:
-                        try:
-                            Vnom = float(elm.properties['ratedU'])
-                        except KeyError:
-                            Vnom = 1.0
-                            self.logger.add_error('no ratedU property', elm.rfid)
+                if B1 is not None:
 
-                    try:
-                        Vset = float(elm.regulating_control[0].properties['targetValue'])
-                    except KeyError:
-                        Vset = Vnom
-                    except IndexError:
-                        Vset = Vnom
-
-                    if Vnom <= 0:
-                        # p.u. set voltage for the model
-                        vset = 1.0
-                    else:
-                        # p.u. set voltage for the model
-                        vset = Vset / Vnom
-
-                    # active power
-                    if len(elm.generating_unit) > 0:
-                        try:
-                            p = float(elm.generating_unit[0].properties['initialP'])
-                        except KeyError:
-                            self.logger.add_error('No active power initialP value', elm.rfid)
-                            p = 0.0
-                    else:
-                        try:
-                            p = float(elm.properties['p'])
-                        except KeyError:
-                            p = 0.0
-                            self.logger.add_error('No active power p value', elm.rfid)
-
-                    try:
-                        name = elm.properties['name']
-                    except KeyError:
-                        name = 'Generator@{}'.format(B1.name)
-
-                    gen = gcdev.Generator(idtag=cimdev.rfid2uuid(elm.rfid),
-                                          name=name,
-                                          active_power=p,
-                                          voltage_module=vset)
+                    gen = gcdev.Generator(idtag=elm.uuid,
+                                          name=elm.name,
+                                          active_power=elm.p,
+                                          voltage_module=1.0)
                     circuit.add_generator(B1, gen)
 
-                    # add class to recognised objects
-                    recognised.add(elm.tpe)
                 else:
-                    self.logger.add_error('Incorrect number of terminals', elm.rfid, len(term))
-
-    def parse_slacks(self, cim: CIMCircuit, circuit: MultiCircuit, T_dict: Dict, recognised: Set):
-        """
-
-        :param cim:
-        :param circuit:
-        :param T_dict:
-        :param recognised:
-        :return:
-        """
-        cim_slack = ['EquivalentNetwork', 'EquivalentInjection']
-        if any_in_dict(cim.elements_by_type, cim_slack):
-            for elm in get_elements(cim.elements_by_type, cim_slack):
-                term = elm.get_terminals()
-                if len(term) > 0:
-                    T1 = T_dict[term[0].rfid]
-                    try:
-                        B1 = self.terminal_node[T1][0]
-                        B1.is_slack = True
-                    except KeyError:
-                        self.logger.add_error('Missing node from terminal', T1.rfid)
-                else:
-                    self.logger.add_error('Incorrect number of terminals', elm.rfid, len(term))
+                    self.logger.add_error('Bus not found', elm.name)
 
     def load_cim_file(self, cim_files):
         """
@@ -1417,43 +986,36 @@ class CIMImport:
         self.emit_text('Looking for references')
         self.cim.find_references()
 
+        # Parse devices into GridCal
+        self.parse_model(self.cim, circuit)
+        busbar_dict = self.parse_bus_bars(self.cim, circuit)
+        self.parse_ac_line_segment(self.cim, circuit, busbar_dict)
+        self.parse_ac_line_segment(self.cim, circuit, busbar_dict)
+        self.parse_power_transformer(self.cim, circuit, busbar_dict)
+        self.parse_switches(self.cim, circuit, busbar_dict)
+        self.parse_loads(self.cim, circuit, busbar_dict)
+        self.parse_shunts(self.cim, circuit, busbar_dict)
+        self.parse_generators(self.cim, circuit, busbar_dict)
+
         return circuit
 
 
 if __name__ == '__main__':
     import os
-    from GridCal.Engine import FileOpen, FileSave
 
-    # folder = r'C:\Users\penversa\Documents\Grids\CGMES'
-    # # folder = '/home/santi/Documentos/Private_Grids/CGMES'
-    #
-    # cimfiles = ['20210203T1830Z_2D_REN_EQ_001.xml',
-    #             '20210203T1830Z_2D_REN_TP_001.xml',
-    #             '20210203T1830Z_2D_REN_SV_001.xml']
-    # cimfiles = [os.path.join(folder, f) for f in cimfiles]
-    #
-    # boundary_profiles = [
-    #                      '20200301T0000Z__ENTSOE_EQBD_001.xml',
-    #                      '20200301T0000Z__ENTSOE_TPBD_001.xml']
-    # boundary_profiles = [os.path.join(folder, f) for f in boundary_profiles]
-    #
-    # fnames = cimfiles + boundary_profiles
-
-    folder = r'C:\Users\penversa\Documents\Grids\CGMES\TYNDP_2025'
+    # folder = r'C:\Users\penversa\Documents\Grids\CGMES\TYNDP_2025'
+    folder = '/home/santi/Documentos/Private_Grids/CGMES/TYNDP_2025'
 
     files = [
              # '2025NT_FR_model_004.zip',
-             '2025NT_ES_model_003.zip',
-             # '2025NT_PT_model_003.zip',
+             # '2025NT_ES_model_003.zip',
+             '2025NT_PT_model_003.zip',
              '20191017T0918Z_ENTSO-E_BD_1130.zip'
              ]
     fnames = [os.path.join(folder, f) for f in files]
 
     print('Reading...')
-    # file_open = FileOpen(fnames)
-    # grid = file_open.open()
-    # FileSave(grid, os.path.join(folder, '20210203T1830Z_2D_REN.gridcal')).save()
-
     parser = CIMImport(text_func=print)
-    parser.load_cim_file(fnames)
-    parser.cim.to_excel('Spain_data.xlsx')
+    circuit_ = parser.load_cim_file(fnames)
+    print()
+    # parser.cim.to_excel('Spain_data.xlsx')
