@@ -211,9 +211,9 @@
     <list>
       <item itemvalue="Python.all2" />
       <item itemvalue="Python.all2_refactored" />
-      <item itemvalue="Python.cim_parser" />
       <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.upload_to_pypi" />
+      <item itemvalue="Python.cim_parser" />
     </list>
     <recent_temporary>
       <list>
