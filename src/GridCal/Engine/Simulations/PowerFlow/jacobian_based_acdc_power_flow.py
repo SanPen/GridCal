@@ -75,10 +75,22 @@ def dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V):
     :return: dS_dVm, dS_dVa data ordered in the CSC format to match the indices of Ybus
     """
 
+    """
+    The matrix operations that this is performing are:
+    
+    diagV = diags(V)
+    diagE = diags(V / np.abs(V))
+    Ibus = Ybus * V
+    diagIbus = diags(Ibus)
+
+    dSbus_dVa = 1j * diagV * np.conj(diagIbus - Ybus * diagV)
+    dSbus_dVm = diagV * np.conj(Ybus * diagE) + np.conj(diagIbus) * diagE    
+    """
+
     # init buffer vector
     n = len(Yp) - 1
     Ibus = np.zeros(n, dtype=np.complex128)
-    Vnorm = V / np.abs(V)
+    E = V / np.abs(V)
     dS_dVm = Yx.copy()
     dS_dVa = Yx.copy()
 
@@ -91,8 +103,8 @@ def dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V):
             # Ibus = Ybus * V
             Ibus[i] += Yx[k] * V[j]  # Yx[k] -> Y(i,j)
 
-            # Ybus * diagVnorm
-            dS_dVm[k] = Yx[k] * Vnorm[j]
+            # Ybus * diagE
+            dS_dVm[k] = Yx[k] * E[j]
 
             # Ybus * diag(V)
             dS_dVa[k] = Yx[k] * V[j]
@@ -100,16 +112,17 @@ def dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V):
     # pass 2: finalize the operations
     for j in range(n):  # for each column ...
 
-        # set buffer variable: this cannot be done in the pass1
+        # set buffer variable:
+        # this operation cannot be done in the pass1
         # because Ibus is not fully formed, but here it is.
-        buffer = np.conj(Ibus[j]) * Vnorm[j]
+        buffer = np.conj(Ibus[j]) * E[j]
 
         for k in range(Yp[j], Yp[j + 1]):  # for each row ...
 
             # row index
             i = Yi[k]
 
-            # diag(V) * conj(Ybus * diagVnorm)
+            # diag(V) * conj(Ybus * diagE)
             dS_dVm[k] = V[i] * np.conj(dS_dVm[k])
 
             if j == i:
@@ -145,12 +158,12 @@ def dSbus_dV(Ybus, V):
     :return: dSbus_dVa, dSbus_dVm
     """
     diagV = diags(V)
-    diagVnorm = diags(V / np.abs(V))
+    diagE = diags(V / np.abs(V))
     Ibus = Ybus * V
     diagIbus = diags(Ibus)
 
     dSbus_dVa = 1j * diagV * np.conj(diagIbus - Ybus * diagV)  # dSbus / dVa
-    dSbus_dVm = diagV * np.conj(Ybus * diagVnorm) + np.conj(diagIbus) * diagVnorm  # dSbus / dVm
+    dSbus_dVm = diagV * np.conj(Ybus * diagE) + np.conj(diagIbus) * diagE  # dSbus / dVm
 
     return dSbus_dVa, dSbus_dVm
 
@@ -198,33 +211,32 @@ def dSbr_dV(Yf, Yt, V, F, T, Cf, Ct):
     return dSf_dVa.tocsc(), dSf_dVm.tocsc(), dSt_dVa.tocsc(), dSt_dVm.tocsc()
 
 
-def dSf_dV(Yf, V, F, Cf, Vc, diagVc, diagVnorm, diagV):
+def dSf_dV(Yf, V, F, Cf, Vc, diagVc, diagE, diagV):
     """
     Derivatives of the branch power w.r.t the branch voltage modules and angles
     :param Yf: Admittances matrix of the branches with the "from" buses
     :param V: Array of voltages
     :param F: Array of branch "from" bus indices
     :param Cf: Connectivity matrix of the branches with the "from" buses
+    :param Vc: array of conjugate voltages
+    :param diagVc: diagonal matrix of conjugate voltages
+    :param diagE: diagonal matrix of normalized voltages
+    :param diagV: diagonal matrix of voltages
     :return: dSf_dVa, dSf_dVm
     """
+
     Yfc = np.conj(Yf)
-    # Vc = np.conj(V)
     Ifc = Yfc * Vc  # conjugate  of "from"  current
 
     diagIfc = diags(Ifc)
     Vf = V[F]
     diagVf = diags(Vf)
-    # diagVc = diags(Vc)
-
-    # Vnorm = V / np.abs(V)
-    # diagVnorm = diags(Vnorm)
-    # diagV = diags(V)
 
     CVf = Cf * diagV
-    CVnf = Cf * diagVnorm
+    CVnf = Cf * diagE
 
     dSf_dVa = 1j * (diagIfc * CVf - diagVf * Yfc * diagVc)
-    dSf_dVm = diagVf * np.conj(Yf * diagVnorm) + diagIfc * CVnf
+    dSf_dVm = diagVf * np.conj(Yf * diagE) + diagIfc * CVnf
 
     return dSf_dVa.tocsc(), dSf_dVm.tocsc()
 
@@ -239,17 +251,11 @@ def dSt_dV(Yt, V, T, Ct, Vc, diagVc, diagVnorm, diagV):
     :return: dSf_dVa, dSf_dVm, dSt_dVa, dSt_dVm
     """
     Ytc = np.conj(Yt)
-    # Vc = np.conj(V)
     Itc = Ytc * Vc  # conjugate of "to" current
 
     diagItc = diags(Itc)
     Vt = V[T]
     diagVt = diags(Vt)
-    # diagVc = diags(Vc)
-
-    # Vnorm = V / np.abs(V)
-    # diagVnorm = diags(Vnorm)
-    # diagV = diags(V)
 
     CVt = Ct * diagV
     CVnt = Ct * diagVnorm
@@ -258,6 +264,66 @@ def dSt_dV(Yt, V, T, Ct, Vc, diagVc, diagVnorm, diagV):
     dSt_dVm = diagVt * np.conj(Yt * diagVnorm) + diagItc * CVnt
 
     return dSt_dVa.tocsc(), dSt_dVm.tocsc()
+
+
+
+@nb.njit()
+def data_1_4(Cf_data, Cf_indptr, Cf_indices, Ifc, V, E, n_cols):
+    data1 = np.empty(len(Cf_data), dtype=nb.complex128)
+    data4 = np.empty(len(Cf_data), dtype=nb.complex128)
+    for j in range(n_cols):  # column j ...
+        for k in range(Cf_indptr[j], Cf_indptr[j + 1]):  # for each column entry k ...
+            i = Cf_indices[k]  # row i
+            data1[k] = Cf_data[k] * Ifc[i] * V[j]
+            data4[k] = Cf_data[k] * Ifc[i] * E[j]
+
+    return data1, data4
+
+
+@nb.njit()
+def data_2_3(Yf_data, Yf_indptr, Yf_indices, V, F, Vc, E, n_cols):
+    data2 = np.empty(len(Yf_data), dtype=nb.complex128)
+    data3 = np.empty(len(Yf_data), dtype=nb.complex128)
+    for j in range(n_cols):  # column j ...
+        for k in range(Yf_indptr[j], Yf_indptr[j + 1]):  # for each column entry k ...
+            i = Yf_indices[k]  # row i
+            data2[k] = np.conj(Yf_data[k]) * V[F[i]] * Vc[j]
+            data3[k] = V[F[i]] * np.conj(Yf_data[k] * E[j])
+    return data2, data3
+
+
+def dSf_dV_fast(Yf, V, F, Cf):
+    """
+    Derivatives of the branch power w.r.t the branch voltage modules and angles
+    Works for dSf with Yf, F, Cf and for dSt with Yt, T, Ct
+    :param Yf: Admittances matrix of the branches with the "from" buses
+    :param V: Array of voltages
+    :param F: Array of branch "from" bus indices
+    :param Cf: Connectivity matrix of the branches with the "from" buses
+    :return: dSf_dVa, dSf_dVm
+    """
+    Vc = np.conj(V)
+    E = V / np.abs(V)
+    Ifc = np.conj(Yf) * Vc  # conjugate  of "from"  current
+
+    # Perform the following operations
+    # op1 = [diagIfc * Cf * diagV]
+    # op4 = [diagIfc * Cf * diagE]
+    data1, data4 = data_1_4(Cf.data, Cf.indptr, Cf.indices, Ifc, V, E, Cf.shape[1])
+    op1 = sp.csc_matrix((data1, Cf.indices, Cf.indptr), shape=Cf.shape)
+    op4 = sp.csc_matrix((data4, Cf.indices, Cf.indptr), shape=Cf.shape)
+
+    # Perform the following operations
+    # op2 = [diagVf * Yfc * diagVc]
+    # op3 = [diagVf * np.conj(Yf * diagE)]
+    data2, data3 = data_2_3(Yf.data, Yf.indptr, Yf.indices, V, F, Vc, E, Yf.shape[1])
+    op2 = sp.csc_matrix((data2, Yf.indices, Yf.indptr), shape=Yf.shape)
+    op3 = sp.csc_matrix((data3, Yf.indices, Yf.indptr), shape=Yf.shape)
+
+    dSf_dVa = 1j * (op1 - op2)
+    dSf_dVm = op3 + op4
+
+    return dSf_dVa, dSf_dVm
 
 
 def derivatives_sh(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
@@ -794,15 +860,17 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     dSbus_dVa, dSbus_dVm = dSbus_dV_with_numba(Ybus, V)
 
     # compose the derivatives of the branch flow w.r.t Va and Vm
-    Vc = np.conj(V)
-    diagVc = diags(Vc)
-    Vnorm = V / np.abs(V)
-    diagVnorm = diags(Vnorm)
-    diagV = diags(V)
-    dSf_dVa, dSf_dVm = dSf_dV(Yf, V, F, Cf, Vc, diagVc, diagVnorm, diagV)
+    # Vc = np.conj(V)
+    # diagVc = diags(Vc)
+    # Vnorm = V / np.abs(V)
+    # diagVnorm = diags(Vnorm)
+    # diagV = diags(V)
+    # dSf_dVa, dSf_dVm = dSf_dV(Yf, V, F, Cf, Vc, diagVc, diagVnorm, diagV)
+    dSf_dVa, dSf_dVm = dSf_dV_fast(Yf, V, F, Cf)
 
     if nQtma:
-        dSt_dVa, dSt_dVm = dSt_dV(Yt, V, T, Ct, Vc, diagVc, diagVnorm, diagV)
+        # dSt_dVa, dSt_dVm = dSt_dV(Yt, V, T, Ct, Vc, diagVc, diagVnorm, diagV)
+        dSt_dVa, dSt_dVm = dSf_dV_fast(Yt, V, T, Ct)
 
     # compose the number of columns and rows of the jacobian super structure "mats"
     cols = bool(npvpq) + bool(npq) + bool(nPfsh) + bool(nQfma) + bool(nBeqz)
@@ -1184,8 +1252,8 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
     Qmax = nc.Qmax_bus[t, :]
     Kdp = nc.branch_data.Kdp
     k2 = nc.branch_data.k
-    Cf = nc.Cf
-    Ct = nc.Ct
+    Cf = nc.Cf.tocsc()
+    Ct = nc.Ct.tocsc()
     F = nc.F
     T = nc.T
     Ys = 1.0 / (nc.branch_data.R + 1j * nc.branch_data.X)

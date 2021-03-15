@@ -123,7 +123,7 @@ def compile_y_acdc(Cf, Ct, C_bus_shunt, shunt_admittance, shunt_active, ys, B, S
     Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
     Ybus = sp.csc_matrix(Cf.T * Yf + Ct.T * Yt)
 
-    return Ybus, Yf, Yt, tap
+    return Ybus, Yf.tocsc(), Yt.tocsc(), tap
 
 
 def compute_split_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus):
