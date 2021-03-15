@@ -269,6 +269,19 @@ def dSt_dV(Yt, V, T, Ct, Vc, diagVc, diagVnorm, diagV):
 
 @nb.njit()
 def data_1_4(Cf_data, Cf_indptr, Cf_indices, Ifc, V, E, n_cols):
+    """
+    Performs the operations:
+        op1 = [diagIfc * Cf * diagV]
+        op4 = [diagIfc * Cf * diagE]
+    :param Cf_data:
+    :param Cf_indptr:
+    :param Cf_indices:
+    :param Ifc:
+    :param V:
+    :param E:
+    :param n_cols:
+    :return:
+    """
     data1 = np.empty(len(Cf_data), dtype=nb.complex128)
     data4 = np.empty(len(Cf_data), dtype=nb.complex128)
     for j in range(n_cols):  # column j ...
@@ -282,6 +295,20 @@ def data_1_4(Cf_data, Cf_indptr, Cf_indices, Ifc, V, E, n_cols):
 
 @nb.njit()
 def data_2_3(Yf_data, Yf_indptr, Yf_indices, V, F, Vc, E, n_cols):
+    """
+    Performs the operations:
+        op2 = [diagVf * Yfc * diagVc]
+        op3 = [diagVf * np.conj(Yf * diagE)]
+    :param Yf_data:
+    :param Yf_indptr:
+    :param Yf_indices:
+    :param V:
+    :param F:
+    :param Vc:
+    :param E:
+    :param n_cols:
+    :return:
+    """
     data2 = np.empty(len(Yf_data), dtype=nb.complex128)
     data3 = np.empty(len(Yf_data), dtype=nb.complex128)
     for j in range(n_cols):  # column j ...
