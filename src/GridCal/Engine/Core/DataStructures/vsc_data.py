@@ -71,7 +71,7 @@ class VscData:
         nc.Inom = self.Inom[elm_idx]
 
         nc.Pfset = self.Pfset[tidx]
-        nc.Qfset = self.Qfset[tidx]
+        nc.Qtset = self.Qtset[tidx]
         nc.Vac_set = self.Vac_set[tidx]
         nc.Vdc_set = self.Vdc_set[tidx]
 

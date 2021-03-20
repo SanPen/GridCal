@@ -126,6 +126,9 @@ def get_shunt_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
         i = bus_dict[elm.bus]
 
         data.shunt_names[k] = elm.name
+        data.shunt_controlled[k] = elm.controlled
+        data.shunt_b_min[k] = elm.Bmin
+        data.shunt_b_max[k] = elm.Bmax
 
         if time_series:
             data.shunt_active[k, :] = elm.active_prof

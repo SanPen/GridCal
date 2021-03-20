@@ -126,6 +126,8 @@ class SnapshotData:
 
         self.Qmax_bus_ = None
         self.Qmin_bus_ = None
+        self.Bmax_bus_ = None
+        self.Bmin_bus_ = None
 
         self.Admittances = None
 
@@ -147,6 +149,7 @@ class SnapshotData:
         self.pv_ = None
         self.vd_ = None
         self.pqpv_ = None
+        self.pvb_ = None
 
         self.available_structures = ['Vbus',
                                      'Sbus',
@@ -517,6 +520,22 @@ class SnapshotData:
         return self.Qmin_bus_
 
     @property
+    def Bmax_bus(self):
+
+        if self.Bmax_bus_ is None:
+            self.Bmax_bus_, self.Bmin_bus_ = self.compute_susceptance_limits()
+
+        return self.Bmax_bus_
+
+    @property
+    def Bmin_bus(self):
+
+        if self.Bmin_bus_ is None:
+            self.Bmax_bus_, self.Bmin_bus_ = self.compute_susceptance_limits()
+
+        return self.Bmin_bus_
+
+    @property
     def Yshunt_from_devices(self):
 
         # compute on demand and store
@@ -780,8 +799,8 @@ class SnapshotData:
     def vd(self):
 
         if self.vd_ is None:
-            self.vd_, self.pq_, self.pv_, self.pqpv_ = compile_types(Sbus=self.Sbus,
-                                                                     types=self.bus_data.bus_types)
+            self.vd_, self.pq_, self.pv_, self.pqpv_, self.pvb_ = compile_types(Sbus=self.Sbus,
+                                                                                types=self.bus_data.bus_types)
 
         return self.vd_
 
@@ -800,6 +819,14 @@ class SnapshotData:
             x = self.vd  # call the constructor
 
         return self.pv_
+
+    @property
+    def pvb(self):
+
+        if self.pvb_ is None:
+            x = self.vd  # call the constructor
+
+        return self.pvb_
 
     @property
     def pqpv(self):
@@ -837,6 +864,13 @@ class SnapshotData:
         Qmin_bus[Qmin_bus == 0] = -1e20
 
         return Qmax_bus / self.Sbase, Qmin_bus / self.Sbase
+
+    def compute_susceptance_limits(self):
+
+        Bmin = self.shunt_data.get_b_min_per_bus() / self.Sbase
+        Bmax = self.shunt_data.get_b_max_per_bus() / self.Sbase
+
+        return Bmax, Bmin
 
     def get_structure(self, structure_type) -> pd.DataFrame:
         """
@@ -1158,6 +1192,7 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
 
     nc.branch_data = ds.circuit_to_data.get_branch_data(circuit, bus_dict, nc.bus_data.Vbus,
                                                         apply_temperature, branch_tolerance_mode)
+
     nc.hvdc_data = ds.circuit_to_data.get_hvdc_data(circuit, bus_dict, nc.bus_data.bus_types)
 
     nc.consolidate_information()

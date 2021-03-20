@@ -33,6 +33,10 @@ class ShuntData:
         self.shunt_active = np.zeros((nshunt, ntime), dtype=bool)
         self.shunt_admittance = np.zeros((nshunt, ntime), dtype=complex)
 
+        self.shunt_controlled = np.zeros(nshunt, dtype=bool)
+        self.shunt_b_min = np.zeros(nshunt, dtype=float)
+        self.shunt_b_max = np.zeros(nshunt, dtype=float)
+
         self.C_bus_shunt = sp.lil_matrix((nbus, nshunt), dtype=int)
 
     def slice(self, elm_idx, bus_idx, time_idx=None):
@@ -65,6 +69,12 @@ class ShuntData:
 
     def get_injections_per_bus(self):
         return self.C_bus_shunt * (self.shunt_admittance * self.shunt_active)
+
+    def get_b_max_per_bus(self):
+        return self.C_bus_shunt * ((self.shunt_b_max * self.shunt_controlled) * self.shunt_active)
+
+    def get_b_min_per_bus(self):
+        return self.C_bus_shunt * ((self.shunt_b_min * self.shunt_controlled) * self.shunt_active)
 
     def __len__(self):
         return self.nshunt

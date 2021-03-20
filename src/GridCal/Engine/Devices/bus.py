@@ -268,8 +268,16 @@ class Bus(EditableDevice):
             if elm.active and elm.is_controlled:
                 batt_on += 1
 
+        shunt_on = 0
+        for elm in self.shunts:
+            if elm.active and elm.controlled:
+                shunt_on += 1
+
         if (gen_on + batt_on) > 0:
             self.type = BusMode.PV
+
+        elif shunt_on > 0:
+            self.type = BusMode.PVB
 
         else:
             # Nothing special; set it as PQ

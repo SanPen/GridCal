@@ -186,13 +186,16 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
     # iterate rows of J
     # first iterate pvpq (J11 and J12)
     for r in range(npvpq):
+
         # nnzStar is necessary to calculate nonzeros per row
         nnzStart = nnz
+
         # iterate columns of J11 = dS_dVa.real at positions in pvpq
         # check entries in row pvpq[r] of dS_dV
         for c in range(Yp[pvpq[r]], Yp[pvpq[r] + 1]):
             # check if column Yj is in pvpq
             cc = pvpq_lookup[Yj[c]]
+
             # entries for J11 and J12
             if pvpq[cc] == Yj[c]:
                 # entry found
@@ -200,6 +203,7 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
                 Jx[nnz] = dVa_x[c].real
                 Jj[nnz] = cc
                 nnz += 1
+
                 # if entry is found in the "pq part" of pvpq = add entry of J12
                 if cc >= npv:
                     Jx[nnz] = dVm_x[c].real
@@ -327,13 +331,14 @@ def _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq):
 
     # data in J, space pre-allocated is bigger than actual Jx -> will be reduced later on
     Jx = empty(len(dS_dVm) * 4, dtype=float64)
+
     # row pointer, dimension = pvpq.shape[0] + pq.shape[0] + 1
     Jp = zeros(pvpq.shape[0] + pq.shape[0] + 1, dtype=int32)
+
     # indices, same with the pre-allocated space (see Jx)
     Jj = empty(len(dS_dVm) * 4, dtype=int32)
 
     # fill Jx, Jj and Jp
-    # createJ(dS_dVm, dS_dVa, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, pq, Jx, Jj, Jp)
     if len(pvpq) == len(pq):
         create_J2(dS_dVm, dS_dVa, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, pq, Jx, Jj, Jp)
     else:
@@ -345,9 +350,7 @@ def _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq):
 
     # generate scipy sparse matrix
     dimJ = npv + npq + npq
-    J = sparse((Jx, Jj, Jp), shape=(dimJ, dimJ))
-
-    return J
+    return sparse((Jx, Jj, Jp), shape=(dimJ, dimJ))
 
 
 def _create_J_without_numba(Ybus, V, pvpq, pq):

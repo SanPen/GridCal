@@ -319,7 +319,7 @@ def data_2_3(Yf_data, Yf_indptr, Yf_indices, V, F, Vc, E, n_cols):
     return data2, data3
 
 
-def dSf_dV_fast(Yf, V, F, Cf):
+def dSf_dV_fast(Yf, V, Vc, E, F, Cf):
     """
     Derivatives of the branch power w.r.t the branch voltage modules and angles
     Works for dSf with Yf, F, Cf and for dSt with Yt, T, Ct
@@ -329,8 +329,7 @@ def dSf_dV_fast(Yf, V, F, Cf):
     :param Cf: Connectivity matrix of the branches with the "from" buses
     :return: dSf_dVa, dSf_dVm
     """
-    Vc = np.conj(V)
-    E = V / np.abs(V)
+
     Ifc = np.conj(Yf) * Vc  # conjugate  of "from"  current
 
     # Perform the following operations
@@ -887,17 +886,12 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     dSbus_dVa, dSbus_dVm = dSbus_dV_with_numba(Ybus, V)
 
     # compose the derivatives of the branch flow w.r.t Va and Vm
-    # Vc = np.conj(V)
-    # diagVc = diags(Vc)
-    # Vnorm = V / np.abs(V)
-    # diagVnorm = diags(Vnorm)
-    # diagV = diags(V)
-    # dSf_dVa, dSf_dVm = dSf_dV(Yf, V, F, Cf, Vc, diagVc, diagVnorm, diagV)
-    dSf_dVa, dSf_dVm = dSf_dV_fast(Yf, V, F, Cf)
+    Vc = np.conj(V)
+    E = V / np.abs(V)
+    dSf_dVa, dSf_dVm = dSf_dV_fast(Yf, V, Vc, E, F, Cf)
 
     if nQtma:
-        # dSt_dVa, dSt_dVm = dSt_dV(Yt, V, T, Ct, Vc, diagVc, diagVnorm, diagV)
-        dSt_dVa, dSt_dVm = dSf_dV_fast(Yt, V, T, Ct)
+        dSt_dVa, dSt_dVm = dSf_dV_fast(Yt, V, Vc, E, T, Ct)
 
     # compose the number of columns and rows of the jacobian super structure "mats"
     cols = bool(npvpq) + bool(npq) + bool(nPfsh) + bool(nQfma) + bool(nBeqz)

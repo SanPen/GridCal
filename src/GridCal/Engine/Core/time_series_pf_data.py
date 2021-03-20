@@ -95,8 +95,8 @@ class TimeCircuit(SnapshotData):
     def vd(self):
 
         if self.vd_ is None:
-            self.vd_, self.pq_, self.pv_, self.pqpv_ = compile_types(Sbus=self.Sbus[:, 0],
-                                                                     types=self.bus_data.bus_types)
+            self.vd_, self.pq_, self.pv_, self.pqpv_, self.iPVB = compile_types(Sbus=self.Sbus[:, 0],
+                                                                                types=self.bus_data.bus_types)
 
         return self.vd_
 

@@ -28,6 +28,7 @@ class BusMode(Enum):
     Slack = 3
     NONE = 4
     STO_DISPATCH = 5  # Storage dispatch, in practice it is the same as REF
+    PVB = 6
 
 
 class BranchImpedanceMode(Enum):
