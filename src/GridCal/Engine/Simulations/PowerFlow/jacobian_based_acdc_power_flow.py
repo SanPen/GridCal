@@ -985,7 +985,7 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
             j93 = sp_slice_rows(dPfdp_dPfsh, iPfdp)
             mats.append(j93)
 
-    # compose the derivative w.r.t ma
+    # compose the derivative w.r.t ma for iQfma
     if nQfma > 0:
         # dSbus_dQfma, dSf_dQfma, dSt_dQfma = derivatives_ma(nb, nl, iQfma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
 
@@ -1018,7 +1018,7 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
             j94 = sp_slice_rows(dPfdp_dQfma, iPfdp)
             mats.append(j94)
 
-    # compose the derivatives w.r.t Beq
+    # compose the derivatives w.r.t Beq for iBeqz
     if nBeqz > 0:
         # dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz = derivatives_Beq(nb, nl, iBeqz, F, T, V, ma, k2)
 
@@ -1051,6 +1051,7 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
             j95 = sp_slice_rows(dPfdp_dBeqz, iPfdp)
             mats.append(j95)
 
+    # compose the derivatives w.r.t Beq for iBeqv
     if nBeqv > 0:
         dSbus_dBeqv, dSf_dBeqv, dSt_dBeqv = derivatives_Beq(nb, nl, iBeqv, F, T, V, ma, k2)
 
@@ -1081,6 +1082,7 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
             j96 = sp_slice_rows(dPfdp_dBeqv, iPfdp)
             mats.append(j96)
 
+    # compose the derivative w.r.t ma for iVtma
     if nVtma > 0:
         # dSbus_dVtma, dSf_dVtma, dSt_dVtma = derivatives_ma(nb, nl, iVtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
 
@@ -1113,6 +1115,7 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
             j97 = sp_slice_rows(dPfdp_dVtma, iPfdp)
             mats.append(j97)
 
+    # compose the derivative w.r.t ma for iQtma
     if nQtma > 0:
         # dSbus_dQtma, dSf_dQtma, dSt_dQtma = derivatives_ma(nb, nl, iQtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
         dSbus_dQtma, dSf_dQtma, dSt_dQtma = derivatives_ma_fast(nb, nl, iQtma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
