@@ -149,7 +149,6 @@ class SnapshotData:
         self.pv_ = None
         self.vd_ = None
         self.pqpv_ = None
-        self.pvb_ = None
 
         self.available_structures = ['Vbus',
                                      'Sbus',
@@ -799,8 +798,8 @@ class SnapshotData:
     def vd(self):
 
         if self.vd_ is None:
-            self.vd_, self.pq_, self.pv_, self.pqpv_, self.pvb_ = compile_types(Sbus=self.Sbus,
-                                                                                types=self.bus_data.bus_types)
+            self.vd_, self.pq_, self.pv_, self.pqpv_ = compile_types(Sbus=self.Sbus,
+                                                                     types=self.bus_data.bus_types)
 
         return self.vd_
 
@@ -819,14 +818,6 @@ class SnapshotData:
             x = self.vd  # call the constructor
 
         return self.pv_
-
-    @property
-    def pvb(self):
-
-        if self.pvb_ is None:
-            x = self.vd  # call the constructor
-
-        return self.pvb_
 
     @property
     def pqpv(self):

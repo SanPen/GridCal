@@ -32,9 +32,6 @@ def compile_types(Sbus, types, logger=Logger()):
 
     pq = np.where(types == BusMode.PQ.value)[0]
     pv = np.where(types == BusMode.PV.value)[0]
-    pvb = np.where(types == BusMode.PVB.value)[0]
-    pv = np.r_[pv, pvb]   #
-    pv.sort()
     ref = np.where(types == BusMode.Slack.value)[0]
 
     if len(ref) == 0:  # there is no slack!
@@ -67,7 +64,7 @@ def compile_types(Sbus, types, logger=Logger()):
     pqpv = np.r_[pq, pv]
     pqpv.sort()
 
-    return ref, pq, pv, pqpv, pvb
+    return ref, pq, pv, pqpv
 
 
 def find_different_states(branch_active_prof) -> Dict[int, List[int]]:
