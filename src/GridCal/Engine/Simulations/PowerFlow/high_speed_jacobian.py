@@ -30,11 +30,11 @@
 
 
 from numba import jit
-from scipy.sparse import issparse
 from numpy import conj, abs
 from numpy import complex128, float64, int32
-from numpy.core.multiarray import zeros, empty, array
-from scipy.sparse import csr_matrix as sparse, vstack, hstack
+from numpy.core.multiarray import zeros, empty
+from scipy.sparse import csr_matrix
+import GridCal.Engine.Simulations.PowerFlow.derivatives as deriv
 
 
 def dSbus_dV(Ybus, V):
@@ -44,85 +44,14 @@ def dSbus_dV(Ybus, V):
 
     Ibus = Ybus * V
     ib = range(len(V))
-    diagV = sparse((V, (ib, ib)))
-    diagIbus = sparse((Ibus, (ib, ib)))
-    diagVnorm = sparse((V / abs(V), (ib, ib)))
+    diagV = csr_matrix((V, (ib, ib)))
+    diagIbus = csr_matrix((Ibus, (ib, ib)))
+    diagVnorm = csr_matrix((V / abs(V), (ib, ib)))
     dS_dVm = diagV * conj(Ybus * diagVnorm) + conj(diagIbus) * diagVnorm
     dS_dVa = 1j * diagV * conj(diagIbus - Ybus * diagV)
     return dS_dVm, dS_dVa
 
 
-# @jit(Tuple((c16[:], c16[:]))(c16[:], i4[:], i4[:], c16[:], c16[:]), nopython=True, cache=False)
-@jit(nopython=True, cache=False)
-def dSbus_dV_numba_sparse(Yx, Yp, Yj, V, Vnorm, Ibus):  # pragma: no cover
-    """
-    Computes partial derivatives of power injection w.r.t. voltage.
-
-    Calculates faster with numba and sparse matrices.
-
-    Input: Ybus in CSR sparse form (Yx = data, Yp = indptr, Yj = indices), V and Vnorm (= V / abs(V))
-
-    OUTPUT: data from CSR form of dS_dVm, dS_dVa
-    (index pointer and indices are the same as the ones from Ybus)
-
-    Translation of: dS_dVm = dS_dVm = diagV * conj(Ybus * diagVnorm) + conj(diagIbus) * diagVnorm
-                             dS_dVa = 1j * diagV * conj(diagIbus - Ybus * diagV)
-    """
-
-    # transform input
-
-    # init buffer vector
-    buffer = zeros(len(V), dtype=complex128)
-    dS_dVm = Yx.copy()
-    dS_dVa = Yx.copy()
-
-    # iterate through sparse matrix
-    for r in range(len(Yp) - 1):
-        for k in range(Yp[r], Yp[r + 1]):
-            # Ibus = Ybus * V
-            buffer[r] += Yx[k] * V[Yj[k]]
-
-            # Ybus * diag(Vnorm)
-            dS_dVm[k] *= Vnorm[Yj[k]]
-
-            # Ybus * diag(V)
-            dS_dVa[k] *= V[Yj[k]]
-
-        Ibus[r] += buffer[r]
-
-        # conj(diagIbus) * diagVnorm
-        buffer[r] = conj(buffer[r]) * Vnorm[r]
-
-    for r in range(len(Yp) - 1):
-        for k in range(Yp[r], Yp[r + 1]):
-            # diag(V) * conj(Ybus * diagVnorm)
-            dS_dVm[k] = conj(dS_dVm[k]) * V[r]
-
-            if r == Yj[k]:
-                # diagonal elements
-                dS_dVa[k] = -Ibus[r] + dS_dVa[k]
-                dS_dVm[k] += buffer[r]
-
-            # 1j * diagV * conj(diagIbus - Ybus * diagV)
-            dS_dVa[k] = conj(-dS_dVa[k]) * (1j * V[r])
-
-    return dS_dVm, dS_dVa
-
-
-def dSbus_dV_with_numba(Ybus, V, I):
-    """
-    Calls functions to calculate dS/dV depending on whether Ybus is sparse or not
-    """
-
-    # I is substracted from Y*V,
-    # therefore it must be negative for numba version of dSbus_dV if it is not zeros anyways
-    # calculates sparse data
-    dS_dVm, dS_dVa = dSbus_dV_numba_sparse(Ybus.data, Ybus.indptr, Ybus.indices, V, V / abs(V), I)
-    # generate sparse CSR matrices with computed data and return them
-    return sparse((dS_dVm, Ybus.indices, Ybus.indptr)), sparse((dS_dVa, Ybus.indices, Ybus.indptr))
-
-
-# @jit(i8(c16[:], c16[:], i4[:], i4[:], i8[:], i8[:], f8[:], i8[:], i8[:]), nopython=True, cache=False)
 @jit(nopython=True, cache=False)
 def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma: no cover
     """
@@ -162,9 +91,14 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
     https://de.wikipedia.org/wiki/Compressed_Row_Storage
 
     J has the shape
-    | J11 | J12 |               | (pvpq, pvpq) | (pvpq, pq) |
-    | --------- | = dimensions: | ------------------------- |
-    | J21 | J22 |               |  (pq, pvpq)  |  (pq, pq)  |
+    
+            pvpq      pq
+    pvpq | dP_dVa | dP_dVm | 
+      pq | dQ_dVa | dQ_dVm | 
+    
+          pvpq   pq
+    pvpq | J11 | J12 | 
+      pq | J21 | J22 | 
 
     We first iterate the rows of J11 and J12 (for r in range lpvpq) and add the entries which are stored in dS_dV
     Then we iterate the rows of J21 and J22 (for r in range lpq) and add the entries from dS_dV
@@ -184,7 +118,7 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
     nnz = 0
 
     # iterate rows of J
-    # first iterate pvpq (J11 and J12)
+    # first iterate pvpq (J11 and J12) (dP_dVa, dP_dVm)
     for r in range(npvpq):
 
         # nnzStar is necessary to calculate nonzeros per row
@@ -213,7 +147,7 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
         # Jp: number of nonzeros per row = nnz - nnzStart (nnz at begging of loop - nnz at end of loop)
         Jp[r + 1] = nnz - nnzStart + Jp[r]
 
-    # second: iterate pq (J21 and J22)
+    # second: iterate pq (J21 and J22) (dQ_dVa, dQ_dVm)
     for r in range(npq):
         nnzStart = nnz
         # iterate columns of J21 = dS_dVa.imag at positions in pvpq
@@ -238,7 +172,7 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
 
 # @jit(i8(c16[:], c16[:], i4[:], i4[:], i8[:], i8[:], f8[:], i8[:], i8[:]), nopython=True, cache=True)
 @jit(nopython=True, cache=False)
-def create_J2(dS_dVm, dS_dVa, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma: no cover
+def create_J_no_pv(dS_dVm, dS_dVa, Yp, Yj, pvpq_lookup, pvpq, Jx, Jj, Jp):  # pragma: no cover
     """
         Calculates Jacobian faster with numba and sparse matrices. This version is similar to create_J except that
         if pvpq = pq (when no pv bus is available) some if statements are obsolete and J11 = J12 and J21 = J22
@@ -311,23 +245,22 @@ def create_J2(dS_dVm, dS_dVa, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pra
         Jp[r + lpvpq + 1] = nnz - nnzStart + Jp[r + lpvpq]
 
 
-def _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq):
+def AC_jacobian(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq):
     """
-
-    :param Ybus:
-    :param V:
-    :param pvpq:
-    :param pq:
-    :param createJ:
-    :param pvpq_lookup:
-    :param npv:
-    :param npq:
-    :return:
+    Create the AC Jacobian function with no embedded controls
+    :param Ybus: Ybus matrix in CSC format
+    :param V: Voltages vector
+    :param pvpq: array of pv|pq bus indices
+    :param pq: array of pq indices
+    :param pvpq_lookup: array of pv|pq lookup indices
+    :param npv: number of pv buses
+    :param npq: number of pq buses
+    :return: Jacobian Matrix in CSR format
     """
     Ibus = zeros(len(V), dtype=complex128)
 
     # create Jacobian from fast calc of dS_dV
-    dS_dVm, dS_dVa = dSbus_dV_numba_sparse(Ybus.data, Ybus.indptr, Ybus.indices, V, V / abs(V), Ibus)
+    dS_dVm, dS_dVa = deriv.dSbus_dV_numba_sparse_csr(Ybus.data, Ybus.indptr, Ybus.indices, V, V / abs(V), Ibus)
 
     # data in J, space pre-allocated is bigger than actual Jx -> will be reduced later on
     Jx = empty(len(dS_dVm) * 4, dtype=float64)
@@ -338,9 +271,9 @@ def _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq):
     # indices, same with the pre-allocated space (see Jx)
     Jj = empty(len(dS_dVm) * 4, dtype=int32)
 
-    # fill Jx, Jj and Jp
+    # fill Jx, Jj and Jp in CSR order
     if len(pvpq) == len(pq):
-        create_J2(dS_dVm, dS_dVa, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, pq, Jx, Jj, Jp)
+        create_J_no_pv(dS_dVm, dS_dVa, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, Jx, Jj, Jp)
     else:
         create_J(dS_dVm, dS_dVa, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, pq, Jx, Jj, Jp)
 
@@ -349,46 +282,5 @@ def _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq):
     Jj.resize(Jp[-1], refcheck=False)
 
     # generate scipy sparse matrix
-    dimJ = npv + npq + npq
-    return sparse((Jx, Jj, Jp), shape=(dimJ, dimJ))
-
-
-def _create_J_without_numba(Ybus, V, pvpq, pq):
-    """
-    Standard matpower-like implementation
-    :param Ybus:
-    :param V:
-    :param pvpq:
-    :param pq:
-    :return:
-    """
-    dS_dVm, dS_dVa = dSbus_dV(Ybus, V)
-
-    # evaluate Jacobian
-    J11 = dS_dVa[array([pvpq]).T, pvpq].real
-    J12 = dS_dVm[array([pvpq]).T, pq].real
-    if len(pq) > 0:
-        J21 = dS_dVa[array([pq]).T, pvpq].imag
-        J22 = dS_dVm[array([pq]).T, pq].imag
-        J = vstack([
-                    hstack([J11, J12]),
-                    hstack([J21, J22])
-                    ], format="csr")
-    else:
-        J = vstack([
-                    hstack([J11, J12])
-                    ], format="csr")
-    return J
-
-
-def get_fastest_jacobian_function(pvpq, pq):
-    """
-    Determine the fastest jacobian function given the amount of PV nodes
-    :param pvpq:
-    :param pq:
-    :return:
-    """
-    if len(pvpq) == len(pq):
-        return create_J2
-    else:
-        return create_J
+    nj = npv + npq + npq
+    return csr_matrix((Jx, Jj, Jp), shape=(nj, nj))

@@ -27,7 +27,7 @@ from GridCal.Engine.IO.matpower.matpower_parser import parse_matpower_file
 from GridCal.Engine.IO.dpx_parser import load_dpx
 from GridCal.Engine.IO.ipa_parser import load_iPA
 from GridCal.Engine.IO.json_parser import parse_json, parse_json_data_v2, parse_json_data_v3
-from GridCal.Engine.IO.psse_parser import PSSeParser
+from GridCal.Engine.IO.raw_parser import PSSeParser
 from GridCal.Engine.IO.cim.cim_parser import CIMImport
 from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, get_frames_from_zip
 from GridCal.Engine.IO.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite

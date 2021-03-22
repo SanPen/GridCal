@@ -22,10 +22,9 @@ import scipy
 import scipy.sparse as sp
 import numpy as np
 
-from GridCal.Engine.Sparse.csc import pack_4_by_4
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 from GridCal.Engine.Simulations.PowerFlow.numba_functions import calc_power_csr_numba, diag
-from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import _create_J_with_numba, get_fastest_jacobian_function
+from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import AC_jacobian
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.basic_structures import ReactivePowerControlMode
 from GridCal.Engine.Simulations.PowerFlow.discrete_controls import control_q_inside_method
@@ -125,7 +124,7 @@ def mu(Ybus, Ibus, J, pvpq_lookup, incS, dV, dx, pvpq, pq, npv, npq):
     # pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
     # pvpq_lookup[pvpq] = np.arange(len(pvpq))
 
-    J2 = _create_J_with_numba(Ybus, dV, pvpq, pq, pvpq_lookup, npv, npq)
+    J2 = AC_jacobian(Ybus, dV, pvpq, pq, pvpq_lookup, npv, npq)
     # J2 = Jacobian(Ybus, dV, Ibus, pq, pvpq)
 
     a = incS
@@ -320,7 +319,7 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
 
             # evaluate Jacobian
             # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
-            J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
+            J = AC_jacobian(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
 
             # compute update step
             dx = linear_solver(J, f)
@@ -612,7 +611,7 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
 
             # evaluate Jacobian
             # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
-            J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
+            J = AC_jacobian(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
 
             # compute update step
             try:
@@ -753,7 +752,7 @@ def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max
 
             # evaluate Jacobian
             if update_jacobian:
-                H = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
+                H = AC_jacobian(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
                 # H = Jacobian(Ybus, V, Ibus, pq, pvpq)
 
             # evaluate the solution error F(x0)

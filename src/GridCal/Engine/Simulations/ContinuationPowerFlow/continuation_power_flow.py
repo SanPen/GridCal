@@ -8,7 +8,7 @@ from enum import Enum
 from GridCal.Engine.basic_structures import ReactivePowerControlMode, Logger
 from GridCal.Engine.Simulations.PowerFlow.discrete_controls import control_q_direct
 from GridCal.Engine.Core.common_functions import compile_types
-from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import _create_J_with_numba
+from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import AC_jacobian
 
 
 class CpfStopAt(Enum):
@@ -258,7 +258,7 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
     nj = npv + npq * 2
 
     # compute Jacobian for the power flow equations
-    J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
+    J = AC_jacobian(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
 
     dF_dlam = -np.r_[Sxfr[pvpq].real, Sxfr[pq].imag]
 
@@ -386,7 +386,7 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
         i += 1
         
         # evaluate Jacobian
-        J = _create_J_with_numba(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
+        J = AC_jacobian(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
 
         dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
     
