@@ -217,10 +217,10 @@
     </configuration>
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python.fast_dSf_dV" />
-      <item itemvalue="Python.newton_svc" />
       <item itemvalue="Python.switch_reduction_dense" />
+      <item itemvalue="Python.fast_dSf_dV" />
       <item itemvalue="Python.upload_to_pypi" />
+      <item itemvalue="Python.newton_svc" />
     </list>
     <recent_temporary>
       <list>
