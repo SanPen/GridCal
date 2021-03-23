@@ -255,31 +255,31 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     # compose the derivatives w.r.t theta sh for iPfsh + droop
     if nPfsh + nPfdp > 0:
         cols += 1
-        dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh = deriv.derivatives_sh_csc_fast(nb, nl, np.r_[iPfsh, iPfdp],
-                                                                          F, T, Ys, k2, tap, V)
+        dSbus_dPfx, dSf_dPfx, dSt_dPfx = deriv.derivatives_sh_csc_fast(nb, nl, np.r_[iPfsh, iPfdp],
+                                                                       F, T, Ys, k2, tap, V)
 
-        dPfdp_dPfsh = -dSf_dPfsh.real
+        dPfdp_dPfsh = -dSf_dPfx.real
 
-        j13 = sp_slice_rows(dSbus_dPfsh.real, pvpq)
-        j23 = sp_slice_rows(dSbus_dPfsh.imag, pq)
+        j13 = sp_slice_rows(dSbus_dPfx.real, pvpq)
+        j23 = sp_slice_rows(dSbus_dPfx.imag, pq)
         mats += [j13, j23]
         if nPfsh:
-            j33 = sp_slice_rows(dSf_dPfsh.real, iPfsh)
+            j33 = sp_slice_rows(dSf_dPfx.real, iPfsh)
             mats.append(j33)
         if nQfma:
-            j43 = sp_slice_rows(dSf_dPfsh.imag, iQfma)
+            j43 = sp_slice_rows(dSf_dPfx.imag, iQfma)
             mats.append(j43)
         if nBeqz:
-            j53 = sp_slice_rows(dSf_dPfsh.imag, iBeqz)
+            j53 = sp_slice_rows(dSf_dPfx.imag, iBeqz)
             mats.append(j53)
         if len(VfBeqbus):
-            j63 = sp_slice_rows(dSbus_dPfsh.imag, VfBeqbus)
+            j63 = sp_slice_rows(dSbus_dPfx.imag, VfBeqbus)
             mats.append(j63)
         if len(Vtmabus):
-            j73 = sp_slice_rows(dSbus_dPfsh.imag, Vtmabus)
+            j73 = sp_slice_rows(dSbus_dPfx.imag, Vtmabus)
             mats.append(j73)
         if nQtma:
-            j83 = sp_slice_rows(dSt_dPfsh.imag, iQtma)
+            j83 = sp_slice_rows(dSt_dPfx.imag, iQtma)
             mats.append(j83)
         if nPfdp:
             j93 = sp_slice_rows(dPfdp_dPfsh, iPfdp)
