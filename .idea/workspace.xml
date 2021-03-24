@@ -23,8 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="simple rename">
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_acdc_power_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_acdc_power_flow.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Looks like the FUBM jacobian reordering went well">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -557,13 +559,6 @@
       <workItem from="1616524115696" duration="11183000" />
       <workItem from="1616601804696" duration="1299000" />
     </task>
-    <task id="LOCAL-00079" summary="Worked out issues with uploading to pipy">
-      <created>1610110757937</created>
-      <option name="number" value="00079" />
-      <option name="presentableId" value="LOCAL-00079" />
-      <option name="project" value="LOCAL" />
-      <updated>1610110757937</updated>
-    </task>
     <task id="LOCAL-00080" summary="Added pipy version check">
       <created>1610134117950</created>
       <option name="number" value="00080" />
@@ -900,7 +895,14 @@
       <option name="project" value="LOCAL" />
       <updated>1616529377598</updated>
     </task>
-    <option name="localTasksCounter" value="128" />
+    <task id="LOCAL-00128" summary="Looks like the FUBM jacobian reordering went well">
+      <created>1616612418079</created>
+      <option name="number" value="00128" />
+      <option name="presentableId" value="LOCAL-00128" />
+      <option name="project" value="LOCAL" />
+      <updated>1616612418079</updated>
+    </task>
+    <option name="localTasksCounter" value="129" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -934,7 +936,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Massive GUI refactor: Now all the engine modules are loaded in the GUI as packages" />
     <MESSAGE value="Started formatting the labels" />
     <MESSAGE value="Vastly improved the logger by allowing it to categorize the records" />
     <MESSAGE value="Fixed Monte Carlo&#10;Fixed HVDC Qmin, Qmax" />
@@ -959,7 +960,8 @@
     <MESSAGE value="Workspace" />
     <MESSAGE value="Fixed HVDC profile representation from the schematic" />
     <MESSAGE value="simple rename" />
-    <option name="LAST_COMMIT_MESSAGE" value="simple rename" />
+    <MESSAGE value="Looks like the FUBM jacobian reordering went well" />
+    <option name="LAST_COMMIT_MESSAGE" value="Looks like the FUBM jacobian reordering went well" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1417,7 +1419,7 @@
     <SUITE FILE_PATH="coverage/GridCal$ptdf_ts_driver.coverage" NAME="ptdf_ts_driver Coverage Results" MODIFIED="1600186726130" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_demo_5_node_py.coverage" NAME="Nosetests in test_demo_5_node.py Coverage Results" MODIFIED="1614631013763" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$lightmap.coverage" NAME="lightmap Coverage Results" MODIFIED="1598594966764" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/map" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1616612313312" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1616613211831" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$demo_Rosenbrock.coverage" NAME="demo_Rosenbrock Coverage Results" MODIFIED="1615240946036" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms/iDone" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_admittance_matrix_test.coverage" NAME="Nosetests for tests.admittance_matrix_test Coverage Results" MODIFIED="1602926351044" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_reverse_transformer_definition_py.coverage" NAME="Nosetests in test_reverse_transformer_definition.py Coverage Results" MODIFIED="1609501285838" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />

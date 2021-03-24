@@ -425,7 +425,7 @@ class GridEditor(QSplitter):
         self.name_layout.setContentsMargins(0, 0, 0, 0)
 
         self.name_label = QLineEdit()
-        self.name_label.setText(self.circuit.name)
+        self.name_label.setText(str(self.circuit.name))
         self.name_layout.addWidget(self.name_label)
         self.name_editor_frame.setLayout(self.name_layout)
 
