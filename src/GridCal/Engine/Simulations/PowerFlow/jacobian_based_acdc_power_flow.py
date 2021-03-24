@@ -106,6 +106,8 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     nVtma = len(iVtma)
     nBeqz = len(iBeqz)
     nBeqv = len(iBeqv)
+    nVfBeqbus = len(VfBeqbus)
+    nVtmabus = len(Vtmabus)
 
     # compose the derivatives of the power injections w.r.t Va and Vm
     dSbus_dVa, dSbus_dVm = deriv.dSbus_dV_csc(Ybus, V)
@@ -139,11 +141,11 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
         j51 = sp_slice(dSf_dVa.imag, iBeqz, pvpq)
         mats.append(j51)
         rows += 1
-    if len(VfBeqbus):
+    if nVfBeqbus:
         j61 = sp_slice(dSbus_dVa.imag, VfBeqbus, pvpq)
         mats.append(j61)
         rows += 1
-    if len(Vtmabus):
+    if nVtmabus:
         j71 = sp_slice(dSbus_dVa.imag, Vtmabus, pvpq)
         mats.append(j71)
         rows += 1
@@ -170,10 +172,10 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     if nBeqz:
         j52 = sp_slice(dSf_dVm.imag, iBeqz, pq)
         mats.append(j52)
-    if len(VfBeqbus):
+    if nVfBeqbus:
         j62 = sp_slice(dSbus_dVm.imag, VfBeqbus, pq)
         mats.append(j62)
-    if len(Vtmabus):
+    if nVtmabus:
         j72 = sp_slice(dSbus_dVm.imag, Vtmabus, pq)
         mats.append(j72)
     if nQtma:
@@ -192,8 +194,6 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
         dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz = deriv.derivatives_Beq_csc_fast(nb, nl, np.r_[iBeqz, iBeqv],
                                                                            F, T, V, ma, k2)
 
-        dPfdp_dBeqz = -dSf_dBeqz.real
-
         j15 = sp_slice_rows(dSbus_dBeqz.real, pvpq)
         j25 = sp_slice_rows(dSbus_dBeqz.imag, pq)
         mats += [j15, j25]
@@ -206,16 +206,17 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
         if nBeqz:
             j55 = sp_slice_rows(dSf_dBeqz.imag, iBeqz)
             mats.append(j55)
-        if len(VfBeqbus):
+        if nVfBeqbus:
             j65 = sp_slice_rows(dSbus_dBeqz.imag, VfBeqbus)
             mats.append(j65)
-        if len(Vtmabus):
+        if nVtmabus:
             j75 = sp_slice_rows(dSbus_dBeqz.imag, Vtmabus)
             mats.append(j75)
         if nQtma:
             j85 = sp_slice_rows(dSt_dBeqz.imag, iQtma)
             mats.append(j85)
         if nPfdp:
+            dPfdp_dBeqz = -dSf_dBeqz.real
             j95 = sp_slice_rows(dPfdp_dBeqz, iPfdp)
             mats.append(j95)
 
@@ -224,8 +225,6 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
         cols += 1
         dSbus_dQfma, dSf_dQfma, dSt_dQfma = deriv.derivatives_ma_csc_fast(nb, nl, np.r_[iQfma, iQtma, iVtma],
                                                                           F, T, Ys, k2, tap, ma, Bc, Beq, V)
-
-        dPfdp_dQfma = -dSf_dQfma.real
 
         j14 = sp_slice_rows(dSbus_dQfma.real, pvpq)
         j24 = sp_slice_rows(dSbus_dQfma.imag, pq)
@@ -239,16 +238,17 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
         if nBeqz:
             j54 = sp_slice_rows(dSf_dQfma.imag, iBeqz)
             mats.append(j54)
-        if len(VfBeqbus):
+        if nVfBeqbus:
             j64 = sp_slice_rows(dSbus_dQfma.imag, VfBeqbus)
             mats.append(j64)
-        if len(Vtmabus):
+        if nVtmabus:
             j74 = sp_slice_rows(dSbus_dQfma.imag, Vtmabus)
             mats.append(j74)
         if nQtma:
             j84 = sp_slice_rows(dSt_dQfma.imag, iQtma)
             mats.append(j84)
         if nPfdp:
+            dPfdp_dQfma = -dSf_dQfma.real
             j94 = sp_slice_rows(dPfdp_dQfma, iPfdp)
             mats.append(j94)
 
@@ -257,8 +257,6 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
         cols += 1
         dSbus_dPfx, dSf_dPfx, dSt_dPfx = deriv.derivatives_sh_csc_fast(nb, nl, np.r_[iPfsh, iPfdp],
                                                                        F, T, Ys, k2, tap, V)
-
-        dPfdp_dPfsh = -dSf_dPfx.real
 
         j13 = sp_slice_rows(dSbus_dPfx.real, pvpq)
         j23 = sp_slice_rows(dSbus_dPfx.imag, pq)
@@ -272,18 +270,239 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
         if nBeqz:
             j53 = sp_slice_rows(dSf_dPfx.imag, iBeqz)
             mats.append(j53)
-        if len(VfBeqbus):
+        if nVfBeqbus:
             j63 = sp_slice_rows(dSbus_dPfx.imag, VfBeqbus)
             mats.append(j63)
-        if len(Vtmabus):
+        if nVtmabus:
             j73 = sp_slice_rows(dSbus_dPfx.imag, Vtmabus)
             mats.append(j73)
         if nQtma:
             j83 = sp_slice_rows(dSt_dPfx.imag, iQtma)
             mats.append(j83)
         if nPfdp:
+            dPfdp_dPfsh = -dSf_dPfx.real
             j93 = sp_slice_rows(dPfdp_dPfsh, iPfdp)
             mats.append(j93)
+
+    # compose Jacobian from the submatrices
+    J = csc_stack_2d_ff(mats, rows, cols, row_major=False)
+
+    if J.shape[0] != J.shape[1]:
+        raise Exception('Invalid Jacobian shape!')
+
+    return J
+
+
+def fubm_jacobian2(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeqbus, Vtmabus,
+                  F, T, Ys, k2, tap, ma, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq):
+    """
+    Compute the FUBM jacobian in a dynamic fashion by only computing the derivatives that are needed
+    :param nb: number of buses
+    :param nl: Number of lines
+    :param iPfsh: indices of the Pf controlled branches
+    :param iPfdp: indices of the droop controlled branches
+    :param iQfma: indices of the Qf controlled branches
+    :param iQtma: Indices of the Qt controlled branches
+    :param iVtma: Indices of the Vt controlled branches
+    :param iBeqz: Indices of the Qf controlled branches
+    :param iBeqv: Indices of the Vf Controlled branches
+    :param F: Array of "from" bus indices
+    :param T: Array of "to" bus indices
+    :param Ys: Array of branch series admittances
+    :param k2: Array of branch converter losses
+    :param tap: Array of complex tap values {remember tap = ma * exp(1j * theta) }
+    :param ma: Array of tap modules
+    :param Bc: Array of branch full susceptances
+    :param Beq: Array of brach equivalent (variable) susceptances
+    :param Kdp: Array of branch converter droop constants
+    :param V: Array of complex bus voltages
+    :param Ybus: Admittance matrix
+    :param Yf: Admittances matrix of the branches with the "from" buses
+    :param Yt: Admittances matrix of the branches with the "to" buses
+    :param Cf: Connectivity matrix of the branches with the "from" buses
+    :param Ct: Connectivity matrix of the branches with the "to" buses
+    :param pvpq: Array of pv and then pq bus indices (not sorted)
+    :param pq: Array of PQ bus indices
+    :return: FUBM Jacobian matrix
+    """
+    nPfsh = len(iPfsh)
+    nPfdp = len(iPfdp)
+    nQfma = len(iQfma)
+    nQtma = len(iQtma)
+    nVtma = len(iVtma)
+    nBeqz = len(iBeqz)
+    nBeqv = len(iBeqv)
+    nVfBeqbus = len(VfBeqbus)
+    nVtmabus = len(Vtmabus)
+    npq = len(pq)
+
+    i2 = np.r_[pq, VfBeqbus, Vtmabus]
+    i4 = np.r_[iQfma, iBeqz]
+
+    # compose the derivatives of the power injections w.r.t Va and Vm
+    dSbus_dVa, dSbus_dVm = deriv.dSbus_dV_csc(Ybus, V)
+
+    # compose the derivatives of the branch flow w.r.t Va and Vm
+    Vc = np.conj(V)
+    E = V / np.abs(V)
+    dSf_dVa, dSf_dVm = deriv.dSf_dV_fast(Yf, V, Vc, E, F, Cf)
+
+    if nQtma:
+        dSt_dVa, dSt_dVm = deriv.dSf_dV_fast(Yt, V, Vc, E, T, Ct)
+
+    # compose the number of columns and rows of the jacobian super structure "mats"
+    cols = 0
+    rows = 0
+
+    # column 1: derivatives w.r.t Va
+    cols += 1
+    j11 = sp_slice(dSbus_dVa.real, pvpq, pvpq)
+    mats = [j11]
+    rows += 1
+
+    if npq + nVfBeqbus + nVtmabus:
+        j21 = sp_slice(dSbus_dVa.imag, i2, pvpq)
+        mats.append(j21)
+        rows += 1
+
+    if nPfsh:
+        j31 = sp_slice(dSf_dVa.real, iPfsh, pvpq)
+        mats.append(j31)
+        rows += 1
+
+    if nQfma + nBeqz:
+        j41 = sp_slice(dSf_dVa.imag, i4, pvpq)
+        mats.append(j41)
+        rows += 1
+
+    if nQtma:
+        j51 = sp_slice(dSt_dVa.imag, iQtma, pvpq)
+        mats.append(j51)
+        rows += 1
+
+    if nPfdp:
+        dPfdp_dVa = -dSf_dVa.real
+        j61 = sp_slice(dPfdp_dVa, iPfdp, pvpq)
+        mats.append(j61)
+        rows += 1
+
+    # column 2: derivatives w.r.t Vm
+    cols += 1
+    j12 = sp_slice(dSbus_dVm.real, pvpq, pq)
+    mats.append(j12)
+
+    if npq + nVfBeqbus + nVtmabus:
+        j22 = sp_slice(dSbus_dVm.imag, i2, pq)
+        mats.append(j22)
+
+    if nPfsh:
+        j32 = sp_slice(dSf_dVm.real, iPfsh, pq)
+        mats.append(j32)
+
+    if nQfma + nBeqz:
+        j42 = sp_slice(dSf_dVm.imag, i4, pq)
+        mats.append(j42)
+
+    if nQtma:
+        j52 = sp_slice(dSt_dVm.imag, iQtma, pq)
+        mats.append(j52)
+
+    if nPfdp:
+        dVmf_dVm = lil_matrix((nl, nb))
+        dVmf_dVm[iPfdp, :] = Cf[iPfdp, :]
+        dPfdp_dVm = -dSf_dVm.real + diags(Kdp) * dVmf_dVm
+        j62 = sp_slice(dPfdp_dVm, iPfdp, pq)
+        mats.append(j62)
+
+    # Column 3: derivatives w.r.t Beq for iBeqz + iBeqv
+    if nBeqz + nBeqv:
+        cols += 1
+        dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz = deriv.derivatives_Beq_csc_fast(nb, nl, np.r_[iBeqz, iBeqv],
+                                                                           F, T, V, ma, k2)
+
+        j13 = sp_slice_rows(dSbus_dBeqz.real, pvpq)
+        mats.append(j13)
+
+        if npq + nVfBeqbus + nVtmabus:
+            j23 = sp_slice_rows(dSbus_dBeqz.imag, i2)
+            mats.append(j23)
+
+        if nPfsh:
+            j33 = sp_slice_rows(dSf_dBeqz.real, iPfsh)
+            mats.append(j33)
+
+        if nQfma + nBeqz:
+            j43 = sp_slice_rows(dSf_dBeqz.imag, i4)
+            mats.append(j43)
+
+        if nQtma:
+            j53 = sp_slice_rows(dSt_dBeqz.imag, iQtma)
+            mats.append(j53)
+
+        if nPfdp:
+            dPfdp_dBeqz = -dSf_dBeqz.real
+            j63 = sp_slice_rows(dPfdp_dBeqz, iPfdp)
+            mats.append(j63)
+
+    # Column 4: derivative w.r.t ma for iQfma + iQfma + iVtma
+    if nQfma + nQtma + nVtma:
+        cols += 1
+        dSbus_dQfma, dSf_dQfma, dSt_dQfma = deriv.derivatives_ma_csc_fast(nb, nl, np.r_[iQfma, iQtma, iVtma],
+                                                                          F, T, Ys, k2, tap, ma, Bc, Beq, V)
+
+        j14 = sp_slice_rows(dSbus_dQfma.real, pvpq)
+        mats.append(j14)
+
+        if npq + nVfBeqbus + nVtmabus:
+            j24 = sp_slice_rows(dSbus_dQfma.imag, i2)
+            mats.append(j24)
+
+        if nPfsh:
+            j34 = sp_slice_rows(dSf_dQfma.real, iPfsh)
+            mats.append(j34)
+
+        if nQfma + nBeqz:
+            j44 = sp_slice_rows(dSf_dQfma.imag, i4)
+            mats.append(j44)
+
+        if nQtma:
+            j54 = sp_slice_rows(dSt_dQfma.imag, iQtma)
+            mats.append(j54)
+
+        if nPfdp:
+            dPfdp_dQfma = -dSf_dQfma.real
+            j64 = sp_slice_rows(dPfdp_dQfma, iPfdp)
+            mats.append(j64)
+
+    # Column 5: derivatives w.r.t theta sh for iPfsh + droop
+    if nPfsh + nPfdp > 0:
+        cols += 1
+        dSbus_dPfx, dSf_dPfx, dSt_dPfx = deriv.derivatives_sh_csc_fast(nb, nl, np.r_[iPfsh, iPfdp],
+                                                                       F, T, Ys, k2, tap, V)
+
+        j15 = sp_slice_rows(dSbus_dPfx.real, pvpq)
+        mats.append(j15)
+
+        if npq + nVfBeqbus + nVtmabus:
+            j25 = sp_slice_rows(dSbus_dPfx.imag, i2)
+            mats.append(j25)
+
+        if nPfsh:
+            j35 = sp_slice_rows(dSf_dPfx.real, iPfsh)
+            mats.append(j35)
+
+        if nQfma + nBeqz:
+            j45 = sp_slice_rows(dSf_dPfx.imag, i4)
+            mats.append(j45)
+
+        if nQtma:
+            j55 = sp_slice_rows(dSt_dPfx.imag, iQtma)
+            mats.append(j55)
+
+        if nPfdp:
+            dPfdp_dPfsh = -dSf_dPfx.real
+            j65 = sp_slice_rows(dPfdp_dPfsh, iPfdp)
+            mats.append(j65)
 
     # compose Jacobian from the submatrices
     J = csc_stack_2d_ff(mats, rows, cols, row_major=False)
@@ -349,6 +568,96 @@ def compute_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
     return df, Scalc
 
 
+class SolSlicer2:
+
+    def __init__(self, npq, npv, nVfBeqbus, nVtmabus, nPfsh, nQfma, nBeqz, nQtma, nPfdp):
+        """
+        Declare the slicing limits in the same order as the Jacobian rows
+        :param npq:
+        :param npv:
+        :param nVfBeqbus:
+        :param nVtmabus:
+        :param nPfsh:
+        :param nQfma:
+        :param nBeqz:
+        :param nQtma:
+        :param nPfdp:
+        """
+        self.a0 = 0
+        self.a1 = self.a0 + npq + npv
+        self.a2 = self.a1 + npq
+        self.a3 = self.a2 + nVfBeqbus
+        self.a4 = self.a3 + nVtmabus
+        self.a5 = self.a4 + nPfsh
+        self.a6 = self.a5 + nQfma
+        self.a7 = self.a6 + nBeqz
+        self.a8 = self.a7 + nQtma
+        self.a9 = self.a8 + nPfdp
+
+    def split(self, dx):
+        """
+        Split the linear system solution
+        :param dx:
+        :return:
+        """
+        dVa = dx[self.a0:self.a1]
+        dVm = dx[self.a1:self.a2]
+        dBeq_v = dx[self.a2:self.a3]
+        dma_Vt = dx[self.a3:self.a4]
+        dtheta_Pf = dx[self.a4:self.a5]
+        dma_Qf = dx[self.a5:self.a6]
+        dBeq_z = dx[self.a6:self.a7]
+        dma_Qt = dx[self.a7:self.a8]
+        dtheta_Pd = dx[self.a8:self.a9]
+
+        return dVa, dVm, dBeq_v, dma_Vt, dtheta_Pf, dma_Qf, dBeq_z, dma_Qt, dtheta_Pd
+
+
+class SolSlicer:
+
+    def __init__(self, npq, npv, nVfBeqbus, nVtmabus, nPfsh, nQfma, nBeqz, nQtma, nPfdp):
+        """
+        Declare the slicing limits in the same order as the Jacobian rows
+        :param npq:
+        :param npv:
+        :param nVfBeqbus:
+        :param nVtmabus:
+        :param nPfsh:
+        :param nQfma:
+        :param nBeqz:
+        :param nQtma:
+        :param nPfdp:
+        """
+        self.a0 = 0
+        self.a1 = self.a0 + npq + npv
+        self.a2 = self.a1 + npq
+        self.a3 = self.a2 + nPfsh
+        self.a4 = self.a3 + nQfma
+        self.a5 = self.a4 + nBeqz
+        self.a6 = self.a5 + nVfBeqbus
+        self.a7 = self.a6 + nVtmabus
+        self.a8 = self.a7 + nQtma
+        self.a9 = self.a8 + nPfdp
+
+    def split(self, dx):
+        """
+        Split the linear system solution
+        :param dx:
+        :return:
+        """
+        dVa = dx[self.a0:self.a1]
+        dVm = dx[self.a1:self.a2]
+        dtheta_Pf = dx[self.a2:self.a3]
+        dma_Qf = dx[self.a3:self.a4]
+        dBeq_z = dx[self.a4:self.a5]
+        dBeq_v = dx[self.a5:self.a6]
+        dma_Vt = dx[self.a6:self.a7]
+        dma_Qt = dx[self.a7:self.a8]
+        dtheta_Pd = dx[self.a8:self.a9]
+
+        return dVa, dVm, dBeq_v, dma_Vt, dtheta_Pf, dma_Qf, dBeq_z, dma_Qt, dtheta_Pd
+
+
 def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
                tolerance=1e-6, max_iter=4, mu_0=1.0, acceleration_parameter=0.05,
                verbose=False, t=0, control_q=ReactivePowerControlMode.NoControl) -> NumericPowerFlowResults:
@@ -411,16 +720,14 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
 
     # --------------------------------------------------------------------------
     # variables dimensions in Jacobian
-    a0 = 0
-    a1 = a0 + npq + npv
-    a2 = a1 + npq
-    a3 = a2 + len(nc.iPfsh)
-    a4 = a3 + len(nc.iQfma)
-    a5 = a4 + len(nc.iBeqz)
-    a6 = a5 + len(nc.VfBeqbus)
-    a7 = a6 + len(nc.Vtmabus)
-    a8 = a7 + len(nc.iQtma)
-    a9 = a8 + len(nc.iPfdp)
+    sol_slicer = SolSlicer(npq, npv,
+                           len(nc.VfBeqbus),
+                           len(nc.Vtmabus),
+                           len(nc.iPfsh),
+                           len(nc.iQfma),
+                           len(nc.iBeqz),
+                           len(nc.iQtma),
+                           len(nc.iPfdp))
 
     # -------------------------------------------------------------------------
     # compute initial admittances
@@ -487,15 +794,7 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
         dx = sp.linalg.spsolve(J, -fx)
 
         # split the solution
-        dVa = dx[a0:a1]
-        dVm = dx[a1:a2]
-        dtheta_Pf = dx[a2:a3]
-        dma_Qf = dx[a3:a4]
-        dBeq_z = dx[a4:a5]
-        dBeq_v = dx[a5:a6]
-        dma_Vt = dx[a6:a7]
-        dma_Qt = dx[a7:a8]
-        dtheta_Pd = dx[a8:a9]
+        dVa, dVm, dBeq_v, dma_Vt, dtheta_Pf, dma_Qf, dBeq_z, dma_Qt, dtheta_Pd = sol_slicer.split(dx)
 
         # set the restoration values
         prev_Vm = Vm.copy()
@@ -636,16 +935,15 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
                         npv = len(pv)
                         npq = len(pq)
 
-                        a0 = 0
-                        a1 = a0 + npq + npv
-                        a2 = a1 + npq
-                        a3 = a2 + len(nc.iPfsh)
-                        a4 = a3 + len(nc.iQfma)
-                        a5 = a4 + len(nc.iBeqz)
-                        a6 = a5 + len(nc.VfBeqbus)
-                        a7 = a6 + len(nc.Vtmabus)
-                        a8 = a7 + len(nc.iQtma)
-                        a9 = a8 + len(nc.iPfdp)
+                        # re declare the slicer because the indices of pq and pv changed
+                        sol_slicer = SolSlicer(npq, npv,
+                                               len(nc.VfBeqbus),
+                                               len(nc.Vtmabus),
+                                               len(nc.iPfsh),
+                                               len(nc.iQfma),
+                                               len(nc.iBeqz),
+                                               len(nc.iQtma),
+                                               len(nc.iPfdp))
 
                         # recompute the mismatch, based on the new S0
                         fx, Scalc = compute_fx(Ybus=Ybus,
@@ -749,16 +1047,14 @@ def LM_ACDC(nc: "SnapshotData", Vbus, Sbus,
     if (npq + npv) > 0:
         # --------------------------------------------------------------------------
         # variables dimensions in Jacobian
-        a0 = 0
-        a1 = a0 + npq + npv
-        a2 = a1 + npq
-        a3 = a2 + len(nc.iPfsh)
-        a4 = a3 + len(nc.iQfma)
-        a5 = a4 + len(nc.iBeqz)
-        a6 = a5 + len(nc.VfBeqbus)
-        a7 = a6 + len(nc.Vtmabus)
-        a8 = a7 + len(nc.iQtma)
-        a9 = a8 + len(nc.iPfdp)
+        sol_slicer = SolSlicer(npq, npv,
+                               len(nc.VfBeqbus),
+                               len(nc.Vtmabus),
+                               len(nc.iPfsh),
+                               len(nc.iQfma),
+                               len(nc.iBeqz),
+                               len(nc.iQtma),
+                               len(nc.iPfdp))
         # -------------------------------------------------------------------------
         # compute initial admittances
         Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
@@ -871,15 +1167,7 @@ def LM_ACDC(nc: "SnapshotData", Vbus, Sbus,
                 nu = 2.0
 
                 # split the solution
-                dVa = dx[a0:a1]
-                dVm = dx[a1:a2]
-                dtheta_Pf = dx[a2:a3]
-                dma_Qf = dx[a3:a4]
-                dBeq_z = dx[a4:a5]
-                dBeq_v = dx[a5:a6]
-                dma_Vt = dx[a6:a7]
-                dma_Qt = dx[a7:a8]
-                dtheta_Pd = dx[a8:a9]
+                dVa, dVm, dBeq_v, dma_Vt, dtheta_Pf, dma_Qf, dBeq_z, dma_Qt, dtheta_Pd = sol_slicer.split(dx)
 
                 # assign the new values
                 Va[pvpq] -= dVa
