@@ -445,23 +445,9 @@ class BusGraphicItem(QGraphicsRectItem):
 
         @return:
         """
-        # Ridiculously large call to get the main GUI that hosts this bus graphic
-        # time series object from the last simulation
-        ts = self.diagramScene.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().time_series
-
         # get the index of this object
         i = self.diagramScene.circuit.buses.index(self.api_object)
-
-        # get the time
-        t = self.diagramScene.circuit.time_profile
-
-        # plot the profiles
-        if t is not None:
-            self.api_object.plot_profiles(time_profile=t,
-                                          ax_load=None,
-                                          ax_voltage=None,
-                                          time_series_driver=ts,
-                                          my_index=i)
+        self.diagramScene.plot_bus(i, self.api_object)
 
     def mousePressEvent(self, event):
         """
