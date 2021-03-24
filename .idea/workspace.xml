@@ -23,10 +23,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Looks like the FUBM jacobian reordering went well">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed minor bug with the circuit name">
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons/abs.svg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,7 +78,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="ToolWindowDatabase.ShowToolbar" value="false" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/research/power_flow" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/GridCal/Gui/Main/icons" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
@@ -84,11 +87,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCal/Gui/Main/icons" />
       <recent name="$PROJECT_DIR$/src/research/power_flow" />
       <recent name="$PROJECT_DIR$/src/research/grid_reduction" />
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/Devices" />
       <recent name="$PROJECT_DIR$/src/research/genetic_algorithms/iDone" />
-      <recent name="$PROJECT_DIR$/src/tests" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/IO/matpower" />
@@ -165,7 +168,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="switch_reduction_dense" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="update_gui_file" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -173,12 +176,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/research/grid_reduction/substation_reduction" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/Main" />
+      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/research/grid_reduction/substation_reduction/switch_reduction_dense.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -211,18 +214,18 @@
     </configuration>
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python.switch_reduction_dense" />
       <item itemvalue="Python.fast_dSf_dV" />
       <item itemvalue="Python.upload_to_pypi" />
       <item itemvalue="Python.newton_svc" />
+      <item itemvalue="Python.update_gui_file" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.newton_svc" />
+        <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.upload_to_pypi" />
+        <item itemvalue="Python.newton_svc" />
         <item itemvalue="Python.fast_dSf_dV" />
-        <item itemvalue="Python.switch_reduction_dense" />
       </list>
     </recent_temporary>
   </component>
@@ -558,13 +561,7 @@
       <workItem from="1616444990256" duration="4870000" />
       <workItem from="1616524115696" duration="11183000" />
       <workItem from="1616601804696" duration="1299000" />
-    </task>
-    <task id="LOCAL-00080" summary="Added pipy version check">
-      <created>1610134117950</created>
-      <option name="number" value="00080" />
-      <option name="presentableId" value="LOCAL-00080" />
-      <option name="project" value="LOCAL" />
-      <updated>1610134117951</updated>
+      <workItem from="1616618785818" duration="1778000" />
     </task>
     <task id="LOCAL-00081" summary="- Removed the outer loop controls&#10;- Added Q control to the AC only NR, LM and Iwamoto algorithms&#10;- in-loop Q control seems to work fine">
       <created>1610197022573</created>
@@ -902,7 +899,14 @@
       <option name="project" value="LOCAL" />
       <updated>1616612418079</updated>
     </task>
-    <option name="localTasksCounter" value="129" />
+    <task id="LOCAL-00129" summary="Fixed minor bug with the circuit name">
+      <created>1616613285208</created>
+      <option name="number" value="00129" />
+      <option name="presentableId" value="LOCAL-00129" />
+      <option name="project" value="LOCAL" />
+      <updated>1616613285208</updated>
+    </task>
+    <option name="localTasksCounter" value="130" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -936,7 +940,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Started formatting the labels" />
     <MESSAGE value="Vastly improved the logger by allowing it to categorize the records" />
     <MESSAGE value="Fixed Monte Carlo&#10;Fixed HVDC Qmin, Qmax" />
     <MESSAGE value="Merged MC and LHS&#10;Added flow based width" />
@@ -961,7 +964,8 @@
     <MESSAGE value="Fixed HVDC profile representation from the schematic" />
     <MESSAGE value="simple rename" />
     <MESSAGE value="Looks like the FUBM jacobian reordering went well" />
-    <option name="LAST_COMMIT_MESSAGE" value="Looks like the FUBM jacobian reordering went well" />
+    <MESSAGE value="Fixed minor bug with the circuit name" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed minor bug with the circuit name" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1419,7 +1423,7 @@
     <SUITE FILE_PATH="coverage/GridCal$ptdf_ts_driver.coverage" NAME="ptdf_ts_driver Coverage Results" MODIFIED="1600186726130" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_demo_5_node_py.coverage" NAME="Nosetests in test_demo_5_node.py Coverage Results" MODIFIED="1614631013763" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$lightmap.coverage" NAME="lightmap Coverage Results" MODIFIED="1598594966764" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/map" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1616613211831" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1616620530475" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$demo_Rosenbrock.coverage" NAME="demo_Rosenbrock Coverage Results" MODIFIED="1615240946036" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms/iDone" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_admittance_matrix_test.coverage" NAME="Nosetests for tests.admittance_matrix_test Coverage Results" MODIFIED="1602926351044" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_reverse_transformer_definition_py.coverage" NAME="Nosetests in test_reverse_transformer_definition.py Coverage Results" MODIFIED="1609501285838" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
@@ -1436,8 +1440,8 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_ptdf_py.coverage" NAME="Nosetests in test_ptdf.py Coverage Results" MODIFIED="1614630972988" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$reactive_power_curve.coverage" NAME="reactive_power_curve Coverage Results" MODIFIED="1606723746932" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/generator" />
     <SUITE FILE_PATH="coverage/GridCal$dc_opf_ts.coverage" NAME="dc_opf_ts Coverage Results" MODIFIED="1602519229272" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
-    <SUITE FILE_PATH="coverage/GridCal$update_gui_file.coverage" NAME="update_gui_file Coverage Results" MODIFIED="1615325412028" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
+    <SUITE FILE_PATH="coverage/GridCal$update_gui_file.coverage" NAME="update_gui_file Coverage Results" MODIFIED="1616620523860" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$download_stats.coverage" NAME="download_stats Coverage Results" MODIFIED="1609500287850" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$upload_to_pypi.coverage" NAME="upload_to_pypi Coverage Results" MODIFIED="1615913474238" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/GridCal$upload_to_pypi.coverage" NAME="upload_to_pypi Coverage Results" MODIFIED="1616613355311" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
   </component>
 </project>

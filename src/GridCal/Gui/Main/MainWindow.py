@@ -1136,6 +1136,14 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.results_as_cdf_checkBox)
 
+        self.results_as_abs_checkBox = QCheckBox(self.frame_8)
+        self.results_as_abs_checkBox.setObjectName(u"results_as_abs_checkBox")
+        icon74 = QIcon()
+        icon74.addFile(u":/Icons/icons/abs.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.results_as_abs_checkBox.setIcon(icon74)
+
+        self.horizontalLayout_2.addWidget(self.results_as_abs_checkBox)
+
         self.units_label = QLabel(self.frame_8)
         self.units_label.setObjectName(u"units_label")
 
@@ -1144,6 +1152,21 @@ class Ui_mainWindow(object):
         self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer_4)
+
+        self.sear_results_lineEdit = QLineEdit(self.frame_8)
+        self.sear_results_lineEdit.setObjectName(u"sear_results_lineEdit")
+
+        self.horizontalLayout_2.addWidget(self.sear_results_lineEdit)
+
+        self.search_results_Button = QPushButton(self.frame_8)
+        self.search_results_Button.setObjectName(u"search_results_Button")
+        self.search_results_Button.setIcon(icon50)
+
+        self.horizontalLayout_2.addWidget(self.search_results_Button)
+
+        self.horizontalSpacer_17 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_2.addItem(self.horizontalSpacer_17)
 
         self.plot_data_pushButton = QPushButton(self.frame_8)
         self.plot_data_pushButton.setObjectName(u"plot_data_pushButton")
@@ -1172,9 +1195,9 @@ class Ui_mainWindow(object):
         self.verticalLayout_22 = QVBoxLayout(self.main_console_tab)
         self.verticalLayout_22.setObjectName(u"verticalLayout_22")
         self.verticalLayout_22.setContentsMargins(0, 0, 0, 0)
-        icon74 = QIcon()
-        icon74.addFile(u":/Icons/icons/console.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.tabWidget.addTab(self.main_console_tab, icon74, "")
+        icon75 = QIcon()
+        icon75.addFile(u":/Icons/icons/console.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.tabWidget.addTab(self.main_console_tab, icon75, "")
         self.SettingsTab = QWidget()
         self.SettingsTab.setObjectName(u"SettingsTab")
         self.gridLayout_8 = QGridLayout(self.SettingsTab)
@@ -2061,9 +2084,9 @@ class Ui_mainWindow(object):
 
         self.gridLayout_12.addWidget(self.frame_22, 2, 1, 1, 1)
 
-        icon75 = QIcon()
-        icon75.addFile(u":/Icons/icons/stochastic_power_flow.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.settings_tabWidget.addTab(self.tab_6, icon75, "")
+        icon76 = QIcon()
+        icon76.addFile(u":/Icons/icons/stochastic_power_flow.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.settings_tabWidget.addTab(self.tab_6, icon76, "")
         self.tab_13 = QWidget()
         self.tab_13.setObjectName(u"tab_13")
         self.gridLayout_17 = QGridLayout(self.tab_13)
@@ -2875,9 +2898,9 @@ class Ui_mainWindow(object):
 
         self.gridLayout_8.addWidget(self.frame_7, 0, 0, 1, 1)
 
-        icon76 = QIcon()
-        icon76.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.tabWidget.addTab(self.SettingsTab, icon76, "")
+        icon77 = QIcon()
+        icon77.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.tabWidget.addTab(self.SettingsTab, icon77, "")
 
         self.verticalLayout.addWidget(self.tabWidget)
 
@@ -3443,8 +3466,13 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(statustip)
         self.results_as_cdf_checkBox.setStatusTip(QCoreApplication.translate("mainWindow", u"Results as cummulative density functions", None))
 #endif // QT_CONFIG(statustip)
-        self.results_as_cdf_checkBox.setText(QCoreApplication.translate("mainWindow", u"CDF", None))
+        self.results_as_cdf_checkBox.setText("")
+#if QT_CONFIG(statustip)
+        self.results_as_abs_checkBox.setStatusTip(QCoreApplication.translate("mainWindow", u"Results as absolute values", None))
+#endif // QT_CONFIG(statustip)
+        self.results_as_abs_checkBox.setText("")
         self.units_label.setText("")
+        self.search_results_Button.setText("")
 #if QT_CONFIG(tooltip)
         self.plot_data_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Plot the data in a separated window", None))
 #endif // QT_CONFIG(tooltip)
