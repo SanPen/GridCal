@@ -589,6 +589,9 @@ class MainGUI(QMainWindow):
                        self.ptdf_ts_analysis,
                        self.otdf_analysis]
 
+        # as a side effect the circuit should know about these for accessing to the results via the objects themselves
+        self.circuit.results_dictionary = {thr.name: thr for thr in all_threads if thr is not None}
+
         return all_threads
 
     def get_process_threads(self):

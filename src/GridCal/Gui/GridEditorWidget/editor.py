@@ -14,6 +14,9 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import os
+import numpy as np
+import pandas as pd
+
 import networkx as nx
 from warnings import warn
 from PySide2.QtWidgets import *
@@ -36,7 +39,7 @@ from GridCal.Gui.GridEditorWidget.transformer2w_graphics import TransformerGraph
 from GridCal.Gui.GridEditorWidget.hvdc_graphics import HvdcGraphicItem
 from GridCal.Gui.GridEditorWidget.vsc_graphics import VscGraphicItem
 from GridCal.Gui.GridEditorWidget.upfc_graphics import UpfcGraphicItem
-
+from matplotlib import pyplot as plt
 
 '''
 Dependencies:
@@ -213,6 +216,105 @@ class DiagramScene(QGraphicsScene):
         self.parent_ = parent
         self.circuit = circuit
         # self.setBackgroundBrush(QtCore.Qt.red)
+
+    def get_app(self):
+        return self.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent()
+
+    def get_simulation_threads_dict(self):
+        d = dict()
+        for sim in self.get_app().get_simulation_threads():
+            if sim is not None:
+                d[sim.name] = sim
+        return d
+
+    def plot_bus(self, i, api_object):
+        """
+        Plot branch results
+        :param i: branch index (not counting HVDC lines because those are not real branches)
+        :param api_object: API object
+        :return:
+        """
+        fig = plt.figure(figsize=(12, 8))
+        ax_1 = fig.add_subplot(211)
+        # ax_2 = fig.add_subplot(212)
+
+        # set time
+        x = self.circuit.time_profile
+
+        # search available results
+        power_data = api_object.get_active_injection_profiles_dictionary()
+        voltage = dict()
+
+        for key, driver in self.circuit.results_dictionary.items():
+            if key == 'Time Series':
+                voltage[key] = np.abs(driver.results.voltage[:, i])
+
+        # injections
+        df = pd.DataFrame(data=power_data, index=x)
+        ax_1.set_title('Power', fontsize=14)
+        ax_1.set_ylabel('Injections [MW]', fontsize=11)
+        df.plot.area(ax=ax_1)
+
+        # voltage
+        if len(voltage.keys()):
+            ax_2 = fig.add_subplot(212, sharex=ax_1)
+            df = pd.DataFrame(data=voltage, index=x)
+            ax_2.set_title('Time', fontsize=14)
+            ax_2.set_ylabel('Voltage [p.u]', fontsize=11)
+            df.plot(ax=ax_2)
+
+        plt.legend()
+        fig.suptitle(api_object.name, fontsize=20)
+
+        # plot the profiles
+        plt.show()
+
+    def plot_branch(self, i, api_object):
+        """
+        Plot branch results
+        :param i: branch index (not counting HVDC lines because those are not real branches)
+        :param api_object: API object
+        :return:
+        """
+        fig = plt.figure(figsize=(12, 8))
+        ax_1 = fig.add_subplot(211)
+        # ax_2 = fig.add_subplot(212, sharex=ax_1)
+        ax_2 = fig.add_subplot(212)
+
+        # set time
+        x = self.circuit.time_profile
+        p = np.arange(len(x)).astype(float) / len(x)
+
+        # search available results
+        power_data = dict()
+        loading_data = dict()
+
+        for key, driver in self.circuit.results_dictionary.items():
+            if key == 'Time Series':
+                power_data[key] = driver.results.Sf.real[:, i]
+                loading_data[key] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+
+            if key == 'PTDF Time Series':
+                power_data[key] = driver.results.Sf.real[:, i]
+                loading_data[key] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+
+        # loading
+        df = pd.DataFrame(data=loading_data, index=p)
+        ax_1.set_title('Probability x < value', fontsize=14)
+        ax_1.set_ylabel('Loading [%]', fontsize=11)
+        df.plot(ax=ax_1)
+
+        # loading
+        df = pd.DataFrame(data=power_data, index=x)
+        ax_2.set_title('Power', fontsize=14)
+        ax_2.set_ylabel('Power [MW]', fontsize=11)
+        df.plot(ax=ax_2)
+
+        plt.legend()
+        fig.suptitle(api_object.name, fontsize=20)
+
+        # plot the profiles
+        plt.show()
 
     def mouseMoveEvent(self, mouseEvent):
         """

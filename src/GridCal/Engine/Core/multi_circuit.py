@@ -212,6 +212,9 @@ class MultiCircuit:
                                       Area(),
                                       Country()]
 
+        # this dictionary is set by the GUI and it is not meant to be used by the API operations
+        self.results_dictionary = dict()
+
         # dictionary of profile magnitudes per object
         self.profile_magnitudes = dict()
 

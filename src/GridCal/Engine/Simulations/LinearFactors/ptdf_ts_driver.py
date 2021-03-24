@@ -199,8 +199,8 @@ class PtdfTimeSeries(QThread):
         a = time.time()
 
         if self.end_ is None:
-            self.end_ = len(self.grid.time_profile) + 1
-        time_indices = np.arange(self.start_, self.end_)
+            self.end_ = len(self.grid.time_profile)
+        time_indices = np.arange(self.start_, self.end_ + 1)
 
         ts_numeric_circuit = compile_time_circuit(self.grid)
         self.results = PtdfTimeSeriesResults(n=ts_numeric_circuit.nbus,
@@ -222,7 +222,7 @@ class PtdfTimeSeries(QThread):
         self.results.Sf = ptdf_analysis.get_branch_time_series(Pbus_0)
 
         # compute post process
-        self.results.loading = self.results.Sf / (ptdf_analysis.numerical_circuit.branch_rates + 1e-9)
+        self.results.loading = self.results.Sf / (ts_numeric_circuit.Rates[:, time_indices].T + 1e-9)
         self.results.S = Pbus_0.T
 
         self.elapsed = time.time() - a
