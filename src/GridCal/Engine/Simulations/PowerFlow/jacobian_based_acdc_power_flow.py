@@ -67,7 +67,7 @@ def compute_converter_losses(V, It, F, alpha1, alpha2, alpha3, iVscL):
     return Gsw
 
 
-def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeqbus, Vtmabus,
+def fubm_jacobian_old(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeqbus, Vtmabus,
                   F, T, Ys, k2, tap, ma, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq):
     """
     Compute the FUBM jacobian in a dynamic fashion by only computing the derivatives that are needed
@@ -293,7 +293,7 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     return J
 
 
-def fubm_jacobian2(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeqbus, Vtmabus,
+def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeqbus, Vtmabus,
                   F, T, Ys, k2, tap, ma, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq):
     """
     Compute the FUBM jacobian in a dynamic fashion by only computing the derivatives that are needed
@@ -554,63 +554,19 @@ def compute_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
     # -------------------------------------------------------------------------
 
     #  Create F vector
-    # FUBM ----------------------------------------------------------------------
+    # FUBM ---------------------------------------------------------------------
+
     df = np.r_[misPbus,  # F1(x0) Power balance mismatch - Va
                misQbus,  # F2(x0) Power balance mismatch - Vm
-               misBeqz,  # F5(x0) Qf control    mismatch - Beq
-               misBeqv,  # F6(x0) Vf control    mismatch - Beq
-               misQfma,  # F4(x0) Qf control    mismatch - ma
-               misQtma,  # F8(x0) Qt control    mismatch - ma
-               misVtma,  # F7(x0) Vt control    mismatch - ma
-               misPfsh,  # F3(x0) Pf control    mismatch - Theta_shift
+               misBeqv,  # F5(x0) Qf control    mismatch - Beq
+               misVtma,  # F6(x0) Vf control    mismatch - Beq
+               misPfsh,  # F4(x0) Qf control    mismatch - ma
+               misQfma,  # F8(x0) Qt control    mismatch - ma
+               misBeqz,  # F7(x0) Vt control    mismatch - ma
+               misQtma,  # F3(x0) Pf control    mismatch - Theta_shift
                misPfdp]  # F9(x0) Pf control    mismatch - Theta_shift Droop
 
     return df, Scalc
-
-
-class SolSlicer2:
-
-    def __init__(self, npq, npv, nVfBeqbus, nVtmabus, nPfsh, nQfma, nBeqz, nQtma, nPfdp):
-        """
-        Declare the slicing limits in the same order as the Jacobian rows
-        :param npq:
-        :param npv:
-        :param nVfBeqbus:
-        :param nVtmabus:
-        :param nPfsh:
-        :param nQfma:
-        :param nBeqz:
-        :param nQtma:
-        :param nPfdp:
-        """
-        self.a0 = 0
-        self.a1 = self.a0 + npq + npv
-        self.a2 = self.a1 + npq
-        self.a3 = self.a2 + nVfBeqbus
-        self.a4 = self.a3 + nVtmabus
-        self.a5 = self.a4 + nPfsh
-        self.a6 = self.a5 + nQfma
-        self.a7 = self.a6 + nBeqz
-        self.a8 = self.a7 + nQtma
-        self.a9 = self.a8 + nPfdp
-
-    def split(self, dx):
-        """
-        Split the linear system solution
-        :param dx:
-        :return:
-        """
-        dVa = dx[self.a0:self.a1]
-        dVm = dx[self.a1:self.a2]
-        dBeq_v = dx[self.a2:self.a3]
-        dma_Vt = dx[self.a3:self.a4]
-        dtheta_Pf = dx[self.a4:self.a5]
-        dma_Qf = dx[self.a5:self.a6]
-        dBeq_z = dx[self.a6:self.a7]
-        dma_Qt = dx[self.a7:self.a8]
-        dtheta_Pd = dx[self.a8:self.a9]
-
-        return dVa, dVm, dBeq_v, dma_Vt, dtheta_Pf, dma_Qf, dBeq_z, dma_Qt, dtheta_Pd
 
 
 class SolSlicer:
@@ -631,12 +587,12 @@ class SolSlicer:
         self.a0 = 0
         self.a1 = self.a0 + npq + npv
         self.a2 = self.a1 + npq
-        self.a3 = self.a2 + nPfsh
-        self.a4 = self.a3 + nQfma
-        self.a5 = self.a4 + nBeqz
-        self.a6 = self.a5 + nVfBeqbus
+        self.a3 = self.a2 + nBeqz
+        self.a4 = self.a3 + nVfBeqbus
+        self.a5 = self.a4 + nQfma
+        self.a6 = self.a5 + nQtma
         self.a7 = self.a6 + nVtmabus
-        self.a8 = self.a7 + nQtma
+        self.a8 = self.a7 + nPfsh
         self.a9 = self.a8 + nPfdp
 
     def split(self, dx):
@@ -647,12 +603,12 @@ class SolSlicer:
         """
         dVa = dx[self.a0:self.a1]
         dVm = dx[self.a1:self.a2]
-        dtheta_Pf = dx[self.a2:self.a3]
-        dma_Qf = dx[self.a3:self.a4]
-        dBeq_z = dx[self.a4:self.a5]
-        dBeq_v = dx[self.a5:self.a6]
+        dBeq_z = dx[self.a2:self.a3]
+        dBeq_v = dx[self.a3:self.a4]
+        dma_Qf = dx[self.a4:self.a5]
+        dma_Qt = dx[self.a5:self.a6]
         dma_Vt = dx[self.a6:self.a7]
-        dma_Qt = dx[self.a7:self.a8]
+        dtheta_Pf = dx[self.a7:self.a8]
         dtheta_Pd = dx[self.a8:self.a9]
 
         return dVa, dVm, dBeq_v, dma_Vt, dtheta_Pf, dma_Qf, dBeq_z, dma_Qt, dtheta_Pd
