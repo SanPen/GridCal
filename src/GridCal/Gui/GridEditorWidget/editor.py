@@ -253,7 +253,7 @@ class DiagramScene(QGraphicsScene):
         df = pd.DataFrame(data=power_data, index=x)
         ax_1.set_title('Power', fontsize=14)
         ax_1.set_ylabel('Injections [MW]', fontsize=11)
-        df.plot(ax=ax_1)
+        df.plot.area(ax=ax_1)
 
         # voltage
         if len(voltage.keys()):
@@ -292,11 +292,11 @@ class DiagramScene(QGraphicsScene):
         for key, driver in self.circuit.results_dictionary.items():
             if key == 'Time Series':
                 power_data[key] = driver.results.Sf.real[:, i]
-                loading_data[key] = np.sort(driver.results.loading.real[:, i] * 100.0)
+                loading_data[key] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
 
             if key == 'PTDF Time Series':
                 power_data[key] = driver.results.Sf.real[:, i]
-                loading_data[key] = np.sort(driver.results.loading.real[:, i] * 100.0)
+                loading_data[key] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
 
         # loading
         df = pd.DataFrame(data=loading_data, index=p)
