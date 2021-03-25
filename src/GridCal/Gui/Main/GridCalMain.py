@@ -52,6 +52,7 @@ import GridCal.Engine.Simulations.LinearFactors.analytic_ptdf_driver as ptdfdrv
 import GridCal.Engine.Simulations.LinearFactors.ptdf_ts_driver as ptdftsdrv
 import GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_driver as scdrv
 import GridCal.Engine.Simulations.NK.n_minus_k_driver as nmkdrv
+import GridCal.Engine.Simulations.NK.n_minus_k_ts_driver as nmktsdrv
 import GridCal.Engine.Simulations.OPF.opf_ts_driver as opftsdrv
 import GridCal.Engine.Simulations.PowerFlow.power_flow_driver as pfdrv
 import GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_driver as mcdrv
@@ -273,6 +274,7 @@ class MainGUI(QMainWindow):
         self.ptdf_analysis = None
         self.ptdf_ts_analysis = None
         self.otdf_analysis = None
+        self.otdf_ts_analysis = None
         self.painter = None
         self.delete_and_reduce_driver = None
         self.export_all_thread_object = None
@@ -368,6 +370,8 @@ class MainGUI(QMainWindow):
         self.ui.actionPTDF.triggered.connect(self.run_ptdf)
 
         self.ui.actionOTDF.triggered.connect(self.run_otdf)
+
+        self.ui.actionOTDF_time_series.triggered.connect(self.run_otdf_ts)
 
         self.ui.actionReset_console.triggered.connect(self.create_console)
 
@@ -589,7 +593,8 @@ class MainGUI(QMainWindow):
                        self.topology_reduction,
                        self.ptdf_analysis,
                        self.ptdf_ts_analysis,
-                       self.otdf_analysis]
+                       self.otdf_analysis,
+                       self.otdf_ts_analysis]
 
         # as a side effect the circuit should know about these for accessing to the results via the objects themselves
         self.circuit.results_dictionary = {thr.name: thr for thr in all_threads if thr is not None}
@@ -2611,6 +2616,53 @@ class MainGUI(QMainWindow):
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
 
+    def run_otdf_ts(self):
+        """
+        Run a Power Transfer Distribution Factors analysis
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+            if restpes.SimulationTypes.OTDF_TS_run not in self.stuff_running_now:
+
+                self.add_simulation(restpes.SimulationTypes.OTDF_TS_run)
+
+                self.LOCK()
+
+                options = nmkdrv.NMinusKOptions(distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
+
+                self.otdf_ts_analysis = nmktsdrv.NMinusKTimeSeries(grid=self.circuit, options=options)
+
+                self.otdf_ts_analysis.progress_signal.connect(self.ui.progressBar.setValue)
+                self.otdf_ts_analysis.progress_text.connect(self.ui.progress_label.setText)
+                self.otdf_ts_analysis.done_signal.connect(self.post_otdf_ts)
+                self.otdf_ts_analysis.start()
+            else:
+                warning_msg('Another OTDF is being executed now...')
+        else:
+            pass
+
+    def post_otdf_ts(self):
+        """
+        Action performed after the short circuit.
+        Returns:
+
+        """
+        self.remove_simulation(restpes.SimulationTypes.OTDF_TS_run)
+
+        # update the results in the circuit structures
+        if not self.otdf_ts_analysis.__cancel__:
+            if self.otdf_ts_analysis.results is not None:
+
+                self.ui.progress_label.setText('Colouring OTDF results in the grid...')
+                QtGui.QGuiApplication.processEvents()
+
+                self.update_available_results()
+            else:
+                error_msg('Something went wrong, There are no OTDF results.')
+
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
+
     def get_selected_voltage_stability(self):
         """
         Gather the voltage stability options
@@ -3654,6 +3706,10 @@ class MainGUI(QMainWindow):
             if self.otdf_analysis.results is not None:
                 lst.append(self.otdf_analysis)
 
+        if self.otdf_ts_analysis is not None:
+            if self.otdf_ts_analysis.results is not None:
+                lst.append(self.otdf_ts_analysis)
+
         return lst
 
     def update_available_results(self):
@@ -4036,6 +4092,12 @@ class MainGUI(QMainWindow):
             elif study_name == nmkdrv.NMinusK.name:
                 if self.otdf_analysis.results is not None:
                     self.results_mdl = self.otdf_analysis.results.mdl(result_type=study_type)
+                else:
+                    warning_msg('There seem to be no results :(')
+
+            elif study_name == nmktsdrv.NMinusKTimeSeries.name:
+                if self.otdf_ts_analysis.results is not None:
+                    self.results_mdl = self.otdf_ts_analysis.results.mdl(result_type=study_type)
                 else:
                     warning_msg('There seem to be no results :(')
 

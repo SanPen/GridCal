@@ -15,55 +15,46 @@
 import time
 import datetime
 import numpy as np
+from numba import jit, prange
 from itertools import combinations
 from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
-from GridCal.Engine.Simulations.NK.n_minus_k_results import NMinusKResults
+from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
+from GridCal.Engine.Simulations.NK.n_minus_k_driver import NMinusKOptions
+from GridCal.Engine.Simulations.NK.n_minus_k_ts_results import NMinusKTimeSeriesResults
 from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf import LinearAnalysis
 
 
-def enumerate_states_n_k(m, k=1):
+@jit(nopython=True, parallel=True)
+def compute_flows_numba(e, nt, nc, OTDF, Flows, rates, overload_count, max_overload):
     """
-    Enumerates the states to produce the so called N-k failures
-    :param m: number of branches
-    :param k: failure level
-    :return: binary array (number of states, m)
+    Compute OTDF based flows
+    :param nt: number of time steps
+    :param ne: number of elements
+    :param nc: number of failed elements
+    :param OTDF: OTDF matrix (element, failed element)
+    :param Flows: base flows matrix (time, element)
+    :return: Cube of N-1 Flows (time, elements, contingencies)
     """
 
-    # num = int(math.factorial(k) / math.factorial(m-k))
-    states = list()
-    indices = list()
-    arr = np.ones(m, dtype=int).tolist()
+    for c in prange(nc):
+        for t in range(nt):
+            # the formula is: Fn-1(i) = Fbase(i) + OTDF(i,j) * Fbase(j) here i->line, j->failed line
+            flow_n_1 = abs(OTDF[e, c] * Flows[t, c] + Flows[t, e])
+            rate = flow_n_1 / rates[t, e]
 
-    idx = list(range(m))
-    for k1 in range(k + 1):
-        for failed in combinations(idx, k1):
-            indices.append(failed)
-            arr2 = arr.copy()
-            for j in failed:
-                arr2[j] = 0
-            states.append(arr2)
-
-    return np.array(states), indices
+            if rate > 1:
+                overload_count[e, c] += 1
+                max_overload[e, c] = max(max_overload[e, c], flow_n_1)
 
 
-class NMinusKOptions:
-
-    def __init__(self, distributed_slack=True, correct_values=True):
-
-        self.distributed_slack = distributed_slack
-
-        self.correct_values = correct_values
-
-
-class NMinusK(QThread):
+class NMinusKTimeSeries(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
-    name = 'N-1/OTDF'
+    name = 'N-1 time series'
 
     def __init__(self, grid: MultiCircuit, options: NMinusKOptions):
         """
@@ -81,12 +72,10 @@ class NMinusK(QThread):
         self.options = options
 
         # N-K results
-        self.results = NMinusKResults(n=0, m=0,
-                                      bus_names=(),
-                                      branch_names=(),
-                                      bus_types=())
-
-        self.numerical_circuit = None
+        self.results = NMinusKTimeSeriesResults(n=0, ne=0, nc=0,
+                                                bus_names=(),
+                                                branch_names=(),
+                                                bus_types=())
 
         # set cancel state
         self.__cancel__ = False
@@ -114,13 +103,15 @@ class NMinusK(QThread):
 
         self.progress_text.emit("Filtering elements by voltage")
 
-        self.numerical_circuit = compile_snapshot_circuit(self.grid)
+        ts_numeric_circuit = compile_time_circuit(self.grid)
+        ne = ts_numeric_circuit.nbr
+        nc = ts_numeric_circuit.nbr
 
-        results = NMinusKResults(m=self.numerical_circuit.nbr,
-                                 n=self.numerical_circuit.nbus,
-                                 branch_names=self.numerical_circuit.branch_names,
-                                 bus_names=self.numerical_circuit.bus_names,
-                                 bus_types=self.numerical_circuit.bus_types)
+        results = NMinusKTimeSeriesResults(ne=ne, nc=nc,
+                                           n=ts_numeric_circuit.nbus,
+                                           branch_names=ts_numeric_circuit.branch_names,
+                                           bus_names=ts_numeric_circuit.bus_names,
+                                           bus_types=ts_numeric_circuit.bus_types)
 
         self.progress_text.emit('Analyzing outage distribution factors...')
         linear_analysis = LinearAnalysis(grid=self.grid,
@@ -128,25 +119,28 @@ class NMinusK(QThread):
                                          correct_values=self.options.correct_values)
         linear_analysis.run()
 
-        Pbus = self.numerical_circuit.get_injections(False).real[:, 0]
-        PTDF = linear_analysis.results.PTDF
-        LODF = linear_analysis.results.LODF
+        self.progress_text.emit('Computing branch base flows...')
+        Pbus = ts_numeric_circuit.Sbus.real
+        flows = linear_analysis.get_branch_time_series(Pbus)
+        rates = ts_numeric_circuit.Rates
 
-        # compute the branch flows in "n"
-        flows_n = np.dot(PTDF, Pbus)
+        self.progress_text.emit('Computing N-1 flows...')
 
-        self.progress_text.emit('Computing flows...')
-        nl = self.numerical_circuit.nbr
-        for c in range(nl):  # branch that fails (contingency)
+        nt = flows.shape[0]
 
-            results.Sf[:, c] = flows_n[:] + LODF[:, c] * flows_n[c]
-            results.loading[:, c] = results.Sf[:, c] / (self.numerical_circuit.branch_rates + 1e-9)
+        for e in range(ne):
+            compute_flows_numba(e=e,
+                                nt=nt,
+                                nc=nc,
+                                OTDF=linear_analysis.results.LODF,
+                                Flows=flows,
+                                rates=rates.T,
+                                overload_count=results.overload_count,
+                                max_overload=results.max_overload)
 
-            results.S[c, :] = Pbus
+            self.progress_signal.emit((e + 1) / ne * 100)
 
-            self.progress_signal.emit((c+1) / nl * 100)
-
-        results.otdf = LODF
+        results.relative_frequency = results.overload_count / nt
 
         return results
 
@@ -170,31 +164,19 @@ class NMinusK(QThread):
 if __name__ == '__main__':
     import os
     import pandas as pd
-    from GridCal.Engine import FileOpen, SolverType,PowerFlowOptions
+    from GridCal.Engine import FileOpen, SolverType, PowerFlowOptions
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/grid_2_islands.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/2869 Pegase.gridcal'
-    fname = os.path.join('..', '..', '..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
+    # fname = os.path.join('..', '..', '..', '..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
     # fname = os.path.join('..', '..', '..', '..', '..', 'Grids_and_profiles', 'grids', '2869 Pegase.gridcal')
 
     main_circuit = FileOpen(fname).open()
 
     options_ = NMinusKOptions()
-    simulation = NMinusK(grid=main_circuit, options=options_)
+    simulation = NMinusKTimeSeries(grid=main_circuit, options=options_)
     simulation.run()
 
-    otdf_ = simulation.get_otdf()
-
-    # save the result
-    br_names = [b.name for b in main_circuit.branches]
-    br_names2 = ['#' + b.name for b in main_circuit.branches]
-    w = pd.ExcelWriter('OTDF IEEE30.xlsx')
-    pd.DataFrame(data=simulation.results.Sf.real,
-                 columns=br_names,
-                 index=['base'] + br_names2).to_excel(w, sheet_name='branch power')
-    pd.DataFrame(data=otdf_,
-                 columns=br_names,
-                 index=br_names2).to_excel(w, sheet_name='OTDF')
-    w.save()
+    print()

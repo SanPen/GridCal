@@ -26,7 +26,6 @@ class NMinusKResults:
         TimeSeriesResults constructor
         @param n: number of buses
         @param m: number of branches
-        @param nt: number of time steps
         """
 
         self.name = 'N-1'
@@ -75,28 +74,9 @@ class NMinusKResults:
         """
         Export as json
         """
-
-        with open(fname, "wb") as output_file:
+        with open(fname, "w") as output_file:
             json_str = json.dumps(self.get_results_dict())
             output_file.write(json_str)
-
-    def analyze(self):
-        """
-        Analyze the results
-        @return:
-        """
-        branch_overload_frequency = np.zeros(self.m)
-        bus_undervoltage_frequency = np.zeros(self.n)
-        bus_overvoltage_frequency = np.zeros(self.n)
-        buses_selected_for_storage_frequency = np.zeros(self.n)
-        for i in range(self.nt):
-            branch_overload_frequency[self.overloads_idx[i]] += 1
-            bus_undervoltage_frequency[self.undervoltage_idx[i]] += 1
-            bus_overvoltage_frequency[self.overvoltage_idx[i]] += 1
-            buses_selected_for_storage_frequency[self.buses_useful_for_storage[i]] += 1
-
-        return branch_overload_frequency, bus_undervoltage_frequency, bus_overvoltage_frequency, \
-                buses_selected_for_storage_frequency
 
     def mdl(self, result_type: ResultTypes):
         """

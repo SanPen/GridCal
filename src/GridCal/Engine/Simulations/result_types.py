@@ -87,6 +87,10 @@ class ResultTypes(Enum):
 
     OTDF = 'Outage transfer distribution factors', DeviceType.BranchDevice
 
+    MaxOverloads = 'Maximum contingency flow', DeviceType.BranchDevice
+    ContingencyFrequency = 'Contingency frequency', DeviceType.BranchDevice
+    ContingencyRelativeFrequency = 'Contingency relative frequency', DeviceType.BranchDevice
+
     SimulationError = 'Error', DeviceType.BusDevice
 
     OTDFSimulationError = 'Error', DeviceType.BranchDevice
@@ -113,4 +117,5 @@ class SimulationTypes(Enum):
     PTDF_run = 'PTDF'
     PTDF_TS_run = 'PTDF_TS'
     OTDF_run = 'OTDF'
+    OTDF_TS_run = 'OTDF_TS'
     Delete_and_reduce_run = 'Delete and reduce'
