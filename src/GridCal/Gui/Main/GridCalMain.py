@@ -490,6 +490,8 @@ class MainGUI(QMainWindow):
 
         self.ui.busViewerButton.clicked.connect(self.bus_viewer)
 
+        self.ui.search_results_Button.clicked.connect(self.search_in_results)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -5457,6 +5459,17 @@ class MainGUI(QMainWindow):
             if len(logger) > 0:
                 dlg = LogsDialogue('Plexos generation import', logger)
                 dlg.exec_()
+
+    def search_in_results(self):
+
+        model = self.ui.resultsTableView.model()
+        text = self.ui.sear_results_lineEdit.text()
+        column = 0
+        start = model.index(0, column)
+        matches = model.match(start, QtCore.Qt.DisplayRole, text, 1, QtCore.Qt.MatchContains)
+        for index in matches:
+            # index.row(), index.column()
+            self.ui.resultsTableView.selectionModel().select(index, QtCore.QItemSelectionModel.Select)
 
 
 def run(use_native_dialogues=True):

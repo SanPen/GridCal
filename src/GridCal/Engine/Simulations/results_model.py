@@ -50,6 +50,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
             self.data_c = data
         self.cols_c = columns
         self.index_c = index
+
         self.editable = editable
         self.editable_min_idx = editable_min_idx
         self.palette = palette
