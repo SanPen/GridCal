@@ -21,7 +21,7 @@ from GridCal.Engine.Simulations.results_model import ResultsModel
 
 class NMinusKTimeSeriesResults:
 
-    def __init__(self, n, ne, nc, bus_names, branch_names, bus_types):
+    def __init__(self, n, ne, nc, time_array, bus_names, branch_names, bus_types):
         """
         TimeSeriesResults constructor
         @param n: number of buses
@@ -29,6 +29,8 @@ class NMinusKTimeSeriesResults:
         """
 
         self.name = 'N-1 time series'
+
+        nt = len(time_array)
 
         self.bus_types = np.zeros(n, dtype=int)
 
@@ -38,15 +40,23 @@ class NMinusKTimeSeriesResults:
 
         self.bus_types = bus_types
 
+        self.time_array = time_array
+
+        self.worst_flows = np.zeros((nt, ne))
+
+        self.worst_loading = np.zeros((nt, ne))
+
         self.overload_count = np.zeros((ne, nc), dtype=int)
 
-        self.relative_frequency = np.zeros((ne, nc), dtype=int)
+        self.relative_frequency = np.zeros((ne, nc))
 
         self.max_overload = np.zeros((ne, nc))
 
         self.available_results = [ResultTypes.ContingencyFrequency,
                                   ResultTypes.ContingencyRelativeFrequency,
-                                  ResultTypes.MaxOverloads]
+                                  ResultTypes.MaxOverloads,
+                                  ResultTypes.WorstContingencyFlows,
+                                  ResultTypes.WorstContingencyLoading]
 
     def get_steps(self):
         return
@@ -96,6 +106,21 @@ class NMinusKTimeSeriesResults:
             y_label = '(#)'
             title = 'Contingency count '
             labels = ['#' + x for x in self.branch_names]
+
+        elif result_type == ResultTypes.WorstContingencyFlows:
+            data = self.worst_flows
+            y_label = '(MW)'
+            title = 'Worst contingency flows '
+            labels = self.branch_names
+            index = self.time_array
+
+        elif result_type == ResultTypes.WorstContingencyLoading:
+            data = self.worst_loading * 100.0
+            y_label = '(%)'
+            title = 'Worst contingency loading '
+            labels = self.branch_names
+            index = self.time_array
+
         else:
             raise Exception('Result type not understood:' + str(result_type))
 

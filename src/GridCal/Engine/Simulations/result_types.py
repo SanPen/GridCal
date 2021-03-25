@@ -88,6 +88,8 @@ class ResultTypes(Enum):
     OTDF = 'Outage transfer distribution factors', DeviceType.BranchDevice
 
     MaxOverloads = 'Maximum contingency flow', DeviceType.BranchDevice
+    WorstContingencyFlows = 'Worst contingency flows', DeviceType.BranchDevice
+    WorstContingencyLoading = 'Worst contingency loading', DeviceType.BranchDevice
     ContingencyFrequency = 'Contingency frequency', DeviceType.BranchDevice
     ContingencyRelativeFrequency = 'Contingency relative frequency', DeviceType.BranchDevice
 

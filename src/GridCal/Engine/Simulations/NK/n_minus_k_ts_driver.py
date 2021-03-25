@@ -27,8 +27,8 @@ from GridCal.Engine.Simulations.NK.n_minus_k_ts_results import NMinusKTimeSeries
 from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf import LinearAnalysis
 
 
-@jit(nopython=True, parallel=True)
-def compute_flows_numba(e, nt, nc, OTDF, Flows, rates, overload_count, max_overload):
+@jit(nopython=True, parallel=False)
+def compute_flows_numba(e, nt, nc, OTDF, Flows, rates, overload_count, max_overload, worst_flows):
     """
     Compute OTDF based flows
     :param nt: number of time steps
@@ -39,15 +39,22 @@ def compute_flows_numba(e, nt, nc, OTDF, Flows, rates, overload_count, max_overl
     :return: Cube of N-1 Flows (time, elements, contingencies)
     """
 
-    for c in prange(nc):
+    for c in range(nc):
         for t in range(nt):
             # the formula is: Fn-1(i) = Fbase(i) + OTDF(i,j) * Fbase(j) here i->line, j->failed line
-            flow_n_1 = abs(OTDF[e, c] * Flows[t, c] + Flows[t, e])
-            rate = flow_n_1 / rates[t, e]
+            flow_n_1 = OTDF[e, c] * Flows[t, c] + Flows[t, e]
+            flow_n_1_abs = abs(flow_n_1)
 
-            if rate > 1:
-                overload_count[e, c] += 1
-                max_overload[e, c] = max(max_overload[e, c], flow_n_1)
+            if rates[t, e] > 0:
+                rate = flow_n_1_abs / rates[t, e]
+
+                if rate > 1:
+                    overload_count[e, c] += 1
+                    if flow_n_1_abs > max_overload[e, c]:
+                        max_overload[e, c] = flow_n_1_abs
+
+            if flow_n_1_abs > abs(worst_flows[t, e]):
+                worst_flows[t, e] = flow_n_1
 
 
 class NMinusKTimeSeries(QThread):
@@ -73,6 +80,7 @@ class NMinusKTimeSeries(QThread):
 
         # N-K results
         self.results = NMinusKTimeSeriesResults(n=0, ne=0, nc=0,
+                                                time_array=(),
                                                 bus_names=(),
                                                 branch_names=(),
                                                 bus_types=())
@@ -106,8 +114,10 @@ class NMinusKTimeSeries(QThread):
         ts_numeric_circuit = compile_time_circuit(self.grid)
         ne = ts_numeric_circuit.nbr
         nc = ts_numeric_circuit.nbr
+        nt = len(ts_numeric_circuit.time_array)
 
         results = NMinusKTimeSeriesResults(ne=ne, nc=nc,
+                                           time_array=ts_numeric_circuit.time_array,
                                            n=ts_numeric_circuit.nbus,
                                            branch_names=ts_numeric_circuit.branch_names,
                                            bus_names=ts_numeric_circuit.bus_names,
@@ -122,11 +132,9 @@ class NMinusKTimeSeries(QThread):
         self.progress_text.emit('Computing branch base flows...')
         Pbus = ts_numeric_circuit.Sbus.real
         flows = linear_analysis.get_branch_time_series(Pbus)
-        rates = ts_numeric_circuit.Rates
+        rates = ts_numeric_circuit.Rates.T
 
         self.progress_text.emit('Computing N-1 flows...')
-
-        nt = flows.shape[0]
 
         for e in range(ne):
             compute_flows_numba(e=e,
@@ -134,13 +142,15 @@ class NMinusKTimeSeries(QThread):
                                 nc=nc,
                                 OTDF=linear_analysis.results.LODF,
                                 Flows=flows,
-                                rates=rates.T,
+                                rates=rates,
                                 overload_count=results.overload_count,
-                                max_overload=results.max_overload)
+                                max_overload=results.max_overload,
+                                worst_flows=results.worst_flows)
 
             self.progress_signal.emit((e + 1) / ne * 100)
 
         results.relative_frequency = results.overload_count / nt
+        results.worst_loading = results.worst_flows / (rates + 1e-9)
 
         return results
 
