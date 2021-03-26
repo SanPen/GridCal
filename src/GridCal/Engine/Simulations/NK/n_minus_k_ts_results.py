@@ -68,7 +68,10 @@ class NMinusKTimeSeriesResults:
         """
         data = {
                 'overload_count': self.overload_count.tolist(),
-                'max_overload': self.max_overload.tolist()
+                'relative_frequency': self.relative_frequency.tolist(),
+                'max_overload': self.max_overload.tolist(),
+                'worst_flows': self.worst_flows.tolist(),
+                'worst_loading': self.worst_loading.tolist(),
                 }
         return data
 

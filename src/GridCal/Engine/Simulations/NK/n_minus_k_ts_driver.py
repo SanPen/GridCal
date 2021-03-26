@@ -28,7 +28,7 @@ from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf import LinearAnalysi
 
 
 @jit(nopython=True, parallel=False)
-def compute_flows_numba(e, nt, nc, OTDF, Flows, rates, overload_count, max_overload, worst_flows):
+def compute_flows_numba_t(e, c, nt, OTDF, Flows, rates, overload_count, max_overload, worst_flows):
     """
     Compute OTDF based flows
     :param nt: number of time steps
@@ -39,22 +39,41 @@ def compute_flows_numba(e, nt, nc, OTDF, Flows, rates, overload_count, max_overl
     :return: Cube of N-1 Flows (time, elements, contingencies)
     """
 
-    for c in range(nc):
-        for t in range(nt):
-            # the formula is: Fn-1(i) = Fbase(i) + OTDF(i,j) * Fbase(j) here i->line, j->failed line
-            flow_n_1 = OTDF[e, c] * Flows[t, c] + Flows[t, e]
-            flow_n_1_abs = abs(flow_n_1)
+    for t in range(nt):
+        # the formula is: Fn-1(i) = Fbase(i) + OTDF(i,j) * Fbase(j) here i->line, j->failed line
+        flow_n_1 = OTDF[e, c] * Flows[t, c] + Flows[t, e]
+        flow_n_1_abs = abs(flow_n_1)
 
-            if rates[t, e] > 0:
-                rate = flow_n_1_abs / rates[t, e]
+        if rates[t, e] > 0:
+            rate = flow_n_1_abs / rates[t, e]
 
-                if rate > 1:
-                    overload_count[e, c] += 1
-                    if flow_n_1_abs > max_overload[e, c]:
-                        max_overload[e, c] = flow_n_1_abs
+            if rate > 1:
+                overload_count[e, c] += 1
+                if flow_n_1_abs > max_overload[e, c]:
+                    max_overload[e, c] = flow_n_1_abs
 
-            if flow_n_1_abs > abs(worst_flows[t, e]):
-                worst_flows[t, e] = flow_n_1
+        if flow_n_1_abs > abs(worst_flows[t, e]):
+            worst_flows[t, e] = flow_n_1
+
+
+@jit(nopython=True, parallel=True)
+def compute_flows_numba(e, nt, nc, OTDF, Flows, rates, overload_count, max_overload, worst_flows, paralelize_from=500):
+    """
+    Compute OTDF based flows
+    :param nt: number of time steps
+    :param ne: number of elements
+    :param nc: number of failed elements
+    :param OTDF: OTDF matrix (element, failed element)
+    :param Flows: base flows matrix (time, element)
+    :return: Cube of N-1 Flows (time, elements, contingencies)
+    """
+
+    if nc < paralelize_from:
+        for c in range(nc):
+            compute_flows_numba_t(e, c, nt, OTDF, Flows, rates, overload_count, max_overload, worst_flows)
+    else:
+        for c in prange(nc):
+            compute_flows_numba_t(e, c, nt, OTDF, Flows, rates, overload_count, max_overload, worst_flows)
 
 
 class NMinusKTimeSeries(QThread):
