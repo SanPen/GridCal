@@ -341,8 +341,8 @@ def plot_html_map(circuit: MultiCircuit, Sbus, Sf, voltages, loadings, types, lo
                   failed_br_idx=None,
                   loading_label='loading',
                   use_flow_based_width=False,
-                  min_width=5,
-                  max_width=5,
+                  min_branch_width=5,
+                  max_branch_width=5,
                   min_bus_width=20,
                   max_bus_width=20,
                   file_name='map.html'):

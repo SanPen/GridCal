@@ -346,6 +346,22 @@ class Bus(EditableDevice):
         if show_fig:
             plt.show()
 
+    def get_active_injection_profiles_dictionary(self):
+        """
+        Get the devices' profiles in a dictionary with the correct sign
+        :return:
+        """
+        dta = dict()
+        devices = self.controlled_generators + self.batteries + self.static_generators
+        if len(devices) > 0:
+            for elm in devices:
+                dta[elm.name] = elm.P_prof
+
+        for elm in self.loads:
+            dta[elm.name] = -elm.P_prof
+
+        return dta
+
     def copy(self):
         """
         Deep copy of this object

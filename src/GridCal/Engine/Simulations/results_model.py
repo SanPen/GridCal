@@ -50,6 +50,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
             self.data_c = data
         self.cols_c = columns
         self.index_c = index
+
         self.editable = editable
         self.editable_min_idx = editable_min_idx
         self.palette = palette
@@ -197,6 +198,13 @@ class ResultsModel(QtCore.QAbstractTableModel):
             self.data_c[:, i] = np.sort(self.data_c[:, i], axis=0)
 
         self.xlabel = 'Probability of value<=x'
+
+    def convert_to_abs(self):
+        """
+        Convert the data to abs
+        :return:
+        """
+        self.data_c = np.abs(self.data_c)
 
     def save_to_excel(self, file_name):
         """

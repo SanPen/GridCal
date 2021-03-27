@@ -1735,11 +1735,25 @@ p, li { white-space: pre-wrap; }
                   <string>Results as cummulative density functions</string>
                  </property>
                  <property name="text">
-                  <string>CDF</string>
+                  <string/>
                  </property>
                  <property name="icon">
                   <iconset resource="icons.qrc">
                    <normaloff>:/Icons/icons/cdf.svg</normaloff>:/Icons/icons/cdf.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="results_as_abs_checkBox">
+                 <property name="statusTip">
+                  <string>Results as absolute values</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/abs.svg</normaloff>:/Icons/icons/abs.svg</iconset>
                  </property>
                 </widget>
                </item>
@@ -1752,6 +1766,33 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <spacer name="horizontalSpacer_4">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="sear_results_lineEdit"/>
+               </item>
+               <item>
+                <widget class="QPushButton" name="search_results_Button">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/magnifying_glass.svg</normaloff>:/Icons/icons/magnifying_glass.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_17">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -6430,6 +6471,7 @@ points from time series</string>
    <addaction name="actionPTDF"/>
    <addaction name="actionPTDF_time_series"/>
    <addaction name="actionOTDF"/>
+   <addaction name="actionOTDF_time_series"/>
    <addaction name="separator"/>
    <addaction name="actionBigger_nodes"/>
    <addaction name="actionSmaller_nodes"/>
@@ -7002,6 +7044,18 @@ points from time series</string>
    </property>
    <property name="text">
     <string>Generator generation</string>
+   </property>
+  </action>
+  <action name="actionOTDF_time_series">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/otdf_ts.svg</normaloff>:/Icons/icons/otdf_ts.svg</iconset>
+   </property>
+   <property name="text">
+    <string>OTDF time series</string>
+   </property>
+   <property name="toolTip">
+    <string>Runs the N-1 time series analysis</string>
    </property>
   </action>
  </widget>

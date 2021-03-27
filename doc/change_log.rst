@@ -52,6 +52,7 @@ Version 4.0.0 (multi-terminal DC Grids)
 
 - Linear Analysis
     - Replaced the empirical PTDF/OTDF by the analytical PTDF/LODF which are several orders of magnitude faster.
+    - Added linear contingency analysis time series
     - Added linear grouping based on PTDF + DBScan clustering.
 
 - Power Flow
@@ -64,7 +65,7 @@ Version 4.0.0 (multi-terminal DC Grids)
       a more stable process.
     - Seamless AC-DC simulation:
         - Added the FUBM model at the numeric circuit level
-        - Added FUBM version of the line-search Newton-Raphson method (not accelerated with numba for now)
+        - Added FUBM version of the line-search Newton-Raphson method (without the super optimized jacobian for now)
         - Integrated it with the GUI.
         - The advanced controls such a transformer power set-points are simulated using the FUBM logic.
 
