@@ -4103,6 +4103,9 @@ class MainGUI(QMainWindow):
 
             if self.results_mdl is not None:
 
+                if self.ui.results_as_abs_checkBox.isChecked():
+                    self.results_mdl.convert_to_abs()
+
                 if self.ui.results_as_cdf_checkBox.isChecked():
                     self.results_mdl.convert_to_cdf()
 

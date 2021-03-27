@@ -199,6 +199,13 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
         self.xlabel = 'Probability of value<=x'
 
+    def convert_to_abs(self):
+        """
+        Convert the data to abs
+        :return:
+        """
+        self.data_c = np.abs(self.data_c)
+
     def save_to_excel(self, file_name):
         """
         save data to excel
