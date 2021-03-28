@@ -5526,15 +5526,17 @@ class MainGUI(QMainWindow):
                 dlg.exec_()
 
     def search_in_results(self):
+        """
+        Search in the results model
+        :return:
+        """
 
-        model = self.ui.resultsTableView.model()
-        text = self.ui.sear_results_lineEdit.text()
-        column = 0
-        start = model.index(0, column)
-        matches = model.match(start, QtCore.Qt.DisplayRole, text, 1, QtCore.Qt.MatchContains)
-        for index in matches:
-            # index.row(), index.column()
-            self.ui.resultsTableView.selectionModel().select(index, QtCore.QItemSelectionModel.Select)
+        if self.results_mdl is not None:
+            text = self.ui.sear_results_lineEdit.text()
+            mdl = self.results_mdl.search_in_columns(text)
+
+            if mdl is not None:
+                self.ui.resultsTableView.setModel(mdl)
 
 
 def run(use_native_dialogues=True):

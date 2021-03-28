@@ -135,6 +135,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
             if orientation == QtCore.Qt.Horizontal:
                 if len(self.cols_c) > p_int:
                     return self.cols_c[p_int]
+
             elif orientation == QtCore.Qt.Vertical:
                 if self.index_c is None:
                     return p_int
@@ -144,6 +145,46 @@ class ResultsModel(QtCore.QAbstractTableModel):
                     else:
                         return str(self.index_c[p_int])
         return None
+
+    def slice_cols(self, col_idx):
+        """
+        Make column slicing
+        :param col_idx: indices of the columns
+        :return: Nothing
+        """
+        sliced_model = ResultsModel(data=self.data_c[:, col_idx],
+                                    columns=self.cols_c[col_idx],
+                                    index=self.index_c,
+                                    palette=None,
+                                    title=self.title,
+                                    xlabel=self.xlabel,
+                                    ylabel=self.ylabel,
+                                    units=self.units,
+                                    parent=None,
+                                    editable=self.editable,
+                                    editable_min_idx=self.editable_min_idx,
+                                    decimals=6)
+
+        sliced_model.format_string = self.format_string
+        return sliced_model
+
+    def search_in_columns(self, txt):
+        """
+        Search stuff
+        :param txt:
+        :return:
+        """
+        idx = list()
+        txt2 = str(txt).lower()
+        for i, val in enumerate(self.cols_c):
+
+            if txt2 in val:
+                idx.append(i)
+
+        if len(idx) > 0:
+            return self.slice_cols(idx)
+        else:
+            return None
 
     def copy_to_column(self, row, col):
         """
