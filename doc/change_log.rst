@@ -33,12 +33,14 @@ Version 4.0.0 (multi-terminal DC Grids)
     - Added a bus viewer: It allows to visualize subsets of the grid.
       It is useful for very large grids where the complete schematic is cumbersome or slow.
     - Added check that converts the results into CDF.
+    - Added check that converts the results into their absolute value.
     - Added schematic branch width based on the line flow.
+    - Added button in the results to copy text data in numpy format.
+    - Added column search in the results.
 
     - Revamp of the context menus.
 
     - Replaced how all the GUI messages are handled.
-    - Added button in the results to copy text data in numpy format
 
     - Improved the logger window, which now allows to save logs report.
     - Improved the transformer and line editors integrating the template selection.

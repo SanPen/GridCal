@@ -14,7 +14,6 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-import numba as nb
 import pandas as pd
 from PySide2.QtWidgets import *
 from PySide2 import QtCore
@@ -251,7 +250,6 @@ class ResultsModel(QtCore.QAbstractTableModel):
         """
         save data to excel
         :param file_name:
-        :param mode: 'real', 'imag', 'abs'
         """
         index, columns, data = self.get_data()
 
@@ -261,7 +259,6 @@ class ResultsModel(QtCore.QAbstractTableModel):
         """
         Save data to csv
         :param file_name:
-        :param mode: 'real', 'imag', 'abs', 'as_is'
         """
         index, columns, data = self.get_data()
         pd.DataFrame(data=data, index=index, columns=columns).to_csv(file_name)
@@ -269,7 +266,6 @@ class ResultsModel(QtCore.QAbstractTableModel):
     def get_data_frame(self):
         """
         Save data to csv
-        :param mode: 'real', 'imag', 'abs', 'as_is'
         """
         index, columns, data = self.get_data()
         return pd.DataFrame(data=data, index=index, columns=columns)
