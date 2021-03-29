@@ -30,9 +30,9 @@ def test_lhs():
                                   control_q=ReactivePowerControlMode.NoControl,
                                   control_p=True)
     print('Running LHC...')
-    lhs_sim = LatinHypercubeSampling(main_circuit,
-                                     pf_options,
-                                     sampling_points=100)
+    lhs_sim = StochasticPowerFlowDriver(main_circuit,
+                                        pf_options,
+                                        sampling_points=100)
     lhs_sim.run()
 
 

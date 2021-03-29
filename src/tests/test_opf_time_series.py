@@ -25,8 +25,19 @@ def test_opf_ts():
     main_circuit = FileOpen(fname).open()
 
     print('Running OPF-TS...', '')
+
+    power_flow_options = PowerFlowOptions(SolverType.NR,
+                                          verbose=False,
+                                          initialize_with_existing_solution=False,
+                                          multi_core=False,
+                                          dispatch_storage=True,
+                                          control_q=ReactivePowerControlMode.NoControl,
+                                          control_p=True,
+                                          retry_with_other_methods=False)
+
     opf_options = OptimalPowerFlowOptions(verbose=False,
                                           solver=SolverType.DC_OPF,
+                                          power_flow_options=power_flow_options,
                                           grouping=TimeGrouping.Daily)
     s = 23
     e = 143

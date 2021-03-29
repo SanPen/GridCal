@@ -21,7 +21,7 @@ from GridCal.Engine import *
 
 def test_short_circuit():
 
-    fname = os.path.join('data', 'IEEE39_1W.gridcal')
+    fname = os.path.join('data', 'grids', 'IEEE39_1W.gridcal')
     print('Reading...')
     main_circuit = FileOpen(fname).open()
     pf_options = PowerFlowOptions(SolverType.NR, verbose=False,

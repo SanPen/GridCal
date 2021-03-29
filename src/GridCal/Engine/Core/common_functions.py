@@ -19,52 +19,6 @@ import numba as nb
 from GridCal.Engine.basic_structures import BusMode, Logger
 
 
-@nb.njit()
-def compile_types_native(Sbus, types):
-    """
-    Compile the types.
-    :param Sbus: array of power injections per node
-    :param types: array of tentative node types
-    :return: ref, pq, pv, pqpv
-    """
-
-    pq = np.where(types == BusMode.PQ.value)[0]
-    pv = np.where(types == BusMode.PV.value)[0]
-    ref = np.where(types == BusMode.Slack.value)[0]
-
-    if len(ref) == 0:  # there is no slack!
-
-        if len(pv) == 0:  # there are no pv neither -> blackout grid
-
-            pass
-
-        else:  # select the first PV generator as the slack
-
-            mx = np.max(Sbus[pv]).real
-            if mx > 0:
-                # find the generator that is injecting the most
-                i = np.where(Sbus == mx)[0][0]
-
-            else:
-                # all the generators are injecting zero, pick the first pv
-                i = pv[0]
-
-            # delete the selected pv bus from the pv list and put it in the slack list
-            pv = np.delete(pv, np.where(pv == i)[0])
-            ref = np.array([i])
-            # print('Setting bus', i, 'as slack')
-
-        # ref = np.ndarray.flatten(np.array(ref))
-        types[ref] = BusMode.Slack.value
-    else:
-        pass  # no problem :)
-
-    pqpv = np.hstack((pq, pv))
-    pqpv.sort()
-
-    return ref, pq, pv, pqpv
-
-
 def compile_types(Sbus, types, logger=Logger()):
     """
     Compile the types.
@@ -73,15 +27,6 @@ def compile_types(Sbus, types, logger=Logger()):
     :param logger: logger where to store the errors
     :return: ref, pq, pv, pqpv
     """
-
-    # # check that Sbus is a 1D array
-    # assert(len(Sbus.shape) == 1)
-    #
-    # ref, pq, pv, pqpv = compile_types_native(Sbus, types)
-    #
-    # if len(pv) == 0:  # there are no pv neither -> blackout grid
-    #
-    #     logger.add('There are no slack nodes selected')
 
     # check that Sbus is a 1D array
     assert (len(Sbus.shape) == 1)
@@ -122,10 +67,7 @@ def compile_types(Sbus, types, logger=Logger()):
 
     return ref, pq, pv, pqpv
 
-    return ref, pq, pv, pqpv
 
-
-@nb.njit()
 def find_different_states(branch_active_prof) -> Dict[int, List[int]]:
     """
     Find the different branch states in time that may lead to different islands

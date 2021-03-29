@@ -584,27 +584,27 @@ class TimeSeries(QThread):
         """
 
         # compile the multi-circuit
-        numerical_circuit = compile_time_circuit(circuit=self.grid,
-                                                 apply_temperature=False,
-                                                 branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                                 opf_results=self.opf_time_series_results)
+        time_circuit = compile_time_circuit(circuit=self.grid,
+                                            apply_temperature=False,
+                                            branch_tolerance_mode=BranchImpedanceMode.Specified,
+                                            opf_results=self.opf_time_series_results)
 
         # do the topological computation
-        time_islands = numerical_circuit.split_into_islands(ignore_single_node_islands=self.options.ignore_single_node_islands)
+        time_islands = time_circuit.split_into_islands(ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         # initialize the grid time series results we will append the island results with another function
-        time_series_results = TimeSeriesResults(n=numerical_circuit.nbus,
-                                                m=numerical_circuit.nbr,
-                                                n_tr=numerical_circuit.ntr,
-                                                n_hvdc=numerical_circuit.nhvdc,
-                                                bus_names=numerical_circuit.bus_names,
-                                                branch_names=numerical_circuit.branch_names,
-                                                transformer_names=numerical_circuit.tr_names,
-                                                hvdc_names=numerical_circuit.hvdc_names,
-                                                bus_types=numerical_circuit.bus_types,
+        time_series_results = TimeSeriesResults(n=time_circuit.nbus,
+                                                m=time_circuit.nbr,
+                                                n_tr=time_circuit.ntr,
+                                                n_hvdc=time_circuit.nhvdc,
+                                                bus_names=time_circuit.bus_names,
+                                                branch_names=time_circuit.branch_names,
+                                                transformer_names=time_circuit.tr_names,
+                                                hvdc_names=time_circuit.hvdc_names,
+                                                bus_types=time_circuit.bus_types,
                                                 time_array=self.grid.time_profile[time_indices])
 
-        time_series_results.bus_types = numerical_circuit.bus_types
+        time_series_results.bus_types = time_circuit.bus_types
 
         # For every island, run the time series
         for island_index, calculation_input in enumerate(time_islands):
@@ -638,7 +638,7 @@ class TimeSeries(QThread):
                                         branch_names=calculation_input.branch_names,
                                         transformer_names=calculation_input.tr_names,
                                         hvdc_names=calculation_input.hvdc_names,
-                                        bus_types=numerical_circuit.bus_types,
+                                        bus_types=time_circuit.bus_types,
                                         time_array=self.grid.time_profile[time_indices])
 
             self.progress_signal.emit(0.0)
@@ -712,10 +712,10 @@ class TimeSeries(QThread):
                                                   'TS')
 
         # set the HVDC results here since the HVDC is not a branch in this modality
-        time_series_results.hvdc_Pf = -numerical_circuit.hvdc_Pf.T
-        time_series_results.hvdc_Pt = -numerical_circuit.hvdc_Pt.T
-        time_series_results.hvdc_loading = numerical_circuit.hvdc_loading.T
-        time_series_results.hvdc_losses = numerical_circuit.hvdc_losses.T
+        time_series_results.hvdc_Pf = -time_circuit.hvdc_Pf.T
+        time_series_results.hvdc_Pt = -time_circuit.hvdc_Pt.T
+        time_series_results.hvdc_loading = time_circuit.hvdc_loading.T
+        time_series_results.hvdc_losses = time_circuit.hvdc_losses.T
 
         return time_series_results
 

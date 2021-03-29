@@ -112,6 +112,7 @@ class SnapshotData:
         self.original_load_idx = np.arange(self.nload)
         self.original_stagen_idx = np.arange(self.nstagen)
         self.original_shunt_idx = np.arange(self.nshunt)
+        self.original_time_idx = np.arange(self.ntime)
 
         # --------------------------------------------------------------------------------------------------------------
         # Internal variables filled on demand, to be ready to consume once computed
