@@ -540,6 +540,7 @@ class MainGUI(QMainWindow):
 
         # line edit enter
         self.ui.smart_search_lineEdit.returnPressed.connect(self.smart_search)
+        self.ui.sear_results_lineEdit.returnPressed.connect(self.search_in_results)
 
         # check boxes
         self.ui.draw_schematic_checkBox.clicked.connect(self.set_grid_editor_state)
@@ -4120,7 +4121,9 @@ class MainGUI(QMainWindow):
         """
         Plot the results
         """
-        if self.results_mdl is not None:
+        mdl = self.ui.resultsTableView.model()
+
+        if mdl is not None:
 
             plt.rcParams["date.autoformatter.minute"] = "%Y-%m-%d %H:%M:%S"
 
@@ -4150,9 +4153,7 @@ class MainGUI(QMainWindow):
                 rows = None
 
             # none selected, plot all
-            self.results_mdl.plot(ax=ax,
-                                  selected_col_idx=cols,
-                                  selected_rows=rows)
+            mdl.plot(ax=ax, selected_col_idx=cols, selected_rows=rows)
 
             plt.show()
 

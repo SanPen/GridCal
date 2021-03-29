@@ -294,9 +294,13 @@ class DiagramScene(QGraphicsScene):
                 power_data[key] = driver.results.Sf.real[:, i]
                 loading_data[key] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
 
-            if key == 'PTDF Time Series':
+            elif key == 'PTDF Time Series':
                 power_data[key] = driver.results.Sf.real[:, i]
                 loading_data[key] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+
+            elif key == 'N-1 time series':
+                power_data[key] = driver.results.worst_flows.real[:, i]
+                loading_data[key] = np.sort(np.abs(driver.results.worst_loading.real[:, i] * 100.0))
 
         # loading
         df = pd.DataFrame(data=loading_data, index=p)
@@ -323,6 +327,8 @@ class DiagramScene(QGraphicsScene):
         @return:
         """
         self.parent_.scene_mouse_move_event(mouseEvent)
+
+        # call the parent event
         super(DiagramScene, self).mouseMoveEvent(mouseEvent)
 
     def mouseReleaseEvent(self, mouseEvent):
