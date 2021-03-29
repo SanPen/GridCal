@@ -16,11 +16,12 @@ import os
 import numpy as np
 
 from GridCal.Engine import *
+from tests.zip_file_mgmt import open_data_frame_from_zip
 
 
 def test_time_series():
 
-    fname = os.path.join('data', 'IEEE39_1W.gridcal')
+    fname = os.path.join('data', 'grids', 'IEEE39_1W.gridcal')
     print('Reading...')
     main_circuit = FileOpen(fname).open()
 
@@ -34,6 +35,17 @@ def test_time_series():
 
     ts = TimeSeries(grid=main_circuit, options=pf_options, start_=0, end_=96)
     ts.run()
+
+    data = open_data_frame_from_zip(file_name_zip=os.path.join('data', 'results', 'Results_IEEE39_1W.zip'),
+                                    file_name='Time series Bus voltage module.csv')
+
+    assert np.isclose(np.abs(ts.results.voltage), data.values[:96]).all()
+
+    data = open_data_frame_from_zip(file_name_zip=os.path.join('data', 'results', 'Results_IEEE39_1W.zip'),
+                                    file_name='Time series Branch active power "from".csv')
+
+    assert np.isclose(np.real(ts.results.Sf), data.values[:96]).all()
+
 
 if __name__ == '__main__':
     test_time_series()

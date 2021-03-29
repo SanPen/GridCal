@@ -24,7 +24,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOpti
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 
-Sbase = 100  # MVA
+Sbase = 100 # MVA
 
 
 def complex_impedance(z, XR):

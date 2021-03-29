@@ -113,6 +113,8 @@ class Cascading(QThread):
 
         QThread.__init__(self)
 
+        self.name = 'Cascading'
+
         self.grid = grid
 
         self.options = options

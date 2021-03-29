@@ -8,15 +8,7 @@ Author: Santiago Peñate Vera (September 2018)
 import numpy as np
 import pandas as pd
 
-from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices.branch import Branch, BranchTemplate
-from GridCal.Engine.Devices.bus import Bus
-from GridCal.Engine.Devices.generator import Generator
-from GridCal.Engine.Devices.load import Load
-from GridCal.Engine.Devices.enumerations import BranchType
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import \
-    PowerFlowOptions, SolverType
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from GridCal.Engine import *
 
 
 def main():
@@ -111,31 +103,27 @@ def main():
     # Add the lines
     ####################################################################################################################
 
-    br1 = Branch(bus_from=bus1,
-                 bus_to=bus2,
-                 name='Line 1-2',
-                 r=0.05,  # resistance of the pi model in per unit
-                 x=0.11,  # reactance of the pi model in per unit
-                 g=1e-20,  # conductance of the pi model in per unit
-                 b=0.02,  # susceptance of the pi model in per unit
-                 rate=50,  # Rate in MVA
-                 tap=1.0,  # Tap value (value close to 1)
-                 shift_angle=0,  # Tap angle in radians
-                 active=True,  # is the branch active?
-                 mttf=0,  # Mean time to failure
-                 mttr=0,  # Mean time to recovery
-                 branch_type=BranchType.Line,  # Branch type tag
-                 length=1,  # Length in km (to be used with templates)
-                 template=BranchTemplate()  # Branch template (The default one is void)
-                 )
+    br1 = Line(bus_from=bus1,
+               bus_to=bus2,
+               name='Line 1-2',
+               r=0.05,  # resistance of the pi model in per unit
+               x=0.11,  # reactance of the pi model in per unit
+               b=0.02,  # susceptance of the pi model in per unit
+               rate=50,  # Rate in MVA
+               active=True,  # is the branch active?
+               mttf=0,  # Mean time to failure
+               mttr=0,  # Mean time to recovery
+               length=1,  # Length in km (to be used with templates)
+               template=BranchTemplate()  # Branch template (The default one is void)
+               )
     grid.add_branch(br1)
 
-    grid.add_branch(Branch(bus1, bus3, name='Line 1-3', r=0.05, x=0.11, b=0.02, rate=50))
-    grid.add_branch(Branch(bus1, bus5, name='Line 1-5', r=0.03, x=0.08, b=0.02, rate=80))
-    grid.add_branch(Branch(bus2, bus3, name='Line 2-3', r=0.04, x=0.09, b=0.02, rate=3))
-    grid.add_branch(Branch(bus2, bus5, name='Line 2-5', r=0.04, x=0.09, b=0.02, rate=10))
-    grid.add_branch(Branch(bus3, bus4, name='Line 3-4', r=0.06, x=0.13, b=0.03, rate=30))
-    grid.add_branch(Branch(bus4, bus5, name='Line 4-5', r=0.04, x=0.09, b=0.02, rate=30))
+    grid.add_branch(Line(bus1, bus3, name='Line 1-3', r=0.05, x=0.11, b=0.02, rate=50))
+    grid.add_branch(Line(bus1, bus5, name='Line 1-5', r=0.03, x=0.08, b=0.02, rate=80))
+    grid.add_branch(Line(bus2, bus3, name='Line 2-3', r=0.04, x=0.09, b=0.02, rate=3))
+    grid.add_branch(Line(bus2, bus5, name='Line 2-5', r=0.04, x=0.09, b=0.02, rate=10))
+    grid.add_branch(Line(bus3, bus4, name='Line 3-4', r=0.06, x=0.13, b=0.03, rate=30))
+    grid.add_branch(Line(bus4, bus5, name='Line 4-5', r=0.04, x=0.09, b=0.02, rate=30))
 
     ####################################################################################################################
     # Run a power flow simulation

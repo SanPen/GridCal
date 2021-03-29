@@ -33,10 +33,10 @@ def test_monte_carlo():
     # Monte Carlo
     ####################################################################################################################
     print('Running MC...')
-    mc_sim = StochasticPowerFlowDriver(main_circuit,
-                                       pf_options,
-                                       mc_tol=1e-5,
-                                       sampling_points=1000)
+    mc_sim = MonteCarlo(main_circuit,
+                        pf_options,
+                        mc_tol=1e-5,
+                        max_mc_iter=1000)
     mc_sim.run()
 
 

@@ -17,42 +17,55 @@ import os
 import numpy as np
 
 from GridCal.Engine import *
+from tests.zip_file_mgmt import open_data_frame_from_zip
 
 
 def test_cpf():
     fname = os.path.join('data', 'grids', 'IEEE39_1W.gridcal')
     main_circuit = FileOpen(fname).open()
-    pf_options = PowerFlowOptions(SolverType.NR, verbose=False,
+    pf_options = PowerFlowOptions(SolverType.NR,
+                                  verbose=False,
                                   initialize_with_existing_solution=False,
-                                  multi_core=False, dispatch_storage=True,
+                                  dispatch_storage=True,
                                   control_q=ReactivePowerControlMode.NoControl,
-                                  control_p=True)
-    ####################################################################################################################
-    # PowerFlowDriver
-    ####################################################################################################################
-    print('\n\n')
-    power_flow = PowerFlowDriver(main_circuit, pf_options)
-    power_flow.run()
-    print(power_flow.results.get_report_dataframe())
+                                  control_p=False)
+
+    Vmbase = open_data_frame_from_zip(file_name_zip=os.path.join('data', 'results', 'Results_IEEE39_1W.zip'),
+                                      file_name='Power flow Bus voltage module.csv').values[:, 0]
+    Vabase = open_data_frame_from_zip(file_name_zip=os.path.join('data', 'results', 'Results_IEEE39_1W.zip'),
+                                      file_name='Power flow Bus voltage angle.csv').values[:, 0]
+    Pbase = open_data_frame_from_zip(file_name_zip=os.path.join('data', 'results', 'Results_IEEE39_1W.zip'),
+                                     file_name='Power flow Bus active power.csv').values[:, 0]
+    Qbase = open_data_frame_from_zip(file_name_zip=os.path.join('data', 'results', 'Results_IEEE39_1W.zip'),
+                                     file_name='Power flow Bus reactive power.csv').values[:, 0]
+
+    Vbase = Vmbase * np.exp(1j * np.deg2rad(Vabase))
+    Sbase = (Pbase + 1j + Qbase) / 100.0
 
     ####################################################################################################################
     # Voltage collapse
     ####################################################################################################################
     vc_options = ContinuationPowerFlowOptions()
 
-    # just for this test
-    numeric_circuit = compile_snapshot_circuit(main_circuit)
-
-    vc_inputs = ContinuationPowerFlowInput(Sbase=numeric_circuit.Sbus,
-                                           Vbase=power_flow.results.voltage,
-                                           Starget=numeric_circuit.Sbus * 2)
+    vc_inputs = ContinuationPowerFlowInput(Sbase=Sbase,
+                                           Vbase=Vbase,
+                                           Starget=Sbase * 2)
 
     vc = ContinuationPowerFlowDriver(circuit=main_circuit,
                                      options=vc_options,
                                      inputs=vc_inputs,
                                      pf_options=pf_options)
     vc.run()
-    mdl = vc.results.mdl()
+
+    data = open_data_frame_from_zip(file_name_zip=os.path.join('data', 'results', 'Results_IEEE39_1W.zip'),
+                                    file_name='Voltage collapse Bus voltage.csv')
+
+    assert np.abs(np.abs(vc.results.voltages)[:500] - data.values[:500]).max() < 0.1
+
+    data = open_data_frame_from_zip(file_name_zip=os.path.join('data', 'results', 'Results_IEEE39_1W.zip'),
+                                    file_name='Voltage collapse Branch active power "from".csv')
+
+    assert np.abs(np.real(vc.results.Sf)[:500] - data.values[:500]).max()
 
 
 if __name__ == '__main__':
