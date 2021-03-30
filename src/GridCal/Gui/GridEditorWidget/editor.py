@@ -215,17 +215,6 @@ class DiagramScene(QGraphicsScene):
         super(DiagramScene, self).__init__(parent)
         self.parent_ = parent
         self.circuit = circuit
-        # self.setBackgroundBrush(QtCore.Qt.red)
-
-    def get_app(self):
-        return self.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent()
-
-    def get_simulation_threads_dict(self):
-        d = dict()
-        for sim in self.get_app().get_simulation_threads():
-            if sim is not None:
-                d[sim.name] = sim
-        return d
 
     def plot_bus(self, i, api_object):
         """
@@ -318,6 +307,38 @@ class DiagramScene(QGraphicsScene):
         fig.suptitle(api_object.name, fontsize=20)
 
         # plot the profiles
+        plt.show()
+
+    def plot_hvdc_branch(self, api_obj):
+        """
+
+        :param api_obj:
+        :return:
+        """
+        fig = plt.figure(figsize=(12, 8))
+
+        ax_1 = fig.add_subplot(211)
+        ax_2 = fig.add_subplot(212, sharex=ax_1)
+
+        x = self.circuit.time_profile
+
+        # loading
+        y = api_obj.Pset_prof / (api_obj.rate_prof + 1e-9) * 100.0
+        df = pd.DataFrame(data=y, index=x, columns=[api_obj.name])
+        ax_1.set_title('Loading', fontsize=14)
+        ax_1.set_ylabel('Loading [%]', fontsize=11)
+        df.plot(ax=ax_1)
+
+        # losses
+        y = api_obj.Pset_prof * api_obj.loss_factor
+        df = pd.DataFrame(data=y, index=x, columns=[api_obj.name])
+        ax_2.set_title('Losses', fontsize=14)
+        ax_2.set_ylabel('Losses [MVA]', fontsize=11)
+        df.plot(ax=ax_2)
+
+        plt.legend()
+        fig.suptitle(api_obj.name, fontsize=20)
+
         plt.show()
 
     def mouseMoveEvent(self, mouseEvent):
@@ -697,7 +718,7 @@ class GridEditor(QSplitter):
         """
 
         if self.circuit.graph is None:
-            self.circuit.compile_snapshot()
+            self.circuit.build_graph()
 
         pos = nx.spectral_layout(self.circuit.graph, scale=2, weight='weight')
 
@@ -896,6 +917,7 @@ class GridEditor(QSplitter):
         graphic_obj.redraw()
 
         return graphic_obj
+
     def add_api_transformer(self, branch: Transformer2W):
         """
         add API branch to the Scene
@@ -1017,15 +1039,15 @@ class GridEditor(QSplitter):
         :return: Nothing
         """
         upfc = UPFC(bus_from=line.bus_from,
-                   bus_to=line.bus_to,
-                   name='UPFC',
-                   active=line.active,
-                   rate=line.rate,
-                   rl=line.R,
-                   xl=line.X,
-                   bl=line.B,
-                   active_prof=line.active_prof,
-                   rate_prof=line.rate_prof)
+                    bus_to=line.bus_to,
+                    name='UPFC',
+                    active=line.active,
+                    rate=line.rate,
+                    rl=line.R,
+                    xl=line.X,
+                    bl=line.B,
+                    active_prof=line.active_prof,
+                    rate_prof=line.rate_prof)
 
         # add device to the circuit
         self.circuit.add_upfc(upfc)
