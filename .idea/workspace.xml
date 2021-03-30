@@ -24,7 +24,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -489,13 +488,6 @@
       <workItem from="1610609505449" duration="6582000" />
       <workItem from="1610635862375" duration="4361000" />
     </task>
-    <task id="LOCAL-00057" summary="Bug fixes">
-      <created>1604316813185</created>
-      <option name="number" value="00057" />
-      <option name="presentableId" value="LOCAL-00057" />
-      <option name="project" value="LOCAL" />
-      <updated>1604316813185</updated>
-    </task>
     <task id="LOCAL-00058" summary="Improved the sigma value usage in the Linear node grouping">
       <created>1604338098674</created>
       <option name="number" value="00058" />
@@ -832,7 +824,14 @@
       <option name="project" value="LOCAL" />
       <updated>1617097740868</updated>
     </task>
-    <option name="localTasksCounter" value="106" />
+    <task id="LOCAL-00106" summary="Updated travis-ci requirements">
+      <created>1617107962839</created>
+      <option name="number" value="00106" />
+      <option name="presentableId" value="LOCAL-00106" />
+      <option name="project" value="LOCAL" />
+      <updated>1617107962839</updated>
+    </task>
+    <option name="localTasksCounter" value="107" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -867,7 +866,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="- Removed the outer loop controls&#10;- Added Q control to the AC only NR, LM and Iwamoto algorithms&#10;- in-loop Q control seems to work fine" />
     <MESSAGE value="- added update command in the about box" />
     <MESSAGE value="- Fixed some visualization issues" />
     <MESSAGE value="Added Q control to the ACDC NR&#10;Fixed some bugs" />
@@ -892,7 +890,8 @@
     <MESSAGE value="Added search function (WIP)" />
     <MESSAGE value="Several GUI improvements" />
     <MESSAGE value="Replaced tests so that they match the new philosophy" />
-    <option name="LAST_COMMIT_MESSAGE" value="Replaced tests so that they match the new philosophy" />
+    <MESSAGE value="Updated travis-ci requirements" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated travis-ci requirements" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
