@@ -24,18 +24,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/IEEE57.gridcal" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/test_generator_q_control.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/test_transformer_controls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/GridCal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/GridCal.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/hvdc_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/hvdc_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/demo_5_node.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/demo_5_node.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_transformer_regulator.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_transformer_static_taps.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_voltage_controlled_generator.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -499,13 +489,6 @@
       <workItem from="1610609505449" duration="6582000" />
       <workItem from="1610635862375" duration="4361000" />
     </task>
-    <task id="LOCAL-00056" summary="Fixed bug in the Cpf function">
-      <created>1604315323516</created>
-      <option name="number" value="00056" />
-      <option name="presentableId" value="LOCAL-00056" />
-      <option name="project" value="LOCAL" />
-      <updated>1604315323521</updated>
-    </task>
     <task id="LOCAL-00057" summary="Bug fixes">
       <created>1604316813185</created>
       <option name="number" value="00057" />
@@ -842,7 +825,14 @@
       <option name="project" value="LOCAL" />
       <updated>1617021221447</updated>
     </task>
-    <option name="localTasksCounter" value="105" />
+    <task id="LOCAL-00105" summary="Replaced tests so that they match the new philosophy">
+      <created>1617097740868</created>
+      <option name="number" value="00105" />
+      <option name="presentableId" value="LOCAL-00105" />
+      <option name="project" value="LOCAL" />
+      <updated>1617097740868</updated>
+    </task>
+    <option name="localTasksCounter" value="106" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -877,7 +867,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added pipy version check" />
     <MESSAGE value="- Removed the outer loop controls&#10;- Added Q control to the AC only NR, LM and Iwamoto algorithms&#10;- in-loop Q control seems to work fine" />
     <MESSAGE value="- added update command in the about box" />
     <MESSAGE value="- Fixed some visualization issues" />
@@ -902,7 +891,8 @@
     <MESSAGE value="Fixed PTDF rates profile usage&#10;Fixed plotting from the schematic" />
     <MESSAGE value="Added search function (WIP)" />
     <MESSAGE value="Several GUI improvements" />
-    <option name="LAST_COMMIT_MESSAGE" value="Several GUI improvements" />
+    <MESSAGE value="Replaced tests so that they match the new philosophy" />
+    <option name="LAST_COMMIT_MESSAGE" value="Replaced tests so that they match the new philosophy" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
