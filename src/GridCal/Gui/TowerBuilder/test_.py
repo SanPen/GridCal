@@ -136,7 +136,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         :return:
         """
         name = 'Wire_' + str(len(self.wire_collection.wires) + 1)
-        wire = Wire(name, x=0, y=0, gmr=0, r=0.01)
+        wire = Wire(name=name, x=0, y=0, gmr=0, r=0.01)
         self.wire_collection.add(wire)
 
     def delete_wire_from_collection(self):

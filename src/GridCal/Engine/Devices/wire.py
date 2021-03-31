@@ -57,7 +57,8 @@ class Wire(EditableDevice):
         Copy of the wire
         :return:
         """
-        return Wire(self.name, self.gmr, self.r, self.x, self.max_current)
+        # name='', idtag=None, gmr=0.01, r=0.01, x=0.0, max_current=1
+        return Wire(name=self.name, gmr=self.gmr, r=self.r, x=self.x, max_current=self.max_current)
 
 
 class WiresTable(QtCore.QAbstractTableModel):
