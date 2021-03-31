@@ -1,5 +1,5 @@
 import sys
-import xlrd
+import openpyxl
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
@@ -16,8 +16,8 @@ class ExcelDialog(QtWidgets.QDialog):
         self.excel_sheet = None
 
         if excel_file is not None:
-            xls = xlrd.open_workbook(excel_file, on_demand=True)
-            self.sheet_names = xls.sheet_names()
+            wb = openpyxl.load_workbook(excel_file, data_only=True)
+            self.sheet_names = wb.sheetnames
             self.ui.sheets_list.addItems(self.sheet_names)
 
         # click

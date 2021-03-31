@@ -231,7 +231,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
             options |= QFileDialog.DontUseNativeDialog
 
         filename, type_selected = QFileDialog.getOpenFileName(self, 'Open file',
-                                                              directory=self.project_directory,
                                                               filter=files_types,
                                                               options=options)
 
