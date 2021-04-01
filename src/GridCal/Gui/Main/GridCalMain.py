@@ -5547,6 +5547,7 @@ def run(use_native_dialogues=True):
     """
     app = QApplication(sys.argv)
     app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
+
     window = MainGUI(use_native_dialogues=use_native_dialogues)
     window.resize(int(1.61 * 700.0), 700)  # golden ratio :)
     window.show()

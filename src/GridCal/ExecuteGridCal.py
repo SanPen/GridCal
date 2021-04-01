@@ -21,9 +21,35 @@ PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 from GridCal.__version__ import about_msg
-from GridCal.Gui.Main.GridCalMain import run
+
+from GridCal.Gui.Main.banner import Ui_splashScreen, QMainWindow, Qt, QApplication
+
+
+class Splash(QMainWindow):
+
+    def __init__(self, parent=None):
+        """
+
+        @param parent:
+        """
+
+        # create main window
+        QMainWindow.__init__(self, parent)
+        self.ui = Ui_splashScreen()
+        self.ui.setupUi(self)
+        self.setWindowFlags(Qt.SplashScreen | Qt.FramelessWindowHint)
 
 
 if __name__ == "__main__":
     print(about_msg)
+
+    # app = QApplication(sys.argv)
+    # app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
+    #
+    # splash = Splash()
+    # splash.show()
+
+    from GridCal.Gui.Main.GridCalMain import run
     run(use_native_dialogues=True)
+
+    # sys.exit(app.exec_())

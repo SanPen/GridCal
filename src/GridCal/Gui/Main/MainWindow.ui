@@ -6292,8 +6292,18 @@ points from time series</string>
       <layout class="QGridLayout" name="gridLayout_7">
        <item row="1" column="1">
         <widget class="QProgressBar" name="progressBar">
+         <property name="styleSheet">
+          <string notr="true">QProgressBar {
+	border: 1px solid rgb(186, 189, 182);
+    border-radius: 5px;
+	text-align: center;
+}
+QProgressBar::chunk{
+	background-color: rgb(0, 180, 136)
+}</string>
+         </property>
          <property name="value">
-          <number>0</number>
+          <number>20</number>
          </property>
          <property name="invertedAppearance">
           <bool>false</bool>
@@ -6302,6 +6312,12 @@ points from time series</string>
        </item>
        <item row="1" column="0">
         <widget class="QPushButton" name="cancelButton">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>24</height>
+          </size>
+         </property>
          <property name="toolTip">
           <string>Cancel process</string>
          </property>

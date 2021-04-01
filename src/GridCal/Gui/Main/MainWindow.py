@@ -2917,13 +2917,22 @@ class Ui_mainWindow(object):
         self.gridLayout_7.setObjectName(u"gridLayout_7")
         self.progressBar = QProgressBar(self.progress_frame)
         self.progressBar.setObjectName(u"progressBar")
-        self.progressBar.setValue(0)
+        self.progressBar.setStyleSheet(u"QProgressBar {\n"
+"	border: 1px solid rgb(186, 189, 182);\n"
+"    border-radius: 5px;\n"
+"	text-align: center;\n"
+"}\n"
+"QProgressBar::chunk{\n"
+"	background-color: rgb(0, 180, 136)\n"
+"}")
+        self.progressBar.setValue(20)
         self.progressBar.setInvertedAppearance(False)
 
         self.gridLayout_7.addWidget(self.progressBar, 1, 1, 1, 1)
 
         self.cancelButton = QPushButton(self.progress_frame)
         self.cancelButton.setObjectName(u"cancelButton")
+        self.cancelButton.setMinimumSize(QSize(0, 24))
         self.cancelButton.setIcon(icon45)
 
         self.gridLayout_7.addWidget(self.cancelButton, 1, 0, 1, 1)
