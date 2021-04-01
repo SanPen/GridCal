@@ -6,19 +6,25 @@
 
 ![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal_banner.png)
 
+![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal.png)
+
 This software aims to be a complete platform for power systems research and simulation.
 [Watch the video](https://youtu.be/SY66WgLGo54) and
 [check out the documentation](https://gridcal.readthedocs.io)
 
-![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal.png)
 
 # Installation
 
-Try: `pip install GridCal`
+You can choose to install GridCal through pip or just get a standalone setup ready to run.
 
-For more options (including a standalone setup one), follow the
-[installation instructions](https://gridcal.readthedocs.io/en/latest/getting_started/install.html)
-from the project's [documentation](https://gridcal.readthedocs.io).
+- From your python distribution on any OS: `pip install GridCal`
+
+- [GridCal for windows x64](https://drive.google.com/open?id=1F_zr8gZ6HXp7wGLcnOxzSVJqXP-XZ4T9)
+
+- [GridCal for linux x64](https://drive.google.com/open?id=1atPCEKxapp7UsI_dFahr3XGwoaH96Tg5)
+
+For more options and details follow the
+[installation instructions](https://gridcal.readthedocs.io/en/latest/getting_started/install.html).
 
 
 # Execution
@@ -35,16 +41,19 @@ from the project's documentation.
 
 # Tutorials
 
-- Cloning the repository: https://youtu.be/59W_rqimB6w
+- [Written tutorials](https://gridcal.readthedocs.io/en/latest/tutorials/tutorials_module.html)
 
-- Standalone GridCal setup: https://youtu.be/SY66WgLGo54
+- [Cloning the repository (video)](https://youtu.be/59W_rqimB6w)
 
-- Making a grid with profiles: https://youtu.be/H2d_2bMsIS0
+- [Standalone GridCal setup (video)](https://youtu.be/SY66WgLGo54)
+
+- [Making a grid with profiles (video)](https://youtu.be/H2d_2bMsIS0)
 
 # Batteries included
 
-In an effort to ease the simulation and construction of grids, We have included extra materials to work with.
- 
+In an effort to ease the simulation and construction of grids, 
+We have included extra materials to work with. These are included in the standalone setups.
+
 [Here](https://github.com/SanPen/GridCal/tree/master/Grids_and_profiles) you can find:
 - Load profiles for your projects
 - Standard IEEE grids as well as grids from open projects

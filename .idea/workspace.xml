@@ -23,15 +23,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="added banner (unsuccessfully)">
-      <change afterPath="$PROJECT_DIR$/pics/GridCal3_icon.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pics/GridCal4_icon.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pics/Promo 4.0.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pics/Promo 4.0.svg" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Updated readme">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pics/GridCal.png" beforeDir="false" afterPath="$PROJECT_DIR$/pics/GridCal.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pics/GridCal.svg" beforeDir="false" afterPath="$PROJECT_DIR$/pics/GridCal.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pics/GridCal_banner.png" beforeDir="false" afterPath="$PROJECT_DIR$/pics/GridCal_banner.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pics/GridCal_banner.svg" beforeDir="false" afterPath="$PROJECT_DIR$/pics/GridCal_banner.svg" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -507,13 +503,6 @@
       <workItem from="1617227653777" duration="433000" />
       <workItem from="1617268722858" duration="844000" />
     </task>
-    <task id="LOCAL-00060" summary="Fixed HVDC devices dimensionality">
-      <created>1605215496446</created>
-      <option name="number" value="00060" />
-      <option name="presentableId" value="LOCAL-00060" />
-      <option name="project" value="LOCAL" />
-      <updated>1605215496447</updated>
-    </task>
     <task id="LOCAL-00061" summary="minor improvements in the loading messages">
       <created>1605819487100</created>
       <option name="number" value="00061" />
@@ -850,7 +839,14 @@
       <option name="project" value="LOCAL" />
       <updated>1617204060351</updated>
     </task>
-    <option name="localTasksCounter" value="109" />
+    <task id="LOCAL-00109" summary="Updated readme">
+      <created>1617279742756</created>
+      <option name="number" value="00109" />
+      <option name="presentableId" value="LOCAL-00109" />
+      <option name="project" value="LOCAL" />
+      <updated>1617279742756</updated>
+    </task>
+    <option name="localTasksCounter" value="110" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -884,7 +880,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added Q control to the ACDC NR&#10;Fixed some bugs" />
     <MESSAGE value="Fixed some bugs regarding HVDC" />
     <MESSAGE value="Added collaborators to the readme" />
     <MESSAGE value="Added HVDC result types" />
@@ -909,7 +904,8 @@
     <MESSAGE value="Published v4.0.0" />
     <MESSAGE value="Fixed issue caused by xlrd when getting the sheet names of an excel workbook" />
     <MESSAGE value="Fixed issue with the wire" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed issue with the wire" />
+    <MESSAGE value="Updated readme" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated readme" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
