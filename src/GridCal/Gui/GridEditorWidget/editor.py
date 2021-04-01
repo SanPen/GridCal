@@ -230,33 +230,36 @@ class DiagramScene(QGraphicsScene):
         # set time
         x = self.circuit.time_profile
 
-        # search available results
-        power_data = api_object.get_active_injection_profiles_dictionary()
-        voltage = dict()
+        if x is not None:
+            if len(x) > 0:
 
-        for key, driver in self.circuit.results_dictionary.items():
-            if key == 'Time Series':
-                voltage[key] = np.abs(driver.results.voltage[:, i])
+                # search available results
+                power_data = api_object.get_active_injection_profiles_dictionary()
+                voltage = dict()
 
-        # injections
-        df = pd.DataFrame(data=power_data, index=x)
-        ax_1.set_title('Power', fontsize=14)
-        ax_1.set_ylabel('Injections [MW]', fontsize=11)
-        df.plot.area(ax=ax_1)
+                for key, driver in self.circuit.results_dictionary.items():
+                    if key == 'Time Series':
+                        voltage[key] = np.abs(driver.results.voltage[:, i])
 
-        # voltage
-        if len(voltage.keys()):
-            ax_2 = fig.add_subplot(212, sharex=ax_1)
-            df = pd.DataFrame(data=voltage, index=x)
-            ax_2.set_title('Time', fontsize=14)
-            ax_2.set_ylabel('Voltage [p.u]', fontsize=11)
-            df.plot(ax=ax_2)
+                # injections
+                df = pd.DataFrame(data=power_data, index=x)
+                ax_1.set_title('Power', fontsize=14)
+                ax_1.set_ylabel('Injections [MW]', fontsize=11)
+                df.plot.area(ax=ax_1)
 
-        plt.legend()
-        fig.suptitle(api_object.name, fontsize=20)
+                # voltage
+                if len(voltage.keys()):
+                    ax_2 = fig.add_subplot(212, sharex=ax_1)
+                    df = pd.DataFrame(data=voltage, index=x)
+                    ax_2.set_title('Time', fontsize=14)
+                    ax_2.set_ylabel('Voltage [p.u]', fontsize=11)
+                    df.plot(ax=ax_2)
 
-        # plot the profiles
-        plt.show()
+                plt.legend()
+                fig.suptitle(api_object.name, fontsize=20)
+
+                # plot the profiles
+                plt.show()
 
     def plot_branch(self, i, api_object):
         """
@@ -272,42 +275,46 @@ class DiagramScene(QGraphicsScene):
 
         # set time
         x = self.circuit.time_profile
-        p = np.arange(len(x)).astype(float) / len(x)
 
-        # search available results
-        power_data = dict()
-        loading_data = dict()
+        if x is not None:
+            if len(x) > 0:
 
-        for key, driver in self.circuit.results_dictionary.items():
-            if key == 'Time Series':
-                power_data[key] = driver.results.Sf.real[:, i]
-                loading_data[key] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+                p = np.arange(len(x)).astype(float) / len(x)
 
-            elif key == 'PTDF Time Series':
-                power_data[key] = driver.results.Sf.real[:, i]
-                loading_data[key] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+                # search available results
+                power_data = dict()
+                loading_data = dict()
 
-            elif key == 'N-1 time series':
-                power_data[key] = driver.results.worst_flows.real[:, i]
-                loading_data[key] = np.sort(np.abs(driver.results.worst_loading.real[:, i] * 100.0))
+                for key, driver in self.circuit.results_dictionary.items():
+                    if key == 'Time Series':
+                        power_data[key] = driver.results.Sf.real[:, i]
+                        loading_data[key] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
 
-        # loading
-        df = pd.DataFrame(data=loading_data, index=p)
-        ax_1.set_title('Probability x < value', fontsize=14)
-        ax_1.set_ylabel('Loading [%]', fontsize=11)
-        df.plot(ax=ax_1)
+                    elif key == 'PTDF Time Series':
+                        power_data[key] = driver.results.Sf.real[:, i]
+                        loading_data[key] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
 
-        # loading
-        df = pd.DataFrame(data=power_data, index=x)
-        ax_2.set_title('Power', fontsize=14)
-        ax_2.set_ylabel('Power [MW]', fontsize=11)
-        df.plot(ax=ax_2)
+                    elif key == 'N-1 time series':
+                        power_data[key] = driver.results.worst_flows.real[:, i]
+                        loading_data[key] = np.sort(np.abs(driver.results.worst_loading.real[:, i] * 100.0))
 
-        plt.legend()
-        fig.suptitle(api_object.name, fontsize=20)
+                # loading
+                df = pd.DataFrame(data=loading_data, index=p)
+                ax_1.set_title('Probability x < value', fontsize=14)
+                ax_1.set_ylabel('Loading [%]', fontsize=11)
+                df.plot(ax=ax_1)
 
-        # plot the profiles
-        plt.show()
+                # loading
+                df = pd.DataFrame(data=power_data, index=x)
+                ax_2.set_title('Power', fontsize=14)
+                ax_2.set_ylabel('Power [MW]', fontsize=11)
+                df.plot(ax=ax_2)
+
+                plt.legend()
+                fig.suptitle(api_object.name, fontsize=20)
+
+                # plot the profiles
+                plt.show()
 
     def plot_hvdc_branch(self, api_obj):
         """
@@ -322,24 +329,26 @@ class DiagramScene(QGraphicsScene):
 
         x = self.circuit.time_profile
 
-        # loading
-        y = api_obj.Pset_prof / (api_obj.rate_prof + 1e-9) * 100.0
-        df = pd.DataFrame(data=y, index=x, columns=[api_obj.name])
-        ax_1.set_title('Loading', fontsize=14)
-        ax_1.set_ylabel('Loading [%]', fontsize=11)
-        df.plot(ax=ax_1)
+        if x is not None:
+            if len(x) > 0:
+                # loading
+                y = api_obj.Pset_prof / (api_obj.rate_prof + 1e-9) * 100.0
+                df = pd.DataFrame(data=y, index=x, columns=[api_obj.name])
+                ax_1.set_title('Loading', fontsize=14)
+                ax_1.set_ylabel('Loading [%]', fontsize=11)
+                df.plot(ax=ax_1)
 
-        # losses
-        y = api_obj.Pset_prof * api_obj.loss_factor
-        df = pd.DataFrame(data=y, index=x, columns=[api_obj.name])
-        ax_2.set_title('Losses', fontsize=14)
-        ax_2.set_ylabel('Losses [MVA]', fontsize=11)
-        df.plot(ax=ax_2)
+                # losses
+                y = api_obj.Pset_prof * api_obj.loss_factor
+                df = pd.DataFrame(data=y, index=x, columns=[api_obj.name])
+                ax_2.set_title('Losses', fontsize=14)
+                ax_2.set_ylabel('Losses [MVA]', fontsize=11)
+                df.plot(ax=ax_2)
 
-        plt.legend()
-        fig.suptitle(api_obj.name, fontsize=20)
+                plt.legend()
+                fig.suptitle(api_obj.name, fontsize=20)
 
-        plt.show()
+                plt.show()
 
     def mouseMoveEvent(self, mouseEvent):
         """

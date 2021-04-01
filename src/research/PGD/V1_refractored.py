@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import sys
 from math import *
+
 # from mpmath import mp
 # mp.dps = 100
 
@@ -12,15 +13,15 @@ pd.options.display.precision = 2
 pd.set_option('display.precision', 2)
 
 
-def progress_bar(idx, n, size):  # show the percentage
-    percent = float(idx) / float(n)
+def progress_bar(i, n, size):  # show the percentage
+    percent = float(i) / float(n)
     sys.stdout.write("\r"
-                     + str(int(idx)).rjust(3, '0')
+                     + str(int(i)).rjust(3, '0')
                      + "/"
                      + str(int(n)).rjust(3, '0')
                      + ' ['
-                     + '=' * ceil(percent*size)
-                     + ' ' * floor((1-percent)*size)
+                     + '=' * ceil(percent * size)
+                     + ' ' * floor((1 - percent) * size)
                      + ']')
 
 
@@ -75,7 +76,8 @@ def read_grid_data(fname):
     for i in range(n_l):
         Ys = 1 / (df_l.iloc[i, 2] + 1j * df_l.iloc[i, 3])  # series element
         Ysh = df_l.iloc[i, 4] + 1j * df_l.iloc[i, 5]  # shunt element
-        t = df_l.iloc[i, 6] * np.cos(df_l.iloc[i, 7]) + 1j * df_l.iloc[i, 6] * np.sin(df_l.iloc[i, 7])  # tap as a complex number
+        t = df_l.iloc[i, 6] * np.cos(df_l.iloc[i, 7]) + 1j * df_l.iloc[i, 6] * np.sin(
+            df_l.iloc[i, 7])  # tap as a complex number
 
         a = df_l.iloc[i, 0]
         b = df_l.iloc[i, 1]
@@ -248,7 +250,7 @@ def fun_C(SSk, SSp, SSq, VVk, VVp, VVq, IIk, IIp, IIq, n_i_coeff, n_v_coeff, n_b
     # CCk = np.empty((Nc, n_bus), dtype=complex)
     # CCp = np.empty((Nc, n_time), dtype=complex)
     # CCq = np.empty((Nc, n_scale), dtype=complex)
-    
+
     # initialize with the S* decomposed variables
     # CCk[:2, :] = SSk
     # CCp[:2, :] = SSp
@@ -295,7 +297,7 @@ def build_map(MMk, MMp, MMq, n_mm):
         print(i)
         # the tri-dimensional representation I am looking for
         MM_map += np.multiply.outer(np.multiply.outer(MMp[:, i], MMk[:, i]), MMq[:, i])
-        progress_bar(i+1, n, 50)
+        progress_bar(i + 1, n, 50)
 
     return MM_map
 
@@ -373,13 +375,17 @@ def pgd(fname, n_gg=20, n_mm=20, n_kk=20, n_scale=12, n_time=8):
 
         for mm in range(n_mm):  # intermediate loop: iterate on i to find the superposition of terms of the I tensor.
             # define the new C
-            CCk, CCp, CCq, Nc, Nv, n = fun_C(SSk, SSp, SSq, VVk, VVp, VVq, IIk, IIp, IIq, idx_i, idx_v, n_buses, n_scale, n_time)
+            CCk, CCp, CCq, Nc, Nv, n = fun_C(SSk, SSp, SSq,
+                                             VVk, VVp, VVq,
+                                             IIk, IIp, IIq,
+                                             idx_i, idx_v, n_buses,
+                                             n_scale, n_time)
             # CCk, CCp, CCq, Nc, Nv, n = fun_C2(SSk, SSp, SSq, VVk, VVp, VVq, IIk, IIp, IIq)
 
             # initialize the residues we have to find
             # IIk1 = (np.random.rand(n_buses) - np.random.rand(n_buses)) * 1  # could also try to set IIk1 = VVk1
             IIk1 = (np.random.rand(n_buses) - np.random.rand(n_buses)) * (n_mm - mm) ** 2 / n_mm ** 2
-            IIp1 = (np.random.rand(n_time) - np.random.rand(n_time)) * 1 
+            IIp1 = (np.random.rand(n_time) - np.random.rand(n_time)) * 1
             IIq1 = (np.random.rand(n_scale) - np.random.rand(n_scale)) * 1
 
             for kk in range(n_kk):  # inner loop: iterate on Γ to find the residues.
@@ -493,7 +499,7 @@ def checking(Y, V_map, S_map, I0_pq, n_buses, n_time, n_scale):
     return I_mis
 
 
-v_map_, s_map_, i_map_, vec_error_ = pgd('data_10PQ_mesh_r.xlsx', n_gg=25, n_mm=25, n_kk=8, n_scale=10, n_time=80)
+v_map_, s_map_, i_map_, vec_error_ = pgd('data_10PQ_mesh_r.xlsx', n_gg=25, n_mm=25, n_kk=8, n_scale=10, n_time=8)
 
 for i in range(len(vec_error_)):
     print(vec_error_[i])
@@ -502,5 +508,3 @@ n_time = 8
 save_mapV(v_map_, 'Map_V2.xlsx', n_time)
 save_mapI(i_map_, 'Map_I2.xlsx', n_time)
 save_mapS(s_map_, 'Map_S2.xlsx', n_time)
-
-
