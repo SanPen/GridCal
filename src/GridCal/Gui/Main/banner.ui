@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>mainWindow</class>
- <widget class="QMainWindow" name="mainWindow">
+ <class>splashScreen</class>
+ <widget class="QMainWindow" name="splashScreen">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -61,7 +61,7 @@
        <enum>Qt::PlainText</enum>
       </property>
       <property name="pixmap">
-       <pixmap resource="icons.qrc">:/Program icon/icons/GridCal_banner.svg</pixmap>
+       <pixmap>../../../../pics/Promo 4.0.svg</pixmap>
       </property>
       <property name="scaledContents">
        <bool>true</bool>
