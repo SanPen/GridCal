@@ -27,15 +27,14 @@ For more options and details follow the
 [installation instructions](https://gridcal.readthedocs.io/en/latest/getting_started/install.html).
 
 
-# Execution
+### Execution
 
-GridCal can be used in 2 ways:
+If you have just installed GridCal on your python distribution, 
+you can call the GUI with the following command:
 
-    1. From the user interface (GUI)
-    2. As a library.
+`python3 -c "from GridCal.ExecuteGridCal import run; run()"`
 
-Executing `python3 -c "from GridCal.ExecuteGridCal import run; run()"` in a console
-should bring up the GUI under most platforms. For detailed instructions, follow the
+ For detailed instructions, follow the
 [instructions](https://gridcal.readthedocs.io/en/latest/getting_started.html)
 from the project's documentation.
 
