@@ -109,7 +109,7 @@ def get_static_generator_data(circuit: MultiCircuit, bus_dict, time_series=False
     return data
 
 
-def get_shunt_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
+def get_shunt_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, time_series=False, ntime=1):
     """
 
     :param circuit:
@@ -136,6 +136,11 @@ def get_shunt_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
         else:
             data.shunt_active[k] = elm.active
             data.shunt_admittance[k] = complex(elm.G, elm.B)
+
+        if Vbus[i, 0].real == 1.0:
+            Vbus[i, :] = complex(elm.Vset, 0)
+        elif elm.Vset != Vbus[i, 0]:
+            logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
 
         data.C_bus_shunt[i, k] = 1
 

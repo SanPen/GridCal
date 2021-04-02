@@ -39,8 +39,8 @@ class Shunt(EditableDevice):
 
     """
 
-    def __init__(self, name='shunt', idtag=None, G=0.0, B=0.0, G_prof=None, B_prof=None, active=True,
-                 controlled=False, Bmin=0.0, Bmax=0.0, mttf=0.0, mttr=0.0):
+    def __init__(self, name='shunt', idtag=None, G=0.0, B=0.0, G_prof=None, B_prof=None, active=True, active_prof=None,
+                 controlled=False, Bmin=0.0, Bmax=0.0, vset=1.0, mttf=0.0, mttr=0.0):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -56,6 +56,9 @@ class Shunt(EditableDevice):
                                                   'B': GCProp('MVAr', float, 'Reactive power of the impedance component at V=1.0 p.u.'),
                                                   'Bmin': GCProp('MVAr', float, 'Reactive power min control value at V=1.0 p.u.'),
                                                   'Bmax': GCProp('MVAr', float, 'Reactive power max control value at V=1.0 p.u.'),
+                                                  'Vset': GCProp('p.u.', float,
+                                                                 'Set voltage. '
+                                                                 'This is used for controlled shunts.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery')},
                                 non_editable_attributes=['bus', 'idtag'],
@@ -66,7 +69,7 @@ class Shunt(EditableDevice):
         # The bus this element is attached to: Not necessary for calculations
         self.bus = None
 
-        self.active_prof = None
+        self.active_prof = active_prof
 
         self.controlled = controlled
 
@@ -79,6 +82,7 @@ class Shunt(EditableDevice):
         self.B = B
         self.Bmin = Bmin
         self.Bmax = Bmax
+        self.Vset = vset
 
         # admittance profile
         self.G_prof = G_prof
@@ -95,6 +99,10 @@ class Shunt(EditableDevice):
                     G_prof=self.G_prof,
                     B_prof=self.B_prof,
                     active=self.active,
+                    active_prof=self.active_prof,
+                    Bmax=self.Bmax,
+                    Bmin=self.Bmin,
+                    vset=self.Vset,
                     mttf=self.mttf,
                     mttr=self.mttr)
         return shu

@@ -57,6 +57,10 @@ class ShuntData:
 
         data.shunt_names = self.shunt_names[elm_idx]
 
+        data.shunt_controlled = self.shunt_controlled[elm_idx]
+        data.shunt_b_min = self.shunt_b_min[elm_idx]
+        data.shunt_b_max = self.shunt_b_max[elm_idx]
+
         data.shunt_active = self.shunt_active[tidx]
         data.shunt_admittance = self.shunt_admittance[tidx]
 
@@ -66,6 +70,9 @@ class ShuntData:
 
     def get_island(self, bus_idx):
         return tp.get_elements_of_the_island(self.C_bus_shunt.T, bus_idx)
+
+    def get_controlled_per_bus(self):
+        return self.C_bus_shunt * (self.shunt_controlled * self.shunt_active)
 
     def get_injections_per_bus(self):
         return self.C_bus_shunt * (self.shunt_admittance * self.shunt_active)

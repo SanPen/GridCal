@@ -456,8 +456,16 @@ class SnapshotData:
             else:
                 raise Exception('Unknown control type:' + str(tpe))
 
+        # VfBeqbus_sh = list()
+        # for k, is_controlled in enumerate(self.shunt_data.get_controlled_per_bus()):
+        #     if is_controlled:
+        #         VfBeqbus_sh.append(k)
+        #         self.any_control = True
+
         # FUBM- Saves the "from" bus identifier for Vf controlled by Beq
         #  (Converters type II for Vdc control)
+        # self.VfBeqbus = np.unique(np.r_[VfBeqbus_sh, self.F[self.iBeqv]])
+        # self.VfBeqbus.sort()
         self.VfBeqbus = self.F[self.iBeqv]
 
         # FUBM- Saves the "to"   bus identifier for Vt controlled by ma
@@ -857,6 +865,11 @@ class SnapshotData:
             Qmax_bus += self.battery_data.get_qmax_per_bus()
             Qmin_bus += self.battery_data.get_qmin_per_bus()
 
+        if self.nshunt > 0:
+            # shunts
+            Qmax_bus += self.shunt_data.get_b_max_per_bus()
+            Qmin_bus += self.shunt_data.get_b_min_per_bus()
+
         if self.nhvdc > 0:
             # hvdc from
             Qmax_bus += self.hvdc_data.get_qmax_from_per_bus()
@@ -1189,7 +1202,7 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
     nc.static_generator_data = ds.circuit_to_data.get_static_generator_data(circuit, bus_dict)
     nc.generator_data = ds.circuit_to_data.get_generator_data(circuit, bus_dict, nc.bus_data.Vbus, logger, opf_results)
     nc.battery_data = ds.circuit_to_data.get_battery_data(circuit, bus_dict, nc.bus_data.Vbus, logger, opf_results)
-    nc.shunt_data = ds.circuit_to_data.get_shunt_data(circuit, bus_dict)
+    nc.shunt_data = ds.circuit_to_data.get_shunt_data(circuit, bus_dict, nc.bus_data.Vbus, logger)
     nc.line_data = ds.circuit_to_data.get_line_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode)
     nc.transformer_data = ds.circuit_to_data.get_transformer_data(circuit, bus_dict)
     nc.vsc_data = ds.circuit_to_data.get_vsc_data(circuit, bus_dict)

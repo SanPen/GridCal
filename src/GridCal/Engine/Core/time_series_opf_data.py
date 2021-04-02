@@ -260,7 +260,8 @@ def compile_opf_time_circuit(circuit: MultiCircuit, apply_temperature=False,
     nc.battery_data = ds.circuit_to_data.get_battery_data(circuit, bus_dict, nc.bus_data.Vbus, logger, opf_results,
                                                           time_series=True, opf=True, ntime=ntime)
 
-    nc.shunt_data = ds.circuit_to_data.get_shunt_data(circuit, bus_dict, time_series=True, ntime=ntime)
+    nc.shunt_data = ds.circuit_to_data.get_shunt_data(circuit, bus_dict, nc.bus_data.Vbus, logger,
+                                                      time_series=True, ntime=ntime)
 
     nc.line_data = ds.circuit_to_data.get_line_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode,
                                                     time_series=True, ntime=ntime)
