@@ -34,6 +34,12 @@ you can call the GUI with the following command:
 
 `python3 -c "from GridCal.ExecuteGridCal import run; run()"`
 
+### Testing GridCal
+
+    python3 -m venv venv
+    venv/bin/python -m pip install --upgrade -r requirements_venv.txt
+    venv/bin/python -m tox
+
  For detailed instructions, follow the
 [instructions](https://gridcal.readthedocs.io/en/latest/getting_started.html)
 from the project's documentation.
@@ -58,16 +64,12 @@ We have included extra materials to work with. These are included in the standal
 - Standard IEEE grids as well as grids from open projects
 - [Equipment catalogue](https://gridcal.readthedocs.io/en/latest/data_sheets.html) (Wires, Cables and Transformers) ready to use in GridCal
 
-# Examples
+### Examples
 
 Examples are included in [Tutorials](https://gridcal.readthedocs.io/en/latest/tutorials/tutorials_module.html) section. In addition, the
 tests under [src/tests](https://github.com/SanPen/GridCal/tree/master/src/tests) may serve as valuable examples.
 
-# Testing GridCal
 
-    python3 -m venv venv
-    venv/bin/python -m pip install --upgrade -r requirements_venv.txt
-    venv/bin/python -m tox
 
 # Features overview
 
