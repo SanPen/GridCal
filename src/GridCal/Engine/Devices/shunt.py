@@ -51,7 +51,7 @@ class Shunt(EditableDevice):
                                                   'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
                                                   'active': GCProp('', bool, 'Is the shunt active?'),
-                                                  'controlled': GCProp('', bool, 'Is the shunt controllable?'),
+                                                  'is_controlled': GCProp('', bool, 'Is the shunt controllable?'),
                                                   'G': GCProp('MW', float, 'Active power of the impedance component at V=1.0 p.u.'),
                                                   'B': GCProp('MVAr', float, 'Reactive power of the impedance component at V=1.0 p.u.'),
                                                   'Bmin': GCProp('MVAr', float, 'Reactive power min control value at V=1.0 p.u.'),
@@ -71,7 +71,7 @@ class Shunt(EditableDevice):
 
         self.active_prof = active_prof
 
-        self.controlled = controlled
+        self.is_controlled = controlled
 
         self.mttf = mttf
 

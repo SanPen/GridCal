@@ -10,6 +10,18 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+Version 4.0.2
+^^^^^^^^^^^^^^^
+
+- Fixed xlrd dependency. It broke the profile import because it stopped supporting .xlsx.
+  Switched to openpyxl.
+
+- Fixed Wire call bug when not passing idtag.
+
+- Added shunt voltage control.
+
+
+
 Version 4.0.0 (multi-terminal DC Grids)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -78,10 +78,10 @@ class ShuntData:
         return self.C_bus_shunt * (self.shunt_admittance * self.shunt_active)
 
     def get_b_max_per_bus(self):
-        return self.C_bus_shunt * ((self.shunt_b_max * self.shunt_controlled) * self.shunt_active)
+        return self.C_bus_shunt * (self.shunt_b_max.reshape(-1, 1) * self.shunt_active)
 
     def get_b_min_per_bus(self):
-        return self.C_bus_shunt * ((self.shunt_b_min * self.shunt_controlled) * self.shunt_active)
+        return self.C_bus_shunt * (self.shunt_b_min.reshape(-1, 1) * self.shunt_active)
 
     def __len__(self):
         return self.nshunt

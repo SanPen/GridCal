@@ -126,7 +126,7 @@ def get_shunt_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, time_s
         i = bus_dict[elm.bus]
 
         data.shunt_names[k] = elm.name
-        data.shunt_controlled[k] = elm.controlled
+        data.shunt_controlled[k] = elm.is_controlled
         data.shunt_b_min[k] = elm.Bmin
         data.shunt_b_max[k] = elm.Bmax
 

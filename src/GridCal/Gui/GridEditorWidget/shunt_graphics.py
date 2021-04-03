@@ -111,6 +111,11 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
         pe.setChecked(self.api_object.active)
         pe.triggered.connect(self.enable_disable_toggle)
 
+        pc = menu.addAction('Voltage control')
+        pc.setCheckable(True)
+        pc.setChecked(self.api_object.is_controlled)
+        pc.triggered.connect(self.enable_disable_control_toggle)
+
         pa = menu.addAction('Plot profiles')
         plot_icon = QIcon()
         plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
@@ -138,14 +143,20 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
 
     def enable_disable_toggle(self):
         """
-
-        @return:
+        Enable / Disable device
         """
         if self.api_object is not None:
             if self.api_object.active:
                 self.set_enable(False)
             else:
                 self.set_enable(True)
+
+    def enable_disable_control_toggle(self):
+        """
+        Enable / Disable device voltage control
+        """
+        if self.api_object is not None:
+            self.api_object.is_controlled = not self.api_object.is_controlled
 
     def set_enable(self, val=True):
         """

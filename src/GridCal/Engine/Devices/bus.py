@@ -270,7 +270,7 @@ class Bus(EditableDevice):
 
         shunt_on = 0
         for elm in self.shunts:
-            if elm.active and elm.controlled:
+            if elm.active and elm.is_controlled:
                 shunt_on += 1
 
         if (gen_on + batt_on + shunt_on) > 0:
