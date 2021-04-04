@@ -104,6 +104,8 @@ These packages replicate GridCal's development environment in python 3.7.x and a
 Make Miniconda work under Windows
 --------------------------------------------------
 
+The use of Anaconda is completely discouraged since we were unable to make GridCal
+work there due to the Qt issues on the platform.
 As of version 4.0.0 of GridCal we have tested the following procedure to make Miniconda work:
 
 - Install Python 3.9 Miniconda3 x64: https://docs.conda.io/en/latest/miniconda.html
@@ -123,6 +125,5 @@ As of version 4.0.0 of GridCal we have tested the following procedure to make Mi
 
 - Test: `python.exe -c "from GridCal.ExecuteGridCal import run; run()"`
 
-The use of Anaconda is completely discouraged since we were unable to make GridCal
-work there due to the Qt issues on the platform.
+
 
