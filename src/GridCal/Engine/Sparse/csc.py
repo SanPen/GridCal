@@ -342,9 +342,16 @@ def sp_slice(mat: csc_matrix, rows, cols):
     :param cols:
     :return:
     """
-    mat2 = sp_transpose(sp_slice_cols(mat, cols))
-    return sp_transpose(sp_slice_cols(mat2, rows))
-    # return sp_transpose(sp_slice_cols(sp_transpose(sp_slice_cols(mat, cols)), rows))
+    # mat2 = sp_transpose(sp_slice_cols(mat, cols))
+    # return sp_transpose(sp_slice_cols(mat2, rows))
+
+    new_val, new_row_ind, new_col_ptr, n_rows, n_cols, nnz = csc_sub_matrix(Am=mat.shape[0], Annz=mat.nnz,
+                                                                            Ap=mat.indptr, Ai=mat.indices, Ax=mat.data,
+                                                                            rows=rows, cols=cols)
+    new_val = np.resize(new_val, nnz)
+    new_row_ind = np.resize(new_row_ind, nnz)
+
+    return csc_matrix((new_val, new_row_ind, new_col_ptr), shape=(n_rows, n_cols))
 
 
 def csc_stack_2d_ff(mats, m_rows=1, m_cols=1, row_major=True):

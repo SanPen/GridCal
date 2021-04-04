@@ -465,7 +465,7 @@ def binary_find(N, x, array):
 
 
 # @nb.njit("Tuple((i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i4[:], i4[:])")
-def csc_sub_matrix(Am, Anz, Ap, Ai, Ax, rows, cols):
+def csc_sub_matrix_old(Am, Anz, Ap, Ai, Ax, rows, cols):
     """
     Get SCS arbitrary sub-matrix
     :param Am: number of rows
@@ -506,7 +506,59 @@ def csc_sub_matrix(Am, Anz, Ap, Ai, Ax, rows, cols):
     return n, Bp, Bi[:n], Bx[:n]
 
 
-# @nb.njit("Tuple((i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i4[:])")
+@nb.njit()
+def csc_sub_matrix(Am, Annz, Ap, Ai, Ax, rows, cols):
+    """
+    CSC matrix sub-matrix view
+    :param Am: number of rows
+    :param Annz: number of non-zero entries
+    :param Ap: Column pointers
+    :param Ai: Row indices
+    :param Ax: Data
+    :param rows: array of selected rows: must be sorted! to use the binary search
+    :param cols: array of columns: should be sorted
+    :return:
+    """
+    n_rows = len(rows)
+    n_cols = len(cols)
+
+    nnz = 0
+    p = 0
+    Bx = np.empty(Annz, dtype=nb.float64)  # data
+    Bi = np.empty(Annz, dtype=nb.int32)  # indices
+    Bp = np.empty(n_cols + 1, dtype=nb.int32)  # pointers
+    Bp[p] = 0
+
+    # generate lookup -> index lookup
+    lookup = np.zeros(Am, dtype=nb.int32)
+    lookup[rows] = np.arange(len(rows), dtype=nb.int32)
+
+    for j in cols:  # sliced columns
+
+        for k in range(Ap[j], Ap[j + 1]):  # rows of A[:, j]
+
+            # row index translation to the "rows" space
+            i = Ai[k]
+            ii = lookup[i]
+
+            if rows[ii] == i:
+                # entry found
+                Bx[nnz] = Ax[k]
+                Bi[nnz] = ii
+                nnz += 1
+
+        p += 1
+        Bp[p] = nnz
+
+    Bp[p] = nnz
+
+    # numba does not support resize...
+    # new_val = np.resize(new_val, nnz)
+    # new_row_ind = np.resize(new_row_ind, nnz)
+
+    return Bx, Bi, Bp, n_rows, n_cols, nnz
+
+
 @nb.njit()
 def csc_sub_matrix_cols(Am, Anz, Ap, Ai, Ax, cols):
     """
@@ -543,7 +595,6 @@ def csc_sub_matrix_cols(Am, Anz, Ap, Ai, Ax, cols):
     return n, Bp, Bi[:n], Bx[:n]
 
 
-# @nb.njit("Tuple((i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i4[:])")
 def csc_sub_matrix_rows(An, Anz, Ap, Ai, Ax, rows):
     """
     Get SCS arbitrary sub-matrix
