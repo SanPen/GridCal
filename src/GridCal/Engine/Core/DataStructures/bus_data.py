@@ -27,6 +27,8 @@ class BusData:
         self.bus_names = np.empty(nbus, dtype=object)
         self.bus_active = np.ones((nbus, ntime), dtype=int)
         self.Vbus = np.ones((nbus, ntime), dtype=complex)
+        self.Vmin = np.ones(nbus, dtype=float)
+        self.Vmax = np.ones(nbus, dtype=float)
         self.bus_types = np.empty(nbus, dtype=int)
         self.bus_installed_power = np.zeros(nbus, dtype=float)
         self.bus_is_dc = np.empty(nbus, dtype=bool)
@@ -50,6 +52,8 @@ class BusData:
 
         data.bus_active = self.bus_active[tidx]
         data.Vbus = self.Vbus[tidx]
+        data.Vmin = self.Vmin[elm_idx]
+        data.Vmax = self.Vmax[elm_idx]
 
         data.bus_types = self.bus_types[elm_idx]
         data.bus_installed_power = self.bus_installed_power[elm_idx]

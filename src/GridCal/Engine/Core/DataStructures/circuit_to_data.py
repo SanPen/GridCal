@@ -19,6 +19,8 @@ def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1):
 
         # bus parameters
         bus_data.bus_names[i] = bus.name
+        bus_data.Vmin[i] = bus.Vmin
+        bus_data.Vmax[i] = bus.Vmax
 
         if time_series:
             bus_data.bus_active[i, :] = bus.active_prof

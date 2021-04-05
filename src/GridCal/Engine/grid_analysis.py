@@ -62,15 +62,17 @@ class TimeSeriesResultsAnalysis:
 
         self.buses_selected_for_storage_frequency = np.zeros(self.res.n)
 
+        rates = self.numerical_circuit.Rates.T
+
         for t in range(self.res.nt):
 
             bus_voltage = np.abs(self.res.voltage[t])
 
             branch_loading = np.abs(self.res.loading[t])
 
-            buses_over = np.where(bus_voltage > self.numerical_circuit.Vmax)[0]
+            buses_over = np.where(bus_voltage > self.numerical_circuit.bus_data.Vmax)[0]
 
-            buses_under = np.where(bus_voltage < self.numerical_circuit.Vmin)[0]
+            buses_under = np.where(bus_voltage < self.numerical_circuit.bus_data.Vmin)[0]
 
             branches_over = np.where(branch_loading > 1.0)[0]
 
@@ -88,9 +90,9 @@ class TimeSeriesResultsAnalysis:
             self.bus_under_voltage_frequency[buses_under] += 1
             self.bus_over_voltage_frequency[buses_over] += 1
 
-            inc_loading = self.res.Sf[t, branches_over] - self.numerical_circuit.branch_rates[t, branches_over]
-            inc_over = bus_voltage[buses_over] - self.numerical_circuit.Vmax[buses_over]
-            inc_under = self.numerical_circuit.Vmin[buses_under] - bus_voltage[buses_under]
+            inc_loading = self.res.Sf[t, branches_over] - rates[t, branches_over]
+            inc_over = bus_voltage[buses_over] - self.numerical_circuit.bus_data.Vmax[buses_over]
+            inc_under = self.numerical_circuit.bus_data.Vmin[buses_under] - bus_voltage[buses_under]
 
             self.branch_overload_accumulated[branches_over] += inc_loading
             self.bus_under_voltage_accumulated[buses_under] += inc_under
