@@ -529,7 +529,7 @@ def csc_sub_matrix(Am, Annz, Ap, Ai, Ax, rows, cols):
     Bp = np.empty(n_cols + 1, dtype=nb.int32)  # pointers
     Bp[p] = 0
 
-    # generate lookup -> index lookup
+    # generate lookup for the non immediate axis (for CSC it is the rows) -> index lookup
     lookup = np.zeros(Am, dtype=nb.int32)
     lookup[rows] = np.arange(len(rows), dtype=nb.int32)
 

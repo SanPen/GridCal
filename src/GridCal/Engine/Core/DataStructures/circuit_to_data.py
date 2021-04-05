@@ -148,7 +148,7 @@ def get_shunt_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, time_s
 
 
 def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
-                       opf_results=None, time_series=False, opf=False, ntime=1):
+                       opf_results: "OptimalPowerFlowResults" = None, time_series=False, opf=False, ntime=1):
     """
 
     :param circuit:
@@ -157,6 +157,8 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
     :param logger:
     :param opf_results:
     :param time_series:
+    :param opf:
+    :param ntime:
     :return:
     """
     devices = circuit.get_generators()
@@ -205,7 +207,7 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.generator_cost[k] = elm.Cost
 
             if opf_results is not None:
-                data.generator_p[k] = opf_results.generator_power[k] - opf_results.generator_shedding[k]
+                data.generator_p[k] = opf_results.generators_power[k] - opf_results.generation_shedding[k]
 
         data.C_bus_gen[i, k] = 1
 
