@@ -242,10 +242,11 @@ class DiagramScene(QGraphicsScene):
                         voltage[key] = np.abs(driver.results.voltage[:, i])
 
                 # injections
-                df = pd.DataFrame(data=power_data, index=x)
-                ax_1.set_title('Power', fontsize=14)
-                ax_1.set_ylabel('Injections [MW]', fontsize=11)
-                df.plot.area(ax=ax_1)
+                if len(power_data.keys()):
+                    df = pd.DataFrame(data=power_data, index=x)
+                    ax_1.set_title('Power', fontsize=14)
+                    ax_1.set_ylabel('Injections [MW]', fontsize=11)
+                    df.plot.area(ax=ax_1)
 
                 # voltage
                 if len(voltage.keys()):
@@ -299,16 +300,18 @@ class DiagramScene(QGraphicsScene):
                         loading_data[key] = np.sort(np.abs(driver.results.worst_loading.real[:, i] * 100.0))
 
                 # loading
-                df = pd.DataFrame(data=loading_data, index=p)
-                ax_1.set_title('Probability x < value', fontsize=14)
-                ax_1.set_ylabel('Loading [%]', fontsize=11)
-                df.plot(ax=ax_1)
+                if len(loading_data.keys()):
+                    df = pd.DataFrame(data=loading_data, index=p)
+                    ax_1.set_title('Probability x < value', fontsize=14)
+                    ax_1.set_ylabel('Loading [%]', fontsize=11)
+                    df.plot(ax=ax_1)
 
                 # loading
-                df = pd.DataFrame(data=power_data, index=x)
-                ax_2.set_title('Power', fontsize=14)
-                ax_2.set_ylabel('Power [MW]', fontsize=11)
-                df.plot(ax=ax_2)
+                if len(power_data.keys()):
+                    df = pd.DataFrame(data=power_data, index=x)
+                    ax_2.set_title('Power', fontsize=14)
+                    ax_2.set_ylabel('Power [MW]', fontsize=11)
+                    df.plot(ax=ax_2)
 
                 plt.legend()
                 fig.suptitle(api_object.name, fontsize=20)
@@ -483,7 +486,7 @@ class GridEditor(QSplitter):
 
         self.started_branch = None
 
-        self.setStretchFactor(0, 0.1)
+        self.setStretchFactor(0, 1)
         self.setStretchFactor(1, 2000)
 
     def start_connection(self, port: TerminalItem):
