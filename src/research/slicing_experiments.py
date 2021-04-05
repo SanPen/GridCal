@@ -30,6 +30,7 @@ def binary_search(array, x):
 def slice(A: csc_matrix, rows, cols):
     """
     CSC matrix sub-matrix view
+    Only works if rows is sorted
     :param A: CSC matrix to get the view from
     :param rows: array of selected rows: must be sorted! to use the binary search
     :param cols: array of columns: should be sorted
@@ -68,7 +69,8 @@ def slice(A: csc_matrix, rows, cols):
 
 def csc_sub_matrix(Am, Annz, Ap, Ai, Ax, rows, cols):
     """
-    CSC matrix sub-matrix view
+    CSC matrix sub-matrix slice
+    Works for sorted and unsorted versions of "rows", but "rows" cannot contain duplicates
     :param Am: number of rows
     :param Annz: number of non-zero entries
     :param Ap: Column pointers
@@ -76,7 +78,7 @@ def csc_sub_matrix(Am, Annz, Ap, Ai, Ax, rows, cols):
     :param Ax: Data
     :param rows: array of selected rows: must be sorted! to use the binary search
     :param cols: array of columns: should be sorted
-    :return:
+    :return: new_val, new_row_ind, new_col_ptr, n_rows, n_cols
     """
     n_rows = len(rows)
     n_cols = len(cols)
@@ -100,8 +102,7 @@ def csc_sub_matrix(Am, Annz, Ap, Ai, Ax, rows, cols):
             i = Ai[k]
             ii = lookup[i]
 
-            if rows[ii] == i:
-                # entry found
+            if rows[ii] == i:  # entry found
                 new_val[nnz] = Ax[k]
                 new_row_ind[nnz] = ii
                 nnz += 1
@@ -119,6 +120,7 @@ def csc_sub_matrix(Am, Annz, Ap, Ai, Ax, rows, cols):
 def slice2(A: csc_matrix, rows, cols):
     """
     CSC matrix sub-matrix view
+    Works for unsorted versions of rows, but rows cannot contain repetitions
     :param A: CSC matrix to get the view from
     :param rows: array of selected rows: must be sorted! to use the binary search
     :param cols: array of columns: should be sorted
@@ -258,8 +260,10 @@ if __name__ == '__main__':
         mat[a, b] = 8
 
     mat = mat.tocsc()
-    cols_ = [1, 2, 5, 6]
-    rows_ = [2, 3, 6]
+    # cols_ = [1, 2, 5, 6]
+    cols_ = [2, 2, 1, 5, 6]
+    # rows_ = [2, 3, 6]
+    rows_ = [5, 3, 2, 6]
     mat2 = slice(A=mat, rows=rows_, cols=cols_)
     mat5 = slice2(A=mat, rows=rows_, cols=cols_)
     mat3 = slice_r(A=mat, rows=rows_)
