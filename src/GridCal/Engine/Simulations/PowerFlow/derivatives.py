@@ -171,8 +171,7 @@ def dSbus_dV_csc(Ybus, V):
     dS_dVm, dS_dVa = dSbus_dV_numba_sparse_csc(Ybus.data, Ybus.indptr, Ybus.indices, V)
 
     # generate sparse CSC matrices with computed data and return them
-    return sp.csc_matrix((dS_dVa, Ybus.indices, Ybus.indptr)), \
-           sp.csc_matrix((dS_dVm, Ybus.indices, Ybus.indptr))
+    return sp.csc_matrix((dS_dVa, Ybus.indices, Ybus.indptr)), sp.csc_matrix((dS_dVm, Ybus.indices, Ybus.indptr))
 
 
 def dSbus_dV_csr(Ybus, V, I):
