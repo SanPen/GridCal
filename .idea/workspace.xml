@@ -23,11 +23,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/high_speed_fubm_jacobian.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/derivatives.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/derivatives.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_acdc_power_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_acdc_power_flow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/slicing_experiments.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/slicing_experiments.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="superfast fubm jacobian structure working">
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/high_speed_fubm_jacobian.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/high_speed_fubm_jacobian.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -514,14 +511,7 @@
       <workItem from="1617540879297" duration="1142000" />
       <workItem from="1617632797911" duration="3094000" />
       <workItem from="1617652313409" duration="1856000" />
-      <workItem from="1617730621442" duration="8683000" />
-    </task>
-    <task id="LOCAL-00070" summary="Early working FUBM models with improved derivatives">
-      <created>1608850996454</created>
-      <option name="number" value="00070" />
-      <option name="presentableId" value="LOCAL-00070" />
-      <option name="project" value="LOCAL" />
-      <updated>1608850996455</updated>
+      <workItem from="1617730621442" duration="9547000" />
     </task>
     <task id="LOCAL-00071" summary="Working NR with FUBM for the simple HVDC example">
       <created>1608896245740</created>
@@ -859,7 +849,14 @@
       <option name="project" value="LOCAL" />
       <updated>1617641677849</updated>
     </task>
-    <option name="localTasksCounter" value="119" />
+    <task id="LOCAL-00119" summary="superfast fubm jacobian structure working">
+      <created>1617745482190</created>
+      <option name="number" value="00119" />
+      <option name="presentableId" value="LOCAL-00119" />
+      <option name="project" value="LOCAL" />
+      <updated>1617745482191</updated>
+    </task>
+    <option name="localTasksCounter" value="120" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -893,7 +890,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="removed the LODF decoupling from the PTDF when distributing the swing" />
     <MESSAGE value="changes to handle cim-zip files" />
     <MESSAGE value="Improved CIM reader" />
     <MESSAGE value="Added ore functions to the CIM objects" />
@@ -918,7 +914,8 @@
     <MESSAGE value="Fixed OPF snapshot feedback to PF" />
     <MESSAGE value="Fixed storage location suggestions" />
     <MESSAGE value="Made the device plots more robust" />
-    <option name="LAST_COMMIT_MESSAGE" value="Made the device plots more robust" />
+    <MESSAGE value="superfast fubm jacobian structure working" />
+    <option name="LAST_COMMIT_MESSAGE" value="superfast fubm jacobian structure working" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1226,7 +1223,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/high_speed_fubm_jacobian.py</url>
-          <line>627</line>
+          <line>1146</line>
           <option name="timeStamp" value="614" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
