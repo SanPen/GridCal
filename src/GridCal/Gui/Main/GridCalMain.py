@@ -401,6 +401,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionImportPlexosGeneratorGeneration.triggered.connect(self.import_plexos_generator_generation)
 
+        self.ui.actionImportPlexosBranchRates.triggered.connect(self.import_plexos_branch_rates)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -5524,6 +5526,21 @@ class MainGUI(QMainWindow):
 
             if len(logger) > 0:
                 dlg = LogsDialogue('Plexos generation import', logger)
+                dlg.exec_()
+
+    def import_plexos_branch_rates(self):
+        """
+        Open and parse Plexos load file
+        """
+        fname = self.select_csv_file()
+
+        if fname:
+            df = pd.read_csv(fname, index_col=0)
+            logger = self.circuit.import_branch_rates_profiles(df=df)
+            self.update_date_dependent_combos()
+
+            if len(logger) > 0:
+                dlg = LogsDialogue('Plexos branch rates import', logger)
                 dlg.exec_()
 
     def search_in_results(self):

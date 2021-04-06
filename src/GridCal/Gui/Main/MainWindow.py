@@ -3,16 +3,13 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.0
+## Created by: Qt User Interface Compiler version 5.15.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import (QCoreApplication, QDate, QDateTime, QMetaObject,
-    QObject, QPoint, QRect, QSize, QTime, QUrl, Qt)
-from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
-    QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter,
-    QPixmap, QRadialGradient)
+from PySide2.QtCore import *
+from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from .icons_rc import *
@@ -259,6 +256,9 @@ class Ui_mainWindow(object):
         icon41 = QIcon()
         icon41.addFile(u":/Icons/icons/otdf_ts.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.actionOTDF_time_series.setIcon(icon41)
+        self.actionImportPlexosBranchRates = QAction(mainWindow)
+        self.actionImportPlexosBranchRates.setObjectName(u"actionImportPlexosBranchRates")
+        self.actionImportPlexosBranchRates.setIcon(icon40)
         self.centralwidget = QWidget(mainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -2992,6 +2992,7 @@ class Ui_mainWindow(object):
         self.menuSpecial_imports_2.addAction(self.menuPlexos_results_2.menuAction())
         self.menuPlexos_results_2.addAction(self.actionImportPlexosNodeLoad)
         self.menuPlexos_results_2.addAction(self.actionImportPlexosGeneratorGeneration)
+        self.menuPlexos_results_2.addAction(self.actionImportPlexosBranchRates)
         self.menuAbout.addAction(self.actionOnline_documentation)
         self.menuAbout.addAction(self.actionLicense)
         self.menuAbout.addAction(self.actionAbout)
@@ -3253,6 +3254,7 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.actionOTDF_time_series.setToolTip(QCoreApplication.translate("mainWindow", u"Runs the N-1 time series analysis", None))
 #endif // QT_CONFIG(tooltip)
+        self.actionImportPlexosBranchRates.setText(QCoreApplication.translate("mainWindow", u"Branch rates", None))
 #if QT_CONFIG(tooltip)
         self.run_cascade_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Run complete cascading process", None))
 #endif // QT_CONFIG(tooltip)
