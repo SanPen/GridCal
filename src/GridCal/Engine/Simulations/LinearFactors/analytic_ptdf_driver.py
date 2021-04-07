@@ -87,6 +87,8 @@ class LinearAnalysisDriver(QThread):
 
         analysis.run()
 
+        self.logger += analysis.logger
+
         self.results = analysis.results
 
         end = time.time()
