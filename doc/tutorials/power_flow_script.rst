@@ -25,7 +25,7 @@ and then run a power flow and a time series power flow. Finally the results will
 
     # let's create a master profile
     date0 = dt.datetime(2021, 1, 1)
-    time_array = pd.DatetimeIndex([date0 + dt.timedelta(hours=i) for i in range(24)])
+    time_array = pd.DatetimeIndex([date0 + dt.timedelta(hours=i) for i in range(26)])
     x = np.linspace(-np.pi, np.pi, len(time_array))
     y = np.abs(np.sin(x))
     df_0 = pd.DataFrame(data=y, index=time_array)  # complex values
