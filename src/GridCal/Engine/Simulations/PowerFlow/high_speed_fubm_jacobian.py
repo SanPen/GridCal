@@ -31,22 +31,90 @@ def make_lookup(n, arr):
     return lookup
 
 
-def fill_data(Jx, Ji, Jp, Yp, Yi, Ys,
-              dSbus_dVa_x, dSbus_dVm_x, dSf_dVa, dSf_dVm, dSt_dVa, dSt_dVm,
-              dPfdp_dVm_x, dPfdp_dVm_i, dPfdp_dVm_p,
-              pvpq, pvpq_lookup, npvpq, pq,
-              i2, ni2, i2_lookup, i4, ni4, i4_lookup,
-              iPfsh, nPfsh, iPfsh_lookup,
-              iQtma, nQtma, iQtma_lookup,
-              iQfma, nQfma,
-              iVtma, nVtma,
-              iPfdp, nPfdp, iPfdp_lookup,
-              iBeqz, nBeqz,
-              iBeqv, nBeqv,
-              F, T, V, ma, k2, tap, Bc, Beq):
+@nb.njit()
+def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
+                            dSbus_dVa_x, dSbus_dVm_x,
+                            dSf_dVa_x, dSf_dVa_i, dSf_dVa_p,
+                            dSf_dVm_x, dSf_dVm_i, dSf_dVm_p,
+                            dSt_dVa_x, dSt_dVa_i, dSt_dVa_p,
+                            dSt_dVm_x, dSt_dVm_i, dSt_dVm_p,
+                            dPfdp_dVm_x, dPfdp_dVm_i, dPfdp_dVm_p,
+                            pvpq, pvpq_lookup, npvpq, pq,
+                            i2, ni2, i2_lookup, i4, ni4, i4_lookup,
+                            iPfsh, nPfsh, iPfsh_lookup,
+                            iQtma, nQtma, iQtma_lookup,
+                            iQfma, nQfma,
+                            iVtma, nVtma,
+                            iPfdp, nPfdp, iPfdp_lookup,
+                            iBeqz, nBeqz,
+                            iBeqv, nBeqv,
+                            F, T, V, ma, k2, tap, Bc, Beq):
+    """
+
+    :param Jx:
+    :param Ji:
+    :param Jp:
+    :param Yp:
+    :param Yi:
+    :param Ys:
+    :param dSbus_dVa_x:
+    :param dSbus_dVm_x:
+    :param dSf_dVa_x:
+    :param dSf_dVa_i:
+    :param dSf_dVa_p:
+    :param dSf_dVm_x:
+    :param dSf_dVm_i:
+    :param dSf_dVm_p:
+    :param dSt_dVa_x:
+    :param dSt_dVa_i:
+    :param dSt_dVa_p:
+    :param dSt_dVm_x:
+    :param dSt_dVm_i:
+    :param dSt_dVm_p:
+    :param dPfdp_dVm_x:
+    :param dPfdp_dVm_i:
+    :param dPfdp_dVm_p:
+    :param pvpq: Array of pv and then pq bus indices (not sorted)
+    :param pvpq_lookup:
+    :param npvpq:
+    :param pvpq: Array of pq bus indices (sorted)
+    :param i2:
+    :param ni2:
+    :param i2_lookup:
+    :param i4:
+    :param ni4:
+    :param i4_lookup:
+    :param iPfsh: indices of the Pf controlled branches
+    :param nPfsh:
+    :param iPfsh_lookup:
+    :param iQtma: Indices of the Qt controlled branches
+    :param nQtma:
+    :param iQtma_lookup:
+    :param iQfma: indices of the Qf controlled branches
+    :param nQfma:
+    :param iVtma: Indices of the Vt controlled branches
+    :param nVtma:
+    :param iPfdp: indices of the droop controlled branches
+    :param nPfdp:
+    :param iPfdp_lookup:
+    :param iBeqz: Indices of the Qf controlled branches
+    :param nBeqz:
+    :param iBeqv: Indices of the Vf Controlled branches
+    :param nBeqv:
+    :param F: Array of "from" bus indices
+    :param T: Array of "to" bus indices
+    :param V: Array of complex bus voltages
+    :param ma: Array of tap modules
+    :param k2: Array of branch converter losses
+    :param tap: Array of complex tap values {remember tap = ma * exp(1j * theta) }
+    :param Bc: Array of branch full susceptances
+    :param Beq: Array of branch equivalent (variable) susceptances
+    :return:
+    """
 
     nnz = 0
     p = 0
+    Jp[p] = 0
 
     # column 1: derivatives w.r.t Va -----------------------------------------------------------------------------------
     for j in pvpq:  # sliced columns
@@ -83,60 +151,60 @@ def fill_data(Jx, Ji, Jp, Yp, Yi, Ys,
         # J51
         offset += ni2
         if nPfsh:
-            for k in range(dSf_dVa.indptr[j], dSf_dVa.indptr[j + 1]):  # rows of A[:, j]
+            for k in range(dSf_dVa_p[j], dSf_dVa_p[j + 1]):  # rows of A[:, j]
 
                 # row index translation to the "rows" space
-                i = dSf_dVa.indices[k]
+                i = dSf_dVa_i[k]
                 ii = iPfsh_lookup[i]
 
                 if iPfsh[ii] == i:
                     # entry found
-                    Jx[nnz] = dSf_dVa.data[k].real
+                    Jx[nnz] = dSf_dVa_x[k].real
                     Ji[nnz] = ii + offset
                     nnz += 1
 
         # J61 J71
         offset += nPfsh
         if ni4:
-            for k in range(dSf_dVa.indptr[j], dSf_dVa.indptr[j + 1]):  # rows of A[:, j]
+            for k in range(dSf_dVa_p[j], dSf_dVa_p[j + 1]):  # rows of A[:, j]
 
                 # row index translation to the "rows" space
-                i = dSf_dVa.indices[k]
+                i = dSf_dVa_i[k]
                 ii = i4_lookup[i]
 
                 if i4[ii] == i:
                     # entry found
-                    Jx[nnz] = dSf_dVa.data[k].imag
+                    Jx[nnz] = dSf_dVa_x[k].imag
                     Ji[nnz] = ii + offset
                     nnz += 1
 
         # J81
         offset += ni4
         if nQtma:
-            for k in range(dSt_dVa.indptr[j], dSt_dVa.indptr[j + 1]):  # rows of A[:, j]
+            for k in range(dSt_dVa_p[j], dSt_dVa_p[j + 1]):  # rows of A[:, j]
 
                 # row index translation to the "rows" space
-                i = dSt_dVa.indices[k]
+                i = dSt_dVa_i[k]
                 ii = iQtma_lookup[i]
 
                 if iQtma[ii] == i:
                     # entry found
-                    Jx[nnz] = dSt_dVa.data[k].imag
+                    Jx[nnz] = dSt_dVa_x[k].imag
                     Ji[nnz] = ii + offset
                     nnz += 1
 
         # J91
         offset += nQtma
         if nPfdp:
-            for k in range(dSf_dVa.indptr[j], dSf_dVa.indptr[j + 1]):  # rows of A[:, j]
+            for k in range(dSf_dVa_p[j], dSf_dVa_p[j + 1]):  # rows of A[:, j]
 
                 # row index translation to the "rows" space
-                i = dSf_dVa.indices[k]
+                i = dSf_dVa_i[k]
                 ii = iPfdp_lookup[i]
 
                 if iPfdp[ii] == i:
                     # entry found
-                    Jx[nnz] = -dSf_dVa[k].real
+                    Jx[nnz] = -dSf_dVa_x[k].real
                     Ji[nnz] = ii + offset
                     nnz += 1
 
@@ -179,45 +247,45 @@ def fill_data(Jx, Ji, Jp, Yp, Yi, Ys,
         # J51
         offset += ni2
         if nPfsh:
-            for k in range(dSf_dVm.indptr[j], dSf_dVm.indptr[j + 1]):  # rows of A[:, j]
+            for k in range(dSf_dVm_p[j], dSf_dVm_p[j + 1]):  # rows of A[:, j]
 
                 # row index translation to the "rows" space
-                i = dSf_dVm.indices[k]
+                i = dSf_dVm_i[k]
                 ii = iPfsh_lookup[i]
 
                 if iPfsh[ii] == i:
                     # entry found
-                    Jx[nnz] = dSf_dVm.data[k].real
+                    Jx[nnz] = dSf_dVm_x[k].real
                     Ji[nnz] = ii + offset
                     nnz += 1
 
         # J61 J71
         offset += nPfsh
         if ni4:
-            for k in range(dSf_dVm.indptr[j], dSf_dVm.indptr[j + 1]):  # rows of A[:, j]
+            for k in range(dSf_dVm_p[j], dSf_dVm_p[j + 1]):  # rows of A[:, j]
 
                 # row index translation to the "rows" space
-                i = dSf_dVm.indices[k]
+                i = dSf_dVm_i[k]
                 ii = i4_lookup[i]
 
                 if i4[ii] == i:
                     # entry found
-                    Jx[nnz] = dSf_dVm.data[k].imag
+                    Jx[nnz] = dSf_dVm_x[k].imag
                     Ji[nnz] = ii + offset
                     nnz += 1
 
         # J81
         offset += ni4
         if nQtma:
-            for k in range(dSt_dVm.indptr[j], dSt_dVm.indptr[j + 1]):  # rows of A[:, j]
+            for k in range(dSt_dVm_p[j], dSt_dVm_p[j + 1]):  # rows of A[:, j]
 
                 # row index translation to the "rows" space
-                i = dSt_dVm.indices[k]
+                i = dSt_dVm_i[k]
                 ii = iQtma_lookup[i]
 
                 if iQtma[ii] == i:
                     # entry found
-                    Jx[nnz] = dSt_dVm.data[k].imag
+                    Jx[nnz] = dSt_dVm_x[k].imag
                     Ji[nnz] = ii + offset
                     nnz += 1
 
@@ -243,10 +311,9 @@ def fill_data(Jx, Ji, Jp, Yp, Yi, Ys,
 
     # Column 3: derivatives w.r.t Beq for iBeqz + iBeqv ----------------------------------------------------------------
     if nBeqz + nBeqv:
-        # dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz = deriv.derivatives_Beq_csc_fast(nb, nl, np.r_[iBeqz, iBeqv], F, T, V, ma, k2)
-
+        indices = np.concatenate((iBeqz, iBeqv))
         dSbus_dBeq_data, dSbus_dBeq_indices, dSbus_dBeq_indptr, \
-        dSf_dBeqx_data, dSf_dBeqx_indices, dSf_dBeqx_indptr = deriv.derivatives_Beq_csc_numba(np.r_[iBeqz, iBeqv],
+        dSf_dBeqx_data, dSf_dBeqx_indices, dSf_dBeqx_indptr = deriv.derivatives_Beq_csc_numba(indices,
                                                                                               F, V, ma, k2)
 
         for j in range(nBeqz + nBeqv):  # sliced columns
@@ -346,10 +413,10 @@ def fill_data(Jx, Ji, Jp, Yp, Yi, Ys,
 
     # Column 4: derivative w.r.t ma for iQfma + iQfma + iVtma ----------------------------------------------------------
     if nQfma + nQtma + nVtma:
-
+        indices = np.concatenate((iQfma, iQtma, iVtma))
         dSbus_dma_data, dSbus_dma_indices, dSbus_dma_indptr, \
         dSf_dma_data, dSf_dma_indices, dSf_dma_indptr, \
-        dSt_dma_data, dSt_dma_indices, dSt_dma_indptr = deriv.derivatives_ma_csc_numba(np.r_[iQfma, iQtma, iVtma],
+        dSt_dma_data, dSt_dma_indices, dSt_dma_indptr = deriv.derivatives_ma_csc_numba(indices,
                                                                                        F, T, Ys, k2, tap, ma, Bc,
                                                                                        Beq, V)
 
@@ -451,12 +518,10 @@ def fill_data(Jx, Ji, Jp, Yp, Yi, Ys,
     # Column 5: derivatives w.r.t theta sh for iPfsh + droop -----------------------------------------------------------
     if nPfsh + nPfdp > 0:
 
-        # dSbus_dPfx, dSf_dPfx, dSt_dPfx = deriv.derivatives_sh_csc_fast(nb, nl, np.r_[iPfsh, iPfdp],
-        #                                                                F, T, Ys, k2, tap, V)
-
+        indices = np.concatenate((iPfsh, iPfdp))
         dSbus_dsh_data, dSbus_dsh_indices, dSbus_dsh_indptr, \
             dSf_dsh_data, dSf_dsh_indices, dSf_dsh_indptr, \
-            dSt_dsh_data, dSt_dsh_indices, dSt_dsh_indptr = deriv.derivatives_sh_csc_numba(np.r_[iPfsh, iPfdp],
+            dSt_dsh_data, dSt_dsh_indices, dSt_dsh_indptr = deriv.derivatives_sh_csc_numba(indices,
                                                                                            F, T, Ys, k2, tap, V)
 
         for j in range(nPfsh + nPfdp):  # sliced columns
@@ -581,7 +646,7 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     :param tap: Array of complex tap values {remember tap = ma * exp(1j * theta) }
     :param ma: Array of tap modules
     :param Bc: Array of branch full susceptances
-    :param Beq: Array of brach equivalent (variable) susceptances
+    :param Beq: Array of branch equivalent (variable) susceptances
     :param Kdp: Array of branch converter droop constants
     :param V: Array of complex bus voltages
     :param Ybus: Admittance matrix
@@ -613,7 +678,7 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     ni4 = len(i4)
 
     # compose the derivatives of the power injections w.r.t Va and Vm
-    dSbus_dVa_x, dSbus_dVm_x = deriv.dSbus_dV_numba_sparse_csc(Ybus.data, Ybus.indptr, Ybus.indices, V)
+    dSbus_dVm_x, dSbus_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus.data, Ybus.indptr, Ybus.indices, V)
 
     # compose the derivatives of the branch flow w.r.t Va and Vm
     Vc = np.conj(V)
@@ -634,8 +699,6 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     else:
         dPfdp_dVm = csc_matrix((nPfdp, nb))
 
-    nnz = 0
-    p = 0
     n_cols = npvpq + npq + nBeqz + nBeqv + nQfma + nQtma + nVtma + nPfsh + nPfdp
     n_rows = n_cols
 
@@ -643,7 +706,6 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     Jx = np.empty(nnz_estimate, dtype=np.float64)  # data
     Ji = np.empty(nnz_estimate, dtype=np.int32)  # indices
     Jp = np.empty(n_cols + 1, dtype=np.int32)  # pointers
-    Jp[p] = 0
 
     # generate lookup for the row slicing
     pvpq_lookup = make_lookup(nbus, pvpq)
@@ -653,532 +715,30 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     iQtma_lookup = make_lookup(nbr, iQtma)
     iPfdp_lookup = make_lookup(nbr, iPfdp)
 
-    # column 1: derivatives w.r.t Va -----------------------------------------------------------------------------------
-    for j in pvpq:  # sliced columns
-
-        # J11
-        if npvpq:
-            for k in range(Ybus.indptr[j], Ybus.indptr[j + 1]):  # rows of A[:, j]
-
-                # row index translation to the "rows" space
-                i = Ybus.indices[k]
-                ii = pvpq_lookup[i]
-
-                if pvpq[ii] == i:
-                    # entry found
-                    Jx[nnz] = dSbus_dVa_x[k].real
-                    Ji[nnz] = ii
-                    nnz += 1
-
-        # J21 J31 J41
-        offset = npvpq
-        if ni2:
-            for k in range(Ybus.indptr[j], Ybus.indptr[j + 1]):  # rows of A[:, j]
-
-                # row index translation to the "rows" space
-                i = Ybus.indices[k]
-                ii = i2_lookup[i]
-
-                if i2[ii] == i:
-                    # entry found
-                    Jx[nnz] = dSbus_dVa_x[k].imag
-                    Ji[nnz] = ii + offset
-                    nnz += 1
-
-        # J51
-        offset += ni2
-        if nPfsh:
-            for k in range(dSf_dVa.indptr[j], dSf_dVa.indptr[j + 1]):  # rows of A[:, j]
-
-                # row index translation to the "rows" space
-                i = dSf_dVa.indices[k]
-                ii = iPfsh_lookup[i]
-
-                if iPfsh[ii] == i:
-                    # entry found
-                    Jx[nnz] = dSf_dVa.data[k].real
-                    Ji[nnz] = ii + offset
-                    nnz += 1
-
-        # J61 J71
-        offset += nPfsh
-        if ni4:
-            for k in range(dSf_dVa.indptr[j], dSf_dVa.indptr[j + 1]):  # rows of A[:, j]
-
-                # row index translation to the "rows" space
-                i = dSf_dVa.indices[k]
-                ii = i4_lookup[i]
-
-                if i4[ii] == i:
-                    # entry found
-                    Jx[nnz] = dSf_dVa.data[k].imag
-                    Ji[nnz] = ii + offset
-                    nnz += 1
-
-        # J81
-        offset += ni4
-        if nQtma:
-            for k in range(dSt_dVa.indptr[j], dSt_dVa.indptr[j + 1]):  # rows of A[:, j]
-
-                # row index translation to the "rows" space
-                i = dSt_dVa.indices[k]
-                ii = iQtma_lookup[i]
-
-                if iQtma[ii] == i:
-                    # entry found
-                    Jx[nnz] = dSt_dVa.data[k].imag
-                    Ji[nnz] = ii + offset
-                    nnz += 1
-
-        # J91
-        offset += nQtma
-        if nPfdp:
-            for k in range(dSf_dVa.indptr[j], dSf_dVa.indptr[j + 1]):  # rows of A[:, j]
-
-                # row index translation to the "rows" space
-                i = dSf_dVa.indices[k]
-                ii = iPfdp_lookup[i]
-
-                if iPfdp[ii] == i:
-                    # entry found
-                    Jx[nnz] = -dSf_dVa[k].real
-                    Ji[nnz] = ii + offset
-                    nnz += 1
-
-        # finalize column
-        p += 1
-        Jp[p] = nnz
-
-    # column 2: derivatives w.r.t Vm -----------------------------------------------------------------------------------
-    for j in pq:  # sliced columns
-
-        # J11
-        if npvpq:
-            for k in range(Ybus.indptr[j], Ybus.indptr[j + 1]):  # rows of A[:, j]
-
-                # row index translation to the "rows" space
-                i = Ybus.indices[k]
-                ii = pvpq_lookup[i]
-
-                if pvpq[ii] == i:
-                    # entry found
-                    Jx[nnz] = dSbus_dVm_x[k].real
-                    Ji[nnz] = ii
-                    nnz += 1
-
-        # J21 J31 J41
-        offset = npvpq
-        if ni2:
-            for k in range(Ybus.indptr[j], Ybus.indptr[j + 1]):  # rows of A[:, j]
-
-                # row index translation to the "rows" space
-                i = Ybus.indices[k]
-                ii = i2_lookup[i]
-
-                if i2[ii] == i:
-                    # entry found
-                    Jx[nnz] = dSbus_dVm_x[k].imag
-                    Ji[nnz] = ii + offset
-                    nnz += 1
-
-        # J51
-        offset += ni2
-        if nPfsh:
-            for k in range(dSf_dVm.indptr[j], dSf_dVm.indptr[j + 1]):  # rows of A[:, j]
-
-                # row index translation to the "rows" space
-                i = dSf_dVm.indices[k]
-                ii = iPfsh_lookup[i]
-
-                if iPfsh[ii] == i:
-                    # entry found
-                    Jx[nnz] = dSf_dVm.data[k].real
-                    Ji[nnz] = ii + offset
-                    nnz += 1
-
-        # J61 J71
-        offset += nPfsh
-        if ni4:
-            for k in range(dSf_dVm.indptr[j], dSf_dVm.indptr[j + 1]):  # rows of A[:, j]
-
-                # row index translation to the "rows" space
-                i = dSf_dVm.indices[k]
-                ii = i4_lookup[i]
-
-                if i4[ii] == i:
-                    # entry found
-                    Jx[nnz] = dSf_dVm.data[k].imag
-                    Ji[nnz] = ii + offset
-                    nnz += 1
-
-        # J81
-        offset += ni4
-        if nQtma:
-            for k in range(dSt_dVm.indptr[j], dSt_dVm.indptr[j + 1]):  # rows of A[:, j]
-
-                # row index translation to the "rows" space
-                i = dSt_dVm.indices[k]
-                ii = iQtma_lookup[i]
-
-                if iQtma[ii] == i:
-                    # entry found
-                    Jx[nnz] = dSt_dVm.data[k].imag
-                    Ji[nnz] = ii + offset
-                    nnz += 1
-
-        # J91
-        offset += nQtma
-        if nPfdp:
-
-            # compute the droop derivative
-            dVmf_dVm = lil_matrix((nl, nb))
-            dVmf_dVm[iPfdp, :] = Cf[iPfdp, :]
-            dPfdp_dVm = -dSf_dVm.real + diags(Kdp) * dVmf_dVm
-
-            for k in range(dPfdp_dVm.indptr[j], dPfdp_dVm.indptr[j + 1]):  # rows of A[:, j]
-
-                # row index translation to the "rows" space
-                i = dPfdp_dVm.indices[k]
-                ii = iPfdp_lookup[i]
-
-                if iPfdp[ii] == i:
-                    # entry found
-                    Jx[nnz] = dPfdp_dVm[k]
-                    Ji[nnz] = ii + offset
-                    nnz += 1
-
-        # finalize column
-        p += 1
-        Jp[p] = nnz
-
-    # Column 3: derivatives w.r.t Beq for iBeqz + iBeqv ----------------------------------------------------------------
-    if nBeqz + nBeqv:
-        dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz = deriv.derivatives_Beq_csc_fast(nb, nl, np.r_[iBeqz, iBeqv],
-                                                                           F, T, V, ma, k2)
-
-        for j in range(nBeqz + nBeqv):  # sliced columns
-
-            # J11
-            if npvpq:
-                for k in range(dSbus_dBeqz.indptr[j], dSbus_dBeqz.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSbus_dBeqz.indices[k]
-                    ii = pvpq_lookup[i]
-
-                    if pvpq[ii] == i:
-                        # entry found
-                        Jx[nnz] = dSbus_dBeqz.data[k].real
-                        Ji[nnz] = ii
-                        nnz += 1
-
-            # J21 J31 J41
-            offset = npvpq
-            if ni2:
-                for k in range(dSbus_dBeqz.indptr[j], dSbus_dBeqz.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSbus_dBeqz.indices[k]
-                    ii = i2_lookup[i]
-
-                    if i2[ii] == i:
-                        # entry found
-                        Jx[nnz] = dSbus_dBeqz.data[k].imag
-                        Ji[nnz] = ii + offset
-                        nnz += 1
-
-            # J51
-            offset += ni2
-            if nPfsh:
-                for k in range(dSf_dBeqz.indptr[j], dSf_dBeqz.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSf_dBeqz.indices[k]
-                    ii = iPfsh_lookup[i]
-
-                    if iPfsh[ii] == i:
-                        # entry found
-                        Jx[nnz] = dSf_dBeqz.data[k].real
-                        Ji[nnz] = ii + offset
-                        nnz += 1
-
-            # J61 J71
-            offset += nPfsh
-            if ni4:
-                for k in range(dSf_dBeqz.indptr[j], dSf_dBeqz.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSf_dBeqz.indices[k]
-                    ii = i4_lookup[i]
-
-                    if i4[ii] == i:
-                        # entry found
-                        Jx[nnz] = dSf_dBeqz.data[k].imag
-                        Ji[nnz] = ii + offset
-                        nnz += 1
-
-            # J81
-            offset += ni4
-            if nQtma:
-                for k in range(dSt_dBeqz.indptr[j], dSt_dBeqz.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSt_dBeqz.indices[k]
-                    ii = iQtma_lookup[i]
-
-                    if iQtma[ii] == i:
-                        # entry found
-                        Jx[nnz] = dSt_dBeqz.data[k].imag
-                        Ji[nnz] = ii + offset
-                        nnz += 1
-
-            # J91
-            offset += nQtma
-            if nPfdp:
-                for k in range(dSf_dBeqz.indptr[j], dSf_dBeqz.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSf_dBeqz.indices[k]
-                    ii = iPfdp_lookup[i]
-
-                    if iPfdp[ii] == i:
-                        # entry found
-                        Jx[nnz] = -dSf_dBeqz[k].real
-                        Ji[nnz] = ii + offset
-                        nnz += 1
-
-            # finalize column
-            p += 1
-            Jp[p] = nnz
-
-    # Column 4: derivative w.r.t ma for iQfma + iQfma + iVtma ----------------------------------------------------------
-    if nQfma + nQtma + nVtma:
-
-        dSbus_dQfma, dSf_dQfma, dSt_dQfma = deriv.derivatives_ma_csc_fast(nb, nl, np.r_[iQfma, iQtma, iVtma],
-                                                                          F, T, Ys, k2, tap, ma, Bc, Beq, V)
-
-        for j in range(nQfma + nQtma + nVtma):  # sliced columns
-
-            # J11
-            if npvpq:
-                for k in range(dSbus_dQfma.indptr[j], dSbus_dQfma.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSbus_dQfma.indices[k]
-                    ii = pvpq_lookup[i]
-
-                    if pvpq[ii] == i:
-                        # entry found
-                        Jx[nnz] = dSbus_dQfma.data[k].real
-                        Ji[nnz] = ii
-                        nnz += 1
-
-            # J21 J31 J41
-            offset = npvpq
-            if ni2:
-                for k in range(dSbus_dQfma.indptr[j], dSbus_dQfma.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSbus_dQfma.indices[k]
-                    ii = i2_lookup[i]
-
-                    if i2[ii] == i:
-                        # entry found
-                        Jx[nnz] = dSbus_dQfma.data[k].imag
-                        Ji[nnz] = ii + offset
-                        nnz += 1
-
-            # J51
-            offset += ni2
-            if nPfsh:
-                for k in range(dSf_dQfma.indptr[j], dSf_dQfma.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSf_dQfma.indices[k]
-                    ii = iPfsh_lookup[i]
-
-                    if iPfsh[ii] == i:
-                        # entry found
-                        Jx[nnz] = dSf_dQfma.data[k].real
-                        Ji[nnz] = ii + offset
-                        nnz += 1
-
-            # J61 J71
-            offset += nPfsh
-            if ni4:
-                for k in range(dSf_dQfma.indptr[j], dSf_dQfma.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSf_dQfma.indices[k]
-                    ii = i4_lookup[i]
-
-                    if i4[ii] == i:
-                        # entry found
-                        Jx[nnz] = dSf_dQfma.data[k].imag
-                        Ji[nnz] = ii + offset
-                        nnz += 1
-
-            # J81
-            offset += ni4
-            if nQtma:
-                for k in range(dSt_dQfma.indptr[j], dSt_dQfma.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSt_dQfma.indices[k]
-                    ii = iQtma_lookup[i]
-
-                    if iQtma[ii] == i:
-                        # entry found
-                        Jx[nnz] = dSt_dQfma.data[k].imag
-                        Ji[nnz] = ii + offset
-                        nnz += 1
-
-            # J91
-            offset += nQtma
-            if nPfdp:
-                for k in range(dSf_dQfma.indptr[j], dSf_dQfma.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSf_dQfma.indices[k]
-                    ii = iPfdp_lookup[i]
-
-                    if iPfdp[ii] == i:
-                        # entry found
-                        Jx[nnz] = -dSf_dQfma[k].real
-                        Ji[nnz] = ii + offset
-                        nnz += 1
-
-            # finalize column
-            p += 1
-            Jp[p] = nnz
-
-    # Column 5: derivatives w.r.t theta sh for iPfsh + droop -----------------------------------------------------------
-    if nPfsh + nPfdp > 0:
-
-        dSbus_dPfx, dSf_dPfx, dSt_dPfx = deriv.derivatives_sh_csc_fast(nb, nl, np.r_[iPfsh, iPfdp],
-                                                                       F, T, Ys, k2, tap, V)
-
-        for j in range(nPfsh + nPfdp):  # sliced columns
-
-            # J11
-            if npvpq:
-                for k in range(dSbus_dPfx.indptr[j], dSbus_dPfx.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSbus_dPfx.indices[k]
-                    ii = pvpq_lookup[i]
-
-                    if pvpq[ii] == i:
-                        # entry found
-                        Jx[nnz] = dSbus_dPfx.data[k].real
-                        Ji[nnz] = ii
-                        nnz += 1
-
-            # J21 J31 J41
-            offset = npvpq
-            if ni2:
-                for k in range(dSbus_dPfx.indptr[j], dSbus_dPfx.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSbus_dPfx.indices[k]
-                    ii = i2_lookup[i]
-
-                    if i2[ii] == i:
-                        # entry found
-                        Jx[nnz] = dSbus_dPfx.data[k].imag
-                        Ji[nnz] = ii + offset
-                        nnz += 1
-
-            # J51
-            offset += ni2
-            if nPfsh:
-                for k in range(dSf_dPfx.indptr[j], dSf_dPfx.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSf_dPfx.indices[k]
-                    ii = iPfsh_lookup[i]
-
-                    if iPfsh[ii] == i:
-                        # entry found
-                        Jx[nnz] = dSf_dPfx.data[k].real
-                        Ji[nnz] = ii + offset
-                        nnz += 1
-
-            # J61 J71
-            offset += nPfsh
-            if ni4:
-                for k in range(dSf_dPfx.indptr[j], dSf_dPfx.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSf_dPfx.indices[k]
-                    ii = i4_lookup[i]
-
-                    if i4[ii] == i:
-                        # entry found
-                        Jx[nnz] = dSf_dPfx.data[k].imag
-                        Ji[nnz] = ii + offset
-                        nnz += 1
-
-            # J81
-            offset += ni4
-            if nQtma:
-                for k in range(dSt_dPfx.indptr[j], dSt_dPfx.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSt_dPfx.indices[k]
-                    ii = iQtma_lookup[i]
-
-                    if iQtma[ii] == i:
-                        # entry found
-                        Jx[nnz] = dSt_dPfx.data[k].imag
-                        Ji[nnz] = ii + offset
-                        nnz += 1
-
-            # J91
-            offset += nQtma
-            if nPfdp:
-                for k in range(dSf_dPfx.indptr[j], dSf_dPfx.indptr[j + 1]):  # rows of A[:, j]
-
-                    # row index translation to the "rows" space
-                    i = dSf_dPfx.indices[k]
-                    ii = iPfdp_lookup[i]
-
-                    if iPfdp[ii] == i:
-                        # entry found
-                        Jx[nnz] = -dSf_dPfx[k].real
-                        Ji[nnz] = ii + offset
-                        nnz += 1
-
-            # finalize column
-            p += 1
-            Jp[p] = nnz
-
-    # Finalize ----------------------------------------------------------------------------
-    #  finalize the Jacobian Pointer
-    Jp[p] = nnz
-
-    # nnz, Jx, Ji, Jp = fill_data(Jx, Ji, Jp, Ybus.indptr, Ybus.indices, Ys,
-    #                             dSbus_dVa_x, dSbus_dVm_x, dSf_dVa, dSf_dVm, dSt_dVa, dSt_dVm,
-    #                             dPfdp_dVm.data, dPfdp_dVm.indices, dPfdp_dVm.indptr,
-    #                             pvpq, pvpq_lookup, npvpq, pq,
-    #                             i2, ni2, i2_lookup, i4, ni4, i4_lookup,
-    #                             iPfsh, nPfsh, iPfsh_lookup,
-    #                             iQtma, nQtma, iQtma_lookup,
-    #                             iQfma, nQfma,
-    #                             iVtma, nVtma,
-    #                             iPfdp, nPfdp, iPfdp_lookup,
-    #                             iBeqz, nBeqz,
-    #                             iBeqv, nBeqv,
-    #                             F, T, V, ma, k2, tap, Bc, Beq)
+    # fill the jacobian data with numba
+    nnz, Jx, Ji, Jp = fill_acdc_jacobian_data(Jx, Ji, Jp, Ybus.indptr, Ybus.indices, Ys,
+                                              dSbus_dVa_x, dSbus_dVm_x,
+                                              dSf_dVa.data, dSf_dVa.indices, dSf_dVa.indptr,
+                                              dSf_dVm.data, dSf_dVm.indices, dSf_dVm.indptr,
+                                              dSt_dVa.data, dSt_dVa.indices, dSt_dVa.indptr,
+                                              dSt_dVm.data, dSt_dVm.indices, dSt_dVm.indptr,
+                                              dPfdp_dVm.data, dPfdp_dVm.indices, dPfdp_dVm.indptr,
+                                              pvpq, pvpq_lookup, npvpq, pq,
+                                              i2, ni2, i2_lookup, i4, ni4, i4_lookup,
+                                              iPfsh, nPfsh, iPfsh_lookup,
+                                              iQtma, nQtma, iQtma_lookup,
+                                              iQfma, nQfma,
+                                              iVtma, nVtma,
+                                              iPfdp, nPfdp, iPfdp_lookup,
+                                              iBeqz, nBeqz,
+                                              iBeqv, nBeqv,
+                                              F, T, V, ma, k2, tap, Bc, Beq)
 
     Jx = np.resize(Jx, nnz)
     Ji = np.resize(Ji, nnz)
 
     J = csc_matrix((Jx, Ji, Jp), shape=(n_rows, n_cols))
 
-    # if J.shape[0] != J.shape[1]:
-    #     raise Exception('Invalid Jacobian shape!')
-    print(J.toarray())
-
     return J
+
 
