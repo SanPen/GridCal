@@ -215,6 +215,8 @@ class LinearAnalysis:
                                              bus_names=[],
                                              bus_types=[])
 
+        self.logger = Logger()
+
     def run(self):
         """
         Run the PTDF and LODF
@@ -230,29 +232,33 @@ class LinearAnalysis:
 
         # compute the PTDF per islands
         if len(islands) > 0:
-            for island in islands:
+            for n_island, island in enumerate(islands):
 
                 # no slacks will make it impossible to compute the PTDF analytically
-                if len(island.vd) > 0 and len(island.pqpv) > 0:
+                if len(island.vd) == 1:
+                    if len(island.pqpv) > 0:
 
-                    # compute the PTDF of the island
-                    ptdf_island = make_ptdf(Bbus=island.Bbus,
-                                            Bf=island.Bf,
-                                            pqpv=island.pqpv,
-                                            distribute_slack=self.distributed_slack)
+                        # compute the PTDF of the island
+                        ptdf_island = make_ptdf(Bbus=island.Bbus,
+                                                Bf=island.Bf,
+                                                pqpv=island.pqpv,
+                                                distribute_slack=self.distributed_slack)
 
-                    # assign the PTDF to the matrix
-                    self.results.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
+                        # assign the PTDF to the matrix
+                        self.results.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
 
-                    # compute the island LODF
-                    lodf_island = make_lodf(Cf=island.Cf,
-                                            Ct=island.Ct,
-                                            PTDF=ptdf_island,
-                                            correct_values=self.correct_values)
+                        # compute the island LODF
+                        lodf_island = make_lodf(Cf=island.Cf,
+                                                Ct=island.Ct,
+                                                PTDF=ptdf_island,
+                                                correct_values=self.correct_values)
 
-                    # assign the LODF to the matrix
-                    self.results.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
-
+                        # assign the LODF to the matrix
+                        self.results.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
+                    else:
+                        self.logger.add_error('No PQ or PV nodes', 'Island {}'.format(n_island))
+                else:
+                    self.logger.add_error('More than one slack bus', 'Island {}'.format(n_island))
         else:
 
             # there is only 1 island, compute the PTDF

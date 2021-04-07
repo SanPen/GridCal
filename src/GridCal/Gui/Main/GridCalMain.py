@@ -2499,6 +2499,10 @@ class MainGUI(QMainWindow):
             else:
                 error_msg('Something went wrong, There are no PTDF results.')
 
+        if len(self.ptdf_analysis.logger) > 0:
+            dlg = LogsDialogue('PTDF', self.ptdf_analysis.logger)
+            dlg.exec_()
+
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
 
@@ -2616,6 +2620,10 @@ class MainGUI(QMainWindow):
             else:
                 error_msg('Something went wrong, There are no OTDF results.')
 
+        if len(self.otdf_analysis.logger) > 0:
+            dlg = LogsDialogue('PTDF', self.otdf_analysis.logger)
+            dlg.exec_()
+
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
 
@@ -2625,22 +2633,26 @@ class MainGUI(QMainWindow):
         :return:
         """
         if len(self.circuit.buses) > 0:
-            if restpes.SimulationTypes.OTDF_TS_run not in self.stuff_running_now:
 
-                self.add_simulation(restpes.SimulationTypes.OTDF_TS_run)
+            if self.valid_time_series():
+                if restpes.SimulationTypes.OTDF_TS_run not in self.stuff_running_now:
 
-                self.LOCK()
+                    self.add_simulation(restpes.SimulationTypes.OTDF_TS_run)
 
-                options = nmkdrv.NMinusKOptions(distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
+                    self.LOCK()
 
-                self.otdf_ts_analysis = nmktsdrv.NMinusKTimeSeries(grid=self.circuit, options=options)
+                    options = nmkdrv.NMinusKOptions(distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
 
-                self.otdf_ts_analysis.progress_signal.connect(self.ui.progressBar.setValue)
-                self.otdf_ts_analysis.progress_text.connect(self.ui.progress_label.setText)
-                self.otdf_ts_analysis.done_signal.connect(self.post_otdf_ts)
-                self.otdf_ts_analysis.start()
+                    self.otdf_ts_analysis = nmktsdrv.NMinusKTimeSeries(grid=self.circuit, options=options)
+
+                    self.otdf_ts_analysis.progress_signal.connect(self.ui.progressBar.setValue)
+                    self.otdf_ts_analysis.progress_text.connect(self.ui.progress_label.setText)
+                    self.otdf_ts_analysis.done_signal.connect(self.post_otdf_ts)
+                    self.otdf_ts_analysis.start()
+                else:
+                    warning_msg('Another OTDF is being executed now...')
             else:
-                warning_msg('Another OTDF is being executed now...')
+                warning_msg('There are no time series...')
         else:
             pass
 
