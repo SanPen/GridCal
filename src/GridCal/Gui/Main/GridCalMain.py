@@ -1112,7 +1112,7 @@ class MainGUI(QMainWindow):
         if len(filenames) > 0:
             self.open_file_now(filenames, post_function)
 
-    def select_csv_file(self):
+    def select_csv_file(self, caption='Open CSV file'):
         """
         Select a CSV file
         :return: csv file path
@@ -1124,7 +1124,7 @@ class MainGUI(QMainWindow):
             options |= QFileDialog.DontUseNativeDialog
 
         filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
-                                                                        caption='Open CSV file',
+                                                                        caption=caption,
                                                                         dir=self.project_directory,
                                                                         filter=files_types,
                                                                         options=options)
@@ -5514,7 +5514,7 @@ class MainGUI(QMainWindow):
         """
         Open and parse Plexos load file
         """
-        fname = self.select_csv_file()
+        fname = self.select_csv_file('Open node load')
 
         if fname:
             df = pd.read_csv(fname, index_col=0)
@@ -5529,7 +5529,7 @@ class MainGUI(QMainWindow):
         """
         Open and parse Plexos generation file
         """
-        fname = self.select_csv_file()
+        fname = self.select_csv_file('Open generation')
 
         if fname:
             df = pd.read_csv(fname, index_col=0)
@@ -5544,16 +5544,21 @@ class MainGUI(QMainWindow):
         """
         Open and parse Plexos load file
         """
-        fname = self.select_csv_file()
+        fname = self.select_csv_file('Open branch rates')
 
         if fname:
             df = pd.read_csv(fname, index_col=0)
-            logger = self.circuit.import_branch_rates_profiles(df=df)
-            self.update_date_dependent_combos()
 
-            if len(logger) > 0:
-                dlg = LogsDialogue('Plexos branch rates import', logger)
-                dlg.exec_()
+            if self.circuit.get_time_number() != df.shape[0]:
+                error_msg('The data has a different number of rows than the existing profiles')
+            else:
+
+                logger = self.circuit.import_branch_rates_profiles(df=df)
+                self.update_date_dependent_combos()
+
+                if len(logger) > 0:
+                    dlg = LogsDialogue('Plexos branch rates import', logger)
+                    dlg.exec_()
 
     def search_in_results(self):
         """
