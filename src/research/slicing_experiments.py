@@ -215,8 +215,7 @@ def _minor_index_fancy(A, idx):
     :return:
     """
 
-    """
-    Index along the minor axis where idx is an array of ints.
+    """Index along the minor axis where idx is an array of ints.
     """
     idx_dtype = A.indices.dtype
     idx = np.asarray(idx, dtype=idx_dtype).ravel()

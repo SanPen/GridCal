@@ -23,8 +23,15 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Made the device plots more robust">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/branch.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/branch.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/analytic_ptdf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/analytic_ptdf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/analytic_ptdf_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/analytic_ptdf_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/derivatives.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/derivatives.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/research/slicing_experiments.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/slicing_experiments.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -97,6 +104,18 @@
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
   </component>
   <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
@@ -196,15 +215,14 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.Nosetests in test_transformer_controls.py" />
         <item itemvalue="Python tests.Nosetests in test_generator_q_control.py" />
         <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python.setup" />
-        <item itemvalue="Python.ExecuteGridCal" />
       </list>
     </recent_temporary>
   </component>
-  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="project-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -491,20 +509,6 @@
       <workItem from="1617540879297" duration="1142000" />
       <workItem from="1617632797911" duration="3094000" />
       <workItem from="1617652313409" duration="1856000" />
-    </task>
-    <task id="LOCAL-00070" summary="Early working FUBM models with improved derivatives">
-      <created>1608850996454</created>
-      <option name="number" value="00070" />
-      <option name="presentableId" value="LOCAL-00070" />
-      <option name="project" value="LOCAL" />
-      <updated>1608850996455</updated>
-    </task>
-    <task id="LOCAL-00071" summary="Working NR with FUBM for the simple HVDC example">
-      <created>1608896245740</created>
-      <option name="number" value="00071" />
-      <option name="presentableId" value="LOCAL-00071" />
-      <option name="project" value="LOCAL" />
-      <updated>1608896245740</updated>
     </task>
     <task id="LOCAL-00072" summary="Early FUBM integration&#10;investigation needed about the configuration">
       <created>1608911359974</created>
@@ -835,7 +839,21 @@
       <option name="project" value="LOCAL" />
       <updated>1617641677849</updated>
     </task>
-    <option name="localTasksCounter" value="119" />
+    <task id="LOCAL-00119" summary="Some PTDF and import fixes">
+      <created>1617865288488</created>
+      <option name="number" value="00119" />
+      <option name="presentableId" value="LOCAL-00119" />
+      <option name="project" value="LOCAL" />
+      <updated>1617865288489</updated>
+    </task>
+    <task id="LOCAL-00120" summary="Some PTDF and import fixes">
+      <created>1617865307968</created>
+      <option name="number" value="00120" />
+      <option name="presentableId" value="LOCAL-00120" />
+      <option name="project" value="LOCAL" />
+      <updated>1617865307969</updated>
+    </task>
+    <option name="localTasksCounter" value="121" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -861,15 +879,15 @@
         </entry>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="removed the LODF decoupling from the PTDF when distributing the swing" />
     <MESSAGE value="changes to handle cim-zip files" />
     <MESSAGE value="Improved CIM reader" />
     <MESSAGE value="Added ore functions to the CIM objects" />
@@ -894,7 +912,8 @@
     <MESSAGE value="Fixed OPF snapshot feedback to PF" />
     <MESSAGE value="Fixed storage location suggestions" />
     <MESSAGE value="Made the device plots more robust" />
-    <option name="LAST_COMMIT_MESSAGE" value="Made the device plots more robust" />
+    <MESSAGE value="Some PTDF and import fixes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Some PTDF and import fixes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -908,6 +927,16 @@
           <url>file://$PROJECT_DIR$/src/research/power_flow/newton_line_search.py</url>
           <line>1169</line>
           <option name="timeStamp" value="31" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/research/slicing_experiments.py</url>
+          <line>276</line>
+          <option name="timeStamp" value="55" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/research/slicing_experiments.py</url>
+          <line>271</line>
+          <option name="timeStamp" value="56" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/linearized_power_flow.py</url>
@@ -926,12 +955,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>991</line>
+          <line>993</line>
           <option name="timeStamp" value="161" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>966</line>
+          <line>968</line>
           <option name="timeStamp" value="162" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -981,7 +1010,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>4463</line>
+          <line>4477</line>
           <option name="timeStamp" value="303" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1020,11 +1049,6 @@
           <option name="timeStamp" value="344" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_transformer_regulator.py</url>
-          <line>185</line>
-          <option name="timeStamp" value="352" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/research/admittance/admittance_variations.py</url>
           <line>122</line>
           <option name="timeStamp" value="355" />
@@ -1036,7 +1060,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>2714</line>
+          <line>2728</line>
           <option name="timeStamp" value="397" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1059,6 +1083,16 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContinuationPowerFlow/continuation_power_flow_driver.py</url>
           <line>364</line>
           <option name="timeStamp" value="408" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py</url>
+          <line>850</line>
+          <option name="timeStamp" value="409" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py</url>
+          <line>525</line>
+          <option name="timeStamp" value="410" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_power_flow.py</url>
@@ -1132,23 +1166,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_acdc_power_flow.py</url>
-          <line>1239</line>
+          <line>1019</line>
           <option name="timeStamp" value="493" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_acdc_power_flow.py</url>
-          <line>1140</line>
+          <line>915</line>
           <option name="timeStamp" value="494" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_acdc_power_flow.py</url>
-          <line>189</line>
+          <line>68</line>
           <option name="timeStamp" value="497" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_acdc_power_flow.py</url>
-          <line>231</line>
-          <option name="timeStamp" value="500" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/setup.py</url>
@@ -1182,7 +1211,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>1754</line>
+          <line>1756</line>
           <option name="timeStamp" value="563" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1192,28 +1221,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>729</line>
+          <line>731</line>
           <option name="timeStamp" value="595" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>738</line>
+          <line>740</line>
           <option name="timeStamp" value="608" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_acdc_power_flow.py</url>
-          <line>510</line>
-          <option name="timeStamp" value="610" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/research/power_flow/jacobian/schafer_jacobian_assembly.py</url>
-          <line>157</line>
-          <option name="timeStamp" value="611" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/grid_analysis.py</url>
-          <line>92</line>
-          <option name="timeStamp" value="612" />
+          <url>file://$PROJECT_DIR$/src/tests/test_transformer_controls.py</url>
+          <line>48</line>
+          <option name="timeStamp" value="617" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -1890,6 +1890,39 @@ class MultiCircuit:
                 bus.latitude = lat[i]
                 bus.longitude = lon[i]
 
+    def import_bus_lat_lon(self, df: pd.DataFrame, bus_col, lat_col, lon_col):
+        """
+
+        :param df:
+        :param bus_col:
+        :param lat_col:
+        :param lon_col:
+        :return:
+        """
+        logger = Logger()
+        lats = df[lat_col].values
+        lons = df[lon_col].values
+        names = df[bus_col].values
+
+        d = dict()
+        for lat, lon, name in zip(lats, lons, names):
+            d[str(name)] = (lat, lon)
+
+        # assign the values
+        for i, bus in enumerate(self.buses):
+            if bus.name in d.keys():
+                lat, lon = d[bus.name]
+                bus.latitude = lat
+                bus.longitude = lon
+            elif bus.code in d.keys():
+                lat, lon = d[bus.code]
+                bus.latitude = lat
+                bus.longitude = lon
+            else:
+                logger.add_error("No coordinates for bus", bus.name)
+
+        return logger
+
     def import_plexos_load_profiles(self, df: pd.DataFrame):
         """
 
@@ -1942,8 +1975,8 @@ class MultiCircuit:
                 gen.P_prof = df[col_name].values
             except KeyError:
                 logger.add_error("Missing in the model", col_name)
-                gen.P_prof = np.zeros(nn)
-                gen.Q_prof = np.zeros(nn)
+                # gen.P_prof = np.zeros(nn)
+                # gen.Q_prof = np.zeros(nn)
 
         return logger
 
@@ -1963,8 +1996,12 @@ class MultiCircuit:
         cols = list()
         for val in df.columns.values:
             vals = val.split('_')
-            col = vals[0] + '_' + vals[3] + '_' + vals[6]
-            cols.append(col)
+            if len(vals) < 7:
+                logger.add_error("Wrong PSSe name", val)
+                cols.append(val)
+            else:
+                col = vals[0] + '_' + vals[3] + '_' + vals[6]
+                cols.append(col)
         df.columns = cols
 
         branches = self.get_branches()
