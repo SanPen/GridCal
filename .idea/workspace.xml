@@ -188,11 +188,11 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python tests.Nosetests in tests" />
       <item itemvalue="Python.setup" />
+      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.Nosetests in test_generator_q_control.py" />
       <item itemvalue="Python tests.Nosetests in test_transformer_controls.py" />
+      <item itemvalue="Python tests.Nosetests in tests" />
     </list>
     <recent_temporary>
       <list>
