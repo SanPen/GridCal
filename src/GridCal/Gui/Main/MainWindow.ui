@@ -6355,20 +6355,6 @@ QProgressBar::chunk{
     <property name="title">
      <string>File</string>
     </property>
-    <widget class="QMenu" name="menuSpecial_imports_2">
-     <property name="title">
-      <string>Special imports</string>
-     </property>
-     <widget class="QMenu" name="menuPlexos_results_2">
-      <property name="title">
-       <string>Plexos results</string>
-      </property>
-      <addaction name="actionImportPlexosNodeLoad"/>
-      <addaction name="actionImportPlexosGeneratorGeneration"/>
-      <addaction name="actionImportPlexosBranchRates"/>
-     </widget>
-     <addaction name="menuPlexos_results_2"/>
-    </widget>
     <addaction name="actionNew_project"/>
     <addaction name="actionOpen_file"/>
     <addaction name="actionSave"/>
@@ -6376,7 +6362,6 @@ QProgressBar::chunk{
     <addaction name="separator"/>
     <addaction name="actionAdd_circuit"/>
     <addaction name="actiongrid_Generator"/>
-    <addaction name="menuSpecial_imports_2"/>
     <addaction name="separator"/>
     <addaction name="actionExport"/>
     <addaction name="actionExport_all_the_device_s_profiles"/>
