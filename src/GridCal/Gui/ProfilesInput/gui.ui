@@ -14,6 +14,18 @@
    <string>Dialog</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
@@ -24,6 +36,18 @@
        <string>Assignation</string>
       </attribute>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QSplitter" name="splitter">
          <property name="orientation">
@@ -37,6 +61,12 @@
            <enum>QFrame::Raised</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_5">
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
            <item>
             <widget class="QFrame" name="frame">
              <property name="frameShape">
@@ -94,6 +124,48 @@
            </item>
            <item>
             <widget class="QListView" name="sources_list"/>
+           </item>
+           <item>
+            <widget class="QFrame" name="frame_2">
+             <property name="frameShape">
+              <enum>QFrame::NoFrame</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QComboBox" name="nameTransformationComboBox">
+                <property name="minimumSize">
+                 <size>
+                  <width>200</width>
+                  <height>0</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="transformNamesPushButton">
+                <property name="text">
+                 <string>Transform</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -255,19 +327,6 @@
               <property name="bottomMargin">
                <number>0</number>
               </property>
-              <item row="0" column="3">
-               <spacer name="horizontalSpacer_3">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
               <item row="0" column="0">
                <widget class="QPushButton" name="set_multiplier_button">
                 <property name="toolTip">
@@ -282,6 +341,16 @@
                 </property>
                </widget>
               </item>
+              <item row="0" column="5">
+               <widget class="QCheckBox" name="normalized_checkBox">
+                <property name="toolTip">
+                 <string>Check if you want the profiles to be normalized on the base object property</string>
+                </property>
+                <property name="text">
+                 <string>normalized</string>
+                </property>
+               </widget>
+              </item>
               <item row="0" column="1">
                <widget class="QDoubleSpinBox" name="multSpinBox">
                 <property name="minimum">
@@ -292,7 +361,7 @@
                 </property>
                </widget>
               </item>
-              <item row="0" column="5">
+              <item row="0" column="6">
                <widget class="QPushButton" name="doit_button">
                 <property name="toolTip">
                  <string>Do it!</string>
@@ -309,13 +378,29 @@
                 </property>
                </widget>
               </item>
+              <item row="0" column="3">
+               <spacer name="horizontalSpacer_3">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
               <item row="0" column="4">
-               <widget class="QCheckBox" name="normalized_checkBox">
-                <property name="toolTip">
-                 <string>Check if you want the profiles to be normalized on the base object property</string>
+               <widget class="QCheckBox" name="setUnassignedToZeroCheckBox">
+                <property name="statusTip">
+                 <string>The profiles for the unassigned objects are set to zero, otherwise they are not set and they remain the default value form the snapshot</string>
                 </property>
                 <property name="text">
-                 <string>normalized</string>
+                 <string>Set unassigned to zero</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>

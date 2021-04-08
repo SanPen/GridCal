@@ -6,10 +6,8 @@ from enum import Enum
 from difflib import SequenceMatcher
 import numpy as np
 import pandas as pd
-# from PySide2.QtCore import *
-# from PySide2.QtGui import *
 from PySide2.QtWidgets import *
-
+from typing import List, Dict
 from GridCal.Gui.ProfilesInput.gui import *
 from GridCal.Gui.ProfilesInput.excel_dialog import *
 
@@ -71,7 +69,7 @@ def get_list_model(iterable):
     if iterable is not None:
         for val in iterable:
             # for the list model
-            item = QtGui.QStandardItem(val)
+            item = QtGui.QStandardItem(str(val))
             item.setEditable(False)
             list_model.appendRow(item)
     return list_model
@@ -82,9 +80,116 @@ class MultiplierType(Enum):
     Cosfi = 2
 
 
+class Association:
+
+    def __init__(self, name, code, scale=1, cos_fi=0.9, multiplier=1, profile_name=''):
+        """
+
+        :param name:
+        :param code:
+        :param scale:
+        :param cos_fi:
+        :param multiplier:
+        :param profile_name:
+        """
+        self.name: str = name
+        self.code: str = code
+        self.scale: float = scale
+        self.cos_fi: float = cos_fi
+        self.multiplier: float = multiplier
+        self.profile_name: str = profile_name
+
+    def get_at(self, idx):
+
+        if idx == 0:
+            return self.name
+        elif idx == 1:
+            return self.code
+        elif idx == 2:
+            return self.profile_name
+        elif idx == 3:
+            return self.scale
+        elif idx == 4:
+            return self.cos_fi
+        elif idx == 5:
+            return self.multiplier
+        else:
+            return ''
+
+
+class Associations(QAbstractTableModel):
+
+    def __init__(self):
+        QtCore.QAbstractTableModel.__init__(self)
+
+        self.__values: List[Association] = list()
+
+        self.__headers = ['Name', 'Code', 'Profile', 'Scale', 'Cos(φ)', 'Multiplier']
+
+    def append(self, val: Association):
+        self.__values.append(val)
+
+    def set_profile_at(self, idx, value):
+        self.__values[idx].profile_name = value
+
+    def set_scale_at(self, idx, value):
+        self.__values[idx].scale = value
+
+    def set_cos_fi_at(self, idx, value):
+        self.__values[idx].cos_fi = value
+
+    def set_multiplier_at(self, idx, value):
+        self.__values[idx].multiplier = value
+
+    def get_profile_at(self, idx):
+        return self.__values[idx].profile_name
+
+    def get_scale_at(self, idx):
+        return self.__values[idx].scale
+
+    def get_cos_fi_at(self, idx):
+        return self.__values[idx].cos_fi
+
+    def get_multiplier_at(self, idx):
+        return self.__values[idx].multiplier
+
+    def clear_at(self, idx):
+        self.__values[idx].profile_name = ''
+        self.__values[idx].scale = 1
+        self.__values[idx].cos_fi = 0.9
+        self.__values[idx].multiplier = 1
+
+    def rowCount(self, parent=None):
+        return len(self.__values)
+
+    def columnCount(self, parent=None):
+        return 6
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        if index.isValid():
+            if role == QtCore.Qt.DisplayRole:
+                # return self.formatter(self._data[index.row(), index.column()])
+                return str(self.__values[index.row()].get_at(index.column()))
+        return None
+
+    def headerData(self, p_int, orientation, role):
+        if role == QtCore.Qt.DisplayRole:
+            if orientation == QtCore.Qt.Horizontal:
+                return self.__headers[p_int]
+            elif orientation == QtCore.Qt.Vertical:
+                return p_int
+        return None
+
+
+class StringSubstitutions(Enum):
+    PSSeBranchName = 'N1_NME1_V1_N2_NME2_V2_CKT -> N1_N2_CKT'
+    PSSeBusGenerator = 'N1_NME1_V1 -> N1_1'
+    PSSeBusLoad = 'N -> N_1'
+
+
 class ProfileInputGUI(QtWidgets.QDialog):
 
-    def __init__(self, parent=None, list_of_objects=None, magnitudes=(''), use_native_dialogues=True):
+    def __init__(self, parent=None, list_of_objects=None, magnitudes=[''], use_native_dialogues=True):
         """
 
         Args:
@@ -145,30 +250,23 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.objects = list_of_objects
 
         # initialize associations
-        # self.magnitudes = ['P']
         self.also_reactive_power = False
-        # if AlsoReactivePower:
-        #     self.magnitudes.append('Q')
-        # else:
-        # self.ui.setQ_on_cosfi_checkbox.setVisible(False)
-        # self.ui.set_cosfi_button.setVisible(False)
 
-        self.associations = list()
-        mag = [''] * len(self.magnitudes)
+        self.associations = Associations()
         for elm in list_of_objects:
-            self.associations.append([elm] + mag + [1, 1, 1])
-
-        self.P_idx = 0
-        self.Q_idx = -1
-        self.MULT_idx = 0
-        self.SCALE_idx = 0
-        self.COSFI_idx = 0
+            self.associations.append(Association(elm.name, elm.code))
+        self.display_associations()
 
         self.ui.splitter.setStretchFactor(0, 3)
         self.ui.splitter.setStretchFactor(1, 7)
 
-        if len(self.associations) > 0:
-            self.display_associations()
+        # set name transformations
+        self.transformations = {
+                                StringSubstitutions.PSSeBranchName.value: StringSubstitutions.PSSeBranchName,
+                                StringSubstitutions.PSSeBusGenerator.value: StringSubstitutions.PSSeBusGenerator,
+                                StringSubstitutions.PSSeBusLoad.value: StringSubstitutions.PSSeBusLoad
+                                }
+        self.ui.nameTransformationComboBox.setModel(get_list_model(list(self.transformations.keys())))
 
         self.original_data_frame = None
 
@@ -178,13 +276,13 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.ui.open_button.clicked.connect(self.import_profile)
         self.ui.doit_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Mult))
         self.ui.set_multiplier_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Mult))
-        # self.ui.set_cosfi_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Cosfi))
         self.ui.autolink_button.clicked.connect(self.auto_link)
         self.ui.rnd_link_pushButton.clicked.connect(self.rnd_link)
         self.ui.assign_to_selection_pushButton.clicked.connect(self.link_to_selection)
         self.ui.assign_to_all_pushButton.clicked.connect(self.link_to_all)
         self.ui.doit_button.clicked.connect(self.do_it)
         self.ui.clear_selection_button.clicked.connect(self.clear_selection)
+        self.ui.transformNamesPushButton.clicked.connect(self.transform_names)
 
         # double click
         self.ui.sources_list.doubleClicked.connect(self.sources_list_double_click)
@@ -265,12 +363,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
             # set the profile names list
             self.profile_names = np.array([str(e).strip() for e in self.original_data_frame.columns.values], dtype=object)
-
-            # set the loaded data_frame to the GUI
-            model = PandasModel(self.original_data_frame)
-            self.ui.tableView.setModel(model)
-
-            self.ui.sources_list.setModel(get_list_model(self.original_data_frame.columns))
+            self.display_profiles()
 
     def sources_list_double_click(self):
         """
@@ -291,14 +384,13 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         @return:
         """
-        cols = ['Objective'] + self.magnitudes + ['Scale', 'Cos(φ)', 'Multiplier']
-        self.P_idx = 1
-        self.Q_idx = self.P_idx + 1
-        self.SCALE_idx = len(cols) - 3
-        self.COSFI_idx = len(cols) - 2
-        self.MULT_idx = len(cols) - 1
-        df = pd.DataFrame(self.associations, columns=cols)
-        self.ui.assignation_table.setModel(PandasModel(df))
+        self.ui.assignation_table.setModel(self.associations)
+
+    def display_profiles(self):
+        # set the loaded data_frame to the GUI
+        model = PandasModel(self.original_data_frame)
+        self.ui.tableView.setModel(model)
+        self.ui.sources_list.setModel(get_list_model(self.profile_names))
 
     def print_profile(self):
         """
@@ -331,8 +423,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
         """
         Makes an association in the associations table
         """
-        col_name = self.original_data_frame.columns[source_idx]
-
         if scale is None:
             scale = self.get_multiplier()
 
@@ -342,13 +432,10 @@ class ProfileInputGUI(QtWidgets.QDialog):
         if mult is None:
             mult = 1.0
 
-        if col_idx is None:
-            col_idx = self.P_idx
-
-        self.associations[obj_idx][col_idx] = self.profile_names[source_idx]
-        self.associations[obj_idx][self.SCALE_idx] = scale
-        self.associations[obj_idx][self.COSFI_idx] = cosfi
-        self.associations[obj_idx][self.MULT_idx] = mult
+        self.associations.set_profile_at(obj_idx, self.profile_names[source_idx])
+        self.associations.set_scale_at(obj_idx, scale)
+        self.associations.set_cos_fi_at(obj_idx, cosfi)
+        self.associations.set_multiplier_at(obj_idx, mult)
 
     def assignation_table_double_click(self):
         """
@@ -359,12 +446,11 @@ class ProfileInputGUI(QtWidgets.QDialog):
             idx_o = self.ui.assignation_table.selectedIndexes()[0].row()
             col = self.ui.assignation_table.selectedIndexes()[0].column()
 
-            if 0 < col < len(self.associations[idx_o]) - 1:
-                self.make_association(idx_s, idx_o, mult=None, col_idx=col)
+            self.make_association(idx_s, idx_o, mult=None, col_idx=col)
 
-            self.display_associations()
+            # self.display_associations()
 
-    def set_multiplier(self, type):
+    def set_multiplier(self, tpe):
         """
         Set the table multipliers
         """
@@ -373,14 +459,12 @@ class ProfileInputGUI(QtWidgets.QDialog):
             for index in self.ui.assignation_table.selectedIndexes():
                 idx = index.row()
 
-                if type == MultiplierType.Mult:
-                    col = self.MULT_idx
-                elif type == MultiplierType.Cosfi:
+                if tpe == MultiplierType.Mult:
+                    self.associations.set_multiplier_at(idx, mult)
+                elif tpe == MultiplierType.Cosfi:
                     col = self.COSFI_idx
                     if mult > 1 or mult < -1:
                         mult = 0
-
-                self.associations[idx][col] = mult
 
             self.display_associations()
 
@@ -547,10 +631,10 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         for i_obj in range(n_obj):
 
-            scale = self.associations[i_obj][self.SCALE_idx]
-            cosfi = self.associations[i_obj][self.COSFI_idx]
-            mult = self.associations[i_obj][self.MULT_idx]
-            profile_name = self.associations[i_obj][self.P_idx]
+            scale = self.associations.get_scale_at(i_obj)
+            cosfi = self.associations.get_cos_fi_at(i_obj)
+            mult = self.associations.get_multiplier_at(i_obj)
+            profile_name = self.associations.get_profile_at(i_obj)
 
             if profile_name != '':
                 # active power
@@ -559,29 +643,13 @@ class ProfileInputGUI(QtWidgets.QDialog):
                 else:
                     vals = self.original_data_frame[profile_name].values * scale * mult
 
-                # add the reactive power if applicable
-                if self.also_reactive_power:
-
-                    if self.ui.setQ_on_cosfi_checkbox.isChecked():
-                        # fill the data using the power factor
-                        fi = np.arccos(cosfi)
-                        Q = vals * np.tan(fi)
-                    else:
-                        # fill Q using the given profile for Q
-                        profile_name = self.associations[i_obj][self.Q_idx]
-
-                        if profile_name != '':
-                            # fill Q with the set profile
-                            Q = self.original_data_frame[profile_name].values * scale * mult
-                        else:
-                            # if the Q profile name is not given, and is not meant to be made with the power factor
-                            # return an array of zeros
-                            Q = np.zeros_like(vals)
-
-                    vals += 1j * Q
             else:
                 vals = np.zeros(rows_o)
-                zeroed[i_obj] = True
+
+                if self.ui.setUnassignedToZeroCheckBox.isChecked():
+                    zeroed[i_obj] = False
+                else:
+                    zeroed[i_obj] = True
 
             profiles[i_obj] = vals
 
@@ -635,8 +703,45 @@ class ProfileInputGUI(QtWidgets.QDialog):
         """
         for idx in self.ui.assignation_table.selectedIndexes():
             obj_idx = idx.row()
-            self.associations[obj_idx][self.P_idx] = ""
+            self.associations.clear_at(obj_idx)
         self.display_associations()
+
+    def transform_names(self):
+        """
+        Transform the names of the inputs
+        :return:
+        """
+        if self.original_data_frame is not None:
+            mode_txt = self.ui.nameTransformationComboBox.currentText()
+            mode = self.transformations[mode_txt]
+
+            if mode == StringSubstitutions.PSSeBranchName:
+
+                for i, name in enumerate(self.profile_names):
+                    if '_':
+                        vals = name.split('_')
+                        if len(vals) < 7:
+                            pass
+                        else:
+                            self.profile_names[i] = vals[0] + '_' + vals[3] + '_' + vals[6]
+                self.original_data_frame.columns = self.profile_names
+                self.display_profiles()
+
+            if mode == StringSubstitutions.PSSeBusGenerator:
+
+                for i, name in enumerate(self.profile_names):
+                    if '_':
+                        vals = name.split('_')
+                        if len(vals) == 3:
+                            self.profile_names[i] = vals[0] + '_1'
+                self.original_data_frame.columns = self.profile_names
+                self.display_profiles()
+
+            elif mode == StringSubstitutions.PSSeBusLoad:
+                for i, name in enumerate(self.profile_names):
+                    self.profile_names[i] = name + '_1'
+                self.original_data_frame.columns = self.profile_names
+                self.display_profiles()
 
     def do_it(self):
         """
@@ -654,10 +759,16 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.close()
 
 
+class TestObj:
+    def __init__(self, name, code):
+        self.name = name
+        self.code = code
+
+
 if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
-    window = ProfileInputGUI(list_of_objects=['Test object'] * 10)
+    window = ProfileInputGUI(list_of_objects=[TestObj('Test object', 'code')] * 10)
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
