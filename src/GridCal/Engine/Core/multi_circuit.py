@@ -1946,3 +1946,36 @@ class MultiCircuit:
                 gen.Q_prof = np.zeros(nn)
 
         return logger
+
+    def import_branch_rates_profiles(self, df: pd.DataFrame):
+        """
+
+        :param df:
+        :return: Logger
+        """
+        logger = Logger()
+        nn = df.shape[0]
+        if self.get_time_number() != nn:
+            self.format_profiles(df.index.values)
+
+        # substitute the stupid psse names by their equally stupid short names
+        # 11000_AGUAYO_400_12004_ABANTO_400_1_CKT
+        cols = list()
+        for val in df.columns.values:
+            vals = val.split('_')
+            col = vals[0] + '_' + vals[3] + '_' + vals[6]
+            cols.append(col)
+        df.columns = cols
+
+        branches = self.get_branches()
+        elm_by_name = {elm.name: elm for elm in branches}
+
+        for col_name in df.columns.values:
+            try:
+                elm = elm_by_name[col_name]
+                elm.rate_prof = df[col_name].values
+            except KeyError:
+                # log the error but keep the default rate
+                logger.add_error("Missing in the model", col_name)
+
+        return logger

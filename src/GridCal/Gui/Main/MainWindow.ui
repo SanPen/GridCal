@@ -6365,6 +6365,7 @@ QProgressBar::chunk{
       </property>
       <addaction name="actionImportPlexosNodeLoad"/>
       <addaction name="actionImportPlexosGeneratorGeneration"/>
+      <addaction name="actionImportPlexosBranchRates"/>
      </widget>
      <addaction name="menuPlexos_results_2"/>
     </widget>
@@ -7072,6 +7073,15 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>Runs the N-1 time series analysis</string>
+   </property>
+  </action>
+  <action name="actionImportPlexosBranchRates">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/load.svg</normaloff>:/Icons/icons/load.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Branch rates</string>
    </property>
   </action>
  </widget>
