@@ -76,26 +76,23 @@ def get_list_model(iterable):
 
 
 class MultiplierType(Enum):
-    Mult = 1,
-    Cosfi = 2
+    Mult = 1
 
 
 class Association:
 
-    def __init__(self, name, code, scale=1, cos_fi=0.9, multiplier=1, profile_name=''):
+    def __init__(self, name, code, scale=1, multiplier=1, profile_name=''):
         """
 
         :param name:
         :param code:
         :param scale:
-        :param cos_fi:
         :param multiplier:
         :param profile_name:
         """
         self.name: str = name
         self.code: str = code
         self.scale: float = scale
-        self.cos_fi: float = cos_fi
         self.multiplier: float = multiplier
         self.profile_name: str = profile_name
 
@@ -110,8 +107,6 @@ class Association:
         elif idx == 3:
             return self.scale
         elif idx == 4:
-            return self.cos_fi
-        elif idx == 5:
             return self.multiplier
         else:
             return ''
@@ -124,7 +119,7 @@ class Associations(QAbstractTableModel):
 
         self.__values: List[Association] = list()
 
-        self.__headers = ['Name', 'Code', 'Profile', 'Scale', 'Cos(φ)', 'Multiplier']
+        self.__headers = ['Name', 'Code', 'Profile', 'Scale', 'Multiplier']
 
     def append(self, val: Association):
         self.__values.append(val)
@@ -135,9 +130,6 @@ class Associations(QAbstractTableModel):
     def set_scale_at(self, idx, value):
         self.__values[idx].scale = value
 
-    def set_cos_fi_at(self, idx, value):
-        self.__values[idx].cos_fi = value
-
     def set_multiplier_at(self, idx, value):
         self.__values[idx].multiplier = value
 
@@ -147,23 +139,19 @@ class Associations(QAbstractTableModel):
     def get_scale_at(self, idx):
         return self.__values[idx].scale
 
-    def get_cos_fi_at(self, idx):
-        return self.__values[idx].cos_fi
-
     def get_multiplier_at(self, idx):
         return self.__values[idx].multiplier
 
     def clear_at(self, idx):
         self.__values[idx].profile_name = ''
         self.__values[idx].scale = 1
-        self.__values[idx].cos_fi = 0.9
         self.__values[idx].multiplier = 1
 
     def rowCount(self, parent=None):
         return len(self.__values)
 
     def columnCount(self, parent=None):
-        return 6
+        return len(self.__headers)
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if index.isValid():
@@ -385,6 +373,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
         @return:
         """
         self.ui.assignation_table.setModel(self.associations)
+        self.ui.assignation_table.repaint()
 
     def display_profiles(self):
         # set the loaded data_frame to the GUI
@@ -405,36 +394,18 @@ class ProfileInputGUI(QtWidgets.QDialog):
                 self.original_data_frame[name].plot(ax=self.ui.plotwidget.canvas.ax)
                 self.ui.plotwidget.canvas.draw()
 
-    def objectives_list_double_click(self):
-        """
-        Link source to objective when the objective item is double clicked
-        :return:
-        """
-        if len(self.ui.sources_list.selectedIndexes()) > 0:
-            idx_s = self.ui.sources_list.selectedIndexes()[0].row()
-            idx_o = self.ui.objectives_list.selectedIndexes()[0].row()
-            scale = self.get_multiplier()
-            cosfi = 0.9
-            mult = 1
-            self.make_association(idx_s, idx_o, scale, cosfi, mult)
-            self.display_associations()
-
-    def make_association(self, source_idx, obj_idx, scale=None, cosfi=None, mult=None, col_idx=None):
+    def make_association(self, source_idx, obj_idx, scale=None, mult=None, col_idx=None):
         """
         Makes an association in the associations table
         """
         if scale is None:
             scale = self.get_multiplier()
 
-        if cosfi is None:
-            cosfi = 0.9
-
         if mult is None:
             mult = 1.0
 
         self.associations.set_profile_at(obj_idx, self.profile_names[source_idx])
         self.associations.set_scale_at(obj_idx, scale)
-        self.associations.set_cos_fi_at(obj_idx, cosfi)
         self.associations.set_multiplier_at(obj_idx, mult)
 
     def assignation_table_double_click(self):
@@ -461,10 +432,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
                 if tpe == MultiplierType.Mult:
                     self.associations.set_multiplier_at(idx, mult)
-                elif tpe == MultiplierType.Cosfi:
-                    col = self.COSFI_idx
-                    if mult > 1 or mult < -1:
-                        mult = 0
 
             self.display_associations()
 
@@ -535,7 +502,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
         Random link
         """
         # scale = self.get_multiplier()
-        cosfi = 0.9
         mult = 1
         scale = self.get_multiplier()
 
@@ -564,7 +530,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
                     idx_o = destination_indices.pop(rnd_idx_o)
 
                     # make the association
-                    self.make_association(idx_s, idx_o, scale, cosfi, mult)
+                    self.make_association(idx_s, idx_o, scale, mult)
 
                 self.display_associations()
             else:
@@ -581,7 +547,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
             idx_s = self.ui.sources_list.selectedIndexes()[0].row()
 
             scale = self.get_multiplier()
-            cosfi = 0.9
             mult = 1
             scale = self.get_multiplier()
 
@@ -589,7 +554,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
             sel_rows = {item.row() for item in self.ui.assignation_table.selectedIndexes()}
 
             for idx_o in sel_rows:
-                self.make_association(idx_s, idx_o, scale, cosfi, mult)
+                self.make_association(idx_s, idx_o, scale, mult)
 
             self.display_associations()
 
@@ -600,7 +565,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         if len(self.ui.sources_list.selectedIndexes()) > 0:
             idx_s = self.ui.sources_list.selectedIndexes()[0].row()
-            cosfi = 0.9
             mult = 1
             scale = self.get_multiplier()
 
@@ -608,7 +572,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
             n_rows = self.ui.assignation_table.model().rowCount()
 
             for idx_o in range(n_rows):
-                self.make_association(idx_s, idx_o, scale, cosfi, mult)
+                self.make_association(idx_s, idx_o, scale, mult)
 
             self.display_associations()
 
@@ -632,7 +596,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
         for i_obj in range(n_obj):
 
             scale = self.associations.get_scale_at(i_obj)
-            cosfi = self.associations.get_cos_fi_at(i_obj)
             mult = self.associations.get_multiplier_at(i_obj)
             profile_name = self.associations.get_profile_at(i_obj)
 
@@ -656,46 +619,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
         time_profile = self.original_data_frame.index
 
         return np.array(profiles).transpose(), time_profile, zeroed
-
-    def get_association_data(self):
-        """
-        Return a dictionary with the data association
-        @return:
-        """
-        data = dict()
-
-        if self.original_data_frame is not None:
-            for i in range(len(self.associations)):
-                objective_name = self.associations[i][0]
-
-                scale = self.associations[i][self.SCALE_idx]
-                cosfi = self.associations[i][self.COSFI_idx]
-                mult = self.associations[i][self.MULT_idx]
-
-                dta = list()
-                for magnitude_idx in range(len(self.magnitudes)):
-                    profile_name = self.associations[i][magnitude_idx + 1]
-
-                    if magnitude_idx == self.Q_idx and self.ui.setQ_on_cosfi_checkbox.isChecked():
-
-                        # create Q profile based on P and cosfi
-                        profile_name = self.associations[i][self.P_idx]
-                        vals = self.original_data_frame[profile_name].values * scale * mult
-                        fi = np.arccos(cosfi)
-                        vals *= np.tan(fi)
-                    else:
-
-                        # pick the profile in the cell
-                        if profile_name != '':
-                            vals = self.original_data_frame[profile_name].values * scale * mult
-                        else:
-                            # if there is no profile, output zeros
-                            vals = np.zeros(self.original_data_frame.shape[0])
-
-                    dta.append(vals)
-                data[objective_name] = np.array(dta).transpose()
-
-        return data
 
     def clear_selection(self):
         """

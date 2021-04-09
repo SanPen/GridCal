@@ -3,13 +3,16 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.2
+## Created by: Qt User Interface Compiler version 5.15.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import *
-from PySide2.QtGui import *
+from PySide2.QtCore import (QCoreApplication, QDate, QDateTime, QMetaObject,
+    QObject, QPoint, QRect, QSize, QTime, QUrl, Qt)
+from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
+    QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter,
+    QPixmap, QRadialGradient)
 from PySide2.QtWidgets import *
 
 from .icons_rc import *
@@ -2951,10 +2954,6 @@ class Ui_mainWindow(object):
         self.menuBar.setGeometry(QRect(0, 0, 1210, 21))
         self.menuProject = QMenu(self.menuBar)
         self.menuProject.setObjectName(u"menuProject")
-        self.menuSpecial_imports_2 = QMenu(self.menuProject)
-        self.menuSpecial_imports_2.setObjectName(u"menuSpecial_imports_2")
-        self.menuPlexos_results_2 = QMenu(self.menuSpecial_imports_2)
-        self.menuPlexos_results_2.setObjectName(u"menuPlexos_results_2")
         self.menuAbout = QMenu(self.menuBar)
         self.menuAbout.setObjectName(u"menuAbout")
         self.menuActions = QMenu(self.menuBar)
@@ -2984,15 +2983,10 @@ class Ui_mainWindow(object):
         self.menuProject.addSeparator()
         self.menuProject.addAction(self.actionAdd_circuit)
         self.menuProject.addAction(self.actiongrid_Generator)
-        self.menuProject.addAction(self.menuSpecial_imports_2.menuAction())
         self.menuProject.addSeparator()
         self.menuProject.addAction(self.actionExport)
         self.menuProject.addAction(self.actionExport_all_the_device_s_profiles)
         self.menuProject.addAction(self.actionExport_all_results)
-        self.menuSpecial_imports_2.addAction(self.menuPlexos_results_2.menuAction())
-        self.menuPlexos_results_2.addAction(self.actionImportPlexosNodeLoad)
-        self.menuPlexos_results_2.addAction(self.actionImportPlexosGeneratorGeneration)
-        self.menuPlexos_results_2.addAction(self.actionImportPlexosBranchRates)
         self.menuAbout.addAction(self.actionOnline_documentation)
         self.menuAbout.addAction(self.actionLicense)
         self.menuAbout.addAction(self.actionAbout)
@@ -3715,8 +3709,6 @@ class Ui_mainWindow(object):
         self.cancelButton.setText("")
         self.progress_label.setText("")
         self.menuProject.setTitle(QCoreApplication.translate("mainWindow", u"File", None))
-        self.menuSpecial_imports_2.setTitle(QCoreApplication.translate("mainWindow", u"Special imports", None))
-        self.menuPlexos_results_2.setTitle(QCoreApplication.translate("mainWindow", u"Plexos results", None))
         self.menuAbout.setTitle(QCoreApplication.translate("mainWindow", u"Help", None))
         self.menuActions.setTitle(QCoreApplication.translate("mainWindow", u"Actions", None))
         self.menuSimulations.setTitle(QCoreApplication.translate("mainWindow", u"Simulations", None))

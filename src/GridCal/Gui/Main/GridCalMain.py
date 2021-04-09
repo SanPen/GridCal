@@ -397,12 +397,6 @@ class MainGUI(QMainWindow):
 
         self.ui.actiongrid_Generator.triggered.connect(self.grid_generator)
 
-        self.ui.actionImportPlexosNodeLoad.triggered.connect(self.import_plexos_node_load)
-
-        self.ui.actionImportPlexosGeneratorGeneration.triggered.connect(self.import_plexos_generator_generation)
-
-        self.ui.actionImportPlexosBranchRates.triggered.connect(self.import_plexos_branch_rates)
-
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
