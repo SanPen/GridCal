@@ -353,6 +353,20 @@ class DiagramScene(QGraphicsScene):
 
                 plt.show()
 
+    def set_rate_to_profile(self, api_object):
+        """
+
+        :param api_object:
+        """
+        if api_object is not None:
+            if api_object.rate_prof is not None:
+                quit_msg = "Are you sure that you want to overwrite the rates profile with the snapshot value?"
+                reply = QMessageBox.question(self.parent_, 'Overwrite the profile', quit_msg, QMessageBox.Yes, QMessageBox.No)
+
+                if reply == QMessageBox.Yes:
+                    api_object.rate_prof *= 0
+                    api_object.rate_prof += api_object.rate
+
     def mouseMoveEvent(self, mouseEvent):
         """
 

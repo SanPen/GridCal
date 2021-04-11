@@ -475,6 +475,12 @@ class TransformerGraphicItem(QGraphicsLineItem):
             ra3.setIcon(ra3_icon)
             ra3.triggered.connect(self.add_to_templates)
 
+            ra4 = menu.addAction('Assign rate to profile')
+            ra4_icon = QIcon()
+            ra4_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
+            ra4.setIcon(ra4_icon)
+            ra4.triggered.connect(self.assign_rate_to_profile)
+
             menu.addSection('Tap changer')
 
             ra4 = menu.addAction('Tap up')
@@ -786,6 +792,12 @@ class TransformerGraphicItem(QGraphicsLineItem):
             if dlg.exec_():
                 tpe = dlg.get_template()
                 self.diagramScene.circuit.add_transformer_type(tpe)
+
+    def assign_rate_to_profile(self):
+        """
+        Assign the snapshot rate to the profile
+        """
+        self.diagramScene.set_rate_to_profile(self.api_object)
 
     def tap_up(self):
         """

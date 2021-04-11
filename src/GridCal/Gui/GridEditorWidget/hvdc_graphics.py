@@ -184,6 +184,12 @@ class HvdcGraphicItem(QGraphicsLineItem):
             ra6.setIcon(plot_icon)
             ra6.triggered.connect(self.plot_profiles)
 
+            ra4 = menu.addAction('Assign rate to profile')
+            ra4_icon = QIcon()
+            ra4_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
+            ra4.setIcon(ra4_icon)
+            ra4.triggered.connect(self.assign_rate_to_profile)
+
             ra2 = menu.addAction('Delete')
             del_icon = QIcon()
             del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
@@ -336,6 +342,12 @@ class HvdcGraphicItem(QGraphicsLineItem):
         # Ridiculously large call to get the main GUI that hosts this bus graphic
         # time series object from the last simulation
         self.diagramScene.plot_hvdc_branch(self.api_object)
+
+    def assign_rate_to_profile(self):
+        """
+        Assign the snapshot rate to the profile
+        """
+        self.diagramScene.set_rate_to_profile(self.api_object)
 
     def setFromPort(self, fromPort):
         """
