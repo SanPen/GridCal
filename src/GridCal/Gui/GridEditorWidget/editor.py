@@ -285,6 +285,7 @@ class DiagramScene(QGraphicsScene):
                 # search available results
                 power_data = dict()
                 loading_data = dict()
+                loading_st_data = None
 
                 for key, driver in self.circuit.results_dictionary.items():
                     if key == 'Time Series':
@@ -299,9 +300,19 @@ class DiagramScene(QGraphicsScene):
                         power_data[key] = driver.results.worst_flows.real[:, i]
                         loading_data[key] = np.sort(np.abs(driver.results.worst_loading.real[:, i] * 100.0))
 
+                    elif key == 'Stochastic Power Flow':
+                        loading_st_data = np.sort(np.abs(driver.results.loading_points.real[:, i] * 100.0))
+
                 # loading
                 if len(loading_data.keys()):
                     df = pd.DataFrame(data=loading_data, index=p)
+                    ax_1.set_title('Probability x < value', fontsize=14)
+                    ax_1.set_ylabel('Loading [%]', fontsize=11)
+                    df.plot(ax=ax_1)
+
+                if loading_st_data is not None:
+                    p_st = np.arange(len(loading_st_data)).astype(float) / len(loading_st_data)
+                    df = pd.DataFrame(data=loading_st_data, index=p_st, columns=['Stochastic Power Flow'])
                     ax_1.set_title('Probability x < value', fontsize=14)
                     ax_1.set_ylabel('Loading [%]', fontsize=11)
                     df.plot(ax=ax_1)
@@ -500,7 +511,7 @@ class GridEditor(QSplitter):
 
         self.started_branch = None
 
-        self.setStretchFactor(0, 1)
+        self.setStretchFactor(0, 0)
         self.setStretchFactor(1, 2000)
 
     def start_connection(self, port: TerminalItem):

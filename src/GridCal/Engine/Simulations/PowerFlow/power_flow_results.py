@@ -139,10 +139,6 @@ class PowerFlowResults:
 
         self.hvdc_loading = np.zeros(self.n_hvdc)
 
-        self.overloads = np.zeros(m, dtype=complex)
-
-        self.buses_useful_for_storage = list()
-
         self.plot_bars_limit = 100
 
         self.convergence_reports = list()
@@ -268,53 +264,6 @@ class PowerFlowResults:
         self.flow_direction[br_idx] = results.flow_direction
 
         self.convergence_reports += results.convergence_reports
-
-    def check_limits(self, F, T, Vmax, Vmin, wo=1, wv1=1, wv2=1):
-        """
-        Check the grid violations on the whole circuit
-
-        Arguments:
-
-            **F**:
-
-            **T**:
-
-            **Vmax**:
-
-            **Vmin**:
-
-            **wo**:
-
-            **wv1**:
-
-            **wv2**:
-
-        Returns:
-
-            Summation of the deviations
-        """
-        # branches: Returns the loading rate when greater than 1 (nominal), zero otherwise
-        br_idx = np.where(self.loading > 1)[0]
-        bb_f = F[br_idx]
-        bb_t = T[br_idx]
-        self.overloads = self.loading[br_idx]
-
-        # Over and under voltage values in the indices where it occurs
-        Vabs = np.abs(self.voltage)
-        vo_idx = np.where(Vabs > Vmax)[0]
-        self.overvoltage = (Vabs - Vmax)[vo_idx]
-        vu_idx = np.where(Vabs < Vmin)[0]
-        self.undervoltage = (Vmin - Vabs)[vu_idx]
-
-        self.overloads_idx = br_idx
-
-        self.overvoltage_idx = vo_idx
-
-        self.undervoltage_idx = vu_idx
-
-        self.buses_useful_for_storage = list(set(np.r_[vo_idx, vu_idx, bb_f, bb_t]))
-
-        return np.abs(wo * np.sum(self.overloads) + wv1 * np.sum(self.overvoltage) + wv2 * np.sum(self.undervoltage))
 
     def get_report_dataframe(self, island_idx=0):
         """

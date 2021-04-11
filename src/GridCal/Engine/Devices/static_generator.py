@@ -39,16 +39,18 @@ class StaticGenerator(EditableDevice):
 
     """
 
-    def __init__(self, name='StaticGen', idtag=None, P=0.0, Q=0.0, P_prof=None, Q_prof=None, active=True,
+    def __init__(self, name='StaticGen', idtag=None, code='', P=0.0, Q=0.0, P_prof=None, Q_prof=None, active=True,
                  mttf=0.0, mttr=0.0):
 
         EditableDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
+                                code=code,
                                 active=active,
                                 device_type=DeviceType.StaticGeneratorDevice,
                                 editable_headers={'name': GCProp('', str, ''),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
+                                                  'idtag': GCProp('', str, 'Unique ID', False),
+                                                  'code': GCProp('', str, 'Secondary ID'),
                                                   'bus': GCProp('', DeviceType.BusDevice, ''),
                                                   'active': GCProp('', bool, ''),
                                                   'P': GCProp('MW', float, 'Active power'),

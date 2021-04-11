@@ -97,20 +97,6 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.converged_values = np.ones(self.nt, dtype=bool)  # guilty assumption
 
-        self.overloads = [None] * self.nt
-
-        self.overvoltage = [None] * self.nt
-
-        self.undervoltage = [None] * self.nt
-
-        self.overloads_idx = [None] * self.nt
-
-        self.overvoltage_idx = [None] * self.nt
-
-        self.undervoltage_idx = [None] * self.nt
-
-        self.buses_useful_for_storage = [None] * self.nt
-
         # results available
         self.available_results = [ResultTypes.BusVoltageModule,
                                   ResultTypes.BusVoltageAngle,
@@ -253,26 +239,6 @@ class TimeSeriesResults(PowerFlowResults):
             json_str = json.dumps(self.get_results_dict())
             output_file.write(json_str)
 
-    def analyze(self):
-        """
-        Analyze the results
-        @return:
-        """
-        branch_overload_frequency = np.zeros(self.m)
-        bus_undervoltage_frequency = np.zeros(self.n)
-        bus_overvoltage_frequency = np.zeros(self.n)
-        buses_selected_for_storage_frequency = np.zeros(self.n)
-        for i in range(self.nt):
-            branch_overload_frequency[self.overloads_idx[i]] += 1
-            bus_undervoltage_frequency[self.undervoltage_idx[i]] += 1
-            bus_overvoltage_frequency[self.overvoltage_idx[i]] += 1
-            buses_selected_for_storage_frequency[self.buses_useful_for_storage[i]] += 1
-
-        return branch_overload_frequency, \
-                bus_undervoltage_frequency, \
-                bus_overvoltage_frequency, \
-                buses_selected_for_storage_frequency
-
     def mdl(self, result_type: ResultTypes) -> "ResultsModel":
         """
 
@@ -401,49 +367,6 @@ class TimeSeriesResults(PowerFlowResults):
         return mdl
 
 
-def kmeans_case_sampling(X, n_points=10):
-    """
-    K-Means clustering
-    :param X: injections matrix (time, bus)
-    :param n_points: number of clusters
-    :return: indices of the closest to the cluster centers, deviation of the closest representatives
-    """
-
-    # declare the model
-    model = KMeans(n_clusters=n_points)
-
-    # model fitting
-    model.fit(X)
-
-    centers = model.cluster_centers_
-    labels = model.labels_
-
-    # get the closest indices to the cluster centers
-    closest_idx = np.zeros(n_points, dtype=int)
-    closest_prob = np.zeros(n_points, dtype=float)
-    nt = X.shape[0]
-
-    unique_labels, counts = np.unique(labels, return_counts=True)
-    probabilities = counts.astype(float) / float(nt)
-
-    prob_dict = {u: p for u, p in zip(unique_labels, probabilities)}
-    for i in range(n_points):
-        deviations = np.sum(np.power(X - centers[i, :], 2.0), axis=1)
-        idx = deviations.argmin()
-        closest_idx[i] = idx
-
-    # sort the indices
-    closest_idx = np.sort(closest_idx)
-
-    # compute the probabilities of each index (sorted already)
-    for i, idx in enumerate(closest_idx):
-        lbl = model.predict(X[idx, :].reshape(1, -1))[0]
-        prob = prob_dict[lbl]
-        closest_prob[i] = prob
-
-    return closest_idx, closest_prob
-
-
 def time_series_worker(n, m, time_profile, namespace, options: PowerFlowOptions,
                        time_indices, logger: Logger) -> (TimeSeriesResults, np.array):
     """
@@ -532,7 +455,7 @@ class TimeSeries(QThread):
     name = 'Time Series'
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, opf_time_series_results=None,
-                 start_=0, end_=None, use_clustering=False, cluster_number=10):
+                 start_=0, end_=None):
         """
         TimeSeries constructor
         @param grid: MultiCircuit instance
@@ -552,10 +475,6 @@ class TimeSeries(QThread):
         self.start_ = start_
 
         self.end_ = end_
-
-        self.use_clustering = use_clustering
-
-        self.cluster_number = cluster_number
 
         self.elapsed = 0
 
@@ -716,24 +635,6 @@ class TimeSeries(QThread):
         time_series_results.hvdc_Pt = -time_circuit.hvdc_Pt.T
         time_series_results.hvdc_loading = time_circuit.hvdc_loading.T
         time_series_results.hvdc_losses = time_circuit.hvdc_losses.T
-
-        return time_series_results
-
-    def run_single_thread_clustering(self, time_indices) -> TimeSeriesResults:
-        """
-        Run single thread time series using the time series clustering
-        :param time_indices: array of time indices to consider
-        :return: TimeSeriesResults instance
-        """
-        # compile the multi-circuit
-        numerical_circuit = self.grid.compile_time_series(opf_time_series_results=self.opf_time_series_results)
-
-        self.progress_text.emit('Clustering...')
-        X = numerical_circuit.get_power_injections()
-        X = X[:, time_indices].real.T
-        time_idx, closest_prob = kmeans_case_sampling(X, n_points=self.cluster_number)
-
-        time_series_results = self.run_single_thread(time_indices=time_idx)
 
         return time_series_results
 
@@ -909,10 +810,7 @@ class TimeSeries(QThread):
         if self.options.multi_thread:
             self.results = self.run_multi_thread(time_indices)
         else:
-            if self.use_clustering:
-                self.results = self.run_single_thread_clustering(time_indices)
-            else:
-                self.results = self.run_single_thread(time_indices)
+            self.results = self.run_single_thread(time_indices)
 
         self.elapsed = time.time() - a
 
