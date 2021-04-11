@@ -1,6 +1,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/75e794c9bcfd49bda1721b9ba8f6c790)](https://app.codacy.com/app/SanPen/GridCal?utm_source=github.com&utm_medium=referral&utm_content=SanPen/GridCal&utm_campaign=Badge_Grade_Dashboard)
 [![Documentation Status](https://readthedocs.org/projects/gridcal/badge/?version=latest)](https://gridcal.readthedocs.io/en/latest/?badge=latest) [![Build Status](https://travis-ci.org/SanPen/GridCal.svg?branch=master)](https://travis-ci.org/SanPen/GridCal)
 [![DOI](https://www.zenodo.org/badge/49583206.svg)](https://www.zenodo.org/badge/latestdoi/49583206)
+[![Downloads](https://static.pepy.tech/personalized-badge/gridcal?period=total&units=abbreviation&left_color=grey&right_color=green&left_text=Downloads)](https://pepy.tech/project/gridcal)
 
 # What is this?
 
@@ -9,9 +10,12 @@
 ![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal.png)
 
 This software aims to be a complete platform for power systems research and simulation.
-[Watch the video](https://youtu.be/SY66WgLGo54) and
-[check out the documentation](https://gridcal.readthedocs.io)
 
+- [Watch the video](https://youtu.be/SY66WgLGo54)
+- Check out the [Documentation](https://gridcal.readthedocs.io/en/latest/about.html)
+- Explore the [Tutorials](https://gridcal.readthedocs.io/en/latest/tutorials/tutorials_module.html)
+- Submit questions or comments to our [form](https://forms.gle/MpjJAntAwZiLwE6B6)
+- Join the [Discord GridCal community](https://discord.com/invite/dzxctaNbvu)
 
 # Installation
 
