@@ -212,10 +212,10 @@
     </configuration>
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
+      <item itemvalue="Python.profile_dialogue" />
+      <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python tests.Nosetests in test_generator_q_control.py" />
       <item itemvalue="Python tests.Nosetests in test_transformer_controls.py" />
-      <item itemvalue="Python.update_gui_file" />
-      <item itemvalue="Python.profile_dialogue" />
     </list>
     <recent_temporary>
       <list>
