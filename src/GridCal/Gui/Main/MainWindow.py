@@ -3,16 +3,13 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.0
+## Created by: Qt User Interface Compiler version 5.15.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import (QCoreApplication, QDate, QDateTime, QMetaObject,
-    QObject, QPoint, QRect, QSize, QTime, QUrl, Qt)
-from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
-    QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter,
-    QPixmap, QRadialGradient)
+from PySide2.QtCore import *
+from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from .icons_rc import *
@@ -1284,15 +1281,6 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_10.addWidget(self.label_64)
 
-        self.label_77 = QLabel(self.frame_36)
-        self.label_77.setObjectName(u"label_77")
-        self.label_77.setMinimumSize(QSize(24, 24))
-        self.label_77.setMaximumSize(QSize(24, 24))
-        self.label_77.setPixmap(QPixmap(u":/Icons/icons/pf_ts_cluster.svg"))
-        self.label_77.setScaledContents(True)
-
-        self.horizontalLayout_10.addWidget(self.label_77)
-
         self.label_65 = QLabel(self.frame_36)
         self.label_65.setObjectName(u"label_65")
         palette1 = QPalette()
@@ -1305,9 +1293,18 @@ class Ui_mainWindow(object):
         font = QFont()
         font.setPointSize(16)
         self.label_65.setFont(font)
-        self.label_65.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
+        self.label_65.setAlignment(Qt.AlignBottom|Qt.AlignHCenter)
 
         self.horizontalLayout_10.addWidget(self.label_65)
+
+        self.label_77 = QLabel(self.frame_36)
+        self.label_77.setObjectName(u"label_77")
+        self.label_77.setMinimumSize(QSize(24, 24))
+        self.label_77.setMaximumSize(QSize(24, 24))
+        self.label_77.setPixmap(QPixmap(u":/Icons/icons/pf_ts_cluster.svg"))
+        self.label_77.setScaledContents(True)
+
+        self.horizontalLayout_10.addWidget(self.label_77)
 
 
         self.gridLayout_21.addWidget(self.frame_36, 11, 0, 1, 1)
@@ -3019,6 +3016,7 @@ class Ui_mainWindow(object):
         self.menuSimulations.addAction(self.actionSet_OPF_generation_to_profiles)
         self.menuSimulations.addSeparator()
         self.menuSimulations.addAction(self.actionPower_flow_Stochastic)
+        self.menuSimulations.addAction(self.actionClustering_time_series)
         self.menuSimulations.addSeparator()
         self.menuSimulations.addAction(self.actionPTDF)
         self.menuSimulations.addAction(self.actionPTDF_time_series)
@@ -3030,7 +3028,6 @@ class Ui_mainWindow(object):
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionPower_flow)
         self.toolBar.addAction(self.actionPower_Flow_Time_series)
-        self.toolBar.addAction(self.actionClustering_time_series)
         self.toolBar.addAction(self.actionShort_Circuit)
         self.toolBar.addAction(self.actionVoltage_stability)
         self.toolBar.addAction(self.actionSigma_analysis)
@@ -3040,6 +3037,7 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionOpf_to_Power_flow)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionPower_flow_Stochastic)
+        self.toolBar.addAction(self.actionClustering_time_series)
         self.toolBar.addAction(self.actionBlackout_cascade)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionPTDF)
@@ -3051,15 +3049,12 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionSmaller_nodes)
         self.toolBar.addAction(self.actionCenter_view)
         self.toolBar.addAction(self.actionAutoatic_layout)
-        self.toolBar.addAction(self.actionFind_node_groups)
         self.toolBar.addAction(self.actionTry_to_fix_buses_location)
         self.toolBar.addAction(self.actionDelete_selected)
         self.toolBar.addSeparator()
-        self.toolBar.addAction(self.actionDetect_transformers)
-        self.toolBar.addAction(self.actionAuto_rate_branches)
         self.toolBar.addAction(self.actionStorage_location_suggestion)
-        self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionLaunch_data_analysis_tool)
+        self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionShow_color_controls)
 
         self.retranslateUi(mainWindow)
@@ -3506,8 +3501,8 @@ class Ui_mainWindow(object):
         self.temperature_correction_checkBox.setText(QCoreApplication.translate("mainWindow", u"Apply temperature correction", None))
         self.apply_impedance_tolerances_checkBox.setText(QCoreApplication.translate("mainWindow", u"Apply impedance tolerances", None))
         self.label_64.setText("")
-        self.label_77.setText("")
         self.label_65.setText(QCoreApplication.translate("mainWindow", u"Time series", None))
+        self.label_77.setText("")
         self.label_22.setText("")
         self.label_67.setText("")
         self.label_33.setText(QCoreApplication.translate("mainWindow", u"Power flow controls", None))

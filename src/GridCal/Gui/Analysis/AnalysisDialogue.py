@@ -378,6 +378,9 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         Ql_prof = np.zeros(nt)
         Qg_prof = np.zeros(nt)
 
+        Qmin = 0.0
+        Qmax = 0.0
+
         print('Analyzing...')
         # declare logs
         self.log = GridErrorLog()
@@ -469,6 +472,10 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
 
                 for i, elm in enumerate(elements):
 
+                    qmin, qmax = elm.get_reactive_power_limits()
+                    Qmin += qmin
+                    Qmax += qmax
+
                     if elm.Vnom <= 0.0:
                         self.log.add(object_type='Bus', element_name=elm.name, element_index=i, severity='High',
                                      propty='Vnom', message='The nominal voltage is <= 0, this causes problems')
@@ -555,9 +562,21 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
                          propty='Active power balance ' + msg,
                          message='There is too much active power imbalance')
 
+        # compare reactive power limits
+        if not (Qmin <= -Ql <= Qmax):
+            msg = "Reactive power out of bounds {0}<={1}<={2}".format(Qmin, Ql, Qmax)
+            self.log.add(object_type='Grid snapshot',
+                         element_name=self.circuit,
+                         element_index=-1,
+                         severity='High',
+                         propty='Reactive power power balance ' + msg,
+                         message='There is too much reactive power imbalance')
+
         if self.circuit.time_profile is not None:
             nt = len(self.circuit.time_profile)
             for t in range(nt):
+
+                # compare loads
                 p_ratio = abs(Pl_prof[t] - Pg_prof[t]) / (Pl_prof[t] + 1e-20)
                 if p_ratio > imbalance_threshold:
                     msg = "{:.1f}".format(p_ratio * 100) + "% >> " + str(imbalance_threshold) + "%"
@@ -568,6 +587,16 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
                                  propty='Active power balance ' + msg,
                                  message='There is too much active power imbalance')
 
+                # compare reactive power limits
+                if not (Qmin <= -Ql_prof[t] <= Qmax):
+                    msg = "Reactive power out of bounds {0}<={1}<={2}".format(Qmin, Ql, Qmax)
+                    self.log.add(object_type='Grid time events',
+                                 element_name=self.circuit,
+                                 element_index=t,
+                                 severity='High',
+                                 propty='Reactive power power balance ' + msg,
+                                 message='There is too much reactive power imbalance')
+
         # set logs
         self.ui.logsTreeView.setModel(self.log.get_model())
         print('Done!')
@@ -575,7 +604,6 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
     def save_diagnostic(self):
 
         files_types = "Excel (*.xlsx)"
-
 
         options = QFileDialog.Options()
         if self.use_native_dialogues:

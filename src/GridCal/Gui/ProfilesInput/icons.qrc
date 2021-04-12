@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/transform.svg</file>
     <file>icons/delete.svg</file>
     <file>icons/link-to-selection.svg</file>
     <file>icons/link-to-all.svg</file>

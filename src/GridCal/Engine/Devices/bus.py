@@ -285,6 +285,29 @@ class Bus(EditableDevice):
 
         return self.type
 
+    def get_reactive_power_limits(self):
+        """
+        get the summation of reactive power
+        @return: Qmin, Qmax
+        """
+        Qmin = 0.0
+        Qmax = 0.0
+
+        # count the active and controlled generators
+        for elm in self.controlled_generators + self.batteries:
+            if elm.active:
+                if elm.is_controlled:
+                    Qmin += elm.Qmin
+                    Qmax += elm.Qmax
+
+        for elm in self.shunts:
+            if elm.active:
+                if elm.is_controlled:
+                    Qmin += elm.Bmin
+                    Qmax += elm.Bmax
+
+        return Qmin, Qmax
+
     def initialize_lp_profiles(self):
         """
         Dimension the LP var profiles

@@ -6409,6 +6409,7 @@ QProgressBar::chunk{
     <addaction name="actionSet_OPF_generation_to_profiles"/>
     <addaction name="separator"/>
     <addaction name="actionPower_flow_Stochastic"/>
+    <addaction name="actionClustering_time_series"/>
     <addaction name="separator"/>
     <addaction name="actionPTDF"/>
     <addaction name="actionPTDF_time_series"/>
@@ -6456,7 +6457,6 @@ QProgressBar::chunk{
    <addaction name="separator"/>
    <addaction name="actionPower_flow"/>
    <addaction name="actionPower_Flow_Time_series"/>
-   <addaction name="actionClustering_time_series"/>
    <addaction name="actionShort_Circuit"/>
    <addaction name="actionVoltage_stability"/>
    <addaction name="actionSigma_analysis"/>
@@ -6466,6 +6466,7 @@ QProgressBar::chunk{
    <addaction name="actionOpf_to_Power_flow"/>
    <addaction name="separator"/>
    <addaction name="actionPower_flow_Stochastic"/>
+   <addaction name="actionClustering_time_series"/>
    <addaction name="actionBlackout_cascade"/>
    <addaction name="separator"/>
    <addaction name="actionPTDF"/>
@@ -6477,15 +6478,12 @@ QProgressBar::chunk{
    <addaction name="actionSmaller_nodes"/>
    <addaction name="actionCenter_view"/>
    <addaction name="actionAutoatic_layout"/>
-   <addaction name="actionFind_node_groups"/>
    <addaction name="actionTry_to_fix_buses_location"/>
    <addaction name="actionDelete_selected"/>
    <addaction name="separator"/>
-   <addaction name="actionDetect_transformers"/>
-   <addaction name="actionAuto_rate_branches"/>
    <addaction name="actionStorage_location_suggestion"/>
-   <addaction name="separator"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
+   <addaction name="separator"/>
    <addaction name="actionShow_color_controls"/>
   </widget>
   <action name="actionOpen_file">
