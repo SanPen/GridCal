@@ -397,12 +397,6 @@ class MainGUI(QMainWindow):
 
         self.ui.actiongrid_Generator.triggered.connect(self.grid_generator)
 
-        self.ui.actionImportPlexosNodeLoad.triggered.connect(self.import_plexos_node_load)
-
-        self.ui.actionImportPlexosGeneratorGeneration.triggered.connect(self.import_plexos_generator_generation)
-
-        self.ui.actionImportPlexosBranchRates.triggered.connect(self.import_plexos_branch_rates)
-
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -2904,15 +2898,11 @@ class MainGUI(QMainWindow):
                     options = self.get_selected_power_flow_options()
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1
-                    use_clusters = self.ui.useClustersCheckBox.isChecked()
-                    cluster_num = self.ui.cluster_number_spinBox.value()
                     self.time_series = pftsdrv.TimeSeries(grid=self.circuit,
                                                           options=options,
                                                           opf_time_series_results=opf_time_series_results,
                                                           start_=start,
-                                                          end_=end,
-                                                          use_clustering=use_clusters,
-                                                          cluster_number=cluster_num)
+                                                          end_=end)
 
                     # Set the time series run options
                     self.time_series.progress_signal.connect(self.ui.progressBar.setValue)

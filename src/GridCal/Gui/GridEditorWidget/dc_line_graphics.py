@@ -316,6 +316,12 @@ class DcLineGraphicItem(QGraphicsLineItem):
             ra6.setIcon(plot_icon)
             ra6.triggered.connect(self.plot_profiles)
 
+            ra4 = menu.addAction('Assign rate to profile')
+            ra4_icon = QIcon()
+            ra4_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
+            ra4.setIcon(ra4_icon)
+            ra4.triggered.connect(self.assign_rate_to_profile)
+
             # menu.addSeparator()
 
             re = menu.addAction('Reduce')
@@ -467,6 +473,12 @@ class DcLineGraphicItem(QGraphicsLineItem):
         """
         i = self.diagramScene.circuit.get_branches().index(self.api_object)
         self.diagramScene.plot_branch(i, self.api_object)
+
+    def assign_rate_to_profile(self):
+        """
+        Assign the snapshot rate to the profile
+        """
+        self.diagramScene.set_rate_to_profile(self.api_object)
 
     def setFromPort(self, fromPort):
         """

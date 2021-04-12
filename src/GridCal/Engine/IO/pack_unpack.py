@@ -191,7 +191,10 @@ def create_data_frames(circuit: MultiCircuit):
     # Time -------------------------------------------------------------------------------------------------------------
 
     if circuit.time_profile is not None:
-        time_df = pd.DataFrame(data=circuit.time_profile, columns=['Time'])
+        if isinstance(circuit.time_profile, pd.DatetimeIndex):
+            time_df = pd.DataFrame(data=circuit.time_profile.values, columns=['Time'])
+        else:
+            time_df = pd.DataFrame(data=circuit.time_profile, columns=['Time'])
         dfs['time'] = time_df
 
     return dfs

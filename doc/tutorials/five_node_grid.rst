@@ -40,22 +40,14 @@ the results are printed on the console.
     grid.add_bus(bus5)
     grid.add_load(bus5, Load('load 5', P=50, Q=20))
 
-
     # add branches (Lines in this case)
-    grid.add_branch(Branch(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02))
-
-    grid.add_branch(Branch(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02))
-
-    grid.add_branch(Branch(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02))
-
-    grid.add_branch(Branch(bus2, bus3, 'line 2-3', r=0.04, x=0.09, b=0.02))
-
-    grid.add_branch(Branch(bus2, bus5, 'line 2-5', r=0.04, x=0.09, b=0.02))
-
-    grid.add_branch(Branch(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03))
-
-    grid.add_branch(Branch(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02))
-
+    grid.add_line(Line(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02))
+    grid.add_line(Line(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02))
+    grid.add_line(Line(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02))
+    grid.add_line(Line(bus2, bus3, 'line 2-3', r=0.04, x=0.09, b=0.02))
+    grid.add_line(Line(bus2, bus5, 'line 2-5', r=0.04, x=0.09, b=0.02))
+    grid.add_line(Line(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03))
+    grid.add_line(Line(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02))
 
     options = PowerFlowOptions(SolverType.NR, verbose=False)
     power_flow = PowerFlowDriver(grid, options)
@@ -63,7 +55,7 @@ the results are printed on the console.
 
     print('\n\n', grid.name)
     print('\t|V|:', abs(power_flow.results.voltage))
-    print('\t|Sbranch|:', abs(power_flow.results.Sbranch))
+    print('\t|Sbranch|:', abs(power_flow.results.Sf))
     print('\t|loading|:', abs(power_flow.results.loading) * 100)
     print('\terr:', power_flow.results.error)
     print('\tConv:', power_flow.results.converged)
