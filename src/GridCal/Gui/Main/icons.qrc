@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/assign_to_profile.svg</file>
     <file>icons/otdf_ts.svg</file>
     <file>icons/abs.svg</file>
     <file>icons/stochastic_pf.svg</file>
