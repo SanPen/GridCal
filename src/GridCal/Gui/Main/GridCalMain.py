@@ -16,6 +16,7 @@ import gc
 import os.path
 import platform
 import sys
+from typing import List, Dict, Tuple
 import datetime as dtelib
 from collections import OrderedDict
 from multiprocessing import cpu_count
@@ -26,6 +27,7 @@ from pandas.plotting import register_matplotlib_converters
 # GUI imports
 from GridCal.__version__ import __GridCal_VERSION__, about_msg
 from GridCal.Gui.Main.MainWindow import *
+from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.GridEditorWidget import *
 from GridCal.Gui.ConsoleWidget import ConsoleWidget
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
@@ -288,6 +290,7 @@ class MainGUI(QMainWindow):
         self.analysis_dialogue = None
         self.profile_input_dialogue = None
         self.stuff_running_now = list()
+        self.object_select_window: ObjectSelectWindow = None
 
         self.file_name = ''
 
@@ -396,6 +399,10 @@ class MainGUI(QMainWindow):
         self.ui.actionFind_node_groups.triggered.connect(self.run_find_node_groups)
 
         self.ui.actiongrid_Generator.triggered.connect(self.grid_generator)
+
+        self.ui.actionSetSelectedBusCountry.triggered.connect(lambda: self.set_selected_bus_property('country'))
+        self.ui.actionSetSelectedBusArea.triggered.connect(lambda: self.set_selected_bus_property('area'))
+        self.ui.actionSetSelectedBusZone.triggered.connect(lambda: self.set_selected_bus_property('zone'))
 
         # Buttons
 
@@ -3625,6 +3632,45 @@ class MainGUI(QMainWindow):
             # clear the results
             self.clear_results()
 
+    def set_selected_bus_property(self, prop):
+        """
+
+        :param prop:
+        :return:
+        """
+        if prop == 'area':
+            self.object_select_window = ObjectSelectWindow('Area', self.circuit.areas)
+            self.object_select_window.setModal(True)
+            self.object_select_window.exec_()
+
+            if self.object_select_window.selected_object is not None:
+                for k, bus in self.get_selected_buses():
+                    bus.area = self.object_select_window.selected_object
+                    print('Set {0} into bus {1}'.format(self.object_select_window.selected_object.name, bus.name))
+
+        elif prop == 'country':
+            self.object_select_window = ObjectSelectWindow('country', self.circuit.countries)
+            self.object_select_window.setModal(True)
+            self.object_select_window.exec_()
+
+            if self.object_select_window.selected_object is not None:
+                for k, bus in self.get_selected_buses():
+                    bus.country = self.object_select_window.selected_object
+                    print('Set {0} into bus {1}'.format(self.object_select_window.selected_object.name, bus.name))
+
+        elif prop == 'zone':
+            self.object_select_window = ObjectSelectWindow('Zones', self.circuit.zones)
+            self.object_select_window.setModal(True)
+            self.object_select_window.exec_()
+
+            if self.object_select_window.selected_object is not None:
+                for k, bus in self.get_selected_buses():
+                    bus.zone = self.object_select_window.selected_object
+                    print('Set {0} into bus {1}'.format(self.object_select_window.selected_object.name, bus.name))
+        else:
+            error_msg('Unrecognized option' + str(prop))
+            return
+
     def set_cancel_state(self):
         """
         Cancel what ever's going on that can be cancelled
@@ -5040,7 +5086,7 @@ class MainGUI(QMainWindow):
                 self.circuit.add_bus(Bus(name='Bus ' + str(len(self.circuit.buses) + 1),
                                          area=self.circuit.areas[0],
                                          zone=self.circuit.zones[0],
-                                         substation=self.circuit.zones[0],
+                                         substation=self.circuit.substations[0],
                                          country=self.circuit.countries[0]))
 
             else:
@@ -5048,7 +5094,6 @@ class MainGUI(QMainWindow):
                 return
 
             # update the view
-            # self.display_filter(objects)
             self.view_objects_data()
 
     def clear_big_bus_markers(self):
@@ -5190,12 +5235,12 @@ class MainGUI(QMainWindow):
             else:
                 pass
 
-    def get_selected_buses(self):
+    def get_selected_buses(self) -> List[Tuple[int, Bus]]:
         """
         Get the selected buses
         :return:
         """
-        lst = list()
+        lst: List[Tuple[int, Bus]] = list()
         for k, bus in enumerate(self.circuit.buses):
             if bus.graphic_obj is not None:
                 if bus.graphic_obj.isSelected():

@@ -6376,6 +6376,14 @@ QProgressBar::chunk{
     <property name="title">
      <string>Actions</string>
     </property>
+    <widget class="QMenu" name="menuSet_selected_buses">
+     <property name="title">
+      <string>Set selected buses</string>
+     </property>
+     <addaction name="actionSetSelectedBusCountry"/>
+     <addaction name="actionSetSelectedBusZone"/>
+     <addaction name="actionSetSelectedBusArea"/>
+    </widget>
     <addaction name="actionBigger_nodes"/>
     <addaction name="actionSmaller_nodes"/>
     <addaction name="actionCenter_view"/>
@@ -6391,6 +6399,8 @@ QProgressBar::chunk{
     <addaction name="actionAdd_default_catalogue"/>
     <addaction name="actionClear_stuff_running_right_now"/>
     <addaction name="actionReset_console"/>
+    <addaction name="separator"/>
+    <addaction name="menuSet_selected_buses"/>
    </widget>
    <widget class="QMenu" name="menuSimulations">
     <property name="title">
@@ -7077,6 +7087,21 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>Perform the time series simulation using clusters for speed / accuracy trade-off</string>
+   </property>
+  </action>
+  <action name="actionSetSelectedBusArea">
+   <property name="text">
+    <string>Area</string>
+   </property>
+  </action>
+  <action name="actionSetSelectedBusZone">
+   <property name="text">
+    <string>Zone</string>
+   </property>
+  </action>
+  <action name="actionSetSelectedBusCountry">
+   <property name="text">
+    <string>Country</string>
    </property>
   </action>
  </widget>
