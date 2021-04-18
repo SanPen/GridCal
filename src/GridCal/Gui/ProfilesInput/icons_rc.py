@@ -172,226 +172,128 @@ ctor-curvature=\x22\
 0\x22\x0d\x0a     sodipod\
 i:nodetypes=\x22cc\x22\
  />\x0d\x0a</svg>\x0d\x0a\
-\x00\x00\x0d\x94\
+\x00\x00\x07r\
 <\
 ?xml version=\x221.\
 0\x22 encoding=\x22UTF\
 -8\x22 standalone=\x22\
-no\x22?>\x0d\x0a<!-- Crea\
-ted with Inkscap\
-e (http://www.in\
-kscape.org/) -->\
-\x0d\x0a\x0d\x0a<svg\x0d\x0a   xml\
-ns:dc=\x22http://pu\
-rl.org/dc/elemen\
-ts/1.1/\x22\x0d\x0a   xml\
-ns:cc=\x22http://cr\
-eativecommons.or\
-g/ns#\x22\x0d\x0a   xmlns\
-:rdf=\x22http://www\
-.w3.org/1999/02/\
-22-rdf-syntax-ns\
-#\x22\x0d\x0a   xmlns:svg\
-=\x22http://www.w3.\
-org/2000/svg\x22\x0d\x0a \
-  xmlns=\x22http://\
-www.w3.org/2000/\
-svg\x22\x0d\x0a   xmlns:s\
-odipodi=\x22http://\
-sodipodi.sourcef\
-orge.net/DTD/sod\
-ipodi-0.dtd\x22\x0d\x0a  \
- xmlns:inkscape=\
-\x22http://www.inks\
-cape.org/namespa\
-ces/inkscape\x22\x0d\x0a \
-  version=\x221.1\x22\x0d\
-\x0a   id=\x22svg2\x22\x0d\x0a \
-  width=\x22192\x22\x0d\x0a \
-  height=\x22192\x22\x0d\x0a\
-   viewBox=\x220 0 \
-192 192\x22\x0d\x0a   sod\
+no\x22?>\x0a<!-- Creat\
+ed with Inkscape\
+ (http://www.ink\
+scape.org/) -->\x0a\
+\x0a<svg\x0a   xmlns:d\
+c=\x22http://purl.o\
+rg/dc/elements/1\
+.1/\x22\x0a   xmlns:cc\
+=\x22http://creativ\
+ecommons.org/ns#\
+\x22\x0a   xmlns:rdf=\x22\
+http://www.w3.or\
+g/1999/02/22-rdf\
+-syntax-ns#\x22\x0a   \
+xmlns:svg=\x22http:\
+//www.w3.org/200\
+0/svg\x22\x0a   xmlns=\
+\x22http://www.w3.o\
+rg/2000/svg\x22\x0a   \
+xmlns:sodipodi=\x22\
+http://sodipodi.\
+sourceforge.net/\
+DTD/sodipodi-0.d\
+td\x22\x0a   xmlns:ink\
+scape=\x22http://ww\
+w.inkscape.org/n\
+amespaces/inksca\
+pe\x22\x0a   version=\x22\
+1.1\x22\x0a   id=\x22svg2\
+\x22\x0a   width=\x22192\x22\
+\x0a   height=\x22192\x22\
+\x0a   viewBox=\x220 0\
+ 192 192\x22\x0a   sod\
 ipodi:docname=\x22g\
-ear.svg\x22\x0d\x0a   ink\
-scape:version=\x220\
-.92.2 (5c3e80d, \
-2017-08-06)\x22>\x0d\x0a \
- <metadata\x0d\x0a    \
+ear.svg\x22\x0a   inks\
+cape:version=\x220.\
+92.4 (5da689c313\
+, 2019-01-14)\x22>\x0a\
+  <metadata\x0a    \
  id=\x22metadata8\x22>\
-\x0d\x0a    <rdf:RDF>\x0d\
-\x0a      <cc:Work\x0d\
-\x0a         rdf:ab\
-out=\x22\x22>\x0d\x0a       \
- <dc:format>imag\
-e/svg+xml</dc:fo\
-rmat>\x0d\x0a        <\
-dc:type\x0d\x0a       \
-    rdf:resource\
-=\x22http://purl.or\
-g/dc/dcmitype/St\
-illImage\x22 />\x0d\x0a  \
-      <dc:title \
-/>\x0d\x0a      </cc:W\
-ork>\x0d\x0a    </rdf:\
-RDF>\x0d\x0a  </metada\
-ta>\x0d\x0a  <defs\x0d\x0a  \
-   id=\x22defs6\x22 />\
-\x0d\x0a  <sodipodi:na\
-medview\x0d\x0a     pa\
-gecolor=\x22#ffffff\
-\x22\x0d\x0a     borderco\
-lor=\x22#666666\x22\x0d\x0a \
+\x0a    <rdf:RDF>\x0a \
+     <cc:Work\x0a  \
+       rdf:about\
+=\x22\x22>\x0a        <dc\
+:format>image/sv\
+g+xml</dc:format\
+>\x0a        <dc:ty\
+pe\x0a           rd\
+f:resource=\x22http\
+://purl.org/dc/d\
+cmitype/StillIma\
+ge\x22 />\x0a        <\
+dc:title />\x0a    \
+  </cc:Work>\x0a   \
+ </rdf:RDF>\x0a  </\
+metadata>\x0a  <def\
+s\x0a     id=\x22defs6\
+\x22 />\x0a  <sodipodi\
+:namedview\x0a     \
+pagecolor=\x22#ffff\
+ff\x22\x0a     borderc\
+olor=\x22#666666\x22\x0a \
     borderopacit\
-y=\x221\x22\x0d\x0a     obje\
-cttolerance=\x2210\x22\
-\x0d\x0a     gridtoler\
-ance=\x2210\x22\x0d\x0a     \
-guidetolerance=\x22\
-10\x22\x0d\x0a     inksca\
-pe:pageopacity=\x22\
-0\x22\x0d\x0a     inkscap\
-e:pageshadow=\x222\x22\
-\x0d\x0a     inkscape:\
-window-width=\x2278\
-4\x22\x0d\x0a     inkscap\
-e:window-height=\
-\x22480\x22\x0d\x0a     id=\x22\
-namedview4\x22\x0d\x0a   \
-  showgrid=\x22fals\
-e\x22\x0d\x0a     inkscap\
-e:zoom=\x221.229166\
-7\x22\x0d\x0a     inkscap\
-e:cx=\x22-47.999997\
-\x22\x0d\x0a     inkscape\
-:cy=\x2296.000003\x22\x0d\
-\x0a     inkscape:w\
-indow-x=\x2257\x22\x0d\x0a  \
+y=\x221\x22\x0a     objec\
+ttolerance=\x2210\x22\x0a\
+     gridtoleran\
+ce=\x2210\x22\x0a     gui\
+detolerance=\x2210\x22\
+\x0a     inkscape:p\
+ageopacity=\x220\x22\x0a \
+    inkscape:pag\
+eshadow=\x222\x22\x0a    \
+ inkscape:window\
+-width=\x221858\x22\x0a  \
    inkscape:wind\
-ow-y=\x2227\x22\x0d\x0a     \
-inkscape:window-\
-maximized=\x220\x22\x0d\x0a \
-    inkscape:cur\
-rent-layer=\x22svg2\
-\x22 />\x0d\x0a  <path\x0d\x0a \
-    style=\x22fill:\
-#999999;stroke-w\
-idth:1.33333337\x22\
-\x0d\x0a     d=\x22m 77.6\
-85212,176.62546 \
-c -0.36495,-0.59\
-051 -1.359378,-6\
-.15571 -2.20984,\
--12.36712 -0.850\
-46,-6.21142 -1.6\
-47284,-11.29448 \
--1.77072,-11.295\
-7 -0.292876,-0.0\
-03 -8.928958,-4.\
-7575 -11.737142,\
--6.46193 -1.6054\
-74,-0.97444 -5.0\
-33267,-0.14448 -\
-13.016802,3.1516\
-8 -6.691473,2.76\
-271 -11.300681,3\
-.99631 -12.04838\
-1,3.22459 -2.638\
-601,-2.72336 -17\
-.422101,-29.3715\
-3 -17.422101,-31\
-.4044 0,-1.19223\
- 3.885057,-5.095\
-18 8.63346,-8.67\
-324 l 8.63346,-6\
-.50555 v -8.6666\
-71 -8.666667 l -\
-8.63346,-6.50555\
-6 c -4.748403,-3\
-.578056 -8.63346\
-,-7.481016 -8.63\
-346,-8.673242 0,\
--2.039252 14.787\
-98,-28.686171 17\
-.435789,-31.4180\
-9 0.765807,-0.79\
-0132 5.266256,0.\
-388912 12.011621\
-,3.146851 10.735\
-632,4.389415 10.\
-808082,4.399033 \
-15.223394,2.0212\
-32 9.226118,-4.9\
-68593 9.854293,-\
-5.918176 11.4033\
-1,-17.237861 0.8\
-02812,-5.866667 \
-1.912158,-11.134\
-266 2.465212,-11\
-.705775 0.553056\
-,-0.571509 9.357\
-958,-0.871509 19\
-.566452,-0.66666\
-7 l 18.560886,0.\
-372442 2,11.7414\
-16 2,11.741416 6\
-.3294,3.92525 c \
-3.48117,2.158888\
- 6.79253,3.92525\
-1 7.35858,3.9252\
-51 0.56605,0 5.4\
-1918,-1.844483 1\
-0.78474,-4.09885\
-1 5.36556,-2.254\
-369 10.45926,-3.\
-828818 11.31934,\
--3.498777 2.0332\
-4,0.780228 18.20\
-794,29.028695 18\
-.20794,31.799445\
- 0,1.166222 -3.8\
-8505,5.047904 -8\
-.63345,8.62596 l\
- -8.63347,6.5055\
-56 v 8.666667 8.\
-666671 l 8.63347\
-,6.50555 c 4.748\
-4,3.57806 8.6334\
-5,7.48101 8.6334\
-5,8.67324 0,2.03\
-287 -14.7835,28.\
-68104 -17.4221,3\
-1.4044 -0.74772,\
-0.77174 -5.29872\
-,-0.43786 -11.89\
-703,-3.1621 l -1\
-0.68606,-4.41197\
- -7.21862,3.7794\
-4 -7.21861,3.779\
-43 -1.77879,12.0\
-4933 -1.77879,12\
-.04933 -18.89906\
-6,0.36932 c -10.\
-394484,0.20314 -\
-19.19766,-0.1138\
-6 -19.562612,-0.\
-7043 z m 29.5045\
-08,-53.06908 c 1\
-4.62521,-6.10929\
- 21.57602,-23.26\
-646 15.09602,-37\
-.262594 -10.2021\
-7,-22.03565 -40.\
-74219,-22.03565 \
--50.944364,0 -10\
-.329641,22.31097\
-4 13.168754,46.7\
-36394 35.848344,\
-37.262594 z\x22\x0d\x0a  \
-   id=\x22path817\x22\x0d\
+ow-height=\x221057\x22\
+\x0a     id=\x22namedv\
+iew4\x22\x0a     showg\
+rid=\x22false\x22\x0a    \
+ inkscape:zoom=\x22\
+1.2291667\x22\x0a     \
+inkscape:cx=\x22-19\
+6.88135\x22\x0a     in\
+kscape:cy=\x2296.00\
+0006\x22\x0a     inksc\
+ape:window-x=\x2254\
+\x22\x0a     inkscape:\
+window-y=\x22-8\x22\x0a  \
+   inkscape:wind\
+ow-maximized=\x221\x22\
 \x0a     inkscape:c\
-onnector-curvatu\
-re=\x220\x22 />\x0d\x0a</svg\
->\x0d\x0a\
+urrent-layer=\x22sv\
+g2\x22 />\x0a  <path\x0a \
+    style=\x22fill:\
+#999999;fill-opa\
+city:1;stroke:no\
+ne;stroke-width:\
+1.05025125px;str\
+oke-linecap:butt\
+;stroke-linejoin\
+:miter;stroke-op\
+acity:1\x22\x0a     d=\
+\x22M 10.576272,94.\
+017211 60.13389,\
+154.68255 180.61\
+016,60.693977 17\
+0.35686,50.44067\
+9 62.697217,126.\
+48598 22.538455,\
+87.181671 Z\x22\x0a   \
+  id=\x22path812\x22\x0a \
+    inkscape:con\
+nector-curvature\
+=\x220\x22\x0a     sodipo\
+di:nodetypes=\x22cc\
+ccccc\x22 />\x0a</svg>\
+\x0a\
 \x00\x00\x04\xa2\
 \x00\
 \x00\x10dx\x9c\xe5WQo\xdb6\x10~/\xd0\xff\
@@ -618,6 +520,159 @@ roke-miterlimit:\
 ay:none;stroke-o\
 pacity:1\x22 />\x0d\x0a  \
 </g>\x0d\x0a</svg>\x0d\x0a\
+\x00\x00\x09i\
+<\
+?xml version=\x221.\
+0\x22 encoding=\x22UTF\
+-8\x22 standalone=\x22\
+no\x22?>\x0a<!-- Creat\
+ed with Inkscape\
+ (http://www.ink\
+scape.org/) -->\x0a\
+\x0a<svg\x0a   xmlns:d\
+c=\x22http://purl.o\
+rg/dc/elements/1\
+.1/\x22\x0a   xmlns:cc\
+=\x22http://creativ\
+ecommons.org/ns#\
+\x22\x0a   xmlns:rdf=\x22\
+http://www.w3.or\
+g/1999/02/22-rdf\
+-syntax-ns#\x22\x0a   \
+xmlns:svg=\x22http:\
+//www.w3.org/200\
+0/svg\x22\x0a   xmlns=\
+\x22http://www.w3.o\
+rg/2000/svg\x22\x0a   \
+xmlns:sodipodi=\x22\
+http://sodipodi.\
+sourceforge.net/\
+DTD/sodipodi-0.d\
+td\x22\x0a   xmlns:ink\
+scape=\x22http://ww\
+w.inkscape.org/n\
+amespaces/inksca\
+pe\x22\x0a   version=\x22\
+1.1\x22\x0a   id=\x22svg2\
+\x22\x0a   width=\x22192\x22\
+\x0a   height=\x22192\x22\
+\x0a   viewBox=\x220 0\
+ 192 192\x22\x0a   sod\
+ipodi:docname=\x22t\
+ransform.svg\x22\x0a  \
+ inkscape:versio\
+n=\x220.92.4 (5da68\
+9c313, 2019-01-1\
+4)\x22>\x0a  <metadata\
+\x0a     id=\x22metada\
+ta8\x22>\x0a    <rdf:R\
+DF>\x0a      <cc:Wo\
+rk\x0a         rdf:\
+about=\x22\x22>\x0a      \
+  <dc:format>ima\
+ge/svg+xml</dc:f\
+ormat>\x0a        <\
+dc:type\x0a        \
+   rdf:resource=\
+\x22http://purl.org\
+/dc/dcmitype/Sti\
+llImage\x22 />\x0a    \
+    <dc:title />\
+\x0a      </cc:Work\
+>\x0a    </rdf:RDF>\
+\x0a  </metadata>\x0a \
+ <defs\x0a     id=\x22\
+defs6\x22 />\x0a  <sod\
+ipodi:namedview\x0a\
+     pagecolor=\x22\
+#ffffff\x22\x0a     bo\
+rdercolor=\x22#6666\
+66\x22\x0a     bordero\
+pacity=\x221\x22\x0a     \
+objecttolerance=\
+\x2210\x22\x0a     gridto\
+lerance=\x2210\x22\x0a   \
+  guidetolerance\
+=\x2210\x22\x0a     inksc\
+ape:pageopacity=\
+\x220\x22\x0a     inkscap\
+e:pageshadow=\x222\x22\
+\x0a     inkscape:w\
+indow-width=\x22185\
+8\x22\x0a     inkscape\
+:window-height=\x22\
+1057\x22\x0a     id=\x22n\
+amedview4\x22\x0a     \
+showgrid=\x22false\x22\
+\x0a     inkscape:z\
+oom=\x221.2291667\x22\x0a\
+     inkscape:cx\
+=\x22-299.28913\x22\x0a  \
+   inkscape:cy=\x22\
+290.26511\x22\x0a     \
+inkscape:window-\
+x=\x2254\x22\x0a     inks\
+cape:window-y=\x22-\
+8\x22\x0a     inkscape\
+:window-maximize\
+d=\x221\x22\x0a     inksc\
+ape:current-laye\
+r=\x22svg2\x22 />\x0a  <c\
+ircle\x0a     style\
+=\x22fill:none;fill\
+-opacity:1;fill-\
+rule:evenodd;str\
+oke:#999999;stro\
+ke-width:8.59070\
+206;stroke-linec\
+ap:round;stroke-\
+linejoin:round;s\
+troke-miterlimit\
+:4;stroke-dashar\
+ray:none;stroke-\
+dashoffset:0;str\
+oke-opacity:1\x22\x0a \
+    id=\x22path4515\
+\x22\x0a     cx=\x2296.55\
+9441\x22\x0a     cy=\x229\
+6.254112\x22\x0a     r\
+=\x2265.134018\x22 />\x0a\
+  <path\x0a     sty\
+le=\x22fill:#999999\
+;fill-opacity:1;\
+stroke:none;stro\
+ke-width:0.70588\
+231px;stroke-lin\
+ecap:round;strok\
+e-linejoin:round\
+;stroke-opacity:\
+1\x22\x0a     d=\x22M 85.\
+352775,11.154757\
+ 82.214223,52.38\
+7421 122.49388,3\
+4.105774 Z\x22\x0a    \
+ id=\x22path4517\x22\x0a \
+    inkscape:con\
+nector-curvature\
+=\x220\x22 />\x0a  <path\x0a\
+     style=\x22fill\
+:#999999;fill-op\
+acity:1;stroke:n\
+one;stroke-width\
+:0.70588231px;st\
+roke-linecap:rou\
+nd;stroke-linejo\
+in:round;stroke-\
+opacity:1\x22\x0a     \
+d=\x22m 113.89831,1\
+40.41077 -0.5742\
+8,41.34795 -38.4\
+76572,-21.82253 \
+z\x22\x0a     id=\x22path\
+4517-3\x22\x0a     ink\
+scape:connector-\
+curvature=\x220\x22 />\
+\x0a</svg>\x0a\
 \x00\x00\x04\xa8\
 \x00\
 \x00\x10jx\x9c\xe5W\xdfo\xdb6\x10~/\xd0\xff\
@@ -1453,6 +1508,10 @@ qt_resource_name = b"\
 \x09\xa4,\xc7\
 \x00m\
 \x00u\x00l\x00t\x00i\x00p\x00l\x00y\x00.\x00s\x00v\x00g\
+\x00\x0d\
+\x01\xa0\xe8\x87\
+\x00t\
+\x00r\x00a\x00n\x00s\x00f\x00o\x00r\x00m\x00.\x00s\x00v\x00g\
 \x00\x15\
 \x01uN\xa7\
 \x00l\
@@ -1487,27 +1546,29 @@ qt_resource_struct = b"\
 \x00\x00\x00\x00\x00\x00\x00\x00\
 \x00\x00\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x02\
 \x00\x00\x00\x00\x00\x00\x00\x00\
-\x00\x00\x00\x10\x00\x02\x00\x00\x00\x0a\x00\x00\x00\x03\
+\x00\x00\x00\x10\x00\x02\x00\x00\x00\x0b\x00\x00\x00\x03\
 \x00\x00\x00\x00\x00\x00\x00\x00\
-\x00\x00\x00\x98\x00\x01\x00\x00\x00\x01\x00\x00%\xb3\
+\x00\x00\x00\xb8\x00\x01\x00\x00\x00\x01\x00\x00(\xfe\
 \x00\x00\x01o\x85$\xfb\x22\
+\x00\x00\x00\x98\x00\x00\x00\x00\x00\x01\x00\x00\x1f\x91\
+\x00\x00\x01x\xc5\x08\x11f\
 \x00\x00\x00 \x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\
 \x00\x00\x01o\x85$\xfb\x13\
-\x00\x00\x00V\x00\x01\x00\x00\x00\x01\x00\x00\x17\xda\
+\x00\x00\x00V\x00\x01\x00\x00\x00\x01\x00\x00\x11\xb8\
 \x00\x00\x01o\x85$\xfb \
-\x00\x00\x01L\x00\x00\x00\x00\x00\x01\x00\x00K\xf0\
+\x00\x00\x01l\x00\x00\x00\x00\x00\x01\x00\x00O;\
 \x00\x00\x01o\x85$\xfb\x17\
-\x00\x00\x00\xf4\x00\x01\x00\x00\x00\x01\x00\x005\x9a\
+\x00\x00\x01\x14\x00\x01\x00\x00\x00\x01\x00\x008\xe5\
 \x00\x00\x01o\x85$\xfb\x0f\
-\x00\x00\x016\x00\x00\x00\x00\x00\x01\x00\x00B\xca\
+\x00\x00\x01V\x00\x00\x00\x00\x00\x01\x00\x00F\x15\
 \x00\x00\x01o\x85$\xfb\x15\
-\x00\x00\x00z\x00\x00\x00\x00\x00\x01\x00\x00\x1c\x80\
+\x00\x00\x00z\x00\x00\x00\x00\x00\x01\x00\x00\x16^\
 \x00\x00\x01o\x85$\xfb$\
 \x00\x00\x00@\x00\x00\x00\x00\x00\x01\x00\x00\x0aB\
-\x00\x00\x01o\x85$\xfb\x1c\
-\x00\x00\x01\x1c\x00\x00\x00\x00\x00\x01\x00\x00:A\
+\x00\x00\x01x\xc5\x0e\xc6\xf4\
+\x00\x00\x01<\x00\x00\x00\x00\x00\x01\x00\x00=\x8c\
 \x00\x00\x01o\x85$\xfb\x19\
-\x00\x00\x00\xc8\x00\x00\x00\x00\x00\x01\x00\x00*_\
+\x00\x00\x00\xe8\x00\x00\x00\x00\x00\x01\x00\x00-\xaa\
 \x00\x00\x01o\x85$\xfb\x1e\
 "
 

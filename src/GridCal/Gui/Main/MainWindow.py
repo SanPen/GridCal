@@ -3,16 +3,13 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.0
+## Created by: Qt User Interface Compiler version 5.15.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import (QCoreApplication, QDate, QDateTime, QMetaObject,
-    QObject, QPoint, QRect, QSize, QTime, QUrl, Qt)
-from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
-    QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter,
-    QPixmap, QRadialGradient)
+from PySide2.QtCore import *
+from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from .icons_rc import *
@@ -3032,6 +3029,7 @@ class Ui_mainWindow(object):
         self.menuSimulations.addAction(self.actionSet_OPF_generation_to_profiles)
         self.menuSimulations.addSeparator()
         self.menuSimulations.addAction(self.actionPower_flow_Stochastic)
+        self.menuSimulations.addAction(self.actionClustering_time_series)
         self.menuSimulations.addSeparator()
         self.menuSimulations.addAction(self.actionPTDF)
         self.menuSimulations.addAction(self.actionPTDF_time_series)
@@ -3043,7 +3041,6 @@ class Ui_mainWindow(object):
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionPower_flow)
         self.toolBar.addAction(self.actionPower_Flow_Time_series)
-        self.toolBar.addAction(self.actionClustering_time_series)
         self.toolBar.addAction(self.actionShort_Circuit)
         self.toolBar.addAction(self.actionVoltage_stability)
         self.toolBar.addAction(self.actionSigma_analysis)
@@ -3053,6 +3050,7 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionOpf_to_Power_flow)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionPower_flow_Stochastic)
+        self.toolBar.addAction(self.actionClustering_time_series)
         self.toolBar.addAction(self.actionBlackout_cascade)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionPTDF)
@@ -3064,15 +3062,12 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionSmaller_nodes)
         self.toolBar.addAction(self.actionCenter_view)
         self.toolBar.addAction(self.actionAutoatic_layout)
-        self.toolBar.addAction(self.actionFind_node_groups)
         self.toolBar.addAction(self.actionTry_to_fix_buses_location)
         self.toolBar.addAction(self.actionDelete_selected)
         self.toolBar.addSeparator()
-        self.toolBar.addAction(self.actionDetect_transformers)
-        self.toolBar.addAction(self.actionAuto_rate_branches)
         self.toolBar.addAction(self.actionStorage_location_suggestion)
-        self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionLaunch_data_analysis_tool)
+        self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionShow_color_controls)
 
         self.retranslateUi(mainWindow)
