@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import os
+import collections
 import h5py
 from h5py._hl.dataset import Dataset
 from h5py._hl.group import Group
@@ -36,23 +37,35 @@ def save_h5(circuit: MultiCircuit, file_path):
 
     store = pd.HDFStore(file_path)
 
-    for key in dfs.keys():
-        store[key] = dfs[key]
+    for key, df in dfs.items():
+        duplicates = [item for item, count in collections.Counter(df.columns.values).items() if count > 1]
+
+        if len(duplicates):
+            print('Duplicates on', key)
+            print(duplicates)
+
+        store[key] = df
+
+    store.close()
 
     return logger
 
 
 def open_h5(file_path):
+    """
 
-    circuit = MultiCircuit()
-
+    :param file_path:
+    :return:
+    """
     store = pd.HDFStore(file_path)
 
     dfs = dict()
     for group in store.root:
         dfs[group._v_name] = pd.read_hdf(store, group._v_pathname)
 
-    return dfs
+    circuit = data_frames_to_circuit(dfs)
+
+    return circuit
 
 
 def save_dict_to_hdf5(dic, filename):
@@ -113,10 +126,14 @@ if __name__ == '__main__':
 
     from GridCal.Engine.IO.file_handler import *
 
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
+    fname = '/home/santi/Documentos/REE/Debug/Propuesta_2026_v16_con MAR+operabilidad/Propuesta_2026_v16_con MAR+operabilidad.gridcal'
 
+    print('First opening...')
     circuit = FileOpen(fname).open()
 
-    save_h5(circuit, file_path='1354 pegase.h5')
+    print('Saving...')
+    save_h5(circuit, file_path='test.h5')
 
-    circuit2 = open_h5('1354 pegase.h5')
+    print('Reopening')
+    circuit2 = open_h5('test.h5')

@@ -68,11 +68,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.28125"
-     inkscape:cx="-492.16362"
-     inkscape:cy="557.84422"
+     inkscape:zoom="0.5625"
+     inkscape:cx="415.37375"
+     inkscape:cy="273.07322"
      inkscape:document-units="px"
-     inkscape:current-layer="g4368"
+     inkscape:current-layer="g863"
      showgrid="false"
      units="px"
      inkscape:window-width="1848"
@@ -128,7 +128,7 @@
       <g
          style="stroke-linecap:butt;stroke-linejoin:round"
          id="g4193-4"
-         transform="matrix(0.69031297,0,0,0.69031297,299.11919,198.12772)">
+         transform="matrix(0.69031297,0,0,0.69031297,220.89744,52.698197)">
         <text
            id="text828-1-7-5"
            y="126.89904"
@@ -209,13 +209,13 @@
       </g>
       <text
          id="text828-1-7-23-8-6-7"
-         y="203.55881"
-         x="386.86469"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.15640068px;line-height:1.25;font-family:Sawasdee;-inkscape-font-specification:Sawasdee;letter-spacing:0px;word-spacing:0px;fill:#3a0ca3;fill-opacity:1;stroke:none;stroke-width:0.55390996;stroke-linecap:butt;stroke-linejoin:round"
+         y="148.26411"
+         x="314.58661"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.86372566px;line-height:1.25;font-family:Sawasdee;-inkscape-font-specification:Sawasdee;letter-spacing:0px;word-spacing:0px;fill:#3a0ca3;fill-opacity:1;stroke:none;stroke-width:0.34659308;stroke-linecap:butt;stroke-linejoin:round"
          xml:space="preserve"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'URW Gothic L';-inkscape-font-specification:'URW Gothic L';fill:#3a0ca3;fill-opacity:1;stroke-width:0.55390996;stroke-linecap:butt;stroke-linejoin:round"
-           y="203.55881"
-           x="386.86469"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'URW Gothic L';-inkscape-font-specification:'URW Gothic L';fill:#3a0ca3;fill-opacity:1;stroke-width:0.34659308;stroke-linecap:butt;stroke-linejoin:round"
+           y="148.26411"
+           x="314.58661"
            id="tspan826-8-9-7-97-56-4"
            sodipodi:role="line">4</tspan></text>
     </g>
