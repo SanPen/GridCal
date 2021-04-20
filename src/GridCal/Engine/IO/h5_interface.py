@@ -15,116 +15,77 @@
 import os
 import collections
 import h5py
-from h5py._hl.dataset import Dataset
-from h5py._hl.group import Group
 import pandas as pd
-import numpy as np
-
+from GridCal.Engine.basic_structures import Logger
+from GridCal.Engine.IO.pack_unpack import create_data_frames, data_frames_to_circuit
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.IO.excel_interface import create_data_frames, interpret_excel_v3
 
 
-def save_h5(circuit: MultiCircuit, file_path):
+def save_h5(circuit: MultiCircuit, file_path, compression_opts=5, text_func=None, prog_func=None):
     """
     Save the circuit information in excel format
     :param circuit: MultiCircuit instance
     :param file_path: path to the excel file
+    :param compression_opts: compression [0, 9]
+    :param text_func:
+    :param prog_func:
     :return: logger with information
     """
     logger = Logger()
 
     dfs = create_data_frames(circuit=circuit)
 
-    store = pd.HDFStore(file_path)
-
+    n = len(dfs)
+    i = 0
     for key, df in dfs.items():
-        duplicates = [item for item, count in collections.Counter(df.columns.values).items() if count > 1]
 
-        if len(duplicates):
-            print('Duplicates on', key)
-            print(duplicates)
+        if text_func:
+            text_func('Saving ' + key + '...')
 
-        store[key] = df
+        df.to_hdf(file_path, key=key, complevel=compression_opts, complib='zlib')
 
-    store.close()
+        if prog_func:
+            prog_func((i+1) / n * 100)
+
+        i += 1
 
     return logger
 
 
-def open_h5(file_path):
+def open_h5(file_path, text_func=None, prog_func=None):
     """
 
     :param file_path:
+    :param text_func:
+    :param prog_func:
     :return:
     """
     store = pd.HDFStore(file_path)
 
     dfs = dict()
+    n = len(list(store.root))
+    i = 0
     for group in store.root:
+
+        if text_func:
+            text_func('Loading ' + group._v_name + '...')
+
         dfs[group._v_name] = pd.read_hdf(store, group._v_pathname)
+
+        if prog_func:
+            prog_func((i+1) / n * 100)
+        i += 1
+
+    store.close()
 
     circuit = data_frames_to_circuit(dfs)
 
     return circuit
 
 
-def save_dict_to_hdf5(dic, filename):
-    """
-
-    :param dic:
-    :param filename:
-    :return:
-    """
-    with h5py.File(filename, 'w') as h5file:
-        recursively_save_dict_contents_to_group(h5file, '/', dic)
-
-
-def recursively_save_dict_contents_to_group(h5file, path, dic):
-    """
-
-    :param h5file:
-    :param path:
-    :param dic:
-    :return:
-    """
-    for key, item in dic.items():
-        if isinstance(item, (np.ndarray, np.int64, np.float64, str, bytes)):
-            h5file[path + key] = item
-        elif isinstance(item, dict):
-            recursively_save_dict_contents_to_group(h5file, path + key + '/', item)
-        else:
-            raise ValueError('Cannot save %s type'%type(item))
-
-
-def load_dict_from_hdf5(filename):
-    """
-
-    :param filename:
-    :return:
-    """
-    with h5py.File(filename, 'r') as h5file:
-        return recursively_load_dict_contents_from_group(h5file, '/')
-
-
-def recursively_load_dict_contents_from_group(h5file, path):
-    """
-
-    :param h5file:
-    :param path:
-    :return:
-    """
-    ans = {}
-    for key, item in h5file[path].items():
-        if isinstance(item, Dataset):
-            ans[key] = item.value
-        elif isinstance(item, Group):
-            ans[key] = recursively_load_dict_contents_from_group(h5file, path + key + '/')
-    return ans
-
-
 if __name__ == '__main__':
 
-    from GridCal.Engine.IO.file_handler import *
+    from GridCal.Engine.IO.file_handler import FileOpen
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
     fname = '/home/santi/Documentos/REE/Debug/Propuesta_2026_v16_con MAR+operabilidad/Propuesta_2026_v16_con MAR+operabilidad.gridcal'
@@ -133,7 +94,7 @@ if __name__ == '__main__':
     circuit = FileOpen(fname).open()
 
     print('Saving...')
-    save_h5(circuit, file_path='test.h5')
+    save_h5(circuit, file_path='test.gch5')
 
     print('Reopening')
-    circuit2 = open_h5('test.h5')
+    circuit2 = open_h5('test.gch5')

@@ -150,7 +150,7 @@ class MainGUI(QMainWindow):
         mdl = get_list_model(lst)
         self.ui.taps_control_mode_comboBox.setModel(mdl)
 
-        self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite',
+        self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
                                     '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.zip', '.dpx']
 
         # ptdf grouping modes
@@ -1096,7 +1096,7 @@ class MainGUI(QMainWindow):
         Open file from a Qt thread to remain responsive
         """
 
-        files_types = "Formats (*.gridcal *.xlsx *.xls *.sqlite *.dgs *.m *.raw *.RAW *.json *.xml *.zip *.dpx)"
+        files_types = "Formats (*.gridcal *.gch5 *.xlsx *.xls *.sqlite *.dgs *.m *.raw *.RAW *.json *.xml *.zip *.dpx)"
         # files_types = ''
         # call dialog to select the file
 
@@ -1287,7 +1287,7 @@ class MainGUI(QMainWindow):
         Save the circuit case to a file
         """
         # declare the allowed file types
-        files_types = "GridCal zip (*.gridcal);;Excel (*.xlsx);;CIM (*.xml);;JSON (*.json);;Sqlite (*.sqlite)"
+        files_types = "GridCal zip (*.gridcal);;GridCal HDF5 (*.gch5);;Excel (*.xlsx);;CIM (*.xml);;JSON (*.json);;Sqlite (*.sqlite)"
 
         # call dialog to select the file
         if self.project_directory is None:
@@ -1320,6 +1320,7 @@ class MainGUI(QMainWindow):
                 extension['CIM (*.xml)'] = '.xml'
                 extension['JSON (*.json)'] = '.json'
                 extension['GridCal zip (*.gridcal)'] = '.gridcal'
+                extension['GridCal HDF5 (*.gch5)'] = '.gch5'
                 extension['Sqlite (*.sqlite)'] = '.sqlite'
 
                 if file_extension == '':

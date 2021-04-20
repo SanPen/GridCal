@@ -31,6 +31,7 @@ from GridCal.Engine.IO.raw_parser import PSSeParser
 from GridCal.Engine.IO.cim.cim_parser import CIMImport
 from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, get_frames_from_zip
 from GridCal.Engine.IO.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
+from GridCal.Engine.IO.h5_interface import save_h5, open_h5
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 from PySide2.QtCore import QThread, Signal
@@ -128,6 +129,9 @@ class FileOpen:
                 elif file_extension.lower() == '.dgs':
                     self.circuit = dgs_to_circuit(self.file_name)
 
+                elif file_extension.lower() == '.gch5':
+                    self.circuit = open_h5(self.file_name, text_func=text_func, prog_func=progress_func)
+
                 elif file_extension.lower() == '.m':
                     self.circuit, log = parse_matpower_file(self.file_name)
                     self.logger += log
@@ -222,6 +226,9 @@ class FileSave:
         elif self.file_name.endswith('.xml'):
             logger = self.save_cim()
 
+        elif self.file_name.endswith('.gch5'):
+            logger = self.save_h5()
+
         else:
             logger = Logger()
             logger.add_error('File path extension not understood', self.file_name)
@@ -291,6 +298,18 @@ class FileSave:
         cim.save(file_name=self.file_name)
 
         return cim.logger
+
+    def save_h5(self):
+        """
+        Save the circuit information in CIM format
+        :return: logger with information
+        """
+
+        logger = save_h5(self.circuit, self.file_name,
+                         text_func=self.text_func,
+                         prog_func=self.progress_func)
+
+        return logger
 
 
 class FileOpenThread(QThread):

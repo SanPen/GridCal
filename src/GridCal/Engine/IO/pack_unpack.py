@@ -95,7 +95,7 @@ def create_data_frames(circuit: MultiCircuit):
     obj.append(['UserName', str(circuit.user_name)])
     obj.append(['program', 'GridCal'])
 
-    dfs['config'] = pd.DataFrame(data=obj, columns=['Property', 'Value'])
+    dfs['config'] = pd.DataFrame(data=obj, columns=['Property', 'Value'], dtype=str)
 
     # get the master time profile
     T = circuit.time_profile
@@ -103,16 +103,16 @@ def create_data_frames(circuit: MultiCircuit):
     ########################################################################################################
     # retrieve buses information that is necessary
     ########################################################################################################
-    names_count = dict()
+    # names_count = dict()
     if len(circuit.buses) > 0:
         for elm in circuit.buses:
 
             # check name: if the name is repeated, change it so that it is not
-            if elm.name in names_count.keys():
-                names_count[elm.name] += 1
-                elm.name = elm.name + '_' + str(names_count[elm.name])
-            else:
-                names_count[elm.name] = 1
+            # if elm.name in names_count.keys():
+            #     names_count[elm.name] += 1
+            #     elm.name = elm.name + '_' + str(names_count[elm.name])
+            # else:
+            #     names_count[elm.name] = 1
 
             elm.ensure_area_objects(circuit)
             elm.ensure_profiles_exist(T)
@@ -139,14 +139,14 @@ def create_data_frames(circuit: MultiCircuit):
 
         obj = list()
         profiles = dict()
-        object_names = list()
+        object_idtags = list()
         if len(lists_of_objects) > 0:
 
             for k, elm in enumerate(lists_of_objects):
 
                 # get the object normal information
                 obj.append(elm.get_save_data())
-                object_names.append(elm.name)
+                object_idtags.append(elm.idtag)
 
                 if T is not None:
                     nt = len(T)
@@ -177,7 +177,7 @@ def create_data_frames(circuit: MultiCircuit):
 
         # create the profiles' DataFrames
         for prop, data in profiles.items():
-            dfs[object_type_name + '_' + prop] = pd.DataFrame(data=data, columns=object_names, index=T)
+            dfs[object_type_name + '_' + prop] = pd.DataFrame(data=data, columns=object_idtags, index=T)
 
     # towers and wires -------------------------------------------------------------------------------------------------
     # because each tower contains a reference to a number of wires, these relations need to be stored as well

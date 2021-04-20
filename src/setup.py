@@ -113,7 +113,9 @@ dependencies = ['setuptools>=41.0.1',
                 "h5py>=2.9.0",
                 "numba>=0.46",  # to compile routines natively
                 "folium",  # to render web maps
-                'pyproj']
+                'pyproj',
+                'tables'  # this is for h5 compatibility
+                ]
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
