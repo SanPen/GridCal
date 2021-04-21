@@ -41,6 +41,7 @@ from GridCal.Gui.GridEditorWidget.messages import *
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
+from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.update import check_version, get_upgrade_command
 
 # Engine imports
@@ -291,6 +292,7 @@ class MainGUI(QMainWindow):
         self.profile_input_dialogue = None
         self.stuff_running_now = list()
         self.object_select_window: ObjectSelectWindow = None
+        self.coordinates_window: CoordinatesInputGUI = None
 
         self.file_name = ''
 
@@ -334,7 +336,7 @@ class MainGUI(QMainWindow):
 
         self.ui.actionShort_Circuit.triggered.connect(self.run_short_circuit)
 
-        self.ui.actionVoltage_stability.triggered.connect(self.run_voltage_stability)
+        self.ui.actionVoltage_stability.triggered.connect(self.run_continuation_power_flow)
 
         self.ui.actionPower_Flow_Time_series.triggered.connect(self.run_time_series)
 
@@ -399,6 +401,8 @@ class MainGUI(QMainWindow):
         self.ui.actionFind_node_groups.triggered.connect(self.run_find_node_groups)
 
         self.ui.actiongrid_Generator.triggered.connect(self.grid_generator)
+
+        self.ui.actionImport_bus_coordinates.triggered.connect(self.import_bus_coordinates)
 
         self.ui.actionSetSelectedBusCountry.triggered.connect(lambda: self.set_selected_bus_property('country'))
         self.ui.actionSetSelectedBusArea.triggered.connect(lambda: self.set_selected_bus_property('area'))
@@ -2680,7 +2684,7 @@ class MainGUI(QMainWindow):
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
 
-    def get_selected_voltage_stability(self):
+    def get_selected_continuation_power_flow_options(self):
         """
         Gather the voltage stability options
         :return:
@@ -2702,7 +2706,7 @@ class MainGUI(QMainWindow):
             idx = np.zeros(0, dtype=int)  # for completeness
         else:
             # pick the selected nodes
-            idx = np.array([x[0] for x in sel_buses])
+            idx = np.array([k for k, bus in sel_buses])
             alpha_vec[idx] = alpha_vec[idx] * alpha
 
         use_profiles = self.ui.start_vs_from_selected_radioButton.isChecked()
@@ -2711,7 +2715,7 @@ class MainGUI(QMainWindow):
 
         return use_alpha, alpha_vec, use_profiles, start_idx, end_idx, idx
 
-    def run_voltage_stability(self):
+    def run_continuation_power_flow(self):
         """
         Run voltage stability (voltage collapse) in a separated thread
         :return:
@@ -2725,7 +2729,7 @@ class MainGUI(QMainWindow):
 
                     # get the selected UI options
                     use_alpha, alpha, use_profiles, \
-                    start_idx, end_idx, sel_bus_idx = self.get_selected_voltage_stability()
+                    start_idx, end_idx, sel_bus_idx = self.get_selected_continuation_power_flow_options()
 
                     if len(sel_bus_idx) > 0:
                         if sum([self.circuit.buses[i].get_device_number() for i in sel_bus_idx]) == 0:
@@ -2786,7 +2790,7 @@ class MainGUI(QMainWindow):
                         # make connections
                         self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
                         self.voltage_stability.progress_text.connect(self.ui.progress_label.setText)
-                        self.voltage_stability.done_signal.connect(self.post_voltage_stability)
+                        self.voltage_stability.done_signal.connect(self.post_continuation_power_flow)
 
                         # thread start
                         self.voltage_stability.start()
@@ -2819,7 +2823,8 @@ class MainGUI(QMainWindow):
 
                             # make connections
                             self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
-                            self.voltage_stability.done_signal.connect(self.post_voltage_stability)
+                            self.voltage_stability.progress_text.connect(self.ui.progress_label.setText)
+                            self.voltage_stability.done_signal.connect(self.post_continuation_power_flow)
 
                             # thread start
                             self.voltage_stability.start()
@@ -2833,7 +2838,7 @@ class MainGUI(QMainWindow):
         else:
             pass
 
-    def post_voltage_stability(self):
+    def post_continuation_power_flow(self):
         """
         Actions performed after the voltage stability. Launched by the thread after its execution
         :return:
@@ -3632,6 +3637,16 @@ class MainGUI(QMainWindow):
 
             # clear the results
             self.clear_results()
+
+    def import_bus_coordinates(self):
+        """
+
+        :return:
+        """
+        self.coordinates_window = CoordinatesInputGUI(self, self.circuit.buses)
+        self.coordinates_window.exec_()
+
+        self.draw_schematic()
 
     def set_selected_bus_property(self, prop):
         """

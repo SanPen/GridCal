@@ -10,6 +10,14 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+Version 4.1.0
+^^^^^^^^^^^^^^^
+
+- Added coordinate input dialogue
+
+- Added ability to set a branch rating profile from the snapshot, via a context menu option.
+
+
 Version 4.0.2
 ^^^^^^^^^^^^^^^
 
