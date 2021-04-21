@@ -20,8 +20,8 @@ from matplotlib import pyplot as plt
 
 from PySide2.QtCore import QThread, Signal
 
-from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import power_flow_post_process, PowerFlowOptions
+from GridCal.Engine.Simulations.results_template import ResultsTemplate
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, CpfStopAt, CpfParametrization, CpfNumericResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -95,7 +95,7 @@ class ContinuationPowerFlowInput:
         self.base_overload_number = base_overload_number
 
 
-class ContinuationPowerFlowResults:
+class ContinuationPowerFlowResults(ResultsTemplate):
 
     def __init__(self, nval, nbus, nbr, bus_names, branch_names, bus_types):
         """
@@ -104,8 +104,31 @@ class ContinuationPowerFlowResults:
         :param nbr: number of branches
         :param bus_names: names of the buses
         """
-
-        self.name = 'Voltage collapse'
+        ResultsTemplate.__init__(self,
+                                 name='Continuation Power Flow',
+                                 available_results=[ResultTypes.BusVoltage,
+                                                    ResultTypes.BusActivePower,
+                                                    ResultTypes.BusReactivePower,
+                                                    ResultTypes.BranchActivePowerFrom,
+                                                    ResultTypes.BranchReactivePowerFrom,
+                                                    ResultTypes.BranchActivePowerTo,
+                                                    ResultTypes.BranchReactivePowerTo,
+                                                    ResultTypes.BranchActiveLosses,
+                                                    ResultTypes.BranchReactiveLosses,
+                                                    ResultTypes.BranchLoading],
+                                 data_variables=['bus_names',
+                                                 'branch_names',
+                                                 'voltages',
+                                                 'lambdas',
+                                                 'error',
+                                                 'converged',
+                                                 'Sf',
+                                                 'St',
+                                                 'loading',
+                                                 'losses',
+                                                 'Sbus',
+                                                 'bus_types']
+                                 )
 
         self.bus_names = bus_names
 
@@ -130,17 +153,6 @@ class ContinuationPowerFlowResults:
 
         self.bus_types = bus_types
 
-        self.available_results = [ResultTypes.BusVoltage,
-                                  ResultTypes.BusActivePower,
-                                  ResultTypes.BusReactivePower,
-                                  ResultTypes.BranchActivePowerFrom,
-                                  ResultTypes.BranchReactivePowerFrom,
-                                  ResultTypes.BranchActivePowerTo,
-                                  ResultTypes.BranchReactivePowerTo,
-                                  ResultTypes.BranchActiveLosses,
-                                  ResultTypes.BranchReactiveLosses,
-                                  ResultTypes.BranchLoading]
-
     def get_results_dict(self):
         """
         Returns a dictionary with the results sorted in a dictionary
@@ -151,14 +163,6 @@ class ContinuationPowerFlowResults:
                 'Va': np.angle(self.voltages).tolist(),
                 'error': self.error.tolist()}
         return data
-
-    def save(self, fname):
-        """
-        Export as json file
-        """
-        with open(fname, "wb") as output_file:
-            json_str = json.dumps(self.get_results_dict())
-            output_file.write(json_str)
 
     def apply_from_island(self, results: CpfNumericResults, bus_original_idx, branch_original_idx):
         """
@@ -266,7 +270,7 @@ class ContinuationPowerFlowResults:
 
         elif result_type == ResultTypes.BranchLoading:
             labels = self.branch_names
-            y = np.abs(self.loading) * 100.0
+            y = self.loading * 100.0
             x = self.lambdas
             title = 'Branch loading'
             y_label = '%'

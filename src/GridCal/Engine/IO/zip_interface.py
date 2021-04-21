@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from io import StringIO, TextIOWrapper
+from io import StringIO, TextIOWrapper, BytesIO
 import os
 import chardet
 from random import randint, seed
@@ -25,7 +25,7 @@ from GridCal.Engine.IO.generic_io_functions import parse_config_df
 
 
 def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip",
-                            text_func=None, progress_func=None):
+                            text_func=None, progress_func=None, use_pkl=False):
     """
     Save a list of DataFrames to a zip file without saving to disk the csv files
     :param dfs: dictionary of pandas dataFrames {name: DataFrame}
@@ -43,27 +43,59 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
         i = 0
         for name, df in dfs.items():
 
-            # compose the csv file name
-            filename = name + ".csv"
-
             if text_func is not None:
                 text_func('Flushing ' + name + ' to ' + filename_zip + '...')
 
             if progress_func is not None:
                 progress_func((i + 1) / n * 100)
 
-            # open a string buffer
-            with StringIO() as buffer:
+            if name.endswith('_prof'):
 
-                # save the DataFrame to the buffer
-                df.to_csv(buffer, index=False)
+                # compose the csv file name
+                filename = name + ".pkl"
 
-                # save the buffer to the zip file
-                myzip.writestr(filename, buffer.getvalue())
+                # open a string buffer
+                with BytesIO() as buffer:
+                    # save the DataFrame to the buffer
+                    df.to_pickle(buffer)
+
+                    # save the buffer to the zip file
+                    myzip.writestr(filename, buffer.getvalue())
+            else:
+                # compose the csv file name
+                filename = name + ".csv"
+
+                # open a string buffer
+                with StringIO() as buffer:
+
+                    # save the DataFrame to the buffer
+                    df.to_csv(buffer, index=False)
+
+                    # save the buffer to the zip file
+                    myzip.writestr(filename, buffer.getvalue())
 
             i += 1
 
     print('All DataFrames flushed to zip!')
+
+
+def read_data_frame_from_zip(file_pointer, extension, index_col=None):
+    """
+    read DataFrame
+    :param file_pointer: Pointer to the file within the zip file
+    :param extension: Extension, just to determine the reader method
+    :param index_col: Index col (only for config file)
+    :return: DataFrame
+    """
+    try:
+        if extension == '.csv':
+            return pd.read_csv(file_pointer, index_col=index_col)
+        elif extension == '.pkl':
+            return pd.read_pickle(file_pointer)
+    except EOFError:
+        return None
+    except zipfile.BadZipFile:
+        return None
 
 
 def get_frames_from_zip(file_name_zip, text_func=None, progress_func=None):
@@ -98,29 +130,18 @@ def get_frames_from_zip(file_name_zip, text_func=None, progress_func=None):
         if progress_func is not None:
             progress_func((i + 1) / n * 100)
 
-        if extension == '.csv':
+        # create a buffer to read the file
+        file_pointer = zip_file_pointer.open(file_name)
 
-            # create a buffer to read the file
-            file_pointer = zip_file_pointer.open(file_name)
+        if name.lower() == "config":
+            df = read_data_frame_from_zip(file_pointer, extension, index_col=0)
+            data = parse_config_df(df, data)
+        else:
+            # make pandas read the file
+            df = read_data_frame_from_zip(file_pointer, extension)
 
-            if name.lower() == "config":
-                try:
-                    df = pd.read_csv(file_pointer, index_col=0)
-                    data = parse_config_df(df, data)
-                except EOFError:
-                    return None
-                except zipfile.BadZipFile:
-                    return None
-            else:
-                # make pandas read the file
-                try:
-                    df = pd.read_csv(file_pointer)
-                except EOFError:
-                    return None
-                except zipfile.BadZipFile:
-                    return None
-
-            # append the DataFrame to the list
+        # append the DataFrame to the list
+        if df is not None:
             data[name] = df
 
     return data

@@ -153,7 +153,7 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
             list_of_objects = list()
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        self.setWindowTitle('Profiles import dialogue')
+        self.setWindowTitle('Coordinates import dialogue')
         self.setAcceptDrops(True)
 
         self.project_directory = None
@@ -360,13 +360,6 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
 
                 else:
                     return
-
-            # try to format the data
-            try:
-                self.original_data_frame = self.original_data_frame.astype(float)
-            except:
-                self.msg('The format of the data is not recognized. Only int or float values are allowed')
-                return
 
             # set the profile names list
             self.set_combo_boxes()

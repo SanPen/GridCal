@@ -113,10 +113,12 @@ dependencies = ['setuptools>=41.0.1',
                 "h5py>=2.9.0",
                 "numba>=0.46",  # to compile routines natively
                 "folium",  # to render web maps
-                'pyproj',
-                'tables'  # this is for h5 compatibility
+                'pyproj'
                 ]
 
+extras_require = {
+        'gch5 files':  ["tables"]  # this is for h5 compatibility
+    }
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
 
@@ -251,10 +253,7 @@ setup(
     #
     # Similar to `install_requires` above, these must be valid existing
     # projects.
-    # extras_require={  # Optional
-    #     'dev': ['check-manifest'],
-    #     'test': ['coverage'],
-    # },
+    extras_require=extras_require,
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.

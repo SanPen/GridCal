@@ -1218,6 +1218,7 @@ class MainGUI(QMainWindow):
 
                 # update the drop down menus that display dates
                 self.update_date_dependent_combos()
+                self.update_area_combos()
 
                 # clear the results
                 self.clear_results()
@@ -1277,6 +1278,12 @@ class MainGUI(QMainWindow):
         self.ui.profile_time_selection_comboBox.setModel(mdl)
         self.ui.vs_departure_comboBox.setModel(mdl)
         self.ui.vs_target_comboBox.setModel(mdl)
+
+    def update_area_combos(self):
+
+        mdl = get_list_model([str(elm) for elm in self.circuit.areas])
+        self.ui.areaFromComboBox.setModel(mdl)
+        self.ui.areaToComboBox.setModel(mdl)
 
     def save_file_as(self):
         """
@@ -1867,6 +1874,7 @@ class MainGUI(QMainWindow):
                 self.ui.profiles_tableView.setModel(None)
                 self.set_up_profile_sliders()
                 self.update_date_dependent_combos()
+                self.update_area_combos()
             else:
                 pass
         else:
@@ -2695,19 +2703,36 @@ class MainGUI(QMainWindow):
         alpha = self.ui.alpha_doubleSpinBox.value()
         n = len(self.circuit.buses)
 
-        sel_buses = self.get_selected_buses()
-
         # vector that multiplies the target power: The continuation direction
         alpha_vec = np.ones(n)
 
-        if len(sel_buses) == 0:
-            # all nodes
-            alpha_vec *= alpha
-            idx = np.zeros(0, dtype=int)  # for completeness
+        if self.ui.atcRadioButton.isChecked():
+            use_alpha = True
+            # available transfer capacity inter areas
+            area_from = self.circuit.areas[self.ui.areaFromComboBox.currentIndex()]
+            area_to = self.circuit.areas[self.ui.areaToComboBox.currentIndex()]
+
+            if area_from != area_to:
+                lst_from = self.get_area_buses(area_from)
+                lst_to = self.get_area_buses(area_to)
+                idx_from = [i for i, bus in lst_from]
+                idx_to = [i for i, bus in lst_to]
+
+                alpha_vec[idx_from] *= 2
+                alpha_vec[idx_to] *= -2
+                idx = np.zeros(0, dtype=int)  # for completeness
+            else:
+                idx = np.zeros(0, dtype=int)  # for completeness
         else:
-            # pick the selected nodes
-            idx = np.array([k for k, bus in sel_buses])
-            alpha_vec[idx] = alpha_vec[idx] * alpha
+            sel_buses = self.get_selected_buses()
+            if len(sel_buses) == 0:
+                # all nodes
+                alpha_vec *= alpha
+                idx = np.zeros(0, dtype=int)  # for completeness
+            else:
+                # pick the selected nodes
+                idx = np.array([k for k, bus in sel_buses])
+                alpha_vec[idx] = alpha_vec[idx] * alpha
 
         use_profiles = self.ui.start_vs_from_selected_radioButton.isChecked()
         start_idx = self.ui.vs_departure_comboBox.currentIndex()
@@ -2726,6 +2751,15 @@ class MainGUI(QMainWindow):
             if self.power_flow is not None:
 
                 if restpes.SimulationTypes.VoltageCollapse_run not in self.stuff_running_now:
+
+                    if self.ui.atcRadioButton.isChecked():
+                        # available transfer capacity inter areas
+                        area_from = self.circuit.areas[self.ui.areaFromComboBox.currentIndex()]
+                        area_to = self.circuit.areas[self.ui.areaToComboBox.currentIndex()]
+
+                        if area_from == area_to:
+                            error_msg('Cannot analyze transfer capacity from and to the same area!')
+                            return
 
                     # get the selected UI options
                     use_alpha, alpha, use_profiles, \
@@ -3634,6 +3668,7 @@ class MainGUI(QMainWindow):
 
             # update the drop down menus that display dates
             self.update_date_dependent_combos()
+            self.update_area_combos()
 
             # clear the results
             self.clear_results()
@@ -5088,15 +5123,19 @@ class MainGUI(QMainWindow):
 
             if elm_type == DeviceType.SubstationDevice.value:
                 self.circuit.add_substation(Substation('Default'))
+                self.update_area_combos()
 
             elif elm_type == DeviceType.ZoneDevice.value:
                 self.circuit.add_zone(Zone('Default'))
+                self.update_area_combos()
 
             elif elm_type == DeviceType.AreaDevice.value:
                 self.circuit.add_area(Area('Default'))
+                self.update_area_combos()
 
             elif elm_type == DeviceType.CountryDevice.value:
                 self.circuit.add_country(Country('Default'))
+                self.update_area_combos()
 
             elif elm_type == DeviceType.BusDevice.value:
                 self.circuit.add_bus(Bus(name='Bus ' + str(len(self.circuit.buses) + 1),
@@ -5261,6 +5300,28 @@ class MainGUI(QMainWindow):
             if bus.graphic_obj is not None:
                 if bus.graphic_obj.isSelected():
                     lst.append((k, bus))
+        return lst
+
+    def get_area_buses(self, area: Area) -> List[Tuple[int, Bus]]:
+        """
+        Get the selected buses
+        :return:
+        """
+        lst: List[Tuple[int, Bus]] = list()
+        for k, bus in enumerate(self.circuit.buses):
+            if bus.area == area:
+                lst.append((k, bus))
+        return lst
+
+    def get_zone_buses(self, zone: Zone) -> List[Tuple[int, Bus]]:
+        """
+        Get the selected buses
+        :return:
+        """
+        lst: List[Tuple[int, Bus]] = list()
+        for k, bus in enumerate(self.circuit.buses):
+            if bus.zone == zone:
+                lst.append((k, bus))
         return lst
 
     def delete_selected_from_the_schematic(self):
