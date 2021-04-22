@@ -19,17 +19,13 @@ import numpy as np
 import time
 import multiprocessing
 from sklearn.cluster import KMeans
-from PySide2.QtCore import QThread, QThreadPool, Signal
+from sklearn.cluster import SpectralClustering
 
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, power_flow_worker_args
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeries
-from GridCal.Engine.Simulations.results_model import ResultsModel
 
 
 def kmeans_approximate_sampling(X, n_points=10):
@@ -73,6 +69,58 @@ def kmeans_approximate_sampling(X, n_points=10):
         closest_prob[i] = prob
 
     return closest_idx, closest_prob
+
+
+def spectral_approximate_sampling(X, n_points=10):
+    """
+    K-Means clustering, corrected to the closest points
+    :param X: injections matrix (time, bus)
+    :param n_points: number of clusters
+    :return: indices of the closest to the cluster centers, deviation of the closest representatives
+    """
+
+    # declare the model
+    model = SpectralClustering(n_points=n_points)
+
+    # model fitting
+    model.fit(X)
+
+    labels = model.labels_
+
+    # categorize labels
+    label_indices_init = [list() for i in range(n_points)]
+    for i, k in enumerate(labels):
+        label_indices_init[k].append(i)
+
+    # there may be less clusters than specified, hence we need to correct
+    n_points_new = 0
+    label_indices = list()
+    for i in range(n_points):
+        if len(label_indices_init[i]):
+            label_indices.append(label_indices_init[i])
+            n_points_new += 1
+
+    # compute the centers
+    centers = np.empty((n_points_new, X.shape[1]))
+    closest_prob = np.empty(n_points_new)
+    n = X.shape[0]  # number of samples
+
+    for k in range(n_points_new):
+        idx = label_indices[k]
+        centers[k, :] = X[idx, :].mean(axis=0)
+        closest_prob[k] = len(idx) / n
+
+    # get the closest indices to the cluster centers
+    closest_idx = np.zeros(n_points_new, dtype=int)
+    for i in range(n_points_new):
+        deviations = np.sum(np.power(X - centers[i, :], 2.0), axis=1)
+        idx = deviations.argmin()
+        closest_idx[i] = idx
+
+    # sort the indices
+    closest_idx = np.sort(closest_idx)
+
+    return closest_idx, closest_prob, n_points_new
 
 
 class TimeSeriesClustering(TimeSeries):
@@ -121,6 +169,8 @@ class TimeSeriesClustering(TimeSeries):
         X = time_circuit.Sbus
         X = X[:, time_indices].real.T
         self.sampled_time_idx, self.sampled_probabilities = kmeans_approximate_sampling(X, n_points=self.cluster_number)
+        # self.sampled_time_idx, self.sampled_probabilities, self.cluster_number = \
+        #     spectral_approximate_sampling(X, n_points=self.cluster_number)
 
         self.results = self.run_single_thread(time_indices=self.sampled_time_idx)
 
