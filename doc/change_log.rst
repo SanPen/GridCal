@@ -23,6 +23,11 @@ Version 4.1.0
 
 - Much faster read and write of .gridcal files due to the saving of the profiles in pandas "pickles"
 
+- Fixed Areas not loading properly
+
+- Fixed Time series indexing for discontinuous index.
+
+
 Version 4.0.2
 ^^^^^^^^^^^^^^^
 
