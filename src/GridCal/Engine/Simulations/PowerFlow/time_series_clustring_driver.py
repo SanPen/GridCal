@@ -32,9 +32,9 @@ from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeries
 from GridCal.Engine.Simulations.results_model import ResultsModel
 
 
-def kmeans_case_sampling(X, n_points=10):
+def kmeans_approximate_sampling(X, n_points=10):
     """
-    K-Means clustering
+    K-Means clustering, corrected to the closest points
     :param X: injections matrix (time, bus)
     :param n_points: number of clusters
     :return: indices of the closest to the cluster centers, deviation of the closest representatives
@@ -91,6 +91,7 @@ class TimeSeriesClustering(TimeSeries):
         self.cluster_number = cluster_number
 
         self.sampled_time_idx = list()
+        self.sampled_probabilities = list()
 
     def get_steps(self):
         """
@@ -119,7 +120,7 @@ class TimeSeriesClustering(TimeSeries):
         self.progress_text.emit('Clustering...')
         X = time_circuit.Sbus
         X = X[:, time_indices].real.T
-        self.sampled_time_idx, closest_prob = kmeans_case_sampling(X, n_points=self.cluster_number)
+        self.sampled_time_idx, self.sampled_probabilities = kmeans_approximate_sampling(X, n_points=self.cluster_number)
 
         self.results = self.run_single_thread(time_indices=self.sampled_time_idx)
 

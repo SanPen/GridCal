@@ -590,11 +590,11 @@ class TimeSeries(QThread):
                 # set the power values
                 # if the storage dispatch option is active, the batteries power is not included
                 # therefore, it shall be included after processing
-                V = calculation_input.Vbus[:, it]
+                V = calculation_input.Vbus[:, t]
                 # Ysh = calculation_input.Yshunt_from_devices[:, it]
-                I = calculation_input.Ibus[:, it]
-                S = calculation_input.Sbus[:, it]
-                branch_rates = calculation_input.Rates[:, it]
+                I = calculation_input.Ibus[:, t]
+                S = calculation_input.Sbus[:, t]
+                branch_rates = calculation_input.Rates[:, t]
 
                 # add the controlled storage power if we are controlling the storage devices
                 if self.options.dispatch_storage:
