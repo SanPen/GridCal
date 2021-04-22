@@ -26,6 +26,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.branch import BranchType
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf_driver import LinearAnalysisResults
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -268,6 +269,7 @@ class TopologyReduction(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
+    tpe = SimulationTypes.TopologyReduction_run
 
     def __init__(self, grid: MultiCircuit, branch_indices):
         """

@@ -30,6 +30,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
 from GridCal.Engine.Simulations.Stochastic.latin_hypercube_sampling import lhs
 from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 
 class TimeSeriesResults(PowerFlowResults):
@@ -472,6 +473,7 @@ class TimeSeries(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
     name = 'Time Series'
+    tpe = SimulationTypes.TimeSeries_run
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, opf_time_series_results=None,
                  start_=0, end_=None):

@@ -21,6 +21,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 
 class PowerFlowDriver(QThread):
@@ -28,6 +29,7 @@ class PowerFlowDriver(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
     name = 'Power Flow'
+    tpe = SimulationTypes.PowerFlow_run
 
     """
     Power flow wrapper to use with Qt

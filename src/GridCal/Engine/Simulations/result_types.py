@@ -104,21 +104,4 @@ class ResultTypes(Enum):
     SigmaPlusDistances = 'Sigma + distances', DeviceType.BusDevice
 
 
-class SimulationTypes(Enum):
-    PowerFlow_run = 'power flow'
-    ShortCircuit_run = 'Short circuit'
-    MonteCarlo_run = 'Monte Carlo'
-    TimeSeries_run = 'Time series power flow'
-    ClusteringTimeSeries_run = 'Clustering Time series power flow'
-    VoltageCollapse_run = 'Voltage collapse'
-    LatinHypercube_run = 'Latin Hypercube'
-    Cascade_run = 'Cascade'
-    OPF_run = 'Optimal power flow'
-    OPFTimeSeries_run = 'OPF Time series'
-    TransientStability_run = 'Transient stability'
-    TopologyReduction_run = 'Topology reduction'
-    PTDF_run = 'PTDF'
-    PTDF_TS_run = 'PTDF_TS'
-    OTDF_run = 'OTDF'
-    OTDF_TS_run = 'OTDF_TS'
-    Delete_and_reduce_run = 'Delete and reduce'
+

@@ -25,6 +25,7 @@ from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_results import 
 from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_driver import StochasticPowerFlowDriver
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, TimeCircuit
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 
 class CascadeType(Enum):
@@ -97,6 +98,7 @@ class Cascading(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
+    tpe = SimulationTypes.Cascade_run
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, triggering_idx=None, max_additional_islands=1,
                  cascade_type_: CascadeType = CascadeType.LatinHypercube, n_lhs_samples_=1000):

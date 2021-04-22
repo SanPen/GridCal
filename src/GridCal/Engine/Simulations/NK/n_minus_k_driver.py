@@ -23,6 +23,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.NK.n_minus_k_results import NMinusKResults
 from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf import LinearAnalysis
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 
 def enumerate_states_n_k(m, k=1):
@@ -64,6 +65,7 @@ class NMinusK(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
     name = 'N-1/OTDF'
+    tpe = SimulationTypes.OTDF_run
 
     def __init__(self, grid: MultiCircuit, options: NMinusKOptions):
         """

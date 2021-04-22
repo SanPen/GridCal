@@ -27,6 +27,7 @@ from GridCal.Engine.Simulations.OPF.ac_opf_ts import OpfAcTimeSeries
 from GridCal.Engine.Simulations.OPF.simple_dispatch_ts import OpfSimpleTimeSeries
 from GridCal.Engine.Core.time_series_opf_data import compile_opf_time_circuit
 from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 
 class OptimalPowerFlowTimeSeries(QThread):
@@ -34,6 +35,7 @@ class OptimalPowerFlowTimeSeries(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
     name = 'Optimal power flow time series'
+    tpe = SimulationTypes.OPFTimeSeries_run
 
     def __init__(self, grid: MultiCircuit, options: OptimalPowerFlowOptions, start_=0, end_=None):
         """

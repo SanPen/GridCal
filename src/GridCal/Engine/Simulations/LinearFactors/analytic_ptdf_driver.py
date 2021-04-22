@@ -19,6 +19,7 @@ from PySide2.QtCore import QThread, Signal
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf import *
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 ########################################################################################################################
 # Optimal Power flow classes
@@ -41,6 +42,7 @@ class LinearAnalysisDriver(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
     name = 'PTDF'
+    tpe = SimulationTypes.PTDF_run
 
     def __init__(self, grid: MultiCircuit, options: LinearAnalysisOptions):
         """

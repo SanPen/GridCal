@@ -15,53 +15,71 @@
 from uuid import uuid4
 
 # Module imports
-import GridCal.Engine.Simulations.Stochastic.blackout_driver as blkout
-import GridCal.Engine.Simulations.OPF.opf_driver as opfdrv
-import GridCal.Engine.Simulations.LinearFactors.analytic_ptdf_driver as ptdfdrv
-import GridCal.Engine.Simulations.LinearFactors.ptdf_ts_driver as ptdftsdrv
-import GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_driver as scdrv
-import GridCal.Engine.Simulations.NK.n_minus_k_driver as nmkdrv
-import GridCal.Engine.Simulations.NK.n_minus_k_ts_driver as nmktsdrv
-import GridCal.Engine.Simulations.OPF.opf_ts_driver as opftsdrv
-import GridCal.Engine.Simulations.PowerFlow.power_flow_driver as pfdrv
-import GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_driver as mcdrv
-import GridCal.Engine.Simulations.PowerFlow.time_series_driver as pftsdrv
-import GridCal.Engine.Simulations.PowerFlow.time_series_clustring_driver as clpftsdrv
-import GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver as cpfdrv
-import GridCal.Engine.Simulations.Topology.topology_driver as tpdrv
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 
 class SimulationSession:
 
     def __init__(self, name: str = 'Session', idtag: str = None):
-
+        """
+        Constructor
+        :param name: Session name
+        :param idtag: Unique identifier
+        """
         self.idtag: str = uuid4().hex if idtag is None else idtag
 
+        # name of the session
         self.name: str = name
 
-        self.power_flow: pfdrv.PowerFlowDriver = None
-        self.short_circuit: scdrv.ShortCircuitDriver = None
-        self.stochastic_pf: mcdrv.StochasticPowerFlowDriver = None
-        self.time_series: pftsdrv.TimeSeries = None
-        self.clustering_time_series: clpftsdrv.TimeSeriesClustering = None
-        self.continuation_power_flow: cpfdrv.ContinuationPowerFlowDriver = None
-        self.cascade: blkout.Cascading = None
-        self.optimal_power_flow: opfdrv.OptimalPowerFlow = None
-        self.optimal_power_flow_time_series: opftsdrv.OptimalPowerFlowTimeSeries = None
-        self.topology_reduction: tpdrv.TopologyReduction = None
-        self.ptdf_analysis: ptdfdrv.LinearAnalysisDriver = None
-        self.ptdf_ts_analysis: ptdftsdrv.PtdfTimeSeries = None
-        self.otdf_analysis: ptdfdrv.LinearAnalysisDriver = None
-        self.otdf_ts_analysis: nmkdrv.NMinusK = None
-
+        # dictionary of drivers
         self.drivers = dict()
 
-    def register_driver(self, driver):
+    def __str__(self):
+        return self.name
+
+    def clear(self):
+        self.drivers = dict()
+
+    def register(self, driver):
         """
         Register driver
         :param driver:
         :return:
         """
-        self.drivers[driver.name] = driver
+        self.drivers[driver.tpe] = driver
 
+    def get_available_drivers(self):
+        return [drv for driver_type, drv in self.drivers.items() if drv is not None]
+
+    def get_driver_results(self, driver_type: SimulationTypes):
+        """
+        Get the results of the driver
+        :param driver_type:
+        :return:
+        """
+        if driver_type in self.drivers.keys():
+            drv = self.drivers[driver_type]
+            if hasattr(drv, 'results'):
+                return drv, drv.results
+            else:
+                return drv, None
+        else:
+            return None, None
+
+    def get_results_model_by_name(self, study_name, study_type):
+        """
+        Get the results model given the study name and study type
+        :param study_name:
+        :param study_type:
+        :return:
+        """
+        for driver_type, drv in self.drivers.items():
+            if study_name == drv.name:
+                if drv.results is not None:
+                    return drv.results.mdl(result_type=study_type)
+                else:
+                    print('There seem to be no results :(')
+                    return None
+
+        return None
 

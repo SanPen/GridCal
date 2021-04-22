@@ -26,6 +26,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
 from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeries
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 
 def kmeans_approximate_sampling(X, n_points=10):
@@ -125,6 +126,7 @@ def spectral_approximate_sampling(X, n_points=10):
 
 class TimeSeriesClustering(TimeSeries):
     name = 'Time Series Clustering'
+    tpe = SimulationTypes.ClusteringTimeSeries_run
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, opf_time_series_results=None,
                  start_=0, end_=None, cluster_number=10):

@@ -31,6 +31,7 @@ from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf import LinearAnalysi
 from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf_driver import LinearAnalysisOptions
 from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 
 class PtdfTimeSeriesResults:
@@ -148,6 +149,7 @@ class PtdfTimeSeries(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
     name = 'PTDF Time Series'
+    tpe = SimulationTypes.PTDF_TS_run
 
     def __init__(self, grid: MultiCircuit, options: LinearAnalysisOptions, start_=0, end_=None):
         """

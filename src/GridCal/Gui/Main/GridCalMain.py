@@ -65,11 +65,13 @@ import GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_
 import GridCal.Engine.Simulations.Topology.topology_driver as tpdrv
 import GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver as sgmadrv
 import GridCal.Engine.Simulations.result_types as restpes
+import GridCal.Engine.Simulations.driver_types as drvtpes
 import GridCal.Engine.grid_analysis as grid_analysis
 import GridCal.Engine.IO.export_results_driver as exprtdrv
 import GridCal.Engine.IO.file_handler as filedrv
 import GridCal.Engine.IO.synchronization_driver as syncdrv
 from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.session import SimulationSession
 
 
 __author__ = 'Santiago Peñate Vera'
@@ -261,22 +263,10 @@ class MainGUI(QMainWindow):
         self.lock_ui = False
         self.ui.progress_frame.setVisible(self.lock_ui)
 
-        # threads
-        self.power_flow: pfdrv.PowerFlowDriver = None
-        self.short_circuit: scdrv.ShortCircuitDriver = None
-        self.stochastic_pf: mcdrv.StochasticPowerFlowDriver = None
-        self.time_series: pftsdrv.TimeSeries = None
-        self.clustering_time_series: clpftsdrv.TimeSeriesClustering = None
-        self.continuation_power_flow: cpfdrv.ContinuationPowerFlowDriver = None
-        self.cascade: blkout.Cascading = None
-        self.optimal_power_flow: opfdrv.OptimalPowerFlow = None
-        self.optimal_power_flow_time_series: opftsdrv.OptimalPowerFlowTimeSeries = None
-        self.topology_reduction: tpdrv.TopologyReduction = None
-        self.ptdf_analysis: ptdfdrv.LinearAnalysisDriver = None
-        self.ptdf_ts_analysis: ptdftsdrv.PtdfTimeSeries = None
-        self.otdf_analysis: ptdfdrv.LinearAnalysisDriver = None
-        self.otdf_ts_analysis: nmkdrv.NMinusK = None
+        # simulations session
+        self.session: SimulationSession = SimulationSession(name='GUI session')
 
+        # threads
         self.painter = None
         self.open_file_thread_object = None
         self.save_file_thread_object = None
@@ -593,20 +583,8 @@ class MainGUI(QMainWindow):
         Get all threads that has to do with simulation
         :return: list of simulation threads
         """
-        all_threads = [self.power_flow,
-                       self.short_circuit,
-                       self.stochastic_pf,
-                       self.time_series,
-                       self.continuation_power_flow,
-                       self.clustering_time_series,
-                       self.cascade,
-                       self.optimal_power_flow,
-                       self.optimal_power_flow_time_series,
-                       self.topology_reduction,
-                       self.ptdf_analysis,
-                       self.ptdf_ts_analysis,
-                       self.otdf_analysis,
-                       self.otdf_ts_analysis]
+
+        all_threads = list(self.session.drivers.values())
 
         # as a side effect the circuit should know about these for accessing to the results via the objects themselves
         self.circuit.results_dictionary = {thr.name: thr for thr in all_threads if thr is not None}
@@ -749,14 +727,14 @@ class MainGUI(QMainWindow):
                     # Just open the file
                     self.open_file_now(filenames=file_names)
 
-    def add_simulation(self, val: restpes.SimulationTypes):
+    def add_simulation(self, val: drvtpes.SimulationTypes):
         """
         Add a simulation to the simulations list
         :param val: simulation type
         """
         self.stuff_running_now.append(val)
 
-    def remove_simulation(self, val: restpes.SimulationTypes):
+    def remove_simulation(self, val: drvtpes.SimulationTypes):
         """
         Remove a simulation from the simulations list
         :param val: simulation type
@@ -1418,38 +1396,6 @@ class MainGUI(QMainWindow):
             self.delete_created_files()
             event.accept()
 
-    def export_pf_results(self):
-        """
-        Export power flow results
-        """
-        if self.power_flow is not None:
-
-            # declare the allowed file types
-            files_types = "Excel file (*.xlsx)"
-            # call dialog to select the file
-            if self.project_directory is None:
-                self.project_directory = ''
-
-            # set grid name
-            self.circuit.name = self.grid_editor.name_label.text()
-
-            fname = os.path.join(self.project_directory, 'power flow results of ' + self.grid_editor.name_label.text())
-
-            options = QFileDialog.Options()
-            if self.use_native_dialogues:
-                options |= QFileDialog.DontUseNativeDialog
-
-            filename, type_selected = QFileDialog.getSaveFileName(self, 'Save file', fname, files_types,
-                                                                  options=options)
-
-            if filename != "":
-                if not filename.endswith('.xlsx'):
-                    filename += '.xlsx'
-                # TODO: Correct this function
-                self.circuit.export_pf(file_name=filename, power_flow_results=self.power_flow.results)
-        else:
-            warning_msg('There are no power flow results', 'Save power flow results')
-
     def export_object_profiles(self):
         """
         Export object profiles
@@ -1635,13 +1581,14 @@ class MainGUI(QMainWindow):
         branches = self.circuit.get_branches()
 
         if len(branches) > 0:
+            pf_drv, pf_results = self.session.get_driver_results(drvtpes.SimulationTypes.PowerFlow_run)
 
-            if self.power_flow is not None:
+            if pf_results is not None:
                 factor = self.ui.branch_rating_doubleSpinBox.value()
 
                 for i, branch in enumerate(branches):
 
-                    S = self.power_flow.results.Sf[i]
+                    S = pf_results.Sf[i]
 
                     if branch.rate < 1e-3 or self.ui.rating_override_checkBox.isChecked():
                         r = np.round(abs(S) * factor, 1)
@@ -2248,11 +2195,11 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if restpes.SimulationTypes.PowerFlow_run not in self.stuff_running_now:
+            if drvtpes.SimulationTypes.PowerFlow_run not in self.stuff_running_now:
 
                 self.LOCK()
 
-                self.add_simulation(restpes.SimulationTypes.PowerFlow_run)
+                self.add_simulation(drvtpes.SimulationTypes.PowerFlow_run)
 
                 self.ui.progress_label.setText('Compiling the grid...')
                 QtGui.QGuiApplication.processEvents()
@@ -2300,13 +2247,15 @@ class MainGUI(QMainWindow):
                 self.ui.progress_label.setText('Running power flow...')
                 QtGui.QGuiApplication.processEvents()
                 # set power flow object instance
-                self.power_flow = pfdrv.PowerFlowDriver(self.circuit, options, opf_results)
+                drv = pfdrv.PowerFlowDriver(self.circuit, options, opf_results)
 
-                self.power_flow.progress_signal.connect(self.ui.progressBar.setValue)
-                self.power_flow.progress_text.connect(self.ui.progress_label.setText)
-                self.power_flow.done_signal.connect(self.UNLOCK)
-                self.power_flow.done_signal.connect(self.post_power_flow)
-                self.power_flow.start()
+                self.session.register(driver=drv)
+
+                drv.progress_signal.connect(self.ui.progressBar.setValue)
+                drv.progress_text.connect(self.ui.progress_label.setText)
+                drv.done_signal.connect(self.UNLOCK)
+                drv.done_signal.connect(self.post_power_flow)
+                drv.start()
 
             else:
                 warning_msg('Another simulation of the same type is running...')
@@ -2320,27 +2269,30 @@ class MainGUI(QMainWindow):
 
         """
         # update the results in the circuit structures
-        if self.power_flow.results is not None:
+
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.PowerFlow_run)
+
+        if results is not None:
             self.ui.progress_label.setText('Colouring power flow results in the grid...')
             QtGui.QGuiApplication.processEvents()
 
-            self.remove_simulation(restpes.SimulationTypes.PowerFlow_run)
+            self.remove_simulation(drvtpes.SimulationTypes.PowerFlow_run)
 
             if self.ui.draw_schematic_checkBox.isChecked() or len(self.bus_viewer_windows) > 0:
                 viz.colour_the_schematic(circuit=self.circuit,
-                                         Sbus=self.power_flow.results.Sbus,
-                                         Sf=self.power_flow.results.Sf,
-                                         St=self.power_flow.results.St,
-                                         voltages=self.power_flow.results.voltage,
-                                         loadings=self.power_flow.results.loading,
-                                         types=self.power_flow.results.bus_types,
-                                         losses=self.power_flow.results.losses,
-                                         hvdc_loading=self.power_flow.results.hvdc_loading,
-                                         hvdc_sending_power=self.power_flow.results.hvdc_Pf,
-                                         hvdc_losses=self.power_flow.results.hvdc_losses,
-                                         ma=self.power_flow.results.ma,
-                                         theta=self.power_flow.results.theta,
-                                         Beq=self.power_flow.results.Beq,
+                                         Sbus=results.Sbus,
+                                         Sf=results.Sf,
+                                         St=results.St,
+                                         voltages=results.voltage,
+                                         loadings=results.loading,
+                                         types=results.bus_types,
+                                         losses=results.losses,
+                                         hvdc_loading=results.hvdc_loading,
+                                         hvdc_sending_power=results.hvdc_Pf,
+                                         hvdc_losses=results.hvdc_losses,
+                                         ma=results.ma,
+                                         theta=results.theta,
+                                         Beq=results.Beq,
                                          use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                          min_branch_width=self.ui.min_branch_size_spinBox.value(),
                                          max_branch_width=self.ui.max_branch_size_spinBox.value(),
@@ -2350,7 +2302,7 @@ class MainGUI(QMainWindow):
             self.update_available_results()
 
             # print convergence reports on the console
-            for report in self.power_flow.convergence_reports:
+            for report in drv.convergence_reports:
                 msg_ = 'Power flow converged: \n' + report.to_dataframe().__str__() + '\n\n'
                 self.console_msg(msg_)
 
@@ -2358,8 +2310,8 @@ class MainGUI(QMainWindow):
             warning_msg('There are no power flow results.\nIs there any slack bus or generator?', 'Power flow')
             QtGui.QGuiApplication.processEvents()
 
-        if len(self.power_flow.logger) > 0:
-            dlg = LogsDialogue('Power flow', self.power_flow.logger)
+        if len(drv.logger) > 0:
+            dlg = LogsDialogue('Power flow', drv.logger)
             dlg.exec_()
 
         if len(self.stuff_running_now) == 0:
@@ -2373,8 +2325,11 @@ class MainGUI(QMainWindow):
         :return:
         """
         if len(self.circuit.buses) > 0:
-            if restpes.SimulationTypes.ShortCircuit_run not in self.stuff_running_now:
-                if self.power_flow is not None:
+            if drvtpes.SimulationTypes.ShortCircuit_run not in self.stuff_running_now:
+
+                pf_drv, pf_results = self.session.get_driver_results(drvtpes.SimulationTypes.PowerFlow_run)
+
+                if pf_results is not None:
 
                     # Since we must run this study in the same conditions as
                     # the last power flow, no compilation is needed
@@ -2390,7 +2345,7 @@ class MainGUI(QMainWindow):
                         warning_msg('You need to enable some buses for short circuit.'
                                      + '\nEnable them by right click, and selecting on the context menu.')
                     else:
-                        self.add_simulation(restpes.SimulationTypes.ShortCircuit_run)
+                        self.add_simulation(drvtpes.SimulationTypes.ShortCircuit_run)
 
                         self.LOCK()
 
@@ -2405,25 +2360,22 @@ class MainGUI(QMainWindow):
 
                         pf_options = self.get_selected_power_flow_options()
 
-                        self.short_circuit = scdrv.ShortCircuitDriver(grid=self.circuit,
-                                                                      options=sc_options,
-                                                                      pf_options=pf_options,
-                                                                      pf_results=self.power_flow.results)
+                        drv = scdrv.ShortCircuitDriver(grid=self.circuit,
+                                                       options=sc_options,
+                                                       pf_options=pf_options,
+                                                       pf_results=pf_results)
 
-                        # self.threadpool.start(self.short_circuit)
-                        # self.threadpool.waitForDone()
-                        # self.post_short_circuit()
+                        self.session.register(drv)
 
                         try:
-                            self.threadpool.start(self.short_circuit)
+                            self.threadpool.start(drv)
                             self.threadpool.waitForDone()
                             self.post_short_circuit()
 
                         except Exception as ex:
                             exc_type, exc_value, exc_traceback = sys.exc_info()
                             error_msg(str(exc_traceback) + '\n' + str(exc_value), 'Short circuit')
-                            self.remove_simulation(restpes.SimulationTypes.ShortCircuit_run)
-                            self.short_circuit = None
+                            self.remove_simulation(drvtpes.SimulationTypes.ShortCircuit_run)
                             self.UNLOCK()
 
                 else:
@@ -2441,19 +2393,20 @@ class MainGUI(QMainWindow):
 
         """
         # update the results in the circuit structures
-        if self.power_flow.results is not None:
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.ShortCircuit_run)
+        if results is not None:
 
-            self.remove_simulation(restpes.SimulationTypes.ShortCircuit_run)
+            self.remove_simulation(drvtpes.SimulationTypes.ShortCircuit_run)
 
             self.ui.progress_label.setText('Colouring short circuit results in the grid...')
             QtGui.QGuiApplication.processEvents()
             if self.ui.draw_schematic_checkBox.isChecked():
                 viz.colour_the_schematic(circuit=self.circuit,
-                                         Sbus=self.short_circuit.results.Sbus,
-                                         Sf=self.short_circuit.results.Sf,
-                                         voltages=self.short_circuit.results.voltage,
-                                         types=self.short_circuit.results.bus_types,
-                                         loadings=self.short_circuit.results.loading,
+                                         Sbus=results.Sbus,
+                                         Sf=results.Sf,
+                                         voltages=results.voltage,
+                                         types=results.bus_types,
+                                         loadings=results.loading,
                                          use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                          min_branch_width=self.ui.min_branch_size_spinBox.value(),
                                          max_branch_width=self.ui.max_branch_size_spinBox.value(),
@@ -2473,9 +2426,9 @@ class MainGUI(QMainWindow):
         :return:
         """
         if len(self.circuit.buses) > 0:
-            if restpes.SimulationTypes.PTDF_run not in self.stuff_running_now:
+            if drvtpes.SimulationTypes.PTDF_run not in self.stuff_running_now:
 
-                self.add_simulation(restpes.SimulationTypes.PTDF_run)
+                self.add_simulation(drvtpes.SimulationTypes.PTDF_run)
 
                 if len(self.circuit.buses) > 0:
                     self.LOCK()
@@ -2504,7 +2457,7 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
-        self.remove_simulation(restpes.SimulationTypes.PTDF_run)
+        self.remove_simulation(drvtpes.SimulationTypes.PTDF_run)
 
         # update the results in the circuit structures
         if not self.ptdf_analysis.__cancel__:
@@ -2530,9 +2483,9 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
             if self.valid_time_series():
-                if restpes.SimulationTypes.PTDF_TS_run not in self.stuff_running_now:
+                if drvtpes.SimulationTypes.PTDF_TS_run not in self.stuff_running_now:
 
-                    self.add_simulation(restpes.SimulationTypes.PTDF_TS_run)
+                    self.add_simulation(drvtpes.SimulationTypes.PTDF_TS_run)
                     self.LOCK()
 
                     options = ptdfdrv.LinearAnalysisOptions(distribute_slack=self.ui.distributed_slack_checkBox.isChecked())
@@ -2562,7 +2515,7 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
-        self.remove_simulation(restpes.SimulationTypes.PTDF_TS_run)
+        self.remove_simulation(drvtpes.SimulationTypes.PTDF_TS_run)
 
         # update the results in the circuit structures
         if not self.ptdf_ts_analysis.__cancel__:
@@ -2600,9 +2553,9 @@ class MainGUI(QMainWindow):
         :return:
         """
         if len(self.circuit.buses) > 0:
-            if restpes.SimulationTypes.OTDF_run not in self.stuff_running_now:
+            if drvtpes.SimulationTypes.OTDF_run not in self.stuff_running_now:
 
-                self.add_simulation(restpes.SimulationTypes.OTDF_run)
+                self.add_simulation(drvtpes.SimulationTypes.OTDF_run)
 
                 self.LOCK()
 
@@ -2625,7 +2578,7 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
-        self.remove_simulation(restpes.SimulationTypes.OTDF_run)
+        self.remove_simulation(drvtpes.SimulationTypes.OTDF_run)
 
         # update the results in the circuit structures
         if not self.otdf_analysis.__cancel__:
@@ -2653,9 +2606,9 @@ class MainGUI(QMainWindow):
         if len(self.circuit.buses) > 0:
 
             if self.valid_time_series():
-                if restpes.SimulationTypes.OTDF_TS_run not in self.stuff_running_now:
+                if drvtpes.SimulationTypes.OTDF_TS_run not in self.stuff_running_now:
 
-                    self.add_simulation(restpes.SimulationTypes.OTDF_TS_run)
+                    self.add_simulation(drvtpes.SimulationTypes.OTDF_TS_run)
 
                     self.LOCK()
 
@@ -2680,7 +2633,7 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
-        self.remove_simulation(restpes.SimulationTypes.OTDF_TS_run)
+        self.remove_simulation(drvtpes.SimulationTypes.OTDF_TS_run)
 
         # update the results in the circuit structures
         if not self.otdf_ts_analysis.__cancel__:
@@ -2752,9 +2705,11 @@ class MainGUI(QMainWindow):
 
         if len(self.circuit.buses) > 0:
 
-            if self.power_flow is not None:
+            pf_drv, pf_results = self.session.get_driver_results(drvtpes.SimulationTypes.PowerFlow_run)
 
-                if restpes.SimulationTypes.VoltageCollapse_run not in self.stuff_running_now:
+            if pf_results is not None:
+
+                if drvtpes.SimulationTypes.ContinuationPowerFlow_run not in self.stuff_running_now:
 
                     if self.ui.atcRadioButton.isChecked():
                         # available transfer capacity inter areas
@@ -2808,30 +2763,31 @@ class MainGUI(QMainWindow):
                         QtGui.QGuiApplication.processEvents()
 
                         #  compose the base power
-                        Sbase = self.power_flow.results.Sbus / self.circuit.Sbase
+                        Sbase = pf_results.Sbus / self.circuit.Sbase
 
-                        base_overload_number = len(np.where(np.abs(self.power_flow.results.loading) > 1)[0])
+                        base_overload_number = len(np.where(np.abs(pf_results.loading) > 1)[0])
 
                         vc_inputs = cpfdrv.ContinuationPowerFlowInput(Sbase=Sbase,
-                                                                      Vbase=self.power_flow.results.voltage,
+                                                                      Vbase=pf_results.voltage,
                                                                       Starget=Sbase * alpha,
                                                                       base_overload_number=base_overload_number)
 
                         pf_options = self.get_selected_power_flow_options()
 
                         # create object
-                        self.continuation_power_flow = cpfdrv.ContinuationPowerFlowDriver(circuit=self.circuit,
-                                                                                          options=vc_options,
-                                                                                          inputs=vc_inputs,
-                                                                                          pf_options=pf_options)
+                        drv = cpfdrv.ContinuationPowerFlowDriver(circuit=self.circuit,
+                                                                 options=vc_options,
+                                                                 inputs=vc_inputs,
+                                                                 pf_options=pf_options)
+                        self.session.register(drv)
 
                         # make connections
-                        self.continuation_power_flow.progress_signal.connect(self.ui.progressBar.setValue)
-                        self.continuation_power_flow.progress_text.connect(self.ui.progress_label.setText)
-                        self.continuation_power_flow.done_signal.connect(self.post_continuation_power_flow)
+                        drv.progress_signal.connect(self.ui.progressBar.setValue)
+                        drv.progress_text.connect(self.ui.progress_label.setText)
+                        drv.done_signal.connect(self.post_continuation_power_flow)
 
                         # thread start
-                        self.continuation_power_flow.start()
+                        drv.start()
 
                     elif use_profiles:
                         '''
@@ -2842,30 +2798,31 @@ class MainGUI(QMainWindow):
                             # lock the UI
                             self.LOCK()
 
-                            self.power_flow.run_at(start_idx)
+                            pf_drv.run_at(start_idx)
 
                             # get the power injections array to get the initial and end points
                             nc = core.compile_time_circuit(circuit=self.circuit)
                             Sprof = nc.Sbus
                             vc_inputs = cpfdrv.ContinuationPowerFlowInput(Sbase=Sprof[:, start_idx],
-                                                                          Vbase=self.power_flow.results.voltage,
+                                                                          Vbase=pf_results.voltage,
                                                                           Starget=Sprof[:, end_idx])
 
                             pf_options = self.get_selected_power_flow_options()
 
                             # create object
-                            self.continuation_power_flow = cpfdrv.ContinuationPowerFlowDriver(circuit=self.circuit,
-                                                                                              options=vc_options,
-                                                                                              inputs=vc_inputs,
-                                                                                              pf_options=pf_options)
+                            drv = cpfdrv.ContinuationPowerFlowDriver(circuit=self.circuit,
+                                                                     options=vc_options,
+                                                                     inputs=vc_inputs,
+                                                                     pf_options=pf_options)
+                            self.session.register(drv)
 
                             # make connections
-                            self.continuation_power_flow.progress_signal.connect(self.ui.progressBar.setValue)
-                            self.continuation_power_flow.progress_text.connect(self.ui.progress_label.setText)
-                            self.continuation_power_flow.done_signal.connect(self.post_continuation_power_flow)
+                            drv.progress_signal.connect(self.ui.progressBar.setValue)
+                            drv.progress_text.connect(self.ui.progress_label.setText)
+                            drv.done_signal.connect(self.post_continuation_power_flow)
 
                             # thread start
-                            self.continuation_power_flow.start()
+                            drv.start()
                         else:
                             info_msg('Check the selected start and finnish time series indices.')
                 else:
@@ -2881,19 +2838,21 @@ class MainGUI(QMainWindow):
         Actions performed after the voltage stability. Launched by the thread after its execution
         :return:
         """
-        if self.continuation_power_flow.results is not None:
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.ContinuationPowerFlow_run)
 
-            self.remove_simulation(restpes.SimulationTypes.VoltageCollapse_run)
+        if results is not None:
 
-            if self.continuation_power_flow.results.voltages is not None:
-                if self.continuation_power_flow.results.voltages.shape[0] > 0:
+            self.remove_simulation(drvtpes.SimulationTypes.ContinuationPowerFlow_run)
+
+            if results.voltages is not None:
+                if results.voltages.shape[0] > 0:
                     if self.ui.draw_schematic_checkBox.isChecked():
                         viz.colour_the_schematic(circuit=self.circuit,
-                                                 Sbus=self.continuation_power_flow.results.Sbus[-1, :],
-                                                 Sf=self.continuation_power_flow.results.Sf[-1, :],
-                                                 voltages=self.continuation_power_flow.results.voltages[-1, :],
-                                                 loadings=self.continuation_power_flow.results.loading[-1, :],
-                                                 types=self.continuation_power_flow.results.bus_types,
+                                                 Sbus=results.Sbus[-1, :],
+                                                 Sf=results.Sf[-1, :],
+                                                 voltages=results.voltages[-1, :],
+                                                 loadings=results.loading[-1, :],
+                                                 types=results.bus_types,
                                                  use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                                  min_branch_width=self.ui.min_branch_size_spinBox.value(),
                                                  max_branch_width=self.ui.max_branch_size_spinBox.value(),
@@ -2915,11 +2874,11 @@ class MainGUI(QMainWindow):
         @return:
         """
         if len(self.circuit.buses) > 0:
-            if restpes.SimulationTypes.TimeSeries_run not in self.stuff_running_now:
+            if drvtpes.SimulationTypes.TimeSeries_run not in self.stuff_running_now:
                 if self.valid_time_series():
                     self.LOCK()
 
-                    self.add_simulation(restpes.SimulationTypes.TimeSeries_run)
+                    self.add_simulation(drvtpes.SimulationTypes.TimeSeries_run)
 
                     self.ui.progress_label.setText('Compiling the grid...')
                     QtGui.QGuiApplication.processEvents()
@@ -2977,7 +2936,7 @@ class MainGUI(QMainWindow):
 
         if self.time_series.results is not None:
 
-            self.remove_simulation(restpes.SimulationTypes.TimeSeries_run)
+            self.remove_simulation(drvtpes.SimulationTypes.TimeSeries_run)
 
             if self.ui.draw_schematic_checkBox.isChecked():
                 voltage = self.time_series.results.voltage.max(axis=0)
@@ -3012,11 +2971,11 @@ class MainGUI(QMainWindow):
         @return:
         """
         if len(self.circuit.buses) > 0:
-            if restpes.SimulationTypes.ClusteringTimeSeries_run not in self.stuff_running_now:
+            if drvtpes.SimulationTypes.ClusteringTimeSeries_run not in self.stuff_running_now:
                 if self.valid_time_series():
                     self.LOCK()
 
-                    self.add_simulation(restpes.SimulationTypes.ClusteringTimeSeries_run)
+                    self.add_simulation(drvtpes.SimulationTypes.ClusteringTimeSeries_run)
 
                     self.ui.progress_label.setText('Compiling the grid...')
                     QtGui.QGuiApplication.processEvents()
@@ -3075,7 +3034,7 @@ class MainGUI(QMainWindow):
 
         if self.clustering_time_series.results is not None:
 
-            self.remove_simulation(restpes.SimulationTypes.ClusteringTimeSeries_run)
+            self.remove_simulation(drvtpes.SimulationTypes.ClusteringTimeSeries_run)
 
             if self.ui.draw_schematic_checkBox.isChecked():
                 voltage = self.clustering_time_series.results.voltage.max(axis=0)
@@ -3112,13 +3071,13 @@ class MainGUI(QMainWindow):
 
         if len(self.circuit.buses) > 0:
 
-            if restpes.SimulationTypes.MonteCarlo_run not in self.stuff_running_now:
+            if drvtpes.SimulationTypes.MonteCarlo_run not in self.stuff_running_now:
 
                 if self.circuit.time_profile is not None:
 
                     self.LOCK()
 
-                    self.add_simulation(restpes.SimulationTypes.MonteCarlo_run)
+                    self.add_simulation(drvtpes.SimulationTypes.MonteCarlo_run)
 
                     self.ui.progress_label.setText('Compiling the grid...')
                     QtGui.QGuiApplication.processEvents()
@@ -3157,7 +3116,7 @@ class MainGUI(QMainWindow):
         """
         if not self.stochastic_pf.__cancel__:
 
-            self.remove_simulation(restpes.SimulationTypes.MonteCarlo_run)
+            self.remove_simulation(drvtpes.SimulationTypes.MonteCarlo_run)
 
             if self.ui.draw_schematic_checkBox.isChecked():
                 viz.colour_the_schematic(circuit=self.circuit,
@@ -3214,9 +3173,9 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if restpes.SimulationTypes.Cascade_run not in self.stuff_running_now:
+            if drvtpes.SimulationTypes.Cascade_run not in self.stuff_running_now:
 
-                self.add_simulation(restpes.SimulationTypes.Cascade_run)
+                self.add_simulation(drvtpes.SimulationTypes.Cascade_run)
 
                 self.LOCK()
 
@@ -3253,7 +3212,7 @@ class MainGUI(QMainWindow):
 
         # update the results in the circuit structures
 
-        self.remove_simulation(restpes.SimulationTypes.Cascade_run)
+        self.remove_simulation(drvtpes.SimulationTypes.Cascade_run)
 
         n = len(self.cascade.results.events)
 
@@ -3313,9 +3272,9 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if restpes.SimulationTypes.OPF_run not in self.stuff_running_now:
+            if drvtpes.SimulationTypes.OPF_run not in self.stuff_running_now:
 
-                self.remove_simulation(restpes.SimulationTypes.OPF_run)
+                self.remove_simulation(drvtpes.SimulationTypes.OPF_run)
 
                 self.LOCK()
 
@@ -3350,7 +3309,7 @@ class MainGUI(QMainWindow):
         """
         if self.optimal_power_flow is not None:
 
-            self.remove_simulation(restpes.SimulationTypes.OPF_run)
+            self.remove_simulation(drvtpes.SimulationTypes.OPF_run)
 
             if self.optimal_power_flow.results.converged:
 
@@ -3384,11 +3343,11 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if restpes.SimulationTypes.OPFTimeSeries_run not in self.stuff_running_now:
+            if drvtpes.SimulationTypes.OPFTimeSeries_run not in self.stuff_running_now:
 
                 if self.circuit.time_profile is not None:
 
-                    self.add_simulation(restpes.SimulationTypes.OPFTimeSeries_run)
+                    self.add_simulation(drvtpes.SimulationTypes.OPFTimeSeries_run)
 
                     self.LOCK()
 
@@ -3445,7 +3404,7 @@ class MainGUI(QMainWindow):
                 dlg.exec_()
 
             # remove from the current simulations
-            self.remove_simulation(restpes.SimulationTypes.OPFTimeSeries_run)
+            self.remove_simulation(drvtpes.SimulationTypes.OPFTimeSeries_run)
 
             if self.optimal_power_flow_time_series.results is not None:
                 if self.ui.draw_schematic_checkBox.isChecked():
@@ -3514,7 +3473,7 @@ class MainGUI(QMainWindow):
 
         if len(self.circuit.buses) > 0:
 
-            if restpes.SimulationTypes.TopologyReduction_run not in self.stuff_running_now:
+            if drvtpes.SimulationTypes.TopologyReduction_run not in self.stuff_running_now:
 
                 # compute the options
                 rx_criteria = self.ui.rxThresholdCheckBox.isChecked()
@@ -3554,7 +3513,7 @@ class MainGUI(QMainWindow):
 
                             self.LOCK()
 
-                            self.add_simulation(restpes.SimulationTypes.TopologyReduction_run)
+                            self.add_simulation(drvtpes.SimulationTypes.TopologyReduction_run)
 
                             # reduce the grid
                             self.topology_reduction = tpdrv.TopologyReduction(grid=self.circuit,
@@ -3640,7 +3599,7 @@ class MainGUI(QMainWindow):
         Actions after reducing
         """
 
-        self.remove_simulation(restpes.SimulationTypes.TopologyReduction_run)
+        self.remove_simulation(drvtpes.SimulationTypes.TopologyReduction_run)
 
         self.create_schematic_from_api(explode_factor=1)
 
@@ -3901,17 +3860,7 @@ class MainGUI(QMainWindow):
         """
         Clear the results tab
         """
-        self.power_flow = None
-        self.short_circuit = None
-        self.stochastic_pf = None
-        self.time_series = None
-        self.clustering_time_series = None
-        self.continuation_power_flow = None
-        self.optimal_power_flow = None
-        self.optimal_power_flow_time_series = None
-        self.ptdf_analysis = None
-        self.ptdf_ts_analysis = None
-        self.otdf_analysis = None
+        self.session.clear()
 
         self.buses_for_storage = None
 
@@ -3967,15 +3916,16 @@ class MainGUI(QMainWindow):
             max_bus_width = self.ui.max_node_size_spinBox.value()
 
             if current_study == pfdrv.PowerFlowDriver.name:
+                drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.PowerFlow_run)
 
                 plot_function(circuit=self.circuit,
-                              Sbus=self.power_flow.results.Sbus,
-                              Sf=self.power_flow.results.Sf,
-                              St=self.power_flow.results.St,
-                              voltages=self.power_flow.results.voltage,
-                              loadings=np.abs(self.power_flow.results.loading),
-                              types=self.power_flow.results.bus_types,
-                              losses=self.power_flow.results.losses,
+                              Sbus=results.Sbus,
+                              Sf=results.Sf,
+                              St=results.St,
+                              voltages=results.voltage,
+                              loadings=np.abs(results.loading),
+                              types=results.bus_types,
+                              losses=results.losses,
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -3984,14 +3934,15 @@ class MainGUI(QMainWindow):
                               file_name=file_name)
 
             elif current_study == pftsdrv.TimeSeries.name:
+                drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.TimeSeries_run)
 
                 plot_function(circuit=self.circuit,
-                              Sbus=self.time_series.results.S[current_step, :],
-                              Sf=self.time_series.results.Sf[current_step, :],
-                              St=self.time_series.results.St[current_step, :],
-                              voltages=self.time_series.results.voltage[current_step, :],
-                              loadings=np.abs(self.time_series.results.loading[current_step, :]),
-                              types=self.time_series.results.bus_types,
+                              Sbus=results.S[current_step, :],
+                              Sf=results.Sf[current_step, :],
+                              St=results.St[current_step, :],
+                              voltages=results.voltage[current_step, :],
+                              loadings=np.abs(results.loading[current_step, :]),
+                              types=results.bus_types,
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -4000,14 +3951,15 @@ class MainGUI(QMainWindow):
                               file_name=file_name)
 
             elif current_study == clpftsdrv.TimeSeriesClustering.name:
+                drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.ClusteringTimeSeries_run)
 
                 plot_function(circuit=self.circuit,
-                              Sbus=self.clustering_time_series.results.S[current_step, :],
-                              Sf=self.clustering_time_series.results.Sf[current_step, :],
-                              St=self.clustering_time_series.results.St[current_step, :],
-                              voltages=self.clustering_time_series.results.voltage[current_step, :],
-                              loadings=np.abs(self.clustering_time_series.results.loading[current_step, :]),
-                              types=self.clustering_time_series.results.bus_types,
+                              Sbus=results.S[current_step, :],
+                              Sf=results.Sf[current_step, :],
+                              St=results.St[current_step, :],
+                              voltages=results.voltage[current_step, :],
+                              loadings=np.abs(results.loading[current_step, :]),
+                              types=results.bus_types,
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -4016,13 +3968,14 @@ class MainGUI(QMainWindow):
                               file_name=file_name)
 
             elif current_study == cpfdrv.ContinuationPowerFlowDriver.name:
+                drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.ContinuationPowerFlow_run)
 
                 plot_function(circuit=self.circuit,
-                              Sbus=self.continuation_power_flow.results.Sbus[current_step, :],
-                              Sf=self.continuation_power_flow.results.Sf[current_step, :],
-                              voltages=self.continuation_power_flow.results.voltages[current_step, :],
-                              loadings=np.abs(self.continuation_power_flow.results.loading[current_step, :]),
-                              types=self.continuation_power_flow.results.bus_types,
+                              Sbus=results.Sbus[current_step, :],
+                              Sf=results.Sf[current_step, :],
+                              voltages=results.voltages[current_step, :],
+                              loadings=np.abs(results.loading[current_step, :]),
+                              types=results.bus_types,
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -4031,13 +3984,14 @@ class MainGUI(QMainWindow):
                               file_name=file_name)
 
             elif current_study == mcdrv.StochasticPowerFlowDriver.name:
+                drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.StochasticPowerFlow)
 
                 plot_function(circuit=self.circuit,
-                              voltages=self.stochastic_pf.results.V_points[current_step, :],
-                              loadings=np.abs(self.stochastic_pf.results.loading_points[current_step, :]),
-                              Sf=self.stochastic_pf.results.Sbr_points[current_step, :],
-                              types=self.stochastic_pf.results.bus_types,
-                              Sbus=self.stochastic_pf.results.S_points[current_step, :],
+                              voltages=results.V_points[current_step, :],
+                              loadings=np.abs(results.loading_points[current_step, :]),
+                              Sf=results.Sbr_points[current_step, :],
+                              types=results.bus_types,
+                              Sbus=results.S_points[current_step, :],
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -4046,12 +4000,14 @@ class MainGUI(QMainWindow):
                               file_name=file_name)
 
             elif current_study == scdrv.ShortCircuitDriver.name:
+                drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.ShortCircuit_run)
+
                 plot_function(circuit=self.circuit,
-                              Sbus=self.short_circuit.results.Sbus,
-                              Sf=self.short_circuit.results.Sf,
-                              voltages=self.short_circuit.results.voltage,
-                              types=self.short_circuit.results.bus_types,
-                              loadings=self.short_circuit.results.loading,
+                              Sbus=results.Sbus,
+                              Sf=results.Sf,
+                              voltages=results.voltage,
+                              types=results.bus_types,
+                              loadings=results.loading,
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -4060,13 +4016,14 @@ class MainGUI(QMainWindow):
                               file_name=file_name)
 
             elif current_study == opfdrv.OptimalPowerFlow.name:
+                drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.OPF_run)
 
                 plot_function(circuit=self.circuit,
-                              voltages=self.optimal_power_flow.results.voltage,
-                              loadings=self.optimal_power_flow.results.loading,
-                              types=self.optimal_power_flow.results.bus_types,
-                              Sf=self.optimal_power_flow.results.Sf,
-                              Sbus=self.optimal_power_flow.results.Sbus,
+                              voltages=results.voltage,
+                              loadings=results.loading,
+                              types=results.bus_types,
+                              Sf=results.Sf,
+                              Sbus=results.Sbus,
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -4075,13 +4032,14 @@ class MainGUI(QMainWindow):
                               file_name=file_name)
 
             elif current_study == opftsdrv.OptimalPowerFlowTimeSeries.name:
+                drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.OPFTimeSeries_run)
 
                 plot_function(circuit=self.circuit,
-                              Sbus=self.optimal_power_flow_time_series.results.Sbus[current_step, :],
-                              Sf=self.optimal_power_flow_time_series.results.Sf[current_step, :],
-                              voltages=self.optimal_power_flow_time_series.results.voltage[current_step, :],
-                              loadings=np.abs(self.optimal_power_flow_time_series.results.loading[current_step, :]),
-                              types=self.optimal_power_flow_time_series.results.bus_types,
+                              Sbus=results.Sbus[current_step, :],
+                              Sf=results.Sf[current_step, :],
+                              voltages=results.voltage[current_step, :],
+                              loadings=np.abs(results.loading[current_step, :]),
+                              types=results.bus_types,
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -4090,17 +4048,17 @@ class MainGUI(QMainWindow):
                               file_name=file_name)
 
             elif current_study == ptdfdrv.LinearAnalysisDriver.name:
-
+                drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.PTDF_run)
                 voltage = np.ones(self.circuit.get_bus_number())
                 loading = np.ones(self.circuit.get_branch_number())
-                Sbranch = self.ptdf_analysis.results.PTDF[:, current_step]
+                Sbranch = results.PTDF[:, current_step]
 
                 plot_function(circuit=self.circuit,
                               Sbus=None,
                               Sf=Sbranch,
                               voltages=voltage,
                               loadings=loading,
-                              types=self.ptdf_analysis.results.bus_types,
+                              types=results.bus_types,
                               loading_label='Sensitivity',
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
@@ -4110,13 +4068,13 @@ class MainGUI(QMainWindow):
                               file_name=file_name)
 
             elif current_study == ptdftsdrv.PtdfTimeSeries.name:
-
+                drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.PTDF_TS_run)
                 plot_function(circuit=self.circuit,
-                              Sbus=self.ptdf_ts_analysis.results.S[current_step],
-                              Sf=self.ptdf_ts_analysis.results.Sf[current_step],
-                              voltages=self.ptdf_ts_analysis.results.voltage[current_step],
-                              loadings=np.abs(self.ptdf_ts_analysis.results.loading[current_step]),
-                              types=self.ptdf_ts_analysis.results.bus_types,
+                              Sbus=results.S[current_step],
+                              Sf=results.Sf[current_step],
+                              voltages=results.voltage[current_step],
+                              loadings=np.abs(results.loading[current_step]),
+                              types=results.bus_types,
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -4197,77 +4155,8 @@ class MainGUI(QMainWindow):
 
             self.results_mdl = None
 
-            if study_name == pfdrv.PowerFlowDriver.name:
-                if self.power_flow.results is not None:
-                    self.results_mdl = self.power_flow.results.mdl(result_type=study_type)
-                else:
-                    warning_msg('There seem to be no results :(')
-
-            elif study_name == pftsdrv.TimeSeries.name:
-                if self.time_series.results is not None:
-                    self.results_mdl = self.time_series.results.mdl(result_type=study_type)
-                else:
-                    warning_msg('There seem to be no results :(')
-
-            elif study_name == clpftsdrv.TimeSeriesClustering.name:
-                if self.clustering_time_series.results is not None:
-                    self.results_mdl = self.clustering_time_series.results.mdl(result_type=study_type)
-                else:
-                    warning_msg('There seem to be no results :(')
-
-            elif study_name == cpfdrv.ContinuationPowerFlowDriver.name:
-                if self.continuation_power_flow.results is not None:
-                    self.results_mdl = self.continuation_power_flow.results.mdl(result_type=study_type)
-                else:
-                    warning_msg('There seem to be no results :(')
-
-            elif study_name == mcdrv.StochasticPowerFlowDriver.name:
-                if self.stochastic_pf.results is not None:
-                    self.results_mdl = self.stochastic_pf.results.mdl(result_type=study_type)
-                else:
-                    warning_msg('There seem to be no results :(')
-
-            elif study_name == scdrv.ShortCircuitDriver.name:
-                if self.short_circuit.results is not None:
-                    self.results_mdl = self.short_circuit.results.mdl(result_type=study_type)
-                else:
-                    warning_msg('There seem to be no results :(')
-
-            elif study_name == opfdrv.OptimalPowerFlow.name:
-                if self.optimal_power_flow.results is not None:
-                    self.results_mdl = self.optimal_power_flow.results.mdl(result_type=study_type)
-                else:
-                    warning_msg('There seem to be no results :(')
-
-            elif study_name == opftsdrv.OptimalPowerFlowTimeSeries.name:
-                if self.optimal_power_flow_time_series.results is not None:
-                    self.results_mdl = self.optimal_power_flow_time_series.results.mdl(result_type=study_type)
-                else:
-                    warning_msg('There seem to be no results :(')
-
-            elif study_name == ptdfdrv.LinearAnalysisDriver.name:
-                if self.ptdf_analysis.results is not None:
-                    self.results_mdl = self.ptdf_analysis.results.mdl(result_type=study_type)
-                else:
-                    warning_msg('There seem to be no results :(')
-
-            elif study_name == ptdftsdrv.PtdfTimeSeries.name:
-                if self.ptdf_ts_analysis.results is not None:
-                    self.results_mdl = self.ptdf_ts_analysis.results.mdl(result_type=study_type)
-                else:
-                    warning_msg('There seem to be no results :(')
-
-            elif study_name == nmkdrv.NMinusK.name:
-                if self.otdf_analysis.results is not None:
-                    self.results_mdl = self.otdf_analysis.results.mdl(result_type=study_type)
-                else:
-                    warning_msg('There seem to be no results :(')
-
-            elif study_name == nmktsdrv.NMinusKTimeSeries.name:
-                if self.otdf_ts_analysis.results is not None:
-                    self.results_mdl = self.otdf_ts_analysis.results.mdl(result_type=study_type)
-                else:
-                    warning_msg('There seem to be no results :(')
+            self.results_mdl = self.session.get_results_model_by_name(study_name=study_name,
+                                                                      study_type=study_type)
 
             if self.results_mdl is not None:
 
@@ -5075,7 +4964,7 @@ class MainGUI(QMainWindow):
 
                             self.LOCK()
 
-                            self.add_simulation(restpes.SimulationTypes.Delete_and_reduce_run)
+                            self.add_simulation(drvtpes.SimulationTypes.Delete_and_reduce_run)
 
                             self.delete_and_reduce_driver = tpdrv.DeleteAndReduce(grid=self.circuit,
                                                                                   objects=objects,
@@ -5120,7 +5009,7 @@ class MainGUI(QMainWindow):
 
             self.clear_results()
 
-            self.remove_simulation(restpes.SimulationTypes.Delete_and_reduce_run)
+            self.remove_simulation(drvtpes.SimulationTypes.Delete_and_reduce_run)
 
             self.UNLOCK()
 

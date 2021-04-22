@@ -27,6 +27,7 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Devices import Branch, Bus
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 ########################################################################################################################
 # Short circuit classes
@@ -181,6 +182,7 @@ class ShortCircuitDriver(QRunnable):
     # progress_text = pyqtSignal(str)
     # done_signal = pyqtSignal()
     name = 'Short Circuit'
+    tpe = SimulationTypes.ShortCircuit_run
 
     def __init__(self, grid: MultiCircuit, options: ShortCircuitOptions, pf_options: PowerFlowOptions,
                  pf_results: PowerFlowResults, opf_results=None):

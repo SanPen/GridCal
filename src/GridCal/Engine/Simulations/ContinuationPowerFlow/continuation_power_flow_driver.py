@@ -28,6 +28,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 
 ########################################################################################################################
@@ -292,6 +293,7 @@ class ContinuationPowerFlowDriver(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
     name = 'Continuation Power Flow'
+    tpe = SimulationTypes.ContinuationPowerFlow_run
 
     def __init__(self, circuit: MultiCircuit,
                  options: ContinuationPowerFlowOptions,
