@@ -323,6 +323,18 @@ class UpfcGraphicItem(QGraphicsLineItem):
             ra6.setIcon(plot_icon)
             ra6.triggered.connect(self.plot_profiles)
 
+            ra4 = menu.addAction('Assign rate to profile')
+            ra4_icon = QIcon()
+            ra4_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
+            ra4.setIcon(ra4_icon)
+            ra4.triggered.connect(self.assign_rate_to_profile)
+
+            ra5 = menu.addAction('Assign active state to profile')
+            ra5_icon = QIcon()
+            ra5_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
+            ra5.setIcon(ra5_icon)
+            ra5.triggered.connect(self.assign_status_to_profile)
+
             menu.addSeparator()
 
             re = menu.addAction('Reduce')
@@ -587,3 +599,15 @@ class UpfcGraphicItem(QGraphicsLineItem):
         dlg = UpfcEditor(self.api_object, Sbase)
         if dlg.exec_():
             pass
+
+    def assign_rate_to_profile(self):
+        """
+        Assign the snapshot rate to the profile
+        """
+        self.diagramScene.set_rate_to_profile(self.api_object)
+
+    def assign_status_to_profile(self):
+        """
+        Assign the snapshot rate to the profile
+        """
+        self.diagramScene.set_active_status_to_profile(self.api_object)

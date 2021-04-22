@@ -55,24 +55,24 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
                 filename = name + ".pkl"
 
                 # open a string buffer
-                with BytesIO() as buffer:
-                    # save the DataFrame to the buffer
-                    df.to_pickle(buffer)
+                try:  # try pickle
+                    with BytesIO() as buffer:
+                        df.to_pickle(buffer)  # save the DataFrame to the buffer
+                        myzip.writestr(filename, buffer.getvalue())  # save the buffer to the zip file
 
-                    # save the buffer to the zip file
-                    myzip.writestr(filename, buffer.getvalue())
+                except:  # otherwise just use csv
+                    print('Failed to pickle profile...install Pandas >= 1.2')
+                    with StringIO() as buffer:
+                        df.to_csv(buffer, index=False)  # save the DataFrame to the buffer
+                        myzip.writestr(filename, buffer.getvalue())  # save the buffer to the zip file
             else:
                 # compose the csv file name
                 filename = name + ".csv"
 
                 # open a string buffer
                 with StringIO() as buffer:
-
-                    # save the DataFrame to the buffer
-                    df.to_csv(buffer, index=False)
-
-                    # save the buffer to the zip file
-                    myzip.writestr(filename, buffer.getvalue())
+                    df.to_csv(buffer, index=False)  # save the DataFrame to the buffer
+                    myzip.writestr(filename, buffer.getvalue())  # save the buffer to the zip file
 
             i += 1
 
