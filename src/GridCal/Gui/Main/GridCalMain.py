@@ -268,18 +268,18 @@ class MainGUI(QMainWindow):
         self.time_series: pftsdrv.TimeSeries = None
         self.clustering_time_series: clpftsdrv.TimeSeriesClustering = None
         self.continuation_power_flow: cpfdrv.ContinuationPowerFlowDriver = None
-        self.cascade = None
+        self.cascade: blkout.Cascading = None
         self.optimal_power_flow: opfdrv.OptimalPowerFlow = None
         self.optimal_power_flow_time_series: opftsdrv.OptimalPowerFlowTimeSeries = None
-        self.transient_stability = None
         self.topology_reduction: tpdrv.TopologyReduction = None
-        self.open_file_thread_object = None
-        self.save_file_thread_object = None
         self.ptdf_analysis: ptdfdrv.LinearAnalysisDriver = None
         self.ptdf_ts_analysis: ptdftsdrv.PtdfTimeSeries = None
         self.otdf_analysis: ptdfdrv.LinearAnalysisDriver = None
         self.otdf_ts_analysis: nmkdrv.NMinusK = None
+
         self.painter = None
+        self.open_file_thread_object = None
+        self.save_file_thread_object = None
         self.delete_and_reduce_driver = None
         self.export_all_thread_object = None
         self.find_node_groups_driver: tpdrv.NodeGroupsDriver = None
@@ -602,7 +602,6 @@ class MainGUI(QMainWindow):
                        self.cascade,
                        self.optimal_power_flow,
                        self.optimal_power_flow_time_series,
-                       self.transient_stability,
                        self.topology_reduction,
                        self.ptdf_analysis,
                        self.ptdf_ts_analysis,
@@ -3910,7 +3909,6 @@ class MainGUI(QMainWindow):
         self.continuation_power_flow = None
         self.optimal_power_flow = None
         self.optimal_power_flow_time_series = None
-        self.transient_stability = None
         self.ptdf_analysis = None
         self.ptdf_ts_analysis = None
         self.otdf_analysis = None
