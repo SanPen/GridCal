@@ -411,7 +411,7 @@ class Transformer2W(EditableDevice):
                                 code=code,
                                 device_type=DeviceType.Transformer2WDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the branch.'),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
+                                                  'idtag': GCProp('', str, 'Unique ID', False),
                                                   'code': GCProp('', str, 'Secondary ID'),
                                                   'bus_from': GCProp('', DeviceType.BusDevice,
                                                                      'Name of the bus at the "from" side of the branch.'),

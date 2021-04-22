@@ -14,8 +14,8 @@
    width="192"
    height="192"
    viewBox="0 0 192 192"
-   sodipodi:docname="gear.svg"
-   inkscape:version="0.92.4 (5da689c313, 2019-01-14)">
+   sodipodi:docname="copy.svg"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)">
   <metadata
      id="metadata8">
     <rdf:RDF>
@@ -39,21 +39,20 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1858"
-     inkscape:window-height="1057"
+     inkscape:window-width="1863"
+     inkscape:window-height="1025"
      id="namedview4"
      showgrid="false"
      inkscape:zoom="1.2291667"
-     inkscape:cx="-196.88135"
-     inkscape:cy="96.000006"
-     inkscape:window-x="54"
-     inkscape:window-y="-8"
+     inkscape:cx="-47.999997"
+     inkscape:cy="96.000003"
+     inkscape:window-x="57"
+     inkscape:window-y="27"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg2" />
   <path
-     style="fill:#999999;fill-opacity:1;stroke:none;stroke-width:1.05025125px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     d="M 10.576272,94.017211 60.13389,154.68255 180.61016,60.693977 170.35686,50.440679 62.697217,126.48598 22.538455,87.181671 Z"
-     id="path812"
-     inkscape:connector-curvature="0"
-     sodipodi:nodetypes="ccccccc" />
+     style="fill:#999999;stroke-width:1.33333337"
+     d="m 59.627116,180.31172 c -1.46666,-0.62009 -4.16666,-2.7414 -6,-4.71401 l -3.33333,-3.58656 V 109.47754 46.943938 l 4.35897,-4.358975 4.35898,-4.358974 h 50.615384 50.61539 l 4.35897,4.358974 4.35897,4.358975 v 62.615382 62.61539 l -4.35758,4.35897 -4.3576,4.35897 -48.97574,0.27327 c -26.936664,0.15029 -50.175744,-0.23409 -51.642414,-0.8542 z m 94.000004,-70.7524 V 53.559322 h -44 -44.000004 v 55.999998 56 h 44.000004 44 z M 17.920536,74.250594 l 0.37325,-59.308728 4.35767,-4.357939 4.35768,-4.3579383 51.30899,-0.3786652 51.308994,-0.3786654 v 8.0453319 8.045332 h -48.000004 -48 v 56 55.999998 h -8.03992 -8.03991 z"
+     id="path817"
+     inkscape:connector-curvature="0" />
 </svg>

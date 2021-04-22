@@ -14,8 +14,8 @@
    width="192"
    height="192"
    viewBox="0 0 192 192"
-   sodipodi:docname="gear.svg"
-   inkscape:version="0.92.4 (5da689c313, 2019-01-14)">
+   sodipodi:docname="delete.svg"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)">
   <metadata
      id="metadata8">
     <rdf:RDF>
@@ -39,21 +39,20 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1858"
-     inkscape:window-height="1057"
+     inkscape:window-width="784"
+     inkscape:window-height="480"
      id="namedview4"
      showgrid="false"
      inkscape:zoom="1.2291667"
-     inkscape:cx="-196.88135"
-     inkscape:cy="96.000006"
-     inkscape:window-x="54"
-     inkscape:window-y="-8"
-     inkscape:window-maximized="1"
+     inkscape:cx="-47.999997"
+     inkscape:cy="96.000003"
+     inkscape:window-x="57"
+     inkscape:window-y="27"
+     inkscape:window-maximized="0"
      inkscape:current-layer="svg2" />
   <path
-     style="fill:#999999;fill-opacity:1;stroke:none;stroke-width:1.05025125px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     d="M 10.576272,94.017211 60.13389,154.68255 180.61016,60.693977 170.35686,50.440679 62.697217,126.48598 22.538455,87.181671 Z"
-     id="path812"
-     inkscape:connector-curvature="0"
-     sodipodi:nodetypes="ccccccc" />
+     style="fill:#999999;stroke-width:1.33333337"
+     d="M 44.01994,147.1665 38.367572,141.51412 60.68885,119.16384 83.010129,96.813559 60.68885,74.463272 38.367572,52.112986 44.01994,46.460618 49.672308,40.80825 72.022594,63.129528 94.372885,85.450807 116.72318,63.129528 139.07346,40.80825 l 5.65238,5.652368 5.65236,5.652368 -22.32128,22.350286 -22.32128,22.350287 22.32128,22.350281 22.32128,22.35028 -5.65236,5.65238 -5.65238,5.65236 -22.35028,-22.32128 -22.350295,-22.32127 -22.350291,22.32127 -22.350286,22.32128 z"
+     id="path817"
+     inkscape:connector-curvature="0" />
 </svg>

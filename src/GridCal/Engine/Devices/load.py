@@ -60,17 +60,19 @@ class Load(EditableDevice):
 
     """
 
-    def __init__(self, name='Load', idtag=None, G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, cost=0.0,
+    def __init__(self, name='Load', idtag=None, code='', G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, cost=0.0,
                  G_prof=None, B_prof=None, Ir_prof=None, Ii_prof=None, P_prof=None, Q_prof=None,
                  active=True, mttf=0.0, mttr=0.0):
 
         EditableDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
+                                code=code,
                                 active=active,
                                 device_type=DeviceType.LoadDevice,
                                 editable_headers={'name': GCProp('', str, 'Load name'),
                                                   'idtag': GCProp('', str, 'Unique ID', False),
+                                                  'code': GCProp('', str, 'Secondary ID', True),
                                                   'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
                                                   'active': GCProp('', bool, 'Is the load active?'),
                                                   'P': GCProp('MW', float, 'Active power'),

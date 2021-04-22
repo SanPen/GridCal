@@ -109,6 +109,7 @@ class SimulationTypes(Enum):
     ShortCircuit_run = 'Short circuit'
     MonteCarlo_run = 'Monte Carlo'
     TimeSeries_run = 'Time series power flow'
+    ClusteringTimeSeries_run = 'Clustering Time series power flow'
     VoltageCollapse_run = 'Voltage collapse'
     LatinHypercube_run = 'Latin Hypercube'
     Cascade_run = 'Cascade'

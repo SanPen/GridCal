@@ -112,10 +112,10 @@ class Bus(EditableDevice):
                                                   'y': GCProp('px', float, 'y position in pixels.'),
                                                   'h': GCProp('px', float, 'height of the bus in pixels.'),
                                                   'w': GCProp('px', float, 'Width of the bus in pixels.'),
-                                                  'country': GCProp('', Country, 'Country of the bus'),
-                                                  'area': GCProp('', Area, 'Area of the bus'),
-                                                  'zone': GCProp('', Zone, 'Zone of the bus'),
-                                                  'substation': GCProp('', Substation, 'Substation of the bus.'),
+                                                  'country': GCProp('', DeviceType.CountryDevice, 'Country of the bus'),
+                                                  'area': GCProp('', DeviceType.AreaDevice, 'Area of the bus'),
+                                                  'zone': GCProp('', DeviceType.ZoneDevice, 'Zone of the bus'),
+                                                  'substation': GCProp('', DeviceType.SubstationDevice, 'Substation of the bus.'),
                                                   'longitude': GCProp('deg', float, 'longitude of the bus.'),
                                                   'latitude': GCProp('deg', float, 'latitude of the bus.')},
                                 non_editable_attributes=['idtag'],
@@ -284,6 +284,29 @@ class Bus(EditableDevice):
             self.type = BusMode.PQ
 
         return self.type
+
+    def get_reactive_power_limits(self):
+        """
+        get the summation of reactive power
+        @return: Qmin, Qmax
+        """
+        Qmin = 0.0
+        Qmax = 0.0
+
+        # count the active and controlled generators
+        for elm in self.controlled_generators + self.batteries:
+            if elm.active:
+                if elm.is_controlled:
+                    Qmin += elm.Qmin
+                    Qmax += elm.Qmax
+
+        for elm in self.shunts:
+            if elm.active:
+                if elm.is_controlled:
+                    Qmin += elm.Bmin
+                    Qmax += elm.Bmax
+
+        return Qmin, Qmax
 
     def initialize_lp_profiles(self):
         """
