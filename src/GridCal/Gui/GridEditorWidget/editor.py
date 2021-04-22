@@ -399,6 +399,23 @@ class DiagramScene(QGraphicsScene):
                     api_object.rate_prof *= 0
                     api_object.rate_prof += api_object.rate
 
+    def set_active_status_to_profile(self, api_object):
+        """
+
+        :param api_object:
+        """
+        if api_object is not None:
+            if api_object.active_prof is not None:
+                quit_msg = "Are you sure that you want to overwrite the rates profile with the snapshot value?"
+                reply = QMessageBox.question(self.parent_, 'Overwrite the profile', quit_msg, QMessageBox.Yes, QMessageBox.No)
+
+                if reply == QMessageBox.Yes:
+                    shape = api_object.active_prof.shape
+                    if api_object.active:
+                        api_object.active_prof = np.ones(shape, dtype=bool)
+                    else:
+                        api_object.active_prof = np.zeros(shape, dtype=bool)
+
     def mouseMoveEvent(self, mouseEvent):
         """
 

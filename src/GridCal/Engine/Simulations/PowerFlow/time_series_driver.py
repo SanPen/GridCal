@@ -175,6 +175,9 @@ class TimeSeriesResults(PowerFlowResults):
         if self.voltage.shape == results.voltage.shape:
             self.voltage = results.voltage
             self.S = results.S
+        elif self.voltage.shape[0] == results.voltage.shape[0]:
+            self.voltage[:, b_idx] = results.voltage
+            self.S[:, b_idx] = results.S
         else:
             self.voltage[np.ix_(t_index, b_idx)] = results.voltage
             self.S[np.ix_(t_index, b_idx)] = results.S
@@ -197,6 +200,22 @@ class TimeSeriesResults(PowerFlowResults):
 
             self.converged_values = self.converged_values * results.converged_values
 
+        elif self.Sf.shape[0] == results.Sf.shape[0]:
+            self.Sf[:, br_idx] = results.Sf
+            self.St[:, br_idx] = results.St
+
+            self.Vbranch[:, br_idx] = results.Vbranch
+
+            self.loading[:, br_idx] = results.loading
+
+            self.losses[:, br_idx] = results.losses
+
+            self.flow_direction[:, br_idx] = results.flow_direction
+
+            if (results.error_values > self.error_values).any():
+                self.error_values += results.error_values
+
+            self.converged_values = self.converged_values * results.converged_values
         else:
             self.Sf[np.ix_(t_index, br_idx)] = results.Sf
             self.St[np.ix_(t_index, br_idx)] = results.St
