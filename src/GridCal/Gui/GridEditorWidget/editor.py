@@ -318,16 +318,16 @@ class DiagramScene(QGraphicsScene):
                     ax_1.set_ylabel('Loading [%]', fontsize=11)
                     df.plot(ax=ax_1)
 
-                if loading_st_data is not None:
-                    p_st = np.arange(len(loading_st_data)).astype(float) / len(loading_st_data)
-                    df = pd.DataFrame(data=loading_st_data, index=p_st, columns=['Stochastic Power Flow'])
+                if loading_clustering_data is not None:
+                    p_st = np.arange(len(loading_clustering_data)).astype(float) / len(loading_clustering_data)
+                    df = pd.DataFrame(data=loading_clustering_data, index=p_st, columns=['Clustering Time Series'])
                     ax_1.set_title('Probability x < value', fontsize=14)
                     ax_1.set_ylabel('Loading [%]', fontsize=11)
                     df.plot(ax=ax_1)
 
-                if loading_clustering_data is not None:
-                    p_st = np.arange(len(loading_clustering_data)).astype(float) / len(loading_clustering_data)
-                    df = pd.DataFrame(data=loading_clustering_data, index=p_st, columns=['Clustering Time Series'])
+                if loading_st_data is not None:
+                    p_st = np.arange(len(loading_st_data)).astype(float) / len(loading_st_data)
+                    df = pd.DataFrame(data=loading_st_data, index=p_st, columns=['Stochastic Power Flow'])
                     ax_1.set_title('Probability x < value', fontsize=14)
                     ax_1.set_ylabel('Loading [%]', fontsize=11)
                     df.plot(ax=ax_1)
