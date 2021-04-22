@@ -276,6 +276,7 @@ class DiagramScene(QGraphicsScene):
 
         # set time
         x = self.circuit.time_profile
+        x_cl = x
 
         if x is not None:
             if len(x) > 0:
@@ -286,11 +287,18 @@ class DiagramScene(QGraphicsScene):
                 power_data = dict()
                 loading_data = dict()
                 loading_st_data = None
+                loading_clustering_data = None
+                power_clustering_data = None
 
                 for key, driver in self.circuit.results_dictionary.items():
                     if key == 'Time Series':
                         power_data[key] = driver.results.Sf.real[:, i]
                         loading_data[key] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+
+                    elif key == 'Time Series Clustering':
+                        x_cl = x[driver.sampled_time_idx]
+                        power_clustering_data = driver.results.Sf.real[:, i]
+                        loading_clustering_data = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
 
                     elif key == 'PTDF Time Series':
                         power_data[key] = driver.results.Sf.real[:, i]
@@ -317,9 +325,22 @@ class DiagramScene(QGraphicsScene):
                     ax_1.set_ylabel('Loading [%]', fontsize=11)
                     df.plot(ax=ax_1)
 
-                # loading
+                if loading_clustering_data is not None:
+                    p_st = np.arange(len(loading_clustering_data)).astype(float) / len(loading_clustering_data)
+                    df = pd.DataFrame(data=loading_clustering_data, index=p_st, columns=['Clustering Time Series'])
+                    ax_1.set_title('Probability x < value', fontsize=14)
+                    ax_1.set_ylabel('Loading [%]', fontsize=11)
+                    df.plot(ax=ax_1)
+
+                # power
                 if len(power_data.keys()):
                     df = pd.DataFrame(data=power_data, index=x)
+                    ax_2.set_title('Power', fontsize=14)
+                    ax_2.set_ylabel('Power [MW]', fontsize=11)
+                    df.plot(ax=ax_2)
+
+                if power_clustering_data is not None:
+                    df = pd.DataFrame(data=power_clustering_data, index=x_cl, columns=['Clustering Time Series'])
                     ax_2.set_title('Power', fontsize=14)
                     ax_2.set_ylabel('Power [MW]', fontsize=11)
                     df.plot(ax=ax_2)
