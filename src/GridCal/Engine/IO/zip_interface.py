@@ -35,7 +35,7 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
     """
 
     n = len(dfs)
-
+    n_failed = 0
     # open zip file for writing
     with zipfile.ZipFile(filename_zip, 'w', zipfile.ZIP_DEFLATED) as myzip:
 
@@ -61,7 +61,8 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
                         myzip.writestr(filename, buffer.getvalue())  # save the buffer to the zip file
 
                 except:  # otherwise just use csv
-                    print('Failed to pickle profile...install Pandas >= 1.2')
+                    n_failed += 1
+                    filename = name + ".csv"
                     with StringIO() as buffer:
                         df.to_csv(buffer, index=False)  # save the DataFrame to the buffer
                         myzip.writestr(filename, buffer.getvalue())  # save the buffer to the zip file
@@ -76,7 +77,8 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
 
             i += 1
 
-    print('All DataFrames flushed to zip!')
+    if n_failed:
+        print('Failed to pickle several profiles, but saved them as csv.\nFor improved speed install Pandas >= 1.2')
 
 
 def read_data_frame_from_zip(file_pointer, extension, index_col=None):
