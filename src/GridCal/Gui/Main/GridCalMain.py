@@ -60,6 +60,7 @@ import GridCal.Engine.Simulations.OPF.opf_ts_driver as opftsdrv
 import GridCal.Engine.Simulations.PowerFlow.power_flow_driver as pfdrv
 import GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_driver as mcdrv
 import GridCal.Engine.Simulations.PowerFlow.time_series_driver as pftsdrv
+import GridCal.Engine.Simulations.PowerFlow.time_series_clustring_driver as clpftsdrv
 import GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver as cpfdrv
 import GridCal.Engine.Simulations.Topology.topology_driver as tpdrv
 import GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver as sgmadrv
@@ -261,41 +262,42 @@ class MainGUI(QMainWindow):
         self.ui.progress_frame.setVisible(self.lock_ui)
 
         # threads
-        self.power_flow = None
-        self.short_circuit = None
-        self.stochastic_pf = None
-        self.time_series = None
-        self.voltage_stability = None
-        self.latin_hypercube_sampling = None
+        self.power_flow: pfdrv.PowerFlowDriver = None
+        self.short_circuit: scdrv.ShortCircuitDriver = None
+        self.stochastic_pf: mcdrv.StochasticPowerFlowDriver = None
+        self.time_series: pftsdrv.TimeSeries = None
+        self.clustering_time_series: clpftsdrv.TimeSeriesClustering = None
+        self.continuation_power_flow: cpfdrv.ContinuationPowerFlowDriver = None
         self.cascade = None
-        self.optimal_power_flow = None
-        self.optimal_power_flow_time_series = None
+        self.optimal_power_flow: opfdrv.OptimalPowerFlow = None
+        self.optimal_power_flow_time_series: opftsdrv.OptimalPowerFlowTimeSeries = None
         self.transient_stability = None
-        self.topology_reduction = None
+        self.topology_reduction: tpdrv.TopologyReduction = None
         self.open_file_thread_object = None
         self.save_file_thread_object = None
-        self.ptdf_analysis = None
-        self.ptdf_ts_analysis = None
-        self.otdf_analysis = None
-        self.otdf_ts_analysis = None
+        self.ptdf_analysis: ptdfdrv.LinearAnalysisDriver = None
+        self.ptdf_ts_analysis: ptdftsdrv.PtdfTimeSeries = None
+        self.otdf_analysis: ptdfdrv.LinearAnalysisDriver = None
+        self.otdf_ts_analysis: nmkdrv.NMinusK = None
         self.painter = None
         self.delete_and_reduce_driver = None
         self.export_all_thread_object = None
-        self.find_node_groups_driver = None
+        self.find_node_groups_driver: tpdrv.NodeGroupsDriver = None
         self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, None, None)
+        self.stuff_running_now = list()
 
         # window pointers
-        self.file_sync_window = None
-        self.sigma_dialogue = None
-        self.grid_generator_dialogue = None
-        self.analysis_dialogue = None
-        self.profile_input_dialogue = None
-        self.stuff_running_now = list()
+        self.file_sync_window: SyncDialogueWindow = None
+        self.sigma_dialogue: SigmaAnalysisGUI = None
+        self.grid_generator_dialogue: GridGeneratorGUI = None
+        self.analysis_dialogue: GridAnalysisGUI = None
+        self.profile_input_dialogue: ProfileInputGUI = None
         self.object_select_window: ObjectSelectWindow = None
         self.coordinates_window: CoordinatesInputGUI = None
 
         self.file_name = ''
 
+        # current results model
         self.results_mdl = ResultsModel(data=np.zeros((0, 0)), columns=np.zeros(0), index=np.zeros(0))
 
         # list of all the objects of the selected type under the Objects tab
@@ -303,6 +305,7 @@ class MainGUI(QMainWindow):
 
         self.buses_for_storage = None
 
+        # dictionaries for available results
         self.available_results_dict = None
         self.available_results_steps_dict = None
 
@@ -339,6 +342,8 @@ class MainGUI(QMainWindow):
         self.ui.actionVoltage_stability.triggered.connect(self.run_continuation_power_flow)
 
         self.ui.actionPower_Flow_Time_series.triggered.connect(self.run_time_series)
+
+        self.ui.actionClustering_time_series.triggered.connect(self.run_clustering_time_series)
 
         self.ui.actionPower_flow_Stochastic.triggered.connect(self.run_stochastic)
 
@@ -592,8 +597,8 @@ class MainGUI(QMainWindow):
                        self.short_circuit,
                        self.stochastic_pf,
                        self.time_series,
-                       self.voltage_stability,
-                       self.latin_hypercube_sampling,
+                       self.continuation_power_flow,
+                       self.clustering_time_series,
                        self.cascade,
                        self.optimal_power_flow,
                        self.optimal_power_flow_time_series,
@@ -2816,18 +2821,18 @@ class MainGUI(QMainWindow):
                         pf_options = self.get_selected_power_flow_options()
 
                         # create object
-                        self.voltage_stability = cpfdrv.ContinuationPowerFlowDriver(circuit=self.circuit,
-                                                                                    options=vc_options,
-                                                                                    inputs=vc_inputs,
-                                                                                    pf_options=pf_options)
+                        self.continuation_power_flow = cpfdrv.ContinuationPowerFlowDriver(circuit=self.circuit,
+                                                                                          options=vc_options,
+                                                                                          inputs=vc_inputs,
+                                                                                          pf_options=pf_options)
 
                         # make connections
-                        self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
-                        self.voltage_stability.progress_text.connect(self.ui.progress_label.setText)
-                        self.voltage_stability.done_signal.connect(self.post_continuation_power_flow)
+                        self.continuation_power_flow.progress_signal.connect(self.ui.progressBar.setValue)
+                        self.continuation_power_flow.progress_text.connect(self.ui.progress_label.setText)
+                        self.continuation_power_flow.done_signal.connect(self.post_continuation_power_flow)
 
                         # thread start
-                        self.voltage_stability.start()
+                        self.continuation_power_flow.start()
 
                     elif use_profiles:
                         '''
@@ -2850,18 +2855,18 @@ class MainGUI(QMainWindow):
                             pf_options = self.get_selected_power_flow_options()
 
                             # create object
-                            self.voltage_stability = cpfdrv.ContinuationPowerFlowDriver(circuit=self.circuit,
-                                                                                        options=vc_options,
-                                                                                        inputs=vc_inputs,
-                                                                                        pf_options=pf_options)
+                            self.continuation_power_flow = cpfdrv.ContinuationPowerFlowDriver(circuit=self.circuit,
+                                                                                              options=vc_options,
+                                                                                              inputs=vc_inputs,
+                                                                                              pf_options=pf_options)
 
                             # make connections
-                            self.voltage_stability.progress_signal.connect(self.ui.progressBar.setValue)
-                            self.voltage_stability.progress_text.connect(self.ui.progress_label.setText)
-                            self.voltage_stability.done_signal.connect(self.post_continuation_power_flow)
+                            self.continuation_power_flow.progress_signal.connect(self.ui.progressBar.setValue)
+                            self.continuation_power_flow.progress_text.connect(self.ui.progress_label.setText)
+                            self.continuation_power_flow.done_signal.connect(self.post_continuation_power_flow)
 
                             # thread start
-                            self.voltage_stability.start()
+                            self.continuation_power_flow.start()
                         else:
                             info_msg('Check the selected start and finnish time series indices.')
                 else:
@@ -2877,19 +2882,19 @@ class MainGUI(QMainWindow):
         Actions performed after the voltage stability. Launched by the thread after its execution
         :return:
         """
-        if self.voltage_stability.results is not None:
+        if self.continuation_power_flow.results is not None:
 
             self.remove_simulation(restpes.SimulationTypes.VoltageCollapse_run)
 
-            if self.voltage_stability.results.voltages is not None:
-                if self.voltage_stability.results.voltages.shape[0] > 0:
+            if self.continuation_power_flow.results.voltages is not None:
+                if self.continuation_power_flow.results.voltages.shape[0] > 0:
                     if self.ui.draw_schematic_checkBox.isChecked():
                         viz.colour_the_schematic(circuit=self.circuit,
-                                                 Sbus=self.voltage_stability.results.Sbus[-1, :],
-                                                 Sf=self.voltage_stability.results.Sf[-1, :],
-                                                 voltages=self.voltage_stability.results.voltages[-1, :],
-                                                 loadings=self.voltage_stability.results.loading[-1, :],
-                                                 types=self.voltage_stability.results.bus_types,
+                                                 Sbus=self.continuation_power_flow.results.Sbus[-1, :],
+                                                 Sf=self.continuation_power_flow.results.Sf[-1, :],
+                                                 voltages=self.continuation_power_flow.results.voltages[-1, :],
+                                                 loadings=self.continuation_power_flow.results.loading[-1, :],
+                                                 types=self.continuation_power_flow.results.bus_types,
                                                  use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                                  min_branch_width=self.ui.min_branch_size_spinBox.value(),
                                                  max_branch_width=self.ui.max_branch_size_spinBox.value(),
@@ -2998,6 +3003,104 @@ class MainGUI(QMainWindow):
 
         else:
             warning_msg('No results for the time series simulation.')
+
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
+
+    def run_clustering_time_series(self):
+        """
+        Run a time series power flow simulation in a separated thread from the gui
+        @return:
+        """
+        if len(self.circuit.buses) > 0:
+            if restpes.SimulationTypes.ClusteringTimeSeries_run not in self.stuff_running_now:
+                if self.valid_time_series():
+                    self.LOCK()
+
+                    self.add_simulation(restpes.SimulationTypes.ClusteringTimeSeries_run)
+
+                    self.ui.progress_label.setText('Compiling the grid...')
+                    QtGui.QGuiApplication.processEvents()
+
+                    use_opf_vals = self.ui.actionOpf_to_Power_flow.isChecked()
+
+                    if use_opf_vals:
+                        if self.optimal_power_flow_time_series is None:
+                            if use_opf_vals:
+                                info_msg('There are no OPF time series, '
+                                         'therefore this operation will not use OPF information.')
+                                self.ui.actionOpf_to_Power_flow.setChecked(False)
+
+                            opf_time_series_results = None
+                        else:
+                            if self.optimal_power_flow_time_series.results is not None:
+                                opf_time_series_results = self.optimal_power_flow_time_series.results
+                            else:
+                                info_msg('There are no OPF time series results, '
+                                         'therefore this operation will not use OPF information.')
+                                self.ui.actionOpf_to_Power_flow.setChecked(False)
+                                opf_time_series_results = None
+                    else:
+                        opf_time_series_results = None
+
+                    options = self.get_selected_power_flow_options()
+                    start = self.ui.profile_start_slider.value()
+                    end = self.ui.profile_end_slider.value() + 1
+                    cluster_number = self.ui.cluster_number_spinBox.value()
+                    self.clustering_time_series = clpftsdrv.TimeSeriesClustering(grid=self.circuit,
+                                                                                 options=options,
+                                                                                 opf_time_series_results=opf_time_series_results,
+                                                                                 start_=start,
+                                                                                 end_=end,
+                                                                                 cluster_number=cluster_number)
+
+                    # Set the time series run options
+                    self.clustering_time_series.progress_signal.connect(self.ui.progressBar.setValue)
+                    self.clustering_time_series.progress_text.connect(self.ui.progress_label.setText)
+                    self.clustering_time_series.done_signal.connect(self.post_clustering_time_series)
+
+                    self.clustering_time_series.start()
+
+                else:
+                    warning_msg('There are no time series.', 'Time series')
+            else:
+                warning_msg('Another time series power flow is being executed now...')
+        else:
+            pass
+
+    def post_clustering_time_series(self):
+        """
+        Events to do when the time series simulation has finished
+        @return:
+        """
+
+        if self.clustering_time_series.results is not None:
+
+            self.remove_simulation(restpes.SimulationTypes.ClusteringTimeSeries_run)
+
+            if self.ui.draw_schematic_checkBox.isChecked():
+                voltage = self.clustering_time_series.results.voltage.max(axis=0)
+                loading = np.abs(self.clustering_time_series.results.loading).max(axis=0)
+                Sbranch = self.clustering_time_series.results.Sf.max(axis=0)
+                Sbus = self.clustering_time_series.results.S.max(axis=0)
+
+                viz.colour_the_schematic(circuit=self.circuit,
+                                         Sbus=Sbus,
+                                         Sf=Sbranch,
+                                         voltages=voltage,
+                                         loadings=loading,
+                                         types=self.clustering_time_series.results.bus_types,
+                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                         max_bus_width=self.ui.max_node_size_spinBox.value()
+                                         )
+
+            self.update_available_results()
+
+        else:
+            warning_msg('No results for the clustering time series simulation.')
 
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
@@ -3734,26 +3837,10 @@ class MainGUI(QMainWindow):
         if reply == QMessageBox.Yes:
             # send the cancel state to whatever it is being executed
 
-            if self.power_flow is not None:
-                self.power_flow.cancel()
-
-            if self.stochastic_pf is not None:
-                self.stochastic_pf.cancel()
-
-            if self.time_series is not None:
-                self.time_series.cancel()
-
-            if self.voltage_stability is not None:
-                self.voltage_stability.cancel()
-
-            if self.optimal_power_flow_time_series is not None:
-                self.optimal_power_flow_time_series.cancel()
-
-            if self.cascade is not None:
-                self.cascade.cancel()
-
-            if self.ptdf_analysis is not None:
-                self.ptdf_analysis.cancel()
+            for drv in self.get_all_threads():
+                if drv is not None:
+                    if hasattr(drv, 'cancel'):
+                        drv.cancel()
         else:
             pass
 
@@ -3764,53 +3851,11 @@ class MainGUI(QMainWindow):
         """
         lst = list()
 
-        if self.power_flow is not None:
-            if self.power_flow.results is not None:
-                lst.append(self.power_flow)
-
-        if self.voltage_stability is not None:
-            if self.voltage_stability.results is not None:
-                lst.append(self.voltage_stability)
-
-        if self.time_series is not None:
-            if self.time_series.results is not None:
-                lst.append(self.time_series)
-
-        if self.stochastic_pf is not None:
-            if self.stochastic_pf.results is not None:
-                lst.append(self.stochastic_pf)
-
-        if self.short_circuit is not None:
-            if self.short_circuit.results is not None:
-                lst.append(self.short_circuit)
-
-        if self.optimal_power_flow is not None:
-            if self.optimal_power_flow.results is not None:
-                lst.append(self.optimal_power_flow)
-
-        if self.optimal_power_flow_time_series is not None:
-            if self.optimal_power_flow_time_series.results is not None:
-                lst.append(self.optimal_power_flow_time_series)
-
-        if self.transient_stability is not None:
-            if self.transient_stability.results is not None:
-                lst.append(self.transient_stability)
-
-        if self.ptdf_analysis is not None:
-            if self.ptdf_analysis.results is not None:
-                lst.append(self.ptdf_analysis)
-
-        if self.ptdf_ts_analysis is not None:
-            if self.ptdf_ts_analysis.results is not None:
-                lst.append(self.ptdf_ts_analysis)
-
-        if self.otdf_analysis is not None:
-            if self.otdf_analysis.results is not None:
-                lst.append(self.otdf_analysis)
-
-        if self.otdf_ts_analysis is not None:
-            if self.otdf_ts_analysis.results is not None:
-                lst.append(self.otdf_ts_analysis)
+        for drv in self.get_simulation_threads():
+            if drv is not None:
+                if hasattr(drv, 'results'):
+                    if drv.results is not None:
+                        lst.append(drv)
 
         return lst
 
@@ -3861,7 +3906,8 @@ class MainGUI(QMainWindow):
         self.short_circuit = None
         self.stochastic_pf = None
         self.time_series = None
-        self.voltage_stability = None
+        self.clustering_time_series = None
+        self.continuation_power_flow = None
         self.optimal_power_flow = None
         self.optimal_power_flow_time_series = None
         self.transient_stability = None
@@ -3955,14 +4001,30 @@ class MainGUI(QMainWindow):
                               max_bus_width=max_bus_width,
                               file_name=file_name)
 
+            elif current_study == clpftsdrv.TimeSeriesClustering.name:
+
+                plot_function(circuit=self.circuit,
+                              Sbus=self.clustering_time_series.results.S[current_step, :],
+                              Sf=self.clustering_time_series.results.Sf[current_step, :],
+                              St=self.clustering_time_series.results.St[current_step, :],
+                              voltages=self.clustering_time_series.results.voltage[current_step, :],
+                              loadings=np.abs(self.clustering_time_series.results.loading[current_step, :]),
+                              types=self.clustering_time_series.results.bus_types,
+                              use_flow_based_width=use_flow_based_width,
+                              min_branch_width=min_branch_width,
+                              max_branch_width=max_branch_width,
+                              min_bus_width=min_bus_width,
+                              max_bus_width=max_bus_width,
+                              file_name=file_name)
+
             elif current_study == cpfdrv.ContinuationPowerFlowDriver.name:
 
                 plot_function(circuit=self.circuit,
-                              Sbus=self.voltage_stability.results.Sbus[current_step, :],
-                              Sf=self.voltage_stability.results.Sf[current_step, :],
-                              voltages=self.voltage_stability.results.voltages[current_step, :],
-                              loadings=np.abs(self.voltage_stability.results.loading[current_step, :]),
-                              types=self.voltage_stability.results.bus_types,
+                              Sbus=self.continuation_power_flow.results.Sbus[current_step, :],
+                              Sf=self.continuation_power_flow.results.Sf[current_step, :],
+                              voltages=self.continuation_power_flow.results.voltages[current_step, :],
+                              loadings=np.abs(self.continuation_power_flow.results.loading[current_step, :]),
+                              types=self.continuation_power_flow.results.bus_types,
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -4149,9 +4211,15 @@ class MainGUI(QMainWindow):
                 else:
                     warning_msg('There seem to be no results :(')
 
+            elif study_name == clpftsdrv.TimeSeriesClustering.name:
+                if self.clustering_time_series.results is not None:
+                    self.results_mdl = self.clustering_time_series.results.mdl(result_type=study_type)
+                else:
+                    warning_msg('There seem to be no results :(')
+
             elif study_name == cpfdrv.ContinuationPowerFlowDriver.name:
-                if self.voltage_stability.results is not None:
-                    self.results_mdl = self.voltage_stability.results.mdl(result_type=study_type)
+                if self.continuation_power_flow.results is not None:
+                    self.results_mdl = self.continuation_power_flow.results.mdl(result_type=study_type)
                 else:
                     warning_msg('There seem to be no results :(')
 
