@@ -685,6 +685,7 @@ class MultiCircuit:
                     self.wire_types,
                     self.transformer_types,
                     self.sequence_line_types]
+            name_prop = ''
 
         elif type_class == 'Wires':
             tpes = self.wire_types
@@ -754,11 +755,8 @@ class MultiCircuit:
     def assign_circuit(self, circ: "MultiCircuit"):
         """
         Assign a circuit object to this object.
-
-        Arguments:
-
-            **circ** (:ref:`MultiCircuit<multicircuit>`):
-            :ref:`MultiCircuit<multicircuit>` object
+        :param circ: Another Circuit instance
+        :return:
         """
         self.buses = circ.buses
 
@@ -1651,7 +1649,7 @@ class MultiCircuit:
 
         return coord.mean(axis=0).tolist()
 
-    def get_boundaries(self, buses):
+    def get_boundaries(self):
         """
         Get the graphic representation boundaries
         :return: min_x, max_x, min_y, max_y
@@ -1662,7 +1660,7 @@ class MultiCircuit:
         max_y = -sys.maxsize
 
         # shrink selection only
-        for bus in buses:
+        for bus in self.buses:
             bus.retrieve_graphic_position()
             x = bus.x
             y = bus.y
@@ -1673,13 +1671,14 @@ class MultiCircuit:
 
         return min_x, max_x, min_y, max_y
 
-    def average_separation(self, branches):
+    def average_separation(self):
         """
         Average separation of the buses
         :param branches: list of Branch elements
         :return: average separation
         """
         separation = 0.0
+        branches = self.get_branch_lists()
         for branch in branches:
             s = np.sqrt((branch.bus_from.x - branch.bus_to.x)**2 + (branch.bus_from.y - branch.bus_to.y)**2)
             separation += s
@@ -1693,11 +1692,9 @@ class MultiCircuit:
         :return: Nothing
         """
 
-        min_x, max_x, min_y, max_y = self.get_boundaries(self.buses)
+        min_x, max_x, min_y, max_y = self.get_boundaries()
 
-        branches = self.lines + self.transformers2w + self.hvdc_lines + self.dc_lines
-
-        sep1 = self.average_separation(branches)
+        sep1 = self.average_separation()
 
         # compute the average point
         xm = (max_x + min_x) / 2

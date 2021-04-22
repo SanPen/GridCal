@@ -39,16 +39,19 @@ class Shunt(EditableDevice):
 
     """
 
-    def __init__(self, name='shunt', idtag=None, G=0.0, B=0.0, G_prof=None, B_prof=None, active=True, active_prof=None,
+    def __init__(self, name='shunt', idtag=None, code='',
+                 G=0.0, B=0.0, G_prof=None, B_prof=None, active=True, active_prof=None,
                  controlled=False, Bmin=0.0, Bmax=0.0, vset=1.0, mttf=0.0, mttr=0.0):
 
         EditableDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
+                                code=code,
                                 active=active,
                                 device_type=DeviceType.ShuntDevice,
                                 editable_headers={'name': GCProp('', str, 'Load name'),
-                                                  'idtag': GCProp('', str, 'Unique ID'),
+                                                  'idtag': GCProp('', str, 'Unique ID', False),
+                                                  'code': GCProp('', str, 'Secondary ID'),
                                                   'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
                                                   'active': GCProp('', bool, 'Is the shunt active?'),
                                                   'is_controlled': GCProp('', bool, 'Is the shunt controllable?'),

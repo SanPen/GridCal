@@ -318,7 +318,8 @@ class PSSeLoad:
         p, q = self.PL, self.QL
 
         elm = Load(name=name,
-                   idtag=name,
+                   idtag=None,
+                   code=name,
                    active=bool(self.STATUS),
                    P=p, Q=q)
 
@@ -509,7 +510,8 @@ class PSSeGenerator:
         """
         name = str(self.I) + '_' + str(self.ID).replace("'", "")
         elm = Generator(name=name,
-                        idtag=name,
+                        idtag=None,
+                        code=name,
                         active_power=self.PG,
                         voltage_module=self.VS,
                         Qmin=self.QB,

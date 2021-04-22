@@ -10,6 +10,24 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+Version 4.1.0
+^^^^^^^^^^^^^^^
+
+- Added coordinates and position input dialogue for the buses
+
+- Added ability to set a branch rating profile from the snapshot, via a context menu option.
+
+- Added time series clustering
+
+- Added HDF file format .gch5
+
+- Much faster read and write of .gridcal files due to the saving of the profiles in pandas "pickles"
+
+- Fixed Areas not loading properly
+
+- Fixed Time series indexing for discontinuous index.
+
+
 Version 4.0.2
 ^^^^^^^^^^^^^^^
 

@@ -95,7 +95,7 @@ def create_data_frames(circuit: MultiCircuit):
     obj.append(['UserName', str(circuit.user_name)])
     obj.append(['program', 'GridCal'])
 
-    dfs['config'] = pd.DataFrame(data=obj, columns=['Property', 'Value'])
+    dfs['config'] = pd.DataFrame(data=obj, columns=['Property', 'Value'], dtype=str)
 
     # get the master time profile
     T = circuit.time_profile
@@ -103,16 +103,16 @@ def create_data_frames(circuit: MultiCircuit):
     ########################################################################################################
     # retrieve buses information that is necessary
     ########################################################################################################
-    names_count = dict()
+    # names_count = dict()
     if len(circuit.buses) > 0:
         for elm in circuit.buses:
 
             # check name: if the name is repeated, change it so that it is not
-            if elm.name in names_count.keys():
-                names_count[elm.name] += 1
-                elm.name = elm.name + '_' + str(names_count[elm.name])
-            else:
-                names_count[elm.name] = 1
+            # if elm.name in names_count.keys():
+            #     names_count[elm.name] += 1
+            #     elm.name = elm.name + '_' + str(names_count[elm.name])
+            # else:
+            #     names_count[elm.name] = 1
 
             elm.ensure_area_objects(circuit)
             elm.ensure_profiles_exist(T)
@@ -139,14 +139,14 @@ def create_data_frames(circuit: MultiCircuit):
 
         obj = list()
         profiles = dict()
-        object_names = list()
+        object_idtags = list()
         if len(lists_of_objects) > 0:
 
             for k, elm in enumerate(lists_of_objects):
 
                 # get the object normal information
                 obj.append(elm.get_save_data())
-                object_names.append(elm.name)
+                object_idtags.append(elm.idtag)
 
                 if T is not None:
                     nt = len(T)
@@ -177,7 +177,7 @@ def create_data_frames(circuit: MultiCircuit):
 
         # create the profiles' DataFrames
         for prop, data in profiles.items():
-            dfs[object_type_name + '_' + prop] = pd.DataFrame(data=data, columns=object_names, index=T)
+            dfs[object_type_name + '_' + prop] = pd.DataFrame(data=data, columns=object_idtags, index=T)
 
     # towers and wires -------------------------------------------------------------------------------------------------
     # because each tower contains a reference to a number of wires, these relations need to be stored as well
@@ -284,10 +284,10 @@ def data_frames_to_circuit(data: Dict):
             if df.shape[0] > 0:
 
                 # for each property ...
-                for prop, gc_prop in template_elm.editable_headers.items():
+                for object_property_name, gc_prop in template_elm.editable_headers.items():
 
                     # if the object property exists in the data file, set all the object's property
-                    if prop in df.columns.values:
+                    if object_property_name in df.columns.values:
 
                         # get the type converter
                         dtype = gc_prop.tpe
@@ -297,8 +297,8 @@ def data_frames_to_circuit(data: Dict):
 
                             # convert and assign the data
                             if dtype is None:
-                                val = df[prop].values[i]
-                                setattr(devices[i], prop, val)
+                                val = df[object_property_name].values[i]
+                                setattr(devices[i], object_property_name, val)
 
                             elif dtype in [DeviceType.SubstationDevice,
                                            DeviceType.AreaDevice,
@@ -315,7 +315,7 @@ def data_frames_to_circuit(data: Dict):
                                 """
 
                                 # search for the Substation, Area, Zone or Country matching object and assign the object
-                                val = str(df[prop].values[i])  # this is the stored string (either idtag or name...)
+                                val = str(df[object_property_name].values[i])  # this is the stored string (either idtag or name...)
 
                                 if dtype not in elements_dict.keys():
                                     elements_dict[dtype] = dict()
@@ -340,14 +340,15 @@ def data_frames_to_circuit(data: Dict):
                                         elements_dict_by_name[dtype][grouping.name] = grouping
 
                                 # set the object
-                                setattr(devices[i], prop, grouping)
+                                setattr(devices[i], object_property_name, grouping)
 
                             elif dtype == DeviceType.BusDevice:
-                                # check if the bus is in the dictionary...
-                                if df[prop].values[i] in elements_dict[DeviceType.BusDevice].keys():
 
-                                    parent_bus = elements_dict[DeviceType.BusDevice][df[prop].values[i]]
-                                    setattr(devices[i], prop, parent_bus)
+                                # check if the bus is in the dictionary...
+                                if df[object_property_name].values[i] in elements_dict[DeviceType.BusDevice].keys():
+
+                                    parent_bus: Bus = elements_dict[DeviceType.BusDevice][df[object_property_name].values[i]]
+                                    setattr(devices[i], object_property_name, parent_bus)
 
                                     # add the device to the bus
                                     if template_elm.device_type in [DeviceType.LoadDevice,
@@ -360,31 +361,41 @@ def data_frames_to_circuit(data: Dict):
                                         parent_bus.add_device(devices[i])
 
                                 else:
-                                    circuit.logger.add_error('Bus not found', str(df[prop].values[i]))
+                                    circuit.logger.add_error('Bus not found', str(df[object_property_name].values[i]))
 
                             elif dtype in [DeviceType.TransformerTypeDevice,  # template types mostly
                                            DeviceType.SequenceLineDevice,
                                            DeviceType.TowerDevice]:
 
-                                if df[prop].values[i] in elements_dict[dtype].keys():
+                                if df[object_property_name].values[i] in elements_dict[dtype].keys():
 
                                     # get the actual template and set it
-                                    val = elements_dict[dtype][df[prop].values[i]]
-                                    setattr(devices[i], prop, val)
+                                    val = elements_dict[dtype][df[object_property_name].values[i]]
+                                    setattr(devices[i], object_property_name, val)
 
                                 else:
-                                    circuit.logger.add_error(dtype.value + ' type not found', str(df[prop].values[i]))
+                                    circuit.logger.add_error(dtype.value + ' type not found', str(df[object_property_name].values[i]))
+
+                            elif dtype == bool:
+                                # regular types (int, str, float, etc...)
+                                val = df[object_property_name].values[i]
+                                if val == 'False':
+                                    setattr(devices[i], object_property_name, False)
+                                elif val == 'True':
+                                    setattr(devices[i], object_property_name, True)
+                                else:
+                                    setattr(devices[i], object_property_name, bool(val))
 
                             else:
                                 # regular types (int, str, float, etc...)
-                                val = dtype(df[prop].values[i])
-                                setattr(devices[i], prop, val)
+                                val = dtype(df[object_property_name].values[i])
+                                setattr(devices[i], object_property_name, val)
 
                         # search the profiles in the data and assign them
-                        if prop in template_elm.properties_with_profile.keys():
+                        if object_property_name in template_elm.properties_with_profile.keys():
 
                             # get the profile property
-                            prop_prof = template_elm.properties_with_profile[prop]
+                            prop_prof = template_elm.properties_with_profile[object_property_name]
 
                             # build the profile property file-name to get it from the data
                             profile_name = key + '_' + prop_prof
@@ -400,10 +411,10 @@ def data_frames_to_circuit(data: Dict):
                                     setattr(devices[i], prop_prof, profile.astype(dtype))
 
                             else:
-                                circuit.logger.add_error('Profile was not found in the data', prop)
+                                circuit.logger.add_error('Profile was not found in the data', object_property_name)
 
                     else:
-                        circuit.logger.add_error(prop + ' of object type ' + str(template_elm.device_type) +
+                        circuit.logger.add_error(object_property_name + ' of object type ' + str(template_elm.device_type) +
                                                  ' not found in the input data')
             else:
                 # no objects of this type

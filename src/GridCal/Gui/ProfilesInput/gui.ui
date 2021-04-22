@@ -146,8 +146,15 @@
               </item>
               <item>
                <widget class="QPushButton" name="transformNamesPushButton">
+                <property name="toolTip">
+                 <string>Transform the input profile names</string>
+                </property>
                 <property name="text">
-                 <string>Transform</string>
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="icons.qrc">
+                  <normaloff>:/Icons/icons/transform.svg</normaloff>:/Icons/icons/transform.svg</iconset>
                 </property>
                </widget>
               </item>
