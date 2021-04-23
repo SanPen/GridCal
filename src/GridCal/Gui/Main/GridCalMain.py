@@ -272,6 +272,7 @@ class MainGUI(QMainWindow):
         self.save_file_thread_object = None
         self.delete_and_reduce_driver = None
         self.export_all_thread_object = None
+        self.topology_reduction = None
         self.find_node_groups_driver: tpdrv.NodeGroupsDriver = None
         self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, None, None)
         self.stuff_running_now = list()
@@ -2436,16 +2437,18 @@ class MainGUI(QMainWindow):
                     options = ptdfdrv.LinearAnalysisOptions(distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked(),
                                                             correct_values=self.ui.ptdf_correct_nonsense_values_checkBox.isChecked())
 
-                    self.ptdf_analysis = ptdfdrv.LinearAnalysisDriver(grid=self.circuit, options=options)
+                    drv = ptdfdrv.LinearAnalysisDriver(grid=self.circuit, options=options)
+
+                    self.session.register(drv)
 
                     self.ui.progress_label.setText('Running PTDF...')
                     QtGui.QGuiApplication.processEvents()
 
-                    self.ptdf_analysis.progress_signal.connect(self.ui.progressBar.setValue)
-                    self.ptdf_analysis.progress_text.connect(self.ui.progress_label.setText)
-                    self.ptdf_analysis.done_signal.connect(self.post_ptdf)
+                    drv.progress_signal.connect(self.ui.progressBar.setValue)
+                    drv.progress_text.connect(self.ui.progress_label.setText)
+                    drv.done_signal.connect(self.post_ptdf)
 
-                    self.ptdf_analysis.start()
+                    drv.start()
             else:
                 warning_msg('Another PTDF is being executed now...')
         else:
@@ -2457,11 +2460,13 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.PTDF_run)
+
         self.remove_simulation(drvtpes.SimulationTypes.PTDF_run)
 
         # update the results in the circuit structures
-        if not self.ptdf_analysis.__cancel__:
-            if self.ptdf_analysis.results is not None:
+        if not drv.__cancel__:
+            if results is not None:
 
                 self.ui.progress_label.setText('Colouring PTDF results in the grid...')
                 QtGui.QGuiApplication.processEvents()
@@ -2470,8 +2475,8 @@ class MainGUI(QMainWindow):
             else:
                 error_msg('Something went wrong, There are no PTDF results.')
 
-        if len(self.ptdf_analysis.logger) > 0:
-            dlg = LogsDialogue('PTDF', self.ptdf_analysis.logger)
+        if len(drv.logger) > 0:
+            dlg = LogsDialogue('PTDF', drv.logger)
             dlg.exec_()
 
         if len(self.stuff_running_now) == 0:
@@ -2491,19 +2496,21 @@ class MainGUI(QMainWindow):
                     options = ptdfdrv.LinearAnalysisOptions(distribute_slack=self.ui.distributed_slack_checkBox.isChecked())
                     start_ = self.ui.profile_start_slider.value()
                     end_ = self.ui.profile_end_slider.value()
-                    self.ptdf_ts_analysis = ptdftsdrv.PtdfTimeSeries(grid=self.circuit,
-                                                                     options=options,
-                                                                     start_=start_,
-                                                                     end_=end_)
+                    drv = ptdftsdrv.PtdfTimeSeries(grid=self.circuit,
+                                                   options=options,
+                                                   start_=start_,
+                                                   end_=end_)
+
+                    self.session.register(drv)
 
                     self.ui.progress_label.setText('Running PTDF time series...')
                     QtGui.QGuiApplication.processEvents()
 
-                    self.ptdf_ts_analysis.progress_signal.connect(self.ui.progressBar.setValue)
-                    self.ptdf_ts_analysis.progress_text.connect(self.ui.progress_label.setText)
-                    self.ptdf_ts_analysis.done_signal.connect(self.post_ptdf_ts)
+                    drv.progress_signal.connect(self.ui.progressBar.setValue)
+                    drv.progress_text.connect(self.ui.progress_label.setText)
+                    drv.done_signal.connect(self.post_ptdf_ts)
 
-                    self.ptdf_ts_analysis.start()
+                    drv.start()
                 else:
                     warning_msg('Another PTDF time series is being executed now...')
             else:
@@ -2515,21 +2522,22 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.PTDF_TS_run)
         self.remove_simulation(drvtpes.SimulationTypes.PTDF_TS_run)
 
         # update the results in the circuit structures
-        if not self.ptdf_ts_analysis.__cancel__:
-            if self.ptdf_ts_analysis.results is not None:
+        if not drv.__cancel__:
+            if results is not None:
 
                 self.ui.progress_label.setText('Colouring PTDF results in the grid...')
                 QtGui.QGuiApplication.processEvents()
                 if self.ui.draw_schematic_checkBox.isChecked():
-                    if self.ptdf_ts_analysis.results.S.shape[0] > 0:
+                    if results.S.shape[0] > 0:
                         viz.colour_the_schematic(circuit=self.circuit,
-                                                 Sbus=self.ptdf_ts_analysis.results.S.max(axis=0),
-                                                 Sf=self.ptdf_ts_analysis.results.Sf.max(axis=0),
-                                                 voltages=self.ptdf_ts_analysis.results.voltage.max(axis=0),
-                                                 loadings=np.abs(self.ptdf_ts_analysis.results.loading).max(axis=0),
+                                                 Sbus=results.S.max(axis=0),
+                                                 Sf=results.Sf.max(axis=0),
+                                                 voltages=results.voltage.max(axis=0),
+                                                 loadings=np.abs(results.loading).max(axis=0),
                                                  types=None,
                                                  use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                                  min_branch_width=self.ui.min_branch_size_spinBox.value(),
@@ -2561,12 +2569,13 @@ class MainGUI(QMainWindow):
 
                 options = nmkdrv.NMinusKOptions(distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
 
-                self.otdf_analysis = nmkdrv.NMinusK(grid=self.circuit, options=options)
+                drv = nmkdrv.NMinusK(grid=self.circuit, options=options)
+                self.session.register(drv)
 
-                self.otdf_analysis.progress_signal.connect(self.ui.progressBar.setValue)
-                self.otdf_analysis.progress_text.connect(self.ui.progress_label.setText)
-                self.otdf_analysis.done_signal.connect(self.post_otdf)
-                self.otdf_analysis.start()
+                drv.progress_signal.connect(self.ui.progressBar.setValue)
+                drv.progress_text.connect(self.ui.progress_label.setText)
+                drv.done_signal.connect(self.post_otdf)
+                drv.start()
             else:
                 warning_msg('Another OTDF is being executed now...')
         else:
@@ -2578,11 +2587,12 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.OTDF_run)
         self.remove_simulation(drvtpes.SimulationTypes.OTDF_run)
 
         # update the results in the circuit structures
-        if not self.otdf_analysis.__cancel__:
-            if self.otdf_analysis.results is not None:
+        if not drv.__cancel__:
+            if results is not None:
 
                 self.ui.progress_label.setText('Colouring OTDF results in the grid...')
                 QtGui.QGuiApplication.processEvents()
@@ -2591,8 +2601,8 @@ class MainGUI(QMainWindow):
             else:
                 error_msg('Something went wrong, There are no OTDF results.')
 
-        if len(self.otdf_analysis.logger) > 0:
-            dlg = LogsDialogue('PTDF', self.otdf_analysis.logger)
+        if len(drv.logger) > 0:
+            dlg = LogsDialogue('PTDF', drv.logger)
             dlg.exec_()
 
         if len(self.stuff_running_now) == 0:
@@ -2614,12 +2624,13 @@ class MainGUI(QMainWindow):
 
                     options = nmkdrv.NMinusKOptions(distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
 
-                    self.otdf_ts_analysis = nmktsdrv.NMinusKTimeSeries(grid=self.circuit, options=options)
+                    drv = nmktsdrv.NMinusKTimeSeries(grid=self.circuit, options=options)
 
-                    self.otdf_ts_analysis.progress_signal.connect(self.ui.progressBar.setValue)
-                    self.otdf_ts_analysis.progress_text.connect(self.ui.progress_label.setText)
-                    self.otdf_ts_analysis.done_signal.connect(self.post_otdf_ts)
-                    self.otdf_ts_analysis.start()
+                    self.session.register(drv)
+                    drv.progress_signal.connect(self.ui.progressBar.setValue)
+                    drv.progress_text.connect(self.ui.progress_label.setText)
+                    drv.done_signal.connect(self.post_otdf_ts)
+                    drv.start()
                 else:
                     warning_msg('Another OTDF is being executed now...')
             else:
@@ -2633,11 +2644,12 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.OTDF_TS_run)
         self.remove_simulation(drvtpes.SimulationTypes.OTDF_TS_run)
 
         # update the results in the circuit structures
-        if not self.otdf_ts_analysis.__cancel__:
-            if self.otdf_ts_analysis.results is not None:
+        if not drv.__cancel__:
+            if results is not None:
 
                 self.ui.progress_label.setText('Colouring OTDF results in the grid...')
                 QtGui.QGuiApplication.processEvents()
@@ -2908,18 +2920,19 @@ class MainGUI(QMainWindow):
                     options = self.get_selected_power_flow_options()
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1
-                    self.time_series = pftsdrv.TimeSeries(grid=self.circuit,
-                                                          options=options,
-                                                          opf_time_series_results=opf_time_series_results,
-                                                          start_=start,
-                                                          end_=end)
+                    drv = pftsdrv.TimeSeries(grid=self.circuit,
+                                             options=options,
+                                             opf_time_series_results=opf_time_series_results,
+                                             start_=start,
+                                             end_=end)
+                    self.session.register(drv)
 
                     # Set the time series run options
-                    self.time_series.progress_signal.connect(self.ui.progressBar.setValue)
-                    self.time_series.progress_text.connect(self.ui.progress_label.setText)
-                    self.time_series.done_signal.connect(self.post_time_series)
+                    drv.progress_signal.connect(self.ui.progressBar.setValue)
+                    drv.progress_text.connect(self.ui.progress_label.setText)
+                    drv.done_signal.connect(self.post_time_series)
 
-                    self.time_series.start()
+                    drv.start()
 
                 else:
                     warning_msg('There are no time series.', 'Time series')
@@ -2934,22 +2947,24 @@ class MainGUI(QMainWindow):
         @return:
         """
 
-        if self.time_series.results is not None:
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.TimeSeries_run)
+
+        if results is not None:
 
             self.remove_simulation(drvtpes.SimulationTypes.TimeSeries_run)
 
             if self.ui.draw_schematic_checkBox.isChecked():
-                voltage = self.time_series.results.voltage.max(axis=0)
-                loading = np.abs(self.time_series.results.loading).max(axis=0)
-                Sbranch = self.time_series.results.Sf.max(axis=0)
-                Sbus = self.time_series.results.S.max(axis=0)
+                voltage = results.voltage.max(axis=0)
+                loading = np.abs(results.loading).max(axis=0)
+                Sbranch = results.Sf.max(axis=0)
+                Sbus = results.S.max(axis=0)
 
                 viz.colour_the_schematic(circuit=self.circuit,
                                          Sbus=Sbus,
                                          Sf=Sbranch,
                                          voltages=voltage,
                                          loadings=loading,
-                                         types=self.time_series.results.bus_types,
+                                         types=results.bus_types,
                                          use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                          min_branch_width=self.ui.min_branch_size_spinBox.value(),
                                          max_branch_width=self.ui.max_branch_size_spinBox.value(),
@@ -3005,19 +3020,20 @@ class MainGUI(QMainWindow):
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1
                     cluster_number = self.ui.cluster_number_spinBox.value()
-                    self.clustering_time_series = clpftsdrv.TimeSeriesClustering(grid=self.circuit,
-                                                                                 options=options,
-                                                                                 opf_time_series_results=opf_time_series_results,
-                                                                                 start_=start,
-                                                                                 end_=end,
-                                                                                 cluster_number=cluster_number)
+                    drv = clpftsdrv.TimeSeriesClustering(grid=self.circuit,
+                                                         options=options,
+                                                         opf_time_series_results=opf_time_series_results,
+                                                         start_=start,
+                                                         end_=end,
+                                                         cluster_number=cluster_number)
+                    self.session.register(drv)
 
                     # Set the time series run options
-                    self.clustering_time_series.progress_signal.connect(self.ui.progressBar.setValue)
-                    self.clustering_time_series.progress_text.connect(self.ui.progress_label.setText)
-                    self.clustering_time_series.done_signal.connect(self.post_clustering_time_series)
+                    drv.progress_signal.connect(self.ui.progressBar.setValue)
+                    drv.progress_text.connect(self.ui.progress_label.setText)
+                    drv.done_signal.connect(self.post_clustering_time_series)
 
-                    self.clustering_time_series.start()
+                    drv.start()
 
                 else:
                     warning_msg('There are no time series.', 'Time series')
@@ -3032,22 +3048,24 @@ class MainGUI(QMainWindow):
         @return:
         """
 
-        if self.clustering_time_series.results is not None:
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.ClusteringTimeSeries_run)
+
+        if results is not None:
 
             self.remove_simulation(drvtpes.SimulationTypes.ClusteringTimeSeries_run)
 
             if self.ui.draw_schematic_checkBox.isChecked():
-                voltage = self.clustering_time_series.results.voltage.max(axis=0)
-                loading = np.abs(self.clustering_time_series.results.loading).max(axis=0)
-                Sbranch = self.clustering_time_series.results.Sf.max(axis=0)
-                Sbus = self.clustering_time_series.results.S.max(axis=0)
+                voltage = results.voltage.max(axis=0)
+                loading = np.abs(results.loading).max(axis=0)
+                Sbranch = results.Sf.max(axis=0)
+                Sbus = results.S.max(axis=0)
 
                 viz.colour_the_schematic(circuit=self.circuit,
                                          Sbus=Sbus,
                                          Sf=Sbranch,
                                          voltages=voltage,
                                          loadings=loading,
-                                         types=self.clustering_time_series.results.bus_types,
+                                         types=results.bus_types,
                                          use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                          min_branch_width=self.ui.min_branch_size_spinBox.value(),
                                          max_branch_width=self.ui.max_branch_size_spinBox.value(),
@@ -3077,7 +3095,7 @@ class MainGUI(QMainWindow):
 
                     self.LOCK()
 
-                    self.add_simulation(drvtpes.SimulationTypes.MonteCarlo_run)
+                    self.add_simulation(drvtpes.SimulationTypes.StochasticPowerFlow)
 
                     self.ui.progress_label.setText('Compiling the grid...')
                     QtGui.QGuiApplication.processEvents()
@@ -3088,18 +3106,18 @@ class MainGUI(QMainWindow):
 
                     tol = 10 ** (-1 * self.ui.tolerance_stochastic_spinBox.value())
                     max_iter = self.ui.max_iterations_stochastic_spinBox.value()
-                    self.stochastic_pf = mcdrv.StochasticPowerFlowDriver(self.circuit,
-                                                                         pf_options,
-                                                                         mc_tol=tol,
-                                                                         batch_size=100,
-                                                                         sampling_points=max_iter,
-                                                                         simulation_type=simulation_type)
+                    drv = mcdrv.StochasticPowerFlowDriver(self.circuit,
+                                                          pf_options,
+                                                          mc_tol=tol,
+                                                          batch_size=100,
+                                                          sampling_points=max_iter,
+                                                          simulation_type=simulation_type)
+                    self.session.register(drv)
+                    drv.progress_signal.connect(self.ui.progressBar.setValue)
+                    drv.progress_text.connect(self.ui.progress_label.setText)
+                    drv.done_signal.connect(self.post_stochastic)
 
-                    self.stochastic_pf.progress_signal.connect(self.ui.progressBar.setValue)
-                    self.stochastic_pf.progress_text.connect(self.ui.progress_label.setText)
-                    self.stochastic_pf.done_signal.connect(self.post_stochastic)
-
-                    self.stochastic_pf.start()
+                    drv.start()
                 else:
                     warning_msg('There are no time series.')
 
@@ -3114,16 +3132,19 @@ class MainGUI(QMainWindow):
         Actions to perform after the Monte Carlo simulation is finished
         @return:
         """
-        if not self.stochastic_pf.__cancel__:
 
-            self.remove_simulation(drvtpes.SimulationTypes.MonteCarlo_run)
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.StochasticPowerFlow)
+
+        if results is not None:
+
+            self.remove_simulation(drvtpes.SimulationTypes.StochasticPowerFlow)
 
             if self.ui.draw_schematic_checkBox.isChecked():
                 viz.colour_the_schematic(circuit=self.circuit,
-                                         voltages=self.stochastic_pf.results.voltage,
-                                         loadings=self.stochastic_pf.results.loading,
-                                         Sf=self.stochastic_pf.results.sbranch,
-                                         types=self.stochastic_pf.results.bus_types,
+                                         voltages=results.voltage,
+                                         loadings=results.loading,
+                                         Sf=results.sbranch,
+                                         types=results.bus_types,
                                          Sbus=None,
                                          use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                          min_branch_width=self.ui.min_branch_size_spinBox.value(),
@@ -3143,7 +3164,7 @@ class MainGUI(QMainWindow):
         """
         Clear cascade simulation
         """
-        self.cascade = None
+        # self.cascade = None
         self.ui.cascade_tableView.setModel(None)
 
     def run_cascade_step(self):
@@ -3153,13 +3174,12 @@ class MainGUI(QMainWindow):
         if len(self.circuit.buses) > 0:
 
             self.LOCK()
-
-            if self.cascade is None:
+            if self.session.exists(drvtpes.SimulationTypes.Cascade_run):
                 options = self.get_selected_power_flow_options()
                 options.solver_type = bs.SolverType.LM
                 max_isl = self.ui.cascading_islands_spinBox.value()
-                self.cascade = blkout.Cascading(self.circuit.copy(), options,
-                                                max_additional_islands=max_isl)
+                drv = blkout.Cascading(self.circuit.copy(), options, max_additional_islands=max_isl)
+                self.session.register(drv)
 
             self.cascade.perform_step_run()
 
@@ -3188,17 +3208,19 @@ class MainGUI(QMainWindow):
                 max_isl = self.ui.cascading_islands_spinBox.value()
                 n_lsh_samples = self.ui.max_iterations_stochastic_spinBox.value()
 
-                self.cascade = blkout.Cascading(self.circuit.copy(), options,
-                                                max_additional_islands=max_isl,
-                                                n_lhs_samples_=n_lsh_samples)
+                drv = blkout.Cascading(self.circuit.copy(), options,
+                                       max_additional_islands=max_isl,
+                                       n_lhs_samples_=n_lsh_samples)
+
+                self.session.register(drv)
 
                 # connect signals
-                self.cascade.progress_signal.connect(self.ui.progressBar.setValue)
-                self.cascade.progress_text.connect(self.ui.progress_label.setText)
-                self.cascade.done_signal.connect(self.post_cascade)
+                drv.progress_signal.connect(self.ui.progressBar.setValue)
+                drv.progress_text.connect(self.ui.progress_label.setText)
+                drv.done_signal.connect(self.post_cascade)
 
                 # run
-                self.cascade.start()
+                drv.start()
 
             else:
                 warning_msg('Another cascade is running...')
@@ -3211,10 +3233,11 @@ class MainGUI(QMainWindow):
         """
 
         # update the results in the circuit structures
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.Cascade_run)
 
         self.remove_simulation(drvtpes.SimulationTypes.Cascade_run)
 
-        n = len(self.cascade.results.events)
+        n = len(results.events)
 
         if n > 0:
 
@@ -3225,10 +3248,10 @@ class MainGUI(QMainWindow):
             # Accumulate all the failed branches
             br_idx = np.zeros(0, dtype=int)
             for i in range(idx):
-                br_idx = np.r_[br_idx, self.cascade.results.events[i].removed_idx]
+                br_idx = np.r_[br_idx, results.events[i].removed_idx]
 
             # pick the results at the designated cascade step
-            results = self.cascade.results.events[idx].pf_results  # StochasticPowerFlowResults object
+            results = results.events[idx].pf_results  # StochasticPowerFlowResults object
 
             # print grid
             if self.ui.draw_schematic_checkBox.isChecked():
@@ -3247,7 +3270,7 @@ class MainGUI(QMainWindow):
                                          )
 
             # Set cascade table
-            self.ui.cascade_tableView.setModel(PandasModel(self.cascade.get_table()))
+            self.ui.cascade_tableView.setModel(PandasModel(drv.get_table()))
 
             # Update results
             self.update_available_results()
@@ -3290,13 +3313,14 @@ class MainGUI(QMainWindow):
                 QtGui.QGuiApplication.processEvents()
                 pf_options = self.get_selected_power_flow_options()
                 # set power flow object instance
-                self.optimal_power_flow = opfdrv.OptimalPowerFlow(self.circuit, options, pf_options)
+                drv = opfdrv.OptimalPowerFlow(self.circuit, options, pf_options)
 
-                self.optimal_power_flow.progress_signal.connect(self.ui.progressBar.setValue)
-                self.optimal_power_flow.progress_text.connect(self.ui.progress_label.setText)
-                self.optimal_power_flow.done_signal.connect(self.post_opf)
+                self.session.register(drv)
+                drv.progress_signal.connect(self.ui.progressBar.setValue)
+                drv.progress_text.connect(self.ui.progress_label.setText)
+                drv.done_signal.connect(self.post_opf)
 
-                self.optimal_power_flow.start()
+                drv.start()
 
             else:
                 warning_msg('Another OPF is being run...')
@@ -3307,19 +3331,21 @@ class MainGUI(QMainWindow):
         """
         Actions to run after the OPF simulation
         """
-        if self.optimal_power_flow is not None:
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.OPF_run)
+
+        if results is not None:
 
             self.remove_simulation(drvtpes.SimulationTypes.OPF_run)
 
-            if self.optimal_power_flow.results.converged:
+            if results.converged:
 
                 if self.ui.draw_schematic_checkBox.isChecked():
                     viz.colour_the_schematic(circuit=self.circuit,
-                                             voltages=self.optimal_power_flow.results.voltage,
-                                             loadings=self.optimal_power_flow.results.loading,
-                                             types=self.optimal_power_flow.results.bus_types,
-                                             Sf=self.optimal_power_flow.results.Sf,
-                                             Sbus=self.optimal_power_flow.results.Sbus,
+                                             voltages=results.voltage,
+                                             loadings=results.loading,
+                                             types=results.bus_types,
+                                             Sf=results.Sf,
+                                             Sbus=results.Sbus,
                                              use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                              min_branch_width=self.ui.min_branch_size_spinBox.value(),
                                              max_branch_width=self.ui.max_branch_size_spinBox.value(),
@@ -3371,18 +3397,20 @@ class MainGUI(QMainWindow):
 
                     # create the OPF time series instance
                     # if non_sequential:
-                    self.optimal_power_flow_time_series = opftsdrv.OptimalPowerFlowTimeSeries(grid=self.circuit,
-                                                                                              options=options,
-                                                                                              start_=start,
-                                                                                              end_=end)
+                    drv = opftsdrv.OptimalPowerFlowTimeSeries(grid=self.circuit,
+                                                              options=options,
+                                                              start_=start,
+                                                              end_=end)
+
+                    self.session.register(drv)
 
                     # make the thread connections to the GUI
-                    self.optimal_power_flow_time_series.progress_signal.connect(self.ui.progressBar.setValue)
-                    self.optimal_power_flow_time_series.progress_text.connect(self.ui.progress_label.setText)
-                    self.optimal_power_flow_time_series.done_signal.connect(self.post_opf_time_series)
+                    drv.progress_signal.connect(self.ui.progressBar.setValue)
+                    drv.progress_text.connect(self.ui.progress_label.setText)
+                    drv.done_signal.connect(self.post_opf_time_series)
 
                     # Run
-                    self.optimal_power_flow_time_series.start()
+                    drv.start()
 
                 else:
                     warning_msg('There are no time series.\nLoad time series are needed for this simulation.')
@@ -3397,27 +3425,30 @@ class MainGUI(QMainWindow):
         """
         Post OPF Time Series
         """
-        if self.optimal_power_flow_time_series is not None:
 
-            if len(self.optimal_power_flow_time_series.logger) > 0:
-                dlg = LogsDialogue('logger', self.optimal_power_flow_time_series.logger)
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.OPFTimeSeries_run)
+
+        if results is not None:
+
+            if len(drv.logger) > 0:
+                dlg = LogsDialogue('logger', drv.logger)
                 dlg.exec_()
 
             # remove from the current simulations
             self.remove_simulation(drvtpes.SimulationTypes.OPFTimeSeries_run)
 
-            if self.optimal_power_flow_time_series.results is not None:
+            if results is not None:
                 if self.ui.draw_schematic_checkBox.isChecked():
-                    voltage = self.optimal_power_flow_time_series.results.voltage.max(axis=0)
-                    loading = self.optimal_power_flow_time_series.results.loading.max(axis=0)
-                    Sf = self.optimal_power_flow_time_series.results.Sf.max(axis=0)
+                    voltage = results.voltage.max(axis=0)
+                    loading = results.loading.max(axis=0)
+                    Sf = results.Sf.max(axis=0)
 
                     viz.colour_the_schematic(circuit=self.circuit,
                                              Sbus=None,
                                              Sf=Sf,
                                              voltages=voltage,
                                              loadings=loading,
-                                             types=self.optimal_power_flow_time_series.results.bus_types,
+                                             types=results.bus_types,
                                              use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                              min_branch_width=self.ui.min_branch_size_spinBox.value(),
                                              max_branch_width=self.ui.max_branch_size_spinBox.value(),
@@ -3427,7 +3458,7 @@ class MainGUI(QMainWindow):
 
                 self.update_available_results()
 
-                msg = 'OPF time series elapsed ' + str(self.optimal_power_flow_time_series.elapsed) + ' s'
+                msg = 'OPF time series elapsed ' + str(drv.elapsed) + ' s'
                 self.console_msg(msg)
 
         else:
@@ -3444,7 +3475,9 @@ class MainGUI(QMainWindow):
 
             if self.circuit.time_profile is not None:
 
-                if self.optimal_power_flow_time_series is not None:
+                drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.OPFTimeSeries_run)
+
+                if results is not None:
 
                     quit_msg = "Are you sure that you want overwrite the time events " \
                                "with the simulated by the OPF time series?"
@@ -3452,7 +3485,7 @@ class MainGUI(QMainWindow):
 
                     if reply == QMessageBox.Yes:
 
-                        self.circuit.apply_lp_profiles()
+                        self.circuit.apply_lp_profiles(results)
 
                     else:
                         pass
@@ -3617,13 +3650,15 @@ class MainGUI(QMainWindow):
 
             if self.ui.actionStorage_location_suggestion.isChecked():
 
-                if self.time_series is not None:
+                ts_drv, ts_results = self.session.get_driver_results(drvtpes.SimulationTypes.TimeSeries_run)
+
+                if ts_results is not None:
 
                     # get the numerical object of the circuit
                     numeric_circuit = core.compile_time_circuit(self.circuit)
 
                     # perform a time series analysis
-                    ts_analysis = grid_analysis.TimeSeriesResultsAnalysis(numeric_circuit, self.time_series.results)
+                    ts_analysis = grid_analysis.TimeSeriesResultsAnalysis(numeric_circuit, ts_results)
 
                     # get the indices of the buses selected for storage
                     idx = np.where(ts_analysis.buses_selected_for_storage_frequency > 0)[0]

@@ -25,6 +25,7 @@ from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 from GridCal.Engine.Simulations.NK.n_minus_k_driver import NMinusKOptions
 from GridCal.Engine.Simulations.NK.n_minus_k_ts_results import NMinusKTimeSeriesResults
 from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf import LinearAnalysis
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 
 @jit(nopython=True, parallel=False)
@@ -81,6 +82,7 @@ class NMinusKTimeSeries(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
     name = 'N-1 time series'
+    tpe = SimulationTypes.OTDF_TS_run
 
     def __init__(self, grid: MultiCircuit, options: NMinusKOptions):
         """

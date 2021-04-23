@@ -51,6 +51,14 @@ class SimulationSession:
     def get_available_drivers(self):
         return [drv for driver_type, drv in self.drivers.items() if drv is not None]
 
+    def exists(self, driver_type: SimulationTypes):
+        """
+        Get the results of the driver
+        :param driver_type:
+        :return:
+        """
+        return driver_type in self.drivers.keys()
+
     def get_driver_results(self, driver_type: SimulationTypes):
         """
         Get the results of the driver

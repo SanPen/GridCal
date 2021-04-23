@@ -575,39 +575,17 @@ class MultiCircuit:
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
-    # def get_Jacobian(self, sparse=False):
-    #     """
-    #     Returns the grid Jacobian matrix.
-    #
-    #     Arguments:
-    #
-    #         **sparse** (bool, False): Return the matrix in CSR sparse format (True) or
-    #         as full matrix (False)
-    #     """
-    #
-    #     numerical_circuit = self.compile_snapshot()
-    #     islands = numerical_circuit.compute()
-    #     i = 0
-    #     # Initial magnitudes
-    #     pvpq = np.r_[islands[i].pv, islands[i].pq]
-    #
-    #     J = Jacobian(Ybus=islands[i].Ybus,
-    #                  V=islands[i].Vbus,
-    #                  Ibus=islands[i].Ibus,
-    #                  pq=islands[i].pq,
-    #                  pvpq=pvpq)
-    #
-    #     if sparse:
-    #         return J
-    #     else:
-    #         return J.todense()
-
-    def apply_lp_profiles(self):
+    def apply_lp_profiles(self, results: "OptimalPowerFlowTimeSeriesResults"):
         """
         Apply the LP results as device profiles.
         """
-        for bus in self.buses:
-            bus.apply_lp_profiles(self.Sbase)
+        generators = self.get_generators()
+        for i, gen in enumerate(generators):
+            gen.P_prof = results.generator_power[:, i]
+
+        loads = self.get_loads()
+        for i, gen in enumerate(loads):
+            gen.P_prof -= results.load_shedding[:, i]
 
     def copy(self):
         """
