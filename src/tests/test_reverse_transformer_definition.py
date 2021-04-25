@@ -61,7 +61,7 @@ def test_reverse_transformer():
                            short_circuit_voltage=Vsc,
                            gr_hv1=0.5,
                            gx_hv1=0.5)
-    z2, zl2 = tpe2.get_impedances()
+    z2, zl2 = tpe2.get_impedances(VH=Vt, VL=Vf, Sbase=100)
     # print(z2)
     # print(1/zl2)
     yl = 1 / zl2

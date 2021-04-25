@@ -59,18 +59,18 @@ class TransformerType(EditableDevice):
                  no_load_current=0, short_circuit_voltage=0, gr_hv1=0.5, gx_hv1=0.5,
                  name='TransformerType', tpe=BranchType.Transformer, idtag=None):
         """
-
-        :param hv_nominal_voltage:
-        :param lv_nominal_voltage:
-        :param nominal_power:
-        :param copper_losses:
-        :param iron_losses:
-        :param no_load_current:
-        :param short_circuit_voltage:
-        :param gr_hv1:
-        :param gx_hv1:
-        :param name:
-        :param tpe:
+        Transformer template from the short circuit study
+        :param hv_nominal_voltage: Nominal voltage of the high voltage side in kV
+        :param lv_nominal_voltage: Nominal voltage of the low voltage side in kV
+        :param nominal_power: Nominal power of the machine in MVA
+        :param copper_losses: Copper losses in kW
+        :param iron_losses: Iron losses in kW
+        :param no_load_current: No load current in %
+        :param short_circuit_voltage: Short circuit voltage in %
+        :param gr_hv1: proportion of the resistance in the HV side (i.e. 0.5)
+        :param gx_hv1: proportion of the reactance in the HV side (i.e. 0.5)
+        :param name: Name of the device template
+        :param tpe: Kind of template
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -109,16 +109,14 @@ class TransformerType(EditableDevice):
 
         self.GX_hv1 = gx_hv1
 
-    def get_impedances(self):
+    def get_impedances(self, VH, VL, Sbase):
         """
         Compute the branch parameters of a transformer from the short circuit test
         values.
-
-        Returns:
-
-            **zs** (complex): Series impedance in per unit
-
-            **zsh** (complex): Shunt impedance in per unit
+        :param VH: High voltage bus nominal voltage in kV
+        :param VL: Low voltage bus nominal voltage in kV
+        :param Sbase: Base power in MVA (normally 100 MVA)
+        :return: Zseries and Yshunt in system per unit
         """
 
         Sn = self.rating
@@ -134,6 +132,8 @@ class TransformerType(EditableDevice):
             xsc = sqrt(zsc ** 2 - rsc ** 2)
         else:
             xsc = 0.0
+
+        # series impedance in p.u. of the machine
         zs = rsc + 1j * xsc
 
         # Shunt impedance (leakage)
@@ -154,9 +154,27 @@ class TransformerType(EditableDevice):
             rm = 0.0
             xm = 0.0
 
+        # shunt impedance in p.u. of the machine
         zsh = rm + 1j * xm
 
-        return zs, zsh
+        # convert impedances from machine per unit to ohms
+        ZbaseHv = (self.HV * self.HV) / Sn
+        ZbaseLv = (self.LV * self.LV) / Sn
+
+        ZseriesHv = zs * self.GR_hv1 * ZbaseHv  # Ohm
+        ZseriesLv = zs * (1 - self.GR_hv1) * ZbaseLv  # Ohm
+        ZshuntHv = zsh * self.GR_hv1 * ZbaseHv  # Ohm
+        ZshuntLv = zsh * (1 - self.GR_hv1) * ZbaseLv  # Ohm
+
+        # convert impedances from ohms to system per unit
+        ZbaseHvSys = (VH * VH) / Sbase
+        ZbaseLvSys = (VL * VL) / Sbase
+
+        Zseries = ZseriesHv / ZbaseHvSys + ZseriesLv / ZbaseLvSys
+        Zshunt = ZshuntHv / ZbaseHvSys + ZshuntLv / ZbaseLvSys
+        Yshunt = 1 / Zshunt
+
+        return Zseries, Yshunt
 
 
 class TapChanger:
@@ -665,6 +683,14 @@ class Transformer2W(EditableDevice):
         else:
             self.tap_module = self.tap_changer.get_tap()
 
+    def get_buses_voltages(self):
+        bus_f_v = self.bus_from.Vnom
+        bus_t_v = self.bus_to.Vnom
+        if bus_f_v > bus_t_v:
+            return bus_f_v, bus_t_v
+        else:
+            return bus_t_v, bus_f_v
+
     def get_from_to_nominal_voltages(self):
 
         bus_f_v = self.bus_from.Vnom
@@ -721,28 +747,16 @@ class Transformer2W(EditableDevice):
         Apply a branch template to this object
 
         Arguments:
-
             **obj**: TransformerType or Tower object
-
-            **Sbase** (float): Nominal power in MVA
-
+            **Sbase** (float): circuit base power in MVA
             **logger** (list, []): Log list
-
         """
         if isinstance(obj, TransformerType):
+
+            VH, VL = self.get_buses_voltages()
+
             # get the transformer impedance in the base of the transformer
-            z_series, zsh = obj.get_impedances()
-
-            # Change the impedances to the system base
-            base_change = Sbase / obj.rating
-            z_series *= base_change
-            zsh *= base_change
-
-            # compute the shunt admittance
-            if zsh.real != 0.0 or zsh.imag != 0.0:
-                y_shunt = 1.0 / zsh
-            else:
-                y_shunt = complex(0, 0)
+            z_series, y_shunt = obj.get_impedances(VH=VH, VL=VL, Sbase=Sbase)
 
             self.R = np.round(z_series.real, 6)
             self.X = np.round(z_series.imag, 6)

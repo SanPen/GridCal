@@ -36,7 +36,7 @@ def test_transformer_definition():
                           short_circuit_voltage=Vsc_,
                           gr_hv1=0.5,
                           gx_hv1=0.5)
-    z, zl = tpe.get_impedances()
+    z, zl = tpe.get_impedances(VH=Vf, VL=Vt, Sbase=100)
     print(z)
     print(zl)
     # ------------------------------------------------------------------------------------------------------------------
@@ -85,7 +85,7 @@ def test_transformer_definition():
                            short_circuit_voltage=Vsc,
                            gr_hv1=0.5,
                            gx_hv1=0.5)
-    z2, zl2 = tpe2.get_impedances()
+    z2, zl2 = tpe2.get_impedances(VH=Vf, VL=Vt, Sbase=100)
     print(z2)
     print(zl2)
 

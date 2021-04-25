@@ -920,7 +920,9 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
                                       gr_hv1=0.5,
                                       gx_hv1=0.5)
 
-                Zs, Zsh = tpe.get_impedances()
+                Zs, Zsh = tpe.get_impedances(VH=HV_nominal_voltage[type_idx],
+                                             VL=LV_nominal_voltage[type_idx],
+                                             Sbase=baseMVA)
 
                 if Zsh != 0:
                     Ysh = 1.0 / Zsh

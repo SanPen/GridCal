@@ -36,7 +36,7 @@ def test_transformer_type():
                           gr_hv1=0.5, gx_hv1=0.5)
 
     Sbase = 100
-    z_series, zsh = obj.get_impedances()
+    z_series, zsh = obj.get_impedances(VH=Vhv, VL=Vlv, Sbase=100)
 
     # Change the base to the system base power
     base_change = obj.rating / Sbase

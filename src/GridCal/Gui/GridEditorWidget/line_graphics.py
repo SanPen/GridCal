@@ -54,18 +54,19 @@ class LineEditor(QDialog):
         # ------------------------------------------------------------------------------------------
         # Set the object values
         # ------------------------------------------------------------------------------------------
+
         Vf = self.line.bus_from.Vnom
         Vt = self.line.bus_to.Vnom
 
-        Zbase = self.Sbase / (Vf * Vf)
+        Zbase = (Vf * Vf) / self.Sbase
         Ybase = 1 / Zbase
-
-        R = self.line.R * Zbase
-        X = self.line.X * Zbase
-        B = self.line.B * Ybase
-        I = self.line.rate / Vf  # current in kA
-
         length = self.line.length
+
+        R = self.line.R * Zbase / length
+        X = self.line.X * Zbase / length
+        B = self.line.B * Ybase / length
+        I = np.round(self.line.rate / (Vf * 1.73205080757), 6)  # current in kA
+
         # ------------------------------------------------------------------------------------------
 
         # catalogue
@@ -182,21 +183,18 @@ class LineEditor(QDialog):
         I = self.i_spinner.value()
         R = self.r_spinner.value() * l
         X = self.x_spinner.value() * l
-        # G = self.g_spinner.value() * l
         B = self.b_spinner.value() * l
 
         Vf = self.line.bus_from.Vnom
         Vt = self.line.bus_to.Vnom
 
-        Sn = np.round(I * Vf * 1.73205080757, 2)  # nominal power in MVA = kA * kV
-
-        Zbase = self.Sbase / (Vf * Vf)
+        Zbase = (Vf * Vf) / self.Sbase
         Ybase = 1.0 / Zbase
 
         self.line.R = np.round(R / Zbase, 6)
         self.line.X = np.round(X / Zbase, 6)
         self.line.B = np.round(B / Ybase, 6)
-        self.line.rate = Sn
+        self.line.rate = np.round(I * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV
 
         if self.selected_template is not None:
             self.line.template = self.selected_template
