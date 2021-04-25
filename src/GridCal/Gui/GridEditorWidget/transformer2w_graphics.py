@@ -159,7 +159,7 @@ class TransformerEditor(QDialog):
 
         # add all to the GUI
         if templates is not None:
-            self.layout.addWidget(QLabel("Available templates"))
+            self.layout.addWidget(QLabel("Suitable templates"))
             self.layout.addWidget(self.catalogue_combo)
             self.layout.addWidget(self.load_template_btn)
             self.layout.addWidget(QLabel(""))
@@ -178,6 +178,8 @@ class TransformerEditor(QDialog):
 
         self.layout.addWidget(QLabel("Vsc: Short circuit voltage [%]"))
         self.layout.addWidget(self.vsc_spinner)
+
+        # self.layout.addWidget(self.system_base_chk)
 
         self.layout.addWidget(self.accept_btn)
 

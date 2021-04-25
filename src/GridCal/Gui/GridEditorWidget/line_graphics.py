@@ -26,16 +26,16 @@ from GridCal.Engine.Simulations.Topology.topology_driver import reduce_grid_brut
 
 class LineEditor(QDialog):
 
-    def __init__(self, branch: Line, Sbase=100, templates=None, current_template=None):
+    def __init__(self, line: Line, Sbase=100, templates=None, current_template=None):
         """
         Line Editor constructor
-        :param branch: Branch object to update
+        :param line: Branch object to update
         :param Sbase: Base power in MVA
         """
         super(LineEditor, self).__init__()
 
         # keep pointer to the line object
-        self.branch = branch
+        self.line = line
 
         self.Sbase = Sbase
 
@@ -54,18 +54,18 @@ class LineEditor(QDialog):
         # ------------------------------------------------------------------------------------------
         # Set the object values
         # ------------------------------------------------------------------------------------------
-        Vf = self.branch.bus_from.Vnom
-        Vt = self.branch.bus_to.Vnom
+        Vf = self.line.bus_from.Vnom
+        Vt = self.line.bus_to.Vnom
 
         Zbase = self.Sbase / (Vf * Vf)
         Ybase = 1 / Zbase
 
-        R = self.branch.R * Zbase
-        X = self.branch.X * Zbase
-        B = self.branch.B * Ybase
+        R = self.line.R * Zbase
+        X = self.line.X * Zbase
+        B = self.line.B * Ybase
+        I = self.line.rate / Vf  # current in kA
 
-        I = self.branch.rate / Vf  # current in kA
-        length = self.branch.length
+        length = self.line.length
         # ------------------------------------------------------------------------------------------
 
         # catalogue
@@ -185,21 +185,21 @@ class LineEditor(QDialog):
         # G = self.g_spinner.value() * l
         B = self.b_spinner.value() * l
 
-        Vf = self.branch.bus_from.Vnom
-        Vt = self.branch.bus_to.Vnom
+        Vf = self.line.bus_from.Vnom
+        Vt = self.line.bus_to.Vnom
 
-        Sn = np.round(I * Vf, 2)  # nominal power in MVA = kA * kV
+        Sn = np.round(I * Vf * 1.73205080757, 2)  # nominal power in MVA = kA * kV
 
         Zbase = self.Sbase / (Vf * Vf)
         Ybase = 1.0 / Zbase
 
-        self.branch.R = np.round(R / Zbase, 6)
-        self.branch.X = np.round(X / Zbase, 6)
-        self.branch.B = np.round(B / Ybase, 6)
-        self.branch.rate = Sn
+        self.line.R = np.round(R / Zbase, 6)
+        self.line.X = np.round(X / Zbase, 6)
+        self.line.B = np.round(B / Ybase, 6)
+        self.line.rate = Sn
 
         if self.selected_template is not None:
-            self.branch.template = self.selected_template
+            self.line.template = self.selected_template
 
         self.accept()
 

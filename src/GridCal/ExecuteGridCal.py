@@ -49,5 +49,5 @@ if __name__ == "__main__":
     # splash = Splash()
     # splash.show()
 
-    run(use_native_dialogues=True)
+    run(use_native_dialogues=False)
     # sys.exit(app.exec_())
