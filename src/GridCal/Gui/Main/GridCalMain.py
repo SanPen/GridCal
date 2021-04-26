@@ -49,11 +49,9 @@ import GridCal.Engine.Visualization.visualization as viz
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.Simulations.Stochastic.blackout_driver as blkout
 import GridCal.Engine.Simulations.OPF.opf_driver as opfdrv
-import GridCal.Engine.Simulations.LinearFactors.analytic_ptdf_driver as ptdfdrv
-import GridCal.Engine.Simulations.LinearFactors.ptdf_ts_driver as ptdftsdrv
+import GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver as ptdfdrv
+import GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver as ptdftsdrv
 import GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_driver as scdrv
-import GridCal.Engine.Simulations.NK.n_minus_k_driver as nmkdrv
-import GridCal.Engine.Simulations.NK.n_minus_k_ts_driver as nmktsdrv
 import GridCal.Engine.Simulations.OPF.opf_ts_driver as opftsdrv
 import GridCal.Engine.Simulations.PowerFlow.power_flow_driver as pfdrv
 import GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_driver as mcdrv
@@ -62,6 +60,8 @@ import GridCal.Engine.Simulations.PowerFlow.time_series_clustring_driver as clpf
 import GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver as cpfdrv
 import GridCal.Engine.Simulations.Topology.topology_driver as tpdrv
 import GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver as sgmadrv
+import GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_driver as catsdrv
+import GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver as cadrv
 import GridCal.Engine.Simulations.result_types as restpes
 import GridCal.Engine.Simulations.driver_types as drvtpes
 import GridCal.Engine.grid_analysis as grid_analysis
@@ -366,11 +366,9 @@ class MainGUI(QMainWindow):
 
         self.ui.actionDelete_selected.triggered.connect(self.delete_selected_from_the_schematic)
 
-        self.ui.actionPTDF.triggered.connect(self.run_ptdf)
+        self.ui.actionLinearAnalysis.triggered.connect(self.run_linear_analysis)
 
-        self.ui.actionOTDF.triggered.connect(self.run_otdf)
-
-        self.ui.actionOTDF_time_series.triggered.connect(self.run_otdf_ts)
+        self.ui.actionOTDF_time_series.triggered.connect(self.run_contingency_analysis_ts)
 
         self.ui.actionReset_console.triggered.connect(self.create_console)
 
@@ -2416,15 +2414,15 @@ class MainGUI(QMainWindow):
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
 
-    def run_ptdf(self):
+    def run_linear_analysis(self):
         """
         Run a Power Transfer Distribution Factors analysis
         :return:
         """
         if len(self.circuit.buses) > 0:
-            if drvtpes.SimulationTypes.PTDF_run not in self.stuff_running_now:
+            if drvtpes.SimulationTypes.LinearAnalysis_run not in self.stuff_running_now:
 
-                self.add_simulation(drvtpes.SimulationTypes.PTDF_run)
+                self.add_simulation(drvtpes.SimulationTypes.LinearAnalysis_run)
 
                 if len(self.circuit.buses) > 0:
                     self.LOCK()
@@ -2441,7 +2439,7 @@ class MainGUI(QMainWindow):
 
                     drv.progress_signal.connect(self.ui.progressBar.setValue)
                     drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_ptdf)
+                    drv.done_signal.connect(self.post_linear_analysis)
 
                     drv.start()
             else:
@@ -2449,15 +2447,15 @@ class MainGUI(QMainWindow):
         else:
             pass
 
-    def post_ptdf(self):
+    def post_linear_analysis(self):
         """
         Action performed after the short circuit.
         Returns:
 
         """
-        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.PTDF_run)
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.LinearAnalysis_run)
 
-        self.remove_simulation(drvtpes.SimulationTypes.PTDF_run)
+        self.remove_simulation(drvtpes.SimulationTypes.LinearAnalysis_run)
 
         # update the results in the circuit structures
         if not drv.__cancel__:
@@ -2483,18 +2481,18 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
             if self.valid_time_series():
-                if drvtpes.SimulationTypes.PTDF_TS_run not in self.stuff_running_now:
+                if drvtpes.SimulationTypes.LinearAnalysis_TS_run not in self.stuff_running_now:
 
-                    self.add_simulation(drvtpes.SimulationTypes.PTDF_TS_run)
+                    self.add_simulation(drvtpes.SimulationTypes.LinearAnalysis_TS_run)
                     self.LOCK()
 
                     options = ptdfdrv.LinearAnalysisOptions(distribute_slack=self.ui.distributed_slack_checkBox.isChecked())
                     start_ = self.ui.profile_start_slider.value()
                     end_ = self.ui.profile_end_slider.value()
-                    drv = ptdftsdrv.PtdfTimeSeries(grid=self.circuit,
-                                                   options=options,
-                                                   start_=start_,
-                                                   end_=end_)
+                    drv = ptdftsdrv.LinearAnalysisTimeSeries(grid=self.circuit,
+                                                             options=options,
+                                                             start_=start_,
+                                                             end_=end_)
 
                     self.session.register(drv)
 
@@ -2517,8 +2515,8 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
-        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.PTDF_TS_run)
-        self.remove_simulation(drvtpes.SimulationTypes.PTDF_TS_run)
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.LinearAnalysis_TS_run)
+        self.remove_simulation(drvtpes.SimulationTypes.LinearAnalysis_TS_run)
 
         # update the results in the circuit structures
         if not drv.__cancel__:
@@ -2550,60 +2548,7 @@ class MainGUI(QMainWindow):
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
 
-    def run_otdf(self):
-        """
-        Run a Power Transfer Distribution Factors analysis
-        :return:
-        """
-        if len(self.circuit.buses) > 0:
-            if drvtpes.SimulationTypes.OTDF_run not in self.stuff_running_now:
-
-                self.add_simulation(drvtpes.SimulationTypes.OTDF_run)
-
-                self.LOCK()
-
-                options = nmkdrv.NMinusKOptions(distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
-
-                drv = nmkdrv.NMinusK(grid=self.circuit, options=options)
-                self.session.register(drv)
-
-                drv.progress_signal.connect(self.ui.progressBar.setValue)
-                drv.progress_text.connect(self.ui.progress_label.setText)
-                drv.done_signal.connect(self.post_otdf)
-                drv.start()
-            else:
-                warning_msg('Another OTDF is being executed now...')
-        else:
-            pass
-
-    def post_otdf(self):
-        """
-        Action performed after the short circuit.
-        Returns:
-
-        """
-        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.OTDF_run)
-        self.remove_simulation(drvtpes.SimulationTypes.OTDF_run)
-
-        # update the results in the circuit structures
-        if not drv.__cancel__:
-            if results is not None:
-
-                self.ui.progress_label.setText('Colouring OTDF results in the grid...')
-                QtGui.QGuiApplication.processEvents()
-
-                self.update_available_results()
-            else:
-                error_msg('Something went wrong, There are no OTDF results.')
-
-        if len(drv.logger) > 0:
-            dlg = LogsDialogue('PTDF', drv.logger)
-            dlg.exec_()
-
-        if len(self.stuff_running_now) == 0:
-            self.UNLOCK()
-
-    def run_otdf_ts(self):
+    def run_contingency_analysis_ts(self):
         """
         Run a Power Transfer Distribution Factors analysis
         :return:
@@ -2611,20 +2556,20 @@ class MainGUI(QMainWindow):
         if len(self.circuit.buses) > 0:
 
             if self.valid_time_series():
-                if drvtpes.SimulationTypes.OTDF_TS_run not in self.stuff_running_now:
+                if drvtpes.SimulationTypes.ContingencyAnalysisTS_run not in self.stuff_running_now:
 
-                    self.add_simulation(drvtpes.SimulationTypes.OTDF_TS_run)
+                    self.add_simulation(drvtpes.SimulationTypes.ContingencyAnalysisTS_run)
 
                     self.LOCK()
 
-                    options = nmkdrv.NMinusKOptions(distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
+                    options = cadrv.ContingencyAnalysisOptions(distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
 
-                    drv = nmktsdrv.NMinusKTimeSeries(grid=self.circuit, options=options)
+                    drv = catsdrv.ContingencyAnalysisTimeSeries(grid=self.circuit, options=options)
 
                     self.session.register(drv)
                     drv.progress_signal.connect(self.ui.progressBar.setValue)
                     drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_otdf_ts)
+                    drv.done_signal.connect(self.post_contingency_analysis_ts)
                     drv.start()
                 else:
                     warning_msg('Another OTDF is being executed now...')
@@ -2633,14 +2578,14 @@ class MainGUI(QMainWindow):
         else:
             pass
 
-    def post_otdf_ts(self):
+    def post_contingency_analysis_ts(self):
         """
         Action performed after the short circuit.
         Returns:
 
         """
-        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.OTDF_TS_run)
-        self.remove_simulation(drvtpes.SimulationTypes.OTDF_TS_run)
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.ContingencyAnalysisTS_run)
+        self.remove_simulation(drvtpes.SimulationTypes.ContingencyAnalysisTS_run)
 
         # update the results in the circuit structures
         if not drv.__cancel__:
@@ -4078,14 +4023,13 @@ class MainGUI(QMainWindow):
                               file_name=file_name)
 
             elif current_study == ptdfdrv.LinearAnalysisDriver.name:
-                drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.PTDF_run)
+                drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.LinearAnalysis_run)
                 voltage = np.ones(self.circuit.get_bus_number())
-                loading = np.ones(self.circuit.get_branch_number())
-                Sbranch = results.PTDF[:, current_step]
+                loading = results.PTDF[:, current_step]
 
                 plot_function(circuit=self.circuit,
                               Sbus=None,
-                              Sf=Sbranch,
+                              Sf=loading,
                               voltages=voltage,
                               loadings=loading,
                               types=results.bus_types,
@@ -4097,8 +4041,8 @@ class MainGUI(QMainWindow):
                               max_bus_width=max_bus_width,
                               file_name=file_name)
 
-            elif current_study == ptdftsdrv.PtdfTimeSeries.name:
-                drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.PTDF_TS_run)
+            elif current_study == ptdftsdrv.LinearAnalysisTimeSeries.name:
+                drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.LinearAnalysis_TS_run)
                 plot_function(circuit=self.circuit,
                               Sbus=results.S[current_step],
                               Sf=results.Sf[current_step],

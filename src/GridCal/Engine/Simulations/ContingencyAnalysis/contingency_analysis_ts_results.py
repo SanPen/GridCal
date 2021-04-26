@@ -19,7 +19,7 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
 
 
-class NMinusKTimeSeriesResults:
+class ContingencyAnalysisTimeSeriesResults:
 
     def __init__(self, n, ne, nc, time_array, bus_names, branch_names, bus_types):
         """

@@ -27,14 +27,14 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf import LinearAnalysis
-from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf_driver import LinearAnalysisOptions
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisOptions
 from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 
-class PtdfTimeSeriesResults:
+class LinearAnalysisTimeSeriesResults:
 
     def __init__(self, n, m, time_array, bus_names, bus_types, branch_names):
         """
@@ -43,7 +43,7 @@ class PtdfTimeSeriesResults:
         @param m: number of branches
         @param nt: number of time steps
         """
-        self.name = 'PTDF Time series'
+        self.name = 'Linear Analysis time series'
         self.nt = len(time_array)
         self.m = m
         self.n = n
@@ -144,12 +144,12 @@ class PtdfTimeSeriesResults:
         return ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
 
 
-class PtdfTimeSeries(QThread):
+class LinearAnalysisTimeSeries(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
-    name = 'PTDF Time Series'
-    tpe = SimulationTypes.PTDF_TS_run
+    name = 'Linear analysis time series'
+    tpe = SimulationTypes.LinearAnalysis_TS_run
 
     def __init__(self, grid: MultiCircuit, options: LinearAnalysisOptions, start_=0, end_=None):
         """
@@ -164,12 +164,12 @@ class PtdfTimeSeries(QThread):
 
         self.options = options
 
-        self.results = PtdfTimeSeriesResults(n=0,
-                                             m=0,
-                                             time_array=[],
-                                             bus_names=[],
-                                             bus_types=[],
-                                             branch_names=[])
+        self.results = LinearAnalysisTimeSeriesResults(n=0,
+                                                       m=0,
+                                                       time_array=[],
+                                                       bus_names=[],
+                                                       bus_types=[],
+                                                       branch_names=[])
 
         self.ptdf_driver = LinearAnalysis(grid=self.grid, distributed_slack=self.options.distribute_slack)
 
@@ -205,12 +205,12 @@ class PtdfTimeSeries(QThread):
         time_indices = np.arange(self.start_, self.end_ + 1)
 
         ts_numeric_circuit = compile_time_circuit(self.grid)
-        self.results = PtdfTimeSeriesResults(n=ts_numeric_circuit.nbus,
-                                             m=ts_numeric_circuit.nbr,
-                                             time_array=ts_numeric_circuit.time_array[time_indices],
-                                             bus_names=ts_numeric_circuit.bus_names,
-                                             bus_types=ts_numeric_circuit.bus_types,
-                                             branch_names=ts_numeric_circuit.branch_names)
+        self.results = LinearAnalysisTimeSeriesResults(n=ts_numeric_circuit.nbus,
+                                                       m=ts_numeric_circuit.nbr,
+                                                       time_array=ts_numeric_circuit.time_array[time_indices],
+                                                       bus_names=ts_numeric_circuit.bus_names,
+                                                       bus_types=ts_numeric_circuit.bus_types,
+                                                       branch_names=ts_numeric_circuit.branch_names)
 
         self.indices = pd.to_datetime(ts_numeric_circuit.time_array[time_indices])
 
@@ -259,7 +259,7 @@ if __name__ == '__main__':
     main_circuit = FileOpen(fname).open()
 
     options_ = LinearAnalysisOptions()
-    ptdf_driver = PtdfTimeSeries(grid=main_circuit, options=options_)
+    ptdf_driver = LinearAnalysisTimeSeries(grid=main_circuit, options=options_)
     ptdf_driver.run()
 
     pf_options_ = PowerFlowOptions(solver_type=SolverType.NR)

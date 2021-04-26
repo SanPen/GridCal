@@ -13,9 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from GridCal.Engine.Simulations.LinearFactors.ptdf_driver import *
-from GridCal.Engine.Simulations.LinearFactors.ptdf_analysis import *
-from GridCal.Engine.Simulations.LinearFactors.ptdf_results import *
-from GridCal.Engine.Simulations.LinearFactors.ptdf_ts_driver import *
-from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf import *
-from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf_driver import *
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import *
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import *
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import *
