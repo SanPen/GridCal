@@ -23,9 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Slight changes in the transformer template handler">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Updated transformer per unit test">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_transformer_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_transformer_type.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/demo_5_node.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/demo_5_node.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_transformer_definition.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,7 +108,7 @@
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python tests.Nosetests in tests">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -122,28 +123,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="line_example" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/research/per_unit" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/research/per_unit/line_example.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -206,20 +185,36 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
+    <configuration name="Nosetests in tests" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.transformer_example" />
-      <item itemvalue="Python.line_example" />
       <item itemvalue="Python tests.Nosetests in test_transformer_type.py" />
       <item itemvalue="Python tests.Nosetests for test_transformer_type.test_transformer_type" />
+      <item itemvalue="Python tests.Nosetests in tests" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.Nosetests for test_transformer_type.test_transformer_type" />
         <item itemvalue="Python.transformer_example" />
         <item itemvalue="Python tests.Nosetests in test_transformer_type.py" />
-        <item itemvalue="Python.line_example" />
       </list>
     </recent_temporary>
   </component>
@@ -520,13 +515,7 @@
       <workItem from="1619212054612" duration="3933000" />
       <workItem from="1619344893205" duration="3326000" />
       <workItem from="1619374132211" duration="5851000" />
-    </task>
-    <task id="LOCAL-00076" summary="Added ACDC levenberg marquadt">
-      <created>1609456014608</created>
-      <option name="number" value="00076" />
-      <option name="presentableId" value="LOCAL-00076" />
-      <option name="project" value="LOCAL" />
-      <updated>1609456014608</updated>
+      <workItem from="1619418319352" duration="964000" />
     </task>
     <task id="LOCAL-00077" summary="60% faster ACDC power flow by dynamic Jacobian composition">
       <created>1609515682212</created>
@@ -864,7 +853,14 @@
       <option name="project" value="LOCAL" />
       <updated>1619374235658</updated>
     </task>
-    <option name="localTasksCounter" value="125" />
+    <task id="LOCAL-00125" summary="Updated transformer per unit test">
+      <created>1619384763118</created>
+      <option name="number" value="00125" />
+      <option name="presentableId" value="LOCAL-00125" />
+      <option name="project" value="LOCAL" />
+      <updated>1619384763118</updated>
+    </task>
+    <option name="localTasksCounter" value="126" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -898,7 +894,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="minor check when dropping files" />
     <MESSAGE value="Fixed Pdc and Qac in the VSC devices and some main file examples&#10;Finalized removing specific numba decorators" />
     <MESSAGE value="Fixed PTDF rates profile usage&#10;Fixed plotting from the schematic" />
     <MESSAGE value="Added search function (WIP)" />
@@ -923,7 +918,8 @@
     <MESSAGE value="created session object" />
     <MESSAGE value="Migrated to the session architecture" />
     <MESSAGE value="Slight changes in the transformer template handler" />
-    <option name="LAST_COMMIT_MESSAGE" value="Slight changes in the transformer template handler" />
+    <MESSAGE value="Updated transformer per unit test" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated transformer per unit test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1260,8 +1256,8 @@
     <SUITE FILE_PATH="coverage/GridCal$derivatives_research1.coverage" NAME="derivatives_research1 Coverage Results" MODIFIED="1608639260953" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/hvdc/fubm" />
     <SUITE FILE_PATH="coverage/GridCal$test_demo_5_node.coverage" NAME="test_demo_5_node Coverage Results" MODIFIED="1614631204068" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$switch_reduction_dense.coverage" NAME="switch_reduction_dense Coverage Results" MODIFIED="1615742845150" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/grid_reduction/substation_reduction" />
-    <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_tests.coverage" NAME="Nosetests in tests Coverage Results" MODIFIED="1617445479259" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$topology_driver.coverage" NAME="topology_driver Coverage Results" MODIFIED="1590932816525" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Topology" />
+    <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_tests.coverage" NAME="Nosetests in tests Coverage Results" MODIFIED="1619422080696" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_admittance_matrix_test_py.coverage" NAME="Nosetests in admittance_matrix_test.py Coverage Results" MODIFIED="1609500304123" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$newton_current.coverage" NAME="newton_current Coverage Results" MODIFIED="1597481272992" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_flow" />
     <SUITE FILE_PATH="coverage/GridCal$fuerte_esquivel_acha_ambriz_perez_paper.coverage" NAME="fuerte_esquivel_acha_ambriz_perez_paper Coverage Results" MODIFIED="1607805654887" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/upfc" />
