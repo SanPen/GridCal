@@ -1020,16 +1020,7 @@ class GridEditor(QSplitter):
         :param line: Line instance
         :return: Nothing
         """
-        hvdc = HvdcLine(bus_from=line.bus_from,
-                        bus_to=line.bus_to,
-                        name='HVDC Line',
-                        active=line.active,
-                        rate=line.rate,
-                        active_prof=line.active_prof,
-                        rate_prof=line.rate_prof)
-
-        # add device to the circuit
-        self.circuit.add_hvdc(hvdc)
+        hvdc = self.circuit.convert_line_to_hvdc(line)
 
         # add device to the schematic
         hvdc.graphic_obj = self.add_api_hvdc(hvdc)
@@ -1037,9 +1028,6 @@ class GridEditor(QSplitter):
         # update position
         hvdc.graphic_obj.fromPort.update()
         hvdc.graphic_obj.toPort.update()
-
-        # delete the line from the circuit
-        self.circuit.delete_line(line)
 
         # delete from the schematic
         self.diagramScene.removeItem(line.graphic_obj)
@@ -1050,19 +1038,7 @@ class GridEditor(QSplitter):
         :param line: Line instance
         :return: Nothing
         """
-        transformer = Transformer2W(bus_from=line.bus_from,
-                                    bus_to=line.bus_to,
-                                    name='Transformer',
-                                    active=line.active,
-                                    rate=line.rate,
-                                    r=line.R,
-                                    x=line.X,
-                                    b=line.B,
-                                    active_prof=line.active_prof,
-                                    rate_prof=line.rate_prof)
-
-        # add device to the circuit
-        self.circuit.add_transformer2w(transformer)
+        transformer = self.circuit.convert_line_to_transformer(line)
 
         # add device to the schematic
         transformer.graphic_obj = self.add_api_transformer(transformer)
@@ -1070,9 +1046,6 @@ class GridEditor(QSplitter):
         # update position
         transformer.graphic_obj.fromPort.update()
         transformer.graphic_obj.toPort.update()
-
-        # delete the line from the circuit
-        self.circuit.delete_line(line)
 
         # delete from the schematic
         self.diagramScene.removeItem(line.graphic_obj)
@@ -1083,20 +1056,7 @@ class GridEditor(QSplitter):
         :param line: Line instance
         :return: Nothing
         """
-        vsc = VSC(bus_from=line.bus_from,
-                  bus_to=line.bus_to,
-                  name='VSC',
-                  active=line.active,
-                  rate=line.rate,
-                  r1=line.R,
-                  x1=line.X,
-                  Beq=line.B,
-                  m=1.0,
-                  active_prof=line.active_prof,
-                  rate_prof=line.rate_prof)
-
-        # add device to the circuit
-        self.circuit.add_vsc(vsc)
+        vsc = self.circuit.convert_line_to_vsc(line)
 
         # add device to the schematic
         vsc.graphic_obj = self.add_api_vsc(vsc)
@@ -1104,9 +1064,6 @@ class GridEditor(QSplitter):
         # update position
         vsc.graphic_obj.fromPort.update()
         vsc.graphic_obj.toPort.update()
-
-        # delete the line from the circuit
-        self.circuit.delete_line(line)
 
         # delete from the schematic
         self.diagramScene.removeItem(line.graphic_obj)
@@ -1117,19 +1074,7 @@ class GridEditor(QSplitter):
         :param line: Line instance
         :return: Nothing
         """
-        upfc = UPFC(bus_from=line.bus_from,
-                    bus_to=line.bus_to,
-                    name='UPFC',
-                    active=line.active,
-                    rate=line.rate,
-                    rl=line.R,
-                    xl=line.X,
-                    bl=line.B,
-                    active_prof=line.active_prof,
-                    rate_prof=line.rate_prof)
-
-        # add device to the circuit
-        self.circuit.add_upfc(upfc)
+        upfc = self.circuit.convert_line_to_upfc(line)
 
         # add device to the schematic
         upfc.graphic_obj = self.add_api_upfc(upfc)
@@ -1137,9 +1082,6 @@ class GridEditor(QSplitter):
         # update position
         upfc.graphic_obj.fromPort.update()
         upfc.graphic_obj.toPort.update()
-
-        # delete the line from the circuit
-        self.circuit.delete_line(line)
 
         # delete from the schematic
         self.diagramScene.removeItem(line.graphic_obj)
@@ -1154,6 +1096,7 @@ class GridEditor(QSplitter):
         :param transformers2w: list of Transformer Objects
         :param hvdc_lines: list of HvdcLine objects
         :param vsc_devices: list Vsc objects
+        :param upfc_devices: List of UPFC devices
         :param explode_factor: factor of "explosion": Separation of the nodes factor
         :param prog_func: progress report function
         :param text_func: Text report function

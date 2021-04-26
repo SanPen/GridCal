@@ -15,12 +15,10 @@
 import gc
 import os.path
 import platform
-import sys
 from typing import List, Dict, Tuple
 import datetime as dtelib
 from collections import OrderedDict
 from multiprocessing import cpu_count
-from PySide2 import QtWidgets
 from matplotlib.colors import LinearSegmentedColormap
 from pandas.plotting import register_matplotlib_converters
 
@@ -257,7 +255,7 @@ class MainGUI(QMainWindow):
         self.ui.simulationDataSplitter.setStretchFactor(1, 15)
         self.ui.catalogueSplitter.setStretchFactor(1, 15)
 
-        self.ui.results_splitter.setStretchFactor(0, 1)
+        self.ui.results_splitter.setStretchFactor(0, 2)
         self.ui.results_splitter.setStretchFactor(1, 4)
 
         self.lock_ui = False
@@ -945,16 +943,14 @@ class MainGUI(QMainWindow):
 
             if reply == QMessageBox.Yes:
                 do_it = True
+                # build the graph always in this step
+                self.circuit.build_graph()
             else:
                 do_it = False
 
         if do_it:
             if self.circuit.graph is None:
-                try:
-                    self.circuit.build_graph()
-                except:
-                    exc_type, exc_value, exc_traceback = sys.exc_info()
-                    error_msg(str(exc_traceback) + '\n' + str(exc_value), 'Automatic layout')
+                self.circuit.build_graph()
 
             alg = dict()
             alg['circular_layout'] = nx.circular_layout
@@ -1609,14 +1605,13 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.lines) > 0:
 
-            for branch in self.circuit.lines:
+            for elm in self.circuit.lines:
 
-                v1 = branch.bus_from.Vnom
-                v2 = branch.bus_to.Vnom
+                v1 = elm.bus_from.Vnom
+                v2 = elm.bus_to.Vnom
 
                 if abs(v1 - v2) > 1.0:
-                    self.circuit.transformers2w.append(branch)
-                    self.circuit.lines.remove(branch)
+                    self.circuit.convert_line_to_transformer(elm)
                 else:
 
                     pass  # is a line

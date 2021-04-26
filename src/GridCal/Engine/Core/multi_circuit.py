@@ -1411,6 +1411,104 @@ class MultiCircuit:
         """
         self.countries.pop(i)
 
+    def convert_line_to_hvdc(self, line: Line) -> HvdcLine:
+        """
+        Convert a line to HVDC, this is the GUI way to create HVDC objects
+        :param line: Line instance
+        :return: HvdcLine
+        """
+        hvdc = HvdcLine(bus_from=line.bus_from,
+                        bus_to=line.bus_to,
+                        name='HVDC Line',
+                        active=line.active,
+                        rate=line.rate,
+                        active_prof=line.active_prof,
+                        rate_prof=line.rate_prof)
+
+        # add device to the circuit
+        self.add_hvdc(hvdc)
+
+        # delete the line from the circuit
+        self.delete_line(line)
+
+        return hvdc
+
+    def convert_line_to_transformer(self, line: Line) -> Transformer2W:
+        """
+        Convert a line to Transformer
+        :param line: Line instance
+        :return: Transformer2W
+        """
+        transformer = Transformer2W(bus_from=line.bus_from,
+                                    bus_to=line.bus_to,
+                                    name='Transformer',
+                                    active=line.active,
+                                    rate=line.rate,
+                                    r=line.R,
+                                    x=line.X,
+                                    b=line.B,
+                                    active_prof=line.active_prof,
+                                    rate_prof=line.rate_prof)
+
+        # add device to the circuit
+        self.add_transformer2w(transformer)
+
+        # delete the line from the circuit
+        self.delete_line(line)
+
+        return transformer
+
+    def convert_line_to_vsc(self, line: Line) -> VSC:
+        """
+        Convert a line to voltage source converter
+        :param line: Line instance
+        :return: Nothing
+        """
+        vsc = VSC(bus_from=line.bus_from,
+                  bus_to=line.bus_to,
+                  name='VSC',
+                  active=line.active,
+                  rate=line.rate,
+                  r1=line.R,
+                  x1=line.X,
+                  Beq=line.B,
+                  m=1.0,
+                  active_prof=line.active_prof,
+                  rate_prof=line.rate_prof)
+
+        # add device to the circuit
+        self.add_vsc(vsc)
+
+        # delete the line from the circuit
+        self.delete_line(line)
+
+        return vsc
+
+    def convert_line_to_upfc(self, line: Line) -> UPFC:
+        """
+        Convert a line to voltage source converter
+        :param line: Line instance
+        :return: Nothing
+        """
+        upfc = UPFC(bus_from=line.bus_from,
+                    bus_to=line.bus_to,
+                    name='UPFC',
+                    active=line.active,
+                    rate=line.rate,
+                    rl=line.R,
+                    xl=line.X,
+                    bl=line.B,
+                    active_prof=line.active_prof,
+                    rate_prof=line.rate_prof)
+
+        # add device to the circuit
+        self.add_upfc(upfc)
+
+        # delete the line from the circuit
+        self.delete_line(line)
+
+        return upfc
+
     def plot_graph(self, ax=None):
         """
         Plot the grid.
