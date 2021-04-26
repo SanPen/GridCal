@@ -15,6 +15,7 @@ Version 4.1.1
 
 - Fixed per unit computation with the GUI dialogues.
 
+- Converted GUI simulation thread handling to a session based architecture.
 
 Version 4.1.0
 ^^^^^^^^^^^^^^^
