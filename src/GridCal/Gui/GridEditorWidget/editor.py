@@ -241,7 +241,7 @@ class DiagramScene(QGraphicsScene):
                 for key, driver in self.circuit.results_dictionary.items():
                     if hasattr(driver, 'results'):
                         if driver.results is not None:
-                            if key == 'Time Series':
+                            if key == SimulationTypes.TimeSeries_run:
                                 voltage[key] = np.abs(driver.results.voltage[:, i])
 
                 # injections

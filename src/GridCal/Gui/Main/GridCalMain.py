@@ -5300,22 +5300,21 @@ class MainGUI(QMainWindow):
         """
         Copy the results from the OPF time series to the profiles
         """
-        if self.optimal_power_flow_time_series is not None:
-            if self.optimal_power_flow_time_series.results is not None:
+        drv, results = self.session.get_driver_results(drvtpes.SimulationTypes.OPFTimeSeries_run)
 
-                reply = QMessageBox.question(self, 'Message',
-                                             'Are you sure that you want to overwrite '
-                                             'the generation profiles with the OPF results?',
-                                             QMessageBox.Yes, QMessageBox.No)
+        if results is not None:
 
-                if reply == QMessageBox.Yes:
-                    for i, gen in enumerate(self.circuit.get_generators()):
-                        gen.P_prof = self.optimal_power_flow_time_series.results.generator_power[:, i]
+            reply = QMessageBox.question(self, 'Message',
+                                         'Are you sure that you want to overwrite '
+                                         'the generation profiles with the OPF results?',
+                                         QMessageBox.Yes, QMessageBox.No)
 
-            else:
-                warning_msg('The OPF time series has no results :(')
+            if reply == QMessageBox.Yes:
+                for i, gen in enumerate(self.circuit.get_generators()):
+                    gen.P_prof = results.generator_power[:, i]
+
         else:
-            warning_msg('The OPF time series has not been run!')
+            warning_msg('The OPF time series has no results :(')
 
     def valid_time_series(self):
         """
