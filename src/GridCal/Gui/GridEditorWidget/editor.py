@@ -39,6 +39,7 @@ from GridCal.Gui.GridEditorWidget.transformer2w_graphics import TransformerGraph
 from GridCal.Gui.GridEditorWidget.hvdc_graphics import HvdcGraphicItem
 from GridCal.Gui.GridEditorWidget.vsc_graphics import VscGraphicItem
 from GridCal.Gui.GridEditorWidget.upfc_graphics import UpfcGraphicItem
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from matplotlib import pyplot as plt
 
 '''
@@ -295,24 +296,24 @@ class DiagramScene(QGraphicsScene):
                 for key, driver in self.circuit.results_dictionary.items():
                     if hasattr(driver, 'results'):
                         if driver.results is not None:
-                            if key == 'Time Series':
-                                power_data[key] = driver.results.Sf.real[:, i]
-                                loading_data[key] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+                            if key == SimulationTypes.TimeSeries_run:
+                                power_data[key.value] = driver.results.Sf.real[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
 
-                            elif key == 'Time Series Clustering':
+                            elif key == SimulationTypes.ClusteringTimeSeries_run:
                                 x_cl = x[driver.sampled_time_idx]
                                 power_clustering_data = driver.results.Sf.real[:, i]
                                 loading_clustering_data = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
 
-                            elif key == 'PTDF Time Series':
-                                power_data[key] = driver.results.Sf.real[:, i]
-                                loading_data[key] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+                            elif key == SimulationTypes.LinearAnalysis_TS_run:
+                                power_data[key.value] = driver.results.Sf.real[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
 
-                            elif key == 'N-1 time series':
-                                power_data[key] = driver.results.worst_flows.real[:, i]
-                                loading_data[key] = np.sort(np.abs(driver.results.worst_loading.real[:, i] * 100.0))
+                            elif key == SimulationTypes.ContingencyAnalysisTS_run:
+                                power_data[key.value] = driver.results.worst_flows.real[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.worst_loading.real[:, i] * 100.0))
 
-                            elif key == 'Stochastic Power Flow':
+                            elif key == SimulationTypes.StochasticPowerFlow:
                                 loading_st_data = np.sort(np.abs(driver.results.loading_points.real[:, i] * 100.0))
 
                 # loading
@@ -324,14 +325,18 @@ class DiagramScene(QGraphicsScene):
 
                 if loading_clustering_data is not None:
                     p_st = np.arange(len(loading_clustering_data)).astype(float) / len(loading_clustering_data)
-                    df = pd.DataFrame(data=loading_clustering_data, index=p_st, columns=['Clustering Time Series'])
+                    df = pd.DataFrame(data=loading_clustering_data,
+                                      index=p_st,
+                                      columns=[SimulationTypes.ClusteringTimeSeries_run.value])
                     ax_1.set_title('Probability x < value', fontsize=14)
                     ax_1.set_ylabel('Loading [%]', fontsize=11)
                     df.plot(ax=ax_1)
 
                 if loading_st_data is not None:
                     p_st = np.arange(len(loading_st_data)).astype(float) / len(loading_st_data)
-                    df = pd.DataFrame(data=loading_st_data, index=p_st, columns=['Stochastic Power Flow'])
+                    df = pd.DataFrame(data=loading_st_data,
+                                      index=p_st,
+                                      columns=[SimulationTypes.StochasticPowerFlow.value])
                     ax_1.set_title('Probability x < value', fontsize=14)
                     ax_1.set_ylabel('Loading [%]', fontsize=11)
                     df.plot(ax=ax_1)
@@ -344,7 +349,9 @@ class DiagramScene(QGraphicsScene):
                     df.plot(ax=ax_2)
 
                 if power_clustering_data is not None:
-                    df = pd.DataFrame(data=power_clustering_data, index=x_cl, columns=['Clustering Time Series'])
+                    df = pd.DataFrame(data=power_clustering_data,
+                                      index=x_cl,
+                                      columns=[SimulationTypes.ClusteringTimeSeries_run.value])
                     ax_2.set_title('Power', fontsize=14)
                     ax_2.set_ylabel('Power [MW]', fontsize=11)
                     df.plot(ax=ax_2)

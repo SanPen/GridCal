@@ -65,7 +65,7 @@ class ContingencyAnalysisDriver(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
     name = 'N-1/OTDF'
-    tpe = SimulationTypes.OTDF_run
+    tpe = SimulationTypes.ContingencyAnalysis_run
 
     def __init__(self, grid: MultiCircuit, options: ContingencyAnalysisOptions):
         """

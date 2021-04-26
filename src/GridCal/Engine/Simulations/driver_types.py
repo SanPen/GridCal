@@ -30,8 +30,21 @@ class SimulationTypes(Enum):
     OPFTimeSeries_run = 'OPF Time series'
     TransientStability_run = 'Transient stability'
     TopologyReduction_run = 'Topology reduction'
-    LinearAnalysis_run = 'PTDF'
-    LinearAnalysis_TS_run = 'PTDF_TS'
-    OTDF_run = 'OTDF'
-    ContingencyAnalysisTS_run = 'OTDF_TS'
+    LinearAnalysis_run = 'Linear analysis'
+    LinearAnalysis_TS_run = 'Linear analysis time series'
+    ContingencyAnalysis_run = 'Contingency analysis'
+    ContingencyAnalysisTS_run = 'Contingency analysis time series'
     Delete_and_reduce_run = 'Delete and reduce'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return SimulationTypes[s]
+        except KeyError:
+            return s
