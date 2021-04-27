@@ -21,8 +21,8 @@ from PySide2.QtCore import QThread, Signal
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
-from GridCal.Engine.Simulations.NK.n_minus_k_results import NMinusKResults
-from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf import LinearAnalysis
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
+from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 
@@ -51,7 +51,7 @@ def enumerate_states_n_k(m, k=1):
     return np.array(states), indices
 
 
-class NMinusKOptions:
+class ContingencyAnalysisOptions:
 
     def __init__(self, distributed_slack=True, correct_values=True):
 
@@ -60,14 +60,14 @@ class NMinusKOptions:
         self.correct_values = correct_values
 
 
-class NMinusK(QThread):
+class ContingencyAnalysisDriver(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
     name = 'N-1/OTDF'
-    tpe = SimulationTypes.OTDF_run
+    tpe = SimulationTypes.ContingencyAnalysis_run
 
-    def __init__(self, grid: MultiCircuit, options: NMinusKOptions):
+    def __init__(self, grid: MultiCircuit, options: ContingencyAnalysisOptions):
         """
         N - k class constructor
         @param grid: MultiCircuit Object
@@ -83,10 +83,10 @@ class NMinusK(QThread):
         self.options = options
 
         # N-K results
-        self.results = NMinusKResults(n=0, m=0,
-                                      bus_names=(),
-                                      branch_names=(),
-                                      bus_types=())
+        self.results = ContingencyAnalysisResults(n=0, m=0,
+                                                  bus_names=(),
+                                                  branch_names=(),
+                                                  bus_types=())
 
         self.numerical_circuit = None
 
@@ -118,11 +118,11 @@ class NMinusK(QThread):
 
         self.numerical_circuit = compile_snapshot_circuit(self.grid)
 
-        results = NMinusKResults(m=self.numerical_circuit.nbr,
-                                 n=self.numerical_circuit.nbus,
-                                 branch_names=self.numerical_circuit.branch_names,
-                                 bus_names=self.numerical_circuit.bus_names,
-                                 bus_types=self.numerical_circuit.bus_types)
+        results = ContingencyAnalysisResults(m=self.numerical_circuit.nbr,
+                                             n=self.numerical_circuit.nbus,
+                                             branch_names=self.numerical_circuit.branch_names,
+                                             bus_names=self.numerical_circuit.bus_names,
+                                             bus_types=self.numerical_circuit.bus_types)
 
         self.progress_text.emit('Analyzing outage distribution factors...')
         linear_analysis = LinearAnalysis(grid=self.grid,
@@ -183,8 +183,8 @@ if __name__ == '__main__':
 
     main_circuit = FileOpen(fname).open()
 
-    options_ = NMinusKOptions()
-    simulation = NMinusK(grid=main_circuit, options=options_)
+    options_ = ContingencyAnalysisOptions()
+    simulation = ContingencyAnalysisDriver(grid=main_circuit, options=options_)
     simulation.run()
 
     otdf_ = simulation.get_otdf()

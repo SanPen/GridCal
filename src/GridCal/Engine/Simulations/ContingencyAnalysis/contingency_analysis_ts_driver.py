@@ -22,9 +22,9 @@ from PySide2.QtCore import QThread, Signal
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
-from GridCal.Engine.Simulations.NK.n_minus_k_driver import NMinusKOptions
-from GridCal.Engine.Simulations.NK.n_minus_k_ts_results import NMinusKTimeSeriesResults
-from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf import LinearAnalysis
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
+from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisOptions
+from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import ContingencyAnalysisTimeSeriesResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 
@@ -77,14 +77,14 @@ def compute_flows_numba(e, nt, nc, OTDF, Flows, rates, overload_count, max_overl
             compute_flows_numba_t(e, c, nt, OTDF, Flows, rates, overload_count, max_overload, worst_flows)
 
 
-class NMinusKTimeSeries(QThread):
+class ContingencyAnalysisTimeSeries(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
-    name = 'N-1 time series'
-    tpe = SimulationTypes.OTDF_TS_run
+    name = 'Contingency analysis time series'
+    tpe = SimulationTypes.ContingencyAnalysisTS_run
 
-    def __init__(self, grid: MultiCircuit, options: NMinusKOptions):
+    def __init__(self, grid: MultiCircuit, options: ContingencyAnalysisOptions):
         """
         N - k class constructor
         @param grid: MultiCircuit Object
@@ -100,11 +100,11 @@ class NMinusKTimeSeries(QThread):
         self.options = options
 
         # N-K results
-        self.results = NMinusKTimeSeriesResults(n=0, ne=0, nc=0,
-                                                time_array=(),
-                                                bus_names=(),
-                                                branch_names=(),
-                                                bus_types=())
+        self.results = ContingencyAnalysisTimeSeriesResults(n=0, ne=0, nc=0,
+                                                            time_array=(),
+                                                            bus_names=(),
+                                                            branch_names=(),
+                                                            bus_types=())
 
         # set cancel state
         self.__cancel__ = False
@@ -137,12 +137,12 @@ class NMinusKTimeSeries(QThread):
         nc = ts_numeric_circuit.nbr
         nt = len(ts_numeric_circuit.time_array)
 
-        results = NMinusKTimeSeriesResults(ne=ne, nc=nc,
-                                           time_array=ts_numeric_circuit.time_array,
-                                           n=ts_numeric_circuit.nbus,
-                                           branch_names=ts_numeric_circuit.branch_names,
-                                           bus_names=ts_numeric_circuit.bus_names,
-                                           bus_types=ts_numeric_circuit.bus_types)
+        results = ContingencyAnalysisTimeSeriesResults(ne=ne, nc=nc,
+                                                       time_array=ts_numeric_circuit.time_array,
+                                                       n=ts_numeric_circuit.nbus,
+                                                       branch_names=ts_numeric_circuit.branch_names,
+                                                       bus_names=ts_numeric_circuit.bus_names,
+                                                       bus_types=ts_numeric_circuit.bus_types)
 
         self.progress_text.emit('Analyzing outage distribution factors...')
         linear_analysis = LinearAnalysis(grid=self.grid,
@@ -206,8 +206,8 @@ if __name__ == '__main__':
 
     main_circuit = FileOpen(fname).open()
 
-    options_ = NMinusKOptions()
-    simulation = NMinusKTimeSeries(grid=main_circuit, options=options_)
+    options_ = ContingencyAnalysisOptions()
+    simulation = ContingencyAnalysisTimeSeries(grid=main_circuit, options=options_)
     simulation.run()
 
     print()

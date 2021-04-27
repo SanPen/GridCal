@@ -103,5 +103,16 @@ class ResultTypes(Enum):
     SigmaDistances = 'Sigma distances', DeviceType.BusDevice
     SigmaPlusDistances = 'Sigma + distances', DeviceType.BusDevice
 
+    def __str__(self):
+        return self.value
 
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return ResultTypes[s]
+        except KeyError:
+            return s
 

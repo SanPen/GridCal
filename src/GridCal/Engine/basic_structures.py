@@ -30,11 +30,37 @@ class BusMode(Enum):
     STO_DISPATCH = 5  # Storage dispatch, in practice it is the same as REF
     PVB = 6
 
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return BusMode[s]
+        except KeyError:
+            return s
+
 
 class BranchImpedanceMode(Enum):
     Specified = 0
     Upper = 1
     Lower = 2
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return BranchImpedanceMode[s]
+        except KeyError:
+            return s
 
 
 class SolverType(Enum):
@@ -65,6 +91,19 @@ class SolverType(Enum):
     DYCORS_OPF = 'DYCORS OPF'
     GA_OPF = 'Genetic Algorithm OPF'
     NELDER_MEAD_OPF = 'Nelder Mead OPF'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return SolverType[s]
+        except KeyError:
+            return s
 
 
 class ReactivePowerControlMode(Enum):
@@ -201,11 +240,37 @@ class TapsControlMode(Enum):
     Direct = "Direct"
     Iterative = "Iterative"
 
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return TapsControlMode[s]
+        except KeyError:
+            return s
+
 
 class SyncIssueType(Enum):
     Added = 'Added'
     Deleted = 'Deleted'
     Conflict = 'Conflict'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return SyncIssueType[s]
+        except KeyError:
+            return s
 
 
 class CDF:
@@ -435,6 +500,19 @@ class MIPSolvers(Enum):
     GUROBI = 'Gurobi'
     XPRESS = 'Xpress'
 
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return MIPSolvers[s]
+        except KeyError:
+            return s
+
 
 class TimeGrouping(Enum):
     NoGrouping = 'No grouping'
@@ -442,6 +520,19 @@ class TimeGrouping(Enum):
     Weekly = 'Weekly'
     Daily = 'Daily'
     Hourly = 'Hourly'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return TimeGrouping[s]
+        except KeyError:
+            return s
 
 
 def classify_by_hour(t: pd.DatetimeIndex):

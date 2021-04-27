@@ -18,7 +18,7 @@ from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.LinearFactors.analytic_ptdf import *
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import *
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 ########################################################################################################################
@@ -41,8 +41,8 @@ class LinearAnalysisDriver(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
-    name = 'PTDF'
-    tpe = SimulationTypes.PTDF_run
+    name = 'Linear analysis'
+    tpe = SimulationTypes.LinearAnalysis_run
 
     def __init__(self, grid: MultiCircuit, options: LinearAnalysisOptions):
         """

@@ -6591,9 +6591,8 @@ QProgressBar::chunk{
     <addaction name="actionPower_flow_Stochastic"/>
     <addaction name="actionClustering_time_series"/>
     <addaction name="separator"/>
-    <addaction name="actionPTDF"/>
+    <addaction name="actionLinearAnalysis"/>
     <addaction name="actionPTDF_time_series"/>
-    <addaction name="actionOTDF"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
@@ -6649,9 +6648,8 @@ QProgressBar::chunk{
    <addaction name="actionPower_flow_Stochastic"/>
    <addaction name="actionBlackout_cascade"/>
    <addaction name="separator"/>
-   <addaction name="actionPTDF"/>
+   <addaction name="actionLinearAnalysis"/>
    <addaction name="actionPTDF_time_series"/>
-   <addaction name="actionOTDF"/>
    <addaction name="actionOTDF_time_series"/>
    <addaction name="separator"/>
    <addaction name="actionBigger_nodes"/>
@@ -7005,28 +7003,16 @@ QProgressBar::chunk{
     <string>Del</string>
    </property>
   </action>
-  <action name="actionPTDF">
+  <action name="actionLinearAnalysis">
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/Icons/icons/ptdf.svg</normaloff>:/Icons/icons/ptdf.svg</iconset>
    </property>
    <property name="text">
-    <string>PTDF (Power Transfer Distribution Factors)</string>
+    <string>Linear Analysis</string>
    </property>
    <property name="toolTip">
-    <string>Power Transfer Distribution Factors</string>
-   </property>
-  </action>
-  <action name="actionOTDF">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/otdf.svg</normaloff>:/Icons/icons/otdf.svg</iconset>
-   </property>
-   <property name="text">
-    <string>N-1 / OTDF (Outage Transfer Distribution Factors)</string>
-   </property>
-   <property name="toolTip">
-    <string>N-1 / OTDF (Outage Transfer Distribution Factors)</string>
+    <string>Perform linear analysis with distribution factors (PTDF, LODF)</string>
    </property>
   </action>
   <action name="actionReset_console">
@@ -7083,7 +7069,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/ptdf_ts.svg</normaloff>:/Icons/icons/ptdf_ts.svg</iconset>
    </property>
    <property name="text">
-    <string>PTDF time series power flow</string>
+    <string>Linear analysis time series power flow</string>
    </property>
    <property name="toolTip">
     <string>Runs the PTDF based time series power flow</string>
@@ -7230,10 +7216,10 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/otdf_ts.svg</normaloff>:/Icons/icons/otdf_ts.svg</iconset>
    </property>
    <property name="text">
-    <string>OTDF time series</string>
+    <string>Contingency analysis time series</string>
    </property>
    <property name="toolTip">
-    <string>Runs the N-1 time series analysis</string>
+    <string>Runs the contingency analysis time series</string>
    </property>
   </action>
   <action name="actionImportPlexosBranchRates">
