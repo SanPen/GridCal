@@ -47,23 +47,24 @@ import GridCal.Engine.Core as core
 import GridCal.Engine.Devices as dev
 import GridCal.Engine.Visualization.visualization as viz
 import GridCal.Engine.basic_structures as bs
-import GridCal.Engine.Simulations.Stochastic.blackout_driver as blkout
-import GridCal.Engine.Simulations.OPF.opf_driver as opfdrv
-import GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver as ptdfdrv
-import GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver as ptdftsdrv
-import GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_driver as scdrv
-import GridCal.Engine.Simulations.OPF.opf_ts_driver as opftsdrv
-import GridCal.Engine.Simulations.PowerFlow.power_flow_driver as pfdrv
-import GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_driver as mcdrv
-import GridCal.Engine.Simulations.PowerFlow.time_series_driver as pftsdrv
-import GridCal.Engine.Simulations.PowerFlow.time_series_clustring_driver as clpftsdrv
-import GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver as cpfdrv
-import GridCal.Engine.Simulations.Topology.topology_driver as tpdrv
-import GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver as sgmadrv
-import GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_driver as catsdrv
-import GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver as cadrv
-import GridCal.Engine.Simulations.result_types as restpes
-import GridCal.Engine.Simulations.driver_types as drvtpes
+import GridCal.Engine.Simulations as sim
+# import GridCal.Engine.Simulations.Stochastic.blackout_driver as blkout
+# import GridCal.Engine.Simulations.OPF.opf_driver as opfdrv
+# import GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver as ptdfdrv
+# import GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver as ptdftsdrv
+# import GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_driver as scdrv
+# import GridCal.Engine.Simulations.OPF.opf_ts_driver as opftsdrv
+# import GridCal.Engine.Simulations.PowerFlow.power_flow_driver as pfdrv
+# import GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_driver as mcdrv
+# import GridCal.Engine.Simulations.PowerFlow.time_series_driver as pftsdrv
+# import GridCal.Engine.Simulations.PowerFlow.time_series_clustring_driver as clpftsdrv
+# import GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver as cpfdrv
+# import GridCal.Engine.Simulations.Topology.topology_driver as tpdrv
+# import GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver as sgmadrv
+# import GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_driver as catsdrv
+# import GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver as cadrv
+# import GridCal.Engine.Simulations.result_types as restpes
+# import GridCal.Engine.Simulations.driver_types as drvtpes
 import GridCal.Engine.grid_analysis as grid_analysis
 import GridCal.Engine.IO.export_results_driver as exprtdrv
 import GridCal.Engine.IO.file_handler as filedrv
@@ -169,8 +170,8 @@ class MainGUI(QMainWindow):
 
         # list of stochastic power flow methods
         self.stochastic_pf_methods_dict = OrderedDict()
-        self.stochastic_pf_methods_dict[mcdrv.StochasticPowerFlowType.LatinHypercube.value] = mcdrv.StochasticPowerFlowType.LatinHypercube
-        self.stochastic_pf_methods_dict[mcdrv.StochasticPowerFlowType.MonteCarlo.value] = mcdrv.StochasticPowerFlowType.MonteCarlo
+        self.stochastic_pf_methods_dict[sim.StochasticPowerFlowType.LatinHypercube.value] = sim.StochasticPowerFlowType.LatinHypercube
+        self.stochastic_pf_methods_dict[sim.StochasticPowerFlowType.MonteCarlo.value] = sim.StochasticPowerFlowType.MonteCarlo
         mdl = get_list_model(list(self.stochastic_pf_methods_dict.keys()))
         self.ui.stochastic_pf_method_comboBox.setModel(mdl)
 

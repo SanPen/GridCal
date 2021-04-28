@@ -12,7 +12,7 @@
    viewBox="0 0 48 48"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
    sodipodi:docname="atc_ts.svg">
   <metadata
      id="metadata12">
@@ -37,17 +37,28 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1858"
-     inkscape:window-height="1057"
+     inkscape:window-width="1848"
+     inkscape:window-height="1018"
      id="namedview8"
      showgrid="false"
      inkscape:zoom="11.313708"
-     inkscape:cx="11.535272"
-     inkscape:cy="23.297803"
-     inkscape:window-x="54"
-     inkscape:window-y="-8"
+     inkscape:cx="24.378511"
+     inkscape:cy="17.137323"
+     inkscape:window-x="72"
+     inkscape:window-y="25"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg2" />
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:43.22439194px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#216778;fill-opacity:1;stroke:none;stroke-width:1.0806098"
+     x="13.282681"
+     y="43.606926"
+     id="text4524-9"><tspan
+       sodipodi:role="line"
+       id="tspan4522-0"
+       x="13.282681"
+       y="43.606926"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'TeX Gyre Pagella Math';-inkscape-font-specification:'TeX Gyre Pagella Math';fill:#216778;fill-opacity:1;stroke-width:1.0806098">λ</tspan></text>
   <path
      d="m -80.610174,-42.956737 h 48 V 5.0432627 h -48 z"
      id="path4"
@@ -92,39 +103,6 @@
   </g>
   <text
      xml:space="preserve"
-     style="font-style:normal;font-weight:normal;font-size:36.13376236px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#162d50;fill-opacity:1;stroke:none;stroke-width:0.90334404"
-     x="2.7506573"
-     y="38.976528"
-     id="text4524"><tspan
-       sodipodi:role="line"
-       id="tspan4522"
-       x="2.7506573"
-       y="38.976528"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Cambria Math';-inkscape-font-specification:'Cambria Math';fill:#162d50;fill-opacity:1;stroke-width:0.90334404">A</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-weight:normal;font-size:36.13376236px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#216778;fill-opacity:1;stroke:none;stroke-width:0.90334404"
-     x="15.058308"
-     y="38.857784"
-     id="text4524-9"><tspan
-       sodipodi:role="line"
-       id="tspan4522-0"
-       x="15.058308"
-       y="38.857784"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Cambria Math';-inkscape-font-specification:'Cambria Math';fill:#216778;fill-opacity:1;stroke-width:0.90334404">T</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-weight:normal;font-size:35.18528366px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#00d4aa;fill-opacity:1;stroke:none;stroke-width:0.87963194"
-     x="25.651115"
-     y="38.551693"
-     id="text4524-1"><tspan
-       sodipodi:role="line"
-       id="tspan4522-8"
-       x="25.651115"
-       y="38.551693"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Cambria Math';-inkscape-font-specification:'Cambria Math';fill:#00d4aa;fill-opacity:1;stroke-width:0.87963194">C</tspan></text>
-  <text
-     xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:31.02170181px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#216778;fill-opacity:1;stroke:none;stroke-width:0.77554256"
      x="-48.97916"
      y="36.47298"
@@ -136,18 +114,18 @@
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:sans-serif;fill:#216778;fill-opacity:1;stroke-width:0.77554256" /></text>
   <rect
      ry="1.5989817"
-     y="36.342392"
-     x="3.3181016"
+     y="38.842392"
+     x="4.5681019"
      height="6.8749847"
      width="40.032848"
      id="rect4596"
-     style="fill:#01635a;fill-opacity:1;stroke:#01635a;stroke-width:0.9416458;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:markers fill stroke" />
+     style="fill:#6f918a;fill-opacity:1;stroke:#6f918a;stroke-width:0.9416458;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:markers fill stroke" />
   <rect
      ry="1.8084072"
-     y="36.414238"
-     x="3.5993557"
+     y="38.914238"
+     x="4.8493557"
      height="6.7312937"
      width="29.602238"
      id="rect4596-3"
-     style="fill:#00d4aa;stroke:none;stroke-width:0.80117643;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal" />
+     style="fill:#216778;stroke:none;stroke-width:0.80117643;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal;fill-opacity:1" />
 </svg>

@@ -106,6 +106,8 @@ class ResultTypes(Enum):
     # ATC
     AvailableTransferCapacityMatrix = 'Available transfer capacity', DeviceType.BranchDevice
     AvailableTransferCapacity = 'Available transfer capacity (worst)', DeviceType.BranchDevice
+    AvailableTransferCapacityFrom = 'Available transfer capacity (from)', DeviceType.BranchDevice
+    AvailableTransferCapacityTo = 'Available transfer capacity (to)', DeviceType.BranchDevice
 
     def __str__(self):
         return self.value

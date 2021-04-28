@@ -12,7 +12,7 @@
    viewBox="0 0 48 48"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
    sodipodi:docname="atc.svg">
   <metadata
      id="metadata12">
@@ -37,16 +37,16 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1858"
-     inkscape:window-height="1057"
+     inkscape:window-width="1228"
+     inkscape:window-height="542"
      id="namedview8"
      showgrid="false"
-     inkscape:zoom="11.313708"
-     inkscape:cx="27.71034"
-     inkscape:cy="23.297803"
-     inkscape:window-x="54"
-     inkscape:window-y="-8"
-     inkscape:window-maximized="1"
+     inkscape:zoom="5.656854"
+     inkscape:cx="9.0817666"
+     inkscape:cy="22.640762"
+     inkscape:window-x="692"
+     inkscape:window-y="144"
+     inkscape:window-maximized="0"
      inkscape:current-layer="svg2" />
   <path
      d="m -80.610174,-42.956737 h 48 V 5.0432627 h -48 z"
@@ -92,37 +92,15 @@
   </g>
   <text
      xml:space="preserve"
-     style="font-style:normal;font-weight:normal;font-size:36.13376236px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#162d50;fill-opacity:1;stroke:none;stroke-width:0.90334404"
-     x="2.7506573"
-     y="38.976528"
-     id="text4524"><tspan
-       sodipodi:role="line"
-       id="tspan4522"
-       x="2.7506573"
-       y="38.976528"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Cambria Math';-inkscape-font-specification:'Cambria Math';fill:#162d50;fill-opacity:1;stroke-width:0.90334404">A</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-weight:normal;font-size:36.13376236px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#216778;fill-opacity:1;stroke:none;stroke-width:0.90334404"
-     x="15.058308"
-     y="38.857784"
+     style="font-style:normal;font-weight:normal;font-size:39.31232071px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#216778;fill-opacity:1;stroke:none;stroke-width:0.98280805"
+     x="12.73796"
+     y="42.355175"
      id="text4524-9"><tspan
        sodipodi:role="line"
        id="tspan4522-0"
-       x="15.058308"
-       y="38.857784"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Cambria Math';-inkscape-font-specification:'Cambria Math';fill:#216778;fill-opacity:1;stroke-width:0.90334404">T</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-weight:normal;font-size:35.18528366px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#00d4aa;fill-opacity:1;stroke:none;stroke-width:0.87963194"
-     x="25.651115"
-     y="38.551693"
-     id="text4524-1"><tspan
-       sodipodi:role="line"
-       id="tspan4522-8"
-       x="25.651115"
-       y="38.551693"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Cambria Math';-inkscape-font-specification:'Cambria Math';fill:#00d4aa;fill-opacity:1;stroke-width:0.87963194">C</tspan></text>
+       x="12.73796"
+       y="42.355175"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'TeX Gyre Pagella Math';-inkscape-font-specification:'TeX Gyre Pagella Math';fill:#216778;fill-opacity:1;stroke-width:0.98280805">λ</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:31.02170181px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#216778;fill-opacity:1;stroke:none;stroke-width:0.77554256"

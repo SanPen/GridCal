@@ -6593,6 +6593,7 @@ QProgressBar::chunk{
     <addaction name="separator"/>
     <addaction name="actionLinearAnalysis"/>
     <addaction name="actionPTDF_time_series"/>
+    <addaction name="actionContingency_analysis"/>
     <addaction name="actionOTDF_time_series"/>
     <addaction name="actionATC"/>
     <addaction name="actionATC_Time_Series"/>
@@ -6652,9 +6653,10 @@ QProgressBar::chunk{
    <addaction name="actionBlackout_cascade"/>
    <addaction name="separator"/>
    <addaction name="actionLinearAnalysis"/>
-   <addaction name="actionATC"/>
    <addaction name="actionPTDF_time_series"/>
+   <addaction name="actionContingency_analysis"/>
    <addaction name="actionOTDF_time_series"/>
+   <addaction name="actionATC"/>
    <addaction name="actionATC_Time_Series"/>
    <addaction name="separator"/>
    <addaction name="actionBigger_nodes"/>
@@ -7077,7 +7079,7 @@ QProgressBar::chunk{
     <string>Linear analysis time series power flow</string>
    </property>
    <property name="toolTip">
-    <string>Runs the PTDF based time series power flow</string>
+    <string>PTDF based time series power flow</string>
    </property>
   </action>
   <action name="actionShow_color_controls">
@@ -7224,7 +7226,7 @@ QProgressBar::chunk{
     <string>Contingency analysis time series</string>
    </property>
    <property name="toolTip">
-    <string>Runs the contingency analysis time series</string>
+    <string>Contingency analysis time series</string>
    </property>
   </action>
   <action name="actionImportPlexosBranchRates">
@@ -7294,6 +7296,15 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>Available Transfer Capacity Time Series</string>
+   </property>
+  </action>
+  <action name="actionContingency_analysis">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/otdf.svg</normaloff>:/Icons/icons/otdf.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Contingency analysis</string>
    </property>
   </action>
  </widget>
