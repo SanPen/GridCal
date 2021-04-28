@@ -215,7 +215,10 @@ class LinearAnalysisTimeSeries(QThread):
         self.indices = pd.to_datetime(ts_numeric_circuit.time_array[time_indices])
 
         self.progress_text.emit('Computing PTDF...')
-        linear_analysis = LinearAnalysis(grid=self.grid, distributed_slack=self.options.distribute_slack)
+        linear_analysis = LinearAnalysis(grid=self.grid,
+                                         distributed_slack=self.options.distribute_slack,
+                                         correct_values=self.options.correct_values
+                                         )
         linear_analysis.run()
 
         self.progress_text.emit('Computing branch flows...')

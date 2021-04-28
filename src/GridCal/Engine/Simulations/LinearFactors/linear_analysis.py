@@ -136,7 +136,7 @@ def make_otdf(ptdf, lodf, j):
     return otdf
 
 
-@nb.njit()
+@nb.njit(parallel=True)
 def make_otdf_max(ptdf, lodf):
     """
     Maximum Outage sensitivity of the branches when transferring power from any bus to the slack
@@ -150,13 +150,20 @@ def make_otdf_max(ptdf, lodf):
     nl = nk
     otdf = np.zeros((nk, nl))
 
-    for j in range(nj):
-        for k in range(nk):
-            for l in range(nl):
-                val = ptdf[k, j] + lodf[k, l] * ptdf[l, j]
-                if abs(val) > abs(otdf[k, l]):
-                    otdf[k, l] = val
-
+    if nj < 500:
+        for j in range(nj):
+            for k in range(nk):
+                for l in range(nl):
+                    val = ptdf[k, j] + lodf[k, l] * ptdf[l, j]
+                    if abs(val) > abs(otdf[k, l]):
+                        otdf[k, l] = val
+    else:
+        for j in nb.prange(nj):
+            for k in range(nk):
+                for l in range(nl):
+                    val = ptdf[k, j] + lodf[k, l] * ptdf[l, j]
+                    if abs(val) > abs(otdf[k, l]):
+                        otdf[k, l] = val
     return otdf
 
 
@@ -197,10 +204,6 @@ def make_transfer_limits(ptdf, flows, rates):
 
             if ptdf[m, i] != 0.0:
                 val = (rates[m] - flows[m]) / ptdf[m, i]  # I want it with sign
-                # if ptdf[m, i] > 0.0:
-                #     val = (rates[m] - flows[m]) / ptdf[m, i]
-                # else:
-                #     val = (-rates[m] - flows[m]) / ptdf[m, i]
 
                 # update the transference value
                 if abs(val) > abs(tmc[m]):
@@ -209,7 +212,8 @@ def make_transfer_limits(ptdf, flows, rates):
     return tmc
 
 
-def make_contingency_transfer_limits(otdf_max, omw, rates):
+@nb.njit(parallel=True)
+def make_contingency_transfer_limits(otdf_max, lodf, flows, rates):
     """
     Compute the maximum transfer limits after contingency of each branch
     :param otdf_max: Maximum Outage sensitivity of the branches when transferring power
@@ -221,15 +225,20 @@ def make_contingency_transfer_limits(otdf_max, omw, rates):
     nbr = otdf_max.shape[0]
     tmc = np.zeros((nbr, nbr))
 
-    for m in range(nbr):
-        for c in range(nbr):
-            if m != c:
-                if otdf_max[m, c] != 0.0:
-                    tmc[m, c] = (rates[m] - omw[m, c]) / otdf_max[m, c]  # i want it with sign
-                    # if otdf_max[m, c] > 0.0:
-                    #     tmc[m, c] = (rates[m] - omw[m, c]) / otdf_max[m, c]
-                    # else:
-                    #     tmc[m, c] = (-rates[m] - omw[m, c]) / otdf_max[m, c]
+    if nbr < 500:
+        for m in range(nbr):
+            for c in range(nbr):
+                if m != c:
+                    if otdf_max[m, c] != 0.0:
+                        omw = flows[m] + lodf[m, c] * flows[c]  # compute the contingency flow
+                        tmc[m, c] = (rates[m] - omw) / otdf_max[m, c]  # i want it with sign
+    else:
+        for m in nb.prange(nbr):
+            for c in range(nbr):
+                if m != c:
+                    if otdf_max[m, c] != 0.0:
+                        omw = flows[m] + lodf[m, c] * flows[c]  # compute the contingency flow
+                        tmc[m, c] = (rates[m] - omw) / otdf_max[m, c]  # i want it with sign
 
     return tmc
 
@@ -265,6 +274,8 @@ class LinearAnalysis:
         self.PTDF = None
 
         self.LODF = None
+
+        self.OTDF = None
 
         self.logger = Logger()
 
@@ -322,6 +333,9 @@ class LinearAnalysis:
                                   PTDF=self.results.PTDF,
                                   correct_values=self.correct_values)
 
+        # Compute the OTDF
+        self.OTDF = make_otdf_max(self.PTDF, self.LODF)
+
     def get_otdf_max(self):
         """
         Maximum Outage sensitivity of the branches when transferring power from any bus to the slack
@@ -344,8 +358,7 @@ class LinearAnalysis:
         :param flows: base flows in MW
         :return: Max transfer limits matrix (n-branch, n-branch)
         """
-        omw = make_contingency_flows(self.LODF, flows)
-        return make_contingency_transfer_limits(self.get_otdf_max(), omw, self.numerical_circuit.Rates)
+        return make_contingency_transfer_limits(self.OTDF, self.LODF, flows, self.numerical_circuit.Rates)
 
     def get_flows_time_series(self, Sbus):
         """
@@ -355,7 +368,6 @@ class LinearAnalysis:
         """
 
         # option 2: call the power directly
-        P = Sbus.real
-        Pbr = np.dot(self.PTDF, P).T * self.grid.Sbase
+        Pbr = np.dot(self.PTDF, Sbus.real).T * self.grid.Sbase
 
         return Pbr

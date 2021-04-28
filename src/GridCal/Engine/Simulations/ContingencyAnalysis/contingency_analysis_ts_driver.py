@@ -170,6 +170,11 @@ class ContingencyAnalysisTimeSeries(QThread):
 
             self.progress_signal.emit((e + 1) / ne * 100)
 
+            if self.__cancel__:
+                results.relative_frequency = results.overload_count / nt
+                results.worst_loading = results.worst_flows / (rates + 1e-9)
+                return results
+
         results.relative_frequency = results.overload_count / nt
         results.worst_loading = results.worst_flows / (rates + 1e-9)
 

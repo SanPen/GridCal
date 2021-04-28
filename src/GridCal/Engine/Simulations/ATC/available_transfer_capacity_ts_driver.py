@@ -21,7 +21,7 @@ from PySide2.QtCore import QThread, Signal
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
+import GridCal.Engine.Simulations.LinearFactors.linear_analysis as la
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityOptions
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
@@ -193,7 +193,7 @@ class AvailableTransferCapacityTimeSeriesDriver(QThread):
         Run thread
         """
         start = time.time()
-        self.progress_text.emit('Analyzing')
+
         self.progress_signal.emit(0)
 
         if self.end_ is None:
@@ -201,7 +201,10 @@ class AvailableTransferCapacityTimeSeriesDriver(QThread):
         time_indices = np.arange(self.start_, self.end_ + 1)
 
         # declare the linear analysis
-        linear_analysis = LinearAnalysis(grid=self.grid)
+        self.progress_text.emit('Computing PTDF, LODF and OTDF...')
+        linear_analysis = la.LinearAnalysis(grid=self.grid,
+                                            distributed_slack=self.options.distributed_slack,
+                                            correct_values=self.options.correct_values)
         linear_analysis.run()
 
         ts_numeric_circuit = compile_time_circuit(self.grid)
@@ -218,13 +221,17 @@ class AvailableTransferCapacityTimeSeriesDriver(QThread):
                                                                   bus_types=ts_numeric_circuit.bus_types)
 
         # compute the base flows
-        Pbus_0 = ts_numeric_circuit.Sbus.real[:, time_indices]
-        flows = linear_analysis.get_flows_time_series(Pbus_0)
 
-        for t in range(nt):
+        for t in time_indices:
+
+            P = ts_numeric_circuit.Sbus.real[:, t]
+            flows = linear_analysis.get_flows_time_series(P)
 
             # get the contingency transfer limits
-            tmc = linear_analysis.get_contingency_transfer_limits(flows=flows[t, :])
+            tmc = la.make_contingency_transfer_limits(otdf_max=linear_analysis.OTDF,
+                                                      lodf=linear_analysis.LODF,
+                                                      flows=flows,
+                                                      rates=ts_numeric_circuit.Rates[:, t])
 
             # post-process and store the results.
             fill_atc_results(t, tmc, self.results.atc_from, self.results.atc_to, self.results.worst_atc)
@@ -255,7 +262,7 @@ class AvailableTransferCapacityTimeSeriesDriver(QThread):
 
 if __name__ == '__main__':
 
-    from GridCal.Engine import *
+    from GridCal.Engine import PowerFlowOptions, FileOpen, LinearAnalysis, PowerFlowDriver, SolverType
     fname = r'C:\Users\penversa\Git\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 
     main_circuit = FileOpen(fname).open()
@@ -264,7 +271,6 @@ if __name__ == '__main__':
     simulation_.run()
 
     pf_options = PowerFlowOptions(solver_type=SolverType.NR,
-                                  control_q=ReactivePowerControlMode.NoControl,
                                   retry_with_other_methods=True)
     power_flow = PowerFlowDriver(main_circuit, pf_options)
     power_flow.run()
