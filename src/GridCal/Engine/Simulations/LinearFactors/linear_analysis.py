@@ -171,7 +171,7 @@ def make_otdf_max(ptdf, lodf):
 def make_contingency_flows(lodf, flows):
     """
     Make contingency flows matrix
-    :param lodf: line outage distribution fcators
+    :param lodf: line outage distribution factors
     :param flows: base flows in MW
     :return: outage flows for every line after each contingency (n-branch, n-branch[outage])
     """
