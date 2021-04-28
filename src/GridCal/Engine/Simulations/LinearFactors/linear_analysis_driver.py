@@ -20,6 +20,8 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import *
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.result_types import ResultTypes
+from GridCal.Engine.Simulations.results_model import ResultsModel
 
 ########################################################################################################################
 # Optimal Power flow classes

@@ -110,12 +110,12 @@ class AvailableTransferCapacityResults:
 
 class AvailableTransferCapacityOptions:
 
-    def __init__(self, distribute_slack=True, correct_values=True):
+    def __init__(self, distributed_slack=True, correct_values=True):
         """
         Power Transfer Distribution Factors' options
-        :param distribute_slack:
+        :param distributed_slack:
         """
-        self.distribute_slack = distribute_slack
+        self.distributed_slack = distributed_slack
         self.correct_values = correct_values
 
 
@@ -166,15 +166,15 @@ class AvailableTransferCapacityDriver(QThread):
         self.progress_signal.emit(0)
 
         # declare the linear analysis
-        simulation = LinearAnalysis(grid=main_circuit)
+        simulation = LinearAnalysis(grid=self.grid)
         simulation.run()
 
         # declare the results
-        self.results = AvailableTransferCapacityResults(n_br=simulation.results.n_br,
-                                                        n_bus=simulation.results.n_bus,
-                                                        br_names=simulation.results.br_names,
-                                                        bus_names=simulation.results.bus_names,
-                                                        bus_types=simulation.results.bus_types)
+        self.results = AvailableTransferCapacityResults(n_br=simulation.numerical_circuit.nbr,
+                                                        n_bus=simulation.numerical_circuit.nbus,
+                                                        br_names=simulation.numerical_circuit.branch_names,
+                                                        bus_names=simulation.numerical_circuit.bus_names,
+                                                        bus_types=simulation.numerical_circuit.bus_types)
 
         # get normal transfer limits
         tm = simulation.get_transfer_limits(flows=self.pf_results.Sf.real)
@@ -211,8 +211,8 @@ if __name__ == '__main__':
 
     main_circuit = FileOpen(fname).open()
 
-    simulation = LinearAnalysis(grid=main_circuit)
-    simulation.run()
+    simulation_ = LinearAnalysis(grid=main_circuit)
+    simulation_.run()
 
     pf_options = PowerFlowOptions(solver_type=SolverType.NR,
                                   control_q=ReactivePowerControlMode.NoControl,

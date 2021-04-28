@@ -13,17 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import time
-import multiprocessing
-from PySide2.QtCore import QThread, Signal
-
 import numpy as np
+import numba as nb
 import scipy.sparse as sp
 from scipy.sparse.linalg import spsolve
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
 
@@ -119,6 +115,7 @@ def make_lodf(Cf, Ct, PTDF, correct_values=True):
     return LODF
 
 
+@nb.njit()
 def make_otdf(ptdf, lodf, j):
     """
     Outage sensitivity of the branches when transferring power from the bus j to the slack
@@ -139,6 +136,7 @@ def make_otdf(ptdf, lodf, j):
     return otdf
 
 
+@nb.njit()
 def make_otdf_max(ptdf, lodf):
     """
     Maximum Outage sensitivity of the branches when transferring power from any bus to the slack
@@ -162,6 +160,7 @@ def make_otdf_max(ptdf, lodf):
     return otdf
 
 
+@nb.njit()
 def make_contingency_flows(lodf, flows):
     """
     Make contingency flows matrix
@@ -180,6 +179,7 @@ def make_contingency_flows(lodf, flows):
     return omw
 
 
+@nb.njit()
 def make_transfer_limits(ptdf, flows, rates):
     """
     Compute the maximum transfer limits of each branch in normal operation
@@ -332,26 +332,26 @@ class LinearAnalysis:
 
     def get_transfer_limits(self, flows):
         """
-
+        compute the normal transfer limits
         :param flows: base flows in MW
-        :return:
+        :return: Max transfer limits vector (n-branch)
         """
         return make_transfer_limits(self.PTDF, flows, self.numerical_circuit.Rates)
 
     def get_contingency_transfer_limits(self, flows):
         """
-
+        Compute the contingency transfer limits
         :param flows: base flows in MW
-        :return:
+        :return: Max transfer limits matrix (n-branch, n-branch)
         """
-        omw = make_contingency_flows(self.results.LODF, flows)
+        omw = make_contingency_flows(self.LODF, flows)
         return make_contingency_transfer_limits(self.get_otdf_max(), omw, self.numerical_circuit.Rates)
 
-    def get_branch_time_series(self, Sbus):
+    def get_flows_time_series(self, Sbus):
         """
-        Compute the time series PTDF
+        Compute the time series branch flows using the PTDF
         :param Sbus: Power injections time series array
-        :return:
+        :return: branch active power flows time series
         """
 
         # option 2: call the power directly

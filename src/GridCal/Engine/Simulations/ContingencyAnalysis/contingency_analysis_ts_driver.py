@@ -152,7 +152,7 @@ class ContingencyAnalysisTimeSeries(QThread):
 
         self.progress_text.emit('Computing branch base flows...')
         Pbus = ts_numeric_circuit.Sbus.real
-        flows = linear_analysis.get_branch_time_series(Pbus)
+        flows = linear_analysis.get_flows_time_series(Pbus)
         rates = ts_numeric_circuit.Rates.T
 
         self.progress_text.emit('Computing N-1 flows...')

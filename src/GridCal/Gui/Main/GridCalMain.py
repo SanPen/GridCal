@@ -12,49 +12,48 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+import datetime as dtelib
 import gc
 import os.path
 import platform
-from typing import List, Dict, Tuple
-import datetime as dtelib
 from collections import OrderedDict
 from multiprocessing import cpu_count
+from typing import List, Tuple
+
 from matplotlib.colors import LinearSegmentedColormap
 from pandas.plotting import register_matplotlib_converters
-
-# GUI imports
-from GridCal.__version__ import __GridCal_VERSION__, about_msg
-from GridCal.Gui.Main.MainWindow import *
-from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
-from GridCal.Gui.GridEditorWidget import *
-from GridCal.Gui.ConsoleWidget import ConsoleWidget
-from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
-from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
-from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
-from GridCal.Gui.GeneralDialogues import *
-from GridCal.Gui.GuiFunctions import *
-from GridCal.Gui.GIS.gis_dialogue import GISWindow
-from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
-from GridCal.Gui.GridEditorWidget.messages import *
-from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
-from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
-from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
-from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
-from GridCal.update import check_version, get_upgrade_command
 
 # Engine imports
 import GridCal.Engine.Core as core
 import GridCal.Engine.Devices as dev
-import GridCal.Engine.Visualization.visualization as viz
-import GridCal.Engine.basic_structures as bs
-import GridCal.Engine.Simulations as sim
-import GridCal.Engine.grid_analysis as grid_analysis
 import GridCal.Engine.IO.export_results_driver as exprtdrv
 import GridCal.Engine.IO.file_handler as filedrv
 import GridCal.Engine.IO.synchronization_driver as syncdrv
-from GridCal.Engine.Simulations.results_model import ResultsModel
-from GridCal.Engine.Simulations.session import SimulationSession
+import GridCal.Engine.Simulations as sim
+import GridCal.Engine.Visualization.visualization as viz
+import GridCal.Engine.basic_structures as bs
+import GridCal.Engine.grid_analysis as grid_analysis
 
+# GUI imports
+from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
+from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
+from GridCal.Gui.ConsoleWidget import ConsoleWidget
+from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
+from GridCal.Gui.GIS.gis_dialogue import GISWindow
+from GridCal.Gui.GeneralDialogues import *
+from GridCal.Gui.GridEditorWidget import *
+from GridCal.Gui.GridEditorWidget.messages import *
+from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
+from GridCal.Gui.GuiFunctions import *
+from GridCal.Gui.Main.MainWindow import *
+from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
+from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
+from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
+from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
+from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
+
+from GridCal.__version__ import __GridCal_VERSION__, about_msg
+from GridCal.update import check_version, get_upgrade_command
 
 __author__ = 'Santiago Peñate Vera'
 
@@ -153,8 +152,10 @@ class MainGUI(QMainWindow):
 
         # list of stochastic power flow methods
         self.stochastic_pf_methods_dict = OrderedDict()
-        self.stochastic_pf_methods_dict[sim.StochasticPowerFlowType.LatinHypercube.value] = sim.StochasticPowerFlowType.LatinHypercube
-        self.stochastic_pf_methods_dict[sim.StochasticPowerFlowType.MonteCarlo.value] = sim.StochasticPowerFlowType.MonteCarlo
+        self.stochastic_pf_methods_dict[
+            sim.StochasticPowerFlowType.LatinHypercube.value] = sim.StochasticPowerFlowType.LatinHypercube
+        self.stochastic_pf_methods_dict[
+            sim.StochasticPowerFlowType.MonteCarlo.value] = sim.StochasticPowerFlowType.MonteCarlo
         mdl = get_list_model(list(self.stochastic_pf_methods_dict.keys()))
         self.ui.stochastic_pf_method_comboBox.setModel(mdl)
 
@@ -246,7 +247,7 @@ class MainGUI(QMainWindow):
         self.ui.progress_frame.setVisible(self.lock_ui)
 
         # simulations session
-        self.session: SimulationSession = SimulationSession(name='GUI session')
+        self.session: sim.SimulationSession = sim.SimulationSession(name='GUI session')
 
         # threads
         self.painter = None
@@ -271,7 +272,7 @@ class MainGUI(QMainWindow):
         self.file_name = ''
 
         # current results model
-        self.results_mdl = ResultsModel(data=np.zeros((0, 0)), columns=np.zeros(0), index=np.zeros(0))
+        self.results_mdl = sim.ResultsModel(data=np.zeros((0, 0)), columns=np.zeros(0), index=np.zeros(0))
 
         # list of all the objects of the selected type under the Objects tab
         self.type_objects_list = list()
@@ -352,7 +353,13 @@ class MainGUI(QMainWindow):
 
         self.ui.actionLinearAnalysis.triggered.connect(self.run_linear_analysis)
 
+        self.ui.actionContingency_analysis.triggered.connect(self.run_contingency_analysis)
+
         self.ui.actionOTDF_time_series.triggered.connect(self.run_contingency_analysis_ts)
+
+        self.ui.actionATC.triggered.connect(self.run_available_transfer_capacity)
+
+        self.ui.actionATC_Time_Series.triggered.connect(self.run_available_transfer_capacity_ts)
 
         self.ui.actionReset_console.triggered.connect(self.create_console)
 
@@ -1117,7 +1124,8 @@ class MainGUI(QMainWindow):
             self.LOCK()
 
             # create thread
-            self.open_file_thread_object = filedrv.FileOpenThread(file_name=filenames if len(filenames) > 1 else filenames[0])
+            self.open_file_thread_object = filedrv.FileOpenThread(
+                file_name=filenames if len(filenames) > 1 else filenames[0])
 
             # make connections
             self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
@@ -2321,7 +2329,7 @@ class MainGUI(QMainWindow):
 
                     if len(sel_buses) == 0:
                         warning_msg('You need to enable some buses for short circuit.'
-                                     + '\nEnable them by right click, and selecting on the context menu.')
+                                    + '\nEnable them by right click, and selecting on the context menu.')
                     else:
                         self.add_simulation(sim.SimulationTypes.ShortCircuit_run)
 
@@ -2411,8 +2419,9 @@ class MainGUI(QMainWindow):
                 if len(self.circuit.buses) > 0:
                     self.LOCK()
 
-                    options = sim.LinearAnalysisOptions(distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked(),
-                                                        correct_values=self.ui.ptdf_correct_nonsense_values_checkBox.isChecked())
+                    options = sim.LinearAnalysisOptions(
+                        distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked(),
+                        correct_values=self.ui.ptdf_correct_nonsense_values_checkBox.isChecked())
 
                     drv = sim.LinearAnalysisDriver(grid=self.circuit, options=options)
 
@@ -2533,6 +2542,61 @@ class MainGUI(QMainWindow):
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
 
+    def run_contingency_analysis(self):
+        """
+        Run a Power Transfer Distribution Factors analysis
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+
+            if self.valid_time_series():
+                if sim.SimulationTypes.ContingencyAnalysis_run not in self.stuff_running_now:
+
+                    self.add_simulation(sim.SimulationTypes.ContingencyAnalysis_run)
+
+                    self.LOCK()
+
+                    distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
+                    options = sim.ContingencyAnalysisOptions(distributed_slack=distributed_slack)
+
+                    drv = sim.ContingencyAnalysisDriver(grid=self.circuit, options=options)
+
+                    self.session.register(drv)
+                    drv.progress_signal.connect(self.ui.progressBar.setValue)
+                    drv.progress_text.connect(self.ui.progress_label.setText)
+                    drv.done_signal.connect(self.post_contingency_analysis)
+                    drv.start()
+                else:
+                    warning_msg('Another contingency analysis is being executed now...')
+            else:
+                warning_msg('There are no time series...')
+        else:
+            pass
+
+    def post_contingency_analysis(self):
+        """
+        Action performed after the short circuit.
+        Returns:
+
+        """
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.ContingencyAnalysis_run)
+        self.remove_simulation(sim.SimulationTypes.ContingencyAnalysis_run)
+
+        # update the results in the circuit structures
+        if not drv.__cancel__:
+            if results is not None:
+
+                self.ui.progress_label.setText('Colouring contingency analysis results in the grid...')
+                QtGui.QGuiApplication.processEvents()
+
+                self.update_available_results()
+                self.colour_now()
+            else:
+                error_msg('Something went wrong, There are no contingency analysis results.')
+
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
+
     def run_contingency_analysis_ts(self):
         """
         Run a Power Transfer Distribution Factors analysis
@@ -2547,7 +2611,8 @@ class MainGUI(QMainWindow):
 
                     self.LOCK()
 
-                    options = sim.ContingencyAnalysisOptions(distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
+                    options = sim.ContingencyAnalysisOptions(
+                        distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
 
                     drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit, options=options)
 
@@ -2580,8 +2645,129 @@ class MainGUI(QMainWindow):
                 QtGui.QGuiApplication.processEvents()
 
                 self.update_available_results()
+                self.colour_now()
             else:
                 error_msg('Something went wrong, There are no OTDF results.')
+
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
+
+    def run_available_transfer_capacity(self):
+        """
+        Run a Power Transfer Distribution Factors analysis
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+
+            pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
+
+            if pf_results is not None:
+                if sim.SimulationTypes.AvailableTransferCapacity_run not in self.stuff_running_now:
+
+                    self.add_simulation(sim.SimulationTypes.AvailableTransferCapacity_run)
+
+                    self.LOCK()
+
+                    distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
+                    options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack)
+
+                    drv = sim.AvailableTransferCapacityDriver(grid=self.circuit,
+                                                              options=options,
+                                                              pf_results=pf_results)
+
+                    self.session.register(drv)
+                    drv.progress_signal.connect(self.ui.progressBar.setValue)
+                    drv.progress_text.connect(self.ui.progress_label.setText)
+                    drv.done_signal.connect(self.post_available_transfer_capacity)
+                    drv.start()
+
+                else:
+                    warning_msg('Another contingency analysis is being executed now...')
+            else:
+                error_msg('This simulation uses the power flow results, please run a power flow first.')
+        else:
+            pass
+
+    def post_available_transfer_capacity(self):
+        """
+        Action performed after the short circuit.
+        Returns:
+
+        """
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.AvailableTransferCapacity_run)
+        self.remove_simulation(sim.SimulationTypes.AvailableTransferCapacity_run)
+
+        # update the results in the circuit structures
+        if not drv.__cancel__:
+            if results is not None:
+
+                self.ui.progress_label.setText('Colouring ATC results in the grid...')
+                QtGui.QGuiApplication.processEvents()
+
+                self.update_available_results()
+                self.colour_now()
+            else:
+                error_msg('Something went wrong, There are no ATC results.')
+
+        if len(self.stuff_running_now) == 0:
+            self.UNLOCK()
+
+    def run_available_transfer_capacity_ts(self):
+        """
+        Run a Power Transfer Distribution Factors analysis
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
+
+            if self.valid_time_series():
+                if sim.SimulationTypes.AvailableTransferCapacity_run not in self.stuff_running_now:
+
+                    self.add_simulation(sim.SimulationTypes.AvailableTransferCapacityTS_run)
+
+                    self.LOCK()
+
+                    distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
+                    options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack)
+                    start_ = self.ui.profile_start_slider.value()
+                    end_ = self.ui.profile_end_slider.value()
+                    drv = sim.AvailableTransferCapacityTimeSeriesDriver(grid=self.circuit,
+                                                                        options=options,
+                                                                        start_=start_,
+                                                                        end_=end_)
+
+                    self.session.register(drv)
+                    drv.progress_signal.connect(self.ui.progressBar.setValue)
+                    drv.progress_text.connect(self.ui.progress_label.setText)
+                    drv.done_signal.connect(self.post_available_transfer_capacity_ts)
+                    drv.start()
+
+                else:
+                    warning_msg('Another ATC time series is being executed now...')
+            else:
+                error_msg('There are no time series!')
+        else:
+            pass
+
+    def post_available_transfer_capacity_ts(self):
+        """
+        Action performed after the short circuit.
+        Returns:
+
+        """
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.AvailableTransferCapacityTS_run)
+        self.remove_simulation(sim.SimulationTypes.AvailableTransferCapacityTS_run)
+
+        # update the results in the circuit structures
+        if not drv.__cancel__:
+            if results is not None:
+
+                self.ui.progress_label.setText('Colouring ATC time series results in the grid...')
+                QtGui.QGuiApplication.processEvents()
+
+                self.update_available_results()
+                self.colour_now()
+            else:
+                error_msg('Something went wrong, There are no ATC time series results.')
 
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
@@ -3027,7 +3213,8 @@ class MainGUI(QMainWindow):
 
                     pf_options = self.get_selected_power_flow_options()
 
-                    simulation_type = self.stochastic_pf_methods_dict[self.ui.stochastic_pf_method_comboBox.currentText()]
+                    simulation_type = self.stochastic_pf_methods_dict[
+                        self.ui.stochastic_pf_method_comboBox.currentText()]
 
                     tol = 10 ** (-1 * self.ui.tolerance_stochastic_spinBox.value())
                     max_iter = self.ui.max_iterations_stochastic_spinBox.value()
@@ -3134,8 +3321,8 @@ class MainGUI(QMainWindow):
                 n_lsh_samples = self.ui.max_iterations_stochastic_spinBox.value()
 
                 drv = sim.Cascading(self.circuit.copy(), options,
-                                       max_additional_islands=max_isl,
-                                       n_lhs_samples_=n_lsh_samples)
+                                    max_additional_islands=max_isl,
+                                    n_lhs_samples_=n_lsh_samples)
 
                 self.session.register(drv)
 
@@ -3231,8 +3418,8 @@ class MainGUI(QMainWindow):
                 mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
                 pf_options = self.get_selected_power_flow_options()
                 options = sim.OptimalPowerFlowOptions(solver=solver,
-                                                         mip_solver=mip_solver,
-                                                         power_flow_options=pf_options)
+                                                      mip_solver=mip_solver,
+                                                      power_flow_options=pf_options)
 
                 self.ui.progress_label.setText('Running optimal power flow...')
                 QtGui.QGuiApplication.processEvents()
@@ -3313,9 +3500,9 @@ class MainGUI(QMainWindow):
                     pf_options = self.get_selected_power_flow_options()
 
                     options = sim.OptimalPowerFlowOptions(solver=solver,
-                                                             grouping=grouping,
-                                                             mip_solver=mip_solver,
-                                                             power_flow_options=pf_options)
+                                                          grouping=grouping,
+                                                          mip_solver=mip_solver,
+                                                          power_flow_options=pf_options)
 
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1
@@ -3323,9 +3510,9 @@ class MainGUI(QMainWindow):
                     # create the OPF time series instance
                     # if non_sequential:
                     drv = sim.OptimalPowerFlowTimeSeries(grid=self.circuit,
-                                                              options=options,
-                                                              start_=start,
-                                                              end_=end)
+                                                         options=options,
+                                                         start_=start,
+                                                         end_=end)
 
                     self.session.register(drv)
 
@@ -3451,14 +3638,14 @@ class MainGUI(QMainWindow):
 
                     # compose options
                     options = sim.TopologyReductionOptions(rx_criteria=rx_criteria,
-                                                             rx_threshold=rx_threshold,
-                                                             selected_types=selected_types)
+                                                           rx_threshold=rx_threshold,
+                                                           selected_types=selected_types)
 
                     # find which branches to remove
                     br_to_remove = sim.select_branches_to_reduce(circuit=self.circuit,
-                                                                   rx_criteria=options.rx_criteria,
-                                                                   rx_threshold=options.rx_threshold,
-                                                                   selected_types=options.selected_type)
+                                                                 rx_criteria=options.rx_criteria,
+                                                                 rx_threshold=options.rx_threshold,
+                                                                 selected_types=options.selected_type)
                     if len(br_to_remove) > 0:
                         # raise dialogue
                         branches = self.circuit.get_branches()
@@ -3510,9 +3697,9 @@ class MainGUI(QMainWindow):
 
                     ptdf_results = self.ptdf_analysis.results
                     self.find_node_groups_driver = sim.NodeGroupsDriver(grid=self.circuit,
-                                                                          sigmas=sigmas,
-                                                                          min_group_size=min_group_size,
-                                                                          ptdf_results=ptdf_results)
+                                                                        sigmas=sigmas,
+                                                                        min_group_size=min_group_size,
+                                                                        ptdf_results=ptdf_results)
 
                     # Set the time series run options
                     self.find_node_groups_driver.progress_signal.connect(self.ui.progressBar.setValue)
@@ -3640,7 +3827,6 @@ class MainGUI(QMainWindow):
         Run the sigma analysis
         """
         if len(self.circuit.buses) > 0:
-
             options = self.get_selected_power_flow_options()
             bus_names = np.array([b.name for b in self.circuit.buses])
             sigma_driver = sim.SigmaAnalysisDriver(grid=self.circuit, options=options)
@@ -3855,7 +4041,7 @@ class MainGUI(QMainWindow):
         if html:
             plot_function = viz.plot_html_map
             k = len(self.files_to_delete_at_exit)
-            file_name = os.path.join(viz.get_create_gridcal_folder(), 'map_' + str(k+1) + '.html')
+            file_name = os.path.join(viz.get_create_gridcal_folder(), 'map_' + str(k + 1) + '.html')
         else:
 
             if not self.ui.draw_schematic_checkBox.isChecked():
@@ -4195,7 +4381,7 @@ class MainGUI(QMainWindow):
                         f += '.xlsx'
                     mdl.save_to_excel(f)
                     print('Saved!')
-                if'csv' in filter:
+                if 'csv' in filter:
                     f = file
                     if not f.endswith('.csv'):
                         f += '.csv'
@@ -4416,7 +4602,8 @@ class MainGUI(QMainWindow):
 
                 elif tpe == 'Transformers':
 
-                    warning_msg('No editor available.\nThe values can be changes from within the table.', 'Transformers')
+                    warning_msg('No editor available.\nThe values can be changes from within the table.',
+                                'Transformers')
 
                 else:
                     pass
@@ -4932,7 +5119,8 @@ class MainGUI(QMainWindow):
                             self.delete_and_reduce_driver.progress_signal.connect(self.ui.progressBar.setValue)
                             self.delete_and_reduce_driver.progress_text.connect(self.ui.progress_label.setText)
                             self.delete_and_reduce_driver.done_signal.connect(self.UNLOCK)
-                            self.delete_and_reduce_driver.done_signal.connect(self.post_delete_and_reduce_selected_objects)
+                            self.delete_and_reduce_driver.done_signal.connect(
+                                self.post_delete_and_reduce_selected_objects)
 
                             self.delete_and_reduce_driver.start()
 
@@ -5337,7 +5525,8 @@ class MainGUI(QMainWindow):
             # attempt to start synchronizing
             if os.path.exists(self.file_name):
                 sleep_time = self.ui.sync_interval_spinBox.value()  # seconds to sleep
-                self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, file_name=self.file_name, sleep_time=sleep_time)
+                self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, file_name=self.file_name,
+                                                               sleep_time=sleep_time)
 
                 # upon sync check (call the gui dialogue)
                 self.file_sync_thread.sync_event.connect(self.post_file_sync)

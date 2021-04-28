@@ -59,8 +59,8 @@
      id="namedview4"
      showgrid="false"
      inkscape:zoom="1.5585937"
-     inkscape:cx="-92.603208"
-     inkscape:cy="160.54879"
+     inkscape:cx="-240.49294"
+     inkscape:cy="157.98237"
      inkscape:window-x="72"
      inkscape:window-y="25"
      inkscape:window-maximized="1"
@@ -68,7 +68,7 @@
      inkscape:snap-bbox="true" />
   <text
      xml:space="preserve"
-     style="font-style:normal;font-weight:normal;font-size:237.84448242px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#162e50;fill-opacity:0.87843137;stroke:none;stroke-width:5.94611311"
+     style="font-style:normal;font-weight:normal;font-size:237.84448242px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#00d4aa;fill-opacity:1;stroke:none;stroke-width:5.94611311;"
      x="30.521622"
      y="172.3031"
      id="text4524-9"
@@ -78,7 +78,7 @@
        id="tspan4522-0"
        x="30.521622"
        y="172.3031"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'TeX Gyre Pagella Math';-inkscape-font-specification:'TeX Gyre Pagella Math';fill:#162e50;fill-opacity:0.87843137;stroke-width:5.94611311">α</tspan></text>
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'TeX Gyre Pagella Math';-inkscape-font-specification:'TeX Gyre Pagella Math';fill:#00d4aa;fill-opacity:1;stroke-width:5.94611311;">α</tspan></text>
   <g
      id="g1179"
      transform="matrix(0.74930152,0,0,0.74930152,-284.47298,-110.7024)">
@@ -605,7 +605,7 @@
          y="37.508411"
          ry="1.6003295" />
       <rect
-         style="fill:#008baa;stroke:none;stroke-width:0.79624575;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal;fill-opacity:1"
+         style="fill:#00d4aa;stroke:none;stroke-width:0.79624575;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal;fill-opacity:1"
          id="rect4596-3-5"
          width="29.214371"
          height="6.7369676"

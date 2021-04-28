@@ -6578,10 +6578,13 @@ QProgressBar::chunk{
     </property>
     <addaction name="actionPower_flow"/>
     <addaction name="actionPower_Flow_Time_series"/>
+    <addaction name="actionClustering_time_series"/>
     <addaction name="separator"/>
     <addaction name="actionShort_Circuit"/>
     <addaction name="separator"/>
     <addaction name="actionVoltage_stability"/>
+    <addaction name="separator"/>
+    <addaction name="actionSigma_analysis"/>
     <addaction name="separator"/>
     <addaction name="actionOPF"/>
     <addaction name="actionOPF_time_series"/>
@@ -6589,7 +6592,7 @@ QProgressBar::chunk{
     <addaction name="actionSet_OPF_generation_to_profiles"/>
     <addaction name="separator"/>
     <addaction name="actionPower_flow_Stochastic"/>
-    <addaction name="actionClustering_time_series"/>
+    <addaction name="actionBlackout_cascade"/>
     <addaction name="separator"/>
     <addaction name="actionLinearAnalysis"/>
     <addaction name="actionPTDF_time_series"/>

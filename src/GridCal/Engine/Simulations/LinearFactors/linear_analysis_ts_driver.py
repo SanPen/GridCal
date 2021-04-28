@@ -215,13 +215,13 @@ class LinearAnalysisTimeSeries(QThread):
         self.indices = pd.to_datetime(ts_numeric_circuit.time_array[time_indices])
 
         self.progress_text.emit('Computing PTDF...')
-        ptdf_analysis = LinearAnalysis(grid=self.grid, distributed_slack=self.options.distribute_slack)
-        ptdf_analysis.run()
+        linear_analysis = LinearAnalysis(grid=self.grid, distributed_slack=self.options.distribute_slack)
+        linear_analysis.run()
 
         self.progress_text.emit('Computing branch flows...')
 
         Pbus_0 = ts_numeric_circuit.Sbus.real[:, time_indices]
-        self.results.Sf = ptdf_analysis.get_branch_time_series(Pbus_0)
+        self.results.Sf = linear_analysis.get_flows_time_series(Pbus_0)
 
         # compute post process
         self.results.loading = self.results.Sf / (ts_numeric_circuit.Rates[:, time_indices].T + 1e-9)

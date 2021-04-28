@@ -15,11 +15,13 @@
 import time
 import json
 import numpy as np
+import numba as nb
 from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, make_worst_contingency_transfer_limits
+from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityOptions
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
@@ -93,19 +95,19 @@ class AvailableTransferCapacityTimeSeriesResults:
         if result_type == ResultTypes.AvailableTransferCapacityFrom:
             data = self.atc_from
             y_label = '(MW)'
-            title = result_type.value
+            title, _ = result_type.value
             labels = self.br_names
 
         elif result_type == ResultTypes.AvailableTransferCapacityTo:
-            data = self.worst_atc
+            data = self.atc_to
             y_label = '(MW)'
-            title = result_type.value
+            title, _ = result_type.value
             labels = self.br_names
 
         elif result_type == ResultTypes.AvailableTransferCapacity:
             data = self.worst_atc
             y_label = '(MW)'
-            title = result_type.value
+            title, _ = result_type.value
             labels = self.br_names
         else:
             raise Exception('Result type not understood:' + str(result_type))
@@ -119,6 +121,29 @@ class AvailableTransferCapacityTimeSeriesResults:
         return mdl
 
 
+@nb.njit()
+def fill_atc_results(t, tmc, atc_from, atc_to, atc_worst):
+
+    nbr = tmc.shape[0]
+
+    for i in range(nbr):  # traverse branches
+        mn_ = 1e20
+        mx_ = -1e20
+        worst = 0
+        for j in range(nbr): # traverse contingencies
+            if tmc[i, j] > mx_:
+                atc_from[t, i] = tmc[i, j]
+                mx_ = tmc[i, j]
+
+            if tmc[i, j] < mn_:
+                atc_to[t, i] = tmc[i, j]
+                mn_ = tmc[i, j]
+
+            if abs(atc_from[t, i]) > abs(atc_to[t, i]):
+                atc_worst[t, i] = atc_from[t, i]
+            else:
+                atc_worst[t, i] = atc_to[t, i]
+
 
 class AvailableTransferCapacityTimeSeriesDriver(QThread):
     progress_signal = Signal(float)
@@ -127,7 +152,7 @@ class AvailableTransferCapacityTimeSeriesDriver(QThread):
     tpe = SimulationTypes.AvailableTransferCapacityTS_run
     name = tpe.value
 
-    def __init__(self, grid: MultiCircuit, options: AvailableTransferCapacityOptions, pf_results):
+    def __init__(self, grid: MultiCircuit, options: AvailableTransferCapacityOptions, start_=0, end_=None):
         """
         Power Transfer Distribution Factors class constructor
         @param grid: MultiCircuit Object
@@ -142,7 +167,11 @@ class AvailableTransferCapacityTimeSeriesDriver(QThread):
         # Options to use
         self.options = options
 
-        self.pf_results = pf_results
+        self.start_ = start_
+
+        self.end_ = end_
+
+        self.indices = self.grid.time_profile
 
         # OPF results
         self.results = AvailableTransferCapacityTimeSeriesResults(n_br=0,
@@ -167,9 +196,13 @@ class AvailableTransferCapacityTimeSeriesDriver(QThread):
         self.progress_text.emit('Analyzing')
         self.progress_signal.emit(0)
 
+        if self.end_ is None:
+            self.end_ = len(self.grid.time_profile)
+        time_indices = np.arange(self.start_, self.end_ + 1)
+
         # declare the linear analysis
-        simulation = LinearAnalysis(grid=main_circuit)
-        simulation.run()
+        linear_analysis = LinearAnalysis(grid=self.grid)
+        linear_analysis.run()
 
         ts_numeric_circuit = compile_time_circuit(self.grid)
         ne = ts_numeric_circuit.nbr
@@ -184,11 +217,23 @@ class AvailableTransferCapacityTimeSeriesDriver(QThread):
                                                                   bus_names=ts_numeric_circuit.bus_names,
                                                                   bus_types=ts_numeric_circuit.bus_types)
 
-        # get normal transfer limits
-        tm = simulation.get_transfer_limits(flows=self.pf_results.Sf.real)
+        # compute the base flows
+        Pbus_0 = ts_numeric_circuit.Sbus.real[:, time_indices]
+        flows = linear_analysis.get_flows_time_series(Pbus_0)
 
-        # get the contingency transfer limits
-        tmc = simulation.get_contingency_transfer_limits(flows=self.pf_results.Sf.real)
+        for t in range(nt):
+
+            # get the contingency transfer limits
+            tmc = linear_analysis.get_contingency_transfer_limits(flows=flows[t, :])
+
+            # post-process and store the results.
+            fill_atc_results(t, tmc, self.results.atc_from, self.results.atc_to, self.results.worst_atc)
+
+            if self.progress_signal is not None:
+                self.progress_signal.emit((t + 1) / nt * 100)
+
+            if self.progress_text is not None:
+                self.progress_text.emit('Available transfer capacity at ' + str(self.grid.time_profile[t]))
 
         end = time.time()
         self.elapsed = end - start
@@ -215,8 +260,8 @@ if __name__ == '__main__':
 
     main_circuit = FileOpen(fname).open()
 
-    simulation = LinearAnalysis(grid=main_circuit)
-    simulation.run()
+    simulation_ = LinearAnalysis(grid=main_circuit)
+    simulation_.run()
 
     pf_options = PowerFlowOptions(solver_type=SolverType.NR,
                                   control_q=ReactivePowerControlMode.NoControl,
