@@ -26,6 +26,79 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 ########################################################################################################################
 
 
+class LinearAnalysisResults:
+
+    def __init__(self, n_br=0, n_bus=0, br_names=(), bus_names=(), bus_types=()):
+        """
+        PTDF and LODF results class
+        :param n_br: number of branches
+        :param n_bus: number of buses
+        :param br_names: branch names
+        :param bus_names: bus names
+        :param bus_types: bus types array
+        """
+
+        self.name = 'Linear Analysis'
+
+        # number of branches
+        self.n_br = n_br
+
+        self.n_bus = n_bus
+
+        # names of the branches
+        self.br_names = br_names
+
+        self.bus_names = bus_names
+
+        self.bus_types = bus_types
+
+        self.logger = Logger()
+
+        self.PTDF = np.zeros((n_br, n_bus))
+        self.LODF = np.zeros((n_br, n_br))
+
+        self.available_results = [ResultTypes.PTDFBranchesSensitivity,
+                                  ResultTypes.OTDF]
+
+    def mdl(self, result_type: ResultTypes) -> ResultsModel:
+        """
+        Plot the results.
+
+        Arguments:
+
+            **result_type**: ResultTypes
+
+        Returns: ResultsModel
+        """
+
+        if result_type == ResultTypes.PTDFBranchesSensitivity:
+            labels = self.bus_names
+            y = self.PTDF
+            y_label = '(p.u.)'
+            title = 'Branches sensitivity'
+
+        elif result_type == ResultTypes.OTDF:
+            labels = self.br_names
+            y = self.LODF
+            y_label = '(p.u.)'
+            title = 'Branch failure sensitivity'
+
+        else:
+            labels = []
+            y = np.zeros(0)
+            y_label = ''
+            title = ''
+
+        # assemble model
+        mdl = ResultsModel(data=y,
+                           index=self.br_names,
+                           columns=labels,
+                           title=title,
+                           ylabel=y_label,
+                           units=y_label)
+        return mdl
+
+
 class LinearAnalysisOptions:
 
     def __init__(self, distribute_slack=True, correct_values=True):
@@ -89,9 +162,15 @@ class LinearAnalysisDriver(QThread):
 
         analysis.run()
 
-        self.logger += analysis.logger
+        self.results = LinearAnalysisResults(n_br=analysis.numerical_circuit.nbr,
+                                             n_bus=analysis.numerical_circuit.nbus,
+                                             br_names=analysis.numerical_circuit.branch_data.branch_names,
+                                             bus_names=analysis.numerical_circuit.bus_data.bus_names,
+                                             bus_types=analysis.numerical_circuit.bus_data.bus_types)
+        self.results.PTDF = analysis.PTDF
+        self.results.LODF = analysis.LODF
 
-        self.results = analysis.results
+        self.logger += analysis.logger
 
         end = time.time()
         self.elapsed = end - start

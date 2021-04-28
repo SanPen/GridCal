@@ -6593,6 +6593,9 @@ QProgressBar::chunk{
     <addaction name="separator"/>
     <addaction name="actionLinearAnalysis"/>
     <addaction name="actionPTDF_time_series"/>
+    <addaction name="actionOTDF_time_series"/>
+    <addaction name="actionATC"/>
+    <addaction name="actionATC_Time_Series"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
@@ -6649,8 +6652,10 @@ QProgressBar::chunk{
    <addaction name="actionBlackout_cascade"/>
    <addaction name="separator"/>
    <addaction name="actionLinearAnalysis"/>
+   <addaction name="actionATC"/>
    <addaction name="actionPTDF_time_series"/>
    <addaction name="actionOTDF_time_series"/>
+   <addaction name="actionATC_Time_Series"/>
    <addaction name="separator"/>
    <addaction name="actionBigger_nodes"/>
    <addaction name="actionSmaller_nodes"/>
@@ -7265,6 +7270,30 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Import bus coordinates</string>
+   </property>
+  </action>
+  <action name="actionATC">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/atc.svg</normaloff>:/Icons/icons/atc.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Available Transfer Capacity</string>
+   </property>
+   <property name="toolTip">
+    <string>Available Transfer Capacity</string>
+   </property>
+  </action>
+  <action name="actionATC_Time_Series">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/atc_ts.svg</normaloff>:/Icons/icons/atc_ts.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Available Transfer Capacity Time Series</string>
+   </property>
+   <property name="toolTip">
+    <string>Available Transfer Capacity Time Series</string>
    </property>
   </action>
  </widget>

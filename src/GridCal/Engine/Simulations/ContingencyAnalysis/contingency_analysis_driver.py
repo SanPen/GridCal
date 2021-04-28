@@ -131,8 +131,8 @@ class ContingencyAnalysisDriver(QThread):
         linear_analysis.run()
 
         Pbus = self.numerical_circuit.get_injections(False).real[:, 0]
-        PTDF = linear_analysis.results.PTDF
-        LODF = linear_analysis.results.LODF
+        PTDF = linear_analysis.PTDF
+        LODF = linear_analysis.LODF
 
         # compute the branch flows in "n"
         flows_n = np.dot(PTDF, Pbus)

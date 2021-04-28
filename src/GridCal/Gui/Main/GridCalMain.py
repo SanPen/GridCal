@@ -374,7 +374,7 @@ class MainGUI(QMainWindow):
 
         self.ui.actionTry_to_fix_buses_location.triggered.connect(self.try_to_fix_buses_location)
 
-        self.ui.actionPTDF_time_series.triggered.connect(self.run_ptdf_ts)
+        self.ui.actionPTDF_time_series.triggered.connect(self.run_linear_analysis_ts)
 
         self.ui.actionSet_OPF_generation_to_profiles.triggered.connect(self.copy_opf_to_profiles)
 
@@ -2465,6 +2465,7 @@ class MainGUI(QMainWindow):
                 QtGui.QGuiApplication.processEvents()
 
                 self.update_available_results()
+                self.colour_now()
             else:
                 error_msg('Something went wrong, There are no PTDF results.')
 
@@ -2475,7 +2476,7 @@ class MainGUI(QMainWindow):
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
 
-    def run_ptdf_ts(self):
+    def run_linear_analysis_ts(self):
         """
         Run PTDF time series simulation
         """
@@ -2501,7 +2502,7 @@ class MainGUI(QMainWindow):
 
                     drv.progress_signal.connect(self.ui.progressBar.setValue)
                     drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_ptdf_ts)
+                    drv.done_signal.connect(self.post_linear_analysis_ts)
 
                     drv.start()
                 else:
@@ -2509,7 +2510,7 @@ class MainGUI(QMainWindow):
             else:
                 warning_msg('There are no time series...')
 
-    def post_ptdf_ts(self):
+    def post_linear_analysis_ts(self):
         """
         Action performed after the short circuit.
         Returns:

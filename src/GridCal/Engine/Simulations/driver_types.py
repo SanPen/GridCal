@@ -35,6 +35,8 @@ class SimulationTypes(Enum):
     ContingencyAnalysis_run = 'Contingency analysis'
     ContingencyAnalysisTS_run = 'Contingency analysis time series'
     Delete_and_reduce_run = 'Delete and reduce'
+    AvailableTransferCapacity_run = 'Available transfer capacity'
+    AvailableTransferCapacityTS_run = 'Available transfer capacity time series'
 
     def __str__(self):
         return self.value

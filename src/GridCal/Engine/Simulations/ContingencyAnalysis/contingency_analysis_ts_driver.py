@@ -161,7 +161,7 @@ class ContingencyAnalysisTimeSeries(QThread):
             compute_flows_numba(e=e,
                                 nt=nt,
                                 nc=nc,
-                                OTDF=linear_analysis.results.LODF,
+                                OTDF=linear_analysis.LODF,
                                 Flows=flows,
                                 rates=rates,
                                 overload_count=results.overload_count,

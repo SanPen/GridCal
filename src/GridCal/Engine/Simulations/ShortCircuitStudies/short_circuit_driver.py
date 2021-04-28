@@ -287,6 +287,7 @@ class ShortCircuitDriver(QRunnable):
         # compute Zbus
         # is dense, so no need to store it as sparse
         if calculation_inputs.Ybus.shape[0] > 1:
+
             Zbus = inv(calculation_inputs.Ybus).toarray()
 
             # Compute the short circuit
