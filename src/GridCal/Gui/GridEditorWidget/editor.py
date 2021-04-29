@@ -309,12 +309,21 @@ class DiagramScene(QGraphicsScene):
                                 power_data[key.value] = driver.results.Sf.real[:, i]
                                 loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
 
+                            elif key == SimulationTypes.AvailableTransferCapacityTS_run:
+                                power_data[key.value] = driver.results.atc[:, i]
+                                atc_perc = driver.results.atc[:, i] / (api_object.rate_prof + 1e-9)
+                                loading_data[key.value] = np.sort(np.abs(atc_perc * 100.0))
+
                             elif key == SimulationTypes.ContingencyAnalysisTS_run:
                                 power_data[key.value] = driver.results.worst_flows.real[:, i]
                                 loading_data[key.value] = np.sort(np.abs(driver.results.worst_loading.real[:, i] * 100.0))
 
                             elif key == SimulationTypes.StochasticPowerFlow:
                                 loading_st_data = np.sort(np.abs(driver.results.loading_points.real[:, i] * 100.0))
+
+                # add the rating
+                power_data['Rates+'] = api_object.rate_prof
+                power_data['Rates-'] = -api_object.rate_prof
 
                 # loading
                 if len(loading_data.keys()):

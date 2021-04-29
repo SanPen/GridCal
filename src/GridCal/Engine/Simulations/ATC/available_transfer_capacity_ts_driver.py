@@ -29,12 +29,12 @@ from GridCal.Engine.Simulations.results_model import ResultsModel
 
 
 @nb.njit(parallel=True)
-def calculate_branch_atc_full(m, ptdf, lodf, flows, rates, thr=0.2):
+def calculate_branch_atc_full(m, ptdf, lodf, flows, rates, thr=0.02):
     """
 
     :param m: branch to inspect
     :param ptdf: PTDF matrix (n-branch, n-bus)
-    :param lodf: LODF matrox (n-branch, n-branch)
+    :param lodf: LODF matrix (n-branch, n-branch)
     :param flows: Flows profiles (n-time, n-branch)
     :param rates: Rates profiles (n-time, n-branch)
     :param thr: threshold
@@ -57,25 +57,29 @@ def calculate_branch_atc_full(m, ptdf, lodf, flows, rates, thr=0.2):
         for c in range(nbr):
             for j in range(nbus):
 
-                if abs(otdf[c, j]) > thr:
+                if abs(otdf[c, j]) > thr and abs(flows[t, m]) <= rates[t, m]:  # if the normal flows are ok
+
+                    # compute the contingency flows
                     omw = flows[t, m] + lodf[m, c] * flows[t, c]
 
-                    if ptdf[m, j] > 0:
-                        T_normal = (rates[t, m] - flows[t, m]) / ptdf[m, j]
-                    elif ptdf[m, j] < 0:
-                        T_normal = (-rates[t, m] - flows[t, m]) / ptdf[m, j]
-                    else:
-                        T_normal = 1e20  # numerical infinite
+                    if abs(otdf[c, j]) > thr and abs(omw) <= rates[t, m]:  # if the contingency flows are ok...
 
-                    if otdf[c, j] > 0:
-                        T_contingency = (rates[t, m] - omw) / otdf[c, j]
-                    elif otdf[c, j] < 0:
-                        T_contingency = (-rates[t, m] - omw) / otdf[c, j]
-                    else:
-                        T_contingency = 1e20  # numerical infinite
+                        if ptdf[m, j] > 0:
+                            T_normal = (rates[t, m] - flows[t, m]) / ptdf[m, j]
+                        elif ptdf[m, j] < 0:
+                            T_normal = (-rates[t, m] - flows[t, m]) / ptdf[m, j]
+                        else:
+                            T_normal = 1e20  # numerical infinite
 
-                    atc_val = min(T_normal, T_contingency)
-                    atc[t] = min(atc[t], atc_val)
+                        if otdf[c, j] > 0:
+                            T_contingency = (rates[t, m] - omw) / otdf[c, j]
+                        elif otdf[c, j] < 0:
+                            T_contingency = (-rates[t, m] - omw) / otdf[c, j]
+                        else:
+                            T_contingency = 1e20  # numerical infinite
+
+                        atc_val = min(T_normal, T_contingency)
+                        atc[t] = min(atc[t], atc_val)
 
     return atc
 
@@ -103,7 +107,7 @@ class AvailableTransferCapacityTimeSeriesResults:
         # available transfer capacity matrix (branch, contingency branch)
         self.atc_from = np.zeros((self.nt, self.n_br))
         self.atc_to = np.zeros((self.nt, self.n_br))
-        self.worst_atc = np.zeros((self.nt, self.n_br))
+        self.atc = np.zeros((self.nt, self.n_br))
 
         self.available_results = [ResultTypes.AvailableTransferCapacity,
                                   # ResultTypes.AvailableTransferCapacityFrom,
@@ -120,7 +124,7 @@ class AvailableTransferCapacityTimeSeriesResults:
         """
         data = {'atc_from': self.atc_from.tolist(),
                 'atc_to': self.atc_to.tolist(),
-                'worst_atc': self.worst_atc.tolist()}
+                'atc': self.atc.tolist()}
         return data
 
     def save(self, fname):
@@ -153,7 +157,7 @@ class AvailableTransferCapacityTimeSeriesResults:
             labels = self.br_names
 
         elif result_type == ResultTypes.AvailableTransferCapacity:
-            data = self.worst_atc
+            data = self.atc
             y_label = '(MW)'
             title, _ = result_type.value
             labels = self.br_names
@@ -167,30 +171,6 @@ class AvailableTransferCapacityTimeSeriesResults:
                            title=title,
                            ylabel=y_label)
         return mdl
-
-
-@nb.njit()
-def fill_atc_results(t, tmc, atc_from, atc_to, atc_worst):
-
-    nbr = tmc.shape[0]
-
-    for i in range(nbr):  # traverse branches
-        mn_ = 1e20
-        mx_ = -1e20
-        worst = 0
-        for j in range(nbr): # traverse contingencies
-            if tmc[i, j] > mx_:
-                atc_from[t, i] = tmc[i, j]
-                mx_ = tmc[i, j]
-
-            if tmc[i, j] < mn_:
-                atc_to[t, i] = tmc[i, j]
-                mn_ = tmc[i, j]
-
-            if abs(atc_from[t, i]) > abs(atc_to[t, i]):
-                atc_worst[t, i] = atc_from[t, i]
-            else:
-                atc_worst[t, i] = atc_to[t, i]
 
 
 class AvailableTransferCapacityTimeSeriesDriver(QThread):
@@ -277,11 +257,11 @@ class AvailableTransferCapacityTimeSeriesDriver(QThread):
             if self.progress_text is not None:
                 self.progress_text.emit('Available transfer capacity for ' + ts_numeric_circuit.branch_names[m])
 
-            self.results.worst_atc[:, m] = calculate_branch_atc_full(m=m,
-                                                                     ptdf=linear_analysis.PTDF,
-                                                                     lodf=linear_analysis.LODF,
-                                                                     flows=flows,
-                                                                     rates=rates)
+            self.results.atc[:, m] = calculate_branch_atc_full(m=m,
+                                                               ptdf=linear_analysis.PTDF,
+                                                               lodf=linear_analysis.LODF,
+                                                               flows=flows,
+                                                               rates=rates)
 
             if self.progress_signal is not None:
                 self.progress_signal.emit((m + 1) / ne * 100)
