@@ -23,21 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="ATC and ATC time series working (not validated yet)">
-      <change afterPath="$PROJECT_DIR$/src/tests/data/results/comparison/IEEE 118 Bus v2.raw" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/results/comparison/IEEE 118 Bus.sav.xlsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/results/comparison/IEEE 14 bus.raw" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/results/comparison/IEEE 14 bus.sav.xlsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/results/comparison/IEEE 30 bus.raw" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/results/comparison/IEEE 30 bus.sav.xlsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/results/comparison/PF Ieee14.txt.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/results/comparison/PF ieee118.txt.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/results/comparison/PF ieee30.txt.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/results/comparison/extract_power_factory_values.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added proper PSS/E Power Factory GridCal comparison files">
+      <change afterPath="$PROJECT_DIR$/requirements_nose.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/demo_5_node.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/demo_5_node.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_power_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_power_flow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.travis.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.travis.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,7 +86,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="ToolWindowDatabase.ShowToolbar" value="false" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/tests/data/results/comparison" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
@@ -539,14 +528,8 @@
       <workItem from="1618945173718" duration="6409000" />
       <workItem from="1618987367489" duration="712000" />
       <workItem from="1619016709084" duration="13793000" />
-      <workItem from="1619631136767" duration="2886000" />
-    </task>
-    <task id="LOCAL-00084" summary="Added Q control to the ACDC NR&#10;Fixed some bugs">
-      <created>1610283163394</created>
-      <option name="number" value="00084" />
-      <option name="presentableId" value="LOCAL-00084" />
-      <option name="project" value="LOCAL" />
-      <updated>1610283163395</updated>
+      <workItem from="1619631136767" duration="2984000" />
+      <workItem from="1619678684518" duration="751000" />
     </task>
     <task id="LOCAL-00085" summary="Fixed some bugs regarding HVDC">
       <created>1610466693935</created>
@@ -884,7 +867,14 @@
       <option name="project" value="LOCAL" />
       <updated>1619615671535</updated>
     </task>
-    <option name="localTasksCounter" value="133" />
+    <task id="LOCAL-00133" summary="Added proper PSS/E Power Factory GridCal comparison files">
+      <created>1619642417562</created>
+      <option name="number" value="00133" />
+      <option name="presentableId" value="LOCAL-00133" />
+      <option name="project" value="LOCAL" />
+      <updated>1619642417563</updated>
+    </task>
+    <option name="localTasksCounter" value="134" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -908,7 +898,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed issue with the wire" />
     <MESSAGE value="Updated readme" />
     <MESSAGE value="Updated pictures, updated the README.md" />
     <MESSAGE value="updated the README.md" />
@@ -933,7 +922,8 @@
     <MESSAGE value="Grouped imports in the main GUI" />
     <MESSAGE value="ATC and ATC time series implemented (validation pending)" />
     <MESSAGE value="ATC and ATC time series working (not validated yet)" />
-    <option name="LAST_COMMIT_MESSAGE" value="ATC and ATC time series working (not validated yet)" />
+    <MESSAGE value="Added proper PSS/E Power Factory GridCal comparison files" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added proper PSS/E Power Factory GridCal comparison files" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
