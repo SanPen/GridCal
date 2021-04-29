@@ -15,7 +15,7 @@ Version 4.1.2
 
 - Added branch contingency multiplier for contingency related simulations
 - Added Available Transmission Capacity
-
+- Added dynamic bus types for the time series, this allows to correctly account for the generators' status
 
 Version 4.1.1
 ^^^^^^^^^^^^^^^

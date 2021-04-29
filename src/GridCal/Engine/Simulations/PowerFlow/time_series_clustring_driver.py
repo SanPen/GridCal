@@ -171,8 +171,6 @@ class TimeSeriesClustering(TimeSeries):
         X = time_circuit.Sbus
         X = X[:, time_indices].real.T
         self.sampled_time_idx, self.sampled_probabilities = kmeans_approximate_sampling(X, n_points=self.cluster_number)
-        # self.sampled_time_idx, self.sampled_probabilities, self.cluster_number = \
-        #     spectral_approximate_sampling(X, n_points=self.cluster_number)
 
         self.results = self.run_single_thread(time_indices=self.sampled_time_idx)
 

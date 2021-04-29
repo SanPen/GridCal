@@ -26,7 +26,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, power_flow_worker_args
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
 from GridCal.Engine.Simulations.Stochastic.latin_hypercube_sampling import lhs
 from GridCal.Engine.Simulations.results_model import ResultsModel
@@ -387,87 +387,6 @@ class TimeSeriesResults(PowerFlowResults):
         return mdl
 
 
-def time_series_worker(n, m, time_profile, namespace, options: PowerFlowOptions,
-                       time_indices, logger: Logger) -> (TimeSeriesResults, np.array):
-    """
-
-    :param n:
-    :param m:
-    :param time_profile:
-    :param options:
-    :param time_indices:  array of time indices to consider
-    :param logger:
-    :return: TimeSeriesResults instance
-    """
-
-    # initialize the grid time series results we will append the island results with another function
-    time_series_results = TimeSeriesResults(n, m, time_array=time_profile[time_indices])
-
-    calc_inputs_dict = namespace.calc_inputs_dict
-    time_series_results.bus_types = namespace.bus_types
-
-    # for each partition of the profiles...
-    for t_key, calc_inputs in calc_inputs_dict.items():
-
-        # For every island, run the time series
-        for island_index, calculation_input in enumerate(calc_inputs):
-
-            # find the original indices
-            bus_original_idx = calculation_input.original_bus_idx
-            branch_original_idx = calculation_input.original_branch_idx
-
-            # if there are valid profiles...
-            if time_profile is not None:
-
-                # declare a results object for the partition
-                results = TimeSeriesResults(n=calculation_input.nbus,
-                                            m=calculation_input.nbr,
-                                            time_array=time_profile[time_indices])
-                last_voltage = calculation_input.Vbus
-
-                # default value in case of single-valued profile
-                dt = 1.0
-
-                # traverse the time profiles of the partition and simulate each time step
-                for it, t in enumerate(time_indices):
-
-                    # set the power values
-                    # if the storage dispatch option is active, the batteries power is not included
-                    # therefore, it shall be included after processing
-                    Ysh = calculation_input.Ysh_prof[:, it]
-                    I = calculation_input.Ibus_prof[:, it]
-                    S = calculation_input.Sbus_prof[:, it]
-                    branch_rates = calculation_input.branch_rates_prof[it, :]
-
-                    # add the controlled storage power if we are controlling the storage devices
-                    if options.dispatch_storage:
-
-                        if (it+1) < len(calculation_input.original_time_idx):
-                            # compute the time delta: the time values come in nanoseconds
-                            dt = (calculation_input.time_array[it + 1]
-                                  - calculation_input.time_array[it]).value * 1e-9 / 3600.0
-
-                    # run power flow at the circuit
-                    res = single_island_pf(circuit=calculation_input,
-                                           Vbus=last_voltage,
-                                           Sbus=S,
-                                           Ibus=I,
-                                           branch_rates=branch_rates,
-                                           options=options,
-                                           logger=logger)
-
-                    # store circuit results at the time index 'it'
-                    results.set_at(it, res)
-
-                # merge the circuit's results
-                time_series_results.apply_from_island(results,
-                                                      bus_original_idx,
-                                                      branch_original_idx,
-                                                      time_indices,
-                                                      'TS')
-    return time_series_results, time_indices
-
-
 class TimeSeries(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
@@ -619,6 +538,10 @@ class TimeSeries(QThread):
                                        Vbus=V,
                                        Sbus=S,
                                        Ibus=I,
+                                       pq=calculation_input.pq_prof[t],
+                                       pv=calculation_input.pv_prof[t],
+                                       vd=calculation_input.vd_prof[t],
+                                       pqpv=calculation_input.pqpv_prof[t],
                                        branch_rates=branch_rates,
                                        options=self.options,
                                        logger=self.logger)
@@ -672,149 +595,6 @@ class TimeSeries(QThread):
         """
         self.returned_results.append(res)
 
-    def run_multi_thread_old(self, time_indices) -> TimeSeriesResults:
-        """
-        Run multi thread time series
-        :param time_indices: array of time indices to consider
-        :return: TimeSeriesResults instance
-        """
-
-        # initialize the grid time series results, we will append the island results with another function
-        n = len(self.grid.buses)
-        m = self.grid.get_branch_number()
-        time_series_results = TimeSeriesResults(n, m, time_array=self.grid.time_profile[time_indices])
-
-        n_cores = multiprocessing.cpu_count()
-        self.pool = multiprocessing.Pool()
-
-        # compile the multi-circuit
-        numerical_circuit = self.grid.compile_time_series(opf_time_series_results=self.opf_time_series_results)
-
-        # perform the topological computation
-        calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
-                                                     ignore_single_node_islands=self.options.ignore_single_node_islands)
-
-        # for each partition of the profiles...
-        for t_key, calc_inputs in calc_inputs_dict.items():
-
-            # For every island, run the time series
-            for island_index, calculation_input in enumerate(calc_inputs):
-
-                self.progress_text.emit('Time series at circuit ' + str(island_index) + '...')
-
-                # Start jobs
-                self.returned_results = list()
-
-                # if there are valid profiles...
-                if self.grid.time_profile is not None:
-
-                    # declare a results object for the partition
-                    results = TimeSeriesResults(n=calculation_input.nbus,
-                                                m=calculation_input.nbr,
-                                                time_array=self.grid.time_profile[time_indices])
-                    Vbus = calculation_input.Vbus
-
-                    self.progress_signal.emit(0.0)
-
-                    # traverse the time profiles of the partition and simulate each time step
-                    for it, t in enumerate(time_indices):
-
-                        # set the power values
-                        # if the storage dispatch option is active, the batteries power is not included
-                        # therefore, it shall be included after processing
-                        Ysh = calculation_input.Ysh_prof[:, it]
-                        Ibus = calculation_input.Ibus_prof[:, it]
-                        Sbus = calculation_input.Sbus_prof[:, it]
-                        branch_rates = calculation_input.branch_rates_prof[t, :]
-
-                        args = (it, self.options, calculation_input, Vbus, Sbus, Ibus, branch_rates)
-                        self.pool.apply_async(power_flow_worker_args, (args,), callback=self.collect_mt_result)
-
-                    # wait for all jobs to complete
-                    self.pool.close()
-                    self.pool.join()
-
-                    # collect results
-                    self.progress_text.emit('Collecting results...')
-                    for it, res in self.returned_results:
-                        # store circuit results at the time index 't'
-                        results.set_at(it, res)
-
-                    # merge  the circuit's results
-                    time_series_results.apply_from_island(results,
-                                                          calculation_input.original_bus_idx,
-                                                          calculation_input.original_branch_idx,
-                                                          time_indices,
-                                                          'TS multi-thread')
-
-                else:
-                    print('There are no profiles')
-                    self.progress_text.emit('There are no profiles')
-
-        return time_series_results
-
-    def run_multi_thread(self, time_indices) -> TimeSeriesResults:
-
-        # initialize the grid time series results, we will append the island results with another function
-        n = len(self.grid.buses)
-        m = self.grid.get_branch_number()
-        nt = len(time_indices)
-        time_series_results = TimeSeriesResults(n, m, time_array=self.grid.time_profile[time_indices])
-
-        # compile the multi-circuit
-        self.progress_text.emit('Compiling time series...')
-        numerical_circuit = self.grid.compile_time_series(opf_time_series_results=self.opf_time_series_results)
-
-        # compute the time indices per process
-        n_cores = multiprocessing.cpu_count()
-        nchunk = int(nt / n_cores)
-        time_chunks = list()
-        k = 0
-        while k < (nt - nchunk * 2):
-            k2 = k+nchunk
-            if k2 > nt:
-                k2 = nt
-            time_chunk = time_indices[k:k2]
-            k += nchunk
-            time_chunks.append(time_chunk)
-        time_chunks.append(time_indices[k::])  # add the last chunk
-
-        # schedule jobs
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Running in parallel...')
-        self.pool = multiprocessing.Pool()
-        manager = multiprocessing.Manager()
-        namespace = manager.Namespace()
-
-        stuff = list()
-
-        calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
-                                                     ignore_single_node_islands=self.options.ignore_single_node_islands)
-
-        namespace.calc_inputs_dict = calc_inputs_dict
-        namespace.bus_types = numerical_circuit.bus_types
-
-        for time_chunk in time_chunks:
-            # n, m, time_profile, buses, numerical_circuit, options, time_indices, logger
-            args = (n, m, self.grid.time_profile, namespace, self.options, time_chunk, self.logger)
-            p = self.pool.apply_async(func=time_series_worker, args=args, callback=self.collect_mt_result)
-            stuff.append(p)
-
-        # wait for all jobs to complete
-        self.pool.close()
-        self.pool.join()
-
-        # collect results
-        self.progress_text.emit('Collecting results...')
-        for result, time_chunk in self.returned_results:
-            # merge  the circuit's results
-            time_series_results.apply_from_island(result,
-                                                  np.arange(n),
-                                                  np.arange(m),
-                                                  time_chunk,
-                                                  'TS multi-thread')
-        self.progress_signal.emit(100.0)
-        return time_series_results
 
     def run(self):
         """
@@ -828,10 +608,7 @@ class TimeSeries(QThread):
             self.end_ = len(self.grid.time_profile)
         time_indices = np.arange(self.start_, self.end_)
 
-        if self.options.multi_thread:
-            self.results = self.run_multi_thread(time_indices)
-        else:
-            self.results = self.run_single_thread(time_indices)
+        self.results = self.run_single_thread(time_indices)
 
         self.elapsed = time.time() - a
 

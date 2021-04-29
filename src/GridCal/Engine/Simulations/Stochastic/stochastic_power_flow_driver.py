@@ -25,7 +25,7 @@ from GridCal.Engine.Core.time_series_pf_data import TimeCircuit
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import CDF
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, single_island_pf, \
-                                                                    power_flow_worker_args, power_flow_post_process
+                                                                    power_flow_post_process
 
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
@@ -120,133 +120,6 @@ class StochasticPowerFlowDriver(QThread):
         self.progress_signal.emit(progress)
         self.returned_results.append(res)
 
-    def run_multi_thread(self):
-        """
-        Run the monte carlo simulation
-        @return: StochasticPowerFlowResults instance
-        """
-
-        self.__cancel__ = False
-
-        # initialize the grid time series results
-        # we will append the island results with another function
-        # self.circuit.time_series_results = TimeSeriesResults(0, 0, [])
-        self.pool = multiprocessing.Pool()
-        it = 0
-        variance_sum = 0.0
-        std_dev_progress = 0
-        v_variance = 0
-
-        n = len(self.circuit.buses)
-        m = self.circuit.get_branch_number()
-
-        mc_results = StochasticPowerFlowResults(n, m, name='Monte Carlo')
-        avg_res = PowerFlowResults()
-        avg_res.initialize(n, m)
-
-        # compile circuits
-        numerical_circuit = self.circuit.compile_time_series()
-
-        # perform the topological computation
-        calc_inputs_dict = numerical_circuit.compute(branch_tolerance_mode=self.options.branch_impedance_tolerance_mode,
-                                                     ignore_single_node_islands=self.options.ignore_single_node_islands)
-
-        mc_results.bus_types = numerical_circuit.bus_types
-
-        v_sum = np.zeros(n, dtype=complex)
-
-        self.progress_signal.emit(0.0)
-
-        while (std_dev_progress < 100.0) and (it < self.sampling_points) and not self.__cancel__:
-
-            self.progress_text.emit('Running Monte Carlo: Variance: ' + str(v_variance))
-
-            mc_results = StochasticPowerFlowResults(n, m, self.batch_size, name='Monte Carlo')
-
-            # for each partition of the profiles...
-            for t_key, calc_inputs in calc_inputs_dict.items():
-
-                # For every island, run the time series
-                for island_index, numerical_island in enumerate(calc_inputs):
-
-                    # set the time series as sampled
-                    monte_carlo_input = make_monte_carlo_input(numerical_island)
-                    mc_time_series = monte_carlo_input(self.batch_size, use_latin_hypercube=False)
-                    Vbus = numerical_island.Vbus
-                    branch_rates = numerical_island.branch_rates
-
-                    # short cut the indices
-                    b_idx = numerical_island.original_bus_idx
-                    br_idx = numerical_island.original_branch_idx
-
-                    self.returned_results = list()
-
-                    t = 0
-                    while t < self.batch_size and not self.__cancel__:
-
-                        Ysh, Ibus, Sbus = mc_time_series.get_at(t)
-
-                        args = (t, self.options, numerical_island, Vbus, Sbus, Ibus, branch_rates)
-
-                        self.pool.apply_async(power_flow_worker_args, (args,), callback=self.update_progress_mt)
-
-                    # wait for all jobs to complete
-                    self.pool.close()
-                    self.pool.join()
-
-                    # collect results
-                    self.progress_text.emit('Collecting batch results...')
-                    for t, res in self.returned_results:
-                        # store circuit results at the time index 't'
-                        mc_results.S_points[t, numerical_island.original_bus_idx] = res.Sbus
-                        mc_results.V_points[t, numerical_island.original_bus_idx] = res.voltage
-                        mc_results.Sbr_points[t, numerical_island.original_branch_idx] = res.Sf
-                        mc_results.loading_points[t, numerical_island.original_branch_idx] = res.loading
-                        mc_results.losses_points[t, numerical_island.original_branch_idx] = res.losses
-
-                    # compile MC results
-                    self.progress_text.emit('Compiling results...')
-                    mc_results.compile()
-
-                    # compute the island branch results
-                    island_avg_res = numerical_island.compute_branch_results(mc_results.voltage[b_idx])
-
-                    # apply the island averaged results
-                    avg_res.apply_from_island(island_avg_res, b_idx=b_idx, br_idx=br_idx)
-
-            # Compute the Monte Carlo values
-            it += self.batch_size
-            mc_results.append_batch(mc_results)
-            v_sum += mc_results.get_voltage_sum()
-            v_avg = v_sum / it
-            v_variance = np.abs((np.power(mc_results.V_points - v_avg, 2.0) / (it - 1)).min())
-
-            # progress
-            variance_sum += v_variance
-            err = variance_sum / it
-            if err == 0:
-                err = 1e-200  # to avoid division by zeros
-            mc_results.error_series.append(err)
-
-            # emmit the progress signal
-            std_dev_progress = 100 * self.mc_tol / err
-            if std_dev_progress > 100:
-                std_dev_progress = 100
-            self.progress_signal.emit(max((std_dev_progress, it / self.sampling_points * 100)))
-
-        # compute the averaged branch magnitudes
-        mc_results.sbranch = avg_res.Sf
-        mc_results.losses = avg_res.losses
-
-        # print('V mc: ', mc_results.voltage)
-
-        # send the finnish signal
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
-
-        return mc_results
-
     def run_single_thread_mc(self):
 
         self.__cancel__ = False
@@ -317,6 +190,10 @@ class StochasticPowerFlowDriver(QThread):
                                        Sbus=S,
                                        Ibus=I,
                                        branch_rates=numerical_island.branch_rates,
+                                       pq=numerical_island.pq,
+                                       pv=numerical_island.pv,
+                                       vd=numerical_island.vd,
+                                       pqpv=numerical_island.pqpv,
                                        options=self.options,
                                        logger=self.logger)
 
@@ -452,6 +329,10 @@ class StochasticPowerFlowDriver(QThread):
                                        Sbus=S,
                                        Ibus=I,
                                        branch_rates=numerical_island.branch_rates,
+                                       pq=numerical_island.pq,
+                                       pv=numerical_island.pv,
+                                       vd=numerical_island.vd,
+                                       pqpv=numerical_island.pqpv,
                                        options=self.options,
                                        logger=self.logger)
 
