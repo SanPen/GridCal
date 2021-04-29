@@ -106,8 +106,9 @@ class AvailableTransferCapacityTimeSeriesResults:
         self.worst_atc = np.zeros((self.nt, self.n_br))
 
         self.available_results = [ResultTypes.AvailableTransferCapacity,
-                                  ResultTypes.AvailableTransferCapacityFrom,
-                                  ResultTypes.AvailableTransferCapacityTo]
+                                  # ResultTypes.AvailableTransferCapacityFrom,
+                                  # ResultTypes.AvailableTransferCapacityTo
+                                  ]
 
     def get_steps(self):
         return
