@@ -275,7 +275,7 @@ class LinearAnalysis:
 
         self.LODF = None
 
-        self.OTDF = None
+        self.__OTDF = None
 
         self.logger = Logger()
 
@@ -333,16 +333,17 @@ class LinearAnalysis:
                                   PTDF=self.results.PTDF,
                                   correct_values=self.correct_values)
 
-        # Compute the OTDF
-        self.OTDF = make_otdf_max(self.PTDF, self.LODF)
-
-    def get_otdf_max(self):
+    @property
+    def OTDF(self):
         """
         Maximum Outage sensitivity of the branches when transferring power from any bus to the slack
         OTDF: outage transfer distribution factors
         :return: Maximum OTDF matrix (n-branch, n-branch)
         """
-        return make_otdf_max(self.PTDF, self.LODF)
+        if self.__OTDF is None:  # lazy-evaluation
+            self.__OTDF = make_otdf_max(self.PTDF, self.LODF)
+
+        return self.__OTDF
 
     def get_transfer_limits(self, flows):
         """

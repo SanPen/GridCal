@@ -28,9 +28,56 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
 
 
-########################################################################################################################
-# Optimal Power flow classes
-########################################################################################################################
+@nb.njit(parallel=True)
+def calculate_branch_atc_full(m, ptdf, lodf, flows, rates, thr=0.2):
+    """
+
+    :param m: branch to inspect
+    :param ptdf: PTDF matrix (n-branch, n-bus)
+    :param lodf: LODF matrox (n-branch, n-branch)
+    :param flows: Flows profiles (n-time, n-branch)
+    :param rates: Rates profiles (n-time, n-branch)
+    :param thr: threshold
+    :return:
+    """
+
+    nbr = ptdf.shape[0]
+    nbus = ptdf.shape[1]
+    nt = flows.shape[0]
+    atc = np.zeros(nt) + 1e20
+
+    # compute OTDF for the line m
+    otdf = np.zeros((nbr, nbus))
+    for c in range(nbr):
+        for j in range(nbus):
+            if abs(ptdf[m, j]) > thr:
+                otdf[c, j] = ptdf[m, j] + lodf[m, c] * ptdf[c, j]
+
+    for t in nb.prange(nt):
+        for c in range(nbr):
+            for j in range(nbus):
+
+                if abs(otdf[c, j]) > thr:
+                    omw = flows[t, m] + lodf[m, c] * flows[t, c]
+
+                    if ptdf[m, j] > 0:
+                        T_normal = (rates[t, m] - flows[t, m]) / ptdf[m, j]
+                    elif ptdf[m, j] < 0:
+                        T_normal = (-rates[t, m] - flows[t, m]) / ptdf[m, j]
+                    else:
+                        T_normal = 1e20  # numerical infinite
+
+                    if otdf[c, j] > 0:
+                        T_contingency = (rates[t, m] - omw) / otdf[c, j]
+                    elif otdf[c, j] < 0:
+                        T_contingency = (-rates[t, m] - omw) / otdf[c, j]
+                    else:
+                        T_contingency = 1e20  # numerical infinite
+
+                    atc_val = min(T_normal, T_contingency)
+                    atc[t] = min(atc[t], atc_val)
+
+    return atc
 
 
 class AvailableTransferCapacityTimeSeriesResults:
@@ -201,7 +248,7 @@ class AvailableTransferCapacityTimeSeriesDriver(QThread):
         time_indices = np.arange(self.start_, self.end_ + 1)
 
         # declare the linear analysis
-        self.progress_text.emit('Computing PTDF, LODF and OTDF...')
+        self.progress_text.emit('Analyzing...')
         linear_analysis = la.LinearAnalysis(grid=self.grid,
                                             distributed_slack=self.options.distributed_slack,
                                             correct_values=self.options.correct_values)
@@ -221,26 +268,25 @@ class AvailableTransferCapacityTimeSeriesDriver(QThread):
                                                                   bus_types=ts_numeric_circuit.bus_types)
 
         # compute the base flows
-
-        for t in time_indices:
-
-            P = ts_numeric_circuit.Sbus.real[:, t]
-            flows = linear_analysis.get_flows_time_series(P)
-
-            # get the contingency transfer limits
-            tmc = la.make_contingency_transfer_limits(otdf_max=linear_analysis.OTDF,
-                                                      lodf=linear_analysis.LODF,
-                                                      flows=flows,
-                                                      rates=ts_numeric_circuit.Rates[:, t])
-
-            # post-process and store the results.
-            fill_atc_results(t, tmc, self.results.atc_from, self.results.atc_to, self.results.worst_atc)
-
-            if self.progress_signal is not None:
-                self.progress_signal.emit((t + 1) / nt * 100)
+        P = ts_numeric_circuit.Sbus.real
+        flows = linear_analysis.get_flows_time_series(P)
+        rates = ts_numeric_circuit.Rates.T
+        for m in range(ne):
 
             if self.progress_text is not None:
-                self.progress_text.emit('Available transfer capacity at ' + str(self.grid.time_profile[t]))
+                self.progress_text.emit('Available transfer capacity for ' + ts_numeric_circuit.branch_names[m])
+
+            self.results.worst_atc[:, m] = calculate_branch_atc_full(m=m,
+                                                                     ptdf=linear_analysis.PTDF,
+                                                                     lodf=linear_analysis.LODF,
+                                                                     flows=flows,
+                                                                     rates=rates)
+
+            if self.progress_signal is not None:
+                self.progress_signal.emit((m + 1) / ne * 100)
+
+            if self.__cancel__:
+                break
 
         end = time.time()
         self.elapsed = end - start
