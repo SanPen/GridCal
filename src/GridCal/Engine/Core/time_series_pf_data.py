@@ -92,6 +92,10 @@ class TimeCircuit(SnapshotData):
         return self.branch_data.branch_rates
 
     @property
+    def ContingencyRates(self):
+        return self.branch_data.branch_contingency_rates
+
+    @property
     def vd(self):
 
         if self.vd_ is None:

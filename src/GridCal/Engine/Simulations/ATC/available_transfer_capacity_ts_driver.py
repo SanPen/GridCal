@@ -251,7 +251,7 @@ class AvailableTransferCapacityTimeSeriesDriver(QThread):
         # compute the base flows
         P = ts_numeric_circuit.Sbus.real
         flows = linear_analysis.get_flows_time_series(P)
-        rates = ts_numeric_circuit.Rates.T
+        rates = ts_numeric_circuit.ContingencyRates.T
         for m in range(ne):
 
             if self.progress_text is not None:

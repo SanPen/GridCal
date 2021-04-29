@@ -420,7 +420,7 @@ class Transformer2W(EditableDevice):
                  temp_base=20, temp_oper=20, alpha=0.00330,
                  control_mode: TransformerControlType = TransformerControlType.fixed,
                  template: TransformerType = None,
-                 rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None):
+                 rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None, contingency_factor=1.0):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -438,7 +438,12 @@ class Transformer2W(EditableDevice):
                                                   'active': GCProp('', bool, 'Is the branch active?'),
                                                   'HV': GCProp('kV', float, 'High voltage rating'),
                                                   'LV': GCProp('kV', float, 'Low voltage rating'),
+
                                                   'rate': GCProp('MVA', float, 'Thermal rating power of the branch.'),
+
+                                                  'contingency_factor': GCProp('p.u.', float,
+                                                                               'Rating multiplier for contingencies.'),
+
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
@@ -560,7 +565,7 @@ class Transformer2W(EditableDevice):
 
         # branch rating in MVA
         self.rate = rate
-
+        self.contingency_factor = contingency_factor
         self.rate_prof = rate_prof
 
         # branch type: Line, Transformer, etc...

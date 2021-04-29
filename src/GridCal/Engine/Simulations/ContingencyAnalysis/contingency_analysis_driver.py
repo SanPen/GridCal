@@ -142,7 +142,7 @@ class ContingencyAnalysisDriver(QThread):
         for c in range(nl):  # branch that fails (contingency)
 
             results.Sf[:, c] = flows_n[:] + LODF[:, c] * flows_n[c]
-            results.loading[:, c] = results.Sf[:, c] / (self.numerical_circuit.branch_rates + 1e-9)
+            results.loading[:, c] = results.Sf[:, c] / (self.numerical_circuit.ContingencyRates + 1e-9)
 
             results.S[c, :] = Pbus
 

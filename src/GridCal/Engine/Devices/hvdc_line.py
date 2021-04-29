@@ -159,7 +159,8 @@ class HvdcLine(EditableDevice):
                  rate=1.0, Pset=0.0, loss_factor=0.0, Vset_f=1.0, Vset_t=1.0, length=1.0, mttf=0.0, mttr=0.0,
                  overload_cost=1000.0,   min_firing_angle_f=-1.0, max_firing_angle_f=1.0, min_firing_angle_t=-1.0,
                  max_firing_angle_t=1.0, active_prof=np.ones(0, dtype=bool), rate_prof=np.zeros(0),
-                 Pset_prof=np.zeros(0), Vset_f_prof=np.ones(0), Vset_t_prof=np.ones(0), overload_cost_prof=np.zeros(0)):
+                 Pset_prof=np.zeros(0), Vset_f_prof=np.ones(0), Vset_t_prof=np.ones(0), overload_cost_prof=np.zeros(0),
+                 contingency_factor=1.0):
         """
         HVDC Line model
         :param bus_from: Bus from
@@ -202,6 +203,9 @@ class HvdcLine(EditableDevice):
                                                   'active': GCProp('', bool, 'Is the line active?'),
 
                                                   'rate': GCProp('MVA', float, 'Thermal rating power of the line.'),
+
+                                                  'contingency_factor': GCProp('p.u.', float,
+                                                                               'Rating multiplier for contingencies.'),
 
                                                   'Pset': GCProp('MW', float, 'Set power flow.'),
 
@@ -290,6 +294,7 @@ class HvdcLine(EditableDevice):
 
         # branch rating in MVA
         self.rate = rate
+        self.contingency_factor = contingency_factor
         self.rate_prof = rate_prof
 
     def get_from_and_to_power(self):

@@ -49,7 +49,7 @@ class Switch(EditableDevice):
     """
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Switch', idtag=None, code='',
-                 r=1e-20, x=1e-20, rate=1.0, active=True, active_prof=None):
+                 r=1e-20, x=1e-20, rate=1.0, active=True, active_prof=None, contingency_factor=1.0):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -66,6 +66,8 @@ class Switch(EditableDevice):
                                                                    'Name of the bus at the "to" side of the line.'),
                                                   'active': GCProp('', bool, 'Is the line active?'),
                                                   'rate': GCProp('MVA', float, 'Thermal rating power of the line.'),
+                                                  'contingency_factor': GCProp('p.u.', float,
+                                                                               'Rating multiplier for contingencies.'),
                                                   'R': GCProp('p.u.', float, 'Total resistance.'),
                                                   'X': GCProp('p.u.', float, 'Total reactance.')
                                                   },
@@ -87,6 +89,7 @@ class Switch(EditableDevice):
 
         # line rating in MVA
         self.rate = rate
+        self.contingency_factor = contingency_factor
 
         # line type: Line, Transformer, etc...
         self.branch_type = BranchType.Switch

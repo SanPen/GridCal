@@ -32,6 +32,7 @@ class BranchData:
 
         self.branch_active = np.zeros((nbr, ntime), dtype=int)
         self.branch_rates = np.zeros((nbr, ntime), dtype=float)
+        self.branch_contingency_rates = np.zeros((nbr, ntime), dtype=float)
 
         self.F = np.zeros(self.nbr, dtype=int)  # indices of the "from" buses
         self.T = np.zeros(self.nbr, dtype=int)  # indices of the "to" buses
@@ -112,6 +113,7 @@ class BranchData:
 
         data.branch_active = self.branch_active[tidx]
         data.branch_rates = self.branch_rates[tidx]
+        data.branch_contingency_rates = self.branch_contingency_rates[tidx]
         data.m = self.m[tidx]
         data.m_min = self.m_min[elm_idx]
         data.m_max = self.m_max[elm_idx]

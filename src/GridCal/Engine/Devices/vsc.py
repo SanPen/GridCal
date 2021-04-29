@@ -34,7 +34,7 @@ class VSC(EditableDevice):
                  control_mode: ConverterControlType = ConverterControlType.type_0_free,
                  Pfset = 0.0, Qfset=0.0, Vac_set=1.0, Vdc_set=1.0,
                  alpha1=0.0001, alpha2=0.015, alpha3=0.2,
-                 mttf=0, mttr=0, cost=1200, cost_prof=None, rate_prof=None, active_prof=None):
+                 mttf=0, mttr=0, cost=1200, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0):
         """
         Voltage source converter (VSC)
         :param bus_from:
@@ -88,6 +88,9 @@ class VSC(EditableDevice):
                                                                    'Name of the bus at the "AC" side of the branch.'),
                                                   'active': GCProp('', bool, 'Is the branch active?'),
                                                   'rate': GCProp('MVA', float, 'Thermal rating power of the branch.'),
+
+                                                  'contingency_factor': GCProp('p.u.', float,
+                                                                               'Rating multiplier for contingencies.'),
 
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
@@ -195,6 +198,7 @@ class VSC(EditableDevice):
 
         # branch rating in MVA
         self.rate = rate
+        self.contingency_factor = contingency_factor
         self.rate_prof = rate_prof
 
         # branch type: Line, Transformer, etc...

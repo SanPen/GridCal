@@ -227,7 +227,8 @@ class Line(EditableDevice):
                  r=1e-20, x=1e-20, b=1e-20, rate=1.0, active=True, tolerance=0, cost=0.0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  length=1, temp_base=20, temp_oper=20, alpha=0.00330,
-                 template=LineTemplate(), rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None):
+                 template=LineTemplate(), rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
+                 contingency_factor=1.0):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -244,6 +245,8 @@ class Line(EditableDevice):
                                                                    'Name of the bus at the "to" side of the line.'),
                                                   'active': GCProp('', bool, 'Is the line active?'),
                                                   'rate': GCProp('MVA', float, 'Thermal rating power of the line.'),
+                                                  'contingency_factor': GCProp('p.u.', float,
+                                                                               'Rating multiplier for contingencies.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
@@ -331,7 +334,7 @@ class Line(EditableDevice):
 
         # line rating in MVA
         self.rate = rate
-
+        self.contingency_factor = contingency_factor
         self.rate_prof = rate_prof
 
         # line type: Line, Transformer, etc...
