@@ -22,66 +22,10 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 import GridCal.Engine.Simulations.LinearFactors.linear_analysis as la
-from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityOptions
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityOptions, compute_atc, compute_transfer_indices
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
-
-
-@nb.njit(parallel=True)
-def calculate_branch_atc_full(m, ptdf, lodf, flows, rates, thr=0.02):
-    """
-
-    :param m: branch to inspect
-    :param ptdf: PTDF matrix (n-branch, n-bus)
-    :param lodf: LODF matrix (n-branch, n-branch)
-    :param flows: Flows profiles (n-time, n-branch)
-    :param rates: Rates profiles (n-time, n-branch)
-    :param thr: threshold
-    :return:
-    """
-
-    nbr = ptdf.shape[0]
-    nbus = ptdf.shape[1]
-    nt = flows.shape[0]
-    atc = np.zeros(nt) + 1e20
-
-    # compute OTDF for the line m
-    otdf = np.zeros((nbr, nbus))
-    for c in range(nbr):
-        for j in range(nbus):
-            if abs(ptdf[m, j]) > thr:
-                otdf[c, j] = ptdf[m, j] + lodf[m, c] * ptdf[c, j]
-
-    for t in nb.prange(nt):
-        for c in range(nbr):
-            for j in range(nbus):
-
-                if abs(otdf[c, j]) > thr and abs(flows[t, m]) <= rates[t, m]:  # if the normal flows are ok
-
-                    # compute the contingency flows
-                    omw = flows[t, m] + lodf[m, c] * flows[t, c]
-
-                    if abs(otdf[c, j]) > thr and abs(omw) <= rates[t, m]:  # if the contingency flows are ok...
-
-                        if ptdf[m, j] > 0:
-                            T_normal = (rates[t, m] - flows[t, m]) / ptdf[m, j]
-                        elif ptdf[m, j] < 0:
-                            T_normal = (-rates[t, m] - flows[t, m]) / ptdf[m, j]
-                        else:
-                            T_normal = 1e20  # numerical infinite
-
-                        if otdf[c, j] > 0:
-                            T_contingency = (rates[t, m] - omw) / otdf[c, j]
-                        elif otdf[c, j] < 0:
-                            T_contingency = (-rates[t, m] - omw) / otdf[c, j]
-                        else:
-                            T_contingency = 1e20  # numerical infinite
-
-                        atc_val = min(T_normal, T_contingency)
-                        atc[t] = min(atc[t], atc_val)
-
-    return atc
 
 
 class AvailableTransferCapacityTimeSeriesResults:
@@ -105,17 +49,27 @@ class AvailableTransferCapacityTimeSeriesResults:
         self.bus_types = bus_types
 
         # available transfer capacity matrix (branch, contingency branch)
-        self.atc_from = np.zeros((self.nt, self.n_br))
-        self.atc_to = np.zeros((self.nt, self.n_br))
+
         self.atc = np.zeros((self.nt, self.n_br))
+        self.alpha = np.zeros((self.nt, self.n_br))
+        self.worst_contingency = np.zeros((self.nt, self.n_br), dtype=int)
+
+        self.report = list()
+        self.report_headers = ['Name', 'ATC', 'Worst Contingency']
+        self.report_indices = list()
 
         self.available_results = [ResultTypes.AvailableTransferCapacity,
-                                  # ResultTypes.AvailableTransferCapacityFrom,
-                                  # ResultTypes.AvailableTransferCapacityTo
+                                  ResultTypes.AvailableTransferCapacityAlpha,
+                                  ResultTypes.AvailableTransferCapacityReport
                                   ]
 
     def get_steps(self):
         return
+
+    def make_report(self):
+        self.report = list()
+        self.report_headers = ['Name', 'ATC', 'Worst Contingency']
+        self.report_indices = list()
 
     def get_results_dict(self):
         """
@@ -144,15 +98,9 @@ class AvailableTransferCapacityTimeSeriesResults:
 
         index = self.time_array
 
-        if result_type == ResultTypes.AvailableTransferCapacityFrom:
-            data = self.atc_from
-            y_label = '(MW)'
-            title, _ = result_type.value
-            labels = self.br_names
-
-        elif result_type == ResultTypes.AvailableTransferCapacityTo:
-            data = self.atc_to
-            y_label = '(MW)'
+        if result_type == ResultTypes.AvailableTransferCapacityAlpha:
+            data = self.alpha
+            y_label = '(p.u.)'
             title, _ = result_type.value
             labels = self.br_names
 
@@ -161,6 +109,14 @@ class AvailableTransferCapacityTimeSeriesResults:
             y_label = '(MW)'
             title, _ = result_type.value
             labels = self.br_names
+
+        elif result_type == ResultTypes.AvailableTransferCapacityReport:
+            data = np.array(self.report)
+            y_label = ''
+            title, _ = result_type.value
+            index = self.report_indices
+            labels = self.report_headers
+
         else:
             raise Exception('Result type not understood:' + str(result_type))
 
@@ -252,22 +208,38 @@ class AvailableTransferCapacityTimeSeriesDriver(QThread):
         P = ts_numeric_circuit.Sbus.real
         flows = linear_analysis.get_flows_time_series(P)
         rates = ts_numeric_circuit.ContingencyRates.T
-        for m in range(ne):
+        for t in time_indices:
 
             if self.progress_text is not None:
-                self.progress_text.emit('Available transfer capacity for ' + ts_numeric_circuit.branch_names[m])
+                self.progress_text.emit('Available transfer capacity at ' + str(self.grid.time_profile[t]))
 
-            self.results.atc[:, m] = calculate_branch_atc_full(m=m,
-                                                               ptdf=linear_analysis.PTDF,
-                                                               lodf=linear_analysis.LODF,
-                                                               flows=flows,
-                                                               rates=rates)
+            # get the converted bus indices
+            idx1b, idx2b = compute_transfer_indices(idx1=self.options.bus_idx_from,
+                                                    idx2=self.options.bus_idx_to,
+                                                    bus_types=ts_numeric_circuit.bus_types_prof(t))
+
+            # compute the ATC
+            atc, alpha, worst_contingency = compute_atc(ptdf=linear_analysis.PTDF,
+                                                        lodf=linear_analysis.LODF,
+                                                        P0=P[:, t],
+                                                        flows=flows[t, :],
+                                                        rates=rates[t, :],
+                                                        idx1=idx1b,
+                                                        idx2=idx2b,
+                                                        dT=self.options.dT)
+
+            # assign the results
+            self.results.atc[t, :] = atc
+            self.results.alpha[t, :] = alpha
+            self.results.worst_contingency[t, :] = worst_contingency
 
             if self.progress_signal is not None:
-                self.progress_signal.emit((m + 1) / ne * 100)
+                self.progress_signal.emit((t + 1) / nt * 100)
 
             if self.__cancel__:
                 break
+
+        self.results.make_report()
 
         end = time.time()
         self.elapsed = end - start

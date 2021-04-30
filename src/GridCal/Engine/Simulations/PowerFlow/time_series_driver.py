@@ -31,6 +31,7 @@ from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, Branch
 from GridCal.Engine.Simulations.Stochastic.latin_hypercube_sampling import lhs
 from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 
 class TimeSeriesResults(PowerFlowResults):
@@ -387,12 +388,9 @@ class TimeSeriesResults(PowerFlowResults):
         return mdl
 
 
-class TimeSeries(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
-    name = 'Time Series'
+class TimeSeries(DriverTemplate):
     tpe = SimulationTypes.TimeSeries_run
+    name = tpe.value
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, opf_time_series_results=None,
                  start_=0, end_=None):
@@ -401,33 +399,18 @@ class TimeSeries(QThread):
         @param grid: MultiCircuit instance
         @param options: PowerFlowOptions instance
         """
-        QThread.__init__(self)
+        DriverTemplate.__init__(self, grid)
 
         # reference the grid directly
-        self.grid = grid
+        # self.grid = grid
 
         self.options = options
 
         self.opf_time_series_results = opf_time_series_results
 
-        self.results = None
-
         self.start_ = start_
 
         self.end_ = end_
-
-        self.elapsed = 0
-
-        self.logger = Logger()
-
-        self.returned_results = list()
-
-        self.pool = None
-
-        self._mt_i = 0
-        self._mt_n = 1
-
-        self.__cancel__ = False
 
     def get_steps(self):
         """
@@ -582,20 +565,6 @@ class TimeSeries(QThread):
 
         return time_series_results
 
-    def update_prog(self):
-        self._mt_i += 1
-        progress = (self._mt_i + 1) / self._mt_n * 100
-        self.progress_signal.emit(progress)
-
-    def collect_mt_result(self, res):
-        """
-
-        :param res:
-        :return:
-        """
-        self.returned_results.append(res)
-
-
     def run(self):
         """
         Run the time series simulation
@@ -617,14 +586,5 @@ class TimeSeries(QThread):
         self.progress_text.emit('Done!')
         self.done_signal.emit()
 
-    def cancel(self):
-        """
-        Cancel the simulation
-        """
-        self.__cancel__ = True
-        if self.pool is not None:
-            self.pool.terminate()
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Cancelled!')
-        self.done_signal.emit()
+
 

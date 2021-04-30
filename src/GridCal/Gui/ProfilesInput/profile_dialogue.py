@@ -676,7 +676,10 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.normalized = self.ui.normalized_checkBox.isChecked()
 
         if self.normalized:
-            self.data /= self.data.max(axis=0)  # divide each series by the maximum
+            for i in range(self.data.shape[1]):
+                mx = self.data[:, i].max()
+                if mx != 0.0:
+                    self.data[:, i] /= mx  # divide each series by the maximum
             self.data = np.nan_to_num(self.data)  # set nan to zero
 
         self.close()

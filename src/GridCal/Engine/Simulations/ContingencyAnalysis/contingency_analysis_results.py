@@ -127,7 +127,7 @@ class ContingencyAnalysisResults:
             y_label = 'Per unit'
             labels = ['# ' + x for x in self.branch_names]
 
-            title = 'OTDF'
+            title = 'LODF'
         else:
             raise Exception('Result type not understood:' + str(result_type))
 

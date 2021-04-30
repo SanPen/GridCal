@@ -122,27 +122,27 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
         return None
 
-    def headerData(self, p_int, orientation, role):
+    def headerData(self, section, orientation, role=None):
         """
-
-        :param p_int:
-        :param orientation:
+        Get the header value
+        :param section: header index
+        :param orientation: Orientation {QtCore.Qt.Horizontal, QtCore.Qt.Vertical}
         :param role:
         :return:
         """
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
-                if len(self.cols_c) > p_int:
-                    return self.cols_c[p_int]
+                if len(self.cols_c) > section:
+                    return self.cols_c[section]
 
             elif orientation == QtCore.Qt.Vertical:
                 if self.index_c is None:
-                    return p_int
+                    return section
                 else:
                     if self.isDate:
-                        return self.index_c[p_int].strftime('%Y/%m/%d  %H:%M.%S')
+                        return self.index_c[section].strftime('%Y/%m/%d  %H:%M.%S')
                     else:
-                        return str(self.index_c[p_int])
+                        return str(self.index_c[section])
         return None
 
     def slice_cols(self, col_idx):
@@ -349,7 +349,6 @@ class ResultsModel(QtCore.QAbstractTableModel):
         df.plot(ax=ax, legend=plot_legend)
 
 
-# @nb.njit()
 def fast_data_to_text(data, columns, index):
     # header first
     txt = '\t' + '\t'.join(columns) + '\n'
@@ -362,7 +361,6 @@ def fast_data_to_text(data, columns, index):
     return txt
 
 
-# @nb.njit()
 def fast_data_to_numpy_text(data):
 
     if len(data.shape) == 1:

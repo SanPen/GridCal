@@ -29,20 +29,20 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 
 @jit(nopython=True, parallel=False)
-def compute_flows_numba_t(e, c, nt, OTDF, Flows, rates, overload_count, max_overload, worst_flows):
+def compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_overload, worst_flows):
     """
-    Compute OTDF based flows
+    Compute LODF based flows
     :param nt: number of time steps
     :param ne: number of elements
     :param nc: number of failed elements
-    :param OTDF: OTDF matrix (element, failed element)
+    :param LODF: LODF matrix (element, failed element)
     :param Flows: base flows matrix (time, element)
     :return: Cube of N-1 Flows (time, elements, contingencies)
     """
 
     for t in range(nt):
-        # the formula is: Fn-1(i) = Fbase(i) + OTDF(i,j) * Fbase(j) here i->line, j->failed line
-        flow_n_1 = OTDF[e, c] * Flows[t, c] + Flows[t, e]
+        # the formula is: Fn-1(i) = Fbase(i) + LODF(i,j) * Fbase(j) here i->line, j->failed line
+        flow_n_1 = LODF[e, c] * Flows[t, c] + Flows[t, e]
         flow_n_1_abs = abs(flow_n_1)
 
         if rates[t, e] > 0:
@@ -58,23 +58,23 @@ def compute_flows_numba_t(e, c, nt, OTDF, Flows, rates, overload_count, max_over
 
 
 @jit(nopython=True, parallel=True)
-def compute_flows_numba(e, nt, nc, OTDF, Flows, rates, overload_count, max_overload, worst_flows, paralelize_from=500):
+def compute_flows_numba(e, nt, nc, LODF, Flows, rates, overload_count, max_overload, worst_flows, paralelize_from=500):
     """
-    Compute OTDF based flows
+    Compute LODF based flows
     :param nt: number of time steps
     :param ne: number of elements
     :param nc: number of failed elements
-    :param OTDF: OTDF matrix (element, failed element)
+    :param LODF: LODF matrix (element, failed element)
     :param Flows: base flows matrix (time, element)
     :return: Cube of N-1 Flows (time, elements, contingencies)
     """
 
     if nc < paralelize_from:
         for c in range(nc):
-            compute_flows_numba_t(e, c, nt, OTDF, Flows, rates, overload_count, max_overload, worst_flows)
+            compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_overload, worst_flows)
     else:
         for c in prange(nc):
-            compute_flows_numba_t(e, c, nt, OTDF, Flows, rates, overload_count, max_overload, worst_flows)
+            compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_overload, worst_flows)
 
 
 class ContingencyAnalysisTimeSeries(QThread):
@@ -130,7 +130,7 @@ class ContingencyAnalysisTimeSeries(QThread):
         :return: returns the results
         """
 
-        self.progress_text.emit("Filtering elements by voltage")
+        self.progress_text.emit("Analyzing...")
 
         ts_numeric_circuit = compile_time_circuit(self.grid)
         ne = ts_numeric_circuit.nbr
@@ -144,7 +144,6 @@ class ContingencyAnalysisTimeSeries(QThread):
                                                        bus_names=ts_numeric_circuit.bus_names,
                                                        bus_types=ts_numeric_circuit.bus_types)
 
-        self.progress_text.emit('Analyzing outage distribution factors...')
         linear_analysis = LinearAnalysis(grid=self.grid,
                                          distributed_slack=self.options.distributed_slack,
                                          correct_values=self.options.correct_values)
@@ -158,10 +157,13 @@ class ContingencyAnalysisTimeSeries(QThread):
         self.progress_text.emit('Computing N-1 flows...')
 
         for e in range(ne):
+
+            self.progress_text.emit('Computing N-1 flows...' + ts_numeric_circuit.branch_names[e])
+
             compute_flows_numba(e=e,
                                 nt=nt,
                                 nc=nc,
-                                OTDF=linear_analysis.LODF,
+                                LODF=linear_analysis.LODF,
                                 Flows=flows,
                                 rates=rates,
                                 overload_count=results.overload_count,

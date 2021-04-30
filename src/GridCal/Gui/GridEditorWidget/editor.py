@@ -322,8 +322,8 @@ class DiagramScene(QGraphicsScene):
                                 loading_st_data = np.sort(np.abs(driver.results.loading_points.real[:, i] * 100.0))
 
                 # add the rating
-                power_data['Rates+'] = api_object.rate_prof
-                power_data['Rates-'] = -api_object.rate_prof
+                # power_data['Rates+'] = api_object.rate_prof
+                # power_data['Rates-'] = -api_object.rate_prof
 
                 # loading
                 if len(loading_data.keys()):
@@ -356,6 +356,8 @@ class DiagramScene(QGraphicsScene):
                     ax_2.set_title('Power', fontsize=14)
                     ax_2.set_ylabel('Power [MW]', fontsize=11)
                     df.plot(ax=ax_2)
+                    ax_2.plot(x, api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
+                    ax_2.plot(x, -api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
 
                 if power_clustering_data is not None:
                     df = pd.DataFrame(data=power_clustering_data,

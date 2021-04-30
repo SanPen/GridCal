@@ -59,8 +59,11 @@ class LinearAnalysisResults:
         self.PTDF = np.zeros((n_br, n_bus))
         self.LODF = np.zeros((n_br, n_br))
 
+        self.flows = np.zeros(self.n_br)
+
         self.available_results = [ResultTypes.PTDFBranchesSensitivity,
-                                  ResultTypes.OTDF]
+                                  ResultTypes.OTDF,
+                                  ResultTypes.BranchActivePowerFrom]
 
     def mdl(self, result_type: ResultTypes) -> ResultsModel:
         """
@@ -84,6 +87,12 @@ class LinearAnalysisResults:
             y = self.LODF
             y_label = '(p.u.)'
             title = 'Branch failure sensitivity'
+
+        elif result_type == ResultTypes.BranchActivePowerFrom:
+            labels = self.br_names
+            y = self.flows
+            y_label = '(MW)'
+            title = 'Branch flows'
 
         else:
             labels = []
@@ -171,6 +180,7 @@ class LinearAnalysisDriver(QThread):
                                              bus_types=analysis.numerical_circuit.bus_data.bus_types)
         self.results.PTDF = analysis.PTDF
         self.results.LODF = analysis.LODF
+        self.results.flows = analysis.get_flows(analysis.numerical_circuit.Sbus.real)
 
         self.logger += analysis.logger
 

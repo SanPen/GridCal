@@ -1249,10 +1249,19 @@ class MainGUI(QMainWindow):
         self.ui.vs_target_comboBox.setModel(mdl)
 
     def update_area_combos(self):
-
+        """
+        Update the area dependent combos
+        """
+        n = len(self.circuit.areas)
         mdl = get_list_model([str(elm) for elm in self.circuit.areas])
         self.ui.areaFromComboBox.setModel(mdl)
         self.ui.areaToComboBox.setModel(mdl)
+        self.ui.atcAreaFromComboBox.setModel(mdl)
+        self.ui.atcAreaToComboBox.setModel(mdl)
+
+        if n > 1:
+            self.ui.areaToComboBox.setCurrentIndex(1)
+            self.ui.atcAreaToComboBox.setCurrentIndex(1)
 
     def save_file_as(self):
         """
@@ -1881,7 +1890,8 @@ class MainGUI(QMainWindow):
                     if not self.profile_input_dialogue.zeroed[i]:
 
                         if self.profile_input_dialogue.normalized:
-                            data = self.profile_input_dialogue.data[:, i]
+                            base_value = getattr(elm, magnitude)
+                            data = self.profile_input_dialogue.data[:, i] * base_value
                         else:
                             data = self.profile_input_dialogue.data[:, i]
 
@@ -2622,7 +2632,7 @@ class MainGUI(QMainWindow):
                     drv.done_signal.connect(self.post_contingency_analysis_ts)
                     drv.start()
                 else:
-                    warning_msg('Another OTDF is being executed now...')
+                    warning_msg('Another LODF is being executed now...')
             else:
                 warning_msg('There are no time series...')
         else:
@@ -2641,13 +2651,13 @@ class MainGUI(QMainWindow):
         if not drv.__cancel__:
             if results is not None:
 
-                self.ui.progress_label.setText('Colouring OTDF results in the grid...')
+                self.ui.progress_label.setText('Colouring LODF results in the grid...')
                 QtGui.QGuiApplication.processEvents()
 
                 self.update_available_results()
                 self.colour_now()
             else:
-                error_msg('Something went wrong, There are no OTDF results.')
+                error_msg('Something went wrong, There are no LODF results.')
 
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
@@ -2659,32 +2669,43 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
+            if sim.SimulationTypes.AvailableTransferCapacity_run not in self.stuff_running_now:
+                distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
+                dT = self.ui.atcPerturbanceSpinBox.value()
+                threshold = self.ui.atcThresholdSpinBox.value()
 
-            if pf_results is not None:
-                if sim.SimulationTypes.AvailableTransferCapacity_run not in self.stuff_running_now:
+                # available transfer capacity inter areas
+                area_from = self.circuit.areas[self.ui.atcAreaFromComboBox.currentIndex()]
+                area_to = self.circuit.areas[self.ui.atcAreaToComboBox.currentIndex()]
+                lst_from = self.get_area_buses(area_from)
+                lst_to = self.get_area_buses(area_to)
+                idx_from = np.array([i for i, bus in lst_from])
+                idx_to = np.array([i for i, bus in lst_to])
 
-                    self.add_simulation(sim.SimulationTypes.AvailableTransferCapacity_run)
+                if area_from == area_to:
+                    error_msg('Cannot analyze transfer capacity from and to the same area!')
+                    return
 
-                    self.LOCK()
+                options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack,
+                                                               bus_idx_from=idx_from,
+                                                               bus_idx_to=idx_to,
+                                                               dT=dT,
+                                                               threshold=threshold)
 
-                    distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
-                    options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack)
+                drv = sim.AvailableTransferCapacityDriver(grid=self.circuit,
+                                                          options=options)
 
-                    drv = sim.AvailableTransferCapacityDriver(grid=self.circuit,
-                                                              options=options,
-                                                              pf_results=pf_results)
+                self.session.register(drv)
+                drv.progress_signal.connect(self.ui.progressBar.setValue)
+                drv.progress_text.connect(self.ui.progress_label.setText)
+                drv.done_signal.connect(self.post_available_transfer_capacity)
+                drv.start()
+                self.add_simulation(sim.SimulationTypes.AvailableTransferCapacity_run)
+                self.LOCK()
 
-                    self.session.register(drv)
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_available_transfer_capacity)
-                    drv.start()
-
-                else:
-                    warning_msg('Another contingency analysis is being executed now...')
             else:
-                error_msg('This simulation uses the power flow results, please run a power flow first.')
+                warning_msg('Another contingency analysis is being executed now...')
+
         else:
             pass
 
@@ -2722,12 +2743,28 @@ class MainGUI(QMainWindow):
             if self.valid_time_series():
                 if sim.SimulationTypes.AvailableTransferCapacity_run not in self.stuff_running_now:
 
-                    self.add_simulation(sim.SimulationTypes.AvailableTransferCapacityTS_run)
-
-                    self.LOCK()
-
                     distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
-                    options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack)
+                    dT = self.ui.atcPerturbanceSpinBox.value()
+                    threshold = self.ui.atcThresholdSpinBox.value()
+
+                    # available transfer capacity inter areas
+                    area_from = self.circuit.areas[self.ui.atcAreaFromComboBox.currentIndex()]
+                    area_to = self.circuit.areas[self.ui.atcAreaToComboBox.currentIndex()]
+                    lst_from = self.get_area_buses(area_from)
+                    lst_to = self.get_area_buses(area_to)
+                    idx_from = np.array([i for i, bus in lst_from])
+                    idx_to = np.array([i for i, bus in lst_to])
+
+                    if area_from == area_to:
+                        error_msg('Cannot analyze transfer capacity from and to the same area!')
+                        return
+
+                    options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack,
+                                                                   bus_idx_from=idx_from,
+                                                                   bus_idx_to=idx_to,
+                                                                   dT=dT,
+                                                                   threshold=threshold)
+
                     start_ = self.ui.profile_start_slider.value()
                     end_ = self.ui.profile_end_slider.value()
                     drv = sim.AvailableTransferCapacityTimeSeriesDriver(grid=self.circuit,
@@ -2740,6 +2777,8 @@ class MainGUI(QMainWindow):
                     drv.progress_text.connect(self.ui.progress_label.setText)
                     drv.done_signal.connect(self.post_available_transfer_capacity_ts)
                     drv.start()
+                    self.add_simulation(sim.SimulationTypes.AvailableTransferCapacityTS_run)
+                    self.LOCK()
 
                 else:
                     warning_msg('Another ATC time series is being executed now...')

@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 
 class NumericPowerFlowResults:
@@ -45,7 +46,7 @@ class NumericPowerFlowResults:
         self.elapsed = elapsed
 
 
-class PowerFlowResults:
+class PowerFlowResults(ResultsTemplate):
     """
     A **PowerFlowResults** object is create as an attribute of the
     :ref:`PowerFlowMP<pf_mp>` (as PowerFlowMP.results) when the power flow is run. It
@@ -88,6 +89,8 @@ class PowerFlowResults:
     """
 
     def __init__(self, n, m, n_tr, n_hvdc, bus_names, branch_names, transformer_names, hvdc_names, bus_types):
+
+        ResultsTemplate.__init__(self)
 
         self.name = 'Power flow'
 

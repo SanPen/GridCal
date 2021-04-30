@@ -64,7 +64,7 @@ class ContingencyAnalysisDriver(QThread):
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
-    name = 'N-1/OTDF'
+    name = 'N-1/LODF'
     tpe = SimulationTypes.ContingencyAnalysis_run
 
     def __init__(self, grid: MultiCircuit, options: ContingencyAnalysisOptions):
@@ -192,11 +192,11 @@ if __name__ == '__main__':
     # save the result
     br_names = [b.name for b in main_circuit.branches]
     br_names2 = ['#' + b.name for b in main_circuit.branches]
-    w = pd.ExcelWriter('OTDF IEEE30.xlsx')
+    w = pd.ExcelWriter('LODF IEEE30.xlsx')
     pd.DataFrame(data=simulation.results.Sf.real,
                  columns=br_names,
                  index=['base'] + br_names2).to_excel(w, sheet_name='branch power')
     pd.DataFrame(data=otdf_,
                  columns=br_names,
-                 index=br_names2).to_excel(w, sheet_name='OTDF')
+                 index=br_names2).to_excel(w, sheet_name='LODF')
     w.save()

@@ -119,11 +119,11 @@ def make_lodf(Cf, Ct, PTDF, correct_values=True):
 def make_otdf(ptdf, lodf, j):
     """
     Outage sensitivity of the branches when transferring power from the bus j to the slack
-        OTDF: outage transfer distribution factors
+        LODF: outage transfer distribution factors
     :param ptdf: power transfer distribution factors matrix (n-branch, n-bus)
     :param lodf: line outage distribution factors matrix (n-branch, n-branch)
     :param j: index of the bus injection
-    :return: OTDF matrix (n-branch, n-branch)
+    :return: LODF matrix (n-branch, n-branch)
     """
     nk = ptdf.shape[0]
     nl = nk
@@ -140,10 +140,10 @@ def make_otdf(ptdf, lodf, j):
 def make_otdf_max(ptdf, lodf):
     """
     Maximum Outage sensitivity of the branches when transferring power from any bus to the slack
-        OTDF: outage transfer distribution factors
+        LODF: outage transfer distribution factors
     :param ptdf: power transfer distribution factors matrix (n-branch, n-bus)
     :param lodf: line outage distribution factors matrix (n-branch, n-branch)
-    :return: OTDF matrix (n-branch, n-branch)
+    :return: LODF matrix (n-branch, n-branch)
     """
     nj = ptdf.shape[1]
     nk = ptdf.shape[0]
@@ -337,8 +337,8 @@ class LinearAnalysis:
     def OTDF(self):
         """
         Maximum Outage sensitivity of the branches when transferring power from any bus to the slack
-        OTDF: outage transfer distribution factors
-        :return: Maximum OTDF matrix (n-branch, n-branch)
+        LODF: outage transfer distribution factors
+        :return: Maximum LODF matrix (n-branch, n-branch)
         """
         if self.__OTDF is None:  # lazy-evaluation
             self.__OTDF = make_otdf_max(self.PTDF, self.LODF)
@@ -360,6 +360,18 @@ class LinearAnalysis:
         :return: Max transfer limits matrix (n-branch, n-branch)
         """
         return make_contingency_transfer_limits(self.OTDF, self.LODF, flows, self.numerical_circuit.Rates)
+
+    def get_flows(self, Sbus):
+        """
+        Compute the time series branch flows using the PTDF
+        :param Sbus: Power injections time series array
+        :return: branch active power flows time series
+        """
+
+        # option 2: call the power directly
+        Pbr = np.dot(self.PTDF, Sbus.real) * self.grid.Sbase
+
+        return Pbr
 
     def get_flows_time_series(self, Sbus):
         """
