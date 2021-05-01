@@ -15,7 +15,6 @@
 from enum import Enum
 import numpy as np
 import time
-from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.basic_structures import TimeGrouping, MIPSolvers
@@ -28,6 +27,7 @@ from GridCal.Engine.basic_structures import SolverType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
 from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 ########################################################################################################################
 # Optimal Power flow classes
@@ -67,10 +67,7 @@ class OptimalPowerFlowOptions:
         self.bus_types = bus_types
 
 
-class OptimalPowerFlow(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class OptimalPowerFlow(DriverTemplate):
     name = 'Optimal power flow'
     tpe = SimulationTypes.OPF_run
 
@@ -80,27 +77,14 @@ class OptimalPowerFlow(QThread):
         @param grid: MultiCircuit Object
         @param options: OPF options
         """
-        QThread.__init__(self)
-
-        # Grid to run a power flow in
-        self.grid = grid
+        DriverTemplate.__init__(self, grid=grid)
 
         # Options to use
         self.options = options
 
         self.pf_options = pf_options
 
-        # OPF results
-        self.results = None
-
-        # set cancel state
-        self.__cancel__ = False
-
         self.all_solved = True
-
-        self.elapsed = 0.0
-
-        self.logger = Logger()
 
     def get_steps(self):
         """
@@ -176,7 +160,3 @@ class OptimalPowerFlow(QThread):
         self.elapsed = end - start
         self.progress_text.emit('Done!')
         self.done_signal.emit()
-
-    def cancel(self):
-        self.__cancel__ = True
-

@@ -246,22 +246,27 @@ class ResultsModel(QtCore.QAbstractTableModel):
         """
         self.data_c = np.abs(self.data_c)
 
+    def to_df(self):
+        """
+        get DataFrame
+        """
+        index, columns, data = self.get_data()
+
+        return pd.DataFrame(data=data, index=index, columns=columns)
+
     def save_to_excel(self, file_name):
         """
         save data to excel
         :param file_name:
         """
-        index, columns, data = self.get_data()
-
-        pd.DataFrame(data=data, index=index, columns=columns).to_excel(file_name)
+        self.to_df().to_excel(file_name)
 
     def save_to_csv(self, file_name):
         """
         Save data to csv
         :param file_name:
         """
-        index, columns, data = self.get_data()
-        pd.DataFrame(data=data, index=index, columns=columns).to_csv(file_name)
+        self.to_df().to_csv(file_name)
 
     def get_data_frame(self):
         """
@@ -346,7 +351,10 @@ class ResultsModel(QtCore.QAbstractTableModel):
         ax.set_title(self.title, fontsize=14)
         ax.set_ylabel(self.ylabel, fontsize=11)
         ax.set_xlabel(self.xlabel, fontsize=11)
-        df.plot(ax=ax, legend=plot_legend)
+        try:
+            df.plot(ax=ax, legend=plot_legend)
+        except TypeError:
+            print('No numeric data to plot...')
 
 
 def fast_data_to_text(data, columns, index):

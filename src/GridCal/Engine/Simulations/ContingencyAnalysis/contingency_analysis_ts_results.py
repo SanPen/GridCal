@@ -17,9 +17,10 @@ import json
 import numpy as np
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 
-class ContingencyAnalysisTimeSeriesResults:
+class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
 
     def __init__(self, n, ne, nc, time_array, bus_names, branch_names, bus_types):
         """
@@ -27,12 +28,24 @@ class ContingencyAnalysisTimeSeriesResults:
         @param n: number of buses
         @param m: number of branches
         """
-
-        self.name = 'N-1 time series'
+        ResultsTemplate.__init__(self,
+                                 name='N-1 time series',
+                                 available_results=[ResultTypes.ContingencyFrequency,
+                                                    ResultTypes.ContingencyRelativeFrequency,
+                                                    ResultTypes.MaxOverloads,
+                                                    ResultTypes.WorstContingencyFlows,
+                                                    ResultTypes.WorstContingencyLoading],
+                                 data_variables=['branch_names',
+                                                 'bus_names',
+                                                 'bus_types',
+                                                 'time_array',
+                                                 'worst_flows',
+                                                 'worst_loading',
+                                                 'overload_count',
+                                                 'relative_frequency',
+                                                 'max_overload'])
 
         nt = len(time_array)
-
-        self.bus_types = np.zeros(n, dtype=int)
 
         self.branch_names = branch_names
 
@@ -51,12 +64,6 @@ class ContingencyAnalysisTimeSeriesResults:
         self.relative_frequency = np.zeros((ne, nc))
 
         self.max_overload = np.zeros((ne, nc))
-
-        self.available_results = [ResultTypes.ContingencyFrequency,
-                                  ResultTypes.ContingencyRelativeFrequency,
-                                  ResultTypes.MaxOverloads,
-                                  ResultTypes.WorstContingencyFlows,
-                                  ResultTypes.WorstContingencyLoading]
 
     def get_steps(self):
         return

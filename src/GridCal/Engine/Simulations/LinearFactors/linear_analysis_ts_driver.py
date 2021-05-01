@@ -20,10 +20,6 @@ import scipy.sparse as sp
 from scipy.sparse.linalg import spsolve, factorized
 import time
 
-from PySide2.QtCore import QThread, Signal
-
-from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
@@ -32,9 +28,11 @@ from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import Line
 from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.results_template import ResultsTemplate
+from GridCal.Engine.Simulations.driver_template import TSDriverTemplate
 
 
-class LinearAnalysisTimeSeriesResults:
+class LinearAnalysisTimeSeriesResults(ResultsTemplate):
 
     def __init__(self, n, m, time_array, bus_names, bus_types, branch_names):
         """
@@ -43,7 +41,22 @@ class LinearAnalysisTimeSeriesResults:
         @param m: number of branches
         @param nt: number of time steps
         """
-        self.name = 'Linear Analysis time series'
+        ResultsTemplate.__init__(self,
+                                 name='Linear Analysis time series',
+                                 available_results=[ResultTypes.BusActivePower,
+                                                    ResultTypes.BranchActivePowerFrom,
+                                                    ResultTypes.BranchLoading
+                                                    ],
+                                 data_variables=['bus_names',
+                                                 'bus_types',
+                                                 'time',
+                                                 'branch_names',
+                                                 'voltage',
+                                                 'S',
+                                                 'Sf',
+                                                 'loading',
+                                                 'losses'])
+
         self.nt = len(time_array)
         self.m = m
         self.n = n
@@ -64,13 +77,6 @@ class LinearAnalysisTimeSeriesResults:
         self.loading = np.zeros((self.nt, m), dtype=float)
 
         self.losses = np.zeros((self.nt, m), dtype=float)
-
-        self.available_results = [
-                                  # ResultTypes.BusVoltageModule,
-                                  ResultTypes.BusActivePower,
-                                  ResultTypes.BranchActivePowerFrom,
-                                  ResultTypes.BranchLoading
-                                 ]
 
     def get_results_dict(self):
         """
@@ -144,10 +150,7 @@ class LinearAnalysisTimeSeriesResults:
         return ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
 
 
-class LinearAnalysisTimeSeries(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class LinearAnalysisTimeSeries(TSDriverTemplate):
     name = 'Linear analysis time series'
     tpe = SimulationTypes.LinearAnalysis_TS_run
 
@@ -157,10 +160,7 @@ class LinearAnalysisTimeSeries(QThread):
         @param grid: MultiCircuit instance
         @param options: LinearAnalysisOptions instance
         """
-        QThread.__init__(self)
-
-        # reference the grid directly
-        self.grid = grid
+        TSDriverTemplate.__init__(self, grid=grid, start_=start_, end_=end_)
 
         self.options = options
 
@@ -172,18 +172,6 @@ class LinearAnalysisTimeSeries(QThread):
                                                        branch_names=[])
 
         self.ptdf_driver = LinearAnalysis(grid=self.grid, distributed_slack=self.options.distribute_slack)
-
-        self.start_ = start_
-
-        self.end_ = end_
-
-        self.indices = pd.to_datetime(self.grid.time_profile)
-
-        self.elapsed = 0
-
-        self.logger = Logger()
-
-        self.__cancel__ = False
 
     def get_steps(self):
         """

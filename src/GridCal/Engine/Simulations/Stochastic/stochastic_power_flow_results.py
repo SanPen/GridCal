@@ -21,9 +21,10 @@ from sklearn.ensemble import RandomForestRegressor
 from GridCal.Engine.basic_structures import CDF
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 
-class StochasticPowerFlowResults:
+class StochasticPowerFlowResults(ResultsTemplate):
 
     def __init__(self, n, m, p, bus_names, branch_names, bus_types, name='Monte Carlo'):
         """
@@ -32,8 +33,22 @@ class StochasticPowerFlowResults:
         @param m: number of branches
         @param p: number of points (rows)
         """
-
-        self.name = name
+        ResultsTemplate.__init__(self,
+                                 name='Stochastic Power Flow',
+                                 available_results=[ResultTypes.BusVoltageAverage,
+                                                    ResultTypes.BusVoltageStd,
+                                                    ResultTypes.BusVoltageCDF,
+                                                    ResultTypes.BusPowerCDF,
+                                                    ResultTypes.BranchPowerAverage,
+                                                    ResultTypes.BranchPowerStd,
+                                                    ResultTypes.BranchPowerCDF,
+                                                    ResultTypes.BranchLoadingAverage,
+                                                    ResultTypes.BranchLoadingStd,
+                                                    ResultTypes.BranchLoadingCDF,
+                                                    ResultTypes.BranchLossesAverage,
+                                                    ResultTypes.BranchLossesStd,
+                                                    ResultTypes.BranchLossesCDF],
+                                 data_variables=[])
 
         self.n = n
 

@@ -16,15 +16,15 @@ import time
 import json
 import numpy as np
 import numba as nb
-from PySide2.QtCore import QThread, Signal
 
-from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, make_worst_contingency_transfer_limits
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_template import ResultsTemplate
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 ########################################################################################################################
 # Optimal Power flow classes
@@ -129,7 +129,7 @@ def compute_atc(ptdf, lodf, P0, flows, rates, idx1, idx2, dT, threshold=0.02):
     return atc, alpha, worst_contingency
 
 
-class AvailableTransferCapacityResults:
+class AvailableTransferCapacityResults(ResultsTemplate):
 
     def __init__(self, n_br, n_bus, br_names, bus_names, bus_types):
         """
@@ -140,6 +140,15 @@ class AvailableTransferCapacityResults:
         :param bus_names:
         :param bus_types:
         """
+        ResultsTemplate.__init__(self,
+                                 name='ATC Results',
+                                 available_results=[ResultTypes.AvailableTransferCapacity,
+                                                    ResultTypes.AvailableTransferCapacityAlpha,
+                                                    ResultTypes.AvailableTransferCapacityReport
+                                                    ],
+                                 data_variables=['atc',
+                                                 'alpha',
+                                                 'worst_contingency'])
         self.n_br = n_br
         self.n_bus = n_bus
         self.br_names = br_names
@@ -155,19 +164,35 @@ class AvailableTransferCapacityResults:
         self.report_headers = ['Name', 'ATC', 'Worst Contingency']
         self.report_indices = list()
 
-        self.available_results = [ResultTypes.AvailableTransferCapacity,
-                                  ResultTypes.AvailableTransferCapacityAlpha,
-                                  ResultTypes.AvailableTransferCapacityReport
-                                  ]
-
     def get_steps(self):
         return
 
     def make_report(self):
+        """
+
+        :return:
+        """
         self.report = list()
-        self.report_headers = ['Name', 'ATC', 'Worst Contingency']
+        self.report_headers = ['Branch', 'Branch idx', 'ATC', 'Worst Contingency', 'Worst Contingency idx']
         self.report_indices = list()
 
+        for i in range(self.n_br):
+            if self.atc[i] != 0.0:
+                c_idx = int(self.worst_contingency[i])
+                if c_idx > -1:
+                    w_name = self.br_names[c_idx]
+                else:
+                    w_name = 'None'
+
+                self.report.append([self.br_names[i], i, self.atc[i], w_name, c_idx])
+                self.report_indices.append(i)
+
+        self.report = np.array(self.report)
+
+        # sort
+        sorted_idx = self.report[:, 2].argsort()  # sort by the ATC
+        self.report = self.report[sorted_idx]
+        self.report_indices = [i for i in range(self.report.shape[0])]
 
     def get_results_dict(self):
         """
@@ -243,10 +268,8 @@ class AvailableTransferCapacityOptions:
         self.threshold = threshold
 
 
-class AvailableTransferCapacityDriver(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class AvailableTransferCapacityDriver(DriverTemplate):
+
     tpe = SimulationTypes.AvailableTransferCapacity_run
     name = tpe.value
 
@@ -257,10 +280,7 @@ class AvailableTransferCapacityDriver(QThread):
         @param options: OPF options
         @:param pf_results: PowerFlowResults, this is to get the flows
         """
-        QThread.__init__(self)
-
-        # Grid to run
-        self.grid = grid
+        DriverTemplate.__init__(self, grid=grid)
 
         # Options to use
         self.options = options
@@ -271,13 +291,6 @@ class AvailableTransferCapacityDriver(QThread):
                                                         br_names=[],
                                                         bus_names=[],
                                                         bus_types=[])
-
-        # set cancel state
-        self.__cancel__ = False
-
-        self.elapsed = 0.0
-
-        self.logger = Logger()
 
     def run(self):
         """
@@ -330,9 +343,6 @@ class AvailableTransferCapacityDriver(QThread):
         Get variations list of strings
         """
         return list()
-
-    def cancel(self):
-        self.__cancel__ = True
 
 
 if __name__ == '__main__':

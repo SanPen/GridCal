@@ -15,7 +15,6 @@
 
 import numpy as np
 from scipy.sparse.linalg import inv
-from PySide2.QtCore import QRunnable
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit import short_circuit_3p
@@ -28,6 +27,7 @@ from GridCal.Engine.Devices import Branch, Bus
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 ########################################################################################################################
 # Short circuit classes
@@ -177,10 +177,7 @@ class ShortCircuitResults(PowerFlowResults):
             self.buses_useful_for_storage = b_idx[results.buses_useful_for_storage]
 
 
-class ShortCircuitDriver(QRunnable):
-    # progress_signal = pyqtSignal(float)
-    # progress_text = pyqtSignal(str)
-    # done_signal = pyqtSignal()
+class ShortCircuitDriver(DriverTemplate):
     name = 'Short Circuit'
     tpe = SimulationTypes.ShortCircuit_run
 
@@ -190,10 +187,7 @@ class ShortCircuitDriver(QRunnable):
         PowerFlowDriver class constructor
         @param grid: MultiCircuit Object
         """
-        QRunnable.__init__(self)
-
-        # Grid to run a power flow in
-        self.grid = grid
+        DriverTemplate.__init__(self, grid=grid)
 
         # power flow results
         self.pf_results = pf_results
@@ -431,8 +425,9 @@ class ShortCircuitDriver(QRunnable):
         self.grid.short_circuit_results = results
         self._is_running = False
 
-    def cancel(self):
-        self.__cancel__ = True
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
 
     def isRunning(self):
         return self._is_running

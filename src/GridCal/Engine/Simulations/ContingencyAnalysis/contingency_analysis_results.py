@@ -17,9 +17,10 @@ import json
 import numpy as np
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 
-class ContingencyAnalysisResults:
+class ContingencyAnalysisResults(ResultsTemplate):
 
     def __init__(self, n, m, bus_names, branch_names, bus_types):
         """
@@ -27,10 +28,20 @@ class ContingencyAnalysisResults:
         @param n: number of buses
         @param m: number of branches
         """
-
-        self.name = 'N-1'
-
-        self.bus_types = np.zeros(n, dtype=int)
+        ResultsTemplate.__init__(self,
+                                 name='Contingency Analysis Results',
+                                 available_results=[ResultTypes.OTDF,
+                                                    ResultTypes.BusActivePower,
+                                                    ResultTypes.BranchActivePowerFrom,
+                                                    ResultTypes.BranchLoading],
+                                 data_variables=['bus_types',
+                                                 'branch_names',
+                                                 'bus_names',
+                                                 'voltage',
+                                                 'S',
+                                                 'Sf',
+                                                 'loading',
+                                                 'otdf'])
 
         self.branch_names = branch_names
 
@@ -47,11 +58,6 @@ class ContingencyAnalysisResults:
         self.loading = np.zeros((m, m), dtype=complex)
 
         self.otdf = np.zeros((m, m))
-
-        self.available_results = [ResultTypes.OTDF,
-                                  ResultTypes.BusActivePower,
-                                  ResultTypes.BranchActivePowerFrom,
-                                  ResultTypes.BranchLoading]
 
     def get_steps(self):
         return

@@ -890,7 +890,7 @@ class GridEditor(QSplitter):
         terminal_from = branch.bus_from.graphic_obj.terminal
         terminal_to = branch.bus_to.graphic_obj.terminal
         graphic_obj = DcLineGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
-        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)
         terminal_to.hosting_connections.append(graphic_obj)
         graphic_obj.redraw()
@@ -957,7 +957,7 @@ class GridEditor(QSplitter):
 
         graphic_obj = DcLineGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
 
-        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)
         terminal_to.hosting_connections.append(graphic_obj)
         graphic_obj.redraw()
@@ -974,7 +974,7 @@ class GridEditor(QSplitter):
 
         graphic_obj = HvdcGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
 
-        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)
         terminal_to.hosting_connections.append(graphic_obj)
         graphic_obj.redraw()
@@ -991,7 +991,7 @@ class GridEditor(QSplitter):
 
         graphic_obj = VscGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
 
-        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)
         terminal_to.hosting_connections.append(graphic_obj)
         graphic_obj.redraw()
@@ -1008,7 +1008,7 @@ class GridEditor(QSplitter):
 
         graphic_obj = UpfcGraphicItem(terminal_from, terminal_to, self.diagramScene, branch=branch)
 
-        graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_obj)
         terminal_to.hosting_connections.append(graphic_obj)
         graphic_obj.redraw()

@@ -17,6 +17,7 @@ import numpy as np
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowResults
 from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Simulations.result_types import ResultTypes
+from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 
 class OptimalPowerFlowTimeSeriesResults:
@@ -33,7 +34,40 @@ class OptimalPowerFlowTimeSeriesResults:
         :param nload:
         :param time: Time array (optional)
         """
-        self.name = 'OPF time series'
+        ResultsTemplate.__init__(self,
+                                 name='OPF time series',
+                                 available_results=[ResultTypes.BusVoltageModule,
+                                                    ResultTypes.BusVoltageAngle,
+                                                    ResultTypes.ShadowPrices,
+                                                    ResultTypes.BranchPower,
+                                                    ResultTypes.BranchLoading,
+                                                    ResultTypes.BranchOverloads,
+                                                    ResultTypes.LoadShedding,
+                                                    ResultTypes.ControlledGeneratorShedding,
+                                                    ResultTypes.ControlledGeneratorPower,
+                                                    ResultTypes.BatteryPower,
+                                                    ResultTypes.BatteryEnergy],
+                                 data_variables=['bus_names',
+                                                 'branch_names',
+                                                 'load_names',
+                                                 'generator_names',
+                                                 'battery_names',
+                                                 'bus_types',
+                                                 'time',
+                                                 'Sbus',
+                                                 'voltage',
+                                                 'load_shedding',
+                                                 'Sf',
+                                                 'overloads',
+                                                 'loading',
+                                                 'losses',
+                                                 'battery_power',
+                                                 'battery_energy',
+                                                 'generation_shedding',
+                                                 'generators_power',
+                                                 'flow_direction',
+                                                 'shadow_prices',
+                                                 'converged'])
 
         self.bus_names = bus_names
         self.branch_names = branch_names
@@ -66,20 +100,6 @@ class OptimalPowerFlowTimeSeriesResults:
         self.shadow_prices = np.zeros((nt, n), dtype=float)
 
         self.Sf = np.zeros((nt, m), dtype=complex)
-
-        self.bus_types = np.zeros(n, dtype=int)
-
-        self.available_results = [ResultTypes.BusVoltageModule,
-                                  ResultTypes.BusVoltageAngle,
-                                  ResultTypes.ShadowPrices,
-                                  ResultTypes.BranchPower,
-                                  ResultTypes.BranchLoading,
-                                  ResultTypes.BranchOverloads,
-                                  ResultTypes.LoadShedding,
-                                  ResultTypes.ControlledGeneratorShedding,
-                                  ResultTypes.ControlledGeneratorPower,
-                                  ResultTypes.BatteryPower,
-                                  ResultTypes.BatteryEnergy]
 
         self.generator_power = np.zeros((nt, ngen), dtype=float)
 

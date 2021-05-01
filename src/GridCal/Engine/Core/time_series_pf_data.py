@@ -127,7 +127,7 @@ class TimeCircuit(SnapshotData):
             self.pqpv_prof_.append(pqpv)
 
     def bus_types_prof(self, t):
-        return self.bus_data.bus_types_prof[:, t]
+        return self.bus_data.bus_types_prof[:, t].astype(int)
 
     @property
     def vd_prof(self):

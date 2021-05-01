@@ -18,18 +18,15 @@ import numpy as np
 import json
 from matplotlib import pyplot as plt
 
-from PySide2.QtCore import QThread, Signal
-
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, CpfStopAt, CpfParametrization, CpfNumericResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
-from GridCal.Engine.plot_config import LINEWIDTH
 from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
-
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 ########################################################################################################################
 # Voltage collapse classes
@@ -288,10 +285,7 @@ class ContinuationPowerFlowResults(ResultsTemplate):
         return mdl
 
 
-class ContinuationPowerFlowDriver(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class ContinuationPowerFlowDriver(DriverTemplate):
     name = 'Continuation Power Flow'
     tpe = SimulationTypes.ContinuationPowerFlow_run
 
@@ -309,10 +303,7 @@ class ContinuationPowerFlowDriver(QThread):
         :param opf_results:
         """
 
-        QThread.__init__(self)
-
-        # MultiCircuit instance
-        self.circuit = circuit
+        DriverTemplate.__init__(self, grid=circuit)
 
         # voltage stability options
         self.options = options
@@ -326,8 +317,6 @@ class ContinuationPowerFlowDriver(QThread):
         self.t = t
 
         self.results = None
-
-        self.__cancel__ = False
 
     def get_steps(self):
         """
@@ -353,7 +342,7 @@ class ContinuationPowerFlowDriver(QThread):
         """
         print('Running voltage collapse...')
 
-        nc = compile_snapshot_circuit(circuit=self.circuit,
+        nc = compile_snapshot_circuit(circuit=self.grid,
                                       apply_temperature=self.pf_options.apply_temperature_correction,
                                       branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
                                       opf_results=self.opf_results)
@@ -426,10 +415,3 @@ class ContinuationPowerFlowDriver(QThread):
         print('done!')
         self.progress_text.emit('Done!')
         self.done_signal.emit()
-
-    def cancel(self):
-        self.__cancel__ = True
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Cancelled!')
-        self.done_signal.emit()
-

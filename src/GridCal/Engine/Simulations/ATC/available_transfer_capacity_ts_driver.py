@@ -16,9 +16,7 @@ import time
 import json
 import numpy as np
 import numba as nb
-from PySide2.QtCore import QThread, Signal
 
-from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 import GridCal.Engine.Simulations.LinearFactors.linear_analysis as la
@@ -26,9 +24,11 @@ from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import Av
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_template import ResultsTemplate
+from GridCal.Engine.Simulations.driver_template import TSDriverTemplate
 
 
-class AvailableTransferCapacityTimeSeriesResults:
+class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def __init__(self, n_br, n_bus, time_array, br_names, bus_names, bus_types):
         """
@@ -40,6 +40,15 @@ class AvailableTransferCapacityTimeSeriesResults:
         :param bus_names:
         :param bus_types:
         """
+        ResultsTemplate.__init__(self,
+                                 name='ATC Time Series Results',
+                                 available_results=[ResultTypes.AvailableTransferCapacity,
+                                                    ResultTypes.AvailableTransferCapacityAlpha,
+                                                    ResultTypes.AvailableTransferCapacityReport
+                                                    ],
+                                 data_variables=['atc',
+                                                 'alpha',
+                                                 'worst_contingency'])
         self.n_br = n_br
         self.n_bus = n_bus
         self.nt = len(time_array)
@@ -129,10 +138,7 @@ class AvailableTransferCapacityTimeSeriesResults:
         return mdl
 
 
-class AvailableTransferCapacityTimeSeriesDriver(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class AvailableTransferCapacityTimeSeriesDriver(TSDriverTemplate):
     tpe = SimulationTypes.AvailableTransferCapacityTS_run
     name = tpe.value
 
@@ -143,19 +149,13 @@ class AvailableTransferCapacityTimeSeriesDriver(QThread):
         @param options: OPF options
         @:param pf_results: PowerFlowResults, this is to get the flows
         """
-        QThread.__init__(self)
-
-        # Grid to run
-        self.grid = grid
+        TSDriverTemplate.__init__(self,
+                                  grid=grid,
+                                  start_=start_,
+                                  end_=end_)
 
         # Options to use
         self.options = options
-
-        self.start_ = start_
-
-        self.end_ = end_
-
-        self.indices = self.grid.time_profile
 
         # OPF results
         self.results = AvailableTransferCapacityTimeSeriesResults(n_br=0,
@@ -165,13 +165,6 @@ class AvailableTransferCapacityTimeSeriesDriver(QThread):
                                                                   bus_names=[],
                                                                   bus_types=[])
 
-        # set cancel state
-        self.__cancel__ = False
-
-        self.elapsed = 0.0
-
-        self.logger = Logger()
-
     def run(self):
         """
         Run thread
@@ -180,9 +173,7 @@ class AvailableTransferCapacityTimeSeriesDriver(QThread):
 
         self.progress_signal.emit(0)
 
-        if self.end_ is None:
-            self.end_ = len(self.grid.time_profile)
-        time_indices = np.arange(self.start_, self.end_ + 1)
+        time_indices = self.get_time_indices()
 
         # declare the linear analysis
         self.progress_text.emit('Analyzing...')

@@ -90,9 +90,61 @@ class PowerFlowResults(ResultsTemplate):
 
     def __init__(self, n, m, n_tr, n_hvdc, bus_names, branch_names, transformer_names, hvdc_names, bus_types):
 
-        ResultsTemplate.__init__(self)
+        ResultsTemplate.__init__(self,
+                                 name='Power flow',
+                                 available_results=[ResultTypes.BusVoltageModule,
+                                                    ResultTypes.BusVoltageAngle,
+                                                    ResultTypes.BusActivePower,
+                                                    ResultTypes.BusReactivePower,
 
-        self.name = 'Power flow'
+                                                    ResultTypes.BranchActivePowerFrom,
+                                                    ResultTypes.BranchReactivePowerFrom,
+                                                    ResultTypes.BranchActivePowerTo,
+                                                    ResultTypes.BranchReactivePowerTo,
+
+                                                    ResultTypes.BranchActiveCurrentFrom,
+                                                    ResultTypes.BranchReactiveCurrentFrom,
+                                                    ResultTypes.BranchActiveCurrentTo,
+                                                    ResultTypes.BranchReactiveCurrentTo,
+
+                                                    ResultTypes.BranchTapModule,
+                                                    ResultTypes.BranchTapAngle,
+                                                    ResultTypes.BranchBeq,
+
+                                                    ResultTypes.BranchLoading,
+                                                    ResultTypes.Transformer2WTapModule,
+                                                    ResultTypes.BranchActiveLosses,
+                                                    ResultTypes.BranchReactiveLosses,
+                                                    ResultTypes.BranchVoltage,
+                                                    ResultTypes.BranchAngles,
+
+                                                    ResultTypes.HvdcLosses,
+                                                    ResultTypes.HvdcPowerFrom,
+                                                    ResultTypes.HvdcPowerTo],
+                                 data_variables=['bus_types',
+                                                 'bus_names',
+                                                 'branch_names',
+                                                 'transformer_names',
+                                                 'hvdc_names',
+                                                 'Sbus',
+                                                 'voltage',
+                                                 'Sf',
+                                                 'St',
+                                                 'If',
+                                                 'It',
+                                                 'ma',
+                                                 'theta',
+                                                 'Beq',
+                                                 'Vbranch',
+                                                 'loading',
+                                                 'flow_direction',
+                                                 'transformer_tap_module',
+                                                 'losses',
+                                                 'hvdc_losses',
+                                                 'hvdc_Pf',
+                                                 'hvdc_Pt',
+                                                 'hvdc_loading']
+                                 )
 
         self.n = n
         self.m = m
@@ -109,10 +161,6 @@ class PowerFlowResults(ResultsTemplate):
         self.Sbus = np.zeros(n, dtype=complex)
 
         self.voltage = np.zeros(n, dtype=complex)
-
-        self.overvoltage = np.zeros(n, dtype=complex)
-
-        self.undervoltage = np.zeros(n, dtype=complex)
 
         self.Sf = np.zeros(m, dtype=complex)
         self.St = np.zeros(m, dtype=complex)
@@ -145,36 +193,6 @@ class PowerFlowResults(ResultsTemplate):
         self.plot_bars_limit = 100
 
         self.convergence_reports = list()
-
-        self.available_results = [ResultTypes.BusVoltageModule,
-                                  ResultTypes.BusVoltageAngle,
-                                  ResultTypes.BusActivePower,
-                                  ResultTypes.BusReactivePower,
-
-                                  ResultTypes.BranchActivePowerFrom,
-                                  ResultTypes.BranchReactivePowerFrom,
-                                  ResultTypes.BranchActivePowerTo,
-                                  ResultTypes.BranchReactivePowerTo,
-
-                                  ResultTypes.BranchActiveCurrentFrom,
-                                  ResultTypes.BranchReactiveCurrentFrom,
-                                  ResultTypes.BranchActiveCurrentTo,
-                                  ResultTypes.BranchReactiveCurrentTo,
-
-                                  ResultTypes.BranchTapModule,
-                                  ResultTypes.BranchTapAngle,
-                                  ResultTypes.BranchBeq,
-
-                                  ResultTypes.BranchLoading,
-                                  ResultTypes.Transformer2WTapModule,
-                                  ResultTypes.BranchActiveLosses,
-                                  ResultTypes.BranchReactiveLosses,
-                                  ResultTypes.BranchVoltage,
-                                  ResultTypes.BranchAngles,
-
-                                  ResultTypes.HvdcLosses,
-                                  ResultTypes.HvdcPowerFrom,
-                                  ResultTypes.HvdcPowerTo]
 
     @property
     def converged(self):
@@ -220,8 +238,6 @@ class PowerFlowResults(ResultsTemplate):
                                transformer_names=self.transformer_names)
         val.Sbus = self.Sbus.copy()
         val.voltage = self.voltage.copy()
-        val.overvoltage = self.overvoltage.copy()
-        val.undervoltage = self.undervoltage.copy()
         val.Sf = self.Sf.copy()
         val.If = self.If.copy()
         val.Vbranch = self.Vbranch.copy()

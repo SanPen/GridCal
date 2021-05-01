@@ -15,7 +15,6 @@
 import numpy as np
 from enum import Enum
 import multiprocessing
-from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
@@ -29,6 +28,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOpti
 
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 ########################################################################################################################
 # Monte Carlo classes
@@ -60,10 +60,7 @@ def make_monte_carlo_input(numerical_input_island: TimeCircuit):
     return StochasticPowerFlowInput(n, Scdf, Icdf, Ycdf)
 
 
-class StochasticPowerFlowDriver(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class StochasticPowerFlowDriver(DriverTemplate):
     name = 'Stochastic Power Flow'
     tpe = SimulationTypes.StochasticPowerFlow
 
@@ -79,9 +76,7 @@ class StochasticPowerFlowDriver(QThread):
         :param sampling_points: maximum monte carlo iterations in case of not reach the precission
         :param simulation_type: Type of sampling method
         """
-        QThread.__init__(self)
-
-        self.circuit = grid
+        DriverTemplate.__init__(self, grid=grid)
 
         self.options = options
 
@@ -133,7 +128,7 @@ class StochasticPowerFlowDriver(QThread):
         self.progress_text.emit('Running Monte Carlo Sampling...')
 
         # compile the multi-circuit
-        numerical_circuit = compile_time_circuit(circuit=self.circuit,
+        numerical_circuit = compile_time_circuit(circuit=self.grid,
                                                  apply_temperature=False,
                                                  branch_tolerance_mode=BranchImpedanceMode.Specified,
                                                  opf_results=self.opf_time_series_results)
@@ -277,7 +272,7 @@ class StochasticPowerFlowDriver(QThread):
         self.progress_text.emit('Running Latin Hypercube Sampling...')
 
         # compile the multi-circuit
-        numerical_circuit = compile_time_circuit(circuit=self.circuit,
+        numerical_circuit = compile_time_circuit(circuit=self.grid,
                                                  apply_temperature=False,
                                                  branch_tolerance_mode=BranchImpedanceMode.Specified,
                                                  opf_results=self.opf_time_series_results)

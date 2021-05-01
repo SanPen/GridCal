@@ -2363,16 +2363,11 @@ class MainGUI(QMainWindow):
 
                         self.session.register(drv)
 
-                        try:
-                            self.threadpool.start(drv)
-                            self.threadpool.waitForDone()
-                            self.post_short_circuit()
-
-                        except Exception as ex:
-                            exc_type, exc_value, exc_traceback = sys.exc_info()
-                            error_msg(str(exc_traceback) + '\n' + str(exc_value), 'Short circuit')
-                            self.remove_simulation(sim.SimulationTypes.ShortCircuit_run)
-                            self.UNLOCK()
+                        drv.progress_signal.connect(self.ui.progressBar.setValue)
+                        drv.progress_text.connect(self.ui.progress_label.setText)
+                        drv.done_signal.connect(self.UNLOCK)
+                        drv.done_signal.connect(self.post_short_circuit)
+                        drv.start()
 
                 else:
                     info_msg('Run a power flow simulation first.\n'
@@ -2390,9 +2385,8 @@ class MainGUI(QMainWindow):
         """
         # update the results in the circuit structures
         drv, results = self.session.get_driver_results(sim.SimulationTypes.ShortCircuit_run)
+        self.remove_simulation(sim.SimulationTypes.ShortCircuit_run)
         if results is not None:
-
-            self.remove_simulation(sim.SimulationTypes.ShortCircuit_run)
 
             self.ui.progress_label.setText('Colouring short circuit results in the grid...')
             QtGui.QGuiApplication.processEvents()

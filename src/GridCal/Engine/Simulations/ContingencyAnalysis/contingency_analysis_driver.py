@@ -16,14 +16,13 @@ import time
 import datetime
 import numpy as np
 from itertools import combinations
-from PySide2.QtCore import QThread, Signal
 
-from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 
 def enumerate_states_n_k(m, k=1):
@@ -60,10 +59,7 @@ class ContingencyAnalysisOptions:
         self.correct_values = correct_values
 
 
-class ContingencyAnalysisDriver(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class ContingencyAnalysisDriver(DriverTemplate):
     name = 'N-1/LODF'
     tpe = SimulationTypes.ContingencyAnalysis_run
 
@@ -74,10 +70,7 @@ class ContingencyAnalysisDriver(QThread):
         @param options: N-k options
         @:param pf_options: power flow options
         """
-        QThread.__init__(self)
-
-        # Grid to run
-        self.grid = grid
+        DriverTemplate.__init__(self, grid=grid)
 
         # Options to use
         self.options = options
@@ -89,13 +82,6 @@ class ContingencyAnalysisDriver(QThread):
                                                   bus_types=())
 
         self.numerical_circuit = None
-
-        # set cancel state
-        self.__cancel__ = False
-
-        self.logger = Logger()
-
-        self.elapsed = 0.0
 
         self.branch_names = list()
 
@@ -164,9 +150,6 @@ class ContingencyAnalysisDriver(QThread):
         self.elapsed = end - start
         self.progress_text.emit('Done!')
         self.done_signal.emit()
-
-    def cancel(self):
-        self.__cancel__ = True
 
 
 if __name__ == '__main__':

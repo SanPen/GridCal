@@ -38,32 +38,38 @@ class SimulationSession:
         return self.name
 
     def clear(self):
+        """
+        Delete all the drivers
+        """
         self.drivers = dict()
 
     def register(self, driver):
         """
         Register driver
-        :param driver:
-        :return:
+        :param driver: driver to register (must have a tpe variable in it)
         """
         self.drivers[driver.tpe] = driver
 
     def get_available_drivers(self):
+        """
+        Get a list of the available driver objects
+        :return: List[Driver]
+        """
         return [drv for driver_type, drv in self.drivers.items() if drv is not None]
 
     def exists(self, driver_type: SimulationTypes):
         """
         Get the results of the driver
-        :param driver_type:
-        :return:
+        :param driver_type: driver type to look for
+        :return: True / False
         """
         return driver_type in self.drivers.keys()
 
     def get_driver_results(self, driver_type: SimulationTypes):
         """
         Get the results of the driver
-        :param driver_type:
-        :return:
+        :param driver_type: driver type
+        :return: driver, results (None, None if not found)
         """
         if driver_type in self.drivers.keys():
             drv = self.drivers[driver_type]
@@ -74,12 +80,20 @@ class SimulationSession:
         else:
             return None, None
 
+    def delete_driver(self, driver_type: SimulationTypes):
+        """
+        Get the results of the driver
+        :param driver_type: driver type to delete
+        """
+        if driver_type in self.drivers.keys():
+            del self.drivers[driver_type]
+
     def get_results_model_by_name(self, study_name, study_type):
         """
         Get the results model given the study name and study type
-        :param study_name:
-        :param study_type:
-        :return:
+        :param study_name: name of the study
+        :param study_type: name of the study type
+        :return: ResultsModel instance or None if not found
         """
         for driver_type, drv in self.drivers.items():
             if study_name == drv.name:
