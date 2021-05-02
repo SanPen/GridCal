@@ -91,16 +91,6 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
                 'loading': np.abs(self.loading).tolist()}
         return data
 
-    def save(self, file_name):
-        """
-        Export as json
-        :param file_name: Name of the file
-        """
-
-        with open(file_name, "wb") as output_file:
-            json_str = json.dumps(self.get_results_dict())
-            output_file.write(json_str)
-
     def mdl(self, result_type: ResultTypes) -> "ResultsModel":
         """
         Get ResultsModel instance

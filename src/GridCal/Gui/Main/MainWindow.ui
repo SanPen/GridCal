@@ -438,16 +438,16 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_8">
             <property name="leftMargin">
-             <number>4</number>
+             <number>0</number>
             </property>
             <property name="topMargin">
-             <number>4</number>
+             <number>0</number>
             </property>
             <property name="rightMargin">
-             <number>4</number>
+             <number>0</number>
             </property>
             <property name="bottomMargin">
-             <number>4</number>
+             <number>0</number>
             </property>
             <item>
              <widget class="QSplitter" name="dataStructuresSplitter">
@@ -462,6 +462,9 @@
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_27">
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QFrame" name="frame_55">
                   <property name="frameShape">
@@ -567,8 +570,20 @@
                  <enum>QFrame::Raised</enum>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_26">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
                  <item>
                   <widget class="QFrame" name="frame_54">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>25</height>
+                    </size>
+                   </property>
                    <property name="frameShape">
                     <enum>QFrame::NoFrame</enum>
                    </property>
@@ -840,6 +855,9 @@ p, li { white-space: pre-wrap; }
                  <enum>QFrame::Raised</enum>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_29">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
                  <item>
                   <widget class="QFrame" name="frame_56">
                    <property name="frameShape">
@@ -938,7 +956,7 @@ p, li { white-space: pre-wrap; }
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tab_12">
+          <widget class="QWidget" name="catalogueTab">
            <attribute name="icon">
             <iconset resource="icons.qrc">
              <normaloff>:/Icons/icons/Catalogue.svg</normaloff>:/Icons/icons/Catalogue.svg</iconset>
@@ -947,6 +965,18 @@ p, li { white-space: pre-wrap; }
             <string>Types catalogue</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_32">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item>
              <widget class="QSplitter" name="catalogueSplitter">
               <property name="orientation">
@@ -960,6 +990,9 @@ p, li { white-space: pre-wrap; }
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_19">
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QLabel" name="label_51">
                   <property name="minimumSize">
@@ -986,8 +1019,17 @@ p, li { white-space: pre-wrap; }
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QGridLayout" name="gridLayout_18">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
                 <item row="0" column="0">
                  <widget class="QLabel" name="label_52">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>24</height>
+                   </size>
+                  </property>
                   <property name="text">
                    <string>Elements data (double click to edit)</string>
                   </property>
@@ -1057,7 +1099,7 @@ p, li { white-space: pre-wrap; }
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tab_7">
+          <widget class="QWidget" name="timeEventsTab">
            <attribute name="icon">
             <iconset resource="icons.qrc">
              <normaloff>:/Icons/icons/clock.svg</normaloff>:/Icons/icons/clock.svg</iconset>
@@ -1066,6 +1108,18 @@ p, li { white-space: pre-wrap; }
             <string>Time events</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_14">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item>
              <widget class="QFrame" name="frame">
               <property name="frameShape">
@@ -1466,7 +1520,7 @@ p, li { white-space: pre-wrap; }
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tab">
+          <widget class="QWidget" name="compiledArraysTab">
            <attribute name="icon">
             <iconset resource="icons.qrc">
              <normaloff>:/Icons/icons/squares.svg</normaloff>:/Icons/icons/squares.svg</iconset>
@@ -1500,6 +1554,9 @@ p, li { white-space: pre-wrap; }
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QGridLayout" name="gridLayout_19">
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
                 <item row="1" column="0">
                  <widget class="QPushButton" name="compute_simulation_data_pushButton">
                   <property name="maximumSize">
@@ -1570,6 +1627,9 @@ p, li { white-space: pre-wrap; }
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_28">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QLabel" name="label_31">
                   <property name="text">
@@ -1586,7 +1646,7 @@ p, li { white-space: pre-wrap; }
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tab_2">
+          <widget class="QWidget" name="commentsTab">
            <attribute name="icon">
             <iconset resource="icons.qrc">
              <normaloff>:/Icons/icons/edit.svg</normaloff>:/Icons/icons/edit.svg</iconset>
@@ -1617,6 +1677,18 @@ p, li { white-space: pre-wrap; }
         <string>Results</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_13">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QSplitter" name="results_splitter">
           <property name="orientation">
@@ -1657,6 +1729,9 @@ p, li { white-space: pre-wrap; }
                <layout class="QVBoxLayout" name="verticalLayout_10">
                 <property name="topMargin">
                  <number>8</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
                 </property>
                 <item>
                  <widget class="QFrame" name="frame_62">
@@ -1739,6 +1814,9 @@ p, li { white-space: pre-wrap; }
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_6">
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QFrame" name="frame_60">
                   <property name="frameShape">
@@ -1818,6 +1896,12 @@ p, li { white-space: pre-wrap; }
             <enum>QFrame::Raised</enum>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_24">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>8</number>
+            </property>
             <item>
              <widget class="QFrame" name="frame_8">
               <property name="frameShape">
@@ -1883,8 +1967,11 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QCheckBox" name="results_as_cdf_checkBox">
-                 <property name="statusTip">
+                 <property name="toolTip">
                   <string>Results as cummulative density functions</string>
+                 </property>
+                 <property name="statusTip">
+                  <string/>
                  </property>
                  <property name="text">
                   <string/>
@@ -1897,8 +1984,11 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QCheckBox" name="results_as_abs_checkBox">
-                 <property name="statusTip">
+                 <property name="toolTip">
                   <string>Results as absolute values</string>
+                 </property>
+                 <property name="statusTip">
+                  <string/>
                  </property>
                  <property name="text">
                   <string/>
@@ -6645,6 +6735,13 @@ points from time series</string>
                <widget class="QCheckBox" name="use_multiprocessing_checkBox">
                 <property name="text">
                  <string>use multiprocessing</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="saveResultsCheckBox">
+                <property name="text">
+                 <string>Save results in the grid file</string>
                 </property>
                </widget>
               </item>

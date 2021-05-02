@@ -76,14 +76,6 @@ class ContingencyAnalysisResults(ResultsTemplate):
                 'loading': np.abs(self.loading).tolist()}
         return data
 
-    def save(self, fname):
-        """
-        Export as json
-        """
-        with open(fname, "w") as output_file:
-            json_str = json.dumps(self.get_results_dict())
-            output_file.write(json_str)
-
     def mdl(self, result_type: ResultTypes):
         """
         Plot the results

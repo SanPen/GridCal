@@ -17,18 +17,13 @@ import json
 import pandas as pd
 import numpy as np
 import time
-import multiprocessing
-from sklearn.cluster import KMeans
-from PySide2.QtCore import QThread, QThreadPool, Signal
 
-from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
-from GridCal.Engine.Simulations.Stochastic.latin_hypercube_sampling import lhs
 from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
@@ -251,7 +246,7 @@ class TimeSeriesResults(PowerFlowResults):
                 'losses_imag': np.imag(self.losses).tolist()}
         return data
 
-    def save(self, fname):
+    def to_json(self, fname):
         """
         Export as json
         """

@@ -24,16 +24,16 @@ class NumericPowerFlowResults:
 
     def __init__(self, V, converged, norm_f, Scalc, ma=None, theta=None, Beq=None, iterations=0, elapsed=0):
         """
-
-        :param V:
-        :param converged:
-        :param norm_f:
-        :param Scalc:
-        :param ma:
-        :param theta:
-        :param Beq:
-        :param iterations:
-        :param elapsed:
+        Object to store the results returned by a numeric power flow routine
+        :param V: Voltage vector
+        :param converged: converged?
+        :param norm_f: error
+        :param Scalc: Calculated power vector
+        :param ma: Tap modules vector for all the branches
+        :param theta: Tap angles vector for all the branches
+        :param Beq: Equivalent susceptance vector for all the branches
+        :param iterations: number of iterations
+        :param elapsed: time elapsed
         """
         self.V = V
         self.converged = converged
@@ -47,48 +47,22 @@ class NumericPowerFlowResults:
 
 
 class PowerFlowResults(ResultsTemplate):
-    """
-    A **PowerFlowResults** object is create as an attribute of the
-    :ref:`PowerFlowMP<pf_mp>` (as PowerFlowMP.results) when the power flow is run. It
-    provides access to the simulation results through its class attributes.
-
-    Attributes:
-
-        **Sbus** (list): Power at each bus in complex per unit
-
-        **voltage** (list): Voltage at each bus in complex per unit
-
-        **Sf** (list): Power through each branch in complex MVA
-
-        **If** (list): Current through each branch in complex per unit
-
-        **loading** (list): Loading of each branch in per unit
-
-        **losses** (list): Losses in each branch in complex MVA
-
-        **tap_module** (list): Computed tap module at each branch in per unit
-
-        **flow_direction** (list): Flow direction at each branch
-
-        **Vbranch** (list): Voltage increment at each branch
-
-        **error** (float): Power flow computed error
-
-        **converged** (bool): Did the power flow converge?
-
-        **Qpv** (list): Reactive power at each PV node in per unit
-
-        **inner_it** (int): Number of inner iterations
-
-        **outer_it** (int): Number of outer iterations
-
-        **elapsed** (float): Simulation duration in seconds
-
-        **methods** (list): Power flow methods used
-
-    """
 
     def __init__(self, n, m, n_tr, n_hvdc, bus_names, branch_names, transformer_names, hvdc_names, bus_types):
+        """
+        A **PowerFlowResults** object is create as an attribute of the
+        :ref:`PowerFlowMP<pf_mp>` (as PowerFlowMP.results) when the power flow is run. It
+        provides access to the simulation results through its class attributes.
+        :param n:
+        :param m:
+        :param n_tr:
+        :param n_hvdc:
+        :param bus_names:
+        :param branch_names:
+        :param transformer_names:
+        :param hvdc_names:
+        :param bus_types:
+        """
 
         ResultsTemplate.__init__(self,
                                  name='Power flow',

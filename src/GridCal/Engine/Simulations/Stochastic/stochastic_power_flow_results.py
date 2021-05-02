@@ -206,33 +206,6 @@ class StochasticPowerFlowResults(ResultsTemplate):
                 'losses': np.abs(self.losses_points).tolist()}
         return data
 
-    def save(self, fname):
-        """
-        Export as json
-        """
-        with open(fname, "wb") as output_file:
-            json_str = json.dumps(self.get_results_dict())
-            output_file.write(json_str)
-
-    def open(self, fname):
-        """
-        open json
-        Args:
-            fname: file name
-        Returns: true if succeeded, false otherwise
-
-        """
-        if os.path.exists(fname):
-            with open(fname, "rb") as input_file:
-                data = json.load(input_file)
-            self.S_points = np.array(data['S'])
-            self.V_points = np.array(data['V'])
-            self.Sbr_points = np.array(data['Ibr'])
-            return True
-        else:
-            warn(fname + " not found")
-            return False
-
     def query_voltage(self, power_array):
         """
         Fantastic function that allows to query the voltage from the sampled points without having to run power flows

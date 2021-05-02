@@ -60,7 +60,7 @@ class ContingencyAnalysisOptions:
 
 
 class ContingencyAnalysisDriver(DriverTemplate):
-    name = 'N-1/LODF'
+    name = 'Contingency Analysis'
     tpe = SimulationTypes.ContingencyAnalysis_run
 
     def __init__(self, grid: MultiCircuit, options: ContingencyAnalysisOptions):

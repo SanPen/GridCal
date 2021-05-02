@@ -486,6 +486,8 @@ class MainGUI(QMainWindow):
 
         self.ui.search_results_Button.clicked.connect(self.search_in_results)
 
+        self.ui.deleteDriverButton.clicked.connect(self.delete_results_driver)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -1189,6 +1191,11 @@ class MainGUI(QMainWindow):
                 self.update_date_dependent_combos()
                 self.update_area_combos()
 
+                # get the session tree structure
+                session_data_dict = self.open_file_thread_object.get_session_tree()
+                mdl = get_tree_model(session_data_dict, 'Sessions')
+                self.ui.diskSessionsTreeView.setModel(mdl)
+
                 # clear the results
                 self.clear_results()
 
@@ -1276,7 +1283,12 @@ class MainGUI(QMainWindow):
         Save the circuit case to a file
         """
         # declare the allowed file types
-        files_types = "GridCal zip (*.gridcal);;GridCal HDF5 (*.gch5);;Excel (*.xlsx);;CIM (*.xml);;JSON (*.json);;Sqlite (*.sqlite)"
+        files_types = "GridCal zip (*.gridcal);;" \
+                      "GridCal HDF5 (*.gch5);;" \
+                      "Excel (*.xlsx);;" \
+                      "CIM (*.xml);;" \
+                      "Json (*.json);;" \
+                      "Sqlite (*.sqlite)"
 
         # call dialog to select the file
         if self.project_directory is None:
@@ -1341,7 +1353,15 @@ class MainGUI(QMainWindow):
 
             simulation_drivers = self.get_simulation_threads()
 
-            self.save_file_thread_object = filedrv.FileSaveThread(self.circuit, filename, simulation_drivers)
+            if self.ui.saveResultsCheckBox.isChecked():
+                sessions = [self.session]
+            else:
+                sessions = []
+
+            self.save_file_thread_object = filedrv.FileSaveThread(circuit=self.circuit,
+                                                                  file_name=filename,
+                                                                  simulation_drivers=simulation_drivers,
+                                                                  sessions=sessions)
 
             # make connections
             self.save_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
@@ -1368,6 +1388,11 @@ class MainGUI(QMainWindow):
         self.stuff_running_now.remove('file_save')
 
         self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
+
+        # get the session tree structure
+        session_data_dict = self.save_file_thread_object.get_session_tree()
+        mdl = get_tree_model(session_data_dict, 'Sessions')
+        self.ui.diskSessionsTreeView.setModel(mdl)
 
         # call the garbage collector to free memory
         gc.collect()
@@ -2051,6 +2076,29 @@ class MainGUI(QMainWindow):
         else:
             # no buses or no actual change
             pass
+
+    def delete_results_driver(self):
+        """
+        Delete the driver
+        :return:
+        """
+        idx = self.ui.results_treeView.selectedIndexes()
+        if len(idx) > 0:
+            tree_mdl = self.ui.results_treeView.model()
+            item = tree_mdl.itemFromIndex(idx[0])
+            path = get_tree_item_path(item)
+
+            if len(path) > 0:
+                study_name = path[0]
+                study_type = self.available_results_dict[study_name]
+
+                quit_msg = "Do you want to delete the results driver " + study_name + "?"
+                reply = QMessageBox.question(self, 'Message', quit_msg,
+                                             QMessageBox.Yes, QMessageBox.No)
+
+                if reply == QMessageBox.Yes:
+                    self.session.delete_driver_by_name(study_name)
+                    self.update_available_results()
 
     def plot_profiles(self):
         """

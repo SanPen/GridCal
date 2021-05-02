@@ -15,29 +15,32 @@
 
 from io import StringIO, TextIOWrapper, BytesIO
 import os
+import numpy as np
 import chardet
-from random import randint, seed
 import pandas as pd
 import zipfile
 from typing import List, Dict
 
 from GridCal.Engine.IO.generic_io_functions import parse_config_df
+from GridCal.Engine.Simulations.session import SimulationSession
 
 
 def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip",
-                            text_func=None, progress_func=None, use_pkl=False):
+                            text_func=None, progress_func=None,
+                            sessions: List[SimulationSession] = []):
     """
     Save a list of DataFrames to a zip file without saving to disk the csv files
     :param dfs: dictionary of pandas dataFrames {name: DataFrame}
     :param filename_zip: file name where to save all
     :param text_func: pointer to function that prints the names
     :param progress_func: pointer to function that prints the progress 0~100
+    :param sessions: SimulationSession instance
     """
 
     n = len(dfs)
     n_failed = 0
     # open zip file for writing
-    with zipfile.ZipFile(filename_zip, 'w', zipfile.ZIP_DEFLATED) as myzip:
+    with zipfile.ZipFile(filename_zip, 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
 
         # for each DataFrame and name...
         i = 0
@@ -58,14 +61,14 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
                 try:  # try pickle
                     with BytesIO() as buffer:
                         df.to_pickle(buffer)  # save the DataFrame to the buffer
-                        myzip.writestr(filename, buffer.getvalue())  # save the buffer to the zip file
+                        f_zip_ptr.writestr(filename, buffer.getvalue())  # save the buffer to the zip file
 
                 except:  # otherwise just use csv
                     n_failed += 1
                     filename = name + ".csv"
                     with StringIO() as buffer:
                         df.to_csv(buffer, index=False)  # save the DataFrame to the buffer
-                        myzip.writestr(filename, buffer.getvalue())  # save the buffer to the zip file
+                        f_zip_ptr.writestr(filename, buffer.getvalue())  # save the buffer to the zip file
             else:
                 # compose the csv file name
                 filename = name + ".csv"
@@ -73,9 +76,38 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
                 # open a string buffer
                 with StringIO() as buffer:
                     df.to_csv(buffer, index=False)  # save the DataFrame to the buffer
-                    myzip.writestr(filename, buffer.getvalue())  # save the buffer to the zip file
+                    f_zip_ptr.writestr(filename, buffer.getvalue())  # save the buffer to the zip file
 
             i += 1
+
+        # save sessions
+        n_items = 0
+        for session in sessions:
+            for drv_name, drv in session.drivers.items():
+                if hasattr(drv, 'results'):
+                    if drv.results is not None:
+                        for arr_name, arr in drv.results.get_arrays().items():
+                            n_items += 1
+
+        i = 0
+        for session in sessions:
+            for drv_name, drv in session.drivers.items():
+                if hasattr(drv, 'results'):
+                    if drv.results is not None:
+                        for arr_name, arr in drv.results.get_arrays().items():
+                            filename = 'sessions/' + session.name + '/' + drv.name + '/' + arr_name
+
+                            if text_func is not None:
+                                text_func('Flushing ' + filename + ' to ' + filename_zip + '...')
+
+                            with BytesIO() as buffer:
+                                np.save(buffer, np.array(arr))  # save the DataFrame to the buffer
+                                f_zip_ptr.writestr(filename + '.npy', buffer.getvalue())  # save the buffer to the zip file
+
+                            if progress_func is not None:
+                                progress_func((i + 1) / n_items * 100)
+
+                            i += 1
 
     if n_failed:
         print('Failed to pickle several profiles, but saved them as csv.\nFor improved speed install Pandas >= 1.2')
@@ -145,6 +177,41 @@ def get_frames_from_zip(file_name_zip, text_func=None, progress_func=None):
         # append the DataFrame to the list
         if df is not None:
             data[name] = df
+
+    return data
+
+
+def get_session_tree(file_name_zip: str):
+    """
+    Get the sessions structure
+    :param file_name_zip:
+    :return:
+    """
+    try:
+        zip_file_pointer = zipfile.ZipFile(file_name_zip)
+    except zipfile.BadZipFile:
+        return dict()
+
+    names = zip_file_pointer.namelist()
+
+    data = dict()
+
+    for name in names:
+        if '/' in name:
+            path = name.split('/')
+            if path[0].lower() == 'sessions':
+
+                session_name = path[1]
+                study_name = path[2]
+                array_name = path[3]
+
+                if session_name not in data.keys():
+                    data[session_name] = dict()
+
+                if study_name not in data[session_name].keys():
+                    data[session_name][study_name] = list()
+
+                data[session_name][study_name].append(array_name)
 
     return data
 
@@ -221,27 +288,9 @@ def get_xml_from_zip(file_name_zip, text_func=None, progress_func=None):
 
 if __name__ == '__main__':
 
-    # Generate some random values to put in the csv file.
-    # seed(42)  # Causes random numbers always be the same for testing.
-    # data = [[randint(0, 100) for _ in range(10)] for _ in range(10)]
-    # df1 = pd.DataFrame(data)
-    #
-    # seed(44)  # Causes random numbers always be the same for testing.
-    # data = [[randint(0, 100) for _ in range(10)] for _ in range(10)]
-    # df2 = pd.DataFrame(data)
-    #
-    # # save
-    # save_data_frames_to_zip({'Data1': df1, 'Data2': df2}, 'some_file.gridcal')
-    #
-    # # read and print
-    # df_list = get_frames_from_zip(file_name_zip='some_file.gridcal')
-    #
-    # for name, df in df_list.items():
-    #     print()
-    #     print(name)
-    #     print(df)
+    fname = '/home/santi/Descargas/IEEE 39.gridcal'
+    # data = get_xml_from_zip(fname)
 
-    fname = r'C:\Users\penversa\Documents\Grids\CGMES\TYNDP_2025\2025NT_ES_model_003.zip'
-    data = get_xml_from_zip(fname)
+    data_ = get_session_tree(fname)
 
     print()

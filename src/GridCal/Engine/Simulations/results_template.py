@@ -12,7 +12,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+import json
 from typing import List
+
+import numpy as np
+
 from GridCal.Engine.Simulations.result_types import ResultTypes
 
 
@@ -30,3 +34,30 @@ class ResultsTemplate:
         self.name = name
         self.available_results: List[ResultTypes] = available_results
         self.data_variables: List[str] = data_variables
+
+    def get_results_dict(self):
+        data = dict()
+
+        return data
+
+    def get_arrays(self):
+        return {var_name: getattr(self, var_name) for var_name in self.data_variables}
+
+    def to_json(self, file_name):
+        """
+        Export as json
+        :param file_name: File name
+        """
+
+        with open(file_name, "w") as output_file:
+            json_str = json.dumps(self.get_results_dict())
+            output_file.write(json_str)
+
+    def save(self, file_name, relative_path):
+
+        data = {var_name: getattr(self, var_name) for var_name in self.data_variables}
+
+        np.savez()
+
+    def load(self):
+        pass

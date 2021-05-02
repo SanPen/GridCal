@@ -88,6 +88,26 @@ class SimulationSession:
         if driver_type in self.drivers.keys():
             del self.drivers[driver_type]
 
+    def delete_driver_by_name(self, study_name: str):
+        """
+        Delete the driver by it's name
+        :param study_name: driver name
+        """
+        for driver_type, drv in self.drivers.items():
+            if study_name == drv.name:
+                del self.drivers[driver_type]
+                return
+
+    def get_driver_by_name(self, study_name: str):
+        """
+        Get the driver by it's name
+        :param study_name: driver name
+        """
+        for driver_type, drv in self.drivers.items():
+            if study_name == drv.name:
+                return self.drivers[driver_type]
+        return None
+
     def get_results_model_by_name(self, study_name, study_type):
         """
         Get the results model given the study name and study type

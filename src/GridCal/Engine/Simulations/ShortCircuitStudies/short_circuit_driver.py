@@ -125,10 +125,6 @@ class ShortCircuitResults(PowerFlowResults):
 
         self.short_circuit_power = np.zeros(n, dtype=complex)
 
-        self.overvoltage = np.zeros(n, dtype=complex)
-
-        self.undervoltage = np.zeros(n, dtype=complex)
-
         self.Sf = np.zeros(m, dtype=complex)
 
         self.If = np.zeros(m, dtype=complex)
@@ -136,14 +132,6 @@ class ShortCircuitResults(PowerFlowResults):
         self.loading = np.zeros(m, dtype=complex)
 
         self.losses = np.zeros(m, dtype=complex)
-
-        self.overloads = np.zeros(m, dtype=complex)
-
-        self.error = 0
-
-        self.converged = True
-
-        self.buses_useful_for_storage = list()
 
     def apply_from_island(self, results: "ShortCircuitResults", b_idx, br_idx):
         """
@@ -159,10 +147,6 @@ class ShortCircuitResults(PowerFlowResults):
 
         self.short_circuit_power[b_idx] = results.short_circuit_power
 
-        self.overvoltage[b_idx] = results.overvoltage
-
-        self.undervoltage[b_idx] = results.undervoltage
-
         self.Sf[br_idx] = results.Sf
 
         self.If[br_idx] = results.If
@@ -170,11 +154,6 @@ class ShortCircuitResults(PowerFlowResults):
         self.loading[br_idx] = results.loading
 
         self.losses[br_idx] = results.losses
-
-        self.overloads[br_idx] = results.overloads
-
-        if results.buses_useful_for_storage is not None:
-            self.buses_useful_for_storage = b_idx[results.buses_useful_for_storage]
 
 
 class ShortCircuitDriver(DriverTemplate):
