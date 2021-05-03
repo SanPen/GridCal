@@ -355,7 +355,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         else:
             self.msg('Select a data structure')
 
-    def analyze_all(self, imbalance_threshold=0.1, v_low=0.95, v_high=1.05):
+    def analyze_all(self, imbalance_threshold=0.02, v_low=0.95, v_high=1.05):
         """
         Analyze the model data
         :param imbalance_threshold: Allowed percentage of imbalance
@@ -496,10 +496,10 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
                 elements = self.circuit.get_generators()
 
                 for k, obj in enumerate(elements):
-                    Pg += obj.P
+                    Pg += obj.P * obj.active
 
                     if self.circuit.time_profile is not None:
-                        Pg_prof += obj.P_prof
+                        Pg_prof += obj.P_prof * obj.active_prof
 
                     if obj.Vset < v_low:
                         self.log.add(object_type='Generator',
@@ -520,21 +520,21 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
                 elements = self.circuit.get_batteries()
 
                 for obj in elements:
-                    Pg += obj.P
+                    Pg += obj.P * obj.active
 
                     if self.circuit.time_profile is not None:
-                        Pg_prof += obj.P_prof
+                        Pg_prof += obj.P_prof * obj.active_prof
 
             elif object_type == DeviceType.StaticGeneratorDevice.value:
                 elements = self.circuit.get_static_generators()
 
                 for k, obj in enumerate(elements):
-                    Pg += obj.P
-                    Qg += obj.Q
+                    Pg += obj.P * obj.active
+                    Qg += obj.Q * obj.active
 
                     if self.circuit.time_profile is not None:
-                        Pg_prof += obj.P_prof
-                        Qg_prof += obj.Q_prof
+                        Pg_prof += obj.P_prof * obj.active_prof
+                        Qg_prof += obj.Q_prof * obj.active_prof
 
             elif object_type == DeviceType.ShuntDevice.value:
                 elements = self.circuit.get_shunts()
@@ -543,12 +543,12 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
                 elements = self.circuit.get_loads()
 
                 for obj in elements:
-                    Pl += obj.P
-                    Ql += obj.Q
+                    Pl += obj.P * obj.active
+                    Ql += obj.Q * obj.active
 
                     if self.circuit.time_profile is not None:
-                        Pl_prof += obj.P_prof
-                        Ql_prof += obj.Q_prof
+                        Pl_prof += obj.P_prof * obj.active_prof
+                        Ql_prof += obj.Q_prof * obj.active_prof
 
         # compare loads
         p_ratio = abs(Pl - Pg) / (Pl + 1e-20)
@@ -580,21 +580,21 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
                 p_ratio = abs(Pl_prof[t] - Pg_prof[t]) / (Pl_prof[t] + 1e-20)
                 if p_ratio > imbalance_threshold:
                     msg = "{:.1f}".format(p_ratio * 100) + "% >> " + str(imbalance_threshold) + "%"
-                    self.log.add(object_type='Grid time events',
+                    self.log.add(object_type='Active power balance',
                                  element_name=self.circuit,
                                  element_index=t,
                                  severity='High',
-                                 propty='Active power balance ' + msg,
+                                 propty=msg,
                                  message='There is too much active power imbalance')
 
                 # compare reactive power limits
                 if not (Qmin <= -Ql_prof[t] <= Qmax):
                     msg = "Reactive power out of bounds {0}<={1}<={2}".format(Qmin, Ql, Qmax)
-                    self.log.add(object_type='Grid time events',
+                    self.log.add(object_type='Reactive power power balance',
                                  element_name=self.circuit,
                                  element_index=t,
                                  severity='High',
-                                 propty='Reactive power power balance ' + msg,
+                                 propty=msg,
                                  message='There is too much reactive power imbalance')
 
         # set logs
