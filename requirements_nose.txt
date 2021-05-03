@@ -32,7 +32,7 @@ numba==0.52.0
 numpy>=1.19
 openpyxl==3.0.6
 packaging==20.9
-pandas==1.2.2
+pandas>=1.1
 parso==0.8.1
 pexpect==4.8.0
 pickleshare==0.7.5
