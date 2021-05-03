@@ -57,6 +57,27 @@ class TimeSeriesResults(PowerFlowResults):
                                   hvdc_names=hvdc_names,
                                   bus_types=bus_types)
 
+        self.data_variables.append('time')  # this is missing from the base class
+
+        # results available (different from the base class)
+        self.available_results = [ResultTypes.BusVoltageModule,
+                                  ResultTypes.BusVoltageAngle,
+                                  ResultTypes.BusActivePower,
+                                  ResultTypes.BusReactivePower,
+
+                                  ResultTypes.BranchActivePowerFrom,
+                                  ResultTypes.BranchReactivePowerFrom,
+                                  ResultTypes.BranchLoading,
+                                  ResultTypes.BranchActiveLosses,
+                                  ResultTypes.BranchReactiveLosses,
+                                  ResultTypes.BranchVoltage,
+                                  ResultTypes.BranchAngles,
+                                  ResultTypes.SimulationError,
+
+                                  ResultTypes.HvdcLosses,
+                                  ResultTypes.HvdcPowerFrom,
+                                  ResultTypes.HvdcPowerTo]
+
         self.name = 'Time series'
         self.nt = len(time_array)
         self.m = m
@@ -94,24 +115,7 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.converged_values = np.ones(self.nt, dtype=bool)  # guilty assumption
 
-        # results available
-        self.available_results = [ResultTypes.BusVoltageModule,
-                                  ResultTypes.BusVoltageAngle,
-                                  ResultTypes.BusActivePower,
-                                  ResultTypes.BusReactivePower,
 
-                                  ResultTypes.BranchActivePowerFrom,
-                                  ResultTypes.BranchReactivePowerFrom,
-                                  ResultTypes.BranchLoading,
-                                  ResultTypes.BranchActiveLosses,
-                                  ResultTypes.BranchReactiveLosses,
-                                  ResultTypes.BranchVoltage,
-                                  ResultTypes.BranchAngles,
-                                  ResultTypes.SimulationError,
-
-                                  ResultTypes.HvdcLosses,
-                                  ResultTypes.HvdcPowerFrom,
-                                  ResultTypes.HvdcPowerTo]
 
     def set_at(self, t, results: PowerFlowResults):
         """

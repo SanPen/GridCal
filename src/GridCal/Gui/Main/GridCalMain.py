@@ -2036,10 +2036,7 @@ class MainGUI(QMainWindow):
                         raise Exception('Operation not supported: ' + str(operation))
 
             model.add_state(mod_cols, 'linear combinations')
-
-            # self.display_profiles()
             model.update()
-            # self.update_date_dependent_combos()
 
     def set_profile_as_linear_combination(self):
         """
