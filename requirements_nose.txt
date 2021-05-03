@@ -10,7 +10,6 @@ et-xmlfile==1.0.1
 folium==0.12.1
 geographiclib==1.50
 geopy==2.1.0
-GridCal @ file:///home/manuelnvro/dev/GridCal/src
 h5py==3.1.0
 idna==2.10
 iniconfig==1.1.1
