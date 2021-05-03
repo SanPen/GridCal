@@ -36,7 +36,7 @@ pandas>=1.1
 parso==0.8.1
 pexpect==4.8.0
 pickleshare==0.7.5
-Pillow==8.1.0
+Pillow==8.1.1
 pluggy==0.13.1
 POAP==0.1.26
 prompt-toolkit==3.0.16
