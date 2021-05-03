@@ -18,7 +18,7 @@ from enum import Enum
 
 class SimulationTypes(Enum):
     TemplateDriver = 'Template'
-    PowerFlow_run = 'power flow'
+    PowerFlow_run = 'Power flow'
     ShortCircuit_run = 'Short circuit'
     MonteCarlo_run = 'Monte Carlo'
     TimeSeries_run = 'Time series power flow'

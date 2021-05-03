@@ -14,10 +14,12 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Dict
-
+import pandas as pd
+import numpy as np
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Devices import *
+import GridCal.Engine.Devices as dev
+from GridCal.Engine.Devices import DeviceType
 
 
 def get_objects_dictionary():
@@ -25,49 +27,49 @@ def get_objects_dictionary():
     creates a dictionary with the types and the circuit objects
     :return: Dictionary instance
     """
-    object_types = {'area': Area(),
+    object_types = {'area': dev.Area(),
 
-                    'zone': Zone(),
+                    'zone': dev.Zone(),
 
-                    'substation': Substation(),
+                    'substation': dev.Substation(),
 
-                    'country': Country(),
+                    'country': dev.Country(),
 
-                    'bus': Bus(),
+                    'bus': dev.Bus(),
 
-                    'load': Load(),
+                    'load': dev.Load(),
 
-                    'static_generator': StaticGenerator(),
+                    'static_generator': dev.StaticGenerator(),
 
-                    'battery': Battery(),
+                    'battery': dev.Battery(),
 
-                    'generator': Generator(),
+                    'generator': dev.Generator(),
 
-                    'shunt': Shunt(),
+                    'shunt': dev.Shunt(),
 
-                    'wires': Wire(),
+                    'wires': dev.Wire(),
 
-                    'overhead_line_types': Tower(),
+                    'overhead_line_types': dev.Tower(),
 
-                    'underground_cable_types': UndergroundLineType(),
+                    'underground_cable_types': dev.UndergroundLineType(),
 
-                    'sequence_line_types': SequenceLineType(),
+                    'sequence_line_types': dev.SequenceLineType(),
 
-                    'transformer_types': TransformerType(),
+                    'transformer_types': dev.TransformerType(),
 
-                    'branch': Branch(),
+                    'branch': dev.Branch(),
 
-                    'transformer2w': Transformer2W(),
+                    'transformer2w': dev.Transformer2W(),
 
-                    'line': Line(),
+                    'line': dev.Line(),
 
-                    'dc_line': DcLine(None, None),
+                    'dc_line': dev.DcLine(None, None),
 
-                    'hvdc': HvdcLine(),
+                    'hvdc': dev.HvdcLine(),
 
-                    'vsc': VSC(None, None),
+                    'vsc': dev.VSC(None, None),
 
-                    'upfc': UPFC(None, None),
+                    'upfc': dev.UPFC(None, None),
                     }
 
     return object_types
@@ -210,7 +212,9 @@ def data_frames_to_circuit(data: Dict):
     circuit = MultiCircuit()
 
     if 'name' in data.keys():
-        circuit.name = data['name']
+        circuit.name = str(data['name'])
+        if circuit.name == 'nan':
+            circuit.name = ''
 
     # set the base magnitudes
     if 'baseMVA' in data.keys():
@@ -218,7 +222,9 @@ def data_frames_to_circuit(data: Dict):
 
     # Set comments
     if 'Comments' in data.keys():
-        circuit.comments = data['Comments']
+        circuit.comments = str(data['Comments'])
+        if circuit.comments == 'nan':
+            circuit.comments = ''
 
     if 'ModelVersion' in data.keys():
         circuit.model_version = int(data['ModelVersion'])
@@ -315,7 +321,8 @@ def data_frames_to_circuit(data: Dict):
                                 """
 
                                 # search for the Substation, Area, Zone or Country matching object and assign the object
-                                val = str(df[object_property_name].values[i])  # this is the stored string (either idtag or name...)
+                                # this is the stored string (either idtag or name...)
+                                val = str(df[object_property_name].values[i])
 
                                 if dtype not in elements_dict.keys():
                                     elements_dict[dtype] = dict()
@@ -347,7 +354,7 @@ def data_frames_to_circuit(data: Dict):
                                 # check if the bus is in the dictionary...
                                 if df[object_property_name].values[i] in elements_dict[DeviceType.BusDevice].keys():
 
-                                    parent_bus: Bus = elements_dict[DeviceType.BusDevice][df[object_property_name].values[i]]
+                                    parent_bus: dev.Bus = elements_dict[DeviceType.BusDevice][df[object_property_name].values[i]]
                                     setattr(devices[i], object_property_name, parent_bus)
 
                                     # add the device to the bus
@@ -374,7 +381,8 @@ def data_frames_to_circuit(data: Dict):
                                     setattr(devices[i], object_property_name, val)
 
                                 else:
-                                    circuit.logger.add_error(dtype.value + ' type not found', str(df[object_property_name].values[i]))
+                                    circuit.logger.add_error(dtype.value + ' type not found',
+                                                             str(df[object_property_name].values[i]))
 
                             elif dtype == bool:
                                 # regular types (int, str, float, etc...)
@@ -500,7 +508,7 @@ def data_frames_to_circuit(data: Dict):
                 ypos = df['ypos'].values[i]
                 phase = df['phase'].values[i]
 
-                w = WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
+                w = dev.WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
                 tower.wires_in_tower.append(w)
 
     # Other actions ----------------------------------------------------------------------------------------------------

@@ -29,7 +29,7 @@ from GridCal.Engine.IO.ipa_parser import load_iPA
 from GridCal.Engine.IO.json_parser import parse_json, parse_json_data_v2, parse_json_data_v3
 from GridCal.Engine.IO.raw_parser import PSSeParser
 from GridCal.Engine.IO.cim.cim_parser import CIMImport
-from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, get_frames_from_zip, get_session_tree
+from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, get_frames_from_zip, get_session_tree, load_session_driver_objects
 from GridCal.Engine.IO.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from GridCal.Engine.IO.h5_interface import save_h5, open_h5
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -351,6 +351,21 @@ class FileOpenThread(QThread):
         else:
             return dict()
 
+    def load_session_objects(self, session_name: str, study_name: str):
+        """
+        Load the numpy objects of the session
+        :param session_name: Name of the session (i.e. GUI Session)
+        :param study_name: Name of the study i.e Power Flow)
+        :return: Dictionary (name: array)
+        """
+        if isinstance(self.file_name, str):
+            if self.file_name.endswith('.gridcal'):
+                return load_session_driver_objects(self.file_name, session_name, study_name)
+            else:
+                return dict()
+        else:
+            return dict()
+
     def run(self):
         """
         run the file open procedure
@@ -421,6 +436,21 @@ class FileSaveThread(QThread):
         if isinstance(self.file_name, str):
             if self.file_name.endswith('.gridcal'):
                 return get_session_tree(self.file_name)
+            else:
+                return dict()
+        else:
+            return dict()
+
+    def load_session_objects(self, session_name: str, study_name: str):
+        """
+        Load the numpy objects of the session
+        :param session_name: Name of the session (i.e. GUI Session)
+        :param study_name: Name of the study i.e Power Flow)
+        :return: Dictionary (name: array)
+        """
+        if isinstance(self.file_name, str):
+            if self.file_name.endswith('.gridcal'):
+                return load_session_driver_objects(self.file_name, session_name, study_name)
             else:
                 return dict()
         else:

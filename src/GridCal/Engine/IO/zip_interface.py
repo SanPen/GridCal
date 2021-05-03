@@ -95,7 +95,7 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
                 if hasattr(drv, 'results'):
                     if drv.results is not None:
                         for arr_name, arr in drv.results.get_arrays().items():
-                            filename = 'sessions/' + session.name + '/' + drv.name + '/' + arr_name
+                            filename = 'sessions/' + session.name + '/' + drv.tpe.value + '/' + arr_name
 
                             if text_func is not None:
                                 text_func('Flushing ' + filename + ' to ' + filename_zip + '...')
@@ -216,6 +216,39 @@ def get_session_tree(file_name_zip: str):
     return data
 
 
+def load_session_driver_objects(file_name_zip: str, session_name: str, study_name: str):
+    """
+    Get the sessions structure
+    :param file_name_zip:
+    :param session_name:
+    :param study_name:
+    :return:
+    """
+    try:
+        zip_file_pointer = zipfile.ZipFile(file_name_zip)
+    except zipfile.BadZipFile:
+        return dict()
+
+    data = dict()
+
+    # traverse the zip names and pick all those that start with sessions/session_name/study_name
+    for name in zip_file_pointer.namelist():
+        if '/' in name:
+            path = name.split('/')
+            if len(path) > 3:
+                if path[0].lower() == 'sessions' and session_name == path[1] and study_name == path[2]:
+                    arr_name = path[3].replace('.npy', '')
+                    # create a buffer to read the file
+                    file_pointer = zip_file_pointer.open(name)
+
+                    try:
+                        data[arr_name] = np.load(file_pointer)
+                    except ValueError:
+                        data[arr_name] = np.load(file_pointer, allow_pickle=True)
+
+    return data
+
+
 def get_xml_content(file_ptr):
     """
     Reads the content of a file
@@ -292,5 +325,9 @@ if __name__ == '__main__':
     # data = get_xml_from_zip(fname)
 
     data_ = get_session_tree(fname)
+
+    load_session_driver_objects(file_name_zip=fname,
+                                session_name='GUI session',
+                                study_name='Power Flow')
 
     print()

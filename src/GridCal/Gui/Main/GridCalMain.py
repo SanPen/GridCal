@@ -253,6 +253,7 @@ class MainGUI(QMainWindow):
         self.painter = None
         self.open_file_thread_object = None
         self.save_file_thread_object = None
+        self.last_file_driver = None
         self.delete_and_reduce_driver = None
         self.export_all_thread_object = None
         self.topology_reduction = None
@@ -462,6 +463,7 @@ class MainGUI(QMainWindow):
         self.ui.view_next_simulation_step_pushButton.clicked.connect(self.colour_next_simulation_step)
 
         self.ui.copy_results_pushButton.clicked.connect(self.copy_results_data)
+
         self.ui.copy_numpy_button.clicked.connect(self.copy_results_data_as_numpy)
 
         self.ui.undo_pushButton.clicked.connect(self.undo)
@@ -487,6 +489,8 @@ class MainGUI(QMainWindow):
         self.ui.search_results_Button.clicked.connect(self.search_in_results)
 
         self.ui.deleteDriverButton.clicked.connect(self.delete_results_driver)
+
+        self.ui.loadResultFromDiskButton.clicked.connect(self.load_results_driver)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -1126,8 +1130,7 @@ class MainGUI(QMainWindow):
             self.LOCK()
 
             # create thread
-            self.open_file_thread_object = filedrv.FileOpenThread(
-                file_name=filenames if len(filenames) > 1 else filenames[0])
+            self.open_file_thread_object = filedrv.FileOpenThread(file_name=filenames if len(filenames) > 1 else filenames[0])
 
             # make connections
             self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
@@ -1141,6 +1144,10 @@ class MainGUI(QMainWindow):
             # thread start
             self.open_file_thread_object.start()
 
+            # register as the latest file driver
+            self.last_file_driver = self.open_file_thread_object
+
+            # register thread
             self.stuff_running_now.append('file_open')
 
     def post_open_file(self):
@@ -1371,6 +1378,9 @@ class MainGUI(QMainWindow):
 
             # thread start
             self.save_file_thread_object.start()
+
+            # register as the latest file driver
+            self.last_file_driver = self.save_file_thread_object
 
             self.stuff_running_now.append('file_save')
 
@@ -2076,6 +2086,31 @@ class MainGUI(QMainWindow):
         else:
             # no buses or no actual change
             pass
+
+    def load_results_driver(self):
+        """
+        Load a driver from disk
+        """
+        idx = self.ui.diskSessionsTreeView.selectedIndexes()
+        if len(idx) > 0:
+            tree_mdl = self.ui.diskSessionsTreeView.model()
+            item = tree_mdl.itemFromIndex(idx[0])
+            path = get_tree_item_path(item)
+
+            if len(path) > 1:
+                session_name = path[0]
+                study_name = path[1]
+                if self.last_file_driver is not None:
+                    data_dict = self.last_file_driver.load_session_objects(session_name=session_name,
+                                                                           study_name=study_name)
+
+                    self.session.register_driver_from_disk_data(self.circuit, study_name, data_dict)
+
+                    self.update_available_results()
+                else:
+                    error_msg('No file driver declared :/')
+            else:
+                info_msg('Select a driver inside a session', 'Driver load from disk')
 
     def delete_results_driver(self):
         """
