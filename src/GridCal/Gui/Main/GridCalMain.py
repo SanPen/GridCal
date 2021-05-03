@@ -2286,13 +2286,6 @@ class MainGUI(QMainWindow):
                 # compute the automatic precision
                 if self.ui.auto_precision_checkBox.isChecked():
 
-                    # numerical_circuit = core.compile_snapshot_circuit(circuit=self.circuit)
-                    # P = np.abs(numerical_circuit.get_injections().real)
-                    # P = P[P > 0]
-                    # lg = np.log10(P)
-                    # lg[lg == -np.inf] = 1e20
-                    # tol_idx = int(np.min(np.abs(lg))) * 3
-                    # tolerance = 1.0 / (10.0 ** tol_idx)
                     options.tolerance, tol_idx = self.circuit.get_automatic_precision()
 
                     if tol_idx > 12:
@@ -5899,6 +5892,12 @@ class MainGUI(QMainWindow):
 
             if mdl is not None:
                 self.ui.resultsTableView.setModel(mdl)
+
+    def get_snapshot_circuit(self):
+        return core.compile_snapshot_circuit(circuit=self.circuit)
+
+    def get_time_circuit(self):
+        return core.compile_time_circuit(circuit=self.circuit)
 
 
 def run(use_native_dialogues=True):

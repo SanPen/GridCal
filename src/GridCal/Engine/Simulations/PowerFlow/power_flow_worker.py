@@ -417,7 +417,6 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     results.Vbranch = Vbranch
     results.loading = loading
     results.losses = losses
-    results.flow_direction = flow_direction
     results.transformer_tap_module = solution.ma[circuit.transformer_idx]
     results.convergence_reports.append(report)
     results.Qpv = Sbus.imag[circuit.pv]

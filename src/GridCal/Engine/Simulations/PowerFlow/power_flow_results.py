@@ -150,8 +150,6 @@ class PowerFlowResults(ResultsTemplate):
 
         self.loading = np.zeros(m, dtype=complex)
 
-        self.flow_direction = np.zeros(m, dtype=float)
-
         self.transformer_tap_module = np.zeros(n_tr, dtype=float)
 
         self.losses = np.zeros(m, dtype=complex)
@@ -216,7 +214,6 @@ class PowerFlowResults(ResultsTemplate):
         val.If = self.If.copy()
         val.Vbranch = self.Vbranch.copy()
         val.loading = self.loading.copy()
-        val.flow_direction = self.flow_direction.copy()
         val.transformer_tap_module = self.transformer_tap_module.copy()
         val.losses = self.losses.copy()
         val.overloads = self.overloads.copy()
@@ -253,8 +250,6 @@ class PowerFlowResults(ResultsTemplate):
         self.transformer_tap_module[tr_idx] = results.transformer_tap_module
 
         self.losses[br_idx] = results.losses
-
-        self.flow_direction[br_idx] = results.flow_direction
 
         self.convergence_reports += results.convergence_reports
 

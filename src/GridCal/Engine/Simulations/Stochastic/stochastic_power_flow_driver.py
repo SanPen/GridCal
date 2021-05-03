@@ -245,7 +245,6 @@ class StochasticPowerFlowDriver(DriverTemplate):
             avg_res.Vbranch[br_idx] = Vbranch
             avg_res.loading[br_idx] = loading
             avg_res.losses[br_idx] = losses
-            avg_res.flow_direction[br_idx] = flow_direction
 
         self.results = mc_results
 
@@ -367,7 +366,6 @@ class StochasticPowerFlowDriver(DriverTemplate):
             avg_res.Vbranch[br_idx] = Vbranch
             avg_res.loading[br_idx] = loading
             avg_res.losses[br_idx] = losses
-            avg_res.flow_direction[br_idx] = flow_direction
 
         self.results = lhs_results
 

@@ -109,13 +109,9 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.hvdc_loading = np.zeros((self.nt, self.n_hvdc))
 
-        self.flow_direction = np.zeros((self.nt, m), dtype=float)
-
         self.error_values = np.zeros(self.nt)
 
         self.converged_values = np.ones(self.nt, dtype=bool)  # guilty assumption
-
-
 
     def set_at(self, t, results: PowerFlowResults):
         """
@@ -136,8 +132,6 @@ class TimeSeriesResults(PowerFlowResults):
         self.loading[t, :] = results.loading
 
         self.losses[t, :] = results.losses
-
-        self.flow_direction[t, :] = results.flow_direction
 
         self.error_values[t] = results.error
 
@@ -194,8 +188,6 @@ class TimeSeriesResults(PowerFlowResults):
 
             self.losses = results.losses
 
-            self.flow_direction = results.flow_direction
-
             if (results.error_values > self.error_values).any():
                 self.error_values += results.error_values
 
@@ -211,8 +203,6 @@ class TimeSeriesResults(PowerFlowResults):
 
             self.losses[:, br_idx] = results.losses
 
-            self.flow_direction[:, br_idx] = results.flow_direction
-
             if (results.error_values > self.error_values).any():
                 self.error_values += results.error_values
 
@@ -226,8 +216,6 @@ class TimeSeriesResults(PowerFlowResults):
             self.loading[np.ix_(t_index, br_idx)] = results.loading
 
             self.losses[np.ix_(t_index, br_idx)] = results.losses
-
-            self.flow_direction[np.ix_(t_index, br_idx)] = results.flow_direction
 
             if (results.error_values > self.error_values[t_index]).any():
                 self.error_values[t_index] += results.error_values

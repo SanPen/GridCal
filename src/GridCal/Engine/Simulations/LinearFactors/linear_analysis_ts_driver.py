@@ -215,20 +215,6 @@ class LinearAnalysisTimeSeries(TSDriverTemplate):
         self.progress_text.emit('Done!')
         self.done_signal.emit()
 
-    def cancel(self):
-        """
-        Cancel the simulation
-        """
-        self.__cancel__ = True
-        if self.ptdf_driver is not None:
-            self.ptdf_driver.cancel()
-
-        if self.pool is not None:
-            self.pool.terminate()
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Cancelled!')
-        self.done_signal.emit()
-
 
 if __name__ == '__main__':
     from matplotlib import pyplot as plt
