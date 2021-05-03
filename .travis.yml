@@ -9,9 +9,11 @@ python:
 # command to install dependencies
 install:
   - pip install -r requirements_nose.txt
+  - pwd
   #- pip install ".[test]" .
 # command to run tests
 script:
   #- pytest
-  - cd SanPen/GridCal/src/tests
+  - pwd 
+  #- cd SanPen/GridCal/src/tests
   - nosetests
