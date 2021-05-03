@@ -3,17 +3,13 @@ services:
   - xvfb  # this is necessary for travis-ci to work with Qt
 language: python
 python:
-  #- "3.6"
-  #- "3.7"
+  - "3.6"
+  - "3.7"
   - "3.8"
 # command to install dependencies
 install:
   - pip install -r requirements_nose.txt
-  - pwd
-  #- pip install ".[test]" .
 # command to run tests
 script:
-  #- pytest
   - cd src/tests
-  - pwd 
   - nosetests
