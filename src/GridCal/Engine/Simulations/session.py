@@ -16,6 +16,43 @@ from uuid import uuid4
 
 # Module imports
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityResults
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_ts_driver import AvailableTransferCapacityTimeSeriesResults
+from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
+from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import ContingencyAnalysisTimeSeriesResults
+from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver import ContinuationPowerFlowResults
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisResults
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesResults
+from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeriesResults
+from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_driver import ShortCircuitResults
+from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_results import StochasticPowerFlowResults
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
+
+
+def get_results_object_dictionary():
+    """
+    Get dictionary of recognizable result types in order to be able to load a driver from disk
+    :return: dictionary[driver name: empty results object]
+    """
+    lst = [(AvailableTransferCapacityResults(0, 0, [], [], []), SimulationTypes.AvailableTransferCapacity_run),
+           (AvailableTransferCapacityTimeSeriesResults(0, 0, [], [], [], []), SimulationTypes.AvailableTransferCapacityTS_run),
+           (ContingencyAnalysisResults(0, 0, [], [], []), SimulationTypes.ContingencyAnalysisTS_run),
+           (ContingencyAnalysisTimeSeriesResults(0, 0, 0, [], [], [], []), SimulationTypes.ContingencyAnalysisTS_run),
+           (ContinuationPowerFlowResults(0, 0, 0, [], [], []), SimulationTypes.ContinuationPowerFlow_run),
+           (LinearAnalysisResults(0, 0, (), (), ()), SimulationTypes.LinearAnalysis_run),
+           (LinearAnalysisTimeSeriesResults(0, 0, (), (), (), ()), SimulationTypes.LinearAnalysis_TS_run),
+           (OptimalPowerFlowResults((), (), (), (), ()), SimulationTypes.OPF_run),
+           (OptimalPowerFlowTimeSeriesResults((), (), (), (), (), 0, 0, 0), SimulationTypes.OPFTimeSeries_run),
+           (PowerFlowResults(0, 0, 0, 0, (), (), (), (), ()), SimulationTypes.PowerFlow_run),
+           (TimeSeriesResults(0, 0, 0, 0, (), (), (), (), (), ()), SimulationTypes.TimeSeries_run),
+           (ShortCircuitResults(0, 0, 0, (), (), (), ()), SimulationTypes.ShortCircuit_run),
+           (StochasticPowerFlowResults(0, 0, 0, (), (), ()), SimulationTypes.StochasticPowerFlow)
+           ]
+
+    return {tpe.value: (elm, tpe) for elm, tpe in lst}
 
 
 class SimulationSession:
@@ -38,32 +75,38 @@ class SimulationSession:
         return self.name
 
     def clear(self):
+        """
+        Delete all the drivers
+        """
         self.drivers = dict()
 
     def register(self, driver):
         """
         Register driver
-        :param driver:
-        :return:
+        :param driver: driver to register (must have a tpe variable in it)
         """
         self.drivers[driver.tpe] = driver
 
     def get_available_drivers(self):
+        """
+        Get a list of the available driver objects
+        :return: List[Driver]
+        """
         return [drv for driver_type, drv in self.drivers.items() if drv is not None]
 
     def exists(self, driver_type: SimulationTypes):
         """
         Get the results of the driver
-        :param driver_type:
-        :return:
+        :param driver_type: driver type to look for
+        :return: True / False
         """
         return driver_type in self.drivers.keys()
 
     def get_driver_results(self, driver_type: SimulationTypes):
         """
         Get the results of the driver
-        :param driver_type:
-        :return:
+        :param driver_type: driver type
+        :return: driver, results (None, None if not found)
         """
         if driver_type in self.drivers.keys():
             drv = self.drivers[driver_type]
@@ -74,12 +117,40 @@ class SimulationSession:
         else:
             return None, None
 
+    def delete_driver(self, driver_type: SimulationTypes):
+        """
+        Get the results of the driver
+        :param driver_type: driver type to delete
+        """
+        if driver_type in self.drivers.keys():
+            del self.drivers[driver_type]
+
+    def delete_driver_by_name(self, study_name: str):
+        """
+        Delete the driver by it's name
+        :param study_name: driver name
+        """
+        for driver_type, drv in self.drivers.items():
+            if study_name == drv.name:
+                del self.drivers[driver_type]
+                return
+
+    def get_driver_by_name(self, study_name: str):
+        """
+        Get the driver by it's name
+        :param study_name: driver name
+        """
+        for driver_type, drv in self.drivers.items():
+            if study_name == drv.name:
+                return self.drivers[driver_type]
+        return None
+
     def get_results_model_by_name(self, study_name, study_type):
         """
         Get the results model given the study name and study type
-        :param study_name:
-        :param study_type:
-        :return:
+        :param study_name: name of the study
+        :param study_type: name of the study type
+        :return: ResultsModel instance or None if not found
         """
         for driver_type, drv in self.drivers.items():
             if study_name == drv.name:
@@ -90,4 +161,32 @@ class SimulationSession:
                     return None
 
         return None
+
+    def register_driver_from_disk_data(self, grid, study_name: str, data_dict: dict):
+        """
+        Create driver with the results
+        :param grid: MultiCircuit instance
+        :param study_name: name of the study (i.e. Power Flow)
+        :param data_dict: dictionary of data coming from the file
+        :return:
+        """
+
+        # get the results' object dictionary
+        drivers_dict = get_results_object_dictionary()
+
+        if study_name in drivers_dict.keys():
+
+            # declare a dummy driver
+            drv = DriverTemplate(grid=grid)
+
+            # set the empty results driver
+            drv.results, drv.tpe = drivers_dict[study_name]
+            drv.name = drv.tpe.value
+
+            # fill in the variables
+            for arr_name, arr in data_dict.items():
+                setattr(drv.results, arr_name, arr)
+
+            self.register(drv)
+
 

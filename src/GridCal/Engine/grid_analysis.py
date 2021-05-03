@@ -77,7 +77,7 @@ class TimeSeriesResultsAnalysis:
             branches_over = np.where(branch_loading > 1.0)[0]
 
             # get the buses from the selected branches
-            flow_dir = self.res.flow_direction[t, branches_over]
+            flow_dir = self.res.Sf[t, branches_over].real
 
             branches_w_from = np.where(flow_dir > 0)[0]
             branches_w_to = np.where(flow_dir < 0)[0]

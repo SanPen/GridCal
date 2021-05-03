@@ -15,7 +15,7 @@
    height="192"
    viewBox="0 0 192 192"
    sodipodi:docname="ptdf_ts.svg"
-   inkscape:version="0.92.4 (unknown)">
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
   <metadata
      id="metadata8">
     <rdf:RDF>
@@ -54,21 +54,34 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1863"
-     inkscape:window-height="1025"
+     inkscape:window-width="1848"
+     inkscape:window-height="1018"
      id="namedview4"
      showgrid="false"
      inkscape:zoom="1.5585937"
-     inkscape:cx="55.286521"
-     inkscape:cy="163.11521"
-     inkscape:window-x="57"
-     inkscape:window-y="27"
+     inkscape:cx="-240.49294"
+     inkscape:cy="157.98237"
+     inkscape:window-x="72"
+     inkscape:window-y="25"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g4615-6"
+     inkscape:current-layer="svg2"
      inkscape:snap-bbox="true" />
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:237.84448242px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#00d4aa;fill-opacity:1;stroke:none;stroke-width:5.94611311;"
+     x="30.521622"
+     y="172.3031"
+     id="text4524-9"
+     inkscape:transform-center-x="7.0618931"
+     inkscape:transform-center-y="-1.1769834"><tspan
+       sodipodi:role="line"
+       id="tspan4522-0"
+       x="30.521622"
+       y="172.3031"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'TeX Gyre Pagella Math';-inkscape-font-specification:'TeX Gyre Pagella Math';fill:#00d4aa;fill-opacity:1;stroke-width:5.94611311;">α</tspan></text>
   <g
      id="g1179"
-     transform="matrix(0.74930152,0,0,0.74930152,26.063368,46.490584)">
+     transform="matrix(0.74930152,0,0,0.74930152,-284.47298,-110.7024)">
     <rect
        y="159.52846"
        x="8.7577868"
@@ -592,7 +605,7 @@
          y="37.508411"
          ry="1.6003295" />
       <rect
-         style="fill:#008baa;stroke:none;stroke-width:0.79624575;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal;fill-opacity:1"
+         style="fill:#00d4aa;stroke:none;stroke-width:0.79624575;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal;fill-opacity:1"
          id="rect4596-3-5"
          width="29.214371"
          height="6.7369676"

@@ -141,6 +141,10 @@ class OpfTimeCircuit(TimeCircuit):
         return self.branch_data.branch_rates
 
     @property
+    def branch_contingency_rates(self):
+        return self.branch_data.branch_contingency_rates
+
+    @property
     def branch_cost(self):
         return self.branch_data.branch_cost
 

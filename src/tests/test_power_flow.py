@@ -69,8 +69,9 @@ def test_ieee_grids():
 
             v_ok = np.allclose(v_gc, v_psse, atol=1e-3)
             flow_ok = np.allclose(p_gc, p_psse, atol=1e-0)
-            assert (v_ok)
-            assert (flow_ok)
+
+            assert v_ok
+            assert flow_ok
 
         print(solver_type, 'ok')
 

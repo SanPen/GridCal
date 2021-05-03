@@ -464,8 +464,6 @@ class SnapshotData:
 
         # FUBM- Saves the "from" bus identifier for Vf controlled by Beq
         #  (Converters type II for Vdc control)
-        # self.VfBeqbus = np.unique(np.r_[VfBeqbus_sh, self.F[self.iBeqv]])
-        # self.VfBeqbus.sort()
         self.VfBeqbus = self.F[self.iBeqv]
 
         # FUBM- Saves the "to"   bus identifier for Vt controlled by ma
@@ -525,6 +523,10 @@ class SnapshotData:
     @property
     def Rates(self):
         return self.branch_data.branch_rates[:, 0]
+
+    @property
+    def ContingencyRates(self):
+        return self.branch_data.branch_contingency_rates[:, 0]
 
     @property
     def Qmax_bus(self):

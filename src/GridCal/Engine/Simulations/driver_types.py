@@ -17,7 +17,8 @@ from enum import Enum
 
 
 class SimulationTypes(Enum):
-    PowerFlow_run = 'power flow'
+    TemplateDriver = 'Template'
+    PowerFlow_run = 'Power flow'
     ShortCircuit_run = 'Short circuit'
     MonteCarlo_run = 'Monte Carlo'
     TimeSeries_run = 'Time series power flow'
@@ -30,8 +31,23 @@ class SimulationTypes(Enum):
     OPFTimeSeries_run = 'OPF Time series'
     TransientStability_run = 'Transient stability'
     TopologyReduction_run = 'Topology reduction'
-    LinearAnalysis_run = 'PTDF'
-    LinearAnalysis_TS_run = 'PTDF_TS'
-    OTDF_run = 'OTDF'
-    ContingencyAnalysisTS_run = 'OTDF_TS'
+    LinearAnalysis_run = 'Linear analysis'
+    LinearAnalysis_TS_run = 'Linear analysis time series'
+    ContingencyAnalysis_run = 'Contingency analysis'
+    ContingencyAnalysisTS_run = 'Contingency analysis time series'
     Delete_and_reduce_run = 'Delete and reduce'
+    AvailableTransferCapacity_run = 'Available transfer capacity'
+    AvailableTransferCapacityTS_run = 'Available transfer capacity time series'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return SimulationTypes[s]
+        except KeyError:
+            return s

@@ -20,10 +20,6 @@ import scipy.sparse as sp
 from scipy.sparse.linalg import spsolve, factorized
 import time
 
-from PySide2.QtCore import QThread, Signal
-
-from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
@@ -32,9 +28,11 @@ from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import Line
 from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.results_template import ResultsTemplate
+from GridCal.Engine.Simulations.driver_template import TSDriverTemplate
 
 
-class LinearAnalysisTimeSeriesResults:
+class LinearAnalysisTimeSeriesResults(ResultsTemplate):
 
     def __init__(self, n, m, time_array, bus_names, bus_types, branch_names):
         """
@@ -43,7 +41,22 @@ class LinearAnalysisTimeSeriesResults:
         @param m: number of branches
         @param nt: number of time steps
         """
-        self.name = 'Linear Analysis time series'
+        ResultsTemplate.__init__(self,
+                                 name='Linear Analysis time series',
+                                 available_results=[ResultTypes.BusActivePower,
+                                                    ResultTypes.BranchActivePowerFrom,
+                                                    ResultTypes.BranchLoading
+                                                    ],
+                                 data_variables=['bus_names',
+                                                 'bus_types',
+                                                 'time',
+                                                 'branch_names',
+                                                 'voltage',
+                                                 'S',
+                                                 'Sf',
+                                                 'loading',
+                                                 'losses'])
+
         self.nt = len(time_array)
         self.m = m
         self.n = n
@@ -65,13 +78,6 @@ class LinearAnalysisTimeSeriesResults:
 
         self.losses = np.zeros((self.nt, m), dtype=float)
 
-        self.available_results = [
-                                  # ResultTypes.BusVoltageModule,
-                                  ResultTypes.BusActivePower,
-                                  ResultTypes.BranchActivePowerFrom,
-                                  ResultTypes.BranchLoading
-                                 ]
-
     def get_results_dict(self):
         """
         Returns a dictionary with the results sorted in a dictionary
@@ -84,16 +90,6 @@ class LinearAnalysisTimeSeriesResults:
                 'Sbr_imag': self.Sf.imag.tolist(),
                 'loading': np.abs(self.loading).tolist()}
         return data
-
-    def save(self, file_name):
-        """
-        Export as json
-        :param file_name: Name of the file
-        """
-
-        with open(file_name, "wb") as output_file:
-            json_str = json.dumps(self.get_results_dict())
-            output_file.write(json_str)
 
     def mdl(self, result_type: ResultTypes) -> "ResultsModel":
         """
@@ -144,10 +140,7 @@ class LinearAnalysisTimeSeriesResults:
         return ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
 
 
-class LinearAnalysisTimeSeries(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class LinearAnalysisTimeSeries(TSDriverTemplate):
     name = 'Linear analysis time series'
     tpe = SimulationTypes.LinearAnalysis_TS_run
 
@@ -157,10 +150,7 @@ class LinearAnalysisTimeSeries(QThread):
         @param grid: MultiCircuit instance
         @param options: LinearAnalysisOptions instance
         """
-        QThread.__init__(self)
-
-        # reference the grid directly
-        self.grid = grid
+        TSDriverTemplate.__init__(self, grid=grid, start_=start_, end_=end_)
 
         self.options = options
 
@@ -172,18 +162,6 @@ class LinearAnalysisTimeSeries(QThread):
                                                        branch_names=[])
 
         self.ptdf_driver = LinearAnalysis(grid=self.grid, distributed_slack=self.options.distribute_slack)
-
-        self.start_ = start_
-
-        self.end_ = end_
-
-        self.indices = pd.to_datetime(self.grid.time_profile)
-
-        self.elapsed = 0
-
-        self.logger = Logger()
-
-        self.__cancel__ = False
 
     def get_steps(self):
         """
@@ -215,13 +193,16 @@ class LinearAnalysisTimeSeries(QThread):
         self.indices = pd.to_datetime(ts_numeric_circuit.time_array[time_indices])
 
         self.progress_text.emit('Computing PTDF...')
-        ptdf_analysis = LinearAnalysis(grid=self.grid, distributed_slack=self.options.distribute_slack)
-        ptdf_analysis.run()
+        linear_analysis = LinearAnalysis(grid=self.grid,
+                                         distributed_slack=self.options.distribute_slack,
+                                         correct_values=self.options.correct_values
+                                         )
+        linear_analysis.run()
 
         self.progress_text.emit('Computing branch flows...')
 
         Pbus_0 = ts_numeric_circuit.Sbus.real[:, time_indices]
-        self.results.Sf = ptdf_analysis.get_branch_time_series(Pbus_0)
+        self.results.Sf = linear_analysis.get_flows_time_series(Pbus_0)
 
         # compute post process
         self.results.loading = self.results.Sf / (ts_numeric_circuit.Rates[:, time_indices].T + 1e-9)
@@ -232,20 +213,6 @@ class LinearAnalysisTimeSeries(QThread):
         # send the finnish signal
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Done!')
-        self.done_signal.emit()
-
-    def cancel(self):
-        """
-        Cancel the simulation
-        """
-        self.__cancel__ = True
-        if self.ptdf_driver is not None:
-            self.ptdf_driver.cancel()
-
-        if self.pool is not None:
-            self.pool.terminate()
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Cancelled!')
         self.done_signal.emit()
 
 

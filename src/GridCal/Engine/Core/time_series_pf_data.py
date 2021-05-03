@@ -58,6 +58,11 @@ class TimeCircuit(SnapshotData):
 
         self.time_array = time_array
 
+        self.vd_prof_ = None
+        self.pq_prof_ = None
+        self.pv_prof_ = None
+        self.pqpv_prof_ = None
+
     def consolidate(self):
         self.Vbus_ = self.bus_data.Vbus.copy()
         self.Sbus_ = self.get_injections(normalize=True)
@@ -92,6 +97,10 @@ class TimeCircuit(SnapshotData):
         return self.branch_data.branch_rates
 
     @property
+    def ContingencyRates(self):
+        return self.branch_data.branch_contingency_rates
+
+    @property
     def vd(self):
 
         if self.vd_ is None:
@@ -99,6 +108,58 @@ class TimeCircuit(SnapshotData):
                                                                      types=self.bus_data.bus_types)
 
         return self.vd_
+
+    def compute_dynamic_types(self):
+        """
+        Compute bus types profiles
+        :return:
+        """
+        self.vd_prof_ = list()
+        self.pq_prof_ = list()
+        self.pv_prof_ = list()
+        self.pqpv_prof_ = list()
+
+        for t in range(self.ntime):
+            vd, pq, pv, pqpv = compile_types(Sbus=self.Sbus[:, t], types=self.bus_data.bus_types_prof[:, t])
+            self.vd_prof_.append(vd)
+            self.pq_prof_.append(pq)
+            self.pv_prof_.append(pv)
+            self.pqpv_prof_.append(pqpv)
+
+    def bus_types_prof(self, t):
+        return self.bus_data.bus_types_prof[:, t].astype(int)
+
+    @property
+    def vd_prof(self):
+
+        if self.vd_prof_ is None:
+            self.compute_dynamic_types()
+
+        return self.vd_prof_
+
+    @property
+    def pq_prof(self):
+
+        if self.pq_prof_ is None:
+            self.compute_dynamic_types()
+
+        return self.pq_prof_
+
+    @property
+    def pv_prof(self):
+
+        if self.pv_prof_ is None:
+            self.compute_dynamic_types()
+
+        return self.pv_prof_
+
+    @property
+    def pqpv_prof(self):
+
+        if self.pqpv_prof_ is None:
+            self.compute_dynamic_types()
+
+        return self.pqpv_prof_
 
     @property
     def hvdc_Pf(self):

@@ -120,6 +120,7 @@ class TimeFrame(Enum):
 
 
 class DeviceType(Enum):
+    NoDevice = "NoDevice"
     CircuitDevice = 'Circuit'
     BusDevice = 'Bus'
     BranchDevice = 'Branch'

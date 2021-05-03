@@ -17,22 +17,23 @@ import numpy as np
 import pandas as pd
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 
 class NumericPowerFlowResults:
 
     def __init__(self, V, converged, norm_f, Scalc, ma=None, theta=None, Beq=None, iterations=0, elapsed=0):
         """
-
-        :param V:
-        :param converged:
-        :param norm_f:
-        :param Scalc:
-        :param ma:
-        :param theta:
-        :param Beq:
-        :param iterations:
-        :param elapsed:
+        Object to store the results returned by a numeric power flow routine
+        :param V: Voltage vector
+        :param converged: converged?
+        :param norm_f: error
+        :param Scalc: Calculated power vector
+        :param ma: Tap modules vector for all the branches
+        :param theta: Tap angles vector for all the branches
+        :param Beq: Equivalent susceptance vector for all the branches
+        :param iterations: number of iterations
+        :param elapsed: time elapsed
         """
         self.V = V
         self.converged = converged
@@ -45,51 +46,79 @@ class NumericPowerFlowResults:
         self.elapsed = elapsed
 
 
-class PowerFlowResults:
-    """
-    A **PowerFlowResults** object is create as an attribute of the
-    :ref:`PowerFlowMP<pf_mp>` (as PowerFlowMP.results) when the power flow is run. It
-    provides access to the simulation results through its class attributes.
-
-    Attributes:
-
-        **Sbus** (list): Power at each bus in complex per unit
-
-        **voltage** (list): Voltage at each bus in complex per unit
-
-        **Sf** (list): Power through each branch in complex MVA
-
-        **If** (list): Current through each branch in complex per unit
-
-        **loading** (list): Loading of each branch in per unit
-
-        **losses** (list): Losses in each branch in complex MVA
-
-        **tap_module** (list): Computed tap module at each branch in per unit
-
-        **flow_direction** (list): Flow direction at each branch
-
-        **Vbranch** (list): Voltage increment at each branch
-
-        **error** (float): Power flow computed error
-
-        **converged** (bool): Did the power flow converge?
-
-        **Qpv** (list): Reactive power at each PV node in per unit
-
-        **inner_it** (int): Number of inner iterations
-
-        **outer_it** (int): Number of outer iterations
-
-        **elapsed** (float): Simulation duration in seconds
-
-        **methods** (list): Power flow methods used
-
-    """
+class PowerFlowResults(ResultsTemplate):
 
     def __init__(self, n, m, n_tr, n_hvdc, bus_names, branch_names, transformer_names, hvdc_names, bus_types):
+        """
+        A **PowerFlowResults** object is create as an attribute of the
+        :ref:`PowerFlowMP<pf_mp>` (as PowerFlowMP.results) when the power flow is run. It
+        provides access to the simulation results through its class attributes.
+        :param n:
+        :param m:
+        :param n_tr:
+        :param n_hvdc:
+        :param bus_names:
+        :param branch_names:
+        :param transformer_names:
+        :param hvdc_names:
+        :param bus_types:
+        """
 
-        self.name = 'Power flow'
+        ResultsTemplate.__init__(self,
+                                 name='Power flow',
+                                 available_results=[ResultTypes.BusVoltageModule,
+                                                    ResultTypes.BusVoltageAngle,
+                                                    ResultTypes.BusActivePower,
+                                                    ResultTypes.BusReactivePower,
+
+                                                    ResultTypes.BranchActivePowerFrom,
+                                                    ResultTypes.BranchReactivePowerFrom,
+                                                    ResultTypes.BranchActivePowerTo,
+                                                    ResultTypes.BranchReactivePowerTo,
+
+                                                    ResultTypes.BranchActiveCurrentFrom,
+                                                    ResultTypes.BranchReactiveCurrentFrom,
+                                                    ResultTypes.BranchActiveCurrentTo,
+                                                    ResultTypes.BranchReactiveCurrentTo,
+
+                                                    ResultTypes.BranchTapModule,
+                                                    ResultTypes.BranchTapAngle,
+                                                    ResultTypes.BranchBeq,
+
+                                                    ResultTypes.BranchLoading,
+                                                    ResultTypes.Transformer2WTapModule,
+                                                    ResultTypes.BranchActiveLosses,
+                                                    ResultTypes.BranchReactiveLosses,
+                                                    ResultTypes.BranchVoltage,
+                                                    ResultTypes.BranchAngles,
+
+                                                    ResultTypes.HvdcLosses,
+                                                    ResultTypes.HvdcPowerFrom,
+                                                    ResultTypes.HvdcPowerTo],
+                                 data_variables=['bus_types',
+                                                 'bus_names',
+                                                 'branch_names',
+                                                 'transformer_names',
+                                                 'hvdc_names',
+                                                 'Sbus',
+                                                 'voltage',
+                                                 'Sf',
+                                                 'St',
+                                                 'If',
+                                                 'It',
+                                                 'ma',
+                                                 'theta',
+                                                 'Beq',
+                                                 'Vbranch',
+                                                 'loading',
+                                                 'flow_direction',
+                                                 'transformer_tap_module',
+                                                 'losses',
+                                                 'hvdc_losses',
+                                                 'hvdc_Pf',
+                                                 'hvdc_Pt',
+                                                 'hvdc_loading']
+                                 )
 
         self.n = n
         self.m = m
@@ -107,10 +136,6 @@ class PowerFlowResults:
 
         self.voltage = np.zeros(n, dtype=complex)
 
-        self.overvoltage = np.zeros(n, dtype=complex)
-
-        self.undervoltage = np.zeros(n, dtype=complex)
-
         self.Sf = np.zeros(m, dtype=complex)
         self.St = np.zeros(m, dtype=complex)
 
@@ -124,8 +149,6 @@ class PowerFlowResults:
         self.Vbranch = np.zeros(m, dtype=complex)
 
         self.loading = np.zeros(m, dtype=complex)
-
-        self.flow_direction = np.zeros(m, dtype=float)
 
         self.transformer_tap_module = np.zeros(n_tr, dtype=float)
 
@@ -142,36 +165,6 @@ class PowerFlowResults:
         self.plot_bars_limit = 100
 
         self.convergence_reports = list()
-
-        self.available_results = [ResultTypes.BusVoltageModule,
-                                  ResultTypes.BusVoltageAngle,
-                                  ResultTypes.BusActivePower,
-                                  ResultTypes.BusReactivePower,
-
-                                  ResultTypes.BranchActivePowerFrom,
-                                  ResultTypes.BranchReactivePowerFrom,
-                                  ResultTypes.BranchActivePowerTo,
-                                  ResultTypes.BranchReactivePowerTo,
-
-                                  ResultTypes.BranchActiveCurrentFrom,
-                                  ResultTypes.BranchReactiveCurrentFrom,
-                                  ResultTypes.BranchActiveCurrentTo,
-                                  ResultTypes.BranchReactiveCurrentTo,
-
-                                  ResultTypes.BranchTapModule,
-                                  ResultTypes.BranchTapAngle,
-                                  ResultTypes.BranchBeq,
-
-                                  ResultTypes.BranchLoading,
-                                  ResultTypes.Transformer2WTapModule,
-                                  ResultTypes.BranchActiveLosses,
-                                  ResultTypes.BranchReactiveLosses,
-                                  ResultTypes.BranchVoltage,
-                                  ResultTypes.BranchAngles,
-
-                                  ResultTypes.HvdcLosses,
-                                  ResultTypes.HvdcPowerFrom,
-                                  ResultTypes.HvdcPowerTo]
 
     @property
     def converged(self):
@@ -217,13 +210,10 @@ class PowerFlowResults:
                                transformer_names=self.transformer_names)
         val.Sbus = self.Sbus.copy()
         val.voltage = self.voltage.copy()
-        val.overvoltage = self.overvoltage.copy()
-        val.undervoltage = self.undervoltage.copy()
         val.Sf = self.Sf.copy()
         val.If = self.If.copy()
         val.Vbranch = self.Vbranch.copy()
         val.loading = self.loading.copy()
-        val.flow_direction = self.flow_direction.copy()
         val.transformer_tap_module = self.transformer_tap_module.copy()
         val.losses = self.losses.copy()
         val.overloads = self.overloads.copy()
@@ -260,8 +250,6 @@ class PowerFlowResults:
         self.transformer_tap_module[tr_idx] = results.transformer_tap_module
 
         self.losses[br_idx] = results.losses
-
-        self.flow_direction[br_idx] = results.flow_direction
 
         self.convergence_reports += results.convergence_reports
 

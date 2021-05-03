@@ -15,7 +15,6 @@
 
 import numpy as np
 from scipy.sparse.linalg import inv
-from PySide2.QtCore import QRunnable
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit import short_circuit_3p
@@ -28,6 +27,7 @@ from GridCal.Engine.Devices import Branch, Bus
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 ########################################################################################################################
 # Short circuit classes
@@ -125,10 +125,6 @@ class ShortCircuitResults(PowerFlowResults):
 
         self.short_circuit_power = np.zeros(n, dtype=complex)
 
-        self.overvoltage = np.zeros(n, dtype=complex)
-
-        self.undervoltage = np.zeros(n, dtype=complex)
-
         self.Sf = np.zeros(m, dtype=complex)
 
         self.If = np.zeros(m, dtype=complex)
@@ -136,14 +132,6 @@ class ShortCircuitResults(PowerFlowResults):
         self.loading = np.zeros(m, dtype=complex)
 
         self.losses = np.zeros(m, dtype=complex)
-
-        self.overloads = np.zeros(m, dtype=complex)
-
-        self.error = 0
-
-        self.converged = True
-
-        self.buses_useful_for_storage = list()
 
     def apply_from_island(self, results: "ShortCircuitResults", b_idx, br_idx):
         """
@@ -159,10 +147,6 @@ class ShortCircuitResults(PowerFlowResults):
 
         self.short_circuit_power[b_idx] = results.short_circuit_power
 
-        self.overvoltage[b_idx] = results.overvoltage
-
-        self.undervoltage[b_idx] = results.undervoltage
-
         self.Sf[br_idx] = results.Sf
 
         self.If[br_idx] = results.If
@@ -171,16 +155,8 @@ class ShortCircuitResults(PowerFlowResults):
 
         self.losses[br_idx] = results.losses
 
-        self.overloads[br_idx] = results.overloads
 
-        if results.buses_useful_for_storage is not None:
-            self.buses_useful_for_storage = b_idx[results.buses_useful_for_storage]
-
-
-class ShortCircuitDriver(QRunnable):
-    # progress_signal = pyqtSignal(float)
-    # progress_text = pyqtSignal(str)
-    # done_signal = pyqtSignal()
+class ShortCircuitDriver(DriverTemplate):
     name = 'Short Circuit'
     tpe = SimulationTypes.ShortCircuit_run
 
@@ -190,10 +166,7 @@ class ShortCircuitDriver(QRunnable):
         PowerFlowDriver class constructor
         @param grid: MultiCircuit Object
         """
-        QRunnable.__init__(self)
-
-        # Grid to run a power flow in
-        self.grid = grid
+        DriverTemplate.__init__(self, grid=grid)
 
         # power flow results
         self.pf_results = pf_results
@@ -287,6 +260,7 @@ class ShortCircuitDriver(QRunnable):
         # compute Zbus
         # is dense, so no need to store it as sparse
         if calculation_inputs.Ybus.shape[0] > 1:
+
             Zbus = inv(calculation_inputs.Ybus).toarray()
 
             # Compute the short circuit
@@ -430,8 +404,9 @@ class ShortCircuitDriver(QRunnable):
         self.grid.short_circuit_results = results
         self._is_running = False
 
-    def cancel(self):
-        self.__cancel__ = True
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
 
     def isRunning(self):
         return self._is_running

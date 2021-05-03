@@ -16,33 +16,30 @@ import time
 import datetime
 import numpy as np
 from numba import jit, prange
-from itertools import combinations
-from PySide2.QtCore import QThread, Signal
-
-from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisOptions
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import ContingencyAnalysisTimeSeriesResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.driver_template import TSDriverTemplate
 
 
 @jit(nopython=True, parallel=False)
-def compute_flows_numba_t(e, c, nt, OTDF, Flows, rates, overload_count, max_overload, worst_flows):
+def compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_overload, worst_flows):
     """
-    Compute OTDF based flows
+    Compute LODF based flows
     :param nt: number of time steps
     :param ne: number of elements
     :param nc: number of failed elements
-    :param OTDF: OTDF matrix (element, failed element)
+    :param LODF: LODF matrix (element, failed element)
     :param Flows: base flows matrix (time, element)
     :return: Cube of N-1 Flows (time, elements, contingencies)
     """
 
     for t in range(nt):
-        # the formula is: Fn-1(i) = Fbase(i) + OTDF(i,j) * Fbase(j) here i->line, j->failed line
-        flow_n_1 = OTDF[e, c] * Flows[t, c] + Flows[t, e]
+        # the formula is: Fn-1(i) = Fbase(i) + LODF(i,j) * Fbase(j) here i->line, j->failed line
+        flow_n_1 = LODF[e, c] * Flows[t, c] + Flows[t, e]
         flow_n_1_abs = abs(flow_n_1)
 
         if rates[t, e] > 0:
@@ -58,43 +55,40 @@ def compute_flows_numba_t(e, c, nt, OTDF, Flows, rates, overload_count, max_over
 
 
 @jit(nopython=True, parallel=True)
-def compute_flows_numba(e, nt, nc, OTDF, Flows, rates, overload_count, max_overload, worst_flows, paralelize_from=500):
+def compute_flows_numba(e, nt, nc, LODF, Flows, rates, overload_count, max_overload, worst_flows, paralelize_from=500):
     """
-    Compute OTDF based flows
+    Compute LODF based flows
     :param nt: number of time steps
     :param ne: number of elements
     :param nc: number of failed elements
-    :param OTDF: OTDF matrix (element, failed element)
+    :param LODF: LODF matrix (element, failed element)
     :param Flows: base flows matrix (time, element)
     :return: Cube of N-1 Flows (time, elements, contingencies)
     """
 
     if nc < paralelize_from:
         for c in range(nc):
-            compute_flows_numba_t(e, c, nt, OTDF, Flows, rates, overload_count, max_overload, worst_flows)
+            compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_overload, worst_flows)
     else:
         for c in prange(nc):
-            compute_flows_numba_t(e, c, nt, OTDF, Flows, rates, overload_count, max_overload, worst_flows)
+            compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_overload, worst_flows)
 
 
-class ContingencyAnalysisTimeSeries(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class ContingencyAnalysisTimeSeries(TSDriverTemplate):
     name = 'Contingency analysis time series'
     tpe = SimulationTypes.ContingencyAnalysisTS_run
 
-    def __init__(self, grid: MultiCircuit, options: ContingencyAnalysisOptions):
+    def __init__(self, grid: MultiCircuit, options: ContingencyAnalysisOptions, start_=0, end_=None):
         """
         N - k class constructor
         @param grid: MultiCircuit Object
         @param options: N-k options
         @:param pf_options: power flow options
         """
-        QThread.__init__(self)
-
-        # Grid to run
-        self.grid = grid
+        TSDriverTemplate.__init__(self,
+                                  grid=grid,
+                                  start_=start_,
+                                  end_=end_)
 
         # Options to use
         self.options = options
@@ -105,13 +99,6 @@ class ContingencyAnalysisTimeSeries(QThread):
                                                             bus_names=(),
                                                             branch_names=(),
                                                             bus_types=())
-
-        # set cancel state
-        self.__cancel__ = False
-
-        self.logger = Logger()
-
-        self.elapsed = 0.0
 
         self.branch_names = list()
 
@@ -130,7 +117,7 @@ class ContingencyAnalysisTimeSeries(QThread):
         :return: returns the results
         """
 
-        self.progress_text.emit("Filtering elements by voltage")
+        self.progress_text.emit("Analyzing...")
 
         ts_numeric_circuit = compile_time_circuit(self.grid)
         ne = ts_numeric_circuit.nbr
@@ -144,7 +131,6 @@ class ContingencyAnalysisTimeSeries(QThread):
                                                        bus_names=ts_numeric_circuit.bus_names,
                                                        bus_types=ts_numeric_circuit.bus_types)
 
-        self.progress_text.emit('Analyzing outage distribution factors...')
         linear_analysis = LinearAnalysis(grid=self.grid,
                                          distributed_slack=self.options.distributed_slack,
                                          correct_values=self.options.correct_values)
@@ -152,16 +138,19 @@ class ContingencyAnalysisTimeSeries(QThread):
 
         self.progress_text.emit('Computing branch base flows...')
         Pbus = ts_numeric_circuit.Sbus.real
-        flows = linear_analysis.get_branch_time_series(Pbus)
-        rates = ts_numeric_circuit.Rates.T
+        flows = linear_analysis.get_flows_time_series(Pbus)
+        rates = ts_numeric_circuit.ContingencyRates.T
 
         self.progress_text.emit('Computing N-1 flows...')
 
         for e in range(ne):
+
+            self.progress_text.emit('Computing N-1 flows...' + ts_numeric_circuit.branch_names[e])
+
             compute_flows_numba(e=e,
                                 nt=nt,
                                 nc=nc,
-                                OTDF=linear_analysis.results.LODF,
+                                LODF=linear_analysis.LODF,
                                 Flows=flows,
                                 rates=rates,
                                 overload_count=results.overload_count,
@@ -169,6 +158,11 @@ class ContingencyAnalysisTimeSeries(QThread):
                                 worst_flows=results.worst_flows)
 
             self.progress_signal.emit((e + 1) / ne * 100)
+
+            if self.__cancel__:
+                results.relative_frequency = results.overload_count / nt
+                results.worst_loading = results.worst_flows / (rates + 1e-9)
+                return results
 
         results.relative_frequency = results.overload_count / nt
         results.worst_loading = results.worst_flows / (rates + 1e-9)
@@ -187,9 +181,6 @@ class ContingencyAnalysisTimeSeries(QThread):
         self.elapsed = end - start
         self.progress_text.emit('Done!')
         self.done_signal.emit()
-
-    def cancel(self):
-        self.__cancel__ = True
 
 
 if __name__ == '__main__':

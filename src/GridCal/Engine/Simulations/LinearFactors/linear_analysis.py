@@ -13,17 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import time
-import multiprocessing
-from PySide2.QtCore import QThread, Signal
-
 import numpy as np
+import numba as nb
 import scipy.sparse as sp
 from scipy.sparse.linalg import spsolve
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
 
@@ -119,77 +115,143 @@ def make_lodf(Cf, Ct, PTDF, correct_values=True):
     return LODF
 
 
-class LinearAnalysisResults:
+@nb.njit()
+def make_otdf(ptdf, lodf, j):
+    """
+    Outage sensitivity of the branches when transferring power from the bus j to the slack
+        LODF: outage transfer distribution factors
+    :param ptdf: power transfer distribution factors matrix (n-branch, n-bus)
+    :param lodf: line outage distribution factors matrix (n-branch, n-branch)
+    :param j: index of the bus injection
+    :return: LODF matrix (n-branch, n-branch)
+    """
+    nk = ptdf.shape[0]
+    nl = nk
+    otdf = np.empty((nk, nl))
 
-    def __init__(self, n_br=0, n_bus=0, br_names=(), bus_names=(), bus_types=()):
-        """
-        PTDF and LODF results class
-        :param n_br: number of branches
-        :param n_bus: number of buses
-        :param br_names: branch names
-        :param bus_names: bus names
-        :param bus_types: bus types array
-        """
+    for k in range(nk):
+        for l in range(nl):
+            otdf[k, l] = ptdf[k, j] + lodf[k, l] * ptdf[l, j]
 
-        self.name = 'Linear Analysis'
+    return otdf
 
-        # number of branches
-        self.n_br = n_br
 
-        self.n_bus = n_bus
+@nb.njit(parallel=True)
+def make_otdf_max(ptdf, lodf):
+    """
+    Maximum Outage sensitivity of the branches when transferring power from any bus to the slack
+        LODF: outage transfer distribution factors
+    :param ptdf: power transfer distribution factors matrix (n-branch, n-bus)
+    :param lodf: line outage distribution factors matrix (n-branch, n-branch)
+    :return: LODF matrix (n-branch, n-branch)
+    """
+    nj = ptdf.shape[1]
+    nk = ptdf.shape[0]
+    nl = nk
+    otdf = np.zeros((nk, nl))
 
-        # names of the branches
-        self.br_names = br_names
+    if nj < 500:
+        for j in range(nj):
+            for k in range(nk):
+                for l in range(nl):
+                    val = ptdf[k, j] + lodf[k, l] * ptdf[l, j]
+                    if abs(val) > abs(otdf[k, l]):
+                        otdf[k, l] = val
+    else:
+        for j in nb.prange(nj):
+            for k in range(nk):
+                for l in range(nl):
+                    val = ptdf[k, j] + lodf[k, l] * ptdf[l, j]
+                    if abs(val) > abs(otdf[k, l]):
+                        otdf[k, l] = val
+    return otdf
 
-        self.bus_names = bus_names
 
-        self.bus_types = bus_types
+@nb.njit()
+def make_contingency_flows(lodf, flows):
+    """
+    Make contingency flows matrix
+    :param lodf: line outage distribution factors
+    :param flows: base flows in MW
+    :return: outage flows for every line after each contingency (n-branch, n-branch[outage])
+    """
+    nbr = lodf.shape[0]
+    omw = np.zeros((nbr, nbr))
 
-        self.logger = Logger()
+    for m in range(nbr):
+        for c in range(nbr):
+            if m != c:
+                omw[m, c] = flows[m] + lodf[m, c] * flows[c]
 
-        self.PTDF = np.zeros((n_br, n_bus))
-        self.LODF = np.zeros((n_br, n_br))
+    return omw
 
-        self.available_results = [ResultTypes.PTDFBranchesSensitivity,
-                                  ResultTypes.OTDF]
 
-    def mdl(self, result_type: ResultTypes) -> ResultsModel:
-        """
-        Plot the results.
+@nb.njit()
+def make_transfer_limits(ptdf, flows, rates):
+    """
+    Compute the maximum transfer limits of each branch in normal operation
+    :param ptdf: power transfer distribution factors matrix (n-branch, n-bus)
+    :param flows: base flows in MW
+    :param rates: array of branch rates
+    :return: Max transfer limits vector  (n-branch)
+    """
+    nbr = ptdf.shape[0]
+    nbus = ptdf.shape[1]
+    tmc = np.zeros(nbr)
 
-        Arguments:
+    for m in range(nbr):
+        for i in range(nbus):
 
-            **result_type**: ResultTypes
+            if ptdf[m, i] != 0.0:
+                val = (rates[m] - flows[m]) / ptdf[m, i]  # I want it with sign
 
-        Returns: ResultsModel
-        """
+                # update the transference value
+                if abs(val) > abs(tmc[m]):
+                    tmc[m] = val
 
-        if result_type == ResultTypes.PTDFBranchesSensitivity:
-            labels = self.bus_names
-            y = self.PTDF
-            y_label = '(p.u.)'
-            title = 'Branches sensitivity'
+    return tmc
 
-        elif result_type == ResultTypes.OTDF:
-            labels = self.br_names
-            y = self.LODF
-            y_label = '(p.u.)'
-            title = 'Branch failure sensitivity'
 
-        else:
-            labels = []
-            y = np.zeros(0)
-            y_label = ''
-            title = ''
+@nb.njit(parallel=True)
+def make_contingency_transfer_limits(otdf_max, lodf, flows, rates):
+    """
+    Compute the maximum transfer limits after contingency of each branch
+    :param otdf_max: Maximum Outage sensitivity of the branches when transferring power
+                     from any bus to the slack  (n-branch, n-branch)
+    :param omw: contingency flows matrix (n-branch, n-branch)
+    :param rates: array of branch rates
+    :return: Max transfer limits matrix  (n-branch, n-branch)
+    """
+    nbr = otdf_max.shape[0]
+    tmc = np.zeros((nbr, nbr))
 
-        # assemble model
-        mdl = ResultsModel(data=y,
-                           index=self.br_names,
-                           columns=labels,
-                           title=title,
-                           ylabel=y_label,
-                           units=y_label)
-        return mdl
+    if nbr < 500:
+        for m in range(nbr):
+            for c in range(nbr):
+                if m != c:
+                    if otdf_max[m, c] != 0.0:
+                        omw = flows[m] + lodf[m, c] * flows[c]  # compute the contingency flow
+                        tmc[m, c] = (rates[m] - omw) / otdf_max[m, c]  # i want it with sign
+    else:
+        for m in nb.prange(nbr):
+            for c in range(nbr):
+                if m != c:
+                    if otdf_max[m, c] != 0.0:
+                        omw = flows[m] + lodf[m, c] * flows[c]  # compute the contingency flow
+                        tmc[m, c] = (rates[m] - omw) / otdf_max[m, c]  # i want it with sign
+
+    return tmc
+
+
+def make_worst_contingency_transfer_limits(tmc):
+
+    nbr = tmc.shape[0]
+    wtmc = np.zeros((nbr, 2))
+
+    wtmc[:, 0] = tmc.max(axis=1)
+    wtmc[:, 1] = tmc.min(axis=1)
+
+    return wtmc
 
 
 class LinearAnalysis:
@@ -209,11 +271,11 @@ class LinearAnalysis:
 
         self.numerical_circuit = None
 
-        self.results = LinearAnalysisResults(n_br=0,
-                                             n_bus=0,
-                                             br_names=[],
-                                             bus_names=[],
-                                             bus_types=[])
+        self.PTDF = None
+
+        self.LODF = None
+
+        self.__OTDF = None
 
         self.logger = Logger()
 
@@ -223,12 +285,10 @@ class LinearAnalysis:
         """
         self.numerical_circuit = compile_snapshot_circuit(self.grid)
         islands = self.numerical_circuit.split_into_islands()
-
-        self.results = LinearAnalysisResults(n_br=self.numerical_circuit.nbr,
-                                             n_bus=self.numerical_circuit.nbus,
-                                             br_names=self.numerical_circuit.branch_data.branch_names,
-                                             bus_names=self.numerical_circuit.bus_data.bus_names,
-                                             bus_types=self.numerical_circuit.bus_data.bus_types)
+        n_br = self.numerical_circuit.nbr
+        n_bus = self.numerical_circuit.nbus
+        self.PTDF = np.zeros((n_br, n_bus))
+        self.LODF = np.zeros((n_br, n_br))
 
         # compute the PTDF per islands
         if len(islands) > 0:
@@ -245,7 +305,7 @@ class LinearAnalysis:
                                                 distribute_slack=self.distributed_slack)
 
                         # assign the PTDF to the matrix
-                        self.results.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
+                        self.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
 
                         # compute the island LODF
                         lodf_island = make_lodf(Cf=island.Cf,
@@ -254,7 +314,7 @@ class LinearAnalysis:
                                                 correct_values=self.correct_values)
 
                         # assign the LODF to the matrix
-                        self.results.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
+                        self.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
                     else:
                         self.logger.add_error('No PQ or PV nodes', 'Island {}'.format(n_island))
                 else:
@@ -262,27 +322,65 @@ class LinearAnalysis:
         else:
 
             # there is only 1 island, compute the PTDF
-            self.results.PTDF = make_ptdf(Bbus=islands[0].Bbus,
-                                          Bf=islands[0].Bf,
-                                          pqpv=islands[0].pqpv,
-                                          distribute_slack=self.distributed_slack)
+            self.PTDF = make_ptdf(Bbus=islands[0].Bbus,
+                                  Bf=islands[0].Bf,
+                                  pqpv=islands[0].pqpv,
+                                  distribute_slack=self.distributed_slack)
 
             # compute the LODF upon the PTDF
-            self.results.LODF = make_lodf(Cf=islands[0].Cf,
-                                          Ct=islands[0].Ct,
-                                          PTDF=self.results.PTDF,
-                                          correct_values=self.correct_values)
+            self.LODF = make_lodf(Cf=islands[0].Cf,
+                                  Ct=islands[0].Ct,
+                                  PTDF=self.results.PTDF,
+                                  correct_values=self.correct_values)
 
-    def get_branch_time_series(self, Sbus):
+    @property
+    def OTDF(self):
         """
-        Compute the time series PTDF
+        Maximum Outage sensitivity of the branches when transferring power from any bus to the slack
+        LODF: outage transfer distribution factors
+        :return: Maximum LODF matrix (n-branch, n-branch)
+        """
+        if self.__OTDF is None:  # lazy-evaluation
+            self.__OTDF = make_otdf_max(self.PTDF, self.LODF)
+
+        return self.__OTDF
+
+    def get_transfer_limits(self, flows):
+        """
+        compute the normal transfer limits
+        :param flows: base flows in MW
+        :return: Max transfer limits vector (n-branch)
+        """
+        return make_transfer_limits(self.PTDF, flows, self.numerical_circuit.Rates)
+
+    def get_contingency_transfer_limits(self, flows):
+        """
+        Compute the contingency transfer limits
+        :param flows: base flows in MW
+        :return: Max transfer limits matrix (n-branch, n-branch)
+        """
+        return make_contingency_transfer_limits(self.OTDF, self.LODF, flows, self.numerical_circuit.Rates)
+
+    def get_flows(self, Sbus):
+        """
+        Compute the time series branch flows using the PTDF
         :param Sbus: Power injections time series array
-        :return:
+        :return: branch active power flows time series
         """
 
         # option 2: call the power directly
-        P = Sbus.real
-        PTDF = self.results.PTDF
-        Pbr = np.dot(PTDF, P).T * self.grid.Sbase
+        Pbr = np.dot(self.PTDF, Sbus.real) * self.grid.Sbase
+
+        return Pbr
+
+    def get_flows_time_series(self, Sbus):
+        """
+        Compute the time series branch flows using the PTDF
+        :param Sbus: Power injections time series array
+        :return: branch active power flows time series
+        """
+
+        # option 2: call the power directly
+        Pbr = np.dot(self.PTDF, Sbus.real).T * self.grid.Sbase
 
         return Pbr

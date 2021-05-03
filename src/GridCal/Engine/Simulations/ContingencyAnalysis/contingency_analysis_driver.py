@@ -16,14 +16,13 @@ import time
 import datetime
 import numpy as np
 from itertools import combinations
-from PySide2.QtCore import QThread, Signal
 
-from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 
 def enumerate_states_n_k(m, k=1):
@@ -60,12 +59,9 @@ class ContingencyAnalysisOptions:
         self.correct_values = correct_values
 
 
-class ContingencyAnalysisDriver(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
-    name = 'N-1/OTDF'
-    tpe = SimulationTypes.OTDF_run
+class ContingencyAnalysisDriver(DriverTemplate):
+    name = 'Contingency Analysis'
+    tpe = SimulationTypes.ContingencyAnalysis_run
 
     def __init__(self, grid: MultiCircuit, options: ContingencyAnalysisOptions):
         """
@@ -74,10 +70,7 @@ class ContingencyAnalysisDriver(QThread):
         @param options: N-k options
         @:param pf_options: power flow options
         """
-        QThread.__init__(self)
-
-        # Grid to run
-        self.grid = grid
+        DriverTemplate.__init__(self, grid=grid)
 
         # Options to use
         self.options = options
@@ -89,13 +82,6 @@ class ContingencyAnalysisDriver(QThread):
                                                   bus_types=())
 
         self.numerical_circuit = None
-
-        # set cancel state
-        self.__cancel__ = False
-
-        self.logger = Logger()
-
-        self.elapsed = 0.0
 
         self.branch_names = list()
 
@@ -131,8 +117,8 @@ class ContingencyAnalysisDriver(QThread):
         linear_analysis.run()
 
         Pbus = self.numerical_circuit.get_injections(False).real[:, 0]
-        PTDF = linear_analysis.results.PTDF
-        LODF = linear_analysis.results.LODF
+        PTDF = linear_analysis.PTDF
+        LODF = linear_analysis.LODF
 
         # compute the branch flows in "n"
         flows_n = np.dot(PTDF, Pbus)
@@ -142,7 +128,7 @@ class ContingencyAnalysisDriver(QThread):
         for c in range(nl):  # branch that fails (contingency)
 
             results.Sf[:, c] = flows_n[:] + LODF[:, c] * flows_n[c]
-            results.loading[:, c] = results.Sf[:, c] / (self.numerical_circuit.branch_rates + 1e-9)
+            results.loading[:, c] = results.Sf[:, c] / (self.numerical_circuit.ContingencyRates + 1e-9)
 
             results.S[c, :] = Pbus
 
@@ -164,9 +150,6 @@ class ContingencyAnalysisDriver(QThread):
         self.elapsed = end - start
         self.progress_text.emit('Done!')
         self.done_signal.emit()
-
-    def cancel(self):
-        self.__cancel__ = True
 
 
 if __name__ == '__main__':
@@ -192,11 +175,11 @@ if __name__ == '__main__':
     # save the result
     br_names = [b.name for b in main_circuit.branches]
     br_names2 = ['#' + b.name for b in main_circuit.branches]
-    w = pd.ExcelWriter('OTDF IEEE30.xlsx')
+    w = pd.ExcelWriter('LODF IEEE30.xlsx')
     pd.DataFrame(data=simulation.results.Sf.real,
                  columns=br_names,
                  index=['base'] + br_names2).to_excel(w, sheet_name='branch power')
     pd.DataFrame(data=otdf_,
                  columns=br_names,
-                 index=br_names2).to_excel(w, sheet_name='OTDF')
+                 index=br_names2).to_excel(w, sheet_name='LODF')
     w.save()

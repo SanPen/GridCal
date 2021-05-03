@@ -14,16 +14,105 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import time
 import multiprocessing
-from PySide2.QtCore import QThread, Signal
 
-from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import *
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.result_types import ResultTypes
+from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_template import ResultsTemplate
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
+
 
 ########################################################################################################################
 # Optimal Power flow classes
 ########################################################################################################################
+
+
+class LinearAnalysisResults(ResultsTemplate):
+
+    def __init__(self, n_br=0, n_bus=0, br_names=(), bus_names=(), bus_types=()):
+        """
+        PTDF and LODF results class
+        :param n_br: number of branches
+        :param n_bus: number of buses
+        :param br_names: branch names
+        :param bus_names: bus names
+        :param bus_types: bus types array
+        """
+        ResultsTemplate.__init__(self,
+                                 name='Linear Analysis',
+                                 available_results=[ResultTypes.PTDFBranchesSensitivity,
+                                                    ResultTypes.OTDF,
+                                                    ResultTypes.BranchActivePowerFrom],
+                                 data_variables=['br_names',
+                                                 'bus_names',
+                                                 'bus_types',
+                                                 'PTDF',
+                                                 'LODF',
+                                                 'flows'])
+        # number of branches
+        self.n_br = n_br
+
+        self.n_bus = n_bus
+
+        # names of the branches
+        self.br_names = br_names
+
+        self.bus_names = bus_names
+
+        self.bus_types = bus_types
+
+        self.logger = Logger()
+
+        self.PTDF = np.zeros((n_br, n_bus))
+        self.LODF = np.zeros((n_br, n_br))
+
+        self.flows = np.zeros(self.n_br)
+
+    def mdl(self, result_type: ResultTypes) -> ResultsModel:
+        """
+        Plot the results.
+
+        Arguments:
+
+            **result_type**: ResultTypes
+
+        Returns: ResultsModel
+        """
+
+        if result_type == ResultTypes.PTDFBranchesSensitivity:
+            labels = self.bus_names
+            y = self.PTDF
+            y_label = '(p.u.)'
+            title = 'Branches sensitivity'
+
+        elif result_type == ResultTypes.OTDF:
+            labels = self.br_names
+            y = self.LODF
+            y_label = '(p.u.)'
+            title = 'Branch failure sensitivity'
+
+        elif result_type == ResultTypes.BranchActivePowerFrom:
+            labels = self.br_names
+            y = self.flows
+            y_label = '(MW)'
+            title = 'Branch flows'
+
+        else:
+            labels = []
+            y = np.zeros(0)
+            y_label = ''
+            title = ''
+
+        # assemble model
+        mdl = ResultsModel(data=y,
+                           index=self.br_names,
+                           columns=labels,
+                           title=title,
+                           ylabel=y_label,
+                           units=y_label)
+        return mdl
 
 
 class LinearAnalysisOptions:
@@ -37,10 +126,7 @@ class LinearAnalysisOptions:
         self.correct_values = correct_values
 
 
-class LinearAnalysisDriver(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class LinearAnalysisDriver(DriverTemplate):
     name = 'Linear analysis'
     tpe = SimulationTypes.LinearAnalysis_run
 
@@ -50,10 +136,7 @@ class LinearAnalysisDriver(QThread):
         @param grid: MultiCircuit Object
         @param options: OPF options
         """
-        QThread.__init__(self)
-
-        # Grid to run
-        self.grid = grid
+        DriverTemplate.__init__(self, grid=grid)
 
         # Options to use
         self.options = options
@@ -65,14 +148,7 @@ class LinearAnalysisDriver(QThread):
                                              bus_names=[],
                                              bus_types=[])
 
-        # set cancel state
-        self.__cancel__ = False
-
         self.all_solved = True
-
-        self.elapsed = 0.0
-
-        self.logger = Logger()
 
     def run(self):
         """
@@ -89,9 +165,16 @@ class LinearAnalysisDriver(QThread):
 
         analysis.run()
 
-        self.logger += analysis.logger
+        self.results = LinearAnalysisResults(n_br=analysis.numerical_circuit.nbr,
+                                             n_bus=analysis.numerical_circuit.nbus,
+                                             br_names=analysis.numerical_circuit.branch_data.branch_names,
+                                             bus_names=analysis.numerical_circuit.bus_data.bus_names,
+                                             bus_types=analysis.numerical_circuit.bus_data.bus_types)
+        self.results.PTDF = analysis.PTDF
+        self.results.LODF = analysis.LODF
+        self.results.flows = analysis.get_flows(analysis.numerical_circuit.Sbus.real)
 
-        self.results = analysis.results
+        self.logger += analysis.logger
 
         end = time.time()
         self.elapsed = end - start
@@ -106,9 +189,6 @@ class LinearAnalysisDriver(QThread):
             return [v for v in self.results.bus_names]
         else:
             return list()
-
-    def cancel(self):
-        self.__cancel__ = True
 
 
 if __name__ == '__main__':

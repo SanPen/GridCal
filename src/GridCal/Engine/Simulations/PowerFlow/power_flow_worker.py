@@ -310,8 +310,8 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
 
 
 def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
-                          voltage_solution, Sbus, Ibus, branch_rates, t=0,
-                          logger=bs.Logger()) -> "PowerFlowResults":
+                          voltage_solution, Sbus, Ibus, branch_rates,
+                          pq, pv, vd, pqpv, logger=bs.Logger()) -> "PowerFlowResults":
     """
     Run a power flow simulation for a single circuit using the selected outer loop
     controls. This method shouldn't be called directly.
@@ -321,18 +321,16 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     :param Sbus: vector of power injections
     :param Ibus: vector of current injections
     :param branch_rates:
-    :param t: time step
+    :param pq: Array of pq nodes
+    :param pv: Array of pv nodes
+    :param vd: Array of slack nodes
+    :param pqpv: Array of (sorted) pq and pv nodes
     :param logger:
     :return: PowerFlowResults instance
     """
 
     # get the original types and compile this class' own lists of node types for thread independence
     bus_types = circuit.bus_types.copy()
-
-    # vd = circuit.vd.copy()
-    # pq = circuit.pq.copy()
-    # pv = circuit.pv.copy()
-    # pqpv = circuit.pqpv.copy()
 
     report = ConvergenceReport()
     solution = NumericPowerFlowResults(V=voltage_solution,
@@ -362,10 +360,10 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                          V0=voltage_solution,
                          Sbus=Sbus,
                          Ibus=Ibus,
-                         pq=circuit.pq,
-                         pv=circuit.pv,
-                         ref=circuit.vd,
-                         pqpv=circuit.pqpv,
+                         pq=pq,
+                         pv=pv,
+                         ref=vd,
+                         pqpv=pqpv,
                          logger=logger)
 
         if options.distributed_slack:
@@ -383,10 +381,10 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                                  V0=solution.V,
                                  Sbus=Sbus + delta,
                                  Ibus=Ibus,
-                                 pq=circuit.pq,
-                                 pv=circuit.pv,
-                                 ref=circuit.vd,
-                                 pqpv=circuit.pqpv,
+                                 pq=pq,
+                                 pv=pv,
+                                 ref=vd,
+                                 pqpv=pqpv,
                                  logger=logger)
 
     # Compute the branches power and the slack buses power
@@ -419,7 +417,6 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     results.Vbranch = Vbranch
     results.loading = loading
     results.losses = losses
-    results.flow_direction = flow_direction
     results.transformer_tap_module = solution.ma[circuit.transformer_idx]
     results.convergence_reports.append(report)
     results.Qpv = Sbus.imag[circuit.pv]
@@ -484,6 +481,7 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
 
 
 def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, branch_rates,
+                     pq, pv, vd, pqpv,
                      options: PowerFlowOptions, logger: bs.Logger) -> "PowerFlowResults":
     """
     Run a power flow for a circuit. In most cases, the **run** method should be used instead.
@@ -492,6 +490,10 @@ def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, branch_rates,
     :param Sbus: Power injection at each bus in complex MVA
     :param Ibus: Current injection at each bus in complex MVA
     :param branch_rates: array of branch rates
+    :param pq: Array of pq nodes
+    :param pv: Array of pv nodes
+    :param vd: Array of slack nodes
+    :param pqpv: Array of (sorted) pq and pv nodes
     :param options: PowerFlowOptions instance
     :param logger: Logger instance
     :return: PowerFlowResults instance
@@ -504,6 +506,10 @@ def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, branch_rates,
                                     Sbus=Sbus,
                                     Ibus=Ibus,
                                     branch_rates=branch_rates,
+                                    pq=pq,
+                                    pv=pv,
+                                    vd=vd,
+                                    pqpv=pqpv,
                                     logger=logger)
 
     # did it worked?
@@ -556,6 +562,10 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                        Sbus=calculation_input.Sbus,
                                        Ibus=calculation_input.Ibus,
                                        branch_rates=calculation_input.Rates,
+                                       pq=calculation_inputs.pq,
+                                       pv=calculation_inputs.pv,
+                                       vd=calculation_inputs.vd,
+                                       pqpv=calculation_inputs.pqpv,
                                        options=options,
                                        logger=logger)
 
@@ -578,6 +588,10 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                    Sbus=calculation_inputs[0].Sbus,
                                    Ibus=calculation_inputs[0].Ibus,
                                    branch_rates=calculation_inputs[0].Rates,
+                                   pq=calculation_inputs[0].pq,
+                                   pv=calculation_inputs[0].pv,
+                                   vd=calculation_inputs[0].vd,
+                                   pqpv=calculation_inputs[0].pqpv,
                                    options=options,
                                    logger=logger)
 
@@ -604,32 +618,3 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     results.hvdc_losses = nc.hvdc_losses
 
     return results
-
-
-def power_flow_worker_args(args):
-    """
-    Power flow worker to schedule parallel power flows
-
-    args -> t, options: PowerFlowOptions, circuit: Circuit, Vbus, Sbus, Ibus, return_dict
-
-
-        **t: execution index
-        **options: power flow options
-        **circuit: circuit
-        **Vbus: Voltages to initialize
-        **Sbus: Power injections
-        **Ibus: Current injections
-        **return_dict: parallel module dictionary in which to return the values
-    :return:
-    """
-    t, options, circuit, Vbus, Sbus, Ibus, branch_rates = args
-
-    res = single_island_pf(circuit=circuit,
-                           Vbus=Vbus,
-                           Sbus=Sbus,
-                           Ibus=Ibus,
-                           branch_rates=branch_rates,
-                           options=options,
-                           logger=bs.Logger())
-
-    return t, res

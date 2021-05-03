@@ -16,9 +16,10 @@
 import numpy as np
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 
-class OptimalPowerFlowResults:
+class OptimalPowerFlowResults(ResultsTemplate):
     """
     OPF results.
 
@@ -46,7 +47,34 @@ class OptimalPowerFlowResults:
                  battery_power=None, controlled_generation_power=None,
                  Sf=None, overloads=None, loading=None, losses=None, converged=None, bus_types=None):
 
-        self.name = 'OPF'
+        ResultsTemplate.__init__(self,
+                                 name='OPF',
+                                 available_results=[ResultTypes.BusVoltageModule,
+                                                    ResultTypes.BusVoltageAngle,
+                                                    ResultTypes.BranchPower,
+                                                    ResultTypes.BranchLoading,
+                                                    ResultTypes.BranchOverloads,
+                                                    ResultTypes.LoadShedding,
+                                                    ResultTypes.ControlledGeneratorShedding,
+                                                    ResultTypes.ControlledGeneratorPower,
+                                                    ResultTypes.BatteryPower],
+                                 data_variables=['bus_names',
+                                                 'branch_names',
+                                                 'load_names',
+                                                 'generator_names',
+                                                 'battery_names',
+                                                 'Sbus',
+                                                 'voltage',
+                                                 'load_shedding',
+                                                 'generation_shedding',
+                                                 'Sf',
+                                                 'bus_types',
+                                                 'overloads',
+                                                 'loading',
+                                                 'battery_power',
+                                                 'generators_power',
+                                                 'flow_direction',
+                                                 'converged'])
 
         self.bus_names = bus_names
         self.branch_names = branch_names
@@ -79,16 +107,6 @@ class OptimalPowerFlowResults:
         self.flow_direction = None
 
         self.converged = converged
-
-        self.available_results = [ResultTypes.BusVoltageModule,
-                                  ResultTypes.BusVoltageAngle,
-                                  ResultTypes.BranchPower,
-                                  ResultTypes.BranchLoading,
-                                  ResultTypes.BranchOverloads,
-                                  ResultTypes.LoadShedding,
-                                  ResultTypes.ControlledGeneratorShedding,
-                                  ResultTypes.ControlledGeneratorPower,
-                                  ResultTypes.BatteryPower]
 
         self.plot_bars_limit = 100
 

@@ -15,7 +15,6 @@
 
 import pandas as pd
 import time
-from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.basic_structures import TimeGrouping, get_time_groups
@@ -28,12 +27,10 @@ from GridCal.Engine.Simulations.OPF.simple_dispatch_ts import OpfSimpleTimeSerie
 from GridCal.Engine.Core.time_series_opf_data import compile_opf_time_circuit
 from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.driver_template import TSDriverTemplate
 
 
-class OptimalPowerFlowTimeSeries(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class OptimalPowerFlowTimeSeries(TSDriverTemplate):
     name = 'Optimal power flow time series'
     tpe = SimulationTypes.OPFTimeSeries_run
 
@@ -43,10 +40,7 @@ class OptimalPowerFlowTimeSeries(QThread):
         @param grid: MultiCircuit Object
         @param options: OPF options
         """
-        QThread.__init__(self)
-
-        # Grid to run a power flow in
-        self.grid = grid
+        TSDriverTemplate.__init__(self, grid=grid, start_=start_, end_=end_)
 
         # Options to use
         self.options = options
@@ -74,21 +68,7 @@ class OptimalPowerFlowTimeSeries(QThread):
                                                          time=self.grid.time_profile,
                                                          bus_types=self.numerical_circuit.bus_types)
 
-        self.start_ = start_
-
-        if end_ is not None:
-            self.end_ = end_
-        else:
-            self.end_ = len(self.grid.time_profile)
-
-        self.logger = Logger()
-
-        # set cancel state
-        self.__cancel__ = False
-
         self.all_solved = True
-
-        self.elapsed = 0.0
 
     def reset_results(self):
         """
@@ -237,8 +217,3 @@ class OptimalPowerFlowTimeSeries(QThread):
         self.progress_text.emit('Done!')
         self.done_signal.emit()
 
-    def cancel(self):
-        self.__cancel__ = True
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Cancelled!')
-        self.done_signal.emit()

@@ -21,13 +21,13 @@ def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1):
         bus_data.bus_names[i] = bus.name
         bus_data.Vmin[i] = bus.Vmin
         bus_data.Vmax[i] = bus.Vmax
+        bus_data.bus_types[i] = bus.determine_bus_type().value
 
         if time_series:
             bus_data.bus_active[i, :] = bus.active_prof
+            bus_data.bus_types_prof[i, :] = bus.determine_bus_type_prof()
         else:
             bus_data.bus_active[i] = bus.active
-
-        bus_data.bus_types[i] = bus.determine_bus_type().value
 
     return bus_data
 
@@ -547,6 +547,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         if time_series:
             data.branch_active[i, :] = elm.active_prof
             data.branch_rates[i, :] = elm.rate_prof
+            data.branch_contingency_rates[i, :] = elm.rate_prof * elm.contingency_factor
 
             if opf:
                 data.branch_cost[i, :] = elm.Cost_prof
@@ -554,6 +555,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         else:
             data.branch_active[i] = elm.active
             data.branch_rates[i] = elm.rate
+            data.branch_contingency_rates[i] = elm.rate * elm.contingency_factor
 
             if opf:
                 data.branch_cost[i] = elm.Cost

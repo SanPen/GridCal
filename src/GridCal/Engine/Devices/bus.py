@@ -276,14 +276,75 @@ class Bus(EditableDevice):
         if (gen_on + batt_on + shunt_on) > 0:
             self.type = BusMode.PV
 
-        # elif shunt_on > 0:
-        #     self.type = BusMode.PVB
-
         else:
             # Nothing special; set it as PQ
             self.type = BusMode.PQ
 
         return self.type
+
+    def determine_bus_type_at(self, t):
+        """
+        Infer the bus type from the devices attached to it
+        :param t: time index
+        @return: self.type
+        """
+        if self.is_slack:
+            # if it is set as slack, set the bus as slack and exit
+            return BusMode.Slack
+
+        elif len(self.external_grids) > 0:  # there are devices setting this as a slack bus
+
+            # count the number of active external grids
+            ext_on = 0
+            for elm in self.external_grids:
+                if elm.active_prof[t]:
+                    ext_on += 1
+
+            # if there ar any active external grids, set as slack and exit
+            if ext_on > 0:
+                return BusMode.Slack
+        else:
+            # if we got here, determine what to do...
+
+            # count the active and controlled generators
+            gen_on = 0
+            for elm in self.controlled_generators:
+                if elm.active_prof[t] and elm.is_controlled:
+                    gen_on += 1
+
+            # count the active and controlled batteries
+            batt_on = 0
+            for elm in self.batteries:
+                if elm.active_prof[t] and elm.is_controlled:
+                    batt_on += 1
+
+            shunt_on = 0
+            for elm in self.shunts:
+                if elm.active_prof[t] and elm.is_controlled:
+                    shunt_on += 1
+
+            if (gen_on + batt_on + shunt_on) > 0:
+                return BusMode.PV
+
+            else:
+                # Nothing special; set it as PQ
+                return BusMode.PQ
+
+        return BusMode.PQ
+
+    def determine_bus_type_prof(self):
+        """
+        Array of bus types according to the profile
+        :return: array of bus type numbers
+        """
+        if self.active_prof is not None:
+            nt = self.active_prof.shape[0]
+            values = np.zeros(nt, dtype=int)
+            for t in range(nt):
+                values[t] = self.determine_bus_type_at(t).value
+            return values
+        else:
+            raise Exception('Asked the profile types with no profile!')
 
     def get_reactive_power_limits(self):
         """

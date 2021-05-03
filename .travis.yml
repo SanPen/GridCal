@@ -1,14 +1,15 @@
-dist: xenial   # required for Python >= 3.7
+dist: focal   # required for Python >= 3.7
 services:
   - xvfb  # this is necessary for travis-ci to work with Qt
 language: python
 python:
-  - "3.6"
+  #- "3.6"
   - "3.7"
   - "3.8"
 # command to install dependencies
 install:
-  - pip install -r requirements.txt
+  - pip install -r requirements_nose.txt
 # command to run tests
 script:
+  - cd src/tests
   - nosetests

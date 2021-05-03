@@ -29,7 +29,7 @@ from GridCal.Engine.IO.ipa_parser import load_iPA
 from GridCal.Engine.IO.json_parser import parse_json, parse_json_data_v2, parse_json_data_v3
 from GridCal.Engine.IO.raw_parser import PSSeParser
 from GridCal.Engine.IO.cim.cim_parser import CIMImport
-from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, get_frames_from_zip
+from GridCal.Engine.IO.zip_interface import save_data_frames_to_zip, get_frames_from_zip, get_session_tree, load_session_driver_objects
 from GridCal.Engine.IO.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from GridCal.Engine.IO.h5_interface import save_h5, open_h5
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -187,7 +187,8 @@ class FileOpen:
 
 class FileSave:
 
-    def __init__(self, circuit: MultiCircuit, file_name, text_func=None, progress_func=None, simulation_drivers=list()):
+    def __init__(self, circuit: MultiCircuit, file_name, text_func=None, progress_func=None,
+                 simulation_drivers=list(), sessions=list()):
         """
         File saver
         :param circuit: MultiCircuit
@@ -201,6 +202,8 @@ class FileSave:
         self.file_name = file_name
 
         self.simulation_drivers = simulation_drivers
+
+        self.sessions = sessions
 
         self.text_func = text_func
 
@@ -255,8 +258,9 @@ class FileSave:
 
         dfs = create_data_frames(self.circuit)
 
-        save_data_frames_to_zip(dfs,
+        save_data_frames_to_zip(dfs=dfs,
                                 filename_zip=self.file_name,
+                                sessions=self.sessions,
                                 text_func=self.text_func,
                                 progress_func=self.progress_func)
 
@@ -334,6 +338,34 @@ class FileOpenThread(QThread):
 
         self.__cancel__ = False
 
+    def get_session_tree(self):
+        """
+        Get the session tree structure from a GridCal file
+        :return:
+        """
+        if isinstance(self.file_name, str):
+            if self.file_name.endswith('.gridcal'):
+                return get_session_tree(self.file_name)
+            else:
+                return dict()
+        else:
+            return dict()
+
+    def load_session_objects(self, session_name: str, study_name: str):
+        """
+        Load the numpy objects of the session
+        :param session_name: Name of the session (i.e. GUI Session)
+        :param study_name: Name of the study i.e Power Flow)
+        :return: Dictionary (name: array)
+        """
+        if isinstance(self.file_name, str):
+            if self.file_name.endswith('.gridcal'):
+                return load_session_driver_objects(self.file_name, session_name, study_name)
+            else:
+                return dict()
+        else:
+            return dict()
+
     def run(self):
         """
         run the file open procedure
@@ -371,7 +403,7 @@ class FileSaveThread(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
 
-    def __init__(self, circuit: MultiCircuit, file_name, simulation_drivers=list()):
+    def __init__(self, circuit: MultiCircuit, file_name, simulation_drivers=list(), sessions=list()):
         """
         Constructor
         :param circuit: MultiCircuit instance
@@ -388,11 +420,41 @@ class FileSaveThread(QThread):
 
         self.simulation_drivers = simulation_drivers
 
+        self.sessions = sessions
+
         self.logger = Logger()
 
         self.error_msg = ''
 
         self.__cancel__ = False
+
+    def get_session_tree(self):
+        """
+        Get the session tree structure from a GridCal file
+        :return:
+        """
+        if isinstance(self.file_name, str):
+            if self.file_name.endswith('.gridcal'):
+                return get_session_tree(self.file_name)
+            else:
+                return dict()
+        else:
+            return dict()
+
+    def load_session_objects(self, session_name: str, study_name: str):
+        """
+        Load the numpy objects of the session
+        :param session_name: Name of the session (i.e. GUI Session)
+        :param study_name: Name of the study i.e Power Flow)
+        :return: Dictionary (name: array)
+        """
+        if isinstance(self.file_name, str):
+            if self.file_name.endswith('.gridcal'):
+                return load_session_driver_objects(self.file_name, session_name, study_name)
+            else:
+                return dict()
+        else:
+            return dict()
 
     def run(self):
         """
@@ -410,7 +472,8 @@ class FileSaveThread(QThread):
                                 self.file_name,
                                 text_func=self.progress_text.emit,
                                 progress_func=self.progress_signal.emit,
-                                simulation_drivers=self.simulation_drivers)
+                                simulation_drivers=self.simulation_drivers,
+                                sessions=self.sessions)
 
         self.logger = file_handler.save()
 

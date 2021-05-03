@@ -55,7 +55,6 @@ def compile_types(Sbus, types, logger=Logger()):
             # delete the selected pv bus from the pv list and put it in the slack list
             pv = np.delete(pv, np.where(pv == i)[0])
             ref = [i]
-            # print('Setting bus', i, 'as slack')
 
         ref = np.ndarray.flatten(np.array(ref))
         types[ref] = BusMode.Slack.value

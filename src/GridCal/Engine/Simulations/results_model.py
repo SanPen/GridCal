@@ -122,27 +122,27 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
         return None
 
-    def headerData(self, p_int, orientation, role):
+    def headerData(self, section, orientation, role=None):
         """
-
-        :param p_int:
-        :param orientation:
+        Get the header value
+        :param section: header index
+        :param orientation: Orientation {QtCore.Qt.Horizontal, QtCore.Qt.Vertical}
         :param role:
         :return:
         """
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
-                if len(self.cols_c) > p_int:
-                    return self.cols_c[p_int]
+                if len(self.cols_c) > section:
+                    return self.cols_c[section]
 
             elif orientation == QtCore.Qt.Vertical:
                 if self.index_c is None:
-                    return p_int
+                    return section
                 else:
                     if self.isDate:
-                        return self.index_c[p_int].strftime('%Y/%m/%d  %H:%M.%S')
+                        return self.index_c[section].strftime('%Y/%m/%d  %H:%M.%S')
                     else:
-                        return str(self.index_c[p_int])
+                        return str(self.index_c[section])
         return None
 
     def slice_cols(self, col_idx):
@@ -246,22 +246,27 @@ class ResultsModel(QtCore.QAbstractTableModel):
         """
         self.data_c = np.abs(self.data_c)
 
+    def to_df(self):
+        """
+        get DataFrame
+        """
+        index, columns, data = self.get_data()
+
+        return pd.DataFrame(data=data, index=index, columns=columns)
+
     def save_to_excel(self, file_name):
         """
         save data to excel
         :param file_name:
         """
-        index, columns, data = self.get_data()
-
-        pd.DataFrame(data=data, index=index, columns=columns).to_excel(file_name)
+        self.to_df().to_excel(file_name)
 
     def save_to_csv(self, file_name):
         """
         Save data to csv
         :param file_name:
         """
-        index, columns, data = self.get_data()
-        pd.DataFrame(data=data, index=index, columns=columns).to_csv(file_name)
+        self.to_df().to_csv(file_name)
 
     def get_data_frame(self):
         """
@@ -346,10 +351,12 @@ class ResultsModel(QtCore.QAbstractTableModel):
         ax.set_title(self.title, fontsize=14)
         ax.set_ylabel(self.ylabel, fontsize=11)
         ax.set_xlabel(self.xlabel, fontsize=11)
-        df.plot(ax=ax, legend=plot_legend)
+        try:
+            df.plot(ax=ax, legend=plot_legend)
+        except TypeError:
+            print('No numeric data to plot...')
 
 
-# @nb.njit()
 def fast_data_to_text(data, columns, index):
     # header first
     txt = '\t' + '\t'.join(columns) + '\n'
@@ -362,7 +369,6 @@ def fast_data_to_text(data, columns, index):
     return txt
 
 
-# @nb.njit()
 def fast_data_to_numpy_text(data):
 
     if len(data.shape) == 1:

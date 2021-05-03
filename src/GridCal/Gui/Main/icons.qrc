@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/atc_ts.svg</file>
+    <file>icons/atc.svg</file>
     <file>icons/pf_ts_cluster.svg</file>
     <file>icons/assign_to_profile.svg</file>
     <file>icons/otdf_ts.svg</file>

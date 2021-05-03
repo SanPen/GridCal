@@ -103,5 +103,24 @@ class ResultTypes(Enum):
     SigmaDistances = 'Sigma distances', DeviceType.BusDevice
     SigmaPlusDistances = 'Sigma + distances', DeviceType.BusDevice
 
+    # ATC
+    AvailableTransferCapacityMatrix = 'Available transfer capacity', DeviceType.BranchDevice
+    AvailableTransferCapacity = 'Available transfer capacity', DeviceType.BranchDevice
+    AvailableTransferCapacityAlpha = 'Sensitivity to the exchange', DeviceType.BranchDevice
+    AvailableTransferCapacityReport = 'ATC Report', DeviceType.NoDevice
+    AvailableTransferCapacityFrom = 'Available transfer capacity (from)', DeviceType.BranchDevice
+    AvailableTransferCapacityTo = 'Available transfer capacity (to)', DeviceType.BranchDevice
 
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return ResultTypes[s]
+        except KeyError:
+            return s
 
