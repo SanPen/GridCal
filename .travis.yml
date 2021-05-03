@@ -13,4 +13,5 @@ install:
 # command to run tests
 script:
   #- pytest
+  - cd SanPen/GridCal/src/tests
   - nosetests
