@@ -14,7 +14,7 @@ h5py==3.1.0
 idna==2.10
 iniconfig==1.1.1
 ipykernel==5.4.3
-ipython==7.20.0
+ipython>=7.16
 ipython-genutils==0.2.0
 jdcal==1.4.1
 jedi==0.18.0
