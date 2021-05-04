@@ -56,7 +56,7 @@ def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
     else:
         dTheta[noref, :] = dtheta_ref
 
-    # compute corresponding change in branch flows
+    # compute corresponding change in branch Sf
     # Bf is a sparse matrix
     H = Bf * dTheta
 
@@ -170,10 +170,10 @@ def make_otdf_max(ptdf, lodf):
 @nb.njit()
 def make_contingency_flows(lodf, flows):
     """
-    Make contingency flows matrix
+    Make contingency Sf matrix
     :param lodf: line outage distribution factors
-    :param flows: base flows in MW
-    :return: outage flows for every line after each contingency (n-branch, n-branch[outage])
+    :param flows: base Sf in MW
+    :return: outage Sf for every line after each contingency (n-branch, n-branch[outage])
     """
     nbr = lodf.shape[0]
     omw = np.zeros((nbr, nbr))
@@ -191,7 +191,7 @@ def make_transfer_limits(ptdf, flows, rates):
     """
     Compute the maximum transfer limits of each branch in normal operation
     :param ptdf: power transfer distribution factors matrix (n-branch, n-bus)
-    :param flows: base flows in MW
+    :param flows: base Sf in MW
     :param rates: array of branch rates
     :return: Max transfer limits vector  (n-branch)
     """
@@ -218,7 +218,7 @@ def make_contingency_transfer_limits(otdf_max, lodf, flows, rates):
     Compute the maximum transfer limits after contingency of each branch
     :param otdf_max: Maximum Outage sensitivity of the branches when transferring power
                      from any bus to the slack  (n-branch, n-branch)
-    :param omw: contingency flows matrix (n-branch, n-branch)
+    :param omw: contingency Sf matrix (n-branch, n-branch)
     :param rates: array of branch rates
     :return: Max transfer limits matrix  (n-branch, n-branch)
     """
@@ -348,7 +348,7 @@ class LinearAnalysis:
     def get_transfer_limits(self, flows):
         """
         compute the normal transfer limits
-        :param flows: base flows in MW
+        :param flows: base Sf in MW
         :return: Max transfer limits vector (n-branch)
         """
         return make_transfer_limits(self.PTDF, flows, self.numerical_circuit.Rates)
@@ -356,16 +356,16 @@ class LinearAnalysis:
     def get_contingency_transfer_limits(self, flows):
         """
         Compute the contingency transfer limits
-        :param flows: base flows in MW
+        :param flows: base Sf in MW
         :return: Max transfer limits matrix (n-branch, n-branch)
         """
         return make_contingency_transfer_limits(self.OTDF, self.LODF, flows, self.numerical_circuit.Rates)
 
     def get_flows(self, Sbus):
         """
-        Compute the time series branch flows using the PTDF
+        Compute the time series branch Sf using the PTDF
         :param Sbus: Power injections time series array
-        :return: branch active power flows time series
+        :return: branch active power Sf time series
         """
 
         # option 2: call the power directly
@@ -375,9 +375,9 @@ class LinearAnalysis:
 
     def get_flows_time_series(self, Sbus):
         """
-        Compute the time series branch flows using the PTDF
+        Compute the time series branch Sf using the PTDF
         :param Sbus: Power injections time series array
-        :return: branch active power flows time series
+        :return: branch active power Sf time series
         """
 
         # option 2: call the power directly

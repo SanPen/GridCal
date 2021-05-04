@@ -139,7 +139,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TSDriverTemplate):
         Power Transfer Distribution Factors class constructor
         @param grid: MultiCircuit Object
         @param options: OPF options
-        @:param pf_results: PowerFlowResults, this is to get the flows
+        @:param pf_results: PowerFlowResults, this is to get the Sf
         """
         TSDriverTemplate.__init__(self,
                                   grid=grid,
@@ -187,7 +187,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TSDriverTemplate):
                                                                   bus_names=ts_numeric_circuit.bus_names,
                                                                   bus_types=ts_numeric_circuit.bus_types)
 
-        # compute the base flows
+        # compute the base Sf
         P = ts_numeric_circuit.Sbus.real
         flows = linear_analysis.get_flows_time_series(P)
         rates = ts_numeric_circuit.ContingencyRates.T

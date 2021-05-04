@@ -20,7 +20,7 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 
-class OptimalPowerFlowTimeSeriesResults:
+class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names,
                  n, m, nt, ngen=0, nbat=0, nload=0, time=None, bus_types=()):
@@ -110,6 +110,10 @@ class OptimalPowerFlowTimeSeriesResults:
         self.battery_energy = np.zeros((nt, nbat), dtype=float)
 
         self.converged = np.empty(nt, dtype=bool)
+
+    def apply_new_time_series_rates(self, nc: "TimeCircuit"):
+        rates = nc.Rates.T
+        self.loading = self.Sf / (rates + 1e-9)
 
     def init_object_results(self, ngen, nbat):
         """

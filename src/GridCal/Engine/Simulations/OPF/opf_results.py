@@ -110,6 +110,10 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
         self.plot_bars_limit = 100
 
+    def apply_new_rates(self, nc: "SnapshotData"):
+        rates = nc.Rates
+        self.loading = self.Sf / (rates + 1e-9)
+
     def copy(self):
         """
         Return a copy of this

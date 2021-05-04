@@ -65,6 +65,10 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
 
         self.max_overload = np.zeros((ne, nc))
 
+    def apply_new_time_series_rates(self, nc: "TimeCircuit"):
+        rates = nc.Rates.T
+        self.worst_loading = self.worst_flows / (rates + 1e-9)
+
     def get_steps(self):
         return
 
@@ -112,7 +116,7 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         elif result_type == ResultTypes.WorstContingencyFlows:
             data = self.worst_flows
             y_label = '(MW)'
-            title = 'Worst contingency flows '
+            title = 'Worst contingency Sf '
             labels = self.branch_names
             index = self.time_array
 

@@ -120,7 +120,7 @@ class OptimalPowerFlow(DriverTemplate):
         # Solve
         problem.solve()
 
-        # get the branch flows (it is used more than one time)
+        # get the branch Sf (it is used more than one time)
         Sbr = problem.get_branch_power()
         ld = problem.get_load_shedding()
         ld[ld == None] = 0

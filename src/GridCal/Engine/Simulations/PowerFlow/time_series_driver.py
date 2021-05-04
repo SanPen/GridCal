@@ -113,6 +113,10 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.converged_values = np.ones(self.nt, dtype=bool)  # guilty assumption
 
+    def apply_new_time_series_rates(self, nc: "TimeCircuit"):
+        rates = nc.Rates.T
+        self.loading = self.Sf / (rates + 1e-9)
+
     def set_at(self, t, results: PowerFlowResults):
         """
         Set the results at the step t

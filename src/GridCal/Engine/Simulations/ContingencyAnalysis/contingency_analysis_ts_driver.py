@@ -28,12 +28,12 @@ from GridCal.Engine.Simulations.driver_template import TSDriverTemplate
 @jit(nopython=True, parallel=False)
 def compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_overload, worst_flows):
     """
-    Compute LODF based flows
+    Compute LODF based Sf
     :param nt: number of time steps
     :param ne: number of elements
     :param nc: number of failed elements
     :param LODF: LODF matrix (element, failed element)
-    :param Flows: base flows matrix (time, element)
+    :param Flows: base Sf matrix (time, element)
     :return: Cube of N-1 Flows (time, elements, contingencies)
     """
 
@@ -57,12 +57,12 @@ def compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_over
 @jit(nopython=True, parallel=True)
 def compute_flows_numba(e, nt, nc, LODF, Flows, rates, overload_count, max_overload, worst_flows, paralelize_from=500):
     """
-    Compute LODF based flows
+    Compute LODF based Sf
     :param nt: number of time steps
     :param ne: number of elements
     :param nc: number of failed elements
     :param LODF: LODF matrix (element, failed element)
-    :param Flows: base flows matrix (time, element)
+    :param Flows: base Sf matrix (time, element)
     :return: Cube of N-1 Flows (time, elements, contingencies)
     """
 
@@ -136,16 +136,16 @@ class ContingencyAnalysisTimeSeries(TSDriverTemplate):
                                          correct_values=self.options.correct_values)
         linear_analysis.run()
 
-        self.progress_text.emit('Computing branch base flows...')
+        self.progress_text.emit('Computing branch base Sf...')
         Pbus = ts_numeric_circuit.Sbus.real
         flows = linear_analysis.get_flows_time_series(Pbus)
         rates = ts_numeric_circuit.ContingencyRates.T
 
-        self.progress_text.emit('Computing N-1 flows...')
+        self.progress_text.emit('Computing N-1 Sf...')
 
         for e in range(ne):
 
-            self.progress_text.emit('Computing N-1 flows...' + ts_numeric_circuit.branch_names[e])
+            self.progress_text.emit('Computing N-1 Sf...' + ts_numeric_circuit.branch_names[e])
 
             compute_flows_numba(e=e,
                                 nt=nt,

@@ -388,6 +388,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionImport_bus_coordinates.triggered.connect(self.import_bus_coordinates)
 
+        self.ui.actionApply_new_rates.triggered.connect(self.apply_new_rates)
+
         self.ui.actionSetSelectedBusCountry.triggered.connect(lambda: self.set_selected_bus_property('country'))
         self.ui.actionSetSelectedBusArea.triggered.connect(lambda: self.set_selected_bus_property('area'))
         self.ui.actionSetSelectedBusZone.triggered.connect(lambda: self.set_selected_bus_property('zone'))
@@ -870,7 +872,7 @@ class MainGUI(QMainWindow):
         print('\tapp.optimal_power_flow.load_shedding:\t the branch loading in %')
         print('\tapp.optimal_power_flow.losses:\t the branch losses in per unit')
         print('\tapp.optimal_power_flow.Sbus:\t the nodal power injections in MW')
-        print('\tapp.optimal_power_flow.Sf:\t the branch power flows')
+        print('\tapp.optimal_power_flow.Sf:\t the branch power Sf')
         print('\tapp.optimal_power_flow.losses:\t the branch losses in MVA')
         print('\tapp.optimal_power_flow.short_circuit_power:\t Short circuit power in MVA of the grid nodes')
 
@@ -5894,10 +5896,47 @@ class MainGUI(QMainWindow):
                 self.ui.resultsTableView.setModel(mdl)
 
     def get_snapshot_circuit(self):
+        """
+        Get a snapshot compilation
+        :return: SnapshotData instance
+        """
         return core.compile_snapshot_circuit(circuit=self.circuit)
 
     def get_time_circuit(self):
+        """
+        Get a time circuit compilation
+        :return: TimeCircuit instance
+        """
         return core.compile_time_circuit(circuit=self.circuit)
+
+    def apply_new_snapshot_rates(self):
+        """
+        Change the loading of a snapshot solution from new rating data if it has means to do it
+        """
+        nc = self.get_snapshot_circuit()
+
+        for drv_tpe, drv in self.session.drivers.items():
+            if drv.results is not None:
+                drv.results.apply_new_rates(nc)
+
+    def apply_new_time_series_rates(self):
+        """
+        Change the loading of a time series solution from new rating data if it has means to do it
+        """
+        if self.circuit.time_profile is not None:
+            nc = self.get_time_circuit()
+
+            for drv_tpe, drv in self.session.drivers.items():
+                if drv.results is not None:
+                    drv.results.apply_new_time_series_rates(nc)
+
+    def apply_new_rates(self):
+        """
+        Apply the new rates everywhere
+        :return:
+        """
+        self.apply_new_snapshot_rates()
+        self.apply_new_time_series_rates()
 
 
 def run(use_native_dialogues=True):

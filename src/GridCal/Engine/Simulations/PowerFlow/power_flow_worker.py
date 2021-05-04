@@ -428,7 +428,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
 
 def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_rates):
     """
-    Compute the power flows trough the branches.
+    Compute the power Sf trough the branches.
 
     Arguments:
 

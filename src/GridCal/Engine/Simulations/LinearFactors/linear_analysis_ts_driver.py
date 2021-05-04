@@ -78,6 +78,10 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
 
         self.losses = np.zeros((self.nt, m), dtype=float)
 
+    def apply_new_time_series_rates(self, nc: "TimeCircuit"):
+        rates = nc.Rates.T
+        self.loading = self.Sf / (rates + 1e-9)
+
     def get_results_dict(self):
         """
         Returns a dictionary with the results sorted in a dictionary
@@ -199,7 +203,7 @@ class LinearAnalysisTimeSeries(TSDriverTemplate):
                                          )
         linear_analysis.run()
 
-        self.progress_text.emit('Computing branch flows...')
+        self.progress_text.emit('Computing branch Sf...')
 
         Pbus_0 = ts_numeric_circuit.Sbus.real[:, time_indices]
         self.results.Sf = linear_analysis.get_flows_time_series(Pbus_0)

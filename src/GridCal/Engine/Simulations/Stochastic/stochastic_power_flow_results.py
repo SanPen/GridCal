@@ -208,7 +208,7 @@ class StochasticPowerFlowResults(ResultsTemplate):
 
     def query_voltage(self, power_array):
         """
-        Fantastic function that allows to query the voltage from the sampled points without having to run power flows
+        Fantastic function that allows to query the voltage from the sampled points without having to run power Sf
         Args:
             power_array: power injections vector
 

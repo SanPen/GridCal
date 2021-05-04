@@ -286,6 +286,11 @@ class Ui_mainWindow(object):
         icon44 = QIcon()
         icon44.addFile(u":/Icons/icons/otdf.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.actionContingency_analysis.setIcon(icon44)
+        self.actionApply_new_rates = QAction(mainWindow)
+        self.actionApply_new_rates.setObjectName(u"actionApply_new_rates")
+        icon45 = QIcon()
+        icon45.addFile(u":/Icons/icons/data.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.actionApply_new_rates.setIcon(icon45)
         self.centralwidget = QWidget(mainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -337,25 +342,25 @@ class Ui_mainWindow(object):
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.run_cascade_pushButton = QPushButton(self.frame_11)
         self.run_cascade_pushButton.setObjectName(u"run_cascade_pushButton")
-        icon45 = QIcon()
-        icon45.addFile(u":/Icons/icons/run_cascade.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.run_cascade_pushButton.setIcon(icon45)
+        icon46 = QIcon()
+        icon46.addFile(u":/Icons/icons/run_cascade.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.run_cascade_pushButton.setIcon(icon46)
 
         self.horizontalLayout_3.addWidget(self.run_cascade_pushButton)
 
         self.run_cascade_step_pushButton = QPushButton(self.frame_11)
         self.run_cascade_step_pushButton.setObjectName(u"run_cascade_step_pushButton")
-        icon46 = QIcon()
-        icon46.addFile(u":/Icons/icons/run_cascade_step.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.run_cascade_step_pushButton.setIcon(icon46)
+        icon47 = QIcon()
+        icon47.addFile(u":/Icons/icons/run_cascade_step.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.run_cascade_step_pushButton.setIcon(icon47)
 
         self.horizontalLayout_3.addWidget(self.run_cascade_step_pushButton)
 
         self.copy_cascade_step_pushButton = QPushButton(self.frame_11)
         self.copy_cascade_step_pushButton.setObjectName(u"copy_cascade_step_pushButton")
-        icon47 = QIcon()
-        icon47.addFile(u":/Icons/icons/copy.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.copy_cascade_step_pushButton.setIcon(icon47)
+        icon48 = QIcon()
+        icon48.addFile(u":/Icons/icons/copy.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.copy_cascade_step_pushButton.setIcon(icon48)
 
         self.horizontalLayout_3.addWidget(self.copy_cascade_step_pushButton)
 
@@ -365,9 +370,9 @@ class Ui_mainWindow(object):
 
         self.clear_cascade_pushButton = QPushButton(self.frame_11)
         self.clear_cascade_pushButton.setObjectName(u"clear_cascade_pushButton")
-        icon48 = QIcon()
-        icon48.addFile(u":/Icons/icons/delete.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.clear_cascade_pushButton.setIcon(icon48)
+        icon49 = QIcon()
+        icon49.addFile(u":/Icons/icons/delete.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.clear_cascade_pushButton.setIcon(icon49)
 
         self.horizontalLayout_3.addWidget(self.clear_cascade_pushButton)
 
@@ -417,9 +422,9 @@ class Ui_mainWindow(object):
 
         self.view_next_simulation_step_pushButton = QPushButton(self.grid_colouring_frame)
         self.view_next_simulation_step_pushButton.setObjectName(u"view_next_simulation_step_pushButton")
-        icon49 = QIcon()
-        icon49.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.view_next_simulation_step_pushButton.setIcon(icon49)
+        icon50 = QIcon()
+        icon50.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.view_next_simulation_step_pushButton.setIcon(icon50)
 
         self.gridLayout_20.addWidget(self.view_next_simulation_step_pushButton, 1, 7, 1, 1)
 
@@ -431,25 +436,25 @@ class Ui_mainWindow(object):
 
         self.view_previous_simulation_step_pushButton = QPushButton(self.grid_colouring_frame)
         self.view_previous_simulation_step_pushButton.setObjectName(u"view_previous_simulation_step_pushButton")
-        icon50 = QIcon()
-        icon50.addFile(u":/Icons/icons/prev.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.view_previous_simulation_step_pushButton.setIcon(icon50)
+        icon51 = QIcon()
+        icon51.addFile(u":/Icons/icons/prev.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.view_previous_simulation_step_pushButton.setIcon(icon51)
 
         self.gridLayout_20.addWidget(self.view_previous_simulation_step_pushButton, 1, 5, 1, 1)
 
         self.colour_results_pushButton = QPushButton(self.grid_colouring_frame)
         self.colour_results_pushButton.setObjectName(u"colour_results_pushButton")
-        icon51 = QIcon()
-        icon51.addFile(u":/Icons/icons/color_grid.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.colour_results_pushButton.setIcon(icon51)
+        icon52 = QIcon()
+        icon52.addFile(u":/Icons/icons/color_grid.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.colour_results_pushButton.setIcon(icon52)
 
         self.gridLayout_20.addWidget(self.colour_results_pushButton, 1, 4, 1, 1)
 
         self.show_map_pushButton = QPushButton(self.grid_colouring_frame)
         self.show_map_pushButton.setObjectName(u"show_map_pushButton")
-        icon52 = QIcon()
-        icon52.addFile(u":/Icons/icons/show_color_controls.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.show_map_pushButton.setIcon(icon52)
+        icon53 = QIcon()
+        icon53.addFile(u":/Icons/icons/show_color_controls.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.show_map_pushButton.setIcon(icon53)
 
         self.gridLayout_20.addWidget(self.show_map_pushButton, 1, 1, 1, 1)
 
@@ -475,9 +480,9 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_5.addWidget(self.cascade_grid_splitter)
 
-        icon53 = QIcon()
-        icon53.addFile(u":/Icons/icons/schematic.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.tabWidget_3.addTab(self.GridSectionTab, icon53, "")
+        icon54 = QIcon()
+        icon54.addFile(u":/Icons/icons/schematic.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.tabWidget_3.addTab(self.GridSectionTab, icon54, "")
         self.DataTab = QWidget()
         self.DataTab.setObjectName(u"DataTab")
         self.verticalLayout_8 = QVBoxLayout(self.DataTab)
@@ -571,17 +576,17 @@ class Ui_mainWindow(object):
 
         self.filter_pushButton = QPushButton(self.frame_54)
         self.filter_pushButton.setObjectName(u"filter_pushButton")
-        icon54 = QIcon()
-        icon54.addFile(u":/Icons/icons/magnifying_glass.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.filter_pushButton.setIcon(icon54)
+        icon55 = QIcon()
+        icon55.addFile(u":/Icons/icons/magnifying_glass.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.filter_pushButton.setIcon(icon55)
 
         self.horizontalLayout_28.addWidget(self.filter_pushButton)
 
         self.highlight_selection_buses_pushButton = QPushButton(self.frame_54)
         self.highlight_selection_buses_pushButton.setObjectName(u"highlight_selection_buses_pushButton")
-        icon55 = QIcon()
-        icon55.addFile(u":/Icons/icons/highlight.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.highlight_selection_buses_pushButton.setIcon(icon55)
+        icon56 = QIcon()
+        icon56.addFile(u":/Icons/icons/highlight.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.highlight_selection_buses_pushButton.setIcon(icon56)
 
         self.horizontalLayout_28.addWidget(self.highlight_selection_buses_pushButton)
 
@@ -597,17 +602,17 @@ class Ui_mainWindow(object):
 
         self.processTemplatesPushButton = QPushButton(self.frame_54)
         self.processTemplatesPushButton.setObjectName(u"processTemplatesPushButton")
-        icon56 = QIcon()
-        icon56.addFile(u":/Icons/icons/calculator.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.processTemplatesPushButton.setIcon(icon56)
+        icon57 = QIcon()
+        icon57.addFile(u":/Icons/icons/calculator.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.processTemplatesPushButton.setIcon(icon57)
 
         self.horizontalLayout_28.addWidget(self.processTemplatesPushButton)
 
         self.viewTemplatesButton = QPushButton(self.frame_54)
         self.viewTemplatesButton.setObjectName(u"viewTemplatesButton")
-        icon57 = QIcon()
-        icon57.addFile(u":/Icons/icons/Catalogue.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.viewTemplatesButton.setIcon(icon57)
+        icon58 = QIcon()
+        icon58.addFile(u":/Icons/icons/Catalogue.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.viewTemplatesButton.setIcon(icon58)
 
         self.horizontalLayout_28.addWidget(self.viewTemplatesButton)
 
@@ -628,45 +633,45 @@ class Ui_mainWindow(object):
         self.horizontalLayout_25.setContentsMargins(0, 0, 0, 0)
         self.add_object_pushButton = QPushButton(self.frame_9)
         self.add_object_pushButton.setObjectName(u"add_object_pushButton")
-        icon58 = QIcon()
-        icon58.addFile(u":/Icons/icons/plus.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.add_object_pushButton.setIcon(icon58)
+        icon59 = QIcon()
+        icon59.addFile(u":/Icons/icons/plus.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.add_object_pushButton.setIcon(icon59)
 
         self.horizontalLayout_25.addWidget(self.add_object_pushButton)
 
         self.delete_selected_objects_pushButton = QPushButton(self.frame_9)
         self.delete_selected_objects_pushButton.setObjectName(u"delete_selected_objects_pushButton")
-        self.delete_selected_objects_pushButton.setIcon(icon48)
+        self.delete_selected_objects_pushButton.setIcon(icon49)
 
         self.horizontalLayout_25.addWidget(self.delete_selected_objects_pushButton)
 
         self.delete_and_reduce_pushButton = QPushButton(self.frame_9)
         self.delete_and_reduce_pushButton.setObjectName(u"delete_and_reduce_pushButton")
-        self.delete_and_reduce_pushButton.setIcon(icon53)
+        self.delete_and_reduce_pushButton.setIcon(icon54)
 
         self.horizontalLayout_25.addWidget(self.delete_and_reduce_pushButton)
 
         self.highlight_by_property_pushButton = QPushButton(self.frame_9)
         self.highlight_by_property_pushButton.setObjectName(u"highlight_by_property_pushButton")
-        icon59 = QIcon()
-        icon59.addFile(u":/Icons/icons/highlight2.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.highlight_by_property_pushButton.setIcon(icon59)
+        icon60 = QIcon()
+        icon60.addFile(u":/Icons/icons/highlight2.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.highlight_by_property_pushButton.setIcon(icon60)
 
         self.horizontalLayout_25.addWidget(self.highlight_by_property_pushButton)
 
         self.clear_highlight_pushButton = QPushButton(self.frame_9)
         self.clear_highlight_pushButton.setObjectName(u"clear_highlight_pushButton")
-        icon60 = QIcon()
-        icon60.addFile(u":/Icons/icons/unhighlight.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.clear_highlight_pushButton.setIcon(icon60)
+        icon61 = QIcon()
+        icon61.addFile(u":/Icons/icons/unhighlight.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.clear_highlight_pushButton.setIcon(icon61)
 
         self.horizontalLayout_25.addWidget(self.clear_highlight_pushButton)
 
         self.setValueToColumnButton = QPushButton(self.frame_9)
         self.setValueToColumnButton.setObjectName(u"setValueToColumnButton")
-        icon61 = QIcon()
-        icon61.addFile(u":/Icons/icons/copy2down.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.setValueToColumnButton.setIcon(icon61)
+        icon62 = QIcon()
+        icon62.addFile(u":/Icons/icons/copy2down.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.setValueToColumnButton.setIcon(icon62)
 
         self.horizontalLayout_25.addWidget(self.setValueToColumnButton)
 
@@ -716,9 +721,9 @@ class Ui_mainWindow(object):
         self.horizontalLayout_27.setContentsMargins(0, 0, 0, 0)
         self.assignTemplateButton = QPushButton(self.frame_53)
         self.assignTemplateButton.setObjectName(u"assignTemplateButton")
-        icon62 = QIcon()
-        icon62.addFile(u":/Icons/icons/copy2left.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.assignTemplateButton.setIcon(icon62)
+        icon63 = QIcon()
+        icon63.addFile(u":/Icons/icons/copy2left.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.assignTemplateButton.setIcon(icon63)
 
         self.horizontalLayout_27.addWidget(self.assignTemplateButton)
 
@@ -734,9 +739,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_8.addWidget(self.dataStructuresSplitter)
 
-        icon63 = QIcon()
-        icon63.addFile(u":/Icons/icons/data.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.tabWidget_3.addTab(self.DataTab, icon63, "")
+        self.tabWidget_3.addTab(self.DataTab, icon45, "")
         self.catalogueTab = QWidget()
         self.catalogueTab.setObjectName(u"catalogueTab")
         self.verticalLayout_32 = QVBoxLayout(self.catalogueTab)
@@ -783,7 +786,7 @@ class Ui_mainWindow(object):
 
         self.catalogue_add_pushButton = QPushButton(self.frame_35)
         self.catalogue_add_pushButton.setObjectName(u"catalogue_add_pushButton")
-        self.catalogue_add_pushButton.setIcon(icon58)
+        self.catalogue_add_pushButton.setIcon(icon59)
 
         self.gridLayout_18.addWidget(self.catalogue_add_pushButton, 0, 2, 1, 1)
 
@@ -812,7 +815,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_32.addWidget(self.catalogueSplitter)
 
-        self.tabWidget_3.addTab(self.catalogueTab, icon57, "")
+        self.tabWidget_3.addTab(self.catalogueTab, icon58, "")
         self.timeEventsTab = QWidget()
         self.timeEventsTab.setObjectName(u"timeEventsTab")
         self.verticalLayout_14 = QVBoxLayout(self.timeEventsTab)
@@ -833,7 +836,7 @@ class Ui_mainWindow(object):
 
         self.delete_profiles_structure_pushButton = QPushButton(self.frame)
         self.delete_profiles_structure_pushButton.setObjectName(u"delete_profiles_structure_pushButton")
-        self.delete_profiles_structure_pushButton.setIcon(icon48)
+        self.delete_profiles_structure_pushButton.setIcon(icon49)
 
         self.horizontalLayout.addWidget(self.delete_profiles_structure_pushButton)
 
@@ -866,7 +869,7 @@ class Ui_mainWindow(object):
 
         self.copy_profile_pushButton = QPushButton(self.frame)
         self.copy_profile_pushButton.setObjectName(u"copy_profile_pushButton")
-        self.copy_profile_pushButton.setIcon(icon47)
+        self.copy_profile_pushButton.setIcon(icon48)
 
         self.horizontalLayout.addWidget(self.copy_profile_pushButton)
 
@@ -897,7 +900,7 @@ class Ui_mainWindow(object):
 
         self.set_profile_state_button = QPushButton(self.frame)
         self.set_profile_state_button.setObjectName(u"set_profile_state_button")
-        self.set_profile_state_button.setIcon(icon62)
+        self.set_profile_state_button.setIcon(icon63)
 
         self.horizontalLayout.addWidget(self.set_profile_state_button)
 
@@ -945,7 +948,7 @@ class Ui_mainWindow(object):
         self.horizontalLayout_4.setContentsMargins(1, 2, 1, 2)
         self.profile_add_pushButton = QPushButton(self.frame_12)
         self.profile_add_pushButton.setObjectName(u"profile_add_pushButton")
-        self.profile_add_pushButton.setIcon(icon58)
+        self.profile_add_pushButton.setIcon(icon59)
 
         self.horizontalLayout_4.addWidget(self.profile_add_pushButton)
 
@@ -1042,7 +1045,7 @@ class Ui_mainWindow(object):
         self.compute_simulation_data_pushButton = QPushButton(self.frame_28)
         self.compute_simulation_data_pushButton.setObjectName(u"compute_simulation_data_pushButton")
         self.compute_simulation_data_pushButton.setMaximumSize(QSize(32, 16777215))
-        self.compute_simulation_data_pushButton.setIcon(icon56)
+        self.compute_simulation_data_pushButton.setIcon(icon57)
 
         self.gridLayout_19.addWidget(self.compute_simulation_data_pushButton, 1, 0, 1, 1)
 
@@ -1111,7 +1114,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_9.addWidget(self.tabWidget_3)
 
-        self.tabWidget.addTab(self.GridTab, icon53, "")
+        self.tabWidget.addTab(self.GridTab, icon54, "")
         self.ResultsTab = QWidget()
         self.ResultsTab.setObjectName(u"ResultsTab")
         self.verticalLayout_13 = QVBoxLayout(self.ResultsTab)
@@ -1229,7 +1232,7 @@ class Ui_mainWindow(object):
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.copy_results_pushButton = QPushButton(self.frame_8)
         self.copy_results_pushButton.setObjectName(u"copy_results_pushButton")
-        self.copy_results_pushButton.setIcon(icon47)
+        self.copy_results_pushButton.setIcon(icon48)
 
         self.horizontalLayout_2.addWidget(self.copy_results_pushButton)
 
@@ -1279,7 +1282,7 @@ class Ui_mainWindow(object):
 
         self.search_results_Button = QPushButton(self.frame_8)
         self.search_results_Button.setObjectName(u"search_results_Button")
-        self.search_results_Button.setIcon(icon54)
+        self.search_results_Button.setIcon(icon55)
 
         self.horizontalLayout_2.addWidget(self.search_results_Button)
 
@@ -2921,7 +2924,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_18.addItem(self.horizontalSpacer_15)
 
-        self.settings_tabWidget.addTab(self.tab_10, icon51, "")
+        self.settings_tabWidget.addTab(self.tab_10, icon52, "")
         self.tab_8 = QWidget()
         self.tab_8.setObjectName(u"tab_8")
         self.horizontalLayout_6 = QHBoxLayout(self.tab_8)
@@ -3165,7 +3168,7 @@ class Ui_mainWindow(object):
         self.cancelButton = QPushButton(self.progress_frame)
         self.cancelButton.setObjectName(u"cancelButton")
         self.cancelButton.setMinimumSize(QSize(0, 24))
-        self.cancelButton.setIcon(icon48)
+        self.cancelButton.setIcon(icon49)
 
         self.gridLayout_7.addWidget(self.cancelButton, 1, 0, 1, 1)
 
@@ -3228,6 +3231,7 @@ class Ui_mainWindow(object):
         self.menuActions.addAction(self.actionAutoatic_layout)
         self.menuActions.addAction(self.actionDetect_transformers)
         self.menuActions.addAction(self.actionAuto_rate_branches)
+        self.menuActions.addAction(self.actionApply_new_rates)
         self.menuActions.addAction(self.actionGrid_Reduction)
         self.menuActions.addAction(self.actionTry_to_fix_buses_location)
         self.menuActions.addAction(self.actionFind_node_groups)
@@ -3506,6 +3510,10 @@ class Ui_mainWindow(object):
         self.actionATC_Time_Series.setToolTip(QCoreApplication.translate("mainWindow", u"Available Transfer Capacity Time Series", None))
 #endif // QT_CONFIG(tooltip)
         self.actionContingency_analysis.setText(QCoreApplication.translate("mainWindow", u"Contingency analysis", None))
+        self.actionApply_new_rates.setText(QCoreApplication.translate("mainWindow", u"Apply new rates", None))
+#if QT_CONFIG(tooltip)
+        self.actionApply_new_rates.setToolTip(QCoreApplication.translate("mainWindow", u"Apply new rates to all the simulation results", None))
+#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.run_cascade_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Run complete cascading process", None))
 #endif // QT_CONFIG(tooltip)

@@ -166,6 +166,10 @@ class PowerFlowResults(ResultsTemplate):
 
         self.convergence_reports = list()
 
+    def apply_new_rates(self, nc: "SnapshotData"):
+        rates = nc.Rates
+        self.loading = self.Sf / (rates + 1e-9)
+
     @property
     def converged(self):
         """

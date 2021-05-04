@@ -315,7 +315,7 @@ class ShortCircuitDriver(DriverTemplate):
     @staticmethod
     def compute_branch_results(calculation_inputs: SnapshotData, V):
         """
-        Compute the power flows trough the branches
+        Compute the power Sf trough the branches
         @param calculation_inputs: instance of Circuit
         @param V: Voltage solution array for the circuit buses
         @return: Sf, If, loading, losses

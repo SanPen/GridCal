@@ -60,7 +60,7 @@ def compute_atc(ptdf, lodf, P0, flows, rates, idx1, idx2, dT, threshold=0.02):
     :param ptdf: Power transfer distribution factors (n-branch, n-bus)
     :param lodf: Line outage distribution factors (n-branch, n-outage branch)
     :param P0: all bus injections [MW]
-    :param flows: Line flows [MW]
+    :param flows: Line Sf [MW]
     :param rates: all line rates vector
     :param idx1:  bus indices of the sending region
     :param idx2: bus indices of the receiving region
@@ -270,7 +270,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         Power Transfer Distribution Factors class constructor
         @param grid: MultiCircuit Object
         @param options: OPF options
-        @:param pf_results: PowerFlowResults, this is to get the flows
+        @:param pf_results: PowerFlowResults, this is to get the Sf
         """
         DriverTemplate.__init__(self, grid=grid)
 

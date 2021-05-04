@@ -473,7 +473,7 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
                                        mf=nc.branch_data.tap_f,
                                        mt=nc.branch_data.tap_t)
 
-    #  compute branch power flows
+    #  compute branch power Sf
     If = Yf * V  # complex current injected at "from" bus, Yf(br, :) * V; For in-service branches
     It = Yt * V  # complex current injected at "to"   bus, Yt(br, :) * V; For in-service branches
     Sf = V[F] * np.conj(If)  # complex power injected at "from" bus
@@ -573,7 +573,7 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
                                                mf=nc.branch_data.tap_f,
                                                mt=nc.branch_data.tap_t)
 
-            #  compute branch power flows
+            #  compute branch power Sf
             If = Yf * V  # complex current injected at "from" bus
             It = Yt * V  # complex current injected at "to" bus
             Sf = V[F] * np.conj(If)  # complex power injected at "from" bus
@@ -799,7 +799,7 @@ def LM_ACDC(nc: "SnapshotData", Vbus, Sbus,
                                            mf=nc.branch_data.tap_f,
                                            mt=nc.branch_data.tap_t)
 
-        #  compute branch power flows
+        #  compute branch power Sf
         If = Yf * V  # complex current injected at "from" bus, Yf(br, :) * V; For in-service branches
         It = Yt * V  # complex current injected at "to"   bus, Yt(br, :) * V; For in-service branches
         Sf = V[F] * np.conj(If)  # complex power injected at "from" bus
@@ -929,7 +929,7 @@ def LM_ACDC(nc: "SnapshotData", Vbus, Sbus,
                                                mf=nc.branch_data.tap_f,
                                                mt=nc.branch_data.tap_t)
 
-            #  compute branch power flows
+            #  compute branch power Sf
             If = Yf * V  # complex current injected at "from" bus, Yf(br, :) * V; For in-service branches
             It = Yt * V  # complex current injected at "to"   bus, Yt(br, :) * V; For in-service branches
             Sf = V[F] * np.conj(If)  # complex power injected at "from" bus

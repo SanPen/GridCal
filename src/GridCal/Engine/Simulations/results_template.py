@@ -53,11 +53,8 @@ class ResultsTemplate:
             json_str = json.dumps(self.get_results_dict())
             output_file.write(json_str)
 
-    def save(self, file_name, relative_path):
+    def apply_new_rates(self, rates):
+        pass
 
-        data = {var_name: getattr(self, var_name) for var_name in self.data_variables}
-
-        np.savez()
-
-    def load(self):
+    def apply_new_time_series_rates(self, rates):
         pass

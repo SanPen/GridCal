@@ -78,13 +78,13 @@ def dSbr_dV(Yf, Yt, V, f, t):
     :return: 
     """
 
-    """Computes partial derivatives of power flows w.r.t. voltage.
+    """Computes partial derivatives of power Sf w.r.t. voltage.
 
     returns four matrices containing partial derivatives of the complex
-    branch power flows at "from" and "to" ends of each branch w.r.t voltage
+    branch power Sf at "from" and "to" ends of each branch w.r.t voltage
     magnitude and voltage angle respectively (for all buses). If C{Yf} is a
     sparse matrix, the partial derivative matrices will be as well. Optionally
-    returns vectors containing the power flows themselves. The following
+    returns vectors containing the power Sf themselves. The following
     explains the expressions used to form the matrices::
 
         If = Yf * V;

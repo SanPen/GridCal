@@ -44,13 +44,15 @@ class LinearAnalysisResults(ResultsTemplate):
                                  name='Linear Analysis',
                                  available_results=[ResultTypes.PTDFBranchesSensitivity,
                                                     ResultTypes.OTDF,
-                                                    ResultTypes.BranchActivePowerFrom],
+                                                    ResultTypes.BranchActivePowerFrom,
+                                                    ResultTypes.BranchLoading],
                                  data_variables=['br_names',
                                                  'bus_names',
                                                  'bus_types',
                                                  'PTDF',
                                                  'LODF',
-                                                 'flows'])
+                                                 'Sf',
+                                                 'loading'])
         # number of branches
         self.n_br = n_br
 
@@ -68,7 +70,13 @@ class LinearAnalysisResults(ResultsTemplate):
         self.PTDF = np.zeros((n_br, n_bus))
         self.LODF = np.zeros((n_br, n_br))
 
-        self.flows = np.zeros(self.n_br)
+        self.Sf = np.zeros(self.n_br)
+
+        self.loading = np.zeros(self.n_br)
+
+    def apply_new_rates(self, nc: "SnapshotData"):
+        rates = nc.Rates
+        self.loading = self.Sf / (rates + 1e-9)
 
     def mdl(self, result_type: ResultTypes) -> ResultsModel:
         """
@@ -95,9 +103,9 @@ class LinearAnalysisResults(ResultsTemplate):
 
         elif result_type == ResultTypes.BranchActivePowerFrom:
             labels = self.br_names
-            y = self.flows
+            y = self.Sf
             y_label = '(MW)'
-            title = 'Branch flows'
+            title = 'Branch Sf'
 
         else:
             labels = []
@@ -172,7 +180,7 @@ class LinearAnalysisDriver(DriverTemplate):
                                              bus_types=analysis.numerical_circuit.bus_data.bus_types)
         self.results.PTDF = analysis.PTDF
         self.results.LODF = analysis.LODF
-        self.results.flows = analysis.get_flows(analysis.numerical_circuit.Sbus.real)
+        self.results.Sf = analysis.get_flows(analysis.numerical_circuit.Sbus.real)
 
         self.logger += analysis.logger
 

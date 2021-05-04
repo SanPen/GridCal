@@ -120,10 +120,10 @@ class ContingencyAnalysisDriver(DriverTemplate):
         PTDF = linear_analysis.PTDF
         LODF = linear_analysis.LODF
 
-        # compute the branch flows in "n"
+        # compute the branch Sf in "n"
         flows_n = np.dot(PTDF, Pbus)
 
-        self.progress_text.emit('Computing flows...')
+        self.progress_text.emit('Computing Sf...')
         nl = self.numerical_circuit.nbr
         for c in range(nl):  # branch that fails (contingency)
 
