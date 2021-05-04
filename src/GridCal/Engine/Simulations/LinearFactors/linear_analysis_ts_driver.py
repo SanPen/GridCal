@@ -203,7 +203,7 @@ class LinearAnalysisTimeSeries(TSDriverTemplate):
                                          )
         linear_analysis.run()
 
-        self.progress_text.emit('Computing branch Sf...')
+        self.progress_text.emit('Computing branch flows...')
 
         Pbus_0 = ts_numeric_circuit.Sbus.real[:, time_indices]
         self.results.Sf = linear_analysis.get_flows_time_series(Pbus_0)

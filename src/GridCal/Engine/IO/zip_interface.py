@@ -20,7 +20,7 @@ import chardet
 import pandas as pd
 import zipfile
 from typing import List, Dict
-
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.IO.generic_io_functions import parse_config_df
 from GridCal.Engine.Simulations.session import SimulationSession
 
@@ -60,8 +60,10 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
                 # open a string buffer
                 try:  # try pickle
                     with BytesIO() as buffer:
-                        df.to_pickle(buffer)  # save the DataFrame to the buffer
-                        f_zip_ptr.writestr(filename, buffer.getvalue())  # save the buffer to the zip file
+                        # save the DataFrame to the buffer, protocol4 is to be compatible with python 3.6
+                        df.to_pickle(buffer, protocol=4)
+                        # save the buffer to the zip file
+                        f_zip_ptr.writestr(filename, buffer.getvalue())
 
                 except:  # otherwise just use csv
                     n_failed += 1
@@ -113,31 +115,37 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
         print('Failed to pickle several profiles, but saved them as csv.\nFor improved speed install Pandas >= 1.2')
 
 
-def read_data_frame_from_zip(file_pointer, extension, index_col=None):
+def read_data_frame_from_zip(file_pointer, extension, index_col=None, logger=Logger()):
     """
     read DataFrame
     :param file_pointer: Pointer to the file within the zip file
     :param extension: Extension, just to determine the reader method
     :param index_col: Index col (only for config file)
+    :param logger:
     :return: DataFrame
     """
     try:
         if extension == '.csv':
             return pd.read_csv(file_pointer, index_col=index_col)
         elif extension == '.pkl':
-            return pd.read_pickle(file_pointer)
+            try:
+                return pd.read_pickle(file_pointer)
+            except ValueError as e:
+                logger.add_error(str(e), device=file_pointer.name)
+                return None
     except EOFError:
         return None
     except zipfile.BadZipFile:
         return None
 
 
-def get_frames_from_zip(file_name_zip, text_func=None, progress_func=None):
+def get_frames_from_zip(file_name_zip, text_func=None, progress_func=None, logger=Logger()):
     """
     Open the csv files from a zip file
     :param file_name_zip: name of the zip file
     :param text_func: pointer to function that prints the names
     :param progress_func: pointer to function that prints the progress 0~100
+    :param logger:
     :return: list of DataFrames
     """
 
@@ -168,11 +176,11 @@ def get_frames_from_zip(file_name_zip, text_func=None, progress_func=None):
         file_pointer = zip_file_pointer.open(file_name)
 
         if name.lower() == "config":
-            df = read_data_frame_from_zip(file_pointer, extension, index_col=0)
+            df = read_data_frame_from_zip(file_pointer, extension, index_col=0, logger=logger)
             data = parse_config_df(df, data)
         else:
             # make pandas read the file
-            df = read_data_frame_from_zip(file_pointer, extension)
+            df = read_data_frame_from_zip(file_pointer, extension, logger=logger)
 
         # append the DataFrame to the list
         if df is not None:

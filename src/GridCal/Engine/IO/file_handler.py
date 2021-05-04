@@ -105,7 +105,8 @@ class FileOpen:
                     # open file content
                     data_dictionary = get_frames_from_zip(self.file_name,
                                                           text_func=text_func,
-                                                          progress_func=progress_func)
+                                                          progress_func=progress_func,
+                                                          logger=self.logger)
                     # interpret file content
                     if data_dictionary is not None:
                         self.circuit = data_frames_to_circuit(data_dictionary)
