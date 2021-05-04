@@ -10,12 +10,13 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
-Version 4.1.2
+Version 4.2.0
 ^^^^^^^^^^^^^^^
 
 - Added branch contingency multiplier for contingency related simulations
-- Added Available Transmission Capacity
+- Added Available Transmission Capacity (WIP)
 - Added dynamic bus types for the time series, this allows to correctly account for the generators' status
+- Added the ability to save "sessions" of results in the .gridcal files, to then load those at a later stage.
 
 Version 4.1.1
 ^^^^^^^^^^^^^^^
