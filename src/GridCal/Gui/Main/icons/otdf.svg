@@ -44,8 +44,8 @@
      id="namedview4"
      showgrid="false"
      inkscape:zoom="1.1020922"
-     inkscape:cx="322.02471"
-     inkscape:cy="91.399553"
+     inkscape:cx="112.87705"
+     inkscape:cy="87.770093"
      inkscape:window-x="72"
      inkscape:window-y="25"
      inkscape:window-maximized="1"
@@ -558,17 +558,15 @@
        width="16.900469"
        id="rect814-9-1-2-9"
        style="opacity:1;fill:#ccaaff;fill-opacity:1;stroke:#ccaaff;stroke-width:3.09953284;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers" />
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:214.84277344px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#5500d4;fill-opacity:1;stroke:none;stroke-width:5.37106943;"
-       x="39.891563"
-       y="116.61201"
-       id="text886"><tspan
-         sodipodi:role="line"
-         id="tspan884"
-         x="39.891563"
-         y="116.61201"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'STIX Math';-inkscape-font-specification:'STIX Math';stroke-width:5.37106943;fill:#5500d4;fill-opacity:1;">γ</tspan></text>
+    <g
+       aria-label="γ"
+       style="font-style:normal;font-weight:normal;font-size:214.84277344px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#5500d4;fill-opacity:1;stroke:none;stroke-width:5.37106943"
+       id="text886">
+      <path
+         d="M 135.28175,19.932759 H 113.79748 L 91.453829,95.772258 C 88.016345,77.29578 85.653074,18.42886 60.731312,18.42886 c -13.105409,0 -18.691321,16.542893 -18.691321,33.945158 h 3.222642 c 1.503899,-12.890567 7.949182,-18.906164 12.460881,-18.906164 20.410063,0 26.210818,59.511448 27.92956,75.409816 -2.36327,6.23044 -5.156226,12.46088 -7.089811,18.90616 -2.578114,8.16403 -3.86717,15.89837 -3.86717,21.05459 0,8.16403 3.437484,14.60931 10.527296,14.60931 10.742138,0 13.105409,-10.09761 13.105409,-21.48428 0,-9.45308 -1.718742,-19.55069 -3.007799,-25.35144 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'STIX Math';-inkscape-font-specification:'STIX Math';fill:#5500d4;fill-opacity:1;stroke-width:5.37106943"
+         id="path893" />
+    </g>
     <g
        id="g868"
        transform="matrix(6.0944437,0,0,6.0944437,713.76968,225.44625)">

@@ -73,7 +73,6 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                  'loading',
                                                  'battery_power',
                                                  'generators_power',
-                                                 'flow_direction',
                                                  'converged'])
 
         self.bus_names = bus_names
@@ -103,8 +102,6 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.battery_power = battery_power
 
         self.generators_power = controlled_generation_power
-
-        self.flow_direction = None
 
         self.converged = converged
 

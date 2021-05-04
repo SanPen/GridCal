@@ -230,7 +230,7 @@ class StochasticPowerFlowDriver(DriverTemplate):
 
             # compute the island branch results
             Sfb, Stb, If, It, Vbranch, loading, \
-            losses, flow_direction, Sbus = power_flow_post_process(numerical_island,
+            losses, Sbus = power_flow_post_process(numerical_island,
                                                                    Sbus=mc_results.S_points.mean(axis=0)[bus_idx],
                                                                    V=mc_results.V_points.mean(axis=0)[bus_idx],
                                                                    branch_rates=numerical_island.branch_rates)
@@ -351,10 +351,10 @@ class StochasticPowerFlowDriver(DriverTemplate):
 
             # compute the island branch results
             Sfb, Stb, If, It, Vbranch, loading, \
-            losses, flow_direction, Sbus = power_flow_post_process(numerical_island,
-                                                                   Sbus=lhs_results.S_points.mean(axis=0)[bus_idx],
-                                                                   V=lhs_results.V_points.mean(axis=0)[bus_idx],
-                                                                   branch_rates=numerical_island.branch_rates)
+            losses, Sbus = power_flow_post_process(numerical_island,
+                                                   Sbus=lhs_results.S_points.mean(axis=0)[bus_idx],
+                                                   V=lhs_results.V_points.mean(axis=0)[bus_idx],
+                                                   branch_rates=numerical_island.branch_rates)
 
             # apply the island averaged results
             avg_res.Sbus[bus_idx] = Sbus

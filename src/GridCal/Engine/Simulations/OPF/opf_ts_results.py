@@ -65,7 +65,6 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                  'battery_energy',
                                                  'generation_shedding',
                                                  'generators_power',
-                                                 'flow_direction',
                                                  'shadow_prices',
                                                  'converged'])
 

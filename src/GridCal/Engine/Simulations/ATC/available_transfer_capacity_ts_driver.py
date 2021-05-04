@@ -64,7 +64,7 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.worst_contingency = np.zeros((self.nt, self.n_br), dtype=int)
 
         self.report = list()
-        self.report_headers = ['Name', 'ATC', 'Worst Contingency']
+        self.report_headers = ['Branch', 'ATC', 'Worst Contingency branch']
         self.report_indices = list()
 
         self.available_results = [ResultTypes.AvailableTransferCapacity,
@@ -76,9 +76,24 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
         return
 
     def make_report(self):
+        """
+
+        :return:
+        """
         self.report = list()
-        self.report_headers = ['Name', 'ATC', 'Worst Contingency']
+        self.report_headers = ['Branch', 'ATC', 'Worst Contingency branch']
         self.report_indices = list()
+
+        for t in range(self.atc.shape[0]):
+            atc_t = np.min(self.atc[t, :])
+            i = np.argmin(self.atc[t, :])
+            wi = self.worst_contingency[t, i]
+            name_i = self.br_names[i]
+            name_wi = self.br_names[wi]
+            self.report.append([name_i, atc_t, name_wi])
+
+        self.report_indices = self.time_array
+        self.report = np.array(self.report)
 
     def get_results_dict(self):
         """

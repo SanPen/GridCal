@@ -111,7 +111,6 @@ class PowerFlowResults(ResultsTemplate):
                                                  'Beq',
                                                  'Vbranch',
                                                  'loading',
-                                                 'flow_direction',
                                                  'transformer_tap_module',
                                                  'losses',
                                                  'hvdc_losses',
