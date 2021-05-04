@@ -88,23 +88,19 @@ def compute_atc(ptdf, lodf, P0, flows, rates, idx1, idx2, dT, threshold=0.02):
     alpha = dFlow / dT
 
     # explore the ATC
-    atc = np.zeros(nbr)
-    worst_contingency = np.zeros(nbr)
+    atc_max = np.zeros(nbr)
+    atc_min = np.zeros(nbr)
+    worst_max = 0
+    worst_min = 0
+    worst_contingency_max = 0
+    worst_contingency_min = 0
+
+    PS_max = 0
+    PS_min = 1e20
 
     for m in range(nbr):  # for each branch
 
         if abs(alpha[m]) > threshold:  # if the branch is relevant enough for the ACT...
-
-            # compute the ATC in "N"
-            if alpha[m] == 0:
-                atc[m] = np.inf
-            elif alpha[m] > 0:
-                atc[m] = (rates[m] - flows[m]) / alpha[m]
-            else:
-                atc[m] = (-rates[m] - flows[m]) / alpha[m]
-
-            # set we don't know if there will be any contingency that makes the ATC worse
-            worst_contingency[m] = -1
 
             # explore the ATC in "N-1"
             for c in range(nbr):  # for each contingency
@@ -113,20 +109,34 @@ def compute_atc(ptdf, lodf, P0, flows, rates, idx1, idx2, dT, threshold=0.02):
                     # compute the OTDF
                     otdf = alpha[m] + lodf[m, c] * alpha[c]
 
-                    # compute the ATC in "N-1"
-                    if otdf == 0:
-                        atc_mc = np.inf
-                    elif otdf > 0:
-                        atc_mc = (rates[m] - flows[m]) / otdf
-                    else:
-                        atc_mc = (-rates[m] - flows[m]) / otdf
+                    # compute the contingency flow
+                    contingency_flow = flows[m] + lodf[m, c] * flows[c]
 
-                    # refine the ATC to the most restrictive value every time
-                    if atc_mc < atc[m]:
-                        worst_contingency[m] = c
-                        atc[m] = atc_mc
+                    if abs(otdf) > threshold:
+                        # compute the branch+contingency ATC for each "sense" of the flow
+                        alpha_ij = (rates[m] - contingency_flow) / otdf
+                        beta_ij = (-rates[m] - contingency_flow) / otdf
 
-    return atc, alpha, worst_contingency
+                        #
+                        alpha_p_ij = min(alpha_ij, beta_ij)
+                        beta_p_ij = max(alpha_ij, beta_ij)
+
+                        if alpha_p_ij > PS_max:
+                            PS_max = alpha_p_ij
+                            atc_max[m] = alpha_p_ij
+                            worst_max = m
+                            worst_contingency_max = c
+
+                        if beta_p_ij < PS_min:
+                            PS_min = beta_p_ij
+                            atc_min[m] = alpha_p_ij
+                            worst_min = m
+                            worst_contingency_min = c
+
+    if PS_min == 1e20:
+        PS_min = 0.0
+
+    return alpha, atc_max, atc_min, worst_max, worst_min, worst_contingency_max, worst_contingency_min, PS_max, PS_min
 
 
 class AvailableTransferCapacityResults(ResultsTemplate):
@@ -146,9 +156,15 @@ class AvailableTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.AvailableTransferCapacityAlpha,
                                                     ResultTypes.AvailableTransferCapacityReport
                                                     ],
-                                 data_variables=['atc',
-                                                 'alpha',
-                                                 'worst_contingency'])
+                                 data_variables=['alpha',
+                                                 'atc_max',
+                                                 'atc_min',
+                                                 'worst_max',
+                                                 'worst_min',
+                                                 'worst_contingency_max',
+                                                 'worst_contingency_min',
+                                                 'PS_max',
+                                                 'PS_min'])
         self.n_br = n_br
         self.n_bus = n_bus
         self.br_names = br_names
@@ -156,13 +172,28 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         self.bus_types = bus_types
 
         # stores the worst transfer capacities (from to) and (to from)
-        self.atc = np.zeros(self.n_br)
         self.alpha = np.zeros(self.n_br)
-        self.worst_contingency = np.zeros(self.n_br, dtype=int)
 
-        self.report = list()
-        self.report_headers = ['Name', 'ATC', 'Worst Contingency']
-        self.report_indices = list()
+        self.alpha = np.zeros(self.n_br)
+        self.atc_max = np.zeros(self.n_br)
+        self.atc_min = np.zeros(self.n_br)
+        self.worst_max = 0
+        self.worst_min = 0
+        self.worst_contingency_max = 0
+        self.worst_contingency_min = 0
+        self.PS_max = 0.0
+        self.PS_min = 0.0
+
+        self.report = np.empty((1, 8), dtype=object)
+        self.report_headers = ['Branch min',
+                               'Branch max',
+                               'Worst Contingency min',
+                               'Worst Contingency max',
+                               'ATC max',
+                               'ATC min',
+                               'PS max',
+                               'PS min']
+        self.report_indices = ['All']
 
     def get_steps(self):
         return
@@ -172,27 +203,25 @@ class AvailableTransferCapacityResults(ResultsTemplate):
 
         :return:
         """
-        self.report = list()
-        self.report_headers = ['Branch', 'Branch idx', 'ATC', 'Worst Contingency', 'Worst Contingency idx']
-        self.report_indices = list()
+        self.report = np.empty((1, 8), dtype=object)
+        self.report_headers = ['Branch min',
+                               'Branch max',
+                               'Worst Contingency min',
+                               'Worst Contingency max',
+                               'ATC max',
+                               'ATC min',
+                               'PS max',
+                               'PS min']
+        self.report_indices = ['All']
 
-        for i in range(self.n_br):
-            if self.atc[i] != 0.0:
-                c_idx = int(self.worst_contingency[i])
-                if c_idx > -1:
-                    w_name = self.br_names[c_idx]
-                else:
-                    w_name = 'None'
-
-                self.report.append([self.br_names[i], i, self.atc[i], w_name, c_idx])
-                self.report_indices.append(i)
-
-        self.report = np.array(self.report)
-
-        # sort
-        sorted_idx = self.report[:, 2].argsort()  # sort by the ATC
-        self.report = self.report[sorted_idx]
-        self.report_indices = [i for i in range(self.report.shape[0])]
+        self.report[0, 0] = self.br_names[self.worst_max]
+        self.report[0, 1] = self.br_names[self.worst_min]
+        self.report[0, 2] = self.br_names[self.worst_contingency_max]
+        self.report[0, 3] = self.br_names[self.worst_contingency_min]
+        self.report[0, 4] = self.atc_max[self.worst_max]
+        self.report[0, 5] = self.atc_min[self.worst_min]
+        self.report[0, 6] = self.PS_max
+        self.report[0, 7] = self.PS_min
 
     def get_results_dict(self):
         """
@@ -310,19 +339,26 @@ class AvailableTransferCapacityDriver(DriverTemplate):
                                                 idx2=self.options.bus_idx_to,
                                                 bus_types=nc.bus_types)
 
-        atc, alpha, worst_contingency = compute_atc(ptdf=linear.PTDF,
-                                                    lodf=linear.LODF,
-                                                    P0=nc.Sbus.real,
-                                                    flows=linear.get_flows(nc.Sbus),
-                                                    rates=nc.Rates,
-                                                    idx1=idx1b,
-                                                    idx2=idx2b,
-                                                    dT=self.options.dT)
+        alpha, atc_max, atc_min, worst_max, worst_min, \
+        worst_contingency_max, worst_contingency_min, PS_max, PS_min = compute_atc(ptdf=linear.PTDF,
+                                                                                   lodf=linear.LODF,
+                                                                                   P0=nc.Sbus.real,
+                                                                                   flows=linear.get_flows(nc.Sbus),
+                                                                                   rates=nc.Rates,
+                                                                                   idx1=idx1b,
+                                                                                   idx2=idx2b,
+                                                                                   dT=self.options.dT)
 
         # post-process and store the results
-        self.results.atc = atc
         self.results.alpha = alpha
-        self.results.worst_contingency = worst_contingency
+        self.results.atc_max = atc_max
+        self.results.atc_min = atc_min
+        self.results.worst_max = worst_max
+        self.results.worst_max = worst_max
+        self.results.worst_contingency_max = worst_contingency_max
+        self.results.worst_contingency_min = worst_contingency_min
+        self.results.PS_max = PS_max
+        self.results.PS_min = PS_min
         self.results.make_report()
 
         end = time.time()

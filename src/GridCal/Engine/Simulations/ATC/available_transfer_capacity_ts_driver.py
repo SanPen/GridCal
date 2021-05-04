@@ -42,13 +42,20 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
         """
         ResultsTemplate.__init__(self,
                                  name='ATC Time Series Results',
-                                 available_results=[ResultTypes.AvailableTransferCapacity,
+                                 available_results=[
+                                                    # ResultTypes.AvailableTransferCapacity,
                                                     ResultTypes.AvailableTransferCapacityAlpha,
                                                     ResultTypes.AvailableTransferCapacityReport
                                                     ],
-                                 data_variables=['atc',
-                                                 'alpha',
-                                                 'worst_contingency'])
+                                 data_variables=['alpha',
+                                                 'atc_max',
+                                                 'atc_min',
+                                                 'worst_max',
+                                                 'worst_min',
+                                                 'worst_contingency_max',
+                                                 'worst_contingency_min',
+                                                 'PS_max',
+                                                 'PS_min'])
         self.n_br = n_br
         self.n_bus = n_bus
         self.nt = len(time_array)
@@ -63,14 +70,26 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.alpha = np.zeros((self.nt, self.n_br))
         self.worst_contingency = np.zeros((self.nt, self.n_br), dtype=int)
 
-        self.report = list()
-        self.report_headers = ['Branch', 'ATC', 'Worst Contingency branch']
-        self.report_indices = list()
+        self.alpha = np.zeros((self.nt, self.n_br))
+        self.worst_max = np.zeros(self.nt, dtype=int)
+        self.worst_min = np.zeros(self.nt, dtype=int)
+        self.worst_contingency_max = np.zeros(self.nt, dtype=int)
+        self.worst_contingency_min = np.zeros(self.nt, dtype=int)
+        self.atc_max = np.zeros((self.nt, self.n_br))
+        self.atc_min = np.zeros((self.nt, self.n_br))
+        self.PS_max = np.zeros(self.nt)
+        self.PS_min = np.zeros(self.nt)
 
-        self.available_results = [ResultTypes.AvailableTransferCapacity,
-                                  ResultTypes.AvailableTransferCapacityAlpha,
-                                  ResultTypes.AvailableTransferCapacityReport
-                                  ]
+        self.report = np.empty((self.nt, 8), dtype=object)
+        self.report_headers = ['Branch min',
+                               'Branch max',
+                               'Worst Contingency min',
+                               'Worst Contingency max',
+                               'ATC max',
+                               'ATC min',
+                               'PS max',
+                               'PS min']
+        self.report_indices = self.time_array
 
     def get_steps(self):
         return
@@ -80,20 +99,25 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         :return:
         """
-        self.report = list()
-        self.report_headers = ['Branch', 'ATC', 'Worst Contingency branch']
-        self.report_indices = list()
-
-        for t in range(self.atc.shape[0]):
-            atc_t = np.min(self.atc[t, :])
-            i = np.argmin(self.atc[t, :])
-            wi = self.worst_contingency[t, i]
-            name_i = self.br_names[i]
-            name_wi = self.br_names[wi]
-            self.report.append([name_i, atc_t, name_wi])
-
+        self.report = np.empty((self.nt, 8), dtype=object)
+        self.report_headers = ['Branch min',
+                               'Branch max',
+                               'Worst Contingency min',
+                               'Worst Contingency max',
+                               'ATC max',
+                               'ATC min',
+                               'PS max',
+                               'PS min']
         self.report_indices = self.time_array
-        self.report = np.array(self.report)
+        for t in range(self.atc.shape[0]):
+            self.report[t, 0] = self.br_names[self.worst_max[t]]
+            self.report[t, 1] = self.br_names[self.worst_min[t]]
+            self.report[t, 2] = self.br_names[self.worst_contingency_max[t]]
+            self.report[t, 3] = self.br_names[self.worst_contingency_min[t]]
+            self.report[t, 4] = self.atc_max[t, self.worst_max[t]]
+            self.report[t, 5] = self.atc_min[t, self.worst_min[t]]
+            self.report[t, 6] = self.PS_max[t]
+            self.report[t, 7] = self.PS_min[t]
 
     def get_results_dict(self):
         """
@@ -217,19 +241,26 @@ class AvailableTransferCapacityTimeSeriesDriver(TSDriverTemplate):
                                                     bus_types=ts_numeric_circuit.bus_types_prof(t))
 
             # compute the ATC
-            atc, alpha, worst_contingency = compute_atc(ptdf=linear_analysis.PTDF,
-                                                        lodf=linear_analysis.LODF,
-                                                        P0=P[:, t],
-                                                        flows=flows[t, :],
-                                                        rates=rates[t, :],
-                                                        idx1=idx1b,
-                                                        idx2=idx2b,
-                                                        dT=self.options.dT)
+            alpha, atc_max, atc_min, worst_max, worst_min, \
+            worst_contingency_max, worst_contingency_min, PS_max, PS_min = compute_atc(ptdf=linear_analysis.PTDF,
+                                                                                       lodf=linear_analysis.LODF,
+                                                                                       P0=P[:, t],
+                                                                                       flows=flows[t, :],
+                                                                                       rates=rates[t, :],
+                                                                                       idx1=idx1b,
+                                                                                       idx2=idx2b,
+                                                                                       dT=self.options.dT)
 
             # assign the results
-            self.results.atc[t, :] = atc
             self.results.alpha[t, :] = alpha
-            self.results.worst_contingency[t, :] = worst_contingency
+            self.results.atc_max[t, :] = atc_max
+            self.results.atc_min[t, :] = atc_min
+            self.results.worst_max[t] = worst_max
+            self.results.worst_max[t] = worst_max
+            self.results.worst_contingency_max[t] = worst_contingency_max
+            self.results.worst_contingency_min[t] = worst_contingency_min
+            self.results.PS_max[t] = PS_max
+            self.results.PS_min[t] = PS_min
 
             if self.progress_signal is not None:
                 self.progress_signal.emit((t + 1) / nt * 100)
