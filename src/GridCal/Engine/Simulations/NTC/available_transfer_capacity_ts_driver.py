@@ -61,8 +61,6 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
                                                  'branch_names',
                                                  'bus_names',
                                                  'bus_types',
-                                                 'bus_idx_from',
-                                                 'bus_idx_to',
                                                  'report',
                                                  'report_headers',
                                                  'report_indices'])
