@@ -35,6 +35,9 @@ class ResultsTemplate:
         self.available_results: List[ResultTypes] = available_results
         self.data_variables: List[str] = data_variables
 
+    def consolidate_after_loading(self):
+        pass
+
     def get_results_dict(self):
         data = dict()
 

@@ -14,6 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
+import pandas as pd
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowResults
 from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Simulations.result_types import ResultTypes
@@ -63,8 +64,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                  'losses',
                                                  'battery_power',
                                                  'battery_energy',
-                                                 'generation_shedding',
-                                                 'generators_power',
+                                                 'generator_shedding',
+                                                 'generator_power',
                                                  'shadow_prices',
                                                  'converged'])
 
@@ -237,7 +238,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             y = np.zeros(0)
 
         if self.time is not None:
-            index = self.time
+            index = pd.to_datetime(self.time)
         else:
             index = np.arange(0, y.shape[0], 1)
 

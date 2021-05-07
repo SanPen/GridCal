@@ -2738,7 +2738,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.AvailableTransferCapacity_run not in self.stuff_running_now:
+            if sim.SimulationTypes.NetTransferCapacity_run not in self.stuff_running_now:
                 distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 threshold = self.ui.atcThresholdSpinBox.value()
@@ -2755,21 +2755,21 @@ class MainGUI(QMainWindow):
                     error_msg('Cannot analyze transfer capacity from and to the same area!')
                     return
 
-                options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack,
-                                                               bus_idx_from=idx_from,
-                                                               bus_idx_to=idx_to,
-                                                               dT=dT,
-                                                               threshold=threshold)
+                options = sim.NetTransferCapacityOptions(distributed_slack=distributed_slack,
+                                                         bus_idx_from=idx_from,
+                                                         bus_idx_to=idx_to,
+                                                         dT=dT,
+                                                         threshold=threshold)
 
-                drv = sim.AvailableTransferCapacityDriver(grid=self.circuit,
-                                                          options=options)
+                drv = sim.NetTransferCapacityDriver(grid=self.circuit,
+                                                    options=options)
 
                 self.session.register(drv)
                 drv.progress_signal.connect(self.ui.progressBar.setValue)
                 drv.progress_text.connect(self.ui.progress_label.setText)
                 drv.done_signal.connect(self.post_available_transfer_capacity)
                 drv.start()
-                self.add_simulation(sim.SimulationTypes.AvailableTransferCapacity_run)
+                self.add_simulation(sim.SimulationTypes.NetTransferCapacity_run)
                 self.LOCK()
 
             else:
@@ -2784,8 +2784,8 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.AvailableTransferCapacity_run)
-        self.remove_simulation(sim.SimulationTypes.AvailableTransferCapacity_run)
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.NetTransferCapacity_run)
+        self.remove_simulation(sim.SimulationTypes.NetTransferCapacity_run)
 
         # update the results in the circuit structures
         if not drv.__cancel__:
@@ -2810,7 +2810,7 @@ class MainGUI(QMainWindow):
         if len(self.circuit.buses) > 0:
 
             if self.valid_time_series():
-                if sim.SimulationTypes.AvailableTransferCapacity_run not in self.stuff_running_now:
+                if sim.SimulationTypes.NetTransferCapacity_run not in self.stuff_running_now:
 
                     distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
                     dT = self.ui.atcPerturbanceSpinBox.value()
@@ -2828,25 +2828,25 @@ class MainGUI(QMainWindow):
                         error_msg('Cannot analyze transfer capacity from and to the same area!')
                         return
 
-                    options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack,
-                                                                   bus_idx_from=idx_from,
-                                                                   bus_idx_to=idx_to,
-                                                                   dT=dT,
-                                                                   threshold=threshold)
+                    options = sim.NetTransferCapacityOptions(distributed_slack=distributed_slack,
+                                                             bus_idx_from=idx_from,
+                                                             bus_idx_to=idx_to,
+                                                             dT=dT,
+                                                             threshold=threshold)
 
                     start_ = self.ui.profile_start_slider.value()
                     end_ = self.ui.profile_end_slider.value()
-                    drv = sim.AvailableTransferCapacityTimeSeriesDriver(grid=self.circuit,
-                                                                        options=options,
-                                                                        start_=start_,
-                                                                        end_=end_)
+                    drv = sim.NetTransferCapacityTimeSeriesDriver(grid=self.circuit,
+                                                                  options=options,
+                                                                  start_=start_,
+                                                                  end_=end_)
 
                     self.session.register(drv)
                     drv.progress_signal.connect(self.ui.progressBar.setValue)
                     drv.progress_text.connect(self.ui.progress_label.setText)
                     drv.done_signal.connect(self.post_available_transfer_capacity_ts)
                     drv.start()
-                    self.add_simulation(sim.SimulationTypes.AvailableTransferCapacityTS_run)
+                    self.add_simulation(sim.SimulationTypes.NetTransferCapacityTS_run)
                     self.LOCK()
 
                 else:
@@ -2862,8 +2862,8 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.AvailableTransferCapacityTS_run)
-        self.remove_simulation(sim.SimulationTypes.AvailableTransferCapacityTS_run)
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.NetTransferCapacityTS_run)
+        self.remove_simulation(sim.SimulationTypes.NetTransferCapacityTS_run)
 
         # update the results in the circuit structures
         if not drv.__cancel__:

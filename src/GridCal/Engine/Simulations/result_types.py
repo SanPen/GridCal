@@ -104,12 +104,13 @@ class ResultTypes(Enum):
     SigmaPlusDistances = 'Sigma + distances', DeviceType.BusDevice
 
     # ATC
-    AvailableTransferCapacityMatrix = 'Available transfer capacity', DeviceType.BranchDevice
-    AvailableTransferCapacity = 'Available transfer capacity', DeviceType.BranchDevice
-    AvailableTransferCapacityAlpha = 'Sensitivity to the exchange', DeviceType.BranchDevice
-    AvailableTransferCapacityReport = 'ATC Report', DeviceType.NoDevice
-    AvailableTransferCapacityFrom = 'Available transfer capacity (from)', DeviceType.BranchDevice
-    AvailableTransferCapacityTo = 'Available transfer capacity (to)', DeviceType.BranchDevice
+    NetTransferCapacityMatrix = 'Available transfer capacity', DeviceType.BranchDevice
+    NetTransferCapacity = 'Available transfer capacity', DeviceType.BranchDevice
+    NetTransferCapacityAlpha = 'Sensitivity to the exchange', DeviceType.BranchDevice
+    NetTransferCapacityReport = 'ATC Report', DeviceType.NoDevice
+    NetTransferCapacityPS = 'Power shift', DeviceType.NoDevice
+    NetTransferCapacityFrom = 'Available transfer capacity (from)', DeviceType.BranchDevice
+    NetTransferCapacityTo = 'Available transfer capacity (to)', DeviceType.BranchDevice
 
     def __str__(self):
         return self.value

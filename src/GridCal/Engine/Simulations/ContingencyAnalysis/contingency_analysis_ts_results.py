@@ -15,6 +15,7 @@
 
 import json
 import numpy as np
+import pandas as pd
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
@@ -118,14 +119,14 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
             y_label = '(MW)'
             title = 'Worst contingency Sf '
             labels = self.branch_names
-            index = self.time_array
+            index = pd.to_datetime(self.time_array)
 
         elif result_type == ResultTypes.WorstContingencyLoading:
             data = self.worst_loading * 100.0
             y_label = '(%)'
             title = 'Worst contingency loading '
             labels = self.branch_names
-            index = self.time_array
+            index = pd.to_datetime(self.time_array)
 
         else:
             raise Exception('Result type not understood:' + str(result_type))

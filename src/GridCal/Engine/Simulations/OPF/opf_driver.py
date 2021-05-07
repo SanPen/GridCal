@@ -138,7 +138,7 @@ class OptimalPowerFlow(DriverTemplate):
                                                Sbus=None,
                                                voltage=problem.get_voltage(),
                                                load_shedding=ld,
-                                               generation_shedding=np.zeros_like(gn),
+                                               generator_shedding=np.zeros_like(gn),
                                                battery_power=bt,
                                                controlled_generation_power=gn,
                                                Sf=Sbr,

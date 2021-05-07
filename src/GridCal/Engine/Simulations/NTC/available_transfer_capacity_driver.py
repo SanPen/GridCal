@@ -54,7 +54,7 @@ def compute_transfer_indices(idx1, idx2, bus_types):
 
 
 @nb.njit()
-def compute_atc(ptdf, lodf, P0, flows, rates, idx1, idx2, dT, threshold=0.02):
+def compute_ntc(ptdf, lodf, P0, flows, rates, idx1, idx2, dT, threshold=0.02):
     """
     Compute all lines' ATC
     :param ptdf: Power transfer distribution factors (n-branch, n-bus)
@@ -139,9 +139,9 @@ def compute_atc(ptdf, lodf, P0, flows, rates, idx1, idx2, dT, threshold=0.02):
     return alpha, atc_max, atc_min, worst_max, worst_min, worst_contingency_max, worst_contingency_min, PS_max, PS_min
 
 
-class AvailableTransferCapacityResults(ResultsTemplate):
+class NetTransferCapacityResults(ResultsTemplate):
 
-    def __init__(self, n_br, n_bus, br_names, bus_names, bus_types):
+    def __init__(self, n_br, n_bus, br_names, bus_names, bus_types, bus_idx_from, bus_idx_to):
         """
 
         :param n_br:
@@ -152,9 +152,9 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         """
         ResultsTemplate.__init__(self,
                                  name='ATC Results',
-                                 available_results=[ResultTypes.AvailableTransferCapacity,
-                                                    ResultTypes.AvailableTransferCapacityAlpha,
-                                                    ResultTypes.AvailableTransferCapacityReport
+                                 available_results=[ResultTypes.NetTransferCapacityPS,
+                                                    ResultTypes.NetTransferCapacityAlpha,
+                                                    ResultTypes.NetTransferCapacityReport
                                                     ],
                                  data_variables=['alpha',
                                                  'atc_max',
@@ -164,12 +164,22 @@ class AvailableTransferCapacityResults(ResultsTemplate):
                                                  'worst_contingency_max',
                                                  'worst_contingency_min',
                                                  'PS_max',
-                                                 'PS_min'])
+                                                 'PS_min',
+                                                 'report',
+                                                 'report_headers',
+                                                 'report_indices',
+                                                 'branch_names',
+                                                 'bus_names',
+                                                 'bus_types',
+                                                 'bus_idx_from',
+                                                 'bus_idx_to'])
         self.n_br = n_br
         self.n_bus = n_bus
-        self.br_names = br_names
+        self.branch_names = br_names
         self.bus_names = bus_names
         self.bus_types = bus_types
+        self.bus_idx_from = bus_idx_from
+        self.bus_idx_to = bus_idx_to
 
         # stores the worst transfer capacities (from to) and (to from)
         self.alpha = np.zeros(self.n_br)
@@ -214,10 +224,10 @@ class AvailableTransferCapacityResults(ResultsTemplate):
                                'PS min']
         self.report_indices = ['All']
 
-        self.report[0, 0] = self.br_names[self.worst_max]
-        self.report[0, 1] = self.br_names[self.worst_min]
-        self.report[0, 2] = self.br_names[self.worst_contingency_max]
-        self.report[0, 3] = self.br_names[self.worst_contingency_min]
+        self.report[0, 0] = self.branch_names[self.worst_max]
+        self.report[0, 1] = self.branch_names[self.worst_min]
+        self.report[0, 2] = self.branch_names[self.worst_contingency_max]
+        self.report[0, 3] = self.branch_names[self.worst_contingency_min]
         self.report[0, 4] = self.atc_max[self.worst_max]
         self.report[0, 5] = self.atc_min[self.worst_min]
         self.report[0, 6] = self.PS_max
@@ -228,7 +238,10 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         Returns a dictionary with the results sorted in a dictionary
         :return: dictionary of 2D numpy arrays (probably of complex numbers)
         """
-        data = {'atc': self.atc.tolist()}
+        data = {'atc_max': self.atc_max.tolist(),
+                'atc_min': self.atc_min.tolist(),
+                'PS_max': self.PS_max,
+                'PS_min': self.PS_min}
         return data
 
     def mdl(self, result_type: ResultTypes):
@@ -238,19 +251,21 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         :return:
         """
 
-        index = self.br_names
+        index = self.branch_names
 
-        if result_type == ResultTypes.AvailableTransferCapacity:
-            data = self.atc
+        if result_type == ResultTypes.NetTransferCapacityPS:
+            data = np.array([self.PS_min, self.PS_max])
             y_label = '(MW)'
             title, _ = result_type.value
-            labels = ['Available Transfer Capacity']
-        elif result_type == ResultTypes.AvailableTransferCapacityAlpha:
+            labels = ['Power shift']
+            index = ['PS min', 'PS max']
+        elif result_type == ResultTypes.NetTransferCapacityAlpha:
             data = self.alpha
             y_label = '(p.u.)'
             title, _ = result_type.value
             labels = ['Sensitivity to the exchange']
-        elif result_type == ResultTypes.AvailableTransferCapacityReport:
+            index = self.branch_names
+        elif result_type == ResultTypes.NetTransferCapacityReport:
             data = np.array(self.report)
             y_label = ''
             title, _ = result_type.value
@@ -268,7 +283,7 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         return mdl
 
 
-class AvailableTransferCapacityOptions:
+class NetTransferCapacityOptions:
 
     def __init__(self, distributed_slack=True, correct_values=True,
                  bus_idx_from=list(), bus_idx_to=list(), dT=100.0, threshold=0.02):
@@ -289,12 +304,12 @@ class AvailableTransferCapacityOptions:
         self.threshold = threshold
 
 
-class AvailableTransferCapacityDriver(DriverTemplate):
+class NetTransferCapacityDriver(DriverTemplate):
 
-    tpe = SimulationTypes.AvailableTransferCapacity_run
+    tpe = SimulationTypes.NetTransferCapacity_run
     name = tpe.value
 
-    def __init__(self, grid: MultiCircuit, options: AvailableTransferCapacityOptions):
+    def __init__(self, grid: MultiCircuit, options: NetTransferCapacityOptions):
         """
         Power Transfer Distribution Factors class constructor
         @param grid: MultiCircuit Object
@@ -307,11 +322,13 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         self.options = options
 
         # OPF results
-        self.results = AvailableTransferCapacityResults(n_br=0,
-                                                        n_bus=0,
-                                                        br_names=[],
-                                                        bus_names=[],
-                                                        bus_types=[])
+        self.results = NetTransferCapacityResults(n_br=0,
+                                                  n_bus=0,
+                                                  br_names=[],
+                                                  bus_names=[],
+                                                  bus_types=[],
+                                                  bus_idx_from=[],
+                                                  bus_idx_to=[])
 
     def run(self):
         """
@@ -321,17 +338,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         self.progress_text.emit('Analyzing')
         self.progress_signal.emit(0)
 
-        # declare the linear analysis
-        linear = LinearAnalysis(grid=self.grid)
-        linear.run()
-
-        # declare the results
-        self.results = AvailableTransferCapacityResults(n_br=linear.numerical_circuit.nbr,
-                                                        n_bus=linear.numerical_circuit.nbus,
-                                                        br_names=linear.numerical_circuit.branch_names,
-                                                        bus_names=linear.numerical_circuit.bus_names,
-                                                        bus_types=linear.numerical_circuit.bus_types)
-
+        # compile the circuit
         nc = compile_snapshot_circuit(self.grid)
 
         # get the converted bus indices
@@ -339,8 +346,22 @@ class AvailableTransferCapacityDriver(DriverTemplate):
                                                 idx2=self.options.bus_idx_to,
                                                 bus_types=nc.bus_types)
 
+        # declare the linear analysis
+        linear = LinearAnalysis(grid=self.grid)
+        linear.run()
+
+        # declare the results
+        self.results = NetTransferCapacityResults(n_br=linear.numerical_circuit.nbr,
+                                                  n_bus=linear.numerical_circuit.nbus,
+                                                  br_names=linear.numerical_circuit.branch_names,
+                                                  bus_names=linear.numerical_circuit.bus_names,
+                                                  bus_types=linear.numerical_circuit.bus_types,
+                                                  bus_idx_from=idx1b,
+                                                  bus_idx_to=idx2b)
+
+        # compute NTC
         alpha, atc_max, atc_min, worst_max, worst_min, \
-        worst_contingency_max, worst_contingency_min, PS_max, PS_min = compute_atc(ptdf=linear.PTDF,
+        worst_contingency_max, worst_contingency_min, PS_max, PS_min = compute_ntc(ptdf=linear.PTDF,
                                                                                    lodf=linear.LODF,
                                                                                    P0=nc.Sbus.real,
                                                                                    flows=linear.get_flows(nc.Sbus),
@@ -380,8 +401,8 @@ if __name__ == '__main__':
 
     main_circuit = FileOpen(fname).open()
 
-    options = AvailableTransferCapacityOptions()
-    driver = AvailableTransferCapacityDriver(main_circuit, options)
+    options = NetTransferCapacityOptions()
+    driver = NetTransferCapacityDriver(main_circuit, options)
     driver.run()
 
     print()

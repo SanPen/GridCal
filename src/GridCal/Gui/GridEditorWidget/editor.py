@@ -309,7 +309,7 @@ class DiagramScene(QGraphicsScene):
                                 power_data[key.value] = driver.results.Sf.real[:, i]
                                 loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
 
-                            elif key == SimulationTypes.AvailableTransferCapacityTS_run:
+                            elif key == SimulationTypes.NetTransferCapacityTS_run:
                                 power_data[key.value] = driver.results.atc[:, i]
                                 atc_perc = driver.results.atc[:, i] / (api_object.rate_prof + 1e-9)
                                 loading_data[key.value] = np.sort(np.abs(atc_perc * 100.0))

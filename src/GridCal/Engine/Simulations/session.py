@@ -16,8 +16,8 @@ from uuid import uuid4
 
 # Module imports
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
-from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityResults
-from GridCal.Engine.Simulations.ATC.available_transfer_capacity_ts_driver import AvailableTransferCapacityTimeSeriesResults
+from GridCal.Engine.Simulations.NTC.available_transfer_capacity_driver import NetTransferCapacityResults
+from GridCal.Engine.Simulations.NTC.available_transfer_capacity_ts_driver import NetTransferCapacityTimeSeriesResults
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import ContingencyAnalysisTimeSeriesResults
 from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver import ContinuationPowerFlowResults
@@ -37,9 +37,9 @@ def get_results_object_dictionary():
     Get dictionary of recognizable result types in order to be able to load a driver from disk
     :return: dictionary[driver name: empty results object]
     """
-    lst = [(AvailableTransferCapacityResults(0, 0, [], [], []), SimulationTypes.AvailableTransferCapacity_run),
-           (AvailableTransferCapacityTimeSeriesResults(0, 0, [], [], [], []), SimulationTypes.AvailableTransferCapacityTS_run),
-           (ContingencyAnalysisResults(0, 0, [], [], []), SimulationTypes.ContingencyAnalysisTS_run),
+    lst = [(NetTransferCapacityResults(0, 0, [], [], [], (), ()), SimulationTypes.NetTransferCapacity_run),
+           (NetTransferCapacityTimeSeriesResults(0, 0, [], [], [], []), SimulationTypes.NetTransferCapacityTS_run),
+           (ContingencyAnalysisResults(0, 0, [], [], []), SimulationTypes.ContingencyAnalysis_run),
            (ContingencyAnalysisTimeSeriesResults(0, 0, 0, [], [], [], []), SimulationTypes.ContingencyAnalysisTS_run),
            (ContinuationPowerFlowResults(0, 0, 0, [], [], []), SimulationTypes.ContinuationPowerFlow_run),
            (LinearAnalysisResults(0, 0, (), (), ()), SimulationTypes.LinearAnalysis_run),
@@ -186,6 +186,9 @@ class SimulationSession:
             # fill in the variables
             for arr_name, arr in data_dict.items():
                 setattr(drv.results, arr_name, arr)
+
+            # perform whatever operations are needed after loading
+            drv.results.consolidate_after_loading()
 
             self.register(drv)
 

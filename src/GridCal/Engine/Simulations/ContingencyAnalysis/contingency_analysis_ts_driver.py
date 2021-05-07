@@ -136,16 +136,16 @@ class ContingencyAnalysisTimeSeries(TSDriverTemplate):
                                          correct_values=self.options.correct_values)
         linear_analysis.run()
 
-        self.progress_text.emit('Computing branch base Sf...')
+        self.progress_text.emit('Computing branch base loading...')
         Pbus = ts_numeric_circuit.Sbus.real
         flows = linear_analysis.get_flows_time_series(Pbus)
         rates = ts_numeric_circuit.ContingencyRates.T
 
-        self.progress_text.emit('Computing N-1 Sf...')
+        self.progress_text.emit('Computing N-1 loading...')
 
         for e in range(ne):
 
-            self.progress_text.emit('Computing N-1 Sf...' + ts_numeric_circuit.branch_names[e])
+            self.progress_text.emit('Computing N-1 loading...' + ts_numeric_circuit.branch_names[e])
 
             compute_flows_numba(e=e,
                                 nt=nt,

@@ -370,7 +370,7 @@ class TimeSeriesResults(PowerFlowResults):
             raise Exception('Result type not understood:' + str(result_type))
 
         if self.time is not None:
-            index = self.time
+            index = pd.to_datetime(self.time)
         else:
             index = list(range(data.shape[0]))
 

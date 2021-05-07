@@ -43,7 +43,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
     """
 
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names,
-                 Sbus=None, voltage=None, load_shedding=None, generation_shedding=None,
+                 Sbus=None, voltage=None, load_shedding=None, generator_shedding=None,
                  battery_power=None, controlled_generation_power=None,
                  Sf=None, overloads=None, loading=None, losses=None, converged=None, bus_types=None):
 
@@ -66,13 +66,13 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                  'Sbus',
                                                  'voltage',
                                                  'load_shedding',
-                                                 'generation_shedding',
+                                                 'generator_shedding',
                                                  'Sf',
                                                  'bus_types',
                                                  'overloads',
                                                  'loading',
                                                  'battery_power',
-                                                 'generators_power',
+                                                 'generator_power',
                                                  'converged'])
 
         self.bus_names = bus_names
@@ -87,8 +87,6 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
         self.load_shedding = load_shedding
 
-        self.generation_shedding = generation_shedding
-
         self.Sf = Sf
 
         self.bus_types = bus_types
@@ -101,7 +99,9 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
         self.battery_power = battery_power
 
-        self.generators_power = controlled_generation_power
+        self.generator_shedding = generator_shedding
+
+        self.generator_power = controlled_generation_power
 
         self.converged = converged
 
@@ -127,9 +127,9 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                        Sf=self.Sf,
                                        overloads=self.overloads,
                                        loading=self.loading,
-                                       generation_shedding=self.generation_shedding,
+                                       generator_shedding=self.generator_shedding,
                                        battery_power=self.battery_power,
-                                       controlled_generation_power=self.generators_power,
+                                       controlled_generation_power=self.generator_power,
                                        converged=self.converged)
 
     def initialize(self, n, m):
@@ -214,13 +214,13 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
         elif result_type == ResultTypes.ControlledGeneratorShedding:
             labels = self.generator_names
-            y = self.generation_shedding
+            y = self.generator_shedding
             y_label = '(MW)'
             title = 'Controlled generator shedding'
 
         elif result_type == ResultTypes.ControlledGeneratorPower:
             labels = self.generator_names
-            y = self.generators_power
+            y = self.generator_power
             y_label = '(MW)'
             title = 'Controlled generators power'
 

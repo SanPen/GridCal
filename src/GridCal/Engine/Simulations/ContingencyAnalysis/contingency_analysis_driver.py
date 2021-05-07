@@ -123,7 +123,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
         # compute the branch Sf in "n"
         flows_n = np.dot(PTDF, Pbus)
 
-        self.progress_text.emit('Computing Sf...')
+        self.progress_text.emit('Computing loading...')
         nl = self.numerical_circuit.nbr
         for c in range(nl):  # branch that fails (contingency)
 
