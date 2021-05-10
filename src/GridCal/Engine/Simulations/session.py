@@ -16,8 +16,8 @@ from uuid import uuid4
 
 # Module imports
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
-from GridCal.Engine.Simulations.NTC.available_transfer_capacity_driver import NetTransferCapacityResults
-from GridCal.Engine.Simulations.NTC.available_transfer_capacity_ts_driver import NetTransferCapacityTimeSeriesResults
+from GridCal.Engine.Simulations.NTC.net_transfer_capacity_driver import NetTransferCapacityResults
+from GridCal.Engine.Simulations.NTC.net_transfer_capacity_ts_driver import NetTransferCapacityTimeSeriesResults
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import ContingencyAnalysisTimeSeriesResults
 from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver import ContinuationPowerFlowResults

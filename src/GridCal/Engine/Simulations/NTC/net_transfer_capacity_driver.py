@@ -31,7 +31,7 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 ########################################################################################################################
 
 
-@nb.njit()
+# @nb.njit()
 def compute_transfer_indices(idx1, idx2, bus_types):
     """
     Determine the actual sending and receiving bus indices
@@ -59,7 +59,7 @@ def compute_ntc(ptdf, lodf, P0, flows, rates, idx1, idx2, dT, threshold=0.02):
     Compute all lines' ATC
     :param ptdf: Power transfer distribution factors (n-branch, n-bus)
     :param lodf: Line outage distribution factors (n-branch, n-outage branch)
-    :param P0: all bus injections [MW]
+    :param P0: all bus injections [p.u.]
     :param flows: Line Sf [MW]
     :param rates: all line rates vector
     :param idx1:  bus indices of the sending region
@@ -81,8 +81,12 @@ def compute_ntc(ptdf, lodf, P0, flows, rates, idx1, idx2, dT, threshold=0.02):
     # set the receiving power increment proportional to the current power
     dTi[idx2] = -dT * (P0[idx2] / P0[idx2].sum())
 
-    # compute the line flow increments due to the exchange increment dT
+    # compute the line flow increments due to the exchange increment dT in MW
     dFlow = ptdf.dot(dTi)
+
+    # this operation proves the same result: dFlow == dFlow2
+    # Pbr = np.dot(ptdf, (P0 * Sbase) + dTi)
+    # dFlow2 = Pbr - flows
 
     # compute the sensitivities to the exchange
     alpha = dFlow / dT
@@ -95,12 +99,12 @@ def compute_ntc(ptdf, lodf, P0, flows, rates, idx1, idx2, dT, threshold=0.02):
     worst_contingency_max = 0
     worst_contingency_min = 0
 
-    PS_max = 0
-    PS_min = 1e20
+    PS_max = -1e20  # should increase
+    PS_min = 1e20  # should decrease
 
     for m in range(nbr):  # for each branch
 
-        if abs(alpha[m]) > threshold:  # if the branch is relevant enough for the ACT...
+        if abs(alpha[m]) > threshold and abs(flows[m]) < rates[m]:  # if the branch is relevant enough for the NTC...
 
             # explore the ATC in "N-1"
             for c in range(nbr):  # for each contingency
@@ -135,6 +139,9 @@ def compute_ntc(ptdf, lodf, P0, flows, rates, idx1, idx2, dT, threshold=0.02):
 
     if PS_min == 1e20:
         PS_min = 0.0
+
+    if PS_max == -1e20:
+        PS_max = 0.0
 
     return alpha, atc_max, atc_min, worst_max, worst_min, worst_contingency_max, worst_contingency_min, PS_max, PS_min
 
@@ -342,9 +349,11 @@ class NetTransferCapacityDriver(DriverTemplate):
         nc = compile_snapshot_circuit(self.grid)
 
         # get the converted bus indices
-        idx1b, idx2b = compute_transfer_indices(idx1=self.options.bus_idx_from,
-                                                idx2=self.options.bus_idx_to,
-                                                bus_types=nc.bus_types)
+        # idx1b, idx2b = compute_transfer_indices(idx1=self.options.bus_idx_from,
+        #                                         idx2=self.options.bus_idx_to,
+        #                                         bus_types=nc.bus_types)
+        idx1b = self.options.bus_idx_from
+        idx2b = self.options.bus_idx_to
 
         # declare the linear analysis
         linear = LinearAnalysis(grid=self.grid)
@@ -365,7 +374,7 @@ class NetTransferCapacityDriver(DriverTemplate):
                                                                                    lodf=linear.LODF,
                                                                                    P0=nc.Sbus.real,
                                                                                    flows=linear.get_flows(nc.Sbus),
-                                                                                   rates=nc.Rates,
+                                                                                   rates=nc.ContingencyRates,
                                                                                    idx1=idx1b,
                                                                                    idx2=idx2b,
                                                                                    dT=self.options.dT)

@@ -2628,27 +2628,24 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if self.valid_time_series():
-                if sim.SimulationTypes.ContingencyAnalysis_run not in self.stuff_running_now:
+            if sim.SimulationTypes.ContingencyAnalysis_run not in self.stuff_running_now:
 
-                    self.add_simulation(sim.SimulationTypes.ContingencyAnalysis_run)
+                self.add_simulation(sim.SimulationTypes.ContingencyAnalysis_run)
 
-                    self.LOCK()
+                self.LOCK()
 
-                    distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
-                    options = sim.ContingencyAnalysisOptions(distributed_slack=distributed_slack)
+                distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
+                options = sim.ContingencyAnalysisOptions(distributed_slack=distributed_slack)
 
-                    drv = sim.ContingencyAnalysisDriver(grid=self.circuit, options=options)
+                drv = sim.ContingencyAnalysisDriver(grid=self.circuit, options=options)
 
-                    self.session.register(drv)
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_contingency_analysis)
-                    drv.start()
-                else:
-                    warning_msg('Another contingency analysis is being executed now...')
+                self.session.register(drv)
+                drv.progress_signal.connect(self.ui.progressBar.setValue)
+                drv.progress_text.connect(self.ui.progress_label.setText)
+                drv.done_signal.connect(self.post_contingency_analysis)
+                drv.start()
             else:
-                warning_msg('There are no time series...')
+                warning_msg('Another contingency analysis is being executed now...')
         else:
             pass
 

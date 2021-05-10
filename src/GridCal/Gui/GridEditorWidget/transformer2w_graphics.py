@@ -60,7 +60,7 @@ class TransformerEditor(QDialog):
         self.Vt = self.transformer_obj.bus_to.Vnom
 
         # Change the impedances to the system base
-        base_change = Sbase / self.transformer_obj.rate
+        base_change = Sbase / (self.transformer_obj.rate + 1e-9)
 
         R = self.transformer_obj.R / base_change
         X = self.transformer_obj.X / base_change

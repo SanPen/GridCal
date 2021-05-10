@@ -82,7 +82,7 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
 
             i += 1
 
-        # save sessions
+        # pre-count the sessions
         n_items = 0
         for session in sessions:
             for drv_name, drv in session.drivers.items():
@@ -91,6 +91,7 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
                         for arr_name, arr in drv.results.get_arrays().items():
                             n_items += 1
 
+        # save sessions
         i = 0
         for session in sessions:
             for drv_name, drv in session.drivers.items():

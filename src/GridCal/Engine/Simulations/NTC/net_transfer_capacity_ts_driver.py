@@ -21,7 +21,7 @@ import pandas as pd
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 import GridCal.Engine.Simulations.LinearFactors.linear_analysis as la
-from GridCal.Engine.Simulations.NTC.available_transfer_capacity_driver import NetTransferCapacityOptions, compute_ntc, compute_transfer_indices
+from GridCal.Engine.Simulations.NTC.net_transfer_capacity_driver import NetTransferCapacityOptions, compute_ntc, compute_transfer_indices
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
@@ -251,9 +251,11 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
                 self.progress_text.emit('Available transfer capacity at ' + str(self.grid.time_profile[t]))
 
             # get the converted bus indices
-            idx1b, idx2b = compute_transfer_indices(idx1=self.options.bus_idx_from,
-                                                    idx2=self.options.bus_idx_to,
-                                                    bus_types=ts_numeric_circuit.bus_types_prof(t))
+            # idx1b, idx2b = compute_transfer_indices(idx1=self.options.bus_idx_from,
+            #                                         idx2=self.options.bus_idx_to,
+            #                                         bus_types=ts_numeric_circuit.bus_types_prof(t))
+            idx1b = self.options.bus_idx_from
+            idx2b = self.options.bus_idx_to
 
             # compute the ATC
             alpha, atc_max, atc_min, worst_max, worst_min, \
