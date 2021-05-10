@@ -21,7 +21,7 @@ import pandas as pd
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 import GridCal.Engine.Simulations.LinearFactors.linear_analysis as la
-from GridCal.Engine.Simulations.NTC.net_transfer_capacity_driver import NetTransferCapacityOptions, compute_ntc, compute_transfer_indices
+from GridCal.Engine.Simulations.NTC.net_transfer_capacity_driver import NetTransferCapacityOptions, compute_ntc
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
@@ -265,8 +265,7 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
                                                                                        flows=flows[t, :],
                                                                                        rates=rates[t, :],
                                                                                        idx1=idx1b,
-                                                                                       idx2=idx2b,
-                                                                                       dT=self.options.dT)
+                                                                                       idx2=idx2b)
 
             # assign the results
             self.results.alpha[t, :] = alpha

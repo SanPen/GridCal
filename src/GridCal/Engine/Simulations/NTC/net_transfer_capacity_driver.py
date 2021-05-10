@@ -31,30 +31,8 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 ########################################################################################################################
 
 
-# @nb.njit()
-def compute_transfer_indices(idx1, idx2, bus_types):
-    """
-    Determine the actual sending and receiving bus indices
-    :param idx1:  bus indices of the sending region
-    :param idx2: bus indices of the receiving region
-    :param bus_types: Array of bus types (1: PQ, 2: PV, 3: Slack)
-    :return: sending bus indices, receiving bus indices
-    """
-    idx1b = list()
-    for i in idx1:
-        if bus_types[i] == 2:  # 2 is for PV nodes
-            idx1b.append(i)
-
-    idx2b = list()
-    for i in idx2:
-        if bus_types[i] == 1:  # 1 is for PQ nodes
-            idx2b.append(i)
-
-    return np.array(idx1b), np.array(idx2b)
-
-
 @nb.njit()
-def compute_ntc(ptdf, lodf, P0, flows, rates, idx1, idx2, dT, threshold=0.02):
+def compute_ntc(ptdf, lodf, P0, flows, rates, idx1, idx2, threshold=0.02):
     """
     Compute all lines' ATC
     :param ptdf: Power transfer distribution factors (n-branch, n-bus)
@@ -64,7 +42,6 @@ def compute_ntc(ptdf, lodf, P0, flows, rates, idx1, idx2, dT, threshold=0.02):
     :param rates: all line rates vector
     :param idx1:  bus indices of the sending region
     :param idx2: bus indices of the receiving region
-    :param dT: Transfer delta [MW]
     :param threshold: value that determines if a line is studied for the ATC calculation
     :return: ATC vector for all the lines
     """
@@ -76,10 +53,12 @@ def compute_ntc(ptdf, lodf, P0, flows, rates, idx1, idx2, dT, threshold=0.02):
     dTi = np.zeros(nbus)
 
     # set the sending power increment proportional to the current power
-    dTi[idx1] = dT * (P0[idx1] / P0[idx1].sum())
+    # dTi[idx1] = dT * (P0[idx1] / P0[idx1].sum())
+    dTi[idx1] = P0[idx1] / P0[idx1].sum()
 
     # set the receiving power increment proportional to the current power
-    dTi[idx2] = -dT * (P0[idx2] / P0[idx2].sum())
+    # dTi[idx2] = -dT * (P0[idx2] / P0[idx2].sum())
+    dTi[idx2] = -P0[idx2] / P0[idx2].sum()
 
     # compute the line flow increments due to the exchange increment dT in MW
     dFlow = ptdf.dot(dTi)
@@ -89,7 +68,8 @@ def compute_ntc(ptdf, lodf, P0, flows, rates, idx1, idx2, dT, threshold=0.02):
     # dFlow2 = Pbr - flows
 
     # compute the sensitivities to the exchange
-    alpha = dFlow / dT
+    # alpha = dFlow / dT
+    alpha = dFlow / 1.0
 
     # explore the ATC
     atc_max = np.zeros(nbr)
@@ -376,8 +356,7 @@ class NetTransferCapacityDriver(DriverTemplate):
                                                                                    flows=linear.get_flows(nc.Sbus),
                                                                                    rates=nc.ContingencyRates,
                                                                                    idx1=idx1b,
-                                                                                   idx2=idx2b,
-                                                                                   dT=self.options.dT)
+                                                                                   idx2=idx2b)
 
         # post-process and store the results
         self.results.alpha = alpha
