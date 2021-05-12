@@ -15,13 +15,12 @@
 import time
 import json
 import numpy as np
-import numba as nb
 import pandas as pd
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 import GridCal.Engine.Simulations.LinearFactors.linear_analysis as la
-from GridCal.Engine.Simulations.NTC.net_transfer_capacity_driver import NetTransferCapacityOptions, compute_ntc
+from GridCal.Engine.Simulations.NTC.net_transfer_capacity_driver import NetTransferCapacityOptions, compute_ntc, compute_alpha
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
@@ -233,6 +232,11 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
         nc = ts_numeric_circuit.nbr
         nt = len(ts_numeric_circuit.time_array)
 
+
+        idx1b = self.options.bus_idx_from
+        idx2b = self.options.bus_idx_to
+
+
         # declare the results
         self.results = NetTransferCapacityTimeSeriesResults(n_br=ts_numeric_circuit.nbr,
                                                             n_bus=ts_numeric_circuit.nbus,
@@ -242,30 +246,28 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
                                                             bus_types=ts_numeric_circuit.bus_types)
 
         # compute the base Sf
-        P = ts_numeric_circuit.Sbus.real
-        flows = linear_analysis.get_flows_time_series(P)
+        P = ts_numeric_circuit.Sbus.real  # these are in p.u.
+        flows = linear_analysis.get_flows_time_series(P)  # will be converted to MW internally
         rates = ts_numeric_circuit.ContingencyRates.T
         for t in time_indices:
 
             if self.progress_text is not None:
                 self.progress_text.emit('Available transfer capacity at ' + str(self.grid.time_profile[t]))
 
-            # get the converted bus indices
-            # idx1b, idx2b = compute_transfer_indices(idx1=self.options.bus_idx_from,
-            #                                         idx2=self.options.bus_idx_to,
-            #                                         bus_types=ts_numeric_circuit.bus_types_prof(t))
-            idx1b = self.options.bus_idx_from
-            idx2b = self.options.bus_idx_to
+            # compute the branch exchange sensitivity (alpha)
+            alpha = compute_alpha(ptdf=linear_analysis.PTDF,
+                                  P0=P[:, t],  # no problem that there are in p.u., are only used for the sensitivity
+                                  idx1=idx1b,
+                                  idx2=idx2b)
 
             # compute the ATC
             alpha, atc_max, atc_min, worst_max, worst_min, \
             worst_contingency_max, worst_contingency_min, PS_max, PS_min = compute_ntc(ptdf=linear_analysis.PTDF,
                                                                                        lodf=linear_analysis.LODF,
-                                                                                       P0=P[:, t],
+                                                                                       alpha=alpha,
                                                                                        flows=flows[t, :],
                                                                                        rates=rates[t, :],
-                                                                                       idx1=idx1b,
-                                                                                       idx2=idx2b)
+                                                                                       threshold=self.options.threshold)
 
             # assign the results
             self.results.alpha[t, :] = alpha

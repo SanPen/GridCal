@@ -32,18 +32,14 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 
 @nb.njit()
-def compute_ntc(ptdf, lodf, P0, flows, rates, idx1, idx2, threshold=0.02):
+def compute_alpha(ptdf, P0, idx1, idx2):
     """
     Compute all lines' ATC
     :param ptdf: Power transfer distribution factors (n-branch, n-bus)
-    :param lodf: Line outage distribution factors (n-branch, n-outage branch)
     :param P0: all bus injections [p.u.]
-    :param flows: Line Sf [MW]
-    :param rates: all line rates vector
     :param idx1:  bus indices of the sending region
     :param idx2: bus indices of the receiving region
-    :param threshold: value that determines if a line is studied for the ATC calculation
-    :return: ATC vector for all the lines
+    :return: Exchange sensitivity vector for all the lines
     """
 
     nbr = ptdf.shape[0]
@@ -71,6 +67,25 @@ def compute_ntc(ptdf, lodf, P0, flows, rates, idx1, idx2, threshold=0.02):
     # alpha = dFlow / dT
     alpha = dFlow / 1.0
 
+    return alpha
+
+
+@nb.njit()
+def compute_ntc(ptdf, lodf, alpha, flows, rates, threshold=0.02):
+    """
+    Compute all lines' ATC
+    :param ptdf: Power transfer distribution factors (n-branch, n-bus)
+    :param lodf: Line outage distribution factors (n-branch, n-outage branch)
+    :param alpha: Branch sensitivities to the exchange [p.u.]
+    :param flows: Line Sf [MW]
+    :param rates: all line rates vector
+    :param threshold: value that determines if a line is studied for the ATC calculation
+    :return: ATC vector for all the lines
+    """
+
+    nbr = ptdf.shape[0]
+    nbus = ptdf.shape[1]
+
     # explore the ATC
     atc_max = np.zeros(nbr)
     atc_min = np.zeros(nbr)
@@ -96,7 +111,8 @@ def compute_ntc(ptdf, lodf, P0, flows, rates, idx1, idx2, threshold=0.02):
                     # compute the contingency flow
                     contingency_flow = flows[m] + lodf[m, c] * flows[c]
 
-                    if abs(otdf) > threshold:
+                    if abs(otdf) > threshold and abs(contingency_flow) <= rates[m]:
+
                         # compute the branch+contingency ATC for each "sense" of the flow
                         alpha_ij = (rates[m] - contingency_flow) / otdf
                         beta_ij = (-rates[m] - contingency_flow) / otdf
@@ -348,15 +364,18 @@ class NetTransferCapacityDriver(DriverTemplate):
                                                   bus_idx_from=idx1b,
                                                   bus_idx_to=idx2b)
 
+        # compute the branch exchange sensitivity (alpha)
+        alpha = compute_alpha(ptdf=linear.PTDF, P0=nc.Sbus.real, idx1=idx1b, idx2=idx2b)
+
         # compute NTC
         alpha, atc_max, atc_min, worst_max, worst_min, \
         worst_contingency_max, worst_contingency_min, PS_max, PS_min = compute_ntc(ptdf=linear.PTDF,
                                                                                    lodf=linear.LODF,
-                                                                                   P0=nc.Sbus.real,
+                                                                                   alpha=alpha,
                                                                                    flows=linear.get_flows(nc.Sbus),
                                                                                    rates=nc.ContingencyRates,
-                                                                                   idx1=idx1b,
-                                                                                   idx2=idx2b)
+                                                                                   threshold=self.options.threshold
+                                                                                   )
 
         # post-process and store the results
         self.results.alpha = alpha
