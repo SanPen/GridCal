@@ -57,15 +57,7 @@ def compute_alpha(ptdf, P0, idx1, idx2):
     dTi[idx2] = -P0[idx2] / P0[idx2].sum()
 
     # compute the line flow increments due to the exchange increment dT in MW
-    dFlow = ptdf.dot(dTi)
-
-    # this operation proves the same result: dFlow == dFlow2
-    # Pbr = np.dot(ptdf, (P0 * Sbase) + dTi)
-    # dFlow2 = Pbr - flows
-
-    # compute the sensitivities to the exchange
-    # alpha = dFlow / dT
-    alpha = dFlow / 1.0
+    alpha = ptdf.dot(dTi)
 
     return alpha
 
