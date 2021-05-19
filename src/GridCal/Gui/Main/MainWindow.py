@@ -3,16 +3,13 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.0
+## Created by: Qt User Interface Compiler version 5.15.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import (QCoreApplication, QDate, QDateTime, QMetaObject,
-    QObject, QPoint, QRect, QSize, QTime, QUrl, Qt)
-from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
-    QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter,
-    QPixmap, QRadialGradient)
+from PySide2.QtCore import *
+from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from .icons_rc import *
@@ -1688,7 +1685,7 @@ class Ui_mainWindow(object):
 
         self.ptdf_distributed_slack_checkBox = QCheckBox(self.frame_32)
         self.ptdf_distributed_slack_checkBox.setObjectName(u"ptdf_distributed_slack_checkBox")
-        self.ptdf_distributed_slack_checkBox.setChecked(True)
+        self.ptdf_distributed_slack_checkBox.setChecked(False)
 
         self.gridLayout_14.addWidget(self.ptdf_distributed_slack_checkBox, 2, 0, 1, 3)
 
@@ -1771,7 +1768,7 @@ class Ui_mainWindow(object):
 
         self.ptdf_correct_nonsense_values_checkBox = QCheckBox(self.frame_32)
         self.ptdf_correct_nonsense_values_checkBox.setObjectName(u"ptdf_correct_nonsense_values_checkBox")
-        self.ptdf_correct_nonsense_values_checkBox.setChecked(True)
+        self.ptdf_correct_nonsense_values_checkBox.setChecked(False)
 
         self.gridLayout_14.addWidget(self.ptdf_correct_nonsense_values_checkBox, 3, 0, 1, 3)
 

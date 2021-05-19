@@ -32,7 +32,7 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 
 @nb.njit()
-def compute_alpha(ptdf, P0, idx1, idx2):
+def compute_alpha(ptdf, P0, idx1, idx2, bus_types, dT=1.0):
     """
     Compute all lines' ATC
     :param ptdf: Power transfer distribution factors (n-branch, n-bus)
@@ -46,18 +46,33 @@ def compute_alpha(ptdf, P0, idx1, idx2):
     nbus = ptdf.shape[1]
 
     # declare the bus injections increment due to the transference
-    dTi = np.zeros(nbus)
+    dP = np.zeros(nbus)
 
     # set the sending power increment proportional to the current power
-    # dTi[idx1] = dT * (P0[idx1] / P0[idx1].sum())
-    dTi[idx1] = P0[idx1] / P0[idx1].sum()
+    n1 = 0.0
+    for i in idx1:
+        if bus_types[i] == 2 or bus_types[i] == 3:  # it is a PV or slack node
+            n1 += P0[i]
+
+    for i in idx1:
+        if bus_types[i] == 2 or bus_types[i] == 3:  # it is a PV or slack node
+            dP[i] = dT * P0[i] / abs(n1)
 
     # set the receiving power increment proportional to the current power
-    # dTi[idx2] = -dT * (P0[idx2] / P0[idx2].sum())
-    dTi[idx2] = -P0[idx2] / P0[idx2].sum()
+    n2 = 0.0
+    for i in idx2:
+        if bus_types[i] == 2 or bus_types[i] == 3:  # it is a PV or slack node
+            n2 += P0[i]
+
+    for i in idx2:
+        if bus_types[i] == 2 or bus_types[i] == 3:  # it is a PV or slack node
+            dP[i] = -dT * P0[i] / abs(n2)
 
     # compute the line flow increments due to the exchange increment dT in MW
-    alpha = ptdf.dot(dTi)
+    dflow = ptdf.dot(dP)
+
+    # compute the sensitivity
+    alpha = dflow / dT
 
     return alpha
 
@@ -379,7 +394,10 @@ class NetTransferCapacityDriver(DriverTemplate):
                                                   bus_idx_to=idx2b)
 
         # compute the branch exchange sensitivity (alpha)
-        alpha = compute_alpha(ptdf=linear.PTDF, P0=nc.Sbus.real, idx1=idx1b, idx2=idx2b)
+        alpha = compute_alpha(ptdf=linear.PTDF, P0=nc.Sbus.real,
+                              idx1=idx1b, idx2=idx2b,
+                              bus_types=nc.bus_types,
+                              dT=self.options.dT)
 
         # get flow
         flows = linear.get_flows(nc.Sbus)

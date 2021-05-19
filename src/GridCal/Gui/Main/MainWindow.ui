@@ -3033,7 +3033,7 @@ p, li { white-space: pre-wrap; }
                   <string>Distributed slack</string>
                  </property>
                  <property name="checked">
-                  <bool>true</bool>
+                  <bool>false</bool>
                  </property>
                 </widget>
                </item>
@@ -3313,7 +3313,7 @@ p, li { white-space: pre-wrap; }
                   <string>Correct nonsense values</string>
                  </property>
                  <property name="checked">
-                  <bool>true</bool>
+                  <bool>false</bool>
                  </property>
                 </widget>
                </item>
