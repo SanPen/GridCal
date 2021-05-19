@@ -625,6 +625,9 @@ class PSSeBranch:
 
         contingency_factor = self.RATEB / self.RATEA if self.RATEA > 0.0 else 1.0
 
+        if contingency_factor == 0:
+            contingency_factor = 1.0
+
         branch = Line(bus_from=bus_from,
                       bus_to=bus_to,
                       idtag=None,

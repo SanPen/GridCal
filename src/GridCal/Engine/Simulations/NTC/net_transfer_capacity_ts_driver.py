@@ -20,7 +20,7 @@ import pandas as pd
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 import GridCal.Engine.Simulations.LinearFactors.linear_analysis as la
-from GridCal.Engine.Simulations.NTC.net_transfer_capacity_driver import NetTransferCapacityOptions, compute_ntc, compute_alpha
+from GridCal.Engine.Simulations.NTC.net_transfer_capacity_driver import NetTransferCapacityOptions, compute_atc, compute_alpha
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
@@ -54,8 +54,8 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
                                                  'worst_min',
                                                  'worst_contingency_max',
                                                  'worst_contingency_min',
-                                                 'PS_max',
-                                                 'PS_min',
+                                                 'PS_down',
+                                                 'PS_up',
                                                  'time_array',
                                                  'branch_names',
                                                  'bus_names',
@@ -84,8 +84,8 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.worst_contingency_min = np.zeros(self.nt, dtype=int)
         self.atc_max = np.zeros((self.nt, self.n_br))
         self.atc_min = np.zeros((self.nt, self.n_br))
-        self.PS_max = np.zeros(self.nt)
-        self.PS_min = np.zeros(self.nt)
+        self.PS_down = np.zeros(self.nt)
+        self.PS_up = np.zeros(self.nt)
 
         self.report = np.empty((self.nt, 8), dtype=object)
         self.report_headers = ['Branch min',
@@ -94,8 +94,8 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
                                'Worst Contingency max',
                                'ATC max',
                                'ATC min',
-                               'PS max',
-                               'PS min']
+                               'PS down',
+                               'PS up']
         self.report_indices = self.time_array
 
     def get_steps(self):
@@ -113,8 +113,8 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
                                'Worst Contingency max',
                                'ATC max',
                                'ATC min',
-                               'PS max',
-                               'PS min']
+                               'PS down',
+                               'PS up']
         self.report_indices = self.time_array
         for t in range(self.atc.shape[0]):
             self.report[t, 0] = self.branch_names[self.worst_max[t]]
@@ -123,16 +123,16 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
             self.report[t, 3] = self.branch_names[self.worst_contingency_min[t]]
             self.report[t, 4] = self.atc_max[t, self.worst_max[t]]
             self.report[t, 5] = self.atc_min[t, self.worst_min[t]]
-            self.report[t, 6] = self.PS_max[t]
-            self.report[t, 7] = self.PS_min[t]
+            self.report[t, 6] = self.PS_down[t]
+            self.report[t, 7] = self.PS_up[t]
 
     def get_results_dict(self):
         """
         Returns a dictionary with the results sorted in a dictionary
         :return: dictionary of 2D numpy arrays (probably of complex numbers)
         """
-        data = {'PS_max': self.PS_max.tolist(),
-                'PS_min': self.PS_min.tolist(),
+        data = {'PS_down': self.PS_down.tolist(),
+                'PS_up': self.PS_up.tolist(),
                 'atc_max': self.atc_max.tolist(),
                 'atc_min': self.atc_min.tolist()}
         return data
@@ -159,10 +159,10 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
             labels = self.branch_names
 
         elif result_type == ResultTypes.NetTransferCapacityPS:
-            data = np.c_[self.PS_min, self.PS_max]
+            data = np.c_[self.PS_up, self.PS_down]
             y_label = '(MW)'
             title, _ = result_type.value
-            labels = ['PS min', 'PS max']
+            labels = ['PS up', 'PS down']
 
         elif result_type == ResultTypes.NetTransferCapacityReport:
             data = np.array(self.report)
@@ -232,11 +232,6 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
         nc = ts_numeric_circuit.nbr
         nt = len(ts_numeric_circuit.time_array)
 
-
-        idx1b = self.options.bus_idx_from
-        idx2b = self.options.bus_idx_to
-
-
         # declare the results
         self.results = NetTransferCapacityTimeSeriesResults(n_br=ts_numeric_circuit.nbr,
                                                             n_bus=ts_numeric_circuit.nbus,
@@ -248,7 +243,8 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
         # compute the base Sf
         P = ts_numeric_circuit.Sbus.real  # these are in p.u.
         flows = linear_analysis.get_flows_time_series(P)  # will be converted to MW internally
-        rates = ts_numeric_circuit.ContingencyRates.T
+        rates = ts_numeric_circuit.Rates.T
+        contingency_rates = ts_numeric_circuit.ContingencyRates.T
         for t in time_indices:
 
             if self.progress_text is not None:
@@ -256,17 +252,18 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
 
             # compute the branch exchange sensitivity (alpha)
             alpha = compute_alpha(ptdf=linear_analysis.PTDF,
-                                  P0=P[:, t],  # no problem that there are in p.u., are only used for the sensitivity
-                                  idx1=idx1b,
-                                  idx2=idx2b)
+                                  P0=P[:, t],  # no problem that these are in p.u., only used for the sensitivity
+                                  idx1=self.options.bus_idx_from,
+                                  idx2=self.options.bus_idx_to)
 
             # compute the ATC
-            alpha, atc_max, atc_min, worst_max, worst_min, \
-            worst_contingency_max, worst_contingency_min, PS_max, PS_min = compute_ntc(ptdf=linear_analysis.PTDF,
+            atc_max, atc_min, worst_max, worst_min, \
+            worst_contingency_max, worst_contingency_min, PS_down, PS_up = compute_atc(ptdf=linear_analysis.PTDF,
                                                                                        lodf=linear_analysis.LODF,
                                                                                        alpha=alpha,
                                                                                        flows=flows[t, :],
                                                                                        rates=rates[t, :],
+                                                                                       contingency_rates=contingency_rates[t, :],
                                                                                        threshold=self.options.threshold)
 
             # assign the results
@@ -277,8 +274,8 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
             self.results.worst_max[t] = worst_max
             self.results.worst_contingency_max[t] = worst_contingency_max
             self.results.worst_contingency_min[t] = worst_contingency_min
-            self.results.PS_max[t] = PS_max
-            self.results.PS_min[t] = PS_min
+            self.results.PS_down[t] = PS_down
+            self.results.PS_up[t] = PS_up
 
             if self.progress_signal is not None:
                 self.progress_signal.emit((t + 1) / nt * 100)

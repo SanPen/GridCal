@@ -31,7 +31,7 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 ########################################################################################################################
 
 
-@nb.njit()
+# @nb.njit()
 def compute_alpha(ptdf, P0, idx1, idx2):
     """
     Compute all lines' ATC
@@ -41,37 +41,25 @@ def compute_alpha(ptdf, P0, idx1, idx2):
     :param idx2: bus indices of the receiving region
     :return: Exchange sensitivity vector for all the lines
     """
-
-    nbr = ptdf.shape[0]
     nbus = ptdf.shape[1]
 
     # declare the bus injections increment due to the transference
     dTi = np.zeros(nbus)
 
     # set the sending power increment proportional to the current power
-    # dTi[idx1] = dT * (P0[idx1] / P0[idx1].sum())
     dTi[idx1] = P0[idx1] / P0[idx1].sum()
 
     # set the receiving power increment proportional to the current power
-    # dTi[idx2] = -dT * (P0[idx2] / P0[idx2].sum())
     dTi[idx2] = -P0[idx2] / P0[idx2].sum()
 
     # compute the line flow increments due to the exchange increment dT in MW
-    dFlow = ptdf.dot(dTi)
-
-    # this operation proves the same result: dFlow == dFlow2
-    # Pbr = np.dot(ptdf, (P0 * Sbase) + dTi)
-    # dFlow2 = Pbr - flows
-
-    # compute the sensitivities to the exchange
-    # alpha = dFlow / dT
-    alpha = dFlow / 1.0
+    alpha = ptdf.dot(dTi)
 
     return alpha
 
 
 @nb.njit()
-def compute_ntc(ptdf, lodf, alpha, flows, rates, threshold=0.02):
+def compute_atc(ptdf, lodf, alpha, flows, rates, contingency_rates, threshold=0.02):
     """
     Compute all lines' ATC
     :param ptdf: Power transfer distribution factors (n-branch, n-bus)
@@ -79,12 +67,14 @@ def compute_ntc(ptdf, lodf, alpha, flows, rates, threshold=0.02):
     :param alpha: Branch sensitivities to the exchange [p.u.]
     :param flows: Line Sf [MW]
     :param rates: all line rates vector
+    :param contingency_rates: all branch contingency rates vector
     :param threshold: value that determines if a line is studied for the ATC calculation
     :return: ATC vector for all the lines
     """
 
     nbr = ptdf.shape[0]
     nbus = ptdf.shape[1]
+    ncon = lodf.shape[1]
 
     # explore the ATC
     atc_max = np.zeros(nbr)
@@ -94,52 +84,69 @@ def compute_ntc(ptdf, lodf, alpha, flows, rates, threshold=0.02):
     worst_contingency_max = 0
     worst_contingency_min = 0
 
-    PS_max = -1e20  # should increase
-    PS_min = 1e20  # should decrease
+    PS_down = -1e20  # should increase
+    PS_up = 1e20  # should decrease
 
     for m in range(nbr):  # for each branch
 
         if abs(alpha[m]) > threshold and abs(flows[m]) < rates[m]:  # if the branch is relevant enough for the NTC...
 
+            # compute for the base situations
+            beta_ij = (rates[m] - flows[m]) / alpha[m]
+            gamma_ij = (-rates[m] - flows[m]) / alpha[m]
+
+            if beta_ij > gamma_ij:
+                PS_up = beta_ij
+                PS_down = gamma_ij
+            else:
+                PS_up = gamma_ij
+                PS_down = beta_ij
+
             # explore the ATC in "N-1"
-            for c in range(nbr):  # for each contingency
+            for c in range(ncon):  # for each contingency
 
                 if m != c:
-                    # compute the OTDF
-                    otdf = alpha[m] + lodf[m, c] * alpha[c]
+                    # compute the OTDF of the exchange
+                    otdf_value = alpha[m] + lodf[m, c] * alpha[c]
 
                     # compute the contingency flow
                     contingency_flow = flows[m] + lodf[m, c] * flows[c]
 
-                    if abs(otdf) > threshold and abs(contingency_flow) <= rates[m]:
+                    # if abs(otdf) > threshold and abs(contingency_flow) <= contingency_rates[m]:
+                    if abs(contingency_flow) <= contingency_rates[m] and otdf_value != 0.0:
 
-                        # compute the branch+contingency ATC for each "sense" of the flow
-                        alpha_ij = (rates[m] - contingency_flow) / otdf
-                        beta_ij = (-rates[m] - contingency_flow) / otdf
+                        # compute the branch + contingency ATC for each "sense" of the flow
+                        beta_ij = (contingency_rates[m] - contingency_flow) / otdf_value
+                        gamma_ij = (-contingency_rates[m] - contingency_flow) / otdf_value
 
-                        #
-                        alpha_p_ij = min(alpha_ij, beta_ij)
-                        beta_p_ij = max(alpha_ij, beta_ij)
+                        # sort the values, it is the same as:
+                        if beta_ij > gamma_ij:
+                            PSup_ij = beta_ij
+                            PSdw_ij = gamma_ij
+                        else:
+                            PSup_ij = gamma_ij
+                            PSdw_ij = beta_ij
 
-                        if alpha_p_ij > PS_max:
-                            PS_max = alpha_p_ij
-                            atc_max[m] = alpha_p_ij
-                            worst_max = m
-                            worst_contingency_max = c
-
-                        if beta_p_ij < PS_min:
-                            PS_min = beta_p_ij
-                            atc_min[m] = alpha_p_ij
+                        # remember the values
+                        if PSup_ij < PS_up:
+                            PS_up = PSup_ij
+                            atc_min[m] = PSdw_ij
                             worst_min = m
                             worst_contingency_min = c
 
-    if PS_min == 1e20:
-        PS_min = 0.0
+                        if PSdw_ij > PS_down:
+                            PS_down = PSdw_ij
+                            atc_max[m] = PSdw_ij
+                            worst_max = m
+                            worst_contingency_max = c
 
-    if PS_max == -1e20:
-        PS_max = 0.0
+    if PS_up == 1e20:
+        PS_up = 0.0
 
-    return alpha, atc_max, atc_min, worst_max, worst_min, worst_contingency_max, worst_contingency_min, PS_max, PS_min
+    if PS_down == -1e20:
+        PS_down = 0.0
+
+    return atc_max, atc_min, worst_max, worst_min, worst_contingency_max, worst_contingency_min, PS_down, PS_up
 
 
 class NetTransferCapacityResults(ResultsTemplate):
@@ -166,8 +173,8 @@ class NetTransferCapacityResults(ResultsTemplate):
                                                  'worst_min',
                                                  'worst_contingency_max',
                                                  'worst_contingency_min',
-                                                 'PS_max',
-                                                 'PS_min',
+                                                 'PS_down',
+                                                 'PS_up',
                                                  'report',
                                                  'report_headers',
                                                  'report_indices',
@@ -194,8 +201,8 @@ class NetTransferCapacityResults(ResultsTemplate):
         self.worst_min = 0
         self.worst_contingency_max = 0
         self.worst_contingency_min = 0
-        self.PS_max = 0.0
-        self.PS_min = 0.0
+        self.PS_down = 0.0
+        self.PS_up = 0.0
 
         self.report = np.empty((1, 8), dtype=object)
         self.report_headers = ['Branch min',
@@ -204,8 +211,8 @@ class NetTransferCapacityResults(ResultsTemplate):
                                'Worst Contingency max',
                                'ATC max',
                                'ATC min',
-                               'PS max',
-                               'PS min']
+                               'PS down',
+                               'PS up']
         self.report_indices = ['All']
 
     def get_steps(self):
@@ -223,8 +230,8 @@ class NetTransferCapacityResults(ResultsTemplate):
                                'Worst Contingency max',
                                'ATC max',
                                'ATC min',
-                               'PS max',
-                               'PS min']
+                               'PS down',
+                               'PS up']
         self.report_indices = ['All']
 
         self.report[0, 0] = self.branch_names[self.worst_max]
@@ -233,8 +240,8 @@ class NetTransferCapacityResults(ResultsTemplate):
         self.report[0, 3] = self.branch_names[self.worst_contingency_min]
         self.report[0, 4] = self.atc_max[self.worst_max]
         self.report[0, 5] = self.atc_min[self.worst_min]
-        self.report[0, 6] = self.PS_max
-        self.report[0, 7] = self.PS_min
+        self.report[0, 6] = self.PS_down
+        self.report[0, 7] = self.PS_up
 
     def get_results_dict(self):
         """
@@ -243,8 +250,8 @@ class NetTransferCapacityResults(ResultsTemplate):
         """
         data = {'atc_max': self.atc_max.tolist(),
                 'atc_min': self.atc_min.tolist(),
-                'PS_max': self.PS_max,
-                'PS_min': self.PS_min}
+                'PS_max': self.PS_down,
+                'PS_min': self.PS_up}
         return data
 
     def mdl(self, result_type: ResultTypes):
@@ -257,11 +264,11 @@ class NetTransferCapacityResults(ResultsTemplate):
         index = self.branch_names
 
         if result_type == ResultTypes.NetTransferCapacityPS:
-            data = np.array([self.PS_min, self.PS_max])
+            data = np.array([self.PS_up, self.PS_down])
             y_label = '(MW)'
             title, _ = result_type.value
             labels = ['Power shift']
-            index = ['PS min', 'PS max']
+            index = ['PS up', 'PS down']
         elif result_type == ResultTypes.NetTransferCapacityAlpha:
             data = self.alpha
             y_label = '(p.u.)'
@@ -344,15 +351,10 @@ class NetTransferCapacityDriver(DriverTemplate):
         # compile the circuit
         nc = compile_snapshot_circuit(self.grid)
 
-        # get the converted bus indices
-        # idx1b, idx2b = compute_transfer_indices(idx1=self.options.bus_idx_from,
-        #                                         idx2=self.options.bus_idx_to,
-        #                                         bus_types=nc.bus_types)
-        idx1b = self.options.bus_idx_from
-        idx2b = self.options.bus_idx_to
-
         # declare the linear analysis
-        linear = LinearAnalysis(grid=self.grid)
+        linear = LinearAnalysis(grid=self.grid,
+                                distributed_slack=self.options.distributed_slack,
+                                correct_values=self.options.correct_values)
         linear.run()
 
         # declare the results
@@ -361,19 +363,23 @@ class NetTransferCapacityDriver(DriverTemplate):
                                                   br_names=linear.numerical_circuit.branch_names,
                                                   bus_names=linear.numerical_circuit.bus_names,
                                                   bus_types=linear.numerical_circuit.bus_types,
-                                                  bus_idx_from=idx1b,
-                                                  bus_idx_to=idx2b)
+                                                  bus_idx_from=self.options.bus_idx_from,
+                                                  bus_idx_to=self.options.bus_idx_to)
 
         # compute the branch exchange sensitivity (alpha)
-        alpha = compute_alpha(ptdf=linear.PTDF, P0=nc.Sbus.real, idx1=idx1b, idx2=idx2b)
+        alpha = compute_alpha(ptdf=linear.PTDF,
+                              P0=nc.Sbus.real,
+                              idx1=self.options.bus_idx_from,
+                              idx2=self.options.bus_idx_to)
 
         # compute NTC
-        alpha, atc_max, atc_min, worst_max, worst_min, \
-        worst_contingency_max, worst_contingency_min, PS_max, PS_min = compute_ntc(ptdf=linear.PTDF,
+        atc_max, atc_min, worst_max, worst_min, \
+        worst_contingency_max, worst_contingency_min, PS_down, PS_up = compute_atc(ptdf=linear.PTDF,
                                                                                    lodf=linear.LODF,
                                                                                    alpha=alpha,
                                                                                    flows=linear.get_flows(nc.Sbus),
-                                                                                   rates=nc.ContingencyRates,
+                                                                                   rates=nc.Rates,
+                                                                                   contingency_rates=nc.ContingencyRates,
                                                                                    threshold=self.options.threshold
                                                                                    )
 
@@ -385,8 +391,8 @@ class NetTransferCapacityDriver(DriverTemplate):
         self.results.worst_max = worst_max
         self.results.worst_contingency_max = worst_contingency_max
         self.results.worst_contingency_min = worst_contingency_min
-        self.results.PS_max = PS_max
-        self.results.PS_min = PS_min
+        self.results.PS_down = PS_down
+        self.results.PS_up = PS_up
         self.results.make_report()
 
         end = time.time()
