@@ -90,7 +90,13 @@ def compute_ntc(ptdf, lodf, alpha, flows, rates, contingency_rates, threshold=0.
     :param rates: all branches rates vector
     :param contingency_rates: all branches contingency rates vector
     :param threshold: value that determines if a line is studied for the ATC calculation
-    :return: ATC vector for all the lines
+    :return:
+             beta_mat: Matrix of beta values (branch, contingency_branch)
+             beta_used: vector of actual beta value used for each branch (n-branch)
+             atc_n: vector of ATC values in "N" (n-branch)
+             atc_final: vector of ATC in "N" or "N-1" whatever is more limiting (n-branch)
+             atc_limiting_contingency_branch: most limiting contingency branch index vector (n-branch)
+             atc_limiting_contingency_flow: most limiting contingency flow vector (n-branch)
     """
 
     nbr = ptdf.shape[0]
@@ -150,7 +156,7 @@ def compute_ntc(ptdf, lodf, alpha, flows, rates, contingency_rates, threshold=0.
                             atc_limiting_contingency_flow[m] = contingency_flow
                             atc_limiting_contingency_branch[m] = c
 
-    return alpha, beta_mat, beta_used, atc_n, atc_final, atc_limiting_contingency_branch, atc_limiting_contingency_flow
+    return beta_mat, beta_used, atc_n, atc_final, atc_limiting_contingency_branch, atc_limiting_contingency_flow
 
 
 class NetTransferCapacityResults(ResultsTemplate):
@@ -410,7 +416,7 @@ class NetTransferCapacityDriver(DriverTemplate):
         flows = linear.get_flows(nc.Sbus)
 
         # compute NTC
-        alpha, beta_mat, beta_used, atc_n, atc_final, \
+        beta_mat, beta_used, atc_n, atc_final, \
         atc_limiting_contingency_branch, \
         atc_limiting_contingency_flow = compute_ntc(ptdf=linear.PTDF,
                                                     lodf=linear.LODF,

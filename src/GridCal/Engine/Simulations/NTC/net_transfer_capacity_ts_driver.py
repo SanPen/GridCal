@@ -317,7 +317,7 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
                                   dT=self.options.dT)
 
             # compute NTC
-            alpha, beta_mat, beta_used, atc_n, atc_final, \
+            beta_mat, beta_used, atc_n, atc_final, \
             atc_limiting_contingency_branch, \
             atc_limiting_contingency_flow = compute_ntc(ptdf=linear_analysis.PTDF,
                                                         lodf=linear_analysis.LODF,
