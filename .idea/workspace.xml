@@ -24,16 +24,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/GridCal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/GridCal.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/circuit_to_data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/net_transfer_capacity_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/net_transfer_capacity_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/ConsoleLog.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/ConsoleLog.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/banner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/banner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/net_transfer_capacity_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/net_transfer_capacity_ts_driver.py" afterDir="false" />
     </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -559,13 +555,6 @@
       <workItem from="1621367763953" duration="1167000" />
       <workItem from="1621405201458" duration="3088000" />
     </task>
-    <task id="LOCAL-00098" summary="Minimal changes">
-      <created>1615204702181</created>
-      <option name="number" value="00098" />
-      <option name="presentableId" value="LOCAL-00098" />
-      <option name="project" value="LOCAL" />
-      <updated>1615204702181</updated>
-    </task>
     <task id="LOCAL-00099" summary="Fixed numba headers not working. Replaced by the generic call njit()">
       <created>1615305008962</created>
       <option name="number" value="00099" />
@@ -902,7 +891,14 @@
       <option name="project" value="LOCAL" />
       <updated>1620130765887</updated>
     </task>
-    <option name="localTasksCounter" value="147" />
+    <task id="LOCAL-00147" summary="Improved the ATC calculation (it is now closer to the TLTG)">
+      <created>1621433357170</created>
+      <option name="number" value="00147" />
+      <option name="presentableId" value="LOCAL-00147" />
+      <option name="project" value="LOCAL" />
+      <updated>1621433357170</updated>
+    </task>
+    <option name="localTasksCounter" value="148" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -927,7 +923,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Deleted the special imports" />
     <MESSAGE value="Added Zone, Area and country assignation functions" />
     <MESSAGE value="Fixed experimental h5 export" />
     <MESSAGE value="Time series clustering working" />
@@ -952,7 +947,8 @@
     <MESSAGE value="Added update rates function" />
     <MESSAGE value="Increased version" />
     <MESSAGE value="Modified the svg to not be dependent on the font" />
-    <option name="LAST_COMMIT_MESSAGE" value="Modified the svg to not be dependent on the font" />
+    <MESSAGE value="Improved the ATC calculation (it is now closer to the TLTG)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved the ATC calculation (it is now closer to the TLTG)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1260,8 +1256,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/NTC/net_transfer_capacity_driver.py</url>
-          <line>76</line>
-          <option name="timeStamp" value="714" />
+          <line>257</line>
+          <option name="timeStamp" value="715" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/circuit_to_data.py</url>
+          <line>595</line>
+          <option name="timeStamp" value="717" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/circuit_to_data.py</url>
+          <line>787</line>
+          <option name="timeStamp" value="718" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
