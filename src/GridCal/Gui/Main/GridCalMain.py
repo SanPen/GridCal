@@ -3114,22 +3114,15 @@ class MainGUI(QMainWindow):
                     use_opf_vals = self.ui.actionOpf_to_Power_flow.isChecked()
 
                     if use_opf_vals:
-                        if self.optimal_power_flow_time_series is None:
+
+                        drv, opf_time_series_results = self.session.get_driver_results(SimulationTypes.OPFTimeSeries_run)
+
+                        if opf_time_series_results is None:
                             if use_opf_vals:
-                                use_opf_vals = False
                                 info_msg('There are no OPF time series, '
                                          'therefore this operation will not use OPF information.')
                                 self.ui.actionOpf_to_Power_flow.setChecked(False)
 
-                            opf_time_series_results = None
-                        else:
-                            if self.optimal_power_flow_time_series.results is not None:
-                                opf_time_series_results = self.optimal_power_flow_time_series.results
-                            else:
-                                info_msg('There are no OPF time series results, '
-                                         'therefore this operation will not use OPF information.')
-                                self.ui.actionOpf_to_Power_flow.setChecked(False)
-                                opf_time_series_results = None
                     else:
                         opf_time_series_results = None
 
@@ -3214,21 +3207,15 @@ class MainGUI(QMainWindow):
                     use_opf_vals = self.ui.actionOpf_to_Power_flow.isChecked()
 
                     if use_opf_vals:
-                        if self.optimal_power_flow_time_series is None:
+
+                        drv, opf_time_series_results = self.session.get_driver_results(SimulationTypes.OPFTimeSeries_run)
+
+                        if opf_time_series_results is None:
                             if use_opf_vals:
                                 info_msg('There are no OPF time series, '
                                          'therefore this operation will not use OPF information.')
                                 self.ui.actionOpf_to_Power_flow.setChecked(False)
 
-                            opf_time_series_results = None
-                        else:
-                            if self.optimal_power_flow_time_series.results is not None:
-                                opf_time_series_results = self.optimal_power_flow_time_series.results
-                            else:
-                                info_msg('There are no OPF time series results, '
-                                         'therefore this operation will not use OPF information.')
-                                self.ui.actionOpf_to_Power_flow.setChecked(False)
-                                opf_time_series_results = None
                     else:
                         opf_time_series_results = None
 
