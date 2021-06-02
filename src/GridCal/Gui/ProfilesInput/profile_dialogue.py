@@ -349,6 +349,10 @@ class ProfileInputGUI(QtWidgets.QDialog):
                 self.msg('The format of the data is not recognized. Only int or float values are allowed')
                 return
 
+            # correct the column names
+            cols = [str(x).strip() for x in self.original_data_frame.columns.values]
+            self.original_data_frame.columns = cols
+
             # set the profile names list
             self.profile_names = np.array([str(e).strip() for e in self.original_data_frame.columns.values], dtype=object)
             self.display_profiles()
