@@ -407,9 +407,11 @@ class NetTransferCapacityDriver(DriverTemplate):
                                                   bus_idx_to=idx2b)
 
         # compute the branch exchange sensitivity (alpha)
-        alpha = compute_alpha(ptdf=linear.PTDF, P0=nc.Sbus.real,
-                              idx1=idx1b, idx2=idx2b,
-                              bus_types=nc.bus_types,
+        alpha = compute_alpha(ptdf=linear.PTDF,
+                              P0=nc.Sbus.real,
+                              idx1=idx1b,
+                              idx2=idx2b,
+                              bus_types=nc.bus_types.astype(np.int),
                               dT=self.options.dT)
 
         # get flow

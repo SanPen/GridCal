@@ -559,10 +559,10 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                        Sbus=calculation_input.Sbus,
                                        Ibus=calculation_input.Ibus,
                                        branch_rates=calculation_input.Rates,
-                                       pq=calculation_inputs.pq,
-                                       pv=calculation_inputs.pv,
-                                       vd=calculation_inputs.vd,
-                                       pqpv=calculation_inputs.pqpv,
+                                       pq=calculation_input.pq,
+                                       pv=calculation_input.pv,
+                                       vd=calculation_input.vd,
+                                       pqpv=calculation_input.pqpv,
                                        options=options,
                                        logger=logger)
 
