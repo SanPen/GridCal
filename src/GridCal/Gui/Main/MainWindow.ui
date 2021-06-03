@@ -3326,16 +3326,6 @@ p, li { white-space: pre-wrap; }
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_4">
-                  <item row="5" column="0">
-                   <widget class="QLabel" name="label_21">
-                    <property name="text">
-                     <string>Area to</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="4" column="1" colspan="2">
-                   <widget class="QComboBox" name="atcAreaFromComboBox"/>
-                  </item>
                   <item row="3" column="0" colspan="2">
                    <widget class="QLabel" name="label_62">
                     <property name="text">
@@ -3343,27 +3333,33 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="0" colspan="2">
-                   <widget class="QLabel" name="label_91">
+                  <item row="6" column="0">
+                   <widget class="QLabel" name="label_21">
                     <property name="text">
-                     <string>Perturbance power</string>
+                     <string>Area to</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="5" column="1" colspan="2">
-                   <widget class="QComboBox" name="atcAreaToComboBox"/>
+                  <item row="2" column="2">
+                   <widget class="QDoubleSpinBox" name="atcPerturbanceSpinBox">
+                    <property name="toolTip">
+                     <string>Amount of power used to compute the branches sensitivity to the transfer</string>
+                    </property>
+                    <property name="suffix">
+                     <string> MW</string>
+                    </property>
+                    <property name="maximum">
+                     <double>999999999999.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>100.000000000000000</double>
+                    </property>
+                   </widget>
                   </item>
-                  <item row="4" column="0">
+                  <item row="5" column="0">
                    <widget class="QLabel" name="label_41">
                     <property name="text">
                      <string>Area from</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="8" column="0" colspan="2">
-                   <widget class="QLabel" name="label_44">
-                    <property name="text">
-                     <string/>
                     </property>
                    </widget>
                   </item>
@@ -3383,21 +3379,35 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="2">
-                   <widget class="QDoubleSpinBox" name="atcPerturbanceSpinBox">
-                    <property name="toolTip">
-                     <string>Amount of power used to compute the branches sensitivity to the transfer</string>
-                    </property>
-                    <property name="suffix">
-                     <string> MW</string>
-                    </property>
-                    <property name="maximum">
-                     <double>999999999999.000000000000000</double>
-                    </property>
-                    <property name="value">
-                     <double>100.000000000000000</double>
+                  <item row="2" column="0" colspan="2">
+                   <widget class="QLabel" name="label_91">
+                    <property name="text">
+                     <string>Perturbance power</string>
                     </property>
                    </widget>
+                  </item>
+                  <item row="9" column="0" colspan="2">
+                   <widget class="QLabel" name="label_44">
+                    <property name="text">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0" colspan="2">
+                   <widget class="QLabel" name="label_77">
+                    <property name="text">
+                     <string>Transfer method</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="2">
+                   <widget class="QComboBox" name="transferMethodComboBox"/>
+                  </item>
+                  <item row="6" column="1" colspan="2">
+                   <widget class="QComboBox" name="atcAreaToComboBox"/>
+                  </item>
+                  <item row="5" column="1" colspan="2">
+                   <widget class="QComboBox" name="atcAreaFromComboBox"/>
                   </item>
                  </layout>
                 </widget>

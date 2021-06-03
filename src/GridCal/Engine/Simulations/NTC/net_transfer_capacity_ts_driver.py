@@ -314,7 +314,8 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
                                   idx1=self.options.bus_idx_from,
                                   idx2=self.options.bus_idx_to,
                                   bus_types=nc.bus_types_prof(t),
-                                  dT=self.options.dT)
+                                  dT=self.options.dT,
+                                  mode=self.options.mode.value)
 
             # compute NTC
             beta_mat, beta_used, atc_n, atc_final, \
