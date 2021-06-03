@@ -317,6 +317,8 @@ class LinearAnalysis:
                         self.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
                     else:
                         self.logger.add_error('No PQ or PV nodes', 'Island {}'.format(n_island))
+                elif len(island.vd) == 0:
+                    self.logger.add_warning('No slack bus', 'Island {}'.format(n_island))
                 else:
                     self.logger.add_error('More than one slack bus', 'Island {}'.format(n_island))
         else:
@@ -330,7 +332,7 @@ class LinearAnalysis:
             # compute the LODF upon the PTDF
             self.LODF = make_lodf(Cf=islands[0].Cf,
                                   Ct=islands[0].Ct,
-                                  PTDF=self.results.PTDF,
+                                  PTDF=self.PTDF,
                                   correct_values=self.correct_values)
 
     @property

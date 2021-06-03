@@ -1688,7 +1688,7 @@ class Ui_mainWindow(object):
 
         self.ptdf_distributed_slack_checkBox = QCheckBox(self.frame_32)
         self.ptdf_distributed_slack_checkBox.setObjectName(u"ptdf_distributed_slack_checkBox")
-        self.ptdf_distributed_slack_checkBox.setChecked(True)
+        self.ptdf_distributed_slack_checkBox.setChecked(False)
 
         self.gridLayout_14.addWidget(self.ptdf_distributed_slack_checkBox, 2, 0, 1, 3)
 
@@ -1771,7 +1771,7 @@ class Ui_mainWindow(object):
 
         self.ptdf_correct_nonsense_values_checkBox = QCheckBox(self.frame_32)
         self.ptdf_correct_nonsense_values_checkBox.setObjectName(u"ptdf_correct_nonsense_values_checkBox")
-        self.ptdf_correct_nonsense_values_checkBox.setChecked(True)
+        self.ptdf_correct_nonsense_values_checkBox.setChecked(False)
 
         self.gridLayout_14.addWidget(self.ptdf_correct_nonsense_values_checkBox, 3, 0, 1, 3)
 
@@ -1781,40 +1781,27 @@ class Ui_mainWindow(object):
         self.frame_63.setFrameShadow(QFrame.Raised)
         self.gridLayout_4 = QGridLayout(self.frame_63)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
-        self.label_21 = QLabel(self.frame_63)
-        self.label_21.setObjectName(u"label_21")
-
-        self.gridLayout_4.addWidget(self.label_21, 5, 0, 1, 1)
-
-        self.atcAreaFromComboBox = QComboBox(self.frame_63)
-        self.atcAreaFromComboBox.setObjectName(u"atcAreaFromComboBox")
-
-        self.gridLayout_4.addWidget(self.atcAreaFromComboBox, 4, 1, 1, 2)
-
         self.label_62 = QLabel(self.frame_63)
         self.label_62.setObjectName(u"label_62")
 
         self.gridLayout_4.addWidget(self.label_62, 3, 0, 1, 2)
 
-        self.label_91 = QLabel(self.frame_63)
-        self.label_91.setObjectName(u"label_91")
+        self.label_21 = QLabel(self.frame_63)
+        self.label_21.setObjectName(u"label_21")
 
-        self.gridLayout_4.addWidget(self.label_91, 2, 0, 1, 2)
+        self.gridLayout_4.addWidget(self.label_21, 6, 0, 1, 1)
 
-        self.atcAreaToComboBox = QComboBox(self.frame_63)
-        self.atcAreaToComboBox.setObjectName(u"atcAreaToComboBox")
+        self.atcPerturbanceSpinBox = QDoubleSpinBox(self.frame_63)
+        self.atcPerturbanceSpinBox.setObjectName(u"atcPerturbanceSpinBox")
+        self.atcPerturbanceSpinBox.setMaximum(999999999999.000000000000000)
+        self.atcPerturbanceSpinBox.setValue(100.000000000000000)
 
-        self.gridLayout_4.addWidget(self.atcAreaToComboBox, 5, 1, 1, 2)
+        self.gridLayout_4.addWidget(self.atcPerturbanceSpinBox, 2, 2, 1, 1)
 
         self.label_41 = QLabel(self.frame_63)
         self.label_41.setObjectName(u"label_41")
 
-        self.gridLayout_4.addWidget(self.label_41, 4, 0, 1, 1)
-
-        self.label_44 = QLabel(self.frame_63)
-        self.label_44.setObjectName(u"label_44")
-
-        self.gridLayout_4.addWidget(self.label_44, 8, 0, 1, 2)
+        self.gridLayout_4.addWidget(self.label_41, 5, 0, 1, 1)
 
         self.atcThresholdSpinBox = QDoubleSpinBox(self.frame_63)
         self.atcThresholdSpinBox.setObjectName(u"atcThresholdSpinBox")
@@ -1824,12 +1811,35 @@ class Ui_mainWindow(object):
 
         self.gridLayout_4.addWidget(self.atcThresholdSpinBox, 3, 2, 1, 1)
 
-        self.atcPerturbanceSpinBox = QDoubleSpinBox(self.frame_63)
-        self.atcPerturbanceSpinBox.setObjectName(u"atcPerturbanceSpinBox")
-        self.atcPerturbanceSpinBox.setMaximum(999999999999.000000000000000)
-        self.atcPerturbanceSpinBox.setValue(100.000000000000000)
+        self.label_91 = QLabel(self.frame_63)
+        self.label_91.setObjectName(u"label_91")
 
-        self.gridLayout_4.addWidget(self.atcPerturbanceSpinBox, 2, 2, 1, 1)
+        self.gridLayout_4.addWidget(self.label_91, 2, 0, 1, 2)
+
+        self.label_44 = QLabel(self.frame_63)
+        self.label_44.setObjectName(u"label_44")
+
+        self.gridLayout_4.addWidget(self.label_44, 9, 0, 1, 2)
+
+        self.label_77 = QLabel(self.frame_63)
+        self.label_77.setObjectName(u"label_77")
+
+        self.gridLayout_4.addWidget(self.label_77, 4, 0, 1, 2)
+
+        self.transferMethodComboBox = QComboBox(self.frame_63)
+        self.transferMethodComboBox.setObjectName(u"transferMethodComboBox")
+
+        self.gridLayout_4.addWidget(self.transferMethodComboBox, 4, 2, 1, 1)
+
+        self.atcAreaToComboBox = QComboBox(self.frame_63)
+        self.atcAreaToComboBox.setObjectName(u"atcAreaToComboBox")
+
+        self.gridLayout_4.addWidget(self.atcAreaToComboBox, 6, 1, 1, 2)
+
+        self.atcAreaFromComboBox = QComboBox(self.frame_63)
+        self.atcAreaFromComboBox.setObjectName(u"atcAreaFromComboBox")
+
+        self.gridLayout_4.addWidget(self.atcAreaFromComboBox, 5, 1, 1, 2)
 
 
         self.gridLayout_14.addWidget(self.frame_63, 8, 0, 1, 3)
@@ -3839,18 +3849,19 @@ class Ui_mainWindow(object):
         self.label_40.setText("")
         self.label_61.setText(QCoreApplication.translate("mainWindow", u"Available Transfer Capacity", None))
         self.ptdf_correct_nonsense_values_checkBox.setText(QCoreApplication.translate("mainWindow", u"Correct nonsense values", None))
-        self.label_21.setText(QCoreApplication.translate("mainWindow", u"Area to", None))
         self.label_62.setText(QCoreApplication.translate("mainWindow", u"Transfer sensitivity threshold", None))
-        self.label_91.setText(QCoreApplication.translate("mainWindow", u"Perturbance power", None))
-        self.label_41.setText(QCoreApplication.translate("mainWindow", u"Area from", None))
-        self.label_44.setText("")
-#if QT_CONFIG(tooltip)
-        self.atcThresholdSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Threshold used to discard insensitive branches", None))
-#endif // QT_CONFIG(tooltip)
+        self.label_21.setText(QCoreApplication.translate("mainWindow", u"Area to", None))
 #if QT_CONFIG(tooltip)
         self.atcPerturbanceSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Amount of power used to compute the branches sensitivity to the transfer", None))
 #endif // QT_CONFIG(tooltip)
         self.atcPerturbanceSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
+        self.label_41.setText(QCoreApplication.translate("mainWindow", u"Area from", None))
+#if QT_CONFIG(tooltip)
+        self.atcThresholdSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Threshold used to discard insensitive branches", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_91.setText(QCoreApplication.translate("mainWindow", u"Perturbance power", None))
+        self.label_44.setText("")
+        self.label_77.setText(QCoreApplication.translate("mainWindow", u"Transfer method", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_9), QCoreApplication.translate("mainWindow", u"Linear", None))
         self.label_72.setText("")
         self.label_73.setText(QCoreApplication.translate("mainWindow", u"Optimal Power Flow", None))

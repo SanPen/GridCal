@@ -105,8 +105,11 @@ class ResultTypes(Enum):
 
     # ATC
     NetTransferCapacityMatrix = 'Available transfer capacity', DeviceType.BranchDevice
-    NetTransferCapacity = 'Available transfer capacity', DeviceType.BranchDevice
+    NetTransferCapacity = 'Available transfer capacity (final)', DeviceType.BranchDevice
+    NetTransferCapacityN = 'Available transfer capacity (N)', DeviceType.BranchDevice
     NetTransferCapacityAlpha = 'Sensitivity to the exchange', DeviceType.BranchDevice
+    NetTransferCapacityBeta = 'Sensitivity to the exchange (N-1)', DeviceType.BranchDevice
+
     NetTransferCapacityReport = 'ATC Report', DeviceType.NoDevice
     NetTransferCapacityPS = 'Power shift', DeviceType.NoDevice
     NetTransferCapacityFrom = 'Available transfer capacity (from)', DeviceType.BranchDevice

@@ -121,19 +121,24 @@ class MainGUI(QMainWindow):
         self.q_control_modes_dict = OrderedDict()
         self.q_control_modes_dict['No control'] = bs.ReactivePowerControlMode.NoControl
         self.q_control_modes_dict['Direct'] = bs.ReactivePowerControlMode.Direct
-        # self.q_control_modes_dict['Iterative'] = ReactivePowerControlMode.Iterative
         lst = list(self.q_control_modes_dict.keys())
-        mdl = get_list_model(lst)
-        self.ui.reactive_power_control_mode_comboBox.setModel(mdl)
+        self.ui.reactive_power_control_mode_comboBox.setModel(get_list_model(lst))
 
         # taps controls (transformer voltage regulator)
         self.taps_control_modes_dict = OrderedDict()
         self.taps_control_modes_dict['No control'] = bs.TapsControlMode.NoControl
         self.taps_control_modes_dict['Direct'] = bs.TapsControlMode.Direct
-        # self.taps_control_modes_dict['Iterative'] = TapsControlMode.Iterative
         lst = list(self.taps_control_modes_dict.keys())
-        mdl = get_list_model(lst)
-        self.ui.taps_control_mode_comboBox.setModel(mdl)
+        self.ui.taps_control_mode_comboBox.setModel(get_list_model(lst))
+
+        # transfer modes
+        self.transfer_modes_dict = OrderedDict()
+        self.transfer_modes_dict['Area generation'] = sim.NetTransferMode.Generation
+        self.transfer_modes_dict['Area load'] = sim.NetTransferMode.Load
+        self.transfer_modes_dict['Area nodes'] = sim.NetTransferMode.GenerationAndLoad
+        lst = list(self.transfer_modes_dict.keys())
+        self.ui.transferMethodComboBox.setModel(get_list_model(lst))
+        self.ui.transferMethodComboBox.setCurrentIndex(0)
 
         self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
                                     '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.zip', '.dpx']
@@ -2748,15 +2753,26 @@ class MainGUI(QMainWindow):
                 idx_from = np.array([i for i, bus in lst_from])
                 idx_to = np.array([i for i, bus in lst_to])
 
+                if len(idx_from) == 0:
+                    error_msg('The area "from" has no buses!')
+                    return
+
+                if len(idx_to) == 0:
+                    error_msg('The area "to" has no buses!')
+                    return
+
                 if area_from == area_to:
                     error_msg('Cannot analyze transfer capacity from and to the same area!')
                     return
+
+                mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
 
                 options = sim.NetTransferCapacityOptions(distributed_slack=distributed_slack,
                                                          bus_idx_from=idx_from,
                                                          bus_idx_to=idx_to,
                                                          dT=dT,
-                                                         threshold=threshold)
+                                                         threshold=threshold,
+                                                         mode=mode)
 
                 drv = sim.NetTransferCapacityDriver(grid=self.circuit,
                                                     options=options)
@@ -2825,11 +2841,14 @@ class MainGUI(QMainWindow):
                         error_msg('Cannot analyze transfer capacity from and to the same area!')
                         return
 
+                    mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
+
                     options = sim.NetTransferCapacityOptions(distributed_slack=distributed_slack,
                                                              bus_idx_from=idx_from,
                                                              bus_idx_to=idx_to,
                                                              dT=dT,
-                                                             threshold=threshold)
+                                                             threshold=threshold,
+                                                             mode=mode)
 
                     start_ = self.ui.profile_start_slider.value()
                     end_ = self.ui.profile_end_slider.value()
@@ -3114,22 +3133,15 @@ class MainGUI(QMainWindow):
                     use_opf_vals = self.ui.actionOpf_to_Power_flow.isChecked()
 
                     if use_opf_vals:
-                        if self.optimal_power_flow_time_series is None:
+
+                        drv, opf_time_series_results = self.session.get_driver_results(SimulationTypes.OPFTimeSeries_run)
+
+                        if opf_time_series_results is None:
                             if use_opf_vals:
-                                use_opf_vals = False
                                 info_msg('There are no OPF time series, '
                                          'therefore this operation will not use OPF information.')
                                 self.ui.actionOpf_to_Power_flow.setChecked(False)
 
-                            opf_time_series_results = None
-                        else:
-                            if self.optimal_power_flow_time_series.results is not None:
-                                opf_time_series_results = self.optimal_power_flow_time_series.results
-                            else:
-                                info_msg('There are no OPF time series results, '
-                                         'therefore this operation will not use OPF information.')
-                                self.ui.actionOpf_to_Power_flow.setChecked(False)
-                                opf_time_series_results = None
                     else:
                         opf_time_series_results = None
 
@@ -3214,21 +3226,15 @@ class MainGUI(QMainWindow):
                     use_opf_vals = self.ui.actionOpf_to_Power_flow.isChecked()
 
                     if use_opf_vals:
-                        if self.optimal_power_flow_time_series is None:
+
+                        drv, opf_time_series_results = self.session.get_driver_results(SimulationTypes.OPFTimeSeries_run)
+
+                        if opf_time_series_results is None:
                             if use_opf_vals:
                                 info_msg('There are no OPF time series, '
                                          'therefore this operation will not use OPF information.')
                                 self.ui.actionOpf_to_Power_flow.setChecked(False)
 
-                            opf_time_series_results = None
-                        else:
-                            if self.optimal_power_flow_time_series.results is not None:
-                                opf_time_series_results = self.optimal_power_flow_time_series.results
-                            else:
-                                info_msg('There are no OPF time series results, '
-                                         'therefore this operation will not use OPF information.')
-                                self.ui.actionOpf_to_Power_flow.setChecked(False)
-                                opf_time_series_results = None
                     else:
                         opf_time_series_results = None
 
