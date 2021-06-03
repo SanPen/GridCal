@@ -388,11 +388,10 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                                  logger=logger)
 
     # Compute the branches power and the slack buses power
-    Sfb, Stb, If, It, Vbranch, loading, losses, \
-     flow_direction, Sbus = power_flow_post_process(calculation_inputs=circuit,
-                                                    Sbus=solution.Scalc,
-                                                    V=solution.V,
-                                                    branch_rates=branch_rates)
+    Sfb, Stb, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process(calculation_inputs=circuit,
+                                                                               Sbus=solution.Scalc,
+                                                                               V=solution.V,
+                                                                               branch_rates=branch_rates)
 
     # voltage, Sf, loading, losses, error, converged, Qpv
     results = PowerFlowResults(n=circuit.nbus,
@@ -428,7 +427,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
 
 def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_rates):
     """
-    Compute the power flows trough the branches.
+    Compute the power Sf trough the branches.
 
     Arguments:
 
@@ -465,8 +464,6 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
     # Branch losses in MVA
     losses = (Sf + St) * calculation_inputs.Sbase
 
-    flow_direction = Sf.real / np.abs(Sf + 1e-20)
-
     # branch voltage increment
     Vbranch = Vf - Vt
 
@@ -477,7 +474,7 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
     # Branch loading in p.u.
     loading = Sfb / (branch_rates + 1e-9)
 
-    return Sfb, Stb, If, It, Vbranch, loading, losses, flow_direction, Sbus
+    return Sfb, Stb, If, It, Vbranch, loading, losses, Sbus
 
 
 def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, branch_rates,

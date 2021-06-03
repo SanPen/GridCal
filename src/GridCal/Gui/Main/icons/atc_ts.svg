@@ -42,23 +42,21 @@
      id="namedview8"
      showgrid="false"
      inkscape:zoom="11.313708"
-     inkscape:cx="4.004996"
-     inkscape:cy="16.78377"
+     inkscape:cx="-16.368519"
+     inkscape:cy="16.430217"
      inkscape:window-x="72"
      inkscape:window-y="25"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg2" />
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-weight:normal;font-size:43.22439194px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ff7f2a;fill-opacity:1;stroke:none;stroke-width:1.0806098;"
-     x="13.282681"
-     y="43.606926"
-     id="text4524-9"><tspan
-       sodipodi:role="line"
-       id="tspan4522-0"
-       x="13.282681"
-       y="43.606926"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'TeX Gyre Pagella Math';-inkscape-font-specification:'TeX Gyre Pagella Math';fill:#ff7f2a;fill-opacity:1;stroke-width:1.0806098;">λ</tspan></text>
+  <g
+     aria-label="λ"
+     style="font-style:normal;font-weight:normal;font-size:43.22439194px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ff7f2a;fill-opacity:1;stroke:none;stroke-width:1.0806098"
+     id="text4524-9">
+    <path
+       d="m 38.914746,39.932853 -0.561917,-0.778039 -1.037386,0.734814 c -1.167058,0.864488 -2.161219,1.296732 -2.550239,1.296732 -0.172897,0 -0.345795,0 -0.994161,-0.821263 -0.432244,-0.518693 -0.864488,-1.556079 -1.556078,-3.025708 L 26.595794,22.254076 c -2.247668,-6.051415 -4.365663,-9.120346 -6.570107,-9.379693 -1.037386,0.950937 -2.636688,2.031547 -3.501176,2.636688 l 0.04322,1.037386 c 0.821264,-0.302571 2.074771,-0.821264 2.463791,-0.821264 1.210283,0 2.723136,1.945098 3.630849,4.452113 l 1.469629,4.019868 c -3.025708,4.668234 -8.817776,15.517557 -10.546752,18.975508 l 1.08061,0.950937 c 0.734815,-0.38902 1.339956,-0.605142 2.377342,-0.950937 2.290892,-6.526883 3.630848,-10.503527 7.607493,-17.549103 l 6.310761,17.160084 c 0.259346,0.734814 0.864488,1.210282 1.599302,1.210282 1.123834,0 2.593464,-0.950936 6.353986,-4.063092 z"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'TeX Gyre Pagella Math';-inkscape-font-specification:'TeX Gyre Pagella Math';fill:#ff7f2a;fill-opacity:1;stroke-width:1.0806098"
+       id="path828" />
+  </g>
   <path
      d="m -80.610174,-42.956737 h 48 V 5.0432627 h -48 z"
      id="path4"

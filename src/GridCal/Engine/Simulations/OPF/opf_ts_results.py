@@ -14,13 +14,14 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
+import pandas as pd
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowResults
 from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 
-class OptimalPowerFlowTimeSeriesResults:
+class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names,
                  n, m, nt, ngen=0, nbat=0, nload=0, time=None, bus_types=()):
@@ -63,9 +64,8 @@ class OptimalPowerFlowTimeSeriesResults:
                                                  'losses',
                                                  'battery_power',
                                                  'battery_energy',
-                                                 'generation_shedding',
-                                                 'generators_power',
-                                                 'flow_direction',
+                                                 'generator_shedding',
+                                                 'generator_power',
                                                  'shadow_prices',
                                                  'converged'])
 
@@ -110,6 +110,10 @@ class OptimalPowerFlowTimeSeriesResults:
         self.battery_energy = np.zeros((nt, nbat), dtype=float)
 
         self.converged = np.empty(nt, dtype=bool)
+
+    def apply_new_time_series_rates(self, nc: "TimeCircuit"):
+        rates = nc.Rates.T
+        self.loading = self.Sf / (rates + 1e-9)
 
     def init_object_results(self, ngen, nbat):
         """
@@ -234,7 +238,7 @@ class OptimalPowerFlowTimeSeriesResults:
             y = np.zeros(0)
 
         if self.time is not None:
-            index = self.time
+            index = pd.to_datetime(self.time)
         else:
             index = np.arange(0, y.shape[0], 1)
 

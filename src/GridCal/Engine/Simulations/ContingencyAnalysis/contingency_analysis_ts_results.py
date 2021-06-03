@@ -15,6 +15,7 @@
 
 import json
 import numpy as np
+import pandas as pd
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_model import ResultsModel
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
@@ -65,6 +66,10 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
 
         self.max_overload = np.zeros((ne, nc))
 
+    def apply_new_time_series_rates(self, nc: "TimeCircuit"):
+        rates = nc.Rates.T
+        self.worst_loading = self.worst_flows / (rates + 1e-9)
+
     def get_steps(self):
         return
 
@@ -112,16 +117,16 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         elif result_type == ResultTypes.WorstContingencyFlows:
             data = self.worst_flows
             y_label = '(MW)'
-            title = 'Worst contingency flows '
+            title = 'Worst contingency Sf '
             labels = self.branch_names
-            index = self.time_array
+            index = pd.to_datetime(self.time_array)
 
         elif result_type == ResultTypes.WorstContingencyLoading:
             data = self.worst_loading * 100.0
             y_label = '(%)'
             title = 'Worst contingency loading '
             labels = self.branch_names
-            index = self.time_array
+            index = pd.to_datetime(self.time_array)
 
         else:
             raise Exception('Result type not understood:' + str(result_type))

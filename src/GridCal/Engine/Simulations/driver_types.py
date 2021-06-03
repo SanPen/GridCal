@@ -28,7 +28,7 @@ class SimulationTypes(Enum):
     StochasticPowerFlow = 'Stochastic Power Flow'
     Cascade_run = 'Cascade'
     OPF_run = 'Optimal power flow'
-    OPFTimeSeries_run = 'OPF Time series'
+    OPFTimeSeries_run = 'Optimal power flow time series'
     TransientStability_run = 'Transient stability'
     TopologyReduction_run = 'Topology reduction'
     LinearAnalysis_run = 'Linear analysis'
@@ -36,8 +36,8 @@ class SimulationTypes(Enum):
     ContingencyAnalysis_run = 'Contingency analysis'
     ContingencyAnalysisTS_run = 'Contingency analysis time series'
     Delete_and_reduce_run = 'Delete and reduce'
-    AvailableTransferCapacity_run = 'Available transfer capacity'
-    AvailableTransferCapacityTS_run = 'Available transfer capacity time series'
+    NetTransferCapacity_run = 'Available transfer capacity'
+    NetTransferCapacityTS_run = 'Available transfer capacity time series'
 
     def __str__(self):
         return self.value

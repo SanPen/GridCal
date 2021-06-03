@@ -209,7 +209,7 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.generator_cost[k] = elm.Cost
 
             if opf_results is not None:
-                data.generator_p[k] = opf_results.generators_power[k] - opf_results.generation_shedding[k]
+                data.generator_p[k] = opf_results.generator_power[k] - opf_results.generator_shedding[k]
 
         data.C_bus_gen[i, k] = 1
 

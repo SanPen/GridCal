@@ -101,23 +101,21 @@
      id="namedview8"
      showgrid="false"
      inkscape:zoom="6.9114586"
-     inkscape:cx="-32.065858"
-     inkscape:cy="47.375459"
+     inkscape:cx="-65.416271"
+     inkscape:cy="46.79671"
      inkscape:window-x="72"
      inkscape:window-y="25"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg2" />
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-weight:normal;font-size:42.96521378px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#5500d4;fill-opacity:1;stroke:none;stroke-width:1.07413042;"
-     x="13.975605"
-     y="34.945423"
-     id="text886"><tspan
-       sodipodi:role="line"
-       id="tspan884"
-       x="13.975605"
-       y="34.945423"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'STIX Math';-inkscape-font-specification:'STIX Math';fill:#5500d4;fill-opacity:1;stroke-width:1.07413042;">γ</tspan></text>
+  <g
+     aria-label="γ"
+     style="font-style:normal;font-weight:normal;font-size:42.96521378px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#5500d4;fill-opacity:1;stroke:none;stroke-width:1.07413042"
+     id="text886">
+    <path
+       d="m 33.05216,15.611077 h -4.296521 l -4.468383,15.16672 C 23.599813,27.082789 23.127196,15.31032 18.143231,15.31032 c -2.620878,0 -3.737974,3.308322 -3.737974,6.788504 h 0.644478 c 0.300757,-2.577913 1.589713,-3.780939 2.491983,-3.780939 4.081695,0 5.241756,11.901365 5.585478,15.08079 -0.472618,1.245992 -1.031166,2.491983 -1.417853,3.780939 -0.515582,1.632678 -0.773373,3.179426 -0.773373,4.210591 0,1.632678 0.687443,2.921635 2.105295,2.921635 2.148261,0 2.620878,-2.019365 2.620878,-4.296522 0,-1.890469 -0.343722,-3.909834 -0.601513,-5.069895 z"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'STIX Math';-inkscape-font-specification:'STIX Math';fill:#5500d4;fill-opacity:1;stroke-width:1.07413042"
+       id="path930" />
+  </g>
   <g
      transform="matrix(0.18447348,0,0,0.18100267,-76.649297,-18.123289)"
      id="g1179-6">

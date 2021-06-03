@@ -44,20 +44,22 @@ class LinearAnalysisResults(ResultsTemplate):
                                  name='Linear Analysis',
                                  available_results=[ResultTypes.PTDFBranchesSensitivity,
                                                     ResultTypes.OTDF,
-                                                    ResultTypes.BranchActivePowerFrom],
-                                 data_variables=['br_names',
+                                                    ResultTypes.BranchActivePowerFrom,
+                                                    ResultTypes.BranchLoading],
+                                 data_variables=['branch_names',
                                                  'bus_names',
                                                  'bus_types',
                                                  'PTDF',
                                                  'LODF',
-                                                 'flows'])
+                                                 'Sf',
+                                                 'loading'])
         # number of branches
         self.n_br = n_br
 
         self.n_bus = n_bus
 
         # names of the branches
-        self.br_names = br_names
+        self.branch_names = br_names
 
         self.bus_names = bus_names
 
@@ -68,7 +70,18 @@ class LinearAnalysisResults(ResultsTemplate):
         self.PTDF = np.zeros((n_br, n_bus))
         self.LODF = np.zeros((n_br, n_br))
 
-        self.flows = np.zeros(self.n_br)
+        self.Sf = np.zeros(self.n_br)
+
+        self.loading = np.zeros(self.n_br)
+
+    def apply_new_rates(self, nc: "SnapshotData"):
+        """
+
+        :param nc:
+        :return:
+        """
+        rates = nc.Rates
+        self.loading = self.Sf / (rates + 1e-9)
 
     def mdl(self, result_type: ResultTypes) -> ResultsModel:
         """
@@ -88,16 +101,22 @@ class LinearAnalysisResults(ResultsTemplate):
             title = 'Branches sensitivity'
 
         elif result_type == ResultTypes.OTDF:
-            labels = self.br_names
+            labels = self.branch_names
             y = self.LODF
             y_label = '(p.u.)'
             title = 'Branch failure sensitivity'
 
         elif result_type == ResultTypes.BranchActivePowerFrom:
-            labels = self.br_names
-            y = self.flows
+            labels = self.branch_names
+            y = self.Sf
             y_label = '(MW)'
-            title = 'Branch flows'
+            title = 'Branch Sf'
+
+        elif result_type == ResultTypes.BranchLoading:
+            labels = self.branch_names
+            y = self.loading * 100.0
+            y_label = '(%)'
+            title = 'Branch loading'
 
         else:
             labels = []
@@ -107,7 +126,7 @@ class LinearAnalysisResults(ResultsTemplate):
 
         # assemble model
         mdl = ResultsModel(data=y,
-                           index=self.br_names,
+                           index=self.branch_names,
                            columns=labels,
                            title=title,
                            ylabel=y_label,
@@ -172,7 +191,7 @@ class LinearAnalysisDriver(DriverTemplate):
                                              bus_types=analysis.numerical_circuit.bus_data.bus_types)
         self.results.PTDF = analysis.PTDF
         self.results.LODF = analysis.LODF
-        self.results.flows = analysis.get_flows(analysis.numerical_circuit.Sbus.real)
+        self.results.Sf = analysis.get_flows(analysis.numerical_circuit.Sbus.real)
 
         self.logger += analysis.logger
 

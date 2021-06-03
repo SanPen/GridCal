@@ -12,7 +12,7 @@
    viewBox="0 0 48 48"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.4 (unknown)"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
    sodipodi:docname="sigma.svg">
   <metadata
      id="metadata12">
@@ -52,32 +52,30 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1863"
-     inkscape:window-height="1025"
+     inkscape:window-width="1848"
+     inkscape:window-height="1018"
      id="namedview8"
      showgrid="false"
-     inkscape:zoom="2.3901682"
-     inkscape:cx="-111.72336"
-     inkscape:cy="52.947194"
-     inkscape:window-x="57"
-     inkscape:window-y="27"
+     inkscape:zoom="6.2604167"
+     inkscape:cx="0.2780126"
+     inkscape:cy="43.968298"
+     inkscape:window-x="72"
+     inkscape:window-y="25"
      inkscape:window-maximized="1"
      inkscape:current-layer="g4544" />
   <g
      id="g4150">
     <g
        id="g4544">
-      <text
-         xml:space="preserve"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:56.84185028px;line-height:125%;font-family:'Alte Haas Grotesk';-inkscape-font-specification:'Alte Haas Grotesk';letter-spacing:0px;word-spacing:0px;fill:#37c8ab;fill-opacity:1;stroke:none;stroke-width:1.42104638px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
-         x="7.9387598"
-         y="38.530277"
-         id="text843"><tspan
-           sodipodi:role="line"
-           id="tspan841"
-           x="7.9387598"
-           y="38.530277"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'TeX Gyre Termes Math';-inkscape-font-specification:'TeX Gyre Termes Math';stroke-width:1.42104638px;fill:#37c8ab;">σ</tspan></text>
+      <g
+         aria-label="σ"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:56.84185028px;line-height:125%;font-family:'Alte Haas Grotesk';-inkscape-font-specification:'Alte Haas Grotesk';letter-spacing:0px;word-spacing:0px;fill:#37c8ab;fill-opacity:1;stroke:none;stroke-width:1.42104638px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         id="text843">
+        <path
+           d="m 37.325996,18.646165 v -4.888399 c -2.78525,1.079995 -7.957859,1.989465 -12.277839,1.989465 -7.844176,0 -12.562049,4.547348 -12.562049,13.471518 0,6.821022 4.661032,12.220998 11.36837,12.220998 6.707338,0 11.36837,-5.399976 11.36837,-12.220998 0,-4.717874 -1.875781,-8.014701 -5.002083,-10.004166 3.06946,-0.05684 4.661032,-0.170525 7.105231,-0.568418 z m -7.162073,9.606273 c 0,5.22945 -0.966311,11.595737 -6.309445,11.595737 -4.717874,0 -6.309445,-6.366287 -6.309445,-11.595737 0,-4.661032 0.795785,-8.867329 6.423129,-8.867329 h 3.126301 c 1.421047,1.136837 3.06946,3.751562 3.06946,8.867329 z"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'TeX Gyre Termes Math';-inkscape-font-specification:'TeX Gyre Termes Math';fill:#37c8ab;stroke-width:1.42104638px"
+           id="path830" />
+      </g>
     </g>
     <g
        transform="translate(1.0067283,-25.887299)"

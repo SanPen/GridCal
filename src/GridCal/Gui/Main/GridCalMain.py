@@ -388,6 +388,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionImport_bus_coordinates.triggered.connect(self.import_bus_coordinates)
 
+        self.ui.actionApply_new_rates.triggered.connect(self.apply_new_rates)
+
         self.ui.actionSetSelectedBusCountry.triggered.connect(lambda: self.set_selected_bus_property('country'))
         self.ui.actionSetSelectedBusArea.triggered.connect(lambda: self.set_selected_bus_property('area'))
         self.ui.actionSetSelectedBusZone.triggered.connect(lambda: self.set_selected_bus_property('zone'))
@@ -870,7 +872,7 @@ class MainGUI(QMainWindow):
         print('\tapp.optimal_power_flow.load_shedding:\t the branch loading in %')
         print('\tapp.optimal_power_flow.losses:\t the branch losses in per unit')
         print('\tapp.optimal_power_flow.Sbus:\t the nodal power injections in MW')
-        print('\tapp.optimal_power_flow.Sf:\t the branch power flows')
+        print('\tapp.optimal_power_flow.Sf:\t the branch power Sf')
         print('\tapp.optimal_power_flow.losses:\t the branch losses in MVA')
         print('\tapp.optimal_power_flow.short_circuit_power:\t Short circuit power in MVA of the grid nodes')
 
@@ -2626,27 +2628,24 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if self.valid_time_series():
-                if sim.SimulationTypes.ContingencyAnalysis_run not in self.stuff_running_now:
+            if sim.SimulationTypes.ContingencyAnalysis_run not in self.stuff_running_now:
 
-                    self.add_simulation(sim.SimulationTypes.ContingencyAnalysis_run)
+                self.add_simulation(sim.SimulationTypes.ContingencyAnalysis_run)
 
-                    self.LOCK()
+                self.LOCK()
 
-                    distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
-                    options = sim.ContingencyAnalysisOptions(distributed_slack=distributed_slack)
+                distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
+                options = sim.ContingencyAnalysisOptions(distributed_slack=distributed_slack)
 
-                    drv = sim.ContingencyAnalysisDriver(grid=self.circuit, options=options)
+                drv = sim.ContingencyAnalysisDriver(grid=self.circuit, options=options)
 
-                    self.session.register(drv)
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_contingency_analysis)
-                    drv.start()
-                else:
-                    warning_msg('Another contingency analysis is being executed now...')
+                self.session.register(drv)
+                drv.progress_signal.connect(self.ui.progressBar.setValue)
+                drv.progress_text.connect(self.ui.progress_label.setText)
+                drv.done_signal.connect(self.post_contingency_analysis)
+                drv.start()
             else:
-                warning_msg('There are no time series...')
+                warning_msg('Another contingency analysis is being executed now...')
         else:
             pass
 
@@ -2736,7 +2735,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.AvailableTransferCapacity_run not in self.stuff_running_now:
+            if sim.SimulationTypes.NetTransferCapacity_run not in self.stuff_running_now:
                 distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 threshold = self.ui.atcThresholdSpinBox.value()
@@ -2753,21 +2752,21 @@ class MainGUI(QMainWindow):
                     error_msg('Cannot analyze transfer capacity from and to the same area!')
                     return
 
-                options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack,
-                                                               bus_idx_from=idx_from,
-                                                               bus_idx_to=idx_to,
-                                                               dT=dT,
-                                                               threshold=threshold)
+                options = sim.NetTransferCapacityOptions(distributed_slack=distributed_slack,
+                                                         bus_idx_from=idx_from,
+                                                         bus_idx_to=idx_to,
+                                                         dT=dT,
+                                                         threshold=threshold)
 
-                drv = sim.AvailableTransferCapacityDriver(grid=self.circuit,
-                                                          options=options)
+                drv = sim.NetTransferCapacityDriver(grid=self.circuit,
+                                                    options=options)
 
                 self.session.register(drv)
                 drv.progress_signal.connect(self.ui.progressBar.setValue)
                 drv.progress_text.connect(self.ui.progress_label.setText)
                 drv.done_signal.connect(self.post_available_transfer_capacity)
                 drv.start()
-                self.add_simulation(sim.SimulationTypes.AvailableTransferCapacity_run)
+                self.add_simulation(sim.SimulationTypes.NetTransferCapacity_run)
                 self.LOCK()
 
             else:
@@ -2782,8 +2781,8 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.AvailableTransferCapacity_run)
-        self.remove_simulation(sim.SimulationTypes.AvailableTransferCapacity_run)
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.NetTransferCapacity_run)
+        self.remove_simulation(sim.SimulationTypes.NetTransferCapacity_run)
 
         # update the results in the circuit structures
         if not drv.__cancel__:
@@ -2808,7 +2807,7 @@ class MainGUI(QMainWindow):
         if len(self.circuit.buses) > 0:
 
             if self.valid_time_series():
-                if sim.SimulationTypes.AvailableTransferCapacity_run not in self.stuff_running_now:
+                if sim.SimulationTypes.NetTransferCapacity_run not in self.stuff_running_now:
 
                     distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
                     dT = self.ui.atcPerturbanceSpinBox.value()
@@ -2826,25 +2825,25 @@ class MainGUI(QMainWindow):
                         error_msg('Cannot analyze transfer capacity from and to the same area!')
                         return
 
-                    options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack,
-                                                                   bus_idx_from=idx_from,
-                                                                   bus_idx_to=idx_to,
-                                                                   dT=dT,
-                                                                   threshold=threshold)
+                    options = sim.NetTransferCapacityOptions(distributed_slack=distributed_slack,
+                                                             bus_idx_from=idx_from,
+                                                             bus_idx_to=idx_to,
+                                                             dT=dT,
+                                                             threshold=threshold)
 
                     start_ = self.ui.profile_start_slider.value()
                     end_ = self.ui.profile_end_slider.value()
-                    drv = sim.AvailableTransferCapacityTimeSeriesDriver(grid=self.circuit,
-                                                                        options=options,
-                                                                        start_=start_,
-                                                                        end_=end_)
+                    drv = sim.NetTransferCapacityTimeSeriesDriver(grid=self.circuit,
+                                                                  options=options,
+                                                                  start_=start_,
+                                                                  end_=end_)
 
                     self.session.register(drv)
                     drv.progress_signal.connect(self.ui.progressBar.setValue)
                     drv.progress_text.connect(self.ui.progress_label.setText)
                     drv.done_signal.connect(self.post_available_transfer_capacity_ts)
                     drv.start()
-                    self.add_simulation(sim.SimulationTypes.AvailableTransferCapacityTS_run)
+                    self.add_simulation(sim.SimulationTypes.NetTransferCapacityTS_run)
                     self.LOCK()
 
                 else:
@@ -2860,8 +2859,8 @@ class MainGUI(QMainWindow):
         Returns:
 
         """
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.AvailableTransferCapacityTS_run)
-        self.remove_simulation(sim.SimulationTypes.AvailableTransferCapacityTS_run)
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.NetTransferCapacityTS_run)
+        self.remove_simulation(sim.SimulationTypes.NetTransferCapacityTS_run)
 
         # update the results in the circuit structures
         if not drv.__cancel__:
@@ -5894,10 +5893,47 @@ class MainGUI(QMainWindow):
                 self.ui.resultsTableView.setModel(mdl)
 
     def get_snapshot_circuit(self):
+        """
+        Get a snapshot compilation
+        :return: SnapshotData instance
+        """
         return core.compile_snapshot_circuit(circuit=self.circuit)
 
     def get_time_circuit(self):
+        """
+        Get a time circuit compilation
+        :return: TimeCircuit instance
+        """
         return core.compile_time_circuit(circuit=self.circuit)
+
+    def apply_new_snapshot_rates(self):
+        """
+        Change the loading of a snapshot solution from new rating data if it has means to do it
+        """
+        nc = self.get_snapshot_circuit()
+
+        for drv_tpe, drv in self.session.drivers.items():
+            if drv.results is not None:
+                drv.results.apply_new_rates(nc)
+
+    def apply_new_time_series_rates(self):
+        """
+        Change the loading of a time series solution from new rating data if it has means to do it
+        """
+        if self.circuit.time_profile is not None:
+            nc = self.get_time_circuit()
+
+            for drv_tpe, drv in self.session.drivers.items():
+                if drv.results is not None:
+                    drv.results.apply_new_time_series_rates(nc)
+
+    def apply_new_rates(self):
+        """
+        Apply the new rates everywhere
+        :return:
+        """
+        self.apply_new_snapshot_rates()
+        self.apply_new_time_series_rates()
 
 
 def run(use_native_dialogues=True):

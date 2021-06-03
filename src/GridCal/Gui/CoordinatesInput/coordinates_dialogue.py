@@ -261,7 +261,7 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
         :return:
         """
         if self.original_data_frame is not None:
-
+            print('Assign')
             name_idx = self.ui.nameComboBox.currentIndex()
             code_idx = self.ui.codeComboBox.currentIndex()
             x_idx = self.ui.xComboBox.currentIndex()
@@ -272,13 +272,13 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
             for i in range(self.original_data_frame.shape[0]):
 
                 if self.ui.nameRadioButton.isChecked():
-                    if self.original_data_frame.dtypes[name_idx] in [float]:
+                    if isinstance(self.original_data_frame.values[i, name_idx], float):
                         dat_name = str(int(self.original_data_frame.values[i, name_idx]))
                     else:
                         dat_name = str(self.original_data_frame.values[i, name_idx])
 
                 elif self.ui.codeRadioButton.isChecked():
-                    if self.original_data_frame.dtypes[code_idx] in [float]:
+                    if isinstance(self.original_data_frame.values[i, code_idx], float):
                         dat_name = str(int(self.original_data_frame.values[i, code_idx]))
                     else:
                         dat_name = str(self.original_data_frame.values[i, code_idx])

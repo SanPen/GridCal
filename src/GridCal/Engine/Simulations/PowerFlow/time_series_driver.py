@@ -113,6 +113,10 @@ class TimeSeriesResults(PowerFlowResults):
 
         self.converged_values = np.ones(self.nt, dtype=bool)  # guilty assumption
 
+    def apply_new_time_series_rates(self, nc: "TimeCircuit"):
+        rates = nc.Rates.T
+        self.loading = self.Sf / (rates + 1e-9)
+
     def set_at(self, t, results: PowerFlowResults):
         """
         Set the results at the step t
@@ -366,7 +370,7 @@ class TimeSeriesResults(PowerFlowResults):
             raise Exception('Result type not understood:' + str(result_type))
 
         if self.time is not None:
-            index = self.time
+            index = pd.to_datetime(self.time)
         else:
             index = list(range(data.shape[0]))
 

@@ -37,16 +37,16 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1228"
-     inkscape:window-height="542"
+     inkscape:window-width="1848"
+     inkscape:window-height="1018"
      id="namedview8"
      showgrid="false"
      inkscape:zoom="5.656854"
-     inkscape:cx="-32.018817"
+     inkscape:cx="-11.312539"
      inkscape:cy="22.640762"
-     inkscape:window-x="692"
-     inkscape:window-y="144"
-     inkscape:window-maximized="0"
+     inkscape:window-x="72"
+     inkscape:window-y="25"
+     inkscape:window-maximized="1"
      inkscape:current-layer="svg2" />
   <path
      d="m -80.610174,-42.956737 h 48 V 5.0432627 h -48 z"
@@ -90,17 +90,15 @@
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
   </g>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-weight:normal;font-size:39.31232071px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ff7f2a;fill-opacity:1;stroke:none;stroke-width:0.98280805;"
-     x="12.73796"
-     y="42.355175"
-     id="text4524-9"><tspan
-       sodipodi:role="line"
-       id="tspan4522-0"
-       x="12.73796"
-       y="42.355175"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'TeX Gyre Pagella Math';-inkscape-font-specification:'TeX Gyre Pagella Math';fill:#ff7f2a;fill-opacity:1;stroke-width:0.98280805;">λ</tspan></text>
+  <g
+     aria-label="λ"
+     style="font-style:normal;font-weight:normal;font-size:39.31232071px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ff7f2a;fill-opacity:1;stroke:none;stroke-width:0.98280805"
+     id="text4524-9">
+    <path
+       d="m 36.050166,39.013628 -0.51106,-0.707622 -0.943496,0.668309 c -1.061432,0.786247 -1.965616,1.17937 -2.319427,1.17937 -0.157249,0 -0.314498,0 -0.904183,-0.746934 -0.393123,-0.471748 -0.786247,-1.415244 -1.415244,-2.751862 l -5.110601,-13.72 c -2.044241,-5.503725 -3.970545,-8.2949 -5.975473,-8.530774 -0.943496,0.864871 -2.398052,1.847679 -3.184298,2.398052 l 0.03931,0.943495 c 0.746934,-0.275186 1.886992,-0.746934 2.240803,-0.746934 1.100744,0 2.476676,1.769055 3.302234,4.049169 l 1.336619,3.656046 c -2.751862,4.245731 -8.019713,14.113123 -9.592206,17.258109 l 0.982808,0.864871 c 0.66831,-0.353811 1.218682,-0.550373 2.162178,-0.864871 2.083553,-5.936161 3.302235,-9.552894 6.918968,-15.960802 l 5.739599,15.606991 c 0.235874,0.668309 0.786246,1.100745 1.454556,1.100745 1.02212,0 2.358739,-0.864871 5.778911,-3.695358 z"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'TeX Gyre Pagella Math';-inkscape-font-specification:'TeX Gyre Pagella Math';fill:#ff7f2a;fill-opacity:1;stroke-width:0.98280805"
+       id="path823" />
+  </g>
   <text
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:31.02170181px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#216778;fill-opacity:1;stroke:none;stroke-width:0.77554256"

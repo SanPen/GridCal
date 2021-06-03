@@ -78,6 +78,10 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
 
         self.losses = np.zeros((self.nt, m), dtype=float)
 
+    def apply_new_time_series_rates(self, nc: "TimeCircuit"):
+        rates = nc.Rates.T
+        self.loading = self.Sf / (rates + 1e-9)
+
     def get_results_dict(self):
         """
         Returns a dictionary with the results sorted in a dictionary

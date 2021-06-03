@@ -58,27 +58,25 @@
      inkscape:window-height="1018"
      id="namedview4"
      showgrid="false"
-     inkscape:zoom="1.5585937"
-     inkscape:cx="-240.49294"
-     inkscape:cy="157.98237"
+     inkscape:zoom="2.2133915"
+     inkscape:cx="-20.650764"
+     inkscape:cy="192.79136"
      inkscape:window-x="72"
      inkscape:window-y="25"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg2"
      inkscape:snap-bbox="true" />
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-weight:normal;font-size:237.84448242px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#00d4aa;fill-opacity:1;stroke:none;stroke-width:5.94611311;"
-     x="30.521622"
-     y="172.3031"
-     id="text4524-9"
+  <g
+     aria-label="α"
      inkscape:transform-center-x="7.0618931"
-     inkscape:transform-center-y="-1.1769834"><tspan
-       sodipodi:role="line"
-       id="tspan4522-0"
-       x="30.521622"
-       y="172.3031"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'TeX Gyre Pagella Math';-inkscape-font-specification:'TeX Gyre Pagella Math';fill:#00d4aa;fill-opacity:1;stroke-width:5.94611311;">α</tspan></text>
+     inkscape:transform-center-y="-1.1769834"
+     style="font-style:normal;font-weight:normal;font-size:237.84448242px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#00d4aa;fill-opacity:1;stroke:none;stroke-width:5.94611311"
+     id="text4524-9">
+    <path
+       d="m 160.14686,153.51339 -3.09197,-4.51905 c -7.84887,7.37318 -13.55714,9.27594 -17.6005,9.27594 -3.80551,0 -6.89749,-0.71354 -10.22731,-5.23258 -3.09198,-4.51905 -7.84887,-14.50852 -10.22731,-21.64385 l -3.80551,-11.17869 c 5.94611,-9.51378 11.41653,-19.97894 14.03282,-25.211516 2.61629,-4.994734 9.51378,-19.265403 9.98947,-24.022293 -1.90276,-2.616289 -3.32982,-4.75689 -5.23258,-8.324557 -0.95138,-0.475689 -3.09198,-1.189222 -4.04335,-1.664911 -2.37845,19.741092 -4.51905,26.400737 -11.1787,40.433557 -0.71353,1.42707 -3.80551,7.37318 -5.94611,11.41654 L 98.069455,69.31644 C 94.026099,58.613438 86.890764,57.66206 81.658185,57.66206 76.187762,57.899905 68.576739,61.943261 61.679249,69.31644 56.44667,74.549018 52.879003,80.732975 49.787025,88.106154 42.413846,109.27431 39.321868,137.57781 42.65169,156.60536 c 1.427067,7.84887 7.135335,18.31403 12.843602,18.31403 9.751624,0 16.886959,-4.75689 23.546604,-10.22731 9.03809,-8.5624 18.314025,-19.26541 24.735824,-27.58996 7.13534,24.73582 16.88696,37.81727 26.40074,37.81727 5.47042,0 12.36791,-4.04336 19.50325,-10.94085 z m -58.74758,-23.78445 c -5.70827,8.08671 -11.654382,15.22205 -17.124805,20.21678 -6.659646,6.18396 -13.319291,8.32456 -17.838336,8.32456 -3.091979,0 -4.994735,-3.32983 -6.183957,-9.51378 -2.616289,-15.22205 -3.091978,-40.90925 1.664911,-60.650346 1.902756,-7.848868 6.89749,-14.746358 12.367913,-14.746358 7.373179,0 10.703002,4.281201 14.032825,14.746358 z"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'TeX Gyre Pagella Math';-inkscape-font-specification:'TeX Gyre Pagella Math';fill:#00d4aa;fill-opacity:1;stroke-width:5.94611311"
+       id="path908" />
+  </g>
   <g
      id="g1179"
      transform="matrix(0.74930152,0,0,0.74930152,-284.47298,-110.7024)">

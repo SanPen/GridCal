@@ -111,7 +111,6 @@ class PowerFlowResults(ResultsTemplate):
                                                  'Beq',
                                                  'Vbranch',
                                                  'loading',
-                                                 'flow_direction',
                                                  'transformer_tap_module',
                                                  'losses',
                                                  'hvdc_losses',
@@ -165,6 +164,10 @@ class PowerFlowResults(ResultsTemplate):
         self.plot_bars_limit = 100
 
         self.convergence_reports = list()
+
+    def apply_new_rates(self, nc: "SnapshotData"):
+        rates = nc.Rates
+        self.loading = self.Sf / (rates + 1e-9)
 
     @property
     def converged(self):

@@ -621,16 +621,20 @@ class PSSeBranch:
         j = abs(self.J)
         bus_from = psse_bus_dict[i]
         bus_to = psse_bus_dict[j]
-        name = str(i) + '_' + str(j) + '_' + str(self.CKT).replace("'", "").strip()
+        code = str(i) + '_' + str(j) + '_' + str(self.CKT).replace("'", "").strip()
 
-        branch = Line(bus_from=bus_from, bus_to=bus_to,
+        contingency_factor = self.RATEB / self.RATEA if self.RATEA > 0.0 else 1.0
+
+        branch = Line(bus_from=bus_from,
+                      bus_to=bus_to,
                       idtag=None,
-                      code=name,
-                      name=name,
+                      code=code,
+                      name=code,
                       r=self.R,
                       x=self.X,
                       b=self.B,
-                      rate=max(self.RATEA, self.RATEB, self.RATEC),
+                      rate=self.RATEA,
+                      contingency_factor=round(contingency_factor, 6),
                       active=bool(self.ST),
                       mttf=0,
                       mttr=0,
@@ -1138,7 +1142,7 @@ class PSSeTransformer:
             else:
                 V2 = self.NOMV2
 
-            # print(idtag, 'CM', self.CM, 'CW', self.CW, 'CZ', self.CZ)
+            contingency_factor = self.RATB1 / self.RATA1 if self.RATA1 > 0.0 else 1.0
 
             elm = Transformer2W(bus_from=bus_from,
                                 bus_to=bus_to,
@@ -1151,7 +1155,8 @@ class PSSeTransformer:
                                 x=x,
                                 g=g,
                                 b=b,
-                                rate=max(self.RATA1, self.RATB1, self.RATC1),
+                                rate=self.RATA1,
+                                contingency_factor=round(contingency_factor, 6),
                                 tap=tap_mod,
                                 shift_angle=np.deg2rad(self.ANG1),
                                 active=bool(self.STAT),
