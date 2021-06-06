@@ -14,9 +14,10 @@ Version 4.2.0
 ^^^^^^^^^^^^^^^
 
 - Added branch contingency multiplier for contingency related simulations
-- Added Available Transmission Capacity (WIP)
+- Added Available Transmission Capacity (ATC)
 - Added dynamic bus types for the time series, this allows to correctly account for the generators' status
 - Added the ability to save "sessions" of results in the .gridcal files, to then load those at a later stage.
+  This is a massive feature that allows to effectively ans securely share models and results with others.
 
 Version 4.1.1
 ^^^^^^^^^^^^^^^
