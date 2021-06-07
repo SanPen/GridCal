@@ -83,14 +83,12 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         self.numerical_circuit = None
 
-        self.branch_names = list()
-
     def get_steps(self):
         """
         Get variations list of strings
         """
         if self.results is not None:
-            return [v for v in self.branch_names]
+            return ['#' + v for v in self.results.branch_names]
         else:
             return list()
 
@@ -132,7 +130,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
             results.S[c, :] = Pbus
 
-            self.progress_signal.emit((c+1) / nl * 100)
+            self.progress_signal.emit((c + 1) / nl * 100)
 
         results.otdf = LODF
 

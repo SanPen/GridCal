@@ -56,6 +56,8 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
 
         self.time_array = time_array
 
+        self.S = np.zeros((nt, n))
+
         self.worst_flows = np.zeros((nt, ne))
 
         self.worst_loading = np.zeros((nt, ne))
@@ -69,9 +71,6 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
     def apply_new_time_series_rates(self, nc: "TimeCircuit"):
         rates = nc.Rates.T
         self.worst_loading = self.worst_flows / (rates + 1e-9)
-
-    def get_steps(self):
-        return
 
     def get_results_dict(self):
         """

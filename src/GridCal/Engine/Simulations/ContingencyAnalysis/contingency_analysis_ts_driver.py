@@ -15,6 +15,7 @@
 import time
 import datetime
 import numpy as np
+import pandas as pd
 from numba import jit, prange
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
@@ -107,7 +108,8 @@ class ContingencyAnalysisTimeSeries(TSDriverTemplate):
         Get variations list of strings
         """
         if self.results is not None:
-            return [v for v in self.branch_names]
+            return [l.strftime('%d-%m-%Y %H:%M') for l in
+                    pd.to_datetime(self.grid.time_profile[self.start_: self.end_])]
         else:
             return list()
 
@@ -124,7 +126,8 @@ class ContingencyAnalysisTimeSeries(TSDriverTemplate):
         nc = ts_numeric_circuit.nbr
         nt = len(ts_numeric_circuit.time_array)
 
-        results = ContingencyAnalysisTimeSeriesResults(ne=ne, nc=nc,
+        results = ContingencyAnalysisTimeSeriesResults(ne=ne,
+                                                       nc=nc,
                                                        time_array=ts_numeric_circuit.time_array,
                                                        n=ts_numeric_circuit.nbus,
                                                        branch_names=ts_numeric_circuit.branch_names,
@@ -166,6 +169,7 @@ class ContingencyAnalysisTimeSeries(TSDriverTemplate):
 
         results.relative_frequency = results.overload_count / nt
         results.worst_loading = results.worst_flows / (rates + 1e-9)
+        results.S = Pbus.T
 
         return results
 

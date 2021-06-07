@@ -2669,6 +2669,22 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Colouring contingency analysis results in the grid...')
                 QtGui.QGuiApplication.processEvents()
+                if self.ui.draw_schematic_checkBox.isChecked():
+                    if results.S.shape[0] > 0:
+                        viz.colour_the_schematic(circuit=self.circuit,
+                                                 Sbus=results.S[0, :],  # same injection for all the contingencies
+                                                 Sf=np.abs(results.Sf).max(axis=1),
+                                                 voltages=results.voltage.max(axis=0),
+                                                 loadings=np.abs(results.loading).max(axis=1),
+                                                 types=results.bus_types,
+                                                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                                 min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                                 max_bus_width=self.ui.max_node_size_spinBox.value()
+                                                 )
+                    else:
+                        info_msg('Cannot colour because there are no branches :/')
 
                 self.update_available_results()
                 self.colour_now()
@@ -2724,6 +2740,23 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Colouring LODF results in the grid...')
                 QtGui.QGuiApplication.processEvents()
+
+                if self.ui.draw_schematic_checkBox.isChecked():
+                    if results.worst_flows.shape[0] > 0:
+                        viz.colour_the_schematic(circuit=self.circuit,
+                                                 Sbus=results.S[0, :],  # same injection for all the contingencies
+                                                 Sf=np.abs(results.worst_flows).max(axis=0),
+                                                 voltages=np.ones(len(results.bus_names), dtype=complex),
+                                                 loadings=np.abs(results.worst_loading).max(axis=0),
+                                                 types=results.bus_types,
+                                                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                                 min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                                 max_bus_width=self.ui.max_node_size_spinBox.value()
+                                                 )
+                    else:
+                        info_msg('Cannot colour because there are no branches :/')
 
                 self.update_available_results()
                 self.colour_now()
@@ -4330,6 +4363,36 @@ class MainGUI(QMainWindow):
                               Sf=results.Sf[current_step],
                               voltages=results.voltage[current_step],
                               loadings=np.abs(results.loading[current_step]),
+                              types=results.bus_types,
+                              use_flow_based_width=use_flow_based_width,
+                              min_branch_width=min_branch_width,
+                              max_branch_width=max_branch_width,
+                              min_bus_width=min_bus_width,
+                              max_bus_width=max_bus_width,
+                              file_name=file_name)
+
+            elif current_study == sim.ContingencyAnalysisDriver.name:
+                drv, results = self.session.get_driver_results(sim.SimulationTypes.ContingencyAnalysis_run)
+                plot_function(circuit=self.circuit,
+                              Sbus=results.S[current_step, :],
+                              Sf=results.Sf[:, current_step],
+                              voltages=results.voltage[current_step, :],
+                              loadings=np.abs(results.loading[:, current_step]),
+                              types=results.bus_types,
+                              use_flow_based_width=use_flow_based_width,
+                              min_branch_width=min_branch_width,
+                              max_branch_width=max_branch_width,
+                              min_bus_width=min_bus_width,
+                              max_bus_width=max_bus_width,
+                              file_name=file_name)
+
+            elif current_study == sim.ContingencyAnalysisTimeSeries.name:
+                drv, results = self.session.get_driver_results(sim.SimulationTypes.ContingencyAnalysisTS_run)
+                plot_function(circuit=self.circuit,
+                              Sbus=results.S[current_step, :],
+                              Sf=results.worst_flows[current_step, :],
+                              voltages=np.ones(len(results.bus_names), dtype=complex),
+                              loadings=np.abs(results.worst_loading[current_step]),
                               types=results.bus_types,
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
