@@ -128,37 +128,60 @@ class UPFC(EditableDevice):
         # branch type: Line, Transformer, etc...
         self.branch_type = BranchType.UPFC
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return:
         """
+        if version == 2:
+            return {'id': self.idtag,
+                    'type': 'upfc',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus_from': self.bus_from.idtag,
+                    'bus_to': self.bus_to.idtag,
+                    'active': self.active,
+                    'rate': self.rate,
+                    'rl': self.Rl,
+                    'xl': self.Xl,
+                    'bl': self.Bl,
+                    'rs': self.Rs,
+                    'xs': self.Xs,
+                    'rsh': self.Rsh,
+                    'xsh': self.Xsh,
+                    'vsh': self.Vsh,
+                    'Pfset': self.Pfset,
+                    'Qfset': self.Qfset
+                    }
+        elif version == 3:
+            return {'id': self.idtag,
+                    'type': 'upfc',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus_from': self.bus_from.idtag,
+                    'bus_to': self.bus_to.idtag,
+                    'active': self.active,
+                    'rate': self.rate,
+                    'contingency_factor1': self.contingency_factor,
+                    'contingency_factor2': self.contingency_factor,
+                    'contingency_factor3': self.contingency_factor,
+                    'rl': self.Rl,
+                    'xl': self.Xl,
+                    'bl': self.Bl,
+                    'rs': self.Rs,
+                    'xs': self.Xs,
+                    'rsh': self.Rsh,
+                    'xsh': self.Xsh,
+                    'vsh': self.Vsh,
+                    'Pfset': self.Pfset,
+                    'Qfset': self.Qfset
+                    }
+        else:
+            return dict()
 
-        d = {'id': self.idtag,
-             'type': 'upfc',
-             'phases': 'ps',
-             'name': self.name,
-             'name_code': self.code,
-             'bus_from': self.bus_from.idtag,
-             'bus_to': self.bus_to.idtag,
-             'active': self.active,
-
-             'rate': self.rate,
-             'rl': self.Rl,
-             'xl': self.Xl,
-             'bl': self.Bl,
-             'rs': self.Rs,
-             'xs': self.Xs,
-             'rsh': self.Rsh,
-             'xsh': self.Xsh,
-             'vsh': self.Vsh,
-             'Pfset': self.Pfset,
-             'Qfset': self.Qfset
-             }
-
-        return d
-
-    def get_profiles_dict(self):
+    def get_profiles_dict(self, version=3):
         """
 
         :return:
@@ -174,7 +197,7 @@ class UPFC(EditableDevice):
                 'active': active_prof,
                 'rate': rate_prof}
 
-    def get_units_dict(self):
+    def get_units_dict(self, version=3):
         """
         Get units of the values
         """

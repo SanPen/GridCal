@@ -163,31 +163,30 @@ class Load(EditableDevice):
 
         return load
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return:
         """
+        if version in [2, 3]:
+            return {'id': self.idtag,
+                    'type': 'load',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus': self.bus.idtag,
+                    'active': self.active,
+                    'g': self.G,
+                    'b': self.B,
+                    'ir': self.Ir,
+                    'ii': self.Ii,
+                    'p': self.P,
+                    'q': self.Q
+                    }
+        else:
+            return dict()
 
-        d = {'id': self.idtag,
-             'type': 'load',
-             'phases': 'ps',
-             'name': self.name,
-             'name_code': self.code,
-             'bus': self.bus.idtag,
-             'active': self.active,
-
-             'g': self.G,
-             'b': self.B,
-             'ir': self.Ir,
-             'ii': self.Ii,
-             'p': self.P,
-             'q': self.Q
-             }
-
-        return d
-
-    def get_profiles_dict(self):
+    def get_profiles_dict(self, version=3):
         """
 
         :return:
@@ -219,7 +218,7 @@ class Load(EditableDevice):
                 'g': G_prof,
                 'b': B_prof}
 
-    def get_units_dict(self):
+    def get_units_dict(self, version=3):
         """
         Get units of the values
         """

@@ -319,35 +319,55 @@ class Generator(EditableDevice):
 
         return gen
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return: json-compatible dictionary
         """
+        if version == 2:
+            return {'id': self.idtag,
+                    'type': 'generator',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus': self.bus.idtag,
+                    'active': self.active,
+                    'is_controlled': self.is_controlled,
+                    'p': self.P,
+                    'pf': self.Pf,
+                    'vset': self.Vset,
+                    'snom': self.Snom,
+                    'qmin': self.Qmin,
+                    'qmax': self.Qmax,
+                    'pmin': self.Pmin,
+                    'pmax': self.Pmax,
+                    'cost': self.Cost,
+                    'technology': "",
+                    }
+        elif version == 3:
+            return {'id': self.idtag,
+                    'type': 'generator',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus': self.bus.idtag,
+                    'active': self.active,
+                    'is_controlled': self.is_controlled,
+                    'p': self.P,
+                    'pf': self.Pf,
+                    'vset': self.Vset,
+                    'snom': self.Snom,
+                    'qmin': self.Qmin,
+                    'qmax': self.Qmax,
+                    'pmin': self.Pmin,
+                    'pmax': self.Pmax,
+                    'cost': self.Cost,
+                    'technology': "",
+                    }
+        else:
+            return dict()
 
-        d = {'id': self.idtag,
-             'type': 'generator',
-             'phases': 'ps',
-             'name': self.name,
-             'name_code': self.code,
-             'bus': self.bus.idtag,
-             'active': self.active,
-             'is_controlled': self.is_controlled,
-             'p': self.P,
-             'pf': self.Pf,
-             'vset': self.Vset,
-             'snom': self.Snom,
-             'qmin': self.Qmin,
-             'qmax': self.Qmax,
-             'pmin': self.Pmin,
-             'pmax': self.Pmax,
-             'cost': self.Cost,
-             'technology': "",
-             }
-
-        return d
-
-    def get_profiles_dict(self):
+    def get_profiles_dict(self, version=3):
         """
 
         :return:
@@ -379,7 +399,7 @@ class Generator(EditableDevice):
                 'v': Vset_prof,
                 'pf': Pf_prof}
 
-    def get_units_dict(self):
+    def get_units_dict(self, version=3):
         """
         Get units of the values
         """

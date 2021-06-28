@@ -227,11 +227,11 @@ class EditableDevice:
             profile = getattr(self, self.properties_with_profile[magnitude])
             setattr(self, magnitude, profile[t])
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         return dict()
 
-    def get_units_dict(self):
+    def get_units_dict(self, version=3):
         return dict()
 
-    def get_profiles_dict(self):
+    def get_profiles_dict(self, version=3):
         return dict()

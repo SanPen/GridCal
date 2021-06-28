@@ -521,40 +521,40 @@ class Bus(EditableDevice):
 
         return bus
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Return Json-like dictionary
         :return: Dictionary
         """
+        if version in [2, 3]:
+            return {'id': self.idtag,
+                    'type': self.determine_bus_type().value,
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'active': self.active,
+                    'is_slack': self.is_slack,
+                    'vnom': self.Vnom,
+                    'vmin': self.Vmin,
+                    'vmax': self.Vmax,
+                    'rf': self.r_fault,
+                    'xf': self.x_fault,
+                    'x': self.x,
+                    'y': self.y,
+                    'h': self.h,
+                    'w': self.w,
+                    'lat': self.latitude,
+                    'lon': self.longitude,
+                    'alt': 0.0,
+                    'country': self.country.idtag,
+                    'area': self.area.idtag,
+                    'zone': self.zone.idtag,
+                    'substation': self.substation.idtag
+                    }
+        else:
+            return dict()
 
-        d = {'id': self.idtag,
-             'type': self.determine_bus_type().value,
-             'phases': 'ps',
-             'name': self.name,
-             'name_code': self.code,
-             'active': self.active,
-             'is_slack': self.is_slack,
-             'vnom': self.Vnom,
-             'vmin': self.Vmin,
-             'vmax': self.Vmax,
-             'rf': self.r_fault,
-             'xf': self.x_fault,
-             'x': self.x,
-             'y': self.y,
-             'h': self.h,
-             'w': self.w,
-             'lat': self.latitude,
-             'lon': self.longitude,
-             'alt': 0.0,
-             'country': self.country.idtag,
-             'area': self.area.idtag,
-             'zone': self.zone.idtag,
-             'substation': self.substation.idtag
-             }
-
-        return d
-
-    def get_profiles_dict(self):
+    def get_profiles_dict(self, version=3):
         """
 
         :return:
@@ -567,7 +567,7 @@ class Bus(EditableDevice):
         return {'id': self.idtag,
                 'active': active_profile}
 
-    def get_units_dict(self):
+    def get_units_dict(self, version=3):
         """
         Get units of the values
         """

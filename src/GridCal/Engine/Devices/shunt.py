@@ -110,29 +110,47 @@ class Shunt(EditableDevice):
                     mttr=self.mttr)
         return shu
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return:
         """
-
-        data = {'id': self.idtag,
-                'type': 'shunt',
-                'phases': 'ps',
-                'name': self.name,
-                'name_code': self.code,
-                'bus': self.bus.idtag,
-                'active': self.active,
-                'g': self.G,
-                'b': self.B,
-                'bmax': self.Bmax,
-                'bmin': self.Bmin,
-                'id_impedance_table': "",
-                'technology': ""
-                }
+        if version == 2:
+            data = {'id': self.idtag,
+                    'type': 'shunt',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus': self.bus.idtag,
+                    'active': self.active,
+                    'g': self.G,
+                    'b': self.B,
+                    'bmax': self.Bmax,
+                    'bmin': self.Bmin,
+                    'id_impedance_table': "",
+                    'technology': ""
+                    }
+        elif version == 3:
+            data = {'id': self.idtag,
+                    'type': 'shunt',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus': self.bus.idtag,
+                    'active': self.active,
+                    'controlled': self.is_controlled,
+                    'g': self.G,
+                    'b': self.B,
+                    'bmax': self.Bmax,
+                    'bmin': self.Bmin,
+                    'id_impedance_table': "",
+                    'technology': ""
+                    }
+        else:
+            data = dict()
         return data
 
-    def get_profiles_dict(self):
+    def get_profiles_dict(self, version=3):
         """
 
         :return:
@@ -152,7 +170,7 @@ class Shunt(EditableDevice):
                 'g': G_prof,
                 'b': B_prof}
 
-    def get_units_dict(self):
+    def get_units_dict(self, version=3):
         """
         Get units of the values
         """

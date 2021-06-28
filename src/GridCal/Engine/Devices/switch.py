@@ -139,29 +139,50 @@ class Switch(EditableDevice):
             data.append(obj)
         return data
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return:
         """
+        if version == 2:
+            d = {'id': self.idtag,
+                 'type': 'Switch',
+                 'phases': 'ps',
+                 'name': self.name,
+                 'name_code': self.code,
+                 'bus_from': self.bus_from.idtag,
+                 'bus_to': self.bus_to.idtag,
+                 'active': self.active,
 
-        d = {'id': self.idtag,
-             'type': 'Switch',
-             'phases': 'ps',
-             'name': self.name,
-             'name_code': self.code,
-             'bus_from': self.bus_from.idtag,
-             'bus_to': self.bus_to.idtag,
-             'active': self.active,
+                 'rate': self.rate,
 
-             'rate': self.rate,
-             'r': self.R,
-             'x': self.X
-             }
+                 'r': self.R,
+                 'x': self.X
+                 }
+        elif version == 3:
+            d = {'id': self.idtag,
+                 'type': 'Switch',
+                 'phases': 'ps',
+                 'name': self.name,
+                 'name_code': self.code,
+                 'bus_from': self.bus_from.idtag,
+                 'bus_to': self.bus_to.idtag,
+                 'active': self.active,
+
+                 'rate': self.rate,
+                 'contingency_factor1': self.contingency_factor,
+                 'contingency_factor2': self.contingency_factor,
+                 'contingency_factor3': self.contingency_factor,
+
+                 'r': self.R,
+                 'x': self.X
+                 }
+        else:
+            d = dict()
 
         return d
 
-    def get_profiles_dict(self):
+    def get_profiles_dict(self, version=3):
         """
 
         :return:
@@ -174,7 +195,7 @@ class Switch(EditableDevice):
         return {'id': self.idtag,
                 'active': active_prof}
 
-    def get_units_dict(self):
+    def get_units_dict(self, version=3):
         """
         Get units of the values
         """
