@@ -244,42 +244,71 @@ class Battery(Generator):
 
         return batt
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return: json-compatible dictionary
         """
+        if version == 2:
+            return {'id': self.idtag,
+                    'type': 'battery',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus': self.bus.idtag,
+                    'active': self.active,
 
-        data = {'id': self.idtag,
-                'type': 'battery',
-                'phases': 'ps',
-                'name': self.name,
-                'name_code': self.code,
-                'bus': self.bus.idtag,
-                'active': self.active,
-
-                'p': self.P,
-                'vset': self.Vset,
-                'pf': self.Pf,
-                'snom': self.Snom,
-                'enom': self.Enom,
-                'qmin': self.Qmin,
-                'qmax': self.Qmax,
-                'pmin': self.Pmin,
-                'pmax': self.Pmax,
-                'cost': self.Cost,
-                'charge_efficiency': self.charge_efficiency,
-                'discharge_efficiency': self.discharge_efficiency,
-                'min_soc': self.min_soc,
-                'max_soc': self.max_soc,
-                'soc_0': self.soc_0,
-                'min_soc_charge': self.min_soc_charge,
-                'charge_per_cycle': self.charge_per_cycle,
-                'discharge_per_cycle': self.discharge_per_cycle,
-                'technology': ""
-                }
-
-        return data
+                    'p': self.P,
+                    'vset': self.Vset,
+                    'pf': self.Pf,
+                    'snom': self.Snom,
+                    'enom': self.Enom,
+                    'qmin': self.Qmin,
+                    'qmax': self.Qmax,
+                    'pmin': self.Pmin,
+                    'pmax': self.Pmax,
+                    'cost': self.Cost,
+                    'charge_efficiency': self.charge_efficiency,
+                    'discharge_efficiency': self.discharge_efficiency,
+                    'min_soc': self.min_soc,
+                    'max_soc': self.max_soc,
+                    'soc_0': self.soc_0,
+                    'min_soc_charge': self.min_soc_charge,
+                    'charge_per_cycle': self.charge_per_cycle,
+                    'discharge_per_cycle': self.discharge_per_cycle,
+                    'technology': ""
+                    }
+        elif version == 3:
+            return {'id': self.idtag,
+                    'type': 'battery',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus': self.bus.idtag,
+                    'active': self.active,
+                    'is_controlled': self.is_controlled,
+                    'p': self.P,
+                    'vset': self.Vset,
+                    'pf': self.Pf,
+                    'snom': self.Snom,
+                    'enom': self.Enom,
+                    'qmin': self.Qmin,
+                    'qmax': self.Qmax,
+                    'pmin': self.Pmin,
+                    'pmax': self.Pmax,
+                    'cost': self.Cost,
+                    'charge_efficiency': self.charge_efficiency,
+                    'discharge_efficiency': self.discharge_efficiency,
+                    'min_soc': self.min_soc,
+                    'max_soc': self.max_soc,
+                    'soc_0': self.soc_0,
+                    'min_soc_charge': self.min_soc_charge,
+                    'charge_per_cycle': self.charge_per_cycle,
+                    'discharge_per_cycle': self.discharge_per_cycle,
+                    'technology': ""
+                    }
+        else:
+            return dict()
 
     def get_profiles_dict(self):
         """

@@ -597,7 +597,7 @@ class Branch(EditableDevice):
             data.append(obj)
         return data
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return:
