@@ -10,6 +10,13 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+Version 4.1.7
+^^^^^^^^^^^^^^^
+
+- Really rare bug with .real and .imag was making HELM diverge. Now it is fixed
+- Added ATC generation scaling based on the installed power
+- Overall usability improvements
+
 Version 4.1.2
 ^^^^^^^^^^^^^^^
 

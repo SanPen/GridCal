@@ -295,8 +295,8 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
     # build the reduced system
     Yred = Yseries[np.ix_(pqpv, pqpv)]  # admittance matrix without slack buses
     Yslack = -Yseries[np.ix_(pqpv, sl)]  # yes, it is the negative of this
-    G = np.real(Yred)  # real parts of Yij
-    B = np.imag(Yred)  # imaginary parts of Yij
+    G = Yred.real.copy()  # real parts of Yij
+    B = Yred.imag.copy()  # imaginary parts of Yij
     vec_P = S0.real[pqpv]
     vec_Q = S0.imag[pqpv]
     Vslack = V0[sl]
@@ -358,10 +358,10 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
         print(MAT.toarray())
 
     # factorize (only once)
-    MAT_LU = factorized(MAT.tocsc())
+    # MAT_LU = factorized(MAT.tocsc())
 
     # solve
-    LHS = MAT_LU(RHS)
+    LHS = spsolve(MAT, RHS)
 
     # update coefficients
     U[1, :] = LHS[:npqpv] + 1j * LHS[npqpv:2 * npqpv]
@@ -379,7 +379,7 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
                     valor.imag,
                     -conv3(U, U, c, pv_).real]
 
-        LHS = MAT_LU(RHS)
+        LHS = spsolve(MAT, RHS)
 
         # update voltage coefficients
         U[c, :] = LHS[:npqpv] + 1j * LHS[npqpv:2 * npqpv]
@@ -423,7 +423,8 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
     # compute the series of coefficients
     U, X, Q, iter_ = helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv,
-                                             tolerance=tolerance, max_coeff=max_coeff, verbose=verbose)
+                                             tolerance=tolerance, max_coeff=max_coeff,
+                                             verbose=verbose)
 
     # --------------------------- RESULTS COMPOSITION ------------------------------------------------------------------
     if verbose:

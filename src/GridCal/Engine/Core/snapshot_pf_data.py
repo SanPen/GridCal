@@ -347,6 +347,7 @@ class SnapshotData:
         self.iQtma = list()  # indices of the branches controlling the Qt flow with ma
         self.iPfdp = list()  # indices of the drop converters controlling the power flow with theta sh
         self.iVscL = list()  # indices of the converters
+        self.iPfdp_va = list()
 
         self.any_control = False
 
@@ -760,6 +761,10 @@ class SnapshotData:
             x = self.Yseries  # call the constructor of Yshunt
 
         return self.Yshunt_
+
+    # @property
+    # def YshuntHelm(self):
+    #     return self.Yshunt_from_devices[:, 0]
 
     @property
     def B1(self):

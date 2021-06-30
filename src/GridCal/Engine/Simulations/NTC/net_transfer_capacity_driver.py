@@ -65,7 +65,6 @@ def compute_alpha(ptdf, P0, Pinstalled, idx1, idx2, bus_types, dT=1.0, mode=0):
     dP = np.zeros(nbus)
 
     if mode == 0:  # move the generators based on the generated power --------------------
-
         # set the sending power increment proportional to the current power (Area 1)
         n1 = 0.0
         for i in idx1:
@@ -187,7 +186,8 @@ def compute_ntc(ptdf, lodf, alpha, flows, rates, contingency_rates, threshold=0.
     beta_used = np.zeros(nbr)
     atc_limiting_contingency_branch = np.zeros(nbr)
     atc_limiting_contingency_flow = flows.copy()
-
+    # processed = list()
+    # mm = 0
     for m in range(nbr):  # for each branch
 
         if abs(alpha[m]) > threshold and abs(flows[m]) < rates[m]:  # if the branch is relevant enough for the NTC...
@@ -205,6 +205,8 @@ def compute_ntc(ptdf, lodf, alpha, flows, rates, contingency_rates, threshold=0.
 
             # set to the current branch, since we don't know if there will be any contingency that make the ATC worse
             atc_limiting_contingency_branch[m] = m
+
+            # processed.append(m)
 
             # explore the ATC in "N-1"
             for c in range(nbr):  # for each contingency
@@ -235,6 +237,9 @@ def compute_ntc(ptdf, lodf, alpha, flows, rates, contingency_rates, threshold=0.
                             atc_limiting_contingency_flow[m] = contingency_flow
                             atc_limiting_contingency_branch[m] = c
 
+    # processed2 = np.array(processed, dtype=nb.int64)
+    # return beta_mat, beta_used, atc_n[processed2], atc_final[processed2], \
+    #        atc_limiting_contingency_branch[processed2], atc_limiting_contingency_flow[processed2]
     return beta_mat, beta_used, atc_n, atc_final, atc_limiting_contingency_branch, atc_limiting_contingency_flow
 
 
@@ -312,7 +317,7 @@ class NetTransferCapacityResults(ResultsTemplate):
     def get_steps(self):
         return
 
-    def make_report(self):
+    def make_report(self, threshold=0):
         """
 
         :return:
@@ -329,10 +334,9 @@ class NetTransferCapacityResults(ResultsTemplate):
                                'Beta',
                                'ATC']
 
+        # sort by ATC
         idx = np.argsort(self.atc)
-
         self.report_indices = self.branch_names[idx]
-
         self.report[:, 0] = self.branch_names[idx]
         self.report[:, 1] = self.base_flow[idx]
         self.report[:, 2] = self.rates[idx]
@@ -343,6 +347,12 @@ class NetTransferCapacityResults(ResultsTemplate):
         self.report[:, 7] = self.contingency_rates[idx]
         self.report[:, 8] = self.beta_used[idx]
         self.report[:, 9] = self.atc[idx]
+
+        # trim by abs alpha > threshold
+        loading = np.abs(self.report[:, 1] / self.report[:, 2])
+        idx = np.where((np.abs(self.report[:, 3]) > threshold) & (loading < 1.0))[0]
+        self.report_indices = self.report_indices[idx]
+        self.report = self.report[idx, :]
 
     def get_results_dict(self):
         """
@@ -524,7 +534,7 @@ class NetTransferCapacityDriver(DriverTemplate):
         self.results.rates = nc.Rates
         self.results.contingency_rates = nc.ContingencyRates
 
-        self.results.make_report()
+        self.results.make_report(threshold=self.options.threshold)
 
         end = time.time()
         self.elapsed = end - start
