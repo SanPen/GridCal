@@ -311,6 +311,7 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
             # compute the branch exchange sensitivity (alpha)
             alpha = compute_alpha(ptdf=linear_analysis.PTDF,
                                   P0=P[:, t],  # no problem that there are in p.u., are only used for the sensitivity
+                                  Pinstalled=nc.bus_installed_power,
                                   idx1=self.options.bus_idx_from,
                                   idx2=self.options.bus_idx_to,
                                   bus_types=nc.bus_types_prof(t),

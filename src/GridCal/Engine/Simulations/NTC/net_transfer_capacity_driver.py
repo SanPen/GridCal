@@ -34,12 +34,13 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 class NetTransferMode(Enum):
     Generation = 0
-    Load = 1
-    GenerationAndLoad = 2
+    InstalledPower = 1
+    Load = 2
+    GenerationAndLoad = 3
 
 
 @nb.njit()
-def compute_alpha(ptdf, P0, idx1, idx2, bus_types, dT=1.0, mode=0):
+def compute_alpha(ptdf, P0, Pinstalled, idx1, idx2, bus_types, dT=1.0, mode=0):
     """
     Compute all lines' ATC
     :param ptdf: Power transfer distribution factors (n-branch, n-bus)
@@ -49,9 +50,10 @@ def compute_alpha(ptdf, P0, idx1, idx2, bus_types, dT=1.0, mode=0):
     :param bus_types: Array of bus types {1: pq, 2: pv, 3: slack}
     :param dT: Exchange amount
     :param mode: Type of power shift
-                 0: shift generation
-                 1: shift load
-                 2 (or else): shift using generation and load
+                 0: shift generation based on the current generated power
+                 1: shift generation based on the installed power
+                 2: shift load
+                 3 (or else): shift using generation and load
 
     :return: Exchange sensitivity vector for all the lines
     """
@@ -62,9 +64,9 @@ def compute_alpha(ptdf, P0, idx1, idx2, bus_types, dT=1.0, mode=0):
     # declare the bus injections increment due to the transference
     dP = np.zeros(nbus)
 
-    if mode == 0:  # move the generators --------------------------------------------------
+    if mode == 0:  # move the generators based on the generated power --------------------
 
-        # set the sending power increment proportional to the current power
+        # set the sending power increment proportional to the current power (Area 1)
         n1 = 0.0
         for i in idx1:
             if bus_types[i] == 2 or bus_types[i] == 3:  # it is a PV or slack node
@@ -74,7 +76,7 @@ def compute_alpha(ptdf, P0, idx1, idx2, bus_types, dT=1.0, mode=0):
             if bus_types[i] == 2 or bus_types[i] == 3:  # it is a PV or slack node
                 dP[i] = dT * P0[i] / abs(n1)
 
-        # set the receiving power increment proportional to the current power
+        # set the receiving power increment proportional to the current power (Area 2)
         n2 = 0.0
         for i in idx2:
             if bus_types[i] == 2 or bus_types[i] == 3:  # it is a PV or slack node
@@ -84,9 +86,31 @@ def compute_alpha(ptdf, P0, idx1, idx2, bus_types, dT=1.0, mode=0):
             if bus_types[i] == 2 or bus_types[i] == 3:  # it is a PV or slack node
                 dP[i] = -dT * P0[i] / abs(n2)
 
-    elif mode == 1:  # move the load ------------------------------------------------------
+    elif mode == 1:  # move the generators based on the installed power --------------------
 
-        # set the sending power increment proportional to the current power
+        # set the sending power increment proportional to the current power (Area 1)
+        n1 = 0.0
+        for i in idx1:
+            if bus_types[i] == 2 or bus_types[i] == 3:  # it is a PV or slack node
+                n1 += Pinstalled[i]
+
+        for i in idx1:
+            if bus_types[i] == 2 or bus_types[i] == 3:  # it is a PV or slack node
+                dP[i] = dT * Pinstalled[i] / abs(n1)
+
+        # set the receiving power increment proportional to the current power (Area 2)
+        n2 = 0.0
+        for i in idx2:
+            if bus_types[i] == 2 or bus_types[i] == 3:  # it is a PV or slack node
+                n2 += Pinstalled[i]
+
+        for i in idx2:
+            if bus_types[i] == 2 or bus_types[i] == 3:  # it is a PV or slack node
+                dP[i] = -dT * Pinstalled[i] / abs(n2)
+
+    elif mode == 2:  # move the load ------------------------------------------------------
+
+        # set the sending power increment proportional to the current power (Area 1)
         n1 = 0.0
         for i in idx1:
             if bus_types[i] == 1:  # it is a PV or slack node
@@ -96,7 +120,7 @@ def compute_alpha(ptdf, P0, idx1, idx2, bus_types, dT=1.0, mode=0):
             if bus_types[i] == 1:  # it is a PV or slack node
                 dP[i] = dT * P0[i] / abs(n1)
 
-        # set the receiving power increment proportional to the current power
+        # set the receiving power increment proportional to the current power (Area 2)
         n2 = 0.0
         for i in idx2:
             if bus_types[i] == 1:  # it is a PV or slack node
@@ -466,6 +490,7 @@ class NetTransferCapacityDriver(DriverTemplate):
         # compute the branch exchange sensitivity (alpha)
         alpha = compute_alpha(ptdf=linear.PTDF,
                               P0=nc.Sbus.real,
+                              Pinstalled=nc.bus_installed_power,
                               idx1=idx1b,
                               idx2=idx2b,
                               bus_types=nc.bus_types.astype(np.int),

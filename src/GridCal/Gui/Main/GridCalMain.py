@@ -134,11 +134,12 @@ class MainGUI(QMainWindow):
         # transfer modes
         self.transfer_modes_dict = OrderedDict()
         self.transfer_modes_dict['Area generation'] = sim.NetTransferMode.Generation
+        self.transfer_modes_dict['Area installed power'] = sim.NetTransferMode.InstalledPower
         self.transfer_modes_dict['Area load'] = sim.NetTransferMode.Load
         self.transfer_modes_dict['Area nodes'] = sim.NetTransferMode.GenerationAndLoad
         lst = list(self.transfer_modes_dict.keys())
         self.ui.transferMethodComboBox.setModel(get_list_model(lst))
-        self.ui.transferMethodComboBox.setCurrentIndex(0)
+        self.ui.transferMethodComboBox.setCurrentIndex(1)
 
         self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
                                     '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.zip', '.dpx']
