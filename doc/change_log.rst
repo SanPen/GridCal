@@ -10,12 +10,21 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
-Version 4.1.7
+Version 4.2.0
 ^^^^^^^^^^^^^^^
 
-- Really rare bug with .real and .imag was making HELM diverge. Now it is fixed
-- Added ATC generation scaling based on the installed power
-- Overall usability improvements
+- Added the ability to save the results into the file, loading and unloading from the file. This is a massive feature.
+- Added contingency analysis colouring.
+- Added ATC generation scaling based on the installed power.
+- Added time series bus type series. Now the bus types change upon the generators' availability.
+
+- Better detection of power imbalances in the analysis tool.
+- Finalized the json v3 export implementation.
+
+- Fixed really rare bug with .real and .imag was making HELM diverge. Now it is fixed.
+- Fixed multiple slacks error in PTDF calculations.
+
+- Overall usability improvements.
 
 Version 4.1.2
 ^^^^^^^^^^^^^^^

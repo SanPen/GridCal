@@ -49,8 +49,7 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
                                                      ResultTypes.NetTransferCapacityReport
                                                     ],
                                  data_variables=['alpha',
-                                                 'beta_mat',
-                                                 'beta_used',
+                                                 'beta',
                                                  'atc',
                                                  'atc_n',
                                                  'atc_limiting_contingency_branch',
@@ -64,8 +63,7 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
                                                  'branch_names',
                                                  'bus_names',
                                                  'bus_types',
-                                                 'bus_idx_from',
-                                                 'bus_idx_to'])
+                                                 'branch_names'])
         self.n_br = n_br
         self.n_bus = n_bus
         self.nt = len(time_array)
@@ -82,7 +80,7 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.atc = np.zeros((self.nt, self.n_br))
         self.atc_n = np.zeros((self.nt, self.n_br))
 
-        self.beta_used = np.zeros((self.nt, self.n_br))
+        self.beta = np.zeros((self.nt, self.n_br))
         self.atc_limiting_contingency_branch = np.zeros((self.nt, self.n_br), dtype=int)
         self.atc_limiting_contingency_flow = np.zeros((self.nt, self.n_br))
         self.base_flow = np.zeros((self.nt, self.n_br))
@@ -164,9 +162,9 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
             self.report[i, 16] = self.contingency_rates[:, i].min()
             self.report[i, 17] = self.contingency_rates[:, i].max()
 
-            self.report[i, 18] = self.beta_used[:, i].mean()
-            self.report[i, 19] = self.beta_used[:, i].min()
-            self.report[i, 20] = self.beta_used[:, i].max()
+            self.report[i, 18] = self.beta[:, i].mean()
+            self.report[i, 19] = self.beta[:, i].min()
+            self.report[i, 20] = self.beta[:, i].max()
 
             self.report[i, 21] = self.atc[:, i].mean()
             self.report[i, 22] = self.atc[:, i].min()
@@ -334,7 +332,7 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
             self.results.alpha[t, :] = alpha
             self.results.atc[t, :] = atc_final
             self.results.atc_n[t, :] = atc_n
-            self.results.beta_used[t, :] = beta_used
+            self.results.beta[t, :] = beta_used
             self.results.atc_limiting_contingency_branch[t, :] = atc_limiting_contingency_branch.astype(int)
             self.results.atc_limiting_contingency_flow[t, :] = atc_limiting_contingency_flow
 
