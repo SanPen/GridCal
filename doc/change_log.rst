@@ -23,6 +23,7 @@ Version 4.2.0
 
 - Fixed really rare bug with .real and .imag was making HELM diverge. Now it is fixed.
 - Fixed multiple slacks error in PTDF calculations.
+- Fixed bug where the voltage profiles were not being applied.
 
 - Overall usability improvements.
 
