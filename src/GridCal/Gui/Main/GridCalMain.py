@@ -2871,6 +2871,14 @@ class MainGUI(QMainWindow):
                     idx_from = np.array([i for i, bus in lst_from])
                     idx_to = np.array([i for i, bus in lst_to])
 
+                    if len(idx_from) == 0:
+                        error_msg('The area "from" has no buses!')
+                        return
+
+                    if len(idx_to) == 0:
+                        error_msg('The area "to" has no buses!')
+                        return
+
                     if area_from == area_to:
                         error_msg('Cannot analyze transfer capacity from and to the same area!')
                         return
