@@ -90,6 +90,9 @@ class GeneratorData:
     def get_injections_per_bus(self):
         return self.C_bus_gen * (self.get_injections() * self.generator_active)
 
+    def get_voltages_per_bus(self):
+        return self.C_bus_gen * (self.generator_v * self.generator_active)
+
     def get_installed_power_per_bus(self):
         return self.C_bus_gen * self.generator_installed_p
 

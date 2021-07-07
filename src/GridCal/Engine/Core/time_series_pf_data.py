@@ -68,11 +68,47 @@ class TimeCircuit(SnapshotData):
         self.Sbus_ = self.get_injections(normalize=True)
         self.Ibus_ = np.zeros((len(self.bus_data), self.ntime), dtype=complex)
 
+    def compose_voltage_profile(self):
+
+        """
+
+        :return:
+        """
+
+        """
+        Arrays dimensions: (nbus, ntime)
+        """
+
+        V = self.bus_data.Vbus.copy()
+        Vgen = self.generator_data.get_voltages_per_bus()
+        Vbat = self.battery_data.get_voltages_per_bus()
+
+        for i in range(V.shape[0]):
+            for t in range(V.shape[1]):
+
+                if Vgen[i, t] != 0:
+                    if Vbat[i, t] != 0:
+                        # there is a conflict between the battery and the generator, pick the generator
+                        V[i, t] = Vgen[i, t]
+                    else:
+                        # the battery is zero, pick the generator
+                        V[i, t] = Vgen[i, t]
+                else:
+                    # the generator is zero
+                    if Vbat[i, t] != 0:
+                        # pick the battery
+                        V[i, t] = Vbat[i, t]
+                    else:
+                        # both are zero, skip
+                        pass
+
+        return V
+
     @property
     def Vbus(self):
 
         if self.Vbus_ is None:
-            self.Vbus_ = self.bus_data.Vbus.copy()
+            self.Vbus_ = self.compose_voltage_profile()
 
         return self.Vbus_
 

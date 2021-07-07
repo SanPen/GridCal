@@ -90,6 +90,9 @@ class BatteryData:
     def get_injections_per_bus(self):
         return self.C_bus_batt * (self.get_injections() * self.battery_active)
 
+    def get_voltages_per_bus(self):
+        return self.C_bus_batt * (self.battery_v * self.battery_active)
+
     def get_installed_power_per_bus(self):
         return self.C_bus_batt * self.battery_installed_p
 
