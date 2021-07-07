@@ -14,6 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
+import numba as nb
 import pandas as pd
 from typing import List
 
@@ -29,6 +30,41 @@ import GridCal.Engine.Core.admittance_matrices as ycalc
 from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType
 
 sparse_type = get_sparse_type()
+
+
+@nb.njit()
+def compose_voltage_profile_numba(Vbus, Vgen, Vbat):
+    """
+
+    :return: Voltage array (nbus, ntime)
+    """
+
+    """
+    Arrays dimensions: (nbus, ntime)
+    """
+
+    V = Vbus.copy()
+
+    for i in range(V.shape[0]):
+        for t in range(V.shape[1]):
+
+            if Vgen[i, t] != 0:
+                if Vbat[i, t] != 0:
+                    # there is a conflict between the battery and the generator, pick the generator
+                    V[i, t] = Vgen[i, t]
+                else:
+                    # the battery is zero, pick the generator
+                    V[i, t] = Vgen[i, t]
+            else:
+                # the generator is zero
+                if Vbat[i, t] != 0:
+                    # pick the battery
+                    V[i, t] = Vbat[i, t]
+                else:
+                    # both are zero, skip
+                    pass
+
+    return V
 
 
 class SnapshotData:
@@ -497,11 +533,23 @@ class SnapshotData:
     def dc_line_idx(self):
         return slice(self.nline + self.ntr + self.nvsc, self.nline + self.ntr + self.nvsc + self.ndcline, 1)
 
+    def compose_voltage_profile(self):
+        """
+        Compose the voltage initial profile from the devices
+        :return: Voltage array (nbus, ntime)
+        """
+
+        V = compose_voltage_profile_numba(Vbus=self.bus_data.Vbus,
+                                          Vgen=self.generator_data.get_voltages_per_bus(),
+                                          Vbat=self.battery_data.get_voltages_per_bus())
+
+        return V
+
     @property
     def Vbus(self):
 
         if self.Vbus_ is None:
-            self.Vbus_ = self.bus_data.Vbus.copy()
+            self.Vbus_ = self.compose_voltage_profile()
 
         return self.Vbus_[:, 0]
 
