@@ -91,7 +91,11 @@ class BatteryData:
         return self.C_bus_batt * (self.get_injections() * self.battery_active)
 
     def get_voltages_per_bus(self):
-        return self.C_bus_batt * (self.battery_v * self.battery_active)
+        n_per_bus = self.C_bus_batt.sum(axis=1)
+        n_per_bus[n_per_bus == 0] = 1
+        # the division by n_per_bus achieves the averaging of the voltage control
+        # value if more than 1 battery is present per bus
+        return self.C_bus_batt * (self.battery_v * self.battery_active) / n_per_bus
 
     def get_installed_power_per_bus(self):
         return self.C_bus_batt * self.battery_installed_p

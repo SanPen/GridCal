@@ -91,7 +91,11 @@ class GeneratorData:
         return self.C_bus_gen * (self.get_injections() * self.generator_active)
 
     def get_voltages_per_bus(self):
-        return self.C_bus_gen * (self.generator_v * self.generator_active)
+        n_per_bus = self.C_bus_gen.sum(axis=1)
+        n_per_bus[n_per_bus == 0] = 1  # replace the zeros by 1 to be able to divide
+        # the division by n_per_bus achieves the averaging of the voltage control
+        # value if more than 1 battery is present per bus
+        return self.C_bus_gen * (self.generator_v * self.generator_active) / n_per_bus
 
     def get_installed_power_per_bus(self):
         return self.C_bus_gen * self.generator_installed_p
