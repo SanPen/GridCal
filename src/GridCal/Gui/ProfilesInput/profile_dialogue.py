@@ -326,7 +326,13 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
             # Depending on the extension load the file
             if file_extension == '.csv':
-                self.original_data_frame = pd.read_csv(filename, index_col=0)
+                try:
+                    self.original_data_frame = pd.read_csv(filename, index_col=0)
+                except UnicodeDecodeError:
+                    try:
+                        self.original_data_frame = pd.read_csv(filename, index_col=0, encoding='windows-1252')
+                    except Exception as e:
+                        self.msg(str(e))
 
             elif file_extension in ['.xlsx', '.xls']:
 
@@ -346,6 +352,15 @@ class ProfileInputGUI(QtWidgets.QDialog):
             try:
                 self.original_data_frame = self.original_data_frame.astype(float)
             except:
+
+                # run the diagnostic
+                for i in range(self.original_data_frame.shape[0]):
+                    for j in range(self.original_data_frame.shape[1]):
+                        try:
+                            a = float(self.original_data_frame.values[i, j])
+                        except:
+                            print('not a float value (', i, j, '):', self.original_data_frame.values[i, j])
+
                 self.msg('The format of the data is not recognized. Only int or float values are allowed')
                 return
 

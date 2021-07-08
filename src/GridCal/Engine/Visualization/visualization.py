@@ -324,7 +324,6 @@ def get_base_map(location, zoom_start=5):
     folium.TileLayer('cartodbpositron').add_to(my_map)
     folium.TileLayer('cartodbdark_matter').add_to(my_map)
     folium.TileLayer('openstreetmap').add_to(my_map)
-    folium.TileLayer('Mapbox Bright').add_to(my_map)
     folium.TileLayer('stamentoner').add_to(my_map)
 
     # add markers layer
