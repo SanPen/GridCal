@@ -23,17 +23,26 @@
    <iconset resource="icons.qrc">
     <normaloff>:/Program icon/GridCal_icon.svg</normaloff>:/Program icon/GridCal_icon.svg</iconset>
   </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
   <property name="iconSize">
    <size>
-    <width>24</width>
-    <height>24</height>
+    <width>48</width>
+    <height>48</height>
    </size>
+  </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonIconOnly</enum>
   </property>
   <property name="documentMode">
    <bool>false</bool>
   </property>
   <property name="tabShape">
    <enum>QTabWidget::Rounded</enum>
+  </property>
+  <property name="dockNestingEnabled">
+   <bool>false</bool>
   </property>
   <property name="unifiedTitleAndToolBarOnMac">
    <bool>false</bool>

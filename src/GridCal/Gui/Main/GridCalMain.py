@@ -55,6 +55,8 @@ from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.__version__ import __GridCal_VERSION__, about_msg
 from GridCal.update import check_version, get_upgrade_command
 
+
+
 __author__ = 'Santiago Peñate Vera'
 
 """

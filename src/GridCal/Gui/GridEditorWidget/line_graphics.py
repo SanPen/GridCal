@@ -62,6 +62,9 @@ class LineEditor(QDialog):
         Ybase = 1 / Zbase
         length = self.line.length
 
+        if length == 0:
+            length = 1.0
+
         R = self.line.R * Zbase / length
         X = self.line.X * Zbase / length
         B = self.line.B * Ybase / length
