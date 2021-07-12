@@ -23,15 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed line editor not updating the length">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed the icon display under windows">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/line_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/line_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/ConsoleLog.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/ConsoleLog.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/banner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/banner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/SigmaAnalysis/sigma_analysis_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/SigmaAnalysis/sigma_analysis_driver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -559,14 +553,7 @@
       <workItem from="1625749875528" duration="516000" />
       <workItem from="1625764769053" duration="4797000" />
       <workItem from="1625827412259" duration="679000" />
-      <workItem from="1626122245940" duration="1604000" />
-    </task>
-    <task id="LOCAL-00104" summary="Fixed tests">
-      <created>1617046620764</created>
-      <option name="number" value="00104" />
-      <option name="presentableId" value="LOCAL-00104" />
-      <option name="project" value="LOCAL" />
-      <updated>1617046620764</updated>
+      <workItem from="1626122245940" duration="2244000" />
     </task>
     <task id="LOCAL-00105" summary="Added PGD v1">
       <created>1617050566781</created>
@@ -904,7 +891,14 @@
       <option name="project" value="LOCAL" />
       <updated>1626122714452</updated>
     </task>
-    <option name="localTasksCounter" value="153" />
+    <task id="LOCAL-00153" summary="Fixed the icon display under windows">
+      <created>1626124810212</created>
+      <option name="number" value="00153" />
+      <option name="presentableId" value="LOCAL-00153" />
+      <option name="project" value="LOCAL" />
+      <updated>1626124810212</updated>
+    </task>
+    <option name="localTasksCounter" value="154" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -928,7 +922,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added changelog info" />
     <MESSAGE value="made the device plots more robust" />
     <MESSAGE value="Added ATC research script, Added two new grids" />
     <MESSAGE value="changed linear icons&#10;Created ATC drivers (WIP)" />
@@ -953,7 +946,8 @@
     <MESSAGE value="Fixed the Setup for the new pypi requirements" />
     <MESSAGE value="Improved the CSV import&#10;Fixed some maps" />
     <MESSAGE value="Fixed line editor not updating the length" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed line editor not updating the length" />
+    <MESSAGE value="Fixed the icon display under windows" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed the icon display under windows" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -995,7 +989,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>979</line>
+          <line>981</line>
           <option name="timeStamp" value="161" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1045,7 +1039,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>4847</line>
+          <line>4849</line>
           <option name="timeStamp" value="303" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1241,12 +1235,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>2469</line>
+          <line>2471</line>
           <option name="timeStamp" value="698" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>2111</line>
+          <line>2113</line>
           <option name="timeStamp" value="717" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1360,7 +1354,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research2_py.coverage" NAME="Nosetests in PTDF_research2.py Coverage Results" MODIFIED="1600161918846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$time_series.coverage" NAME="time_series Coverage Results" MODIFIED="1617809423186" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Tutorials" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_power_flow_py.coverage" NAME="Nosetests in test_power_flow.py Coverage Results" MODIFIED="1617046155983" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1626124425245" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1626124863544" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$binary_ga.coverage" NAME="binary_ga Coverage Results" MODIFIED="1615226727819" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_matrix_slicing_py.coverage" NAME="Nosetests in test_matrix_slicing.py Coverage Results" MODIFIED="1609500376313" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$psse_parser.coverage" NAME="psse_parser Coverage Results" MODIFIED="1594285082315" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />

@@ -93,11 +93,15 @@ class SigmaAnalysisResults:
 
         ax.plot(sx, sy1, 'k', linewidth=2)
         ax.plot(sx, sy2, 'k', linewidth=2)
-        # sc = ax.plot(self.sigma_re, self.sigma_im, 'o')
 
-        sc = ax.scatter(self.sigma_re, self.sigma_im, s=100)
+        d = np.abs(np.nan_to_num(self.distances))
+        colors = (d / d.max())
+        area = 100.0 * np.power(1.0 + d, 2)
 
-        annot = ax.annotate("", xy=(0, 0), xytext=(20, 20), textcoords="offset points",
+        sc = ax.scatter(self.sigma_re, self.sigma_im, c=colors, s=area, cmap='winter', alpha=0.75)
+
+        annot = ax.annotate("", xy=(0, 0), xytext=(20, 20),
+                            textcoords="offset points",
                             bbox=dict(boxstyle="round", fc="w"),
                             arrowprops=dict(arrowstyle="->"))
         annot.set_visible(False)
