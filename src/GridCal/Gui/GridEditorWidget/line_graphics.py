@@ -179,11 +179,11 @@ class LineEditor(QDialog):
         Set the values
         :return:
         """
-        l = self.l_spinner.value()
+        length = self.l_spinner.value()
         I = self.i_spinner.value()
-        R = self.r_spinner.value() * l
-        X = self.x_spinner.value() * l
-        B = self.b_spinner.value() * l
+        R = self.r_spinner.value() * length
+        X = self.x_spinner.value() * length
+        B = self.b_spinner.value() * length
 
         Vf = self.line.bus_from.Vnom
         Vt = self.line.bus_to.Vnom
@@ -195,6 +195,7 @@ class LineEditor(QDialog):
         self.line.X = np.round(X / Zbase, 6)
         self.line.B = np.round(B / Ybase, 6)
         self.line.rate = np.round(I * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV
+        self.line.length = length
 
         if self.selected_template is not None:
             self.line.template = self.selected_template
