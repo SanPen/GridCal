@@ -154,35 +154,47 @@ def add_dc_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem: LpPro
 
 def add_branch_loading_restriction(problem: LpProblem,
                                    theta_f, theta_t, Bseries,
-                                   Fmax, FSlack1, FSlack2):
+                                   ratings, ratings_slack_from, ratings_slack_to):
     """
     Add the branch loading restrictions
     :param problem: LpProblem instance
     :param theta_f: voltage angles at the "from" side of the branches (m, nt)
     :param theta_t: voltage angles at the "to" side of the branches (m, nt)
     :param Bseries: Array of branch susceptances (m)
-    :param Fmax: Array of branch ratings (m, nt)
-    :param FSlack1: Array of branch loading slack variables in the from-to sense
-    :param FSlack2: Array of branch loading slack variables in the to-from sense
+    :param ratings: Array of branch ratings (m, nt)
+    :param ratings_slack_from: Array of branch loading slack variables in the from-to sense
+    :param ratings_slack_to: Array of branch loading slack variables in the to-from sense
     :return: Nothing
     """
-
-    load_f = Bseries * (theta_f - theta_t)
-    load_t = Bseries * (theta_t - theta_f)
+    m = ratings_slack_to.shape[1]
 
     # from-to branch power restriction
-    lpAddRestrictions2(problem=problem,
-                       lhs=load_f,
-                       rhs=np.array([Fmax[:, i] + FSlack1[:, i] for i in range(FSlack1.shape[1])]).transpose(),  # Fmax + FSlack1
-                       name='from_to_branch_rate',
-                       op='<=')
+    load_f = Bseries * (theta_f - theta_t)
+    # lpAddRestrictions2(problem=problem,
+    #                    lhs=load_f,
+    #                    rhs=np.array([ratings[:, i] + ratings_slack_from[:, i] for i in range(m)]).transpose(),  # Fmax + FSlack1
+    #                    name='from_to_branch_rate1',
+    #                    op='<=')
+    # lpAddRestrictions2(problem=problem,
+    #                    lhs=load_f,
+    #                    rhs=np.array([-ratings[:, i] - ratings_slack_to[:, i] for i in range(m)]).transpose(),
+    #                    # Fmax + FSlack1
+    #                    name='from_to_branch_rate2',
+    #                    op='>=')
+
+    lpAddRestrictions3(problem=problem,
+                       lhs=np.array([-ratings[:, i] - ratings_slack_to[:, i] for i in range(m)]).transpose(),
+                       var=load_f,
+                       rhs=np.array([ratings[:, i] + ratings_slack_from[:, i] for i in range(m)]).transpose(),
+                       name='2_side_branch_rate')
 
     # to-from branch power restriction
-    lpAddRestrictions2(problem=problem,
-                       lhs=load_t,
-                       rhs=np.array([Fmax[:, i] + FSlack2[:, i] for i in range(FSlack2.shape[1])]).transpose(),  # Fmax + FSlack2
-                       name='to_from_branch_rate',
-                       op='<=')
+    load_t = Bseries * (theta_t - theta_f)
+    # lpAddRestrictions2(problem=problem,
+    #                    lhs=load_t,
+    #                    rhs=np.array([ratings[:, i] + ratings_slack_to[:, i] for i in range(m)]).transpose(),  # Fmax + FSlack2
+    #                    name='to_from_branch_rate',
+    #                    op='<=')
 
     return load_f, load_t
 

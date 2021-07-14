@@ -319,8 +319,8 @@ class DiagramScene(QGraphicsScene):
                                 loading_data[key.value] = np.sort(np.abs(driver.results.worst_loading.real[:, i] * 100.0))
 
                             elif key == SimulationTypes.OPFTimeSeries_run:
-                                power_data[key.value] = driver.results.Sf[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.loading[:, i] * 100.0))
+                                power_data[key.value] = driver.results.Sf.real[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
 
                             elif key == SimulationTypes.StochasticPowerFlow:
                                 loading_st_data = np.sort(np.abs(driver.results.loading_points.real[:, i] * 100.0))
