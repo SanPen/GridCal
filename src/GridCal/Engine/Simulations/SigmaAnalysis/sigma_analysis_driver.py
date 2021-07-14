@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
+import numba as nb
 from matplotlib import pyplot as plt
 from PySide2.QtCore import QThread, Signal
 
@@ -233,7 +234,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
                 Sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.vd])
                 Sig_re[calculation_input.pqpv] = np.real(Sigma)
                 Sig_im[calculation_input.pqpv] = np.imag(Sigma)
-                sigma_distances = np.abs(sigma_distance(Sig_re, Sig_im))
+                sigma_distances = sigma_distance(Sig_re, Sig_im)
 
                 # store the results
                 island_results = SigmaAnalysisResults(n=len(calculation_input.Vbus))
@@ -275,7 +276,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
             Sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.vd])
             Sig_re[calculation_input.pqpv] = np.real(Sigma)
             Sig_im[calculation_input.pqpv] = np.imag(Sigma)
-            sigma_distances = np.abs(sigma_distance(Sig_re, Sig_im))
+            sigma_distances = sigma_distance(Sig_re, Sig_im)
 
             # store the results
             island_results = SigmaAnalysisResults(n=len(calculation_input.Vbus))
@@ -292,7 +293,8 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
     return results
 
 
-def sigma_distance(a, b):
+@nb.jit()
+def sigma_distance(sigma_real, sigma_imag):
     """
     Distance to the collapse in the sigma space
 
@@ -317,20 +319,43 @@ def sigma_distance(a, b):
          (192 (-64 a^3 + 48 a^2
                + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2)
                - 12 a + 216 b^2 + 1)^(1/3)) + 1/12 (8 a - 5)
-    :param a: Sigma real
-    :param b: Sigma imag
+    :param sigma_real: Sigma real array
+    :param sigma_imag: Sigma imag array
     :return: distance of the sigma point to the curve sqrt(0.25 + x)
     """
+    n = len(sigma_real)
+    x1 = np.zeros(n)
 
-    t1 = (-64 * a**3
-          + 48 * a**2
-          + 12 * np.sqrt(3)*np.sqrt(-64 * a**3 * b**2
-                                    + 48 * a**2 * b**2
-                                    - 12 * a * b**2
-                                    + 108 * b**4 + b**2)
-          - 12 * a + 216 * b**2 + 1)**(1 / 3)
+    i = 0
+    sq3 = np.sqrt(3)
 
-    x1 = 1 / 12 * t1 - (-256 * a**2 + 128*a - 16) / (192 * t1) + 1 / 12 * (8 * a - 5)
+    for a, b in zip(sigma_real, sigma_imag):
+
+        t0 = -64 * a ** 3 * b ** 2 \
+             + 48 * a ** 2 * b ** 2 \
+             - 12 * a * b ** 2 \
+             + 108 * b ** 4 + b ** 2
+
+        if t0 > 0:
+
+            t1 = (-64 * a**3
+                  + 48 * a**2
+                  + 12 * sq3 * np.sqrt(t0)
+                  - 12 * a + 216 * b**2 + 1)**(1 / 3)
+
+            # the value is within limits
+            x1[i] = 1 / 12 * t1 - (-256 * a**2 + 128 * a - 16) / (192 * t1) + 1 / 12 * (8 * a - 5)
+        else:
+            t1 = (-64 * a ** 3
+                  + 48 * a ** 2
+                  + 12 * sq3 * np.sqrt(-t0)
+                  - 12 * a + 216 * b ** 2 + 1) ** (1 / 3)
+
+            # here I set the value negative to indicate that it is off-limits
+            x1[i] = -(1 / 12 * t1 - (-256 * a**2 + 128 * a - 16) / (192 * t1) + 1 / 12 * (8 * a - 5))
+
+        i += 1
+
     return x1
 
 

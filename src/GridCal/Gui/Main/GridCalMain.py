@@ -2307,9 +2307,11 @@ class MainGUI(QMainWindow):
 
                 if use_opf:
 
-                    if self.optimal_power_flow is not None:
-                        if self.optimal_power_flow.results is not None:
-                            opf_results = self.optimal_power_flow.results
+                    drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_run)
+
+                    if drv is not None:
+                        if results is not None:
+                            opf_results = results
                         else:
                             warning_msg('There are no OPF results, '
                                         'therefore this operation will not use OPF information.')

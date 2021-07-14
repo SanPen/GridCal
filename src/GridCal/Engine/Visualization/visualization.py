@@ -323,8 +323,12 @@ def get_base_map(location, zoom_start=5):
     # add possible tiles
     folium.TileLayer('cartodbpositron').add_to(my_map)
     folium.TileLayer('cartodbdark_matter').add_to(my_map)
-    folium.TileLayer('openstreetmap').add_to(my_map)
+    # folium.TileLayer('openstreetmap').add_to(my_map)
     folium.TileLayer('stamentoner').add_to(my_map)
+    folium.WmsTileLayer(url='https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+                        layers='Esri_WorldGray',
+                        attr='Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
+                        ).add_to(my_map)
 
     # add markers layer
     marker_cluster = MarkerCluster().add_to(my_map)
