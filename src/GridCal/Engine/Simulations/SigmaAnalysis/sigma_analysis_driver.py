@@ -15,7 +15,6 @@
 import numpy as np
 import numba as nb
 from matplotlib import pyplot as plt
-from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
@@ -24,6 +23,8 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_coefficients_josep, sigma_function
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 
 class SigmaAnalysisResults:
@@ -359,11 +360,9 @@ def sigma_distance(sigma_real, sigma_imag):
     return x1
 
 
-class SigmaAnalysisDriver(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class SigmaAnalysisDriver(DriverTemplate):
     name = 'Sigma Analysis'
+    tpe = SimulationTypes.SigmaAnalysis_run
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
         """
@@ -371,11 +370,7 @@ class SigmaAnalysisDriver(QThread):
         :param grid: MultiCircuit instance
         :param options: PowerFlowOptions instance
         """
-
-        QThread.__init__(self)
-
-        # Grid to run a power flow in
-        self.grid = grid
+        DriverTemplate.__init__(self, grid=grid)
 
         # Options to use
         self.options = options

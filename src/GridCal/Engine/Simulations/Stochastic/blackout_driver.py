@@ -16,7 +16,6 @@
 from enum import Enum
 import pandas as pd
 import numpy as np
-from PySide2.QtCore import QThread, Signal
 
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
@@ -26,6 +25,7 @@ from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_driver import S
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, TimeCircuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 
 class CascadeType(Enum):
@@ -94,10 +94,7 @@ class CascadingResults:
         pass
 
 
-class Cascading(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class Cascading(DriverTemplate):
     tpe = SimulationTypes.Cascade_run
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, triggering_idx=None, max_additional_islands=1,
@@ -113,11 +110,9 @@ class Cascading(QThread):
             n_lhs_samples_: number of latin hypercube samples if using LHS cascade
         """
 
-        QThread.__init__(self)
+        DriverTemplate.__init__(self, grid=grid)
 
         self.name = 'Cascading'
-
-        self.grid = grid
 
         self.options = options
 

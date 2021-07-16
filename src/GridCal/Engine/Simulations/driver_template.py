@@ -52,6 +52,9 @@ class DriverTemplate:
     def get_steps(self):
         return list()
 
+    def run(self):
+        pass
+
     def cancel(self):
         """
         Cancel the simulation

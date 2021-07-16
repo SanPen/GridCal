@@ -17,7 +17,7 @@ import pandas as pd
 # from networkx import DiGraph, all_simple_paths, Graph, all_pairs_dijkstra_path_length
 import networkx as nx
 from scipy.sparse import lil_matrix, csc_matrix
-from PySide2.QtCore import QThread, Signal
+
 from typing import List
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import Normalizer
@@ -27,6 +27,7 @@ from GridCal.Engine.Devices.branch import BranchType
 from GridCal.Engine.Devices.bus import Bus
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -265,10 +266,7 @@ class TopologyReductionOptions:
         self.selected_type = selected_types
 
 
-class TopologyReduction(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class TopologyReduction(DriverTemplate):
     tpe = SimulationTypes.TopologyReduction_run
 
     def __init__(self, grid: MultiCircuit, branch_indices):
@@ -277,9 +275,7 @@ class TopologyReduction(QThread):
         :param grid: MultiCircuit instance
         :param options:
         """
-        QThread.__init__(self)
-
-        self.grid = grid
+        DriverTemplate.__init__(self, grid=grid)
 
         self.br_to_remove = branch_indices
 
@@ -326,10 +322,7 @@ class TopologyReduction(QThread):
         self.done_signal.emit()
 
 
-class DeleteAndReduce(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class DeleteAndReduce(DriverTemplate):
 
     def __init__(self, grid: MultiCircuit, objects, sel_idx):
         """
@@ -338,9 +331,7 @@ class DeleteAndReduce(QThread):
         :param objects: list of objects to reduce (buses in this cases)
         :param sel_idx: indices
         """
-        QThread.__init__(self)
-
-        self.grid = grid
+        DriverTemplate.__init__(self, grid=grid)
 
         self.objects = objects
 
@@ -383,10 +374,7 @@ class DeleteAndReduce(QThread):
         self.done_signal.emit()
 
 
-class NodeGroupsDriver(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class NodeGroupsDriver(DriverTemplate):
 
     def __init__(self, grid: MultiCircuit, sigmas=0.5, min_group_size=2, ptdf_results: LinearAnalysisResults = None):
         """
@@ -394,7 +382,7 @@ class NodeGroupsDriver(QThread):
         :param grid: MultiCircuit instance
         :param sigmas: number of standard deviations to consider
         """
-        QThread.__init__(self)
+        DriverTemplate.__init__(self, grid=grid)
 
         self.grid = grid
 

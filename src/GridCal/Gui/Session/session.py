@@ -87,7 +87,6 @@ class GcThread(QThread):
         return list()
 
     def run(self):
-
         self.progress_signal.emit(0.0)
 
         self.driver.run()

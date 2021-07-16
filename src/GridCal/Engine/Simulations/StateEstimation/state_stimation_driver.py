@@ -14,12 +14,12 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-from PySide2.QtCore import QRunnable
 
 from GridCal.Engine.Simulations.StateEstimation.state_estimation import solve_se_lm
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults, power_flow_post_process
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Devices.measurement import MeasurementType
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 
 class StateEstimationInput:
@@ -130,7 +130,7 @@ class StateEstimationResults(PowerFlowResults):
                                   bus_types=bus_types)
 
 
-class StateEstimation(QRunnable):
+class StateEstimation(DriverTemplate):
 
     def __init__(self, circuit: MultiCircuit):
         """
@@ -138,9 +138,7 @@ class StateEstimation(QRunnable):
         :param circuit: circuit object
         """
 
-        QRunnable.__init__(self)
-
-        self.grid = circuit
+        DriverTemplate.__init__(self, grid=circuit)
 
         self.se_results = None
 
