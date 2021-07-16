@@ -51,6 +51,7 @@ from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
+from GridCal.Gui.Session.session import SimulationSession
 
 from GridCal.__version__ import __GridCal_VERSION__, about_msg
 from GridCal.update import check_version, get_upgrade_command
@@ -255,7 +256,7 @@ class MainGUI(QMainWindow):
         self.ui.progress_frame.setVisible(self.lock_ui)
 
         # simulations session
-        self.session: sim.SimulationSession = sim.SimulationSession(name='GUI session')
+        self.session: SimulationSession = SimulationSession(name='GUI session')
 
         # threads
         self.painter = None
@@ -583,6 +584,19 @@ class MainGUI(QMainWindow):
             self.LOCK(False)
 
     def get_simulation_threads(self):
+        """
+        Get all threads that has to do with simulation
+        :return: list of simulation threads
+        """
+
+        all_threads = list(self.session.threads.values())
+
+        # as a side effect the circuit should know about these for accessing to the results via the objects themselves
+        self.circuit.results_dictionary = {thr.tpe: thr for thr in all_threads if thr is not None}
+
+        return all_threads
+
+    def get_simulations(self):
         """
         Get all threads that has to do with simulation
         :return: list of simulation threads
@@ -1368,7 +1382,7 @@ class MainGUI(QMainWindow):
                     if ok:
                         self.save_file_thread_object.quit()
 
-            simulation_drivers = self.get_simulation_threads()
+            simulation_drivers = self.get_simulations()
 
             if self.ui.saveResultsCheckBox.isChecked():
                 sessions = [self.session]
@@ -2330,13 +2344,10 @@ class MainGUI(QMainWindow):
                 # set power flow object instance
                 drv = sim.PowerFlowDriver(self.circuit, options, opf_results)
 
-                self.session.register(driver=drv)
-
-                drv.progress_signal.connect(self.ui.progressBar.setValue)
-                drv.progress_text.connect(self.ui.progress_label.setText)
-                drv.done_signal.connect(self.UNLOCK)
-                drv.done_signal.connect(self.post_power_flow)
-                drv.start()
+                self.session.run(drv,
+                                 post_func=self.post_power_flow,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
 
             else:
                 warning_msg('Another simulation of the same type is running...')
@@ -2445,14 +2456,10 @@ class MainGUI(QMainWindow):
                                                      options=sc_options,
                                                      pf_options=pf_options,
                                                      pf_results=pf_results)
-
-                        self.session.register(drv)
-
-                        drv.progress_signal.connect(self.ui.progressBar.setValue)
-                        drv.progress_text.connect(self.ui.progress_label.setText)
-                        drv.done_signal.connect(self.UNLOCK)
-                        drv.done_signal.connect(self.post_short_circuit)
-                        drv.start()
+                        self.session.run(drv,
+                                         post_func=self.post_short_circuit,
+                                         prog_func=self.ui.progressBar.setValue,
+                                         text_func=self.ui.progress_label.setText)
 
                 else:
                     info_msg('Run a power flow simulation first.\n'
@@ -2514,16 +2521,10 @@ class MainGUI(QMainWindow):
 
                     drv = sim.LinearAnalysisDriver(grid=self.circuit, options=options)
 
-                    self.session.register(drv)
-
-                    self.ui.progress_label.setText('Running PTDF...')
-                    QtGui.QGuiApplication.processEvents()
-
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_linear_analysis)
-
-                    drv.start()
+                    self.session.run(drv,
+                                     post_func=self.post_linear_analysis,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
             else:
                 warning_msg('Another PTDF is being executed now...')
         else:
@@ -2577,16 +2578,10 @@ class MainGUI(QMainWindow):
                                                        start_=start_,
                                                        end_=end_)
 
-                    self.session.register(drv)
-
-                    self.ui.progress_label.setText('Running PTDF time series...')
-                    QtGui.QGuiApplication.processEvents()
-
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_linear_analysis_ts)
-
-                    drv.start()
+                    self.session.run(drv,
+                                     post_func=self.post_linear_analysis_ts,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
                 else:
                     warning_msg('Another PTDF time series is being executed now...')
             else:
@@ -2649,11 +2644,10 @@ class MainGUI(QMainWindow):
 
                 drv = sim.ContingencyAnalysisDriver(grid=self.circuit, options=options)
 
-                self.session.register(drv)
-                drv.progress_signal.connect(self.ui.progressBar.setValue)
-                drv.progress_text.connect(self.ui.progress_label.setText)
-                drv.done_signal.connect(self.post_contingency_analysis)
-                drv.start()
+                self.session.run(drv,
+                                 post_func=self.post_contingency_analysis,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
             else:
                 warning_msg('Another contingency analysis is being executed now...')
         else:
@@ -2718,11 +2712,10 @@ class MainGUI(QMainWindow):
 
                     drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit, options=options)
 
-                    self.session.register(drv)
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_contingency_analysis_ts)
-                    drv.start()
+                    self.session.run(drv,
+                                     post_func=self.post_contingency_analysis_ts,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
                 else:
                     warning_msg('Another LODF is being executed now...')
             else:
@@ -2815,11 +2808,10 @@ class MainGUI(QMainWindow):
                 drv = sim.NetTransferCapacityDriver(grid=self.circuit,
                                                     options=options)
 
-                self.session.register(drv)
-                drv.progress_signal.connect(self.ui.progressBar.setValue)
-                drv.progress_text.connect(self.ui.progress_label.setText)
-                drv.done_signal.connect(self.post_available_transfer_capacity)
-                drv.start()
+                self.session.run(drv,
+                                 post_func=self.post_available_transfer_capacity,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
                 self.add_simulation(sim.SimulationTypes.NetTransferCapacity_run)
                 self.LOCK()
 
@@ -2903,11 +2895,10 @@ class MainGUI(QMainWindow):
                                                                   start_=start_,
                                                                   end_=end_)
 
-                    self.session.register(drv)
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_available_transfer_capacity_ts)
-                    drv.start()
+                    self.session.run(drv,
+                                     post_func=self.post_available_transfer_capacity_ts,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
                     self.add_simulation(sim.SimulationTypes.NetTransferCapacityTS_run)
                     self.LOCK()
 
@@ -3072,15 +3063,10 @@ class MainGUI(QMainWindow):
                                                               options=vc_options,
                                                               inputs=vc_inputs,
                                                               pf_options=pf_options)
-                        self.session.register(drv)
-
-                        # make connections
-                        drv.progress_signal.connect(self.ui.progressBar.setValue)
-                        drv.progress_text.connect(self.ui.progress_label.setText)
-                        drv.done_signal.connect(self.post_continuation_power_flow)
-
-                        # thread start
-                        drv.start()
+                        self.session.run(drv,
+                                         post_func=self.post_continuation_power_flow,
+                                         prog_func=self.ui.progressBar.setValue,
+                                         text_func=self.ui.progress_label.setText)
 
                     elif use_profiles:
                         '''
@@ -3107,15 +3093,10 @@ class MainGUI(QMainWindow):
                                                                   options=vc_options,
                                                                   inputs=vc_inputs,
                                                                   pf_options=pf_options)
-                            self.session.register(drv)
-
-                            # make connections
-                            drv.progress_signal.connect(self.ui.progressBar.setValue)
-                            drv.progress_text.connect(self.ui.progress_label.setText)
-                            drv.done_signal.connect(self.post_continuation_power_flow)
-
-                            # thread start
-                            drv.start()
+                            self.session.run(drv,
+                                             post_func=self.post_continuation_power_flow,
+                                             prog_func=self.ui.progressBar.setValue,
+                                             text_func=self.ui.progress_label.setText)
                         else:
                             info_msg('Check the selected start and finnish time series indices.')
                 else:
@@ -3199,14 +3180,11 @@ class MainGUI(QMainWindow):
                                          opf_time_series_results=opf_time_series_results,
                                          start_=start,
                                          end_=end)
-                    self.session.register(drv)
 
-                    # Set the time series run options
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_time_series)
-
-                    drv.start()
+                    self.session.run(drv,
+                                     post_func=self.post_time_series,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
 
                 else:
                     warning_msg('There are no time series.', 'Time series')
@@ -3294,14 +3272,11 @@ class MainGUI(QMainWindow):
                                                    start_=start,
                                                    end_=end,
                                                    cluster_number=cluster_number)
-                    self.session.register(drv)
 
-                    # Set the time series run options
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_clustering_time_series)
-
-                    drv.start()
+                    self.session.run(drv,
+                                     post_func=self.post_clustering_time_series,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
 
                 else:
                     warning_msg('There are no time series.', 'Time series')
@@ -3381,12 +3356,10 @@ class MainGUI(QMainWindow):
                                                         batch_size=100,
                                                         sampling_points=max_iter,
                                                         simulation_type=simulation_type)
-                    self.session.register(drv)
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_stochastic)
-
-                    drv.start()
+                    self.session.run(drv,
+                                     post_func=self.post_stochastic,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
                 else:
                     warning_msg('There are no time series.')
 
@@ -3448,7 +3421,11 @@ class MainGUI(QMainWindow):
                 options.solver_type = bs.SolverType.LM
                 max_isl = self.ui.cascading_islands_spinBox.value()
                 drv = sim.Cascading(self.circuit.copy(), options, max_additional_islands=max_isl)
-                self.session.register(drv)
+
+                self.session.run(drv,
+                                 post_func=self.post_cascade,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
 
             self.cascade.perform_step_run()
 
@@ -3481,12 +3458,10 @@ class MainGUI(QMainWindow):
                                     max_additional_islands=max_isl,
                                     n_lhs_samples_=n_lsh_samples)
 
-                self.session.register(drv)
-
-                # connect signals
-                drv.progress_signal.connect(self.ui.progressBar.setValue)
-                drv.progress_text.connect(self.ui.progress_label.setText)
-                drv.done_signal.connect(self.post_cascade)
+                self.session.run(drv,
+                                 post_func=self.post_cascade,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
 
                 # run
                 drv.start()
@@ -3584,12 +3559,10 @@ class MainGUI(QMainWindow):
                 # set power flow object instance
                 drv = sim.OptimalPowerFlow(self.circuit, options, pf_options)
 
-                self.session.register(drv)
-                drv.progress_signal.connect(self.ui.progressBar.setValue)
-                drv.progress_text.connect(self.ui.progress_label.setText)
-                drv.done_signal.connect(self.post_opf)
-
-                drv.start()
+                self.session.run(drv,
+                                 post_func=self.post_opf,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
 
             else:
                 warning_msg('Another OPF is being run...')
@@ -3671,15 +3644,10 @@ class MainGUI(QMainWindow):
                                                          start_=start,
                                                          end_=end)
 
-                    self.session.register(drv)
-
-                    # make the thread connections to the GUI
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_opf_time_series)
-
-                    # Run
-                    drv.start()
+                    self.session.run(drv,
+                                     post_func=self.post_opf_time_series,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
 
                 else:
                     warning_msg('There are no time series.\nLoad time series are needed for this simulation.')
@@ -4112,7 +4080,7 @@ class MainGUI(QMainWindow):
         """
         lst = list()
 
-        for drv in self.get_simulation_threads():
+        for drv in self.get_simulations():
             if drv is not None:
                 if hasattr(drv, 'results'):
                     if drv.results is not None:

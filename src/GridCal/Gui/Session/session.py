@@ -13,6 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 from uuid import uuid4
+from PySide2.QtCore import QThread, Signal
+from typing import List
+import numpy as np
 
 # Module imports
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
@@ -30,6 +33,8 @@ from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeriesRe
 from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_driver import ShortCircuitResults
 from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_results import StochasticPowerFlowResults
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.basic_structures import Logger
 
 
 def get_results_object_dictionary():
@@ -55,6 +60,51 @@ def get_results_object_dictionary():
     return {tpe.value: (elm, tpe) for elm, tpe in lst}
 
 
+class GcThread(QThread):
+    progress_signal = Signal(float)
+    progress_text = Signal(str)
+    done_signal = Signal()
+
+    def __init__(self, driver: DriverTemplate):
+        QThread.__init__(self)
+
+        # assign the driver and set the driver's reporting functions
+        self.driver = driver
+        self.driver.progress_signal = self.progress_signal
+        self.driver.progress_text = self.progress_text
+        self.driver.done_signal = self.done_signal
+        self.tpe = driver.tpe
+
+        self.results = None
+
+        self.elapsed = 0
+
+        self.logger = Logger()
+
+        self.__cancel__ = False
+
+    def get_steps(self):
+        return list()
+
+    def run(self):
+
+        self.progress_signal.emit(0.0)
+
+        self.driver.run()
+
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
+
+    def cancel(self):
+        """
+        Cancel the simulation
+        """
+        self.__cancel__ = True
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Cancelled!')
+        self.done_signal.emit()
+
+
 class SimulationSession:
 
     def __init__(self, name: str = 'Session', idtag: str = None):
@@ -70,6 +120,7 @@ class SimulationSession:
 
         # dictionary of drivers
         self.drivers = dict()
+        self.threads = dict()
 
     def __str__(self):
         return self.name
@@ -85,7 +136,29 @@ class SimulationSession:
         Register driver
         :param driver: driver to register (must have a tpe variable in it)
         """
+        # register
         self.drivers[driver.tpe] = driver
+
+    def run(self, driver, post_func=None, prog_func=None, text_func=None):
+        """
+        Register driver
+        :param driver: driver to register (must have a tpe variable in it)
+        :param post_func: Function to run after it is done
+        :param prog_func: Function to display the progress
+        :param text_func: Function to display text
+        """
+
+        thr = GcThread(driver)
+        thr.progress_signal.connect(prog_func)
+        thr.progress_text.connect(text_func)
+        thr.done_signal.connect(post_func)
+
+        # register
+        self.drivers[driver.tpe] = driver
+        self.threads[driver.tpe] = thr
+
+        # run!
+        thr.start()
 
     def get_available_drivers(self):
         """
