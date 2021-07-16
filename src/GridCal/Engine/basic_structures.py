@@ -17,9 +17,8 @@ from enum import Enum
 import pandas as pd
 import numpy as np
 import datetime
-from typing import List, Dict
 
-from GridCal.Engine.plot_config import LINEWIDTH, plt
+from GridCal.Gui.plot_config import LINEWIDTH, plt
 
 
 class BusMode(Enum):

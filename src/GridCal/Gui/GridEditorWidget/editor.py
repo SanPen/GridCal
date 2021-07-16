@@ -216,6 +216,10 @@ class DiagramScene(QGraphicsScene):
         super(DiagramScene, self).__init__(parent)
         self.parent_ = parent
         self.circuit = circuit
+        self.results_dictionary = dict()
+
+    def set_results_to_plot(self, all_threads):
+        self.results_dictionary = {thr.tpe: thr for thr in all_threads if thr is not None}
 
     def plot_bus(self, i, api_object):
         """
@@ -238,7 +242,7 @@ class DiagramScene(QGraphicsScene):
                 power_data = api_object.get_active_injection_profiles_dictionary()
                 voltage = dict()
 
-                for key, driver in self.circuit.results_dictionary.items():
+                for key, driver in self.results_dictionary.items():
                     if hasattr(driver, 'results'):
                         if driver.results is not None:
                             if key == SimulationTypes.TimeSeries_run:
@@ -293,7 +297,7 @@ class DiagramScene(QGraphicsScene):
                 loading_clustering_data = None
                 power_clustering_data = None
 
-                for key, driver in self.circuit.results_dictionary.items():
+                for key, driver in self.results_dictionary.items():
                     if hasattr(driver, 'results'):
                         if driver.results is not None:
                             if key == SimulationTypes.TimeSeries_run:

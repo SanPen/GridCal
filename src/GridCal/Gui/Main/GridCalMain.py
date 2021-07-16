@@ -295,9 +295,6 @@ class MainGUI(QMainWindow):
         self.available_results_dict = None
         self.available_results_steps_dict = None
 
-        self.threadpool = QThreadPool()
-        self.threadpool.setMaxThreadCount(cpu_count())
-
         ################################################################################################################
         # Console
         ################################################################################################################
@@ -593,9 +590,6 @@ class MainGUI(QMainWindow):
 
         all_threads = list(self.session.threads.values())
 
-        # as a side effect the circuit should know about these for accessing to the results via the objects themselves
-        self.circuit.results_dictionary = {thr.tpe: thr for thr in all_threads if thr is not None}
-
         return all_threads
 
     def get_simulations(self):
@@ -606,8 +600,8 @@ class MainGUI(QMainWindow):
 
         all_threads = list(self.session.drivers.values())
 
-        # as a side effect the circuit should know about these for accessing to the results via the objects themselves
-        self.circuit.results_dictionary = {thr.tpe: thr for thr in all_threads if thr is not None}
+        # set the threads so that the diagram scene objects can plot them
+        self.grid_editor.diagramScene.set_results_to_plot(all_threads)
 
         return all_threads
 
