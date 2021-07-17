@@ -17,7 +17,6 @@ import gc
 import os.path
 import platform
 from collections import OrderedDict
-from multiprocessing import cpu_count
 from typing import List, Tuple
 
 from matplotlib.colors import LinearSegmentedColormap
@@ -26,11 +25,11 @@ from pandas.plotting import register_matplotlib_converters
 # Engine imports
 import GridCal.Engine.Core as core
 import GridCal.Engine.Devices as dev
-import GridCal.Engine.IO.export_results_driver as exprtdrv
-import GridCal.Engine.IO.file_handler as filedrv
-import GridCal.Engine.IO.synchronization_driver as syncdrv
+import GridCal.Gui.Session.export_results_driver as exprtdrv
+import GridCal.Gui.Session.file_handler as filedrv
+import GridCal.Gui.Session.synchronization_driver as syncdrv
 import GridCal.Engine.Simulations as sim
-import GridCal.Engine.Visualization.visualization as viz
+import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.grid_analysis as grid_analysis
 
@@ -55,7 +54,6 @@ from GridCal.Gui.Session.session import SimulationSession
 
 from GridCal.__version__ import __GridCal_VERSION__, about_msg
 from GridCal.update import check_version, get_upgrade_command
-
 
 
 __author__ = 'Santiago Peñate Vera'

@@ -10,7 +10,6 @@ import matplotlib.cm as mplcm
 import matplotlib.colors as colors
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 from GridCal.Engine.Devices.editable_device import DeviceType
 
 
