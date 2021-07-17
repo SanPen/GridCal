@@ -154,7 +154,8 @@ class MainGUI(QMainWindow):
                               'circular_layout',
                               'random_layout',
                               'shell_layout',
-                              'spring_layout'])
+                              'spring_layout',
+                              'graphviz'])
         self.ui.automatic_layout_comboBox.setModel(mdl)
 
         # list of stochastic power flow methods
@@ -972,6 +973,7 @@ class MainGUI(QMainWindow):
             alg['spring_layout'] = nx.spring_layout
             alg['spectral_layout'] = nx.spectral_layout
             alg['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
+            alg['graphviz'] = nx.nx_agraph.graphviz_layout
 
             sel = self.ui.automatic_layout_comboBox.currentText()
             pos_alg = alg[sel]
@@ -979,13 +981,18 @@ class MainGUI(QMainWindow):
             # get the positions of a spring layout of the graph
             if sel == 'random_layout':
                 pos = pos_alg(self.circuit.graph)
+            elif sel == 'spring_layout':
+                pos = pos_alg(self.circuit.graph, iterations=100, scale=10)
+            elif sel == 'graphviz':
+                pos = pos_alg(self.circuit.graph)
             else:
                 pos = pos_alg(self.circuit.graph, scale=10)
 
             # assign the positions to the graphical objects of the nodes
             for i, bus in enumerate(self.circuit.buses):
                 try:
-                    x, y = pos[i] * 500
+                    x = pos[i][0] * 500
+                    y = pos[i][1] * 500
                     bus.graphic_obj.setPos(QPoint(x, y))
                 except KeyError as ex:
                     warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))

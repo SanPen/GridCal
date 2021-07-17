@@ -94,7 +94,6 @@ class ResultsTable:
         idx = list()
         txt2 = str(txt).lower()
         for i, val in enumerate(self.cols_c):
-
             if txt2 in val.lower():
                 idx.append(i)
 
