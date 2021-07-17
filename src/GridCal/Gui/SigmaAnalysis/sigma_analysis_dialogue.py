@@ -8,6 +8,7 @@ import pandas as pd
 from PySide2.QtWidgets import *
 
 from GridCal.Gui.SigmaAnalysis.gui import *
+from GridCal.Gui.Session.results_model import ResultsModel
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisResults
 
@@ -100,9 +101,9 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
 
             n = len(bus_names)
 
-            self.mdl = self.results.mdl(result_type=ResultTypes.SigmaPlusDistances,
-                                        indices=np.arange(n),
-                                        names=bus_names)
+            self.mdl = ResultsModel(self.results.mdl(result_type=ResultTypes.SigmaPlusDistances,
+                                                     indices=np.arange(n),
+                                                     names=bus_names))
             self.ui.tableView.setModel(self.mdl)
         else:
             self.mdl = None

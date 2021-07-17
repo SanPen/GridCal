@@ -19,6 +19,7 @@ import platform
 from collections import OrderedDict
 from typing import List, Tuple
 
+import networkx as nx
 from matplotlib.colors import LinearSegmentedColormap
 from pandas.plotting import register_matplotlib_converters
 
@@ -149,13 +150,17 @@ class MainGUI(QMainWindow):
         self.ptdf_group_modes = OrderedDict()
 
         # Automatic layout modes
-        mdl = get_list_model(['fruchterman_reingold_layout',
-                              'spectral_layout',
-                              'circular_layout',
-                              'random_layout',
-                              'shell_layout',
-                              'spring_layout',
-                              'graphviz'])
+        self.layout_algorithms_dict = dict()
+        self.layout_algorithms_dict['circular_layout'] = nx.circular_layout
+        self.layout_algorithms_dict['random_layout'] = nx.random_layout
+        self.layout_algorithms_dict['shell_layout'] = nx.shell_layout
+        self.layout_algorithms_dict['spring_layout'] = nx.spring_layout
+        self.layout_algorithms_dict['spectral_layout'] = nx.spectral_layout
+        self.layout_algorithms_dict['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
+        self.layout_algorithms_dict['kamada_kawai'] = nx.kamada_kawai_layout
+        self.layout_algorithms_dict['graphviz_neato'] = nx.nx_agraph.graphviz_layout
+        self.layout_algorithms_dict['graphviz_dot'] = nx.nx_agraph.graphviz_layout
+        mdl = get_list_model(list(self.layout_algorithms_dict.keys()))
         self.ui.automatic_layout_comboBox.setModel(mdl)
 
         # list of stochastic power flow methods
@@ -966,25 +971,18 @@ class MainGUI(QMainWindow):
             if self.circuit.graph is None:
                 self.circuit.build_graph()
 
-            alg = dict()
-            alg['circular_layout'] = nx.circular_layout
-            alg['random_layout'] = nx.random_layout
-            alg['shell_layout'] = nx.shell_layout
-            alg['spring_layout'] = nx.spring_layout
-            alg['spectral_layout'] = nx.spectral_layout
-            alg['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
-            alg['graphviz'] = nx.nx_agraph.graphviz_layout
-
             sel = self.ui.automatic_layout_comboBox.currentText()
-            pos_alg = alg[sel]
+            pos_alg = self.layout_algorithms_dict[sel]
 
             # get the positions of a spring layout of the graph
             if sel == 'random_layout':
                 pos = pos_alg(self.circuit.graph)
             elif sel == 'spring_layout':
                 pos = pos_alg(self.circuit.graph, iterations=100, scale=10)
-            elif sel == 'graphviz':
-                pos = pos_alg(self.circuit.graph)
+            elif sel == 'graphviz_neato':
+                pos = pos_alg(self.circuit.graph, prog='neato')
+            elif sel == 'graphviz_dot':
+                pos = pos_alg(self.circuit.graph, prog='dot')
             else:
                 pos = pos_alg(self.circuit.graph, scale=10)
 
