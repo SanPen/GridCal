@@ -25,7 +25,7 @@ from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Devices import Branch, Bus
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
-from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 

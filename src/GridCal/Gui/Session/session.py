@@ -35,6 +35,7 @@ from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_results import 
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.basic_structures import Logger
+from GridCal.Gui.Session.results_model import ResultsModel
 
 
 def get_results_object_dictionary():
@@ -227,7 +228,7 @@ class SimulationSession:
         for driver_type, drv in self.drivers.items():
             if study_name == drv.name:
                 if drv.results is not None:
-                    return drv.results.mdl(result_type=study_type)
+                    return ResultsModel(drv.results.mdl(result_type=study_type))
                 else:
                     print('There seem to be no results :(')
                     return None

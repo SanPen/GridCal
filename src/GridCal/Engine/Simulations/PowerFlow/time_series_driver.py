@@ -24,7 +24,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
-from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
@@ -251,7 +251,7 @@ class TimeSeriesResults(PowerFlowResults):
             json_str = json.dumps(self.get_results_dict())
             output_file.write(json_str)
 
-    def mdl(self, result_type: ResultTypes) -> "ResultsModel":
+    def mdl(self, result_type: ResultTypes) -> "ResultsTable":
         """
 
         :param result_type:
@@ -375,7 +375,7 @@ class TimeSeriesResults(PowerFlowResults):
             index = list(range(data.shape[0]))
 
         # assemble model
-        mdl = ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
+        mdl = ResultsTable(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
         return mdl
 
 

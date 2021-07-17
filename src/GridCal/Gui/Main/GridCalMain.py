@@ -280,7 +280,7 @@ class MainGUI(QMainWindow):
         self.file_name = ''
 
         # current results model
-        self.results_mdl: sim.ResultsModel = sim.ResultsModel(data=np.zeros((0, 0)),
+        self.results_mdl: sim.ResultsTable = sim.ResultsTable(data=np.zeros((0, 0)),
                                                               columns=np.zeros(0),
                                                               index=np.zeros(0))
 

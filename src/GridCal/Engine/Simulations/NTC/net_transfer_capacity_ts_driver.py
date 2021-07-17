@@ -23,7 +23,7 @@ import GridCal.Engine.Simulations.LinearFactors.linear_analysis as la
 from GridCal.Engine.Simulations.NTC.net_transfer_capacity_driver import NetTransferCapacityOptions, compute_ntc, compute_alpha
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import TSDriverTemplate
 
@@ -225,7 +225,7 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
             raise Exception('Result type not understood:' + str(result_type))
 
         # assemble model
-        mdl = ResultsModel(data=data,
+        mdl = ResultsTable(data=data,
                            index=index,
                            columns=labels,
                            title=title,

@@ -26,11 +26,12 @@ from GridCal.Gui.GeneralDialogues import LogsDialogue
 
 class TowerBuilderGUI(QtWidgets.QDialog):
 
-    def __init__(self, parent=None, tower=None, wires_catalogue=list()):
+    def __init__(self, parent=None, tower: Tower = None, wires_catalogue=list()):
         """
-        Constructor
-        Args:
-            parent:
+
+        :param parent:
+        :param tower:
+        :param wires_catalogue:
         """
         QtWidgets.QDialog.__init__(self, parent)
         self.ui = Ui_Dialog()

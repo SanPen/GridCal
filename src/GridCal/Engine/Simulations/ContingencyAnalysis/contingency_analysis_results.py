@@ -16,7 +16,7 @@
 import json
 import numpy as np
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 
@@ -134,7 +134,7 @@ class ContingencyAnalysisResults(ResultsTemplate):
             raise Exception('Result type not understood:' + str(result_type))
 
         # assemble model
-        mdl = ResultsModel(data=data,
+        mdl = ResultsTable(data=data,
                            index=index,
                            columns=labels,
                            title=title,

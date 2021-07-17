@@ -23,7 +23,7 @@ from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, make_worst_contingency_transfer_limits
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
@@ -407,7 +407,7 @@ class NetTransferCapacityResults(ResultsTemplate):
             raise Exception('Result type not understood:' + str(result_type))
 
         # assemble model
-        mdl = ResultsModel(data=data,
+        mdl = ResultsTable(data=data,
                            index=index,
                            columns=labels,
                            title=title,

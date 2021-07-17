@@ -15,18 +15,17 @@
 
 import numpy as np
 import pandas as pd
-from PySide2.QtWidgets import *
-from PySide2 import QtCore
+
 from matplotlib import pyplot as plt
 from GridCal.Engine.Simulations.result_types import ResultTypes
 
 
-class ResultsModel(QtCore.QAbstractTableModel):
+class ResultsTable:
     """
     Class to populate a Qt table view with data from the results
     """
     def __init__(self, data: np.ndarray, columns, index, palette=None, title='', xlabel='', ylabel='', units='',
-                 parent=None, editable=False, editable_min_idx=-1, decimals=6):
+                 editable=False, editable_min_idx=-1, decimals=6):
         """
 
         :param data:
@@ -36,13 +35,10 @@ class ResultsModel(QtCore.QAbstractTableModel):
         :param title:
         :param xlabel:
         :param ylabel:
-        :param parent:
         :param editable:
         :param editable_min_idx:
         :param decimals:
         """
-        QtCore.QAbstractTableModel.__init__(self, parent)
-
         if len(data.shape) == 1:
             self.data_c = data.reshape(-1, 1)
         else:
@@ -68,90 +64,13 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
         self.formatter = lambda x: "%.2f" % x
 
-    def flags(self, index):
-        if self.editable and index.column() > self.editable_min_idx:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
-        else:
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
-
-    def rowCount(self, parent=None):
-        """
-
-        :param parent:
-        :return:
-        """
-        return self.r
-
-    def columnCount(self, parent=None):
-        """
-
-        :param parent:
-        :return:
-        """
-        return self.c
-
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        """
-
-        :param index:
-        :param role:
-        :return:
-        """
-        if index.isValid():
-
-            val = self.data_c[index.row(), index.column()]
-
-            if role == QtCore.Qt.DisplayRole:
-
-                if isinstance(val, str):
-                    return val
-                elif isinstance(val, complex):
-                    if val.real != 0 or val.imag != 0:
-                        return val.__format__(self.format_string)
-                    else:
-                        return '0'
-                else:
-                    if val != 0:
-                        return val.__format__(self.format_string)
-                    else:
-                        return '0'
-
-            elif role == QtCore.Qt.BackgroundRole:
-
-                return None  # QBrush(Qt.yellow)
-
-        return None
-
-    def headerData(self, section, orientation, role=None):
-        """
-        Get the header value
-        :param section: header index
-        :param orientation: Orientation {QtCore.Qt.Horizontal, QtCore.Qt.Vertical}
-        :param role:
-        :return:
-        """
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                if len(self.cols_c) > section:
-                    return self.cols_c[section]
-
-            elif orientation == QtCore.Qt.Vertical:
-                if self.index_c is None:
-                    return section
-                else:
-                    if self.isDate:
-                        return self.index_c[section].strftime('%Y/%m/%d  %H:%M.%S')
-                    else:
-                        return str(self.index_c[section])
-        return None
-
     def slice_cols(self, col_idx):
         """
         Make column slicing
         :param col_idx: indices of the columns
         :return: Nothing
         """
-        sliced_model = ResultsModel(data=self.data_c[:, col_idx],
+        sliced_model = ResultsTable(data=self.data_c[:, col_idx],
                                     columns=self.cols_c[col_idx],
                                     index=self.index_c,
                                     palette=None,
@@ -159,7 +78,6 @@ class ResultsModel(QtCore.QAbstractTableModel):
                                     xlabel=self.xlabel,
                                     ylabel=self.ylabel,
                                     units=self.units,
-                                    parent=None,
                                     editable=self.editable,
                                     editable_min_idx=self.editable_min_idx,
                                     decimals=6)
@@ -177,7 +95,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
         txt2 = str(txt).lower()
         for i, val in enumerate(self.cols_c):
 
-            if txt2 in val:
+            if txt2 in val.lower():
                 idx.append(i)
 
         if len(idx) > 0:
@@ -275,48 +193,6 @@ class ResultsModel(QtCore.QAbstractTableModel):
         index, columns, data = self.get_data()
         return pd.DataFrame(data=data, index=index, columns=columns)
 
-    def copy_to_clipboard(self):
-        """
-        Copy profiles to clipboard
-        """
-        n = len(self.cols_c)
-
-        if n > 0:
-
-            index, columns, data = self.get_data()
-
-            txt = fast_data_to_text(data, columns, index)
-
-            # copy to clipboard
-            cb = QApplication.clipboard()
-            cb.clear(mode=cb.Clipboard)
-            cb.setText(txt, mode=cb.Clipboard)
-
-        else:
-            # there are no elements
-            pass
-
-    def copy_numpy_to_clipboard(self):
-        """
-        Copy profiles to clipboard
-        """
-        n = len(self.cols_c)
-
-        if n > 0:
-
-            index, columns, data = self.get_data()
-
-            txt = fast_data_to_numpy_text(data)
-
-            # copy to clipboard
-            cb = QApplication.clipboard()
-            cb.clear(mode=cb.Clipboard)
-            cb.setText(txt, mode=cb.Clipboard)
-
-        else:
-            # there are no elements
-            pass
-
     def plot(self, ax=None, selected_col_idx=None, selected_rows=None):
         """
         Plot the data model
@@ -324,7 +200,6 @@ class ResultsModel(QtCore.QAbstractTableModel):
         :param selected_col_idx: list of selected column indices
         :param selected_rows: list of rows to plot
         """
-
         index, columns, data = self.get_data()
 
         if selected_col_idx is not None:
@@ -357,37 +232,3 @@ class ResultsModel(QtCore.QAbstractTableModel):
             print('No numeric data to plot...')
 
 
-def fast_data_to_text(data, columns, index):
-    # header first
-    txt = '\t' + '\t'.join(columns) + '\n'
-
-    # data
-    for t, index_value in enumerate(index):
-        if data[t, :].sum() != 0.0:
-            txt += str(index_value) + '\t' + '\t'.join([str(x) for x in data[t, :]]) + '\n'
-
-    return txt
-
-
-def fast_data_to_numpy_text(data):
-
-    if len(data.shape) == 1:
-        txt = '[' + ', '.join(['{0:.6f}'.format(x) for x in data]) + ']'
-
-    elif len(data.shape) == 2:
-
-        if data.shape[1] > 1:
-            # header first
-            txt = '['
-
-            # data
-            for t in range(data.shape[0]):
-                txt += '[' + ', '.join(['{0:.6f}'.format(x) for x in data[t, :]]) + '],\n'
-
-            txt += ']'
-        else:
-            txt = '[' + ', '.join(['{0:.6f}'.format(x) for x in data[:, 0]]) + ']'
-    else:
-        txt = '[]'
-
-    return txt

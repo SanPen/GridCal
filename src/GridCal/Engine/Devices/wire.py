@@ -57,7 +57,3 @@ class Wire(EditableDevice):
         """
         # name='', idtag=None, gmr=0.01, r=0.01, x=0.0, max_current=1
         return Wire(name=self.name, gmr=self.gmr, r=self.r, x=self.x, max_current=self.max_current)
-
-
-
-

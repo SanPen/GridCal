@@ -15,7 +15,7 @@
 
 import numpy as np
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 
@@ -157,7 +157,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
         self.plot_bars_limit = 100
 
-    def mdl(self, result_type) -> "ResultsModel":
+    def mdl(self, result_type) -> "ResultsTable":
         """
         Plot the results
         :param result_type: type of results (string)
@@ -236,7 +236,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
             y_label = '(MW)'
             title = 'Battery power'
 
-        mdl = ResultsModel(data=y,
+        mdl = ResultsTable(data=y,
                            index=labels,
                            columns=[result_type.value[0]],
                            title=title,

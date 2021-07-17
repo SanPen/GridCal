@@ -18,7 +18,7 @@ from matplotlib import pyplot as plt
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
@@ -133,7 +133,7 @@ class SigmaAnalysisResults:
 
         fig.canvas.mpl_connect("motion_notify_event", hover)
 
-    def mdl(self, result_type: ResultTypes, indices=None, names=None) -> "ResultsModel":
+    def mdl(self, result_type: ResultTypes, indices=None, names=None) -> "ResultsTable":
         """
 
         :param result_type:
@@ -169,7 +169,7 @@ class SigmaAnalysisResults:
                 y_label = '(p.u.)'
                 title = 'Sigma and distances'
 
-                mdl = ResultsModel(data=y, index=labels, columns=['σ real', 'σ imaginary', 'Distances'],
+                mdl = ResultsTable(data=y, index=labels, columns=['σ real', 'σ imaginary', 'Distances'],
                                    title=title, ylabel=y_label, units=y_label)
                 return mdl
 
@@ -180,7 +180,7 @@ class SigmaAnalysisResults:
                 title = ''
 
             # assemble model
-            mdl = ResultsModel(data=y, index=labels, columns=[result_type.value[0]],
+            mdl = ResultsTable(data=y, index=labels, columns=[result_type.value[0]],
                                title=title, ylabel=y_label, units=y_label)
             return mdl
 
