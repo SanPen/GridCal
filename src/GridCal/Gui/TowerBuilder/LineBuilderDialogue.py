@@ -19,7 +19,7 @@ from PySide2.QtWidgets import *
 
 from GridCal.Gui.TowerBuilder.gui import *
 from GridCal.Engine.Devices import *
-from GridCal.Gui.TowerBuilder.tower_model import *
+from GridCal.Gui.TowerBuilder.table_models import *
 from GridCal.Gui.GuiFunctions import PandasModel
 from GridCal.Gui.GeneralDialogues import LogsDialogue
 
