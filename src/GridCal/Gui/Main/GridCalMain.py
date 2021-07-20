@@ -135,10 +135,10 @@ class MainGUI(QMainWindow):
 
         # transfer modes
         self.transfer_modes_dict = OrderedDict()
-        self.transfer_modes_dict['Area generation'] = sim.NetTransferMode.Generation
-        self.transfer_modes_dict['Area installed power'] = sim.NetTransferMode.InstalledPower
-        self.transfer_modes_dict['Area load'] = sim.NetTransferMode.Load
-        self.transfer_modes_dict['Area nodes'] = sim.NetTransferMode.GenerationAndLoad
+        self.transfer_modes_dict['Area generation'] = sim.AvailableTransferMode.Generation
+        self.transfer_modes_dict['Area installed power'] = sim.AvailableTransferMode.InstalledPower
+        self.transfer_modes_dict['Area load'] = sim.AvailableTransferMode.Load
+        self.transfer_modes_dict['Area nodes'] = sim.AvailableTransferMode.GenerationAndLoad
         lst = list(self.transfer_modes_dict.keys())
         self.ui.transferMethodComboBox.setModel(get_list_model(lst))
         self.ui.transferMethodComboBox.setCurrentIndex(1)
@@ -2797,15 +2797,15 @@ class MainGUI(QMainWindow):
 
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
 
-                options = sim.NetTransferCapacityOptions(distributed_slack=distributed_slack,
-                                                         bus_idx_from=idx_from,
-                                                         bus_idx_to=idx_to,
-                                                         dT=dT,
-                                                         threshold=threshold,
-                                                         mode=mode)
+                options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack,
+                                                               bus_idx_from=idx_from,
+                                                               bus_idx_to=idx_to,
+                                                               dT=dT,
+                                                               threshold=threshold,
+                                                               mode=mode)
 
-                drv = sim.NetTransferCapacityDriver(grid=self.circuit,
-                                                    options=options)
+                drv = sim.AvailableTransferCapacityDriver(grid=self.circuit,
+                                                          options=options)
 
                 self.session.run(drv,
                                  post_func=self.post_available_transfer_capacity,
@@ -2880,19 +2880,19 @@ class MainGUI(QMainWindow):
 
                     mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
 
-                    options = sim.NetTransferCapacityOptions(distributed_slack=distributed_slack,
-                                                             bus_idx_from=idx_from,
-                                                             bus_idx_to=idx_to,
-                                                             dT=dT,
-                                                             threshold=threshold,
-                                                             mode=mode)
+                    options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack,
+                                                                   bus_idx_from=idx_from,
+                                                                   bus_idx_to=idx_to,
+                                                                   dT=dT,
+                                                                   threshold=threshold,
+                                                                   mode=mode)
 
                     start_ = self.ui.profile_start_slider.value()
                     end_ = self.ui.profile_end_slider.value()
-                    drv = sim.NetTransferCapacityTimeSeriesDriver(grid=self.circuit,
-                                                                  options=options,
-                                                                  start_=start_,
-                                                                  end_=end_)
+                    drv = sim.AvailableTransferCapacityTimeSeriesDriver(grid=self.circuit,
+                                                                        options=options,
+                                                                        start_=start_,
+                                                                        end_=end_)
 
                     self.session.run(drv,
                                      post_func=self.post_available_transfer_capacity_ts,

@@ -19,8 +19,8 @@ import numpy as np
 
 # Module imports
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
-from GridCal.Engine.Simulations.NTC.net_transfer_capacity_driver import NetTransferCapacityResults
-from GridCal.Engine.Simulations.NTC.net_transfer_capacity_ts_driver import NetTransferCapacityTimeSeriesResults
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityResults
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_ts_driver import AvailableTransferCapacityTimeSeriesResults
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import ContingencyAnalysisTimeSeriesResults
 from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver import ContinuationPowerFlowResults
@@ -43,8 +43,8 @@ def get_results_object_dictionary():
     Get dictionary of recognizable result types in order to be able to load a driver from disk
     :return: dictionary[driver name: empty results object]
     """
-    lst = [(NetTransferCapacityResults(0, 0, [], [], [], (), ()), SimulationTypes.NetTransferCapacity_run),
-           (NetTransferCapacityTimeSeriesResults(0, 0, [], [], [], []), SimulationTypes.NetTransferCapacityTS_run),
+    lst = [(AvailableTransferCapacityResults(0, 0, [], [], [], (), ()), SimulationTypes.NetTransferCapacity_run),
+           (AvailableTransferCapacityTimeSeriesResults(0, 0, [], [], [], []), SimulationTypes.NetTransferCapacityTS_run),
            (ContingencyAnalysisResults(0, 0, [], [], []), SimulationTypes.ContingencyAnalysis_run),
            (ContingencyAnalysisTimeSeriesResults(0, 0, 0, [], [], [], []), SimulationTypes.ContingencyAnalysisTS_run),
            (ContinuationPowerFlowResults(0, 0, 0, [], [], []), SimulationTypes.ContinuationPowerFlow_run),

@@ -12,5 +12,5 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-from GridCal.Engine.Simulations.NTC.net_transfer_capacity_driver import *
-from GridCal.Engine.Simulations.NTC.net_transfer_capacity_ts_driver import *
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import *
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_ts_driver import *

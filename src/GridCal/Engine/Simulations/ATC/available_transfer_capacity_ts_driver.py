@@ -20,7 +20,7 @@ import pandas as pd
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 import GridCal.Engine.Simulations.LinearFactors.linear_analysis as la
-from GridCal.Engine.Simulations.NTC.net_transfer_capacity_driver import NetTransferCapacityOptions, compute_ntc, compute_alpha
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityOptions, compute_atc, compute_alpha
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
@@ -28,7 +28,7 @@ from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import TSDriverTemplate
 
 
-class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
+class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def __init__(self, n_br, n_bus, time_array, br_names, bus_names, bus_types):
         """
@@ -233,11 +233,11 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
         return mdl
 
 
-class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
+class AvailableTransferCapacityTimeSeriesDriver(TSDriverTemplate):
     tpe = SimulationTypes.NetTransferCapacityTS_run
     name = tpe.value
 
-    def __init__(self, grid: MultiCircuit, options: NetTransferCapacityOptions, start_=0, end_=None):
+    def __init__(self, grid: MultiCircuit, options: AvailableTransferCapacityOptions, start_=0, end_=None):
         """
         Power Transfer Distribution Factors class constructor
         @param grid: MultiCircuit Object
@@ -253,12 +253,12 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
         self.options = options
 
         # OPF results
-        self.results = NetTransferCapacityTimeSeriesResults(n_br=0,
-                                                            n_bus=0,
-                                                            time_array=[],
-                                                            br_names=[],
-                                                            bus_names=[],
-                                                            bus_types=[])
+        self.results = AvailableTransferCapacityTimeSeriesResults(n_br=0,
+                                                                  n_bus=0,
+                                                                  time_array=[],
+                                                                  br_names=[],
+                                                                  bus_names=[],
+                                                                  bus_types=[])
 
     def run(self):
         """
@@ -283,12 +283,12 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
         nt = len(nc.time_array)
 
         # declare the results
-        self.results = NetTransferCapacityTimeSeriesResults(n_br=nc.nbr,
-                                                            n_bus=nc.nbus,
-                                                            time_array=nc.time_array,
-                                                            br_names=nc.branch_names,
-                                                            bus_names=nc.bus_names,
-                                                            bus_types=nc.bus_types)
+        self.results = AvailableTransferCapacityTimeSeriesResults(n_br=nc.nbr,
+                                                                  n_bus=nc.nbus,
+                                                                  time_array=nc.time_array,
+                                                                  br_names=nc.branch_names,
+                                                                  bus_names=nc.bus_names,
+                                                                  bus_types=nc.bus_types)
 
         # compute the base Sf
         P = nc.Sbus.real  # these are in p.u.
@@ -316,10 +316,10 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
                                   dT=self.options.dT,
                                   mode=self.options.mode.value)
 
-            # compute NTC
+            # compute ATC
             beta_mat, beta_used, atc_n, atc_final, \
             atc_limiting_contingency_branch, \
-            atc_limiting_contingency_flow = compute_ntc(ptdf=linear_analysis.PTDF,
+            atc_limiting_contingency_flow = compute_atc(ptdf=linear_analysis.PTDF,
                                                         lodf=linear_analysis.LODF,
                                                         alpha=alpha,
                                                         flows=flows[t, :],
@@ -378,8 +378,8 @@ if __name__ == '__main__':
     power_flow = PowerFlowDriver(main_circuit, pf_options)
     power_flow.run()
 
-    options = NetTransferCapacityOptions()
-    driver = NetTransferCapacityTimeSeriesDriver(main_circuit, options, power_flow.results)
+    options = AvailableTransferCapacityOptions()
+    driver = AvailableTransferCapacityTimeSeriesDriver(main_circuit, options, power_flow.results)
     driver.run()
 
     print()

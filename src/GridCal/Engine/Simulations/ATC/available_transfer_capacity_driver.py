@@ -32,7 +32,7 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 ########################################################################################################################
 
 
-class NetTransferMode(Enum):
+class AvailableTransferMode(Enum):
     Generation = 0
     InstalledPower = 1
     Load = 2
@@ -158,7 +158,7 @@ def compute_alpha(ptdf, P0, Pinstalled, idx1, idx2, bus_types, dT=1.0, mode=0):
 
 
 @nb.njit()
-def compute_ntc(ptdf, lodf, alpha, flows, rates, contingency_rates, threshold=0.005):
+def compute_atc(ptdf, lodf, alpha, flows, rates, contingency_rates, threshold=0.005):
     """
     Compute all lines' ATC
     :param ptdf: Power transfer distribution factors (n-branch, n-bus)
@@ -190,7 +190,7 @@ def compute_ntc(ptdf, lodf, alpha, flows, rates, contingency_rates, threshold=0.
     # mm = 0
     for m in range(nbr):  # for each branch
 
-        if abs(alpha[m]) > threshold and abs(flows[m]) < rates[m]:  # if the branch is relevant enough for the NTC...
+        if abs(alpha[m]) > threshold and abs(flows[m]) < rates[m]:  # if the branch is relevant enough for the ATC...
 
             # compute the ATC in "N"
             if alpha[m] == 0:
@@ -243,7 +243,7 @@ def compute_ntc(ptdf, lodf, alpha, flows, rates, contingency_rates, threshold=0.
     return beta_mat, beta_used, atc_n, atc_final, atc_limiting_contingency_branch, atc_limiting_contingency_flow
 
 
-class NetTransferCapacityResults(ResultsTemplate):
+class AvailableTransferCapacityResults(ResultsTemplate):
 
     def __init__(self, n_br, n_bus, br_names, bus_names, bus_types, bus_idx_from, bus_idx_to):
         """
@@ -317,7 +317,7 @@ class NetTransferCapacityResults(ResultsTemplate):
     def get_steps(self):
         return
 
-    def make_report(self, threshold=0):
+    def make_report(self, threshold: float = 0.0):
         """
 
         :return:
@@ -365,7 +365,7 @@ class NetTransferCapacityResults(ResultsTemplate):
                 'atc_limiting_contingency_branch': self.atc_limiting_contingency_branch}
         return data
 
-    def mdl(self, result_type: ResultTypes):
+    def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """
         Plot the results
         :param result_type:
@@ -415,11 +415,11 @@ class NetTransferCapacityResults(ResultsTemplate):
         return mdl
 
 
-class NetTransferCapacityOptions:
+class AvailableTransferCapacityOptions:
 
     def __init__(self, distributed_slack=True, correct_values=True,
                  bus_idx_from=list(), bus_idx_to=list(), dT=100.0, threshold=0.02,
-                 mode: NetTransferMode = NetTransferMode.Generation):
+                 mode: AvailableTransferMode = AvailableTransferMode.Generation):
         """
 
         :param distributed_slack:
@@ -438,12 +438,12 @@ class NetTransferCapacityOptions:
         self.mode = mode
 
 
-class NetTransferCapacityDriver(DriverTemplate):
+class AvailableTransferCapacityDriver(DriverTemplate):
 
     tpe = SimulationTypes.NetTransferCapacity_run
     name = tpe.value
 
-    def __init__(self, grid: MultiCircuit, options: NetTransferCapacityOptions):
+    def __init__(self, grid: MultiCircuit, options: AvailableTransferCapacityOptions):
         """
         Power Transfer Distribution Factors class constructor
         @param grid: MultiCircuit Object
@@ -456,13 +456,13 @@ class NetTransferCapacityDriver(DriverTemplate):
         self.options = options
 
         # OPF results
-        self.results = NetTransferCapacityResults(n_br=0,
-                                                  n_bus=0,
-                                                  br_names=[],
-                                                  bus_names=[],
-                                                  bus_types=[],
-                                                  bus_idx_from=[],
-                                                  bus_idx_to=[])
+        self.results = AvailableTransferCapacityResults(n_br=0,
+                                                        n_bus=0,
+                                                        br_names=[],
+                                                        bus_names=[],
+                                                        bus_types=[],
+                                                        bus_idx_from=[],
+                                                        bus_idx_to=[])
 
     def run(self):
         """
@@ -489,13 +489,13 @@ class NetTransferCapacityDriver(DriverTemplate):
         linear.run()
 
         # declare the results
-        self.results = NetTransferCapacityResults(n_br=linear.numerical_circuit.nbr,
-                                                  n_bus=linear.numerical_circuit.nbus,
-                                                  br_names=linear.numerical_circuit.branch_names,
-                                                  bus_names=linear.numerical_circuit.bus_names,
-                                                  bus_types=linear.numerical_circuit.bus_types,
-                                                  bus_idx_from=idx1b,
-                                                  bus_idx_to=idx2b)
+        self.results = AvailableTransferCapacityResults(n_br=linear.numerical_circuit.nbr,
+                                                        n_bus=linear.numerical_circuit.nbus,
+                                                        br_names=linear.numerical_circuit.branch_names,
+                                                        bus_names=linear.numerical_circuit.bus_names,
+                                                        bus_types=linear.numerical_circuit.bus_types,
+                                                        bus_idx_from=idx1b,
+                                                        bus_idx_to=idx2b)
 
         # compute the branch exchange sensitivity (alpha)
         alpha = compute_alpha(ptdf=linear.PTDF,
@@ -510,10 +510,10 @@ class NetTransferCapacityDriver(DriverTemplate):
         # get flow
         flows = linear.get_flows(nc.Sbus)
 
-        # compute NTC
+        # compute ATC
         beta_mat, beta_used, atc_n, atc_final, \
         atc_limiting_contingency_branch, \
-        atc_limiting_contingency_flow = compute_ntc(ptdf=linear.PTDF,
+        atc_limiting_contingency_flow = compute_atc(ptdf=linear.PTDF,
                                                     lodf=linear.LODF,
                                                     alpha=alpha,
                                                     flows=flows,
@@ -555,8 +555,8 @@ if __name__ == '__main__':
 
     main_circuit = FileOpen(fname).open()
 
-    options = NetTransferCapacityOptions()
-    driver = NetTransferCapacityDriver(main_circuit, options)
+    options = AvailableTransferCapacityOptions()
+    driver = AvailableTransferCapacityDriver(main_circuit, options)
     driver.run()
 
     print()
