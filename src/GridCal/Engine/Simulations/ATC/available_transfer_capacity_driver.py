@@ -181,11 +181,12 @@ def compute_atc(ptdf, lodf, alpha, flows, rates, contingency_rates, threshold=0.
 
     # explore the ATC
     atc_n = np.zeros(nbr)
+    atc_mc = np.zeros(nbr)
     atc_final = np.zeros(nbr)
     beta_mat = np.zeros((nbr, nbr))
     beta_used = np.zeros(nbr)
     atc_limiting_contingency_branch = np.zeros(nbr)
-    atc_limiting_contingency_flow = flows.copy()
+    atc_limiting_contingency_flow = np.zeros(nbr)
     # processed = list()
     # mm = 0
     for m in range(nbr):  # for each branch
@@ -206,8 +207,6 @@ def compute_atc(ptdf, lodf, alpha, flows, rates, contingency_rates, threshold=0.
             # set to the current branch, since we don't know if there will be any contingency that make the ATC worse
             atc_limiting_contingency_branch[m] = m
 
-            # processed.append(m)
-
             # explore the ATC in "N-1"
             for c in range(nbr):  # for each contingency
                 # compute the exchange sensitivity in contingency conditions
@@ -218,29 +217,32 @@ def compute_atc(ptdf, lodf, alpha, flows, rates, contingency_rates, threshold=0.
 
                     # compute the contingency flow
                     contingency_flow = flows[m] + lodf[m, c] * flows[c]
-                    atc_limiting_contingency_flow[m] = contingency_flow  # default
 
+                    # set the default values (worst contingency by itself, not comparing with the base situation)
+                    if abs(contingency_flow) > abs(atc_limiting_contingency_flow[m]):
+                        atc_limiting_contingency_flow[m] = contingency_flow  # default
+                        atc_limiting_contingency_branch[m] = c
+                        beta_used[m] = beta_mat[m, c]
+
+                    # now here, do compare with the base situation
                     if abs(beta_mat[m, c]) > threshold and abs(contingency_flow) <= contingency_rates[m]:
 
                         # compute the ATC in "N-1"
                         if beta_mat[m, c] == 0:
-                            atc_mc = np.inf
+                            atc_mc[m] = np.inf
                         elif beta_mat[m, c] > 0:
-                            atc_mc = (contingency_rates[m] - contingency_flow) / beta_mat[m, c]
+                            atc_mc[m] = (contingency_rates[m] - contingency_flow) / beta_mat[m, c]
                         else:
-                            atc_mc = (-contingency_rates[m] - contingency_flow) / beta_mat[m, c]
+                            atc_mc[m] = (-contingency_rates[m] - contingency_flow) / beta_mat[m, c]
 
                         # refine the ATC to the most restrictive value every time
-                        if abs(atc_mc) < abs(atc_final[m]):
-                            atc_final[m] = atc_mc
+                        if abs(atc_mc[m]) < abs(atc_final[m]):
+                            atc_final[m] = atc_mc[m]
                             beta_used[m] = beta_mat[m, c]
                             atc_limiting_contingency_flow[m] = contingency_flow
                             atc_limiting_contingency_branch[m] = c
 
-    # processed2 = np.array(processed, dtype=nb.int64)
-    # return beta_mat, beta, atc_n[processed2], atc_final[processed2], \
-    #        atc_limiting_contingency_branch[processed2], atc_limiting_contingency_flow[processed2]
-    return beta_mat, beta_used, atc_n, atc_final, atc_limiting_contingency_branch, atc_limiting_contingency_flow
+    return beta_mat, beta_used, atc_n, atc_mc, atc_final, atc_limiting_contingency_branch, atc_limiting_contingency_flow
 
 
 class AvailableTransferCapacityResults(ResultsTemplate):
@@ -295,6 +297,7 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         self.alpha = np.zeros(self.n_br)
         self.atc = np.zeros(self.n_br)
         self.atc_n = np.zeros(self.n_br)
+        self.atc_mc = np.zeros(self.n_br)
         self.beta_mat = np.zeros((self.n_br, self.n_br))
         self.beta = np.zeros(self.n_br)
         self.atc_limiting_contingency_branch = np.zeros(self.n_br, dtype=int)
@@ -322,7 +325,6 @@ class AvailableTransferCapacityResults(ResultsTemplate):
 
         :return:
         """
-        self.report = np.empty((self.n_br, 10), dtype=object)
         self.report_headers = ['Branch',
                                'Base flow',
                                'Rate',
@@ -332,21 +334,26 @@ class AvailableTransferCapacityResults(ResultsTemplate):
                                'Limiting contingency flow',
                                'Contingency rate',
                                'Beta',
+                               'Contingency ATC',
                                'ATC']
+        self.report = np.empty((self.n_br, len(self.report_headers)), dtype=object)
 
         # sort by ATC
         idx = np.argsort(self.atc)
         self.report_indices = self.branch_names[idx]
-        self.report[:, 0] = self.branch_names[idx]
-        self.report[:, 1] = self.base_flow[idx]
-        self.report[:, 2] = self.rates[idx]
-        self.report[:, 3] = self.alpha[idx]
-        self.report[:, 4] = self.atc_n[idx]
-        self.report[:, 5] = self.branch_names[self.atc_limiting_contingency_branch][idx]
-        self.report[:, 6] = self.atc_limiting_contingency_flow[idx]
-        self.report[:, 7] = self.contingency_rates[idx]
-        self.report[:, 8] = self.beta[idx]
-        self.report[:, 9] = self.atc[idx]
+        self.report[:, 0] = self.branch_names[idx]  # 'Branch'
+        self.report[:, 1] = self.base_flow[idx]  # 'Base flow'
+        self.report[:, 2] = self.rates[idx]  # 'Rate',
+        self.report[:, 3] = self.alpha[idx]  # 'Alpha'
+        self.report[:, 4] = self.atc_n[idx]  # 'ATC normal'
+
+        # contingency info
+        self.report[:, 5] = self.branch_names[self.atc_limiting_contingency_branch][idx]  # 'Limiting contingency branch'
+        self.report[:, 6] = self.atc_limiting_contingency_flow[idx]  # 'Limiting contingency flow'
+        self.report[:, 7] = self.contingency_rates[idx]  # 'Contingency rate'
+        self.report[:, 8] = self.beta[idx]  # 'Beta'
+        self.report[:, 9] = self.atc_mc[idx]  # 'Contingency ATC'
+        self.report[:, 10] = self.atc[idx]  # ATC
 
         # trim by abs alpha > threshold
         loading = np.abs(self.report[:, 1] / (self.report[:, 2] + 1e-20))
@@ -511,7 +518,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         flows = linear.get_flows(nc.Sbus)
 
         # compute ATC
-        beta_mat, beta_used, atc_n, atc_final, \
+        beta_mat, beta_used, atc_n, atc_mc, atc_final, \
         atc_limiting_contingency_branch, \
         atc_limiting_contingency_flow = compute_atc(ptdf=linear.PTDF,
                                                     lodf=linear.LODF,
@@ -526,6 +533,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         self.results.alpha = alpha
         self.results.atc = atc_final
         self.results.atc_n = atc_n
+        self.results.atc_mc = atc_mc
         self.results.beta_mat = beta_mat
         self.results.beta = beta_used
         self.results.atc_limiting_contingency_branch = atc_limiting_contingency_branch.astype(int)

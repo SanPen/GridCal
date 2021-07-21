@@ -79,6 +79,7 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.alpha = np.zeros((self.nt, self.n_br))
         self.atc = np.zeros((self.nt, self.n_br))
         self.atc_n = np.zeros((self.nt, self.n_br))
+        self.atc_mc = np.zeros((self.nt, self.n_br))
 
         self.beta = np.zeros((self.nt, self.n_br))
         self.atc_limiting_contingency_branch = np.zeros((self.nt, self.n_br), dtype=int)
@@ -128,6 +129,9 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
                                'Beta (avg)',
                                'Beta (min)',
                                'Beta (max)',
+                               'Contingency ATC (avg)',
+                               'Contingency ATC (min)',
+                               'Contingency ATC (max)',
                                'ATC (avg)',
                                'ATC (min)',
                                'ATC (max)']
@@ -166,15 +170,26 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
             self.report[i, 19] = self.beta[:, i].min()
             self.report[i, 20] = self.beta[:, i].max()
 
-            self.report[i, 21] = self.atc[:, i].mean()
-            self.report[i, 22] = self.atc[:, i].min()
-            self.report[i, 23] = self.atc[:, i].max()
+            self.report[i, 21] = self.atc_mc[:, i].mean()
+            self.report[i, 22] = self.atc_mc[:, i].min()
+            self.report[i, 23] = self.atc_mc[:, i].max()
+
+            ii = np.where(self.atc_mc[:, i] == self.report[i, 23])[0][0]
+            self.report[i, 12] = self.branch_names[self.atc_limiting_contingency_branch[ii, i]]
+
+            self.report[i, 24] = self.atc[:, i].mean()
+            self.report[i, 25] = self.atc[:, i].min()
+            self.report[i, 26] = self.atc[:, i].max()
 
             if prog_func is not None:
                 prog_func((i+1) / self.n_br * 100)
 
         # sort by ATC min
-        idx = np.argsort(self.report[:, 22].astype(float))
+        idx = np.argsort(self.report[:, 26].astype(float))
+        self.report = self.report[idx, :]
+
+        # remove zeros
+        idx = np.where(self.report[:, 26].astype(float) > 0)[0]
         self.report = self.report[idx, :]
 
     def get_results_dict(self):
@@ -317,7 +332,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TSDriverTemplate):
                                   mode=self.options.mode.value)
 
             # compute ATC
-            beta_mat, beta_used, atc_n, atc_final, \
+            beta_mat, beta_used, atc_n, atc_mc, atc_final, \
             atc_limiting_contingency_branch, \
             atc_limiting_contingency_flow = compute_atc(ptdf=linear_analysis.PTDF,
                                                         lodf=linear_analysis.LODF,
@@ -332,6 +347,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TSDriverTemplate):
             self.results.alpha[t, :] = alpha
             self.results.atc[t, :] = atc_final
             self.results.atc_n[t, :] = atc_n
+            self.results.atc_mc[t, :] = atc_mc
             self.results.beta[t, :] = beta_used
             self.results.atc_limiting_contingency_branch[t, :] = atc_limiting_contingency_branch.astype(int)
             self.results.atc_limiting_contingency_flow[t, :] = atc_limiting_contingency_flow
