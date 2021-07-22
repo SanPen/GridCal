@@ -624,3 +624,20 @@ class Line(EditableDevice):
         Get the line defining coordinates
         """
         return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]
+
+    def convertible_to_vsc(self):
+        """
+        Is this line convertible to VSC?
+        :return:
+        """
+        if self.bus_to is not None and self.bus_from is not None:
+            # connectivity:
+            # for the later primitives to make sense, the "bus from" must be AC and the "bus to" must be DC
+            if self.bus_from.is_dc and not self.bus_to.is_dc:  # this is the correct sense
+                return True
+            elif not self.bus_from.is_dc and self.bus_to.is_dc:  # opposite sense, revert
+                return True
+            else:
+                return False
+        else:
+            return False

@@ -795,10 +795,13 @@ class LineGraphicItem(QGraphicsLineItem):
         Convert this object to VSC
         :return:
         """
-        ok = yes_no_question('Are you sure that you want to convert this line into a VSC device?', 'Convert line')
-        if ok:
-            editor = self.diagramScene.parent()
-            editor.convert_line_to_vsc(self.api_object)
+        if self.api_object.convertible_to_vsc():
+            ok = yes_no_question('Are you sure that you want to convert this line into a VSC device?', 'Convert line')
+            if ok:
+                editor = self.diagramScene.parent()
+                editor.convert_line_to_vsc(self.api_object)
+        else:
+            warning_msg('Unable to convert to VSC. One of the buses must be DC and the other AC.')
 
     def to_upfc(self):
         """

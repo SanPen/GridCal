@@ -575,7 +575,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
 
             else:
                 logger.add_info('No slack nodes in the island', str(i))
-    else:
+    elif len(calculation_inputs) == 1:
 
         if len(calculation_inputs[0].vd) > 0:
             # only one island
@@ -606,6 +606,10 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
 
         else:
             logger.add_error('There are no slack nodes')
+
+    else:
+        # no viable islands
+        pass
 
     # compile HVDC results (available for the complete grid since HVDC line as formulated are split objects
     # Pt is the "generation" at the sending point
