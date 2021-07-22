@@ -12,6 +12,9 @@
       <excludeFolder url="file://$MODULE_DIR$/src/dist" />
       <excludeFolder url="file://$MODULE_DIR$/src/research" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/src/Tutorials" />
+      <excludeFolder url="file://$MODULE_DIR$/src/tests" />
+      <excludeFolder url="file://$MODULE_DIR$/src/api_rest" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -55,7 +55,7 @@ description = 'GridCal is a Power Systems simulation program intended for profes
 
 base_path = os.path.join('GridCal')
 
-packages = find_packages(exclude=['docs', 'test', 'research', 'tests', 'Tutorials'])
+packages = find_packages(exclude=['*docs', '*test', '*research', '*tests', '*Tutorials'])
 
 package_data = {'GridCal': ['*.md',
                             '*.rst',
@@ -166,7 +166,7 @@ setup(
 
     # This should be your name or the name of the organization which owns the
     # project.
-    author='Santiago Peñate Vera et. al.',  # Optional
+    author='Santiago Peñate Vera et. Al.',  # Optional
 
     # This should be a valid email address corresponding to the author listed
     # above.
