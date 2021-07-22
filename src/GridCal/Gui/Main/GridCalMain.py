@@ -2778,10 +2778,26 @@ class MainGUI(QMainWindow):
                 # available transfer capacity inter areas
                 area_from = self.circuit.areas[self.ui.atcAreaFromComboBox.currentIndex()]
                 area_to = self.circuit.areas[self.ui.atcAreaToComboBox.currentIndex()]
-                lst_from = self.get_area_buses(area_from)
-                lst_to = self.get_area_buses(area_to)
+                lst_from = self.circuit.get_area_buses(area_from)
+                lst_to = self.circuit.get_area_buses(area_to)
+                lst_br = self.circuit.get_inter_area_branches(area_from, area_to)
                 idx_from = np.array([i for i, bus in lst_from])
                 idx_to = np.array([i for i, bus in lst_to])
+                idx_br = np.array([i for i, bus, sense in lst_br])
+                sense_br = np.array([sense for i, bus, sense in lst_br])
+
+                if self.ui.usePfValuesForAtcCheckBox.isChecked():
+                    pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
+                    if pf_results is not None:
+                        Pf = pf_results.Sf.real
+                        use_provided_flows = True
+                    else:
+                        warning_msg('There were no power flow values available. Linear flows will be used.')
+                        use_provided_flows = False
+                        Pf = None
+                else:
+                    use_provided_flows = False
+                    Pf = None
 
                 if len(idx_from) == 0:
                     error_msg('The area "from" has no buses!')
@@ -2791,6 +2807,10 @@ class MainGUI(QMainWindow):
                     error_msg('The area "to" has no buses!')
                     return
 
+                if len(idx_br) == 0:
+                    error_msg('There are no inter-area branches!')
+                    return
+
                 if area_from == area_to:
                     error_msg('Cannot analyze transfer capacity from and to the same area!')
                     return
@@ -2798,8 +2818,12 @@ class MainGUI(QMainWindow):
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
 
                 options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack,
+                                                               use_provided_flows=use_provided_flows,
                                                                bus_idx_from=idx_from,
                                                                bus_idx_to=idx_to,
+                                                               idx_br=idx_br,
+                                                               sense_br=sense_br,
+                                                               Pf=Pf,
                                                                dT=dT,
                                                                threshold=threshold,
                                                                mode=mode)
@@ -2861,10 +2885,13 @@ class MainGUI(QMainWindow):
                     # available transfer capacity inter areas
                     area_from = self.circuit.areas[self.ui.atcAreaFromComboBox.currentIndex()]
                     area_to = self.circuit.areas[self.ui.atcAreaToComboBox.currentIndex()]
-                    lst_from = self.get_area_buses(area_from)
-                    lst_to = self.get_area_buses(area_to)
+                    lst_from = self.circuit.get_area_buses(area_from)
+                    lst_to = self.circuit.get_area_buses(area_to)
+                    lst_br = self.circuit.get_inter_area_branches(area_from, area_to)
                     idx_from = np.array([i for i, bus in lst_from])
                     idx_to = np.array([i for i, bus in lst_to])
+                    idx_br = np.array([i for i, bus, sense in lst_br])
+                    sense_br = np.array([sense for i, bus, sense in lst_br])
 
                     if len(idx_from) == 0:
                         error_msg('The area "from" has no buses!')
@@ -2872,6 +2899,10 @@ class MainGUI(QMainWindow):
 
                     if len(idx_to) == 0:
                         error_msg('The area "to" has no buses!')
+                        return
+
+                    if len(idx_br) == 0:
+                        error_msg('There are no inter-area branches!')
                         return
 
                     if area_from == area_to:
@@ -2883,6 +2914,8 @@ class MainGUI(QMainWindow):
                     options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack,
                                                                    bus_idx_from=idx_from,
                                                                    bus_idx_to=idx_to,
+                                                                   idx_br=idx_br,
+                                                                   sense_br=sense_br,
                                                                    dT=dT,
                                                                    threshold=threshold,
                                                                    mode=mode)
@@ -5556,28 +5589,6 @@ class MainGUI(QMainWindow):
             if bus.graphic_obj is not None:
                 if bus.graphic_obj.isSelected():
                     lst.append((k, bus))
-        return lst
-
-    def get_area_buses(self, area: Area) -> List[Tuple[int, Bus]]:
-        """
-        Get the selected buses
-        :return:
-        """
-        lst: List[Tuple[int, Bus]] = list()
-        for k, bus in enumerate(self.circuit.buses):
-            if bus.area == area:
-                lst.append((k, bus))
-        return lst
-
-    def get_zone_buses(self, zone: Zone) -> List[Tuple[int, Bus]]:
-        """
-        Get the selected buses
-        :return:
-        """
-        lst: List[Tuple[int, Bus]] = list()
-        for k, bus in enumerate(self.circuit.buses):
-            if bus.zone == zone:
-                lst.append((k, bus))
         return lst
 
     def delete_selected_from_the_schematic(self):

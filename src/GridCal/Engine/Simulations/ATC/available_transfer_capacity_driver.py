@@ -294,10 +294,14 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         self.rates = np.zeros(self.n_br)
         self.contingency_rates = np.zeros(self.n_br)
 
+        self.base_exchange = 0
+
         self.alpha = np.zeros(self.n_br)
         self.atc = np.zeros(self.n_br)
         self.atc_n = np.zeros(self.n_br)
         self.atc_mc = np.zeros(self.n_br)
+        self.ntc = np.zeros(self.n_br)
+
         self.beta_mat = np.zeros((self.n_br, self.n_br))
         self.beta = np.zeros(self.n_br)
         self.atc_limiting_contingency_branch = np.zeros(self.n_br, dtype=int)
@@ -335,11 +339,13 @@ class AvailableTransferCapacityResults(ResultsTemplate):
                                'Contingency rate',
                                'Beta',
                                'Contingency ATC',
-                               'ATC']
+                               'ATC',
+                               'Base exchange flow',
+                               'NTC']
         self.report = np.empty((self.n_br, len(self.report_headers)), dtype=object)
 
         # sort by ATC
-        idx = np.argsort(self.atc)
+        idx = np.argsort(self.ntc)
         self.report_indices = self.branch_names[idx]
         self.report[:, 0] = self.branch_names[idx]  # 'Branch'
         self.report[:, 1] = self.base_flow[idx]  # 'Base flow'
@@ -354,6 +360,8 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         self.report[:, 8] = self.beta[idx]  # 'Beta'
         self.report[:, 9] = self.atc_mc[idx]  # 'Contingency ATC'
         self.report[:, 10] = self.atc[idx]  # ATC
+        self.report[:, 11] = self.base_exchange  # Base exchange flow
+        self.report[:, 12] = self.ntc[idx]  # NTC
 
         # trim by abs alpha > threshold
         loading = np.abs(self.report[:, 1] / (self.report[:, 2] + 1e-20))
@@ -424,22 +432,30 @@ class AvailableTransferCapacityResults(ResultsTemplate):
 
 class AvailableTransferCapacityOptions:
 
-    def __init__(self, distributed_slack=True, correct_values=True,
-                 bus_idx_from=list(), bus_idx_to=list(), dT=100.0, threshold=0.02,
-                 mode: AvailableTransferMode = AvailableTransferMode.Generation):
+    def __init__(self, distributed_slack=True, correct_values=True, use_provided_flows=False,
+                 bus_idx_from=list(), bus_idx_to=list(), idx_br=list(), sense_br=list(), Pf=None,
+                 dT=100.0, threshold=0.02, mode: AvailableTransferMode = AvailableTransferMode.Generation):
         """
 
         :param distributed_slack:
         :param correct_values:
         :param bus_idx_from:
         :param bus_idx_to:
+        :param idx_br:
+        :param sense_br:
+        :param Pf:
         :param dT:
         :param threshold:
+        :param mode:
         """
         self.distributed_slack = distributed_slack
         self.correct_values = correct_values
+        self.use_provided_flows = use_provided_flows
         self.bus_idx_from = bus_idx_from
         self.bus_idx_to = bus_idx_to
+        self.inter_area_branch_idx = idx_br
+        self.inter_area_branch_sense = sense_br
+        self.Pf = Pf
         self.dT = dT
         self.threshold = threshold
         self.mode = mode
@@ -483,9 +499,6 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         nc = compile_snapshot_circuit(self.grid)
 
         # get the converted bus indices
-        # idx1b, idx2b = compute_transfer_indices(idx1=self.options.bus_idx_from,
-        #                                         idx2=self.options.bus_idx_to,
-        #                                         bus_types=nc.bus_types)
         idx1b = self.options.bus_idx_from
         idx2b = self.options.bus_idx_to
 
@@ -515,7 +528,18 @@ class AvailableTransferCapacityDriver(DriverTemplate):
                               mode=self.options.mode.value)
 
         # get flow
-        flows = linear.get_flows(nc.Sbus)
+        if self.options.use_provided_flows:
+            flows = self.options.Pf
+
+            if self.options.Pf is None:
+                msg = 'The option to use the provided flows is enabled, but no flows are available'
+                self.logger.add_error(msg)
+                raise Exception(msg)
+        else:
+            flows = linear.get_flows(nc.Sbus)
+
+        # base exchange
+        base_exchange = (self.options.inter_area_branch_sense * flows[self.options.inter_area_branch_idx]).sum()
 
         # compute ATC
         beta_mat, beta_used, atc_n, atc_mc, atc_final, \
@@ -526,14 +550,15 @@ class AvailableTransferCapacityDriver(DriverTemplate):
                                                     flows=flows,
                                                     rates=nc.Rates,
                                                     contingency_rates=nc.ContingencyRates,
-                                                    threshold=self.options.threshold
-                                                    )
+                                                    threshold=self.options.threshold)
 
         # post-process and store the results
         self.results.alpha = alpha
         self.results.atc = atc_final
         self.results.atc_n = atc_n
         self.results.atc_mc = atc_mc
+        self.results.ntc = atc_final + base_exchange
+        self.results.base_exchange = base_exchange
         self.results.beta_mat = beta_mat
         self.results.beta = beta_used
         self.results.atc_limiting_contingency_branch = atc_limiting_contingency_branch.astype(int)

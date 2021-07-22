@@ -76,10 +76,13 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.rates = np.zeros((self.nt, self.n_br))
         self.contingency_rates = np.zeros((self.nt, self.n_br))
 
+        self.base_exchange = np.zeros(self.nt)
+
         self.alpha = np.zeros((self.nt, self.n_br))
         self.atc = np.zeros((self.nt, self.n_br))
         self.atc_n = np.zeros((self.nt, self.n_br))
         self.atc_mc = np.zeros((self.nt, self.n_br))
+        self.ntc = np.zeros((self.nt, self.n_br))
 
         self.beta = np.zeros((self.nt, self.n_br))
         self.atc_limiting_contingency_branch = np.zeros((self.nt, self.n_br), dtype=int)

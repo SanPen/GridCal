@@ -71,7 +71,7 @@ class ResultsTable:
         :return: Nothing
         """
         sliced_model = ResultsTable(data=self.data_c[:, col_idx],
-                                    columns=self.cols_c[col_idx],
+                                    columns=[self.cols_c[i] for i in col_idx],
                                     index=self.index_c,
                                     palette=None,
                                     title=self.title,
@@ -96,7 +96,7 @@ class ResultsTable:
         for i, val in enumerate(self.cols_c):
             if txt2 in val.lower():
                 idx.append(i)
-
+        idx = np.array(idx)
         if len(idx) > 0:
             return self.slice_cols(idx)
         else:

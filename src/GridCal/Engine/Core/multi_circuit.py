@@ -2086,3 +2086,55 @@ class MultiCircuit:
                 logger.add_error("Missing in the model", col_name)
 
         return logger
+
+    def get_area_buses(self, area: Area) -> List[Tuple[int, Bus]]:
+        """
+        Get the selected buses
+        :return:
+        """
+        lst: List[Tuple[int, Bus]] = list()
+        for k, bus in enumerate(self.buses):
+            if bus.area == area:
+                lst.append((k, bus))
+        return lst
+
+    def get_zone_buses(self, zone: Zone) -> List[Tuple[int, Bus]]:
+        """
+        Get the selected buses
+        :return:
+        """
+        lst: List[Tuple[int, Bus]] = list()
+        for k, bus in enumerate(self.buses):
+            if bus.zone == zone:
+                lst.append((k, bus))
+        return lst
+
+    def get_inter_area_branches(self, a1: Area, a2: Area):
+        """
+        Get the inter-area branches
+        :param a1: Area from
+        :param a2: Area to
+        :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+        """
+        lst: List[Tuple[int, object, float]] = list()
+        for k, branch in enumerate(self.get_branches()):
+            if branch.bus_from.area == a1 and branch.bus_to.area == a2:
+                lst.append((k, branch, 1.0))
+            elif branch.bus_from.area == a2 and branch.bus_to.area == a1:
+                lst.append((k, branch, -1.0))
+        return lst
+
+    def get_inter_zone_branches(self, z1: Zone, z2: Zone):
+        """
+        Get the inter-area branches
+        :param z1: Zone from
+        :param z2: Zone to
+        :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+        """
+        lst: List[Tuple[int, object, float]] = list()
+        for k, branch in enumerate(self.get_branches()):
+            if branch.bus_from.zone == z1 and branch.bus_to.zone == z2:
+                lst.append((k, branch, 1.0))
+            elif branch.bus_from.zone == z2 and branch.bus_to.zone == z1:
+                lst.append((k, branch, -1.0))
+        return lst
