@@ -23,7 +23,7 @@ from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnaly
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisOptions
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import ContingencyAnalysisTimeSeriesResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
-from GridCal.Engine.Simulations.driver_template import TSDriverTemplate
+from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 
 
 @jit(nopython=True, parallel=False)
@@ -75,7 +75,7 @@ def compute_flows_numba(e, nt, nc, LODF, Flows, rates, overload_count, max_overl
             compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_overload, worst_flows)
 
 
-class ContingencyAnalysisTimeSeries(TSDriverTemplate):
+class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
     name = 'Contingency analysis time series'
     tpe = SimulationTypes.ContingencyAnalysisTS_run
 
@@ -86,10 +86,10 @@ class ContingencyAnalysisTimeSeries(TSDriverTemplate):
         @param options: N-k options
         @:param pf_options: power flow options
         """
-        TSDriverTemplate.__init__(self,
-                                  grid=grid,
-                                  start_=start_,
-                                  end_=end_)
+        TimeSeriesDriverTemplate.__init__(self,
+                                          grid=grid,
+                                          start_=start_,
+                                          end_=end_)
 
         # Options to use
         self.options = options

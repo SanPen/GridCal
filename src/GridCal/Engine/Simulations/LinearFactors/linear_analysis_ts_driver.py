@@ -29,7 +29,7 @@ from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
-from GridCal.Engine.Simulations.driver_template import TSDriverTemplate
+from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 
 
 class LinearAnalysisTimeSeriesResults(ResultsTemplate):
@@ -144,7 +144,7 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
         return ResultsTable(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
 
 
-class LinearAnalysisTimeSeries(TSDriverTemplate):
+class LinearAnalysisTimeSeries(TimeSeriesDriverTemplate):
     name = 'Linear analysis time series'
     tpe = SimulationTypes.LinearAnalysis_TS_run
 
@@ -154,7 +154,7 @@ class LinearAnalysisTimeSeries(TSDriverTemplate):
         @param grid: MultiCircuit instance
         @param options: LinearAnalysisOptions instance
         """
-        TSDriverTemplate.__init__(self, grid=grid, start_=start_, end_=end_)
+        TimeSeriesDriverTemplate.__init__(self, grid=grid, start_=start_, end_=end_)
 
         self.options = options
 

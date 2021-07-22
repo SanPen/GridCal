@@ -65,7 +65,7 @@ class DriverTemplate:
         self.done_signal.emit()
 
 
-class TSDriverTemplate(DriverTemplate):
+class TimeSeriesDriverTemplate(DriverTemplate):
 
     def __init__(self, grid: MultiCircuit, start_=0, end_=None):
 

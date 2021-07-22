@@ -25,7 +25,7 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
-from GridCal.Engine.Simulations.driver_template import TSDriverTemplate
+from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 
 
 class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
@@ -248,7 +248,7 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
         return mdl
 
 
-class AvailableTransferCapacityTimeSeriesDriver(TSDriverTemplate):
+class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
     tpe = SimulationTypes.NetTransferCapacityTS_run
     name = tpe.value
 
@@ -259,10 +259,10 @@ class AvailableTransferCapacityTimeSeriesDriver(TSDriverTemplate):
         @param options: OPF options
         @:param pf_results: PowerFlowResults, this is to get the Sf
         """
-        TSDriverTemplate.__init__(self,
-                                  grid=grid,
-                                  start_=start_,
-                                  end_=end_)
+        TimeSeriesDriverTemplate.__init__(self,
+                                          grid=grid,
+                                          start_=start_,
+                                          end_=end_)
 
         # Options to use
         self.options = options
