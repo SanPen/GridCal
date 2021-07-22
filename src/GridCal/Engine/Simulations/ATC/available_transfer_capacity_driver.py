@@ -258,11 +258,12 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         """
         ResultsTemplate.__init__(self,
                                  name='ATC Results',
-                                 available_results=[ResultTypes.NetTransferCapacity,
-                                                    ResultTypes.NetTransferCapacityN,
-                                                    ResultTypes.NetTransferCapacityAlpha,
-                                                    ResultTypes.NetTransferCapacityBeta,
-                                                    ResultTypes.NetTransferCapacityReport
+                                 available_results=[ResultTypes.AvailableTransferCapacity,
+                                                    ResultTypes.NetTransferCapacity,
+                                                    ResultTypes.AvailableTransferCapacityN,
+                                                    ResultTypes.AvailableTransferCapacityAlpha,
+                                                    ResultTypes.AvailableTransferCapacityBeta,
+                                                    ResultTypes.AvailableTransferCapacityReport
                                                     ],
                                  data_variables=['alpha',
                                                  'beta_mat',
@@ -388,31 +389,37 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         """
         index = self.branch_names
 
-        if result_type == ResultTypes.NetTransferCapacity:
+        if result_type == ResultTypes.AvailableTransferCapacity:
             data = self.atc
             y_label = '(MW)'
             title, _ = result_type.value
             labels = ['ATC']
             index = self.branch_names
-        elif result_type == ResultTypes.NetTransferCapacityN:
+        elif result_type == ResultTypes.NetTransferCapacity:
+            data = self.ntc
+            y_label = '(MW)'
+            title, _ = result_type.value
+            labels = ['NTC']
+            index = self.branch_names
+        elif result_type == ResultTypes.AvailableTransferCapacityN:
             data = self.atc_n
             y_label = '(MW)'
             title, _ = result_type.value
             labels = ['ATC (N)']
             index = self.branch_names
-        elif result_type == ResultTypes.NetTransferCapacityAlpha:
+        elif result_type == ResultTypes.AvailableTransferCapacityAlpha:
             data = self.alpha
             y_label = '(p.u.)'
             title, _ = result_type.value
             labels = ['Sensitivity to the exchange']
             index = self.branch_names
-        elif result_type == ResultTypes.NetTransferCapacityBeta:
+        elif result_type == ResultTypes.AvailableTransferCapacityBeta:
             data = self.beta_mat
             y_label = '(p.u.)'
             title, _ = result_type.value
             labels = ['#' + x for x in self.branch_names]
             index = self.branch_names
-        elif result_type == ResultTypes.NetTransferCapacityReport:
+        elif result_type == ResultTypes.AvailableTransferCapacityReport:
             data = np.array(self.report)
             y_label = ''
             title, _ = result_type.value
