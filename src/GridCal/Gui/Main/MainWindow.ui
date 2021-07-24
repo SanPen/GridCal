@@ -3011,105 +3011,7 @@ p, li { white-space: pre-wrap; }
                <enum>QFrame::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_14">
-               <item row="5" column="0">
-                <widget class="QLabel" name="label_90">
-                 <property name="minimumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="pixmap">
-                  <pixmap resource="icons.qrc">:/Icons/icons/atc.svg</pixmap>
-                 </property>
-                 <property name="scaledContents">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0" colspan="3">
-                <widget class="QCheckBox" name="ptdf_distributed_slack_checkBox">
-                 <property name="text">
-                  <string>Distributed slack</string>
-                 </property>
-                 <property name="checked">
-                  <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="9" column="0">
-                <spacer name="verticalSpacer_12">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item row="1" column="0" colspan="3">
-                <widget class="Line" name="line_22">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <property name="lineWidth">
-                  <number>4</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="0" colspan="3">
+               <item row="0" column="0" colspan="2">
                 <widget class="QFrame" name="frame_42">
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
@@ -3210,14 +3112,102 @@ p, li { white-space: pre-wrap; }
                  </layout>
                 </widget>
                </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="label_40">
-                 <property name="text">
-                  <string/>
+               <item row="6" column="0">
+                <spacer name="verticalSpacer_12">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="1" column="0" colspan="2">
+                <widget class="Line" name="line_22">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>4</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="0" colspan="3">
+               <item row="2" column="0" colspan="2">
+                <widget class="QCheckBox" name="ptdf_distributed_slack_checkBox">
+                 <property name="text">
+                  <string>Distributed slack</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0" colspan="2">
+                <widget class="QCheckBox" name="ptdf_correct_nonsense_values_checkBox">
+                 <property name="text">
+                  <string>Correct nonsense values</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QFrame" name="frame_64">
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_13">
+               <item row="1" column="0" colspan="2">
                 <widget class="Line" name="line_23">
                  <property name="palette">
                   <palette>
@@ -3267,7 +3257,45 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1" colspan="2">
+               <item row="3" column="1">
+                <spacer name="verticalSpacer_9">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>150</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_90">
+                 <property name="minimumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="icons.qrc">:/Icons/icons/atc.svg</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
                 <widget class="QLabel" name="label_61">
                  <property name="palette">
                   <palette>
@@ -3316,17 +3344,7 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="3" column="0" colspan="3">
-                <widget class="QCheckBox" name="ptdf_correct_nonsense_values_checkBox">
-                 <property name="text">
-                  <string>Correct nonsense values</string>
-                 </property>
-                 <property name="checked">
-                  <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="8" column="0" colspan="3">
+               <item row="2" column="0" colspan="2">
                 <widget class="QFrame" name="frame_63">
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
@@ -3335,8 +3353,46 @@ p, li { white-space: pre-wrap; }
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_4">
-                  <item row="5" column="1" colspan="2">
-                   <widget class="QComboBox" name="atcAreaFromComboBox"/>
+                  <item row="6" column="2">
+                   <widget class="QLabel" name="label_21">
+                    <property name="text">
+                     <string>Areas to</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0" colspan="2">
+                   <widget class="QLabel" name="label_62">
+                    <property name="text">
+                     <string>Transfer sensitivity threshold</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="6" column="0" colspan="2">
+                   <widget class="QLabel" name="label_41">
+                    <property name="text">
+                     <string>Areas from</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0" colspan="2">
+                   <widget class="QLabel" name="label_77">
+                    <property name="text">
+                     <string>Transfer method</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="2">
+                   <widget class="QComboBox" name="transferMethodComboBox"/>
+                  </item>
+                  <item row="2" column="0" colspan="2">
+                   <widget class="QLabel" name="label_91">
+                    <property name="text">
+                     <string>Perturbance power</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="8" column="0">
+                   <widget class="QListView" name="areaFromListView"/>
                   </item>
                   <item row="3" column="2">
                    <widget class="QDoubleSpinBox" name="atcThresholdSpinBox">
@@ -3354,16 +3410,6 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="3" column="0" colspan="2">
-                   <widget class="QLabel" name="label_62">
-                    <property name="text">
-                     <string>Transfer sensitivity threshold</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="6" column="1" colspan="2">
-                   <widget class="QComboBox" name="atcAreaToComboBox"/>
-                  </item>
                   <item row="2" column="2">
                    <widget class="QDoubleSpinBox" name="atcPerturbanceSpinBox">
                     <property name="toolTip">
@@ -3380,48 +3426,13 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="0" colspan="2">
-                   <widget class="QLabel" name="label_91">
-                    <property name="text">
-                     <string>Perturbance power</string>
-                    </property>
-                   </widget>
+                  <item row="8" column="2">
+                   <widget class="QListView" name="areaToListView"/>
                   </item>
-                  <item row="4" column="0" colspan="2">
-                   <widget class="QLabel" name="label_77">
-                    <property name="text">
-                     <string>Transfer method</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="6" column="0">
-                   <widget class="QLabel" name="label_21">
-                    <property name="text">
-                     <string>Area to</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="9" column="0" colspan="2">
-                   <widget class="QLabel" name="label_44">
-                    <property name="text">
-                     <string/>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="4" column="2">
-                   <widget class="QComboBox" name="transferMethodComboBox"/>
-                  </item>
-                  <item row="5" column="0">
-                   <widget class="QLabel" name="label_41">
-                    <property name="text">
-                     <string>Area from</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="10" column="0" colspan="3">
+                  <item row="5" column="0" colspan="3">
                    <widget class="QCheckBox" name="usePfValuesForAtcCheckBox">
                     <property name="text">
-                     <string>Use power flow values is available</string>
+                     <string>Use power flow values if available</string>
                     </property>
                     <property name="checked">
                      <bool>true</bool>
@@ -3442,263 +3453,6 @@ p, li { white-space: pre-wrap; }
               <property name="sizeHint" stdset="0">
                <size>
                 <width>781</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_4">
-           <attribute name="icon">
-            <iconset resource="icons.qrc">
-             <normaloff>:/Icons/icons/dcopf.svg</normaloff>:/Icons/icons/dcopf.svg</iconset>
-           </attribute>
-           <attribute name="title">
-            <string>OPF</string>
-           </attribute>
-           <attribute name="toolTip">
-            <string>Optimal power flow settings</string>
-           </attribute>
-           <layout class="QGridLayout" name="gridLayout_10">
-            <item row="1" column="0">
-             <spacer name="verticalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>260</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="0" column="0">
-             <widget class="QFrame" name="frame_30">
-              <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_20">
-               <item>
-                <widget class="QFrame" name="frame_43">
-                 <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
-                 </property>
-                 <layout class="QHBoxLayout" name="horizontalLayout_15">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QLabel" name="label_72">
-                    <property name="minimumSize">
-                     <size>
-                      <width>24</width>
-                      <height>24</height>
-                     </size>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>24</width>
-                      <height>24</height>
-                     </size>
-                    </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                    <property name="pixmap">
-                     <pixmap resource="icons.qrc">:/Icons/icons/dcopf.svg</pixmap>
-                    </property>
-                    <property name="scaledContents">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QLabel" name="label_73">
-                    <property name="palette">
-                     <palette>
-                      <active>
-                       <colorrole role="WindowText">
-                        <brush brushstyle="SolidPattern">
-                         <color alpha="255">
-                          <red>85</red>
-                          <green>87</green>
-                          <blue>83</blue>
-                         </color>
-                        </brush>
-                       </colorrole>
-                      </active>
-                      <inactive>
-                       <colorrole role="WindowText">
-                        <brush brushstyle="SolidPattern">
-                         <color alpha="255">
-                          <red>85</red>
-                          <green>87</green>
-                          <blue>83</blue>
-                         </color>
-                        </brush>
-                       </colorrole>
-                      </inactive>
-                      <disabled>
-                       <colorrole role="WindowText">
-                        <brush brushstyle="SolidPattern">
-                         <color alpha="255">
-                          <red>190</red>
-                          <green>190</green>
-                          <blue>190</blue>
-                         </color>
-                        </brush>
-                       </colorrole>
-                      </disabled>
-                     </palette>
-                    </property>
-                    <property name="font">
-                     <font>
-                      <pointsize>16</pointsize>
-                     </font>
-                    </property>
-                    <property name="text">
-                     <string>Optimal Power Flow</string>
-                    </property>
-                    <property name="alignment">
-                     <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item>
-                <widget class="Line" name="line_16">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <property name="lineWidth">
-                  <number>4</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QFrame" name="frame_2">
-                 <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
-                 </property>
-                 <layout class="QGridLayout" name="gridLayout_3">
-                  <item row="0" column="1">
-                   <widget class="QComboBox" name="lpf_solver_comboBox">
-                    <property name="toolTip">
-                     <string>Choose the optimal power flow method</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="0">
-                   <widget class="QLabel" name="label_4">
-                    <property name="text">
-                     <string>Time grouping</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="label_42">
-                    <property name="text">
-                     <string>Method</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="QComboBox" name="opf_time_grouping_comboBox">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the time grouping to possibly shorten the solution time.&lt;/p&gt;&lt;p&gt;This splits the time series by week, month, etc. and the subproblems are solved sequentially.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="label_10">
-                    <property name="text">
-                     <string>MIP solver</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="1">
-                   <widget class="QComboBox" name="mip_solver_comboBox">
-                    <property name="toolTip">
-                     <string>Choose the external mixed integer programming solver</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <spacer name="horizontalSpacer_10">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
                 <height>20</height>
                </size>
               </property>
@@ -3741,26 +3495,16 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="10" column="5">
-                <widget class="QComboBox" name="areaToComboBox"/>
-               </item>
                <item row="9" column="3">
                 <widget class="QComboBox" name="vs_departure_comboBox"/>
                </item>
                <item row="10" column="3">
                 <widget class="QComboBox" name="vs_target_comboBox"/>
                </item>
-               <item row="10" column="4">
-                <widget class="QLabel" name="label_26">
-                 <property name="text">
-                  <string>Area to</string>
-                 </property>
-                </widget>
-               </item>
                <item row="9" column="4">
                 <widget class="QLabel" name="label_25">
                  <property name="text">
-                  <string>Area from</string>
+                  <string>Refer to the ATC areas (linear tab)</string>
                  </property>
                 </widget>
                </item>
@@ -3783,9 +3527,6 @@ p, li { white-space: pre-wrap; }
                   <number>20</number>
                  </property>
                 </widget>
-               </item>
-               <item row="9" column="5">
-                <widget class="QComboBox" name="areaFromComboBox"/>
                </item>
                <item row="4" column="0">
                 <spacer name="verticalSpacer_7">
@@ -4171,6 +3912,263 @@ points from time series</string>
             </item>
             <item row="0" column="1">
              <spacer name="horizontalSpacer_11">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_4">
+           <attribute name="icon">
+            <iconset resource="icons.qrc">
+             <normaloff>:/Icons/icons/dcopf.svg</normaloff>:/Icons/icons/dcopf.svg</iconset>
+           </attribute>
+           <attribute name="title">
+            <string>OPF</string>
+           </attribute>
+           <attribute name="toolTip">
+            <string>Optimal power flow settings</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_10">
+            <item row="1" column="0">
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>260</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="0" column="0">
+             <widget class="QFrame" name="frame_30">
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_20">
+               <item>
+                <widget class="QFrame" name="frame_43">
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_15">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QLabel" name="label_72">
+                    <property name="minimumSize">
+                     <size>
+                      <width>24</width>
+                      <height>24</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>24</width>
+                      <height>24</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="pixmap">
+                     <pixmap resource="icons.qrc">:/Icons/icons/dcopf.svg</pixmap>
+                    </property>
+                    <property name="scaledContents">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_73">
+                    <property name="palette">
+                     <palette>
+                      <active>
+                       <colorrole role="WindowText">
+                        <brush brushstyle="SolidPattern">
+                         <color alpha="255">
+                          <red>85</red>
+                          <green>87</green>
+                          <blue>83</blue>
+                         </color>
+                        </brush>
+                       </colorrole>
+                      </active>
+                      <inactive>
+                       <colorrole role="WindowText">
+                        <brush brushstyle="SolidPattern">
+                         <color alpha="255">
+                          <red>85</red>
+                          <green>87</green>
+                          <blue>83</blue>
+                         </color>
+                        </brush>
+                       </colorrole>
+                      </inactive>
+                      <disabled>
+                       <colorrole role="WindowText">
+                        <brush brushstyle="SolidPattern">
+                         <color alpha="255">
+                          <red>190</red>
+                          <green>190</green>
+                          <blue>190</blue>
+                         </color>
+                        </brush>
+                       </colorrole>
+                      </disabled>
+                     </palette>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>16</pointsize>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>Optimal Power Flow</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="Line" name="line_16">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>4</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QFrame" name="frame_2">
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_3">
+                  <item row="0" column="1">
+                   <widget class="QComboBox" name="lpf_solver_comboBox">
+                    <property name="toolTip">
+                     <string>Choose the optimal power flow method</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_4">
+                    <property name="text">
+                     <string>Time grouping</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_42">
+                    <property name="text">
+                     <string>Method</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QComboBox" name="opf_time_grouping_comboBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the time grouping to possibly shorten the solution time.&lt;/p&gt;&lt;p&gt;This splits the time series by week, month, etc. and the subproblems are solved sequentially.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_10">
+                    <property name="text">
+                     <string>MIP solver</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QComboBox" name="mip_solver_comboBox">
+                    <property name="toolTip">
+                     <string>Choose the external mixed integer programming solver</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <spacer name="horizontalSpacer_10">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>

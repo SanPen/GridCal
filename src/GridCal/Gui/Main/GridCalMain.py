@@ -1290,15 +1290,15 @@ class MainGUI(QMainWindow):
         Update the area dependent combos
         """
         n = len(self.circuit.areas)
-        mdl = get_list_model([str(elm) for elm in self.circuit.areas])
-        self.ui.areaFromComboBox.setModel(mdl)
-        self.ui.areaToComboBox.setModel(mdl)
-        self.ui.atcAreaFromComboBox.setModel(mdl)
-        self.ui.atcAreaToComboBox.setModel(mdl)
+        mdl1 = get_list_model([str(elm) for elm in self.circuit.areas], checks=True)
+        mdl2 = get_list_model([str(elm) for elm in self.circuit.areas], checks=True)
+
+        self.ui.areaFromListView.setModel(mdl1)
+        self.ui.areaToListView.setModel(mdl2)
 
         if n > 1:
-            self.ui.areaToComboBox.setCurrentIndex(1)
-            self.ui.atcAreaToComboBox.setCurrentIndex(1)
+            self.ui.areaFromListView.model().item(0).setCheckState(QtCore.Qt.Checked)
+            self.ui.areaToListView.model().item(1).setCheckState(QtCore.Qt.Checked)
 
     def save_file_as(self):
         """
@@ -2776,11 +2776,11 @@ class MainGUI(QMainWindow):
                 threshold = self.ui.atcThresholdSpinBox.value()
 
                 # available transfer capacity inter areas
-                area_from = self.circuit.areas[self.ui.atcAreaFromComboBox.currentIndex()]
-                area_to = self.circuit.areas[self.ui.atcAreaToComboBox.currentIndex()]
-                lst_from = self.circuit.get_area_buses(area_from)
-                lst_to = self.circuit.get_area_buses(area_to)
-                lst_br = self.circuit.get_inter_area_branches(area_from, area_to)
+                compatible_areas, lst_from, lst_to, lst_br = self.get_compatible_areas_from_to()
+
+                if not compatible_areas:
+                    return
+
                 idx_from = np.array([i for i, bus in lst_from])
                 idx_to = np.array([i for i, bus in lst_to])
                 idx_br = np.array([i for i, bus, sense in lst_br])
@@ -2809,10 +2809,6 @@ class MainGUI(QMainWindow):
 
                 if len(idx_br) == 0:
                     error_msg('There are no inter-area branches!')
-                    return
-
-                if area_from == area_to:
-                    error_msg('Cannot analyze transfer capacity from and to the same area!')
                     return
 
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
@@ -2883,11 +2879,11 @@ class MainGUI(QMainWindow):
                     threshold = self.ui.atcThresholdSpinBox.value()
 
                     # available transfer capacity inter areas
-                    area_from = self.circuit.areas[self.ui.atcAreaFromComboBox.currentIndex()]
-                    area_to = self.circuit.areas[self.ui.atcAreaToComboBox.currentIndex()]
-                    lst_from = self.circuit.get_area_buses(area_from)
-                    lst_to = self.circuit.get_area_buses(area_to)
-                    lst_br = self.circuit.get_inter_area_branches(area_from, area_to)
+                    compatible_areas, lst_from, lst_to, lst_br = self.get_compatible_areas_from_to()
+
+                    if not compatible_areas:
+                        return
+
                     idx_from = np.array([i for i, bus in lst_from])
                     idx_to = np.array([i for i, bus in lst_to])
                     idx_br = np.array([i for i, bus, sense in lst_br])
@@ -2918,9 +2914,7 @@ class MainGUI(QMainWindow):
                         error_msg('There are no inter-area branches!')
                         return
 
-                    if area_from == area_to:
-                        error_msg('Cannot analyze transfer capacity from and to the same area!')
-                        return
+
 
                     mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
 
@@ -2980,54 +2974,6 @@ class MainGUI(QMainWindow):
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
 
-    def get_selected_continuation_power_flow_options(self):
-        """
-        Gather the voltage stability options
-        :return:
-        """
-        use_alpha = self.ui.start_vs_from_default_radioButton.isChecked()
-
-        # direction vector
-        alpha = self.ui.alpha_doubleSpinBox.value()
-        n = len(self.circuit.buses)
-
-        # vector that multiplies the target power: The continuation direction
-        alpha_vec = np.ones(n)
-
-        if self.ui.atcRadioButton.isChecked():
-            use_alpha = True
-            # available transfer capacity inter areas
-            area_from = self.circuit.areas[self.ui.areaFromComboBox.currentIndex()]
-            area_to = self.circuit.areas[self.ui.areaToComboBox.currentIndex()]
-
-            if area_from != area_to:
-                lst_from = self.get_area_buses(area_from)
-                lst_to = self.get_area_buses(area_to)
-                idx_from = [i for i, bus in lst_from]
-                idx_to = [i for i, bus in lst_to]
-
-                alpha_vec[idx_from] *= 2
-                alpha_vec[idx_to] *= -2
-                idx = np.zeros(0, dtype=int)  # for completeness
-            else:
-                idx = np.zeros(0, dtype=int)  # for completeness
-        else:
-            sel_buses = self.get_selected_buses()
-            if len(sel_buses) == 0:
-                # all nodes
-                alpha_vec *= alpha
-                idx = np.zeros(0, dtype=int)  # for completeness
-            else:
-                # pick the selected nodes
-                idx = np.array([k for k, bus in sel_buses])
-                alpha_vec[idx] = alpha_vec[idx] * alpha
-
-        use_profiles = self.ui.start_vs_from_selected_radioButton.isChecked()
-        start_idx = self.ui.vs_departure_comboBox.currentIndex()
-        end_idx = self.ui.vs_target_comboBox.currentIndex()
-
-        return use_alpha, alpha_vec, use_profiles, start_idx, end_idx, idx
-
     def run_continuation_power_flow(self):
         """
         Run voltage stability (voltage collapse) in a separated thread
@@ -3042,18 +2988,45 @@ class MainGUI(QMainWindow):
 
                 if sim.SimulationTypes.ContinuationPowerFlow_run not in self.stuff_running_now:
 
-                    if self.ui.atcRadioButton.isChecked():
-                        # available transfer capacity inter areas
-                        area_from = self.circuit.areas[self.ui.areaFromComboBox.currentIndex()]
-                        area_to = self.circuit.areas[self.ui.areaToComboBox.currentIndex()]
-
-                        if area_from == area_to:
-                            error_msg('Cannot analyze transfer capacity from and to the same area!')
-                            return
-
                     # get the selected UI options
-                    use_alpha, alpha, use_profiles, \
-                    start_idx, end_idx, sel_bus_idx = self.get_selected_continuation_power_flow_options()
+                    use_alpha = self.ui.start_vs_from_default_radioButton.isChecked()
+
+                    # direction vector
+                    alpha = self.ui.alpha_doubleSpinBox.value()
+                    n = len(self.circuit.buses)
+
+                    # vector that multiplies the target power: The continuation direction
+                    alpha_vec = np.ones(n)
+
+                    if self.ui.atcRadioButton.isChecked():
+                        use_alpha = True
+                        compatible_areas, lst_from, lst_to, lst_br = self.get_compatible_areas_from_to()
+
+                        if compatible_areas:
+                            idx_from = [i for i, bus in lst_from]
+                            idx_to = [i for i, bus in lst_to]
+
+                            alpha_vec[idx_from] *= 2
+                            alpha_vec[idx_to] *= -2
+                            sel_bus_idx = np.zeros(0, dtype=int)  # for completeness
+                        else:
+                            sel_bus_idx = np.zeros(0, dtype=int)  # for completeness
+                            # incompatible areas...exit
+                            return
+                    else:
+                        sel_buses = self.get_selected_buses()
+                        if len(sel_buses) == 0:
+                            # all nodes
+                            alpha_vec *= alpha
+                            sel_bus_idx = np.zeros(0, dtype=int)  # for completeness
+                        else:
+                            # pick the selected nodes
+                            sel_bus_idx = np.array([k for k, bus in sel_buses])
+                            alpha_vec[sel_bus_idx] = alpha_vec[sel_bus_idx] * alpha
+
+                    use_profiles = self.ui.start_vs_from_selected_radioButton.isChecked()
+                    start_idx = self.ui.vs_departure_comboBox.currentIndex()
+                    end_idx = self.ui.vs_target_comboBox.currentIndex()
 
                     if len(sel_bus_idx) > 0:
                         if sum([self.circuit.buses[i].get_device_number() for i in sel_bus_idx]) == 0:
@@ -6009,6 +5982,30 @@ class MainGUI(QMainWindow):
         """
         self.apply_new_snapshot_rates()
         self.apply_new_time_series_rates()
+
+    def get_compatible_areas_from_to(self):
+        """
+
+        :return:
+        """
+        areas_from_idx = get_checked_indices(self.ui.areaFromListView.model())
+        areas_to_idx = get_checked_indices(self.ui.areaToListView.model())
+        areas_from = [self.circuit.areas[i] for i in areas_from_idx]
+        areas_to = [self.circuit.areas[i] for i in areas_to_idx]
+
+        for a1 in areas_from:
+            if a1 in areas_to:
+                error_msg("The area from '{0}' is in the list of areas to. This cannot be.".format(a1.name), 'Incompatible areas')
+                return False, [], [], []
+        for a2 in areas_to:
+            if a2 in areas_from:
+                error_msg("The area to '{0}' is in the list of areas from. This cannot be.".format(a2.name), 'Incompatible areas')
+                return False, [], [], []
+
+        lst_from = self.circuit.get_areas_buses(areas_from)
+        lst_to = self.circuit.get_areas_buses(areas_to)
+        lst_br = self.circuit.get_inter_areas_branches(areas_from, areas_to)
+        return True, lst_from, lst_to, lst_br
 
 
 def run(use_native_dialogues=True):

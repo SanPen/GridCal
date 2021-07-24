@@ -2098,6 +2098,17 @@ class MultiCircuit:
                 lst.append((k, bus))
         return lst
 
+    def get_areas_buses(self, areas: List[Area]) -> List[Tuple[int, Bus]]:
+        """
+        Get the selected buses
+        :return:
+        """
+        lst: List[Tuple[int, Bus]] = list()
+        for k, bus in enumerate(self.buses):
+            if bus.area in areas:
+                lst.append((k, bus))
+        return lst
+
     def get_zone_buses(self, zone: Zone) -> List[Tuple[int, Bus]]:
         """
         Get the selected buses
@@ -2121,6 +2132,21 @@ class MultiCircuit:
             if branch.bus_from.area == a1 and branch.bus_to.area == a2:
                 lst.append((k, branch, 1.0))
             elif branch.bus_from.area == a2 and branch.bus_to.area == a1:
+                lst.append((k, branch, -1.0))
+        return lst
+
+    def get_inter_areas_branches(self, a1: List[Area], a2: List[Area]):
+        """
+        Get the inter-area branches
+        :param a1: Area from
+        :param a2: Area to
+        :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+        """
+        lst: List[Tuple[int, object, float]] = list()
+        for k, branch in enumerate(self.get_branches()):
+            if branch.bus_from.area in a1 and branch.bus_to.area in a2:
+                lst.append((k, branch, 1.0))
+            elif branch.bus_from.area in a2 and branch.bus_to.area in a1:
                 lst.append((k, branch, -1.0))
         return lst
 
