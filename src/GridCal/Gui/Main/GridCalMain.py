@@ -52,10 +52,8 @@ from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.Session.session import SimulationSession
-
-from GridCal.__version__ import __GridCal_VERSION__, about_msg
-from GridCal.update import check_version, get_upgrade_command
-
+from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
+from GridCal.__version__ import __GridCal_VERSION__
 
 __author__ = 'Santiago Peñate Vera'
 
@@ -282,6 +280,7 @@ class MainGUI(QMainWindow):
         self.profile_input_dialogue: ProfileInputGUI = None
         self.object_select_window: ObjectSelectWindow = None
         self.coordinates_window: CoordinatesInputGUI = None
+        self.about_msg_window: AboutDialogueGuiGUI = None
 
         self.file_name = ''
 
@@ -807,25 +806,8 @@ class MainGUI(QMainWindow):
         :return:
         """
 
-        version_code, latest_version = check_version()
-
-        if version_code == 1:
-            addendum = '\nThere is a newer version: ' + latest_version
-
-            cmd = get_upgrade_command(latest_version)
-            command = ' '.join(cmd)
-            addendum += '\n\nTerminal command to update:\n' + command
-
-        elif version_code == -1:
-            addendum = '\nThis version is newer than the version available\nin the repositories (' + latest_version + ')'
-        elif version_code == 0:
-            addendum = '\nGridCal is up to date.'
-        elif version_code == -2:
-            addendum = '\nIt was impossible to check for a newer version'
-        else:
-            addendum = ''
-
-        QMessageBox.about(self, "About GridCal", about_msg + addendum)
+        self.about_msg_window = AboutDialogueGuiGUI()
+        self.about_msg_window.setVisible(True)
 
     @staticmethod
     def show_online_docs():
