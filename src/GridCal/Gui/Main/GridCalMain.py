@@ -3833,28 +3833,25 @@ class MainGUI(QMainWindow):
         """
         if self.ui.actionFind_node_groups.isChecked():
 
-            if self.ptdf_analysis is not None:
+            drv, ptdf_results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_run)
 
-                if self.ptdf_analysis.results is not None:
-                    self.LOCK()
-                    sigmas = self.ui.node_distances_sigma_doubleSpinBox.value()
-                    min_group_size = self.ui.node_distances_elements_spinBox.value()
+            if ptdf_results is not None:
 
-                    ptdf_results = self.ptdf_analysis.results
-                    self.find_node_groups_driver = sim.NodeGroupsDriver(grid=self.circuit,
-                                                                        sigmas=sigmas,
-                                                                        min_group_size=min_group_size,
-                                                                        ptdf_results=ptdf_results)
+                self.LOCK()
+                sigmas = self.ui.node_distances_sigma_doubleSpinBox.value()
+                min_group_size = self.ui.node_distances_elements_spinBox.value()
+                drv = sim.NodeGroupsDriver(grid=self.circuit,
+                                           sigmas=sigmas,
+                                           min_group_size=min_group_size,
+                                           ptdf_results=ptdf_results)
 
-                    # Set the time series run options
-                    self.find_node_groups_driver.progress_signal.connect(self.ui.progressBar.setValue)
-                    self.find_node_groups_driver.progress_text.connect(self.ui.progress_label.setText)
-                    self.find_node_groups_driver.done_signal.connect(self.post_run_find_node_groups)
-                    self.find_node_groups_driver.start()
-                else:
-                    error_msg('There are no PTDF results :/')
+                self.session.run(drv,
+                                 post_func=self.post_run_find_node_groups,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
+
             else:
-                info_msg('You need to run a PTDF simulation first :/')
+                error_msg('There are no PTDF results :/')
 
         else:
             # delete the markers
@@ -3870,19 +3867,23 @@ class MainGUI(QMainWindow):
         self.UNLOCK()
         print('\nGroups:')
 
-        for group in self.find_node_groups_driver.groups_by_name:
-            print(group)
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.NodeGrouping_run)
 
-        colours = viz.get_n_colours(n=len(self.find_node_groups_driver.groups_by_index))
+        if drv is not None:
 
-        for c, group in enumerate(self.find_node_groups_driver.groups_by_index):
-            for i in group:
-                bus = self.circuit.buses[i]
-                if bus.active:
-                    if bus.graphic_obj is not None:
-                        r, g, b, a = colours[c]
-                        color = QColor(r * 255, g * 255, b * 255, a * 255)
-                        bus.graphic_obj.add_big_marker(color=color, tool_tip_text='Group ' + str(c))
+            for group in drv.groups_by_name:
+                print(group)
+
+            colours = viz.get_n_colours(n=len(drv.groups_by_index))
+
+            for c, group in enumerate(drv.groups_by_index):
+                for i in group:
+                    bus = self.circuit.buses[i]
+                    if bus.active:
+                        if bus.graphic_obj is not None:
+                            r, g, b, a = colours[c]
+                            color = QColor(r * 255, g * 255, b * 255, a * 255)
+                            bus.graphic_obj.add_big_marker(color=color, tool_tip_text='Group ' + str(c))
 
     def post_reduce_grid(self):
         """

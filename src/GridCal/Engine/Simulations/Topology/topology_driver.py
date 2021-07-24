@@ -375,6 +375,8 @@ class DeleteAndReduce(DriverTemplate):
 
 
 class NodeGroupsDriver(DriverTemplate):
+    name = 'Node groups'
+    tpe = SimulationTypes.NodeGrouping_run
 
     def __init__(self, grid: MultiCircuit, sigmas=0.5, min_group_size=2, ptdf_results: LinearAnalysisResults = None):
         """
