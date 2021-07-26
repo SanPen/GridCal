@@ -135,7 +135,7 @@ class HvdcData:
         return self.C_hvdc_bus_t.T * (self.Qmin_t * self.active.T).T
 
     def get_loading(self):
-        return self.Pf / self.rate
+        return self.Pf / (self.rate + 1e-20)
 
     def get_losses(self):
         return (self.Pf.T * self.loss_factor).T

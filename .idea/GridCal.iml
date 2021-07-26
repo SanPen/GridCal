@@ -16,7 +16,7 @@
       <excludeFolder url="file://$MODULE_DIR$/src/tests" />
       <excludeFolder url="file://$MODULE_DIR$/src/api_rest" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="Python 3.8 (development)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">

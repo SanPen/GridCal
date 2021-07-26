@@ -2277,7 +2277,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.PowerFlow_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.PowerFlow_run):
 
                 self.LOCK()
 
@@ -2388,7 +2388,7 @@ class MainGUI(QMainWindow):
             dlg = LogsDialogue('Power flow', drv.logger)
             dlg.exec_()
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_short_circuit(self):
@@ -2399,7 +2399,7 @@ class MainGUI(QMainWindow):
         :return:
         """
         if len(self.circuit.buses) > 0:
-            if sim.SimulationTypes.ShortCircuit_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.ShortCircuit_run):
 
                 pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
 
@@ -2481,7 +2481,7 @@ class MainGUI(QMainWindow):
         else:
             error_msg('Something went wrong, There are no power short circuit results.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_linear_analysis(self):
@@ -2490,7 +2490,7 @@ class MainGUI(QMainWindow):
         :return:
         """
         if len(self.circuit.buses) > 0:
-            if sim.SimulationTypes.LinearAnalysis_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.LinearAnalysis_run):
 
                 self.add_simulation(sim.SimulationTypes.LinearAnalysis_run)
 
@@ -2538,7 +2538,7 @@ class MainGUI(QMainWindow):
             dlg = LogsDialogue('PTDF', drv.logger)
             dlg.exec_()
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_linear_analysis_ts(self):
@@ -2547,7 +2547,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
             if self.valid_time_series():
-                if sim.SimulationTypes.LinearAnalysis_TS_run not in self.stuff_running_now:
+                if not self.session.is_this_running(sim.SimulationTypes.LinearAnalysis_TS_run):
 
                     self.add_simulation(sim.SimulationTypes.LinearAnalysis_TS_run)
                     self.LOCK()
@@ -2605,7 +2605,7 @@ class MainGUI(QMainWindow):
             else:
                 error_msg('Something went wrong, There are no PTDF Time series results.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_contingency_analysis(self):
@@ -2615,7 +2615,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.ContingencyAnalysis_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.ContingencyAnalysis_run):
 
                 self.add_simulation(sim.SimulationTypes.ContingencyAnalysis_run)
 
@@ -2672,7 +2672,7 @@ class MainGUI(QMainWindow):
             else:
                 error_msg('Something went wrong, There are no contingency analysis results.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_contingency_analysis_ts(self):
@@ -2683,7 +2683,7 @@ class MainGUI(QMainWindow):
         if len(self.circuit.buses) > 0:
 
             if self.valid_time_series():
-                if sim.SimulationTypes.ContingencyAnalysisTS_run not in self.stuff_running_now:
+                if not self.session.is_this_running(sim.SimulationTypes.ContingencyAnalysisTS_run):
 
                     self.add_simulation(sim.SimulationTypes.ContingencyAnalysisTS_run)
 
@@ -2743,7 +2743,7 @@ class MainGUI(QMainWindow):
             else:
                 error_msg('Something went wrong, There are no LODF results.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_available_transfer_capacity(self):
@@ -2753,7 +2753,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.NetTransferCapacity_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.NetTransferCapacity_run):
                 distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 threshold = self.ui.atcThresholdSpinBox.value()
@@ -2844,7 +2844,7 @@ class MainGUI(QMainWindow):
             else:
                 error_msg('Something went wrong, There are no ATC results.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_available_transfer_capacity_ts(self):
@@ -2855,7 +2855,7 @@ class MainGUI(QMainWindow):
         if len(self.circuit.buses) > 0:
 
             if self.valid_time_series():
-                if sim.SimulationTypes.NetTransferCapacity_run not in self.stuff_running_now:
+                if not self.session.is_this_running(sim.SimulationTypes.NetTransferCapacity_run):
 
                     distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
                     dT = self.ui.atcPerturbanceSpinBox.value()
@@ -2896,8 +2896,6 @@ class MainGUI(QMainWindow):
                     if len(idx_br) == 0:
                         error_msg('There are no inter-area branches!')
                         return
-
-
 
                     mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
 
@@ -2954,7 +2952,7 @@ class MainGUI(QMainWindow):
             else:
                 error_msg('Something went wrong, There are no ATC time series results.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_continuation_power_flow(self):
@@ -2969,7 +2967,7 @@ class MainGUI(QMainWindow):
 
             if pf_results is not None:
 
-                if sim.SimulationTypes.ContinuationPowerFlow_run not in self.stuff_running_now:
+                if not self.session.is_this_running(sim.SimulationTypes.ContinuationPowerFlow_run):
 
                     # get the selected UI options
                     use_alpha = self.ui.start_vs_from_default_radioButton.isChecked()
@@ -3142,7 +3140,7 @@ class MainGUI(QMainWindow):
         else:
             error_msg('Something went wrong, There are no voltage stability results.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_time_series(self):
@@ -3151,7 +3149,7 @@ class MainGUI(QMainWindow):
         @return:
         """
         if len(self.circuit.buses) > 0:
-            if sim.SimulationTypes.TimeSeries_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.TimeSeries_run):
                 if self.valid_time_series():
                     self.LOCK()
 
@@ -3232,7 +3230,7 @@ class MainGUI(QMainWindow):
         else:
             warning_msg('No results for the time series simulation.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_clustering_time_series(self):
@@ -3241,7 +3239,7 @@ class MainGUI(QMainWindow):
         @return:
         """
         if len(self.circuit.buses) > 0:
-            if sim.SimulationTypes.ClusteringTimeSeries_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.ClusteringTimeSeries_run):
                 if self.valid_time_series():
                     self.LOCK()
 
@@ -3324,7 +3322,7 @@ class MainGUI(QMainWindow):
         else:
             warning_msg('No results for the clustering time series simulation.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_stochastic(self):
@@ -3335,7 +3333,7 @@ class MainGUI(QMainWindow):
 
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.MonteCarlo_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.MonteCarlo_run):
 
                 if self.circuit.time_profile is not None:
 
@@ -3402,7 +3400,7 @@ class MainGUI(QMainWindow):
         else:
             pass
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def clear_cascade(self):
@@ -3442,7 +3440,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.Cascade_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.Cascade_run):
 
                 self.add_simulation(sim.SimulationTypes.Cascade_run)
 
@@ -3522,7 +3520,7 @@ class MainGUI(QMainWindow):
             # Update results
             self.update_available_results()
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def cascade_table_click(self):
@@ -3542,7 +3540,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.OPF_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.OPF_run):
 
                 self.remove_simulation(sim.SimulationTypes.OPF_run)
 
@@ -3605,7 +3603,7 @@ class MainGUI(QMainWindow):
                             'Check that all branches have rating and \n'
                             'that there is a generator at the slack node.', 'OPF')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_opf_time_series(self):
@@ -3614,7 +3612,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.OPFTimeSeries_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.OPFTimeSeries_run):
 
                 if self.circuit.time_profile is not None:
 
@@ -3704,7 +3702,7 @@ class MainGUI(QMainWindow):
         else:
             pass
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def copy_opf_to_time_series(self):
@@ -3746,7 +3744,7 @@ class MainGUI(QMainWindow):
 
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.TopologyReduction_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.TopologyReduction_run):
 
                 # compute the options
                 rx_criteria = self.ui.rxThresholdCheckBox.isChecked()
@@ -3879,7 +3877,7 @@ class MainGUI(QMainWindow):
 
         self.clear_results()
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def storage_location(self):

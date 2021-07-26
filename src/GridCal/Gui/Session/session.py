@@ -265,4 +265,27 @@ class SimulationSession:
 
             self.register(drv)
 
+    def is_this_running(self, sim_tpe: SimulationTypes):
+        """
+        Check if a simulation type is running
+        :param sim_tpe:
+        :return:
+        """
+        for driver_type, drv in self.threads.items():
+            if drv is not None:
+                if drv.isRunning():
+                    if driver_type == sim_tpe:
+                        return True
+        return False
 
+    def is_anything_running(self):
+        """
+        Check if anything is running
+        :return:
+        """
+
+        for driver_type, drv in self.threads.items():
+            if drv is not None:
+                if drv.isRunning():
+                    return True
+        return False
