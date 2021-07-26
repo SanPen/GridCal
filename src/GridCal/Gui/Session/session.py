@@ -14,7 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 from uuid import uuid4
 from PySide2.QtCore import QThread, Signal
-from typing import List
+from typing import List, Dict
 import numpy as np
 
 # Module imports
@@ -100,6 +100,8 @@ class GcThread(QThread):
         Cancel the simulation
         """
         self.__cancel__ = True
+        self.terminate()
+        self.quit()
         self.progress_signal.emit(0.0)
         self.progress_text.emit('Cancelled!')
         self.done_signal.emit()
@@ -120,7 +122,7 @@ class SimulationSession:
 
         # dictionary of drivers
         self.drivers = dict()
-        self.threads = dict()
+        self.threads: Dict[GcThread] = dict()
 
     def __str__(self):
         return self.name
@@ -152,6 +154,13 @@ class SimulationSession:
         thr.progress_signal.connect(prog_func)
         thr.progress_text.connect(text_func)
         thr.done_signal.connect(post_func)
+
+        # check and kill
+        if driver.tpe in self.drivers.keys():
+            del self.drivers[driver.tpe]
+            if self.threads[driver.tpe].isRunning():
+                self.threads[driver.tpe].terminate()
+            del self.threads[driver.tpe]
 
         # register
         self.drivers[driver.tpe] = driver

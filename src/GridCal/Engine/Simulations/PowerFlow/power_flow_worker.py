@@ -280,7 +280,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
 
         else:
             # for any other method, raise exception
-            raise Exception(solver_type + ' Not supported in power flow mode')
+            raise Exception(solver_type.value + ' Not supported in power flow mode')
 
         # record the method used, if it improved the solution
         if solution.norm_f < final_solution.norm_f:

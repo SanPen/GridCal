@@ -19,4 +19,4 @@ numba>=0.46
 PySide2>=5.15.0
 Cython
 pyproj
-
+folium

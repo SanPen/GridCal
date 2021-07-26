@@ -1172,6 +1172,7 @@ class MainGUI(QMainWindow):
             if self.open_file_thread_object.valid:
 
                 # assign the loaded circuit
+                self.new_project_now()
                 self.circuit = self.open_file_thread_object.circuit
 
                 if len(self.circuit.buses) > 1500:
@@ -1182,6 +1183,7 @@ class MainGUI(QMainWindow):
 
                     if reply == QMessageBox.Yes:
                         self.ui.draw_schematic_checkBox.setChecked(False)
+                        self.set_grid_editor_state()
 
                 # create schematic
                 self.create_schematic_from_api(explode_factor=1)
@@ -2348,7 +2350,7 @@ class MainGUI(QMainWindow):
 
         if results is not None:
             self.ui.progress_label.setText('Colouring power flow results in the grid...')
-            QtGui.QGuiApplication.processEvents()
+            # QtGui.QGuiApplication.processEvents()
 
             self.remove_simulation(sim.SimulationTypes.PowerFlow_run)
 
@@ -2382,7 +2384,7 @@ class MainGUI(QMainWindow):
 
         else:
             warning_msg('There are no power flow results.\nIs there any slack bus or generator?', 'Power flow')
-            QtGui.QGuiApplication.processEvents()
+            # QtGui.QGuiApplication.processEvents()
 
         if len(drv.logger) > 0:
             dlg = LogsDialogue('Power flow', drv.logger)
