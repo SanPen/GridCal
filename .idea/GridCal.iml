@@ -13,7 +13,6 @@
       <excludeFolder url="file://$MODULE_DIR$/src/research" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/src/Tutorials" />
-      <excludeFolder url="file://$MODULE_DIR$/src/tests" />
       <excludeFolder url="file://$MODULE_DIR$/src/api_rest" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.8 (GridCal)" jdkType="Python SDK" />

@@ -75,8 +75,8 @@ def compose_generator_voltage_profile(nbus, ntime, gen_bus_indices, gen_vset, ge
     for i in range(len(hvdc_status)):
         from_idx = hvdc_bus_f[i]
         to_idx = hvdc_bus_t[i]
-        if hvdc_status[i] != 0:
-            for t in range(ntime):
+        for t in range(ntime):
+            if hvdc_status[i, t] != 0:
                 if used[from_idx, t] == 0:
                     V[from_idx, t] = complex(hvdc_vf[i, t], 0)
                     used[from_idx, t] = 1
@@ -327,6 +327,22 @@ class SnapshotData:
         self.bus_data.bus_installed_power = self.generator_data.get_installed_power_per_bus()
         self.bus_data.bus_installed_power += self.battery_data.get_installed_power_per_bus()
 
+        self.bus_data.Vbus = compose_generator_voltage_profile(nbus=self.nbus,
+                                                               ntime=self.ntime,
+                                                               gen_bus_indices=self.generator_data.get_bus_indices(),
+                                                               gen_vset=self.generator_data.generator_v,
+                                                               gen_status=self.generator_data.generator_active,
+                                                               gen_is_controlled=self.generator_data.generator_controllable,
+                                                               bat_bus_indices=self.battery_data.get_bus_indices(),
+                                                               bat_vset=self.battery_data.battery_v,
+                                                               bat_status=self.battery_data.battery_active,
+                                                               bat_is_controlled=self.battery_data.battery_controllable,
+                                                               hvdc_bus_f=self.hvdc_data.get_bus_indices_f(),
+                                                               hvdc_bus_t=self.hvdc_data.get_bus_indices_t(),
+                                                               hvdc_status=self.hvdc_data.active,
+                                                               hvdc_vf=self.hvdc_data.Vset_f,
+                                                               hvdc_vt=self.hvdc_data.Vset_t)
+
         self.determine_control_indices()
 
     def re_calc_admittance_matrices(self, tap_module, t=0, idx=None):
@@ -553,34 +569,11 @@ class SnapshotData:
     def dc_line_idx(self):
         return slice(self.nline + self.ntr + self.nvsc, self.nline + self.ntr + self.nvsc + self.ndcline, 1)
 
-    def compose_voltage_profile(self):
-        """
-        Compose the voltage initial profile from the devices
-        :return: Voltage array (nbus, ntime)
-        """
-        V = compose_generator_voltage_profile(nbus=self.nbus,
-                                              ntime=self.ntime,
-                                              gen_bus_indices=self.generator_data.get_bus_indices(),
-                                              gen_vset=self.generator_data.generator_v,
-                                              gen_status=self.generator_data.generator_active,
-                                              gen_is_controlled=self.generator_data.generator_controllable,
-                                              bat_bus_indices=self.battery_data.get_bus_indices(),
-                                              bat_vset=self.battery_data.battery_v,
-                                              bat_status=self.battery_data.battery_active,
-                                              bat_is_controlled=self.battery_data.battery_controllable,
-                                              hvdc_bus_f=self.hvdc_data.get_bus_indices_f(),
-                                              hvdc_bus_t=self.hvdc_data.get_bus_indices_t(),
-                                              hvdc_status=self.hvdc_data.active,
-                                              hvdc_vf=self.hvdc_data.Vset_f,
-                                              hvdc_vt=self.hvdc_data.Vset_t)
-
-        return V
-
     @property
     def Vbus(self):
 
         if self.Vbus_ is None:
-            self.Vbus_ = self.compose_voltage_profile()
+            self.Vbus_ = self.bus_data.Vbus
 
         return self.Vbus_[:, 0]
 
