@@ -33,6 +33,7 @@ import GridCal.Engine.Simulations as sim
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.grid_analysis as grid_analysis
+from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 
 # GUI imports
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
@@ -4169,7 +4170,7 @@ class MainGUI(QMainWindow):
         if html:
             plot_function = viz.plot_html_map
             k = len(self.files_to_delete_at_exit)
-            file_name = os.path.join(viz.get_create_gridcal_folder(), 'map_' + str(k + 1) + '.html')
+            file_name = os.path.join(get_create_gridcal_folder(), 'map_' + str(k + 1) + '.html')
         else:
 
             if not self.ui.draw_schematic_checkBox.isChecked():
@@ -5363,6 +5364,8 @@ class MainGUI(QMainWindow):
 
                         # update the view
                         self.display_filter(objects)
+                        self.update_area_combos()
+                        self.update_date_dependent_combos()
                     else:
                         pass
                 else:

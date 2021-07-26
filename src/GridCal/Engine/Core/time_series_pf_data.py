@@ -22,7 +22,7 @@ from typing import List, Dict
 from GridCal.Engine.basic_structures import Logger
 import GridCal.Engine.Core.topology as tp
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import SnapshotData, compose_voltage_profile_numba
+from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
@@ -68,18 +68,6 @@ class TimeCircuit(SnapshotData):
         self.Vbus_ = self.compose_voltage_profile()
         self.Sbus_ = self.get_injections(normalize=True)
         self.Ibus_ = np.zeros((len(self.bus_data), self.ntime), dtype=complex)
-
-    def compose_voltage_profile(self):
-        """
-        Compose the voltage initial profile from the devices
-        :return: Voltage array (nbus, ntime)
-        """
-
-        V = compose_voltage_profile_numba(Vbus=self.bus_data.Vbus,
-                                          Vgen=self.generator_data.get_voltages_per_bus(),
-                                          Vbat=self.battery_data.get_voltages_per_bus())
-
-        return V
 
     @property
     def Vbus(self):

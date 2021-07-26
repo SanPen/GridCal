@@ -90,6 +90,9 @@ class BatteryData:
     def get_injections_per_bus(self):
         return self.C_bus_batt * (self.get_injections() * self.battery_active)
 
+    def get_bus_indices(self):
+        return self.C_bus_batt.tocsc().indices
+
     def get_voltages_per_bus(self):
         n_per_bus = self.C_bus_batt.sum(axis=1)
         n_per_bus[n_per_bus == 0] = 1

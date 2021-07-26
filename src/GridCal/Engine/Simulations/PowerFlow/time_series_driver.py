@@ -486,7 +486,6 @@ class TimeSeries(DriverTemplate):
                 # if the storage dispatch option is active, the batteries power is not included
                 # therefore, it shall be included after processing
                 V = calculation_input.Vbus[:, t]
-                # Ysh = calculation_input.Yshunt_from_devices[:, it]
                 I = calculation_input.Ibus[:, t]
                 S = calculation_input.Sbus[:, t]
                 branch_rates = calculation_input.Rates[:, t]

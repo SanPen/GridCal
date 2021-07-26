@@ -4,7 +4,7 @@ import subprocess
 from PySide2.QtWidgets import QDialog
 from typing import List, Dict
 from GridCal.Gui.AboutDialogue.gui import *
-from GridCal.__version__ import __GridCal_VERSION__, about_msg
+from GridCal.__version__ import __GridCal_VERSION__, contributors_msg, copyright_msg
 from GridCal.update import check_version, get_upgrade_command
 
 
@@ -31,28 +31,33 @@ class AboutDialogueGuiGUI(QDialog):
 
             self.upgrade_cmd = get_upgrade_command(latest_version)
             command = ' '.join(self.upgrade_cmd)
-            addendum += '\n\nTerminal command to update:\n' + command
-            self.ui.updateLabel.setText(command)
+            self.ui.updateLabel.setText('\n\nTerminal command to update:\n\n' + command)
             self.ui.updateButton.setVisible(False)
 
         elif version_code == -1:
-            addendum = '\nThis version is newer than the version available\nin the repositories (' + latest_version + ')'
+            addendum = '\nThis version is newer than the version available in the repositories (' + latest_version + ')'
             self.ui.updateLabel.setText(addendum)
             self.ui.updateButton.setVisible(False)
+
         elif version_code == 0:
             addendum = '\nGridCal is up to date.'
             self.ui.updateLabel.setText(addendum)
             self.ui.updateButton.setVisible(False)
+
         elif version_code == -2:
             addendum = '\nIt was impossible to check for a newer version'
             self.ui.updateLabel.setText(addendum)
             self.ui.updateButton.setVisible(False)
+
         else:
             addendum = ''
             self.ui.updateLabel.setText(addendum)
             self.ui.updateButton.setVisible(False)
 
-        self.ui.mainLabel.setText(about_msg)
+        # self.ui.mainLabel.setText(about_msg)
+        self.ui.versionLabel.setText('GridCal version: ' + __GridCal_VERSION__ + ', ' + addendum)
+        self.ui.copyrightLabel.setText(copyright_msg)
+        self.ui.contributorsLabel.setText(contributors_msg)
 
         # click
         self.ui.updateButton.clicked.connect(self.update)

@@ -33,36 +33,56 @@ sparse_type = get_sparse_type()
 
 
 @nb.njit()
-def compose_voltage_profile_numba(Vbus, Vgen, Vbat):
+def compose_generator_voltage_profile(nbus, ntime, gen_bus_indices, gen_vset, gen_status, gen_is_controlled,
+                                      bat_bus_indices, bat_vset, bat_status, bat_is_controlled,
+                                      hvdc_bus_f, hvdc_bus_t, hvdc_status, hvdc_vf, hvdc_vt):
     """
-
-    :return: Voltage array (nbus, ntime)
+    Get the array of voltage set points per bus
+    :param nbus: number of buses
+    :param ntime: number of time steps
+    :param gen_bus_indices: array of bus indices per generator
+    :param gen_vset: array of voltage set points (ngen, ntime)
+    :param gen_status: array of generator status (ngen, ntime)
+    :param gen_is_controlled: array of values indicating if a generator controls the voltage or not (ngen)
+    :param bat_bus_indices:  array of bus indices per battery
+    :param bat_vset: array of voltage set points (nbat, ntime)
+    :param bat_status: array of battery status (nbat, ntime)
+    :param bat_is_controlled: array of values indicating if a battery controls the voltage or not (ngen)
+    :return: Voltage set points array per bus (nbus, ntime)
     """
+    V = np.ones((nbus, ntime), dtype=nb.complex128)
+    used = np.zeros((nbus, ntime), dtype=nb.int8)
 
-    """
-    Arrays dimensions: (nbus, ntime)
-    """
+    # generators
+    for i, bus_idx in enumerate(gen_bus_indices):
+        if gen_is_controlled[i]:
+            for t in range(ntime):
+                if used[bus_idx, t] == 0:
+                    if gen_status[i, t]:
+                        V[bus_idx, t] = complex(gen_vset[i, t], 0)
+                        used[bus_idx, t] = 1
 
-    V = Vbus.copy()
+    # batteries
+    for i, bus_idx in enumerate(bat_bus_indices):
+        if bat_is_controlled[i]:
+            for t in range(ntime):
+                if used[bus_idx, t] == 0:
+                    if bat_status[i, t]:
+                        V[bus_idx, t] = complex(bat_vset[i, t], 0)
+                        used[bus_idx, t] = 1
 
-    for i in range(V.shape[0]):
-        for t in range(V.shape[1]):
-
-            if Vgen[i, t] != 0:
-                if Vbat[i, t] != 0:
-                    # there is a conflict between the battery and the generator, pick the generator
-                    V[i, t] = Vgen[i, t]
-                else:
-                    # the battery is zero, pick the generator
-                    V[i, t] = Vgen[i, t]
-            else:
-                # the generator is zero
-                if Vbat[i, t] != 0:
-                    # pick the battery
-                    V[i, t] = Vbat[i, t]
-                else:
-                    # both are zero, skip
-                    pass
+    # HVDC
+    for i in range(len(hvdc_status)):
+        from_idx = hvdc_bus_f[i]
+        to_idx = hvdc_bus_t[i]
+        if hvdc_status[i] != 0:
+            for t in range(ntime):
+                if used[from_idx, t] == 0:
+                    V[from_idx, t] = complex(hvdc_vf[i, t], 0)
+                    used[from_idx, t] = 1
+                if used[to_idx, t] == 0:
+                    V[to_idx, t] = complex(hvdc_vt[i, t], 0)
+                    used[to_idx, t] = 1
 
     return V
 
@@ -538,10 +558,21 @@ class SnapshotData:
         Compose the voltage initial profile from the devices
         :return: Voltage array (nbus, ntime)
         """
-
-        V = compose_voltage_profile_numba(Vbus=self.bus_data.Vbus,
-                                          Vgen=self.generator_data.get_voltages_per_bus(),
-                                          Vbat=self.battery_data.get_voltages_per_bus())
+        V = compose_generator_voltage_profile(nbus=self.nbus,
+                                              ntime=self.ntime,
+                                              gen_bus_indices=self.generator_data.get_bus_indices(),
+                                              gen_vset=self.generator_data.generator_v,
+                                              gen_status=self.generator_data.generator_active,
+                                              gen_is_controlled=self.generator_data.generator_controllable,
+                                              bat_bus_indices=self.battery_data.get_bus_indices(),
+                                              bat_vset=self.battery_data.battery_v,
+                                              bat_status=self.battery_data.battery_active,
+                                              bat_is_controlled=self.battery_data.battery_controllable,
+                                              hvdc_bus_f=self.hvdc_data.get_bus_indices_f(),
+                                              hvdc_bus_t=self.hvdc_data.get_bus_indices_t(),
+                                              hvdc_status=self.hvdc_data.active,
+                                              hvdc_vf=self.hvdc_data.Vset_f,
+                                              hvdc_vt=self.hvdc_data.Vset_t)
 
         return V
 

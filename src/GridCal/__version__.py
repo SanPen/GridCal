@@ -2,24 +2,34 @@
 import datetime
 _current_year_ = datetime.datetime.now().year
 
-__GridCal_VERSION__ = "4.2.0a1"
+__GridCal_VERSION__ = "4.2.0a10"
 
 url = 'https://github.com/SanPen/GridCal'
 
 about_msg = "GridCal v" + str(__GridCal_VERSION__) + '\n\n'
 
-about_msg += "GridCal has been carefully crafted since 2015 to serve as a platform for research and consultancy.\n\n"
+about_msg += """
+GridCal has been carefully crafted since 2015 to 
+serve as a platform for research and consultancy. 
+Visit https://gridcal.org for more details.\n"""
 
-about_msg += 'This program comes with ABSOLUTELY NO WARRANTY. \n'
-about_msg += 'This is free software, and you are welcome to redistribute it under certain conditions; '
+about_msg += """
+This program comes with ABSOLUTELY NO WARRANTY. 
+This is free software, and you are welcome to 
+redistribute it under certain conditions.\n
+GridCal is licensed under the GNU general public 
+license V.3. See the license file for more 
+details.
 
-about_msg += "GridCal is licensed under the GNU general public license V.3. "
-about_msg += 'See the license file for more details. \n\n'
-about_msg += "The source of GridCal can be found at:\n" + url + "\n\n"
+The source of GridCal can be found at:
+""" + url + "\n\n"
 
-about_msg += 'Copyright (C) 2015-' + str(_current_year_) + '\nSantiago Peñate Vera\n'
-about_msg += 'Michel Lavoie (Transformer automation)\n'
-about_msg += 'Bengt Lüers (Better testing)\n'
-about_msg += 'Josep Fanals Batllori (HELM)\n'
-about_msg += 'Manuel Navarro Catalán (Better documentation)\n'
-about_msg += 'Paul Schultz (Grid Generator)\n'
+copyright_msg = 'Copyright (C) 2015-' + str(_current_year_) + ' Santiago Peñate Vera'
+
+contributors_msg = 'Michel Lavoie (Transformer automation)\n'
+contributors_msg += 'Bengt Lüers (Better testing)\n'
+contributors_msg += 'Josep Fanals Batllori (HELM)\n'
+contributors_msg += 'Manuel Navarro Catalán (Better documentation)\n'
+contributors_msg += 'Paul Schultz (Grid Generator)\n'
+
+about_msg += copyright_msg + '\n' + contributors_msg
