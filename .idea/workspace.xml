@@ -23,12 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improved voltage initialization">
-      <change beforePath="$PROJECT_DIR$/.idea/GridCal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/GridCal.iml" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Moved the oltages initialization and it seems to work">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/demo_5_node.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/demo_5_node.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -578,13 +575,6 @@
       <workItem from="1627284278398" duration="8042000" />
       <workItem from="1627295798752" duration="1869000" />
     </task>
-    <task id="LOCAL-00129" summary="changed linear icons&#10;Created ATC drivers (WIP)">
-      <created>1619600714868</created>
-      <option name="number" value="00129" />
-      <option name="presentableId" value="LOCAL-00129" />
-      <option name="project" value="LOCAL" />
-      <updated>1619600714868</updated>
-    </task>
     <task id="LOCAL-00130" summary="Grouped imports in the main GUI">
       <created>1619602070307</created>
       <option name="number" value="00130" />
@@ -921,7 +911,14 @@
       <option name="project" value="LOCAL" />
       <updated>1627292840629</updated>
     </task>
-    <option name="localTasksCounter" value="178" />
+    <task id="LOCAL-00178" summary="Moved the oltages initialization and it seems to work">
+      <created>1627304636756</created>
+      <option name="number" value="00178" />
+      <option name="presentableId" value="LOCAL-00178" />
+      <option name="project" value="LOCAL" />
+      <updated>1627304636756</updated>
+    </task>
+    <option name="localTasksCounter" value="179" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -945,7 +942,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed the icon display under windows" />
     <MESSAGE value="Added colors to the sigma plot" />
     <MESSAGE value="Added OPF time series to the branches plot" />
     <MESSAGE value="Improved maps visualization&#10;Improved sigma distances" />
@@ -970,7 +966,8 @@
     <MESSAGE value="Fixed critical bug related to the voltages&#10;&#10;Fixed handling of the node groups threading" />
     <MESSAGE value="Improved the about dialogue" />
     <MESSAGE value="Improved voltage initialization" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved voltage initialization" />
+    <MESSAGE value="Moved the oltages initialization and it seems to work" />
+    <option name="LAST_COMMIT_MESSAGE" value="Moved the oltages initialization and it seems to work" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1436,6 +1433,11 @@
           <line>169</line>
           <option name="timeStamp" value="776" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py</url>
+          <line>843</line>
+          <option name="timeStamp" value="790" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
@@ -1536,7 +1538,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research2_py.coverage" NAME="Nosetests in PTDF_research2.py Coverage Results" MODIFIED="1600161918846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$time_series.coverage" NAME="time_series Coverage Results" MODIFIED="1617809423186" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Tutorials" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_power_flow_py.coverage" NAME="Nosetests in test_power_flow.py Coverage Results" MODIFIED="1617046155983" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1627304441086" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1627311104996" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$binary_ga.coverage" NAME="binary_ga Coverage Results" MODIFIED="1615226727819" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_matrix_slicing_py.coverage" NAME="Nosetests in test_matrix_slicing.py Coverage Results" MODIFIED="1609500376313" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$psse_parser.coverage" NAME="psse_parser Coverage Results" MODIFIED="1594285082315" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
