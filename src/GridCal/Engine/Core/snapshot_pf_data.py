@@ -33,9 +33,11 @@ sparse_type = get_sparse_type()
 
 
 @nb.njit()
-def compose_generator_voltage_profile(nbus, ntime, gen_bus_indices, gen_vset, gen_status, gen_is_controlled,
+def compose_generator_voltage_profile(nbus, ntime,
+                                      gen_bus_indices, gen_vset, gen_status, gen_is_controlled,
                                       bat_bus_indices, bat_vset, bat_status, bat_is_controlled,
-                                      hvdc_bus_f, hvdc_bus_t, hvdc_status, hvdc_vf, hvdc_vt):
+                                      hvdc_bus_f, hvdc_bus_t, hvdc_status, hvdc_vf, hvdc_vt,
+                                      iBeqv, iVtma, VfBeqbus, Vtmabus, branch_status, br_vf, br_vt):
     """
     Get the array of voltage set points per bus
     :param nbus: number of buses
@@ -48,6 +50,18 @@ def compose_generator_voltage_profile(nbus, ntime, gen_bus_indices, gen_vset, ge
     :param bat_vset: array of voltage set points (nbat, ntime)
     :param bat_status: array of battery status (nbat, ntime)
     :param bat_is_controlled: array of values indicating if a battery controls the voltage or not (ngen)
+    :param hvdc_bus_f:
+    :param hvdc_bus_t:
+    :param hvdc_status:
+    :param hvdc_vf
+    :param hvdc_vt
+    :param iBeqv: indices of the branches when controlling Vf with Beq
+    :param iVtma: indices of the branches when controlling Vt with ma
+    :param VfBeqbus: indices of the buses where Vf is controlled by Beq
+    :param Vtmabus: indices of the buses where Vt is controlled by ma
+    :param branch_status:
+    :param br_vf:
+    :param br_vt:
     :return: Voltage set points array per bus (nbus, ntime)
     """
     V = np.ones((nbus, ntime), dtype=nb.complex128)
@@ -72,7 +86,7 @@ def compose_generator_voltage_profile(nbus, ntime, gen_bus_indices, gen_vset, ge
                         used[bus_idx, t] = 1
 
     # HVDC
-    for i in range(len(hvdc_status)):
+    for i in range(hvdc_status.shape[0]):
         from_idx = hvdc_bus_f[i]
         to_idx = hvdc_bus_t[i]
         for t in range(ntime):
@@ -83,6 +97,24 @@ def compose_generator_voltage_profile(nbus, ntime, gen_bus_indices, gen_vset, ge
                 if used[to_idx, t] == 0:
                     V[to_idx, t] = complex(hvdc_vt[i, t], 0)
                     used[to_idx, t] = 1
+
+    # branch - from
+    for i in iBeqv:  # branches controlling Vf
+        from_idx = VfBeqbus[i]
+        for t in range(ntime):
+            if branch_status[i, t] != 0:
+                if used[from_idx, t] == 0:
+                    V[from_idx, t] = complex(br_vf[i, t], 0)
+                    used[from_idx, t] = 1
+
+    # branch - to
+    for i in iVtma:  # branches controlling Vt
+        from_idx = Vtmabus[i]
+        for t in range(ntime):
+            if branch_status[i, t] != 0:
+                if used[from_idx, t] == 0:
+                    V[from_idx, t] = complex(br_vt[i, t], 0)
+                    used[from_idx, t] = 1
 
     return V
 
@@ -341,7 +373,14 @@ class SnapshotData:
                                                                hvdc_bus_t=self.hvdc_data.get_bus_indices_t(),
                                                                hvdc_status=self.hvdc_data.active,
                                                                hvdc_vf=self.hvdc_data.Vset_f,
-                                                               hvdc_vt=self.hvdc_data.Vset_t)
+                                                               hvdc_vt=self.hvdc_data.Vset_t,
+                                                               iBeqv=np.array(self.iBeqv, dtype=int),
+                                                               iVtma=np.array(self.iVtma, dtype=int),
+                                                               VfBeqbus=np.array(self.VfBeqbus, dtype=int),
+                                                               Vtmabus=np.array(self.Vtmabus, dtype=int),
+                                                               branch_status=self.branch_data.branch_active,
+                                                               br_vf=self.branch_data.vf_set,
+                                                               br_vt=self.branch_data.vt_set)
 
         self.determine_control_indices()
 

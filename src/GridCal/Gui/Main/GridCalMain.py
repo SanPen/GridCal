@@ -1214,6 +1214,9 @@ class MainGUI(QMainWindow):
                 # clear the results
                 self.clear_results()
 
+                # center nodes
+                self.grid_editor.align_schematic()
+
             else:
                 warn('The file was not valid')
         else:
@@ -1602,6 +1605,9 @@ class MainGUI(QMainWindow):
             self.grid_editor.circuit = self.circuit
 
             self.grid_editor.schematic_from_api(explode_factor=explode_factor)
+
+            # center nodes
+            self.grid_editor.align_schematic()
         else:
             info_msg('The schematic drawing is disabled')
 

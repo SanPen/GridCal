@@ -835,11 +835,12 @@ class PSSeVscDCLine:
         rate = max(self.SMAX1, self.SMAX2)
 
         # Estimate power
+        # P = dV^2 / R
         V1 = bus1.Vnom * Vset_f
         V2 = bus2.Vnom * Vset_t
-        dV = (V1-V2) * 1000.0
-        P = dV * dV / self.RDC
-        specified_power = P * 1e-6
+        dV = (V1-V2) * 1000.0  # in V
+        P = dV * dV / self.RDC  # power in W
+        specified_power = P * 1e-6  # power in MW
 
         obj = HvdcLine(bus_from=bus1,
                        bus_to=bus2,
