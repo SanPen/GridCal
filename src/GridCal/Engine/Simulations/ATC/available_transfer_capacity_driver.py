@@ -348,23 +348,26 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         self.report = np.empty((len(self.br_idx), len(self.report_headers)), dtype=object)
 
         # sort by ATC
-        idx = np.argsort(self.ntc)
-        self.report_indices = self.branch_names[idx]
-        self.report[:, 0] = self.branch_names[self.br_idx][idx]  # 'Branch'
-        self.report[:, 1] = self.base_flow[self.br_idx][idx]  # 'Base flow'
-        self.report[:, 2] = self.rates[self.br_idx][idx]  # 'Rate',
-        self.report[:, 3] = self.alpha[self.br_idx][idx]  # 'Alpha'
-        self.report[:, 4] = self.atc_n[idx]  # 'ATC normal'
+        self.report_indices = self.branch_names
+        self.report[:, 0] = self.branch_names[self.br_idx]  # 'Branch'
+        self.report[:, 1] = self.base_flow[self.br_idx]  # 'Base flow'
+        self.report[:, 2] = self.rates[self.br_idx]  # 'Rate',
+        self.report[:, 3] = self.alpha[self.br_idx]  # 'Alpha'
+        self.report[:, 4] = self.atc_n  # 'ATC normal'
 
         # contingency info
-        self.report[:, 5] = self.branch_names[self.atc_limiting_contingency_branch][idx]  # 'Limiting contingency branch'
-        self.report[:, 6] = self.atc_limiting_contingency_flow[idx]  # 'Limiting contingency flow'
-        self.report[:, 7] = self.contingency_rates[idx]  # 'Contingency rate'
-        self.report[:, 8] = self.beta[idx]  # 'Beta'
-        self.report[:, 9] = self.atc_mc[idx]  # 'Contingency ATC'
-        self.report[:, 10] = self.atc[idx]  # ATC
+        self.report[:, 5] = self.branch_names[self.atc_limiting_contingency_branch]  # 'Limiting contingency branch'
+        self.report[:, 6] = self.atc_limiting_contingency_flow  # 'Limiting contingency flow'
+        self.report[:, 7] = self.contingency_rates[self.br_idx]  # 'Contingency rate'
+        self.report[:, 8] = self.beta  # 'Beta'
+        self.report[:, 9] = self.atc_mc  # 'Contingency ATC'
+        self.report[:, 10] = self.atc  # ATC
         self.report[:, 11] = self.base_exchange  # Base exchange flow
-        self.report[:, 12] = self.ntc[idx]  # NTC
+        self.report[:, 12] = self.ntc  # NTC
+
+        # sort by NTC
+        idx = np.argsort(self.ntc)
+        self.report = self.report[idx, :]
 
         # trim by abs alpha > threshold
         loading = np.abs(self.report[:, 1] / (self.report[:, 2] + 1e-20))
