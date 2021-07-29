@@ -30,10 +30,10 @@ from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 
 class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
 
-    def __init__(self, n_br, n_bus, time_array, br_names, bus_names, bus_types):
+    def __init__(self, br_idx, n_bus, time_array, br_names, bus_names, bus_types):
         """
 
-        :param n_br:
+        :param br_idx:
         :param n_bus:
         :param time_array:
         :param br_names:
@@ -64,8 +64,12 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
                                                  'branch_names',
                                                  'bus_names',
                                                  'bus_types',
-                                                 'branch_names'])
-        self.n_br = n_br
+                                                 'branch_names',
+                                                 'br_idx',
+                                                 'time_array'])
+
+        self.br_idx = br_idx
+        self.n_br = len(br_idx)
         self.n_bus = n_bus
         self.nt = len(time_array)
         self.time_array = time_array
@@ -90,17 +94,8 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.atc_limiting_contingency_flow = np.zeros((self.nt, self.n_br))
         self.base_flow = np.zeros((self.nt, self.n_br))
 
-        self.report = np.empty((self.n_br, 10), dtype=object)
-        self.report_headers = ['Branch',
-                               'Base flow',
-                               'Rate',
-                               'Alpha',
-                               'ATC normal',
-                               'Limiting contingency branch',
-                               'Limiting contingency flow',
-                               'Contingency rate',
-                               'Beta',
-                               'ATC']
+        self.report = np.empty((self.n_br, 0), dtype=object)
+        self.report_headers = []
         self.report_indices = self.time_array
 
     def get_steps(self):
@@ -147,8 +142,8 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.report = np.empty((dim, len(self.report_headers)), dtype=object)
         self.report_indices = np.arange(dim)
 
-        for i in range(self.n_br):
-            self.report[i, 0] = self.branch_names[i]
+        for i, ii in enumerate(self.br_idx):
+            self.report[i, 0] = self.branch_names[ii]
 
             self.report[i, 1] = self.base_flow[:, i].mean()
             self.report[i, 2] = self.base_flow[:, i].min()
@@ -183,8 +178,8 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
             self.report[i, 22] = self.atc_mc[:, i].min()
             self.report[i, 23] = self.atc_mc[:, i].max()
 
-            ii = np.where(self.atc_mc[:, i] == self.report[i, 23])[0][0]
-            self.report[i, 12] = self.branch_names[self.atc_limiting_contingency_branch[ii, i]]
+            j = np.where(self.atc_mc[:, i] == self.report[i, 23])[0][0]
+            self.report[i, 12] = self.branch_names[self.atc_limiting_contingency_branch[j, i]]
 
             self.report[i, 24] = self.atc[:, i].mean()
             self.report[i, 25] = self.atc[:, i].min()
@@ -231,25 +226,25 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
             data = self.atc
             y_label = '(MW)'
             title, _ = result_type.value
-            labels = self.branch_names
+            labels = self.branch_names[self.br_idx]
 
         elif result_type == ResultTypes.NetTransferCapacity:
             data = self.ntc
             y_label = '(MW)'
             title, _ = result_type.value
-            labels = self.branch_names
+            labels = self.branch_names[self.br_idx]
 
         elif result_type == ResultTypes.AvailableTransferCapacityN:
             data = self.atc_n
             y_label = '(MW)'
             title, _ = result_type.value
-            labels = self.branch_names
+            labels = self.branch_names[self.br_idx]
 
         elif result_type == ResultTypes.AvailableTransferCapacityAlpha:
             data = self.alpha
             y_label = '(p.u.)'
             title, _ = result_type.value
-            labels = self.branch_names
+            labels = self.branch_names[self.br_idx]
 
         elif result_type == ResultTypes.AvailableTransferCapacityReport:
             data = np.array(self.report)
@@ -289,7 +284,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.options = options
 
         # OPF results
-        self.results = AvailableTransferCapacityTimeSeriesResults(n_br=0,
+        self.results = AvailableTransferCapacityTimeSeriesResults(br_idx=[],
                                                                   n_bus=0,
                                                                   time_array=[],
                                                                   br_names=[],
@@ -318,8 +313,11 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         # nc = nc.nbr
         nt = len(nc.time_array)
 
+        # get the branch indices to analyze
+        br_idx = linear_analysis.numerical_circuit.branch_data.get_contingency_enabled_indices()
+
         # declare the results
-        self.results = AvailableTransferCapacityTimeSeriesResults(n_br=nc.nbr,
+        self.results = AvailableTransferCapacityTimeSeriesResults(br_idx=br_idx,
                                                                   n_bus=nc.nbus,
                                                                   time_array=nc.time_array,
                                                                   br_names=nc.branch_names,
@@ -370,7 +368,8 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             # compute ATC
             beta_mat, beta_used, atc_n, atc_mc, atc_final, \
             atc_limiting_contingency_branch, \
-            atc_limiting_contingency_flow = compute_atc(ptdf=linear_analysis.PTDF,
+            atc_limiting_contingency_flow = compute_atc(br_idx=br_idx,
+                                                        ptdf=linear_analysis.PTDF,
                                                         lodf=linear_analysis.LODF,
                                                         alpha=alpha,
                                                         flows=flows[t, :],
@@ -380,7 +379,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                                         )
 
             # post-process and store the results
-            self.results.alpha[t, :] = alpha
+            self.results.alpha[t, :] = alpha[br_idx]
             self.results.base_exchange[t] = base_exchange
             self.results.atc[t, :] = atc_final
             self.results.atc_n[t, :] = atc_n

@@ -1286,7 +1286,7 @@ class SnapshotData:
 
 def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
                              branch_tolerance_mode=BranchImpedanceMode.Specified,
-                             opf_results = None) -> SnapshotData:
+                             opf_results=None) -> SnapshotData:
     """
 
     :param circuit:

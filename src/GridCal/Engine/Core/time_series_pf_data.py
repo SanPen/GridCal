@@ -65,7 +65,6 @@ class TimeCircuit(SnapshotData):
         self.pqpv_prof_ = None
 
     def consolidate(self):
-        self.Vbus_ = self.compose_voltage_profile()
         self.Sbus_ = self.get_injections(normalize=True)
         self.Ibus_ = np.zeros((len(self.bus_data), self.ntime), dtype=complex)
 
@@ -73,7 +72,7 @@ class TimeCircuit(SnapshotData):
     def Vbus(self):
 
         if self.Vbus_ is None:
-            self.Vbus_ = self.compose_voltage_profile()
+            self.Vbus_ = self.bus_data.Vbus
 
         return self.Vbus_
 
