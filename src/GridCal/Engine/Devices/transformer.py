@@ -420,7 +420,8 @@ class Transformer2W(EditableDevice):
                  temp_base=20, temp_oper=20, alpha=0.00330,
                  control_mode: TransformerControlType = TransformerControlType.fixed,
                  template: TransformerType = None,
-                 rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None, contingency_factor=1.0):
+                 rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None, contingency_factor=1.0,
+                 contingency_enabled=True):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -443,7 +444,8 @@ class Transformer2W(EditableDevice):
 
                                                   'contingency_factor': GCProp('p.u.', float,
                                                                                'Rating multiplier for contingencies.'),
-
+                                                  'contingency_enabled': GCProp('', bool,
+                                                                                'Consider this transformer for contingencies.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
@@ -566,6 +568,7 @@ class Transformer2W(EditableDevice):
         # branch rating in MVA
         self.rate = rate
         self.contingency_factor = contingency_factor
+        self.contingency_enabled: bool = contingency_enabled
         self.rate_prof = rate_prof
 
         # branch type: Line, Transformer, etc...

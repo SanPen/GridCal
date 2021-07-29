@@ -580,6 +580,8 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.X[i] = elm.X
         data.B[i] = elm.B
 
+        data.contingency_enabled[i] = int(elm.contingency_enabled)
+
     # 2-winding transformers
     for i, elm in enumerate(circuit.transformers2w):
         ii = i + nline
@@ -624,6 +626,8 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
 
         data.control_mode[ii] = elm.control_mode
         data.tap_f[ii], data.tap_t[ii] = elm.get_virtual_taps()
+
+        data.contingency_enabled[ii] = int(elm.contingency_enabled)
 
         if elm.control_mode == TransformerControlType.Vt:
             Vbus[t] = elm.vset
@@ -681,6 +685,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.vf_set[ii] = elm.Vac_set
         data.vt_set[ii] = elm.Vdc_set
         data.control_mode[ii] = elm.control_mode
+        data.contingency_enabled[ii] = int(elm.contingency_enabled)
 
         '''
         type_0_free = '0:Free'
@@ -739,6 +744,8 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.F[ii] = f
         data.T[ii] = t
 
+        data.contingency_enabled[ii] = int(elm.contingency_enabled)
+
         if apply_temperature:
             data.R[ii] = elm.R_corrected
         else:
@@ -784,6 +791,8 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.Beq[ii] = elm.Bl
 
         data.Pfset[ii] = elm.Pfset
+
+        data.contingency_enabled[ii] = int(elm.contingency_enabled)
 
     return data
 

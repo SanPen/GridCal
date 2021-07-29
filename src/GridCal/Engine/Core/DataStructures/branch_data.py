@@ -73,6 +73,8 @@ class BranchData:
         self.alpha3 = np.zeros(self.nbr)  # converter losses parameter (alpha3)
         self.control_mode = np.zeros(self.nbr, dtype=object)
 
+        self.contingency_enabled = np.ones(self.nbr, dtype=int)
+
         self.C_branch_bus_f = sp.lil_matrix((self.nbr, nbus), dtype=int)  # connectivity branch with their "from" bus
         self.C_branch_bus_t = sp.lil_matrix((self.nbr, nbus), dtype=int)  # connectivity branch with their "to" bus
 
@@ -128,6 +130,8 @@ class BranchData:
         data.vf_set = self.vf_set[tidx]
         data.vt_set = self.vt_set[tidx]
 
+        data.contingency_enabled = self.contingency_enabled[tidx]
+
         data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(elm_idx, bus_idx)]
         data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(elm_idx, bus_idx)]
 
@@ -140,6 +144,10 @@ class BranchData:
         :return: array of island branch indices
         """
         return tp.get_elements_of_the_island(self.C_branch_bus_f + self.C_branch_bus_t, bus_idx)
+
+    def get_contingency_enabled_indices(self):
+
+        return np.where(self.contingency_enabled == 1)[0]
 
     def __len__(self):
         return self.nbr

@@ -20,7 +20,7 @@ from scipy.sparse.linalg import spsolve
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, SnapshotData
 
 
 def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
@@ -269,7 +269,7 @@ class LinearAnalysis:
 
         self.correct_values = correct_values
 
-        self.numerical_circuit = None
+        self.numerical_circuit: SnapshotData = None
 
         self.PTDF = None
 

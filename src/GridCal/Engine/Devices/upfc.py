@@ -27,7 +27,8 @@ class UPFC(EditableDevice):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='UPFC', code='', idtag=None, active=True,
                  rs=0.0, xs=0.00001, rl=0.0, xl=0.0, bl=0.0, rp=0.0, xp=0.0, vp=1.0, Pset = 0.0, Qset=0.0, rate=9999,
-                 mttf=0, mttr=0, cost=1200, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0):
+                 mttf=0, mttr=0, cost=1200, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0,
+                 contingency_enabled=True):
         """
         Unified Power Flow Converter (UPFC)
         :param bus_from:
@@ -71,7 +72,8 @@ class UPFC(EditableDevice):
 
                                                   'contingency_factor': GCProp('p.u.', float,
                                                                                'Rating multiplier for contingencies.'),
-
+                                                  'contingency_enabled': GCProp('', bool,
+                                                                                'Consider this UPFC for contingencies.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
@@ -123,6 +125,7 @@ class UPFC(EditableDevice):
         # branch rating in MVA
         self.rate = rate
         self.contingency_factor = contingency_factor
+        self.contingency_enabled: bool = contingency_enabled
         self.rate_prof = rate_prof
 
         # branch type: Line, Transformer, etc...
