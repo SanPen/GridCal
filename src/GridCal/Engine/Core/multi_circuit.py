@@ -2137,13 +2137,28 @@ class MultiCircuit:
 
     def get_inter_areas_branches(self, a1: List[Area], a2: List[Area]):
         """
+        Get the inter-area branches. HVDC branches are not considered
+        :param a1: Area from
+        :param a2: Area to
+        :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+        """
+        lst: List[Tuple[int, object, float]] = list()
+        for k, branch in enumerate(self.get_branches_wo_hvdc()):
+            if branch.bus_from.area in a1 and branch.bus_to.area in a2:
+                lst.append((k, branch, 1.0))
+            elif branch.bus_from.area in a2 and branch.bus_to.area in a1:
+                lst.append((k, branch, -1.0))
+        return lst
+
+    def get_inter_areas_hvdc_branches(self, a1: List[Area], a2: List[Area]):
+        """
         Get the inter-area branches
         :param a1: Area from
         :param a2: Area to
         :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
         """
         lst: List[Tuple[int, object, float]] = list()
-        for k, branch in enumerate(self.get_branches()):
+        for k, branch in enumerate(self.hvdc_lines):
             if branch.bus_from.area in a1 and branch.bus_to.area in a2:
                 lst.append((k, branch, 1.0))
             elif branch.bus_from.area in a2 and branch.bus_to.area in a1:

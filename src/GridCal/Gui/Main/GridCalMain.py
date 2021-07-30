@@ -2768,7 +2768,7 @@ class MainGUI(QMainWindow):
                 threshold = self.ui.atcThresholdSpinBox.value()
 
                 # available transfer capacity inter areas
-                compatible_areas, lst_from, lst_to, lst_br = self.get_compatible_areas_from_to()
+                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
 
                 if not compatible_areas:
                     return
@@ -2778,18 +2778,25 @@ class MainGUI(QMainWindow):
                 idx_br = np.array([i for i, bus, sense in lst_br])
                 sense_br = np.array([sense for i, bus, sense in lst_br])
 
+                # HVDC
+                idx_hvdc_br = np.array([i for i, bus, sense in lst_hvdc_br])
+                sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
+
                 if self.ui.usePfValuesForAtcCheckBox.isChecked():
                     pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
                     if pf_results is not None:
                         Pf = pf_results.Sf.real
+                        Pf_hvdc = pf_results.hvdc_Pf.real
                         use_provided_flows = True
                     else:
                         warning_msg('There were no power flow values available. Linear flows will be used.')
                         use_provided_flows = False
+                        Pf_hvdc = None
                         Pf = None
                 else:
                     use_provided_flows = False
                     Pf = None
+                    Pf_hvdc = None
 
                 if len(idx_from) == 0:
                     error_msg('The area "from" has no buses!')
@@ -2812,6 +2819,9 @@ class MainGUI(QMainWindow):
                                                                idx_br=idx_br,
                                                                sense_br=sense_br,
                                                                Pf=Pf,
+                                                               idx_hvdc_br=idx_hvdc_br,
+                                                               sense_hvdc_br=sense_hvdc_br,
+                                                               Pf_hvdc=Pf_hvdc,
                                                                dT=dT,
                                                                threshold=threshold,
                                                                mode=mode)
@@ -2871,7 +2881,7 @@ class MainGUI(QMainWindow):
                     threshold = self.ui.atcThresholdSpinBox.value()
 
                     # available transfer capacity inter areas
-                    compatible_areas, lst_from, lst_to, lst_br = self.get_compatible_areas_from_to()
+                    compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
 
                     if not compatible_areas:
                         return
@@ -2881,17 +2891,24 @@ class MainGUI(QMainWindow):
                     idx_br = np.array([i for i, bus, sense in lst_br])
                     sense_br = np.array([sense for i, bus, sense in lst_br])
 
+                    # HVDC
+                    idx_hvdc_br = np.array([i for i, bus, sense in lst_hvdc_br])
+                    sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
+
                     if self.ui.usePfValuesForAtcCheckBox.isChecked():
                         pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
                         if pf_results is not None:
                             Pf = pf_results.Sf.real
+                            Pf_hvdc = pf_results.hvdc_Pf.real
                             use_provided_flows = True
                         else:
                             warning_msg('There were no power flow values available. Linear flows will be used.')
                             use_provided_flows = False
+                            Pf_hvdc = None
                             Pf = None
                     else:
                         use_provided_flows = False
+                        Pf_hvdc = None
                         Pf = None
 
                     if len(idx_from) == 0:
@@ -2915,6 +2932,9 @@ class MainGUI(QMainWindow):
                                                                    idx_br=idx_br,
                                                                    sense_br=sense_br,
                                                                    Pf=Pf,
+                                                                   idx_hvdc_br=idx_hvdc_br,
+                                                                   sense_hvdc_br=sense_hvdc_br,
+                                                                   Pf_hvdc=Pf_hvdc,
                                                                    dT=dT,
                                                                    threshold=threshold,
                                                                    mode=mode)
@@ -2990,7 +3010,7 @@ class MainGUI(QMainWindow):
 
                     if self.ui.atcRadioButton.isChecked():
                         use_alpha = True
-                        compatible_areas, lst_from, lst_to, lst_br = self.get_compatible_areas_from_to()
+                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
 
                         if compatible_areas:
                             idx_from = [i for i, bus in lst_from]
@@ -2999,6 +3019,10 @@ class MainGUI(QMainWindow):
                             alpha_vec[idx_from] *= 2
                             alpha_vec[idx_to] *= -2
                             sel_bus_idx = np.zeros(0, dtype=int)  # for completeness
+
+                            # HVDC
+                            idx_hvdc_br = np.array([i for i, bus, sense in lst_hvdc_br])
+                            sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
                         else:
                             sel_bus_idx = np.zeros(0, dtype=int)  # for completeness
                             # incompatible areas...exit
@@ -5998,7 +6022,8 @@ class MainGUI(QMainWindow):
         lst_from = self.circuit.get_areas_buses(areas_from)
         lst_to = self.circuit.get_areas_buses(areas_to)
         lst_br = self.circuit.get_inter_areas_branches(areas_from, areas_to)
-        return True, lst_from, lst_to, lst_br
+        lst_br_hvdc = self.circuit.get_inter_areas_hvdc_branches(areas_from, areas_to)
+        return True, lst_from, lst_to, lst_br, lst_br_hvdc
 
 
 def run(use_native_dialogues=True):

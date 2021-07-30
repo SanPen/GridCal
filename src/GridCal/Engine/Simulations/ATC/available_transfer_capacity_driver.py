@@ -443,6 +443,7 @@ class AvailableTransferCapacityOptions:
 
     def __init__(self, distributed_slack=True, correct_values=True, use_provided_flows=False,
                  bus_idx_from=list(), bus_idx_to=list(), idx_br=list(), sense_br=list(), Pf=None,
+                 idx_hvdc_br=list(), sense_hvdc_br=list(), Pf_hvdc=None,
                  dT=100.0, threshold=0.02, mode: AvailableTransferMode = AvailableTransferMode.Generation):
         """
 
@@ -465,6 +466,11 @@ class AvailableTransferCapacityOptions:
         self.inter_area_branch_idx = idx_br
         self.inter_area_branch_sense = sense_br
         self.Pf = Pf
+
+        self.idx_hvdc_br = idx_hvdc_br
+        self.inter_area_hvdc_branch_sense = sense_hvdc_br
+        self.Pf_hvdc = Pf_hvdc
+
         self.dT = dT
         self.threshold = threshold
         self.mode = mode
@@ -553,6 +559,11 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         # base exchange
         base_exchange = (self.options.inter_area_branch_sense * flows[self.options.inter_area_branch_idx]).sum()
 
+        # consider the HVDC transfer
+        if self.options.Pf_hvdc is not None:
+            if len(self.options.idx_hvdc_br):
+                base_exchange += (self.options.inter_area_hvdc_branch_sense * self.options.Pf_hvdc[self.options.idx_hvdc_br]).sum()
+
         # compute ATC
         beta_mat, beta_used, atc_n, atc_mc, atc_final, \
         atc_limiting_contingency_branch, \
@@ -597,7 +608,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
 
 if __name__ == '__main__':
 
-    from GridCal.Engine import *
+    from GridCal.Engine.IO import *
     fname = r'C:\Users\penversa\Git\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 
     main_circuit = FileOpen(fname).open()
