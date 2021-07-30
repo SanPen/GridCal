@@ -1220,7 +1220,8 @@ class MainGUI(QMainWindow):
             else:
                 warn('The file was not valid')
         else:
-            pass
+            # center nodes
+            self.grid_editor.align_schematic()
 
     def add_circuit(self):
         """

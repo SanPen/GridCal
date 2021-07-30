@@ -22,11 +22,11 @@ from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 class ContingencyAnalysisResults(ResultsTemplate):
 
-    def __init__(self, n, m, bus_names, branch_names, bus_types):
+    def __init__(self, nbus, nbr, bus_names, branch_names, bus_types):
         """
         TimeSeriesResults constructor
-        @param n: number of buses
-        @param m: number of branches
+        @param nbus: number of buses
+        @param nbr: number of branches
         """
         ResultsTemplate.__init__(self,
                                  name='Contingency Analysis Results',
@@ -49,15 +49,15 @@ class ContingencyAnalysisResults(ResultsTemplate):
 
         self.bus_types = bus_types
 
-        self.voltage = np.ones((m, n), dtype=complex)
+        self.voltage = np.ones((nbr, nbus), dtype=complex)
 
-        self.S = np.zeros((m, n), dtype=complex)
+        self.S = np.zeros((nbr, nbus), dtype=complex)
 
-        self.Sf = np.zeros((m, m), dtype=complex)
+        self.Sf = np.zeros((nbr, nbr), dtype=complex)
 
-        self.loading = np.zeros((m, m), dtype=complex)
+        self.loading = np.zeros((nbr, nbr), dtype=complex)
 
-        self.otdf = np.zeros((m, m))
+        self.otdf = np.zeros((nbr, nbr))
 
     def apply_new_rates(self, nc: "SnapshotData"):
         rates = nc.Rates
