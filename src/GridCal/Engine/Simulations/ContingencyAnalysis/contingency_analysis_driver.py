@@ -127,8 +127,12 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         for ic, c in enumerate(br_idx):  # branch that fails (contingency)
 
-            results.Sf[:, c] = flows_n[:] + LODF[:, c] * flows_n[c]
-            results.loading[:, c] = results.Sf[:, c] / (self.numerical_circuit.ContingencyRates + 1e-9)
+            # results.Sf[:, c] = flows_n[:] + LODF[:, c] * flows_n[c]
+            # results.loading[:, c] = results.Sf[:, c] / (self.numerical_circuit.ContingencyRates + 1e-9)
+            # results.S[c, :] = Pbus
+
+            results.Sf[br_idx, c] = flows_n[br_idx] + LODF[br_idx, c] * flows_n[c]
+            results.loading[br_idx, c] = results.Sf[br_idx, c] / (self.numerical_circuit.ContingencyRates[br_idx] + 1e-9)
             results.S[c, :] = Pbus
 
             self.progress_signal.emit((ic + 1) / len(br_idx) * 100)

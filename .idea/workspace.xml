@@ -23,12 +23,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Extended the contingency branch selection to the ATC">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContingencyAnalysis/contingency_analysis_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContingencyAnalysis/contingency_analysis_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContingencyAnalysis/contingency_analysis_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContingencyAnalysis/contingency_analysis_results.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Extended the contingency branch selection to the contingency calculation">
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContingencyAnalysis/contingency_analysis_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContingencyAnalysis/contingency_analysis_ts_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -584,14 +580,7 @@
       <workItem from="1627459702892" duration="613000" />
       <workItem from="1627546650524" duration="8161000" />
       <workItem from="1627576235635" duration="2989000" />
-      <workItem from="1627627560359" duration="1095000" />
-    </task>
-    <task id="LOCAL-00135" summary="full ATC">
-      <created>1619686503436</created>
-      <option name="number" value="00135" />
-      <option name="presentableId" value="LOCAL-00135" />
-      <option name="project" value="LOCAL" />
-      <updated>1619686503436</updated>
+      <workItem from="1627627560359" duration="1748000" />
     </task>
     <task id="LOCAL-00136" summary="full ATC">
       <created>1619686677451</created>
@@ -929,7 +918,14 @@
       <option name="project" value="LOCAL" />
       <updated>1627571383097</updated>
     </task>
-    <option name="localTasksCounter" value="184" />
+    <task id="LOCAL-00184" summary="Extended the contingency branch selection to the contingency calculation">
+      <created>1627628672649</created>
+      <option name="number" value="00184" />
+      <option name="presentableId" value="LOCAL-00184" />
+      <option name="project" value="LOCAL" />
+      <updated>1627628672649</updated>
+    </task>
+    <option name="localTasksCounter" value="185" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -953,7 +949,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="GUI session now handles all the threading" />
     <MESSAGE value="Further remove PySide2" />
     <MESSAGE value="Further simplified the passing of results to the schematic for representation" />
     <MESSAGE value="Moved file drivers to the Session Gui package" />
@@ -978,7 +973,8 @@
     <MESSAGE value="Added the ability to select branches for contingency&#10;ATC (snapshot) taked into account the contingency_enabled property" />
     <MESSAGE value="Fixed minor indexing error&#10;The ATC report generation is more straight forward" />
     <MESSAGE value="Extended the contingency branch selection to the ATC" />
-    <option name="LAST_COMMIT_MESSAGE" value="Extended the contingency branch selection to the ATC" />
+    <MESSAGE value="Extended the contingency branch selection to the contingency calculation" />
+    <option name="LAST_COMMIT_MESSAGE" value="Extended the contingency branch selection to the contingency calculation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

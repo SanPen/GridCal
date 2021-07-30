@@ -161,6 +161,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
             self.progress_text.emit('Computing N-1 loading...' + ts_numeric_circuit.branch_names[e])
 
+            # the results are passed by reference and filled inside
             compute_flows_numba(e=e,
                                 nt=nt,
                                 contingency_branch_idx=br_idx,
