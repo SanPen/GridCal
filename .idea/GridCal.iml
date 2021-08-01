@@ -15,7 +15,7 @@
       <excludeFolder url="file://$MODULE_DIR$/src/Tutorials" />
       <excludeFolder url="file://$MODULE_DIR$/src/api_rest" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.8 (GridCal)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.8 (development)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">
