@@ -917,7 +917,7 @@ class MultiCircuit:
 
         self.buses.append(obj)
 
-    def delete_bus(self, obj: Bus):
+    def delete_bus(self, obj: Bus, ask=True):
         """
         Delete a :ref:`Bus<bus>` object from the grid.
 
@@ -930,9 +930,10 @@ class MultiCircuit:
         for branch_list in self.get_branch_lists():
             for i in range(len(branch_list) - 1, -1, -1):
                 if branch_list[i].bus_from == obj or branch_list[i].bus_to == obj:
-                    deleted_elm = branch_list.pop(i)
-                    if deleted_elm.graphic_obj is not None:
-                        deleted_elm.graphic_obj.remove()
+                    # deleted_elm = branch_list.pop(i)
+                    # if deleted_elm.graphic_obj is not None:
+                    # deleted_elm.graphic_obj.remove(ask=ask)
+                    branch_list[i].graphic_obj.remove(ask=ask)
 
         # remove the bus itself
         if obj in self.buses:

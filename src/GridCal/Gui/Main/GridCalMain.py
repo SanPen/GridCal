@@ -5391,7 +5391,7 @@ class MainGUI(QMainWindow):
                             if obj.graphic_obj is not None:
                                 # this is a more complete function than the circuit one because it removes the
                                 # graphical items too, and for loads and generators it deletes them properly
-                                obj.graphic_obj.remove()
+                                obj.graphic_obj.remove(ask=False)
 
                         # update the view
                         self.display_filter(objects)
@@ -5617,7 +5617,7 @@ class MainGUI(QMainWindow):
                         if bus.graphic_obj is not None:
                             # this is a more complete function than the circuit one because it removes the
                             # graphical items too, and for loads and generators it deletes them properly
-                            bus.graphic_obj.remove()
+                            bus.graphic_obj.remove(ask=False)
                 else:
                     pass
             else:
@@ -5818,7 +5818,7 @@ class MainGUI(QMainWindow):
 
             elif issue.issue_type == bs.SyncIssueType.Deleted:
                 if issue.their_elm.graphic_obj is not None:
-                    issue.my_elm.graphic_obj.remove()
+                    issue.my_elm.graphic_obj.remove(ask=False)
 
         # center nodes
         self.grid_editor.align_schematic()
@@ -6031,8 +6031,13 @@ def run(use_native_dialogues=True):
     Main function to run the GUI
     :return:
     """
+    # from GridCal.Gui.themes import QDarkPalette
+
     app = QApplication(sys.argv)
     app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
+
+    # dark = QDarkPalette(None)
+    # dark.set_app(app)
 
     window = MainGUI(use_native_dialogues=use_native_dialogues)
     window.resize(int(1.61 * 700.0), 700)  # golden ratio :)

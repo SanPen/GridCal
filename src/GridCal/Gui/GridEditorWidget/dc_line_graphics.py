@@ -374,15 +374,18 @@ class DcLineGraphicItem(QGraphicsLineItem):
             # change state
             self.enable_disable_toggle()
 
-    def remove(self):
+    def remove(self, ask=True):
         """
         Remove this object in the diagram and the API
         @return:
         """
-        ok = yes_no_question('Do you want to remove this line?', 'Remove line')
+        if ask:
+            ok = yes_no_question('Do you want to remove this line?', 'Remove line')
+        else:
+            ok = True
 
         if ok:
-            self.diagramScene.circuit.delete_branch(self.api_object)
+            self.diagramScene.circuit.delete_dc_line(self.api_object)
             self.diagramScene.removeItem(self)
 
     def reduce(self):
