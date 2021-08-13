@@ -178,6 +178,9 @@ class HvdcGraphicItem(QGraphicsLineItem):
             pe.setChecked(self.api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
 
+            pe2 = menu.addAction('Convert to Multi-terminal')
+            pe2.triggered.connect(self.convert_to_multi_terminal)
+
             ra6 = menu.addAction('Plot profiles')
             plot_icon = QIcon()
             plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
@@ -339,6 +342,9 @@ class HvdcGraphicItem(QGraphicsLineItem):
 
         # Set pen for everyone
         self.set_pen(QPen(self.color, self.width, self.style))
+
+    def convert_to_multi_terminal(self):
+        pass
 
     def plot_profiles(self):
         """

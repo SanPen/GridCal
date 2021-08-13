@@ -111,7 +111,7 @@ class ExternalGrid(EditableDevice):
 
         return elm
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return:
@@ -133,7 +133,7 @@ class ExternalGrid(EditableDevice):
 
         return d
 
-    def get_profiles_dict(self):
+    def get_profiles_dict(self, version=3):
         """
 
         :return:

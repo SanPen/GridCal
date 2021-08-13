@@ -1,0 +1,1 @@
+python .\upload_to_pypi.py

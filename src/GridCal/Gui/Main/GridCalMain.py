@@ -17,22 +17,23 @@ import gc
 import os.path
 import platform
 from collections import OrderedDict
-from multiprocessing import cpu_count
 from typing import List, Tuple
 
+import networkx as nx
 from matplotlib.colors import LinearSegmentedColormap
 from pandas.plotting import register_matplotlib_converters
 
 # Engine imports
 import GridCal.Engine.Core as core
 import GridCal.Engine.Devices as dev
-import GridCal.Engine.IO.export_results_driver as exprtdrv
-import GridCal.Engine.IO.file_handler as filedrv
-import GridCal.Engine.IO.synchronization_driver as syncdrv
+import GridCal.Gui.Session.export_results_driver as exprtdrv
+import GridCal.Gui.Session.file_handler as filedrv
+import GridCal.Gui.Session.synchronization_driver as syncdrv
 import GridCal.Engine.Simulations as sim
-import GridCal.Engine.Visualization.visualization as viz
+import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.grid_analysis as grid_analysis
+from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 
 # GUI imports
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
@@ -51,9 +52,9 @@ from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
-
-from GridCal.__version__ import __GridCal_VERSION__, about_msg
-from GridCal.update import check_version, get_upgrade_command
+from GridCal.Gui.Session.session import SimulationSession
+from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
+from GridCal.__version__ import __GridCal_VERSION__
 
 __author__ = 'Santiago Peñate Vera'
 
@@ -133,12 +134,13 @@ class MainGUI(QMainWindow):
 
         # transfer modes
         self.transfer_modes_dict = OrderedDict()
-        self.transfer_modes_dict['Area generation'] = sim.NetTransferMode.Generation
-        self.transfer_modes_dict['Area load'] = sim.NetTransferMode.Load
-        self.transfer_modes_dict['Area nodes'] = sim.NetTransferMode.GenerationAndLoad
+        self.transfer_modes_dict['Area generation'] = sim.AvailableTransferMode.Generation
+        self.transfer_modes_dict['Area installed power'] = sim.AvailableTransferMode.InstalledPower
+        self.transfer_modes_dict['Area load'] = sim.AvailableTransferMode.Load
+        self.transfer_modes_dict['Area nodes'] = sim.AvailableTransferMode.GenerationAndLoad
         lst = list(self.transfer_modes_dict.keys())
         self.ui.transferMethodComboBox.setModel(get_list_model(lst))
-        self.ui.transferMethodComboBox.setCurrentIndex(0)
+        self.ui.transferMethodComboBox.setCurrentIndex(1)
 
         self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
                                     '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.zip', '.dpx']
@@ -147,12 +149,17 @@ class MainGUI(QMainWindow):
         self.ptdf_group_modes = OrderedDict()
 
         # Automatic layout modes
-        mdl = get_list_model(['fruchterman_reingold_layout',
-                              'spectral_layout',
-                              'circular_layout',
-                              'random_layout',
-                              'shell_layout',
-                              'spring_layout'])
+        self.layout_algorithms_dict = dict()
+        self.layout_algorithms_dict['circular_layout'] = nx.circular_layout
+        self.layout_algorithms_dict['random_layout'] = nx.random_layout
+        self.layout_algorithms_dict['shell_layout'] = nx.shell_layout
+        self.layout_algorithms_dict['spring_layout'] = nx.spring_layout
+        self.layout_algorithms_dict['spectral_layout'] = nx.spectral_layout
+        self.layout_algorithms_dict['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
+        self.layout_algorithms_dict['kamada_kawai'] = nx.kamada_kawai_layout
+        self.layout_algorithms_dict['graphviz_neato'] = nx.nx_agraph.graphviz_layout
+        self.layout_algorithms_dict['graphviz_dot'] = nx.nx_agraph.graphviz_layout
+        mdl = get_list_model(list(self.layout_algorithms_dict.keys()))
         self.ui.automatic_layout_comboBox.setModel(mdl)
 
         # list of stochastic power flow methods
@@ -252,7 +259,7 @@ class MainGUI(QMainWindow):
         self.ui.progress_frame.setVisible(self.lock_ui)
 
         # simulations session
-        self.session: sim.SimulationSession = sim.SimulationSession(name='GUI session')
+        self.session: SimulationSession = SimulationSession(name='GUI session')
 
         # threads
         self.painter = None
@@ -274,11 +281,14 @@ class MainGUI(QMainWindow):
         self.profile_input_dialogue: ProfileInputGUI = None
         self.object_select_window: ObjectSelectWindow = None
         self.coordinates_window: CoordinatesInputGUI = None
+        self.about_msg_window: AboutDialogueGuiGUI = None
 
         self.file_name = ''
 
         # current results model
-        self.results_mdl = sim.ResultsModel(data=np.zeros((0, 0)), columns=np.zeros(0), index=np.zeros(0))
+        self.results_mdl: sim.ResultsTable = sim.ResultsTable(data=np.zeros((0, 0)),
+                                                              columns=np.zeros(0),
+                                                              index=np.zeros(0))
 
         # list of all the objects of the selected type under the Objects tab
         self.type_objects_list = list()
@@ -288,9 +298,6 @@ class MainGUI(QMainWindow):
         # dictionaries for available results
         self.available_results_dict = None
         self.available_results_steps_dict = None
-
-        self.threadpool = QThreadPool()
-        self.threadpool.setMaxThreadCount(cpu_count())
 
         ################################################################################################################
         # Console
@@ -585,10 +592,20 @@ class MainGUI(QMainWindow):
         :return: list of simulation threads
         """
 
+        all_threads = list(self.session.threads.values())
+
+        return all_threads
+
+    def get_simulations(self):
+        """
+        Get all threads that has to do with simulation
+        :return: list of simulation threads
+        """
+
         all_threads = list(self.session.drivers.values())
 
-        # as a side effect the circuit should know about these for accessing to the results via the objects themselves
-        self.circuit.results_dictionary = {thr.tpe: thr for thr in all_threads if thr is not None}
+        # set the threads so that the diagram scene objects can plot them
+        self.grid_editor.diagramScene.set_results_to_plot(all_threads)
 
         return all_threads
 
@@ -790,25 +807,8 @@ class MainGUI(QMainWindow):
         :return:
         """
 
-        version_code, latest_version = check_version()
-
-        if version_code == 1:
-            addendum = '\nThere is a newer version: ' + latest_version
-
-            cmd = get_upgrade_command(latest_version)
-            command = ' '.join(cmd)
-            addendum += '\n\nTerminal command to update:\n' + command
-
-        elif version_code == -1:
-            addendum = '\nThis version is newer than the version available\nin the repositories (' + latest_version + ')'
-        elif version_code == 0:
-            addendum = '\nGridCal is up to date.'
-        elif version_code == -2:
-            addendum = '\nIt was impossible to check for a newer version'
-        else:
-            addendum = ''
-
-        QMessageBox.about(self, "About GridCal", about_msg + addendum)
+        self.about_msg_window = AboutDialogueGuiGUI()
+        self.about_msg_window.setVisible(True)
 
     @staticmethod
     def show_online_docs():
@@ -954,27 +954,26 @@ class MainGUI(QMainWindow):
             if self.circuit.graph is None:
                 self.circuit.build_graph()
 
-            alg = dict()
-            alg['circular_layout'] = nx.circular_layout
-            alg['random_layout'] = nx.random_layout
-            alg['shell_layout'] = nx.shell_layout
-            alg['spring_layout'] = nx.spring_layout
-            alg['spectral_layout'] = nx.spectral_layout
-            alg['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
-
             sel = self.ui.automatic_layout_comboBox.currentText()
-            pos_alg = alg[sel]
+            pos_alg = self.layout_algorithms_dict[sel]
 
             # get the positions of a spring layout of the graph
             if sel == 'random_layout':
                 pos = pos_alg(self.circuit.graph)
+            elif sel == 'spring_layout':
+                pos = pos_alg(self.circuit.graph, iterations=100, scale=10)
+            elif sel == 'graphviz_neato':
+                pos = pos_alg(self.circuit.graph, prog='neato')
+            elif sel == 'graphviz_dot':
+                pos = pos_alg(self.circuit.graph, prog='dot')
             else:
                 pos = pos_alg(self.circuit.graph, scale=10)
 
             # assign the positions to the graphical objects of the nodes
             for i, bus in enumerate(self.circuit.buses):
                 try:
-                    x, y = pos[i] * 500
+                    x = pos[i][0] * 500
+                    y = pos[i][1] * 500
                     bus.graphic_obj.setPos(QPoint(x, y))
                 except KeyError as ex:
                     warn('Node ' + str(i) + ' not in graph!!!! \n' + str(ex))
@@ -1173,6 +1172,7 @@ class MainGUI(QMainWindow):
             if self.open_file_thread_object.valid:
 
                 # assign the loaded circuit
+                self.new_project_now()
                 self.circuit = self.open_file_thread_object.circuit
 
                 if len(self.circuit.buses) > 1500:
@@ -1183,6 +1183,7 @@ class MainGUI(QMainWindow):
 
                     if reply == QMessageBox.Yes:
                         self.ui.draw_schematic_checkBox.setChecked(False)
+                        self.set_grid_editor_state()
 
                 # create schematic
                 self.create_schematic_from_api(explode_factor=1)
@@ -1213,10 +1214,14 @@ class MainGUI(QMainWindow):
                 # clear the results
                 self.clear_results()
 
+                # center nodes
+                self.grid_editor.align_schematic()
+
             else:
                 warn('The file was not valid')
         else:
-            pass
+            # center nodes
+            self.grid_editor.align_schematic()
 
     def add_circuit(self):
         """
@@ -1274,15 +1279,15 @@ class MainGUI(QMainWindow):
         Update the area dependent combos
         """
         n = len(self.circuit.areas)
-        mdl = get_list_model([str(elm) for elm in self.circuit.areas])
-        self.ui.areaFromComboBox.setModel(mdl)
-        self.ui.areaToComboBox.setModel(mdl)
-        self.ui.atcAreaFromComboBox.setModel(mdl)
-        self.ui.atcAreaToComboBox.setModel(mdl)
+        mdl1 = get_list_model([str(elm) for elm in self.circuit.areas], checks=True)
+        mdl2 = get_list_model([str(elm) for elm in self.circuit.areas], checks=True)
+
+        self.ui.areaFromListView.setModel(mdl1)
+        self.ui.areaToListView.setModel(mdl2)
 
         if n > 1:
-            self.ui.areaToComboBox.setCurrentIndex(1)
-            self.ui.atcAreaToComboBox.setCurrentIndex(1)
+            self.ui.areaFromListView.model().item(0).setCheckState(QtCore.Qt.Checked)
+            self.ui.areaToListView.model().item(1).setCheckState(QtCore.Qt.Checked)
 
     def save_file_as(self):
         """
@@ -1365,7 +1370,7 @@ class MainGUI(QMainWindow):
                     if ok:
                         self.save_file_thread_object.quit()
 
-            simulation_drivers = self.get_simulation_threads()
+            simulation_drivers = self.get_simulations()
 
             if self.ui.saveResultsCheckBox.isChecked():
                 sessions = [self.session]
@@ -1601,6 +1606,9 @@ class MainGUI(QMainWindow):
             self.grid_editor.circuit = self.circuit
 
             self.grid_editor.schematic_from_api(explode_factor=explode_factor)
+
+            # center nodes
+            self.grid_editor.align_schematic()
         else:
             info_msg('The schematic drawing is disabled')
 
@@ -2278,7 +2286,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.PowerFlow_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.PowerFlow_run):
 
                 self.LOCK()
 
@@ -2304,9 +2312,11 @@ class MainGUI(QMainWindow):
 
                 if use_opf:
 
-                    if self.optimal_power_flow is not None:
-                        if self.optimal_power_flow.results is not None:
-                            opf_results = self.optimal_power_flow.results
+                    drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_run)
+
+                    if drv is not None:
+                        if results is not None:
+                            opf_results = results
                         else:
                             warning_msg('There are no OPF results, '
                                         'therefore this operation will not use OPF information.')
@@ -2325,13 +2335,10 @@ class MainGUI(QMainWindow):
                 # set power flow object instance
                 drv = sim.PowerFlowDriver(self.circuit, options, opf_results)
 
-                self.session.register(driver=drv)
-
-                drv.progress_signal.connect(self.ui.progressBar.setValue)
-                drv.progress_text.connect(self.ui.progress_label.setText)
-                drv.done_signal.connect(self.UNLOCK)
-                drv.done_signal.connect(self.post_power_flow)
-                drv.start()
+                self.session.run(drv,
+                                 post_func=self.post_power_flow,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
 
             else:
                 warning_msg('Another simulation of the same type is running...')
@@ -2350,7 +2357,7 @@ class MainGUI(QMainWindow):
 
         if results is not None:
             self.ui.progress_label.setText('Colouring power flow results in the grid...')
-            QtGui.QGuiApplication.processEvents()
+            # QtGui.QGuiApplication.processEvents()
 
             self.remove_simulation(sim.SimulationTypes.PowerFlow_run)
 
@@ -2384,13 +2391,13 @@ class MainGUI(QMainWindow):
 
         else:
             warning_msg('There are no power flow results.\nIs there any slack bus or generator?', 'Power flow')
-            QtGui.QGuiApplication.processEvents()
+            # QtGui.QGuiApplication.processEvents()
 
         if len(drv.logger) > 0:
             dlg = LogsDialogue('Power flow', drv.logger)
             dlg.exec_()
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_short_circuit(self):
@@ -2401,7 +2408,7 @@ class MainGUI(QMainWindow):
         :return:
         """
         if len(self.circuit.buses) > 0:
-            if sim.SimulationTypes.ShortCircuit_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.ShortCircuit_run):
 
                 pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
 
@@ -2440,14 +2447,10 @@ class MainGUI(QMainWindow):
                                                      options=sc_options,
                                                      pf_options=pf_options,
                                                      pf_results=pf_results)
-
-                        self.session.register(drv)
-
-                        drv.progress_signal.connect(self.ui.progressBar.setValue)
-                        drv.progress_text.connect(self.ui.progress_label.setText)
-                        drv.done_signal.connect(self.UNLOCK)
-                        drv.done_signal.connect(self.post_short_circuit)
-                        drv.start()
+                        self.session.run(drv,
+                                         post_func=self.post_short_circuit,
+                                         prog_func=self.ui.progressBar.setValue,
+                                         text_func=self.ui.progress_label.setText)
 
                 else:
                     info_msg('Run a power flow simulation first.\n'
@@ -2487,7 +2490,7 @@ class MainGUI(QMainWindow):
         else:
             error_msg('Something went wrong, There are no power short circuit results.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_linear_analysis(self):
@@ -2496,7 +2499,7 @@ class MainGUI(QMainWindow):
         :return:
         """
         if len(self.circuit.buses) > 0:
-            if sim.SimulationTypes.LinearAnalysis_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.LinearAnalysis_run):
 
                 self.add_simulation(sim.SimulationTypes.LinearAnalysis_run)
 
@@ -2509,16 +2512,10 @@ class MainGUI(QMainWindow):
 
                     drv = sim.LinearAnalysisDriver(grid=self.circuit, options=options)
 
-                    self.session.register(drv)
-
-                    self.ui.progress_label.setText('Running PTDF...')
-                    QtGui.QGuiApplication.processEvents()
-
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_linear_analysis)
-
-                    drv.start()
+                    self.session.run(drv,
+                                     post_func=self.post_linear_analysis,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
             else:
                 warning_msg('Another PTDF is being executed now...')
         else:
@@ -2550,7 +2547,7 @@ class MainGUI(QMainWindow):
             dlg = LogsDialogue('PTDF', drv.logger)
             dlg.exec_()
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_linear_analysis_ts(self):
@@ -2559,7 +2556,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
             if self.valid_time_series():
-                if sim.SimulationTypes.LinearAnalysis_TS_run not in self.stuff_running_now:
+                if not self.session.is_this_running(sim.SimulationTypes.LinearAnalysis_TS_run):
 
                     self.add_simulation(sim.SimulationTypes.LinearAnalysis_TS_run)
                     self.LOCK()
@@ -2572,16 +2569,10 @@ class MainGUI(QMainWindow):
                                                        start_=start_,
                                                        end_=end_)
 
-                    self.session.register(drv)
-
-                    self.ui.progress_label.setText('Running PTDF time series...')
-                    QtGui.QGuiApplication.processEvents()
-
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_linear_analysis_ts)
-
-                    drv.start()
+                    self.session.run(drv,
+                                     post_func=self.post_linear_analysis_ts,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
                 else:
                     warning_msg('Another PTDF time series is being executed now...')
             else:
@@ -2623,7 +2614,7 @@ class MainGUI(QMainWindow):
             else:
                 error_msg('Something went wrong, There are no PTDF Time series results.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_contingency_analysis(self):
@@ -2633,7 +2624,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.ContingencyAnalysis_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.ContingencyAnalysis_run):
 
                 self.add_simulation(sim.SimulationTypes.ContingencyAnalysis_run)
 
@@ -2644,11 +2635,10 @@ class MainGUI(QMainWindow):
 
                 drv = sim.ContingencyAnalysisDriver(grid=self.circuit, options=options)
 
-                self.session.register(drv)
-                drv.progress_signal.connect(self.ui.progressBar.setValue)
-                drv.progress_text.connect(self.ui.progress_label.setText)
-                drv.done_signal.connect(self.post_contingency_analysis)
-                drv.start()
+                self.session.run(drv,
+                                 post_func=self.post_contingency_analysis,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
             else:
                 warning_msg('Another contingency analysis is being executed now...')
         else:
@@ -2669,13 +2659,29 @@ class MainGUI(QMainWindow):
 
                 self.ui.progress_label.setText('Colouring contingency analysis results in the grid...')
                 QtGui.QGuiApplication.processEvents()
+                if self.ui.draw_schematic_checkBox.isChecked():
+                    if results.S.shape[0] > 0:
+                        viz.colour_the_schematic(circuit=self.circuit,
+                                                 Sbus=results.S[0, :],  # same injection for all the contingencies
+                                                 Sf=np.abs(results.Sf).max(axis=1),
+                                                 voltages=results.voltage.max(axis=0),
+                                                 loadings=np.abs(results.loading).max(axis=1),
+                                                 types=results.bus_types,
+                                                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                                 min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                                 max_bus_width=self.ui.max_node_size_spinBox.value()
+                                                 )
+                    else:
+                        info_msg('Cannot colour because there are no branches :/')
 
                 self.update_available_results()
                 self.colour_now()
             else:
                 error_msg('Something went wrong, There are no contingency analysis results.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_contingency_analysis_ts(self):
@@ -2686,7 +2692,7 @@ class MainGUI(QMainWindow):
         if len(self.circuit.buses) > 0:
 
             if self.valid_time_series():
-                if sim.SimulationTypes.ContingencyAnalysisTS_run not in self.stuff_running_now:
+                if not self.session.is_this_running(sim.SimulationTypes.ContingencyAnalysisTS_run):
 
                     self.add_simulation(sim.SimulationTypes.ContingencyAnalysisTS_run)
 
@@ -2697,11 +2703,10 @@ class MainGUI(QMainWindow):
 
                     drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit, options=options)
 
-                    self.session.register(drv)
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_contingency_analysis_ts)
-                    drv.start()
+                    self.session.run(drv,
+                                     post_func=self.post_contingency_analysis_ts,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
                 else:
                     warning_msg('Another LODF is being executed now...')
             else:
@@ -2725,12 +2730,29 @@ class MainGUI(QMainWindow):
                 self.ui.progress_label.setText('Colouring LODF results in the grid...')
                 QtGui.QGuiApplication.processEvents()
 
+                if self.ui.draw_schematic_checkBox.isChecked():
+                    if results.worst_flows.shape[0] > 0:
+                        viz.colour_the_schematic(circuit=self.circuit,
+                                                 Sbus=results.S[0, :],  # same injection for all the contingencies
+                                                 Sf=np.abs(results.worst_flows).max(axis=0),
+                                                 voltages=np.ones(len(results.bus_names), dtype=complex),
+                                                 loadings=np.abs(results.worst_loading).max(axis=0),
+                                                 types=results.bus_types,
+                                                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                                 min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                                 max_bus_width=self.ui.max_node_size_spinBox.value()
+                                                 )
+                    else:
+                        info_msg('Cannot colour because there are no branches :/')
+
                 self.update_available_results()
                 self.colour_now()
             else:
                 error_msg('Something went wrong, There are no LODF results.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_available_transfer_capacity(self):
@@ -2740,18 +2762,41 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.NetTransferCapacity_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.NetTransferCapacity_run):
                 distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 threshold = self.ui.atcThresholdSpinBox.value()
 
                 # available transfer capacity inter areas
-                area_from = self.circuit.areas[self.ui.atcAreaFromComboBox.currentIndex()]
-                area_to = self.circuit.areas[self.ui.atcAreaToComboBox.currentIndex()]
-                lst_from = self.get_area_buses(area_from)
-                lst_to = self.get_area_buses(area_to)
+                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+
+                if not compatible_areas:
+                    return
+
                 idx_from = np.array([i for i, bus in lst_from])
                 idx_to = np.array([i for i, bus in lst_to])
+                idx_br = np.array([i for i, bus, sense in lst_br])
+                sense_br = np.array([sense for i, bus, sense in lst_br])
+
+                # HVDC
+                idx_hvdc_br = np.array([i for i, bus, sense in lst_hvdc_br])
+                sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
+
+                if self.ui.usePfValuesForAtcCheckBox.isChecked():
+                    pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
+                    if pf_results is not None:
+                        Pf = pf_results.Sf.real
+                        Pf_hvdc = pf_results.hvdc_Pf.real
+                        use_provided_flows = True
+                    else:
+                        warning_msg('There were no power flow values available. Linear flows will be used.')
+                        use_provided_flows = False
+                        Pf_hvdc = None
+                        Pf = None
+                else:
+                    use_provided_flows = False
+                    Pf = None
+                    Pf_hvdc = None
 
                 if len(idx_from) == 0:
                     error_msg('The area "from" has no buses!')
@@ -2761,27 +2806,33 @@ class MainGUI(QMainWindow):
                     error_msg('The area "to" has no buses!')
                     return
 
-                if area_from == area_to:
-                    error_msg('Cannot analyze transfer capacity from and to the same area!')
+                if len(idx_br) == 0:
+                    error_msg('There are no inter-area branches!')
                     return
 
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
 
-                options = sim.NetTransferCapacityOptions(distributed_slack=distributed_slack,
-                                                         bus_idx_from=idx_from,
-                                                         bus_idx_to=idx_to,
-                                                         dT=dT,
-                                                         threshold=threshold,
-                                                         mode=mode)
+                options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack,
+                                                               use_provided_flows=use_provided_flows,
+                                                               bus_idx_from=idx_from,
+                                                               bus_idx_to=idx_to,
+                                                               idx_br=idx_br,
+                                                               sense_br=sense_br,
+                                                               Pf=Pf,
+                                                               idx_hvdc_br=idx_hvdc_br,
+                                                               sense_hvdc_br=sense_hvdc_br,
+                                                               Pf_hvdc=Pf_hvdc,
+                                                               dT=dT,
+                                                               threshold=threshold,
+                                                               mode=mode)
 
-                drv = sim.NetTransferCapacityDriver(grid=self.circuit,
-                                                    options=options)
+                drv = sim.AvailableTransferCapacityDriver(grid=self.circuit,
+                                                          options=options)
 
-                self.session.register(drv)
-                drv.progress_signal.connect(self.ui.progressBar.setValue)
-                drv.progress_text.connect(self.ui.progress_label.setText)
-                drv.done_signal.connect(self.post_available_transfer_capacity)
-                drv.start()
+                self.session.run(drv,
+                                 post_func=self.post_available_transfer_capacity,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
                 self.add_simulation(sim.SimulationTypes.NetTransferCapacity_run)
                 self.LOCK()
 
@@ -2812,7 +2863,7 @@ class MainGUI(QMainWindow):
             else:
                 error_msg('Something went wrong, There are no ATC results.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_available_transfer_capacity_ts(self):
@@ -2823,45 +2874,82 @@ class MainGUI(QMainWindow):
         if len(self.circuit.buses) > 0:
 
             if self.valid_time_series():
-                if sim.SimulationTypes.NetTransferCapacity_run not in self.stuff_running_now:
+                if not self.session.is_this_running(sim.SimulationTypes.NetTransferCapacity_run):
 
                     distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
                     dT = self.ui.atcPerturbanceSpinBox.value()
                     threshold = self.ui.atcThresholdSpinBox.value()
 
                     # available transfer capacity inter areas
-                    area_from = self.circuit.areas[self.ui.atcAreaFromComboBox.currentIndex()]
-                    area_to = self.circuit.areas[self.ui.atcAreaToComboBox.currentIndex()]
-                    lst_from = self.get_area_buses(area_from)
-                    lst_to = self.get_area_buses(area_to)
+                    compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+
+                    if not compatible_areas:
+                        return
+
                     idx_from = np.array([i for i, bus in lst_from])
                     idx_to = np.array([i for i, bus in lst_to])
+                    idx_br = np.array([i for i, bus, sense in lst_br])
+                    sense_br = np.array([sense for i, bus, sense in lst_br])
 
-                    if area_from == area_to:
-                        error_msg('Cannot analyze transfer capacity from and to the same area!')
+                    # HVDC
+                    idx_hvdc_br = np.array([i for i, bus, sense in lst_hvdc_br])
+                    sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
+
+                    if self.ui.usePfValuesForAtcCheckBox.isChecked():
+                        pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
+                        if pf_results is not None:
+                            Pf = pf_results.Sf.real
+                            Pf_hvdc = pf_results.hvdc_Pf.real
+                            use_provided_flows = True
+                        else:
+                            warning_msg('There were no power flow values available. Linear flows will be used.')
+                            use_provided_flows = False
+                            Pf_hvdc = None
+                            Pf = None
+                    else:
+                        use_provided_flows = False
+                        Pf_hvdc = None
+                        Pf = None
+
+                    if len(idx_from) == 0:
+                        error_msg('The area "from" has no buses!')
+                        return
+
+                    if len(idx_to) == 0:
+                        error_msg('The area "to" has no buses!')
+                        return
+
+                    if len(idx_br) == 0:
+                        error_msg('There are no inter-area branches!')
                         return
 
                     mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
 
-                    options = sim.NetTransferCapacityOptions(distributed_slack=distributed_slack,
-                                                             bus_idx_from=idx_from,
-                                                             bus_idx_to=idx_to,
-                                                             dT=dT,
-                                                             threshold=threshold,
-                                                             mode=mode)
+                    options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack,
+                                                                   use_provided_flows=use_provided_flows,
+                                                                   bus_idx_from=idx_from,
+                                                                   bus_idx_to=idx_to,
+                                                                   idx_br=idx_br,
+                                                                   sense_br=sense_br,
+                                                                   Pf=Pf,
+                                                                   idx_hvdc_br=idx_hvdc_br,
+                                                                   sense_hvdc_br=sense_hvdc_br,
+                                                                   Pf_hvdc=Pf_hvdc,
+                                                                   dT=dT,
+                                                                   threshold=threshold,
+                                                                   mode=mode)
 
                     start_ = self.ui.profile_start_slider.value()
                     end_ = self.ui.profile_end_slider.value()
-                    drv = sim.NetTransferCapacityTimeSeriesDriver(grid=self.circuit,
-                                                                  options=options,
-                                                                  start_=start_,
-                                                                  end_=end_)
+                    drv = sim.AvailableTransferCapacityTimeSeriesDriver(grid=self.circuit,
+                                                                        options=options,
+                                                                        start_=start_,
+                                                                        end_=end_)
 
-                    self.session.register(drv)
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_available_transfer_capacity_ts)
-                    drv.start()
+                    self.session.run(drv,
+                                     post_func=self.post_available_transfer_capacity_ts,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
                     self.add_simulation(sim.SimulationTypes.NetTransferCapacityTS_run)
                     self.LOCK()
 
@@ -2893,56 +2981,8 @@ class MainGUI(QMainWindow):
             else:
                 error_msg('Something went wrong, There are no ATC time series results.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
-
-    def get_selected_continuation_power_flow_options(self):
-        """
-        Gather the voltage stability options
-        :return:
-        """
-        use_alpha = self.ui.start_vs_from_default_radioButton.isChecked()
-
-        # direction vector
-        alpha = self.ui.alpha_doubleSpinBox.value()
-        n = len(self.circuit.buses)
-
-        # vector that multiplies the target power: The continuation direction
-        alpha_vec = np.ones(n)
-
-        if self.ui.atcRadioButton.isChecked():
-            use_alpha = True
-            # available transfer capacity inter areas
-            area_from = self.circuit.areas[self.ui.areaFromComboBox.currentIndex()]
-            area_to = self.circuit.areas[self.ui.areaToComboBox.currentIndex()]
-
-            if area_from != area_to:
-                lst_from = self.get_area_buses(area_from)
-                lst_to = self.get_area_buses(area_to)
-                idx_from = [i for i, bus in lst_from]
-                idx_to = [i for i, bus in lst_to]
-
-                alpha_vec[idx_from] *= 2
-                alpha_vec[idx_to] *= -2
-                idx = np.zeros(0, dtype=int)  # for completeness
-            else:
-                idx = np.zeros(0, dtype=int)  # for completeness
-        else:
-            sel_buses = self.get_selected_buses()
-            if len(sel_buses) == 0:
-                # all nodes
-                alpha_vec *= alpha
-                idx = np.zeros(0, dtype=int)  # for completeness
-            else:
-                # pick the selected nodes
-                idx = np.array([k for k, bus in sel_buses])
-                alpha_vec[idx] = alpha_vec[idx] * alpha
-
-        use_profiles = self.ui.start_vs_from_selected_radioButton.isChecked()
-        start_idx = self.ui.vs_departure_comboBox.currentIndex()
-        end_idx = self.ui.vs_target_comboBox.currentIndex()
-
-        return use_alpha, alpha_vec, use_profiles, start_idx, end_idx, idx
 
     def run_continuation_power_flow(self):
         """
@@ -2956,20 +2996,51 @@ class MainGUI(QMainWindow):
 
             if pf_results is not None:
 
-                if sim.SimulationTypes.ContinuationPowerFlow_run not in self.stuff_running_now:
-
-                    if self.ui.atcRadioButton.isChecked():
-                        # available transfer capacity inter areas
-                        area_from = self.circuit.areas[self.ui.areaFromComboBox.currentIndex()]
-                        area_to = self.circuit.areas[self.ui.areaToComboBox.currentIndex()]
-
-                        if area_from == area_to:
-                            error_msg('Cannot analyze transfer capacity from and to the same area!')
-                            return
+                if not self.session.is_this_running(sim.SimulationTypes.ContinuationPowerFlow_run):
 
                     # get the selected UI options
-                    use_alpha, alpha, use_profiles, \
-                    start_idx, end_idx, sel_bus_idx = self.get_selected_continuation_power_flow_options()
+                    use_alpha = self.ui.start_vs_from_default_radioButton.isChecked()
+
+                    # direction vector
+                    alpha = self.ui.alpha_doubleSpinBox.value()
+                    n = len(self.circuit.buses)
+
+                    # vector that multiplies the target power: The continuation direction
+                    alpha_vec = np.ones(n)
+
+                    if self.ui.atcRadioButton.isChecked():
+                        use_alpha = True
+                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+
+                        if compatible_areas:
+                            idx_from = [i for i, bus in lst_from]
+                            idx_to = [i for i, bus in lst_to]
+
+                            alpha_vec[idx_from] *= 2
+                            alpha_vec[idx_to] *= -2
+                            sel_bus_idx = np.zeros(0, dtype=int)  # for completeness
+
+                            # HVDC
+                            idx_hvdc_br = np.array([i for i, bus, sense in lst_hvdc_br])
+                            sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
+                        else:
+                            sel_bus_idx = np.zeros(0, dtype=int)  # for completeness
+                            # incompatible areas...exit
+                            return
+                    else:
+                        sel_buses = self.get_selected_buses()
+                        if len(sel_buses) == 0:
+                            # all nodes
+                            alpha_vec *= alpha
+                            sel_bus_idx = np.zeros(0, dtype=int)  # for completeness
+                        else:
+                            # pick the selected nodes
+                            sel_bus_idx = np.array([k for k, bus in sel_buses])
+                            alpha_vec[sel_bus_idx] = alpha_vec[sel_bus_idx] * alpha
+
+                    use_profiles = self.ui.start_vs_from_selected_radioButton.isChecked()
+                    start_idx = self.ui.vs_departure_comboBox.currentIndex()
+                    end_idx = self.ui.vs_target_comboBox.currentIndex()
 
                     if len(sel_bus_idx) > 0:
                         if sum([self.circuit.buses[i].get_device_number() for i in sel_bus_idx]) == 0:
@@ -3026,15 +3097,10 @@ class MainGUI(QMainWindow):
                                                               options=vc_options,
                                                               inputs=vc_inputs,
                                                               pf_options=pf_options)
-                        self.session.register(drv)
-
-                        # make connections
-                        drv.progress_signal.connect(self.ui.progressBar.setValue)
-                        drv.progress_text.connect(self.ui.progress_label.setText)
-                        drv.done_signal.connect(self.post_continuation_power_flow)
-
-                        # thread start
-                        drv.start()
+                        self.session.run(drv,
+                                         post_func=self.post_continuation_power_flow,
+                                         prog_func=self.ui.progressBar.setValue,
+                                         text_func=self.ui.progress_label.setText)
 
                     elif use_profiles:
                         '''
@@ -3061,15 +3127,10 @@ class MainGUI(QMainWindow):
                                                                   options=vc_options,
                                                                   inputs=vc_inputs,
                                                                   pf_options=pf_options)
-                            self.session.register(drv)
-
-                            # make connections
-                            drv.progress_signal.connect(self.ui.progressBar.setValue)
-                            drv.progress_text.connect(self.ui.progress_label.setText)
-                            drv.done_signal.connect(self.post_continuation_power_flow)
-
-                            # thread start
-                            drv.start()
+                            self.session.run(drv,
+                                             post_func=self.post_continuation_power_flow,
+                                             prog_func=self.ui.progressBar.setValue,
+                                             text_func=self.ui.progress_label.setText)
                         else:
                             info_msg('Check the selected start and finnish time series indices.')
                 else:
@@ -3112,7 +3173,7 @@ class MainGUI(QMainWindow):
         else:
             error_msg('Something went wrong, There are no voltage stability results.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_time_series(self):
@@ -3121,7 +3182,7 @@ class MainGUI(QMainWindow):
         @return:
         """
         if len(self.circuit.buses) > 0:
-            if sim.SimulationTypes.TimeSeries_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.TimeSeries_run):
                 if self.valid_time_series():
                     self.LOCK()
 
@@ -3153,14 +3214,11 @@ class MainGUI(QMainWindow):
                                          opf_time_series_results=opf_time_series_results,
                                          start_=start,
                                          end_=end)
-                    self.session.register(drv)
 
-                    # Set the time series run options
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_time_series)
-
-                    drv.start()
+                    self.session.run(drv,
+                                     post_func=self.post_time_series,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
 
                 else:
                     warning_msg('There are no time series.', 'Time series')
@@ -3205,7 +3263,7 @@ class MainGUI(QMainWindow):
         else:
             warning_msg('No results for the time series simulation.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_clustering_time_series(self):
@@ -3214,7 +3272,7 @@ class MainGUI(QMainWindow):
         @return:
         """
         if len(self.circuit.buses) > 0:
-            if sim.SimulationTypes.ClusteringTimeSeries_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.ClusteringTimeSeries_run):
                 if self.valid_time_series():
                     self.LOCK()
 
@@ -3248,14 +3306,11 @@ class MainGUI(QMainWindow):
                                                    start_=start,
                                                    end_=end,
                                                    cluster_number=cluster_number)
-                    self.session.register(drv)
 
-                    # Set the time series run options
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_clustering_time_series)
-
-                    drv.start()
+                    self.session.run(drv,
+                                     post_func=self.post_clustering_time_series,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
 
                 else:
                     warning_msg('There are no time series.', 'Time series')
@@ -3300,7 +3355,7 @@ class MainGUI(QMainWindow):
         else:
             warning_msg('No results for the clustering time series simulation.')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_stochastic(self):
@@ -3311,7 +3366,7 @@ class MainGUI(QMainWindow):
 
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.MonteCarlo_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.MonteCarlo_run):
 
                 if self.circuit.time_profile is not None:
 
@@ -3335,12 +3390,10 @@ class MainGUI(QMainWindow):
                                                         batch_size=100,
                                                         sampling_points=max_iter,
                                                         simulation_type=simulation_type)
-                    self.session.register(drv)
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_stochastic)
-
-                    drv.start()
+                    self.session.run(drv,
+                                     post_func=self.post_stochastic,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
                 else:
                     warning_msg('There are no time series.')
 
@@ -3380,7 +3433,7 @@ class MainGUI(QMainWindow):
         else:
             pass
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def clear_cascade(self):
@@ -3402,7 +3455,11 @@ class MainGUI(QMainWindow):
                 options.solver_type = bs.SolverType.LM
                 max_isl = self.ui.cascading_islands_spinBox.value()
                 drv = sim.Cascading(self.circuit.copy(), options, max_additional_islands=max_isl)
-                self.session.register(drv)
+
+                self.session.run(drv,
+                                 post_func=self.post_cascade,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
 
             self.cascade.perform_step_run()
 
@@ -3416,7 +3473,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.Cascade_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.Cascade_run):
 
                 self.add_simulation(sim.SimulationTypes.Cascade_run)
 
@@ -3435,12 +3492,10 @@ class MainGUI(QMainWindow):
                                     max_additional_islands=max_isl,
                                     n_lhs_samples_=n_lsh_samples)
 
-                self.session.register(drv)
-
-                # connect signals
-                drv.progress_signal.connect(self.ui.progressBar.setValue)
-                drv.progress_text.connect(self.ui.progress_label.setText)
-                drv.done_signal.connect(self.post_cascade)
+                self.session.run(drv,
+                                 post_func=self.post_cascade,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
 
                 # run
                 drv.start()
@@ -3498,7 +3553,7 @@ class MainGUI(QMainWindow):
             # Update results
             self.update_available_results()
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def cascade_table_click(self):
@@ -3518,7 +3573,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.OPF_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.OPF_run):
 
                 self.remove_simulation(sim.SimulationTypes.OPF_run)
 
@@ -3538,12 +3593,10 @@ class MainGUI(QMainWindow):
                 # set power flow object instance
                 drv = sim.OptimalPowerFlow(self.circuit, options, pf_options)
 
-                self.session.register(drv)
-                drv.progress_signal.connect(self.ui.progressBar.setValue)
-                drv.progress_text.connect(self.ui.progress_label.setText)
-                drv.done_signal.connect(self.post_opf)
-
-                drv.start()
+                self.session.run(drv,
+                                 post_func=self.post_opf,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
 
             else:
                 warning_msg('Another OPF is being run...')
@@ -3583,7 +3636,7 @@ class MainGUI(QMainWindow):
                             'Check that all branches have rating and \n'
                             'that there is a generator at the slack node.', 'OPF')
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def run_opf_time_series(self):
@@ -3592,7 +3645,7 @@ class MainGUI(QMainWindow):
         """
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.OPFTimeSeries_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.OPFTimeSeries_run):
 
                 if self.circuit.time_profile is not None:
 
@@ -3625,15 +3678,10 @@ class MainGUI(QMainWindow):
                                                          start_=start,
                                                          end_=end)
 
-                    self.session.register(drv)
-
-                    # make the thread connections to the GUI
-                    drv.progress_signal.connect(self.ui.progressBar.setValue)
-                    drv.progress_text.connect(self.ui.progress_label.setText)
-                    drv.done_signal.connect(self.post_opf_time_series)
-
-                    # Run
-                    drv.start()
+                    self.session.run(drv,
+                                     post_func=self.post_opf_time_series,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
 
                 else:
                     warning_msg('There are no time series.\nLoad time series are needed for this simulation.')
@@ -3687,7 +3735,7 @@ class MainGUI(QMainWindow):
         else:
             pass
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def copy_opf_to_time_series(self):
@@ -3729,7 +3777,7 @@ class MainGUI(QMainWindow):
 
         if len(self.circuit.buses) > 0:
 
-            if sim.SimulationTypes.TopologyReduction_run not in self.stuff_running_now:
+            if not self.session.is_this_running(sim.SimulationTypes.TopologyReduction_run):
 
                 # compute the options
                 rx_criteria = self.ui.rxThresholdCheckBox.isChecked()
@@ -3799,28 +3847,25 @@ class MainGUI(QMainWindow):
         """
         if self.ui.actionFind_node_groups.isChecked():
 
-            if self.ptdf_analysis is not None:
+            drv, ptdf_results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_run)
 
-                if self.ptdf_analysis.results is not None:
-                    self.LOCK()
-                    sigmas = self.ui.node_distances_sigma_doubleSpinBox.value()
-                    min_group_size = self.ui.node_distances_elements_spinBox.value()
+            if ptdf_results is not None:
 
-                    ptdf_results = self.ptdf_analysis.results
-                    self.find_node_groups_driver = sim.NodeGroupsDriver(grid=self.circuit,
-                                                                        sigmas=sigmas,
-                                                                        min_group_size=min_group_size,
-                                                                        ptdf_results=ptdf_results)
+                self.LOCK()
+                sigmas = self.ui.node_distances_sigma_doubleSpinBox.value()
+                min_group_size = self.ui.node_distances_elements_spinBox.value()
+                drv = sim.NodeGroupsDriver(grid=self.circuit,
+                                           sigmas=sigmas,
+                                           min_group_size=min_group_size,
+                                           ptdf_results=ptdf_results)
 
-                    # Set the time series run options
-                    self.find_node_groups_driver.progress_signal.connect(self.ui.progressBar.setValue)
-                    self.find_node_groups_driver.progress_text.connect(self.ui.progress_label.setText)
-                    self.find_node_groups_driver.done_signal.connect(self.post_run_find_node_groups)
-                    self.find_node_groups_driver.start()
-                else:
-                    error_msg('There are no PTDF results :/')
+                self.session.run(drv,
+                                 post_func=self.post_run_find_node_groups,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
+
             else:
-                info_msg('You need to run a PTDF simulation first :/')
+                error_msg('There are no PTDF results :/')
 
         else:
             # delete the markers
@@ -3836,19 +3881,23 @@ class MainGUI(QMainWindow):
         self.UNLOCK()
         print('\nGroups:')
 
-        for group in self.find_node_groups_driver.groups_by_name:
-            print(group)
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.NodeGrouping_run)
 
-        colours = viz.get_n_colours(n=len(self.find_node_groups_driver.groups_by_index))
+        if drv is not None:
 
-        for c, group in enumerate(self.find_node_groups_driver.groups_by_index):
-            for i in group:
-                bus = self.circuit.buses[i]
-                if bus.active:
-                    if bus.graphic_obj is not None:
-                        r, g, b, a = colours[c]
-                        color = QColor(r * 255, g * 255, b * 255, a * 255)
-                        bus.graphic_obj.add_big_marker(color=color, tool_tip_text='Group ' + str(c))
+            for group in drv.groups_by_name:
+                print(group)
+
+            colours = viz.get_n_colours(n=len(drv.groups_by_index))
+
+            for c, group in enumerate(drv.groups_by_index):
+                for i in group:
+                    bus = self.circuit.buses[i]
+                    if bus.active:
+                        if bus.graphic_obj is not None:
+                            r, g, b, a = colours[c]
+                            color = QColor(r * 255, g * 255, b * 255, a * 255)
+                            bus.graphic_obj.add_big_marker(color=color, tool_tip_text='Group ' + str(c))
 
     def post_reduce_grid(self):
         """
@@ -3861,7 +3910,7 @@ class MainGUI(QMainWindow):
 
         self.clear_results()
 
-        if len(self.stuff_running_now) == 0:
+        if not self.session.is_anything_running():
             self.UNLOCK()
 
     def storage_location(self):
@@ -4066,7 +4115,7 @@ class MainGUI(QMainWindow):
         """
         lst = list()
 
-        for drv in self.get_simulation_threads():
+        for drv in self.get_simulations():
             if drv is not None:
                 if hasattr(drv, 'results'):
                     if drv.results is not None:
@@ -4152,7 +4201,7 @@ class MainGUI(QMainWindow):
         if html:
             plot_function = viz.plot_html_map
             k = len(self.files_to_delete_at_exit)
-            file_name = os.path.join(viz.get_create_gridcal_folder(), 'map_' + str(k + 1) + '.html')
+            file_name = os.path.join(get_create_gridcal_folder(), 'map_' + str(k + 1) + '.html')
         else:
 
             if not self.ui.draw_schematic_checkBox.isChecked():
@@ -4330,6 +4379,36 @@ class MainGUI(QMainWindow):
                               Sf=results.Sf[current_step],
                               voltages=results.voltage[current_step],
                               loadings=np.abs(results.loading[current_step]),
+                              types=results.bus_types,
+                              use_flow_based_width=use_flow_based_width,
+                              min_branch_width=min_branch_width,
+                              max_branch_width=max_branch_width,
+                              min_bus_width=min_bus_width,
+                              max_bus_width=max_bus_width,
+                              file_name=file_name)
+
+            elif current_study == sim.ContingencyAnalysisDriver.name:
+                drv, results = self.session.get_driver_results(sim.SimulationTypes.ContingencyAnalysis_run)
+                plot_function(circuit=self.circuit,
+                              Sbus=results.S[current_step, :],
+                              Sf=results.Sf[:, current_step],
+                              voltages=results.voltage[current_step, :],
+                              loadings=np.abs(results.loading[:, current_step]),
+                              types=results.bus_types,
+                              use_flow_based_width=use_flow_based_width,
+                              min_branch_width=min_branch_width,
+                              max_branch_width=max_branch_width,
+                              min_bus_width=min_bus_width,
+                              max_bus_width=max_bus_width,
+                              file_name=file_name)
+
+            elif current_study == sim.ContingencyAnalysisTimeSeries.name:
+                drv, results = self.session.get_driver_results(sim.SimulationTypes.ContingencyAnalysisTS_run)
+                plot_function(circuit=self.circuit,
+                              Sbus=results.S[current_step, :],
+                              Sf=results.worst_flows[current_step, :],
+                              voltages=np.ones(len(results.bus_names), dtype=complex),
+                              loadings=np.abs(results.worst_loading[current_step]),
                               types=results.bus_types,
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
@@ -5316,6 +5395,8 @@ class MainGUI(QMainWindow):
 
                         # update the view
                         self.display_filter(objects)
+                        self.update_area_combos()
+                        self.update_date_dependent_combos()
                     else:
                         pass
                 else:
@@ -5513,28 +5594,6 @@ class MainGUI(QMainWindow):
             if bus.graphic_obj is not None:
                 if bus.graphic_obj.isSelected():
                     lst.append((k, bus))
-        return lst
-
-    def get_area_buses(self, area: Area) -> List[Tuple[int, Bus]]:
-        """
-        Get the selected buses
-        :return:
-        """
-        lst: List[Tuple[int, Bus]] = list()
-        for k, bus in enumerate(self.circuit.buses):
-            if bus.area == area:
-                lst.append((k, bus))
-        return lst
-
-    def get_zone_buses(self, zone: Zone) -> List[Tuple[int, Bus]]:
-        """
-        Get the selected buses
-        :return:
-        """
-        lst: List[Tuple[int, Bus]] = list()
-        for k, bus in enumerate(self.circuit.buses):
-            if bus.zone == zone:
-                lst.append((k, bus))
         return lst
 
     def delete_selected_from_the_schematic(self):
@@ -5940,6 +5999,31 @@ class MainGUI(QMainWindow):
         """
         self.apply_new_snapshot_rates()
         self.apply_new_time_series_rates()
+
+    def get_compatible_areas_from_to(self):
+        """
+
+        :return:
+        """
+        areas_from_idx = get_checked_indices(self.ui.areaFromListView.model())
+        areas_to_idx = get_checked_indices(self.ui.areaToListView.model())
+        areas_from = [self.circuit.areas[i] for i in areas_from_idx]
+        areas_to = [self.circuit.areas[i] for i in areas_to_idx]
+
+        for a1 in areas_from:
+            if a1 in areas_to:
+                error_msg("The area from '{0}' is in the list of areas to. This cannot be.".format(a1.name), 'Incompatible areas')
+                return False, [], [], []
+        for a2 in areas_to:
+            if a2 in areas_from:
+                error_msg("The area to '{0}' is in the list of areas from. This cannot be.".format(a2.name), 'Incompatible areas')
+                return False, [], [], []
+
+        lst_from = self.circuit.get_areas_buses(areas_from)
+        lst_to = self.circuit.get_areas_buses(areas_to)
+        lst_br = self.circuit.get_inter_areas_branches(areas_from, areas_to)
+        lst_br_hvdc = self.circuit.get_inter_areas_hvdc_branches(areas_from, areas_to)
+        return True, lst_from, lst_to, lst_br, lst_br_hvdc
 
 
 def run(use_native_dialogues=True):

@@ -128,7 +128,7 @@ def compile_y_acdc(Cf, Ct, C_bus_shunt, shunt_admittance, shunt_active, ys, B, S
 
 def compute_split_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus):
     """
-    Compute the complete admittance matrices for the general power flow methods (Newton-Raphson based)
+    Compute the complete admittance matrices for the helm method and others that may require them
     :param R: array of branch resistance (p.u.)
     :param X: array of branch reactance (p.u.)
     :param G: array of branch conductance (p.u.)
@@ -167,6 +167,11 @@ def compute_split_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, 
     Yts = sp.diags(Ytfs) * Cf + sp.diags(Ytts) * Ct
     Yseries = Cf.T * Yfs + Ct.T * Yts
     Yshunt = Cf.T * ysh + Ct.T * ysh + Yshunt_bus
+
+    GBc = G + 1.0j * B
+    Gsh = GBc / 2.0
+    Ysh = Yshunt_bus + Cf.T * Gsh + Ct.T * Gsh
+
 
     return Yseries, Yshunt
 

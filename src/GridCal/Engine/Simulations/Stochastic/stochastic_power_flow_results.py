@@ -20,7 +20,7 @@ import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from GridCal.Engine.basic_structures import CDF
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 
@@ -272,13 +272,10 @@ class StochasticPowerFlowResults(ResultsTemplate):
 
         return idx, val, prob, cdf.arr[-1, :]
 
-    def mdl(self, result_type: ResultTypes) -> "ResultsModel":
+    def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """
         Plot the results
         :param result_type:
-        :param ax:
-        :param indices:
-        :param names:
         :return:
         """
         cdf_result_types = [ResultTypes.BusVoltageCDF,
@@ -387,10 +384,10 @@ class StochasticPowerFlowResults(ResultsTemplate):
 
             # assemble model
             index = np.arange(0, y.shape[0], 1)
-            mdl = ResultsModel(data=np.abs(y), index=index, columns=labels, title=title,
+            mdl = ResultsTable(data=np.abs(y), index=index, columns=labels, title=title,
                                ylabel=y_label, xlabel=x_label, units=y_label)
 
         else:
-            mdl = ResultsModel(data=cdf.arr, index=cdf.prob, columns=labels, title=title,
+            mdl = ResultsTable(data=cdf.arr, index=cdf.prob, columns=labels, title=title,
                                ylabel=y_label, xlabel=x_label, units=y_label)
         return mdl

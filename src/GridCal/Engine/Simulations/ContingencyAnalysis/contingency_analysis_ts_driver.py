@@ -15,6 +15,7 @@
 import time
 import datetime
 import numpy as np
+import pandas as pd
 from numba import jit, prange
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
@@ -22,18 +23,22 @@ from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnaly
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisOptions
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import ContingencyAnalysisTimeSeriesResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
-from GridCal.Engine.Simulations.driver_template import TSDriverTemplate
+from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 
 
 @jit(nopython=True, parallel=False)
 def compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_overload, worst_flows):
     """
-    Compute LODF based Sf
+    Compute LODF based flows (Sf)
+    :param e: element index
+    :param c: contingency element index
     :param nt: number of time steps
-    :param ne: number of elements
-    :param nc: number of failed elements
     :param LODF: LODF matrix (element, failed element)
     :param Flows: base Sf matrix (time, element)
+    :param rates: Matrix of rates (time, element)
+    :param overload_count: [out] number of overloads per element (element, contingency element)
+    :param max_overload: [out] maximum overload per element (element, contingency element)
+    :param worst_flows: [out] worst flows per element (time, element)
     :return: Cube of N-1 Flows (time, elements, contingencies)
     """
 
@@ -55,26 +60,34 @@ def compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_over
 
 
 @jit(nopython=True, parallel=True)
-def compute_flows_numba(e, nt, nc, LODF, Flows, rates, overload_count, max_overload, worst_flows, paralelize_from=500):
+def compute_flows_numba(e, nt, contingency_branch_idx, LODF, Flows, rates, overload_count,
+                        max_overload, worst_flows, parallelize_from=500):
     """
     Compute LODF based Sf
+    :param e: element index
     :param nt: number of time steps
-    :param ne: number of elements
-    :param nc: number of failed elements
+    :param contingency_branch_idx: list of branch indices to fail
     :param LODF: LODF matrix (element, failed element)
     :param Flows: base Sf matrix (time, element)
-    :return: Cube of N-1 Flows (time, elements, contingencies)
+    :param rates:
+    :param overload_count:
+    :param max_overload:
+    :param worst_flows:
+    :param parallelize_from:
+    :return:  Cube of N-1 Flows (time, elements, contingencies)
     """
-
-    if nc < paralelize_from:
-        for c in range(nc):
+    nc = len(contingency_branch_idx)
+    if nc < parallelize_from:
+        for ic in range(nc):
+            c = contingency_branch_idx[ic]
             compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_overload, worst_flows)
     else:
-        for c in prange(nc):
+        for ic in prange(nc):
+            c = contingency_branch_idx[ic]
             compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_overload, worst_flows)
 
 
-class ContingencyAnalysisTimeSeries(TSDriverTemplate):
+class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
     name = 'Contingency analysis time series'
     tpe = SimulationTypes.ContingencyAnalysisTS_run
 
@@ -85,10 +98,10 @@ class ContingencyAnalysisTimeSeries(TSDriverTemplate):
         @param options: N-k options
         @:param pf_options: power flow options
         """
-        TSDriverTemplate.__init__(self,
-                                  grid=grid,
-                                  start_=start_,
-                                  end_=end_)
+        TimeSeriesDriverTemplate.__init__(self,
+                                          grid=grid,
+                                          start_=start_,
+                                          end_=end_)
 
         # Options to use
         self.options = options
@@ -107,7 +120,8 @@ class ContingencyAnalysisTimeSeries(TSDriverTemplate):
         Get variations list of strings
         """
         if self.results is not None:
-            return [v for v in self.branch_names]
+            return [l.strftime('%d-%m-%Y %H:%M') for l in
+                    pd.to_datetime(self.grid.time_profile[self.start_: self.end_])]
         else:
             return list()
 
@@ -124,7 +138,8 @@ class ContingencyAnalysisTimeSeries(TSDriverTemplate):
         nc = ts_numeric_circuit.nbr
         nt = len(ts_numeric_circuit.time_array)
 
-        results = ContingencyAnalysisTimeSeriesResults(ne=ne, nc=nc,
+        results = ContingencyAnalysisTimeSeriesResults(ne=ne,
+                                                       nc=nc,
                                                        time_array=ts_numeric_circuit.time_array,
                                                        n=ts_numeric_circuit.nbus,
                                                        branch_names=ts_numeric_circuit.branch_names,
@@ -136,6 +151,9 @@ class ContingencyAnalysisTimeSeries(TSDriverTemplate):
                                          correct_values=self.options.correct_values)
         linear_analysis.run()
 
+        # get the contingency branches
+        br_idx = linear_analysis.numerical_circuit.branch_data.get_contingency_enabled_indices()
+
         self.progress_text.emit('Computing branch base loading...')
         Pbus = ts_numeric_circuit.Sbus.real
         flows = linear_analysis.get_flows_time_series(Pbus)
@@ -143,13 +161,14 @@ class ContingencyAnalysisTimeSeries(TSDriverTemplate):
 
         self.progress_text.emit('Computing N-1 loading...')
 
-        for e in range(ne):
+        for ie, e in enumerate(br_idx):
 
             self.progress_text.emit('Computing N-1 loading...' + ts_numeric_circuit.branch_names[e])
 
+            # the results are passed by reference and filled inside
             compute_flows_numba(e=e,
                                 nt=nt,
-                                nc=nc,
+                                contingency_branch_idx=br_idx,
                                 LODF=linear_analysis.LODF,
                                 Flows=flows,
                                 rates=rates,
@@ -157,7 +176,7 @@ class ContingencyAnalysisTimeSeries(TSDriverTemplate):
                                 max_overload=results.max_overload,
                                 worst_flows=results.worst_flows)
 
-            self.progress_signal.emit((e + 1) / ne * 100)
+            self.progress_signal.emit((ie + 1) / len(br_idx) * 100)
 
             if self.__cancel__:
                 results.relative_frequency = results.overload_count / nt
@@ -166,6 +185,7 @@ class ContingencyAnalysisTimeSeries(TSDriverTemplate):
 
         results.relative_frequency = results.overload_count / nt
         results.worst_loading = results.worst_flows / (rates + 1e-9)
+        results.S = Pbus.T
 
         return results
 

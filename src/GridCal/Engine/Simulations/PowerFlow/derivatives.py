@@ -385,7 +385,7 @@ def derivatives_sh(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
 
     :param nb: number of buses
     :param nl: number of branches
-    :param iPxsh: array of indices {iPfsh or iPfdp}
+    :param iPxsh: array of indices {iPfsh or iPfdp}, this is the indices of the phase shifting branches
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
     :param Ys: Array of branch series admittances

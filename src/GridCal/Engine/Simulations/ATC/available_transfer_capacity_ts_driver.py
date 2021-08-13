@@ -20,20 +20,20 @@ import pandas as pd
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 import GridCal.Engine.Simulations.LinearFactors.linear_analysis as la
-from GridCal.Engine.Simulations.NTC.net_transfer_capacity_driver import NetTransferCapacityOptions, compute_ntc, compute_alpha
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityOptions, compute_atc, compute_alpha
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
-from GridCal.Engine.Simulations.driver_template import TSDriverTemplate
+from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 
 
-class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
+class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
 
-    def __init__(self, n_br, n_bus, time_array, br_names, bus_names, bus_types):
+    def __init__(self, br_idx, n_bus, time_array, br_names, bus_names, bus_types):
         """
 
-        :param n_br:
+        :param br_idx:
         :param n_bus:
         :param time_array:
         :param br_names:
@@ -43,14 +43,14 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
         ResultsTemplate.__init__(self,
                                  name='ATC Time Series Results',
                                  available_results=[
+                                                     ResultTypes.AvailableTransferCapacity,
                                                      ResultTypes.NetTransferCapacity,
-                                                     ResultTypes.NetTransferCapacityN,
-                                                     ResultTypes.NetTransferCapacityAlpha,
-                                                     ResultTypes.NetTransferCapacityReport
+                                                     ResultTypes.AvailableTransferCapacityN,
+                                                     ResultTypes.AvailableTransferCapacityAlpha,
+                                                     ResultTypes.AvailableTransferCapacityReport
                                                     ],
                                  data_variables=['alpha',
-                                                 'beta_mat',
-                                                 'beta_used',
+                                                 'beta',
                                                  'atc',
                                                  'atc_n',
                                                  'atc_limiting_contingency_branch',
@@ -64,9 +64,12 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
                                                  'branch_names',
                                                  'bus_names',
                                                  'bus_types',
-                                                 'bus_idx_from',
-                                                 'bus_idx_to'])
-        self.n_br = n_br
+                                                 'branch_names',
+                                                 'br_idx',
+                                                 'time_array'])
+
+        self.br_idx = br_idx
+        self.n_br = len(br_idx)
         self.n_bus = n_bus
         self.nt = len(time_array)
         self.time_array = time_array
@@ -78,26 +81,21 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.rates = np.zeros((self.nt, self.n_br))
         self.contingency_rates = np.zeros((self.nt, self.n_br))
 
+        self.base_exchange = np.zeros(self.nt)
+
         self.alpha = np.zeros((self.nt, self.n_br))
         self.atc = np.zeros((self.nt, self.n_br))
         self.atc_n = np.zeros((self.nt, self.n_br))
+        self.atc_mc = np.zeros((self.nt, self.n_br))
+        self.ntc = np.zeros((self.nt, self.n_br))
 
-        self.beta_used = np.zeros((self.nt, self.n_br))
+        self.beta = np.zeros((self.nt, self.n_br))
         self.atc_limiting_contingency_branch = np.zeros((self.nt, self.n_br), dtype=int)
         self.atc_limiting_contingency_flow = np.zeros((self.nt, self.n_br))
         self.base_flow = np.zeros((self.nt, self.n_br))
 
-        self.report = np.empty((self.n_br, 10), dtype=object)
-        self.report_headers = ['Branch',
-                               'Base flow',
-                               'Rate',
-                               'Alpha',
-                               'ATC normal',
-                               'Limiting contingency branch',
-                               'Limiting contingency flow',
-                               'Contingency rate',
-                               'Beta',
-                               'ATC']
+        self.report = np.empty((self.n_br, 0), dtype=object)
+        self.report_headers = []
         self.report_indices = self.time_array
 
     def get_steps(self):
@@ -130,14 +128,22 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
                                'Beta (avg)',
                                'Beta (min)',
                                'Beta (max)',
+                               'Contingency ATC (avg)',
+                               'Contingency ATC (min)',
+                               'Contingency ATC (max)',
                                'ATC (avg)',
                                'ATC (min)',
-                               'ATC (max)']
+                               'ATC (max)',
+                               'Base exchange',
+                               'NTC (avg)',
+                               'NTC (min)',
+                               'NTC (max)'
+                               ]
         self.report = np.empty((dim, len(self.report_headers)), dtype=object)
         self.report_indices = np.arange(dim)
 
-        for i in range(self.n_br):
-            self.report[i, 0] = self.branch_names[i]
+        for i, ii in enumerate(self.br_idx):
+            self.report[i, 0] = self.branch_names[ii]
 
             self.report[i, 1] = self.base_flow[:, i].mean()
             self.report[i, 2] = self.base_flow[:, i].min()
@@ -164,19 +170,36 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
             self.report[i, 16] = self.contingency_rates[:, i].min()
             self.report[i, 17] = self.contingency_rates[:, i].max()
 
-            self.report[i, 18] = self.beta_used[:, i].mean()
-            self.report[i, 19] = self.beta_used[:, i].min()
-            self.report[i, 20] = self.beta_used[:, i].max()
+            self.report[i, 18] = self.beta[:, i].mean()
+            self.report[i, 19] = self.beta[:, i].min()
+            self.report[i, 20] = self.beta[:, i].max()
 
-            self.report[i, 21] = self.atc[:, i].mean()
-            self.report[i, 22] = self.atc[:, i].min()
-            self.report[i, 23] = self.atc[:, i].max()
+            self.report[i, 21] = self.atc_mc[:, i].mean()
+            self.report[i, 22] = self.atc_mc[:, i].min()
+            self.report[i, 23] = self.atc_mc[:, i].max()
+
+            j = np.where(self.atc_mc[:, i] == self.report[i, 23])[0][0]
+            self.report[i, 12] = self.branch_names[self.atc_limiting_contingency_branch[j, i]]
+
+            self.report[i, 24] = self.atc[:, i].mean()
+            self.report[i, 25] = self.atc[:, i].min()
+            self.report[i, 26] = self.atc[:, i].max()
+
+            self.report[i, 27] = self.base_exchange[i]
+
+            self.report[i, 28] = self.ntc[:, i].mean()
+            self.report[i, 29] = self.ntc[:, i].min()
+            self.report[i, 30] = self.ntc[:, i].max()
 
             if prog_func is not None:
                 prog_func((i+1) / self.n_br * 100)
 
         # sort by ATC min
-        idx = np.argsort(self.report[:, 22].astype(float))
+        idx = np.argsort(self.report[:, 30].astype(float))
+        self.report = self.report[idx, :]
+
+        # remove zeros
+        idx = np.where(self.report[:, 26].astype(float) > 0)[0]
         self.report = self.report[idx, :]
 
     def get_results_dict(self):
@@ -199,25 +222,31 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         index = pd.to_datetime(self.time_array)
 
-        if result_type == ResultTypes.NetTransferCapacity:
+        if result_type == ResultTypes.AvailableTransferCapacity:
             data = self.atc
             y_label = '(MW)'
             title, _ = result_type.value
-            labels = self.branch_names
+            labels = self.branch_names[self.br_idx]
 
-        elif result_type == ResultTypes.NetTransferCapacityN:
+        elif result_type == ResultTypes.NetTransferCapacity:
+            data = self.ntc
+            y_label = '(MW)'
+            title, _ = result_type.value
+            labels = self.branch_names[self.br_idx]
+
+        elif result_type == ResultTypes.AvailableTransferCapacityN:
             data = self.atc_n
             y_label = '(MW)'
             title, _ = result_type.value
-            labels = self.branch_names
+            labels = self.branch_names[self.br_idx]
 
-        elif result_type == ResultTypes.NetTransferCapacityAlpha:
+        elif result_type == ResultTypes.AvailableTransferCapacityAlpha:
             data = self.alpha
             y_label = '(p.u.)'
             title, _ = result_type.value
-            labels = self.branch_names
+            labels = self.branch_names[self.br_idx]
 
-        elif result_type == ResultTypes.NetTransferCapacityReport:
+        elif result_type == ResultTypes.AvailableTransferCapacityReport:
             data = np.array(self.report)
             y_label = ''
             title, _ = result_type.value
@@ -227,7 +256,7 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
             raise Exception('Result type not understood:' + str(result_type))
 
         # assemble model
-        mdl = ResultsModel(data=data,
+        mdl = ResultsTable(data=data,
                            index=index,
                            columns=labels,
                            title=title,
@@ -235,32 +264,32 @@ class NetTransferCapacityTimeSeriesResults(ResultsTemplate):
         return mdl
 
 
-class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
+class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
     tpe = SimulationTypes.NetTransferCapacityTS_run
     name = tpe.value
 
-    def __init__(self, grid: MultiCircuit, options: NetTransferCapacityOptions, start_=0, end_=None):
+    def __init__(self, grid: MultiCircuit, options: AvailableTransferCapacityOptions, start_=0, end_=None):
         """
         Power Transfer Distribution Factors class constructor
         @param grid: MultiCircuit Object
         @param options: OPF options
         @:param pf_results: PowerFlowResults, this is to get the Sf
         """
-        TSDriverTemplate.__init__(self,
-                                  grid=grid,
-                                  start_=start_,
-                                  end_=end_)
+        TimeSeriesDriverTemplate.__init__(self,
+                                          grid=grid,
+                                          start_=start_,
+                                          end_=end_)
 
         # Options to use
         self.options = options
 
         # OPF results
-        self.results = NetTransferCapacityTimeSeriesResults(n_br=0,
-                                                            n_bus=0,
-                                                            time_array=[],
-                                                            br_names=[],
-                                                            bus_names=[],
-                                                            bus_types=[])
+        self.results = AvailableTransferCapacityTimeSeriesResults(br_idx=[],
+                                                                  n_bus=0,
+                                                                  time_array=[],
+                                                                  br_names=[],
+                                                                  bus_names=[],
+                                                                  bus_types=[])
 
     def run(self):
         """
@@ -284,17 +313,32 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
         # nc = nc.nbr
         nt = len(nc.time_array)
 
-        # declare the results
-        self.results = NetTransferCapacityTimeSeriesResults(n_br=nc.nbr,
-                                                            n_bus=nc.nbus,
-                                                            time_array=nc.time_array,
-                                                            br_names=nc.branch_names,
-                                                            bus_names=nc.bus_names,
-                                                            bus_types=nc.bus_types)
+        # get the branch indices to analyze
+        br_idx = linear_analysis.numerical_circuit.branch_data.get_contingency_enabled_indices()
 
-        # compute the base Sf
+        # declare the results
+        self.results = AvailableTransferCapacityTimeSeriesResults(br_idx=br_idx,
+                                                                  n_bus=nc.nbus,
+                                                                  time_array=nc.time_array,
+                                                                  br_names=nc.branch_names,
+                                                                  bus_names=nc.bus_names,
+                                                                  bus_types=nc.bus_types)
+        # get the power injections
         P = nc.Sbus.real  # these are in p.u.
-        flows = linear_analysis.get_flows_time_series(P)  # will be converted to MW internally
+
+        # get flow
+        if self.options.use_provided_flows:
+            flows = self.options.Pf
+
+            if self.options.Pf is None:
+                msg = 'The option to use the provided flows is enabled, but no flows are available'
+                self.logger.add_error(msg)
+                raise Exception(msg)
+        else:
+            # compute the base Sf
+            flows = linear_analysis.get_flows_time_series(P)  # will be converted to MW internally
+
+        # transform the contingency rates and the normal rates
         contingency_rates = nc.ContingencyRates.T
         rates = nc.Rates.T
 
@@ -311,16 +355,21 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
             # compute the branch exchange sensitivity (alpha)
             alpha = compute_alpha(ptdf=linear_analysis.PTDF,
                                   P0=P[:, t],  # no problem that there are in p.u., are only used for the sensitivity
+                                  Pinstalled=nc.bus_installed_power,
                                   idx1=self.options.bus_idx_from,
                                   idx2=self.options.bus_idx_to,
                                   bus_types=nc.bus_types_prof(t),
                                   dT=self.options.dT,
                                   mode=self.options.mode.value)
 
-            # compute NTC
-            beta_mat, beta_used, atc_n, atc_final, \
+            # base exchange
+            base_exchange = (self.options.inter_area_branch_sense * flows[t][self.options.inter_area_branch_idx]).sum()
+
+            # compute ATC
+            beta_mat, beta_used, atc_n, atc_mc, atc_final, \
             atc_limiting_contingency_branch, \
-            atc_limiting_contingency_flow = compute_ntc(ptdf=linear_analysis.PTDF,
+            atc_limiting_contingency_flow = compute_atc(br_idx=br_idx,
+                                                        ptdf=linear_analysis.PTDF,
                                                         lodf=linear_analysis.LODF,
                                                         alpha=alpha,
                                                         flows=flows[t, :],
@@ -330,10 +379,13 @@ class NetTransferCapacityTimeSeriesDriver(TSDriverTemplate):
                                                         )
 
             # post-process and store the results
-            self.results.alpha[t, :] = alpha
+            self.results.alpha[t, :] = alpha[br_idx]
+            self.results.base_exchange[t] = base_exchange
             self.results.atc[t, :] = atc_final
             self.results.atc_n[t, :] = atc_n
-            self.results.beta_used[t, :] = beta_used
+            self.results.atc_mc[t, :] = atc_mc
+            self.results.ntc[t, :] = atc_final + base_exchange
+            self.results.beta[t, :] = beta_used
             self.results.atc_limiting_contingency_branch[t, :] = atc_limiting_contingency_branch.astype(int)
             self.results.atc_limiting_contingency_flow[t, :] = atc_limiting_contingency_flow
 
@@ -379,8 +431,8 @@ if __name__ == '__main__':
     power_flow = PowerFlowDriver(main_circuit, pf_options)
     power_flow.run()
 
-    options = NetTransferCapacityOptions()
-    driver = NetTransferCapacityTimeSeriesDriver(main_circuit, options, power_flow.results)
+    options = AvailableTransferCapacityOptions()
+    driver = AvailableTransferCapacityTimeSeriesDriver(main_circuit, options, power_flow.results)
     driver.run()
 
     print()

@@ -116,14 +116,14 @@ class Opf:
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.extract(self.s_from, make_abs=True) / (self.rating + 1e-12)
+        return self.extract(self.s_from, make_abs=False) / (self.rating + 1e-12)
 
     def get_branch_power(self):
         """
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.extract(self.s_from, make_abs=True) * self.numerical_circuit.Sbase
+        return self.extract(self.s_from, make_abs=False) * self.numerical_circuit.Sbase
 
     def get_battery_power(self):
         """
@@ -270,14 +270,14 @@ class OpfTimeSeries:
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.s_from, make_abs=True) / self.rating
+        return self.extract2D(self.s_from, make_abs=False) / self.rating
 
     def get_branch_power(self):
         """
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.s_from, make_abs=True) * self.numerical_circuit.Sbase
+        return self.extract2D(self.s_from, make_abs=False) * self.numerical_circuit.Sbase
 
     def get_battery_power(self):
         """

@@ -24,7 +24,7 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow import continuation_nr, CpfStopAt, CpfParametrization, CpfNumericResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
-from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
@@ -185,7 +185,7 @@ class ContinuationPowerFlowResults(ResultsTemplate):
         self.loading[np.ix_(nval, branch_original_idx)] = results.loading
         self.losses[np.ix_(nval, branch_original_idx)] = results.losses
 
-    def mdl(self, result_type: ResultTypes = ResultTypes.BusVoltage) -> ResultsModel:
+    def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """
         Plot the results
         :param result_type:
@@ -280,7 +280,7 @@ class ContinuationPowerFlowResults(ResultsTemplate):
             y = self.voltages
 
         # assemble model
-        mdl = ResultsModel(data=y, index=x, columns=labels, title=title,
+        mdl = ResultsTable(data=y, index=x, columns=labels, title=title,
                            ylabel=y_label, xlabel=x_label, units=y_label)
         return mdl
 

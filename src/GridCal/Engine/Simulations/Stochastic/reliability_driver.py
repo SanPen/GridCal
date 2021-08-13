@@ -15,12 +15,11 @@
 
 import numpy as np
 
-from PySide2.QtCore import QThread, Signal
-
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import SnapshotData, compile_snapshot_circuit, split_into_islands
 from GridCal.Engine.Devices import DeviceType
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 
 def get_failure_time(mttf):
@@ -161,10 +160,7 @@ def run_events(nc: SnapshotData, events_list: list):
         calculation_islands = split_into_islands(nc)
 
 
-class ReliabilityStudy(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class ReliabilityStudy(DriverTemplate):
 
     def __init__(self, circuit: MultiCircuit, pf_options: PowerFlowOptions):
         """
@@ -172,10 +168,7 @@ class ReliabilityStudy(QThread):
         @param circuit: NumericalCircuit instance
         @param pf_options: power flow options instance
         """
-        QThread.__init__(self)
-
-        # MultiCircuit instance
-        self.circuit = circuit
+        DriverTemplate.__init__(self, grid=circuit)
 
         # voltage stability options
         self.pf_options = pf_options
@@ -200,7 +193,7 @@ class ReliabilityStudy(QThread):
         print('Running voltage collapse...')
 
         # compile the numerical circuit
-        numerical_circuit = compile_snapshot_circuit(self.circuit)
+        numerical_circuit = compile_snapshot_circuit(self.grid)
 
         evt = get_reliability_scenario(numerical_circuit)
 

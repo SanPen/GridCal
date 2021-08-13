@@ -19,7 +19,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import *
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
@@ -83,7 +83,7 @@ class LinearAnalysisResults(ResultsTemplate):
         rates = nc.Rates
         self.loading = self.Sf / (rates + 1e-9)
 
-    def mdl(self, result_type: ResultTypes) -> ResultsModel:
+    def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """
         Plot the results.
 
@@ -125,7 +125,7 @@ class LinearAnalysisResults(ResultsTemplate):
             title = ''
 
         # assemble model
-        mdl = ResultsModel(data=y,
+        mdl = ResultsTable(data=y,
                            index=self.branch_names,
                            columns=labels,
                            title=title,

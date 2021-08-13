@@ -21,30 +21,6 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Gui.GuiFunctions import ObjectsModel, get_tree_model
 
 
-def get_list_model(lst, checks=False):
-    """
-    Pass a list to a list model
-    """
-    list_model = QtGui.QStandardItemModel()
-    if lst is not None:
-        if not checks:
-            for val in lst:
-                # for the list model
-                item = QtGui.QStandardItem(str(val))
-                item.setEditable(False)
-                list_model.appendRow(item)
-        else:
-            for val in lst:
-                # for the list model
-                item = QtGui.QStandardItem(str(val))
-                item.setEditable(False)
-                item.setCheckable(True)
-                item.setCheckState(QtCore.Qt.Checked)
-                list_model.appendRow(item)
-
-    return list_model
-
-
 class ProfileTypes(Enum):
     Loads = 1,
     Generators = 2

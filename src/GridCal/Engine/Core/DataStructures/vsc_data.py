@@ -89,5 +89,11 @@ class VscData:
         """
         return tp.get_elements_of_the_island(self.C_vsc_bus, bus_idx)
 
+    def get_bus_indices_f(self):
+        return self.C_vsc_bus.tocsc().indices
+
+    def get_bus_indices_t(self):
+        return self.C_vsc_bus.tocsc().indices
+
     def __len__(self):
         return self.nvsc

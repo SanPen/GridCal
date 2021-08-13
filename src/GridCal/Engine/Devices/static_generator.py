@@ -91,7 +91,7 @@ class StaticGenerator(EditableDevice):
                                mttf=self.mttf,
                                mttr=self.mttr)
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return:
@@ -110,7 +110,7 @@ class StaticGenerator(EditableDevice):
 
         return data
 
-    def get_profiles_dict(self):
+    def get_profiles_dict(self, version=3):
         """
 
         :return:
@@ -130,7 +130,7 @@ class StaticGenerator(EditableDevice):
                 'p': P_prof,
                 'q': Q_prof}
 
-    def get_units_dict(self):
+    def get_units_dict(self, version=3):
         """
         Get units of the values
         """

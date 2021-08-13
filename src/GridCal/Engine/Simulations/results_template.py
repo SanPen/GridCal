@@ -18,6 +18,7 @@ from typing import List
 import numpy as np
 
 from GridCal.Engine.Simulations.result_types import ResultTypes
+from GridCal.Engine.Simulations.results_table import ResultsTable
 
 
 class ResultsTemplate:
@@ -60,4 +61,7 @@ class ResultsTemplate:
         pass
 
     def apply_new_time_series_rates(self, rates):
+        pass
+
+    def mdl(self, result_type: ResultTypes) -> ResultsTable:
         pass

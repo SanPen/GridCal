@@ -14,6 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
+import numba as nb
 import pandas as pd
 from typing import List
 
@@ -29,6 +30,93 @@ import GridCal.Engine.Core.admittance_matrices as ycalc
 from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType
 
 sparse_type = get_sparse_type()
+
+
+@nb.njit()
+def compose_generator_voltage_profile(nbus, ntime,
+                                      gen_bus_indices, gen_vset, gen_status, gen_is_controlled,
+                                      bat_bus_indices, bat_vset, bat_status, bat_is_controlled,
+                                      hvdc_bus_f, hvdc_bus_t, hvdc_status, hvdc_vf, hvdc_vt,
+                                      iBeqv, iVtma, VfBeqbus, Vtmabus, branch_status, br_vf, br_vt):
+    """
+    Get the array of voltage set points per bus
+    :param nbus: number of buses
+    :param ntime: number of time steps
+    :param gen_bus_indices: array of bus indices per generator
+    :param gen_vset: array of voltage set points (ngen, ntime)
+    :param gen_status: array of generator status (ngen, ntime)
+    :param gen_is_controlled: array of values indicating if a generator controls the voltage or not (ngen)
+    :param bat_bus_indices:  array of bus indices per battery
+    :param bat_vset: array of voltage set points (nbat, ntime)
+    :param bat_status: array of battery status (nbat, ntime)
+    :param bat_is_controlled: array of values indicating if a battery controls the voltage or not (ngen)
+    :param hvdc_bus_f:
+    :param hvdc_bus_t:
+    :param hvdc_status:
+    :param hvdc_vf
+    :param hvdc_vt
+    :param iBeqv: indices of the branches when controlling Vf with Beq
+    :param iVtma: indices of the branches when controlling Vt with ma
+    :param VfBeqbus: indices of the buses where Vf is controlled by Beq
+    :param Vtmabus: indices of the buses where Vt is controlled by ma
+    :param branch_status:
+    :param br_vf:
+    :param br_vt:
+    :return: Voltage set points array per bus (nbus, ntime)
+    """
+    V = np.ones((nbus, ntime), dtype=nb.complex128)
+    used = np.zeros((nbus, ntime), dtype=nb.int8)
+
+    # generators
+    for i, bus_idx in enumerate(gen_bus_indices):
+        if gen_is_controlled[i]:
+            for t in range(ntime):
+                if used[bus_idx, t] == 0:
+                    if gen_status[i, t]:
+                        V[bus_idx, t] = complex(gen_vset[i, t], 0)
+                        used[bus_idx, t] = 1
+
+    # batteries
+    for i, bus_idx in enumerate(bat_bus_indices):
+        if bat_is_controlled[i]:
+            for t in range(ntime):
+                if used[bus_idx, t] == 0:
+                    if bat_status[i, t]:
+                        V[bus_idx, t] = complex(bat_vset[i, t], 0)
+                        used[bus_idx, t] = 1
+
+    # HVDC
+    for i in range(hvdc_status.shape[0]):
+        from_idx = hvdc_bus_f[i]
+        to_idx = hvdc_bus_t[i]
+        for t in range(ntime):
+            if hvdc_status[i, t] != 0:
+                if used[from_idx, t] == 0:
+                    V[from_idx, t] = complex(hvdc_vf[i, t], 0)
+                    used[from_idx, t] = 1
+                if used[to_idx, t] == 0:
+                    V[to_idx, t] = complex(hvdc_vt[i, t], 0)
+                    used[to_idx, t] = 1
+
+    # branch - from
+    for i in iBeqv:  # branches controlling Vf
+        from_idx = VfBeqbus[i]
+        for t in range(ntime):
+            if branch_status[i, t] != 0:
+                if used[from_idx, t] == 0:
+                    V[from_idx, t] = complex(br_vf[i, t], 0)
+                    used[from_idx, t] = 1
+
+    # branch - to
+    for i in iVtma:  # branches controlling Vt
+        from_idx = Vtmabus[i]
+        for t in range(ntime):
+            if branch_status[i, t] != 0:
+                if used[from_idx, t] == 0:
+                    V[from_idx, t] = complex(br_vt[i, t], 0)
+                    used[from_idx, t] = 1
+
+    return V
 
 
 class SnapshotData:
@@ -271,6 +359,29 @@ class SnapshotData:
         self.bus_data.bus_installed_power = self.generator_data.get_installed_power_per_bus()
         self.bus_data.bus_installed_power += self.battery_data.get_installed_power_per_bus()
 
+        self.bus_data.Vbus = compose_generator_voltage_profile(nbus=self.nbus,
+                                                               ntime=self.ntime,
+                                                               gen_bus_indices=self.generator_data.get_bus_indices(),
+                                                               gen_vset=self.generator_data.generator_v,
+                                                               gen_status=self.generator_data.generator_active,
+                                                               gen_is_controlled=self.generator_data.generator_controllable,
+                                                               bat_bus_indices=self.battery_data.get_bus_indices(),
+                                                               bat_vset=self.battery_data.battery_v,
+                                                               bat_status=self.battery_data.battery_active,
+                                                               bat_is_controlled=self.battery_data.battery_controllable,
+                                                               hvdc_bus_f=self.hvdc_data.get_bus_indices_f(),
+                                                               hvdc_bus_t=self.hvdc_data.get_bus_indices_t(),
+                                                               hvdc_status=self.hvdc_data.active,
+                                                               hvdc_vf=self.hvdc_data.Vset_f,
+                                                               hvdc_vt=self.hvdc_data.Vset_t,
+                                                               iBeqv=np.array(self.iBeqv, dtype=int),
+                                                               iVtma=np.array(self.iVtma, dtype=int),
+                                                               VfBeqbus=np.array(self.VfBeqbus, dtype=int),
+                                                               Vtmabus=np.array(self.Vtmabus, dtype=int),
+                                                               branch_status=self.branch_data.branch_active,
+                                                               br_vf=self.branch_data.vf_set,
+                                                               br_vt=self.branch_data.vt_set)
+
         self.determine_control_indices()
 
     def re_calc_admittance_matrices(self, tap_module, t=0, idx=None):
@@ -347,6 +458,7 @@ class SnapshotData:
         self.iQtma = list()  # indices of the branches controlling the Qt flow with ma
         self.iPfdp = list()  # indices of the drop converters controlling the power flow with theta sh
         self.iVscL = list()  # indices of the converters
+        self.iPfdp_va = list()
 
         self.any_control = False
 
@@ -500,7 +612,7 @@ class SnapshotData:
     def Vbus(self):
 
         if self.Vbus_ is None:
-            self.Vbus_ = self.bus_data.Vbus.copy()
+            self.Vbus_ = self.bus_data.Vbus
 
         return self.Vbus_[:, 0]
 
@@ -760,6 +872,10 @@ class SnapshotData:
             x = self.Yseries  # call the constructor of Yshunt
 
         return self.Yshunt_
+
+    # @property
+    # def YshuntHelm(self):
+    #     return self.Yshunt_from_devices[:, 0]
 
     @property
     def B1(self):
@@ -1170,7 +1286,7 @@ class SnapshotData:
 
 def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
                              branch_tolerance_mode=BranchImpedanceMode.Specified,
-                             opf_results = None) -> SnapshotData:
+                             opf_results=None) -> SnapshotData:
     """
 
     :param circuit:

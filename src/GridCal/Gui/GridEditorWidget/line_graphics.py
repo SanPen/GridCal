@@ -62,6 +62,9 @@ class LineEditor(QDialog):
         Ybase = 1 / Zbase
         length = self.line.length
 
+        if length == 0:
+            length = 1.0
+
         R = self.line.R * Zbase / length
         X = self.line.X * Zbase / length
         B = self.line.B * Ybase / length
@@ -179,11 +182,11 @@ class LineEditor(QDialog):
         Set the values
         :return:
         """
-        l = self.l_spinner.value()
+        length = self.l_spinner.value()
         I = self.i_spinner.value()
-        R = self.r_spinner.value() * l
-        X = self.x_spinner.value() * l
-        B = self.b_spinner.value() * l
+        R = self.r_spinner.value() * length
+        X = self.x_spinner.value() * length
+        B = self.b_spinner.value() * length
 
         Vf = self.line.bus_from.Vnom
         Vt = self.line.bus_to.Vnom
@@ -195,6 +198,7 @@ class LineEditor(QDialog):
         self.line.X = np.round(X / Zbase, 6)
         self.line.B = np.round(B / Ybase, 6)
         self.line.rate = np.round(I * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV
+        self.line.length = length
 
         if self.selected_template is not None:
             self.line.template = self.selected_template
@@ -791,10 +795,13 @@ class LineGraphicItem(QGraphicsLineItem):
         Convert this object to VSC
         :return:
         """
-        ok = yes_no_question('Are you sure that you want to convert this line into a VSC device?', 'Convert line')
-        if ok:
-            editor = self.diagramScene.parent()
-            editor.convert_line_to_vsc(self.api_object)
+        if self.api_object.convertible_to_vsc():
+            ok = yes_no_question('Are you sure that you want to convert this line into a VSC device?', 'Convert line')
+            if ok:
+                editor = self.diagramScene.parent()
+                editor.convert_line_to_vsc(self.api_object)
+        else:
+            warning_msg('Unable to convert to VSC. One of the buses must be DC and the other AC.')
 
     def to_upfc(self):
         """

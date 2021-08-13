@@ -13,11 +13,26 @@ Hence if something goes wrong, you need to re-upload with a new Version number.
 Version 4.2.0
 ^^^^^^^^^^^^^^^
 
+- Added the ability to save the results into the file, loading and unloading from the file. This is a massive feature.
+- Added contingency analysis colouring.
+- Added ATC generation scaling based on the installed power.
+- Added time series bus type series. Now the bus types change upon the generators' availability.
+
+- Better detection of power imbalances in the analysis tool.
+- Finalized the json v3 export implementation.
+
+- Fixed really rare bug with .real and .imag was making HELM diverge. Now it is fixed.
+- Fixed multiple slacks error in PTDF calculations.
+- Fixed bug where the voltage profiles were not being applied.
+
+- Overall usability improvements.
+
+Version 4.1.2
+^^^^^^^^^^^^^^^
+
 - Added branch contingency multiplier for contingency related simulations
-- Added Available Transmission Capacity (ATC)
+- Added Available Transmission Capacity
 - Added dynamic bus types for the time series, this allows to correctly account for the generators' status
-- Added the ability to save "sessions" of results in the .gridcal files, to then load those at a later stage.
-  This is a massive feature that allows to effectively ans securely share models and results with others.
 
 Version 4.1.1
 ^^^^^^^^^^^^^^^
