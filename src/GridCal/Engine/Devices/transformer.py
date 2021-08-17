@@ -172,7 +172,11 @@ class TransformerType(EditableDevice):
 
         Zseries = ZseriesHv / ZbaseHvSys + ZseriesLv / ZbaseLvSys
         Zshunt = ZshuntHv / ZbaseHvSys + ZshuntLv / ZbaseLvSys
-        Yshunt = 1 / Zshunt
+
+        if Zshunt != 0:
+            Yshunt = 1 / Zshunt
+        else:
+            Yshunt = 0j
 
         return Zseries, Yshunt
 
