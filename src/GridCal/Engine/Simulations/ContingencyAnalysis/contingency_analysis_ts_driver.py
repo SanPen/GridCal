@@ -29,12 +29,16 @@ from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 @jit(nopython=True, parallel=False)
 def compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_overload, worst_flows):
     """
-    Compute LODF based Sf
+    Compute LODF based flows (Sf)
+    :param e: element index
+    :param c: contingency element index
     :param nt: number of time steps
-    :param ne: number of elements
-    :param nc: number of failed elements
     :param LODF: LODF matrix (element, failed element)
     :param Flows: base Sf matrix (time, element)
+    :param rates: Matrix of rates (time, element)
+    :param overload_count: [out] number of overloads per element (element, contingency element)
+    :param max_overload: [out] maximum overload per element (element, contingency element)
+    :param worst_flows: [out] worst flows per element (time, element)
     :return: Cube of N-1 Flows (time, elements, contingencies)
     """
 
