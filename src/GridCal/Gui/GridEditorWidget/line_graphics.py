@@ -530,7 +530,7 @@ class LineGraphicItem(QGraphicsLineItem):
 
         if ok:
             # get the index of the branch
-            br_idx = self.diagramScene.circuit.branches.index(self.api_object)
+            br_idx = self.diagramScene.circuit.lines.index(self.api_object)
 
             # call the reduction routine
             removed_branch, removed_bus, \
