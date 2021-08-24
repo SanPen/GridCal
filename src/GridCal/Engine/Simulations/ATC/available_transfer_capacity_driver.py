@@ -364,7 +364,7 @@ class AvailableTransferCapacityResults(ResultsTemplate):
 
         # trim by abs alpha > threshold
         loading = np.abs(self.report[:, 1] / (self.report[:, 2] + 1e-20))
-        idx = np.where((np.abs(self.report[:, 3]) > threshold) & (loading < 1.0))[0]
+        idx = np.where((np.abs(self.report[:, 3]) > threshold) & (loading <= 1.0))[0]
         self.report_indices = self.report_indices[idx]
         self.report = self.report[idx, :]
 

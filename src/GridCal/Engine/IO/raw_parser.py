@@ -278,9 +278,6 @@ class PSSeBus:
         if self.bus.type == BusMode.Slack:
             self.bus.is_slack = True
 
-        if int(self.IDE) == 4:
-            self.bus.active = False
-
         # Ensures unique name
         self.bus.name = self.bus.name.replace("'", "").strip()
 
@@ -646,6 +643,7 @@ class PSSeBranch:
         bus_from = psse_bus_dict[i]
         bus_to = psse_bus_dict[j]
         code = str(i) + '_' + str(j) + '_' + str(self.CKT).replace("'", "").strip()
+        name = str(bus_from.name) + '_' + str(bus_to.name) + '_' + str(self.CKT).replace("'", "").strip()
 
         contingency_factor = self.RATEB / self.RATEA if self.RATEA > 0.0 else 1.0
 
@@ -656,7 +654,7 @@ class PSSeBranch:
                       bus_to=bus_to,
                       idtag=None,
                       code=code,
-                      name=code,
+                      name=name,
                       r=self.R,
                       x=self.X,
                       b=self.B,
@@ -1123,14 +1121,17 @@ class PSSeTransformer:
 
         self.NAME = self.NAME.replace("'", "").strip()
 
-        if self.NAME == '':
-            self.NAME = str(self.I) + '_' + str(self.J) + '_' + str(self.CKT)
-            self.NAME = self.NAME.strip()
+        if self.NAME != '':
+            self.NAME += '_'
+
+        self.NAME += str(self.I) + '_' + str(self.J) + '_' + str(self.CKT)
+        self.NAME = self.NAME.strip()
 
         if self.windings == 2:
             bus_from = psse_bus_dict[self.I]
             bus_to = psse_bus_dict[self.J]
 
+            name = self.NAME + '_' + str(bus_from.name) + '_' + str(bus_to.name) + '_' + str(self.CKT).replace("'", "").strip()
             code = str(self.I) + '_' + str(self.J) + '_' + str(self.CKT)
             code = code.strip().replace("'", "")
 
@@ -1181,7 +1182,7 @@ class PSSeTransformer:
                                 bus_to=bus_to,
                                 idtag=None,
                                 code=code,
-                                name=self.NAME,
+                                name=name,
                                 HV=V1,
                                 LV=V2,
                                 r=r,

@@ -28,7 +28,10 @@ def fast_data_to_text(data, columns, index):
 
     # data
     for t, index_value in enumerate(index):
-        if data[t, :].sum() != 0.0:
+        try:
+            if data[t, :].sum() != 0.0:
+                txt += str(index_value) + '\t' + '\t'.join([str(x) for x in data[t, :]]) + '\n'
+        except TypeError:
             txt += str(index_value) + '\t' + '\t'.join([str(x) for x in data[t, :]]) + '\n'
 
     return txt
