@@ -2088,6 +2088,18 @@ class MultiCircuit:
 
         return logger
 
+    def get_bus_area_indices(self):
+        """
+        Get array of area indices for each bus
+        :return:
+        """
+        d = {elm: k for k, elm in enumerate(self.areas)}
+
+        lst = np.zeros(len(self.buses), dtype=int)
+        for k, bus in enumerate(self.buses):
+            lst[k] = d[bus.area]
+        return lst
+
     def get_area_buses(self, area: Area) -> List[Tuple[int, Bus]]:
         """
         Get the selected buses

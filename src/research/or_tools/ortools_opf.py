@@ -89,11 +89,22 @@ def lpExpand(mat, arr):
     return res
 
 
-# fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\lynn5buspv.xlsx'
-fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\lynn5buspv.xlsx'
+fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
+# fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 
 grid = gc.FileOpen(fname).open()
+
+area_from_idx = 0
+area_to_idx = 1
+areas = grid.get_bus_area_indices()
+
+
 nc = gc.compile_snapshot_circuit(grid)
+
+# get the area bus indices
+areas = areas[nc.original_bus_idx]
+a1 = np.where(areas == area_from_idx)[0]
+a2 = np.where(areas == area_to_idx)[0]
 
 # pick constants
 Bpqpv = nc.Bpqpv
@@ -141,7 +152,6 @@ for balance, power in zip(node_balance, P):
 
 # branch flow
 pftk = np.empty(nc.nbr, dtype=object)
-ptfk = np.empty(nc.nbr, dtype=object)
 overload1 = np.empty(nc.nbr, dtype=object)
 overload2 = np.empty(nc.nbr, dtype=object)
 for i in range(nc.nbr):
@@ -151,12 +161,28 @@ for i in range(nc.nbr):
     else:
         tau_k = 0
     overload1[i] = solver.NumVar(0, 9999, 'overload1_'+str(i))
-    overload2[i] = solver.NumVar(0, 9999, 'overload2_'+str(i))
-    pftk[i] = bk * (angles_f[i]-angles_t[i] - tau_k)  # branch power from-to eq.15
-    ptfk[i] = bk * (angles_t[i]-angles_f[i] + tau_k)  # branch power to-from eq.16
-    solver.Add(pftk[i] <= rates[i]+overload1[i])  # rating restriction in the sense from-to: eq.17
-    solver.Add(ptfk[i] <= rates[i]+overload2[i])  # rating restriction in the sense to-from: eq.18
-    solver.Add(overload1[i] == overload2[i])  # branch power symmetry for ill conditioned problems eq.19
+    overload2[i] = solver.NumVar(0, 9999, 'overload2_' + str(i))
+    pftk[i] = bk * (angles_f[i] - angles_t[i] - tau_k)  # branch power from-to eq.15
+    solver.Add(pftk[i] <= (rates[i] + overload1[i]))  # rating restriction in the sense from-to: eq.17
+    solver.Add((rates[i] + overload2[i]) <= pftk[i])  # rating restriction in the sense to-from: eq.18
 
+status = solver.Solve()
+
+# [START print_solution]
+if status == pywraplp.Solver.OPTIMAL:
+    print('Solution:')
+    print('Objective value =', solver.Objective().Value())
+    print('Power flow:')
+    for x in pftk:
+        print(x.solution_value())
+
+else:
+    print('The problem does not have an optimal solution.')
+# [END print_solution]
+
+# [START advanced]
+print('\nAdvanced usage:')
+print('Problem solved in %f milliseconds' % solver.wall_time())
+print('Problem solved in %d iterations' % solver.iterations())
 
 print()
