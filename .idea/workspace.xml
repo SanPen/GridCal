@@ -24,12 +24,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/research/or_tools/ortools_opf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/GridCal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/GridCal.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Session/results_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Session/results_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -124,7 +123,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.ortools_opf">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -147,7 +146,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="available_transfer_capacity_driver" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="ortools_opf" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -155,11 +154,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/research/or_tools" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_driver.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/research/or_tools/ortools_opf.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -233,18 +232,18 @@
     </configuration>
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python.available_transfer_capacity_driver" />
       <item itemvalue="Python.setup" />
       <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.setup (1)" />
+      <item itemvalue="Python.ortools_opf" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.ortools_opf" />
         <item itemvalue="Python.setup" />
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.setup (1)" />
         <item itemvalue="Python.update_gui_file" />
-        <item itemvalue="Python.available_transfer_capacity_driver" />
       </list>
     </recent_temporary>
   </component>
@@ -559,13 +558,6 @@
       <workItem from="1620122664571" duration="8108000" />
       <workItem from="1621367763953" duration="1167000" />
       <workItem from="1621405201458" duration="3088000" />
-    </task>
-    <task id="LOCAL-00102" summary="Fixed PTDF rates profile usage&#10;Fixed plotting from the schematic">
-      <created>1616598798933</created>
-      <option name="number" value="00102" />
-      <option name="presentableId" value="LOCAL-00102" />
-      <option name="project" value="LOCAL" />
-      <updated>1616598798933</updated>
     </task>
     <task id="LOCAL-00103" summary="Added search function (WIP)">
       <created>1616687265822</created>
@@ -903,7 +895,14 @@
       <option name="project" value="LOCAL" />
       <updated>1625071726159</updated>
     </task>
-    <option name="localTasksCounter" value="151" />
+    <task id="LOCAL-00151" summary="Improved the naming from the .raw parsing">
+      <created>1629813705525</created>
+      <option name="number" value="00151" />
+      <option name="presentableId" value="LOCAL-00151" />
+      <option name="project" value="LOCAL" />
+      <updated>1629813705533</updated>
+    </task>
+    <option name="localTasksCounter" value="152" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -928,7 +927,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Time series clustering working" />
     <MESSAGE value="Fixed time series clustering with islands" />
     <MESSAGE value="Added changelog info" />
     <MESSAGE value="made the device plots more robust" />
@@ -953,7 +951,8 @@
     <MESSAGE value="Improved the ATC calculation (it is now closer to the TLTG)" />
     <MESSAGE value="Fixed the multiple slack error in the PTDF calculation" />
     <MESSAGE value="Added generation scaling by installed power" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added generation scaling by installed power" />
+    <MESSAGE value="Improved the naming from the .raw parsing" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved the naming from the .raw parsing" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1285,6 +1284,11 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py</url>
           <line>322</line>
           <option name="timeStamp" value="677" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/research/or_tools/ortools_opf.py</url>
+          <line>140</line>
+          <option name="timeStamp" value="678" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
