@@ -342,7 +342,7 @@ class AvailableTransferCapacityResults(ResultsTemplate):
 
         # sort by ATC
         self.report_indices = self.branch_names[self.br_idx]
-        self.report[:, 0] = self.branch_names[self.br_idx]  # 'Branch'
+        self.report[:, 0] = self.branch_names[self.br_idx]  # Branch name
         self.report[:, 1] = self.base_flow  # 'Base flow'
         self.report[:, 2] = self.rates  # 'Rate',
         self.report[:, 3] = self.alpha  # 'Alpha'
@@ -365,8 +365,9 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         # trim by abs alpha > threshold
         loading = np.abs(self.report[:, 1] / (self.report[:, 2] + 1e-20))
         idx = np.where((np.abs(self.report[:, 3]) > threshold) & (loading <= 1.0))[0]
-        self.report_indices = self.report_indices[idx]
+
         self.report = self.report[idx, :]
+        self.report_indices = self.report[:, 0]
 
     def get_results_dict(self):
         """

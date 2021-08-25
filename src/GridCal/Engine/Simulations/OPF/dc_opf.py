@@ -144,7 +144,8 @@ def add_dc_nodal_power_balance(numerical_circuit, problem: pl.LpProblem, theta, 
     return nodal_restrictions
 
 
-def add_branch_loading_restriction(problem: pl.LpProblem, theta_f, theta_t, Bseries, rating, FSlack1, FSlack2):
+def add_branch_loading_restriction(problem: pl.LpProblem, theta_f, theta_t, Bseries,
+                                   rating, ratings_slack_from, ratings_slack_to):
     """
     Add the branch loading restrictions
     :param problem: LpProblem instance
@@ -152,29 +153,21 @@ def add_branch_loading_restriction(problem: pl.LpProblem, theta_f, theta_t, Bser
     :param theta_t: voltage angles at the "to" side of the branches (m)
     :param Bseries: Array of branch susceptances (m)
     :param rating: Array of branch ratings (m)
-    :param FSlack1: Array of branch loading slack variables in the from-to sense
-    :param FSlack2: Array of branch loading slack variables in the to-from sense
+    :param ratings_slack_from: Array of branch loading slack variables in the from-to sense
+    :param ratings_slack_to: Array of branch loading slack variables in the to-from sense
     :return: load_f and load_t arrays (LP+float)
     """
 
     load_f = Bseries * (theta_f - theta_t)
-    load_t = Bseries * (theta_t - theta_f)
 
     # from-to branch power restriction
-    pl.lpAddRestrictions2(problem=problem,
-                          lhs=load_f,
-                          rhs=rating + FSlack1,  # rating + FSlack1
-                          name='from_to_branch_rate',
-                          op='<=')
+    pl.lpAddRestrictions3(problem=problem,
+                          lhs=-rating - ratings_slack_to,
+                          var=load_f,
+                          rhs=rating + ratings_slack_from,
+                          name='2_side_branch_rate')
 
-    # to-from branch power restriction
-    pl.lpAddRestrictions2(problem=problem,
-                          lhs=load_t,
-                          rhs=rating + FSlack2,  # rating + FSlack2
-                          name='to_from_branch_rate',
-                          op='<=')
-
-    return load_f, load_t
+    return load_f
 
 
 class OpfDc(Opf):
@@ -266,13 +259,13 @@ class OpfDc(Opf):
                                                         P=P)
 
         # add the branch loading restriction
-        load_f, load_t = add_branch_loading_restriction(problem=problem,
-                                                        theta_f=theta_f,
-                                                        theta_t=theta_t,
-                                                        Bseries=Bseries,
-                                                        rating=branch_ratings,
-                                                        FSlack1=branch_rating_slack1,
-                                                        FSlack2=branch_rating_slack2)
+        load_f = add_branch_loading_restriction(problem=problem,
+                                                theta_f=theta_f,
+                                                theta_t=theta_t,
+                                                Bseries=Bseries,
+                                                rating=branch_ratings,
+                                                ratings_slack_from=branch_rating_slack1,
+                                                ratings_slack_to=branch_rating_slack2)
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
@@ -282,7 +275,7 @@ class OpfDc(Opf):
         self.Pl = Pl
         self.load_shedding = load_slack
         self.s_from = load_f
-        self.s_to = load_t
+        self.s_to = -load_f
         self.overloads = branch_rating_slack1 + branch_rating_slack2
         self.rating = branch_ratings
         self.nodal_restrictions = nodal_restrictions

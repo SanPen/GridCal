@@ -190,7 +190,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
         elif result_type == ResultTypes.BranchLoading:
             labels = self.branch_names
-            y = np.abs(self.loading * 100.0)
+            y = self.loading * 100.0
             y_label = '(%)'
             title = 'Branch loading'
 

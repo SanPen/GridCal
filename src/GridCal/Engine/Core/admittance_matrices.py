@@ -81,7 +81,7 @@ def compute_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a,
 
 
 def compile_y_acdc(Cf, Ct, C_bus_shunt, shunt_admittance, shunt_active, ys, B, Sbase,
-                   m, theta, Beq, Gsw, mf, mt, ):
+                   m, theta, Beq, Gsw, mf, mt):
     """
     Compile the admittance matrices using the variable elements
     :param Cf: Connectivity branch-bus "from" with the branch states computed
@@ -171,7 +171,6 @@ def compute_split_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, 
     GBc = G + 1.0j * B
     Gsh = GBc / 2.0
     Ysh = Yshunt_bus + Cf.T * Gsh + Ct.T * Gsh
-
 
     return Yseries, Yshunt
 

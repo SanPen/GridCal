@@ -88,8 +88,8 @@ def lpExpand(mat, arr):
                     res[j, k] = arr[i, k]  # C.data[ii] is equivalent to C[i, j]
     return res
 
-
-fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
+fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
+# fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 # fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 
 grid = gc.FileOpen(fname).open()
@@ -97,7 +97,6 @@ grid = gc.FileOpen(fname).open()
 area_from_idx = 0
 area_to_idx = 1
 areas = grid.get_bus_area_indices()
-
 
 nc = gc.compile_snapshot_circuit(grid)
 
@@ -121,54 +120,85 @@ t = 0
 # declare the solver
 solver = pywraplp.Solver.CreateSolver('SCIP')
 
-# create the angles
-infinity = solver.infinity()
+# create the angles ----------------------------------------------------------------------------------------------------
 angles = np.array([solver.NumVar(-6.28, 6.28, 'theta' + str(i)) for i in range(nc.nbus)])
 angles_pqpv = angles[nc.pqpv]
 angles_sl = angles[nc.vd]
 angles_f = lpExpand(Cf, angles)
 angles_t = lpExpand(Ct, angles)
 
-# create the phase shift angles
+# create the phase shift angles ----------------------------------------------------------------------------------------
 tau = dict()
 for i in range(nc.branch_data.nbr):
     if nc.branch_data.control_mode[i] == gc.TransformerControlType.Pt:  # is a phase shifter
         tau[i] = solver.NumVar(nc.branch_data.theta_min[i], nc.branch_data.theta_max[i], 'tau' + str(i))
 
+# create generation delta functions ------------------------------------------------------------------------------------
+margin_up = (nc.generator_data.generator_installed_p - nc.generator_data.generator_p[:, t]) / nc.Sbase
+margin_down = nc.generator_data.generator_p[:, t] / nc.Sbase
+dgen_per_bus = np.zeros(nc.nbus, dtype=object)
+gen_indices_per_bus = lpExpand(Cgen, np.arange(nc.generator_data.ngen))
+Pinj = np.zeros(nc.nbus, dtype=object)
 
-# create generation delta functions
-margin_up = nc.generator_data.generator_installed_p - nc.generator_data.generator_p[:, t]
-margin_down = nc.generator_data.generator_p[:, t]
-dgen = [solver.NumVar(-int(margin_down[i]), int(margin_up[i]), 'dGen' + str(i)) for i in range(nc.generator_data.ngen)]
-dgen_per_bus = lpExpand(Cgen, np.array(dgen))
-P = P + dgen_per_bus  # add generation deltas: eq.10
+# generators in area 1
+for i1 in a1:
+    ig = gen_indices_per_bus[i1]
+    dgen_per_bus[i1] = solver.NumVar(-int(margin_down[ig]), int(margin_up[ig]), 'dGen' + str(ig))
 
-# nodal balance
+    # add generation deltas: eq.10
+    Pinj[i1] = P[i1] + dgen_per_bus[i1]
+
+# generators in area 2
+for i2 in a2:
+    ig = gen_indices_per_bus[i2]
+    dgen_per_bus[i2] = solver.NumVar(-int(margin_down[ig]), int(margin_up[ig]), 'dGen' + str(ig))
+
+    # add generation deltas: eq.10
+    Pinj[i2] = P[i2] + dgen_per_bus[i2]
+
+
+# nodal balance --------------------------------------------------------------------------------------------------------
 node_balance = np.empty(nc.nbus, dtype=object)
-node_balance[nc.pqpv] = lpDot(Bpqpv, angles_pqpv)  # power balance in the non slack nodes: eq.13
-node_balance[nc.vd] = lpDot(Bsl, angles)  # power balance in the slack nodes: eq.14
-for balance, power in zip(node_balance, P):
-    solver.Add(balance == power)  # equal the balance to the generation: eq.13,14 (equality)
 
-# branch flow
+# power balance in the non slack nodes: eq.13
+node_balance[nc.pqpv] = lpDot(Bpqpv, angles_pqpv)
+
+# power balance in the slack nodes: eq.14
+node_balance[nc.vd] = lpDot(Bsl, angles)
+
+# equal the balance to the generation: eq.13,14 (equality)
+for balance, power in zip(node_balance, Pinj):
+    solver.Add(balance == power)
+
+# branch flow ----------------------------------------------------------------------------------------------------------
 pftk = np.empty(nc.nbr, dtype=object)
 overload1 = np.empty(nc.nbr, dtype=object)
 overload2 = np.empty(nc.nbr, dtype=object)
 for i in range(nc.nbr):
-    bk = 1/nc.branch_data.X[i]
+
+    # compute the branch susceptance
+    bk = (1.0 / complex(nc.branch_data.R[i], nc.branch_data.X[i])).imag
+
     if i in tau.keys():
         tau_k = tau[i]
     else:
         tau_k = 0
-    overload1[i] = solver.NumVar(0, 9999, 'overload1_'+str(i))
-    overload2[i] = solver.NumVar(0, 9999, 'overload2_' + str(i))
-    pftk[i] = bk * (angles_f[i] - angles_t[i] - tau_k)  # branch power from-to eq.15
-    solver.Add(pftk[i] <= (rates[i] + overload1[i]))  # rating restriction in the sense from-to: eq.17
-    solver.Add((rates[i] + overload2[i]) <= pftk[i])  # rating restriction in the sense to-from: eq.18
 
+    # branch power from-to eq.15
+    pftk[i] = bk * (angles_f[i] - angles_t[i] - tau_k)
+
+    # rating restriction in the sense from-to: eq.17
+    overload1[i] = solver.NumVar(0, 9999, 'overload1_' + str(i))
+    solver.Add(pftk[i] <= (rates[i] + overload1[i]))
+
+    # rating restriction in the sense to-from: eq.18
+    overload2[i] = solver.NumVar(0, 9999, 'overload2_' + str(i))
+    solver.Add((-rates[i] - overload2[i]) <= pftk[i])
+
+# Solve ----------------------------------------------------------------------------------------------------------------
 status = solver.Solve()
 
-# [START print_solution]
+# print results --------------------------------------------------------------------------------------------------------
 if status == pywraplp.Solver.OPTIMAL:
     print('Solution:')
     print('Objective value =', solver.Objective().Value())

@@ -643,7 +643,8 @@ class PSSeBranch:
         bus_from = psse_bus_dict[i]
         bus_to = psse_bus_dict[j]
         code = str(i) + '_' + str(j) + '_' + str(self.CKT).replace("'", "").strip()
-        name = str(bus_from.name) + '_' + str(bus_to.name) + '_' + str(self.CKT).replace("'", "").strip()
+        name = "{0}_{1}_{2}_{3}_{4}".format(bus_from.name, i, bus_to.name, j, self.CKT)
+        name = name.replace("'", "").replace(" ", "").strip()
 
         contingency_factor = self.RATEB / self.RATEA if self.RATEA > 0.0 else 1.0
 
@@ -1121,17 +1122,17 @@ class PSSeTransformer:
 
         self.NAME = self.NAME.replace("'", "").strip()
 
-        if self.NAME != '':
-            self.NAME += '_'
-
-        self.NAME += str(self.I) + '_' + str(self.J) + '_' + str(self.CKT)
-        self.NAME = self.NAME.strip()
-
         if self.windings == 2:
             bus_from = psse_bus_dict[self.I]
             bus_to = psse_bus_dict[self.J]
 
-            name = self.NAME + '_' + str(bus_from.name) + '_' + str(bus_to.name) + '_' + str(self.CKT).replace("'", "").strip()
+            if self.NAME != "":
+                name = "{0}:{1}_{2}_{3}_{4}_{5}".format(self.NAME, bus_from.name, self.I, bus_to.name, self.J, self.CKT)
+            else:
+                name = "{0}_{1}_{2}_{3}_{4}".format(bus_from.name, self.I, bus_to.name, self.J, self.CKT)
+
+            name = name.replace("'", "").replace(" ", "").strip()
+
             code = str(self.I) + '_' + str(self.J) + '_' + str(self.CKT)
             code = code.strip().replace("'", "")
 
