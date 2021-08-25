@@ -89,7 +89,8 @@ def lpExpand(mat, arr):
     return res
 
 
-fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\lynn5buspv.xlsx'
+# fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\lynn5buspv.xlsx'
+fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\lynn5buspv.xlsx'
 
 grid = gc.FileOpen(fname).open()
 nc = gc.compile_snapshot_circuit(grid)
@@ -129,13 +130,33 @@ margin_up = nc.generator_data.generator_installed_p - nc.generator_data.generato
 margin_down = nc.generator_data.generator_p[:, t]
 dgen = [solver.NumVar(-int(margin_down[i]), int(margin_up[i]), 'dGen' + str(i)) for i in range(nc.generator_data.ngen)]
 dgen_per_bus = lpExpand(Cgen, np.array(dgen))
-P = P + dgen_per_bus  # add generation deltas
+P = P + dgen_per_bus  # add generation deltas: eq.10
 
 # nodal balance
 node_balance = np.empty(nc.nbus, dtype=object)
-node_balance[nc.pqpv] = lpDot(Bpqpv, angles_pqpv)  # power balance in the non slack nodes
-node_balance[nc.vd] = lpDot(Bsl, angles)  # power balance in the slack nodes
+node_balance[nc.pqpv] = lpDot(Bpqpv, angles_pqpv)  # power balance in the non slack nodes: eq.13
+node_balance[nc.vd] = lpDot(Bsl, angles)  # power balance in the slack nodes: eq.14
 for balance, power in zip(node_balance, P):
-    solver.Add(balance == power)  # equal the balance to the generation
+    solver.Add(balance == power)  # equal the balance to the generation: eq.13,14 (equality)
+
+# branch flow
+pftk = np.empty(nc.nbr, dtype=object)
+ptfk = np.empty(nc.nbr, dtype=object)
+overload1 = np.empty(nc.nbr, dtype=object)
+overload2 = np.empty(nc.nbr, dtype=object)
+for i in range(nc.nbr):
+    bk = 1/nc.branch_data.X[i]
+    if i in tau.keys():
+        tau_k = tau[i]
+    else:
+        tau_k = 0
+    overload1[i] = solver.NumVar(0, 9999, 'overload1_'+str(i))
+    overload2[i] = solver.NumVar(0, 9999, 'overload2_'+str(i))
+    pftk[i] = bk * (angles_f[i]-angles_t[i] - tau_k)  # branch power from-to eq.15
+    ptfk[i] = bk * (angles_t[i]-angles_f[i] + tau_k)  # branch power to-from eq.16
+    solver.Add(pftk[i] <= rates[i]+overload1[i])  # rating restriction in the sense from-to: eq.17
+    solver.Add(ptfk[i] <= rates[i]+overload2[i])  # rating restriction in the sense to-from: eq.18
+    solver.Add(overload1[i] == overload2[i])  # branch power symmetry for ill conditioned problems eq.19
+
 
 print()
