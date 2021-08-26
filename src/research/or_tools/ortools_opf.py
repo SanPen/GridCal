@@ -89,7 +89,7 @@ def lpExpand(mat, arr):
     return res
 
 
-def get_inter_areas_branches(nbr, F, T, areas_1, areas_2):
+def get_inter_areas_branches(nbr, F, T, buses_areas_1, buses_areas_2):
     """
     Get the inter-area branches.
     :param a1: Area from
@@ -98,21 +98,22 @@ def get_inter_areas_branches(nbr, F, T, areas_1, areas_2):
     """
     lst: List[Tuple[int, float]] = list()
     for k in range(nbr):
-        if F[k] in areas_1 and T[k] in areas_2:
+        if F[k] in buses_areas_1 and T[k] in buses_areas_2:
             lst.append((k, 1.0))
-        elif F[k] in areas_2 and T[k] in areas_1:
+        elif F[k] in buses_areas_2 and T[k] in buses_areas_1:
             lst.append((k, -1.0))
     return lst
 
 
-fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
+fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/PGOC_6bus(from .raw).gridcal'
+# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
 # fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 # fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 
 grid = gc.FileOpen(fname).open()
 
 area_from_idx = 0
-area_to_idx = 2
+area_to_idx = 1
 areas = grid.get_bus_area_indices()
 
 nc = gc.compile_snapshot_circuit(grid)
@@ -197,7 +198,7 @@ for balance, power in zip(node_balance, Pinj):
     i += 1
 
 # branch flow ----------------------------------------------------------------------------------------------------------
-pftk = np.empty(nc.nbr, dtype=object)
+pftk = [solver.NumVar(-9999, 9999, 'pftk_' + str(i)) for i in range(nc.nbr)]
 overload1 = np.empty(nc.nbr, dtype=object)
 overload2 = np.empty(nc.nbr, dtype=object)
 for i in range(nc.nbr):
@@ -211,23 +212,30 @@ for i in range(nc.nbr):
         tau_k = 0
 
     # branch power from-to eq.15
-    pftk[i] = bk * (angles_f[i] - angles_t[i] - tau_k)
+    solver.Add(pftk[i] == bk * (angles_f[i] - angles_t[i] - tau_k), 'brach_power_flow_' + str(i))
 
-    # # rating restriction in the sense from-to: eq.17
+    # rating restriction in the sense from-to: eq.17
     overload1[i] = solver.NumVar(0, 9999, 'overload1_' + str(i))
     solver.Add(pftk[i] <= (rates[i] + overload1[i]), "ft_rating_" + str(i))
-    #
-    # # rating restriction in the sense to-from: eq.18
+
+    # rating restriction in the sense to-from: eq.18
     overload2[i] = solver.NumVar(0, 9999, 'overload2_' + str(i))
     solver.Add((-rates[i] - overload2[i]) <= pftk[i], "tf_rating_" + str(i))
 
 
 # objective function ---------------------------------------------------------------------------------------------------
 
-flow_from_a1_to_a2 = 0
+# maximize the power from->to
+flows_ft = np.zeros(len(inter_area_branches), dtype=object)
+i = 0
 for k, sign in inter_area_branches:
-    flow_from_a1_to_a2 += pftk[k] * sign
-overload_sum = sum(overload1) + sum(overload2)
+    flows_ft[i] = pftk[k] * sign
+    i += 1
+
+flow_from_a1_to_a2 = solver.Sum(flows_ft)
+
+# reduce the overload slacks
+overload_sum = solver.Sum(overload1) + solver.Sum(overload2)
 
 solver.Maximize(flow_from_a1_to_a2 - overload_sum)
 
