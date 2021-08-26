@@ -88,6 +88,23 @@ def lpExpand(mat, arr):
                     res[j, k] = arr[i, k]  # C.data[ii] is equivalent to C[i, j]
     return res
 
+
+def get_inter_areas_branches(nbr, F, T, areas_1, areas_2):
+    """
+    Get the inter-area branches.
+    :param a1: Area from
+    :param a2: Area to
+    :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+    """
+    lst: List[Tuple[int, float]] = list()
+    for k in range(nbr):
+        if F[k] in areas_1 and T[k] in areas_2:
+            lst.append((k, 1.0))
+        elif F[k] in areas_2 and T[k] in areas_1:
+            lst.append((k, -1.0))
+    return lst
+
+
 fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
 # fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 # fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
@@ -95,7 +112,7 @@ fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE
 grid = gc.FileOpen(fname).open()
 
 area_from_idx = 0
-area_to_idx = 1
+area_to_idx = 2
 areas = grid.get_bus_area_indices()
 
 nc = gc.compile_snapshot_circuit(grid)
@@ -105,20 +122,23 @@ areas = areas[nc.original_bus_idx]
 a1 = np.where(areas == area_from_idx)[0]
 a2 = np.where(areas == area_to_idx)[0]
 
+# get the inter-area branches and their sign
+inter_area_branches = get_inter_areas_branches(nc.nbr, nc.branch_data.F, nc.branch_data.T, a1, a2)
+
 # pick constants
 Bpqpv = nc.Bpqpv
 Bsl = nc.Bbus[nc.vd, :]
-P = nc.Sbus.real
+P = nc.Sbus.real  # already in p.u.
 Cgen = nc.generator_data.C_bus_gen.tocsc()
 Cf = nc.Cf.tocsc()
 Ct = nc.Ct.tocsc()
-rates = nc.Rates
+rates = nc.Rates / nc.Sbase
 
 # time index
 t = 0
 
 # declare the solver
-solver = pywraplp.Solver.CreateSolver('SCIP')
+solver = pywraplp.Solver.CreateSolver('CBC')
 
 # create the angles ----------------------------------------------------------------------------------------------------
 angles = np.array([solver.NumVar(-6.28, 6.28, 'theta' + str(i)) for i in range(nc.nbus)])
@@ -126,6 +146,10 @@ angles_pqpv = angles[nc.pqpv]
 angles_sl = angles[nc.vd]
 angles_f = lpExpand(Cf, angles)
 angles_t = lpExpand(Ct, angles)
+
+# Set the slack angles = 0 ---------------------------------------------------------------------------------------------
+for i in nc.vd:
+    solver.Add(angles[i] == 0, "Slack_angle_zero")
 
 # create the phase shift angles ----------------------------------------------------------------------------------------
 tau = dict()
@@ -140,18 +164,18 @@ dgen_per_bus = np.zeros(nc.nbus, dtype=object)
 gen_indices_per_bus = lpExpand(Cgen, np.arange(nc.generator_data.ngen))
 Pinj = np.zeros(nc.nbus, dtype=object)
 
-# generators in area 1
+# generators in area 1 (increase generation)
 for i1 in a1:
     ig = gen_indices_per_bus[i1]
-    dgen_per_bus[i1] = solver.NumVar(-int(margin_down[ig]), int(margin_up[ig]), 'dGen' + str(ig))
+    dgen_per_bus[i1] = solver.NumVar(0, int(margin_up[ig]), 'dGen_up_' + str(i1))
 
     # add generation deltas: eq.10
     Pinj[i1] = P[i1] + dgen_per_bus[i1]
 
-# generators in area 2
+# generators in area 2 (decrease generation)
 for i2 in a2:
     ig = gen_indices_per_bus[i2]
-    dgen_per_bus[i2] = solver.NumVar(-int(margin_down[ig]), int(margin_up[ig]), 'dGen' + str(ig))
+    dgen_per_bus[i2] = solver.NumVar(-int(margin_down[ig]), 0, 'dGen_down_' + str(i2))
 
     # add generation deltas: eq.10
     Pinj[i2] = P[i2] + dgen_per_bus[i2]
@@ -167,8 +191,10 @@ node_balance[nc.pqpv] = lpDot(Bpqpv, angles_pqpv)
 node_balance[nc.vd] = lpDot(Bsl, angles)
 
 # equal the balance to the generation: eq.13,14 (equality)
+i = 0
 for balance, power in zip(node_balance, Pinj):
-    solver.Add(balance == power)
+    solver.Add(balance == power, "Node_power_balance_" + str(i))
+    i += 1
 
 # branch flow ----------------------------------------------------------------------------------------------------------
 pftk = np.empty(nc.nbr, dtype=object)
@@ -187,16 +213,33 @@ for i in range(nc.nbr):
     # branch power from-to eq.15
     pftk[i] = bk * (angles_f[i] - angles_t[i] - tau_k)
 
-    # rating restriction in the sense from-to: eq.17
+    # # rating restriction in the sense from-to: eq.17
     overload1[i] = solver.NumVar(0, 9999, 'overload1_' + str(i))
-    solver.Add(pftk[i] <= (rates[i] + overload1[i]))
-
-    # rating restriction in the sense to-from: eq.18
+    solver.Add(pftk[i] <= (rates[i] + overload1[i]), "ft_rating_" + str(i))
+    #
+    # # rating restriction in the sense to-from: eq.18
     overload2[i] = solver.NumVar(0, 9999, 'overload2_' + str(i))
-    solver.Add((-rates[i] - overload2[i]) <= pftk[i])
+    solver.Add((-rates[i] - overload2[i]) <= pftk[i], "tf_rating_" + str(i))
+
+
+# objective function ---------------------------------------------------------------------------------------------------
+
+flow_from_a1_to_a2 = 0
+for k, sign in inter_area_branches:
+    flow_from_a1_to_a2 += pftk[k] * sign
+overload_sum = sum(overload1) + sum(overload2)
+
+solver.Maximize(flow_from_a1_to_a2 - overload_sum)
 
 # Solve ----------------------------------------------------------------------------------------------------------------
 status = solver.Solve()
+
+# save the problem in LP format to debug
+lp_content = solver.ExportModelAsLpFormat(obfuscated=False)
+# lp_content = solver.ExportModelAsMpsFormat(obfuscated=False, fixed_format=True)
+file2write = open("ortools.lp", 'w')
+file2write.write(lp_content)
+file2write.close()
 
 # print results --------------------------------------------------------------------------------------------------------
 if status == pywraplp.Solver.OPTIMAL:
@@ -205,6 +248,10 @@ if status == pywraplp.Solver.OPTIMAL:
     print('Power flow:')
     for x in pftk:
         print(x.solution_value())
+
+    print('Power flow inter-area:')
+    for k, sign in inter_area_branches:
+        print(pftk[k].solution_value())
 
 else:
     print('The problem does not have an optimal solution.')

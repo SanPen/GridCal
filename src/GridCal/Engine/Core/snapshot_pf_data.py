@@ -618,6 +618,10 @@ class SnapshotData:
 
     @property
     def Sbus(self):
+        """
+        Returns the power injections in per-unit
+        :return: array of power injections (p.u.)
+        """
 
         if self.Sbus_ is None:
             self.Sbus_ = self.get_injections(normalize=True)
