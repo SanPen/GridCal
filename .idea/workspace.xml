@@ -23,12 +23,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improved ortools ntc script, not working yet">
-      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/PGOC_6bus(from .raw).gridcal" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/or_tools/ortools.lp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ortools_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/or_tools/ortools_opf.py" afterDir="false" />
-    </list>
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improved ortools ntc script, not working yet" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -585,14 +580,7 @@
       <workItem from="1629560883577" duration="599000" />
       <workItem from="1629623427831" duration="1991000" />
       <workItem from="1629914794794" duration="5558000" />
-      <workItem from="1629959702691" duration="6376000" />
-    </task>
-    <task id="LOCAL-00111" summary="updated the README.md">
-      <created>1617284063378</created>
-      <option name="number" value="00111" />
-      <option name="presentableId" value="LOCAL-00111" />
-      <option name="project" value="LOCAL" />
-      <updated>1617284063378</updated>
+      <workItem from="1629959702691" duration="7059000" />
     </task>
     <task id="LOCAL-00112" summary="Fixed the shunt voltage control">
       <created>1617362091712</created>
@@ -930,7 +918,14 @@
       <option name="project" value="LOCAL" />
       <updated>1629964165624</updated>
     </task>
-    <option name="localTasksCounter" value="160" />
+    <task id="LOCAL-00160" summary="Improved ortools ntc script, not working yet">
+      <created>1629966972532</created>
+      <option name="number" value="00160" />
+      <option name="presentableId" value="LOCAL-00160" />
+      <option name="project" value="LOCAL" />
+      <updated>1629966972532</updated>
+    </task>
+    <option name="localTasksCounter" value="161" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
