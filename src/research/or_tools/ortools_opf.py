@@ -105,10 +105,10 @@ def get_inter_areas_branches(nbr, F, T, buses_areas_1, buses_areas_2):
     return lst
 
 
-fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/PGOC_6bus(from .raw).gridcal'
+# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/PGOC_6bus(from .raw).gridcal'
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
 # fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
-# fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
+fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\PGOC_6bus(from .raw).gridcal'
 
 grid = gc.FileOpen(fname).open()
 
@@ -168,7 +168,8 @@ Pinj = np.zeros(nc.nbus, dtype=object)
 # generators in area 1 (increase generation)
 for i1 in a1:
     ig = gen_indices_per_bus[i1]
-    dgen_per_bus[i1] = solver.NumVar(0, int(margin_up[ig]), 'dGen_up_' + str(i1))
+    # dgen_per_bus[i1] = solver.NumVar(0, int(margin_up[ig]), 'dGen_up_' + str(i1))
+    dgen_per_bus[i1] = solver.NumVar(-9999, 9999, 'dGen_up_' + str(i1))
 
     # add generation deltas: eq.10
     Pinj[i1] = P[i1] + dgen_per_bus[i1]
@@ -176,7 +177,8 @@ for i1 in a1:
 # generators in area 2 (decrease generation)
 for i2 in a2:
     ig = gen_indices_per_bus[i2]
-    dgen_per_bus[i2] = solver.NumVar(-int(margin_down[ig]), 0, 'dGen_down_' + str(i2))
+    # dgen_per_bus[i2] = solver.NumVar(-int(margin_down[ig]), 0, 'dGen_down_' + str(i2))
+    dgen_per_bus[i2] = solver.NumVar(-9999, 9999, 'dGen_down_' + str(i2))
 
     # add generation deltas: eq.10
     Pinj[i2] = P[i2] + dgen_per_bus[i2]
@@ -245,7 +247,7 @@ status = solver.Solve()
 # save the problem in LP format to debug
 lp_content = solver.ExportModelAsLpFormat(obfuscated=False)
 # lp_content = solver.ExportModelAsMpsFormat(obfuscated=False, fixed_format=True)
-file2write = open("ortools.lp", 'w')
+file2write = open("ortools2.lp", 'w')
 file2write.write(lp_content)
 file2write.close()
 
@@ -258,8 +260,12 @@ if status == pywraplp.Solver.OPTIMAL:
         print(x.solution_value())
 
     print('Power flow inter-area:')
+    total_pw = 0
     for k, sign in inter_area_branches:
-        print(pftk[k].solution_value())
+        total_pw += sign * pftk[k].solution_value()
+        # print(pftk[k].solution_value())
+
+    print('Total power from-to', total_pw * nc.Sbase, 'MW')
 
 else:
     print('The problem does not have an optimal solution.')
