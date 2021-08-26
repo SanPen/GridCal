@@ -23,7 +23,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improved ortools ntc script, not working yet" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="bs">
+      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE 14.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ortools_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/or_tools/ortools_opf.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -580,14 +585,8 @@
       <workItem from="1629560883577" duration="599000" />
       <workItem from="1629623427831" duration="1991000" />
       <workItem from="1629914794794" duration="5558000" />
-      <workItem from="1629959702691" duration="7059000" />
-    </task>
-    <task id="LOCAL-00112" summary="Fixed the shunt voltage control">
-      <created>1617362091712</created>
-      <option name="number" value="00112" />
-      <option name="presentableId" value="LOCAL-00112" />
-      <option name="project" value="LOCAL" />
-      <updated>1617362091713</updated>
+      <workItem from="1629959702691" duration="7959000" />
+      <workItem from="1629970936413" duration="8153000" />
     </task>
     <task id="LOCAL-00113" summary="Fixed the shunt Q limits for time series&#10;Added is_controlled to the generator and shunt context menus">
       <created>1617450061708</created>
@@ -925,7 +924,14 @@
       <option name="project" value="LOCAL" />
       <updated>1629966972532</updated>
     </task>
-    <option name="localTasksCounter" value="161" />
+    <task id="LOCAL-00161" summary="bs">
+      <created>1629969017676</created>
+      <option name="number" value="00161" />
+      <option name="presentableId" value="LOCAL-00161" />
+      <option name="project" value="LOCAL" />
+      <updated>1629969017676</updated>
+    </task>
+    <option name="localTasksCounter" value="162" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -949,7 +955,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added proper PSS/E Power Factory GridCal comparison files" />
     <MESSAGE value="changed travis config" />
     <MESSAGE value="full ATC" />
     <MESSAGE value="Added contingency rates" />
@@ -974,7 +979,8 @@
     <MESSAGE value="Fixed issues with HVDC zero loading" />
     <MESSAGE value="added new josep PCA&#10;worked a bit on the ORTOOLS NTC research" />
     <MESSAGE value="Improved ortools ntc script, not working yet" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved ortools ntc script, not working yet" />
+    <MESSAGE value="bs" />
+    <option name="LAST_COMMIT_MESSAGE" value="bs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1282,13 +1288,23 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/research/or_tools/ortools_opf.py</url>
-          <line>272</line>
+          <line>340</line>
           <option name="timeStamp" value="727" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/research/or_tools/ortools_opf.py</url>
-          <line>239</line>
+          <line>285</line>
           <option name="timeStamp" value="731" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/research/or_tools/ortools_opf.py</url>
+          <line>227</line>
+          <option name="timeStamp" value="732" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/research/or_tools/ortools_opf.py</url>
+          <line>315</line>
+          <option name="timeStamp" value="735" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1310,7 +1326,7 @@
     <SUITE FILE_PATH="coverage/GridCal$psse_parser.coverage" NAME="psse_parser Coverage Results" MODIFIED="1594285082315" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_file.coverage" NAME="update_gui_file Coverage Results" MODIFIED="1622734323907" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$zip_interface.coverage" NAME="zip_interface Coverage Results" MODIFIED="1620029421103" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
-    <SUITE FILE_PATH="coverage/GridCal$ortools_opf.coverage" NAME="ortools_opf Coverage Results" MODIFIED="1629965232327" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/or_tools" />
+    <SUITE FILE_PATH="coverage/GridCal$ortools_opf.coverage" NAME="ortools_opf Coverage Results" MODIFIED="1629984421698" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/or_tools" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_temp_correction_py.coverage" NAME="Nosetests in test_temp_correction.py Coverage Results" MODIFIED="1609501421833" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$test.coverage" NAME="test Coverage Results" MODIFIED="1612900533026" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/CIM/cim_to_matpower/test" />
     <SUITE FILE_PATH="coverage/GridCal$n_minus_k_ts_driver.coverage" NAME="n_minus_k_ts_driver Coverage Results" MODIFIED="1616706318512" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/NK" />
@@ -1362,7 +1378,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research_py.coverage" NAME="Nosetests in PTDF_research.py Coverage Results" MODIFIED="1592575743464" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$demo_sum_of_int.coverage" NAME="demo_sum_of_int Coverage Results" MODIFIED="1615240494920" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms/iDone" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_api_helm_py.coverage" NAME="Nosetests in test_api_helm.py Coverage Results" MODIFIED="1609500335381" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1629964977384" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1629981098235" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research2_py.coverage" NAME="Nosetests in PTDF_research2.py Coverage Results" MODIFIED="1600161918846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$ptdf_ts_driver.coverage" NAME="ptdf_ts_driver Coverage Results" MODIFIED="1600186726130" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_branch_tolerance_py.coverage" NAME="Nosetests in test_branch_tolerance.py Coverage Results" MODIFIED="1602949779672" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
