@@ -149,6 +149,18 @@ def compose_branches_df(num, solver_power_vars, overloads1, overloads2):
     cols = ['Name', 'Power (MW)', 'Loading', 'SlackF', 'SlackT']
     return pd.DataFrame(data, columns=cols)
 
+
+def compose_generation_df(num, generation):
+
+    data = list()
+    for i, var in enumerate(generation):
+        if not isinstance(var, float):
+            data.append([str(var), '', var.Lb() * nc.Sbase, var.solution_value() * nc.Sbase, var.Ub() * nc.Sbase])
+        else:
+            data.append([num.generator_data.generator_names[i], '', 0, num.generator_data.generator_p[i, t], 0])
+
+    cols = ['Name', 'Bus', 'LB', 'Power (MW)', 'UB']
+    return pd.DataFrame(data=data, columns=cols)
 # ----------------------------------------------------------------------------------------------------------------------
 # Net transfer capacity optimization program 2021
 # ----------------------------------------------------------------------------------------------------------------------
@@ -214,12 +226,12 @@ dgen1 = list()
 dgen2 = list()
 
 for bus_idx, gen_idx in gens1:
-    name = 'dGen_up_{}'.format(gen_idx)
+    name = 'Gen_up_{}'.format(gen_idx)
     generation[gen_idx] = solver.NumVar(0, Pmax[gen_idx], name)
     dgen1.append(Pgen[gen_idx] + generation[gen_idx])
 
 for bus_idx, gen_idx in gens2:
-    name = 'dGen_down_{}'.format(gen_idx)
+    name = 'Gen_down_{}'.format(gen_idx)
     generation[gen_idx] = solver.NumVar(0, Pmax[gen_idx], name)
     dgen2.append(Pgen[gen_idx] - generation[gen_idx])
 
@@ -319,18 +331,19 @@ if status == pywraplp.Solver.OPTIMAL:
 
     print('\nGenerators:')
     # generators in area 1 (increase generation)
-    for var in generation:
-        if not isinstance(var, float):
-            print(str(var), var.solution_value() * nc.Sbase, 'MW')
+    # for var in generation:
+    #     if not isinstance(var, float):
+    #         print(str(var), var.solution_value() * nc.Sbase, 'MW')
+    print(compose_generation_df(nc, generation))
 
     print('\nPower flow inter-area:')
     total_pw = 0
     for k, sign in inter_area_branches:
         total_pw += sign * pftk[k].solution_value()
-        print(nc.branch_data.branch_names[k], pftk[k].solution_value() * nc.Sbase, 'MW')
+        print(nc.branch_data.branch_names[k], ':', pftk[k].solution_value() * nc.Sbase, 'MW')
 
-    print('   Total power from-to', total_pw * nc.Sbase, 'MW')
-    print('  ', str(area_power_slack), area_power_slack.solution_value() * nc.Sbase, 'MW')
+    print('   Total     :', total_pw * nc.Sbase, 'MW')
+    print('   Area slack:', area_power_slack.solution_value() * nc.Sbase, 'MW')
 else:
     print('The problem does not have an optimal solution.')
 # [END print_solution]
