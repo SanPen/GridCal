@@ -2,7 +2,7 @@ import GridCal.Engine as gc
 from ortools.linear_solver import pywraplp
 import numpy as np
 import pandas as pd
-
+from scipy.sparse.csc import csc_matrix
 
 def lpDot(mat, arr):
     """
@@ -106,6 +106,23 @@ def get_inter_areas_branches(nbr, F, T, buses_areas_1, buses_areas_2):
     return lst
 
 
+def get_generators_connectivity(Cgen):
+
+    assert isinstance(Cgen, csc_matrix)
+
+    gens_in_a1 = list()
+    gens_in_a2 = list()
+    for j in range(Cgen.shape[1]):
+        for ii in range(Cgen.indptr[j], Cgen.indptr[j + 1]):
+            i = Cgen.indices[ii]
+            if i in a1:
+                gens_in_a1.append((i, j))  # i: bus idx, j: gen idx
+            elif i in a2:
+                gens_in_a2.append((i, j))  # i: bus idx, j: gen idx
+
+    return gens_in_a1, gens_in_a2
+
+
 def compose_branches_df(num, solver_power_vars, overloads1, overloads2):
 
     data = list()
@@ -133,7 +150,7 @@ fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE
 # fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\PGOC_6bus(from .raw).gridcal'
 
 grid = gc.FileOpen(fname).open()
-nc = gc.compile_snapshot_circuit(grid)
+nc = gc.compile_snapshot_opf_circuit(grid)
 
 # compute information about areas --------------------------------------------------------------------------------------
 
@@ -149,6 +166,9 @@ a2 = np.where(areas == area_to_idx)[0]
 # get the inter-area branches and their sign
 inter_area_branches = get_inter_areas_branches(nc.nbr, nc.branch_data.F, nc.branch_data.T, a1, a2)
 
+# time index
+t = 0
+
 # pick constants -------------------------------------------------------------------------------------------------------
 Bpqpv = nc.Bpqpv
 Bsl = nc.Bbus[nc.vd, :]
@@ -157,9 +177,7 @@ Cgen = nc.generator_data.C_bus_gen.tocsc()
 Cf = nc.Cf.tocsc()
 Ct = nc.Ct.tocsc()
 rates = nc.Rates / nc.Sbase
-
-# time index
-t = 0
+gen_cost = nc.generator_data.generator_cost[:, t]
 
 # declare the solver ---------------------------------------------------------------------------------------------------
 solver = pywraplp.Solver.CreateSolver('CBC')
@@ -184,16 +202,7 @@ for i in range(nc.branch_data.nbr):
 # create generation delta functions ------------------------------------------------------------------------------------
 margin_up = (nc.generator_data.generator_installed_p - nc.generator_data.generator_p[:, t]) / nc.Sbase
 margin_down = nc.generator_data.generator_p[:, t] / nc.Sbase
-
-gens_in_a1 = list()
-gens_in_a2 = list()
-for j in range(nc.generator_data.ngen):
-    for ii in range(Cgen.indptr[j], Cgen.indptr[j + 1]):
-        i = Cgen.indices[ii]
-        if i in a1:
-            gens_in_a1.append((i, j))  # i: bus idx, j: gen idx
-        elif i in a2:
-            gens_in_a2.append((i, j))  # i: bus idx, j: gen idx
+gens_in_a1, gens_in_a2 = get_generators_connectivity(Cgen)
 
 Pinj = np.zeros(nc.nbus, dtype=object)
 for i in range(nc.nbus):
@@ -204,18 +213,21 @@ dgen1 = list()
 dgen2 = list()
 # generators in area 1 (increase generation)
 for bus_idx, gen_idx in gens_in_a1:
-    #
-    dgen[gen_idx] = solver.NumVar(0, margin_up[gen_idx], 'dGen_up_' + str(bus_idx) + '_' + str(gen_idx))
+    name = 'dGen_up_{}_{}'.format(gen_idx, nc.bus_data.bus_names[bus_idx].replace(' ', ''))
+    dgen[gen_idx] = solver.NumVar(0, margin_up[gen_idx], name)
     dgen1.append(dgen[gen_idx])
     # add generation deltas: eq.10
     Pinj[bus_idx] += dgen[gen_idx]
 
 # generators in area 2 (decrease generation)
 for bus_idx, gen_idx in gens_in_a2:
-    if bus_idx in nc.vd:
-        dgen[gen_idx] = solver.NumVar(-9999, 0, 'dGen_down_' + str(bus_idx) + '_' + str(gen_idx))
+
+    name = 'dGen_down_{}_{}'.format(gen_idx, nc.bus_data.bus_names[bus_idx].replace(' ', ''))
+
+    if bus_idx in nc.vd and margin_down[gen_idx] == 0:
+        dgen[gen_idx] = solver.NumVar(-9999, 0, name)
     else:
-        dgen[gen_idx] = solver.NumVar(-margin_down[gen_idx], 0, 'dGen_down_' + str(bus_idx) + '_' + str(gen_idx))
+        dgen[gen_idx] = solver.NumVar(-margin_down[gen_idx], 0, name)
 
     dgen2.append(dgen[gen_idx])
 
@@ -224,8 +236,7 @@ for bus_idx, gen_idx in gens_in_a2:
 
 # the increase in area 1 must be equal to minus the increase in area 2
 area_power_slack1 = solver.NumVar(0, 99999, 'Area_slack1')
-area_power_slack2 = solver.NumVar(0, 99999, 'Area_slack2')
-solver.Add(solver.Sum(dgen1) + solver.Sum(dgen2) == area_power_slack1 - area_power_slack2, 'Area equality')
+solver.Add(solver.Sum(dgen1) + solver.Sum(dgen2) <= area_power_slack1, 'Area equality')
 
 
 # nodal balance --------------------------------------------------------------------------------------------------------
@@ -283,14 +294,16 @@ flow_from_a1_to_a2 = solver.Sum(flows_ft)
 # reduce the overload slacks
 overload_sum = solver.Sum(overload1) + solver.Sum(overload2)
 
-# solver.Minimize(-flow_from_a1_to_a2 + 1e4 * overload_sum + 1e4 * area_power_slack1 + 1e4 * area_power_slack2)
-# solver.Minimize(solver.Sum(dgen2) + 1e4 * overload_sum + 1e4 * area_power_slack1 + 1e4 * area_power_slack2)
+gen_cost_f = solver.Sum(gen_cost * dgen)
 
-solver.Minimize(-flow_from_a1_to_a2
+
+solver.Minimize(
+                flow_from_a1_to_a2
+                + gen_cost_f
                 + solver.Sum(dgen2)
                 + 1e4 * overload_sum
                 + 1e4 * area_power_slack1
-                + 1e4 * area_power_slack2
+                # + 1e4 * area_power_slack2
                 )
 
 # Solve ----------------------------------------------------------------------------------------------------------------
@@ -299,7 +312,7 @@ status = solver.Solve()
 # save the problem in LP format to debug
 lp_content = solver.ExportModelAsLpFormat(obfuscated=False)
 # lp_content = solver.ExportModelAsMpsFormat(obfuscated=False, fixed_format=True)
-file2write = open("ortools2.lp", 'w')
+file2write = open("ortools.lp", 'w')
 file2write.write(lp_content)
 file2write.close()
 
@@ -326,9 +339,7 @@ if status == pywraplp.Solver.OPTIMAL:
         print(nc.branch_data.branch_names[k], pftk[k].solution_value() * nc.Sbase, 'MW')
 
     print('Total power from-to', total_pw * nc.Sbase, 'MW')
-    print('Slacks',
-          area_power_slack1.solution_value() * nc.Sbase, 'MW',
-          area_power_slack2.solution_value() * nc.Sbase, 'MW')
+    print('Slacks', area_power_slack1.solution_value() * nc.Sbase, 'MW')
 else:
     print('The problem does not have an optimal solution.')
 # [END print_solution]
