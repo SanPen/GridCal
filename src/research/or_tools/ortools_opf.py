@@ -240,17 +240,13 @@ for bus_idx, gen_idx in gens_in_a2:
 
 # the increase in area 1 must be equal to minus the increase in area 2
 area_power_slack = solver.NumVar(0, 99999, 'Area_slack')
-solver.Add(solver.Sum(dgen1) + solver.Sum(dgen2) <= area_power_slack, 'Area equality')
+solver.Add(solver.Sum(dgen1) == area_power_slack + solver.Sum(dgen2), 'Area equality')
 
 
 # nodal balance --------------------------------------------------------------------------------------------------------
-node_balance = np.empty(nc.nbus, dtype=object)
 
 # power balance in the non slack nodes: eq.13
-node_balance[nc.pqpv] = lpDot(Bpqpv, angles_pqpv)
-
-# power balance in the slack nodes: eq.14
-node_balance[nc.vd] = lpDot(Bsl, angles)
+node_balance = lpDot(nc.Bbus, angles)
 
 # equal the balance to the generation: eq.13,14 (equality)
 i = 0
@@ -289,7 +285,7 @@ for i in range(nc.nbr):
 flows_ft = np.zeros(len(inter_area_branches), dtype=object)
 i = 0
 for k, sign in inter_area_branches:
-    flows_ft[i] = pftk[k]
+    flows_ft[i] = sign * pftk[k]
     i += 1
 
 flow_from_a1_to_a2 = solver.Sum(flows_ft)

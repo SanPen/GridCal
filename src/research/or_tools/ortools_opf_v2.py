@@ -155,8 +155,8 @@ def compose_branches_df(num, solver_power_vars, overloads1, overloads2):
 
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/PGOC_6bus(from .raw).gridcal'
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/Grid4Bus-OPF.gridcal'
-fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
+# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
+fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
 # fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 # fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\PGOC_6bus(from .raw).gridcal'
 
@@ -169,7 +169,7 @@ print('\tBranches:', nc.nbr)
 # compute information about areas --------------------------------------------------------------------------------------
 
 area_from_idx = 0
-area_to_idx = 2
+area_to_idx = 1
 areas = grid.get_bus_area_indices()
 
 # get the area bus indices
@@ -314,23 +314,23 @@ file2write.close()
 if status == pywraplp.Solver.OPTIMAL:
     print('Solution:')
     print('Objective value =', solver.Objective().Value())
-    print('Power flow:')
+    print('\nPower flow:')
     print(compose_branches_df(nc, pftk, overload1, overload2))
 
-    print('Generators:')
+    print('\nGenerators:')
     # generators in area 1 (increase generation)
     for var in generation:
         if not isinstance(var, float):
-            print(str(var), 'up', var.solution_value() * nc.Sbase, 'MW')
+            print(str(var), var.solution_value() * nc.Sbase, 'MW')
 
-    print('Power flow inter-area:')
+    print('\nPower flow inter-area:')
     total_pw = 0
     for k, sign in inter_area_branches:
         total_pw += sign * pftk[k].solution_value()
         print(nc.branch_data.branch_names[k], pftk[k].solution_value() * nc.Sbase, 'MW')
 
-    print('Total power from-to', total_pw * nc.Sbase, 'MW')
-    print(str(area_power_slack), area_power_slack.solution_value() * nc.Sbase, 'MW')
+    print('   Total power from-to', total_pw * nc.Sbase, 'MW')
+    print('  ', str(area_power_slack), area_power_slack.solution_value() * nc.Sbase, 'MW')
 else:
     print('The problem does not have an optimal solution.')
 # [END print_solution]
