@@ -106,21 +106,30 @@ def get_inter_areas_branches(nbr, F, T, buses_areas_1, buses_areas_2):
     return lst
 
 
-def get_generators_connectivity(Cgen):
+def get_generators_connectivity(Cgen, buses_in_a1, buses_in_a2):
+    """
 
+    :param Cgen:
+    :param buses_in_a1:
+    :param buses_in_a2:
+    :return:
+    """
     assert isinstance(Cgen, csc_matrix)
 
     gens_in_a1 = list()
     gens_in_a2 = list()
-    for j in range(Cgen.shape[1]):
+    gens_out = list()
+    for j in range(Cgen.shape[1]):  # for each bus
         for ii in range(Cgen.indptr[j], Cgen.indptr[j + 1]):
             i = Cgen.indices[ii]
-            if i in a1:
+            if i in buses_in_a1:
                 gens_in_a1.append((i, j))  # i: bus idx, j: gen idx
-            elif i in a2:
+            elif i in buses_in_a2:
                 gens_in_a2.append((i, j))  # i: bus idx, j: gen idx
+            else:
+                gens_out.append((i, j))  # i: bus idx, j: gen idx
 
-    return gens_in_a1, gens_in_a2
+    return gens_in_a1, gens_in_a2, gens_out
 
 
 def compose_branches_df(num, solver_power_vars, overloads1, overloads2):
@@ -145,8 +154,9 @@ def compose_branches_df(num, solver_power_vars, overloads1, overloads2):
 # ----------------------------------------------------------------------------------------------------------------------
 
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/PGOC_6bus(from .raw).gridcal'
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
-fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
+# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/Grid4Bus-OPF.gridcal'
+fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
+# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
 # fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 # fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\PGOC_6bus(from .raw).gridcal'
 
@@ -159,7 +169,7 @@ print('\tBranches:', nc.nbr)
 # compute information about areas --------------------------------------------------------------------------------------
 
 area_from_idx = 0
-area_to_idx = 1
+area_to_idx = 2
 areas = grid.get_bus_area_indices()
 
 # get the area bus indices
@@ -173,23 +183,13 @@ inter_area_branches = get_inter_areas_branches(nc.nbr, nc.branch_data.F, nc.bran
 # time index
 t = 0
 
-# pick constants -------------------------------------------------------------------------------------------------------
-Bpqpv = nc.Bpqpv
-Bsl = nc.Bbus[nc.vd, :]
-P = nc.Sbus.real  # already in p.u.
-Cgen = nc.generator_data.C_bus_gen.tocsc()
-Cf = nc.Cf.tocsc()
-Ct = nc.Ct.tocsc()
-rates = nc.Rates / nc.Sbase
-gen_cost = nc.generator_data.generator_cost[:, t]
-
 # declare the solver ---------------------------------------------------------------------------------------------------
 solver = pywraplp.Solver.CreateSolver('CBC')
 
 # create the angles ----------------------------------------------------------------------------------------------------
+Cf = nc.Cf.tocsc()
+Ct = nc.Ct.tocsc()
 angles = np.array([solver.NumVar(-6.28, 6.28, 'theta' + str(i)) for i in range(nc.nbus)])
-angles_pqpv = angles[nc.pqpv]
-angles_sl = angles[nc.vd]
 angles_f = lpExpand(Cf, angles)
 angles_t = lpExpand(Ct, angles)
 
@@ -204,53 +204,42 @@ for i in range(nc.branch_data.nbr):
         tau[i] = solver.NumVar(nc.branch_data.theta_min[i], nc.branch_data.theta_max[i], 'tau' + str(i))
 
 # create generation delta functions ------------------------------------------------------------------------------------
-margin_up = (nc.generator_data.generator_installed_p - nc.generator_data.generator_p[:, t]) / nc.Sbase
-margin_down = nc.generator_data.generator_p[:, t] / nc.Sbase
-gens_in_a1, gens_in_a2 = get_generators_connectivity(Cgen)
-
-Pinj = np.zeros(nc.nbus, dtype=object)
-for i in range(nc.nbus):
-    Pinj[i] = P[i]
-
-dgen = np.zeros(nc.generator_data.ngen, dtype=object)
+Cgen = nc.generator_data.C_bus_gen.tocsc()
+gen_cost = nc.generator_data.generator_cost[:, t]
+Pgen = nc.generator_data.generator_p[:, t] / nc.Sbase
+Pmax = nc.generator_data.generator_installed_p / nc.Sbase
+gens1, gens2, gens_out = get_generators_connectivity(Cgen, a1, a2)
+generation = np.zeros(nc.generator_data.ngen, dtype=object)
 dgen1 = list()
 dgen2 = list()
-# generators in area 1 (increase generation)
-for bus_idx, gen_idx in gens_in_a1:
-    name = 'dGen_up_{}_{}'.format(gen_idx, nc.bus_data.bus_names[bus_idx].replace(' ', ''))
-    dgen[gen_idx] = solver.NumVar(0, margin_up[gen_idx], name)
-    dgen1.append(dgen[gen_idx])
-    # add generation deltas: eq.10
-    Pinj[bus_idx] += dgen[gen_idx]
 
-# generators in area 2 (decrease generation)
-for bus_idx, gen_idx in gens_in_a2:
+for bus_idx, gen_idx in gens1:
+    name = 'dGen_up_{}'.format(gen_idx)
+    generation[gen_idx] = solver.NumVar(0, Pmax[gen_idx], name)
+    dgen1.append(Pgen[gen_idx] + generation[gen_idx])
 
-    name = 'dGen_down_{}_{}'.format(gen_idx, nc.bus_data.bus_names[bus_idx].replace(' ', ''))
+for bus_idx, gen_idx in gens2:
+    name = 'dGen_down_{}'.format(gen_idx)
+    generation[gen_idx] = solver.NumVar(0, Pmax[gen_idx], name)
+    dgen2.append(Pgen[gen_idx] - generation[gen_idx])
 
-    if bus_idx in nc.vd and margin_down[gen_idx] == 0:
-        dgen[gen_idx] = solver.NumVar(-9999, 0, name)
-    else:
-        dgen[gen_idx] = solver.NumVar(-margin_down[gen_idx], 0, name)
+# set the generation in the non inter-area ones
+for bus_idx, gen_idx in gens_out:
+    generation[gen_idx] = Pgen[gen_idx]
 
-    dgen2.append(dgen[gen_idx])
-
-    # add generation deltas: eq.10
-    Pinj[bus_idx] += dgen[gen_idx]
-
-# the increase in area 1 must be equal to minus the increase in area 2
 area_power_slack = solver.NumVar(0, 99999, 'Area_slack')
-solver.Add(solver.Sum(dgen1) + solver.Sum(dgen2) <= area_power_slack, 'Area equality')
+solver.Add(solver.Sum(dgen1) + solver.Sum(dgen2) == area_power_slack, 'Area equality')
+# solver.Add(solver.Sum(dgen1) == -solver.Sum(dgen2), 'Area equality')
 
+# define the power injection -------------------------------------------------------------------------------------------
+gen_fixed_injections = lpExpand(Cgen, generation)
+load_fixed_injections = nc.load_data.get_injections_per_bus()[:, t].real / nc.Sbase  # with sign already
+Pinj = gen_fixed_injections + load_fixed_injections
 
 # nodal balance --------------------------------------------------------------------------------------------------------
-node_balance = np.empty(nc.nbus, dtype=object)
 
 # power balance in the non slack nodes: eq.13
-node_balance[nc.pqpv] = lpDot(Bpqpv, angles_pqpv)
-
-# power balance in the slack nodes: eq.14
-node_balance[nc.vd] = lpDot(Bsl, angles)
+node_balance = lpDot(nc.Bbus, angles)
 
 # equal the balance to the generation: eq.13,14 (equality)
 i = 0
@@ -259,10 +248,14 @@ for balance, power in zip(node_balance, Pinj):
     i += 1
 
 # branch flow ----------------------------------------------------------------------------------------------------------
-pftk = [solver.NumVar(-9999, 9999, 'pftk_' + str(i)) for i in range(nc.nbr)]
+
+pftk = list()
+rates = nc.Rates / nc.Sbase
 overload1 = np.empty(nc.nbr, dtype=object)
 overload2 = np.empty(nc.nbr, dtype=object)
 for i in range(nc.nbr):
+
+    pftk.append(solver.NumVar(-rates[i], rates[i], 'pftk_' + str(i)))
 
     # compute the branch susceptance
     bk = (1.0 / complex(nc.branch_data.R[i], nc.branch_data.X[i])).imag
@@ -287,24 +280,24 @@ for i in range(nc.nbr):
 
 # maximize the power from->to
 flows_ft = np.zeros(len(inter_area_branches), dtype=object)
-i = 0
-for k, sign in inter_area_branches:
-    flows_ft[i] = pftk[k]
-    i += 1
+for i, (k, sign) in enumerate(inter_area_branches):
+    flows_ft[i] = sign * pftk[k]
 
 flow_from_a1_to_a2 = solver.Sum(flows_ft)
 
 # reduce the overload slacks
 overload_sum = solver.Sum(overload1) + solver.Sum(overload2)
 
-gen_cost_f = solver.Sum(gen_cost * dgen)
+# include the cost of generation
+gen_cost_f = solver.Sum(gen_cost * generation)
 
-
+# objective function
 solver.Minimize(
                 -flow_from_a1_to_a2
-                # + solver.Sum(dgen2)
-                + 1e4 * overload_sum
-                + 1e4 * area_power_slack
+                + solver.Sum(dgen2)
+                + 1.0 * overload_sum
+                + 1.0 * gen_cost_f
+                + 1.0 * area_power_slack
                 )
 
 # Solve ----------------------------------------------------------------------------------------------------------------
@@ -313,7 +306,7 @@ status = solver.Solve()
 # save the problem in LP format to debug
 lp_content = solver.ExportModelAsLpFormat(obfuscated=False)
 # lp_content = solver.ExportModelAsMpsFormat(obfuscated=False, fixed_format=True)
-file2write = open("ortools.lp", 'w')
+file2write = open("ortools_v2.lp", 'w')
 file2write.write(lp_content)
 file2write.close()
 
@@ -326,12 +319,9 @@ if status == pywraplp.Solver.OPTIMAL:
 
     print('Generators:')
     # generators in area 1 (increase generation)
-    for var in dgen1:
-        print(str(var), 'up', var.solution_value() * nc.Sbase, 'MW')
-
-    # generators in area 2 (decrease generation)
-    for var in dgen2:
-        print(str(var), 'down', var.solution_value() * nc.Sbase, 'MW')
+    for var in generation:
+        if not isinstance(var, float):
+            print(str(var), 'up', var.solution_value() * nc.Sbase, 'MW')
 
     print('Power flow inter-area:')
     total_pw = 0
