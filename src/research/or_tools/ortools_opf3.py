@@ -204,6 +204,20 @@ t = 0
 # declare the solver ---------------------------------------------------------------------------------------------------
 solver = pywraplp.Solver.CreateSolver('CBC')
 
+# create the angles ----------------------------------------------------------------------------------------------------
+angles = np.array([solver.NumVar(-6.28, 6.28, 'theta' + str(i)) for i in range(nc.nbus)])
+angles_pqpv = angles[nc.pqpv]
+
+
+# power balance in the non slack nodes: eq.13
+node_balance = lpDot(nc.Bbus, angles)
+
+# create power injections ----------------------------------------------------------------------------------------------
+P = nc.Sbus.real  # already in p.u.
+Pinj = np.zeros(nc.nbus, dtype=object)
+for i in range(nc.nbus):
+    Pinj[i] = P[i]
+
 
 # create generation delta functions ------------------------------------------------------------------------------------
 Cgen = nc.generator_data.C_bus_gen.tocsc()
@@ -229,6 +243,8 @@ for bus_idx, gen_idx in gens1:
     delta.append(dg)
     generation1.append(generation[gen_idx])
     Pgen1.append(Pgen[gen_idx])
+    # add generation deltas: eq.10
+    Pinj[bus_idx] += dg
 
 for bus_idx, gen_idx in gens2:
     name = 'Gen_down_{}'.format(gen_idx)
@@ -239,13 +255,31 @@ for bus_idx, gen_idx in gens2:
     delta.append(dg)
     generation2.append(generation[gen_idx])
     Pgen2.append(Pgen[gen_idx])
+    # add generation deltas: eq.10
+    Pinj[bus_idx] += dg
 
 # set the generation in the non inter-area ones
 for bus_idx, gen_idx in gens_out:
     generation[gen_idx] = Pgen[gen_idx]
 
+
+
+# equal the balance to the generation: eq.13,14 (equality)
+i = 0
+for balance, power in zip(node_balance, Pinj):
+    solver.Add(balance == power, "Node_power_balance_" + str(i))
+    i += 1
+
 total_power_slack = solver.NumVar(0, 99999, 'Total_slack')
 solver.Add(solver.Sum(dgen1) + solver.Sum(dgen2) == total_power_slack, 'Balance equality')
+
+# area1_power_slack = solver.NumVar(0, 99999, 'Area1_slack')
+# solver.Add(solver.Sum(dgen1) == area1_power_slack, 'Area1 Balance')
+
+# area2_power_slack = solver.NumVar(0, 99999, 'Area2_slack')
+# solver.Add(solver.Sum(dgen2) == area2_power_slack, 'Area2 Balance')
+
+
 
 # include the cost of generation
 gen_cost_f = solver.Sum(gen_cost * delta)
