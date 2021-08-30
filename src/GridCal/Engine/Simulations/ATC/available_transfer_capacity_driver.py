@@ -212,7 +212,6 @@ def compute_atc(br_idx, ptdf, lodf, alpha, flows, rates, contingency_rates, thre
             for ic, c in enumerate(br_idx):  # for each contingency
                 # compute the exchange sensitivity in contingency conditions
                 beta_mat[im, ic] = alpha[m] + lodf[m, c] * alpha[c]
-                beta_used[im] = beta_mat[im, ic]  # default
 
                 if m != c:
 
@@ -223,7 +222,6 @@ def compute_atc(br_idx, ptdf, lodf, alpha, flows, rates, contingency_rates, thre
                     if abs(contingency_flow) > abs(atc_limiting_contingency_flow[im]):
                         atc_limiting_contingency_flow[im] = contingency_flow  # default
                         atc_limiting_contingency_branch[im] = c
-                        beta_used[im] = beta_mat[im, ic]
 
                     # now here, do compare with the base situation
                     if abs(beta_mat[im, ic]) > threshold and abs(contingency_flow) <= contingency_rates[m]:
