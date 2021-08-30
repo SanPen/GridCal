@@ -24,10 +24,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="WIP">
+      <change afterPath="$PROJECT_DIR$/src/research/PCA/josep_v2/main_v2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/GridCal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/GridCal.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ortools.lp" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/or_tools/ortools.lp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ortools_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/or_tools/ortools_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ortools_opf_v2.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/or_tools/ortools_opf_v2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/research/PCA/josep_v2/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/PCA/josep_v2/main_v1.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -99,7 +100,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="ToolWindowDatabase.ShowToolbar" value="false" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/research/or_tools" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../flask-crud-contacts-app" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
@@ -588,6 +589,7 @@
       <workItem from="1629959702691" duration="7959000" />
       <workItem from="1629970936413" duration="8921000" />
       <workItem from="1630045859721" duration="13060000" />
+      <workItem from="1630346022658" duration="2099000" />
     </task>
     <task id="LOCAL-00117" summary="Fixed storage location suggestions">
       <created>1617640806234</created>
