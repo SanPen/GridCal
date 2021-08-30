@@ -1128,7 +1128,8 @@ class SnapshotData:
 
         elif structure_type == 'Jacobian':
 
-            J = Jacobian(self.Ybus, self.Vbus, self.Ibus, self.pq, self.pqpv)
+            pvpq = np.r_[self.pv, self.pq]
+            J = Jacobian(self.Ybus, self.Vbus, self.Ibus, self.pq, pvpq)
 
             """
             J11 = dS_dVa[array([pvpq]).T, pvpq].real
