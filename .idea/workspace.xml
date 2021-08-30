@@ -122,7 +122,7 @@
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ortools_opf">
+  <component name="RunManager" selected="Python.jacobian_gomez_exposito">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -145,7 +145,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="jacobian_gomez_exposito" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -153,12 +153,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/research/PCA/josep_v2" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/research/jacobian" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/research/PCA/josep_v2/main.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/research/jacobian/jacobian_gomez_exposito.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -211,7 +211,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="upload_to_pypi" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="ortools_opf_v4" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -219,12 +219,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/research/or_tools" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/upload_to_pypi.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/research/or_tools/ortools_opf_v4.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -235,18 +235,18 @@
     </configuration>
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python.upload_to_pypi" />
-      <item itemvalue="Python.main" />
       <item itemvalue="Python.ortools_opf" />
       <item itemvalue="Python.ortools_opf_v2" />
+      <item itemvalue="Python.ortools_opf_v4" />
+      <item itemvalue="Python.jacobian_gomez_exposito" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ortools_opf" />
+        <item itemvalue="Python.jacobian_gomez_exposito" />
+        <item itemvalue="Python.ortools_opf_v4" />
         <item itemvalue="Python.ortools_opf_v2" />
+        <item itemvalue="Python.ortools_opf" />
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.main" />
-        <item itemvalue="Python.upload_to_pypi" />
       </list>
     </recent_temporary>
   </component>
