@@ -24,12 +24,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/research/or_tools/ortools_opf_v4.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/GridCal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/GridCal.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ortools.lp" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/or_tools/ortools.lp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ortools_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/or_tools/ortools_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ortools_opf_v2.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/or_tools/ortools_opf_v2.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v5.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -124,7 +120,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.ortools_opf_v2">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -139,6 +135,27 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="ntc_opf_v5" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/research/or_tools" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v5.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -189,27 +206,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="setup (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/setup.py" />
-      <option name="PARAMETERS" value="bdist_wheel" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="setup" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -234,17 +230,17 @@
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.setup" />
-      <item itemvalue="Python.setup (1)" />
       <item itemvalue="Python.ortools_opf" />
       <item itemvalue="Python.ortools_opf_v2" />
+      <item itemvalue="Python.ntc_opf_v5" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.ntc_opf_v5" />
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.ortools_opf_v2" />
         <item itemvalue="Python.setup" />
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.ortools_opf" />
-        <item itemvalue="Python.setup (1)" />
       </list>
     </recent_temporary>
   </component>
@@ -559,13 +555,6 @@
       <workItem from="1620122664571" duration="8108000" />
       <workItem from="1621367763953" duration="1167000" />
       <workItem from="1621405201458" duration="3088000" />
-    </task>
-    <task id="LOCAL-00106" summary="Published v4.0.0">
-      <created>1617125944900</created>
-      <option name="number" value="00106" />
-      <option name="presentableId" value="LOCAL-00106" />
-      <option name="project" value="LOCAL" />
-      <updated>1617125944900</updated>
     </task>
     <task id="LOCAL-00107" summary="Fixed issue caused by xlrd when getting the sheet names of an excel workbook">
       <created>1617203397739</created>
@@ -903,7 +892,14 @@
       <option name="project" value="LOCAL" />
       <updated>1630318371603</updated>
     </task>
-    <option name="localTasksCounter" value="155" />
+    <task id="LOCAL-00155" summary="included NTC OPF v4">
+      <created>1630318913677</created>
+      <option name="number" value="00155" />
+      <option name="presentableId" value="LOCAL-00155" />
+      <option name="project" value="LOCAL" />
+      <updated>1630318913677</updated>
+    </task>
+    <option name="localTasksCounter" value="156" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -928,7 +924,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added ATC research script, Added two new grids" />
     <MESSAGE value="changed linear icons&#10;Created ATC drivers (WIP)" />
     <MESSAGE value="Grouped imports in the main GUI" />
     <MESSAGE value="ATC and ATC time series implemented (validation pending)" />
@@ -953,7 +948,8 @@
     <MESSAGE value="started ortools opf research" />
     <MESSAGE value="improved area indexing" />
     <MESSAGE value="Improved the reporting of beta in the ATC calculation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved the reporting of beta in the ATC calculation" />
+    <MESSAGE value="included NTC OPF v4" />
+    <option name="LAST_COMMIT_MESSAGE" value="included NTC OPF v4" />
   </component>
   <component name="WindowStateProjectService">
     <state width="405" height="655" key="Git.Branch.Popup" />
