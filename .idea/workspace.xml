@@ -24,8 +24,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v5.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v6.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v5.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v5.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -85,7 +85,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="ToolWindowDatabase.ShowToolbar" value="false" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../ENTSOe/pemmdb2plexos" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/research/or_tools" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
@@ -93,19 +93,19 @@
     <option name="mySaveCallSignatures" value="true" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/src/tests/data/results/comparison" />
-      <recent name="C:\Users\penversa\Git\GridCal\src\GridCal\Engine\Simulations\ATC" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow" />
-      <recent name="$PROJECT_DIR$/doc" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/doc/formats" />
       <recent name="$PROJECT_DIR$/src/research/power_flow" />
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/Sparse" />
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/Main" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\penversa\Git\Github\GridCal\src\research\or_tools" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/src/tests/data/results/comparison" />
+      <recent name="C:\Users\penversa\Git\GridCal\src\GridCal\Engine\Simulations\ATC" />
+      <recent name="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -120,7 +120,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.ntc_opf_v6">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -164,19 +164,19 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="ortools_opf" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="ntc_opf_v6" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="C:\ReePlexos\Python37_dev\python.exe" />
+      <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/research/or_tools" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/research/or_tools/ortools_opf.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v6.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -230,17 +230,17 @@
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.setup" />
-      <item itemvalue="Python.ortools_opf" />
       <item itemvalue="Python.ortools_opf_v2" />
       <item itemvalue="Python.ntc_opf_v5" />
+      <item itemvalue="Python.ntc_opf_v6" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.ntc_opf_v6" />
         <item itemvalue="Python.ntc_opf_v5" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.ortools_opf_v2" />
         <item itemvalue="Python.setup" />
-        <item itemvalue="Python.ortools_opf" />
       </list>
     </recent_temporary>
   </component>
@@ -555,13 +555,6 @@
       <workItem from="1620122664571" duration="8108000" />
       <workItem from="1621367763953" duration="1167000" />
       <workItem from="1621405201458" duration="3088000" />
-    </task>
-    <task id="LOCAL-00107" summary="Fixed issue caused by xlrd when getting the sheet names of an excel workbook">
-      <created>1617203397739</created>
-      <option name="number" value="00107" />
-      <option name="presentableId" value="LOCAL-00107" />
-      <option name="project" value="LOCAL" />
-      <updated>1617203397740</updated>
     </task>
     <task id="LOCAL-00108" summary="Fixed issue with the wire">
       <created>1617204060351</created>
@@ -899,7 +892,14 @@
       <option name="project" value="LOCAL" />
       <updated>1630318913677</updated>
     </task>
-    <option name="localTasksCounter" value="156" />
+    <task id="LOCAL-00156" summary="included NTC OPF v5: Generation increment equal in the two areas">
+      <created>1630321225717</created>
+      <option name="number" value="00156" />
+      <option name="presentableId" value="LOCAL-00156" />
+      <option name="project" value="LOCAL" />
+      <updated>1630321225717</updated>
+    </task>
+    <option name="localTasksCounter" value="157" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -924,7 +924,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="changed linear icons&#10;Created ATC drivers (WIP)" />
     <MESSAGE value="Grouped imports in the main GUI" />
     <MESSAGE value="ATC and ATC time series implemented (validation pending)" />
     <MESSAGE value="ATC and ATC time series working (not validated yet)" />
@@ -949,7 +948,8 @@
     <MESSAGE value="improved area indexing" />
     <MESSAGE value="Improved the reporting of beta in the ATC calculation" />
     <MESSAGE value="included NTC OPF v4" />
-    <option name="LAST_COMMIT_MESSAGE" value="included NTC OPF v4" />
+    <MESSAGE value="included NTC OPF v5: Generation increment equal in the two areas" />
+    <option name="LAST_COMMIT_MESSAGE" value="included NTC OPF v5: Generation increment equal in the two areas" />
   </component>
   <component name="WindowStateProjectService">
     <state width="405" height="655" key="Git.Branch.Popup" />
