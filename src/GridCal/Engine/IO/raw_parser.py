@@ -1127,13 +1127,13 @@ class PSSeTransformer:
             bus_to = psse_bus_dict[self.J]
 
             # 11000_AGUAYO_400_12004_ABANTO_400_1_CKT
-            if self.NAME != "":
-                name = "{0}:{1}_{2}_{3}_{4}_{5}_{6}_{7}".format(self.NAME,
-                                                                self.I, bus_from.name, bus_from.Vnom,
-                                                                self.J, bus_to.name, bus_to.Vnom, self.CKT)
-            else:
-                name = "{0}_{1}_{2}_{3}_{4}_{5}_{6}".format(self.I, bus_from.name, bus_from.Vnom,
-                                                            self.J, bus_to.name, bus_to.Vnom, self.CKT)
+            # if self.NAME != "":
+            # name = "{0}:{1}_{2}_{3}_{4}_{5}_{6}_{7}".format(self.NAME,
+            #                                                 self.I, bus_from.name, bus_from.Vnom,
+            #                                                 self.J, bus_to.name, bus_to.Vnom, self.CKT)
+            # else:
+            name = "{0}_{1}_{2}_{3}_{4}_{5}_{6}".format(self.I, bus_from.name, bus_from.Vnom,
+                                                        self.J, bus_to.name, bus_to.Vnom, self.CKT)
 
             name = name.replace("'", "").replace(" ", "").strip()
 
