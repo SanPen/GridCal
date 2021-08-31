@@ -384,8 +384,6 @@ class OpfNTC(Opf):
     def formulate(self):
         """
         Formulate the Net Transfer Capacity problem
-        :param area_from_idx:
-        :param area_to_idx:
         :return:
         """
 
@@ -421,27 +419,25 @@ class OpfNTC(Opf):
         Bseries = (self.numerical_circuit.branch_active * Ys).imag
         cost_br = self.numerical_circuit.branch_cost
 
-        # compute information about areas
-
-        areas = self.numerical_circuit.bus_data.areas
-
         # time index
         t = 0
 
-        # get the area bus indices
-        F = self.numerical_circuit.branch_data.F
-        T = self.numerical_circuit.branch_data.T
-        a1 = self.area_from_bus_idx
-        a2 = self.area_to_bus_idx
-
         # get the inter-area branches and their sign
-        inter_area_branches = get_inter_areas_branches(m, F, T, a1, a2)
+        inter_area_branches = get_inter_areas_branches(nbr=m,
+                                                       F=self.numerical_circuit.branch_data.F,
+                                                       T=self.numerical_circuit.branch_data.T,
+                                                       buses_areas_1=self.area_from_bus_idx,
+                                                       buses_areas_2=self.area_to_bus_idx)
 
         # add te generation
         Pg, delta, gen_a1_idx, gen_a2_idx, \
-        area_balance_slack, dgen1 = self.formulate_generation(ng, Cgen, Pg_fix,
-                                                              Pg_max, Pg_min,
-                                                              a1, a2)
+        area_balance_slack, dgen1 = self.formulate_generation(ngen=ng,
+                                                              Cgen=Cgen,
+                                                              Pgen=Pg_fix,
+                                                              Pmax=Pg_max,
+                                                              Pmin=Pg_min,
+                                                              a1=self.area_from_bus_idx,
+                                                              a2=self.area_to_bus_idx)
 
         # add the angles
         theta = self.formulate_angles()
@@ -450,8 +446,9 @@ class OpfNTC(Opf):
 
         Pinj = self.formulate_power_injections(Cgen=Cgen, generation=Pg, t=t)
 
-        node_balance, node_balance_slack_1, node_balance_slack_2 = self.formulate_node_balance(angles=theta,
-                                                                                               Pinj=Pinj)
+        node_balance, \
+        node_balance_slack_1, \
+        node_balance_slack_2 = self.formulate_node_balance(angles=theta, Pinj=Pinj)
 
         flow_f, overload1, overload2 = self.formulate_branches_flow(angles=theta,
                                                                     tau_dict=tau)

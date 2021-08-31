@@ -2325,10 +2325,23 @@ class MainGUI(QMainWindow):
                             self.ui.actionOpf_to_Power_flow.setChecked(False)
                             opf_results = None
                     else:
-                        warning_msg('There are no OPF results, '
-                                    'therefore this operation will not use OPF information.')
-                        self.ui.actionOpf_to_Power_flow.setChecked(False)
-                        opf_results = None
+
+                        # try the OPF-NTC...
+                        drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_NTC_run)
+
+                        if drv is not None:
+                            if results is not None:
+                                opf_results = results
+                            else:
+                                warning_msg('There are no OPF results, '
+                                            'therefore this operation will not use OPF information.')
+                                self.ui.actionOpf_to_Power_flow.setChecked(False)
+                                opf_results = None
+                        else:
+                            warning_msg('There are no OPF results, '
+                                        'therefore this operation will not use OPF information.')
+                            self.ui.actionOpf_to_Power_flow.setChecked(False)
+                            opf_results = None
                 else:
                     opf_results = None
 

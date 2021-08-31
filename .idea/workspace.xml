@@ -23,19 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added details about the node slack's balance">
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons/ntc_opf.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons/ntc_opf_ts.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/__init__.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Implemented OPF-NTC in the GUI">
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/driver_types.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/driver_types.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/demo_5_node.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/demo_5_node.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -587,13 +577,6 @@
       <workItem from="1630346022658" duration="2099000" />
       <workItem from="1630403045731" duration="8284000" />
     </task>
-    <task id="LOCAL-00118" summary="Made the device plots more robust">
-      <created>1617641677849</created>
-      <option name="number" value="00118" />
-      <option name="presentableId" value="LOCAL-00118" />
-      <option name="project" value="LOCAL" />
-      <updated>1617641677849</updated>
-    </task>
     <task id="LOCAL-00119" summary="superfast fubm jacobian structure working">
       <created>1617745482190</created>
       <option name="number" value="00119" />
@@ -930,7 +913,14 @@
       <option name="project" value="LOCAL" />
       <updated>1630394319593</updated>
     </task>
-    <option name="localTasksCounter" value="167" />
+    <task id="LOCAL-00167" summary="Implemented OPF-NTC in the GUI">
+      <created>1630430014526</created>
+      <option name="number" value="00167" />
+      <option name="presentableId" value="LOCAL-00167" />
+      <option name="project" value="LOCAL" />
+      <updated>1630430014526</updated>
+    </task>
+    <option name="localTasksCounter" value="168" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -954,7 +944,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Session saving WIP" />
     <MESSAGE value="Loading session driver done!" />
     <MESSAGE value="Fixed minor time series error" />
     <MESSAGE value="Added update rates function" />
@@ -979,7 +968,8 @@
     <MESSAGE value="WIP" />
     <MESSAGE value="PCA work" />
     <MESSAGE value="Added details about the node slack's balance" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added details about the node slack's balance" />
+    <MESSAGE value="Implemented OPF-NTC in the GUI" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented OPF-NTC in the GUI" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1071,7 +1061,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>4966</line>
+          <line>4979</line>
           <option name="timeStamp" value="303" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1237,7 +1227,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>2482</line>
+          <line>2495</line>
           <option name="timeStamp" value="698" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1361,7 +1351,7 @@
     <SUITE FILE_PATH="coverage/GridCal$ortools_opf_v4.coverage" NAME="ortools_opf_v4 Coverage Results" MODIFIED="1630076374457" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/or_tools" />
     <SUITE FILE_PATH="coverage/GridCal$demo_sum_of_int.coverage" NAME="demo_sum_of_int Coverage Results" MODIFIED="1615240494920" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms/iDone" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_api_helm_py.coverage" NAME="Nosetests in test_api_helm.py Coverage Results" MODIFIED="1609500335381" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1630429823063" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1630430922474" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research2_py.coverage" NAME="Nosetests in PTDF_research2.py Coverage Results" MODIFIED="1600161918846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$ptdf_ts_driver.coverage" NAME="ptdf_ts_driver Coverage Results" MODIFIED="1600186726130" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_branch_tolerance_py.coverage" NAME="Nosetests in test_branch_tolerance.py Coverage Results" MODIFIED="1602949779672" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
