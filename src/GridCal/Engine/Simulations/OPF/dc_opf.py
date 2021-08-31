@@ -172,19 +172,16 @@ def add_branch_loading_restriction(problem: pl.LpProblem, theta_f, theta_t, Bser
 
 class OpfDc(Opf):
 
-    def __init__(self, numerical_circuit, solver: MIPSolvers = MIPSolvers.CBC):
+    def __init__(self, numerical_circuit, solver_type: MIPSolvers = MIPSolvers.CBC):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
         """
-        Opf.__init__(self, numerical_circuit=numerical_circuit, solver=solver)
-
-        # build the formulation
-        self.problem = self.formulate()
+        Opf.__init__(self, numerical_circuit=numerical_circuit, solver_type=solver_type)
 
     def formulate(self):
         """
-        Formulate the AC OPF time series in the non-sequential fashion (all to the solver at once)
+        Formulate the AC OPF time series in the non-sequential fashion (all to the solver_type at once)
         :return: PuLP Problem instance
         """
 

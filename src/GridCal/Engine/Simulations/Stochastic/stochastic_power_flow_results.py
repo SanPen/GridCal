@@ -229,7 +229,7 @@ class StochasticPowerFlowResults(ResultsTemplate):
         # # Reduce power dimensions
         # x_train = red.transform(x_train)
 
-        # model = MLPRegressor(hidden_layer_sizes=(10*n, n, n, n), activation='relu', solver='adam', alpha=0.0001,
+        # model = MLPRegressor(hidden_layer_sizes=(10*n, n, n, n), activation='relu', solver_type='adam', alpha=0.0001,
         #                      batch_size=2, learning_rate='constant', learning_rate_init=0.01, power_t=0.5,
         #                      max_iter=3, shuffle=True, random_state=None, tol=0.0001, verbose=True,
         #                      warm_start=False, momentum=0.9, nesterovs_momentum=True, early_stopping=False,

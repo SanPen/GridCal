@@ -26,7 +26,7 @@ class PowerFlowOptions:
         **solver_type** (:ref:`SolverType<solver_type>`, SolverType.NR): Solver type
 
         **retry_with_other_methods** (bool, True): Use a battery of methods to tackle
-        the problem if the main solver fails
+        the problem if the main solver_type fails
 
         **verbose** (bool, False): Print additional details in the logger
 

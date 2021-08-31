@@ -227,18 +227,18 @@ class OpfDcTimeSeries(OpfTimeSeries):
         :param numerical_circuit: NumericalCircuit instance
         :param start_idx: start index of the time series
         :param end_idx: end index of the time series
-        :param solver: MIP solver to use
+        :param solver: MIP solver_type to use
         :param batteries_energy_0: initial state of the batteries, if None the default values are taken
         """
         OpfTimeSeries.__init__(self, numerical_circuit=numerical_circuit, start_idx=start_idx, end_idx=end_idx,
-                               solver=solver)
+                               solver=solver, skip_formulation=True)
 
         # build the formulation
         self.problem = self.formulate(batteries_energy_0=batteries_energy_0)
 
     def formulate(self, batteries_energy_0=None):
         """
-        Formulate the AC OPF time series in the non-sequential fashion (all to the solver at once)
+        Formulate the AC OPF time series in the non-sequential fashion (all to the solver_type at once)
         :param batteries_energy_0: initial energy state of the batteries (if none, the default is taken)
         :return: PuLP Problem instance
         """

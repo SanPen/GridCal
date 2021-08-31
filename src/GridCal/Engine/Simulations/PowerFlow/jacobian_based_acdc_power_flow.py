@@ -627,7 +627,7 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
             end = time.time()
             elapsed = end - start
 
-            # set the state for the next solver
+            # set the state for the next solver_type
             nc.branch_data.m[:, 0] = m
             nc.branch_data.theta[:, 0] = theta
             nc.branch_data.Beq[:, 0] = Beq

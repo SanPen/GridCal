@@ -174,10 +174,12 @@ def compose_generation_df(num, generation, dgen_arr, Pgen_arr):
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/PGOC_6bus(from .raw).gridcal'
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/Grid4Bus-OPF.gridcal'
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
+fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
+# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/PGOC_6bus_modNTC.gridcal'
+
 # fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 # fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE14 - ntc areas.gridcal'
-fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\PGOC_6bus_modNTC.gridcal'
+# fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\PGOC_6bus_modNTC.gridcal'
 
 grid = gc.FileOpen(fname).open()
 nc = gc.compile_snapshot_opf_circuit(grid)

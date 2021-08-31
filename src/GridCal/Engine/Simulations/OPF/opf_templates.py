@@ -13,13 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.ThirdParty.pulp import *
+from ortools.linear_solver import pywraplp
 
 
 class Opf:
 
-    def __init__(self, numerical_circuit, solver: MIPSolvers = MIPSolvers.CBC):
+    def __init__(self, numerical_circuit: SnapshotOpfData, solver_type: MIPSolvers = MIPSolvers.CBC):
         """
         Optimal power flow template class
         :param numerical_circuit: NumericalCircuit instance
@@ -38,13 +40,15 @@ class Opf:
         self.load_shedding = None
         self.nodal_restrictions = None
 
-        self.solver = solver
+        self.solver_type = solver_type
+
+        self.solver = pywraplp.Solver.CreateSolver(self.solver_type.value)
 
         self.problem = self.formulate()
 
     def formulate(self):
         """
-        Formulate the AC OPF time series in the non-sequential fashion (all to the solver at once)
+        Formulate the AC OPF time series in the non-sequential fashion (all to the solver_type at once)
         :return: PuLP Problem instance
         """
 
@@ -58,23 +62,23 @@ class Opf:
         Call PuLP to solve the problem
         """
         # self.problem.writeLP('OPF.lp')
-        if self.solver == MIPSolvers.CBC:
+        if self.solver_type == MIPSolvers.CBC:
             params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=1)
 
-        elif self.solver == MIPSolvers.SCIP:
+        elif self.solver_type == MIPSolvers.SCIP:
             params = SCIP_CMD(msg=1)
 
-        elif self.solver == MIPSolvers.CPLEX:
+        elif self.solver_type == MIPSolvers.CPLEX:
             params = CPLEX_CMD(msg=1)
 
-        elif self.solver == MIPSolvers.GUROBI:
+        elif self.solver_type == MIPSolvers.GUROBI:
             params = GUROBI_CMD(msg=1)
 
-        elif self.solver == MIPSolvers.XPRESS:
+        elif self.solver_type == MIPSolvers.XPRESS:
             params = XPRESS(msg=1)
 
         else:
-            raise Exception('Solver not supported! ' + str(self.solver))
+            raise Exception('Solver not supported! ' + str(self.solver_type))
 
         self.problem.solve(params)
 
@@ -170,7 +174,7 @@ class Opf:
 
 class OpfTimeSeries:
 
-    def __init__(self, numerical_circuit, start_idx, end_idx, solver: MIPSolvers=MIPSolvers.CBC):
+    def __init__(self, numerical_circuit, start_idx, end_idx, solver: MIPSolvers=MIPSolvers.CBC, skip_formulation=True):
         """
 
         :param numerical_circuit:
@@ -194,11 +198,12 @@ class OpfTimeSeries:
         self.load_shedding = None
         self.nodal_restrictions = None
 
-        self.problem = self.formulate()
+        if not skip_formulation:
+            self.problem = self.formulate()
 
     def formulate(self):
         """
-        Formulate the AC OPF time series in the non-sequential fashion (all to the solver at once)
+        Formulate the AC OPF time series in the non-sequential fashion (all to the solver_type at once)
         :return: PuLP Problem instance
         """
 

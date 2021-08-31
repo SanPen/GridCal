@@ -45,7 +45,7 @@ class OptimalPowerFlowOptions:
         """
         Optimal power flow options
         :param verbose:
-        :param solver: OPF solver type
+        :param solver: OPF solver_type type
         :param grouping:
         :param mip_solver:
         :param faster_less_accurate:
@@ -104,11 +104,11 @@ class OptimalPowerFlow(DriverTemplate):
 
         if self.options.solver == SolverType.DC_OPF:
             # DC optimal power flow
-            problem = OpfDc(numerical_circuit=numerical_circuit, solver=self.options.mip_solver)
+            problem = OpfDc(numerical_circuit=numerical_circuit, solver_type=self.options.mip_solver)
 
         elif self.options.solver == SolverType.AC_OPF:
             # AC optimal power flow
-            problem = OpfAc(numerical_circuit=numerical_circuit, solver=self.options.mip_solver)
+            problem = OpfAc(numerical_circuit=numerical_circuit, solver_type=self.options.mip_solver)
 
         elif self.options.solver == SolverType.Simple_OPF:
             # simplistic dispatch
