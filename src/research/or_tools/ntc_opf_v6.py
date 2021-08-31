@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from scipy.sparse.csc import csc_matrix
 
+
 def lpDot(mat, arr):
     """
     CSC matrix-vector or CSC matrix-matrix dot product (A x b)
@@ -173,8 +174,8 @@ def compose_generation_df(num, generation, dgen_arr, Pgen_arr):
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/PGOC_6bus(from .raw).gridcal'
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/Grid4Bus-OPF.gridcal'
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
-fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
+fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
+# fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 # fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE14 - ntc areas.gridcal'
 # fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\PGOC_6bus(from .raw).gridcal'
 
@@ -220,7 +221,7 @@ generation2 = list()
 Pgen1 = list()
 Pgen2 = list()
 for bus_idx, gen_idx in gens1:
-    name = 'Gen_up_{}'.format(gen_idx)
+    name = 'Gen_up_bus{}'.format(bus_idx)
     generation[gen_idx] = solver.NumVar(0, Pmax[gen_idx], name)
     dg = solver.NumVar(0, Pmax[gen_idx] - Pgen[gen_idx], name + '_delta')
     solver.Add(dg == generation[gen_idx] - Pgen[gen_idx])
@@ -230,7 +231,7 @@ for bus_idx, gen_idx in gens1:
     Pgen1.append(Pgen[gen_idx])
 
 for bus_idx, gen_idx in gens2:
-    name = 'Gen_down_{}'.format(gen_idx)
+    name = 'Gen_down_bus{}'.format(bus_idx)
     generation[gen_idx] = solver.NumVar(0, Pmax[gen_idx], name)
     dg = solver.NumVar(-Pgen[gen_idx], 0, name + '_delta')
     solver.Add(dg == generation[gen_idx] - Pgen[gen_idx])
@@ -243,20 +244,100 @@ for bus_idx, gen_idx in gens2:
 for bus_idx, gen_idx in gens_out:
     generation[gen_idx] = Pgen[gen_idx]
 
-area_power_slack = solver.NumVar(0, 99999, 'Area_slack')
-solver.Add(solver.Sum(dgen1) + solver.Sum(dgen2) == area_power_slack, 'Area equality')
+area_balance_slack = solver.NumVar(0, 99999, 'Area_slack')
+solver.Add(solver.Sum(dgen1) + solver.Sum(dgen2) == area_balance_slack, 'Area equality')
 
+
+# create the angles ----------------------------------------------------------------------------------------------------
+Cf = nc.Cf.tocsc()
+Ct = nc.Ct.tocsc()
+angles = np.array([solver.NumVar(-6.28, 6.28, 'theta' + str(i)) for i in range(nc.nbus)])
+# angles_f = lpExpand(Cf, angles)
+# angles_t = lpExpand(Ct, angles)
+
+# Set the slack angles = 0 ---------------------------------------------------------------------------------------------
+for i in nc.vd:
+    solver.Add(angles[i] == 0, "Slack_angle_zero")
+
+# create the phase shift angles ----------------------------------------------------------------------------------------
+tau = dict()
+for i in range(nc.branch_data.nbr):
+    if nc.branch_data.control_mode[i] == gc.TransformerControlType.Pt:  # is a phase shifter
+        tau[i] = solver.NumVar(nc.branch_data.theta_min[i], nc.branch_data.theta_max[i], 'tau' + str(i))
+
+# define the power injection -------------------------------------------------------------------------------------------
+gen_injections = lpExpand(Cgen, generation)
+load_fixed_injections = nc.load_data.get_injections_per_bus()[:, t].real / nc.Sbase  # with sign already
+Pinj = gen_injections + load_fixed_injections
+
+# nodal balance --------------------------------------------------------------------------------------------------------
+
+# power balance in the non slack nodes: eq.13
+node_balance = lpDot(nc.Bbus, angles)
+
+node_balance_slack_1 = [solver.NumVar(0, 99999, 'balance_slack1_' + str(i)) for i in range(nc.nbus)]
+node_balance_slack_2 = [solver.NumVar(0, 99999, 'balance_slack2_' + str(i)) for i in range(nc.nbus)]
+
+# equal the balance to the generation: eq.13,14 (equality)
+i = 0
+for balance, power in zip(node_balance, Pinj):
+    solver.Add(balance == power + node_balance_slack_1[i] - node_balance_slack_2[i], "Node_power_balance_" + str(i))
+    i += 1
+
+# branch flow ----------------------------------------------------------------------------------------------------------
+
+pftk = list()
+rates = nc.Rates / nc.Sbase
+overload1 = np.empty(nc.nbr, dtype=object)
+overload2 = np.empty(nc.nbr, dtype=object)
+for i in range(nc.nbr):
+
+    _f = nc.branch_data.F[i]
+    _t = nc.branch_data.T[i]
+    pftk.append(solver.NumVar(-rates[i], rates[i], 'pftk_' + str(i)))
+
+    # compute the branch susceptance
+    bk = (1.0 / complex(nc.branch_data.R[i], nc.branch_data.X[i])).imag
+
+    if i in tau.keys():
+        # branch power from-to eq.15
+        solver.Add(pftk[i] == bk * (angles[_t] - angles[_f] - tau[i]), 'phase_shifter_power_flow_' + str(i))
+    else:
+        # branch power from-to eq.15
+        solver.Add(pftk[i] == bk * (angles[_t] - angles[_f]), 'branch_power_flow_' + str(i))
+
+    # rating restriction in the sense from-to: eq.17
+    overload1[i] = solver.NumVar(0, 9999, 'overload1_' + str(i))
+    solver.Add(pftk[i] <= (rates[i] + overload1[i]), "ft_rating_" + str(i))
+
+    # rating restriction in the sense to-from: eq.18
+    overload2[i] = solver.NumVar(0, 9999, 'overload2_' + str(i))
+    solver.Add((-rates[i] - overload2[i]) <= pftk[i], "tf_rating_" + str(i))
 
 # objective function ---------------------------------------------------------------------------------------------------
 
+# maximize the power from->to
+flows_ft = np.zeros(len(inter_area_branches), dtype=object)
+for i, (k, sign) in enumerate(inter_area_branches):
+    flows_ft[i] = sign * pftk[k]
+
+flow_from_a1_to_a2 = solver.Sum(flows_ft)
 
 # include the cost of generation
-# gen_cost_f = solver.Sum(gen_cost * delta)
+gen_cost_f = solver.Sum(gen_cost * delta)
+
+node_balance_slack_f = solver.Sum(node_balance_slack_1) + solver.Sum(node_balance_slack_2)
+
+overload_slack_f = solver.Sum(overload1) + solver.Sum(overload2)
 
 # objective function
 solver.Minimize(
-                + 1.0 * area_power_slack
+                # + 1.0 * flow_from_a1_to_a2
+                - 1.0 * solver.Sum(dgen1)
+                + 1.0 * area_balance_slack
                 # + 1.0 * gen_cost_f
+                + 1e0 * node_balance_slack_f
+                + 1e0 * overload_slack_f
                 )
 
 # Solve ----------------------------------------------------------------------------------------------------------------
@@ -267,16 +348,29 @@ if status == pywraplp.Solver.OPTIMAL:
     print('Solution:')
     print('Objective value =', solver.Objective().Value())
 
+    print('\nPower flow:')
+    print(compose_branches_df(nc, pftk, overload1, overload2))
+
+    print('\nPower flow inter-area:')
+    total_pw = 0
+    for k, sign in inter_area_branches:
+        total_pw += sign * pftk[k].solution_value()
+        print(nc.branch_data.branch_names[k], ':', pftk[k].solution_value() * nc.Sbase, 'MW')
+    print('Total exchange:', flow_from_a1_to_a2.solution_value() * nc.Sbase, 'MW')
+
     print('\nGenerators:')
     print(compose_generation_df(nc, generation1, dgen1, Pgen1))
     print(compose_generation_df(nc, generation2, dgen2, Pgen2))
+    print()
+    print('node balance slack:', node_balance_slack_f.solution_value())
+    print('Reference node:', nc.vd)
+    for i, (var1, var2) in enumerate(zip(node_balance_slack_1, node_balance_slack_2)):
+        print('node slack {0}'.format(i), var1.solution_value(), var2.solution_value())
+
+    print('area balance slack:', area_balance_slack.solution_value())
 
 else:
     print('The problem does not have an optimal solution.')
-
-    print('\nGenerators:')
-    print(compose_generation_df(nc, generation1, dgen1, Pgen1))
-    print(compose_generation_df(nc, generation2, dgen2, Pgen2))
 # [END print_solution]
 
 # [START advanced]

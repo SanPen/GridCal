@@ -6,9 +6,23 @@ from GridCal.Engine import *
 import random
 import math
 import itertools
+from smt.sampling_methods import LHS
 np.set_printoptions(precision=10)
 
-random.seed(42)
+
+def dSbus_dV(Ybus, V):
+    """
+    Computes partial derivatives of power injection w.r.t. voltage.
+    """
+
+    Ibus = Ybus * V
+    ib = range(len(V))
+    diagV = csr_matrix((V, (ib, ib)))
+    diagIbus = csr_matrix((Ibus, (ib, ib)))
+    diagVnorm = csr_matrix((V / abs(V), (ib, ib)))
+    dS_dVm = diagV * conj(Ybus * diagVnorm) + conj(diagIbus) * diagVnorm
+    dS_dVa = 1j * diagV * conj(diagIbus - Ybus * diagV)
+    return dS_dVm, dS_dVa
 
 
 # Created functions
@@ -24,6 +38,7 @@ def grid_solve(p_PQ, indx_Vbus):
 
     grid = MultiCircuit()
 
+    # Buses
     bus1 = Bus('Bus 1', vnom=20)
     bus1.is_slack = True
     grid.add_bus(bus1)
@@ -46,6 +61,29 @@ def grid_solve(p_PQ, indx_Vbus):
     grid.add_bus(bus5)
     grid.add_load(bus5, Load('load 5', P=p_PQ[6], Q=p_PQ[7]))
 
+    # more buses added
+    bus6 = Bus('Bus 6', vnom=20)
+    grid.add_bus(bus6)
+    grid.add_load(bus6, Load('load 6', P=p_PQ[8], Q=p_PQ[9]))
+
+    bus7 = Bus('Bus 7', vnom=20)
+    grid.add_bus(bus7)
+    grid.add_load(bus7, Load('load 7', P=p_PQ[10], Q=p_PQ[11]))
+
+    bus8 = Bus('Bus 8', vnom=20)
+    grid.add_bus(bus8)
+    grid.add_load(bus8, Load('load 8', P=p_PQ[12], Q=p_PQ[13]))
+
+    bus9 = Bus('Bus 9', vnom=20)
+    grid.add_bus(bus9)
+    grid.add_load(bus9, Load('load 9', P=p_PQ[14], Q=p_PQ[15]))
+
+    bus10 = Bus('Bus 10', vnom=20)
+    grid.add_bus(bus10)
+    grid.add_load(bus10, Load('load 10', P=p_PQ[16], Q=p_PQ[17]))
+
+
+    # Lines
     grid.add_line(Line(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.0))
     grid.add_line(Line(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.0))
     grid.add_line(Line(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.0))
@@ -54,6 +92,15 @@ def grid_solve(p_PQ, indx_Vbus):
     grid.add_line(Line(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.0))
     grid.add_line(Line(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.0))
 
+    # more lines added
+    grid.add_line(Line(bus1, bus6, 'line 1-6', r=0.03, x=0.10, b=0.0))
+    grid.add_line(Line(bus4, bus6, 'line 4-6', r=0.04, x=0.08, b=0.0))
+    grid.add_line(Line(bus5, bus7, 'line 5-7', r=0.04, x=0.11, b=0.0))
+    grid.add_line(Line(bus3, bus8, 'line 3-8', r=0.03, x=0.09, b=0.0))
+    grid.add_line(Line(bus6, bus9, 'line 6-9', r=0.03, x=0.08, b=0.0))
+    grid.add_line(Line(bus7, bus10, 'line 7-10', r=0.04, x=0.12, b=0.0))
+
+    # run power flow
     options = PowerFlowOptions(SolverType.NR, verbose=False)
     power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
@@ -77,26 +124,26 @@ def samples_calc(M, n_param, indx_Vbus, param_lower_bnd, param_upper_bnd):
 
     hx = np.zeros(M)  # h_x vector, with the x solutions at each sample. Maybe better than using zmean?
     C = np.zeros((n_param, n_param), dtype=float)
-    param_store = np.zeros((M, n_param), dtype=float)
 
-    for sample_idx in range(M):
-        # generate random values for the parameters
-        params = [random.uniform(param_lower_bnd[i], param_upper_bnd[i]) for i in range(n_param)]
-        param_store[sample_idx, :] = params
+    # create samples with Latin Hypercube
+    xlimits = np.zeros((n_param, 2), dtype=float)  # 2 columns: [lower_bound, upper_bound]
+    for ll in range(n_param):
+        xlimits[ll, 0] = param_lower_bnd[ll]
+        xlimits[ll, 1] = param_upper_bnd[ll]
 
+    sampling_lh = LHS(xlimits=xlimits)
+    param_store = sampling_lh(M)  # matrix with all samples
+
+    for ll in range(M):
         # x solution for each sample
-        hx[sample_idx] = grid_solve(params, indx_Vbus)
+        hx[ll] = grid_solve(param_store[ll, :], indx_Vbus)
 
         # calculate gradients and form C matrix
         Ag = np.zeros(n_param)
-        for i in range(n_param):
-            params_delta = np.copy(params)
-
-            # increase a parameter by delta
-            params_delta[i] += delta
-
-            # compute gradient as [x(p + delta) - x(p)] / delta
-            Ag[i] = (grid_solve(params_delta, indx_Vbus) - hx[sample_idx]) / delta
+        for kk in range(n_param):
+            params_delta = np.copy(param_store[ll, :])
+            params_delta[kk] += delta  # increase a parameter by delta
+            Ag[kk] = (grid_solve(params_delta, indx_Vbus) - hx[ll]) / delta  # compute gradient as [x(p + delta) - x(p)] / delta
 
         Ag_prod = np.outer(Ag, Ag)  # vector by vector to create a matrix
         C += 1 / M * Ag_prod
@@ -127,7 +174,7 @@ def orthogonal_decomposition(C, tr_error, l_exp):
         k += 1
 
     N_t = int(math.factorial(l_exp + k) / (math.factorial(k) * math.factorial(l_exp)))  # number of terms
-    Wy = w[:, :k]  # and for now, do not define Wz
+    Wy = w[:,:k]  # and for now, do not define Wz
 
     return Wy, N_t, k
 
@@ -136,8 +183,9 @@ def permutate(k, l_exp):
 
     """
     Generate the permutations for all exponents of y
+
     :param k: number of meaningful directions
-    :param l_exp: expansion order
+    :param l: expansion order
     :return perms: array of permutations
     """
 
@@ -166,6 +214,7 @@ def polynomial_coeff(M, N_t, Wy, param_store, hx, perms):
     :param perms: permutations of exponents
     :return: array with c coefficients
     """
+
     Q = np.zeros((M, N_t), dtype=float)  # store the values of the basis function
 
     for ll in range(M):
@@ -182,47 +231,49 @@ def polynomial_coeff(M, N_t, Wy, param_store, hx, perms):
     return c_vec
 
 
-if __name__ == '__main__':
-    # Input values
-    x_bus = 5  # bus of interest
-    n_param = 8  # number of parameters
-    l_exp = 3  # expansion order
-    k_est = 0.2  # proportion of expected meaningful directions
-    factor_MNt = 2.5  # M = factor_MNt * Nterms, should be around 1.5 and 3
-    param_lower_bnd = [0, 0, 0, 0, 0, 0, 0, 0]  # lower limits, in MVA
-    param_upper_bnd = [50, 50, 50, 50, 50, 50, 50, 50]  # upper limits, in MVA
-    delta = 1e-1  # small increment to calculate gradients
-    tr_error = 0.1  # truncation error allowed
+# Input values
+x_bus = 5  # bus of interest
+n_param = 18  # number of parameters, added more buses
+l_exp = 3  # expansion order
+k_est = 0.2  # proportion of expected meaningful directions
+factor_MNt = 2.5  # M = factor_MNt * Nterms, should be around 1.5 and 3
+param_lower_bnd = [10] * n_param  # lower limits for all parameters
+param_upper_bnd = [20] * n_param  # upper limits for all parameters
+delta = 1e-5  # small increment to calculate gradients
+tr_error = 0.1  # truncation error allowed
 
-    # 1. Initial calculations
-    n_k_est = int(k_est * n_param)  # estimated meaningful directions
-    N_terms_est = int(math.factorial(l_exp + n_k_est) / (math.factorial(n_k_est) * math.factorial(l_exp)))  # estimated number of terms
-    M = int(factor_MNt * N_terms_est)  # estimated number of samples
-    indx_Vbus = x_bus - 1  # index to grab the voltage
+# 1. Initial calculations
+n_k_est = int(k_est * n_param)  # estimated meaningful directions
+N_terms_est = int(math.factorial(l_exp + n_k_est) / (math.factorial(n_k_est) * math.factorial(l_exp)))  # estimated number of terms
+M = int(factor_MNt * N_terms_est)  # estimated number of samples
+indx_Vbus = x_bus - 1  # index to grab the voltage
 
-    # 2. Compute gradients and covariance matrix
-    hx, C, param_store = samples_calc(M, n_param, indx_Vbus, param_lower_bnd, param_upper_bnd)
+# 2. Compute gradients and covariance matrix
+hx, C, param_store = samples_calc(M, n_param, indx_Vbus, param_lower_bnd, param_upper_bnd)
 
-    # 3. Perform orthogonal decomposition
-    Wy, N_t, k = orthogonal_decomposition(C, tr_error, l_exp)
+# 3. Perform orthogonal decomposition
+Wy, N_t, k = orthogonal_decomposition(C, tr_error, l_exp)
 
-    # 4. Generate permutations
-    perms = permutate(k, l_exp)
+# 4. Generate permutations
+perms = permutate(k, l_exp)
 
-    # 5. Find polynomial coefficients
-    c_vec = polynomial_coeff(M, N_t, Wy, param_store, hx, perms)
-    print('Array of coefficients: ', c_vec)
+# 5. Find polynomial coefficients
+c_vec = polynomial_coeff(M, N_t, Wy, param_store, hx, perms)
+print('Array of coefficients: ', c_vec)
 
-    # 6. Test
-    pp = [random.uniform(param_lower_bnd[kk], param_upper_bnd[kk]) for kk in range(n_param)]  # random parameters
+# 6. Test
+pp = [random.uniform(param_lower_bnd[kk], param_upper_bnd[kk]) for kk in range(n_param)]  # random parameters
 
-    x_real = grid_solve(pp, indx_Vbus)
+x_real = grid_solve(pp, indx_Vbus)
 
-    y_red = np.dot(Wy.T, np.array(pp))
-    x_est = 0
-    for nn in range(N_t):
-        x_est += c_vec[nn] * y_red ** nn  # change for the generic polynomial, todo
+y_red = np.dot(Wy.T, np.array(pp))
+x_est = 0
+for nn in range(N_t):
+    x_est += c_vec[nn] * y_red ** nn  # change for the generic polynomial, todo
 
-    print('Actual state:           ', x_real)
-    print('Estimated state:        ', x_est[0])
-    print('Error:                  ', abs(x_real - x_est[0]))
+print('Actual state:               ', x_real)
+print('Estimated state:            ', x_est[0])
+print('Error:                      ', abs(x_real - x_est[0]))
+print('Number of power flow calls: ', M * (n_param + 1))
+print('Original calls n^m = M^m:   ', M ** n_param)
+
