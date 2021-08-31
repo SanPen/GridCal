@@ -174,9 +174,9 @@ def compose_generation_df(num, generation, dgen_arr, Pgen_arr):
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/PGOC_6bus(from .raw).gridcal'
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/Grid4Bus-OPF.gridcal'
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
+fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
 # fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
-fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE14 - ntc areas.gridcal'
+# fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE14 - ntc areas.gridcal'
 # fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\PGOC_6bus(from .raw).gridcal'
 
 grid = gc.FileOpen(fname).open()
@@ -275,13 +275,13 @@ Pinj = gen_injections + load_fixed_injections
 # power balance in the non slack nodes: eq.13
 node_balance = lpDot(nc.Bbus, angles)
 
-balance_slack_1 = [solver.NumVar(0, 99999, 'balance_slack1_' + str(i)) for i in range(nc.nbus)]
-balance_slack_2 = [solver.NumVar(0, 99999, 'balance_slack2_' + str(i)) for i in range(nc.nbus)]
+node_balance_slack_1 = [solver.NumVar(0, 99999, 'balance_slack1_' + str(i)) for i in range(nc.nbus)]
+node_balance_slack_2 = [solver.NumVar(0, 99999, 'balance_slack2_' + str(i)) for i in range(nc.nbus)]
 
 # equal the balance to the generation: eq.13,14 (equality)
 i = 0
 for balance, power in zip(node_balance, Pinj):
-    solver.Add(balance == power + balance_slack_1[i] - balance_slack_2[i], "Node_power_balance_" + str(i))
+    solver.Add(balance == power + node_balance_slack_1[i] - node_balance_slack_2[i], "Node_power_balance_" + str(i))
     i += 1
 
 # branch flow ----------------------------------------------------------------------------------------------------------
@@ -326,7 +326,7 @@ flow_from_a1_to_a2 = solver.Sum(flows_ft)
 # include the cost of generation
 gen_cost_f = solver.Sum(gen_cost * delta)
 
-node_balance_slack_f = solver.Sum(balance_slack_1) + solver.Sum(balance_slack_2)
+node_balance_slack_f = solver.Sum(node_balance_slack_1) + solver.Sum(node_balance_slack_2)
 
 overload_slack_f = solver.Sum(overload1) + solver.Sum(overload2)
 
@@ -363,6 +363,10 @@ if status == pywraplp.Solver.OPTIMAL:
     print(compose_generation_df(nc, generation2, dgen2, Pgen2))
     print()
     print('node balance slack:', node_balance_slack_f.solution_value())
+    print('Reference node:', nc.vd)
+    for i, (var1, var2) in enumerate(zip(node_balance_slack_1, node_balance_slack_2)):
+        print('node slack {0}'.format(i), var1.solution_value(), var2.solution_value())
+
     print('area balance slack:', area_balance_slack.solution_value())
 
 else:
