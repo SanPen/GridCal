@@ -328,30 +328,19 @@ class OptimalNetTransferCapacity(DriverTemplate):
         # Solve
         problem.solve()
 
-        # get the branch Sf (it is used more than one time)
-        Sbr = problem.get_branch_power()
-        # ld = problem.get_load_shedding()
-        # ld[ld == None] = 0
-        # bt = problem.get_battery_power()
-        # bt[bt == None] = 0
-        gn = problem.get_generator_power()
-        gn[gn == None] = 0
-
-        Sbus = problem.get_power_injections()
-
         # pack the results
         self.results = OptimalNetTransferCapacityResults(bus_names=numerical_circuit.bus_data.bus_names,
                                                          branch_names=numerical_circuit.branch_data.branch_names,
                                                          load_names=numerical_circuit.load_data.load_names,
                                                          generator_names=numerical_circuit.generator_data.generator_names,
                                                          battery_names=numerical_circuit.battery_data.battery_names,
-                                                         Sbus=Sbus,
+                                                         Sbus=problem.get_power_injections(),
                                                          voltage=problem.get_voltage(),
                                                          load_shedding=np.zeros((numerical_circuit.nload, 1)),
-                                                         generator_shedding=np.zeros_like(gn),
+                                                         generator_shedding=np.zeros((numerical_circuit.ngen, 1)),
                                                          battery_power=np.zeros((numerical_circuit.nbatt, 1)),
-                                                         controlled_generation_power=gn,
-                                                         Sf=Sbr,
+                                                         controlled_generation_power=problem.get_generator_power(),
+                                                         Sf=problem.get_branch_power(),
                                                          overloads=problem.get_overloads(),
                                                          loading=problem.get_loading(),
                                                          converged=bool(problem.converged()),

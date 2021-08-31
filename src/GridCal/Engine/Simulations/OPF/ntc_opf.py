@@ -477,9 +477,12 @@ class OpfNTC(Opf):
         """
         Call ORTools to solve the problem
         """
-        status = self.solver.Solve()
+        self.status = self.solver.Solve()
 
-        return status == pywraplp.Solver.OPTIMAL
+        return self.converged()
+
+    def converged(self):
+        return self.status == pywraplp.Solver.OPTIMAL
 
     def get_power_injections(self):
         """
