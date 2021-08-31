@@ -6999,6 +6999,7 @@ QProgressBar::chunk{
    <addaction name="separator"/>
    <addaction name="actionOPF"/>
    <addaction name="actionOPF_time_series"/>
+   <addaction name="actionOptimal_Net_Transfer_Capacity"/>
    <addaction name="actionOpf_to_Power_flow"/>
    <addaction name="separator"/>
    <addaction name="actionPower_flow_Stochastic"/>
@@ -7635,7 +7636,7 @@ QProgressBar::chunk{
     <string>Available Transfer Capacity</string>
    </property>
    <property name="toolTip">
-    <string>Available Transfer Capacity</string>
+    <string>Net Transfer Capacity</string>
    </property>
   </action>
   <action name="actionATC_Time_Series">
@@ -7647,7 +7648,7 @@ QProgressBar::chunk{
     <string>Available Transfer Capacity Time Series</string>
    </property>
    <property name="toolTip">
-    <string>Available Transfer Capacity Time Series</string>
+    <string>Net Transfer Capacity Time Series</string>
    </property>
   </action>
   <action name="actionContingency_analysis">
@@ -7669,6 +7670,18 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>Apply new rates to all the simulation results</string>
+   </property>
+  </action>
+  <action name="actionOptimal_Net_Transfer_Capacity">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/ntc_opf.svg</normaloff>:/Icons/icons/ntc_opf.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Optimal Net Transfer Capacity</string>
+   </property>
+   <property name="toolTip">
+    <string>Optimal Net Transfer Capacity</string>
    </property>
   </action>
  </widget>

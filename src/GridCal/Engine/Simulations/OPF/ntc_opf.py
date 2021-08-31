@@ -192,11 +192,16 @@ def compose_generation_df(nc, generation, dgen_arr, Pgen_arr):
 
 class OpfNTC(Opf):
 
-    def __init__(self, numerical_circuit, solver_type: MIPSolvers = MIPSolvers.CBC):
+    def __init__(self, numerical_circuit, area_from_bus_idx, area_to_bus_idx,
+                 solver_type: MIPSolvers = MIPSolvers.CBC):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
         """
+        self.area_from_bus_idx = area_from_bus_idx
+
+        self.area_to_bus_idx = area_to_bus_idx
+
         # this builds the formulation right away
         Opf.__init__(self, numerical_circuit=numerical_circuit, solver_type=solver_type)
 
@@ -367,13 +372,16 @@ class OpfNTC(Opf):
         """
         val = np.zeros(arr.shape)
         for i in range(val.shape[0]):
-            val[i] = arr[i].solution_value()
+            if isinstance(arr[i], float):
+                val[i] = arr[i]
+            else:
+                val[i] = arr[i].solution_value()
         if make_abs:
             val = np.abs(val)
 
         return val
 
-    def formulate(self, area_from_idx=0, area_to_idx=1):
+    def formulate(self):
         """
         Formulate the Net Transfer Capacity problem
         :param area_from_idx:
@@ -423,17 +431,17 @@ class OpfNTC(Opf):
         # get the area bus indices
         F = self.numerical_circuit.branch_data.F
         T = self.numerical_circuit.branch_data.T
-        areas = areas[self.numerical_circuit.original_bus_idx]
-        a1 = np.where(areas == area_from_idx)[0]
-        a2 = np.where(areas == area_to_idx)[0]
+        a1 = self.area_from_bus_idx
+        a2 = self.area_to_bus_idx
 
         # get the inter-area branches and their sign
         inter_area_branches = get_inter_areas_branches(m, F, T, a1, a2)
 
         # add te generation
-        Pg, delta, gen_a1_idx, gen_a2_idx, area_balance_slack, dgen1 = self.formulate_generation(ng, Cgen, Pg_fix,
-                                                                      Pg_max, Pg_min,
-                                                                      a1, a2)
+        Pg, delta, gen_a1_idx, gen_a2_idx, \
+        area_balance_slack, dgen1 = self.formulate_generation(ng, Cgen, Pg_fix,
+                                                              Pg_max, Pg_min,
+                                                              a1, a2)
 
         # add the angles
         theta = self.formulate_angles()
@@ -458,6 +466,7 @@ class OpfNTC(Opf):
         self.Pg = Pg
         # self.Pb = Pb
         self.Pl = Pl
+        self.Pinj = Pinj
         # self.load_shedding = load_slack
         self.s_from = flow_f
         self.s_to = - flow_f
@@ -474,6 +483,13 @@ class OpfNTC(Opf):
         status = self.solver.Solve()
 
         return status == pywraplp.Solver.OPTIMAL
+
+    def get_power_injections(self):
+        """
+        return the branch loading (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.Pinj, make_abs=False) * self.numerical_circuit.Sbase
 
 
 if __name__ == '__main__':
