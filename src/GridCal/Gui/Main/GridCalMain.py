@@ -2333,7 +2333,7 @@ class MainGUI(QMainWindow):
                             if results is not None:
                                 opf_results = results
                             else:
-                                warning_msg('There are no OPF results, '
+                                warning_msg('There are no OPF-NTC results, '
                                             'therefore this operation will not use OPF information.')
                                 self.ui.actionOpf_to_Power_flow.setChecked(False)
                                 opf_results = None
