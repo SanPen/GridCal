@@ -174,10 +174,10 @@ def compose_generation_df(num, generation, dgen_arr, Pgen_arr):
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/PGOC_6bus(from .raw).gridcal'
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/Grid4Bus-OPF.gridcal'
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
-fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
+# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
 # fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 # fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE14 - ntc areas.gridcal'
-# fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\PGOC_6bus(from .raw).gridcal'
+fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\PGOC_6bus_modNTC.gridcal'
 
 grid = gc.FileOpen(fname).open()
 nc = gc.compile_snapshot_opf_circuit(grid)
@@ -187,8 +187,8 @@ print('\tBranches:', nc.nbr)
 
 # compute information about areas --------------------------------------------------------------------------------------
 
-area_from_idx = 0
-area_to_idx = 1
+area_from_idx = 1
+area_to_idx = 0
 areas = grid.get_bus_area_indices()
 
 # get the area bus indices
@@ -324,7 +324,7 @@ for i, (k, sign) in enumerate(inter_area_branches):
 flow_from_a1_to_a2 = solver.Sum(flows_ft)
 
 # include the cost of generation
-gen_cost_f = solver.Sum(gen_cost * delta)
+# gen_cost_f = solver.Sum(gen_cost * delta)
 
 node_balance_slack_f = solver.Sum(node_balance_slack_1) + solver.Sum(node_balance_slack_2)
 
@@ -332,7 +332,7 @@ overload_slack_f = solver.Sum(overload1) + solver.Sum(overload2)
 
 # objective function
 solver.Minimize(
-                # + 1.0 * flow_from_a1_to_a2
+                # - 1.0 * flow_from_a1_to_a2
                 - 1.0 * solver.Sum(dgen1)
                 + 1.0 * area_balance_slack
                 # + 1.0 * gen_cost_f

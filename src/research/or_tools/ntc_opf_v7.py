@@ -200,3 +200,114 @@ inter_area_branches = get_inter_areas_branches(nc.nbr, nc.branch_data.F, nc.bran
 
 # time index
 t = 0
+
+# declare the solver ---------------------------------------------------------------------------------------------------
+solver = pywraplp.Solver.CreateSolver('CBC')
+
+
+# create generation delta functions ------------------------------------------------------------------------------------
+Cgen = nc.generator_data.C_bus_gen.tocsc()
+gen_cost = nc.generator_data.generator_cost[:, t]
+Pgen = nc.generator_data.generator_p[:, t] / nc.Sbase
+Pmax = nc.generator_data.generator_installed_p / nc.Sbase
+gens1, gens2, gens_out = get_generators_connectivity(Cgen, a1, a2)
+generation = np.zeros(nc.generator_data.ngen, dtype=object)
+dgen1 = list()
+dgen2 = list()
+delta = list()
+generation1 = list()
+generation2 = list()
+Pgen1 = list()
+Pgen2 = list()
+
+for bus_idx, gen_idx in gens1:
+    name = 'Gen_up_{}'.format(gen_idx)
+    generation[gen_idx] = solver.NumVar(0, Pmax[gen_idx], name)
+    dg = solver.NumVar(0, Pmax[gen_idx] - Pgen[gen_idx], name + '_delta')
+    solver.Add(dg == generation[gen_idx] - Pgen[gen_idx])
+    dgen1.append(dg)
+    delta.append(dg)
+    generation1.append(generation[gen_idx])
+    Pgen1.append(Pgen[gen_idx])
+
+for bus_idx, gen_idx in gens2:
+    name = 'Gen_down_{}'.format(gen_idx)
+    generation[gen_idx] = solver.NumVar(0, Pmax[gen_idx], name)
+    dg = solver.NumVar(-Pgen[gen_idx], 0, name + '_delta')
+    solver.Add(dg == generation[gen_idx] - Pgen[gen_idx])
+    dgen2.append(dg)
+    delta.append(dg)
+    generation2.append(generation[gen_idx])
+    Pgen2.append(Pgen[gen_idx])
+
+# set the generation in the non inter-area ones
+for bus_idx, gen_idx in gens_out:
+    generation[gen_idx] = Pgen[gen_idx]
+
+total_power_slack = solver.NumVar(0, 99999, 'Total_slack')
+solver.Add(solver.Sum(dgen1) + solver.Sum(dgen2) == total_power_slack, 'Balance equality')
+
+# include the cost of generation
+gen_cost_f = solver.Sum(gen_cost * delta)
+
+
+# nodal balance --------------------------------------------------------------------------------------------------------
+
+# create power injections ----------------------------------------------------------------------------------------------
+P = nc.Sbus.real  # already in p.u.
+Pinj = np.zeros(nc.nbus, dtype=object)
+for i in range(nc.nbus):
+    Pinj[i] = P[i]
+
+# power balance in the non slack nodes: eq.13
+angles = np.array([solver.NumVar(-6.28, 6.28, 'theta' + str(i)) for i in range(nc.nbus)])
+node_balance = lpDot(nc.Bbus, angles)
+
+
+# equal the balance to the generation: eq.13,14 (equality)
+i = 0
+for balance, power in zip(node_balance, Pinj):
+    node_balance_slack = solver.NumVar(-99999, 99999, 'Node_balance_slack_'+str(i))
+    solver.Add(balance + power == node_balance_slack, "Node_power_balance_" + str(i))
+    i += 1
+
+
+# objective function ---------------------------------------------------------------------------------------------------
+
+solver.Minimize(
+                + 1.0 * total_power_slack
+                # + 1.0 * gen_cost_f
+                )
+
+
+# Solve ----------------------------------------------------------------------------------------------------------------
+status = solver.Solve()
+
+# save the problem in LP format to debug
+lp_content = solver.ExportModelAsLpFormat(obfuscated=False)
+# lp_content = solver.ExportModelAsMpsFormat(obfuscated=False, fixed_format=True)
+file2write = open("ortools_v7.lp", 'w')
+file2write.write(lp_content)
+file2write.close()
+
+
+# print results --------------------------------------------------------------------------------------------------------
+if status == pywraplp.Solver.OPTIMAL:
+    print('Solution:')
+    print('Objective value =', solver.Objective().Value())
+
+    print('\nGenerators:')
+    print(compose_generation_df(nc, generation1, dgen1, Pgen1))
+    print(compose_generation_df(nc, generation2, dgen2, Pgen2))
+
+else:
+    print('The problem does not have an optimal solution.')
+# [END print_solution]
+
+# [START advanced]
+print('\nAdvanced usage:')
+print('Problem solved in %f milliseconds' % solver.wall_time())
+print('Problem solved in %d iterations' % solver.iterations())
+
+print()
+
