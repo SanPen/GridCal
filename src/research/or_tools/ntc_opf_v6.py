@@ -187,8 +187,8 @@ print('\tBranches:', nc.nbr)
 
 # compute information about areas --------------------------------------------------------------------------------------
 
-area_from_idx = 1
-area_to_idx = 0
+area_from_idx = 0
+area_to_idx = 1
 areas = grid.get_bus_area_indices()
 
 # get the area bus indices

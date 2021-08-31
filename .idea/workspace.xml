@@ -24,11 +24,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/PGOC_6bus_modNTC.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v6.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v6.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v7.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v7.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/PGOC_6bus_modNTC.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/PGOC_6bus_modNTC.gridcal" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -555,13 +552,6 @@
       <workItem from="1616261080829" duration="12802000" />
       <workItem from="1616444990256" duration="4870000" />
     </task>
-    <task id="LOCAL-00080" summary="Added pipy version check">
-      <created>1610134117950</created>
-      <option name="number" value="00080" />
-      <option name="presentableId" value="LOCAL-00080" />
-      <option name="project" value="LOCAL" />
-      <updated>1610134117951</updated>
-    </task>
     <task id="LOCAL-00081" summary="- Removed the outer loop controls&#10;- Added Q control to the AC only NR, LM and Iwamoto algorithms&#10;- in-loop Q control seems to work fine">
       <created>1610197022573</created>
       <option name="number" value="00081" />
@@ -898,7 +888,14 @@
       <option name="project" value="LOCAL" />
       <updated>1630325811311</updated>
     </task>
-    <option name="localTasksCounter" value="129" />
+    <task id="LOCAL-00129" summary="fixed flow sense">
+      <created>1630403575509</created>
+      <option name="number" value="00129" />
+      <option name="presentableId" value="LOCAL-00129" />
+      <option name="project" value="LOCAL" />
+      <updated>1630403575509</updated>
+    </task>
+    <option name="localTasksCounter" value="130" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -932,7 +929,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Started formatting the labels" />
     <MESSAGE value="Vastly improved the logger by allowing it to categorize the records" />
     <MESSAGE value="Fixed Monte Carlo&#10;Fixed HVDC Qmin, Qmax" />
     <MESSAGE value="Merged MC and LHS&#10;Added flow based width" />
@@ -957,7 +953,8 @@
     <MESSAGE value="developing NTC opf" />
     <MESSAGE value="ntc opf is working!!" />
     <MESSAGE value="new ntc opf v7" />
-    <option name="LAST_COMMIT_MESSAGE" value="new ntc opf v7" />
+    <MESSAGE value="fixed flow sense" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed flow sense" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1312,11 +1309,6 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_acdc_power_flow.py</url>
           <line>17</line>
           <option name="timeStamp" value="639" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/research/or_tools/ntc_opf_v6.py</url>
-          <line>268</line>
-          <option name="timeStamp" value="641" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
