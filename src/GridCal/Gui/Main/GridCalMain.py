@@ -3795,11 +3795,6 @@ class MainGUI(QMainWindow):
 
                 self.remove_simulation(sim.SimulationTypes.OPF_NTC_run)
 
-                self.LOCK()
-
-
-                # get the power flow options from the GUI
-
                 # available transfer capacity inter areas
                 compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
 
@@ -3808,6 +3803,22 @@ class MainGUI(QMainWindow):
 
                 idx_from = np.array([i for i, bus in lst_from])
                 idx_to = np.array([i for i, bus in lst_to])
+                idx_br = np.array([i for i, bus, sense in lst_br])
+                sense_br = np.array([sense for i, bus, sense in lst_br])
+                idx_hvdc_br = np.array([i for i, bus, sense in lst_hvdc_br])
+                sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
+
+                if len(idx_from) == 0:
+                    error_msg('The area "from" has no buses!')
+                    return
+
+                if len(idx_to) == 0:
+                    error_msg('The area "to" has no buses!')
+                    return
+
+                if len(idx_br) == 0:
+                    error_msg('There are no inter-area branches!')
+                    return
 
                 mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
 
@@ -3821,6 +3832,7 @@ class MainGUI(QMainWindow):
                 # set power flow object instance
                 drv = sim.OptimalNetTransferCapacity(self.circuit, options, pf_options)
 
+                self.LOCK()
                 self.session.run(drv,
                                  post_func=self.post_opf_ntc,
                                  prog_func=self.ui.progressBar.setValue,

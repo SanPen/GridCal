@@ -31,9 +31,13 @@ class HvdcData:
         self.names = np.zeros(nhvdc, dtype=object)
 
         self.loss_factor = np.zeros(nhvdc)
+        self.r = np.zeros(nhvdc)
+
+        self.control_mode = np.zeros(nhvdc, dtype=object)
 
         self.active = np.zeros((nhvdc, ntime), dtype=bool)
         self.rate = np.zeros((nhvdc, ntime))
+
         self.Pf = np.zeros((nhvdc, ntime))
         self.Pt = np.zeros((nhvdc, ntime))
         self.Vset_f = np.zeros((nhvdc, ntime))
@@ -73,6 +77,10 @@ class HvdcData:
         data.Vset_t = self.Vset_t[tidx]
 
         data.loss_factor = self.loss_factor[elm_idx]
+
+        data.r = self.r[elm_idx]
+        data.control_mode = self.control_mode[elm_idx]
+
         data.Qmin_f = self.Qmin_f[elm_idx]
         data.Qmax_f = self.Qmax_f[elm_idx]
         data.Qmin_t = self.Qmin_t[elm_idx]

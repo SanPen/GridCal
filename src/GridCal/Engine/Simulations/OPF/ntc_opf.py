@@ -19,9 +19,9 @@ That means that solves the OPF problem for a complete time series at once
 """
 from typing import List, Dict, Tuple
 import numpy as np
-# from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
+from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers, pywraplp
-from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType
+from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType
 
 import pandas as pd
 from scipy.sparse.csc import csc_matrix
@@ -192,7 +192,7 @@ def compose_generation_df(nc, generation, dgen_arr, Pgen_arr):
 
 class OpfNTC(Opf):
 
-    def __init__(self, numerical_circuit, area_from_bus_idx, area_to_bus_idx,
+    def __init__(self, numerical_circuit: SnapshotOpfData, area_from_bus_idx, area_to_bus_idx,
                  solver_type: MIPSolvers = MIPSolvers.CBC):
         """
         DC time series linear optimal power flow
@@ -257,23 +257,26 @@ class OpfNTC(Opf):
 
         return generation, delta, gen_a1_idx, gen_a2_idx, area_balance_slack, dgen1
 
-    def formulate_angles(self):
+    def formulate_angles(self, set_ref_to_zero=True):
 
         theta = np.array([self.solver.NumVar(-6.28, 6.28, 'theta' + str(i)) for i in range(self.numerical_circuit.nbus)])
 
-        for i in self.numerical_circuit.vd:
-            self.solver.Add(theta[i] == 0, "Slack_angle_zero")
+        if set_ref_to_zero:
+            for i in self.numerical_circuit.vd:
+                self.solver.Add(theta[i] == 0, "Slack_angle_zero_" + str(i))
 
         return theta
 
     def formulate_phase_shift(self):
 
-        tau = dict()
+        phase_shift_dict = dict()
         nc = self.numerical_circuit
         for i in range(nc.branch_data.nbr):
             if nc.branch_data.control_mode[i] == TransformerControlType.Pt:  # is a phase shifter
-                tau[i] = self.solver.NumVar(nc.branch_data.theta_min[i], nc.branch_data.theta_max[i], 'tau_dict' + str(i))
-        return tau
+                phase_shift_dict[i] = self.solver.NumVar(nc.branch_data.theta_min[i],
+                                            nc.branch_data.theta_max[i],
+                                            'phase_shift' + str(i))
+        return phase_shift_dict
 
     def formulate_power_injections(self, Cgen, generation, t=0):
 
@@ -334,14 +337,58 @@ class OpfNTC(Opf):
 
         return flow_f, overload1, overload2
 
-    def formulate_objective(self, inter_area_branches, flows_f,
-                            node_balance_slack_1, node_balance_slack_2,
-                            overload1, overload2, area_balance_slack, dgen1):
+    def formulate_hvdc_flow(self, angles, t=0):
+        nc = self.numerical_circuit
+
+        flow_f = np.empty(nc.nhvdc, dtype=object)
+        rates = nc.hvdc_data.rate[:, t] / nc.Sbase
+        F = nc.hvdc_data.get_bus_indices_f()
+        T = nc.hvdc_data.get_bus_indices_t()
+        overload1 = np.empty(nc.nhvdc, dtype=object)
+        overload2 = np.empty(nc.nhvdc, dtype=object)
+
+        hvdc_control1 = np.empty(nc.nhvdc, dtype=object)
+        hvdc_control2 = np.empty(nc.nhvdc, dtype=object)
+
+        for i in range(self.numerical_circuit.nhvdc):
+            _f = F[i]
+            _t = T[i]
+            flow_f[i] = self.solver.NumVar(-rates[i], rates[i], 'hvdc_flow_' + str(i))
+            hvdc_control1[i] = self.solver.NumVar(0, 9999, 'hvdc_control1_' + str(i))
+            hvdc_control2[i] = self.solver.NumVar(0, 9999, 'hvdc_control2_' + str(i))
+            P0 = nc.hvdc_data.Pf[i, t]
+
+            if nc.hvdc_data.control_mode[i] == HvdcControlType.type_0_free:
+                bk = 1.0 / nc.hvdc_data.r[i]  # TODO: yes, I know... DC...
+                self.solver.Add(flow_f[i] == P0 + bk * (angles[_t] - angles[_f]) + hvdc_control1[i], 'hvdc_power_flow_' + str(i))
+
+            elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset:
+                bk = 1.0
+                self.solver.Add(flow_f[i] == P0 + bk * (angles[_t] - angles[_f]) + hvdc_control2[i], 'hvdc_power_flow_' + str(i))
+
+            # rating restriction in the sense from-to: eq.17
+            overload1[i] = self.solver.NumVar(0, 9999, 'overload_hvdc1_' + str(i))
+            self.solver.Add(flow_f[i] <= (rates[i] + overload1[i]), "hvdc_ft_rating_" + str(i))
+
+            # rating restriction in the sense to-from: eq.18
+            overload2[i] = self.solver.NumVar(0, 9999, 'overload_hvdc2_' + str(i))
+            self.solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "hvdc_tf_rating_" + str(i))
+
+        return flow_f, overload1, overload2, hvdc_control1, hvdc_control2
+
+    def formulate_objective(self, node_balance_slack_1, node_balance_slack_2,
+                            inter_area_branches, flows_f, overload1, overload2,
+                            inter_area_hvdc, hvdc_flow_f, hvdc_overload1, hvdc_overload2, hvdc_control1, hvdc_control2,
+                            area_balance_slack, dgen1):
 
         # maximize the power from->to
         flows_ft = np.zeros(len(inter_area_branches), dtype=object)
         for i, (k, sign) in enumerate(inter_area_branches):
             flows_ft[i] = sign * flows_f[k]
+
+        flows_hvdc_ft = np.zeros(len(inter_area_hvdc), dtype=object)
+        for i, (k, sign) in enumerate(inter_area_hvdc):
+            flows_hvdc_ft[i] = sign * hvdc_flow_f[k]
 
         flow_from_a1_to_a2 = self.solver.Sum(flows_ft)
 
@@ -350,7 +397,11 @@ class OpfNTC(Opf):
 
         node_balance_slack_f = self.solver.Sum(node_balance_slack_1) + self.solver.Sum(node_balance_slack_2)
 
-        overload_slack_f = self.solver.Sum(overload1) + self.solver.Sum(overload2)
+        branch_overload = self.solver.Sum(overload1) + self.solver.Sum(overload2)
+
+        hvdc_overload = self.solver.Sum(hvdc_overload1) + self.solver.Sum(hvdc_overload2)
+
+        hvdc_control = self.solver.Sum(hvdc_control1) + self.solver.Sum(hvdc_control2)
 
         # objective function
         self.solver.Minimize(
@@ -359,7 +410,9 @@ class OpfNTC(Opf):
             + 1.0 * area_balance_slack
             # + 1.0 * gen_cost_f
             + 1e0 * node_balance_slack_f
-            + 1e0 * overload_slack_f
+            + 1e0 * branch_overload
+            + 1e0 * hvdc_overload
+            + 1.0 * hvdc_control
         )
 
     @staticmethod
@@ -429,6 +482,12 @@ class OpfNTC(Opf):
                                                        buses_areas_1=self.area_from_bus_idx,
                                                        buses_areas_2=self.area_to_bus_idx)
 
+        inter_area_hvdc = get_inter_areas_branches(nbr=self.numerical_circuit.nhvdc,
+                                                   F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
+                                                   T=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
+                                                   buses_areas_1=self.area_from_bus_idx,
+                                                   buses_areas_2=self.area_to_bus_idx)
+
         # add te generation
         Pg, delta, gen_a1_idx, gen_a2_idx, \
         area_balance_slack, dgen1 = self.formulate_generation(ngen=ng,
@@ -442,7 +501,7 @@ class OpfNTC(Opf):
         # add the angles
         theta = self.formulate_angles()
 
-        tau = self.formulate_phase_shift()
+        phase_shift_dict = self.formulate_phase_shift()
 
         Pinj = self.formulate_power_injections(Cgen=Cgen, generation=Pg, t=t)
 
@@ -451,11 +510,14 @@ class OpfNTC(Opf):
         node_balance_slack_2 = self.formulate_node_balance(angles=theta, Pinj=Pinj)
 
         flow_f, overload1, overload2 = self.formulate_branches_flow(angles=theta,
-                                                                    tau_dict=tau)
+                                                                    tau_dict=phase_shift_dict)
 
-        self.formulate_objective(inter_area_branches, flow_f,
-                                 node_balance_slack_1, node_balance_slack_2,
-                                 overload1, overload2, area_balance_slack, dgen1)
+        hvdc_flow_f, hvdc_overload1, hvdc_overload2, hvdc_control1, hvdc_control2 = self.formulate_hvdc_flow(angles=theta, t=t)
+
+        self.formulate_objective(node_balance_slack_1, node_balance_slack_2,
+                                 inter_area_branches, flow_f, overload1, overload2,
+                                 inter_area_hvdc, hvdc_flow_f, hvdc_overload1, hvdc_overload2, hvdc_control1, hvdc_control2,
+                                 area_balance_slack, dgen1)
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
@@ -467,8 +529,12 @@ class OpfNTC(Opf):
         # self.load_shedding = load_slack
         self.s_from = flow_f
         self.s_to = - flow_f
+
+        self.hvdc_flow = hvdc_flow_f
+
         self.overloads = overload1 + overload2
         self.rating = branch_ratings
+        self.phase_shift_dict = phase_shift_dict
         self.nodal_restrictions = node_balance
 
         return self.solver
@@ -491,6 +557,24 @@ class OpfNTC(Opf):
         """
         return self.extract(self.Pinj, make_abs=False) * self.numerical_circuit.Sbase
 
+    def get_phase_angles(self):
+        """
+        Get the phase shift solution
+        :return:
+        """
+        arr = np.zeros(self.numerical_circuit.nbr)
+        for i, var in self.phase_shift_dict.values():
+            arr[i] = var.solution_value()
+
+        return arr
+
+    def get_hvdc_flow(self):
+        """
+        return the branch loading (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.hvdc_flow, make_abs=False) * self.numerical_circuit.Sbase
+
 
 if __name__ == '__main__':
     from GridCal.Engine.basic_structures import BranchImpedanceMode
@@ -498,23 +582,20 @@ if __name__ == '__main__':
     from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
 
     # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
-    fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
+    fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas_voltages_hvdc_shifter.gridcal'
+    # fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 
     main_circuit = FileOpen(fname).open()
 
-    # compute information about areas --------------------------------------------------------------------------------------
+    # compute information about areas ----------------------------------------------------------------------------------
 
-    area_from_idx = 0
-    area_to_idx = 1
+    area_from_idx = 1
+    area_to_idx = 0
     areas = main_circuit.get_bus_area_indices()
-
-
-    # main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
 
     numerical_circuit_ = compile_snapshot_opf_circuit(circuit=main_circuit,
                                                       apply_temperature=False,
                                                       branch_tolerance_mode=BranchImpedanceMode.Specified)
-
 
     # get the area bus indices
     areas = areas[numerical_circuit_.original_bus_idx]
@@ -528,11 +609,7 @@ if __name__ == '__main__':
 
     print("Status:", status)
 
-    v = problem.get_voltage()
-    print('Angles\n', np.angle(v))
-
-    l = problem.get_loading()
-    print('Branch loading\n', l)
-
-    g = problem.get_generator_power()
-    print('Gen power\n', g)
+    print('Angles\n', np.angle(problem.get_voltage()))
+    print('Branch loading\n', problem.get_loading())
+    print('Gen power\n', problem.get_generator_power())
+    print('HVDC flow\n', problem.get_hvdc_flow())

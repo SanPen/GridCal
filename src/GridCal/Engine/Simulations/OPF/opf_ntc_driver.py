@@ -287,7 +287,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
 
 class OptimalNetTransferCapacity(DriverTemplate):
-    name = 'Optimal net power capacity'
+    name = 'Optimal net transfer capacity'
     tpe = SimulationTypes.OPF_NTC_run
 
     def __init__(self, grid: MultiCircuit, options: OptimalNetTransferCapacityOptions, pf_options: PowerFlowOptions):

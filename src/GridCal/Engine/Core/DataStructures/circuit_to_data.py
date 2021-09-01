@@ -838,6 +838,9 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, time_series=False,
             data.Vset_t[i] = elm.Vset_t
 
         data.loss_factor[i] = elm.loss_factor
+        data.r[i] = elm.r
+        data.control_mode[i] = elm.control_mode
+
         data.Qmin_f[i] = elm.Qmin_f
         data.Qmax_f[i] = elm.Qmax_f
         data.Qmin_t[i] = elm.Qmin_t

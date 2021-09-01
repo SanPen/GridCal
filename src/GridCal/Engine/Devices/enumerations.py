@@ -115,6 +115,28 @@ class ConverterControlType(Enum):
         return list(map(lambda c: c.value, cls))
 
 
+class HvdcControlType(Enum):
+    type_0_free = '0:Free'
+    type_1_Pset = '1:Pdc'
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return ConverterControlType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
+
 class TimeFrame(Enum):
     Continuous = 'Continuous'
 
