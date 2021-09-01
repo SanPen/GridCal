@@ -33,7 +33,7 @@ gurobipy = None
 
 class GUROBI(LpSolver):
     """
-    The Gurobi LP/MIP solver (via its python interface)
+    The Gurobi LP/MIP solver_type (via its python interface)
 
     The Gurobi variables are available (after a solve) in var.solverVar
     Constriaints in constraint.solverConstraint
@@ -47,7 +47,7 @@ class GUROBI(LpSolver):
     except:  # FIXME: Bug because gurobi returns
             # a gurobi exception on failed imports
         def available(self):
-            """True if the solver is available"""
+            """True if the solver_type is available"""
             return False
 
         def actualSolve(self, lp, callback = None):
@@ -59,10 +59,10 @@ class GUROBI(LpSolver):
     else:
         def __init__(self,  mip=True, msg=True, timeLimit=None, epgap=None, **solverParams):
             """
-            Initializes the Gurobi solver.
+            Initializes the Gurobi solver_type.
 
-            @param mip: if False the solver will solve a MIP as an LP
-            @param msg: displays information from the solver to stdout
+            @param mip: if False the solver_type will solve a MIP as an LP
+            @param msg: displays information from the solver_type to stdout
             @param timeLimit: sets the maximum time for solution
             @param epgap: sets the integer bound gap
             """
@@ -135,7 +135,7 @@ class GUROBI(LpSolver):
 
         def available(self):
             """
-            True if the solver is available
+            True if the solver_type is available
             """
             return True
 
@@ -228,7 +228,7 @@ class GUROBI(LpSolver):
             """
             Solve a well formulated lp problem
 
-            uses the old solver and modifies the rhs of the modified constraints
+            uses the old solver_type and modifies the rhs of the modified constraints
             """
             log.debug("Resolve the Model using gurobi")
             for constraint in lp.constraints.values():
@@ -248,13 +248,13 @@ class GUROBI(LpSolver):
 
 class GUROBI_CMD(LpSolver_CMD):
     """
-    The GUROBI_CMD solver
+    The GUROBI_CMD solver_type
     """
     def defaultPath(self):
         return self.executableExtension("gurobi_cl")
 
     def available(self):
-        """True if the solver is available"""
+        """True if the solver_type is available"""
         return self.executable(self.path)
 
     def actualSolve(self, lp):

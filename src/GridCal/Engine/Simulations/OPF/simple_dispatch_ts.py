@@ -32,7 +32,7 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
         :param numerical_circuit: NumericalCircuit instance
         :param start_idx: start index of the time series
         :param end_idx: end index of the time series
-        :param solver: MIP solver to use
+        :param solver: MIP solver_type to use
         :param batteries_energy_0: initial state of the batteries, if None the default values are taken
         """
         OpfTimeSeries.__init__(self, numerical_circuit=numerical_circuit, start_idx=start_idx, end_idx=end_idx,

@@ -11,7 +11,7 @@
 # by a BSD-style license that can be found in the LICENSE file.
 
 # The file has been modified from Pypower.
-# The function mu() has been added to the solver in order to provide an optimal iteration control
+# The function mu() has been added to the solver_type in order to provide an optimal iteration control
 #
 # Copyright (c) 2018 Santiago Peñate Vera
 #

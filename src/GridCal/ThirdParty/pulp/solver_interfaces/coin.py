@@ -29,7 +29,7 @@ from GridCal.ThirdParty.pulp.solvers import *
 
 class COIN_CMD(LpSolver_CMD):
     """
-    The COIN CLP/CBC LP solver
+    The COIN CLP/CBC LP solver_type
     now only uses cbc
     """
 
@@ -84,7 +84,7 @@ class COIN_CMD(LpSolver_CMD):
 
     def available(self):
         """
-        True if the solver is available
+        True if the solver_type is available
         """
         return self.executable(self.path)
 
@@ -270,7 +270,7 @@ COIN = COIN_CMD
 
 class PULP_CBC_CMD(COIN_CMD):
     """
-    This solver uses a precompiled version of cbc provided with the package
+    This solver_type uses a precompiled version of cbc provided with the package
     """
     pulp_cbc_path = pulp_cbc_path
     try:
@@ -280,7 +280,7 @@ class PULP_CBC_CMD(COIN_CMD):
                 os.chmod(pulp_cbc_path, stat.S_IXUSR + stat.S_IXOTH)
     except:  # probably due to incorrect permissions
         def available(self):
-            """True if the solver is available"""
+            """True if the solver_type is available"""
             return False
 
         def actualSolve(self, lp, callback=None):
@@ -320,9 +320,9 @@ def COINMP_DLL_load_dll(path):
 
 class COINMP_DLL(LpSolver):
     """
-    The COIN_MP LP MIP solver (via a DLL or linux so)
+    The COIN_MP LP MIP solver_type (via a DLL or linux so)
 
-    :param timeLimit: The number of seconds before forcing the solver to exit
+    :param timeLimit: The number of seconds before forcing the solver_type to exit
     :param epgap: The fractional mip tolerance
     """
     try:
@@ -333,7 +333,7 @@ class COINMP_DLL(LpSolver):
         @classmethod
         def available(cls):
             """
-            True if the solver is available
+            True if the solver_type is available
             """
             return False
 
@@ -392,12 +392,12 @@ class COINMP_DLL(LpSolver):
 
         @classmethod
         def available(cls):
-            """True if the solver is available"""
+            """True if the solver_type is available"""
             return True
 
         def getSolverVersion(self):
             """
-            returns a solver version string
+            returns a solver_type version string
 
             example:
             >>> COINMP_DLL().getSolverVersion() # doctest: +ELLIPSIS
@@ -411,7 +411,7 @@ class COINMP_DLL(LpSolver):
             """
             # TODO alter so that msg parameter is handled correctly
             self.debug = 0
-            # initialise solver
+            # initialise solver_type
             self.lib.CoinInitSolver("")
             # create problem
             self.hProb = hProb = self.lib.CoinCreateProblem(lp.name)

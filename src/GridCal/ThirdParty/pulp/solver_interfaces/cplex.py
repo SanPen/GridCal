@@ -28,7 +28,7 @@ from GridCal.ThirdParty.pulp.solvers import *
 
 
 class CPLEX_CMD(LpSolver_CMD):
-    """The CPLEX LP solver"""
+    """The CPLEX LP solver_type"""
 
     def __init__(self, path = None, keepFiles = 0, mip = 1,
             msg = 0, options = [], timelimit = None):
@@ -39,7 +39,7 @@ class CPLEX_CMD(LpSolver_CMD):
         return self.executableExtension("cplex")
 
     def available(self):
-        """True if the solver is available"""
+        """True if the solver_type is available"""
         return self.executable(self.path)
 
     def actualSolve(self, lp):
@@ -157,15 +157,15 @@ try:
 
     class CPLEX_DLL(LpSolver):
         """
-        The CPLEX LP/MIP solver (via a Dynamic library DLL - windows or SO - Linux)
+        The CPLEX LP/MIP solver_type (via a Dynamic library DLL - windows or SO - Linux)
 
-        This solver wraps the c library api of cplex.
+        This solver_type wraps the c library api of cplex.
         It has been tested against cplex 11.
-        For api functions that have not been wrapped in this solver please use
+        For api functions that have not been wrapped in this solver_type please use
         the ctypes library interface to the cplex api in CPLEX_DLL.lib
         """
         lib = CPLEX_DLL_load_dll(cplex_dll_path)
-        # parameters manually found in solver manual
+        # parameters manually found in solver_type manual
         CPX_PARAM_EPGAP = 2009
         CPX_PARAM_MEMORYEMPHASIS = 1082 # from Cplex 11.0 manual
         CPX_PARAM_TILIM = 1039
@@ -183,13 +183,13 @@ try:
 
         def __init__(self, mip=True, msg=True, timeLimit=None, epgap=None, logfilename=None, emphasizeMemory=False):
             """
-            Initializes the CPLEX_DLL solver.
+            Initializes the CPLEX_DLL solver_type.
 
-            @param mip: if False the solver will solve a MIP as an LP
-            @param msg: displays information from the solver to stdout
+            @param mip: if False the solver_type will solve a MIP as an LP
+            @param msg: displays information from the solver_type to stdout
             @param epgap: sets the integer bound gap
             @param logfilename: sets the filename of the cplex logfile
-            @param emphasizeMemory: makes the solver emphasize Memory over
+            @param emphasizeMemory: makes the solver_type emphasize Memory over
               solution time
             """
             LpSolver.__init__(self, mip, msg)
@@ -220,7 +220,7 @@ try:
 
         def changeEpgap(self, epgap=1e-4):
             """
-            Change cplex solver integer bound gap tolerence
+            Change cplex solver_type integer bound gap tolerence
             """
             CPLEX_DLL.lib.CPXsetdblparam(self.env, CPLEX_DLL.CPX_PARAM_EPGAP, epgap)
 
@@ -332,7 +332,7 @@ try:
             self.releaseLicence()
 
         def available(self):
-            """True if the solver is available"""
+            """True if the solver_type is available"""
             return True
 
         def grabLicence(self):
@@ -576,11 +576,11 @@ except (ImportError, OSError):
 
     class CPLEX_DLL(LpSolver):
         """
-        The CPLEX LP/MIP solver PHANTOM Something went wrong!!!!
+        The CPLEX LP/MIP solver_type PHANTOM Something went wrong!!!!
         """
         def available(self):
             """
-            True if the solver is available
+            True if the solver_type is available
             """
             return False
 
@@ -601,11 +601,11 @@ except ImportError:
     class CPLEX_PY(LpSolver):
 
         """
-        The CPLEX LP/MIP solver from python PHANTOM Something went wrong!!!!
+        The CPLEX LP/MIP solver_type from python PHANTOM Something went wrong!!!!
         """
         def available(self):
             """
-            True if the solver is available
+            True if the solver_type is available
             """
             return False
 
@@ -617,20 +617,20 @@ except ImportError:
 else:
     class CPLEX_PY(LpSolver):
         """
-        The CPLEX LP/MIP solver (via a Python Binding)
+        The CPLEX LP/MIP solver_type (via a Python Binding)
 
-        This solver wraps the python api of cplex.
+        This solver_type wraps the python api of cplex.
         It has been tested against cplex 12.3.
-        For api functions that have not been wrapped in this solver please use
+        For api functions that have not been wrapped in this solver_type please use
         the base cplex classes
         """
 
         def __init__(self, mip=True, msg=True, timeLimit=None, epgap=None, logfilename=None):
             """
-            Initializes the CPLEX_PY solver.
+            Initializes the CPLEX_PY solver_type.
 
-            @param mip: if False the solver will solve a MIP as an LP
-            @param msg: displays information from the solver to stdout
+            @param mip: if False the solver_type will solve a MIP as an LP
+            @param msg: displays information from the solver_type to stdout
             @param epgap: sets the integer bound gap
             @param logfilename: sets the filename of the cplex logfile
             """
@@ -640,7 +640,7 @@ else:
             self.logfilename = logfilename
 
         def available(self):
-            """True if the solver is available"""
+            """True if the solver_type is available"""
             return True
 
         def actualSolve(self, lp, callback = None):
@@ -674,7 +674,7 @@ else:
             self.n2v = dict((var.name, var) for var in lp.variables())
             if len(self.n2v) != len(lp.variables()):
                 raise PulpSolverError(
-                        'Variables must have unique names for cplex solver')
+                        'Variables must have unique names for cplex solver_type')
             log.debug("create the cplex model")
             self.solverModel = lp.solverModel = cplex.Cplex()
             log.debug("set the name of the problem")
@@ -755,7 +755,7 @@ else:
 
         def changeEpgap(self, epgap = 10**-4):
             """
-            Change cplex solver integer bound gap tolerence
+            Change cplex solver_type integer bound gap tolerence
             """
             self.solverModel.parameters.mip.tolerances.mipgap.set(epgap)
 

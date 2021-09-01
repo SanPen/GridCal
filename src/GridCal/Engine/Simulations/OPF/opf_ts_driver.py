@@ -143,7 +143,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
         if not remote:
             self.progress_signal.emit(0.0)
-            self.progress_text.emit('Running all in an external solver, this may take a while...')
+            self.progress_text.emit('Running all in an external solver_type, this may take a while...')
 
         # solve the problem
         status = problem.solve()
@@ -191,7 +191,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
             energy_0 = self.results.battery_energy[end_ - 1, :]
 
-            self.progress_text.emit('Running OPF for the time group ' + str(i) + ' in external solver...')
+            self.progress_text.emit('Running OPF for the time group ' + str(i) + ' in external solver_type...')
             progress = ((start_ - self.start_ + 1) / (self.end_ - self.start_)) * 100
             self.progress_signal.emit(progress)
 

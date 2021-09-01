@@ -32,12 +32,12 @@ glpk = None
 
 
 class GLPK_CMD(LpSolver_CMD):
-    """The GLPK LP solver"""
+    """The GLPK LP solver_type"""
     def defaultPath(self):
         return self.executableExtension(glpk_path)
 
     def available(self):
-        """True if the solver is available"""
+        """True if the solver_type is available"""
         return self.executable(self.path)
 
     def actualSolve(self, lp):
@@ -138,7 +138,7 @@ GLPK = GLPK_CMD
 
 class PYGLPK(LpSolver):
     """
-    The glpk LP/MIP solver (via its python interface)
+    The glpk LP/MIP solver_type (via its python interface)
 
     Copyright Christophe-Marie Duquesne 2012
 
@@ -152,7 +152,7 @@ class PYGLPK(LpSolver):
         import glpk.glpkpi as glpk
     except:
         def available(self):
-            """True if the solver is available"""
+            """True if the solver_type is available"""
             return False
         def actualSolve(self, lp, callback = None):
             """Solve a well formulated lp problem"""
@@ -165,10 +165,10 @@ class PYGLPK(LpSolver):
                     epgap = None,
                     **solverParams):
             """
-            Initializes the glpk solver.
+            Initializes the glpk solver_type.
 
-            @param mip: if False the solver will solve a MIP as an LP
-            @param msg: displays information from the solver to stdout
+            @param mip: if False the solver_type will solve a MIP as an LP
+            @param msg: displays information from the solver_type to stdout
             @param timeLimit: not handled
             @param epgap: not handled
             @param solverParams: not handled
@@ -213,7 +213,7 @@ class PYGLPK(LpSolver):
             return lp.status
 
         def available(self):
-            """True if the solver is available"""
+            """True if the solver_type is available"""
             return True
 
         def hasMIPConstraints(self, solverModel):
@@ -347,7 +347,7 @@ class PYGLPK(LpSolver):
             """
             Solve a well formulated lp problem
 
-            uses the old solver and modifies the rhs of the modified
+            uses the old solver_type and modifies the rhs of the modified
             constraints
             """
             log.debug("Resolve the Model using glpk")

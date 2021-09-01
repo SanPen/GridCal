@@ -15,6 +15,8 @@ def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1):
     """
     bus_data = BusData(nbus=len(circuit.buses), ntime=ntime)
 
+    areas_dict = {elm: k for k, elm in enumerate(circuit.areas)}
+
     for i, bus in enumerate(circuit.buses):
 
         # bus parameters
@@ -22,6 +24,11 @@ def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1):
         bus_data.Vmin[i] = bus.Vmin
         bus_data.Vmax[i] = bus.Vmax
         bus_data.bus_types[i] = bus.determine_bus_type().value
+
+        if bus.area in areas_dict.keys():
+            bus_data.areas[i] = areas_dict[bus.area]
+        else:
+            bus_data.areas[i] = 0
 
         if time_series:
             bus_data.bus_active[i, :] = bus.active_prof

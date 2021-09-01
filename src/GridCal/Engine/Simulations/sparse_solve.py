@@ -158,7 +158,7 @@ def umfpack_linsolve(A, b):
 
 def get_linear_solver(solver_type: SparseSolver = preferred_type):
     """
-    Privide the chosen linear solver function pointer to solver linear systems of the type A x = b, with x = f(A,b)
+    Privide the chosen linear solver_type function pointer to solver_type linear systems of the type A x = b, with x = f(A,b)
     :param solver_type: SparseSolver option
     :return: function pointer f(A, b)
     """

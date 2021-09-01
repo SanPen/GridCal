@@ -340,6 +340,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionOPF_time_series.triggered.connect(self.run_opf_time_series)
 
+        self.ui.actionOptimal_Net_Transfer_Capacity.triggered.connect(self.run_opf_ntc)
+
         self.ui.actionAbout.triggered.connect(self.about_box)
 
         self.ui.actionExport.triggered.connect(self.export_diagram)
@@ -2323,10 +2325,23 @@ class MainGUI(QMainWindow):
                             self.ui.actionOpf_to_Power_flow.setChecked(False)
                             opf_results = None
                     else:
-                        warning_msg('There are no OPF results, '
-                                    'therefore this operation will not use OPF information.')
-                        self.ui.actionOpf_to_Power_flow.setChecked(False)
-                        opf_results = None
+
+                        # try the OPF-NTC...
+                        drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_NTC_run)
+
+                        if drv is not None:
+                            if results is not None:
+                                opf_results = results
+                            else:
+                                warning_msg('There are no OPF-NTC results, '
+                                            'therefore this operation will not use OPF information.')
+                                self.ui.actionOpf_to_Power_flow.setChecked(False)
+                                opf_results = None
+                        else:
+                            warning_msg('There are no OPF results, '
+                                        'therefore this operation will not use OPF information.')
+                            self.ui.actionOpf_to_Power_flow.setChecked(False)
+                            opf_results = None
                 else:
                     opf_results = None
 
@@ -3769,6 +3784,88 @@ class MainGUI(QMainWindow):
                 warning_msg('There are no time series.\nLoad time series are needed for this simulation.')
         else:
             pass
+
+    def run_opf_ntc(self):
+        """
+        Run OPF simulation
+        """
+        if len(self.circuit.buses) > 0:
+
+            if not self.session.is_this_running(sim.SimulationTypes.OPF_NTC_run):
+
+                self.remove_simulation(sim.SimulationTypes.OPF_NTC_run)
+
+                self.LOCK()
+
+
+                # get the power flow options from the GUI
+
+                # available transfer capacity inter areas
+                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+
+                if not compatible_areas:
+                    return
+
+                idx_from = np.array([i for i, bus in lst_from])
+                idx_to = np.array([i for i, bus in lst_to])
+
+                mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
+
+                options = sim.OptimalNetTransferCapacityOptions(area_from_bus_idx=idx_from,
+                                                                area_to_bus_idx=idx_to,
+                                                                mip_solver=mip_solver)
+
+                self.ui.progress_label.setText('Running optimal power flow...')
+                QtGui.QGuiApplication.processEvents()
+                pf_options = self.get_selected_power_flow_options()
+                # set power flow object instance
+                drv = sim.OptimalNetTransferCapacity(self.circuit, options, pf_options)
+
+                self.session.run(drv,
+                                 post_func=self.post_opf_ntc,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
+
+            else:
+                warning_msg('Another OPF is being run...')
+        else:
+            pass
+
+    def post_opf_ntc(self):
+        """
+        Actions to run after the OPF simulation
+        """
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_NTC_run)
+
+        if results is not None:
+
+            self.remove_simulation(sim.SimulationTypes.OPF_NTC_run)
+
+            if results.converged:
+
+                if self.ui.draw_schematic_checkBox.isChecked():
+                    viz.colour_the_schematic(circuit=self.circuit,
+                                             voltages=results.voltage,
+                                             loadings=results.loading,
+                                             types=results.bus_types,
+                                             Sf=results.Sf,
+                                             Sbus=results.Sbus,
+                                             use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                             min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                             max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                             min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                             max_bus_width=self.ui.max_node_size_spinBox.value()
+                                             )
+                self.update_available_results()
+
+            else:
+
+                warning_msg('Some islands did not solve.\n'
+                            'Check that all branches have rating and \n'
+                            'that there is a generator at the slack node.', 'OPF')
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()
 
     def reduce_grid(self):
         """
