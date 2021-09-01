@@ -489,6 +489,12 @@ class TransformerGraphicItem(QGraphicsLineItem):
             ra5.setIcon(ra5_icon)
             ra5.triggered.connect(self.assign_status_to_profile)
 
+            ra7 = menu.addAction('Flip')
+            ra7_icon = QIcon()
+            ra7_icon.addPixmap(QPixmap(":/Icons/icons/redo.svg"))
+            ra7.setIcon(ra7_icon)
+            ra7.triggered.connect(self.flip_connections)
+
             menu.addSection('Tap changer')
 
             ra4 = menu.addAction('Tap up')
@@ -809,6 +815,13 @@ class TransformerGraphicItem(QGraphicsLineItem):
         Assign the snapshot rate to the profile
         """
         self.diagramScene.set_rate_to_profile(self.api_object)
+
+    def flip_connections(self):
+        """
+        Flip connections
+        :return:
+        """
+        self.api_object.flip()
 
     def assign_status_to_profile(self):
         """

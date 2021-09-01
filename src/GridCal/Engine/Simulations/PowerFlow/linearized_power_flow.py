@@ -82,7 +82,7 @@ def dcpf(Ybus, Bpqpv, Bref, Sbus, Ibus, V0, ref, pvpq, pq, pv) -> NumericPowerFl
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, True, norm_f, Scalc, None, None, None, 1, elapsed)
+    return NumericPowerFlowResults(V, True, norm_f, Scalc, None, None, None, None, None, None, 1, elapsed)
 
 
 def lacpf(Y, Ys, S, I, Vset, pq, pv) -> NumericPowerFlowResults:
@@ -175,5 +175,5 @@ def lacpf(Y, Ys, S, I, Vset, pq, pv) -> NumericPowerFlowResults:
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(voltages_vector, True, norm_f, s_calc, None, None, None, 1, elapsed)
+    return NumericPowerFlowResults(voltages_vector, True, norm_f, s_calc, None, None, None, None, None, None, 1, elapsed)
 

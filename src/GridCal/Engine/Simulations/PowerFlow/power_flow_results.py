@@ -22,7 +22,8 @@ from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 class NumericPowerFlowResults:
 
-    def __init__(self, V, converged, norm_f, Scalc, ma=None, theta=None, Beq=None, iterations=0, elapsed=0):
+    def __init__(self, V, converged, norm_f, Scalc, ma=None, theta=None, Beq=None, Ybus=None, Yf=None, Yt=None,
+                 iterations=0, elapsed=0):
         """
         Object to store the results returned by a numeric power flow routine
         :param V: Voltage vector
@@ -32,6 +33,9 @@ class NumericPowerFlowResults:
         :param ma: Tap modules vector for all the branches
         :param theta: Tap angles vector for all the branches
         :param Beq: Equivalent susceptance vector for all the branches
+        :param Ybus: Admittance matrix
+        :param Yf: Admittance matrix of the "from" buses
+        :param Yt: Admittance matrix of the "to" buses
         :param iterations: number of iterations
         :param elapsed: time elapsed
         """
@@ -42,6 +46,9 @@ class NumericPowerFlowResults:
         self.ma = ma
         self.theta = theta
         self.Beq = Beq
+        self.Ybus = Ybus
+        self.Yf = Yf
+        self.Yt = Yt
         self.iterations = iterations
         self.elapsed = elapsed
 

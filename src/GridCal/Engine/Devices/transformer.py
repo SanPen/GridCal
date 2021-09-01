@@ -665,6 +665,11 @@ class Transformer2W(EditableDevice):
 
         return b
 
+    def flip(self):
+
+        F, T = self.bus_from, self.bus_to
+        self.bus_to, self.bus_from = F, T
+
     def tap_up(self):
         """
         Move the tap changer one position up
