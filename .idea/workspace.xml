@@ -25,7 +25,8 @@
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v6.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v6.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ntc_pruebas.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/or_tools/ntc_pruebas.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -552,13 +553,6 @@
       <workItem from="1616261080829" duration="12802000" />
       <workItem from="1616444990256" duration="4870000" />
     </task>
-    <task id="LOCAL-00083" summary="- Fixed some visualization issues">
-      <created>1610209501922</created>
-      <option name="number" value="00083" />
-      <option name="presentableId" value="LOCAL-00083" />
-      <option name="project" value="LOCAL" />
-      <updated>1610209501922</updated>
-    </task>
     <task id="LOCAL-00084" summary="Added Q control to the ACDC NR&#10;Fixed some bugs">
       <created>1610283163394</created>
       <option name="number" value="00084" />
@@ -895,7 +889,14 @@
       <option name="project" value="LOCAL" />
       <updated>1630481103683</updated>
     </task>
-    <option name="localTasksCounter" value="132" />
+    <task id="LOCAL-00132" summary="fix ntc_opf call">
+      <created>1630482037693</created>
+      <option name="number" value="00132" />
+      <option name="presentableId" value="LOCAL-00132" />
+      <option name="project" value="LOCAL" />
+      <updated>1630482037693</updated>
+    </task>
+    <option name="localTasksCounter" value="133" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -929,7 +930,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Merged MC and LHS&#10;Added flow based width" />
     <MESSAGE value="some bug fixes" />
     <MESSAGE value="Implemented the dictionary to export objects" />
     <MESSAGE value="Added binary GA and iDONE research" />
@@ -954,7 +954,8 @@
     <MESSAGE value="fixed flow sense" />
     <MESSAGE value="fixed PGOC_6bus_modNTC.gridcal model" />
     <MESSAGE value="new file pruebas" />
-    <option name="LAST_COMMIT_MESSAGE" value="new file pruebas" />
+    <MESSAGE value="fix ntc_opf call" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix ntc_opf call" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

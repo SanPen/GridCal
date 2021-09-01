@@ -1,6 +1,28 @@
-import GridCal.Engine as gc
-from ortools.linear_solver import pywraplp
+# This file is part of GridCal.
+#
+# GridCal is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GridCal is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+This file implements a DC-OPF for time series
+That means that solves the OPF problem for a complete time series at once
+"""
+from typing import List, Dict, Tuple
 import numpy as np
+# from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
+from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers, pywraplp
+from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType
+
 import pandas as pd
 from scipy.sparse.csc import csc_matrix
 
@@ -141,7 +163,7 @@ def compose_branches_df(num, solver_power_vars, overloads1, overloads2):
         row = [
             num.branch_data.branch_names[k],
             val,
-            val / nc.Rates[k],
+            val / num.Rates[k],
             overloads1[k].solution_value(),
             overloads2[k].solution_value()
         ]
@@ -151,7 +173,7 @@ def compose_branches_df(num, solver_power_vars, overloads1, overloads2):
     return pd.DataFrame(data, columns=cols)
 
 
-def compose_generation_df(num, generation, dgen_arr, Pgen_arr):
+def compose_generation_df(nc, generation, dgen_arr, Pgen_arr):
 
     data = list()
     for i, (var, dgen, pgen) in enumerate(zip(generation, dgen_arr, Pgen_arr)):
@@ -167,672 +189,350 @@ def compose_generation_df(num, generation, dgen_arr, Pgen_arr):
     cols = ['Name', 'Bus', 'LB', 'Power (MW)', 'Set (MW)', 'Delta (MW)', 'UB']
     return pd.DataFrame(data=data, columns=cols)
 
-def print_area_report(grid, detailed = False):
-    areas = grid.areas
-    allLoad = 0
-    allGen = 0
-    for area in areas:
-        print('Area', area)
-        totalLoad = 0
-        loads = grid.get_loads()
-        for load in loads:
-            if load.bus.area == area:
-                if load.P != 0 and detailed:
-                    print('Load_' + load.bus.code, load.bus.name, load.P)
-                totalLoad += load.P
-                allLoad += load.P
 
-        totalGen = 0
-        gens = grid.get_generators()
-        for gen in gens:
-            if gen.bus.area == area:
-                if gen.P != 0 and detailed:
-                    print('Gen_' + gen.bus.code, gen.bus.name, gen.P)
-                totalGen += gen.P
-                allGen += gen.P
+class OpfNTC(Opf):
 
-        print('MW Load', totalLoad)
-        print('MW Gen', totalGen)
-        print()
-
-    print('Total MW Load', allLoad)
-    print('Total MW Gen', allGen)
-    print()
-
-# ----------------------------------------------------------------------------------------------------------------------
-# Net transfer capacity optimization program 2021
-# ----------------------------------------------------------------------------------------------------------------------
-
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/PGOC_6bus(from .raw).gridcal'
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/Grid4Bus-OPF.gridcal'
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
-# fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
-# fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE14 - ntc areas.gridcal'
-fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas_two.gridcal'
-
-grid = gc.FileOpen(fname).open()
-nc = gc.compile_snapshot_opf_circuit(grid)
-print('Problem loaded:')
-print('\tNodes:', nc.nbus)
-print('\tBranches:', nc.nbr)
-
-# print area report
-print_area_report(grid)
-
-# compute information about areas --------------------------------------------------------------------------------------
-
-area_from_idx = 0
-area_to_idx = 1
-areas = grid.get_bus_area_indices()
-
-# get the area bus indices
-areas = areas[nc.original_bus_idx]
-a1 = np.where(areas == area_from_idx)[0]
-a2 = np.where(areas == area_to_idx)[0]
-
-# get the inter-area branches and their sign
-inter_area_branches = get_inter_areas_branches(nc.nbr, nc.branch_data.F, nc.branch_data.T, a1, a2)
-
-# time index
-t = 0
-
-# declare the solver ---------------------------------------------------------------------------------------------------
-solver = pywraplp.Solver.CreateSolver('CBC')
-
-
-
-# create generation delta functions ------------------------------------------------------------------------------------
-Cgen = nc.generator_data.C_bus_gen.tocsc()
-gen_cost = nc.generator_data.generator_cost[:, t]
-Pgen = nc.generator_data.generator_p[:, t] / nc.Sbase
-Pmax = nc.generator_data.generator_installed_p / nc.Sbase
-gens1, gens2, gens_out = get_generators_connectivity(Cgen, a1, a2)
-generation = np.zeros(nc.generator_data.ngen, dtype=object)
-dgen1 = list()
-dgen2 = list()
-delta = list()
-generation1 = list()
-generation2 = list()
-Pgen1 = list()
-Pgen2 = list()
-
-for bus_idx, gen_idx in gens1:
-    name = 'Gen_up_bus{}'.format(bus_idx)
-    generation[gen_idx] = solver.NumVar(0, Pmax[gen_idx], name)
-    dg = solver.NumVar(0, Pmax[gen_idx] - Pgen[gen_idx], name + '_delta')
-    solver.Add(dg == generation[gen_idx] - Pgen[gen_idx])
-    dgen1.append(dg)
-    delta.append(dg)
-    generation1.append(generation[gen_idx])
-    Pgen1.append(Pgen[gen_idx])
-
-for bus_idx, gen_idx in gens2:
-    name = 'Gen_down_bus{}'.format(bus_idx)
-    generation[gen_idx] = solver.NumVar(0, Pmax[gen_idx], name)
-    dg = solver.NumVar(-Pgen[gen_idx], 0, name + '_delta')
-    solver.Add(dg == generation[gen_idx] - Pgen[gen_idx])
-    dgen2.append(dg)
-    delta.append(dg)
-    generation2.append(generation[gen_idx])
-    Pgen2.append(Pgen[gen_idx])
-
-# set the generation in the non inter-area ones
-for bus_idx, gen_idx in gens_out:
-    generation[gen_idx] = Pgen[gen_idx]
-
-area_balance_slack = solver.NumVar(0, 99999, 'Area_slack')
-solver.Add(solver.Sum(dgen1) + solver.Sum(dgen2) == area_balance_slack, 'Area equality')
-
-
-# create the angles ----------------------------------------------------------------------------------------------------
-Cf = nc.Cf.tocsc()
-Ct = nc.Ct.tocsc()
-angles = np.array([solver.NumVar(-6.28, 6.28, 'theta' + str(i)) for i in range(nc.nbus)])
-# angles_f = lpExpand(Cf, angles)
-# angles_t = lpExpand(Ct, angles)
-
-# Set the slack angles = 0 ---------------------------------------------------------------------------------------------
-for i in nc.vd:
-    solver.Add(angles[i] == 0, "Slack_angle_zero")
-
-# create the phase shift angles ----------------------------------------------------------------------------------------
-tau = dict()
-for i in range(nc.branch_data.nbr):
-    if nc.branch_data.control_mode[i] == gc.TransformerControlType.Pt:  # is a phase shifter
-        tau[i] = solver.NumVar(nc.branch_data.theta_min[i], nc.branch_data.theta_max[i], 'tau' + str(i))
-
-# define the power injection -------------------------------------------------------------------------------------------
-gen_injections = lpExpand(Cgen, generation)
-load_fixed_injections = nc.load_data.get_injections_per_bus()[:, t].real / nc.Sbase  # with sign already
-Pinj = gen_injections + load_fixed_injections
-
-# nodal balance --------------------------------------------------------------------------------------------------------
-
-# power balance in the non slack nodes: eq.13
-node_balance = lpDot(nc.Bbus, angles)
-
-node_balance_slack_1 = [solver.NumVar(0, 99999, 'balance_slack1_' + str(i)) for i in range(nc.nbus)]
-node_balance_slack_2 = [solver.NumVar(0, 99999, 'balance_slack2_' + str(i)) for i in range(nc.nbus)]
-
-# equal the balance to the generation: eq.13,14 (equality)
-i = 0
-for balance, power in zip(node_balance, Pinj):
-    solver.Add(balance == power + node_balance_slack_1[i] - node_balance_slack_2[i], "Node_power_balance_" + str(i))
-    i += 1
-
-# branch flow ----------------------------------------------------------------------------------------------------------
-
-pftk = list()
-rates = nc.Rates / nc.Sbase
-overload1 = np.empty(nc.nbr, dtype=object)
-overload2 = np.empty(nc.nbr, dtype=object)
-for i in range(nc.nbr):
-
-    _f = nc.branch_data.F[i]
-    _t = nc.branch_data.T[i]
-    pftk.append(solver.NumVar(-rates[i], rates[i], 'pftk_' + str(i)))
-
-    # compute the branch susceptance
-    bk = (1.0 / complex(nc.branch_data.R[i], nc.branch_data.X[i])).imag
-
-    if i in tau.keys():
-        # branch power from-to eq.15
-        solver.Add(pftk[i] == bk * (angles[_t] - angles[_f] - tau[i]), 'phase_shifter_power_flow_' + str(i))
-    else:
-        # branch power from-to eq.15
-        solver.Add(pftk[i] == bk * (angles[_t] - angles[_f]), 'branch_power_flow_' + str(i))
-
-    # rating restriction in the sense from-to: eq.17
-    overload1[i] = solver.NumVar(0, 9999, 'overload1_' + str(i))
-    solver.Add(pftk[i] <= (rates[i] + overload1[i]), "ft_rating_" + str(i))
-
-    # rating restriction in the sense to-from: eq.18
-    overload2[i] = solver.NumVar(0, 9999, 'overload2_' + str(i))
-    solver.Add((-rates[i] - overload2[i]) <= pftk[i], "tf_rating_" + str(i))
-
-# objective function ---------------------------------------------------------------------------------------------------
-
-# maximize the power from->to
-flows_ft = np.zeros(len(inter_area_branches), dtype=object)
-for i, (k, sign) in enumerate(inter_area_branches):
-    flows_ft[i] = sign * pftk[k]
-
-flow_from_a1_to_a2 = solver.Sum(flows_ft)
-
-# include the cost of generation
-# gen_cost_f = solver.Sum(gen_cost * delta)
-
-node_balance_slack_f = solver.Sum(node_balance_slack_1) + solver.Sum(node_balance_slack_2)
-
-overload_slack_f = solver.Sum(overload1) + solver.Sum(overload2)
-
-# objective function
-solver.Minimize(
-                # - 1.0 * flow_from_a1_to_a2
-                - 1.0 * solver.Sum(dgen1)
-                # + 1.0 * area_balance_slack
-                # + 1.0 * gen_cost_f
-                # + 1e0 * node_balance_slack_f
-                # + 1e0 * overload_slack_f
-                )
-
-# Solve ----------------------------------------------------------------------------------------------------------------
-status = solver.Solve()
-
-# print results --------------------------------------------------------------------------------------------------------
-if status == pywraplp.Solver.OPTIMAL:
-    print('Solution:')
-    print('Objective value =', solver.Objective().Value())
-
-    print('\nPower flow:')
-    print(compose_branches_df(nc, pftk, overload1, overload2))
-
-    print('\nPower flow inter-area:')
-    total_pw = 0
-    for k, sign in inter_area_branches:
-        total_pw += sign * pftk[k].solution_value()
-        print(nc.branch_data.branch_names[k], ':', pftk[k].solution_value() * nc.Sbase, 'MW')
-    print('Total exchange:', flow_from_a1_to_a2.solution_value() * nc.Sbase, 'MW')
-
-    print('\nGenerators:')
-    print(compose_generation_df(nc, generation1, dgen1, Pgen1))
-    print(compose_generation_df(nc, generation2, dgen2, Pgen2))
-    print()
-    print('node balance slack:', node_balance_slack_f.solution_value())
-    print('Reference node:', nc.vd)
-    for i, (var1, var2) in enumerate(zip(node_balance_slack_1, node_balance_slack_2)):
-        print('node slack {0}'.format(i), var1.solution_value(), var2.solution_value())
-
-    print('area balance slack:', area_balance_slack.solution_value())
-
-else:
-    print('The problem does not have an optimal solution.')
-# [END print_solution]
-
-# [START advanced]
-print('\nAdvanced usage:')
-print('Problem solved in %f milliseconds' % solver.wall_time())
-print('Problem solved in %d iterations' % solver.iterations())
-
-print()
-
-import GridCal.Engine as gc
-from ortools.linear_solver import pywraplp
-import numpy as np
-import pandas as pd
-from scipy.sparse.csc import csc_matrix
-
-
-def lpDot(mat, arr):
-    """
-    CSC matrix-vector or CSC matrix-matrix dot product (A x b)
-    :param mat: CSC sparse matrix (A)
-    :param arr: dense vector or matrix of object type (b)
-    :return: vector or matrix result of the product
-    """
-    n_rows, n_cols = mat.shape
-
-    # check dimensional compatibility
-    assert (n_cols == arr.shape[0])
-
-    # check that the sparse matrix is indeed of CSC format
-    if mat.format == 'csc':
-        mat_2 = mat
-    else:
-        # convert the matrix to CSC sparse
-        mat_2 = csc_matrix(mat)
-
-    if len(arr.shape) == 1:
+    def __init__(self, numerical_circuit, area_from_bus_idx, area_to_bus_idx,
+                 solver_type: MIPSolvers = MIPSolvers.CBC):
         """
-        Uni-dimensional sparse matrix - vector product
+        DC time series linear optimal power flow
+        :param numerical_circuit: NumericalCircuit instance
         """
-        res = np.zeros(n_rows, dtype=arr.dtype)
-        for i in range(n_cols):
-            for ii in range(mat_2.indptr[i], mat_2.indptr[i + 1]):
-                j = mat_2.indices[ii]  # row index
-                res[j] += mat_2.data[ii] * arr[i]  # C.data[ii] is equivalent to C[i, j]
-    else:
-        """
-        Multi-dimensional sparse matrix - matrix product
-        """
-        cols_vec = arr.shape[1]
-        res = np.zeros((n_rows, cols_vec), dtype=arr.dtype)
+        self.area_from_bus_idx = area_from_bus_idx
 
-        for k in range(cols_vec):  # for each column of the matrix "vec", do the matrix vector product
-            for i in range(n_cols):
-                for ii in range(mat_2.indptr[i], mat_2.indptr[i + 1]):
-                    j = mat_2.indices[ii]  # row index
-                    res[j, k] += mat_2.data[ii] * arr[i, k]  # C.data[ii] is equivalent to C[i, j]
-    return res
+        self.area_to_bus_idx = area_to_bus_idx
 
+        # this builds the formulation right away
+        Opf.__init__(self, numerical_circuit=numerical_circuit, solver_type=solver_type)
 
-def lpExpand(mat, arr):
-    """
-    CSC matrix-vector or CSC matrix-matrix dot product (A x b)
-    :param mat: CSC sparse matrix (A)
-    :param arr: dense vector or matrix of object type (b)
-    :return: vector or matrix result of the product
-    """
-    n_rows, n_cols = mat.shape
+    def formulate_generation(self, ngen, Cgen, Pgen, Pmax, Pmin, a1, a2):
 
-    # check dimensional compatibility
-    assert (n_cols == arr.shape[0])
+        gens1, gens2, gens_out = get_generators_connectivity(Cgen, a1, a2)
 
-    # check that the sparse matrix is indeed of CSC format
-    if mat.format == 'csc':
-        mat_2 = mat
-    else:
-        # convert the matrix to CSC sparse
-        mat_2 = csc_matrix(mat)
+        generation = np.zeros(ngen, dtype=object)
+        delta = np.zeros(ngen, dtype=object)
 
-    if len(arr.shape) == 1:
-        """
-        Uni-dimensional sparse matrix - vector product
-        """
-        res = np.zeros(n_rows, dtype=arr.dtype)
-        for i in range(n_cols):
-            for ii in range(mat_2.indptr[i], mat_2.indptr[i + 1]):
-                j = mat_2.indices[ii]  # row index
-                res[j] = arr[i]  # C.data[ii] is equivalent to C[i, j]
-    else:
-        """
-        Multi-dimensional sparse matrix - matrix product
-        """
-        cols_vec = arr.shape[1]
-        res = np.zeros((n_rows, cols_vec), dtype=arr.dtype)
+        dgen1 = list()
+        dgen2 = list()
 
-        for k in range(cols_vec):  # for each column of the matrix "vec", do the matrix vector product
-            for i in range(n_cols):
-                for ii in range(mat_2.indptr[i], mat_2.indptr[i + 1]):
-                    j = mat_2.indices[ii]  # row index
-                    res[j, k] = arr[i, k]  # C.data[ii] is equivalent to C[i, j]
-    return res
+        generation1 = list()
+        generation2 = list()
 
+        Pgen1 = list()
+        Pgen2 = list()
 
-def get_inter_areas_branches(nbr, F, T, buses_areas_1, buses_areas_2):
-    """
-    Get the inter-area branches.
-    :param buses_areas_1: Area from
-    :param buses_areas_2: Area to
-    :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
-    """
-    lst: List[Tuple[int, float]] = list()
-    for k in range(nbr):
-        if F[k] in buses_areas_1 and T[k] in buses_areas_2:
-            lst.append((k, 1.0))
-        elif F[k] in buses_areas_2 and T[k] in buses_areas_1:
-            lst.append((k, -1.0))
-    return lst
+        gen_a1_idx = list()
+        gen_a2_idx = list()
 
+        for bus_idx, gen_idx in gens1:
+            name = 'Gen_up_{0}@bus{1}'.format(gen_idx, bus_idx)
 
-def get_generators_connectivity(Cgen, buses_in_a1, buses_in_a2):
-    """
+            generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
+            delta[gen_idx] = self.solver.NumVar(0, Pmax[gen_idx] - Pgen[gen_idx], name + '_delta')
+            self.solver.Add(delta[gen_idx] == generation[gen_idx] - Pgen[gen_idx], 'Delta_up_gen{}'.format(gen_idx))
 
-    :param Cgen:
-    :param buses_in_a1:
-    :param buses_in_a2:
-    :return:
-    """
-    assert isinstance(Cgen, csc_matrix)
+            dgen1.append(delta[gen_idx])
+            generation1.append(generation[gen_idx])
+            Pgen1.append(Pgen[gen_idx])
+            gen_a1_idx.append(gen_idx)
 
-    gens_in_a1 = list()
-    gens_in_a2 = list()
-    gens_out = list()
-    for j in range(Cgen.shape[1]):  # for each bus
-        for ii in range(Cgen.indptr[j], Cgen.indptr[j + 1]):
-            i = Cgen.indices[ii]
-            if i in buses_in_a1:
-                gens_in_a1.append((i, j))  # i: bus idx, j: gen idx
-            elif i in buses_in_a2:
-                gens_in_a2.append((i, j))  # i: bus idx, j: gen idx
+        for bus_idx, gen_idx in gens2:
+            name = 'Gen_down_{0}@bus{1}'.format(gen_idx, bus_idx)
+
+            generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
+            delta[gen_idx] = self.solver.NumVar(-Pgen[gen_idx], 0, name + '_delta')
+            self.solver.Add(delta[gen_idx] == generation[gen_idx] - Pgen[gen_idx], 'Delta_down_gen{}'.format(gen_idx))
+
+            dgen2.append(delta[gen_idx])
+            generation2.append(generation[gen_idx])
+            Pgen2.append(Pgen[gen_idx])
+            gen_a2_idx.append(gen_idx)
+
+        # set the generation in the non inter-area ones
+        for bus_idx, gen_idx in gens_out:
+            generation[gen_idx] = Pgen[gen_idx]
+
+        area_balance_slack = self.solver.NumVar(0, 99999, 'Area_slack')
+        self.solver.Add(self.solver.Sum(dgen1) + self.solver.Sum(dgen2) == area_balance_slack, 'Area equality')
+
+        return generation, delta, gen_a1_idx, gen_a2_idx, area_balance_slack, dgen1
+
+    def formulate_angles(self):
+
+        theta = np.array([self.solver.NumVar(-6.28, 6.28, 'theta' + str(i)) for i in range(self.numerical_circuit.nbus)])
+
+        for i in self.numerical_circuit.vd:
+            self.solver.Add(theta[i] == 0, "Slack_angle_zero")
+
+        return theta
+
+    def formulate_phase_shift(self):
+
+        tau = dict()
+        nc = self.numerical_circuit
+        for i in range(nc.branch_data.nbr):
+            if nc.branch_data.control_mode[i] == TransformerControlType.Pt:  # is a phase shifter
+                tau[i] = self.solver.NumVar(nc.branch_data.theta_min[i], nc.branch_data.theta_max[i], 'tau_dict' + str(i))
+        return tau
+
+    def formulate_power_injections(self, Cgen, generation, t=0):
+
+        nc = self.numerical_circuit
+        gen_injections = lpExpand(Cgen, generation)
+        load_fixed_injections = nc.load_data.get_injections_per_bus()[:, t].real / nc.Sbase  # with sign already
+
+        return gen_injections + load_fixed_injections
+
+    def formulate_node_balance(self, angles, Pinj):
+
+        nc = self.numerical_circuit
+        node_balance = lpDot(nc.Bbus, angles)
+
+        node_balance_slack_1 = [self.solver.NumVar(0, 99999, 'balance_slack1_' + str(i)) for i in range(nc.nbus)]
+        node_balance_slack_2 = [self.solver.NumVar(0, 99999, 'balance_slack2_' + str(i)) for i in range(nc.nbus)]
+
+        # equal the balance to the generation: eq.13,14 (equality)
+        i = 0
+        for balance, power in zip(node_balance, Pinj):
+            self.solver.Add(balance == power + node_balance_slack_1[i] - node_balance_slack_2[i],
+                       "Node_power_balance_" + str(i))
+            i += 1
+
+        return node_balance, node_balance_slack_1, node_balance_slack_2
+
+    def formulate_branches_flow(self, angles, tau_dict):
+
+        nc = self.numerical_circuit
+
+        flow_f = np.empty(nc.nbr, dtype=object)
+        rates = nc.Rates / nc.Sbase
+        overload1 = np.empty(nc.nbr, dtype=object)
+        overload2 = np.empty(nc.nbr, dtype=object)
+        for i in range(nc.nbr):
+
+            _f = nc.branch_data.F[i]
+            _t = nc.branch_data.T[i]
+            flow_f[i] = self.solver.NumVar(-rates[i], rates[i], 'pftk_' + str(i))
+
+            # compute the branch susceptance
+            bk = (1.0 / complex(nc.branch_data.R[i], nc.branch_data.X[i])).imag
+
+            if i in tau_dict.keys():
+                # branch power from-to eq.15
+                self.solver.Add(flow_f[i] == bk * (angles[_t] - angles[_f] - tau_dict[i]), 'phase_shifter_power_flow_' + str(i))
             else:
-                gens_out.append((i, j))  # i: bus idx, j: gen idx
+                # branch power from-to eq.15
+                self.solver.Add(flow_f[i] == bk * (angles[_t] - angles[_f]), 'branch_power_flow_' + str(i))
 
-    return gens_in_a1, gens_in_a2, gens_out
+            # rating restriction in the sense from-to: eq.17
+            overload1[i] = self.solver.NumVar(0, 9999, 'overload1_' + str(i))
+            self.solver.Add(flow_f[i] <= (rates[i] + overload1[i]), "ft_rating_" + str(i))
+
+            # rating restriction in the sense to-from: eq.18
+            overload2[i] = self.solver.NumVar(0, 9999, 'overload2_' + str(i))
+            self.solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "tf_rating_" + str(i))
+
+        return flow_f, overload1, overload2
+
+    def formulate_objective(self, inter_area_branches, flows_f,
+                            node_balance_slack_1, node_balance_slack_2,
+                            overload1, overload2, area_balance_slack, dgen1):
+
+        # maximize the power from->to
+        flows_ft = np.zeros(len(inter_area_branches), dtype=object)
+        for i, (k, sign) in enumerate(inter_area_branches):
+            flows_ft[i] = sign * flows_f[k]
+
+        flow_from_a1_to_a2 = self.solver.Sum(flows_ft)
+
+        # include the cost of generation
+        # gen_cost_f = solver.Sum(gen_cost * delta)
+
+        node_balance_slack_f = self.solver.Sum(node_balance_slack_1) + self.solver.Sum(node_balance_slack_2)
+
+        overload_slack_f = self.solver.Sum(overload1) + self.solver.Sum(overload2)
+
+        # objective function
+        self.solver.Minimize(
+            # - 1.0 * flow_from_a1_to_a2
+            - 1.0 * self.solver.Sum(dgen1)
+            + 1.0 * area_balance_slack
+            # + 1.0 * gen_cost_f
+            + 1e0 * node_balance_slack_f
+            + 1e0 * overload_slack_f
+        )
+
+    @staticmethod
+    def extract(arr, make_abs=False):  # override this method to call ORTools instead of PuLP
+        """
+        Extract values fro the 1D array of LP variables
+        :param arr: 1D array of LP variables
+        :param make_abs: substitute the result by its abs value
+        :return: 1D numpy array
+        """
+        val = np.zeros(arr.shape)
+        for i in range(val.shape[0]):
+            if isinstance(arr[i], float):
+                val[i] = arr[i]
+            else:
+                val[i] = arr[i].solution_value()
+        if make_abs:
+            val = np.abs(val)
+
+        return val
+
+    def formulate(self):
+        """
+        Formulate the Net Transfer Capacity problem
+        :return:
+        """
+
+        # general indices
+        n = self.numerical_circuit.nbus
+        m = self.numerical_circuit.nbr
+        ng = self.numerical_circuit.ngen
+        nb = self.numerical_circuit.nbatt
+        nl = self.numerical_circuit.nload
+        Sbase = self.numerical_circuit.Sbase
+
+        # battery
+        Pb_max = self.numerical_circuit.battery_pmax / Sbase
+        Pb_min = self.numerical_circuit.battery_pmin / Sbase
+        cost_b = self.numerical_circuit.battery_cost
+        Cbat = self.numerical_circuit.battery_data.C_bus_batt.tocsc()
+
+        # generator
+        Pg_max = self.numerical_circuit.generator_pmax / Sbase
+        Pg_min = self.numerical_circuit.generator_pmin / Sbase
+        cost_g = self.numerical_circuit.generator_cost
+        Pg_fix = self.numerical_circuit.generator_p / Sbase
+        enabled_for_dispatch = self.numerical_circuit.generator_dispatchable
+        Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
+
+        # load
+        Pl = (self.numerical_circuit.load_active * self.numerical_circuit.load_s.real) / Sbase
+        cost_l = self.numerical_circuit.load_cost
+
+        # branch
+        branch_ratings = self.numerical_circuit.branch_rates / Sbase
+        Ys = 1 / (self.numerical_circuit.branch_R + 1j * self.numerical_circuit.branch_X)
+        Bseries = (self.numerical_circuit.branch_active * Ys).imag
+        cost_br = self.numerical_circuit.branch_cost
+
+        # time index
+        t = 0
+
+        # get the inter-area branches and their sign
+        inter_area_branches = get_inter_areas_branches(nbr=m,
+                                                       F=self.numerical_circuit.branch_data.F,
+                                                       T=self.numerical_circuit.branch_data.T,
+                                                       buses_areas_1=self.area_from_bus_idx,
+                                                       buses_areas_2=self.area_to_bus_idx)
+
+        # add te generation
+        Pg, delta, gen_a1_idx, gen_a2_idx, \
+        area_balance_slack, dgen1 = self.formulate_generation(ngen=ng,
+                                                              Cgen=Cgen,
+                                                              Pgen=Pg_fix,
+                                                              Pmax=Pg_max,
+                                                              Pmin=Pg_min,
+                                                              a1=self.area_from_bus_idx,
+                                                              a2=self.area_to_bus_idx)
+
+        # add the angles
+        theta = self.formulate_angles()
+
+        tau = self.formulate_phase_shift()
+
+        Pinj = self.formulate_power_injections(Cgen=Cgen, generation=Pg, t=t)
+
+        node_balance, \
+        node_balance_slack_1, \
+        node_balance_slack_2 = self.formulate_node_balance(angles=theta, Pinj=Pinj)
+
+        flow_f, overload1, overload2 = self.formulate_branches_flow(angles=theta,
+                                                                    tau_dict=tau)
+
+        self.formulate_objective(inter_area_branches, flow_f,
+                                 node_balance_slack_1, node_balance_slack_2,
+                                 overload1, overload2, area_balance_slack, dgen1)
+
+        # Assign variables to keep
+        # transpose them to be in the format of GridCal: time, device
+        self.theta = theta
+        self.Pg = Pg
+        # self.Pb = Pb
+        self.Pl = Pl
+        self.Pinj = Pinj
+        # self.load_shedding = load_slack
+        self.s_from = flow_f
+        self.s_to = - flow_f
+        self.overloads = overload1 + overload2
+        self.rating = branch_ratings
+        self.nodal_restrictions = node_balance
+
+        return self.solver
+
+    def solve(self):
+        """
+        Call ORTools to solve the problem
+        """
+        self.status = self.solver.Solve()
+
+        return self.converged()
+
+    def converged(self):
+        return self.status == pywraplp.Solver.OPTIMAL
+
+    def get_power_injections(self):
+        """
+        return the branch loading (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.Pinj, make_abs=False) * self.numerical_circuit.Sbase
 
 
-def compose_branches_df(num, solver_power_vars, overloads1, overloads2):
+if __name__ == '__main__':
+    from GridCal.Engine.basic_structures import BranchImpedanceMode
+    from GridCal.Engine.IO.file_handler import FileOpen
+    from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
 
-    data = list()
-    for k in range(num.nbr):
-        val = solver_power_vars[k].solution_value() * num.Sbase
-        row = [
-            num.branch_data.branch_names[k],
-            val,
-            val / nc.Rates[k],
-            overloads1[k].solution_value(),
-            overloads2[k].solution_value()
-        ]
-        data.append(row)
+    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
+    fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 
-    cols = ['Name', 'Power (MW)', 'Loading', 'SlackF', 'SlackT']
-    return pd.DataFrame(data, columns=cols)
+    main_circuit = FileOpen(fname).open()
 
+    # compute information about areas --------------------------------------------------------------------------------------
 
-def compose_generation_df(num, generation, dgen_arr, Pgen_arr):
-
-    data = list()
-    for i, (var, dgen, pgen) in enumerate(zip(generation, dgen_arr, Pgen_arr)):
-        if not isinstance(var, float):
-            data.append([str(var),
-                         '',
-                         var.Lb() * nc.Sbase,
-                         var.solution_value() * nc.Sbase,
-                         pgen * nc.Sbase,
-                         dgen.solution_value() * nc.Sbase,
-                         var.Ub() * nc.Sbase])
-
-    cols = ['Name', 'Bus', 'LB', 'Power (MW)', 'Set (MW)', 'Delta (MW)', 'UB']
-    return pd.DataFrame(data=data, columns=cols)
-
-def print_area_report(grid, detailed = False):
-    areas = grid.areas
-    allLoad = 0
-    allGen = 0
-    for area in areas:
-        print('Area', area)
-        totalLoad = 0
-        loads = grid.get_loads()
-        for load in loads:
-            if load.bus.area == area:
-                if load.P != 0 and detailed:
-                    print('Load_' + load.bus.code, load.bus.name, load.P)
-                totalLoad += load.P
-                allLoad += load.P
-
-        totalGen = 0
-        gens = grid.get_generators()
-        for gen in gens:
-            if gen.bus.area == area:
-                if gen.P != 0 and detailed:
-                    print('Gen_' + gen.bus.code, gen.bus.name, gen.P)
-                totalGen += gen.P
-                allGen += gen.P
-
-        print('MW Load', totalLoad)
-        print('MW Gen', totalGen)
-        print()
-
-    print('Total MW Load', allLoad)
-    print('Total MW Gen', allGen)
-    print()
-
-# ----------------------------------------------------------------------------------------------------------------------
-# Net transfer capacity optimization program 2021
-# ----------------------------------------------------------------------------------------------------------------------
-
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/PGOC_6bus(from .raw).gridcal'
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/Grid4Bus-OPF.gridcal'
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal'
-# fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
-# fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
-# fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\IEEE14 - ntc areas.gridcal'
-fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas_two.gridcal'
-
-grid = gc.FileOpen(fname).open()
-nc = gc.compile_snapshot_opf_circuit(grid)
-print('Problem loaded:')
-print('\tNodes:', nc.nbus)
-print('\tBranches:', nc.nbr)
-
-# print area report
-print_area_report(grid)
-
-# compute information about areas --------------------------------------------------------------------------------------
-
-area_from_idx = 0
-area_to_idx = 1
-areas = grid.get_bus_area_indices()
-
-# get the area bus indices
-areas = areas[nc.original_bus_idx]
-a1 = np.where(areas == area_from_idx)[0]
-a2 = np.where(areas == area_to_idx)[0]
-
-# get the inter-area branches and their sign
-inter_area_branches = get_inter_areas_branches(nc.nbr, nc.branch_data.F, nc.branch_data.T, a1, a2)
-
-# time index
-t = 0
-
-# declare the solver ---------------------------------------------------------------------------------------------------
-solver = pywraplp.Solver.CreateSolver('CBC')
+    area_from_idx = 0
+    area_to_idx = 1
+    areas = main_circuit.get_bus_area_indices()
 
 
+    # main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
 
-# create generation delta functions ------------------------------------------------------------------------------------
-Cgen = nc.generator_data.C_bus_gen.tocsc()
-gen_cost = nc.generator_data.generator_cost[:, t]
-Pgen = nc.generator_data.generator_p[:, t] / nc.Sbase
-Pmax = nc.generator_data.generator_installed_p / nc.Sbase
-gens1, gens2, gens_out = get_generators_connectivity(Cgen, a1, a2)
-generation = np.zeros(nc.generator_data.ngen, dtype=object)
-dgen1 = list()
-dgen2 = list()
-delta = list()
-generation1 = list()
-generation2 = list()
-Pgen1 = list()
-Pgen2 = list()
-
-for bus_idx, gen_idx in gens1:
-    name = 'Gen_up_bus{}'.format(bus_idx)
-    generation[gen_idx] = solver.NumVar(0, Pmax[gen_idx], name)
-    dg = solver.NumVar(0, Pmax[gen_idx] - Pgen[gen_idx], name + '_delta')
-    solver.Add(dg == generation[gen_idx] - Pgen[gen_idx])
-    dgen1.append(dg)
-    delta.append(dg)
-    generation1.append(generation[gen_idx])
-    Pgen1.append(Pgen[gen_idx])
-
-for bus_idx, gen_idx in gens2:
-    name = 'Gen_down_bus{}'.format(bus_idx)
-    generation[gen_idx] = solver.NumVar(0, Pmax[gen_idx], name)
-    dg = solver.NumVar(-Pgen[gen_idx], 0, name + '_delta')
-    solver.Add(dg == generation[gen_idx] - Pgen[gen_idx])
-    dgen2.append(dg)
-    delta.append(dg)
-    generation2.append(generation[gen_idx])
-    Pgen2.append(Pgen[gen_idx])
-
-# set the generation in the non inter-area ones
-for bus_idx, gen_idx in gens_out:
-    generation[gen_idx] = Pgen[gen_idx]
-
-area_balance_slack = solver.NumVar(0, 99999, 'Area_slack')
-solver.Add(solver.Sum(dgen1) + solver.Sum(dgen2) == area_balance_slack, 'Area equality')
+    numerical_circuit_ = compile_snapshot_opf_circuit(circuit=main_circuit,
+                                                      apply_temperature=False,
+                                                      branch_tolerance_mode=BranchImpedanceMode.Specified)
 
 
-# create the angles ----------------------------------------------------------------------------------------------------
-Cf = nc.Cf.tocsc()
-Ct = nc.Ct.tocsc()
-angles = np.array([solver.NumVar(-6.28, 6.28, 'theta' + str(i)) for i in range(nc.nbus)])
-# angles_f = lpExpand(Cf, angles)
-# angles_t = lpExpand(Ct, angles)
+    # get the area bus indices
+    areas = areas[numerical_circuit_.original_bus_idx]
+    a1 = np.where(areas == area_from_idx)[0]
+    a2 = np.where(areas == area_to_idx)[0]
 
-# Set the slack angles = 0 ---------------------------------------------------------------------------------------------
-for i in nc.vd:
-    solver.Add(angles[i] == 0, "Slack_angle_zero")
+    problem = OpfNTC(numerical_circuit=numerical_circuit_, area_from_bus_idx=a1, area_to_bus_idx=a2)
 
-# create the phase shift angles ----------------------------------------------------------------------------------------
-tau = dict()
-for i in range(nc.branch_data.nbr):
-    if nc.branch_data.control_mode[i] == gc.TransformerControlType.Pt:  # is a phase shifter
-        tau[i] = solver.NumVar(nc.branch_data.theta_min[i], nc.branch_data.theta_max[i], 'tau' + str(i))
+    print('Solving...')
+    status = problem.solve()
 
-# define the power injection -------------------------------------------------------------------------------------------
-gen_injections = lpExpand(Cgen, generation)
-load_fixed_injections = nc.load_data.get_injections_per_bus()[:, t].real / nc.Sbase  # with sign already
-Pinj = gen_injections + load_fixed_injections
+    print("Status:", status)
 
-# nodal balance --------------------------------------------------------------------------------------------------------
+    v = problem.get_voltage()
+    print('Angles\n', np.angle(v))
 
-# power balance in the non slack nodes: eq.13
-node_balance = lpDot(nc.Bbus, angles)
+    l = problem.get_loading()
+    print('Branch loading\n', l)
 
-node_balance_slack_1 = [solver.NumVar(0, 99999, 'balance_slack1_' + str(i)) for i in range(nc.nbus)]
-node_balance_slack_2 = [solver.NumVar(0, 99999, 'balance_slack2_' + str(i)) for i in range(nc.nbus)]
-
-# equal the balance to the generation: eq.13,14 (equality)
-i = 0
-for balance, power in zip(node_balance, Pinj):
-    solver.Add(balance == power + node_balance_slack_1[i] - node_balance_slack_2[i], "Node_power_balance_" + str(i))
-    i += 1
-
-# branch flow ----------------------------------------------------------------------------------------------------------
-
-pftk = list()
-rates = nc.Rates / nc.Sbase
-overload1 = np.empty(nc.nbr, dtype=object)
-overload2 = np.empty(nc.nbr, dtype=object)
-for i in range(nc.nbr):
-
-    _f = nc.branch_data.F[i]
-    _t = nc.branch_data.T[i]
-    pftk.append(solver.NumVar(-rates[i], rates[i], 'pftk_' + str(i)))
-
-    # compute the branch susceptance
-    bk = (1.0 / complex(nc.branch_data.R[i], nc.branch_data.X[i])).imag
-
-    if i in tau.keys():
-        # branch power from-to eq.15
-        solver.Add(pftk[i] == bk * (angles[_t] - angles[_f] - tau[i]), 'phase_shifter_power_flow_' + str(i))
-    else:
-        # branch power from-to eq.15
-        solver.Add(pftk[i] == bk * (angles[_t] - angles[_f]), 'branch_power_flow_' + str(i))
-
-    # rating restriction in the sense from-to: eq.17
-    overload1[i] = solver.NumVar(0, 9999, 'overload1_' + str(i))
-    solver.Add(pftk[i] <= (rates[i] + overload1[i]), "ft_rating_" + str(i))
-
-    # rating restriction in the sense to-from: eq.18
-    overload2[i] = solver.NumVar(0, 9999, 'overload2_' + str(i))
-    solver.Add((-rates[i] - overload2[i]) <= pftk[i], "tf_rating_" + str(i))
-
-# objective function ---------------------------------------------------------------------------------------------------
-
-# maximize the power from->to
-flows_ft = np.zeros(len(inter_area_branches), dtype=object)
-for i, (k, sign) in enumerate(inter_area_branches):
-    flows_ft[i] = sign * pftk[k]
-
-flow_from_a1_to_a2 = solver.Sum(flows_ft)
-
-# include the cost of generation
-# gen_cost_f = solver.Sum(gen_cost * delta)
-
-node_balance_slack_f = solver.Sum(node_balance_slack_1) + solver.Sum(node_balance_slack_2)
-
-overload_slack_f = solver.Sum(overload1) + solver.Sum(overload2)
-
-# objective function
-solver.Minimize(
-                # - 1.0 * flow_from_a1_to_a2
-                - 1.0 * solver.Sum(dgen1)
-                # + 1.0 * area_balance_slack
-                # + 1.0 * gen_cost_f
-                # + 1e0 * node_balance_slack_f
-                # + 1e0 * overload_slack_f
-                )
-
-# Solve ----------------------------------------------------------------------------------------------------------------
-status = solver.Solve()
-
-# print results --------------------------------------------------------------------------------------------------------
-if status == pywraplp.Solver.OPTIMAL:
-    print('Solution:')
-    print('Objective value =', solver.Objective().Value())
-
-    print('\nPower flow:')
-    print(compose_branches_df(nc, pftk, overload1, overload2))
-
-    print('\nPower flow inter-area:')
-    total_pw = 0
-    for k, sign in inter_area_branches:
-        total_pw += sign * pftk[k].solution_value()
-        print(nc.branch_data.branch_names[k], ':', pftk[k].solution_value() * nc.Sbase, 'MW')
-    print('Total exchange:', flow_from_a1_to_a2.solution_value() * nc.Sbase, 'MW')
-
-    print('\nGenerators:')
-    print(compose_generation_df(nc, generation1, dgen1, Pgen1))
-    print(compose_generation_df(nc, generation2, dgen2, Pgen2))
-    print()
-    print('node balance slack:', node_balance_slack_f.solution_value())
-    print('Reference node:', nc.vd)
-    for i, (var1, var2) in enumerate(zip(node_balance_slack_1, node_balance_slack_2)):
-        print('node slack {0}'.format(i), var1.solution_value(), var2.solution_value())
-
-    print('area balance slack:', area_balance_slack.solution_value())
-
-else:
-    print('The problem does not have an optimal solution.')
-# [END print_solution]
-
-# [START advanced]
-print('\nAdvanced usage:')
-print('Problem solved in %f milliseconds' % solver.wall_time())
-print('Problem solved in %d iterations' % solver.iterations())
-
-print()
-
+    g = problem.get_generator_power()
+    print('Gen power\n', g)

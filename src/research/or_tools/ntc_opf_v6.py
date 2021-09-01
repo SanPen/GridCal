@@ -187,6 +187,7 @@ print('Problem loaded:')
 print('\tNodes:', nc.nbus)
 print('\tBranches:', nc.nbr)
 
+gc.compile_snapshot_opf_circuit
 # compute information about areas --------------------------------------------------------------------------------------
 
 area_from_idx = 1
