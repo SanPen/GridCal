@@ -187,10 +187,11 @@ print('Problem loaded:')
 print('\tNodes:', nc.nbus)
 print('\tBranches:', nc.nbr)
 
+gc.compile_snapshot_opf_circuit
 # compute information about areas --------------------------------------------------------------------------------------
 
-area_from_idx = 0
-area_to_idx = 1
+area_from_idx = 1
+area_to_idx = 0
 areas = grid.get_bus_area_indices()
 
 # get the area bus indices
