@@ -33,6 +33,9 @@ class NumericPowerFlowResults:
         :param ma: Tap modules vector for all the branches
         :param theta: Tap angles vector for all the branches
         :param Beq: Equivalent susceptance vector for all the branches
+        :param Ybus: Admittance matrix
+        :param Yf: Admittance matrix of the "from" buses
+        :param Yt: Admittance matrix of the "to" buses
         :param iterations: number of iterations
         :param elapsed: time elapsed
         """
@@ -43,12 +46,11 @@ class NumericPowerFlowResults:
         self.ma = ma
         self.theta = theta
         self.Beq = Beq
-        self.iterations = iterations
-        self.elapsed = elapsed
-
         self.Ybus = Ybus
         self.Yf = Yf
         self.Yt = Yt
+        self.iterations = iterations
+        self.elapsed = elapsed
 
 
 class PowerFlowResults(ResultsTemplate):
