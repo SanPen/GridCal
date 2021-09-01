@@ -25,8 +25,6 @@
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v6.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v6.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ntc_pruebas.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/or_tools/ntc_pruebas.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -207,10 +205,10 @@
     </configuration>
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python.ntc_opf_v5" />
-      <item itemvalue="Python.ntc_opf_v7" />
-      <item itemvalue="Python.ntc_opf_v6" />
       <item itemvalue="Python.ntc_opf" />
+      <item itemvalue="Python.ntc_opf_v5" />
+      <item itemvalue="Python.ntc_opf_v6" />
+      <item itemvalue="Python.ntc_opf_v7" />
     </list>
     <recent_temporary>
       <list>
@@ -553,13 +551,6 @@
       <workItem from="1616261080829" duration="12802000" />
       <workItem from="1616444990256" duration="4870000" />
     </task>
-    <task id="LOCAL-00084" summary="Added Q control to the ACDC NR&#10;Fixed some bugs">
-      <created>1610283163394</created>
-      <option name="number" value="00084" />
-      <option name="presentableId" value="LOCAL-00084" />
-      <option name="project" value="LOCAL" />
-      <updated>1610283163395</updated>
-    </task>
     <task id="LOCAL-00085" summary="Fixed some bugs regarding HVDC">
       <created>1610466693935</created>
       <option name="number" value="00085" />
@@ -896,7 +887,14 @@
       <option name="project" value="LOCAL" />
       <updated>1630482037693</updated>
     </task>
-    <option name="localTasksCounter" value="133" />
+    <task id="LOCAL-00133" summary="new IEE 14 network with hvdc and shifter">
+      <created>1630486959084</created>
+      <option name="number" value="00133" />
+      <option name="presentableId" value="LOCAL-00133" />
+      <option name="project" value="LOCAL" />
+      <updated>1630486959084</updated>
+    </task>
+    <option name="localTasksCounter" value="134" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -930,7 +928,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="some bug fixes" />
     <MESSAGE value="Implemented the dictionary to export objects" />
     <MESSAGE value="Added binary GA and iDONE research" />
     <MESSAGE value="unfolded the model in-function functions" />
@@ -955,7 +952,8 @@
     <MESSAGE value="fixed PGOC_6bus_modNTC.gridcal model" />
     <MESSAGE value="new file pruebas" />
     <MESSAGE value="fix ntc_opf call" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix ntc_opf call" />
+    <MESSAGE value="new IEE 14 network with hvdc and shifter" />
+    <option name="LAST_COMMIT_MESSAGE" value="new IEE 14 network with hvdc and shifter" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
