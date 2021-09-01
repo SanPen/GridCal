@@ -632,7 +632,7 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
             nc.branch_data.theta[:, 0] = theta
             nc.branch_data.Beq[:, 0] = Beq
 
-            return NumericPowerFlowResults(V, converged, norm_f_new, prev_Scalc, m, theta, Beq, iterations, elapsed)
+            return NumericPowerFlowResults(V, converged, norm_f_new, prev_Scalc, m, theta, Beq, Ybus, Yf, Yt, iterations, elapsed)
         else:
             # the iteration was ok, check the controls if the error is small enough
             if norm_f < 1e-2:
@@ -718,7 +718,7 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, converged, norm_f, Scalc, m, theta, Beq, iterations, elapsed)
+    return NumericPowerFlowResults(V, converged, norm_f, Scalc, m, theta, Beq, Ybus, Yf, Yt, iterations, elapsed)
 
 
 def LM_ACDC(nc: "SnapshotData", Vbus, Sbus,
@@ -984,11 +984,14 @@ def LM_ACDC(nc: "SnapshotData", Vbus, Sbus,
         converged = True
         Scalc = S0  # V * np.conj(Ybus * V - Ibus)
         iter_ = 0
+        Ybus = None
+        Yf = None
+        Yt = None
 
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, converged, norm_f, Scalc, m, theta, Beq, iter_, elapsed)
+    return NumericPowerFlowResults(V, converged, norm_f, Scalc, m, theta, Beq, Ybus, Yf, Yt, iter_, elapsed)
 
 
 if __name__ == "__main__":

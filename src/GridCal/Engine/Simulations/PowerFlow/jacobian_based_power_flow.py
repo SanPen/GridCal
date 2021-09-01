@@ -367,7 +367,7 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
 
                 end = time.time()
                 elapsed = end - start
-                return NumericPowerFlowResults(V, converged, norm_f_new, Scalc, None, None, None, iter_, elapsed)
+                return NumericPowerFlowResults(V, converged, norm_f_new, Scalc, None, None, None, None, None, None, iter_, elapsed)
             else:
                 norm_f = norm_f_new
 
@@ -409,7 +409,7 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, iter_, elapsed)
+    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
 
 
 def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15,
@@ -547,7 +547,7 @@ def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15,
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, iter_, elapsed)
+    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
 
 
 def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
@@ -622,7 +622,7 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
                 iter_ = max_it + 1  # exit condition
                 end = time.time()
                 elapsed = end - start
-                return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, iter_, elapsed)
+                return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
 
             # assign the solution vector
             dVa[pvpq] = dx[:npvpq]
@@ -690,7 +690,7 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, iter_, elapsed)
+    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
 
 
 def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=50,
@@ -859,7 +859,7 @@ def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, converged, normF, Scalc, None, None, None, iter_, elapsed)
+    return NumericPowerFlowResults(V, converged, normF, Scalc, None, None, None, None, None, None, iter_, elapsed)
 
 
 def Jacobian_I(Ybus, V, pq, pvpq):
@@ -1029,7 +1029,7 @@ def NR_I_LS(Ybus, Sbus_sp, V0, Ibus_sp, pv, pq, tol, max_it=15, acceleration_par
 
     Scalc = V * np.conj(Icalc)
 
-    return NumericPowerFlowResults(V, converged, normF, Scalc, None, None, None, iter_, elapsed)
+    return NumericPowerFlowResults(V, converged, normF, Scalc, None, None, None, None, None, None, iter_, elapsed)
 
 
 def F(V, Ybus, S, I, pq, pvpq):
@@ -1188,4 +1188,4 @@ def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15) -> NumericPowerFl
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, converged, normF, Scalc, None, None, None, iter_, elapsed)
+    return NumericPowerFlowResults(V, converged, normF, Scalc, None, None, None, None, None, None, iter_, elapsed)

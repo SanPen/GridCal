@@ -419,7 +419,7 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
     n = Yseries.shape[0]
     if n < 2:
-        return NumericPowerFlowResults(V0, True, 0.0, S0, None, None, None, 0, 0.0)
+        return NumericPowerFlowResults(V0, True, 0.0, S0, None, None, None, None, None, None, 0, 0.0)
 
     # compute the series of coefficients
     U, X, Q, iter_ = helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv,
@@ -453,7 +453,7 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
     elapsed = time.time() - start_time
 
-    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, iter_, elapsed)
+    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
 
 
 if __name__ == '__main__':

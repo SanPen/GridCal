@@ -129,6 +129,9 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
                                              ma=circuit.branch_data.m[:, 0],
                                              theta=circuit.branch_data.theta[:, 0],
                                              Beq=circuit.branch_data.Beq[:, 0],
+                                             Ybus=circuit.Ybus,
+                                             Yf=circuit.Yf,
+                                             Yt=circuit.Yt,
                                              iterations=0,
                                              elapsed=0)
 
@@ -340,6 +343,9 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                                        ma=circuit.branch_data.m[:, 0],
                                        theta=circuit.branch_data.theta[:, 0],
                                        Beq=circuit.branch_data.Beq[:, 0],
+                                       Ybus=circuit.Ybus,
+                                       Yf=circuit.Yf,
+                                       Yt=circuit.Yt,
                                        iterations=0,
                                        elapsed=0)
 
@@ -391,7 +397,9 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     Sfb, Stb, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process(calculation_inputs=circuit,
                                                                                Sbus=solution.Scalc,
                                                                                V=solution.V,
-                                                                               branch_rates=branch_rates)
+                                                                               branch_rates=branch_rates,
+                                                                               Yf=solution.Yf,
+                                                                               Yt=solution.Yt)
 
     # voltage, Sf, loading, losses, error, converged, Qpv
     results = PowerFlowResults(n=circuit.nbus,
@@ -425,7 +433,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     return results
 
 
-def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_rates):
+def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_rates, Yf=None, Yt=None):
     """
     Compute the power Sf trough the branches.
 
@@ -453,11 +461,16 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
     Q = (V[pv] * np.conj(calculation_inputs.Ybus[pv, :].dot(V))).imag
     Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
 
+    if Yf is None:
+        Yf = calculation_inputs.Yf
+    if Yt is None:
+        Yt = calculation_inputs.Yt
+
     # Branches current, loading, etc
     Vf = calculation_inputs.Cf * V
     Vt = calculation_inputs.Ct * V
-    If = calculation_inputs.Yf * V
-    It = calculation_inputs.Yt * V
+    If = Yf * V
+    It = Yt * V
     Sf = Vf * np.conj(If)
     St = Vt * np.conj(It)
 
