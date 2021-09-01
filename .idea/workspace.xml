@@ -25,9 +25,7 @@
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/PGOC_6bus_modNTC.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/PGOC_6bus_modNTC.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v6.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/or_tools/ntc_opf_v6.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -99,7 +97,7 @@
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/Sparse" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ntc_opf_v6">
+  <component name="RunManager" selected="Python.ntc_opf">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -114,6 +112,27 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="ntc_opf" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -185,41 +204,20 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="ortools_opf3" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="D:\ReeGit\github\GridCal\venv\Scripts\python.exe" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/research/or_tools" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/research/or_tools/ortools_opf3.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.ntc_opf_v5" />
       <item itemvalue="Python.ntc_opf_v7" />
-      <item itemvalue="Python.ortools_opf3" />
       <item itemvalue="Python.ntc_opf_v6" />
+      <item itemvalue="Python.ntc_opf" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ntc_opf_v6" />
+        <item itemvalue="Python.ntc_opf" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.ntc_opf_v6" />
         <item itemvalue="Python.ntc_opf_v7" />
         <item itemvalue="Python.ntc_opf_v5" />
-        <item itemvalue="Python.ortools_opf3" />
       </list>
     </recent_temporary>
   </component>
@@ -553,13 +551,6 @@
       <workItem from="1616154505083" duration="1220000" />
       <workItem from="1616261080829" duration="12802000" />
       <workItem from="1616444990256" duration="4870000" />
-    </task>
-    <task id="LOCAL-00082" summary="- added update command in the about box">
-      <created>1610205857704</created>
-      <option name="number" value="00082" />
-      <option name="presentableId" value="LOCAL-00082" />
-      <option name="project" value="LOCAL" />
-      <updated>1610205857704</updated>
     </task>
     <task id="LOCAL-00083" summary="- Fixed some visualization issues">
       <created>1610209501922</created>
@@ -897,7 +888,14 @@
       <option name="project" value="LOCAL" />
       <updated>1630404839446</updated>
     </task>
-    <option name="localTasksCounter" value="131" />
+    <task id="LOCAL-00131" summary="new file pruebas">
+      <created>1630481103682</created>
+      <option name="number" value="00131" />
+      <option name="presentableId" value="LOCAL-00131" />
+      <option name="project" value="LOCAL" />
+      <updated>1630481103683</updated>
+    </task>
+    <option name="localTasksCounter" value="132" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -931,7 +929,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed Monte Carlo&#10;Fixed HVDC Qmin, Qmax" />
     <MESSAGE value="Merged MC and LHS&#10;Added flow based width" />
     <MESSAGE value="some bug fixes" />
     <MESSAGE value="Implemented the dictionary to export objects" />
@@ -956,7 +953,8 @@
     <MESSAGE value="new ntc opf v7" />
     <MESSAGE value="fixed flow sense" />
     <MESSAGE value="fixed PGOC_6bus_modNTC.gridcal model" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed PGOC_6bus_modNTC.gridcal model" />
+    <MESSAGE value="new file pruebas" />
+    <option name="LAST_COMMIT_MESSAGE" value="new file pruebas" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -497,9 +497,17 @@ if __name__ == '__main__':
     from GridCal.Engine.IO.file_handler import FileOpen
     from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
 
-    fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
+    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
+    fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
 
     main_circuit = FileOpen(fname).open()
+
+    # compute information about areas --------------------------------------------------------------------------------------
+
+    area_from_idx = 0
+    area_to_idx = 1
+    areas = main_circuit.get_bus_area_indices()
+
 
     # main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
 
@@ -507,7 +515,13 @@ if __name__ == '__main__':
                                                       apply_temperature=False,
                                                       branch_tolerance_mode=BranchImpedanceMode.Specified)
 
-    problem = OpfNTC(numerical_circuit=numerical_circuit_)
+
+    # get the area bus indices
+    areas = areas[numerical_circuit_.original_bus_idx]
+    a1 = np.where(areas == area_from_idx)[0]
+    a2 = np.where(areas == area_to_idx)[0]
+
+    problem = OpfNTC(numerical_circuit=numerical_circuit_, area_from_bus_idx=a1, area_to_bus_idx=a2)
 
     print('Solving...')
     status = problem.solve()
