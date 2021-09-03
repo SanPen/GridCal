@@ -291,8 +291,8 @@ class OpfNTC(Opf):
         nc = self.numerical_circuit
         node_balance = lpDot(nc.Bbus, angles)
 
-        node_balance_slack_1 = [self.solver.NumVar(0, 99999, 'balance_slack1_' + str(i)) for i in range(nc.nbus)]
-        node_balance_slack_2 = [self.solver.NumVar(0, 99999, 'balance_slack2_' + str(i)) for i in range(nc.nbus)]
+        node_balance_slack_1 = np.array([self.solver.NumVar(0, 99999, 'balance_slack1_' + str(i)) for i in range(nc.nbus)])
+        node_balance_slack_2 = np.array([self.solver.NumVar(0, 99999, 'balance_slack2_' + str(i)) for i in range(nc.nbus)])
 
         # equal the balance to the generation: eq.13,14 (equality)
         i = 0
@@ -306,73 +306,80 @@ class OpfNTC(Opf):
     def formulate_branches_flow(self, angles, tau_dict):
 
         nc = self.numerical_circuit
-
-        flow_f = np.empty(nc.nbr, dtype=object)
+        flow_f = np.zeros(nc.nbr, dtype=object)
+        overload1 = np.zeros(nc.nbr, dtype=object)
+        overload2 = np.zeros(nc.nbr, dtype=object)
         rates = nc.Rates / nc.Sbase
-        overload1 = np.empty(nc.nbr, dtype=object)
-        overload2 = np.empty(nc.nbr, dtype=object)
+
         for i in range(nc.nbr):
 
-            _f = nc.branch_data.F[i]
-            _t = nc.branch_data.T[i]
-            flow_f[i] = self.solver.NumVar(-rates[i], rates[i], 'pftk_' + str(i))
+            if nc.branch_data.branch_active[i]:
+                _f = nc.branch_data.F[i]
+                _t = nc.branch_data.T[i]
+                flow_f[i] = self.solver.NumVar(-rates[i], rates[i], 'pftk_' + str(i))
 
-            # compute the branch susceptance
-            bk = (1.0 / complex(nc.branch_data.R[i], nc.branch_data.X[i])).imag
+                # compute the branch susceptance
+                bk = (1.0 / complex(nc.branch_data.R[i], nc.branch_data.X[i])).imag
 
-            if i in tau_dict.keys():
-                # branch power from-to eq.15
-                self.solver.Add(flow_f[i] == bk * (angles[_t] - angles[_f] - tau_dict[i]), 'phase_shifter_power_flow_' + str(i))
-            else:
-                # branch power from-to eq.15
-                self.solver.Add(flow_f[i] == bk * (angles[_t] - angles[_f]), 'branch_power_flow_' + str(i))
+                if i in tau_dict.keys():
+                    # branch power from-to eq.15
+                    self.solver.Add(flow_f[i] == bk * (angles[_t] - angles[_f] - tau_dict[i]), 'phase_shifter_power_flow_' + str(i))
+                else:
+                    # branch power from-to eq.15
+                    self.solver.Add(flow_f[i] == bk * (angles[_t] - angles[_f]), 'branch_power_flow_' + str(i))
 
-            # rating restriction in the sense from-to: eq.17
-            overload1[i] = self.solver.NumVar(0, 9999, 'overload1_' + str(i))
-            self.solver.Add(flow_f[i] <= (rates[i] + overload1[i]), "ft_rating_" + str(i))
+                # rating restriction in the sense from-to: eq.17
+                overload1[i] = self.solver.NumVar(0, 9999, 'overload1_' + str(i))
+                self.solver.Add(flow_f[i] <= (rates[i] + overload1[i]), "ft_rating_" + str(i))
 
-            # rating restriction in the sense to-from: eq.18
-            overload2[i] = self.solver.NumVar(0, 9999, 'overload2_' + str(i))
-            self.solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "tf_rating_" + str(i))
+                # rating restriction in the sense to-from: eq.18
+                overload2[i] = self.solver.NumVar(0, 9999, 'overload2_' + str(i))
+                self.solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "tf_rating_" + str(i))
 
         return flow_f, overload1, overload2
 
-    def formulate_hvdc_flow(self, angles, t=0):
+    def formulate_hvdc_flow(self, angles, Pinj, t=0):
         nc = self.numerical_circuit
 
-        flow_f = np.empty(nc.nhvdc, dtype=object)
         rates = nc.hvdc_data.rate[:, t] / nc.Sbase
         F = nc.hvdc_data.get_bus_indices_f()
         T = nc.hvdc_data.get_bus_indices_t()
-        overload1 = np.empty(nc.nhvdc, dtype=object)
-        overload2 = np.empty(nc.nhvdc, dtype=object)
 
-        hvdc_control1 = np.empty(nc.nhvdc, dtype=object)
-        hvdc_control2 = np.empty(nc.nhvdc, dtype=object)
+        flow_f = np.zeros(nc.nhvdc, dtype=object)
+        overload1 = np.zeros(nc.nhvdc, dtype=object)
+        overload2 = np.zeros(nc.nhvdc, dtype=object)
+        hvdc_control1 = np.zeros(nc.nhvdc, dtype=object)
+        hvdc_control2 = np.zeros(nc.nhvdc, dtype=object)
 
         for i in range(self.numerical_circuit.nhvdc):
-            _f = F[i]
-            _t = T[i]
-            flow_f[i] = self.solver.NumVar(-rates[i], rates[i], 'hvdc_flow_' + str(i))
-            hvdc_control1[i] = self.solver.NumVar(0, 9999, 'hvdc_control1_' + str(i))
-            hvdc_control2[i] = self.solver.NumVar(0, 9999, 'hvdc_control2_' + str(i))
-            P0 = nc.hvdc_data.Pf[i, t]
 
-            if nc.hvdc_data.control_mode[i] == HvdcControlType.type_0_free:
-                bk = 1.0 / nc.hvdc_data.r[i]  # TODO: yes, I know... DC...
-                self.solver.Add(flow_f[i] == P0 + bk * (angles[_t] - angles[_f]) + hvdc_control1[i], 'hvdc_power_flow_' + str(i))
+            if nc.hvdc_data.active[i]:
 
-            elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset:
-                bk = 1.0
-                self.solver.Add(flow_f[i] == P0 + bk * (angles[_t] - angles[_f]) + hvdc_control2[i], 'hvdc_power_flow_' + str(i))
+                _f = F[i]
+                _t = T[i]
 
-            # rating restriction in the sense from-to: eq.17
-            overload1[i] = self.solver.NumVar(0, 9999, 'overload_hvdc1_' + str(i))
-            self.solver.Add(flow_f[i] <= (rates[i] + overload1[i]), "hvdc_ft_rating_" + str(i))
+                hvdc_control1[i] = self.solver.NumVar(0, 9999, 'hvdc_control1_' + str(i))
+                hvdc_control2[i] = self.solver.NumVar(0, 9999, 'hvdc_control2_' + str(i))
+                P0 = nc.hvdc_data.Pt[i, t] / nc.Sbase
 
-            # rating restriction in the sense to-from: eq.18
-            overload2[i] = self.solver.NumVar(0, 9999, 'overload_hvdc2_' + str(i))
-            self.solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "hvdc_tf_rating_" + str(i))
+                if nc.hvdc_data.control_mode[i] == HvdcControlType.type_0_free:
+                    flow_f[i] = self.solver.NumVar(-rates[i], rates[i], 'hvdc_flow_' + str(i))
+
+                    bk = 1.0 / nc.hvdc_data.r[i]  # TODO: yes, I know... DC...
+                    self.solver.Add(flow_f[i] == P0 + bk * (angles[_t] - angles[_f]) + hvdc_control1[i], 'hvdc_power_flow_' + str(i))
+
+                    # rating restriction in the sense from-to: eq.17
+                    overload1[i] = self.solver.NumVar(0, 9999, 'overload_hvdc1_' + str(i))
+                    self.solver.Add(flow_f[i] <= (rates[i] + overload1[i]), "hvdc_ft_rating_" + str(i))
+
+                    # rating restriction in the sense to-from: eq.18
+                    overload2[i] = self.solver.NumVar(0, 9999, 'overload_hvdc2_' + str(i))
+                    self.solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "hvdc_tf_rating_" + str(i))
+
+                elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset:
+                    # simple injections model
+                    Pinj += nc.hvdc_data.get_injections_per_bus()[:, t] / nc.Sbase
+                    flow_f[i] = P0
 
         return flow_f, overload1, overload2, hvdc_control1, hvdc_control2
 
@@ -425,7 +432,7 @@ class OpfNTC(Opf):
         """
         val = np.zeros(arr.shape)
         for i in range(val.shape[0]):
-            if isinstance(arr[i], float):
+            if isinstance(arr[i], float) or isinstance(arr[i], int):
                 val[i] = arr[i]
             else:
                 val[i] = arr[i].solution_value()
@@ -505,14 +512,15 @@ class OpfNTC(Opf):
 
         Pinj = self.formulate_power_injections(Cgen=Cgen, generation=Pg, t=t)
 
-        node_balance, \
-        node_balance_slack_1, \
-        node_balance_slack_2 = self.formulate_node_balance(angles=theta, Pinj=Pinj)
-
         flow_f, overload1, overload2 = self.formulate_branches_flow(angles=theta,
                                                                     tau_dict=phase_shift_dict)
 
-        hvdc_flow_f, hvdc_overload1, hvdc_overload2, hvdc_control1, hvdc_control2 = self.formulate_hvdc_flow(angles=theta, t=t)
+        hvdc_flow_f, hvdc_overload1, hvdc_overload2, \
+        hvdc_control1, hvdc_control2 = self.formulate_hvdc_flow(angles=theta, Pinj=Pinj, t=t)
+
+        node_balance, \
+        node_balance_slack_1, \
+        node_balance_slack_2 = self.formulate_node_balance(angles=theta, Pinj=Pinj)
 
         self.formulate_objective(node_balance_slack_1, node_balance_slack_2,
                                  inter_area_branches, flow_f, overload1, overload2,
@@ -523,6 +531,7 @@ class OpfNTC(Opf):
         # transpose them to be in the format of GridCal: time, device
         self.theta = theta
         self.Pg = Pg
+        self.Pg_delta = delta
         # self.Pb = Pb
         self.Pl = Pl
         self.Pinj = Pinj
@@ -531,11 +540,17 @@ class OpfNTC(Opf):
         self.s_to = - flow_f
 
         self.hvdc_flow = hvdc_flow_f
+        self.hvdc_slacks = hvdc_overload1 - hvdc_overload2
 
-        self.overloads = overload1 + overload2
+        self.overloads = overload1 - overload2
         self.rating = branch_ratings
         self.phase_shift_dict = phase_shift_dict
         self.nodal_restrictions = node_balance
+
+        self.nodal_slacks = node_balance_slack_1 - node_balance_slack_2
+
+        self.inter_area_branches = inter_area_branches
+        self.inter_area_hvdc = inter_area_hvdc
 
         return self.solver
 
@@ -557,13 +572,27 @@ class OpfNTC(Opf):
         """
         return self.extract(self.Pinj, make_abs=False) * self.numerical_circuit.Sbase
 
+    def get_generator_delta(self):
+        """
+        return the branch loading (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.Pg_delta, make_abs=False) * self.numerical_circuit.Sbase
+
+    def get_node_slacks(self):
+        """
+        return the branch loading (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.nodal_slacks, make_abs=False) * self.numerical_circuit.Sbase
+
     def get_phase_angles(self):
         """
         Get the phase shift solution
         :return:
         """
         arr = np.zeros(self.numerical_circuit.nbr)
-        for i, var in self.phase_shift_dict.values():
+        for i, var in self.phase_shift_dict.items():
             arr[i] = var.solution_value()
 
         return arr
@@ -574,6 +603,20 @@ class OpfNTC(Opf):
         :return: 2D array
         """
         return self.extract(self.hvdc_flow, make_abs=False) * self.numerical_circuit.Sbase
+
+    def get_hvdc_loading(self):
+        """
+        return the branch loading (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.hvdc_flow, make_abs=False) * self.numerical_circuit.Sbase / self.numerical_circuit.hvdc_data.rate[:, 0]
+
+    def get_hvdc_slacks(self):
+        """
+        return the branch loading (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.hvdc_slacks, make_abs=False) * self.numerical_circuit.Sbase
 
 
 if __name__ == '__main__':

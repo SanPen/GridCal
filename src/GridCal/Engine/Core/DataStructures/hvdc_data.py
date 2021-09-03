@@ -92,10 +92,10 @@ class HvdcData:
         return data
 
     def get_bus_indices_f(self):
-        return self.C_hvdc_bus_f.tocsc().indices
+        return self.C_hvdc_bus_f * np.arange(self.C_hvdc_bus_f.shape[1])
 
     def get_bus_indices_t(self):
-        return self.C_hvdc_bus_t.tocsc().indices
+        return self.C_hvdc_bus_t * np.arange(self.C_hvdc_bus_t.shape[1])
 
     def get_island(self, bus_idx):
         """

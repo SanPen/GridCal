@@ -3856,12 +3856,21 @@ class MainGUI(QMainWindow):
             if results.converged:
 
                 if self.ui.draw_schematic_checkBox.isChecked():
+
                     viz.colour_the_schematic(circuit=self.circuit,
+                                             Sbus=results.Sbus,
+                                             Sf=results.Sf,
+                                             St=-results.Sf,
                                              voltages=results.voltage,
                                              loadings=results.loading,
                                              types=results.bus_types,
-                                             Sf=results.Sf,
-                                             Sbus=results.Sbus,
+                                             losses=results.losses,
+                                             hvdc_loading=results.hvdc_loading,
+                                             hvdc_sending_power=results.hvdc_Pf,
+                                             hvdc_losses=None,
+                                             ma=None,
+                                             theta=results.phase_shift,
+                                             Beq=None,
                                              use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                              min_branch_width=self.ui.min_branch_size_spinBox.value(),
                                              max_branch_width=self.ui.max_branch_size_spinBox.value(),

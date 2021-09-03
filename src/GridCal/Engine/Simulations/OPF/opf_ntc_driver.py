@@ -82,10 +82,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         **converged**: converged?
     """
 
-    def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names,
+    def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names,
                  Sbus=None, voltage=None, load_shedding=None, generator_shedding=None,
                  battery_power=None, controlled_generation_power=None,
-                 Sf=None, overloads=None, loading=None, losses=None, converged=None, bus_types=None):
+                 Sf=None, overloads=None, loading=None, losses=None, converged=None, bus_types=None,
+                 hvdc_flow=None, hvdc_slacks=None, hvdc_loading=None, node_slacks=None, phase_shift=None, generation_delta=None,
+                 inter_area_branches=list(), inter_area_hvdc=list()):
 
         ResultsTemplate.__init__(self,
                                  name='OPF',
@@ -97,7 +99,14 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.LoadShedding,
                                                     ResultTypes.ControlledGeneratorShedding,
                                                     ResultTypes.ControlledGeneratorPower,
-                                                    ResultTypes.BatteryPower],
+                                                    ResultTypes.BatteryPower,
+
+                                                    ResultTypes.HvdcPowerFrom,
+                                                    ResultTypes.HvdcOverloads,
+                                                    ResultTypes.BranchTapAngle,
+                                                    ResultTypes.GenerationDelta,
+                                                    ResultTypes.InterAreaExchange],
+
                                  data_variables=['bus_names',
                                                  'branch_names',
                                                  'load_names',
@@ -120,14 +129,29 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.load_names = load_names
         self.generator_names = generator_names
         self.battery_names = battery_names
+        self.hvdc_names = hvdc_names
+
+        self.inter_area_branches = inter_area_branches
+
+        self.inter_area_hvdc = inter_area_hvdc
+
+        self.generation_delta = generation_delta
 
         self.Sbus = Sbus
 
         self.voltage = voltage
 
+        self.node_slacks = node_slacks
+
         self.load_shedding = load_shedding
 
         self.Sf = Sf
+
+        self.hvdc_Pf = hvdc_flow
+        self.hvdc_loading = hvdc_loading
+        self.hvdc_slacks = hvdc_slacks
+
+        self.phase_shift = phase_shift
 
         self.bus_types = bus_types
 
@@ -270,6 +294,47 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = '(MW)'
             title = 'Battery power'
 
+        elif result_type == ResultTypes.HvdcPowerFrom:
+            labels = self.hvdc_names
+            y = self.hvdc_Pf
+            y_label = '(MW)'
+            title = result_type.value
+
+        elif result_type == ResultTypes.HvdcOverloads:
+            labels = self.hvdc_names
+            y = self.hvdc_slacks
+            y_label = '(MW)'
+            title = result_type.value
+
+        elif result_type == ResultTypes.BranchTapAngle:
+            labels = self.branch_names
+            y = self.phase_shift
+            y_label = '(rad)'
+            title = result_type.value
+
+        elif result_type == ResultTypes.GenerationDelta:
+            labels = self.generator_names
+            y = self.generation_delta
+            y_label = '(MW)'
+            title = result_type.value
+
+        elif result_type == ResultTypes.InterAreaExchange:
+            labels = list()
+            y = list()
+
+            for (k, sign) in self.inter_area_branches:
+                labels.append(self.branch_names[k])
+                y.append([self.Sf[k] * sign])
+
+            for (k, sign) in self.inter_area_hvdc:
+                labels.append(self.hvdc_names[k])
+                y.append([self.hvdc_Pf[k] * sign])
+
+            y = np.array(y)
+            labels = np.array(labels)
+            y_label = '(MW)'
+            title = result_type.value
+
         else:
             labels = []
             y = np.zeros(0)
@@ -334,6 +399,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
                                                          load_names=numerical_circuit.load_data.load_names,
                                                          generator_names=numerical_circuit.generator_data.generator_names,
                                                          battery_names=numerical_circuit.battery_data.battery_names,
+                                                         hvdc_names=numerical_circuit.hvdc_data.names,
                                                          Sbus=problem.get_power_injections(),
                                                          voltage=problem.get_voltage(),
                                                          load_shedding=np.zeros((numerical_circuit.nload, 1)),
@@ -344,7 +410,16 @@ class OptimalNetTransferCapacity(DriverTemplate):
                                                          overloads=problem.get_overloads(),
                                                          loading=problem.get_loading(),
                                                          converged=bool(problem.converged()),
-                                                         bus_types=numerical_circuit.bus_types)
+                                                         bus_types=numerical_circuit.bus_types,
+                                                         hvdc_flow=problem.get_hvdc_flow(),
+                                                         hvdc_loading=problem.get_hvdc_loading(),
+                                                         hvdc_slacks=problem.get_hvdc_slacks(),
+                                                         node_slacks=problem.get_node_slacks(),
+                                                         phase_shift=problem.get_phase_angles(),
+                                                         generation_delta=problem.get_generator_delta(),
+                                                         inter_area_branches=problem.inter_area_branches,
+                                                         inter_area_hvdc=problem.inter_area_hvdc
+                                                         )
 
         return self.results
 
