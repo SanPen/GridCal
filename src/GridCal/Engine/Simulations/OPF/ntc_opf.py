@@ -205,10 +205,10 @@ class OpfNTC(Opf):
         # this builds the formulation right away
         Opf.__init__(self, numerical_circuit=numerical_circuit, solver_type=solver_type)
 
-    def formulate_generation(self, ngen, Cgen, Pgen, Pmax, Pmin, a1, a2):
+    def formulate_generation(self, ngen, Cgen, Pgen, Pmax, Pmin, a1, a2, t=0):
 
         gens1, gens2, gens_out = get_generators_connectivity(Cgen, a1, a2)
-
+        gen_cost = self.numerical_circuit.generator_data.generator_cost[:, t] * self.numerical_circuit.Sbase  # pass from $/MWh to $/p.u.h
         generation = np.zeros(ngen, dtype=object)
         delta = np.zeros(ngen, dtype=object)
 
@@ -255,7 +255,7 @@ class OpfNTC(Opf):
         area_balance_slack = self.solver.NumVar(0, 99999, 'Area_slack')
         self.solver.Add(self.solver.Sum(dgen1) + self.solver.Sum(dgen2) == area_balance_slack, 'Area equality')
 
-        return generation, delta, gen_a1_idx, gen_a2_idx, area_balance_slack, dgen1
+        return generation, delta, gen_a1_idx, gen_a2_idx, area_balance_slack, dgen1, gen_cost
 
     def formulate_angles(self, set_ref_to_zero=True):
 
@@ -386,7 +386,7 @@ class OpfNTC(Opf):
     def formulate_objective(self, node_balance_slack_1, node_balance_slack_2,
                             inter_area_branches, flows_f, overload1, overload2,
                             inter_area_hvdc, hvdc_flow_f, hvdc_overload1, hvdc_overload2, hvdc_control1, hvdc_control2,
-                            area_balance_slack, dgen1):
+                            area_balance_slack, dgen1, gen_cost, delta):
 
         # maximize the power from->to
         flows_ft = np.zeros(len(inter_area_branches), dtype=object)
@@ -400,7 +400,7 @@ class OpfNTC(Opf):
         flow_from_a1_to_a2 = self.solver.Sum(flows_ft)
 
         # include the cost of generation
-        # gen_cost_f = solver.Sum(gen_cost * delta)
+        gen_cost_f = self.solver.Sum(gen_cost * delta)
 
         node_balance_slack_f = self.solver.Sum(node_balance_slack_1) + self.solver.Sum(node_balance_slack_2)
 
@@ -415,7 +415,7 @@ class OpfNTC(Opf):
             # - 1.0 * flow_from_a1_to_a2
             - 1.0 * self.solver.Sum(dgen1)
             + 1.0 * area_balance_slack
-            # + 1.0 * gen_cost_f
+            + 1.0 * gen_cost_f
             + 1e0 * node_balance_slack_f
             + 1e0 * branch_overload
             + 1e0 * hvdc_overload
@@ -497,13 +497,14 @@ class OpfNTC(Opf):
 
         # add te generation
         Pg, delta, gen_a1_idx, gen_a2_idx, \
-        area_balance_slack, dgen1 = self.formulate_generation(ngen=ng,
-                                                              Cgen=Cgen,
-                                                              Pgen=Pg_fix,
-                                                              Pmax=Pg_max,
-                                                              Pmin=Pg_min,
-                                                              a1=self.area_from_bus_idx,
-                                                              a2=self.area_to_bus_idx)
+        area_balance_slack, dgen1, gen_cost = self.formulate_generation(ngen=ng,
+                                                                        Cgen=Cgen,
+                                                                        Pgen=Pg_fix,
+                                                                        Pmax=Pg_max,
+                                                                        Pmin=Pg_min,
+                                                                        a1=self.area_from_bus_idx,
+                                                                        a2=self.area_to_bus_idx,
+                                                                        t=t)
 
         # add the angles
         theta = self.formulate_angles()
@@ -522,10 +523,22 @@ class OpfNTC(Opf):
         node_balance_slack_1, \
         node_balance_slack_2 = self.formulate_node_balance(angles=theta, Pinj=Pinj)
 
-        self.formulate_objective(node_balance_slack_1, node_balance_slack_2,
-                                 inter_area_branches, flow_f, overload1, overload2,
-                                 inter_area_hvdc, hvdc_flow_f, hvdc_overload1, hvdc_overload2, hvdc_control1, hvdc_control2,
-                                 area_balance_slack, dgen1)
+        self.formulate_objective(node_balance_slack_1=node_balance_slack_1,
+                                 node_balance_slack_2=node_balance_slack_2,
+                                 inter_area_branches=inter_area_branches,
+                                 flows_f=flow_f,
+                                 overload1=overload1,
+                                 overload2=overload2,
+                                 inter_area_hvdc=inter_area_hvdc,
+                                 hvdc_flow_f=hvdc_flow_f,
+                                 hvdc_overload1=hvdc_overload1,
+                                 hvdc_overload2=hvdc_overload2,
+                                 hvdc_control1=hvdc_control1,
+                                 hvdc_control2=hvdc_control2,
+                                 area_balance_slack=area_balance_slack,
+                                 dgen1=dgen1,
+                                 gen_cost=gen_cost,
+                                 delta=delta)
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
