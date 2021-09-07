@@ -399,6 +399,9 @@ class OpfNTC(Opf):
 
         flow_from_a1_to_a2 = self.solver.Sum(flows_ft)
 
+        # summation of generation deltas in the area 1 (this should be positive)
+        area_1_gen_delta = self.solver.Sum(dgen1)
+
         # include the cost of generation
         gen_cost_f = self.solver.Sum(gen_cost * delta)
 
@@ -413,13 +416,13 @@ class OpfNTC(Opf):
         # objective function
         self.solver.Minimize(
             # - 1.0 * flow_from_a1_to_a2
-            - 1.0 * self.solver.Sum(dgen1)
-            + 1.0 * area_balance_slack
-            + 1.0 * gen_cost_f
+            - 1e0 * area_1_gen_delta
+            + 1e0 * area_balance_slack
+            + 1e0 * gen_cost_f
             + 1e0 * node_balance_slack_f
             + 1e0 * branch_overload
             + 1e0 * hvdc_overload
-            + 1.0 * hvdc_control
+            + 1e0 * hvdc_control
         )
 
     @staticmethod
