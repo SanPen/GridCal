@@ -730,6 +730,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         t = bus_dict[elm.bus_to]
 
         data.branch_names[ii] = elm.name
+        data.branch_dc[ii] = 1
 
         if time_series:
             data.branch_active[ii, :] = elm.active_prof

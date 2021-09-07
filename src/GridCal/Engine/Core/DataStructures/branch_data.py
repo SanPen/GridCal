@@ -30,6 +30,8 @@ class BranchData:
 
         self.branch_names = np.empty(self.nbr, dtype=object)
 
+        self.branch_dc = np.zeros(self.nbr, dtype=int)
+
         self.branch_active = np.zeros((nbr, ntime), dtype=int)
         self.branch_rates = np.zeros((nbr, ntime), dtype=float)
         self.branch_contingency_rates = np.zeros((nbr, ntime), dtype=float)
@@ -112,8 +114,8 @@ class BranchData:
         data.alpha3 = self.alpha3[elm_idx]
 
         data.control_mode = self.control_mode[elm_idx]
-
         data.branch_active = self.branch_active[tidx]
+        data.branch_dc = self.branch_dc[tidx]
         data.branch_rates = self.branch_rates[tidx]
         data.branch_contingency_rates = self.branch_contingency_rates[tidx]
         data.m = self.m[tidx]
@@ -148,6 +150,12 @@ class BranchData:
     def get_contingency_enabled_indices(self):
 
         return np.where(self.contingency_enabled == 1)[0]
+
+    def get_dc_indices(self):
+        return np.where(self.branch_dc != 0)[0]
+
+    def get_ac_indices(self):
+        return np.where(self.branch_dc == 0)[0]
 
     def __len__(self):
         return self.nbr

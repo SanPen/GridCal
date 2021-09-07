@@ -386,7 +386,7 @@ class OpfNTC(Opf):
     def formulate_objective(self, node_balance_slack_1, node_balance_slack_2,
                             inter_area_branches, flows_f, overload1, overload2,
                             inter_area_hvdc, hvdc_flow_f, hvdc_overload1, hvdc_overload2, hvdc_control1, hvdc_control2,
-                            area_balance_slack, dgen1, gen_cost, delta):
+                            area_balance_slack, dgen1, gen_cost, generation_delta):
 
         # maximize the power from->to
         flows_ft = np.zeros(len(inter_area_branches), dtype=object)
@@ -403,7 +403,7 @@ class OpfNTC(Opf):
         area_1_gen_delta = self.solver.Sum(dgen1)
 
         # include the cost of generation
-        gen_cost_f = self.solver.Sum(gen_cost * delta)
+        gen_cost_f = self.solver.Sum(gen_cost * generation_delta)
 
         node_balance_slack_f = self.solver.Sum(node_balance_slack_1) + self.solver.Sum(node_balance_slack_2)
 
@@ -418,7 +418,7 @@ class OpfNTC(Opf):
             # - 1.0 * flow_from_a1_to_a2
             - 1e0 * area_1_gen_delta
             + 1e0 * area_balance_slack
-            + 1e0 * gen_cost_f
+            - 1e-2 * gen_cost_f
             + 1e0 * node_balance_slack_f
             + 1e0 * branch_overload
             + 1e0 * hvdc_overload
@@ -499,7 +499,7 @@ class OpfNTC(Opf):
                                                    buses_areas_2=self.area_to_bus_idx)
 
         # add te generation
-        Pg, delta, gen_a1_idx, gen_a2_idx, \
+        generation, generation_delta, gen_a1_idx, gen_a2_idx, \
         area_balance_slack, dgen1, gen_cost = self.formulate_generation(ngen=ng,
                                                                         Cgen=Cgen,
                                                                         Pgen=Pg_fix,
@@ -514,7 +514,7 @@ class OpfNTC(Opf):
 
         phase_shift_dict = self.formulate_phase_shift()
 
-        Pinj = self.formulate_power_injections(Cgen=Cgen, generation=Pg, t=t)
+        Pinj = self.formulate_power_injections(Cgen=Cgen, generation=generation, t=t)
 
         flow_f, overload1, overload2 = self.formulate_branches_flow(angles=theta,
                                                                     tau_dict=phase_shift_dict)
@@ -540,14 +540,14 @@ class OpfNTC(Opf):
                                  hvdc_control2=hvdc_control2,
                                  area_balance_slack=area_balance_slack,
                                  dgen1=dgen1,
-                                 gen_cost=gen_cost,
-                                 delta=delta)
+                                 gen_cost=gen_cost[gen_a1_idx],
+                                 generation_delta=generation_delta[gen_a1_idx])
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
         self.theta = theta
-        self.Pg = Pg
-        self.Pg_delta = delta
+        self.Pg = generation
+        self.Pg_delta = generation_delta
         # self.Pb = Pb
         self.Pl = Pl
         self.Pinj = Pinj

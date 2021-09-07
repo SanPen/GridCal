@@ -16,6 +16,7 @@
 import numpy as np
 import numba as nb
 import pandas as pd
+import scipy.sparse as sp
 from typing import List
 
 from GridCal.Engine.basic_structures import Logger
@@ -239,6 +240,8 @@ class SnapshotData:
         self.pv_ = None
         self.vd_ = None
         self.pqpv_ = None
+        self.ac_ = None
+        self.dc_ = None
 
         self.available_structures = ['Vbus',
                                      'Sbus',
@@ -246,6 +249,8 @@ class SnapshotData:
                                      'Ybus',
                                      'Yf',
                                      'Yt',
+                                     'Bbus',
+                                     'Bf',
                                      'Cf',
                                      'Ct',
                                      'Yshunt',
@@ -782,6 +787,21 @@ class SnapshotData:
         return self.hvdc_data.get_losses()[:, 0]
 
     @property
+    def ac_indices(self):
+
+        if self.ac_ is None:
+            self.ac_ = self.branch_data.get_ac_indices()
+
+        return self.ac_
+
+    @property
+    def dc_indices(self):
+        if self.dc_ is None:
+            self.dc_ = self.branch_data.get_dc_indices()
+
+        return self.dc_
+
+    @property
     def Cf(self):
 
         # compute on demand and store
@@ -789,6 +809,10 @@ class SnapshotData:
             self.Cf_, self.Ct_ = ycalc.compute_connectivity(branch_active=self.branch_data.branch_active[:, 0],
                                                             Cf_=self.branch_data.C_branch_bus_f,
                                                             Ct_=self.branch_data.C_branch_bus_t)
+
+        if not isinstance(self.Cf_, sp.csc_matrix):
+            self.Cf_ = self.Cf_.tocsc()
+
         return self.Cf_
 
     @property
@@ -799,6 +823,10 @@ class SnapshotData:
             self.Cf_, self.Ct_ = ycalc.compute_connectivity(branch_active=self.branch_data.branch_active[:, 0],
                                                             Cf_=self.branch_data.C_branch_bus_f,
                                                             Ct_=self.branch_data.C_branch_bus_t)
+
+        if not isinstance(self.Ct_, sp.csc_matrix):
+            self.Ct_ = self.Ct_.tocsc()
+
         return self.Ct_
 
     @property
@@ -907,10 +935,14 @@ class SnapshotData:
     def Bbus(self):
 
         if self.Bbus_ is None:
-            self.Bbus_, self.Bf_ = ycalc.compute_linear_admittances(X=self.branch_data.X,
+            self.Bbus_, self.Bf_ = ycalc.compute_linear_admittances(nbr=self.nbr,
+                                                                    X=self.branch_data.X,
+                                                                    R=self.branch_data.R,
                                                                     m=self.branch_data.m[:, 0],
                                                                     Cf=self.Cf,
-                                                                    Ct=self.Ct)
+                                                                    Ct=self.Ct,
+                                                                    ac=self.ac_indices,
+                                                                    dc=self.dc_indices)
             self.Bpqpv_ = self.Bbus_[np.ix_(self.pqpv, self.pqpv)]
             self.Bref_ = self.Bbus_[np.ix_(self.pqpv, self.vd)]
 
@@ -1050,6 +1082,16 @@ class SnapshotData:
 
         elif structure_type == 'Yt':
             df = pd.DataFrame(data=self.Yt.toarray(),
+                              columns=self.bus_data.bus_names,
+                              index=self.branch_data.branch_names)
+
+        elif structure_type == 'Bbus':
+            df = pd.DataFrame(data=self.Bbus.toarray(),
+                              columns=self.bus_data.bus_names,
+                              index=self.bus_data.bus_names)
+
+        elif structure_type == 'Bf':
+            df = pd.DataFrame(data=self.Bf.toarray(),
                               columns=self.bus_data.bus_names,
                               index=self.branch_data.branch_names)
 
