@@ -1260,6 +1260,9 @@ class GridEditor(QSplitter):
         #  center the view
         self.center_nodes()
 
+    def clear(self):
+        self.diagramView.scene_.clear()
+
     def schematic_from_api(self, explode_factor=1.0, prog_func=None, text_func=None):
         """
         Generate schematic from the API

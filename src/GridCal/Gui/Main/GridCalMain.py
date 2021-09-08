@@ -16,6 +16,7 @@ import datetime as dtelib
 import gc
 import os.path
 import platform
+import time
 from collections import OrderedDict
 from typing import List, Tuple
 
@@ -1016,16 +1017,18 @@ class MainGUI(QMainWindow):
         # clear the file name
         self.file_name = ''
 
-        self.grid_editor = GridEditor(self.circuit)
+        #self.grid_editor = GridEditor(self.circuit)
 
-        self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
+        self.grid_editor.clear()
 
         # delete all widgets
-        for i in reversed(range(self.ui.schematic_layout.count())):
-            self.ui.schematic_layout.itemAt(i).widget().deleteLater()
+        #for i in reversed(range(self.ui.schematic_layout.count())):
+        #    self.ui.schematic_layout.itemAt(i).widget().deleteLater()
 
         # add the widgets
-        self.ui.schematic_layout.addWidget(self.grid_editor)
+        #self.ui.schematic_layout.addWidget(self.grid_editor)
+
+        self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
         # clear the results
         self.ui.resultsTableView.setModel(None)
@@ -1176,6 +1179,7 @@ class MainGUI(QMainWindow):
                 # assign the loaded circuit
                 self.new_project_now()
                 self.circuit = self.open_file_thread_object.circuit
+                self.file_name = self.open_file_thread_object.file_name
 
                 if len(self.circuit.buses) > 1500:
                     quit_msg = "The grid is quite large, hence the schematic might be slow.\n" \
@@ -1217,7 +1221,8 @@ class MainGUI(QMainWindow):
                 self.clear_results()
 
                 # center nodes
-                self.grid_editor.align_schematic()
+                time.sleep(0.3)
+                self.center_nodes()
 
             else:
                 warn('The file was not valid')
@@ -1951,6 +1956,8 @@ class MainGUI(QMainWindow):
                         prof_attr = elm.properties_with_profile[magnitude]
                         setattr(elm, prof_attr, data)
                         # elm.profile_f[magnitude](dialogue.time, dialogue.data[:, i], dialogue.normalized)
+                    else:
+                        print(elm.name, 'skipped')
 
                 # set up sliders
                 self.set_up_profile_sliders()

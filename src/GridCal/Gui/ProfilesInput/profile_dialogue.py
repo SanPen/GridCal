@@ -200,7 +200,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         # click
         self.ui.open_button.clicked.connect(self.import_profile)
-        self.ui.doit_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Mult))
         self.ui.set_multiplier_button.clicked.connect(lambda: self.set_multiplier(MultiplierType.Mult))
         self.ui.autolink_button.clicked.connect(self.auto_link)
         self.ui.rnd_link_pushButton.clicked.connect(self.rnd_link)

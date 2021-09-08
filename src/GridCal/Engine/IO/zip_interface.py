@@ -134,6 +134,9 @@ def read_data_frame_from_zip(file_pointer, extension, index_col=None, logger=Log
             except ValueError as e:
                 logger.add_error(str(e), device=file_pointer.name)
                 return None
+            except AttributeError as e:
+                logger.add_error(str(e) + ' Upgrading pandas might help.', device=file_pointer.name)
+                return None
     except EOFError:
         return None
     except zipfile.BadZipFile:
