@@ -1220,10 +1220,6 @@ class MainGUI(QMainWindow):
                 # clear the results
                 self.clear_results()
 
-                # center nodes
-                time.sleep(0.3)
-                self.center_nodes()
-
             else:
                 warn('The file was not valid')
         else:

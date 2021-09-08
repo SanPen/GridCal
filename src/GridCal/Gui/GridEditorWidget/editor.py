@@ -1220,6 +1220,9 @@ class GridEditor(QSplitter):
         :param text_func: Text report function
         """
 
+        # reset zoom level, otherwise the newly loaded grids appear with a much wider spacing
+        self.diagramView.resetTransform()
+
         self.add_elements_to_schematic(buses=circuit.buses,
                                        lines=circuit.lines,
                                        dc_lines=circuit.dc_lines,
@@ -1272,7 +1275,7 @@ class GridEditor(QSplitter):
         :return: Nothing
         """
         # clear all
-        self.diagramView.scene_.clear()
+        self.clear()
 
         # add to schematic
         self.add_circuit_to_schematic(self.circuit,
