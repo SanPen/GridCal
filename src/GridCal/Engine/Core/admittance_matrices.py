@@ -207,13 +207,18 @@ def compute_fast_decoupled_admittances(X, B, m, mf, mt, Cf, Ct):
     return B1, B2
 
 
-def compute_linear_admittances(nbr, X, R, m, Cf, Ct, ac, dc):
+def compute_linear_admittances(nbr, X, R, m, active, Cf, Ct, ac, dc):
     """
     Compute the linear admittances for methods such as the "DC power flow" of the PTDF
+    :param nbr: Number of branches
     :param X: array of branch reactance (p.u.)
+    :param R: array of branch resistance (p.u.)
     :param m: array of tap modules (for all branches, regardless of their type)
+    :param active: array of branch active (bool)
     :param Cf: Connectivity branch-bus "from" with the branch states computed
     :param Ct: Connectivity branch-bus "to" with the branch states computed
+    :param ac: array of ac branches indices
+    :param dc: array of dc branches indices
     :return: Bbus, Bf
     """
 
@@ -222,10 +227,10 @@ def compute_linear_admittances(nbr, X, R, m, Cf, Ct, ac, dc):
         # compose the vector for AC-DC grids where the R is needed for this matrix
         # even if conceptually we only want the susceptance
         b = np.zeros(nbr)
-        b[ac] = 1.0 / (m_abs[ac] * X[ac] + 1e-20)  # for ac branches
-        b[dc] = 1.0 / (m_abs[dc] * R[dc] + 1e-20)  # for dc branches
+        b[ac] = 1.0 / (m_abs[ac] * X[ac] * active[ac] + 1e-20)  # for ac branches
+        b[dc] = 1.0 / (m_abs[dc] * R[dc] * active[dc] + 1e-20)  # for dc branches
     else:
-        b = 1.0 / (m_abs * X + 1e-20)  # for ac branches
+        b = 1.0 / (m_abs * X * active + 1e-20)  # for ac branches
 
     b_tt = sp.diags(b)
     Bf = b_tt * Cf - b_tt * Ct

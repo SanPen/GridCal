@@ -939,6 +939,7 @@ class SnapshotData:
                                                                     X=self.branch_data.X,
                                                                     R=self.branch_data.R,
                                                                     m=self.branch_data.m[:, 0],
+                                                                    active=self.branch_data.branch_active[:, 0],
                                                                     Cf=self.Cf,
                                                                     Ct=self.Ct,
                                                                     ac=self.ac_indices,

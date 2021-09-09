@@ -25,9 +25,8 @@
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/admittance_matrices.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/admittance_matrices.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -558,13 +557,6 @@
       <workItem from="1621367763953" duration="1167000" />
       <workItem from="1621405201458" duration="3088000" />
     </task>
-    <task id="LOCAL-00113" summary="Fixed the shunt Q limits for time series&#10;Added is_controlled to the generator and shunt context menus">
-      <created>1617450061708</created>
-      <option name="number" value="00113" />
-      <option name="presentableId" value="LOCAL-00113" />
-      <option name="project" value="LOCAL" />
-      <updated>1617450061709</updated>
-    </task>
     <task id="LOCAL-00114" summary="Updated the readme">
       <created>1617539403190</created>
       <option name="number" value="00114" />
@@ -901,7 +893,14 @@
       <option name="project" value="LOCAL" />
       <updated>1631081911505</updated>
     </task>
-    <option name="localTasksCounter" value="162" />
+    <task id="LOCAL-00162" summary="Fixed grid zooming when loading">
+      <created>1631111869640</created>
+      <option name="number" value="00162" />
+      <option name="presentableId" value="LOCAL-00162" />
+      <option name="project" value="LOCAL" />
+      <updated>1631111869640</updated>
+    </task>
+    <option name="localTasksCounter" value="163" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -926,7 +925,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="full ATC" />
     <MESSAGE value="Added contingency rates" />
     <MESSAGE value="Added dynamic bus types for the time series" />
     <MESSAGE value="New ATC implemented" />
@@ -951,7 +949,8 @@
     <MESSAGE value="Refactored area summation in the objective" />
     <MESSAGE value="Improved the settings for the NTC" />
     <MESSAGE value="Fixed buf that set the multiplier when clicking &quot;do it&quot; on the profile&#10;input dialogue&#10;Fixed bug of not resizing the grid schematic on load" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed buf that set the multiplier when clicking &quot;do it&quot; on the profile&#10;input dialogue&#10;Fixed bug of not resizing the grid schematic on load" />
+    <MESSAGE value="Fixed grid zooming when loading" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed grid zooming when loading" />
   </component>
   <component name="WindowStateProjectService">
     <state width="405" height="655" key="Git.Branch.Popup" />
@@ -1149,7 +1148,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/admittance_matrices.py</url>
-          <line>292</line>
+          <line>297</line>
           <option name="timeStamp" value="431" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1411,12 +1410,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py</url>
-          <line>1279</line>
+          <line>1280</line>
           <option name="timeStamp" value="714" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py</url>
-          <line>1224</line>
+          <line>1225</line>
           <option name="timeStamp" value="715" />
         </line-breakpoint>
       </breakpoints>
