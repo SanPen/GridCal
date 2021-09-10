@@ -76,6 +76,7 @@ class BranchData:
         self.control_mode = np.zeros(self.nbr, dtype=object)
 
         self.contingency_enabled = np.ones(self.nbr, dtype=int)
+        self.monitor_loading = np.ones(self.nbr, dtype=int)
 
         self.C_branch_bus_f = sp.lil_matrix((self.nbr, nbus), dtype=int)  # connectivity branch with their "from" bus
         self.C_branch_bus_t = sp.lil_matrix((self.nbr, nbus), dtype=int)  # connectivity branch with their "to" bus
@@ -133,6 +134,7 @@ class BranchData:
         data.vt_set = self.vt_set[tidx]
 
         data.contingency_enabled = self.contingency_enabled[tidx]
+        data.monitor_loading = self.monitor_loading[tidx]
 
         data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(elm_idx, bus_idx)]
         data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(elm_idx, bus_idx)]

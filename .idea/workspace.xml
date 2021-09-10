@@ -25,8 +25,15 @@
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/admittance_matrices.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/admittance_matrices.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/branch_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/branch_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/circuit_to_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/dc_line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/dc_line.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/line.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/load.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/load.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/transformer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/upfc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/upfc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/vsc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/vsc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -557,13 +564,6 @@
       <workItem from="1621367763953" duration="1167000" />
       <workItem from="1621405201458" duration="3088000" />
     </task>
-    <task id="LOCAL-00114" summary="Updated the readme">
-      <created>1617539403190</created>
-      <option name="number" value="00114" />
-      <option name="presentableId" value="LOCAL-00114" />
-      <option name="project" value="LOCAL" />
-      <updated>1617539403190</updated>
-    </task>
     <task id="LOCAL-00115" summary="finally found a linear time sparse slicing">
       <created>1617569812608</created>
       <option name="number" value="00115" />
@@ -900,7 +900,14 @@
       <option name="project" value="LOCAL" />
       <updated>1631111869640</updated>
     </task>
-    <option name="localTasksCounter" value="163" />
+    <task id="LOCAL-00163" summary="Added active to the creation of Bbus, Bf">
+      <created>1631206859942</created>
+      <option name="number" value="00163" />
+      <option name="presentableId" value="LOCAL-00163" />
+      <option name="project" value="LOCAL" />
+      <updated>1631206859943</updated>
+    </task>
+    <option name="localTasksCounter" value="164" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -925,7 +932,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added contingency rates" />
     <MESSAGE value="Added dynamic bus types for the time series" />
     <MESSAGE value="New ATC implemented" />
     <MESSAGE value="Added Templates all around" />
@@ -950,7 +956,8 @@
     <MESSAGE value="Improved the settings for the NTC" />
     <MESSAGE value="Fixed buf that set the multiplier when clicking &quot;do it&quot; on the profile&#10;input dialogue&#10;Fixed bug of not resizing the grid schematic on load" />
     <MESSAGE value="Fixed grid zooming when loading" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed grid zooming when loading" />
+    <MESSAGE value="Added active to the creation of Bbus, Bf" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added active to the creation of Bbus, Bf" />
   </component>
   <component name="WindowStateProjectService">
     <state width="405" height="655" key="Git.Branch.Popup" />
@@ -1417,6 +1424,11 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py</url>
           <line>1225</line>
           <option name="timeStamp" value="715" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
+          <line>617</line>
+          <option name="timeStamp" value="716" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

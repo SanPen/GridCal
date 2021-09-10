@@ -206,7 +206,18 @@ class OpfNTC(Opf):
         Opf.__init__(self, numerical_circuit=numerical_circuit, solver_type=solver_type)
 
     def formulate_generation(self, ngen, Cgen, Pgen, Pmax, Pmin, a1, a2, t=0):
+        """
 
+        :param ngen:
+        :param Cgen:
+        :param Pgen:
+        :param Pmax:
+        :param Pmin:
+        :param a1:
+        :param a2:
+        :param t:
+        :return:
+        """
         gens1, gens2, gens_out = get_generators_connectivity(Cgen, a1, a2)
         gen_cost = self.numerical_circuit.generator_data.generator_cost[:, t] * self.numerical_circuit.Sbase  # pass from $/MWh to $/p.u.h
         generation = np.zeros(ngen, dtype=object)
@@ -258,28 +269,41 @@ class OpfNTC(Opf):
         return generation, delta, gen_a1_idx, gen_a2_idx, area_balance_slack, dgen1, gen_cost
 
     def formulate_angles(self, set_ref_to_zero=True):
+        """
 
+        :param set_ref_to_zero:
+        :return:
+        """
         theta = np.array([self.solver.NumVar(-6.28, 6.28, 'theta' + str(i)) for i in range(self.numerical_circuit.nbus)])
 
-        if set_ref_to_zero:
-            for i in self.numerical_circuit.vd:
-                self.solver.Add(theta[i] == 0, "Slack_angle_zero_" + str(i))
+        # if set_ref_to_zero:
+        #     for i in self.numerical_circuit.vd:
+        #         self.solver.Add(theta[i] == 0, "Slack_angle_zero_" + str(i))
 
         return theta
 
     def formulate_phase_shift(self):
+        """
 
+        :return:
+        """
         phase_shift_dict = dict()
         nc = self.numerical_circuit
         for i in range(nc.branch_data.nbr):
             if nc.branch_data.control_mode[i] == TransformerControlType.Pt:  # is a phase shifter
                 phase_shift_dict[i] = self.solver.NumVar(nc.branch_data.theta_min[i],
-                                            nc.branch_data.theta_max[i],
-                                            'phase_shift' + str(i))
+                                                         nc.branch_data.theta_max[i],
+                                                         'phase_shift_' + str(i))
         return phase_shift_dict
 
     def formulate_power_injections(self, Cgen, generation, t=0):
+        """
 
+        :param Cgen:
+        :param generation:
+        :param t:
+        :return:
+        """
         nc = self.numerical_circuit
         gen_injections = lpExpand(Cgen, generation)
         load_fixed_injections = nc.load_data.get_injections_per_bus()[:, t].real / nc.Sbase  # with sign already
@@ -287,7 +311,12 @@ class OpfNTC(Opf):
         return gen_injections + load_fixed_injections
 
     def formulate_node_balance(self, angles, Pinj):
+        """
 
+        :param angles:
+        :param Pinj:
+        :return:
+        """
         nc = self.numerical_circuit
         node_balance = lpDot(nc.Bbus, angles)
 
@@ -298,13 +327,18 @@ class OpfNTC(Opf):
         i = 0
         for balance, power in zip(node_balance, Pinj):
             self.solver.Add(balance == power + node_balance_slack_1[i] - node_balance_slack_2[i],
-                       "Node_power_balance_" + str(i))
+                            "Node_power_balance_" + str(i))
             i += 1
 
         return node_balance, node_balance_slack_1, node_balance_slack_2
 
     def formulate_branches_flow(self, angles, tau_dict):
+        """
 
+        :param angles:
+        :param tau_dict:
+        :return:
+        """
         nc = self.numerical_circuit
         flow_f = np.zeros(nc.nbr, dtype=object)
         overload1 = np.zeros(nc.nbr, dtype=object)
@@ -316,29 +350,43 @@ class OpfNTC(Opf):
             if nc.branch_data.branch_active[i]:
                 _f = nc.branch_data.F[i]
                 _t = nc.branch_data.T[i]
-                flow_f[i] = self.solver.NumVar(-rates[i], rates[i], 'pftk_' + str(i))
+
+                if nc.branch_data.monitor_loading[i]:
+                    flow_f[i] = self.solver.NumVar(-rates[i], rates[i], 'pftk_' + str(i))
+                else:
+                    flow_f[i] = self.solver.NumVar(-9999, 9999, 'pftk_' + str(i))
 
                 # compute the branch susceptance
                 bk = (1.0 / complex(nc.branch_data.R[i], nc.branch_data.X[i])).imag
 
                 if i in tau_dict.keys():
                     # branch power from-to eq.15
-                    self.solver.Add(flow_f[i] == bk * (angles[_t] - angles[_f] - tau_dict[i]), 'phase_shifter_power_flow_' + str(i))
+                    self.solver.Add(flow_f[i] == bk * (angles[_t] - angles[_f] - tau_dict[i]),
+                                    'phase_shifter_power_flow_' + str(i))
                 else:
                     # branch power from-to eq.15
-                    self.solver.Add(flow_f[i] == bk * (angles[_t] - angles[_f]), 'branch_power_flow_' + str(i))
+                    self.solver.Add(flow_f[i] == bk * (angles[_t] - angles[_f]),
+                                    'branch_power_flow_' + str(i))
 
-                # rating restriction in the sense from-to: eq.17
-                overload1[i] = self.solver.NumVar(0, 9999, 'overload1_' + str(i))
-                self.solver.Add(flow_f[i] <= (rates[i] + overload1[i]), "ft_rating_" + str(i))
+                if nc.branch_data.monitor_loading[i]:
+                    # rating restriction in the sense from-to: eq.17
+                    overload1[i] = self.solver.NumVar(0, 9999, 'overload1_' + str(i))
+                    self.solver.Add(flow_f[i] <= (rates[i] + overload1[i]), "ft_rating_" + str(i))
 
-                # rating restriction in the sense to-from: eq.18
-                overload2[i] = self.solver.NumVar(0, 9999, 'overload2_' + str(i))
-                self.solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "tf_rating_" + str(i))
+                    # rating restriction in the sense to-from: eq.18
+                    overload2[i] = self.solver.NumVar(0, 9999, 'overload2_' + str(i))
+                    self.solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "tf_rating_" + str(i))
 
         return flow_f, overload1, overload2
 
     def formulate_hvdc_flow(self, angles, Pinj, t=0):
+        """
+
+        :param angles:
+        :param Pinj:
+        :param t:
+        :return:
+        """
         nc = self.numerical_circuit
 
         rates = nc.hvdc_data.rate[:, t] / nc.Sbase
@@ -366,15 +414,18 @@ class OpfNTC(Opf):
                     flow_f[i] = self.solver.NumVar(-rates[i], rates[i], 'hvdc_flow_' + str(i))
 
                     bk = 1.0 / nc.hvdc_data.r[i]  # TODO: yes, I know... DC...
-                    self.solver.Add(flow_f[i] == P0 + bk * (angles[_t] - angles[_f]) + hvdc_control1[i], 'hvdc_power_flow_' + str(i))
+                    self.solver.Add(flow_f[i] == P0 + bk * (angles[_t] - angles[_f]) + hvdc_control1[i],
+                                    'hvdc_power_flow_' + str(i))
 
                     # rating restriction in the sense from-to: eq.17
                     overload1[i] = self.solver.NumVar(0, 9999, 'overload_hvdc1_' + str(i))
-                    self.solver.Add(flow_f[i] <= (rates[i] + overload1[i]), "hvdc_ft_rating_" + str(i))
+                    self.solver.Add(flow_f[i] <= (rates[i] + overload1[i]),
+                                    "hvdc_ft_rating_" + str(i))
 
                     # rating restriction in the sense to-from: eq.18
                     overload2[i] = self.solver.NumVar(0, 9999, 'overload_hvdc2_' + str(i))
-                    self.solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "hvdc_tf_rating_" + str(i))
+                    self.solver.Add((-rates[i] - overload2[i]) <= flow_f[i],
+                                    "hvdc_tf_rating_" + str(i))
 
                 elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset:
                     # simple injections model
@@ -387,7 +438,26 @@ class OpfNTC(Opf):
                             inter_area_branches, flows_f, overload1, overload2,
                             inter_area_hvdc, hvdc_flow_f, hvdc_overload1, hvdc_overload2, hvdc_control1, hvdc_control2,
                             area_balance_slack, dgen1, gen_cost, generation_delta):
+        """
 
+        :param node_balance_slack_1:
+        :param node_balance_slack_2:
+        :param inter_area_branches:
+        :param flows_f:
+        :param overload1:
+        :param overload2:
+        :param inter_area_hvdc:
+        :param hvdc_flow_f:
+        :param hvdc_overload1:
+        :param hvdc_overload2:
+        :param hvdc_control1:
+        :param hvdc_control2:
+        :param area_balance_slack:
+        :param dgen1:
+        :param gen_cost:
+        :param generation_delta:
+        :return:
+        """
         # maximize the power from->to
         flows_ft = np.zeros(len(inter_area_branches), dtype=object)
         for i, (k, sign) in enumerate(inter_area_branches):
@@ -570,11 +640,25 @@ class OpfNTC(Opf):
 
         return self.solver
 
+    def save_lp(self, fname="ortools.lp"):
+        """
+        Save problem in LP format
+        :param fname: name of the file
+        """
+        # save the problem in LP format to debug
+        lp_content = self.solver.ExportModelAsLpFormat(obfuscated=False)
+        # lp_content = solver.ExportModelAsMpsFormat(obfuscated=False, fixed_format=True)
+        file2write = open(fname, 'w')
+        file2write.write(lp_content)
+        file2write.close()
+
     def solve(self):
         """
         Call ORTools to solve the problem
         """
         self.status = self.solver.Solve()
+
+        self.save_lp()
 
         return self.converged()
 
