@@ -224,11 +224,11 @@ class Line(EditableDevice):
     """
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Line', idtag=None, code='',
-                 r=1e-20, x=1e-20, b=1e-20, rate=1.0, active=True, tolerance=0, cost=0.0,
+                 r=1e-20, x=1e-20, b=1e-20, rate=1.0, active=True, tolerance=0, cost=100.0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  length=1, temp_base=20, temp_oper=20, alpha=0.00330,
                  template=LineTemplate(), rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
-                 contingency_factor=1.0, contingency_enabled=True):
+                 contingency_factor=1.0, contingency_enabled=True, monitor_loading=True):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -249,6 +249,8 @@ class Line(EditableDevice):
                                                                                'Rating multiplier for contingencies.'),
                                                   'contingency_enabled': GCProp('', bool,
                                                                                 'Consider this line for contingencies.'),
+                                                  'monitor_loading': GCProp('', bool,
+                                                                                'Monitor this device loading for optimization, NTC or contingency studies.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
@@ -311,6 +313,8 @@ class Line(EditableDevice):
         self.fault_pos = fault_pos
 
         self.contingency_enabled: bool = contingency_enabled
+
+        self.monitor_loading: bool = monitor_loading
 
         # total impedance and admittance in p.u.
         self.R = r

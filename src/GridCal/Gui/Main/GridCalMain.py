@@ -16,6 +16,7 @@ import datetime as dtelib
 import gc
 import os.path
 import platform
+import time
 from collections import OrderedDict
 from typing import List, Tuple
 
@@ -339,6 +340,8 @@ class MainGUI(QMainWindow):
         self.ui.actionOPF.triggered.connect(self.run_opf)
 
         self.ui.actionOPF_time_series.triggered.connect(self.run_opf_time_series)
+
+        self.ui.actionOptimal_Net_Transfer_Capacity.triggered.connect(self.run_opf_ntc)
 
         self.ui.actionAbout.triggered.connect(self.about_box)
 
@@ -1014,16 +1017,18 @@ class MainGUI(QMainWindow):
         # clear the file name
         self.file_name = ''
 
-        self.grid_editor = GridEditor(self.circuit)
+        #self.grid_editor = GridEditor(self.circuit)
 
-        self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
+        self.grid_editor.clear()
 
         # delete all widgets
-        for i in reversed(range(self.ui.schematic_layout.count())):
-            self.ui.schematic_layout.itemAt(i).widget().deleteLater()
+        #for i in reversed(range(self.ui.schematic_layout.count())):
+        #    self.ui.schematic_layout.itemAt(i).widget().deleteLater()
 
         # add the widgets
-        self.ui.schematic_layout.addWidget(self.grid_editor)
+        #self.ui.schematic_layout.addWidget(self.grid_editor)
+
+        self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
         # clear the results
         self.ui.resultsTableView.setModel(None)
@@ -1174,6 +1179,7 @@ class MainGUI(QMainWindow):
                 # assign the loaded circuit
                 self.new_project_now()
                 self.circuit = self.open_file_thread_object.circuit
+                self.file_name = self.open_file_thread_object.file_name
 
                 if len(self.circuit.buses) > 1500:
                     quit_msg = "The grid is quite large, hence the schematic might be slow.\n" \
@@ -1213,9 +1219,6 @@ class MainGUI(QMainWindow):
 
                 # clear the results
                 self.clear_results()
-
-                # center nodes
-                self.grid_editor.align_schematic()
 
             else:
                 warn('The file was not valid')
@@ -1949,6 +1952,8 @@ class MainGUI(QMainWindow):
                         prof_attr = elm.properties_with_profile[magnitude]
                         setattr(elm, prof_attr, data)
                         # elm.profile_f[magnitude](dialogue.time, dialogue.data[:, i], dialogue.normalized)
+                    else:
+                        print(elm.name, 'skipped')
 
                 # set up sliders
                 self.set_up_profile_sliders()
@@ -2323,10 +2328,23 @@ class MainGUI(QMainWindow):
                             self.ui.actionOpf_to_Power_flow.setChecked(False)
                             opf_results = None
                     else:
-                        warning_msg('There are no OPF results, '
-                                    'therefore this operation will not use OPF information.')
-                        self.ui.actionOpf_to_Power_flow.setChecked(False)
-                        opf_results = None
+
+                        # try the OPF-NTC...
+                        drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_NTC_run)
+
+                        if drv is not None:
+                            if results is not None:
+                                opf_results = results
+                            else:
+                                warning_msg('There are no OPF-NTC results, '
+                                            'therefore this operation will not use OPF information.')
+                                self.ui.actionOpf_to_Power_flow.setChecked(False)
+                                opf_results = None
+                        else:
+                            warning_msg('There are no OPF results, '
+                                        'therefore this operation will not use OPF information.')
+                            self.ui.actionOpf_to_Power_flow.setChecked(False)
+                            opf_results = None
                 else:
                     opf_results = None
 
@@ -3769,6 +3787,109 @@ class MainGUI(QMainWindow):
                 warning_msg('There are no time series.\nLoad time series are needed for this simulation.')
         else:
             pass
+
+    def run_opf_ntc(self):
+        """
+        Run OPF simulation
+        """
+        if len(self.circuit.buses) > 0:
+
+            if not self.session.is_this_running(sim.SimulationTypes.OPF_NTC_run):
+
+                self.remove_simulation(sim.SimulationTypes.OPF_NTC_run)
+
+                # available transfer capacity inter areas
+                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+
+                if not compatible_areas:
+                    return
+
+                idx_from = np.array([i for i, bus in lst_from])
+                idx_to = np.array([i for i, bus in lst_to])
+                idx_br = np.array([i for i, bus, sense in lst_br])
+                sense_br = np.array([sense for i, bus, sense in lst_br])
+                idx_hvdc_br = np.array([i for i, bus, sense in lst_hvdc_br])
+                sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
+
+                if len(idx_from) == 0:
+                    error_msg('The area "from" has no buses!')
+                    return
+
+                if len(idx_to) == 0:
+                    error_msg('The area "to" has no buses!')
+                    return
+
+                if len(idx_br) == 0:
+                    error_msg('There are no inter-area branches!')
+                    return
+
+                mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
+
+                options = sim.OptimalNetTransferCapacityOptions(area_from_bus_idx=idx_from,
+                                                                area_to_bus_idx=idx_to,
+                                                                mip_solver=mip_solver)
+
+                self.ui.progress_label.setText('Running optimal power flow...')
+                QtGui.QGuiApplication.processEvents()
+                pf_options = self.get_selected_power_flow_options()
+                # set power flow object instance
+                drv = sim.OptimalNetTransferCapacity(self.circuit, options, pf_options)
+
+                self.LOCK()
+                self.session.run(drv,
+                                 post_func=self.post_opf_ntc,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
+
+            else:
+                warning_msg('Another OPF is being run...')
+        else:
+            pass
+
+    def post_opf_ntc(self):
+        """
+        Actions to run after the OPF simulation
+        """
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_NTC_run)
+
+        if results is not None:
+
+            self.remove_simulation(sim.SimulationTypes.OPF_NTC_run)
+
+            if results.converged:
+
+                if self.ui.draw_schematic_checkBox.isChecked():
+
+                    viz.colour_the_schematic(circuit=self.circuit,
+                                             Sbus=results.Sbus,
+                                             Sf=results.Sf,
+                                             St=-results.Sf,
+                                             voltages=results.voltage,
+                                             loadings=results.loading,
+                                             types=results.bus_types,
+                                             losses=results.losses,
+                                             hvdc_loading=results.hvdc_loading,
+                                             hvdc_sending_power=results.hvdc_Pf,
+                                             hvdc_losses=None,
+                                             ma=None,
+                                             theta=results.phase_shift,
+                                             Beq=None,
+                                             use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                             min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                             max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                             min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                             max_bus_width=self.ui.max_node_size_spinBox.value()
+                                             )
+                self.update_available_results()
+
+            else:
+
+                warning_msg('Some islands did not solve.\n'
+                            'Check that all branches have rating and \n'
+                            'that there is a generator at the slack node.', 'OPF')
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()
 
     def reduce_grid(self):
         """
@@ -5391,7 +5512,7 @@ class MainGUI(QMainWindow):
                             if obj.graphic_obj is not None:
                                 # this is a more complete function than the circuit one because it removes the
                                 # graphical items too, and for loads and generators it deletes them properly
-                                obj.graphic_obj.remove()
+                                obj.graphic_obj.remove(ask=False)
 
                         # update the view
                         self.display_filter(objects)
@@ -5617,7 +5738,7 @@ class MainGUI(QMainWindow):
                         if bus.graphic_obj is not None:
                             # this is a more complete function than the circuit one because it removes the
                             # graphical items too, and for loads and generators it deletes them properly
-                            bus.graphic_obj.remove()
+                            bus.graphic_obj.remove(ask=False)
                 else:
                     pass
             else:
@@ -5818,7 +5939,7 @@ class MainGUI(QMainWindow):
 
             elif issue.issue_type == bs.SyncIssueType.Deleted:
                 if issue.their_elm.graphic_obj is not None:
-                    issue.my_elm.graphic_obj.remove()
+                    issue.my_elm.graphic_obj.remove(ask=False)
 
         # center nodes
         self.grid_editor.align_schematic()
@@ -6031,8 +6152,13 @@ def run(use_native_dialogues=True):
     Main function to run the GUI
     :return:
     """
+    # from GridCal.Gui.themes import QDarkPalette
+
     app = QApplication(sys.argv)
     app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
+
+    # dark = QDarkPalette(None)
+    # dark.set_app(app)
 
     window = MainGUI(use_native_dialogues=use_native_dialogues)
     window.resize(int(1.61 * 700.0), 700)  # golden ratio :)

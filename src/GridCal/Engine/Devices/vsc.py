@@ -34,8 +34,8 @@ class VSC(EditableDevice):
                  control_mode: ConverterControlType = ConverterControlType.type_0_free,
                  Pfset = 0.0, Qfset=0.0, Vac_set=1.0, Vdc_set=1.0,
                  alpha1=0.0001, alpha2=0.015, alpha3=0.2,
-                 mttf=0, mttr=0, cost=1200, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0,
-                 contingency_enabled=True):
+                 mttf=0, mttr=0, cost=100, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0,
+                 contingency_enabled=True, monitor_loading=True):
         """
         Voltage source converter (VSC)
         :param bus_from:
@@ -94,6 +94,8 @@ class VSC(EditableDevice):
                                                                                'Rating multiplier for contingencies.'),
                                                   'contingency_enabled': GCProp('', bool,
                                                                                 'Consider this VSC for contingencies.'),
+                                                  'monitor_loading': GCProp('', bool,
+                                                                            'Monitor this device loading for optimization, NTC or contingency studies.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
@@ -202,6 +204,7 @@ class VSC(EditableDevice):
         self.rate = rate
         self.contingency_factor = contingency_factor
         self.contingency_enabled: bool = contingency_enabled
+        self.monitor_loading: bool = monitor_loading
         self.rate_prof = rate_prof
 
         # branch type: Line, Transformer, etc...

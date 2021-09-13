@@ -28,6 +28,7 @@ class SimulationTypes(Enum):
     StochasticPowerFlow = 'Stochastic Power Flow'
     Cascade_run = 'Cascade'
     OPF_run = 'Optimal power flow'
+    OPF_NTC_run = 'Optimal net transfer capacity'
     OPFTimeSeries_run = 'Optimal power flow time series'
     TransientStability_run = 'Transient stability'
     TopologyReduction_run = 'Topology reduction'

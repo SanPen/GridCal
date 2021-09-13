@@ -78,6 +78,12 @@ class ResultTypes(Enum):
     ControlledGeneratorShedding = 'Generator shedding', DeviceType.GeneratorDevice
     ControlledGeneratorPower = 'Generator power', DeviceType.GeneratorDevice
 
+    # OPF-NTC
+    HvdcOverloads = 'HVDC overloads', DeviceType.HVDCLineDevice
+    NodeSlacks = 'Nodal slacks', DeviceType.BusDevice
+    GenerationDelta = 'Generation deltas', DeviceType.GeneratorDevice
+    InterAreaExchange = 'Inter-Area exchange', DeviceType.NoDevice
+
     # Short-circuit
     BusShortCircuitPower = 'Bus short circuit power', DeviceType.BusDevice
 

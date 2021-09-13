@@ -232,15 +232,18 @@ class HvdcGraphicItem(QGraphicsLineItem):
 
         pass
 
-    def remove(self):
+    def remove(self, ask=True):
         """
         Remove this object in the diagram and the API
         @return:
         """
-        ok = yes_no_question('Do you want to remove this HVDC line?', 'Remove HVDC line')
+        if ask:
+            ok = yes_no_question('Do you want to remove this HVDC line?', 'Remove HVDC line')
+        else:
+            ok = True
 
         if ok:
-            self.diagramScene.circuit.delete_branch(self.api_object)
+            self.diagramScene.circuit.delete_hvdc_line(self.api_object)
             self.diagramScene.removeItem(self)
 
     def reduce(self):

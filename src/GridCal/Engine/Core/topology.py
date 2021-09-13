@@ -146,6 +146,9 @@ def get_adjacency_matrix(C_branch_bus_f, C_branch_bus_t, branch_active, bus_acti
     return C_bus_bus
 
 
+
+
+
 class Graph:
 
     def __init__(self, C_bus_bus, C_branch_bus, bus_states):

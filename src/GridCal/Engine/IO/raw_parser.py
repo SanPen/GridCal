@@ -278,9 +278,6 @@ class PSSeBus:
         if self.bus.type == BusMode.Slack:
             self.bus.is_slack = True
 
-        if int(self.IDE) == 4:
-            self.bus.active = False
-
         # Ensures unique name
         self.bus.name = self.bus.name.replace("'", "").strip()
 
@@ -646,6 +643,8 @@ class PSSeBranch:
         bus_from = psse_bus_dict[i]
         bus_to = psse_bus_dict[j]
         code = str(i) + '_' + str(j) + '_' + str(self.CKT).replace("'", "").strip()
+        name = "{0}_{1}_{2}_{3}_{4}_{5}_{6}".format(i, bus_from.name, bus_from.Vnom, j, bus_to.name, bus_to.Vnom, self.CKT)
+        name = name.replace("'", "").replace(" ", "").strip()
 
         contingency_factor = self.RATEB / self.RATEA if self.RATEA > 0.0 else 1.0
 
@@ -656,7 +655,7 @@ class PSSeBranch:
                       bus_to=bus_to,
                       idtag=None,
                       code=code,
-                      name=code,
+                      name=name,
                       r=self.R,
                       x=self.X,
                       b=self.B,
@@ -1123,13 +1122,20 @@ class PSSeTransformer:
 
         self.NAME = self.NAME.replace("'", "").strip()
 
-        if self.NAME == '':
-            self.NAME = str(self.I) + '_' + str(self.J) + '_' + str(self.CKT)
-            self.NAME = self.NAME.strip()
-
         if self.windings == 2:
             bus_from = psse_bus_dict[self.I]
             bus_to = psse_bus_dict[self.J]
+
+            # 11000_AGUAYO_400_12004_ABANTO_400_1_CKT
+            # if self.NAME != "":
+            # name = "{0}:{1}_{2}_{3}_{4}_{5}_{6}_{7}".format(self.NAME,
+            #                                                 self.I, bus_from.name, bus_from.Vnom,
+            #                                                 self.J, bus_to.name, bus_to.Vnom, self.CKT)
+            # else:
+            name = "{0}_{1}_{2}_{3}_{4}_{5}_{6}".format(self.I, bus_from.name, bus_from.Vnom,
+                                                        self.J, bus_to.name, bus_to.Vnom, self.CKT)
+
+            name = name.replace("'", "").replace(" ", "").strip()
 
             code = str(self.I) + '_' + str(self.J) + '_' + str(self.CKT)
             code = code.strip().replace("'", "")
@@ -1181,7 +1187,7 @@ class PSSeTransformer:
                                 bus_to=bus_to,
                                 idtag=None,
                                 code=code,
-                                name=self.NAME,
+                                name=name,
                                 HV=V1,
                                 LV=V2,
                                 r=r,
@@ -1607,7 +1613,7 @@ class PSSeParser:
                 name = re.search(str_a + '(.*)' + str_b, srch).group(1).strip()
                 data2 = sections[i - 1].split('\n')[1:]
 
-                if name.lower() == 'bus':
+                if name.lower() == 'bus' and len(data2) > 1:
                     data2.pop(0)
                     data2.pop(0)
 

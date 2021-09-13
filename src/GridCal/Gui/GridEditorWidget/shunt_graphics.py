@@ -130,12 +130,16 @@ class ShuntGraphicItem(QtWidgets.QGraphicsItemGroup):
 
         menu.exec_(event.screenPos())
 
-    def remove(self):
+    def remove(self, ask=True):
         """
         Remove this element
         @return:
         """
-        ok = yes_no_question('Are you sure that you want to remove this shunt', 'Remove shunt')
+        if ask:
+            ok = yes_no_question('Are you sure that you want to remove this shunt', 'Remove shunt')
+        else:
+            ok = True
+
         if ok:
             self.diagramScene.removeItem(self.nexus)
             self.diagramScene.removeItem(self)

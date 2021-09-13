@@ -33,6 +33,7 @@ class BusData:
         self.bus_types_prof = np.zeros((nbus, ntime), dtype=int)
         self.bus_installed_power = np.zeros(nbus, dtype=float)
         self.bus_is_dc = np.empty(nbus, dtype=bool)
+        self.areas = np.empty(nbus, dtype=int)
 
     def slice(self, elm_idx, time_idx=None):
         """
@@ -62,6 +63,7 @@ class BusData:
 
         data.bus_installed_power = self.bus_installed_power[elm_idx]
         data.bus_is_dc = self.bus_is_dc[elm_idx]
+        data.areas = self.areas[elm_idx]
 
         return data
 

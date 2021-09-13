@@ -24,13 +24,13 @@ def compute_connectivity(branch_active, Cf_, Ct_):
     :param branch_active: array of branch states
     :param Cf_: Connectivity branch-bus "from"
     :param Ct_: Connectivity branch-bus "to"
-    :return:
+    :return: Final Ct and Cf in CSC format
     """
     br_states_diag = sp.diags(branch_active)
     Cf = br_states_diag * Cf_
     Ct = br_states_diag * Ct_
 
-    return Cf, Ct
+    return Cf.tocsc(), Ct.tocsc()
 
 
 def compute_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus):
@@ -61,8 +61,8 @@ def compute_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a,
     Gsw = G0 + a * np.power(If, 2) + b * If + c
 
     # form the admittance matrices
-    ys = 1.0 / (R + 1.0j * X)  # series admittance
-    bc2 = (G + 1j * B) / 2  # shunt admittance
+    ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
+    bc2 = (G + 1j * B) / 2.0  # shunt admittance
     # k is already filled with the appropriate value for each type of branch
     mp = k * m
 
@@ -81,7 +81,7 @@ def compute_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a,
 
 
 def compile_y_acdc(Cf, Ct, C_bus_shunt, shunt_admittance, shunt_active, ys, B, Sbase,
-                   m, theta, Beq, Gsw, mf, mt, ):
+                   m, theta, Beq, Gsw, mf, mt):
     """
     Compile the admittance matrices using the variable elements
     :param Cf: Connectivity branch-bus "from" with the branch states computed
@@ -172,7 +172,6 @@ def compute_split_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, 
     Gsh = GBc / 2.0
     Ysh = Yshunt_bus + Cf.T * Gsh + Ct.T * Gsh
 
-
     return Yseries, Yshunt
 
 
@@ -208,17 +207,30 @@ def compute_fast_decoupled_admittances(X, B, m, mf, mt, Cf, Ct):
     return B1, B2
 
 
-def compute_linear_admittances(X, m, Cf, Ct):
+def compute_linear_admittances(nbr, X, R, m, active, Cf, Ct, ac, dc):
     """
     Compute the linear admittances for methods such as the "DC power flow" of the PTDF
+    :param nbr: Number of branches
     :param X: array of branch reactance (p.u.)
+    :param R: array of branch resistance (p.u.)
     :param m: array of tap modules (for all branches, regardless of their type)
+    :param active: array of branch active (bool)
     :param Cf: Connectivity branch-bus "from" with the branch states computed
     :param Ct: Connectivity branch-bus "to" with the branch states computed
+    :param ac: array of ac branches indices
+    :param dc: array of dc branches indices
     :return: Bbus, Bf
     """
 
-    b = 1.0 / (np.abs(m) * X + 1e-20)
+    m_abs = np.abs(m)
+    if len(dc):
+        # compose the vector for AC-DC grids where the R is needed for this matrix
+        # even if conceptually we only want the susceptance
+        b = np.zeros(nbr)
+        b[ac] = 1.0 / (m_abs[ac] * X[ac] * active[ac] + 1e-20)  # for ac branches
+        b[dc] = 1.0 / (m_abs[dc] * R[dc] * active[dc] + 1e-20)  # for dc branches
+    else:
+        b = 1.0 / (m_abs * X * active + 1e-20)  # for ac branches
 
     b_tt = sp.diags(b)
     Bf = b_tt * Cf - b_tt * Ct

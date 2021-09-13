@@ -212,7 +212,6 @@ def compute_atc(br_idx, ptdf, lodf, alpha, flows, rates, contingency_rates, thre
             for ic, c in enumerate(br_idx):  # for each contingency
                 # compute the exchange sensitivity in contingency conditions
                 beta_mat[im, ic] = alpha[m] + lodf[m, c] * alpha[c]
-                beta_used[im] = beta_mat[im, ic]  # default
 
                 if m != c:
 
@@ -223,7 +222,6 @@ def compute_atc(br_idx, ptdf, lodf, alpha, flows, rates, contingency_rates, thre
                     if abs(contingency_flow) > abs(atc_limiting_contingency_flow[im]):
                         atc_limiting_contingency_flow[im] = contingency_flow  # default
                         atc_limiting_contingency_branch[im] = c
-                        beta_used[im] = beta_mat[im, ic]
 
                     # now here, do compare with the base situation
                     if abs(beta_mat[im, ic]) > threshold and abs(contingency_flow) <= contingency_rates[m]:
@@ -342,7 +340,7 @@ class AvailableTransferCapacityResults(ResultsTemplate):
 
         # sort by ATC
         self.report_indices = self.branch_names[self.br_idx]
-        self.report[:, 0] = self.branch_names[self.br_idx]  # 'Branch'
+        self.report[:, 0] = self.branch_names[self.br_idx]  # Branch name
         self.report[:, 1] = self.base_flow  # 'Base flow'
         self.report[:, 2] = self.rates  # 'Rate',
         self.report[:, 3] = self.alpha  # 'Alpha'
@@ -364,9 +362,10 @@ class AvailableTransferCapacityResults(ResultsTemplate):
 
         # trim by abs alpha > threshold
         loading = np.abs(self.report[:, 1] / (self.report[:, 2] + 1e-20))
-        idx = np.where((np.abs(self.report[:, 3]) > threshold) & (loading < 1.0))[0]
-        self.report_indices = self.report_indices[idx]
+        idx = np.where((np.abs(self.report[:, 3]) > threshold) & (loading <= 1.0))[0]
+
         self.report = self.report[idx, :]
+        self.report_indices = self.report[:, 0]
 
     def get_results_dict(self):
         """

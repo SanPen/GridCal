@@ -172,7 +172,11 @@ class TransformerType(EditableDevice):
 
         Zseries = ZseriesHv / ZbaseHvSys + ZseriesLv / ZbaseLvSys
         Zshunt = ZshuntHv / ZbaseHvSys + ZshuntLv / ZbaseLvSys
-        Yshunt = 1 / Zshunt
+
+        if Zshunt != 0:
+            Yshunt = 1 / Zshunt
+        else:
+            Yshunt = 0j
 
         return Zseries, Yshunt
 
@@ -414,14 +418,14 @@ class Transformer2W(EditableDevice):
                  rate=1.0,
                  tap=1.0, tap_module_max=1.2, tap_module_min=0.5,
                  shift_angle=0.0, theta_max=6.28, theta_min=-6.28,
-                 active=True, tolerance=0, cost=0.0,
+                 active=True, tolerance=0, cost=100.0,
                  mttf=0, mttr=0,
                  vset=1.0, Pset=0, bus_to_regulated=False,
                  temp_base=20, temp_oper=20, alpha=0.00330,
                  control_mode: TransformerControlType = TransformerControlType.fixed,
                  template: TransformerType = None,
                  rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None, contingency_factor=1.0,
-                 contingency_enabled=True):
+                 contingency_enabled=True, monitor_loading=True):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -446,6 +450,8 @@ class Transformer2W(EditableDevice):
                                                                                'Rating multiplier for contingencies.'),
                                                   'contingency_enabled': GCProp('', bool,
                                                                                 'Consider this transformer for contingencies.'),
+                                                  'monitor_loading': GCProp('', bool,
+                                                                            'Monitor this device loading for optimization, NTC or contingency studies.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
@@ -569,6 +575,7 @@ class Transformer2W(EditableDevice):
         self.rate = rate
         self.contingency_factor = contingency_factor
         self.contingency_enabled: bool = contingency_enabled
+        self.monitor_loading: bool = monitor_loading
         self.rate_prof = rate_prof
 
         # branch type: Line, Transformer, etc...
@@ -660,6 +667,11 @@ class Transformer2W(EditableDevice):
         b.Cost_prof = self.Cost_prof
 
         return b
+
+    def flip(self):
+
+        F, T = self.bus_from, self.bus_to
+        self.bus_to, self.bus_from = F, T
 
     def tap_up(self):
         """

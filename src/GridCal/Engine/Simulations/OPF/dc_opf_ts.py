@@ -170,17 +170,6 @@ def add_branch_loading_restriction(problem: LpProblem,
 
     # from-to branch power restriction
     load_f = Bseries * (theta_f - theta_t)
-    # lpAddRestrictions2(problem=problem,
-    #                    lhs=load_f,
-    #                    rhs=np.array([ratings[:, i] + ratings_slack_from[:, i] for i in range(m)]).transpose(),  # Fmax + FSlack1
-    #                    name='from_to_branch_rate1',
-    #                    op='<=')
-    # lpAddRestrictions2(problem=problem,
-    #                    lhs=load_f,
-    #                    rhs=np.array([-ratings[:, i] - ratings_slack_to[:, i] for i in range(m)]).transpose(),
-    #                    # Fmax + FSlack1
-    #                    name='from_to_branch_rate2',
-    #                    op='>=')
 
     lpAddRestrictions3(problem=problem,
                        lhs=np.array([-ratings[:, i] - ratings_slack_to[:, i] for i in range(m)]).transpose(),
@@ -188,15 +177,7 @@ def add_branch_loading_restriction(problem: LpProblem,
                        rhs=np.array([ratings[:, i] + ratings_slack_from[:, i] for i in range(m)]).transpose(),
                        name='2_side_branch_rate')
 
-    # to-from branch power restriction
-    load_t = Bseries * (theta_t - theta_f)
-    # lpAddRestrictions2(problem=problem,
-    #                    lhs=load_t,
-    #                    rhs=np.array([ratings[:, i] + ratings_slack_to[:, i] for i in range(m)]).transpose(),  # Fmax + FSlack2
-    #                    name='to_from_branch_rate',
-    #                    op='<=')
-
-    return load_f, load_t
+    return load_f
 
 
 def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Efficiency, Pb, E, dt):
@@ -246,18 +227,18 @@ class OpfDcTimeSeries(OpfTimeSeries):
         :param numerical_circuit: NumericalCircuit instance
         :param start_idx: start index of the time series
         :param end_idx: end index of the time series
-        :param solver: MIP solver to use
+        :param solver: MIP solver_type to use
         :param batteries_energy_0: initial state of the batteries, if None the default values are taken
         """
         OpfTimeSeries.__init__(self, numerical_circuit=numerical_circuit, start_idx=start_idx, end_idx=end_idx,
-                               solver=solver)
+                               solver=solver, skip_formulation=True)
 
         # build the formulation
         self.problem = self.formulate(batteries_energy_0=batteries_energy_0)
 
     def formulate(self, batteries_energy_0=None):
         """
-        Formulate the AC OPF time series in the non-sequential fashion (all to the solver at once)
+        Formulate the AC OPF time series in the non-sequential fashion (all to the solver_type at once)
         :param batteries_energy_0: initial energy state of the batteries (if none, the default is taken)
         :return: PuLP Problem instance
         """
@@ -343,8 +324,8 @@ class OpfDcTimeSeries(OpfTimeSeries):
         nodal_restrictions = add_dc_nodal_power_balance(self.numerical_circuit, problem, theta, P,
                                                         start_=self.start_idx, end_=self.end_idx)
 
-        load_f, load_t = add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, branch_ratings,
-                                                        branch_rating_slack1, branch_rating_slack2)
+        load_f = add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, branch_ratings,
+                                                branch_rating_slack1, branch_rating_slack2)
 
         # if there are batteries, add the batteries
         if nb > 0:
@@ -359,7 +340,7 @@ class OpfDcTimeSeries(OpfTimeSeries):
         self.E = E.transpose()
         self.load_shedding = load_slack.transpose()
         self.s_from = load_f.transpose()
-        self.s_to = load_t.transpose()
+        self.s_to = -load_f.transpose()
         self.overloads = (branch_rating_slack1 + branch_rating_slack2).transpose()
         self.rating = branch_ratings.T
         self.nodal_restrictions = nodal_restrictions

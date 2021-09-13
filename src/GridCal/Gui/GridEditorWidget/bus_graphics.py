@@ -380,12 +380,16 @@ class BusGraphicItem(QGraphicsRectItem):
             reduce_buses(self.diagramScene.circuit, [self.api_object])
             self.remove()
 
-    def remove(self):
+    def remove(self, ask=True):
         """
         Remove this element
         @return:
         """
-        ok = yes_no_question('Are you sure that you want to remove this bus', 'Remove bus')
+        if ask:
+            ok = yes_no_question('Are you sure that you want to remove this bus', 'Remove bus')
+        else:
+            ok = True
+
         if ok:
             self.delete_all_connections()
 
@@ -393,7 +397,7 @@ class BusGraphicItem(QGraphicsRectItem):
                 self.diagramScene.removeItem(g.nexus)
 
             self.diagramScene.removeItem(self)
-            self.diagramScene.circuit.delete_bus(self.api_object)
+            self.diagramScene.circuit.delete_bus(self.api_object, ask)
 
     def enable_disable_toggle(self):
         """

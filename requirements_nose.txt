@@ -9,6 +9,7 @@ dill==0.3.3
 et-xmlfile==1.0.1
 folium==0.12.1
 geographiclib==1.50
+ortools>=9.0.0
 geopy==2.1.0
 h5py==3.1.0
 idna==2.10

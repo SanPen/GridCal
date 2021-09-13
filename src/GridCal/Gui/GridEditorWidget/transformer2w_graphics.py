@@ -489,6 +489,12 @@ class TransformerGraphicItem(QGraphicsLineItem):
             ra5.setIcon(ra5_icon)
             ra5.triggered.connect(self.assign_status_to_profile)
 
+            ra7 = menu.addAction('Flip')
+            ra7_icon = QIcon()
+            ra7_icon.addPixmap(QPixmap(":/Icons/icons/redo.svg"))
+            ra7.setIcon(ra7_icon)
+            ra7.triggered.connect(self.flip_connections)
+
             menu.addSection('Tap changer')
 
             ra4 = menu.addAction('Tap up')
@@ -536,12 +542,15 @@ class TransformerGraphicItem(QGraphicsLineItem):
             # change state
             self.enable_disable_toggle()
 
-    def remove(self):
+    def remove(self, ask=True):
         """
         Remove this object in the diagram and the API
         @return:
         """
-        ok = yes_no_question('Do you want to remove this transformer?', 'Remove transformer')
+        if ask:
+            ok = yes_no_question('Do you want to remove this transformer?', 'Remove transformer')
+        else:
+            ok = True
 
         if ok:
             self.diagramScene.circuit.delete_branch(self.api_object)
@@ -806,6 +815,13 @@ class TransformerGraphicItem(QGraphicsLineItem):
         Assign the snapshot rate to the profile
         """
         self.diagramScene.set_rate_to_profile(self.api_object)
+
+    def flip_connections(self):
+        """
+        Flip connections
+        :return:
+        """
+        self.api_object.flip()
 
     def assign_status_to_profile(self):
         """

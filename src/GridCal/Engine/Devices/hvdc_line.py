@@ -24,7 +24,7 @@ from GridCal.Engine.Devices.enumerations import BranchType
 from GridCal.Engine.Devices.underground_line import UndergroundLineType
 
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
-from GridCal.Engine.Devices.tower import Tower
+from GridCal.Engine.Devices.enumerations import HvdcControlType
 
 
 def firing_angles_to_reactive_limits(P, alphamin, alphamax):
@@ -156,11 +156,11 @@ class HvdcLine(EditableDevice):
     """
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='HVDC Line', idtag=None, active=True,
-                 rate=1.0, Pset=0.0, loss_factor=0.0, Vset_f=1.0, Vset_t=1.0, length=1.0, mttf=0.0, mttr=0.0,
+                 rate=1.0, Pset=0.0, r=1e-20, loss_factor=0.0, Vset_f=1.0, Vset_t=1.0, length=1.0, mttf=0.0, mttr=0.0,
                  overload_cost=1000.0,   min_firing_angle_f=-1.0, max_firing_angle_f=1.0, min_firing_angle_t=-1.0,
                  max_firing_angle_t=1.0, active_prof=np.ones(0, dtype=bool), rate_prof=np.zeros(0),
                  Pset_prof=np.zeros(0), Vset_f_prof=np.ones(0), Vset_t_prof=np.ones(0), overload_cost_prof=np.zeros(0),
-                 contingency_factor=1.0):
+                 contingency_factor=1.0, control_mode: HvdcControlType=HvdcControlType.type_1_Pset):
         """
         HVDC Line model
         :param bus_from: Bus from
@@ -207,7 +207,11 @@ class HvdcLine(EditableDevice):
                                                   'contingency_factor': GCProp('p.u.', float,
                                                                                'Rating multiplier for contingencies.'),
 
+                                                  'control_mode': GCProp('-', HvdcControlType, 'Control type.'),
+
                                                   'Pset': GCProp('MW', float, 'Set power flow.'),
+
+                                                  'r': GCProp('Ohm', float, 'line resistance.'),
 
                                                   'loss_factor': GCProp('p.u.', float,
                                                                         'Losses factor.\n'
@@ -260,6 +264,8 @@ class HvdcLine(EditableDevice):
 
         self.Pset = Pset
 
+        self.r = r
+
         self.loss_factor = loss_factor
 
         self.mttf = mttf
@@ -286,6 +292,8 @@ class HvdcLine(EditableDevice):
                                                                     self.max_firing_angle_t)
 
         self.overload_cost_prof = overload_cost_prof
+
+        self.control_mode = control_mode
 
         self.Pset_prof = Pset_prof
         self.active_prof = active_prof

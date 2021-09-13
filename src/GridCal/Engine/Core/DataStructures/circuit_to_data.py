@@ -15,6 +15,8 @@ def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1):
     """
     bus_data = BusData(nbus=len(circuit.buses), ntime=ntime)
 
+    areas_dict = {elm: k for k, elm in enumerate(circuit.areas)}
+
     for i, bus in enumerate(circuit.buses):
 
         # bus parameters
@@ -22,6 +24,11 @@ def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1):
         bus_data.Vmin[i] = bus.Vmin
         bus_data.Vmax[i] = bus.Vmax
         bus_data.bus_types[i] = bus.determine_bus_type().value
+
+        if bus.area in areas_dict.keys():
+            bus_data.areas[i] = areas_dict[bus.area]
+        else:
+            bus_data.areas[i] = 0
 
         if time_series:
             bus_data.bus_active[i, :] = bus.active_prof
@@ -581,6 +588,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.B[i] = elm.B
 
         data.contingency_enabled[i] = int(elm.contingency_enabled)
+        data.monitor_loading[i] = int(elm.monitor_loading)
 
     # 2-winding transformers
     for i, elm in enumerate(circuit.transformers2w):
@@ -628,6 +636,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.tap_f[ii], data.tap_t[ii] = elm.get_virtual_taps()
 
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
+        data.monitor_loading[ii] = int(elm.monitor_loading)
 
         if elm.control_mode == TransformerControlType.Vt:
             Vbus[t] = elm.vset
@@ -686,6 +695,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.vt_set[ii] = elm.Vdc_set
         data.control_mode[ii] = elm.control_mode
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
+        data.monitor_loading[ii] = int(elm.monitor_loading)
 
         '''
         type_0_free = '0:Free'
@@ -723,6 +733,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         t = bus_dict[elm.bus_to]
 
         data.branch_names[ii] = elm.name
+        data.branch_dc[ii] = 1
 
         if time_series:
             data.branch_active[ii, :] = elm.active_prof
@@ -745,6 +756,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.T[ii] = t
 
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
+        data.monitor_loading[ii] = int(elm.monitor_loading)
 
         if apply_temperature:
             data.R[ii] = elm.R_corrected
@@ -793,6 +805,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.Pfset[ii] = elm.Pfset
 
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
+        data.monitor_loading[ii] = int(elm.monitor_loading)
 
     return data
 
@@ -831,6 +844,9 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, time_series=False,
             data.Vset_t[i] = elm.Vset_t
 
         data.loss_factor[i] = elm.loss_factor
+        data.r[i] = elm.r
+        data.control_mode[i] = elm.control_mode
+
         data.Qmin_f[i] = elm.Qmin_f
         data.Qmax_f[i] = elm.Qmax_f
         data.Qmin_t[i] = elm.Qmin_t

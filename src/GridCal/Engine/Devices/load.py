@@ -60,7 +60,7 @@ class Load(EditableDevice):
 
     """
 
-    def __init__(self, name='Load', idtag=None, code='', G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, cost=0.0,
+    def __init__(self, name='Load', idtag=None, code='', G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, cost=1200.0,
                  G_prof=None, B_prof=None, Ir_prof=None, Ii_prof=None, P_prof=None, Q_prof=None,
                  active=True, mttf=0.0, mttr=0.0):
 

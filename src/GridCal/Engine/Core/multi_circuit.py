@@ -917,7 +917,7 @@ class MultiCircuit:
 
         self.buses.append(obj)
 
-    def delete_bus(self, obj: Bus):
+    def delete_bus(self, obj: Bus, ask=True):
         """
         Delete a :ref:`Bus<bus>` object from the grid.
 
@@ -930,9 +930,10 @@ class MultiCircuit:
         for branch_list in self.get_branch_lists():
             for i in range(len(branch_list) - 1, -1, -1):
                 if branch_list[i].bus_from == obj or branch_list[i].bus_to == obj:
-                    deleted_elm = branch_list.pop(i)
-                    if deleted_elm.graphic_obj is not None:
-                        deleted_elm.graphic_obj.remove()
+                    if branch_list[i].graphic_obj is not None:
+                        branch_list[i].graphic_obj.remove(ask=ask)
+                    else:
+                        self.delete_branch(branch_list[i])
 
         # remove the bus itself
         if obj in self.buses:
@@ -2086,6 +2087,18 @@ class MultiCircuit:
                 logger.add_error("Missing in the model", col_name)
 
         return logger
+
+    def get_bus_area_indices(self):
+        """
+        Get array of area indices for each bus
+        :return:
+        """
+        d = {elm: k for k, elm in enumerate(self.areas)}
+
+        lst = np.zeros(len(self.buses), dtype=int)
+        for k, bus in enumerate(self.buses):
+            lst[k] = d[bus.area]
+        return lst
 
     def get_area_buses(self, area: Area) -> List[Tuple[int, Bus]]:
         """
