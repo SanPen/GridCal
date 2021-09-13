@@ -61,8 +61,8 @@ def compute_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a,
     Gsw = G0 + a * np.power(If, 2) + b * If + c
 
     # form the admittance matrices
-    ys = 1.0 / (R + 1.0j * X)  # series admittance
-    bc2 = (G + 1j * B) / 2  # shunt admittance
+    ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
+    bc2 = (G + 1j * B) / 2.0  # shunt admittance
     # k is already filled with the appropriate value for each type of branch
     mp = k * m
 

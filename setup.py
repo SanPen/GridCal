@@ -65,7 +65,7 @@ dependencies = ["PySide2>=5.15",  # for now, 5.14 breaks the UI generation for d
                 "geopy>=1.16",
                 "pytest>=3.8",
                 "h5py>=2.9.0",
-                "numba>=0.46",
+                "numba>=0.54",
                 "folium",
                 "pytest>=3.8"]
 

@@ -1613,7 +1613,7 @@ class PSSeParser:
                 name = re.search(str_a + '(.*)' + str_b, srch).group(1).strip()
                 data2 = sections[i - 1].split('\n')[1:]
 
-                if name.lower() == 'bus':
+                if name.lower() == 'bus' and len(data2) > 1:
                     data2.pop(0)
                     data2.pop(0)
 
