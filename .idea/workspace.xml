@@ -214,8 +214,8 @@
     </configuration>
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python.PTDF_by_node_groups" />
       <item itemvalue="Python.update_gui_file" />
+      <item itemvalue="Python.PTDF_by_node_groups" />
       <item itemvalue="Python.zip_interface" />
       <item itemvalue="Python tests.Nosetests in tests" />
     </list>
