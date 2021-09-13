@@ -236,11 +236,15 @@ class OpfNTC(Opf):
         gen_a2_idx = list()
 
         for bus_idx, gen_idx in gens1:
-            name = 'Gen_up_{0}@bus{1}'.format(gen_idx, bus_idx)
 
-            generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-            delta[gen_idx] = self.solver.NumVar(0, Pmax[gen_idx] - Pgen[gen_idx], name + '_delta')
-            self.solver.Add(delta[gen_idx] == generation[gen_idx] - Pgen[gen_idx], 'Delta_up_gen{}'.format(gen_idx))
+            if self.numerical_circuit.generator_data.generator_dispatchable[gen_idx]:
+                name = 'Gen_up_{0}@bus{1}'.format(gen_idx, bus_idx)
+                generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
+                delta[gen_idx] = self.solver.NumVar(0, Pmax[gen_idx] - Pgen[gen_idx], name + '_delta')
+                self.solver.Add(delta[gen_idx] == generation[gen_idx] - Pgen[gen_idx], 'Delta_up_gen{}'.format(gen_idx))
+            else:
+                generation[gen_idx] = Pgen[gen_idx]
+                delta[gen_idx] = 0
 
             dgen1.append(delta[gen_idx])
             generation1.append(generation[gen_idx])
@@ -248,11 +252,15 @@ class OpfNTC(Opf):
             gen_a1_idx.append(gen_idx)
 
         for bus_idx, gen_idx in gens2:
-            name = 'Gen_down_{0}@bus{1}'.format(gen_idx, bus_idx)
 
-            generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-            delta[gen_idx] = self.solver.NumVar(-Pgen[gen_idx], 0, name + '_delta')
-            self.solver.Add(delta[gen_idx] == generation[gen_idx] - Pgen[gen_idx], 'Delta_down_gen{}'.format(gen_idx))
+            if self.numerical_circuit.generator_data.generator_dispatchable[gen_idx]:
+                name = 'Gen_down_{0}@bus{1}'.format(gen_idx, bus_idx)
+                generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
+                delta[gen_idx] = self.solver.NumVar(-Pgen[gen_idx], 0, name + '_delta')
+                self.solver.Add(delta[gen_idx] == generation[gen_idx] - Pgen[gen_idx], 'Delta_down_gen{}'.format(gen_idx))
+            else:
+                generation[gen_idx] = Pgen[gen_idx]
+                delta[gen_idx] = 0
 
             dgen2.append(delta[gen_idx])
             generation2.append(generation[gen_idx])
@@ -414,7 +422,7 @@ class OpfNTC(Opf):
                     flow_f[i] = self.solver.NumVar(-rates[i], rates[i], 'hvdc_flow_' + str(i))
 
                     bk = 1.0 / nc.hvdc_data.r[i]  # TODO: yes, I know... DC...
-                    self.solver.Add(flow_f[i] == P0 + bk * (angles[_t] - angles[_f]) + hvdc_control1[i],
+                    self.solver.Add(flow_f[i] == P0 + bk * (angles[_f] - angles[_t]) + hvdc_control1[i],
                                     'hvdc_power_flow_' + str(i))
 
                     # rating restriction in the sense from-to: eq.17
@@ -485,7 +493,7 @@ class OpfNTC(Opf):
 
         # objective function
         self.solver.Minimize(
-            # - 1.0 * flow_from_a1_to_a2
+            - 1.0 * flow_from_a1_to_a2
             - 1e0 * area_1_gen_delta
             + 1e0 * area_balance_slack
             - 1e-2 * gen_cost_f
