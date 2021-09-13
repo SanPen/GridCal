@@ -17,6 +17,17 @@ import scipy.sparse as sp
 import GridCal.Engine.Core.topology as tp
 
 
+def get_bus_indices(C_branch_bus):
+    F = np.zeros(C_branch_bus.shape[0], dtype=int)
+
+    for j in range(C_branch_bus.shape[1]):
+        for l in range(C_branch_bus.indptr[j], C_branch_bus.indptr[j + 1]):
+            i = C_branch_bus.indices[l]  # row index
+            F[i] = j
+
+    return F
+
+
 class BranchData:
 
     def __init__(self, nbr, nbus, ntime=1):
@@ -98,8 +109,8 @@ class BranchData:
         data = BranchData(nbr=len(elm_idx), nbus=len(bus_idx))
 
         data.branch_names = self.branch_names[elm_idx]
-        data.F = self.F[elm_idx]
-        data.T = self.T[elm_idx]
+        # data.F = self.F[elm_idx]
+        # data.T = self.T[elm_idx]
         data.R = self.R[elm_idx]
         data.X = self.X[elm_idx]
         data.G = self.G[elm_idx]
@@ -138,6 +149,9 @@ class BranchData:
 
         data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(elm_idx, bus_idx)]
         data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(elm_idx, bus_idx)]
+
+        data.F = get_bus_indices(data.C_branch_bus_f)
+        data.T = get_bus_indices(data.C_branch_bus_t)
 
         return data
 
@@ -190,35 +204,8 @@ class BranchOpfData(BranchData):
         else:
             tidx = np.ix_(elm_idx, time_idx)
 
-        data = BranchOpfData(nbr=len(elm_idx), nbus=len(bus_idx))
-
-        data.branch_names = self.branch_names[elm_idx]
-        data.F = self.F[elm_idx]
-        data.T = self.T[elm_idx]
-        data.R = self.R[elm_idx]
-        data.X = self.X[elm_idx]
-        data.G = self.G[elm_idx]
-        data.B = self.B[elm_idx]
-        data.k = self.k[elm_idx]
-        data.tap_t = self.tap_f[elm_idx]
-        data.tap_f = self.tap_t[elm_idx]
-        data.Kdp = self.Kdp[elm_idx]
-        data.control_mode = self.control_mode[elm_idx]
-
-        data.branch_active = self.branch_active[tidx]
-        data.branch_rates = self.branch_rates[tidx]
-        data.m = self.m[tidx]
-        data.theta = self.theta[tidx]
-        data.Beq = self.Beq[tidx]
-        data.G0 = self.G0[tidx]
-        data.Pfset = self.Pfset[tidx]
-        data.Qfset = self.Qfset[tidx]
-        data.vf_set = self.vf_set[tidx]
-        data.vt_set = self.vt_set[tidx]
+        data = super().slice(elm_idx, bus_idx, time_idx)
 
         data.branch_cost = self.branch_cost[tidx]
-
-        data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(elm_idx, bus_idx)]
-        data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(elm_idx, bus_idx)]
 
         return data

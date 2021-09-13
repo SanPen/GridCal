@@ -222,6 +222,8 @@ class OpfNTC(Opf):
         gen_cost = self.numerical_circuit.generator_data.generator_cost[:, t] * self.numerical_circuit.Sbase  # pass from $/MWh to $/p.u.h
         generation = np.zeros(ngen, dtype=object)
         delta = np.zeros(ngen, dtype=object)
+        delta_slack_1 = np.zeros(ngen, dtype=object)
+        delta_slack_2 = np.zeros(ngen, dtype=object)
 
         dgen1 = list()
         dgen2 = list()
@@ -241,7 +243,9 @@ class OpfNTC(Opf):
                 name = 'Gen_up_{0}@bus{1}'.format(gen_idx, bus_idx)
                 generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
                 delta[gen_idx] = self.solver.NumVar(0, Pmax[gen_idx] - Pgen[gen_idx], name + '_delta')
-                self.solver.Add(delta[gen_idx] == generation[gen_idx] - Pgen[gen_idx], 'Delta_up_gen{}'.format(gen_idx))
+                delta_slack_1[gen_idx] = self.solver.NumVar(0, 99999, name + '_delta_slack_up')
+                delta_slack_2[gen_idx] = self.solver.NumVar(0, 99999, name + '_delta_slack_down')
+                self.solver.Add(delta[gen_idx] == generation[gen_idx] - Pgen[gen_idx] + delta_slack_1[gen_idx] - delta_slack_2[gen_idx], 'Delta_up_gen{}'.format(gen_idx))
             else:
                 generation[gen_idx] = Pgen[gen_idx]
                 delta[gen_idx] = 0
@@ -257,7 +261,10 @@ class OpfNTC(Opf):
                 name = 'Gen_down_{0}@bus{1}'.format(gen_idx, bus_idx)
                 generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
                 delta[gen_idx] = self.solver.NumVar(-Pgen[gen_idx], 0, name + '_delta')
-                self.solver.Add(delta[gen_idx] == generation[gen_idx] - Pgen[gen_idx], 'Delta_down_gen{}'.format(gen_idx))
+
+                delta_slack_1[gen_idx] = self.solver.NumVar(0, 99999, name + '_delta_slack_up')
+                delta_slack_2[gen_idx] = self.solver.NumVar(0, 99999, name + '_delta_slack_down')
+                self.solver.Add(delta[gen_idx] == generation[gen_idx] - Pgen[gen_idx] + delta_slack_1[gen_idx] - delta_slack_2[gen_idx], 'Delta_down_gen{}'.format(gen_idx))
             else:
                 generation[gen_idx] = Pgen[gen_idx]
                 delta[gen_idx] = 0
@@ -274,7 +281,7 @@ class OpfNTC(Opf):
         area_balance_slack = self.solver.NumVar(0, 99999, 'Area_slack')
         self.solver.Add(self.solver.Sum(dgen1) + self.solver.Sum(dgen2) == area_balance_slack, 'Area equality')
 
-        return generation, delta, gen_a1_idx, gen_a2_idx, area_balance_slack, dgen1, gen_cost
+        return generation, delta, gen_a1_idx, gen_a2_idx, area_balance_slack, dgen1, gen_cost, delta_slack_1, delta_slack_2
 
     def formulate_angles(self, set_ref_to_zero=True):
         """
@@ -445,7 +452,8 @@ class OpfNTC(Opf):
     def formulate_objective(self, node_balance_slack_1, node_balance_slack_2,
                             inter_area_branches, flows_f, overload1, overload2,
                             inter_area_hvdc, hvdc_flow_f, hvdc_overload1, hvdc_overload2, hvdc_control1, hvdc_control2,
-                            area_balance_slack, dgen1, gen_cost, generation_delta):
+                            area_balance_slack, dgen1, gen_cost, generation_delta,
+                            delta_slack_1, delta_slack_2):
         """
 
         :param node_balance_slack_1:
@@ -491,6 +499,8 @@ class OpfNTC(Opf):
 
         hvdc_control = self.solver.Sum(hvdc_control1) + self.solver.Sum(hvdc_control2)
 
+        delta_slacks = self.solver.Sum(delta_slack_1) + self.solver.Sum(delta_slack_2)
+
         # objective function
         self.solver.Minimize(
             - 1.0 * flow_from_a1_to_a2
@@ -501,6 +511,7 @@ class OpfNTC(Opf):
             + 1e0 * branch_overload
             + 1e0 * hvdc_overload
             + 1e0 * hvdc_control
+            + 1e0 * delta_slacks
         )
 
     @staticmethod
@@ -578,14 +589,15 @@ class OpfNTC(Opf):
 
         # add te generation
         generation, generation_delta, gen_a1_idx, gen_a2_idx, \
-        area_balance_slack, dgen1, gen_cost = self.formulate_generation(ngen=ng,
-                                                                        Cgen=Cgen,
-                                                                        Pgen=Pg_fix,
-                                                                        Pmax=Pg_max,
-                                                                        Pmin=Pg_min,
-                                                                        a1=self.area_from_bus_idx,
-                                                                        a2=self.area_to_bus_idx,
-                                                                        t=t)
+        area_balance_slack, dgen1, gen_cost, \
+        delta_slack_1, delta_slack_2 = self.formulate_generation(ngen=ng,
+                                                                 Cgen=Cgen,
+                                                                 Pgen=Pg_fix,
+                                                                 Pmax=Pg_max,
+                                                                 Pmin=Pg_min,
+                                                                 a1=self.area_from_bus_idx,
+                                                                 a2=self.area_to_bus_idx,
+                                                                 t=t)
 
         # add the angles
         theta = self.formulate_angles()
@@ -619,7 +631,9 @@ class OpfNTC(Opf):
                                  area_balance_slack=area_balance_slack,
                                  dgen1=dgen1,
                                  gen_cost=gen_cost[gen_a1_idx],
-                                 generation_delta=generation_delta[gen_a1_idx])
+                                 generation_delta=generation_delta[gen_a1_idx],
+                                 delta_slack_1=delta_slack_1,
+                                 delta_slack_2=delta_slack_2)
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device

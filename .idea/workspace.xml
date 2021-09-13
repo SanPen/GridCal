@@ -25,7 +25,10 @@
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/branch_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/branch_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/topology.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/topology.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -556,13 +559,6 @@
       <workItem from="1621367763953" duration="1167000" />
       <workItem from="1621405201458" duration="3088000" />
     </task>
-    <task id="LOCAL-00115" summary="finally found a linear time sparse slicing">
-      <created>1617569812608</created>
-      <option name="number" value="00115" />
-      <option name="presentableId" value="LOCAL-00115" />
-      <option name="project" value="LOCAL" />
-      <updated>1617569812608</updated>
-    </task>
     <task id="LOCAL-00116" summary="Fixed OPF snapshot feedback to PF">
       <created>1617633252517</created>
       <option name="number" value="00116" />
@@ -899,7 +895,14 @@
       <option name="project" value="LOCAL" />
       <updated>1631206859943</updated>
     </task>
-    <option name="localTasksCounter" value="164" />
+    <task id="LOCAL-00164" summary="Added the generator dispatch check to the NTC OPF">
+      <created>1631543532716</created>
+      <option name="number" value="00164" />
+      <option name="presentableId" value="LOCAL-00164" />
+      <option name="project" value="LOCAL" />
+      <updated>1631543532731</updated>
+    </task>
+    <option name="localTasksCounter" value="165" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -924,7 +927,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added dynamic bus types for the time series" />
     <MESSAGE value="New ATC implemented" />
     <MESSAGE value="Added Templates all around" />
     <MESSAGE value="Session saving WIP" />
@@ -949,7 +951,8 @@
     <MESSAGE value="Fixed buf that set the multiplier when clicking &quot;do it&quot; on the profile&#10;input dialogue&#10;Fixed bug of not resizing the grid schematic on load" />
     <MESSAGE value="Fixed grid zooming when loading" />
     <MESSAGE value="Added active to the creation of Bbus, Bf" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added active to the creation of Bbus, Bf" />
+    <MESSAGE value="Added the generator dispatch check to the NTC OPF" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added the generator dispatch check to the NTC OPF" />
   </component>
   <component name="WindowStateProjectService">
     <state width="405" height="655" key="Git.Branch.Popup" />
@@ -1408,19 +1411,49 @@
           <option name="timeStamp" value="713" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py</url>
-          <line>1280</line>
-          <option name="timeStamp" value="714" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/branch_data.py</url>
+          <line>155</line>
+          <option name="timeStamp" value="720" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py</url>
-          <line>1225</line>
-          <option name="timeStamp" value="715" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/branch_data.py</url>
+          <line>152</line>
+          <option name="timeStamp" value="721" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>625</line>
-          <option name="timeStamp" value="716" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/branch_data.py</url>
+          <line>27</line>
+          <option name="timeStamp" value="722" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py</url>
+          <line>1309</line>
+          <option name="timeStamp" value="724" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py</url>
+          <line>1324</line>
+          <option name="timeStamp" value="725" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py</url>
+          <line>1278</line>
+          <option name="timeStamp" value="726" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/branch_data.py</url>
+          <line>210</line>
+          <option name="timeStamp" value="728" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/branch_data.py</url>
+          <line>153</line>
+          <option name="timeStamp" value="731" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/results_table.py</url>
+          <line>215</line>
+          <option name="timeStamp" value="732" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
