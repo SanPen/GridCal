@@ -25,6 +25,8 @@ class GISWindow(QMainWindow):
         self.web_layout = QtWidgets.QVBoxLayout(self.ui.webFrame)
         self.webView = QWebView()
         self.web_layout.addWidget(self.webView)
+        self.ui.webFrame.setContentsMargins(0, 0, 0, 0)
+        self.web_layout.setContentsMargins(0, 0, 0, 0)
 
         if os.path.exists(external_file_path):
             self.file_path = external_file_path

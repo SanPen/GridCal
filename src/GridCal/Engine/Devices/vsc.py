@@ -34,7 +34,8 @@ class VSC(EditableDevice):
                  control_mode: ConverterControlType = ConverterControlType.type_0_free,
                  Pfset = 0.0, Qfset=0.0, Vac_set=1.0, Vdc_set=1.0,
                  alpha1=0.0001, alpha2=0.015, alpha3=0.2,
-                 mttf=0, mttr=0, cost=1200, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0):
+                 mttf=0, mttr=0, cost=1200, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0,
+                 contingency_enabled=True):
         """
         Voltage source converter (VSC)
         :param bus_from:
@@ -91,7 +92,8 @@ class VSC(EditableDevice):
 
                                                   'contingency_factor': GCProp('p.u.', float,
                                                                                'Rating multiplier for contingencies.'),
-
+                                                  'contingency_enabled': GCProp('', bool,
+                                                                                'Consider this VSC for contingencies.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
@@ -199,6 +201,7 @@ class VSC(EditableDevice):
         # branch rating in MVA
         self.rate = rate
         self.contingency_factor = contingency_factor
+        self.contingency_enabled: bool = contingency_enabled
         self.rate_prof = rate_prof
 
         # branch type: Line, Transformer, etc...
@@ -231,7 +234,7 @@ class VSC(EditableDevice):
             self.bus_from = None
             self.bus_to = None
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return:
@@ -252,50 +255,96 @@ class VSC(EditableDevice):
                  ConverterControlType.type_II_5: 5,
                  ConverterControlType.type_III_6: 6,
                  ConverterControlType.type_III_7: 7}
+        if version == 2:
+            d = {'id': self.idtag,
+                 'type': 'vsc',
+                 'phases': 'ps',
+                 'name': self.name,
+                 'name_code': self.code,
+                 'bus_from': self.bus_from.idtag,
+                 'bus_to': self.bus_to.idtag,
+                 'active': self.active,
 
-        d = {'id': self.idtag,
-             'type': 'vsc',
-             'phases': 'ps',
-             'name': self.name,
-             'name_code': self.code,
-             'bus_from': self.bus_from.idtag,
-             'bus_to': self.bus_to.idtag,
-             'active': self.active,
+                 'rate': self.rate,
+                 'r': self.R1,
+                 'x': self.X1,
+                 'g': self.G0,
 
-             'rate': self.rate,
-             'r': self.R1,
-             'x': self.X1,
-             'g': self.G0,
+                 'm': self.m,
+                 'm_min': self.m_min,
+                 'm_max': self.m_max,
 
-             'm': self.m,
-             'm_min': self.m_min,
-             'm_max': self.m_max,
+                 'theta': self.theta,
+                 'theta_min': self.theta_min,
+                 'theta_max': self.theta_max,
 
-             'theta': self.theta,
-             'theta_min': self.theta_min,
-             'theta_max': self.theta_max,
+                 'Beq': self.Beq,
+                 'Beq_min': self.Beq_min,
+                 'Beq_max': self.Beq_max,
 
-             'Beq': self.Beq,
-             'Beq_min': self.Beq_min,
-             'Beq_max': self.Beq_max,
+                 'alpha1': self.alpha1,
+                 'alpha2': self.alpha2,
+                 'alpha3': self.alpha3,
 
-             'alpha1': self.alpha1,
-             'alpha2': self.alpha2,
-             'alpha3': self.alpha3,
+                 'k': self.k,
+                 'kdp': self.kdp,
+                 'Pfset': self.Pdc_set,
+                 'Qfset': self.Qac_set,
+                 'vac_set': self.Vac_set,
+                 'vdc_set': self.Vdc_set,
 
-             'k': self.k,
-             'kdp': self.kdp,
-             'Pfset': self.Pdc_set,
-             'Qfset': self.Qac_set,
-             'vac_set': self.Vac_set,
-             'vdc_set': self.Vdc_set,
+                 'mode': modes[self.control_mode]
+                 }
+        elif version == 3:
+            d = {'id': self.idtag,
+                 'type': 'vsc',
+                 'phases': 'ps',
+                 'name': self.name,
+                 'name_code': self.code,
+                 'bus_from': self.bus_from.idtag,
+                 'bus_to': self.bus_to.idtag,
+                 'active': self.active,
 
-             'mode': modes[self.control_mode]
-             }
+                 'rate': self.rate,
+                 'contingency_factor1': self.contingency_factor,
+                 'contingency_factor2': self.contingency_factor,
+                 'contingency_factor3': self.contingency_factor,
+
+                 'r': self.R1,
+                 'x': self.X1,
+                 'g': self.G0,
+
+                 'm': self.m,
+                 'm_min': self.m_min,
+                 'm_max': self.m_max,
+
+                 'theta': self.theta,
+                 'theta_min': self.theta_min,
+                 'theta_max': self.theta_max,
+
+                 'Beq': self.Beq,
+                 'Beq_min': self.Beq_min,
+                 'Beq_max': self.Beq_max,
+
+                 'alpha1': self.alpha1,
+                 'alpha2': self.alpha2,
+                 'alpha3': self.alpha3,
+
+                 'k': self.k,
+                 'kdp': self.kdp,
+                 'Pfset': self.Pdc_set,
+                 'Qfset': self.Qac_set,
+                 'vac_set': self.Vac_set,
+                 'vdc_set': self.Vdc_set,
+
+                 'mode': modes[self.control_mode]
+                 }
+        else:
+            d = dict()
 
         return d
 
-    def get_profiles_dict(self):
+    def get_profiles_dict(self, version=3):
         """
 
         :return:
@@ -311,7 +360,7 @@ class VSC(EditableDevice):
                 'active': active_prof,
                 'rate': rate_prof}
 
-    def get_units_dict(self):
+    def get_units_dict(self, version=3):
         """
         Get units of the values
         """

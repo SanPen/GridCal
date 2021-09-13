@@ -21,6 +21,40 @@ class Ui_Dialog(object):
         Dialog.resize(769, 420)
         self.verticalLayout = QVBoxLayout(Dialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.frame = QFrame(Dialog)
+        self.frame.setObjectName(u"frame")
+        self.frame.setMaximumSize(QSize(16777215, 40))
+        self.frame.setFrameShape(QFrame.NoFrame)
+        self.frame.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_5 = QHBoxLayout(self.frame)
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
+        self.open_button = QPushButton(self.frame)
+        self.open_button.setObjectName(u"open_button")
+        self.open_button.setMinimumSize(QSize(0, 0))
+        icon = QIcon()
+        icon.addFile(u":/Icons/icons/import_profiles.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.open_button.setIcon(icon)
+        self.open_button.setIconSize(QSize(24, 24))
+
+        self.horizontalLayout_5.addWidget(self.open_button)
+
+        self.refreshButton = QPushButton(self.frame)
+        self.refreshButton.setObjectName(u"refreshButton")
+        icon1 = QIcon()
+        icon1.addFile(u":/Icons/icons/transform.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.refreshButton.setIcon(icon1)
+        self.refreshButton.setIconSize(QSize(24, 24))
+
+        self.horizontalLayout_5.addWidget(self.refreshButton)
+
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_5.addItem(self.horizontalSpacer_2)
+
+
+        self.verticalLayout.addWidget(self.frame)
+
         self.splitter = QSplitter(Dialog)
         self.splitter.setObjectName(u"splitter")
         self.splitter.setOrientation(Qt.Horizontal)
@@ -105,28 +139,6 @@ class Ui_Dialog(object):
 
         self.verticalLayout_2.addWidget(self.frame_2)
 
-        self.frame = QFrame(self.frame_4)
-        self.frame.setObjectName(u"frame")
-        self.frame.setFrameShape(QFrame.NoFrame)
-        self.frame.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_5 = QHBoxLayout(self.frame)
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.horizontalLayout_5.setContentsMargins(0, -1, 0, -1)
-        self.open_button = QPushButton(self.frame)
-        self.open_button.setObjectName(u"open_button")
-        icon = QIcon()
-        icon.addFile(u":/Icons/icons/import_profiles.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.open_button.setIcon(icon)
-
-        self.horizontalLayout_5.addWidget(self.open_button)
-
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_5.addItem(self.horizontalSpacer_2)
-
-
-        self.verticalLayout_2.addWidget(self.frame)
-
         self.splitter.addWidget(self.frame_4)
         self.frame_6 = QFrame(self.splitter)
         self.frame_6.setObjectName(u"frame_6")
@@ -153,19 +165,11 @@ class Ui_Dialog(object):
 
         self.acceptButton = QPushButton(self.frame_9)
         self.acceptButton.setObjectName(u"acceptButton")
-        icon1 = QIcon()
-        icon1.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.acceptButton.setIcon(icon1)
+        icon2 = QIcon()
+        icon2.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.acceptButton.setIcon(icon2)
 
         self.gridLayout.addWidget(self.acceptButton, 0, 2, 1, 1)
-
-        self.refreshButton = QPushButton(self.frame_9)
-        self.refreshButton.setObjectName(u"refreshButton")
-        icon2 = QIcon()
-        icon2.addFile(u":/Icons/icons/transform.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.refreshButton.setIcon(icon2)
-
-        self.gridLayout.addWidget(self.refreshButton, 0, 0, 1, 1)
 
 
         self.verticalLayout_3.addWidget(self.frame_9)
@@ -182,6 +186,14 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Dialog", None))
+#if QT_CONFIG(tooltip)
+        self.open_button.setToolTip(QCoreApplication.translate("Dialog", u"Import file", None))
+#endif // QT_CONFIG(tooltip)
+        self.open_button.setText("")
+#if QT_CONFIG(tooltip)
+        self.refreshButton.setToolTip(QCoreApplication.translate("Dialog", u"Refresh assignation table", None))
+#endif // QT_CONFIG(tooltip)
+        self.refreshButton.setText("")
         self.xCheckBox.setText(QCoreApplication.translate("Dialog", u"Bus x position", None))
         self.yCheckBox.setText(QCoreApplication.translate("Dialog", u"Bus y position", None))
         self.latitudeCheckBox.setText(QCoreApplication.translate("Dialog", u"Bus latitude", None))
@@ -189,19 +201,11 @@ class Ui_Dialog(object):
         self.nameRadioButton.setText(QCoreApplication.translate("Dialog", u"Name", None))
         self.codeRadioButton.setText(QCoreApplication.translate("Dialog", u"Code", None))
 #if QT_CONFIG(tooltip)
-        self.open_button.setToolTip(QCoreApplication.translate("Dialog", u"Import file", None))
-#endif // QT_CONFIG(tooltip)
-        self.open_button.setText("")
-#if QT_CONFIG(tooltip)
         self.acceptButton.setToolTip(QCoreApplication.translate("Dialog", u"Do it!", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(statustip)
         self.acceptButton.setStatusTip("")
 #endif // QT_CONFIG(statustip)
         self.acceptButton.setText(QCoreApplication.translate("Dialog", u"Accept", None))
-#if QT_CONFIG(tooltip)
-        self.refreshButton.setToolTip(QCoreApplication.translate("Dialog", u"Refresh assignation table", None))
-#endif // QT_CONFIG(tooltip)
-        self.refreshButton.setText("")
     # retranslateUi
 

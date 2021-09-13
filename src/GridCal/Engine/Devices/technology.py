@@ -43,18 +43,18 @@ class TechnologyCategory(EditableDevice):
                                 non_editable_attributes=['idtag'],
                                 properties_with_profile={})
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         data = {'id': self.idtag,
                 'name': self.name,
                 'code': self.code,
                 }
         return data
 
-    def get_profiles_dict(self):
+    def get_profiles_dict(self, version=3):
         data = {'id': self.idtag}
         return data
 
-    def get_units_dict(self):
+    def get_units_dict(self, version=3):
         data = {}
         return data
 

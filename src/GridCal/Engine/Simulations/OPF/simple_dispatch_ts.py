@@ -93,10 +93,10 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
         for i, t in enumerate(range(a, b)):
 
             # generator share:
-            Pavail = (Pg_max * nc.generator_active[t, :])
+            Pavail = (Pg_max * nc.generator_active[:, t])
             Gshare = Pavail / Pavail.sum()
 
-            Pl[i] = (nc.load_active[t, :] * nc.load_s.real[t, :]) / Sbase
+            Pl[i] = (nc.load_active[:, t] * nc.load_s.real[:, t]) / Sbase
 
             Pg[i] = Pl[i].sum() * Gshare
 
@@ -138,7 +138,7 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.s_from / self.rating
+        return self.s_from / self.rating.T
 
     def get_branch_power(self):
         """

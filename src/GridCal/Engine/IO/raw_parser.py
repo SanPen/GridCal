@@ -83,6 +83,26 @@ class PSSeGrid:
         area_dict = {val.I: elm for val, elm in zip(self.areas, circuit.areas)}
         zones_dict = {val.I: elm for val, elm in zip(self.zones, circuit.zones)}
 
+        # scan for missing zones or areas (yes, PSSe is so crappy that can reference areas that do not exist)
+        missing_areas = False
+        missing_zones = False
+        for psse_bus in self.buses:
+
+            # replace area idx by area name if available
+            if abs(psse_bus.bus.area) not in area_dict.keys():
+                area_dict[abs(psse_bus.bus.area)] = Area(name='A' + str(abs(psse_bus.bus.area)))
+                missing_areas = True
+
+            if abs(psse_bus.bus.zone) not in zones_dict.keys():
+                zones_dict[abs(psse_bus.bus.zone)] = Zone(name='Z' + str(abs(psse_bus.bus.zone)))
+                missing_zones = True
+
+        if missing_areas:
+            circuit.areas = [v for k, v in area_dict.items()]
+
+        if missing_zones:
+            circuit.zones = [v for k, v in zones_dict.items()]
+
         # ---------------------------------------------------------------------
         # Bus related
         # ---------------------------------------------------------------------
@@ -263,7 +283,11 @@ class PSSeBus:
 
         # Ensures unique name
         self.bus.name = self.bus.name.replace("'", "").strip()
+
         self.bus.code = str(self.I)
+
+        if self.bus.name == '':
+            self.bus.name = 'Bus ' + str(self.I)
 
 
 class PSSeLoad:
@@ -625,6 +649,9 @@ class PSSeBranch:
 
         contingency_factor = self.RATEB / self.RATEA if self.RATEA > 0.0 else 1.0
 
+        if contingency_factor == 0:
+            contingency_factor = 1.0
+
         branch = Line(bus_from=bus_from,
                       bus_to=bus_to,
                       idtag=None,
@@ -807,7 +834,13 @@ class PSSeVscDCLine:
         Vset_t = self.ACSET2
         rate = max(self.SMAX1, self.SMAX2)
 
-        specified_power = 0
+        # Estimate power
+        # P = dV^2 / R
+        V1 = bus1.Vnom * Vset_f
+        V2 = bus2.Vnom * Vset_t
+        dV = (V1-V2) * 1000.0  # in V
+        P = dV * dV / self.RDC  # power in W
+        specified_power = P * 1e-6  # power in MW
 
         obj = HvdcLine(bus_from=bus1,
                        bus_to=bus2,

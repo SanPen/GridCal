@@ -23,6 +23,13 @@ sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 from GridCal.__version__ import about_msg
 from GridCal.Gui.Main.GridCalMain import run
 from GridCal.Gui.Main.banner import Ui_splashScreen, QMainWindow, Qt, QApplication
+import platform
+
+if platform.system() == 'Windows':
+    # this makes the icon display properly under windows
+    import ctypes
+    myappid = 'mycompany.myproduct.subproduct.version'  # arbitrary string
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
 class Splash(QMainWindow):

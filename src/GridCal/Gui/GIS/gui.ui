@@ -19,6 +19,18 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item>
      <widget class="QFrame" name="webFrame">
       <property name="frameShape">
@@ -52,7 +64,7 @@
   </widget>
   <action name="actionSave_map">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/savec.svg</normaloff>:/icons/icons/savec.svg</iconset>
    </property>
    <property name="text">

@@ -280,7 +280,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
 
         else:
             # for any other method, raise exception
-            raise Exception(solver_type + ' Not supported in power flow mode')
+            raise Exception(solver_type.value + ' Not supported in power flow mode')
 
         # record the method used, if it improved the solution
         if solution.norm_f < final_solution.norm_f:
@@ -559,10 +559,10 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                        Sbus=calculation_input.Sbus,
                                        Ibus=calculation_input.Ibus,
                                        branch_rates=calculation_input.Rates,
-                                       pq=calculation_inputs.pq,
-                                       pv=calculation_inputs.pv,
-                                       vd=calculation_inputs.vd,
-                                       pqpv=calculation_inputs.pqpv,
+                                       pq=calculation_input.pq,
+                                       pv=calculation_input.pv,
+                                       vd=calculation_input.vd,
+                                       pqpv=calculation_input.pqpv,
                                        options=options,
                                        logger=logger)
 
@@ -575,7 +575,8 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
 
             else:
                 logger.add_info('No slack nodes in the island', str(i))
-    else:
+
+    elif len(calculation_inputs) == 1:
 
         if len(calculation_inputs[0].vd) > 0:
             # only one island
@@ -606,6 +607,10 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
 
         else:
             logger.add_error('There are no slack nodes')
+
+    else:
+        # no viable islands
+        pass
 
     # compile HVDC results (available for the complete grid since HVDC line as formulated are split objects
     # Pt is the "generation" at the sending point

@@ -76,21 +76,19 @@ class ContingencyAnalysisDriver(DriverTemplate):
         self.options = options
 
         # N-K results
-        self.results = ContingencyAnalysisResults(n=0, m=0,
+        self.results = ContingencyAnalysisResults(nbus=0, nbr=0,
                                                   bus_names=(),
                                                   branch_names=(),
                                                   bus_types=())
 
         self.numerical_circuit = None
 
-        self.branch_names = list()
-
     def get_steps(self):
         """
         Get variations list of strings
         """
         if self.results is not None:
-            return [v for v in self.branch_names]
+            return ['#' + v for v in self.results.branch_names]
         else:
             return list()
 
@@ -100,22 +98,24 @@ class ContingencyAnalysisDriver(DriverTemplate):
         :return: returns the results
         """
 
-        self.progress_text.emit("Filtering elements by voltage")
-
-        self.numerical_circuit = compile_snapshot_circuit(self.grid)
-
-        results = ContingencyAnalysisResults(m=self.numerical_circuit.nbr,
-                                             n=self.numerical_circuit.nbus,
-                                             branch_names=self.numerical_circuit.branch_names,
-                                             bus_names=self.numerical_circuit.bus_names,
-                                             bus_types=self.numerical_circuit.bus_types)
-
         self.progress_text.emit('Analyzing outage distribution factors...')
         linear_analysis = LinearAnalysis(grid=self.grid,
                                          distributed_slack=self.options.distributed_slack,
                                          correct_values=self.options.correct_values)
         linear_analysis.run()
 
+        # set the numerical circuit
+        self.numerical_circuit = linear_analysis.numerical_circuit
+
+        # declare the results
+        results = ContingencyAnalysisResults(nbr=self.numerical_circuit.nbr,
+                                             nbus=self.numerical_circuit.nbus,
+                                             branch_names=self.numerical_circuit.branch_names,
+                                             bus_names=self.numerical_circuit.bus_names,
+                                             bus_types=self.numerical_circuit.bus_types)
+
+        # get the contingency branch indices
+        br_idx = linear_analysis.numerical_circuit.branch_data.get_contingency_enabled_indices()
         Pbus = self.numerical_circuit.get_injections(False).real[:, 0]
         PTDF = linear_analysis.PTDF
         LODF = linear_analysis.LODF
@@ -124,15 +124,18 @@ class ContingencyAnalysisDriver(DriverTemplate):
         flows_n = np.dot(PTDF, Pbus)
 
         self.progress_text.emit('Computing loading...')
-        nl = self.numerical_circuit.nbr
-        for c in range(nl):  # branch that fails (contingency)
 
-            results.Sf[:, c] = flows_n[:] + LODF[:, c] * flows_n[c]
-            results.loading[:, c] = results.Sf[:, c] / (self.numerical_circuit.ContingencyRates + 1e-9)
+        for ic, c in enumerate(br_idx):  # branch that fails (contingency)
 
+            # results.Sf[:, c] = flows_n[:] + LODF[:, c] * flows_n[c]
+            # results.loading[:, c] = results.Sf[:, c] / (self.numerical_circuit.ContingencyRates + 1e-9)
+            # results.S[c, :] = Pbus
+
+            results.Sf[br_idx, c] = flows_n[br_idx] + LODF[br_idx, c] * flows_n[c]
+            results.loading[br_idx, c] = results.Sf[br_idx, c] / (self.numerical_circuit.ContingencyRates[br_idx] + 1e-9)
             results.S[c, :] = Pbus
 
-            self.progress_signal.emit((c+1) / nl * 100)
+            self.progress_signal.emit((ic + 1) / len(br_idx) * 100)
 
         results.otdf = LODF
 

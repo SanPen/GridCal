@@ -57,46 +57,46 @@
  },
  "devices": {
   "Circuit": {
-   "id": "5476d37c00d14a58bf2f115abccda17b",
+   "id": "ea6d66691d864fd79058096795e7081d",
    "phases": "ps",
    "name": "",
    "sbase": 100,
    "fbase": 50.0,
    "model_version": 2,
-   "user_name": "54711655512089:santi",
+   "user_name": "48751573507332:SPV86",
    "comments": ""
   },
   "Substation": [
    {
-    "id": "1f7fbda53ec9465ab3841faf95925499",
+    "id": "c8aed36dd53f47aa8b7f2042cbb1b0c5",
     "name": "Default substation",
     "code": ""
    }
   ],
   "Zone": [
    {
-    "id": "13e19ddba24944df8b497fa2c29b67bf",
+    "id": "d332965e480c44aa9182aff6eabf81a9",
     "name": "Default zone",
     "code": ""
    }
   ],
   "Area": [
    {
-    "id": "afe748ed77f5497a9832c54fa5dd5ebc",
+    "id": "099402a58df543abb07222c6e0fc86cd",
     "name": "Default area",
     "code": ""
    }
   ],
   "Country": [
    {
-    "id": "606b23a4ef254db485f2769f59c1a7af",
+    "id": "28d646c174214d7da0a665d0ba72c240",
     "name": "Default country",
     "code": ""
    }
   ],
   "Bus": [
    {
-    "id": "ba274a68bb8e4b71ad00e9104bb69960",
+    "id": "38cfbcf5d0f346a8b4414b3d1fcb4d65",
     "type": 2,
     "phases": "ps",
     "name": "Bus 1",
@@ -115,13 +115,13 @@
     "lat": 0.0,
     "lon": 0.0,
     "alt": 0.0,
-    "country": "606b23a4ef254db485f2769f59c1a7af",
-    "area": "afe748ed77f5497a9832c54fa5dd5ebc",
-    "zone": "13e19ddba24944df8b497fa2c29b67bf",
-    "substation": "1f7fbda53ec9465ab3841faf95925499"
+    "country": "28d646c174214d7da0a665d0ba72c240",
+    "area": "099402a58df543abb07222c6e0fc86cd",
+    "zone": "d332965e480c44aa9182aff6eabf81a9",
+    "substation": "c8aed36dd53f47aa8b7f2042cbb1b0c5"
    },
    {
-    "id": "d5c4962946c248b0a1e039e2b2c0885a",
+    "id": "bf4f1621bca2426bb49b1fb94311f219",
     "type": 1,
     "phases": "ps",
     "name": "Bus 2",
@@ -140,13 +140,13 @@
     "lat": 0.0,
     "lon": 0.0,
     "alt": 0.0,
-    "country": "606b23a4ef254db485f2769f59c1a7af",
-    "area": "afe748ed77f5497a9832c54fa5dd5ebc",
-    "zone": "13e19ddba24944df8b497fa2c29b67bf",
-    "substation": "1f7fbda53ec9465ab3841faf95925499"
+    "country": "28d646c174214d7da0a665d0ba72c240",
+    "area": "099402a58df543abb07222c6e0fc86cd",
+    "zone": "d332965e480c44aa9182aff6eabf81a9",
+    "substation": "c8aed36dd53f47aa8b7f2042cbb1b0c5"
    },
    {
-    "id": "4edcefaa059b4b2495ed613e2956883a",
+    "id": "291a2d2f513640e2891ec69a18d74180",
     "type": 1,
     "phases": "ps",
     "name": "Bus 3",
@@ -165,13 +165,13 @@
     "lat": 0.0,
     "lon": 0.0,
     "alt": 0.0,
-    "country": "606b23a4ef254db485f2769f59c1a7af",
-    "area": "afe748ed77f5497a9832c54fa5dd5ebc",
-    "zone": "13e19ddba24944df8b497fa2c29b67bf",
-    "substation": "1f7fbda53ec9465ab3841faf95925499"
+    "country": "28d646c174214d7da0a665d0ba72c240",
+    "area": "099402a58df543abb07222c6e0fc86cd",
+    "zone": "d332965e480c44aa9182aff6eabf81a9",
+    "substation": "c8aed36dd53f47aa8b7f2042cbb1b0c5"
    },
    {
-    "id": "0241da3758624cd4bd3e5235ac35324c",
+    "id": "2936db8a1053427eb3d27a94c2abd60f",
     "type": 1,
     "phases": "ps",
     "name": "Bus 4",
@@ -190,13 +190,13 @@
     "lat": 0.0,
     "lon": 0.0,
     "alt": 0.0,
-    "country": "606b23a4ef254db485f2769f59c1a7af",
-    "area": "afe748ed77f5497a9832c54fa5dd5ebc",
-    "zone": "13e19ddba24944df8b497fa2c29b67bf",
-    "substation": "1f7fbda53ec9465ab3841faf95925499"
+    "country": "28d646c174214d7da0a665d0ba72c240",
+    "area": "099402a58df543abb07222c6e0fc86cd",
+    "zone": "d332965e480c44aa9182aff6eabf81a9",
+    "substation": "c8aed36dd53f47aa8b7f2042cbb1b0c5"
    },
    {
-    "id": "96d672fc0c9c46b181ebff7142f33ade",
+    "id": "becce4e21f7941f1a545f910f9036ca7",
     "type": 1,
     "phases": "ps",
     "name": "Bus 5",
@@ -215,20 +215,20 @@
     "lat": 0.0,
     "lon": 0.0,
     "alt": 0.0,
-    "country": "606b23a4ef254db485f2769f59c1a7af",
-    "area": "afe748ed77f5497a9832c54fa5dd5ebc",
-    "zone": "13e19ddba24944df8b497fa2c29b67bf",
-    "substation": "1f7fbda53ec9465ab3841faf95925499"
+    "country": "28d646c174214d7da0a665d0ba72c240",
+    "area": "099402a58df543abb07222c6e0fc86cd",
+    "zone": "d332965e480c44aa9182aff6eabf81a9",
+    "substation": "c8aed36dd53f47aa8b7f2042cbb1b0c5"
    }
   ],
   "Generator": [
    {
-    "id": "be0b3dbcff0c4b14b0574c1f87018e18",
+    "id": "cb530281ec0b42388a239293fa007b57",
     "type": "generator",
     "phases": "ps",
     "name": "Slack Generator",
     "name_code": "",
-    "bus": "ba274a68bb8e4b71ad00e9104bb69960",
+    "bus": "38cfbcf5d0f346a8b4414b3d1fcb4d65",
     "active": true,
     "is_controlled": true,
     "p": 0.0,
@@ -245,12 +245,12 @@
   ],
   "Load": [
    {
-    "id": "38d9a269c1c04f599ca92560b04648da",
+    "id": "006031db9f084ea0b3cf64ae4c23799f",
     "type": "load",
     "phases": "ps",
     "name": "load 2",
     "name_code": "",
-    "bus": "d5c4962946c248b0a1e039e2b2c0885a",
+    "bus": "bf4f1621bca2426bb49b1fb94311f219",
     "active": true,
     "g": 0.0,
     "b": 0.0,
@@ -260,12 +260,12 @@
     "q": 20
    },
    {
-    "id": "b220e7c6fd6b4f29aceafa21407dd5ff",
+    "id": "b2a5323318f54f2b96d894df6132e4d4",
     "type": "load",
     "phases": "ps",
     "name": "load 3",
     "name_code": "",
-    "bus": "4edcefaa059b4b2495ed613e2956883a",
+    "bus": "291a2d2f513640e2891ec69a18d74180",
     "active": true,
     "g": 0.0,
     "b": 0.0,
@@ -275,12 +275,12 @@
     "q": 15
    },
    {
-    "id": "7a39093571ea4ea5841f8141554d3bf5",
+    "id": "8394d30fd8124e12af3a8d77f167b6fe",
     "type": "load",
     "phases": "ps",
     "name": "load 4",
     "name_code": "",
-    "bus": "0241da3758624cd4bd3e5235ac35324c",
+    "bus": "2936db8a1053427eb3d27a94c2abd60f",
     "active": true,
     "g": 0.0,
     "b": 0.0,
@@ -290,12 +290,12 @@
     "q": 20
    },
    {
-    "id": "1d0490f9d9ee4f97af167952468a8588",
+    "id": "04312e481b5a4621b0e9df5812b94b65",
     "type": "load",
     "phases": "ps",
     "name": "load 5",
     "name_code": "",
-    "bus": "96d672fc0c9c46b181ebff7142f33ade",
+    "bus": "becce4e21f7941f1a545f910f9036ca7",
     "active": true,
     "g": 0.0,
     "b": 0.0,
@@ -307,15 +307,18 @@
   ],
   "Line": [
    {
-    "id": "80f654b0bb154c8288f39ccdc4ef7f52",
+    "id": "192c620611714b09b6c3472e7b09593a",
     "type": "line",
     "phases": "ps",
     "name": "line 1-2",
     "name_code": "",
-    "bus_from": "ba274a68bb8e4b71ad00e9104bb69960",
-    "bus_to": "d5c4962946c248b0a1e039e2b2c0885a",
+    "bus_from": "38cfbcf5d0f346a8b4414b3d1fcb4d65",
+    "bus_to": "bf4f1621bca2426bb49b1fb94311f219",
     "active": true,
     "rate": 1.0,
+    "contingency_factor1": 1.0,
+    "contingency_factor2": 1.0,
+    "contingency_factor3": 1.0,
     "r": 0.05,
     "x": 0.11,
     "b": 0.02,
@@ -326,15 +329,18 @@
     "locations": []
    },
    {
-    "id": "cf31e4722fb54a9aaacd1290578bc659",
+    "id": "e90c93f95b2841f8a4dba5f1dce05a67",
     "type": "line",
     "phases": "ps",
     "name": "line 1-3",
     "name_code": "",
-    "bus_from": "ba274a68bb8e4b71ad00e9104bb69960",
-    "bus_to": "4edcefaa059b4b2495ed613e2956883a",
+    "bus_from": "38cfbcf5d0f346a8b4414b3d1fcb4d65",
+    "bus_to": "291a2d2f513640e2891ec69a18d74180",
     "active": true,
     "rate": 1.0,
+    "contingency_factor1": 1.0,
+    "contingency_factor2": 1.0,
+    "contingency_factor3": 1.0,
     "r": 0.05,
     "x": 0.11,
     "b": 0.02,
@@ -345,15 +351,18 @@
     "locations": []
    },
    {
-    "id": "0b739f9d6ddd4b41886c32386b5bc0f7",
+    "id": "01092d00c45e42fab9977d2760136720",
     "type": "line",
     "phases": "ps",
     "name": "line 1-5",
     "name_code": "",
-    "bus_from": "ba274a68bb8e4b71ad00e9104bb69960",
-    "bus_to": "96d672fc0c9c46b181ebff7142f33ade",
+    "bus_from": "38cfbcf5d0f346a8b4414b3d1fcb4d65",
+    "bus_to": "becce4e21f7941f1a545f910f9036ca7",
     "active": true,
     "rate": 1.0,
+    "contingency_factor1": 1.0,
+    "contingency_factor2": 1.0,
+    "contingency_factor3": 1.0,
     "r": 0.03,
     "x": 0.08,
     "b": 0.02,
@@ -364,15 +373,18 @@
     "locations": []
    },
    {
-    "id": "04f624a2fa49404d85cb70052f788c76",
+    "id": "1ab9425b461e4edf9f225cfceccacfab",
     "type": "line",
     "phases": "ps",
     "name": "line 2-3",
     "name_code": "",
-    "bus_from": "d5c4962946c248b0a1e039e2b2c0885a",
-    "bus_to": "4edcefaa059b4b2495ed613e2956883a",
+    "bus_from": "bf4f1621bca2426bb49b1fb94311f219",
+    "bus_to": "291a2d2f513640e2891ec69a18d74180",
     "active": true,
     "rate": 1.0,
+    "contingency_factor1": 1.0,
+    "contingency_factor2": 1.0,
+    "contingency_factor3": 1.0,
     "r": 0.04,
     "x": 0.09,
     "b": 0.02,
@@ -383,15 +395,18 @@
     "locations": []
    },
    {
-    "id": "b54ed9feef9248d48f7132afcbfc3c41",
+    "id": "cd706094d3724270b78d430f140a2390",
     "type": "line",
     "phases": "ps",
     "name": "line 2-5",
     "name_code": "",
-    "bus_from": "d5c4962946c248b0a1e039e2b2c0885a",
-    "bus_to": "96d672fc0c9c46b181ebff7142f33ade",
+    "bus_from": "bf4f1621bca2426bb49b1fb94311f219",
+    "bus_to": "becce4e21f7941f1a545f910f9036ca7",
     "active": true,
     "rate": 1.0,
+    "contingency_factor1": 1.0,
+    "contingency_factor2": 1.0,
+    "contingency_factor3": 1.0,
     "r": 0.04,
     "x": 0.09,
     "b": 0.02,
@@ -402,15 +417,18 @@
     "locations": []
    },
    {
-    "id": "6cd377a12f7846f98c80243035e461cb",
+    "id": "10be3aee2266423dbd060ab62b7e97a6",
     "type": "line",
     "phases": "ps",
     "name": "line 3-4",
     "name_code": "",
-    "bus_from": "4edcefaa059b4b2495ed613e2956883a",
-    "bus_to": "0241da3758624cd4bd3e5235ac35324c",
+    "bus_from": "291a2d2f513640e2891ec69a18d74180",
+    "bus_to": "2936db8a1053427eb3d27a94c2abd60f",
     "active": true,
     "rate": 1.0,
+    "contingency_factor1": 1.0,
+    "contingency_factor2": 1.0,
+    "contingency_factor3": 1.0,
     "r": 0.06,
     "x": 0.13,
     "b": 0.03,
@@ -421,15 +439,18 @@
     "locations": []
    },
    {
-    "id": "26b273289b744a59a4f3bf390c2ddf30",
+    "id": "0c9b204cf2de41b9aa2ba6f8ee8e47b6",
     "type": "line",
     "phases": "ps",
     "name": "line 4-5",
     "name_code": "",
-    "bus_from": "0241da3758624cd4bd3e5235ac35324c",
-    "bus_to": "96d672fc0c9c46b181ebff7142f33ade",
+    "bus_from": "2936db8a1053427eb3d27a94c2abd60f",
+    "bus_to": "becce4e21f7941f1a545f910f9036ca7",
     "active": true,
     "rate": 1.0,
+    "contingency_factor1": 1.0,
+    "contingency_factor2": 1.0,
+    "contingency_factor3": 1.0,
     "r": 0.04,
     "x": 0.09,
     "b": 0.02,
@@ -447,49 +468,49 @@
   },
   "Substation": [
    {
-    "id": "1f7fbda53ec9465ab3841faf95925499"
+    "id": "c8aed36dd53f47aa8b7f2042cbb1b0c5"
    }
   ],
   "Zone": [
    {
-    "id": "13e19ddba24944df8b497fa2c29b67bf"
+    "id": "d332965e480c44aa9182aff6eabf81a9"
    }
   ],
   "Area": [
    {
-    "id": "afe748ed77f5497a9832c54fa5dd5ebc"
+    "id": "099402a58df543abb07222c6e0fc86cd"
    }
   ],
   "Country": [
    {
-    "id": "606b23a4ef254db485f2769f59c1a7af"
+    "id": "28d646c174214d7da0a665d0ba72c240"
    }
   ],
   "Bus": [
    {
-    "id": "ba274a68bb8e4b71ad00e9104bb69960",
+    "id": "38cfbcf5d0f346a8b4414b3d1fcb4d65",
     "active": []
    },
    {
-    "id": "d5c4962946c248b0a1e039e2b2c0885a",
+    "id": "bf4f1621bca2426bb49b1fb94311f219",
     "active": []
    },
    {
-    "id": "4edcefaa059b4b2495ed613e2956883a",
+    "id": "291a2d2f513640e2891ec69a18d74180",
     "active": []
    },
    {
-    "id": "0241da3758624cd4bd3e5235ac35324c",
+    "id": "2936db8a1053427eb3d27a94c2abd60f",
     "active": []
    },
    {
-    "id": "96d672fc0c9c46b181ebff7142f33ade",
+    "id": "becce4e21f7941f1a545f910f9036ca7",
     "active": []
    }
   ],
   "Generator": [
    {
-    "id": "be0b3dbcff0c4b14b0574c1f87018e18",
+    "id": "cb530281ec0b42388a239293fa007b57",
     "active": [],
     "p": [],
     "v": [],
@@ -498,7 +519,7 @@
   ],
   "Load": [
    {
-    "id": "38d9a269c1c04f599ca92560b04648da",
+    "id": "006031db9f084ea0b3cf64ae4c23799f",
     "active": [],
     "p": [],
     "q": [],
@@ -508,7 +529,7 @@
     "b": []
    },
    {
-    "id": "b220e7c6fd6b4f29aceafa21407dd5ff",
+    "id": "b2a5323318f54f2b96d894df6132e4d4",
     "active": [],
     "p": [],
     "q": [],
@@ -518,7 +539,7 @@
     "b": []
    },
    {
-    "id": "7a39093571ea4ea5841f8141554d3bf5",
+    "id": "8394d30fd8124e12af3a8d77f167b6fe",
     "active": [],
     "p": [],
     "q": [],
@@ -528,7 +549,7 @@
     "b": []
    },
    {
-    "id": "1d0490f9d9ee4f97af167952468a8588",
+    "id": "04312e481b5a4621b0e9df5812b94b65",
     "active": [],
     "p": [],
     "q": [],
@@ -540,37 +561,37 @@
   ],
   "Line": [
    {
-    "id": "80f654b0bb154c8288f39ccdc4ef7f52",
+    "id": "192c620611714b09b6c3472e7b09593a",
     "active": [],
     "rate": []
    },
    {
-    "id": "cf31e4722fb54a9aaacd1290578bc659",
+    "id": "e90c93f95b2841f8a4dba5f1dce05a67",
     "active": [],
     "rate": []
    },
    {
-    "id": "0b739f9d6ddd4b41886c32386b5bc0f7",
+    "id": "01092d00c45e42fab9977d2760136720",
     "active": [],
     "rate": []
    },
    {
-    "id": "04f624a2fa49404d85cb70052f788c76",
+    "id": "1ab9425b461e4edf9f225cfceccacfab",
     "active": [],
     "rate": []
    },
    {
-    "id": "b54ed9feef9248d48f7132afcbfc3c41",
+    "id": "cd706094d3724270b78d430f140a2390",
     "active": [],
     "rate": []
    },
    {
-    "id": "6cd377a12f7846f98c80243035e461cb",
+    "id": "10be3aee2266423dbd060ab62b7e97a6",
     "active": [],
     "rate": []
    },
    {
-    "id": "26b273289b744a59a4f3bf390c2ddf30",
+    "id": "0c9b204cf2de41b9aa2ba6f8ee8e47b6",
     "active": [],
     "rate": []
    }

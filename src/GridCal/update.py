@@ -4,8 +4,12 @@ import pkg_resources
 from GridCal.__version__ import __GridCal_VERSION__
 
 
-def find_latest_version():
-    name = 'GridCal'
+def find_latest_version(name='GridCal'):
+    """
+    Find the latest version of a package
+    :param name: name of the Package
+    :return: version string
+    """
     latest_version = str(subprocess.run([sys.executable, '-m', 'pip', 'install', '{}==random'.format(name)],
                                         capture_output=True, text=True))
     latest_version = latest_version[latest_version.find('(from versions:') + 15:]
@@ -66,11 +70,11 @@ def get_upgrade_command(latest_version=None):
     cmd = [sys.executable, '-m', 'pip', 'install',
            'GridCal=={}'.format(latest_version),
            '--upgrade',
-           '--upgrade-strategy only-if-needed']
+           '--no-dependencies']
 
     return cmd
 
 
 if __name__ == '__main__':
-    is_latest, curr_ver = check_version('GridCal')
+    is_latest, curr_ver = check_version()
     print('is the latest', is_latest, curr_ver)

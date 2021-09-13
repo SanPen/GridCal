@@ -13,12 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-
-from PySide2.QtCore import QThread, Signal
-
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults
 from GridCal.Engine.Simulations.Dynamics.dynamic_modules import dynamic_simulation
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 ########################################################################################################################
 # Transient stability
@@ -42,10 +40,7 @@ class TransientStabilityOptions:
         self.max_iter = max_iter
 
 
-class TransientStability(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class TransientStability(DriverTemplate):
 
     def __init__(self, grid: MultiCircuit, options: TransientStabilityOptions, pf_res: PowerFlowResults):
         """
@@ -53,7 +48,7 @@ class TransientStability(QThread):
         @param grid: MultiCircuit instance
         @param options: PowerFlowOptions instance
         """
-        QThread.__init__(self)
+        DriverTemplate.__init__(self, grid=grid)
 
         self.grid = grid
 

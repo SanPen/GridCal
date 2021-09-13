@@ -20,7 +20,7 @@ from scipy.sparse.linalg import spsolve
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, SnapshotData
 
 
 def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
@@ -269,7 +269,7 @@ class LinearAnalysis:
 
         self.correct_values = correct_values
 
-        self.numerical_circuit = None
+        self.numerical_circuit: SnapshotData = None
 
         self.PTDF = None
 
@@ -317,6 +317,8 @@ class LinearAnalysis:
                         self.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
                     else:
                         self.logger.add_error('No PQ or PV nodes', 'Island {}'.format(n_island))
+                elif len(island.vd) == 0:
+                    self.logger.add_warning('No slack bus', 'Island {}'.format(n_island))
                 else:
                     self.logger.add_error('More than one slack bus', 'Island {}'.format(n_island))
         else:
@@ -330,7 +332,7 @@ class LinearAnalysis:
             # compute the LODF upon the PTDF
             self.LODF = make_lodf(Cf=islands[0].Cf,
                                   Ct=islands[0].Ct,
-                                  PTDF=self.results.PTDF,
+                                  PTDF=self.PTDF,
                                   correct_values=self.correct_values)
 
     @property

@@ -228,7 +228,7 @@ class Line(EditableDevice):
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  length=1, temp_base=20, temp_oper=20, alpha=0.00330,
                  template=LineTemplate(), rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
-                 contingency_factor=1.0):
+                 contingency_factor=1.0, contingency_enabled=True):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -247,6 +247,8 @@ class Line(EditableDevice):
                                                   'rate': GCProp('MVA', float, 'Thermal rating power of the line.'),
                                                   'contingency_factor': GCProp('p.u.', float,
                                                                                'Rating multiplier for contingencies.'),
+                                                  'contingency_enabled': GCProp('', bool,
+                                                                                'Consider this line for contingencies.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
@@ -307,6 +309,8 @@ class Line(EditableDevice):
         self.r_fault = r_fault
         self.x_fault = x_fault
         self.fault_pos = fault_pos
+
+        self.contingency_enabled: bool = contingency_enabled
 
         # total impedance and admittance in p.u.
         self.R = r
@@ -500,36 +504,61 @@ class Line(EditableDevice):
             data.append(obj)
         return data
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return:
         """
+        if version == 2:
+            return {'id': self.idtag,
+                    'type': 'line',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus_from': self.bus_from.idtag,
+                    'bus_to': self.bus_to.idtag,
+                    'active': self.active,
 
-        d = {'id': self.idtag,
-             'type': 'line',
-             'phases': 'ps',
-             'name': self.name,
-             'name_code': self.code,
-             'bus_from': self.bus_from.idtag,
-             'bus_to': self.bus_to.idtag,
-             'active': self.active,
+                    'rate': self.rate,
+                    'r': self.R,
+                    'x': self.X,
+                    'b': self.B,
 
-             'rate': self.rate,
-             'r': self.R,
-             'x': self.X,
-             'b': self.B,
+                    'length': self.length,
+                    'base_temperature': self.temp_base,
+                    'operational_temperature': self.temp_oper,
+                    'alpha': self.alpha,
+                    'locations': []
+                    }
 
-             'length': self.length,
-             'base_temperature': self.temp_base,
-             'operational_temperature': self.temp_oper,
-             'alpha': self.alpha,
-             'locations': []
-             }
+        elif version == 3:
+            return {'id': self.idtag,
+                    'type': 'line',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus_from': self.bus_from.idtag,
+                    'bus_to': self.bus_to.idtag,
+                    'active': self.active,
 
-        return d
+                    'rate': self.rate,
+                    'contingency_factor1': self.contingency_factor,
+                    'contingency_factor2': self.contingency_factor,
+                    'contingency_factor3': self.contingency_factor,
+                    'r': self.R,
+                    'x': self.X,
+                    'b': self.B,
 
-    def get_profiles_dict(self):
+                    'length': self.length,
+                    'base_temperature': self.temp_base,
+                    'operational_temperature': self.temp_oper,
+                    'alpha': self.alpha,
+                    'locations': []
+                    }
+        else:
+            return dict()
+
+    def get_profiles_dict(self, version=3):
         """
 
         :return:
@@ -545,7 +574,7 @@ class Line(EditableDevice):
                 'active': active_prof,
                 'rate': rate_prof}
 
-    def get_units_dict(self):
+    def get_units_dict(self, version=3):
         """
         Get units of the values
         """
@@ -599,3 +628,20 @@ class Line(EditableDevice):
         Get the line defining coordinates
         """
         return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]
+
+    def convertible_to_vsc(self):
+        """
+        Is this line convertible to VSC?
+        :return:
+        """
+        if self.bus_to is not None and self.bus_from is not None:
+            # connectivity:
+            # for the later primitives to make sense, the "bus from" must be AC and the "bus to" must be DC
+            if self.bus_from.is_dc and not self.bus_to.is_dc:  # this is the correct sense
+                return True
+            elif not self.bus_from.is_dc and self.bus_to.is_dc:  # opposite sense, revert
+                return True
+            else:
+                return False
+        else:
+            return False

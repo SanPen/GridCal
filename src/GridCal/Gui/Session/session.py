@@ -13,11 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 from uuid import uuid4
+from PySide2.QtCore import QThread, Signal
+from typing import List, Dict
+import numpy as np
 
 # Module imports
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
-from GridCal.Engine.Simulations.NTC.net_transfer_capacity_driver import NetTransferCapacityResults
-from GridCal.Engine.Simulations.NTC.net_transfer_capacity_ts_driver import NetTransferCapacityTimeSeriesResults
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityResults
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_ts_driver import AvailableTransferCapacityTimeSeriesResults
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import ContingencyAnalysisTimeSeriesResults
 from GridCal.Engine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver import ContinuationPowerFlowResults
@@ -30,6 +33,9 @@ from GridCal.Engine.Simulations.PowerFlow.time_series_driver import TimeSeriesRe
 from GridCal.Engine.Simulations.ShortCircuitStudies.short_circuit_driver import ShortCircuitResults
 from GridCal.Engine.Simulations.Stochastic.stochastic_power_flow_results import StochasticPowerFlowResults
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.basic_structures import Logger
+from GridCal.Gui.Session.results_model import ResultsModel
 
 
 def get_results_object_dictionary():
@@ -37,8 +43,8 @@ def get_results_object_dictionary():
     Get dictionary of recognizable result types in order to be able to load a driver from disk
     :return: dictionary[driver name: empty results object]
     """
-    lst = [(NetTransferCapacityResults(0, 0, [], [], [], (), ()), SimulationTypes.NetTransferCapacity_run),
-           (NetTransferCapacityTimeSeriesResults(0, 0, [], [], [], []), SimulationTypes.NetTransferCapacityTS_run),
+    lst = [(AvailableTransferCapacityResults(0, 0, [], [], [], (), ()), SimulationTypes.NetTransferCapacity_run),
+           (AvailableTransferCapacityTimeSeriesResults(0, 0, [], [], [], []), SimulationTypes.NetTransferCapacityTS_run),
            (ContingencyAnalysisResults(0, 0, [], [], []), SimulationTypes.ContingencyAnalysis_run),
            (ContingencyAnalysisTimeSeriesResults(0, 0, 0, [], [], [], []), SimulationTypes.ContingencyAnalysisTS_run),
            (ContinuationPowerFlowResults(0, 0, 0, [], [], []), SimulationTypes.ContinuationPowerFlow_run),
@@ -53,6 +59,52 @@ def get_results_object_dictionary():
            ]
 
     return {tpe.value: (elm, tpe) for elm, tpe in lst}
+
+
+class GcThread(QThread):
+    progress_signal = Signal(float)
+    progress_text = Signal(str)
+    done_signal = Signal()
+
+    def __init__(self, driver: DriverTemplate):
+        QThread.__init__(self)
+
+        # assign the driver and set the driver's reporting functions
+        self.driver = driver
+        self.driver.progress_signal = self.progress_signal
+        self.driver.progress_text = self.progress_text
+        self.driver.done_signal = self.done_signal
+        self.tpe = driver.tpe
+
+        self.results = None
+
+        self.elapsed = 0
+
+        self.logger = Logger()
+
+        self.__cancel__ = False
+
+    def get_steps(self):
+        return list()
+
+    def run(self):
+        self.progress_signal.emit(0.0)
+
+        self.driver.run()
+
+        self.progress_text.emit('Done!')
+        self.done_signal.emit()
+
+    def cancel(self):
+        """
+        Cancel the simulation
+        """
+        self.__cancel__ = True
+        self.terminate()
+        self.quit()
+        self.progress_signal.emit(0.0)
+        self.progress_text.emit('Cancelled!')
+        self.done_signal.emit()
 
 
 class SimulationSession:
@@ -70,6 +122,7 @@ class SimulationSession:
 
         # dictionary of drivers
         self.drivers = dict()
+        self.threads: Dict[GcThread] = dict()
 
     def __str__(self):
         return self.name
@@ -85,7 +138,36 @@ class SimulationSession:
         Register driver
         :param driver: driver to register (must have a tpe variable in it)
         """
+        # register
         self.drivers[driver.tpe] = driver
+
+    def run(self, driver, post_func=None, prog_func=None, text_func=None):
+        """
+        Register driver
+        :param driver: driver to register (must have a tpe variable in it)
+        :param post_func: Function to run after it is done
+        :param prog_func: Function to display the progress
+        :param text_func: Function to display text
+        """
+
+        thr = GcThread(driver)
+        thr.progress_signal.connect(prog_func)
+        thr.progress_text.connect(text_func)
+        thr.done_signal.connect(post_func)
+
+        # check and kill
+        if driver.tpe in self.drivers.keys():
+            del self.drivers[driver.tpe]
+            if self.threads[driver.tpe].isRunning():
+                self.threads[driver.tpe].terminate()
+            del self.threads[driver.tpe]
+
+        # register
+        self.drivers[driver.tpe] = driver
+        self.threads[driver.tpe] = thr
+
+        # run!
+        thr.start()
 
     def get_available_drivers(self):
         """
@@ -155,7 +237,7 @@ class SimulationSession:
         for driver_type, drv in self.drivers.items():
             if study_name == drv.name:
                 if drv.results is not None:
-                    return drv.results.mdl(result_type=study_type)
+                    return ResultsModel(drv.results.mdl(result_type=study_type))
                 else:
                     print('There seem to be no results :(')
                     return None
@@ -192,4 +274,27 @@ class SimulationSession:
 
             self.register(drv)
 
+    def is_this_running(self, sim_tpe: SimulationTypes):
+        """
+        Check if a simulation type is running
+        :param sim_tpe:
+        :return:
+        """
+        for driver_type, drv in self.threads.items():
+            if drv is not None:
+                if drv.isRunning():
+                    if driver_type == sim_tpe:
+                        return True
+        return False
 
+    def is_anything_running(self):
+        """
+        Check if anything is running
+        :return:
+        """
+
+        for driver_type, drv in self.threads.items():
+            if drv is not None:
+                if drv.isRunning():
+                    return True
+        return False

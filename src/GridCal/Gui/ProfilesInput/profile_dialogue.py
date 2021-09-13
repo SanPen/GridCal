@@ -8,71 +8,9 @@ import numpy as np
 import pandas as pd
 from PySide2.QtWidgets import *
 from typing import List, Dict
+from GridCal.Gui.GuiFunctions import PandasModel, get_list_model
 from GridCal.Gui.ProfilesInput.gui import *
 from GridCal.Gui.ProfilesInput.excel_dialog import *
-
-
-class PandasModel(QtCore.QAbstractTableModel):
-    """
-    Class to populate a Qt table view with a pandas data frame
-    """
-    def __init__(self, data, parent=None):
-        QtCore.QAbstractTableModel.__init__(self, parent)
-        self._data = np.array(data.values)
-        self._cols = data.columns
-        self._index = data.index.values
-        self.r, self.c = np.shape(self._data)
-        self.isDate = False
-
-        if len(self._index) > 0:
-            if isinstance(self._index[0], np.datetime64):
-                self._index = pd.to_datetime(self._index)
-                self.isDate = True
-
-        self.formatter = lambda x: "%.2f" % x
-
-    def rowCount(self, parent=None):
-        return self.r
-
-    def columnCount(self, parent=None):
-        return self.c
-
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
-                # return self.formatter(self._data[index.row(), index.column()])
-                return str(self._data[index.row(), index.column()])
-        return None
-
-    def headerData(self, p_int, orientation, role):
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
-                return self._cols[p_int]
-            elif orientation == QtCore.Qt.Vertical:
-                if self._index is None:
-                    return p_int
-                else:
-                    if self.isDate:
-                        return self._index[p_int].strftime('%Y/%m/%d  %H:%M.%S')
-                    else:
-                        return str(self._index[p_int])
-        return None
-
-
-def get_list_model(iterable):
-    """
-    get Qt list model from a simple iterable
-    :param iterable: 
-    :return: List model
-    """
-    list_model = QtGui.QStandardItemModel()
-    if iterable is not None:
-        for val in iterable:
-            # for the list model
-            item = QtGui.QStandardItem(str(val))
-            item.setEditable(False)
-            list_model.appendRow(item)
-    return list_model
 
 
 class MultiplierType(Enum):
@@ -326,7 +264,13 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
             # Depending on the extension load the file
             if file_extension == '.csv':
-                self.original_data_frame = pd.read_csv(filename, index_col=0)
+                try:
+                    self.original_data_frame = pd.read_csv(filename, index_col=0)
+                except UnicodeDecodeError:
+                    try:
+                        self.original_data_frame = pd.read_csv(filename, index_col=0, encoding='windows-1252')
+                    except Exception as e:
+                        self.msg(str(e))
 
             elif file_extension in ['.xlsx', '.xls']:
 
@@ -346,8 +290,21 @@ class ProfileInputGUI(QtWidgets.QDialog):
             try:
                 self.original_data_frame = self.original_data_frame.astype(float)
             except:
+
+                # run the diagnostic
+                for i in range(self.original_data_frame.shape[0]):
+                    for j in range(self.original_data_frame.shape[1]):
+                        try:
+                            a = float(self.original_data_frame.values[i, j])
+                        except:
+                            print('not a float value (', i, j, '):', self.original_data_frame.values[i, j])
+
                 self.msg('The format of the data is not recognized. Only int or float values are allowed')
                 return
+
+            # correct the column names
+            cols = [str(x).strip() for x in self.original_data_frame.columns.values]
+            self.original_data_frame.columns = cols
 
             # set the profile names list
             self.profile_names = np.array([str(e).strip() for e in self.original_data_frame.columns.values], dtype=object)

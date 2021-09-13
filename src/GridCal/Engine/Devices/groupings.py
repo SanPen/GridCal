@@ -48,7 +48,7 @@ class GenericAreaGroup(EditableDevice):
         self.latitude = latitude
         self.longitude = longitude
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
 
         data = {'id': self.idtag,
                 'name': self.name,
@@ -56,11 +56,11 @@ class GenericAreaGroup(EditableDevice):
                 }
         return data
 
-    def get_profiles_dict(self):
+    def get_profiles_dict(self, version=3):
         data = {'id': self.idtag}
         return data
 
-    def get_units_dict(self):
+    def get_units_dict(self, version=3):
         data = {}
         return data
 

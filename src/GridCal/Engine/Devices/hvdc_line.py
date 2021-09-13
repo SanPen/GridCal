@@ -409,41 +409,70 @@ class HvdcLine(EditableDevice):
             data.append(obj)
         return data
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return:
         """
+        if version == 2:
+            return {'id': self.idtag,
+                    'type': 'hvdc',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus_from': self.bus_from.idtag,
+                    'bus_to': self.bus_to.idtag,
+                    'active': self.active,
+                    'rate': self.rate,
+                    'r': 0,
+                    'length': self.length,
+                    'loss_factor': self.loss_factor,
+                    'vset_from': self.Vset_f,
+                    'vset_to': self.Vset_t,
+                    'Pset': self.Pset,
+                    'min_firing_angle_f': self.min_firing_angle_f,
+                    'max_firing_angle_f': self.max_firing_angle_f,
+                    'min_firing_angle_t': self.min_firing_angle_t,
+                    'max_firing_angle_t': self.max_firing_angle_t,
+                    'overload_cost': self.overload_cost,
+                    'base_temperature': 20,
+                    'operational_temperature': 20,
+                    'alpha': 0.00330,
+                    'locations': []
+                    }
+        elif version == 3:
+            return {'id': self.idtag,
+                    'type': 'hvdc',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus_from': self.bus_from.idtag,
+                    'bus_to': self.bus_to.idtag,
+                    'active': self.active,
+                    'rate': self.rate,
+                    'contingency_factor1': self.contingency_factor,
+                    'contingency_factor2': self.contingency_factor,
+                    'contingency_factor3': self.contingency_factor,
+                    'r': 0,
+                    'length': self.length,
+                    'loss_factor': self.loss_factor,
+                    'vset_from': self.Vset_f,
+                    'vset_to': self.Vset_t,
+                    'Pset': self.Pset,
+                    'min_firing_angle_f': self.min_firing_angle_f,
+                    'max_firing_angle_f': self.max_firing_angle_f,
+                    'min_firing_angle_t': self.min_firing_angle_t,
+                    'max_firing_angle_t': self.max_firing_angle_t,
+                    'overload_cost': self.overload_cost,
+                    'base_temperature': 20,
+                    'operational_temperature': 20,
+                    'alpha': 0.00330,
+                    'locations': []
+                    }
+        else:
+            return dict()
 
-        d = {'id': self.idtag,
-             'type': 'hvdc',
-             'phases': 'ps',
-             'name': self.name,
-             'name_code': self.code,
-             'bus_from': self.bus_from.idtag,
-             'bus_to': self.bus_to.idtag,
-             'active': self.active,
-             'rate': self.rate,
-             'r': 0,
-             'length': self.length,
-             'loss_factor': self.loss_factor,
-             'vset_from': self.Vset_f,
-             'vset_to': self.Vset_t,
-             'Pset': self.Pset,
-             'min_firing_angle_f': self.min_firing_angle_f,
-             'max_firing_angle_f': self.max_firing_angle_f,
-             'min_firing_angle_t': self.min_firing_angle_t,
-             'max_firing_angle_t': self.max_firing_angle_t,
-             'overload_cost': self.overload_cost,
-             'base_temperature': 20,
-             'operational_temperature': 20,
-             'alpha': 0.00330,
-             'locations': []
-             }
-
-        return d
-
-    def get_profiles_dict(self):
+    def get_profiles_dict(self, version=3):
         """
 
         :return:
@@ -472,7 +501,7 @@ class HvdcLine(EditableDevice):
                 'vset_to': vset_prof_t,
                 'overload_cost': cost_prof}
 
-    def get_units_dict(self):
+    def get_units_dict(self, version=3):
         """
         Get units of the values
         """

@@ -51,26 +51,11 @@ from the project's [documentation](https://gridcal.readthedocs.io)
 # else:
 #     description = ''
 #     print('Unable to read the description file')
-description = '''# About GridCal
-
-GridCal is a research oriented power systems software.
-
-Research oriented? How? Well, it is a fruit of research. It is designed to be modular.
-As a researcher I found that the available software (not even talking about commercial
-options) are hard to expand or adapt to achieve complex simulations. GridCal is
-designed to allow you to build and reuse modules, which eventually will boost your
-productivity and the possibilities that are at hand.
-
-So, I do really hope you enjoy it, and if you have comments, suggestions or just want
-to collaborate, do not hesitate to contact.
-
-Cheers,
-Santiago
-'''
+description = 'GridCal is a Power Systems simulation program intended for professional use and research'
 
 base_path = os.path.join('GridCal')
 
-packages = find_packages(exclude=['docs', 'test', 'research', 'tests', 'Tutorials'])
+packages = find_packages(exclude=['*docs', '*test', '*research', '*tests', '*Tutorials'])
 
 package_data = {'GridCal': ['*.md',
                             '*.rst',
@@ -159,7 +144,7 @@ setup(
     #
     # This field corresponds to the "Description" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#description-optional
-    long_description=long_description,  # Optional
+    # long_description=long_description,  # Optional
 
     # Denotes that our long_description is in Markdown; valid values are
     # text/plain, text/x-rst, and text/markdown
@@ -181,7 +166,7 @@ setup(
 
     # This should be your name or the name of the organization which owns the
     # project.
-    author='Santiago Peñate Vera et. al.',  # Optional
+    author='Santiago Peñate Vera et. Al.',  # Optional
 
     # This should be a valid email address corresponding to the author listed
     # above.
@@ -196,20 +181,16 @@ setup(
         #   4 - Beta
         #   5 - Production/Stable
 
-        # Indicate who your project is intended for
-        'Intended Audience :: Developers and electrical engineers',
-        'Topic :: Software Development :: Power Systems',
-
         # Pick your license as you wish
-        'License :: OSI Approved :: GPLv3',
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
         # These classifiers are *not* checked by 'pip install'. See instead
         # 'python_requires' below.
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
 
     # This field adds keywords for your project which will appear on the

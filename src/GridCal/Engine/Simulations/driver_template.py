@@ -15,22 +15,29 @@
 from typing import List
 
 import numpy as np
-from PySide2.QtCore import QThread, Signal
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
-class DriverTemplate(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class DummySignal:
+
+    def __init__(self, tpe=str):
+        self.tpe = tpe
+
+    def emit(self, val=''):
+        pass
+
+
+class DriverTemplate:
 
     tpe = SimulationTypes.TemplateDriver
     name = 'Template'
 
     def __init__(self, grid: MultiCircuit):
-        QThread.__init__(self)
+        self.progress_signal = DummySignal()
+        self.progress_text = DummySignal(str)
+        self.done_signal = DummySignal()
 
         self.grid = grid
 
@@ -45,6 +52,9 @@ class DriverTemplate(QThread):
     def get_steps(self):
         return list()
 
+    def run(self):
+        pass
+
     def cancel(self):
         """
         Cancel the simulation
@@ -55,7 +65,7 @@ class DriverTemplate(QThread):
         self.done_signal.emit()
 
 
-class TSDriverTemplate(DriverTemplate):
+class TimeSeriesDriverTemplate(DriverTemplate):
 
     def __init__(self, grid: MultiCircuit, start_=0, end_=None):
 

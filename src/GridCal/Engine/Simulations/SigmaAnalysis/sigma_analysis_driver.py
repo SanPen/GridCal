@@ -13,16 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
+import numba as nb
 from matplotlib import pyplot as plt
-from PySide2.QtCore import QThread, Signal
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_coefficients_josep, sigma_function
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 
 class SigmaAnalysisResults:
@@ -93,11 +95,15 @@ class SigmaAnalysisResults:
 
         ax.plot(sx, sy1, 'k', linewidth=2)
         ax.plot(sx, sy2, 'k', linewidth=2)
-        # sc = ax.plot(self.sigma_re, self.sigma_im, 'o')
 
-        sc = ax.scatter(self.sigma_re, self.sigma_im, s=100)
+        d = np.abs(np.nan_to_num(self.distances))
+        colors = (d / d.max())
+        area = 100.0 * np.power(1.0 + d, 2)
 
-        annot = ax.annotate("", xy=(0, 0), xytext=(20, 20), textcoords="offset points",
+        sc = ax.scatter(self.sigma_re, self.sigma_im, c=colors, s=area, cmap='winter', alpha=0.75)
+
+        annot = ax.annotate("", xy=(0, 0), xytext=(20, 20),
+                            textcoords="offset points",
                             bbox=dict(boxstyle="round", fc="w"),
                             arrowprops=dict(arrowstyle="->"))
         annot.set_visible(False)
@@ -127,7 +133,7 @@ class SigmaAnalysisResults:
 
         fig.canvas.mpl_connect("motion_notify_event", hover)
 
-    def mdl(self, result_type: ResultTypes, indices=None, names=None) -> "ResultsModel":
+    def mdl(self, result_type: ResultTypes, indices=None, names=None) -> "ResultsTable":
         """
 
         :param result_type:
@@ -163,7 +169,7 @@ class SigmaAnalysisResults:
                 y_label = '(p.u.)'
                 title = 'Sigma and distances'
 
-                mdl = ResultsModel(data=y, index=labels, columns=['σ real', 'σ imaginary', 'Distances'],
+                mdl = ResultsTable(data=y, index=labels, columns=['σ real', 'σ imaginary', 'Distances'],
                                    title=title, ylabel=y_label, units=y_label)
                 return mdl
 
@@ -174,7 +180,7 @@ class SigmaAnalysisResults:
                 title = ''
 
             # assemble model
-            mdl = ResultsModel(data=y, index=labels, columns=[result_type.value[0]],
+            mdl = ResultsTable(data=y, index=labels, columns=[result_type.value[0]],
                                title=title, ylabel=y_label, units=y_label)
             return mdl
 
@@ -229,7 +235,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
                 Sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.vd])
                 Sig_re[calculation_input.pqpv] = np.real(Sigma)
                 Sig_im[calculation_input.pqpv] = np.imag(Sigma)
-                sigma_distances = np.abs(sigma_distance(Sig_re, Sig_im))
+                sigma_distances = sigma_distance(Sig_re, Sig_im)
 
                 # store the results
                 island_results = SigmaAnalysisResults(n=len(calculation_input.Vbus))
@@ -271,7 +277,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
             Sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.vd])
             Sig_re[calculation_input.pqpv] = np.real(Sigma)
             Sig_im[calculation_input.pqpv] = np.imag(Sigma)
-            sigma_distances = np.abs(sigma_distance(Sig_re, Sig_im))
+            sigma_distances = sigma_distance(Sig_re, Sig_im)
 
             # store the results
             island_results = SigmaAnalysisResults(n=len(calculation_input.Vbus))
@@ -288,7 +294,8 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
     return results
 
 
-def sigma_distance(a, b):
+@nb.jit()
+def sigma_distance(sigma_real, sigma_imag):
     """
     Distance to the collapse in the sigma space
 
@@ -313,28 +320,49 @@ def sigma_distance(a, b):
          (192 (-64 a^3 + 48 a^2
                + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2)
                - 12 a + 216 b^2 + 1)^(1/3)) + 1/12 (8 a - 5)
-    :param a: Sigma real
-    :param b: Sigma imag
+    :param sigma_real: Sigma real array
+    :param sigma_imag: Sigma imag array
     :return: distance of the sigma point to the curve sqrt(0.25 + x)
     """
+    n = len(sigma_real)
+    x1 = np.zeros(n)
 
-    t1 = (-64 * a**3
-          + 48 * a**2
-          + 12 * np.sqrt(3)*np.sqrt(-64 * a**3 * b**2
-                                    + 48 * a**2 * b**2
-                                    - 12 * a * b**2
-                                    + 108 * b**4 + b**2)
-          - 12 * a + 216 * b**2 + 1)**(1 / 3)
+    i = 0
+    sq3 = np.sqrt(3)
 
-    x1 = 1 / 12 * t1 - (-256 * a**2 + 128*a - 16) / (192 * t1) + 1 / 12 * (8 * a - 5)
+    for a, b in zip(sigma_real, sigma_imag):
+
+        t0 = -64 * a ** 3 * b ** 2 \
+             + 48 * a ** 2 * b ** 2 \
+             - 12 * a * b ** 2 \
+             + 108 * b ** 4 + b ** 2
+
+        if t0 > 0:
+
+            t1 = (-64 * a**3
+                  + 48 * a**2
+                  + 12 * sq3 * np.sqrt(t0)
+                  - 12 * a + 216 * b**2 + 1)**(1 / 3)
+
+            # the value is within limits
+            x1[i] = 1 / 12 * t1 - (-256 * a**2 + 128 * a - 16) / (192 * t1) + 1 / 12 * (8 * a - 5)
+        else:
+            t1 = (-64 * a ** 3
+                  + 48 * a ** 2
+                  + 12 * sq3 * np.sqrt(-t0)
+                  - 12 * a + 216 * b ** 2 + 1) ** (1 / 3)
+
+            # here I set the value negative to indicate that it is off-limits
+            x1[i] = -(1 / 12 * t1 - (-256 * a**2 + 128 * a - 16) / (192 * t1) + 1 / 12 * (8 * a - 5))
+
+        i += 1
+
     return x1
 
 
-class SigmaAnalysisDriver(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class SigmaAnalysisDriver(DriverTemplate):
     name = 'Sigma Analysis'
+    tpe = SimulationTypes.SigmaAnalysis_run
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions):
         """
@@ -342,11 +370,7 @@ class SigmaAnalysisDriver(QThread):
         :param grid: MultiCircuit instance
         :param options: PowerFlowOptions instance
         """
-
-        QThread.__init__(self)
-
-        # Grid to run a power flow in
-        self.grid = grid
+        DriverTemplate.__init__(self, grid=grid)
 
         # Options to use
         self.options = options

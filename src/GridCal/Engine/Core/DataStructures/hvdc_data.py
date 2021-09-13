@@ -83,6 +83,12 @@ class HvdcData:
 
         return data
 
+    def get_bus_indices_f(self):
+        return self.C_hvdc_bus_f.tocsc().indices
+
+    def get_bus_indices_t(self):
+        return self.C_hvdc_bus_t.tocsc().indices
+
     def get_island(self, bus_idx):
         """
         Get HVDC indices of the island given by the bus indices
@@ -129,7 +135,7 @@ class HvdcData:
         return self.C_hvdc_bus_t.T * (self.Qmin_t * self.active.T).T
 
     def get_loading(self):
-        return self.Pf / self.rate
+        return self.Pf / (self.rate + 1e-20)
 
     def get_losses(self):
         return (self.Pf.T * self.loss_factor).T

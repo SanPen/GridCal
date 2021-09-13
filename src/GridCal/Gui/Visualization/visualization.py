@@ -10,7 +10,6 @@ import matplotlib.cm as mplcm
 import matplotlib.colors as colors
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 from GridCal.Engine.Devices.editable_device import DeviceType
 
 
@@ -99,8 +98,15 @@ def colour_sub_schematic(Sbase,
     vnorm = (vabs - vmin) / vrng
 
     if Sbus is not None:
-        Pabs = np.abs(Sbus)
-        Pnorm = Pabs / Pabs.max()
+        if len(Sbus) > 0:
+            Pabs = np.abs(Sbus)
+            mx = Pabs.max()
+            if mx != 0.0:
+                Pnorm = Pabs / mx
+            else:
+                Pnorm = np.zeros(len(buses))
+        else:
+            Pnorm = np.zeros(len(buses))
     else:
         Pnorm = np.zeros(len(buses))
 
@@ -147,64 +153,64 @@ def colour_sub_schematic(Sbase,
 
     # color branches
     if Sf is not None:
+        if len(Sf) > 0:
+            lnorm = np.abs(loadings)
+            lnorm[lnorm == np.inf] = 0
+            Sfabs = np.abs(Sf)
+            max_flow = Sfabs.max()
 
-        lnorm = np.abs(loadings)
-        lnorm[lnorm == np.inf] = 0
-        Sfabs = np.abs(Sf)
-        max_flow = Sfabs.max()
+            if hvdc_sending_power is not None:
+                if len(hvdc_sending_power) > 0:
+                    max_flow = max(max_flow, np.abs(hvdc_sending_power).max())
 
-        if hvdc_sending_power is not None:
-            if len(hvdc_sending_power) > 0:
-                max_flow = max(max_flow, np.abs(hvdc_sending_power).max())
+            Sfnorm = Sfabs / max_flow
 
-        Sfnorm = Sfabs / max_flow
+            for i, branch in enumerate(branches):
+                if branch.graphic_obj is not None:
 
-        for i, branch in enumerate(branches):
-            if branch.graphic_obj is not None:
+                    if use_flow_based_width:
+                        w = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
+                    else:
+                        w = branch.graphic_obj.pen_width
 
-                if use_flow_based_width:
-                    w = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
-                else:
-                    w = branch.graphic_obj.pen_width
+                    if branch.active:
+                        style = QtCore.Qt.SolidLine
+                        r, g, b, a = loading_cmap(lnorm[i])
+                        color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+                    else:
+                        style = QtCore.Qt.DashLine
+                        color = QtCore.Qt.gray
 
-                if branch.active:
-                    style = QtCore.Qt.SolidLine
-                    r, g, b, a = loading_cmap(lnorm[i])
-                    color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
-                else:
-                    style = QtCore.Qt.DashLine
-                    color = QtCore.Qt.gray
+                    tooltip = str(i) + ': ' + branch.name
+                    tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
 
-                tooltip = str(i) + ': ' + branch.name
-                tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
+                    tooltip += '\nPower (from):\t' + "{:10.4f}".format(Sf[i]) + ' [MVA]'
 
-                tooltip += '\nPower (from):\t' + "{:10.4f}".format(Sf[i]) + ' [MVA]'
+                    if St is not None:
+                        tooltip += '\nPower (to):\t' + "{:10.4f}".format(St[i]) + ' [MVA]'
 
-                if St is not None:
-                    tooltip += '\nPower (to):\t' + "{:10.4f}".format(St[i]) + ' [MVA]'
+                    if losses is not None:
+                        tooltip += '\nLosses:\t\t' + "{:10.4f}".format(losses[i]) + ' [MVA]'
 
-                if losses is not None:
-                    tooltip += '\nLosses:\t\t' + "{:10.4f}".format(losses[i]) + ' [MVA]'
+                    if branch.device_type == DeviceType.Transformer2WDevice:
+                        if ma is not None:
+                            tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
 
-                if branch.device_type == DeviceType.Transformer2WDevice:
-                    if ma is not None:
-                        tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
+                        if theta is not None:
+                            tooltip += '\ntap angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
 
-                    if theta is not None:
-                        tooltip += '\ntap angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
+                    if branch.device_type == DeviceType.VscDevice:
+                        if ma is not None:
+                            tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
 
-                if branch.device_type == DeviceType.VscDevice:
-                    if ma is not None:
-                        tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
+                        if theta is not None:
+                            tooltip += '\nfiring angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
 
-                    if theta is not None:
-                        tooltip += '\nfiring angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
+                        if Beq is not None:
+                            tooltip += '\nBeq:\t' + "{:10.4f}".format(Beq[i])
 
-                    if Beq is not None:
-                        tooltip += '\nBeq:\t' + "{:10.4f}".format(Beq[i])
-
-                branch.graphic_obj.setToolTipText(tooltip)
-                branch.graphic_obj.set_colour(color, w, style)
+                    branch.graphic_obj.setToolTipText(tooltip)
+                    branch.graphic_obj.set_colour(color, w, style)
 
     if failed_br_idx is not None:
         for i in failed_br_idx:
@@ -323,9 +329,12 @@ def get_base_map(location, zoom_start=5):
     # add possible tiles
     folium.TileLayer('cartodbpositron').add_to(my_map)
     folium.TileLayer('cartodbdark_matter').add_to(my_map)
-    folium.TileLayer('openstreetmap').add_to(my_map)
-    folium.TileLayer('Mapbox Bright').add_to(my_map)
+    # folium.TileLayer('openstreetmap').add_to(my_map)
     folium.TileLayer('stamentoner').add_to(my_map)
+    folium.WmsTileLayer(url='https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+                        layers='Esri_WorldGray',
+                        attr='Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
+                        ).add_to(my_map)
 
     # add markers layer
     marker_cluster = MarkerCluster().add_to(my_map)

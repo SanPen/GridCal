@@ -128,6 +128,41 @@ def lpAddRestrictions2(problem: LpProblem, lhs, rhs, name, op='='):
     return arr
 
 
+def lpAddRestrictions3(problem: LpProblem, lhs, var, rhs, name):
+    """
+    Add vector or matrix of restrictions to the problem
+    so that lhs <= var <= rhs
+    :param problem: instance of LpProblem
+    :param lhs: 1D array (left hand side)
+    :param var: 1D or 2D array (right hand side)
+    :param rhs: 1D or 2D array (right hand side)
+    :param name: name of the restriction
+    """
+
+    assert (lhs.shape == rhs.shape)
+    assert (var.shape == rhs.shape)
+
+    arr_l = np.empty(lhs.shape, dtype=object)
+    arr_r = np.empty(lhs.shape, dtype=object)
+
+    if len(lhs.shape) == 1:
+
+        for i in range(lhs.shape[0]):
+            arr_r[i] = var[i] <= rhs[i]
+            arr_l[i] = lhs[i] <= var[i]
+
+    elif len(lhs.shape) == 2:
+
+        for i, j in product(range(lhs.shape[0]), range(lhs.shape[1])):
+            arr_r[i, j] = var[i, j] <= rhs[i, j]
+            arr_l[i, j] = lhs[i, j] <= var[i, j]
+
+    lpAddRestrictions(problem=problem, arr=arr_l, name=name + '_l')
+    lpAddRestrictions(problem=problem, arr=arr_r, name=name + '_r')
+
+    return arr_l, arr_r
+
+
 def lpMakeVars(name, shape, lower=None, upper=None):
     """
     Declares 1D of 2D array of LpVars

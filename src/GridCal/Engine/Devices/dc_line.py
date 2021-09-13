@@ -32,7 +32,7 @@ class DcLine(EditableDevice):
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  length=1, temp_base=20, temp_oper=20, alpha=0.00330,
                  template=None, rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
-                 contingency_factor=1.0):
+                 contingency_factor=1.0, contingency_enabled=True):
         """
 
         :param bus_from:
@@ -78,7 +78,8 @@ class DcLine(EditableDevice):
 
                                                   'contingency_factor': GCProp('p.u.', float,
                                                                                'Rating multiplier for contingencies.'),
-
+                                                  'contingency_enabled': GCProp('', bool,
+                                                                                'Consider this line for contingencies.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
@@ -163,6 +164,7 @@ class DcLine(EditableDevice):
         # line rating in MW
         self.rate = rate
         self.contingency_factor = contingency_factor
+        self.contingency_enabled: bool = contingency_enabled
         self.rate_prof = rate_prof
 
         # branch type: Line, Transformer, etc...
@@ -313,32 +315,50 @@ class DcLine(EditableDevice):
             data.append(obj)
         return data
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return:
         """
+        if version == 2:
+            return {'id': self.idtag,
+                    'type': 'dc_line',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus_from': self.bus_from.idtag,
+                    'bus_to': self.bus_to.idtag,
+                    'active': self.active,
+                    'rate': self.rate,
+                    'r': self.R,
+                    'length': self.length,
+                    'base_temperature': self.temp_base,
+                    'operational_temperature': self.temp_oper,
+                    'alpha': self.alpha,
+                    'locations': []}
+        elif version == 3:
+            return {'id': self.idtag,
+                    'type': 'dc_line',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus_from': self.bus_from.idtag,
+                    'bus_to': self.bus_to.idtag,
+                    'active': self.active,
+                    'rate': self.rate,
+                    'contingency_factor1': self.contingency_factor,
+                    'contingency_factor2': self.contingency_factor,
+                    'contingency_factor3': self.contingency_factor,
+                    'r': self.R,
+                    'length': self.length,
+                    'base_temperature': self.temp_base,
+                    'operational_temperature': self.temp_oper,
+                    'alpha': self.alpha,
+                    'locations': []}
+        else:
+            return dict()
 
-        d = {'id': self.idtag,
-             'type': 'dc_line',
-             'phases': 'ps',
-             'name': self.name,
-             'name_code': self.code,
-             'bus_from': self.bus_from.idtag,
-             'bus_to': self.bus_to.idtag,
-             'active': self.active,
-
-             'rate': self.rate,
-             'r': self.R,
-             'length': self.length,
-             'base_temperature': self.temp_base,
-             'operational_temperature': self.temp_oper,
-             'alpha': self.alpha,
-             'locations': []}
-
-        return d
-
-    def get_profiles_dict(self):
+    def get_profiles_dict(self, version=3):
 
         if self.active_prof is not None:
             active_prof = self.active_prof.tolist()
@@ -351,7 +371,7 @@ class DcLine(EditableDevice):
                 'active': active_prof,
                 'rate': rate_prof}
 
-    def get_units_dict(self):
+    def get_units_dict(self, version=3):
         """
         Get units of the values
         """

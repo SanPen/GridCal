@@ -3,7 +3,7 @@ import sys
 from PySide2.QtWidgets import *
 from PySide2.QtCore import Qt
 from GridCal.Gui.SyncDialogue.gui import *
-from GridCal.Engine.IO.synchronization_driver import get_issues_tree_view_model, FileSyncThread
+from GridCal.Gui.Session.synchronization_driver import get_issues_tree_view_model, FileSyncThread
 
 
 class SyncDialogueWindow(QtWidgets.QDialog):

@@ -16,7 +16,7 @@
 import numpy as np
 import pandas as pd
 from GridCal.Engine.Simulations.result_types import ResultTypes
-from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 
@@ -279,7 +279,7 @@ class PowerFlowResults(ResultsTemplate):
 
         return df
 
-    def mdl(self, result_type: ResultTypes) -> "ResultsModel":
+    def mdl(self, result_type: ResultTypes) -> "ResultsTable":
         """
 
         :param result_type:
@@ -458,7 +458,7 @@ class PowerFlowResults(ResultsTemplate):
             raise Exception('Unsupported result type: ' + str(result_type))
 
         # assemble model
-        mdl = ResultsModel(data=y, index=labels, columns=[result_type.value[0]],
+        mdl = ResultsTable(data=y, index=labels, columns=[result_type.value[0]],
                            title=title, ylabel=y_label, units=y_label)
         return mdl
 

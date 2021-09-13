@@ -27,10 +27,10 @@ from GridCal.Engine.Simulations.OPF.simple_dispatch_ts import OpfSimpleTimeSerie
 from GridCal.Engine.Core.time_series_opf_data import compile_opf_time_circuit
 from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
-from GridCal.Engine.Simulations.driver_template import TSDriverTemplate
+from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 
 
-class OptimalPowerFlowTimeSeries(TSDriverTemplate):
+class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
     name = 'Optimal power flow time series'
     tpe = SimulationTypes.OPFTimeSeries_run
 
@@ -40,7 +40,7 @@ class OptimalPowerFlowTimeSeries(TSDriverTemplate):
         @param grid: MultiCircuit Object
         @param options: OPF options
         """
-        TSDriverTemplate.__init__(self, grid=grid, start_=start_, end_=end_)
+        TimeSeriesDriverTemplate.__init__(self, grid=grid, start_=start_, end_=end_)
 
         # Options to use
         self.options = options

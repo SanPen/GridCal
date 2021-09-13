@@ -14,6 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
+import numba as nb
 import pandas as pd
 import scipy.sparse as sp
 from typing import List, Dict
@@ -64,7 +65,6 @@ class TimeCircuit(SnapshotData):
         self.pqpv_prof_ = None
 
     def consolidate(self):
-        self.Vbus_ = self.bus_data.Vbus.copy()
         self.Sbus_ = self.get_injections(normalize=True)
         self.Ibus_ = np.zeros((len(self.bus_data), self.ntime), dtype=complex)
 
@@ -72,7 +72,7 @@ class TimeCircuit(SnapshotData):
     def Vbus(self):
 
         if self.Vbus_ is None:
-            self.Vbus_ = self.bus_data.Vbus.copy()
+            self.Vbus_ = self.bus_data.Vbus
 
         return self.Vbus_
 

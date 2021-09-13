@@ -13,8 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from PySide2.QtCore import QThread, Signal
-
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_pf
@@ -22,12 +20,10 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
+from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 
-class PowerFlowDriver(QThread):
-    progress_signal = Signal(float)
-    progress_text = Signal(str)
-    done_signal = Signal()
+class PowerFlowDriver(DriverTemplate):
     name = 'Power Flow'
     tpe = SimulationTypes.PowerFlow_run
 
@@ -43,10 +39,7 @@ class PowerFlowDriver(QThread):
         :param opf_results: OptimalPowerFlowResults instance
         """
 
-        QThread.__init__(self)
-
-        # Grid to run a power flow in
-        self.grid = grid
+        DriverTemplate.__init__(self, grid=grid)
 
         # Options to use
         self.options = options
@@ -63,8 +56,7 @@ class PowerFlowDriver(QThread):
 
         self.__cancel__ = False
 
-    @staticmethod
-    def get_steps():
+    def get_steps(self):
         """
 
         :return:
@@ -81,11 +73,4 @@ class PowerFlowDriver(QThread):
                                        opf_results=self.opf_results,
                                        logger=self.logger)
         self.convergence_reports = self.results.convergence_reports
-        # send the finnish signal
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
-
-    def cancel(self):
-        self.__cancel__ = True
 

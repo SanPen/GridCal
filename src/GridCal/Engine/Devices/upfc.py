@@ -27,7 +27,8 @@ class UPFC(EditableDevice):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='UPFC', code='', idtag=None, active=True,
                  rs=0.0, xs=0.00001, rl=0.0, xl=0.0, bl=0.0, rp=0.0, xp=0.0, vp=1.0, Pset = 0.0, Qset=0.0, rate=9999,
-                 mttf=0, mttr=0, cost=1200, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0):
+                 mttf=0, mttr=0, cost=1200, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0,
+                 contingency_enabled=True):
         """
         Unified Power Flow Converter (UPFC)
         :param bus_from:
@@ -71,7 +72,8 @@ class UPFC(EditableDevice):
 
                                                   'contingency_factor': GCProp('p.u.', float,
                                                                                'Rating multiplier for contingencies.'),
-
+                                                  'contingency_enabled': GCProp('', bool,
+                                                                                'Consider this UPFC for contingencies.'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure, '
                                                                  'used in reliability studies.'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery, '
@@ -123,42 +125,66 @@ class UPFC(EditableDevice):
         # branch rating in MVA
         self.rate = rate
         self.contingency_factor = contingency_factor
+        self.contingency_enabled: bool = contingency_enabled
         self.rate_prof = rate_prof
 
         # branch type: Line, Transformer, etc...
         self.branch_type = BranchType.UPFC
 
-    def get_properties_dict(self):
+    def get_properties_dict(self, version=3):
         """
         Get json dictionary
         :return:
         """
+        if version == 2:
+            return {'id': self.idtag,
+                    'type': 'upfc',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus_from': self.bus_from.idtag,
+                    'bus_to': self.bus_to.idtag,
+                    'active': self.active,
+                    'rate': self.rate,
+                    'rl': self.Rl,
+                    'xl': self.Xl,
+                    'bl': self.Bl,
+                    'rs': self.Rs,
+                    'xs': self.Xs,
+                    'rsh': self.Rsh,
+                    'xsh': self.Xsh,
+                    'vsh': self.Vsh,
+                    'Pfset': self.Pfset,
+                    'Qfset': self.Qfset
+                    }
+        elif version == 3:
+            return {'id': self.idtag,
+                    'type': 'upfc',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus_from': self.bus_from.idtag,
+                    'bus_to': self.bus_to.idtag,
+                    'active': self.active,
+                    'rate': self.rate,
+                    'contingency_factor1': self.contingency_factor,
+                    'contingency_factor2': self.contingency_factor,
+                    'contingency_factor3': self.contingency_factor,
+                    'rl': self.Rl,
+                    'xl': self.Xl,
+                    'bl': self.Bl,
+                    'rs': self.Rs,
+                    'xs': self.Xs,
+                    'rsh': self.Rsh,
+                    'xsh': self.Xsh,
+                    'vsh': self.Vsh,
+                    'Pfset': self.Pfset,
+                    'Qfset': self.Qfset
+                    }
+        else:
+            return dict()
 
-        d = {'id': self.idtag,
-             'type': 'upfc',
-             'phases': 'ps',
-             'name': self.name,
-             'name_code': self.code,
-             'bus_from': self.bus_from.idtag,
-             'bus_to': self.bus_to.idtag,
-             'active': self.active,
-
-             'rate': self.rate,
-             'rl': self.Rl,
-             'xl': self.Xl,
-             'bl': self.Bl,
-             'rs': self.Rs,
-             'xs': self.Xs,
-             'rsh': self.Rsh,
-             'xsh': self.Xsh,
-             'vsh': self.Vsh,
-             'Pfset': self.Pfset,
-             'Qfset': self.Qfset
-             }
-
-        return d
-
-    def get_profiles_dict(self):
+    def get_profiles_dict(self, version=3):
         """
 
         :return:
@@ -174,7 +200,7 @@ class UPFC(EditableDevice):
                 'active': active_prof,
                 'rate': rate_prof}
 
-    def get_units_dict(self):
+    def get_units_dict(self, version=3):
         """
         Get units of the values
         """

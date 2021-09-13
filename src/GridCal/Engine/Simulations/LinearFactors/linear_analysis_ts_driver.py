@@ -25,11 +25,11 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCal.Engine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisOptions
-from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
-from GridCal.Engine.Simulations.driver_template import TSDriverTemplate
+from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 
 
 class LinearAnalysisTimeSeriesResults(ResultsTemplate):
@@ -95,7 +95,7 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
                 'loading': np.abs(self.loading).tolist()}
         return data
 
-    def mdl(self, result_type: ResultTypes) -> "ResultsModel":
+    def mdl(self, result_type: ResultTypes) -> "ResultsTable":
         """
         Get ResultsModel instance
         :param result_type:
@@ -141,10 +141,10 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
             index = list(range(data.shape[0]))
 
         # assemble model
-        return ResultsModel(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
+        return ResultsTable(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)
 
 
-class LinearAnalysisTimeSeries(TSDriverTemplate):
+class LinearAnalysisTimeSeries(TimeSeriesDriverTemplate):
     name = 'Linear analysis time series'
     tpe = SimulationTypes.LinearAnalysis_TS_run
 
@@ -154,7 +154,7 @@ class LinearAnalysisTimeSeries(TSDriverTemplate):
         @param grid: MultiCircuit instance
         @param options: LinearAnalysisOptions instance
         """
-        TSDriverTemplate.__init__(self, grid=grid, start_=start_, end_=end_)
+        TimeSeriesDriverTemplate.__init__(self, grid=grid, start_=start_, end_=end_)
 
         self.options = options
 

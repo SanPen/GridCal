@@ -38,6 +38,8 @@ class SimulationTypes(Enum):
     Delete_and_reduce_run = 'Delete and reduce'
     NetTransferCapacity_run = 'Available transfer capacity'
     NetTransferCapacityTS_run = 'Available transfer capacity time series'
+    SigmaAnalysis_run = "Sigma Analysis"
+    NodeGrouping_run = "Node groups"
 
     def __str__(self):
         return self.value

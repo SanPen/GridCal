@@ -16,7 +16,7 @@
 import numpy as np
 import pandas as pd
 from GridCal.Engine.Simulations.OPF.opf_driver import OptimalPowerFlowResults
-from GridCal.Engine.Simulations.results_model import ResultsModel
+from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
@@ -146,7 +146,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         self.Sf[t, :] = res.Sf
 
-    def mdl(self, result_type) -> "ResultsModel":
+    def mdl(self, result_type) -> "ResultsTable":
         """
         Plot the results
         :param result_type:
@@ -242,6 +242,6 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         else:
             index = np.arange(0, y.shape[0], 1)
 
-        mdl = ResultsModel(data=y, index=index, columns=labels, title=title,
+        mdl = ResultsTable(data=y, index=index, columns=labels, title=title,
                            ylabel=y_label, xlabel='', units=y_label)
         return mdl

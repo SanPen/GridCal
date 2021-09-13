@@ -1196,8 +1196,7 @@ class MeasurementsModel(QtCore.QAbstractListModel):
         return None
 
 
-
-def get_list_model(lst, checks=False):
+def get_list_model(lst, checks=False, check_value=False):
     """
     Pass a list to a list model
     """
@@ -1215,7 +1214,8 @@ def get_list_model(lst, checks=False):
                 item = QtGui.QStandardItem(str(val))
                 item.setEditable(False)
                 item.setCheckable(True)
-                item.setCheckState(QtCore.Qt.Checked)
+                if check_value:
+                    item.setCheckState(QtCore.Qt.Checked)
                 list_model.appendRow(item)
 
     return list_model
