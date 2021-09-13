@@ -16,6 +16,7 @@ Version 4.2.0
 - Added the ability to save the results into the file, loading and unloading from the file. This is a massive feature.
 - Added contingency analysis colouring.
 - Added ATC generation scaling based on the installed power.
+- Added NTV calculation using optimal dispatch (blue lambda).
 - Added time series bus type series. Now the bus types change upon the generators' availability.
 
 - Better detection of power imbalances in the analysis tool.
@@ -24,6 +25,7 @@ Version 4.2.0
 - Fixed really rare bug with .real and .imag was making HELM diverge. Now it is fixed.
 - Fixed multiple slacks error in PTDF calculations.
 - Fixed bug where the voltage profiles were not being applied.
+- Fixed FUBM model branch power calculation.
 
 - Overall usability improvements.
 
