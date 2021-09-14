@@ -17,11 +17,13 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
+from enum import Enum
 from typing import List, Dict, Tuple
 import numpy as np
 from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers, pywraplp
-from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType
+from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType, GenerationNtcFormulation
+
 
 import pandas as pd
 from scipy.sparse.csc import csc_matrix
@@ -192,20 +194,45 @@ def compose_generation_df(nc, generation, dgen_arr, Pgen_arr):
 
 class OpfNTC(Opf):
 
-    def __init__(self, numerical_circuit: SnapshotOpfData, area_from_bus_idx, area_to_bus_idx,
-                 solver_type: MIPSolvers = MIPSolvers.CBC):
+    def __init__(self, numerical_circuit: SnapshotOpfData,
+                 area_from_bus_idx,
+                 area_to_bus_idx,
+                 alpha,
+                 solver_type: MIPSolvers = MIPSolvers.CBC,
+                 generation_formulation: GenerationNtcFormulation = GenerationNtcFormulation.Optimal,
+                 monitor_only_sensitive_branches=False,
+                 branch_sensitivity_threshold=0.01,
+                 skip_generation_limits=False):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
+        :param area_from_bus_idx: indices of the buses of the area 1
+        :param area_to_bus_idx: indices of the buses of the area 2
+        :param solver_type: type of linear solver
+        :param generation_formulation: type of generation formulation
+        :param monitor_only_sensitive_branches: Monitor the loading of only the sensitive branches?
+        :param branch_sensitivity_threshold: branch sensitivity
+        :param skip_generation_limits:
         """
+
         self.area_from_bus_idx = area_from_bus_idx
 
         self.area_to_bus_idx = area_to_bus_idx
 
+        self.generation_formulation = generation_formulation
+
+        self.monitor_only_sensitive_branches = monitor_only_sensitive_branches
+
+        self.branch_sensitivity_threshold = branch_sensitivity_threshold
+
+        self.skip_generation_limits = skip_generation_limits
+
+        self.alpha = alpha
+
         # this builds the formulation right away
         Opf.__init__(self, numerical_circuit=numerical_circuit, solver_type=solver_type)
 
-    def formulate_generation(self, ngen, Cgen, Pgen, Pmax, Pmin, a1, a2, t=0):
+    def formulate_optimal_generation(self, ngen, Cgen, Pgen, Pmax, Pmin, a1, a2, t=0):
         """
 
         :param ngen:
@@ -239,7 +266,8 @@ class OpfNTC(Opf):
 
         for bus_idx, gen_idx in gens1:
 
-            if self.numerical_circuit.generator_data.generator_dispatchable[gen_idx]:
+            if self.numerical_circuit.generator_data.generator_active[gen_idx] and \
+                    self.numerical_circuit.generator_data.generator_dispatchable[gen_idx]:
                 name = 'Gen_up_{0}@bus{1}'.format(gen_idx, bus_idx)
                 generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
                 delta[gen_idx] = self.solver.NumVar(0, Pmax[gen_idx] - Pgen[gen_idx], name + '_delta')
@@ -257,7 +285,8 @@ class OpfNTC(Opf):
 
         for bus_idx, gen_idx in gens2:
 
-            if self.numerical_circuit.generator_data.generator_dispatchable[gen_idx]:
+            if self.numerical_circuit.generator_data.generator_active[gen_idx] and \
+                    self.numerical_circuit.generator_data.generator_dispatchable[gen_idx]:
                 name = 'Gen_down_{0}@bus{1}'.format(gen_idx, bus_idx)
                 generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
                 delta[gen_idx] = self.solver.NumVar(-Pgen[gen_idx], 0, name + '_delta')
@@ -276,10 +305,108 @@ class OpfNTC(Opf):
 
         # set the generation in the non inter-area ones
         for bus_idx, gen_idx in gens_out:
-            generation[gen_idx] = Pgen[gen_idx]
+            if self.numerical_circuit.generator_data.generator_active[gen_idx]:
+                generation[gen_idx] = Pgen[gen_idx]
 
         area_balance_slack = self.solver.NumVar(0, 99999, 'Area_slack')
         self.solver.Add(self.solver.Sum(dgen1) + self.solver.Sum(dgen2) == area_balance_slack, 'Area equality')
+
+        return generation, delta, gen_a1_idx, gen_a2_idx, area_balance_slack, dgen1, gen_cost, delta_slack_1, delta_slack_2
+
+    def formulate_proportional_generation(self, ngen, Cgen, Pgen, Pmax, Pmin, a1, a2, t=0):
+        """
+
+        :param ngen:
+        :param Cgen:
+        :param Pgen:
+        :param Pmax:
+        :param Pmin:
+        :param a1:
+        :param a2:
+        :param t:
+        :return:
+        """
+        gens1, gens2, gens_out = get_generators_connectivity(Cgen, a1, a2)
+        gen_cost = self.numerical_circuit.generator_data.generator_cost[:, t] * self.numerical_circuit.Sbase  # pass from $/MWh to $/p.u.h
+        generation = np.zeros(ngen, dtype=object)
+        delta = np.zeros(ngen, dtype=object)
+        delta_slack_1 = np.zeros(ngen, dtype=object)
+        delta_slack_2 = np.zeros(ngen, dtype=object)
+
+        dgen1 = list()
+        dgen2 = list()
+
+        generation1 = list()
+        generation2 = list()
+
+        Pgen1 = list()
+        Pgen2 = list()
+
+        gen_a1_idx = list()
+        gen_a2_idx = list()
+
+        sum_gen_1 = 0
+        for bus_idx, gen_idx in gens1:
+            if self.numerical_circuit.generator_data.generator_active[gen_idx]:
+                sum_gen_1 += Pgen[gen_idx]
+
+        sum_gen_2 = 0
+        for bus_idx, gen_idx in gens2:
+            if self.numerical_circuit.generator_data.generator_active[gen_idx]:
+                sum_gen_2 += Pgen[gen_idx]
+
+        area_balance_slack = self.solver.NumVar(0, 99999, 'Area_slack')
+
+        for bus_idx, gen_idx in gens1:
+
+            if self.numerical_circuit.generator_data.generator_active[gen_idx] and \
+                    self.numerical_circuit.generator_data.generator_dispatchable[gen_idx]:
+                name = 'Gen_up_{0}@bus{1}'.format(gen_idx, bus_idx)
+                generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
+                delta[gen_idx] = self.solver.NumVar(0, 999999, name + '_delta')
+                delta_slack_1[gen_idx] = self.solver.NumVar(0, 99999, name + '_delta_slack_up')
+                delta_slack_2[gen_idx] = self.solver.NumVar(0, 99999, name + '_delta_slack_down')
+                prop = abs(Pgen[gen_idx] / sum_gen_1)
+                self.solver.Add(delta[gen_idx] == prop * area_balance_slack, 'Delta_up_gen{}'.format(gen_idx))
+                self.solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx] + delta_slack_1[gen_idx] - delta_slack_2[gen_idx], 'Gen_up_gen{}'.format(gen_idx))
+            else:
+                generation[gen_idx] = Pgen[gen_idx]
+                delta[gen_idx] = 0
+
+            dgen1.append(delta[gen_idx])
+            generation1.append(generation[gen_idx])
+            Pgen1.append(Pgen[gen_idx])
+            gen_a1_idx.append(gen_idx)
+
+        for bus_idx, gen_idx in gens2:
+
+            if self.numerical_circuit.generator_data.generator_active[gen_idx] and \
+                    self.numerical_circuit.generator_data.generator_dispatchable[gen_idx]:
+                name = 'Gen_down_{0}@bus{1}'.format(gen_idx, bus_idx)
+                generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
+                delta[gen_idx] = self.solver.NumVar(-999999, 0, name + '_delta')
+                delta_slack_1[gen_idx] = self.solver.NumVar(0, 99999, name + '_delta_slack_up')
+                delta_slack_2[gen_idx] = self.solver.NumVar(0, 99999, name + '_delta_slack_down')
+
+                prop = abs(Pgen[gen_idx] / sum_gen_2)
+                self.solver.Add(delta[gen_idx] == - prop * area_balance_slack, 'Delta_down_gen{}'.format(gen_idx))
+                self.solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx] + delta_slack_1[gen_idx] - delta_slack_2[gen_idx], 'Gen_down_gen{}'.format(gen_idx))
+            else:
+                generation[gen_idx] = Pgen[gen_idx]
+                delta[gen_idx] = 0
+
+            dgen2.append(delta[gen_idx])
+            generation2.append(generation[gen_idx])
+            Pgen2.append(Pgen[gen_idx])
+            gen_a2_idx.append(gen_idx)
+
+        # set the generation in the non inter-area ones
+        for bus_idx, gen_idx in gens_out:
+            if self.numerical_circuit.generator_data.generator_active[gen_idx]:
+                generation[gen_idx] = Pgen[gen_idx]
+
+        self.solver.Add(self.solver.Sum(dgen1) == area_balance_slack, 'Area equality_1')
+        self.solver.Add(self.solver.Sum(dgen2) == - area_balance_slack, 'Area equality_2')
 
         return generation, delta, gen_a1_idx, gen_a2_idx, area_balance_slack, dgen1, gen_cost, delta_slack_1, delta_slack_2
 
@@ -347,7 +474,7 @@ class OpfNTC(Opf):
 
         return node_balance, node_balance_slack_1, node_balance_slack_2
 
-    def formulate_branches_flow(self, angles, tau_dict):
+    def formulate_branches_flow(self, angles, tau_dict, alpha):
         """
 
         :param angles:
@@ -366,7 +493,15 @@ class OpfNTC(Opf):
                 _f = nc.branch_data.F[i]
                 _t = nc.branch_data.T[i]
 
-                if nc.branch_data.monitor_loading[i]:
+                if self.monitor_only_sensitive_branches:
+                    if nc.branch_data.monitor_loading[i] and abs(alpha[i]) > self.branch_sensitivity_threshold:
+                        monitor = True
+                    else:
+                        monitor = False
+                else:
+                    monitor = nc.branch_data.monitor_loading[i]
+
+                if monitor:
                     flow_f[i] = self.solver.NumVar(-rates[i], rates[i], 'pftk_' + str(i))
                 else:
                     flow_f[i] = self.solver.NumVar(-9999, 9999, 'pftk_' + str(i))
@@ -501,17 +636,23 @@ class OpfNTC(Opf):
 
         delta_slacks = self.solver.Sum(delta_slack_1) + self.solver.Sum(delta_slack_2)
 
+        # when we are in optimal dispatch mode, the area_balance_slack is mean to force
+        # both areas to be equal, hence it is minimized
+        # when we area in proportional dispatch the area_balance_slack is the inter-area
+        # exchange and should be maximized
+        area_slack = area_balance_slack if self.generation_formulation == GenerationNtcFormulation.Optimal else -area_balance_slack
+
         # objective function
         self.solver.Minimize(
             - 1.0 * flow_from_a1_to_a2
             - 1e0 * area_1_gen_delta
-            + 1e0 * area_balance_slack
+            + 1e0 * area_slack  # for proportional
             - 1e-2 * gen_cost_f
-            + 1e0 * node_balance_slack_f
+            + 1e5 * node_balance_slack_f
             + 1e0 * branch_overload
             + 1e0 * hvdc_overload
             + 1e0 * hvdc_control
-            + 1e0 * delta_slacks
+            + 1e5 * delta_slacks
         )
 
     @staticmethod
@@ -532,6 +673,8 @@ class OpfNTC(Opf):
             val = np.abs(val)
 
         return val
+
+
 
     def formulate(self):
         """
@@ -561,6 +704,11 @@ class OpfNTC(Opf):
         enabled_for_dispatch = self.numerical_circuit.generator_dispatchable
         Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
 
+        if self.skip_generation_limits:
+            print('Skipping generation limits')
+            Pg_max += 1e6
+            Pg_min -= 1e6
+
         # load
         Pl = (self.numerical_circuit.load_active * self.numerical_circuit.load_s.real) / Sbase
         cost_l = self.numerical_circuit.load_cost
@@ -588,16 +736,42 @@ class OpfNTC(Opf):
                                                    buses_areas_2=self.area_to_bus_idx)
 
         # add te generation
-        generation, generation_delta, gen_a1_idx, gen_a2_idx, \
-        area_balance_slack, dgen1, gen_cost, \
-        delta_slack_1, delta_slack_2 = self.formulate_generation(ngen=ng,
-                                                                 Cgen=Cgen,
-                                                                 Pgen=Pg_fix,
-                                                                 Pmax=Pg_max,
-                                                                 Pmin=Pg_min,
-                                                                 a1=self.area_from_bus_idx,
-                                                                 a2=self.area_to_bus_idx,
-                                                                 t=t)
+        if self.generation_formulation == GenerationNtcFormulation.Optimal:
+
+            generation, generation_delta, gen_a1_idx, gen_a2_idx, \
+            area_balance_slack, dgen1, gen_cost, \
+            delta_slack_1, delta_slack_2 = self.formulate_optimal_generation(ngen=ng,
+                                                                             Cgen=Cgen,
+                                                                             Pgen=Pg_fix,
+                                                                             Pmax=Pg_max,
+                                                                             Pmin=Pg_min,
+                                                                             a1=self.area_from_bus_idx,
+                                                                             a2=self.area_to_bus_idx,
+                                                                             t=t)
+
+        elif self.generation_formulation == GenerationNtcFormulation.Proportional:
+
+            generation, generation_delta, gen_a1_idx, gen_a2_idx, \
+            area_balance_slack, dgen1, gen_cost, \
+            delta_slack_1, delta_slack_2 = self.formulate_proportional_generation(ngen=ng,
+                                                                                  Cgen=Cgen,
+                                                                                  Pgen=Pg_fix,
+                                                                                  Pmax=Pg_max,
+                                                                                  Pmin=Pg_min,
+                                                                                  a1=self.area_from_bus_idx,
+                                                                                  a2=self.area_to_bus_idx,
+                                                                                  t=t)
+        else:
+            generation, generation_delta, gen_a1_idx, gen_a2_idx, \
+            area_balance_slack, dgen1, gen_cost, \
+            delta_slack_1, delta_slack_2 = self.formulate_optimal_generation(ngen=ng,
+                                                                             Cgen=Cgen,
+                                                                             Pgen=Pg_fix,
+                                                                             Pmax=Pg_max,
+                                                                             Pmin=Pg_min,
+                                                                             a1=self.area_from_bus_idx,
+                                                                             a2=self.area_to_bus_idx,
+                                                                             t=t)
 
         # add the angles
         theta = self.formulate_angles()
@@ -607,7 +781,8 @@ class OpfNTC(Opf):
         Pinj = self.formulate_power_injections(Cgen=Cgen, generation=generation, t=t)
 
         flow_f, overload1, overload2 = self.formulate_branches_flow(angles=theta,
-                                                                    tau_dict=phase_shift_dict)
+                                                                    tau_dict=phase_shift_dict,
+                                                                    alpha=self.alpha)
 
         hvdc_flow_f, hvdc_overload1, hvdc_overload2, \
         hvdc_control1, hvdc_control2 = self.formulate_hvdc_flow(angles=theta, Pinj=Pinj, t=t)
@@ -640,6 +815,9 @@ class OpfNTC(Opf):
         self.theta = theta
         self.Pg = generation
         self.Pg_delta = generation_delta
+        self.area_balance_slack = area_balance_slack
+        self.generation_delta_slacks = delta_slack_1 - delta_slack_2
+
         # self.Pb = Pb
         self.Pl = Pl
         self.Pinj = Pinj
@@ -701,6 +879,13 @@ class OpfNTC(Opf):
         """
         return self.extract(self.Pg_delta, make_abs=False) * self.numerical_circuit.Sbase
 
+    def get_generator_delta_slacks(self):
+        """
+        return the branch loading (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.generation_delta_slacks, make_abs=False) * self.numerical_circuit.Sbase
+
     def get_node_slacks(self):
         """
         return the branch loading (time, device)
@@ -747,8 +932,8 @@ if __name__ == '__main__':
     from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
 
     # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
-    fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas_voltages_hvdc_shifter.gridcal'
-    # fname = r'D:\ReeGit\github\GridCal\Grids_and_profiles\grids\IEEE 118 Bus - ntc_areas.gridcal'
+    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas_voltages_hvdc_shifter.gridcal'
+    fname = r'C:\Users\SPV86\Documents\Git\GitHub\GridCal\Grids_and_profiles\grids\IEEE14 - ntc areas_voltages_hvdc_shifter.gridcal'
 
     main_circuit = FileOpen(fname).open()
 
@@ -767,7 +952,8 @@ if __name__ == '__main__':
     a1 = np.where(areas == area_from_idx)[0]
     a2 = np.where(areas == area_to_idx)[0]
 
-    problem = OpfNTC(numerical_circuit=numerical_circuit_, area_from_bus_idx=a1, area_to_bus_idx=a2)
+    problem = OpfNTC(numerical_circuit=numerical_circuit_, area_from_bus_idx=a1, area_to_bus_idx=a2,
+                     generation_formulation=GenerationNtcFormulation.Proportional)
 
     print('Solving...')
     status = problem.solve()
@@ -777,4 +963,6 @@ if __name__ == '__main__':
     print('Angles\n', np.angle(problem.get_voltage()))
     print('Branch loading\n', problem.get_loading())
     print('Gen power\n', problem.get_generator_power())
+    print('Delta power\n', problem.get_generator_delta())
+    print('Area slack', problem.area_balance_slack.solution_value())
     print('HVDC flow\n', problem.get_hvdc_flow())

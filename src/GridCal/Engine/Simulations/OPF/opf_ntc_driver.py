@@ -20,12 +20,13 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.basic_structures import TimeGrouping, MIPSolvers
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.OPF.ntc_opf import OpfNTC
+from GridCal.Engine.Simulations.OPF.ntc_opf import OpfNTC, GenerationNtcFormulation
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
 from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
-
+from GridCal.Engine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
+from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha, AvailableTransferMode
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
@@ -40,7 +41,13 @@ class OptimalNetTransferCapacityOptions:
     def __init__(self, area_from_bus_idx, area_to_bus_idx,
                  verbose=False,
                  grouping: TimeGrouping = TimeGrouping.NoGrouping,
-                 mip_solver=MIPSolvers.CBC):
+                 mip_solver=MIPSolvers.CBC,
+                 generation_formulation: GenerationNtcFormulation = GenerationNtcFormulation.Optimal,
+                 monitor_only_sensitive_branches=False,
+                 branch_sensitivity_threshold=0.01,
+                 skip_generation_limits=False,
+                 sensitivity_dT=100.0,
+                 sensitivity_mode: AvailableTransferMode = AvailableTransferMode.InstalledPower):
         """
         Optimal power flow options
         :param verbose:
@@ -57,6 +64,17 @@ class OptimalNetTransferCapacityOptions:
 
         self.area_to_bus_idx = area_to_bus_idx
 
+        self.generation_formulation = generation_formulation
+
+        self.monitor_only_sensitive_branches = monitor_only_sensitive_branches
+
+        self.branch_sensitivity_threshold = branch_sensitivity_threshold
+
+        self.skip_generation_limits = skip_generation_limits
+
+        self.sensitivity_dT = sensitivity_dT
+
+        self.sensitivity_mode = sensitivity_mode
 
 
 class OptimalNetTransferCapacityResults(ResultsTemplate):
@@ -86,8 +104,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                  Sbus=None, voltage=None, load_shedding=None, generator_shedding=None,
                  battery_power=None, controlled_generation_power=None,
                  Sf=None, overloads=None, loading=None, losses=None, converged=None, bus_types=None,
-                 hvdc_flow=None, hvdc_slacks=None, hvdc_loading=None, node_slacks=None, phase_shift=None, generation_delta=None,
-                 inter_area_branches=list(), inter_area_hvdc=list()):
+                 hvdc_flow=None, hvdc_slacks=None, hvdc_loading=None, node_slacks=None, phase_shift=None,
+                 generation_delta=None, generation_delta_slacks=None,
+                 inter_area_branches=list(), inter_area_hvdc=list(), alpha=None):
 
         ResultsTemplate.__init__(self,
                                  name='OPF',
@@ -96,16 +115,19 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.BranchPower,
                                                     ResultTypes.BranchLoading,
                                                     ResultTypes.BranchOverloads,
-                                                    ResultTypes.LoadShedding,
-                                                    ResultTypes.ControlledGeneratorShedding,
+                                                    # ResultTypes.LoadShedding,
+                                                    # ResultTypes.ControlledGeneratorShedding,
                                                     ResultTypes.ControlledGeneratorPower,
                                                     ResultTypes.BatteryPower,
-
                                                     ResultTypes.HvdcPowerFrom,
                                                     ResultTypes.HvdcOverloads,
                                                     ResultTypes.BranchTapAngle,
+                                                    ResultTypes.NodeSlacks,
                                                     ResultTypes.GenerationDelta,
-                                                    ResultTypes.InterAreaExchange],
+                                                    ResultTypes.GenerationDeltaSlacks,
+                                                    ResultTypes.InterAreaExchange,
+                                                    ResultTypes.AvailableTransferCapacityAlpha
+                                                    ],
 
                                  data_variables=['bus_names',
                                                  'branch_names',
@@ -136,6 +158,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.inter_area_hvdc = inter_area_hvdc
 
         self.generation_delta = generation_delta
+
+        self.generation_delta_slacks = generation_delta_slacks
 
         self.Sbus = Sbus
 
@@ -169,32 +193,13 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.converged = converged
 
+        self.alpha = alpha
+
         self.plot_bars_limit = 100
 
     def apply_new_rates(self, nc: "SnapshotData"):
         rates = nc.Rates
         self.loading = self.Sf / (rates + 1e-9)
-
-    def copy(self):
-        """
-        Return a copy of this
-        @return:
-        """
-        return OptimalPowerFlowResults(bus_names=self.bus_names,
-                                       branch_names=self.branch_names,
-                                       load_names=self.load_names,
-                                       generator_names=self.generator_names,
-                                       battery_names=self.battery_names,
-                                       Sbus=self.Sbus,
-                                       voltage=self.voltage,
-                                       load_shedding=self.load_shedding,
-                                       Sf=self.Sf,
-                                       overloads=self.overloads,
-                                       loading=self.loading,
-                                       generator_shedding=self.generator_shedding,
-                                       battery_power=self.battery_power,
-                                       controlled_generation_power=self.generator_power,
-                                       converged=self.converged)
 
     def initialize(self, n, m):
         """
@@ -270,17 +275,17 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = '(MW)'
             title = 'Branch losses'
 
-        elif result_type == ResultTypes.LoadShedding:
-            labels = self.load_names
-            y = self.load_shedding
+        elif result_type == ResultTypes.NodeSlacks:
+            labels = self.bus_names
+            y = self.node_slacks
             y_label = '(MW)'
-            title = 'Load shedding'
+            title = result_type.value[0]
 
-        elif result_type == ResultTypes.ControlledGeneratorShedding:
+        elif result_type == ResultTypes.GenerationDeltaSlacks:
             labels = self.generator_names
-            y = self.generator_shedding
+            y = self.generation_delta_slacks
             y_label = '(MW)'
-            title = 'Controlled generator shedding'
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.ControlledGeneratorPower:
             labels = self.generator_names
@@ -298,25 +303,25 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             labels = self.hvdc_names
             y = self.hvdc_Pf
             y_label = '(MW)'
-            title = result_type.value
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.HvdcOverloads:
             labels = self.hvdc_names
             y = self.hvdc_slacks
             y_label = '(MW)'
-            title = result_type.value
+            title = result_type.value[0]
 
-        elif result_type == ResultTypes.BranchTapAngle:
+        elif result_type == ResultTypes.AvailableTransferCapacityAlpha:
             labels = self.branch_names
-            y = self.phase_shift
-            y_label = '(rad)'
-            title = result_type.value
+            y = self.alpha
+            y_label = '(p.u.)'
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.GenerationDelta:
             labels = self.generator_names
             y = self.generation_delta
             y_label = '(MW)'
-            title = result_type.value
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.InterAreaExchange:
             labels = list()
@@ -376,6 +381,28 @@ class OptimalNetTransferCapacity(DriverTemplate):
         """
         return list()
 
+    def compute_exchange_sensitivity(self, numerical_circuit):
+        # declare the linear analysis
+        linear = LinearAnalysis(grid=self.grid,
+                                distributed_slack=False,
+                                correct_values=False)
+        linear.run()
+
+        # get the branch indices to analyze
+        br_idx = linear.numerical_circuit.branch_data.get_contingency_enabled_indices()
+
+        # compute the branch exchange sensitivity (alpha)
+        alpha = compute_alpha(ptdf=linear.PTDF,
+                              P0=numerical_circuit.Sbus.real,
+                              Pinstalled=numerical_circuit.bus_installed_power,
+                              idx1=self.options.area_from_bus_idx,
+                              idx2=self.options.area_to_bus_idx,
+                              bus_types=numerical_circuit.bus_types.astype(np.int),
+                              dT=self.options.sensitivity_dT,
+                              mode=self.options.sensitivity_mode.value)
+
+        return alpha
+
     def opf(self):
         """
         Run a power flow for every circuit
@@ -386,6 +413,12 @@ class OptimalNetTransferCapacity(DriverTemplate):
                                                          apply_temperature=self.pf_options.apply_temperature_correction,
                                                          branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
 
+        # sensitivities
+        if self.options.monitor_only_sensitive_branches:
+            alpha = self.compute_exchange_sensitivity(numerical_circuit)
+        else:
+            alpha = np.ones(numerical_circuit.nbr)
+
         # islands = numerical_circuit.split_into_islands(ignore_single_node_islands=True)
         # for island in islands:
 
@@ -394,7 +427,12 @@ class OptimalNetTransferCapacity(DriverTemplate):
         problem = OpfNTC(island,
                          area_from_bus_idx=self.options.area_from_bus_idx,
                          area_to_bus_idx=self.options.area_to_bus_idx,
-                         solver_type=self.options.mip_solver)
+                         alpha=alpha,
+                         solver_type=self.options.mip_solver,
+                         generation_formulation=self.options.generation_formulation,
+                         monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
+                         branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
+                         skip_generation_limits=self.options.skip_generation_limits)
         # Solve
         problem.solve()
 
@@ -422,8 +460,10 @@ class OptimalNetTransferCapacity(DriverTemplate):
                                                          node_slacks=problem.get_node_slacks(),
                                                          phase_shift=problem.get_phase_angles(),
                                                          generation_delta=problem.get_generator_delta(),
+                                                         generation_delta_slacks=problem.get_generator_delta_slacks(),
                                                          inter_area_branches=problem.inter_area_branches,
-                                                         inter_area_hvdc=problem.inter_area_hvdc
+                                                         inter_area_hvdc=problem.inter_area_hvdc,
+                                                         alpha=alpha,
                                                          )
 
         return self.results

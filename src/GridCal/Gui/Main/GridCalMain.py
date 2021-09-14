@@ -3825,9 +3825,28 @@ class MainGUI(QMainWindow):
 
                 mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
 
+                if self.ui.optimalRedispatchRadioButton.isChecked():
+                    generation_formulation = dev.GenerationNtcFormulation.Optimal
+                elif self.ui.proportionalRedispatchRadioButton.isChecked():
+                    generation_formulation = dev.GenerationNtcFormulation.Proportional
+                else:
+                    generation_formulation = dev.GenerationNtcFormulation.Optimal
+
+                monitor_only_sensitive_branches = self.ui.monitorOnlySensitiveBranchesCheckBox.isChecked()
+                skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
+                branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
+                dT = self.ui.atcPerturbanceSpinBox.value()
+                mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
+
                 options = sim.OptimalNetTransferCapacityOptions(area_from_bus_idx=idx_from,
                                                                 area_to_bus_idx=idx_to,
-                                                                mip_solver=mip_solver)
+                                                                mip_solver=mip_solver,
+                                                                generation_formulation=generation_formulation,
+                                                                monitor_only_sensitive_branches=monitor_only_sensitive_branches,
+                                                                branch_sensitivity_threshold=branch_sensitivity_threshold,
+                                                                skip_generation_limits=skip_generation_limits,
+                                                                sensitivity_dT=dT,
+                                                                sensitivity_mode=mode)
 
                 self.ui.progress_label.setText('Running optimal power flow...')
                 QtGui.QGuiApplication.processEvents()

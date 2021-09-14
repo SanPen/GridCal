@@ -137,6 +137,11 @@ class HvdcControlType(Enum):
         return list(map(lambda c: c.value, cls))
 
 
+class GenerationNtcFormulation(Enum):
+    Proportional = 'Proportional'
+    Optimal = 'Optimal'
+
+
 class TimeFrame(Enum):
     Continuous = 'Continuous'
 

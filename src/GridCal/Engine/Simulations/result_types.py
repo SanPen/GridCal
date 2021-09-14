@@ -82,6 +82,7 @@ class ResultTypes(Enum):
     HvdcOverloads = 'HVDC overloads', DeviceType.HVDCLineDevice
     NodeSlacks = 'Nodal slacks', DeviceType.BusDevice
     GenerationDelta = 'Generation deltas', DeviceType.GeneratorDevice
+    GenerationDeltaSlacks = 'Generation delta slacks', DeviceType.GeneratorDevice
     InterAreaExchange = 'Inter-Area exchange', DeviceType.NoDevice
 
     # Short-circuit

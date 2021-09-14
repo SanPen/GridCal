@@ -534,6 +534,10 @@ class TimeGrouping(Enum):
             return s
 
 
+
+
+
+
 def classify_by_hour(t: pd.DatetimeIndex):
     """
     Passes an array of TimeStamps to an array of arrays of indices
