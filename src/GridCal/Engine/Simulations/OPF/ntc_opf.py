@@ -229,6 +229,8 @@ class OpfNTC(Opf):
 
         self.alpha = alpha
 
+        self.inf = 99999999999999
+
         # this builds the formulation right away
         Opf.__init__(self, numerical_circuit=numerical_circuit, solver_type=solver_type)
 
@@ -271,8 +273,8 @@ class OpfNTC(Opf):
                 name = 'Gen_up_{0}@bus{1}'.format(gen_idx, bus_idx)
                 generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
                 delta[gen_idx] = self.solver.NumVar(0, Pmax[gen_idx] - Pgen[gen_idx], name + '_delta')
-                delta_slack_1[gen_idx] = self.solver.NumVar(0, 99999, name + '_delta_slack_up')
-                delta_slack_2[gen_idx] = self.solver.NumVar(0, 99999, name + '_delta_slack_down')
+                delta_slack_1[gen_idx] = self.solver.NumVar(0, self.inf, name + '_delta_slack_up')
+                delta_slack_2[gen_idx] = self.solver.NumVar(0, self.inf, name + '_delta_slack_down')
                 self.solver.Add(delta[gen_idx] == generation[gen_idx] - Pgen[gen_idx] + delta_slack_1[gen_idx] - delta_slack_2[gen_idx], 'Delta_up_gen{}'.format(gen_idx))
             else:
                 generation[gen_idx] = Pgen[gen_idx]
@@ -291,8 +293,8 @@ class OpfNTC(Opf):
                 generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
                 delta[gen_idx] = self.solver.NumVar(-Pgen[gen_idx], 0, name + '_delta')
 
-                delta_slack_1[gen_idx] = self.solver.NumVar(0, 99999, name + '_delta_slack_up')
-                delta_slack_2[gen_idx] = self.solver.NumVar(0, 99999, name + '_delta_slack_down')
+                delta_slack_1[gen_idx] = self.solver.NumVar(0, self.inf, name + '_delta_slack_up')
+                delta_slack_2[gen_idx] = self.solver.NumVar(0, self.inf, name + '_delta_slack_down')
                 self.solver.Add(delta[gen_idx] == generation[gen_idx] - Pgen[gen_idx] + delta_slack_1[gen_idx] - delta_slack_2[gen_idx], 'Delta_down_gen{}'.format(gen_idx))
             else:
                 generation[gen_idx] = Pgen[gen_idx]
@@ -308,10 +310,12 @@ class OpfNTC(Opf):
             if self.numerical_circuit.generator_data.generator_active[gen_idx]:
                 generation[gen_idx] = Pgen[gen_idx]
 
-        area_balance_slack = self.solver.NumVar(0, 99999, 'Area_slack')
-        self.solver.Add(self.solver.Sum(dgen1) + self.solver.Sum(dgen2) == area_balance_slack, 'Area equality')
+        power_shift = self.solver.NumVar(0, self.inf, 'Area_slack')
+        # self.solver.Add(self.solver.Sum(dgen1) + self.solver.Sum(dgen2) == area_balance_slack, 'Area equality')
+        self.solver.Add(self.solver.Sum(dgen1) == power_shift, 'Area equality_1')
+        self.solver.Add(self.solver.Sum(dgen2) == - power_shift, 'Area equality_2')
 
-        return generation, delta, gen_a1_idx, gen_a2_idx, area_balance_slack, dgen1, gen_cost, delta_slack_1, delta_slack_2
+        return generation, delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, gen_cost, delta_slack_1, delta_slack_2
 
     def formulate_proportional_generation(self, ngen, Cgen, Pgen, Pmax, Pmin, a1, a2, t=0):
         """
@@ -355,7 +359,7 @@ class OpfNTC(Opf):
             if self.numerical_circuit.generator_data.generator_active[gen_idx]:
                 sum_gen_2 += Pgen[gen_idx]
 
-        area_balance_slack = self.solver.NumVar(0, 99999, 'Area_slack')
+        power_shift = self.solver.NumVar(0, self.inf, 'Area_slack')
 
         for bus_idx, gen_idx in gens1:
 
@@ -363,11 +367,11 @@ class OpfNTC(Opf):
                     self.numerical_circuit.generator_data.generator_dispatchable[gen_idx]:
                 name = 'Gen_up_{0}@bus{1}'.format(gen_idx, bus_idx)
                 generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-                delta[gen_idx] = self.solver.NumVar(0, 999999, name + '_delta')
-                delta_slack_1[gen_idx] = self.solver.NumVar(0, 99999, name + '_delta_slack_up')
-                delta_slack_2[gen_idx] = self.solver.NumVar(0, 99999, name + '_delta_slack_down')
+                delta[gen_idx] = self.solver.NumVar(0, self.inf, name + '_delta')
+                delta_slack_1[gen_idx] = self.solver.NumVar(0, self.inf, name + '_delta_slack_up')
+                delta_slack_2[gen_idx] = self.solver.NumVar(0, self.inf, name + '_delta_slack_down')
                 prop = abs(Pgen[gen_idx] / sum_gen_1)
-                self.solver.Add(delta[gen_idx] == prop * area_balance_slack, 'Delta_up_gen{}'.format(gen_idx))
+                self.solver.Add(delta[gen_idx] == prop * power_shift, 'Delta_up_gen{}'.format(gen_idx))
                 self.solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx] + delta_slack_1[gen_idx] - delta_slack_2[gen_idx], 'Gen_up_gen{}'.format(gen_idx))
             else:
                 generation[gen_idx] = Pgen[gen_idx]
@@ -384,12 +388,12 @@ class OpfNTC(Opf):
                     self.numerical_circuit.generator_data.generator_dispatchable[gen_idx]:
                 name = 'Gen_down_{0}@bus{1}'.format(gen_idx, bus_idx)
                 generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-                delta[gen_idx] = self.solver.NumVar(-999999, 0, name + '_delta')
-                delta_slack_1[gen_idx] = self.solver.NumVar(0, 99999, name + '_delta_slack_up')
-                delta_slack_2[gen_idx] = self.solver.NumVar(0, 99999, name + '_delta_slack_down')
+                delta[gen_idx] = self.solver.NumVar(-self.inf, 0, name + '_delta')
+                delta_slack_1[gen_idx] = self.solver.NumVar(0, self.inf, name + '_delta_slack_up')
+                delta_slack_2[gen_idx] = self.solver.NumVar(0, self.inf, name + '_delta_slack_down')
 
                 prop = abs(Pgen[gen_idx] / sum_gen_2)
-                self.solver.Add(delta[gen_idx] == - prop * area_balance_slack, 'Delta_down_gen{}'.format(gen_idx))
+                self.solver.Add(delta[gen_idx] == - prop * power_shift, 'Delta_down_gen{}'.format(gen_idx))
                 self.solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx] + delta_slack_1[gen_idx] - delta_slack_2[gen_idx], 'Gen_down_gen{}'.format(gen_idx))
             else:
                 generation[gen_idx] = Pgen[gen_idx]
@@ -405,10 +409,10 @@ class OpfNTC(Opf):
             if self.numerical_circuit.generator_data.generator_active[gen_idx]:
                 generation[gen_idx] = Pgen[gen_idx]
 
-        self.solver.Add(self.solver.Sum(dgen1) == area_balance_slack, 'Area equality_1')
-        self.solver.Add(self.solver.Sum(dgen2) == - area_balance_slack, 'Area equality_2')
+        self.solver.Add(self.solver.Sum(dgen1) == power_shift, 'Area equality_1')
+        self.solver.Add(self.solver.Sum(dgen2) == - power_shift, 'Area equality_2')
 
-        return generation, delta, gen_a1_idx, gen_a2_idx, area_balance_slack, dgen1, gen_cost, delta_slack_1, delta_slack_2
+        return generation, delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, gen_cost, delta_slack_1, delta_slack_2
 
     def formulate_angles(self, set_ref_to_zero=True):
         """
@@ -462,8 +466,8 @@ class OpfNTC(Opf):
         nc = self.numerical_circuit
         node_balance = lpDot(nc.Bbus, angles)
 
-        node_balance_slack_1 = np.array([self.solver.NumVar(0, 99999, 'balance_slack1_' + str(i)) for i in range(nc.nbus)])
-        node_balance_slack_2 = np.array([self.solver.NumVar(0, 99999, 'balance_slack2_' + str(i)) for i in range(nc.nbus)])
+        node_balance_slack_1 = np.array([self.solver.NumVar(0, self.inf, 'balance_slack1_' + str(i)) for i in range(nc.nbus)])
+        node_balance_slack_2 = np.array([self.solver.NumVar(0, self.inf, 'balance_slack2_' + str(i)) for i in range(nc.nbus)])
 
         # equal the balance to the generation: eq.13,14 (equality)
         i = 0
@@ -493,6 +497,22 @@ class OpfNTC(Opf):
                 _f = nc.branch_data.F[i]
                 _t = nc.branch_data.T[i]
 
+                # declare the flow variable with ample limits
+                flow_f[i] = self.solver.NumVar(-self.inf, self.inf, 'pftk_' + str(i))
+
+                # compute the branch susceptance
+                bk = (1.0 / complex(nc.branch_data.R[i], nc.branch_data.X[i])).imag
+
+                if i in tau_dict.keys():
+                    # branch power from-to eq.15
+                    self.solver.Add(flow_f[i] == bk * (angles[_t] - angles[_f] + tau_dict[i]),
+                                    'phase_shifter_power_flow_' + str(i))
+                else:
+                    # branch power from-to eq.15
+                    self.solver.Add(flow_f[i] == bk * (angles[_t] - angles[_f]),
+                                    'branch_power_flow_' + str(i))
+
+                # determine the monitoring logic
                 if self.monitor_only_sensitive_branches:
                     if nc.branch_data.monitor_loading[i] and abs(alpha[i]) > self.branch_sensitivity_threshold:
                         monitor = True
@@ -502,29 +522,12 @@ class OpfNTC(Opf):
                     monitor = nc.branch_data.monitor_loading[i]
 
                 if monitor:
-                    flow_f[i] = self.solver.NumVar(-rates[i], rates[i], 'pftk_' + str(i))
-                else:
-                    flow_f[i] = self.solver.NumVar(-9999, 9999, 'pftk_' + str(i))
-
-                # compute the branch susceptance
-                bk = (1.0 / complex(nc.branch_data.R[i], nc.branch_data.X[i])).imag
-
-                if i in tau_dict.keys():
-                    # branch power from-to eq.15
-                    self.solver.Add(flow_f[i] == bk * (angles[_t] - angles[_f] - tau_dict[i]),
-                                    'phase_shifter_power_flow_' + str(i))
-                else:
-                    # branch power from-to eq.15
-                    self.solver.Add(flow_f[i] == bk * (angles[_t] - angles[_f]),
-                                    'branch_power_flow_' + str(i))
-
-                if nc.branch_data.monitor_loading[i]:
                     # rating restriction in the sense from-to: eq.17
-                    overload1[i] = self.solver.NumVar(0, 9999, 'overload1_' + str(i))
+                    overload1[i] = self.solver.NumVar(0, self.inf, 'overload1_' + str(i))
                     self.solver.Add(flow_f[i] <= (rates[i] + overload1[i]), "ft_rating_" + str(i))
 
                     # rating restriction in the sense to-from: eq.18
-                    overload2[i] = self.solver.NumVar(0, 9999, 'overload2_' + str(i))
+                    overload2[i] = self.solver.NumVar(0, self.inf, 'overload2_' + str(i))
                     self.solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "tf_rating_" + str(i))
 
         return flow_f, overload1, overload2
@@ -556,38 +559,41 @@ class OpfNTC(Opf):
                 _f = F[i]
                 _t = T[i]
 
-                hvdc_control1[i] = self.solver.NumVar(0, 9999, 'hvdc_control1_' + str(i))
-                hvdc_control2[i] = self.solver.NumVar(0, 9999, 'hvdc_control2_' + str(i))
+                hvdc_control1[i] = self.solver.NumVar(0, self.inf, 'hvdc_control1_' + str(i))
+                hvdc_control2[i] = self.solver.NumVar(0, self.inf, 'hvdc_control2_' + str(i))
                 P0 = nc.hvdc_data.Pt[i, t] / nc.Sbase
 
                 if nc.hvdc_data.control_mode[i] == HvdcControlType.type_0_free:
                     flow_f[i] = self.solver.NumVar(-rates[i], rates[i], 'hvdc_flow_' + str(i))
 
+                    # formulate the hvdc flow as an AC line equivalent
                     bk = 1.0 / nc.hvdc_data.r[i]  # TODO: yes, I know... DC...
-                    self.solver.Add(flow_f[i] == P0 + bk * (angles[_f] - angles[_t]) + hvdc_control1[i],
-                                    'hvdc_power_flow_' + str(i))
+                    self.solver.Add(flow_f[i] == P0 + bk * (angles[_f] - angles[_t]) + hvdc_control1[i] - hvdc_control2[i], 'hvdc_power_flow_' + str(i))
+
+                    # add the injections matching the flow
+                    Pinj[_f] -= flow_f[i]
+                    Pinj[_t] += flow_f[i]
 
                     # rating restriction in the sense from-to: eq.17
-                    overload1[i] = self.solver.NumVar(0, 9999, 'overload_hvdc1_' + str(i))
-                    self.solver.Add(flow_f[i] <= (rates[i] + overload1[i]),
-                                    "hvdc_ft_rating_" + str(i))
+                    overload1[i] = self.solver.NumVar(0, self.inf, 'overload_hvdc1_' + str(i))
+                    self.solver.Add(flow_f[i] <= (rates[i] + overload1[i]), "hvdc_ft_rating_" + str(i))
 
                     # rating restriction in the sense to-from: eq.18
-                    overload2[i] = self.solver.NumVar(0, 9999, 'overload_hvdc2_' + str(i))
-                    self.solver.Add((-rates[i] - overload2[i]) <= flow_f[i],
-                                    "hvdc_tf_rating_" + str(i))
+                    overload2[i] = self.solver.NumVar(0, self.inf, 'overload_hvdc2_' + str(i))
+                    self.solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "hvdc_tf_rating_" + str(i))
 
                 elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset:
                     # simple injections model
-                    Pinj += nc.hvdc_data.get_injections_per_bus()[:, t] / nc.Sbase
-                    flow_f[i] = P0
+                    flow_f[i] = P0 + hvdc_control1[i] - + hvdc_control2[i]
+                    Pinj[_f] -= flow_f[i]
+                    Pinj[_t] += flow_f[i]
 
         return flow_f, overload1, overload2, hvdc_control1, hvdc_control2
 
     def formulate_objective(self, node_balance_slack_1, node_balance_slack_2,
                             inter_area_branches, flows_f, overload1, overload2,
                             inter_area_hvdc, hvdc_flow_f, hvdc_overload1, hvdc_overload2, hvdc_control1, hvdc_control2,
-                            area_balance_slack, dgen1, gen_cost, generation_delta,
+                            power_shift, dgen1, gen_cost, generation_delta,
                             delta_slack_1, delta_slack_2):
         """
 
@@ -603,7 +609,7 @@ class OpfNTC(Opf):
         :param hvdc_overload2:
         :param hvdc_control1:
         :param hvdc_control2:
-        :param area_balance_slack:
+        :param power_shift:
         :param dgen1:
         :param gen_cost:
         :param generation_delta:
@@ -626,7 +632,7 @@ class OpfNTC(Opf):
         # include the cost of generation
         gen_cost_f = self.solver.Sum(gen_cost * generation_delta)
 
-        node_balance_slack_f = self.solver.Sum(node_balance_slack_1) + self.solver.Sum(node_balance_slack_2)
+        node_balance_slacks = self.solver.Sum(node_balance_slack_1) + self.solver.Sum(node_balance_slack_2)
 
         branch_overload = self.solver.Sum(overload1) + self.solver.Sum(overload2)
 
@@ -636,51 +642,26 @@ class OpfNTC(Opf):
 
         delta_slacks = self.solver.Sum(delta_slack_1) + self.solver.Sum(delta_slack_2)
 
-        # when we are in optimal dispatch mode, the area_balance_slack is mean to force
-        # both areas to be equal, hence it is minimized
-        # when we area in proportional dispatch the area_balance_slack is the inter-area
-        # exchange and should be maximized
-        area_slack = area_balance_slack if self.generation_formulation == GenerationNtcFormulation.Optimal else -area_balance_slack
-
         # objective function
         self.solver.Minimize(
             - 1.0 * flow_from_a1_to_a2
             - 1e0 * area_1_gen_delta
-            + 1e0 * area_slack  # for proportional
-            - 1e-2 * gen_cost_f
-            + 1e5 * node_balance_slack_f
-            + 1e0 * branch_overload
+            - 1e0 * power_shift
+            + 1e-2 * gen_cost_f
+            + 1e5 * node_balance_slacks
+            + 1e5 * branch_overload
             + 1e0 * hvdc_overload
             + 1e0 * hvdc_control
             + 1e5 * delta_slacks
         )
-
-    @staticmethod
-    def extract(arr, make_abs=False):  # override this method to call ORTools instead of PuLP
-        """
-        Extract values fro the 1D array of LP variables
-        :param arr: 1D array of LP variables
-        :param make_abs: substitute the result by its abs value
-        :return: 1D numpy array
-        """
-        val = np.zeros(arr.shape)
-        for i in range(val.shape[0]):
-            if isinstance(arr[i], float) or isinstance(arr[i], int):
-                val[i] = arr[i]
-            else:
-                val[i] = arr[i].solution_value()
-        if make_abs:
-            val = np.abs(val)
-
-        return val
-
-
 
     def formulate(self):
         """
         Formulate the Net Transfer Capacity problem
         :return:
         """
+
+        self.inf = self.solver.infinity()
 
         # general indices
         n = self.numerical_circuit.nbus
@@ -739,7 +720,7 @@ class OpfNTC(Opf):
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
 
             generation, generation_delta, gen_a1_idx, gen_a2_idx, \
-            area_balance_slack, dgen1, gen_cost, \
+            power_shift, dgen1, gen_cost, \
             delta_slack_1, delta_slack_2 = self.formulate_optimal_generation(ngen=ng,
                                                                              Cgen=Cgen,
                                                                              Pgen=Pg_fix,
@@ -751,8 +732,9 @@ class OpfNTC(Opf):
 
         elif self.generation_formulation == GenerationNtcFormulation.Proportional:
 
-            generation, generation_delta, gen_a1_idx, gen_a2_idx, \
-            area_balance_slack, dgen1, gen_cost, \
+            generation, generation_delta, \
+            gen_a1_idx, gen_a2_idx, \
+            power_shift, dgen1, gen_cost, \
             delta_slack_1, delta_slack_2 = self.formulate_proportional_generation(ngen=ng,
                                                                                   Cgen=Cgen,
                                                                                   Pgen=Pg_fix,
@@ -762,8 +744,9 @@ class OpfNTC(Opf):
                                                                                   a2=self.area_to_bus_idx,
                                                                                   t=t)
         else:
-            generation, generation_delta, gen_a1_idx, gen_a2_idx, \
-            area_balance_slack, dgen1, gen_cost, \
+            generation, generation_delta, \
+            gen_a1_idx, gen_a2_idx, \
+            power_shift, dgen1, gen_cost, \
             delta_slack_1, delta_slack_2 = self.formulate_optimal_generation(ngen=ng,
                                                                              Cgen=Cgen,
                                                                              Pgen=Pg_fix,
@@ -803,7 +786,7 @@ class OpfNTC(Opf):
                                  hvdc_overload2=hvdc_overload2,
                                  hvdc_control1=hvdc_control1,
                                  hvdc_control2=hvdc_control2,
-                                 area_balance_slack=area_balance_slack,
+                                 power_shift=power_shift,
                                  dgen1=dgen1,
                                  gen_cost=gen_cost[gen_a1_idx],
                                  generation_delta=generation_delta[gen_a1_idx],
@@ -815,7 +798,7 @@ class OpfNTC(Opf):
         self.theta = theta
         self.Pg = generation
         self.Pg_delta = generation_delta
-        self.area_balance_slack = area_balance_slack
+        self.area_balance_slack = power_shift
         self.generation_delta_slacks = delta_slack_1 - delta_slack_2
 
         # self.Pb = Pb
@@ -864,6 +847,25 @@ class OpfNTC(Opf):
 
     def converged(self):
         return self.status == pywraplp.Solver.OPTIMAL
+
+    @staticmethod
+    def extract(arr, make_abs=False):  # override this method to call ORTools instead of PuLP
+        """
+        Extract values fro the 1D array of LP variables
+        :param arr: 1D array of LP variables
+        :param make_abs: substitute the result by its abs value
+        :return: 1D numpy array
+        """
+        val = np.zeros(arr.shape)
+        for i in range(val.shape[0]):
+            if isinstance(arr[i], float) or isinstance(arr[i], int):
+                val[i] = arr[i]
+            else:
+                val[i] = arr[i].solution_value()
+        if make_abs:
+            val = np.abs(val)
+
+        return val
 
     def get_power_injections(self):
         """
