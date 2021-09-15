@@ -3208,17 +3208,53 @@ p, li { white-space: pre-wrap; }
               </property>
               <layout class="QGridLayout" name="gridLayout_13">
                <item row="5" column="1">
-                <spacer name="verticalSpacer_9">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                <widget class="QLabel" name="label_61">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
                  </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>150</height>
-                  </size>
+                 <property name="font">
+                  <font>
+                   <pointsize>16</pointsize>
+                  </font>
                  </property>
-                </spacer>
+                 <property name="text">
+                  <string>Linear method</string>
+                 </property>
+                </widget>
                </item>
                <item row="3" column="0" colspan="2">
                 <widget class="QFrame" name="frame_63">
@@ -3252,29 +3288,82 @@ p, li { white-space: pre-wrap; }
                  </layout>
                 </widget>
                </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_92">
-                 <property name="minimumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
+               <item row="7" column="0" colspan="2">
+                <widget class="QFrame" name="frame_66">
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
                  </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
                  </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="pixmap">
-                  <pixmap resource="icons.qrc">:/Icons/icons/ntc_opf.svg</pixmap>
-                 </property>
-                 <property name="scaledContents">
-                  <bool>true</bool>
-                 </property>
+                 <layout class="QGridLayout" name="gridLayout_16">
+                  <item row="0" column="1">
+                   <widget class="QDoubleSpinBox" name="atcPerturbanceSpinBox">
+                    <property name="toolTip">
+                     <string>Amount of power used to compute the branches sensitivity to the transfer</string>
+                    </property>
+                    <property name="suffix">
+                     <string> MW</string>
+                    </property>
+                    <property name="maximum">
+                     <double>999999999999.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>100.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_91">
+                    <property name="text">
+                     <string>Perturbance power</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QComboBox" name="transferMethodComboBox"/>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_62">
+                    <property name="text">
+                     <string>Transfer sensitivity threshold</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_77">
+                    <property name="text">
+                     <string>Transfer method</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QDoubleSpinBox" name="atcThresholdSpinBox">
+                    <property name="toolTip">
+                     <string>Threshold used to discard insensitive branches</string>
+                    </property>
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                    <property name="maximum">
+                     <double>1.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>0.020000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QCheckBox" name="usePfValuesForAtcCheckBox">
+                    <property name="text">
+                     <string>Use power flow values if available</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
                 </widget>
                </item>
                <item row="1" column="1">
@@ -3326,8 +3415,121 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="label_90">
+                 <property name="minimumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="icons.qrc">:/Icons/icons/atc.svg</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
                <item row="2" column="0" colspan="2">
                 <widget class="Line" name="line_26">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>4</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="1">
+                <spacer name="verticalSpacer_9">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>150</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_92">
+                 <property name="minimumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="icons.qrc">:/Icons/icons/ntc_opf.svg</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0" colspan="2">
+                <widget class="Line" name="line_23">
                  <property name="palette">
                   <palette>
                    <active>
@@ -3388,52 +3590,80 @@ p, li { white-space: pre-wrap; }
                <enum>QFrame::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_15">
-               <item row="0" column="1" colspan="2">
-                <widget class="QLabel" name="label_61">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>85</red>
-                       <green>87</green>
-                       <blue>83</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>85</red>
-                       <green>87</green>
-                       <blue>83</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
+               <item row="6" column="0" colspan="3">
+                <widget class="QFrame" name="frame_67">
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
                  </property>
-                 <property name="font">
-                  <font>
-                   <pointsize>16</pointsize>
-                  </font>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_23">
+                  <item row="0" column="0">
+                   <widget class="QRadioButton" name="proportionalRedispatchRadioButton">
+                    <property name="toolTip">
+                     <string>The generation is modified as a linear combination of it's current dispatch</string>
+                    </property>
+                    <property name="text">
+                     <string>Proportional redispatch</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QRadioButton" name="optimalRedispatchRadioButton">
+                    <property name="toolTip">
+                     <string>The generation is modified so that the transference is maximal.</string>
+                    </property>
+                    <property name="text">
+                     <string>Optimal redispatch</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QCheckBox" name="skipNtcGenerationLimitsCheckBox">
+                    <property name="text">
+                     <string>Skip generation limits</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QCheckBox" name="monitorOnlySensitiveBranchesCheckBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Overrides the monitor loading property of the branches.Then, only the branches whose sensitivity is greater than the threshold are monitored. Use the transfer sensitivity threshold value of the linear method.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="text">
+                     <string>Only monitor sensitive branches to the exchange</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_97">
+                 <property name="minimumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
                  </property>
                  <property name="text">
-                  <string>Linear method</string>
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="icons.qrc">:/Icons/icons/ntc_opf.svg</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -3536,7 +3766,7 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="7" column="2">
+               <item row="9" column="2">
                 <spacer name="verticalSpacer_17">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -3549,230 +3779,154 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </spacer>
                </item>
-               <item row="2" column="0" colspan="3">
-                <widget class="QFrame" name="frame_66">
+               <item row="7" column="0" colspan="3">
+                <widget class="QFrame" name="frame_68">
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
                   <enum>QFrame::Raised</enum>
                  </property>
-                 <layout class="QGridLayout" name="gridLayout_16">
-                  <item row="0" column="1">
-                   <widget class="QDoubleSpinBox" name="atcPerturbanceSpinBox">
-                    <property name="toolTip">
-                     <string>Amount of power used to compute the branches sensitivity to the transfer</string>
+                 <layout class="QFormLayout" name="formLayout">
+                  <item row="0" column="0" colspan="2">
+                   <widget class="QLabel" name="label_102">
+                    <property name="font">
+                     <font>
+                      <weight>75</weight>
+                      <bold>true</bold>
+                     </font>
                     </property>
-                    <property name="suffix">
-                     <string> MW</string>
-                    </property>
-                    <property name="maximum">
-                     <double>999999999999.000000000000000</double>
-                    </property>
-                    <property name="value">
-                     <double>100.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="label_91">
                     <property name="text">
-                     <string>Perturbance power</string>
+                     <string>Objective function weights</string>
                     </property>
                    </widget>
-                  </item>
-                  <item row="2" column="1">
-                   <widget class="QComboBox" name="transferMethodComboBox"/>
                   </item>
                   <item row="1" column="0">
-                   <widget class="QLabel" name="label_62">
+                   <widget class="QLabel" name="label_26">
                     <property name="text">
-                     <string>Transfer sensitivity threshold</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="label_77">
-                    <property name="text">
-                     <string>Transfer method</string>
+                     <string>Power shift</string>
                     </property>
                    </widget>
                   </item>
                   <item row="1" column="1">
-                   <widget class="QDoubleSpinBox" name="atcThresholdSpinBox">
-                    <property name="toolTip">
-                     <string>Threshold used to discard insensitive branches</string>
+                   <widget class="QSpinBox" name="weightPowerShiftSpinBox">
+                    <property name="suffix">
+                     <string/>
                     </property>
-                    <property name="decimals">
-                     <number>4</number>
+                    <property name="prefix">
+                     <string>1e</string>
                     </property>
-                    <property name="maximum">
-                     <double>1.000000000000000</double>
+                    <property name="minimum">
+                     <number>-99</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_40">
+                    <property name="text">
+                     <string>Generation cost</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QSpinBox" name="weightGenCostSpinBox">
+                    <property name="suffix">
+                     <string/>
+                    </property>
+                    <property name="prefix">
+                     <string>1e</string>
+                    </property>
+                    <property name="minimum">
+                     <number>-99</number>
                     </property>
                     <property name="value">
-                     <double>0.020000000000000</double>
+                     <number>-2</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0">
+                   <widget class="QLabel" name="label_44">
+                    <property name="text">
+                     <string>Kirchoff</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="1">
+                   <widget class="QSpinBox" name="weightsKirchoffSpinBox">
+                    <property name="suffix">
+                     <string/>
+                    </property>
+                    <property name="prefix">
+                     <string>1e</string>
+                    </property>
+                    <property name="minimum">
+                     <number>-99</number>
+                    </property>
+                    <property name="value">
+                     <number>5</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="0">
+                   <widget class="QLabel" name="label_98">
+                    <property name="text">
+                     <string>Overloads</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="1">
+                   <widget class="QSpinBox" name="weightsOverloadsSpinBox">
+                    <property name="suffix">
+                     <string/>
+                    </property>
+                    <property name="prefix">
+                     <string>1e</string>
+                    </property>
+                    <property name="minimum">
+                     <number>-99</number>
+                    </property>
+                    <property name="value">
+                     <number>5</number>
                     </property>
                    </widget>
                   </item>
                   <item row="3" column="0">
-                   <widget class="QCheckBox" name="usePfValuesForAtcCheckBox">
+                   <widget class="QLabel" name="label_99">
                     <property name="text">
-                     <string>Use power flow values if available</string>
-                    </property>
-                    <property name="checked">
-                     <bool>true</bool>
+                     <string>Generation delta</string>
                     </property>
                    </widget>
                   </item>
-                 </layout>
-                </widget>
-               </item>
-               <item row="1" column="0" colspan="3">
-                <widget class="Line" name="line_23">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <property name="lineWidth">
-                  <number>4</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="label_97">
-                 <property name="minimumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="pixmap">
-                  <pixmap resource="icons.qrc">:/Icons/icons/ntc_opf.svg</pixmap>
-                 </property>
-                 <property name="scaledContents">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_90">
-                 <property name="minimumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="pixmap">
-                  <pixmap resource="icons.qrc">:/Icons/icons/atc.svg</pixmap>
-                 </property>
-                 <property name="scaledContents">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="0" colspan="3">
-                <widget class="QFrame" name="frame_67">
-                 <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
-                 </property>
-                 <layout class="QGridLayout" name="gridLayout_23">
-                  <item row="2" column="0">
-                   <widget class="QCheckBox" name="monitorOnlySensitiveBranchesCheckBox">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Overrides the monitor loading property of the branches.Then, only the branches whose sensitivity is greater than the threshold are monitored. Use the transfer sensitivity threshold value of the linear method.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <item row="3" column="1">
+                   <widget class="QSpinBox" name="weightGenDeltaSpinBox">
+                    <property name="suffix">
+                     <string/>
                     </property>
-                    <property name="text">
-                     <string>Only monitor sensitive branches to the exchange</string>
+                    <property name="prefix">
+                     <string>1e</string>
+                    </property>
+                    <property name="minimum">
+                     <number>-99</number>
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="0">
-                   <widget class="QRadioButton" name="optimalRedispatchRadioButton">
-                    <property name="toolTip">
-                     <string>The generation is modified so that the transference is maximal.</string>
-                    </property>
+                  <item row="6" column="0">
+                   <widget class="QLabel" name="label_100">
                     <property name="text">
-                     <string>Optimal redispatch</string>
-                    </property>
-                    <property name="checked">
-                     <bool>true</bool>
+                     <string>HVDC control</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="0">
-                   <widget class="QRadioButton" name="proportionalRedispatchRadioButton">
-                    <property name="toolTip">
-                     <string>The generation is modified as a linear combination of it's current dispatch</string>
+                  <item row="6" column="1">
+                   <widget class="QSpinBox" name="weightsHVDCControlSpinBox">
+                    <property name="suffix">
+                     <string/>
                     </property>
-                    <property name="text">
-                     <string>Proportional redispatch</string>
+                    <property name="prefix">
+                     <string>1e</string>
                     </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="0">
-                   <widget class="QCheckBox" name="skipNtcGenerationLimitsCheckBox">
-                    <property name="text">
-                     <string>Skip generation limits</string>
+                    <property name="minimum">
+                     <number>-99</number>
                     </property>
                    </widget>
                   </item>

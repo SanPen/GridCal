@@ -3837,6 +3837,12 @@ class MainGUI(QMainWindow):
                 branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
+                weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
+                weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
+                weight_generation_delta = 10.0 ** self.ui.weightGenDeltaSpinBox.value()
+                weight_kirchoff = 10.0 ** self.ui.weightsKirchoffSpinBox.value()
+                weight_overloads = 10.0 ** self.ui.weightsOverloadsSpinBox.value()
+                weight_hvdc_control = 10.0 ** self.ui.weightsHVDCControlSpinBox.value()
 
                 options = sim.OptimalNetTransferCapacityOptions(area_from_bus_idx=idx_from,
                                                                 area_to_bus_idx=idx_to,
@@ -3846,7 +3852,14 @@ class MainGUI(QMainWindow):
                                                                 branch_sensitivity_threshold=branch_sensitivity_threshold,
                                                                 skip_generation_limits=skip_generation_limits,
                                                                 sensitivity_dT=dT,
-                                                                sensitivity_mode=mode)
+                                                                sensitivity_mode=mode,
+                                                                weight_power_shift=weight_power_shift,
+                                                                weight_generation_cost=weight_generation_cost,
+                                                                weight_generation_delta=weight_generation_delta,
+                                                                weight_kirchoff=weight_kirchoff,
+                                                                weight_overloads=weight_overloads,
+                                                                weight_hvdc_control=weight_hvdc_control
+                                                                )
 
                 self.ui.progress_label.setText('Running optimal power flow...')
                 QtGui.QGuiApplication.processEvents()

@@ -47,7 +47,14 @@ class OptimalNetTransferCapacityOptions:
                  branch_sensitivity_threshold=0.01,
                  skip_generation_limits=False,
                  sensitivity_dT=100.0,
-                 sensitivity_mode: AvailableTransferMode = AvailableTransferMode.InstalledPower):
+                 sensitivity_mode: AvailableTransferMode = AvailableTransferMode.InstalledPower,
+                 weight_power_shift=1e0,
+                 weight_generation_cost=1e-2,
+                 weight_generation_delta=1e0,
+                 weight_kirchoff=1e5,
+                 weight_overloads=1e5,
+                 weight_hvdc_control=1e0
+                 ):
         """
         Optimal power flow options
         :param verbose:
@@ -75,6 +82,13 @@ class OptimalNetTransferCapacityOptions:
         self.sensitivity_dT = sensitivity_dT
 
         self.sensitivity_mode = sensitivity_mode
+
+        self.weight_power_shift = weight_power_shift
+        self.weight_generation_cost = weight_generation_cost
+        self.weight_generation_delta = weight_generation_delta
+        self.weight_kirchoff = weight_kirchoff
+        self.weight_overloads = weight_overloads
+        self.weight_hvdc_control = weight_hvdc_control
 
 
 class OptimalNetTransferCapacityResults(ResultsTemplate):
@@ -430,7 +444,14 @@ class OptimalNetTransferCapacity(DriverTemplate):
                          generation_formulation=self.options.generation_formulation,
                          monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
                          branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
-                         skip_generation_limits=self.options.skip_generation_limits)
+                         skip_generation_limits=self.options.skip_generation_limits,
+                         weight_power_shift=self.options.weight_power_shift,
+                         weight_generation_cost=self.options.weight_generation_cost,
+                         weight_generation_delta=self.options.weight_generation_delta,
+                         weight_kirchoff=self.options.weight_kirchoff,
+                         weight_overloads=self.options.weight_overloads,
+                         weight_hvdc_control=self.options.weight_hvdc_control
+                         )
         # Solve
         problem.solve()
 

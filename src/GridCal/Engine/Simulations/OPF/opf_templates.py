@@ -42,11 +42,13 @@ class Opf:
 
         self.solver_type = solver_type
 
-        self.solver = pywraplp.Solver.CreateSolver(self.solver_type.value)
-
         self.status = 100000  # a number that is not likely to be an enumeration value so converged returns false
 
-        self.problem = self.formulate()
+        self.solver = pywraplp.Solver.CreateSolver(self.solver_type.value)
+
+        if self.solver is not None:
+
+            self.problem = self.formulate()
 
     def formulate(self):
         """

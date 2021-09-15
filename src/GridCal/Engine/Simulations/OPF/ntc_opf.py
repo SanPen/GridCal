@@ -202,7 +202,13 @@ class OpfNTC(Opf):
                  generation_formulation: GenerationNtcFormulation = GenerationNtcFormulation.Optimal,
                  monitor_only_sensitive_branches=False,
                  branch_sensitivity_threshold=0.01,
-                 skip_generation_limits=False):
+                 skip_generation_limits=False,
+                 weight_power_shift=1e0,
+                 weight_generation_cost=1e-2,
+                 weight_generation_delta=1e0,
+                 weight_kirchoff=1e5,
+                 weight_overloads=1e5,
+                 weight_hvdc_control=1e0):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
@@ -228,6 +234,13 @@ class OpfNTC(Opf):
         self.skip_generation_limits = skip_generation_limits
 
         self.alpha = alpha
+
+        self.weight_power_shift = weight_power_shift
+        self.weight_generation_cost = weight_generation_cost
+        self.weight_generation_delta = weight_generation_delta
+        self.weight_kirchoff = weight_kirchoff
+        self.weight_overloads = weight_overloads
+        self.weight_hvdc_control = weight_hvdc_control
 
         self.inf = 99999999999999
 
@@ -644,15 +657,15 @@ class OpfNTC(Opf):
 
         # objective function
         self.solver.Minimize(
-            - 1.0 * flow_from_a1_to_a2
-            - 1e0 * area_1_gen_delta
-            - 1e0 * power_shift
-            + 1e-2 * gen_cost_f
-            + 1e5 * node_balance_slacks
-            + 1e5 * branch_overload
-            + 1e0 * hvdc_overload
-            + 1e0 * hvdc_control
-            + 1e5 * delta_slacks
+            - self.weight_power_shift * flow_from_a1_to_a2
+            - self.weight_power_shift * area_1_gen_delta
+            - self.weight_power_shift * power_shift
+            + self.weight_generation_cost * gen_cost_f
+            + self.weight_kirchoff * node_balance_slacks
+            + self.weight_overloads * branch_overload
+            + self.weight_overloads * hvdc_overload
+            + self.weight_hvdc_control * hvdc_control
+            + self.weight_generation_delta * delta_slacks
         )
 
     def formulate(self):
