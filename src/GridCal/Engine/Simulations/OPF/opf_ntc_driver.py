@@ -115,18 +115,16 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.BranchPower,
                                                     ResultTypes.BranchLoading,
                                                     ResultTypes.BranchOverloads,
-                                                    # ResultTypes.LoadShedding,
-                                                    # ResultTypes.ControlledGeneratorShedding,
-                                                    ResultTypes.ControlledGeneratorPower,
-                                                    ResultTypes.BatteryPower,
+                                                    ResultTypes.BranchTapAngle,
                                                     ResultTypes.HvdcPowerFrom,
                                                     ResultTypes.HvdcOverloads,
-                                                    ResultTypes.BranchTapAngle,
                                                     ResultTypes.NodeSlacks,
+                                                    ResultTypes.BatteryPower,
+                                                    ResultTypes.ControlledGeneratorPower,
                                                     ResultTypes.GenerationDelta,
                                                     ResultTypes.GenerationDeltaSlacks,
-                                                    ResultTypes.InterAreaExchange,
-                                                    ResultTypes.AvailableTransferCapacityAlpha
+                                                    ResultTypes.AvailableTransferCapacityAlpha,
+                                                    ResultTypes.InterAreaExchange
                                                     ],
 
                                  data_variables=['bus_names',
