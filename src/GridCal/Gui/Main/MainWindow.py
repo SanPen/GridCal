@@ -1828,7 +1828,7 @@ class Ui_mainWindow(object):
         self.atcThresholdSpinBox.setObjectName(u"atcThresholdSpinBox")
         self.atcThresholdSpinBox.setDecimals(4)
         self.atcThresholdSpinBox.setMaximum(1.000000000000000)
-        self.atcThresholdSpinBox.setValue(0.020000000000000)
+        self.atcThresholdSpinBox.setValue(0.050000000000000)
 
         self.gridLayout_16.addWidget(self.atcThresholdSpinBox, 1, 1, 1, 1)
 
@@ -1917,22 +1917,25 @@ class Ui_mainWindow(object):
         self.gridLayout_23.setObjectName(u"gridLayout_23")
         self.proportionalRedispatchRadioButton = QRadioButton(self.frame_67)
         self.proportionalRedispatchRadioButton.setObjectName(u"proportionalRedispatchRadioButton")
+        self.proportionalRedispatchRadioButton.setChecked(True)
 
         self.gridLayout_23.addWidget(self.proportionalRedispatchRadioButton, 0, 0, 1, 1)
 
         self.optimalRedispatchRadioButton = QRadioButton(self.frame_67)
         self.optimalRedispatchRadioButton.setObjectName(u"optimalRedispatchRadioButton")
-        self.optimalRedispatchRadioButton.setChecked(True)
+        self.optimalRedispatchRadioButton.setChecked(False)
 
         self.gridLayout_23.addWidget(self.optimalRedispatchRadioButton, 1, 0, 1, 1)
 
         self.skipNtcGenerationLimitsCheckBox = QCheckBox(self.frame_67)
         self.skipNtcGenerationLimitsCheckBox.setObjectName(u"skipNtcGenerationLimitsCheckBox")
+        self.skipNtcGenerationLimitsCheckBox.setChecked(True)
 
         self.gridLayout_23.addWidget(self.skipNtcGenerationLimitsCheckBox, 3, 0, 1, 1)
 
         self.monitorOnlySensitiveBranchesCheckBox = QCheckBox(self.frame_67)
         self.monitorOnlySensitiveBranchesCheckBox.setObjectName(u"monitorOnlySensitiveBranchesCheckBox")
+        self.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
 
         self.gridLayout_23.addWidget(self.monitorOnlySensitiveBranchesCheckBox, 2, 0, 1, 1)
 
@@ -2046,6 +2049,7 @@ class Ui_mainWindow(object):
         self.weightGenDeltaSpinBox = QSpinBox(self.frame_68)
         self.weightGenDeltaSpinBox.setObjectName(u"weightGenDeltaSpinBox")
         self.weightGenDeltaSpinBox.setMinimum(-99)
+        self.weightGenDeltaSpinBox.setValue(5)
 
         self.formLayout.setWidget(3, QFormLayout.FieldRole, self.weightGenDeltaSpinBox)
 

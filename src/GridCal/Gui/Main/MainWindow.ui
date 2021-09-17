@@ -3349,7 +3349,7 @@ p, li { white-space: pre-wrap; }
                      <double>1.000000000000000</double>
                     </property>
                     <property name="value">
-                     <double>0.020000000000000</double>
+                     <double>0.050000000000000</double>
                     </property>
                    </widget>
                   </item>
@@ -3607,6 +3607,9 @@ p, li { white-space: pre-wrap; }
                     <property name="text">
                      <string>Proportional redispatch</string>
                     </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
                    </widget>
                   </item>
                   <item row="1" column="0">
@@ -3618,7 +3621,7 @@ p, li { white-space: pre-wrap; }
                      <string>Optimal redispatch</string>
                     </property>
                     <property name="checked">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                    </widget>
                   </item>
@@ -3626,6 +3629,9 @@ p, li { white-space: pre-wrap; }
                    <widget class="QCheckBox" name="skipNtcGenerationLimitsCheckBox">
                     <property name="text">
                      <string>Skip generation limits</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -3636,6 +3642,9 @@ p, li { white-space: pre-wrap; }
                     </property>
                     <property name="text">
                      <string>Only monitor sensitive branches to the exchange</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -3907,6 +3916,9 @@ p, li { white-space: pre-wrap; }
                     </property>
                     <property name="minimum">
                      <number>-99</number>
+                    </property>
+                    <property name="value">
+                     <number>5</number>
                     </property>
                    </widget>
                   </item>

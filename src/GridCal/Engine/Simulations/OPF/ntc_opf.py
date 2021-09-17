@@ -485,8 +485,11 @@ class OpfNTC(Opf):
         # equal the balance to the generation: eq.13,14 (equality)
         i = 0
         for balance, power in zip(node_balance, Pinj):
-            self.solver.Add(balance == power + node_balance_slack_1[i] - node_balance_slack_2[i],
-                            "Node_power_balance_" + str(i))
+            if self.numerical_circuit.bus_data.bus_active[i]:
+                self.solver.Add(balance == power + node_balance_slack_1[i] - node_balance_slack_2[i],
+                                "Node_power_balance_" + str(i))
+            else:
+                print('Bus disconnected:', self.numerical_circuit.bus_data.bus_names[i])
             i += 1
 
         return node_balance, node_balance_slack_1, node_balance_slack_2
