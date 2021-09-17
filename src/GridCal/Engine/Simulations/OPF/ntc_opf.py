@@ -488,8 +488,8 @@ class OpfNTC(Opf):
             if self.numerical_circuit.bus_data.bus_active[i]:
                 self.solver.Add(balance == power + node_balance_slack_1[i] - node_balance_slack_2[i],
                                 "Node_power_balance_" + str(i))
-            else:
-                print('Bus disconnected:', self.numerical_circuit.bus_data.bus_names[i])
+            # else:
+                # print('Bus disconnected:', self.numerical_circuit.bus_data.bus_names[i])
             i += 1
 
         return node_balance, node_balance_slack_1, node_balance_slack_2
@@ -640,7 +640,7 @@ class OpfNTC(Opf):
         for i, (k, sign) in enumerate(inter_area_hvdc):
             flows_hvdc_ft[i] = sign * hvdc_flow_f[k]
 
-        flow_from_a1_to_a2 = self.solver.Sum(flows_ft)
+        flow_from_a1_to_a2 = self.solver.Sum(flows_ft) + self.solver.Sum(flows_hvdc_ft)
 
         # summation of generation deltas in the area 1 (this should be positive)
         area_1_gen_delta = self.solver.Sum(dgen1)
@@ -670,6 +670,10 @@ class OpfNTC(Opf):
             + self.weight_hvdc_control * hvdc_control
             + self.weight_generation_delta * delta_slacks
         )
+
+        all_slacks = node_balance_slacks + branch_overload + hvdc_overload + hvdc_control + delta_slacks
+
+        return all_slacks
 
     def formulate(self):
         """
@@ -790,24 +794,24 @@ class OpfNTC(Opf):
         node_balance_slack_1, \
         node_balance_slack_2 = self.formulate_node_balance(angles=theta, Pinj=Pinj)
 
-        self.formulate_objective(node_balance_slack_1=node_balance_slack_1,
-                                 node_balance_slack_2=node_balance_slack_2,
-                                 inter_area_branches=inter_area_branches,
-                                 flows_f=flow_f,
-                                 overload1=overload1,
-                                 overload2=overload2,
-                                 inter_area_hvdc=inter_area_hvdc,
-                                 hvdc_flow_f=hvdc_flow_f,
-                                 hvdc_overload1=hvdc_overload1,
-                                 hvdc_overload2=hvdc_overload2,
-                                 hvdc_control1=hvdc_control1,
-                                 hvdc_control2=hvdc_control2,
-                                 power_shift=power_shift,
-                                 dgen1=dgen1,
-                                 gen_cost=gen_cost[gen_a1_idx],
-                                 generation_delta=generation_delta[gen_a1_idx],
-                                 delta_slack_1=delta_slack_1,
-                                 delta_slack_2=delta_slack_2)
+        self.all_slacks = self.formulate_objective(node_balance_slack_1=node_balance_slack_1,
+                                                   node_balance_slack_2=node_balance_slack_2,
+                                                   inter_area_branches=inter_area_branches,
+                                                   flows_f=flow_f,
+                                                   overload1=overload1,
+                                                   overload2=overload2,
+                                                   inter_area_hvdc=inter_area_hvdc,
+                                                   hvdc_flow_f=hvdc_flow_f,
+                                                   hvdc_overload1=hvdc_overload1,
+                                                   hvdc_overload2=hvdc_overload2,
+                                                   hvdc_control1=hvdc_control1,
+                                                   hvdc_control2=hvdc_control2,
+                                                   power_shift=power_shift,
+                                                   dgen1=dgen1,
+                                                   gen_cost=gen_cost[gen_a1_idx],
+                                                   generation_delta=generation_delta[gen_a1_idx],
+                                                   delta_slack_1=delta_slack_1,
+                                                   delta_slack_2=delta_slack_2)
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
@@ -857,12 +861,17 @@ class OpfNTC(Opf):
         """
         self.status = self.solver.Solve()
 
-        self.save_lp()
+        # self.save_lp()
 
         return self.converged()
 
     def converged(self):
-        return self.status == pywraplp.Solver.OPTIMAL
+        if self.status == pywraplp.Solver.OPTIMAL:
+            x = self.all_slacks.solution_value()
+            print('All slacks sum:', x)
+            return abs(x) < 1e-4
+        else:
+            return False
 
     @staticmethod
     def extract(arr, make_abs=False):  # override this method to call ORTools instead of PuLP

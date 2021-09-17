@@ -453,7 +453,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
                          weight_hvdc_control=self.options.weight_hvdc_control
                          )
         # Solve
-        problem.solve()
+        converged = problem.solve()
 
         # pack the results
         self.results = OptimalNetTransferCapacityResults(bus_names=island.bus_data.bus_names,
@@ -471,7 +471,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
                                                          Sf=problem.get_branch_power(),
                                                          overloads=problem.get_overloads(),
                                                          loading=problem.get_loading(),
-                                                         converged=bool(problem.converged()),
+                                                         converged=bool(converged),
                                                          bus_types=island.bus_types,
                                                          hvdc_flow=problem.get_hvdc_flow(),
                                                          hvdc_loading=problem.get_hvdc_loading(),

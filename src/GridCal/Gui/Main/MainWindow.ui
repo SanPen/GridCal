@@ -7416,6 +7416,7 @@ QProgressBar::chunk{
     <addaction name="actionTry_to_fix_buses_location"/>
     <addaction name="actionFind_node_groups"/>
     <addaction name="actionDrawSchematic"/>
+    <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
     <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="actionAdd_default_catalogue"/>
@@ -7440,6 +7441,7 @@ QProgressBar::chunk{
     <addaction name="separator"/>
     <addaction name="actionOPF"/>
     <addaction name="actionOPF_time_series"/>
+    <addaction name="actionOptimal_Net_Transfer_Capacity"/>
     <addaction name="actionOpf_to_Power_flow"/>
     <addaction name="actionSet_OPF_generation_to_profiles"/>
     <addaction name="separator"/>
@@ -7590,7 +7592,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/pf_ts.svg</normaloff>:/Icons/icons/pf_ts.svg</iconset>
    </property>
    <property name="text">
-    <string>Power Flow: Time series</string>
+    <string>Power flow time series</string>
    </property>
    <property name="toolTip">
     <string>Power flow time series</string>
@@ -7722,7 +7724,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/dcopf.svg</normaloff>:/Icons/icons/dcopf.svg</iconset>
    </property>
    <property name="text">
-    <string>OPF</string>
+    <string>Optimal power flow</string>
    </property>
    <property name="toolTip">
     <string>Optimal power flow</string>
@@ -7737,7 +7739,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/dcopf_ts.svg</normaloff>:/Icons/icons/dcopf_ts.svg</iconset>
    </property>
    <property name="text">
-    <string>OPF time series</string>
+    <string>Optimal power flow time series</string>
    </property>
    <property name="toolTip">
     <string>Optimal power flow time series</string>
@@ -7896,7 +7898,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/dcopf2ts.svg</normaloff>:/Icons/icons/dcopf2ts.svg</iconset>
    </property>
    <property name="text">
-    <string>Set OPF results to Power flow (non destructive)</string>
+    <string>Set OPF results to power flow (non destructive)</string>
    </property>
    <property name="toolTip">
     <string>Set the OPF resultsinto the power flow or time series simulations (non destructive)</string>
@@ -8181,10 +8183,19 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/ntc_opf.svg</normaloff>:/Icons/icons/ntc_opf.svg</iconset>
    </property>
    <property name="text">
-    <string>Optimal Net Transfer Capacity</string>
+    <string>Optimal net transfer capacity</string>
    </property>
    <property name="toolTip">
     <string>Optimal Net Transfer Capacity</string>
+   </property>
+  </action>
+  <action name="actionSet_schematic_positions_from_GPS_coordinates">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Set schematic (x,y) from (lat,lon)</string>
    </property>
   </action>
  </widget>

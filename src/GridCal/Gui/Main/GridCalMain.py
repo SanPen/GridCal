@@ -391,6 +391,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionDrawSchematic.triggered.connect(self.draw_schematic)
 
+        self.ui.actionSet_schematic_positions_from_GPS_coordinates.triggered.connect(self.set_xy_from_lat_lon)
+
         self.ui.actionSigma_analysis.triggered.connect(self.sigma_analysis)
 
         self.ui.actionAdd_default_catalogue.triggered.connect(self.add_default_catalogue)
@@ -1598,6 +1600,16 @@ class MainGUI(QMainWindow):
         Sandbox to call create_schematic_from_api from the action item without affecting the explode factor variable
         """
         self.create_schematic_from_api()
+
+    def set_xy_from_lat_lon(self):
+        """
+        Get the x, y coordinates of the buses from their latitude and longitude
+        """
+        if len(self.circuit.buses) > 0:
+            if yes_no_question("All nodes will be moved as a conversion to a 2D plane of their latitude and longitude. "
+                               "Are you sure of this?"):
+                self.circuit.fill_xy_from_lat_lon()
+                self.create_schematic_from_api()
 
     def create_schematic_from_api(self, explode_factor=1.0):
         """
