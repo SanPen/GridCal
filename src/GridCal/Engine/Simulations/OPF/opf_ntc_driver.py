@@ -47,6 +47,7 @@ class OptimalNetTransferCapacityOptions:
                  branch_sensitivity_threshold=0.01,
                  skip_generation_limits=False,
                  consider_contingencies=True,
+                 maximize_exchange_flows=True,
                  tolerance=1e-2,
                  sensitivity_dT=100.0,
                  sensitivity_mode: AvailableTransferMode = AvailableTransferMode.InstalledPower,
@@ -98,6 +99,8 @@ class OptimalNetTransferCapacityOptions:
         self.skip_generation_limits = skip_generation_limits
 
         self.consider_contingencies = consider_contingencies
+
+        self.maximize_exchange_flows = maximize_exchange_flows
 
         self.tolerance = tolerance
 
@@ -454,6 +457,8 @@ class OptimalNetTransferCapacity(DriverTemplate):
         # islands = numerical_circuit.split_into_islands(ignore_single_node_islands=True)
         # for island in islands:
 
+        self.progress_text.emit('Formulating NTC OPF...')
+
         island = numerical_circuit
 
         problem = OpfNTC(island,
@@ -467,6 +472,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
                          branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
                          skip_generation_limits=self.options.skip_generation_limits,
                          consider_contingencies=self.options.consider_contingencies,
+                         maximize_exchange_flows=self.options.maximize_exchange_flows,
                          tolerance=self.options.tolerance,
                          weight_power_shift=self.options.weight_power_shift,
                          weight_generation_cost=self.options.weight_generation_cost,
@@ -476,6 +482,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
                          weight_hvdc_control=self.options.weight_hvdc_control
                          )
         # Solve
+        self.progress_text.emit('Solving NTC OPF...')
         converged = problem.solve()
 
         # pack the results
@@ -507,6 +514,8 @@ class OptimalNetTransferCapacity(DriverTemplate):
                                                          inter_area_hvdc=problem.inter_area_hvdc,
                                                          alpha=alpha,
                                                          )
+
+        self.progress_text.emit('Done!')
 
         return self.results
 

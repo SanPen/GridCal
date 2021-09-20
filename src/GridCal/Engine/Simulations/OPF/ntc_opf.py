@@ -205,6 +205,7 @@ class OpfNTC(Opf):
                  branch_sensitivity_threshold=0.01,
                  skip_generation_limits=False,
                  consider_contingencies=True,
+                 maximize_exchange_flows=True,
                  tolerance=1e-2,
                  weight_power_shift=1e0,
                  weight_generation_cost=1e-2,
@@ -237,6 +238,8 @@ class OpfNTC(Opf):
         self.skip_generation_limits = skip_generation_limits
 
         self.consider_contingencies = consider_contingencies
+
+        self.maximize_exchange_flows = maximize_exchange_flows
 
         self.tolerance = tolerance
 
@@ -450,20 +453,6 @@ class OpfNTC(Opf):
 
         return theta
 
-    def formulate_phase_shift(self):
-        """
-
-        :return:
-        """
-        phase_shift_dict = dict()
-        nc = self.numerical_circuit
-        for i in range(nc.branch_data.nbr):
-            if nc.branch_data.control_mode[i] == TransformerControlType.Pt:  # is a phase shifter
-                phase_shift_dict[i] = self.solver.NumVar(nc.branch_data.theta_min[i],
-                                                         nc.branch_data.theta_max[i],
-                                                         'phase_shift_' + str(i))
-        return phase_shift_dict
-
     def formulate_power_injections(self, Cgen, generation, t=0):
         """
 
@@ -487,33 +476,34 @@ class OpfNTC(Opf):
         """
         nc = self.numerical_circuit
         node_balance = lpDot(nc.Bbus, angles)
-
-        node_balance_slack_1 = np.array([self.solver.NumVar(0, self.inf, 'balance_slack1_' + str(i)) for i in range(nc.nbus)])
-        node_balance_slack_2 = np.array([self.solver.NumVar(0, self.inf, 'balance_slack2_' + str(i)) for i in range(nc.nbus)])
+        node_balance_slack_1 = np.zeros(nc.nbus, dtype=object)
+        node_balance_slack_2 = np.zeros(nc.nbus, dtype=object)
 
         # equal the balance to the generation: eq.13,14 (equality)
         i = 0
         for balance, power in zip(node_balance, Pinj):
             if self.numerical_circuit.bus_data.bus_active[i]:
-                self.solver.Add(balance == power + node_balance_slack_1[i] - node_balance_slack_2[i],
-                                "Node_power_balance_" + str(i))
-            # else:
-                # print('Bus disconnected:', self.numerical_circuit.bus_data.bus_names[i])
+                # node_balance_slack_1[i] = self.solver.NumVar(0, self.inf, 'balance_slack1_' + str(i))
+                # node_balance_slack_2[i] = self.solver.NumVar(0, self.inf, 'balance_slack2_' + str(i))
+                # self.solver.Add(balance == power + node_balance_slack_1[i] - node_balance_slack_2[i],
+                #                 "Node_power_balance_" + str(i))
+                self.solver.Add(balance == power, "Node_power_balance_" + str(i))
             i += 1
 
         return node_balance, node_balance_slack_1, node_balance_slack_2
 
-    def formulate_branches_flow(self, angles, tau_dict, alpha):
+    def formulate_branches_flow(self, angles, alpha):
         """
 
-        :param angles:
-        :param tau_dict:
+        :param angles: node angles array
+        :param alpha: branch sensitivities array
         :return:
         """
         nc = self.numerical_circuit
         flow_f = np.zeros(nc.nbr, dtype=object)
         overload1 = np.zeros(nc.nbr, dtype=object)
         overload2 = np.zeros(nc.nbr, dtype=object)
+        tau = np.zeros(nc.nbr, dtype=object)
         monitor = np.zeros(nc.nbr, dtype=bool)
         rates = nc.Rates / nc.Sbase
 
@@ -528,16 +518,21 @@ class OpfNTC(Opf):
                 flow_f[m] = self.solver.NumVar(-self.inf, self.inf, 'pftk_' + str(m))
 
                 # compute the branch susceptance
-                bk = (1.0 / complex(nc.branch_data.R[m], nc.branch_data.X[m])).imag
+                # bk = (1.0 / complex(nc.branch_data.R[m], nc.branch_data.X[m])).imag  # this seems to be problematic
 
-                if m in tau_dict.keys():
+                if nc.branch_data.branch_dc[m]:
+                    bk = 1.0 / nc.branch_data.R[m]
+                else:
+                    bk = 1.0 / nc.branch_data.X[m]
+
+                if nc.branch_data.control_mode[m] == TransformerControlType.Pt:  # is a phase shifter
+                    # create the phase shift variable
+                    tau[m] = self.solver.NumVar(nc.branch_data.theta_min[m], nc.branch_data.theta_max[m], 'phase_shift_' + str(m))
                     # branch power from-to eq.15
-                    self.solver.Add(flow_f[m] == bk * (angles[_t] - angles[_f] + tau_dict[m]),
-                                    'phase_shifter_power_flow_' + str(m))
+                    self.solver.Add(flow_f[m] == bk * (angles[_f] - angles[_t] + tau[m]), 'phase_shifter_power_flow_' + str(m))
                 else:
                     # branch power from-to eq.15
-                    self.solver.Add(flow_f[m] == bk * (angles[_t] - angles[_f]),
-                                    'branch_power_flow_' + str(m))
+                    self.solver.Add(flow_f[m] == bk * (angles[_f] - angles[_t]), 'branch_power_flow_' + str(m))
 
                 # determine the monitoring logic
                 if self.monitor_only_sensitive_branches:
@@ -557,10 +552,15 @@ class OpfNTC(Opf):
                     overload2[m] = self.solver.NumVar(0, self.inf, 'overload2_' + str(m))
                     self.solver.Add((-rates[m] - overload2[m]) <= flow_f[m], "tf_rating_" + str(m))
 
-        return flow_f, overload1, overload2, monitor
+        return flow_f, overload1, overload2, tau, monitor
 
     def formulate_contingency(self, flow_f, monitor):
+        """
 
+        :param flow_f:
+        :param monitor:
+        :return:
+        """
         nc = self.numerical_circuit
         rates = nc.ContingencyRates / nc.Sbase
 
@@ -578,18 +578,20 @@ class OpfNTC(Opf):
                 _f = nc.branch_data.F[m]
                 _t = nc.branch_data.T[m]
 
-                for c in con_br_idx:  # for every contingency
+                for ic, c in enumerate(con_br_idx):  # for every contingency
 
-                    # declare the flow variable with ample limits
-                    flow_n1f[m, c] = flow_f[m] + self.LODF[m, c] * flow_f[c]
+                    if m != c:
 
-                    # rating restriction in the sense from-to: eq.17
-                    overload1[m, c] = self.solver.NumVar(0, self.inf, 'n-1_overload1_' + str(m) + ',' + str(c))
-                    self.solver.Add(flow_n1f[m, c] <= (rates[m] + overload1[m, c]), "n-1_ft_rating_" + str(m) + ',' + str(c))
+                        # compute the N-1 flow
+                        flow_n1f[m, ic] = flow_f[m] + self.LODF[m, c] * flow_f[c]
 
-                    # rating restriction in the sense to-from: eq.18
-                    overload2[m] = self.solver.NumVar(0, self.inf, 'n-1_overload2_' + str(m) + ',' + str(c))
-                    self.solver.Add((-rates[m] - overload2[m, c]) <= flow_n1f[m, c], "n-1_tf_rating_" + str(m)+ ',' + str(c))
+                        # rating restriction in the sense from-to
+                        overload1[m, ic] = self.solver.NumVar(0, self.inf, 'n-1_overload1_' + str(m) + ',' + str(c))
+                        self.solver.Add(flow_n1f[m, ic] <= (rates[m] + overload1[m, ic]), "n-1_ft_rating_" + str(m) + ',' + str(c))
+
+                        # rating restriction in the sense to-from
+                        overload2[m] = self.solver.NumVar(0, self.inf, 'n-1_overload2_' + str(m) + ',' + str(c))
+                        self.solver.Add((-rates[m] - overload2[m, ic]) <= flow_n1f[m, ic], "n-1_tf_rating_" + str(m) + ',' + str(c))
 
         return flow_n1f, overload1, overload2
 
@@ -705,19 +707,24 @@ class OpfNTC(Opf):
 
         delta_slacks = self.solver.Sum(delta_slack_1) + self.solver.Sum(delta_slack_2)
 
+        # formulate objective function
+        f = - self.weight_power_shift * area_1_gen_delta
+        f -= self.weight_power_shift * power_shift
+
+        if self.maximize_exchange_flows:
+            f -= self.weight_power_shift * flow_from_a1_to_a2
+        else:
+            print('Skipping the exchange branch flows maximization')
+
+        f += self.weight_generation_cost * gen_cost_f
+        f += self.weight_generation_delta * delta_slacks
+        f += self.weight_overloads * branch_overload
+        f += self.weight_overloads * contingency_branch_overload
+        f += self.weight_overloads * hvdc_overload
+        f += self.weight_hvdc_control * hvdc_control
+
         # objective function
-        self.solver.Minimize(
-            - self.weight_power_shift * flow_from_a1_to_a2
-            - self.weight_power_shift * area_1_gen_delta
-            - self.weight_power_shift * power_shift
-            + self.weight_generation_cost * gen_cost_f
-            + self.weight_kirchoff * node_balance_slacks
-            + self.weight_overloads * branch_overload
-            + self.weight_overloads * contingency_branch_overload
-            + self.weight_overloads * hvdc_overload
-            + self.weight_hvdc_control * hvdc_control
-            + self.weight_generation_delta * delta_slacks
-        )
+        self.solver.Minimize(f)
 
         all_slacks = node_balance_slacks + branch_overload + hvdc_overload + hvdc_control + delta_slacks + contingency_branch_overload
 
@@ -826,16 +833,12 @@ class OpfNTC(Opf):
         # add the angles
         theta = self.formulate_angles()
 
-        # formulate the phase-shifters
-        phase_shift_dict = self.formulate_phase_shift()
-
         # formulate the power injections
         Pinj = self.formulate_power_injections(Cgen=Cgen, generation=generation, t=t)
 
         # formulate the flows
-        flow_f, overload1, overload2, monitor = self.formulate_branches_flow(angles=theta,
-                                                                             tau_dict=phase_shift_dict,
-                                                                             alpha=self.alpha)
+        flow_f, overload1, overload2, tau, monitor = self.formulate_branches_flow(angles=theta,
+                                                                                  alpha=self.alpha)
 
         # formulate the contingencies
         if self.consider_contingencies:
@@ -897,7 +900,7 @@ class OpfNTC(Opf):
 
         self.overloads = overload1 - overload2
         self.rating = branch_ratings
-        self.phase_shift_dict = phase_shift_dict
+        self.phase_shift = tau
         self.nodal_restrictions = node_balance
 
         self.nodal_slacks = node_balance_slack_1 - node_balance_slack_2
@@ -989,11 +992,7 @@ class OpfNTC(Opf):
         Get the phase shift solution
         :return:
         """
-        arr = np.zeros(self.numerical_circuit.nbr)
-        for i, var in self.phase_shift_dict.items():
-            arr[i] = var.solution_value()
-
-        return arr
+        return self.extract(self.phase_shift, make_abs=False)
 
     def get_hvdc_flow(self):
         """
