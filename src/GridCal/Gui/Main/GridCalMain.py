@@ -3849,6 +3849,8 @@ class MainGUI(QMainWindow):
                 branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
+                consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
+                tolerance = 10.0 ** self.ui.ntcOpfTolSpinBox.value()
                 weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
                 weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
                 weight_generation_delta = 10.0 ** self.ui.weightGenDeltaSpinBox.value()
@@ -3863,6 +3865,8 @@ class MainGUI(QMainWindow):
                                                                 monitor_only_sensitive_branches=monitor_only_sensitive_branches,
                                                                 branch_sensitivity_threshold=branch_sensitivity_threshold,
                                                                 skip_generation_limits=skip_generation_limits,
+                                                                consider_contingencies=consider_contingencies,
+                                                                tolerance=tolerance,
                                                                 sensitivity_dT=dT,
                                                                 sensitivity_mode=mode,
                                                                 weight_power_shift=weight_power_shift,
@@ -3900,33 +3904,31 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(sim.SimulationTypes.OPF_NTC_run)
 
-            if results.converged:
+            if self.ui.draw_schematic_checkBox.isChecked():
 
-                if self.ui.draw_schematic_checkBox.isChecked():
+                viz.colour_the_schematic(circuit=self.circuit,
+                                         Sbus=results.Sbus,
+                                         Sf=results.Sf,
+                                         St=-results.Sf,
+                                         voltages=results.voltage,
+                                         loadings=results.loading,
+                                         types=results.bus_types,
+                                         losses=results.losses,
+                                         hvdc_loading=results.hvdc_loading,
+                                         hvdc_sending_power=results.hvdc_Pf,
+                                         hvdc_losses=None,
+                                         ma=None,
+                                         theta=results.phase_shift,
+                                         Beq=None,
+                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                         max_bus_width=self.ui.max_node_size_spinBox.value()
+                                         )
+            self.update_available_results()
 
-                    viz.colour_the_schematic(circuit=self.circuit,
-                                             Sbus=results.Sbus,
-                                             Sf=results.Sf,
-                                             St=-results.Sf,
-                                             voltages=results.voltage,
-                                             loadings=results.loading,
-                                             types=results.bus_types,
-                                             losses=results.losses,
-                                             hvdc_loading=results.hvdc_loading,
-                                             hvdc_sending_power=results.hvdc_Pf,
-                                             hvdc_losses=None,
-                                             ma=None,
-                                             theta=results.phase_shift,
-                                             Beq=None,
-                                             use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                             min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                             max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                             min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                             max_bus_width=self.ui.max_node_size_spinBox.value()
-                                             )
-                self.update_available_results()
-
-            else:
+            if not results.converged:
 
                 warning_msg('Some islands did not solve.\n'
                             'Check that all branches have rating and \n'

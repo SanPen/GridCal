@@ -198,11 +198,14 @@ class OpfNTC(Opf):
                  area_from_bus_idx,
                  area_to_bus_idx,
                  alpha,
+                 LODF,
                  solver_type: MIPSolvers = MIPSolvers.CBC,
                  generation_formulation: GenerationNtcFormulation = GenerationNtcFormulation.Optimal,
                  monitor_only_sensitive_branches=False,
                  branch_sensitivity_threshold=0.01,
                  skip_generation_limits=False,
+                 consider_contingencies=True,
+                 tolerance=1e-2,
                  weight_power_shift=1e0,
                  weight_generation_cost=1e-2,
                  weight_generation_delta=1e0,
@@ -233,7 +236,13 @@ class OpfNTC(Opf):
 
         self.skip_generation_limits = skip_generation_limits
 
+        self.consider_contingencies = consider_contingencies
+
+        self.tolerance = tolerance
+
         self.alpha = alpha
+
+        self.LODF = LODF
 
         self.weight_power_shift = weight_power_shift
         self.weight_generation_cost = weight_generation_cost
@@ -505,48 +514,84 @@ class OpfNTC(Opf):
         flow_f = np.zeros(nc.nbr, dtype=object)
         overload1 = np.zeros(nc.nbr, dtype=object)
         overload2 = np.zeros(nc.nbr, dtype=object)
+        monitor = np.zeros(nc.nbr, dtype=bool)
         rates = nc.Rates / nc.Sbase
 
-        for i in range(nc.nbr):
+        # formulate flows
+        for m in range(nc.nbr):
 
-            if nc.branch_data.branch_active[i]:
-                _f = nc.branch_data.F[i]
-                _t = nc.branch_data.T[i]
+            if nc.branch_data.branch_active[m]:
+                _f = nc.branch_data.F[m]
+                _t = nc.branch_data.T[m]
 
                 # declare the flow variable with ample limits
-                flow_f[i] = self.solver.NumVar(-self.inf, self.inf, 'pftk_' + str(i))
+                flow_f[m] = self.solver.NumVar(-self.inf, self.inf, 'pftk_' + str(m))
 
                 # compute the branch susceptance
-                bk = (1.0 / complex(nc.branch_data.R[i], nc.branch_data.X[i])).imag
+                bk = (1.0 / complex(nc.branch_data.R[m], nc.branch_data.X[m])).imag
 
-                if i in tau_dict.keys():
+                if m in tau_dict.keys():
                     # branch power from-to eq.15
-                    self.solver.Add(flow_f[i] == bk * (angles[_t] - angles[_f] + tau_dict[i]),
-                                    'phase_shifter_power_flow_' + str(i))
+                    self.solver.Add(flow_f[m] == bk * (angles[_t] - angles[_f] + tau_dict[m]),
+                                    'phase_shifter_power_flow_' + str(m))
                 else:
                     # branch power from-to eq.15
-                    self.solver.Add(flow_f[i] == bk * (angles[_t] - angles[_f]),
-                                    'branch_power_flow_' + str(i))
+                    self.solver.Add(flow_f[m] == bk * (angles[_t] - angles[_f]),
+                                    'branch_power_flow_' + str(m))
 
                 # determine the monitoring logic
                 if self.monitor_only_sensitive_branches:
-                    if nc.branch_data.monitor_loading[i] and abs(alpha[i]) > self.branch_sensitivity_threshold:
-                        monitor = True
+                    if nc.branch_data.monitor_loading[m] and abs(alpha[m]) > self.branch_sensitivity_threshold:
+                        monitor[m] = True
                     else:
-                        monitor = False
+                        monitor[m] = False
                 else:
-                    monitor = nc.branch_data.monitor_loading[i]
+                    monitor[m] = nc.branch_data.monitor_loading[m]
 
-                if monitor:
+                if monitor[m]:
                     # rating restriction in the sense from-to: eq.17
-                    overload1[i] = self.solver.NumVar(0, self.inf, 'overload1_' + str(i))
-                    self.solver.Add(flow_f[i] <= (rates[i] + overload1[i]), "ft_rating_" + str(i))
+                    overload1[m] = self.solver.NumVar(0, self.inf, 'overload1_' + str(m))
+                    self.solver.Add(flow_f[m] <= (rates[m] + overload1[m]), "ft_rating_" + str(m))
 
                     # rating restriction in the sense to-from: eq.18
-                    overload2[i] = self.solver.NumVar(0, self.inf, 'overload2_' + str(i))
-                    self.solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "tf_rating_" + str(i))
+                    overload2[m] = self.solver.NumVar(0, self.inf, 'overload2_' + str(m))
+                    self.solver.Add((-rates[m] - overload2[m]) <= flow_f[m], "tf_rating_" + str(m))
 
-        return flow_f, overload1, overload2
+        return flow_f, overload1, overload2, monitor
+
+    def formulate_contingency(self, flow_f, monitor):
+
+        nc = self.numerical_circuit
+        rates = nc.ContingencyRates / nc.Sbase
+
+        # get the indices of the branches marked for contingency
+        con_br_idx = self.numerical_circuit.branch_data.get_contingency_enabled_indices()
+
+        # formulate contingency flows
+        # this is done in a separated loop because all te flow variables must exist beforehand
+        flow_n1f = np.zeros((nc.nbr, len(con_br_idx)), dtype=object)
+        overload1 = np.zeros((nc.nbr, len(con_br_idx)), dtype=object)
+        overload2 = np.zeros((nc.nbr, len(con_br_idx)), dtype=object)
+        for m in range(nc.nbr):  # for every branch
+
+            if monitor[m]:  # the monitor variable is pre-computed in the previous loop
+                _f = nc.branch_data.F[m]
+                _t = nc.branch_data.T[m]
+
+                for c in con_br_idx:  # for every contingency
+
+                    # declare the flow variable with ample limits
+                    flow_n1f[m, c] = flow_f[m] + self.LODF[m, c] * flow_f[c]
+
+                    # rating restriction in the sense from-to: eq.17
+                    overload1[m, c] = self.solver.NumVar(0, self.inf, 'n-1_overload1_' + str(m) + ',' + str(c))
+                    self.solver.Add(flow_n1f[m, c] <= (rates[m] + overload1[m, c]), "n-1_ft_rating_" + str(m) + ',' + str(c))
+
+                    # rating restriction in the sense to-from: eq.18
+                    overload2[m] = self.solver.NumVar(0, self.inf, 'n-1_overload2_' + str(m) + ',' + str(c))
+                    self.solver.Add((-rates[m] - overload2[m, c]) <= flow_n1f[m, c], "n-1_tf_rating_" + str(m)+ ',' + str(c))
+
+        return flow_n1f, overload1, overload2
 
     def formulate_hvdc_flow(self, angles, Pinj, t=0):
         """
@@ -607,7 +652,7 @@ class OpfNTC(Opf):
         return flow_f, overload1, overload2, hvdc_control1, hvdc_control2
 
     def formulate_objective(self, node_balance_slack_1, node_balance_slack_2,
-                            inter_area_branches, flows_f, overload1, overload2,
+                            inter_area_branches, flows_f, overload1, overload2, n1overload1, n1overload2,
                             inter_area_hvdc, hvdc_flow_f, hvdc_overload1, hvdc_overload2, hvdc_control1, hvdc_control2,
                             power_shift, dgen1, gen_cost, generation_delta,
                             delta_slack_1, delta_slack_2):
@@ -652,6 +697,8 @@ class OpfNTC(Opf):
 
         branch_overload = self.solver.Sum(overload1) + self.solver.Sum(overload2)
 
+        contingency_branch_overload = self.solver.Sum(n1overload1) + self.solver.Sum(n1overload2)
+
         hvdc_overload = self.solver.Sum(hvdc_overload1) + self.solver.Sum(hvdc_overload2)
 
         hvdc_control = self.solver.Sum(hvdc_control1) + self.solver.Sum(hvdc_control2)
@@ -666,12 +713,13 @@ class OpfNTC(Opf):
             + self.weight_generation_cost * gen_cost_f
             + self.weight_kirchoff * node_balance_slacks
             + self.weight_overloads * branch_overload
+            + self.weight_overloads * contingency_branch_overload
             + self.weight_overloads * hvdc_overload
             + self.weight_hvdc_control * hvdc_control
             + self.weight_generation_delta * delta_slacks
         )
 
-        all_slacks = node_balance_slacks + branch_overload + hvdc_overload + hvdc_control + delta_slacks
+        all_slacks = node_balance_slacks + branch_overload + hvdc_overload + hvdc_control + delta_slacks + contingency_branch_overload
 
         return all_slacks
 
@@ -736,7 +784,7 @@ class OpfNTC(Opf):
                                                    buses_areas_1=self.area_from_bus_idx,
                                                    buses_areas_2=self.area_to_bus_idx)
 
-        # add te generation
+        # formulate the generation
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
 
             generation, generation_delta, gen_a1_idx, gen_a2_idx, \
@@ -749,7 +797,6 @@ class OpfNTC(Opf):
                                                                              a1=self.area_from_bus_idx,
                                                                              a2=self.area_to_bus_idx,
                                                                              t=t)
-
         elif self.generation_formulation == GenerationNtcFormulation.Proportional:
 
             generation, generation_delta, \
@@ -779,27 +826,44 @@ class OpfNTC(Opf):
         # add the angles
         theta = self.formulate_angles()
 
+        # formulate the phase-shifters
         phase_shift_dict = self.formulate_phase_shift()
 
+        # formulate the power injections
         Pinj = self.formulate_power_injections(Cgen=Cgen, generation=generation, t=t)
 
-        flow_f, overload1, overload2 = self.formulate_branches_flow(angles=theta,
-                                                                    tau_dict=phase_shift_dict,
-                                                                    alpha=self.alpha)
+        # formulate the flows
+        flow_f, overload1, overload2, monitor = self.formulate_branches_flow(angles=theta,
+                                                                             tau_dict=phase_shift_dict,
+                                                                             alpha=self.alpha)
 
+        # formulate the contingencies
+        if self.consider_contingencies:
+            n1flow_f, n1overload1, n1overload2 = self.formulate_contingency(flow_f=flow_f, monitor=monitor)
+            n1overload1 = n1overload1.reshape(1, -1)[0]
+            n1overload2 = n1overload2.reshape(1, -1)[0]
+        else:
+            n1overload1 = np.zeros(self.numerical_circuit.nbr)
+            n1overload2 = np.zeros(self.numerical_circuit.nbr)
+
+        # formulate the HVDC flows
         hvdc_flow_f, hvdc_overload1, hvdc_overload2, \
         hvdc_control1, hvdc_control2 = self.formulate_hvdc_flow(angles=theta, Pinj=Pinj, t=t)
 
+        # formulate the node power balance
         node_balance, \
         node_balance_slack_1, \
         node_balance_slack_2 = self.formulate_node_balance(angles=theta, Pinj=Pinj)
 
+        # formulate the objective
         self.all_slacks = self.formulate_objective(node_balance_slack_1=node_balance_slack_1,
                                                    node_balance_slack_2=node_balance_slack_2,
                                                    inter_area_branches=inter_area_branches,
                                                    flows_f=flow_f,
                                                    overload1=overload1,
                                                    overload2=overload2,
+                                                   n1overload1=n1overload1,
+                                                   n1overload2=n1overload2,
                                                    inter_area_hvdc=inter_area_hvdc,
                                                    hvdc_flow_f=hvdc_flow_f,
                                                    hvdc_overload1=hvdc_overload1,
@@ -869,7 +933,7 @@ class OpfNTC(Opf):
         if self.status == pywraplp.Solver.OPTIMAL:
             x = self.all_slacks.solution_value()
             print('All slacks sum:', x)
-            return abs(x) < 1e-4
+            return abs(x) < self.tolerance
         else:
             return False
 

@@ -3598,8 +3598,8 @@ p, li { white-space: pre-wrap; }
                  <property name="frameShadow">
                   <enum>QFrame::Raised</enum>
                  </property>
-                 <layout class="QGridLayout" name="gridLayout_23">
-                  <item row="0" column="0">
+                 <layout class="QFormLayout" name="formLayout_2">
+                  <item row="0" column="0" colspan="2">
                    <widget class="QRadioButton" name="proportionalRedispatchRadioButton">
                     <property name="toolTip">
                      <string>The generation is modified as a linear combination of it's current dispatch</string>
@@ -3612,30 +3612,7 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="0">
-                   <widget class="QRadioButton" name="optimalRedispatchRadioButton">
-                    <property name="toolTip">
-                     <string>The generation is modified so that the transference is maximal.</string>
-                    </property>
-                    <property name="text">
-                     <string>Optimal redispatch</string>
-                    </property>
-                    <property name="checked">
-                     <bool>false</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="0">
-                   <widget class="QCheckBox" name="skipNtcGenerationLimitsCheckBox">
-                    <property name="text">
-                     <string>Skip generation limits</string>
-                    </property>
-                    <property name="checked">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="0">
+                  <item row="2" column="0" colspan="2">
                    <widget class="QCheckBox" name="monitorOnlySensitiveBranchesCheckBox">
                     <property name="toolTip">
                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Overrides the monitor loading property of the branches.Then, only the branches whose sensitivity is greater than the threshold are monitored. Use the transfer sensitivity threshold value of the linear method.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -3645,6 +3622,68 @@ p, li { white-space: pre-wrap; }
                     </property>
                     <property name="checked">
                      <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="0">
+                   <widget class="QLabel" name="label_101">
+                    <property name="text">
+                     <string>Tolerance</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="1">
+                   <widget class="QSpinBox" name="ntcOpfTolSpinBox">
+                    <property name="toolTip">
+                     <string>This value determines if the convergence is reached</string>
+                    </property>
+                    <property name="suffix">
+                     <string/>
+                    </property>
+                    <property name="prefix">
+                     <string>1e</string>
+                    </property>
+                    <property name="minimum">
+                     <number>-99</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0" colspan="2">
+                   <widget class="QCheckBox" name="considerContingenciesNtcOpfCheckBox">
+                    <property name="toolTip">
+                     <string>If activated, the N-1 contingencies are considered</string>
+                    </property>
+                    <property name="text">
+                     <string>Consider contingencies</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0" colspan="2">
+                   <widget class="QCheckBox" name="skipNtcGenerationLimitsCheckBox">
+                    <property name="toolTip">
+                     <string>If activated, the generation limits are not considered</string>
+                    </property>
+                    <property name="text">
+                     <string>Skip generation limits</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0" colspan="2">
+                   <widget class="QRadioButton" name="optimalRedispatchRadioButton">
+                    <property name="toolTip">
+                     <string>The generation is modified so that the transference is maximal.</string>
+                    </property>
+                    <property name="text">
+                     <string>Optimal redispatch</string>
+                    </property>
+                    <property name="checked">
+                     <bool>false</bool>
                     </property>
                    </widget>
                   </item>

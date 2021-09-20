@@ -46,6 +46,8 @@ class OptimalNetTransferCapacityOptions:
                  monitor_only_sensitive_branches=False,
                  branch_sensitivity_threshold=0.01,
                  skip_generation_limits=False,
+                 consider_contingencies=True,
+                 tolerance=1e-2,
                  sensitivity_dT=100.0,
                  sensitivity_mode: AvailableTransferMode = AvailableTransferMode.InstalledPower,
                  weight_power_shift=1e0,
@@ -56,10 +58,26 @@ class OptimalNetTransferCapacityOptions:
                  weight_hvdc_control=1e0
                  ):
         """
-        Optimal power flow options
+
+        :param area_from_bus_idx:
+        :param area_to_bus_idx:
         :param verbose:
         :param grouping:
         :param mip_solver:
+        :param generation_formulation:
+        :param monitor_only_sensitive_branches:
+        :param branch_sensitivity_threshold:
+        :param skip_generation_limits:
+        :param consider_contingencies:
+        :param tolerance:
+        :param sensitivity_dT:
+        :param sensitivity_mode:
+        :param weight_power_shift:
+        :param weight_generation_cost:
+        :param weight_generation_delta:
+        :param weight_kirchoff:
+        :param weight_overloads:
+        :param weight_hvdc_control:
         """
         self.verbose = verbose
 
@@ -78,6 +96,10 @@ class OptimalNetTransferCapacityOptions:
         self.branch_sensitivity_threshold = branch_sensitivity_threshold
 
         self.skip_generation_limits = skip_generation_limits
+
+        self.consider_contingencies = consider_contingencies
+
+        self.tolerance = tolerance
 
         self.sensitivity_dT = sensitivity_dT
 
@@ -393,15 +415,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
         """
         return list()
 
-    def compute_exchange_sensitivity(self, numerical_circuit):
-        # declare the linear analysis
-        linear = LinearAnalysis(grid=self.grid,
-                                distributed_slack=False,
-                                correct_values=False)
-        linear.run()
-
-        # get the branch indices to analyze
-        br_idx = linear.numerical_circuit.branch_data.get_contingency_enabled_indices()
+    def compute_exchange_sensitivity(self, linear, numerical_circuit):
 
         # compute the branch exchange sensitivity (alpha)
         alpha = compute_alpha(ptdf=linear.PTDF,
@@ -425,9 +439,15 @@ class OptimalNetTransferCapacity(DriverTemplate):
                                                          apply_temperature=self.pf_options.apply_temperature_correction,
                                                          branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
 
+        # declare the linear analysis
+        linear = LinearAnalysis(grid=self.grid,
+                                distributed_slack=False,
+                                correct_values=False)
+        linear.run()
+
         # sensitivities
         if self.options.monitor_only_sensitive_branches:
-            alpha = self.compute_exchange_sensitivity(numerical_circuit)
+            alpha = self.compute_exchange_sensitivity(linear, numerical_circuit)
         else:
             alpha = np.ones(numerical_circuit.nbr)
 
@@ -440,11 +460,14 @@ class OptimalNetTransferCapacity(DriverTemplate):
                          area_from_bus_idx=self.options.area_from_bus_idx,
                          area_to_bus_idx=self.options.area_to_bus_idx,
                          alpha=alpha,
+                         LODF=linear.LODF,
                          solver_type=self.options.mip_solver,
                          generation_formulation=self.options.generation_formulation,
                          monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
                          branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
                          skip_generation_limits=self.options.skip_generation_limits,
+                         consider_contingencies=self.options.consider_contingencies,
+                         tolerance=self.options.tolerance,
                          weight_power_shift=self.options.weight_power_shift,
                          weight_generation_cost=self.options.weight_generation_cost,
                          weight_generation_delta=self.options.weight_generation_delta,
