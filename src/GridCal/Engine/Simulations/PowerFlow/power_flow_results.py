@@ -101,7 +101,8 @@ class PowerFlowResults(ResultsTemplate):
 
                                                     ResultTypes.HvdcLosses,
                                                     ResultTypes.HvdcPowerFrom,
-                                                    ResultTypes.HvdcPowerTo],
+                                                    ResultTypes.HvdcPowerTo,
+                                                    ResultTypes.InterAreaExchange],
                                  data_variables=['bus_types',
                                                  'bus_names',
                                                  'branch_names',
@@ -137,6 +138,14 @@ class PowerFlowResults(ResultsTemplate):
         self.branch_names = branch_names
         self.transformer_names = transformer_names
         self.hvdc_names = hvdc_names
+
+        # vars for the inter-area computation
+        self.F = None
+        self.T = None
+        self.hvdc_F = None
+        self.hvdc_T = None
+        self.bus_area_indices = None
+        self.area_names = None
 
         self.Sbus = np.zeros(n, dtype=complex)
 
@@ -286,12 +295,35 @@ class PowerFlowResults(ResultsTemplate):
 
         return df
 
+    def get_inter_area_flows(self):
+
+        na = len(self.area_names)
+        x = np.zeros((na, na), dtype=complex)
+
+        for f, t, flow in zip(self.F, self.T, self.Sf):
+            a1 = self.bus_area_indices[f]
+            a2 = self.bus_area_indices[t]
+            if a1 != a2:
+                x[a1, a2] += flow
+                x[a2, a1] -= flow
+
+        for f, t, flow in zip(self.hvdc_F, self.hvdc_T, self.hvdc_Pf):
+            a1 = self.bus_area_indices[f]
+            a2 = self.bus_area_indices[t]
+            if a1 != a2:
+                x[a1, a2] += flow
+                x[a2, a1] -= flow
+
+        return x
+
     def mdl(self, result_type: ResultTypes) -> "ResultsTable":
         """
 
         :param result_type:
         :return:
         """
+
+        columns = [result_type.value[0]]
 
         if result_type == ResultTypes.BusVoltageModule:
             labels = self.bus_names
@@ -461,11 +493,18 @@ class PowerFlowResults(ResultsTemplate):
             y_label = '(MW)'
             title = result_type.value
 
+        elif result_type == ResultTypes.InterAreaExchange:
+            labels = ['from:' + a for a in self.area_names]
+            columns = ['to:' + a for a in self.area_names]
+            y = self.get_inter_area_flows().real
+            y_label = '(MW)'
+            title = result_type.value
+
         else:
             raise Exception('Unsupported result type: ' + str(result_type))
 
         # assemble model
-        mdl = ResultsTable(data=y, index=labels, columns=[result_type.value[0]],
+        mdl = ResultsTable(data=y, index=labels, columns=columns,
                            title=title, ylabel=y_label, units=y_label)
         return mdl
 

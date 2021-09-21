@@ -632,4 +632,12 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     results.hvdc_loading = nc.hvdc_loading
     results.hvdc_losses = nc.hvdc_losses
 
+    # set the inter-area variables
+    results.F = nc.F
+    results.T = nc.T
+    results.hvdc_F = nc.hvdc_data.get_bus_indices_f()
+    results.hvdc_T = nc.hvdc_data.get_bus_indices_t()
+    results.bus_area_indices = nc.bus_data.areas
+    results.area_names = [a.name for a in multi_circuit.areas]
+
     return results

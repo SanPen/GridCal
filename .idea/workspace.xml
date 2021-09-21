@@ -25,8 +25,9 @@
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Session/results_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Session/results_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -557,13 +558,6 @@
       <workItem from="1621367763953" duration="1167000" />
       <workItem from="1621405201458" duration="3088000" />
     </task>
-    <task id="LOCAL-00119" summary="superfast fubm jacobian structure working">
-      <created>1617745482190</created>
-      <option name="number" value="00119" />
-      <option name="presentableId" value="LOCAL-00119" />
-      <option name="project" value="LOCAL" />
-      <updated>1617745482191</updated>
-    </task>
     <task id="LOCAL-00120" summary="Fixed issue with pandas dataframes not recognizing the index :/">
       <created>1617909513824</created>
       <option name="number" value="00120" />
@@ -900,7 +894,14 @@
       <option name="project" value="LOCAL" />
       <updated>1632139252344</updated>
     </task>
-    <option name="localTasksCounter" value="168" />
+    <task id="LOCAL-00168" summary="Improved clipboard export">
+      <created>1632221092546</created>
+      <option name="number" value="00168" />
+      <option name="presentableId" value="LOCAL-00168" />
+      <option name="project" value="LOCAL" />
+      <updated>1632221092546</updated>
+    </task>
+    <option name="localTasksCounter" value="169" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -925,7 +926,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Loading session driver done!" />
     <MESSAGE value="Fixed minor time series error" />
     <MESSAGE value="Added update rates function" />
     <MESSAGE value="Increased version" />
@@ -950,7 +950,8 @@
     <MESSAGE value="Fixed the branch_data F and T when sliced&#10;Added delta slacks" />
     <MESSAGE value="Added contingency analysis to the NTC OPF" />
     <MESSAGE value="Added contingency analysis to the NTC OPF&#10;- Removed kirchhoff tolerances" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added contingency analysis to the NTC OPF&#10;- Removed kirchhoff tolerances" />
+    <MESSAGE value="Improved clipboard export" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved clipboard export" />
   </component>
   <component name="WindowStateProjectService">
     <state width="409" height="659" key="Git.Branch.Popup" />
@@ -1442,6 +1443,11 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Session/results_model.py</url>
           <line>240</line>
           <option name="timeStamp" value="745" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py</url>
+          <line>640</line>
+          <option name="timeStamp" value="752" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

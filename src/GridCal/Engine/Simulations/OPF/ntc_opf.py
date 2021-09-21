@@ -497,11 +497,7 @@ class OpfNTC(Opf):
         # equal the balance to the generation: eq.13,14 (equality)
         i = 0
         for balance, power in zip(node_balance, Pinj):
-            if self.numerical_circuit.bus_data.bus_active[i]:
-                # node_balance_slack_1[i] = self.solver.NumVar(0, self.inf, 'balance_slack1_' + str(i))
-                # node_balance_slack_2[i] = self.solver.NumVar(0, self.inf, 'balance_slack2_' + str(i))
-                # self.solver.Add(balance == power + node_balance_slack_1[i] - node_balance_slack_2[i],
-                #                 "Node_power_balance_" + str(i))
+            if self.numerical_circuit.bus_data.bus_active[i] and not isinstance(balance, int):  # balance is 0 for isolated buses
                 self.solver.Add(balance == power, "Node_power_balance_" + str(i))
             i += 1
 
@@ -511,7 +507,7 @@ class OpfNTC(Opf):
         """
 
         :param angles: node angles array
-        :param alpha: branch sensitivities array
+        :param alpha_abs: absolute branch sensitivities array
         :return:
         """
         nc = self.numerical_circuit
@@ -662,7 +658,7 @@ class OpfNTC(Opf):
 
                 elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset:
                     # simple injections model
-                    flow_f[i] = P0 + hvdc_control1[i] - + hvdc_control2[i]
+                    flow_f[i] = P0 + hvdc_control1[i] - hvdc_control2[i]
                     Pinj[_f] -= flow_f[i]
                     Pinj[_t] += flow_f[i]
 
