@@ -485,9 +485,8 @@ class OptimalNetTransferCapacity(DriverTemplate):
 
         self.progress_text.emit('Formulating NTC OPF...')
 
-        island = numerical_circuit
-
-        problem = OpfNTC(island,
+        # DDefine the problem
+        problem = OpfNTC(numerical_circuit,
                          area_from_bus_idx=self.options.area_from_bus_idx,
                          area_to_bus_idx=self.options.area_to_bus_idx,
                          alpha=alpha,
@@ -512,17 +511,17 @@ class OptimalNetTransferCapacity(DriverTemplate):
         converged = problem.solve()
 
         # pack the results
-        self.results = OptimalNetTransferCapacityResults(bus_names=island.bus_data.bus_names,
-                                                         branch_names=island.branch_data.branch_names,
-                                                         load_names=island.load_data.load_names,
-                                                         generator_names=island.generator_data.generator_names,
-                                                         battery_names=island.battery_data.battery_names,
-                                                         hvdc_names=island.hvdc_data.names,
+        self.results = OptimalNetTransferCapacityResults(bus_names=numerical_circuit.bus_data.bus_names,
+                                                         branch_names=numerical_circuit.branch_data.branch_names,
+                                                         load_names=numerical_circuit.load_data.load_names,
+                                                         generator_names=numerical_circuit.generator_data.generator_names,
+                                                         battery_names=numerical_circuit.battery_data.battery_names,
+                                                         hvdc_names=numerical_circuit.hvdc_data.names,
                                                          Sbus=problem.get_power_injections(),
                                                          voltage=problem.get_voltage(),
-                                                         load_shedding=np.zeros((island.nload, 1)),
-                                                         generator_shedding=np.zeros((island.ngen, 1)),
-                                                         battery_power=np.zeros((island.nbatt, 1)),
+                                                         load_shedding=np.zeros((numerical_circuit.nload, 1)),
+                                                         generator_shedding=np.zeros((numerical_circuit.ngen, 1)),
+                                                         battery_power=np.zeros((numerical_circuit.nbatt, 1)),
                                                          controlled_generation_power=problem.get_generator_power(),
                                                          Sf=problem.get_branch_power(),
                                                          contingency_flows=problem.get_contingency_flows(),
@@ -530,7 +529,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
                                                          overloads=problem.get_overloads(),
                                                          loading=problem.get_loading(),
                                                          converged=bool(converged),
-                                                         bus_types=island.bus_types,
+                                                         bus_types=numerical_circuit.bus_types,
                                                          hvdc_flow=problem.get_hvdc_flow(),
                                                          hvdc_loading=problem.get_hvdc_loading(),
                                                          hvdc_slacks=problem.get_hvdc_slacks(),
