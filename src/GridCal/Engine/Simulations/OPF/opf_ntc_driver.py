@@ -142,7 +142,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names,
                  Sbus=None, voltage=None, load_shedding=None, generator_shedding=None,
                  battery_power=None, controlled_generation_power=None,
-                 Sf=None, overloads=None, loading=None, losses=None, converged=None, bus_types=None,
+                 Sf=None, contingency_flows=None, contingency_loading=None,
+                 overloads=None, loading=None, losses=None, converged=None, bus_types=None,
                  hvdc_flow=None, hvdc_slacks=None, hvdc_loading=None, node_slacks=None, phase_shift=None,
                  generation_delta=None, generation_delta_slacks=None,
                  inter_area_branches=list(), inter_area_hvdc=list(), alpha=None):
@@ -154,6 +155,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.BranchPower,
                                                     ResultTypes.BranchLoading,
                                                     ResultTypes.BranchOverloads,
+                                                    ResultTypes.ContingencyFlows,
+                                                    ResultTypes.ContingencyLoading,
                                                     ResultTypes.BranchTapAngle,
                                                     ResultTypes.HvdcPowerFrom,
                                                     ResultTypes.HvdcOverloads,
@@ -207,6 +210,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.load_shedding = load_shedding
 
         self.Sf = Sf
+
+        self.contingency_flows = contingency_flows
+
+        self.contingency_loading = contingency_loading
 
         self.hvdc_Pf = hvdc_flow
         self.hvdc_loading = hvdc_loading
@@ -270,6 +277,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         :return: DataFrame of the results (or None if the result was not understood)
         """
 
+        columns = [result_type.value[0]]
+
         if result_type == ResultTypes.BusVoltageModule:
             labels = self.bus_names
             y = np.abs(self.voltage)
@@ -305,6 +314,20 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y = np.abs(self.overloads)
             y_label = '(MW)'
             title = 'Branch overloads'
+
+        elif result_type == ResultTypes.ContingencyFlows:
+            labels = self.branch_names
+            columns = labels
+            y = np.abs(self.contingency_flows)
+            y_label = '(MW)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.ContingencyLoading:
+            labels = self.branch_names
+            columns = labels
+            y = np.abs(self.contingency_loading)
+            y_label = '(%)'
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchLosses:
             labels = self.branch_names
@@ -385,7 +408,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         mdl = ResultsTable(data=y,
                            index=labels,
-                           columns=[result_type.value[0]],
+                           columns=columns,
                            title=title,
                            ylabel=y_label,
                            xlabel='',
@@ -437,10 +460,13 @@ class OptimalNetTransferCapacity(DriverTemplate):
         Run a power flow for every circuit
         @return: OptimalPowerFlowResults object
         """
+        self.progress_text.emit('Compiling...')
 
         numerical_circuit = compile_snapshot_opf_circuit(circuit=self.grid,
                                                          apply_temperature=self.pf_options.apply_temperature_correction,
                                                          branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
+
+        self.progress_text.emit('Running linear analysis...')
 
         # declare the linear analysis
         linear = LinearAnalysis(grid=self.grid,
@@ -499,6 +525,8 @@ class OptimalNetTransferCapacity(DriverTemplate):
                                                          battery_power=np.zeros((island.nbatt, 1)),
                                                          controlled_generation_power=problem.get_generator_power(),
                                                          Sf=problem.get_branch_power(),
+                                                         contingency_flows=problem.get_contingency_flows(),
+                                                         contingency_loading=problem.get_contingency_loading(),
                                                          overloads=problem.get_overloads(),
                                                          loading=problem.get_loading(),
                                                          converged=bool(converged),

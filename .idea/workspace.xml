@@ -27,9 +27,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/result_types.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/result_types.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -124,7 +122,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.update_gui_file">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -560,13 +558,6 @@
       <workItem from="1621367763953" duration="1167000" />
       <workItem from="1621405201458" duration="3088000" />
     </task>
-    <task id="LOCAL-00118" summary="Made the device plots more robust">
-      <created>1617641677849</created>
-      <option name="number" value="00118" />
-      <option name="presentableId" value="LOCAL-00118" />
-      <option name="project" value="LOCAL" />
-      <updated>1617641677849</updated>
-    </task>
     <task id="LOCAL-00119" summary="superfast fubm jacobian structure working">
       <created>1617745482190</created>
       <option name="number" value="00119" />
@@ -903,7 +894,14 @@
       <option name="project" value="LOCAL" />
       <updated>1632130365924</updated>
     </task>
-    <option name="localTasksCounter" value="167" />
+    <task id="LOCAL-00167" summary="Added contingency analysis to the NTC OPF&#10;- Removed kirchhoff tolerances">
+      <created>1632139252344</created>
+      <option name="number" value="00167" />
+      <option name="presentableId" value="LOCAL-00167" />
+      <option name="project" value="LOCAL" />
+      <updated>1632139252344</updated>
+    </task>
+    <option name="localTasksCounter" value="168" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -928,7 +926,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Session saving WIP" />
     <MESSAGE value="Loading session driver done!" />
     <MESSAGE value="Fixed minor time series error" />
     <MESSAGE value="Added update rates function" />
@@ -953,12 +950,13 @@
     <MESSAGE value="Added the generator dispatch check to the NTC OPF" />
     <MESSAGE value="Fixed the branch_data F and T when sliced&#10;Added delta slacks" />
     <MESSAGE value="Added contingency analysis to the NTC OPF" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added contingency analysis to the NTC OPF" />
+    <MESSAGE value="Added contingency analysis to the NTC OPF&#10;- Removed kirchhoff tolerances" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added contingency analysis to the NTC OPF&#10;- Removed kirchhoff tolerances" />
   </component>
   <component name="WindowStateProjectService">
-    <state width="407" height="657" key="Git.Branch.Popup" />
-    <state width="407" height="657" key="Git.Branch.Popup/1920.1080" />
-    <state width="407" height="657" key="Git.Branch.Popup@1920.1080" />
+    <state width="409" height="659" key="Git.Branch.Popup" />
+    <state width="409" height="659" key="Git.Branch.Popup/1920.1080" />
+    <state width="409" height="659" key="Git.Branch.Popup@1920.1080" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1423,12 +1421,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>861</line>
-          <option name="timeStamp" value="735" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>938</line>
+          <line>960</line>
           <option name="timeStamp" value="736" />
         </line-breakpoint>
       </breakpoints>
