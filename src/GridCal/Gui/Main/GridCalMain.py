@@ -164,13 +164,13 @@ class MainGUI(QMainWindow):
         self.ui.automatic_layout_comboBox.setModel(mdl)
 
         # list of stochastic power flow methods
-        self.session.stochastic_power_flow_methods_dict = OrderedDict()
-        self.session.stochastic_power_flow_methods_dict[
+        self.stochastic_pf_methods_dict = OrderedDict()
+        self.stochastic_pf_methods_dict[
             sim.StochasticPowerFlowType.LatinHypercube.value] = sim.StochasticPowerFlowType.LatinHypercube
-        self.session.stochastic_power_flow_methods_dict[
+        self.stochastic_pf_methods_dict[
             sim.StochasticPowerFlowType.MonteCarlo.value] = sim.StochasticPowerFlowType.MonteCarlo
-        mdl = get_list_model(list(self.session.stochastic_power_flow_methods_dict.keys()))
-        self.ui.session.stochastic_power_flow_method_comboBox.setModel(mdl)
+        mdl = get_list_model(list(self.stochastic_pf_methods_dict.keys()))
+        self.ui.stochastic_pf_method_comboBox.setModel(mdl)
 
         # list of styles
         plt_styles = plt.style.available
@@ -3407,8 +3407,8 @@ class MainGUI(QMainWindow):
 
                     pf_options = self.get_selected_power_flow_options()
 
-                    simulation_type = self.session.stochastic_power_flow_methods_dict[
-                        self.ui.session.stochastic_power_flow_method_comboBox.currentText()]
+                    simulation_type = self.stochastic_pf_methods_dict[
+                        self.ui.stochastic_pf_method_comboBox.currentText()]
 
                     tol = 10 ** (-1 * self.ui.tolerance_stochastic_spinBox.value())
                     max_iter = self.ui.max_iterations_stochastic_spinBox.value()
