@@ -164,13 +164,13 @@ class MainGUI(QMainWindow):
         self.ui.automatic_layout_comboBox.setModel(mdl)
 
         # list of stochastic power flow methods
-        self.stochastic_pf_methods_dict = OrderedDict()
-        self.stochastic_pf_methods_dict[
+        self.session.stochastic_power_flow_methods_dict = OrderedDict()
+        self.session.stochastic_power_flow_methods_dict[
             sim.StochasticPowerFlowType.LatinHypercube.value] = sim.StochasticPowerFlowType.LatinHypercube
-        self.stochastic_pf_methods_dict[
+        self.session.stochastic_power_flow_methods_dict[
             sim.StochasticPowerFlowType.MonteCarlo.value] = sim.StochasticPowerFlowType.MonteCarlo
-        mdl = get_list_model(list(self.stochastic_pf_methods_dict.keys()))
-        self.ui.stochastic_pf_method_comboBox.setModel(mdl)
+        mdl = get_list_model(list(self.session.stochastic_power_flow_methods_dict.keys()))
+        self.ui.session.stochastic_power_flow_method_comboBox.setModel(mdl)
 
         # list of styles
         plt_styles = plt.style.available
@@ -859,59 +859,57 @@ class MainGUI(QMainWindow):
         print('\tapp.circuit.export_pf("file_name.xlsx"): Export power flow results to Excel')
 
         print('\n\nPower flow results:')
-        print('\tapp.power_flow.voltage:\t the nodal voltages in per unit')
-        print('\tapp.power_flow.current:\t the branch currents in per unit')
-        print('\tapp.power_flow.loading:\t the branch loading in %')
-        print('\tapp.power_flow.losses:\t the branch losses in per unit')
-        print('\tapp.power_flow.power:\t the nodal power injections in per unit')
-        print('\tapp.power_flow.power_from:\t the branch power injections in per unit at the "from" side')
-        print('\tapp.power_flow.power_to:\t the branch power injections in per unit at the "to" side')
+        print('\tapp.session.power_flow.voltage:\t the nodal voltages in per unit')
+        print('\tapp.session.power_flow.current:\t the branch currents in per unit')
+        print('\tapp.session.power_flow.loading:\t the branch loading in %')
+        print('\tapp.session.power_flow.losses:\t the branch losses in per unit')
+        print('\tapp.session.power_flow.power:\t the nodal power injections in per unit')
+        print('\tapp.session.power_flow.Sf:\t the branch power injections in per unit at the "from" side')
+        print('\tapp.session.power_flow.St:\t the branch power injections in per unit at the "to" side')
 
         print('\n\nShort circuit results:')
-        print('\tapp.short_circuit.voltage:\t the nodal voltages in per unit')
-        print('\tapp.short_circuit.current:\t the branch currents in per unit')
-        print('\tapp.short_circuit.loading:\t the branch loading in %')
-        print('\tapp.short_circuit.losses:\t the branch losses in per unit')
-        print('\tapp.short_circuit.power:\t the nodal power injections in per unit')
-        print('\tapp.short_circuit.power_from:\t the branch power injections in per unit at the "from" side')
-        print('\tapp.short_circuit.power_to:\t the branch power injections in per unit at the "to" side')
-        print('\tapp.short_circuit.short_circuit_power:\t Short circuit power in MVA of the grid nodes')
+        print('\tapp.session.short_circuit.voltage:\t the nodal voltages in per unit')
+        print('\tapp.session.short_circuit.current:\t the branch currents in per unit')
+        print('\tapp.session.short_circuit.loading:\t the branch loading in %')
+        print('\tapp.session.short_circuit.losses:\t the branch losses in per unit')
+        print('\tapp.session.short_circuit.power:\t the nodal power injections in per unit')
+        print('\tapp.session.short_circuit.power_from:\t the branch power injections in per unit at the "from" side')
+        print('\tapp.session.short_circuit.power_to:\t the branch power injections in per unit at the "to" side')
+        print('\tapp.session.short_circuit.short_circuit_power:\t Short circuit power in MVA of the grid nodes')
 
         print('\n\nOptimal power flow results:')
-        print('\tapp.optimal_power_flow.voltage:\t the nodal voltages angles in rad')
-        print('\tapp.optimal_power_flow.load_shedding:\t the branch loading in %')
-        print('\tapp.optimal_power_flow.losses:\t the branch losses in per unit')
-        print('\tapp.optimal_power_flow.Sbus:\t the nodal power injections in MW')
-        print('\tapp.optimal_power_flow.Sf:\t the branch power Sf')
-        print('\tapp.optimal_power_flow.losses:\t the branch losses in MVA')
-        print('\tapp.optimal_power_flow.short_circuit_power:\t Short circuit power in MVA of the grid nodes')
+        print('\tapp.session.optimal_power_flow.voltage:\t the nodal voltages angles in rad')
+        print('\tapp.session.optimal_power_flow.load_shedding:\t the branch loading in %')
+        print('\tapp.session.optimal_power_flow.losses:\t the branch losses in per unit')
+        print('\tapp.session.optimal_power_flow.Sbus:\t the nodal power injections in MW')
+        print('\tapp.session.optimal_power_flow.Sf:\t the branch power Sf')
 
         print('\n\nTime series power flow results:')
-        print('\tapp.time_series.time:\t Profiles time index (pandas DateTimeIndex object)')
-        print('\tapp.time_series.load_profiles:\t Load profiles matrix (row: time, col: node)')
-        print('\tapp.time_series.gen_profiles:\t Generation profiles matrix (row: time, col: node)')
-        print('\tapp.time_series.voltages:\t nodal voltages results matrix (row: time, col: node)')
-        print('\tapp.time_series.currents:\t branches currents results matrix (row: time, col: branch)')
-        print('\tapp.time_series.loadings:\t branches loadings results matrix (row: time, col: branch)')
-        print('\tapp.time_series.losses:\t branches losses results matrix (row: time, col: branch)')
+        print('\tapp.session.power_flow_ts.time:\t Profiles time index (pandas DateTimeIndex object)')
+        print('\tapp.session.power_flow_ts.load_profiles:\t Load profiles matrix (row: time, col: node)')
+        print('\tapp.session.power_flow_ts.gen_profiles:\t Generation profiles matrix (row: time, col: node)')
+        print('\tapp.session.power_flow_ts.voltages:\t nodal voltages results matrix (row: time, col: node)')
+        print('\tapp.session.power_flow_ts.currents:\t branches currents results matrix (row: time, col: branch)')
+        print('\tapp.session.power_flow_ts.loadings:\t branches loadings results matrix (row: time, col: branch)')
+        print('\tapp.session.power_flow_ts.losses:\t branches losses results matrix (row: time, col: branch)')
 
         print('\n\nVoltage stability power flow results:')
-        print('\tapp.voltage_stability.continuation_voltage:\t Voltage values for every power multiplication factor.')
-        print('\tapp.voltage_stability.continuation_lambda:\t Value of power multiplication factor applied')
-        print('\tapp.voltage_stability.continuation_power:\t Power values for every power multiplication factor.')
+        print('\tapp.session.continuation_power_flow.voltage:\t Voltage values for every power multiplication factor.')
+        print('\tapp.session.continuation_power_flow.lambda:\t Value of power multiplication factor applied')
+        print('\tapp.session.continuation_power_flow.Sf:\t Power values for every power multiplication factor.')
 
         print('\n\nMonte Carlo power flow results:')
-        print('\tapp.stochastic_pf.V_avg:\t nodal voltage average result.')
-        print('\tapp.stochastic_pf.I_avg:\t branch current average result.')
-        print('\tapp.stochastic_pf.Loading_avg:\t branch loading average result.')
-        print('\tapp.stochastic_pf.Losses_avg:\t branch losses average result.')
-        print('\tapp.stochastic_pf.V_std:\t nodal voltage standard deviation result.')
-        print('\tapp.stochastic_pf.I_std:\t branch current standard deviation result.')
-        print('\tapp.stochastic_pf.Loading_std:\t branch loading standard deviation result.')
-        print('\tapp.stochastic_pf.Losses_std:\t branch losses standard deviation result.')
-        print('\tapp.stochastic_pf.V_avg_series:\t nodal voltage average series.')
-        print('\tapp.stochastic_pf.V_std_series:\t branch current standard deviation series.')
-        print('\tapp.stochastic_pf.error_series:\t Monte Carlo error series (the convergence value).')
+        print('\tapp.session.stochastic_power_flow.V_avg:\t nodal voltage average result.')
+        print('\tapp.session.stochastic_power_flow.I_avg:\t branch current average result.')
+        print('\tapp.session.stochastic_power_flow.Loading_avg:\t branch loading average result.')
+        print('\tapp.session.stochastic_power_flow.Losses_avg:\t branch losses average result.')
+        print('\tapp.session.stochastic_power_flow.V_std:\t nodal voltage standard deviation result.')
+        print('\tapp.session.stochastic_power_flow.I_std:\t branch current standard deviation result.')
+        print('\tapp.session.stochastic_power_flow.Loading_std:\t branch loading standard deviation result.')
+        print('\tapp.session.stochastic_power_flow.Losses_std:\t branch losses standard deviation result.')
+        print('\tapp.session.stochastic_power_flow.V_avg_series:\t nodal voltage average series.')
+        print('\tapp.session.stochastic_power_flow.V_std_series:\t branch current standard deviation series.')
+        print('\tapp.session.stochastic_power_flow.error_series:\t Monte Carlo error series (the convergence value).')
         print('The same for app.latin_hypercube_sampling')
 
     def clc(self):
@@ -3409,8 +3407,8 @@ class MainGUI(QMainWindow):
 
                     pf_options = self.get_selected_power_flow_options()
 
-                    simulation_type = self.stochastic_pf_methods_dict[
-                        self.ui.stochastic_pf_method_comboBox.currentText()]
+                    simulation_type = self.session.stochastic_power_flow_methods_dict[
+                        self.ui.session.stochastic_power_flow_method_comboBox.currentText()]
 
                     tol = 10 ** (-1 * self.ui.tolerance_stochastic_spinBox.value())
                     max_iter = self.ui.max_iterations_stochastic_spinBox.value()

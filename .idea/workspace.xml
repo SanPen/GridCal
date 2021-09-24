@@ -24,8 +24,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Session/session.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Session/session.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -556,13 +555,6 @@
       <workItem from="1621367763953" duration="1167000" />
       <workItem from="1621405201458" duration="3088000" />
     </task>
-    <task id="LOCAL-00122" summary="Added Zone, Area and country assignation functions">
-      <created>1618779114104</created>
-      <option name="number" value="00122" />
-      <option name="presentableId" value="LOCAL-00122" />
-      <option name="project" value="LOCAL" />
-      <updated>1618779114106</updated>
-    </task>
     <task id="LOCAL-00123" summary="Fixed experimental h5 export">
       <created>1618928335680</created>
       <option name="number" value="00123" />
@@ -899,7 +891,14 @@
       <option name="project" value="LOCAL" />
       <updated>1632466261486</updated>
     </task>
-    <option name="localTasksCounter" value="171" />
+    <task id="LOCAL-00171" summary="Added the results as session properties">
+      <created>1632467433415</created>
+      <option name="number" value="00171" />
+      <option name="presentableId" value="LOCAL-00171" />
+      <option name="project" value="LOCAL" />
+      <updated>1632467433415</updated>
+    </task>
+    <option name="localTasksCounter" value="172" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -924,7 +923,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Increased version" />
     <MESSAGE value="Modified the svg to not be dependent on the font" />
     <MESSAGE value="Improved the ATC calculation (it is now closer to the TLTG)" />
     <MESSAGE value="Fixed the multiple slack error in the PTDF calculation" />
@@ -949,7 +947,8 @@
     <MESSAGE value="Improved clipboard export" />
     <MESSAGE value="Added inter-area report in the power flow results" />
     <MESSAGE value="Refactored the .raw transformer conversions&#10;Added the angle limits in the buses data" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactored the .raw transformer conversions&#10;Added the angle limits in the buses data" />
+    <MESSAGE value="Added the results as session properties" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added the results as session properties" />
   </component>
   <component name="WindowStateProjectService">
     <state width="409" height="659" key="Git.Branch.Popup" />
@@ -1051,7 +1050,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>5022</line>
+          <line>5020</line>
           <option name="timeStamp" value="303" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1217,22 +1216,22 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>4225</line>
+          <line>4223</line>
           <option name="timeStamp" value="621" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>4250</line>
+          <line>4248</line>
           <option name="timeStamp" value="622" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>4240</line>
+          <line>4238</line>
           <option name="timeStamp" value="623" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>4230</line>
+          <line>4228</line>
           <option name="timeStamp" value="624" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1434,7 +1433,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>4758</line>
+          <line>4756</line>
           <option name="timeStamp" value="743" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
