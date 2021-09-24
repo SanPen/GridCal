@@ -1310,7 +1310,7 @@ class Ui_mainWindow(object):
         self.resultsTableView = QTableView(self.frame_5)
         self.resultsTableView.setObjectName(u"resultsTableView")
         self.resultsTableView.setAlternatingRowColors(True)
-        self.resultsTableView.setSelectionMode(QAbstractItemView.ContiguousSelection)
+        self.resultsTableView.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.resultsTableView.setSelectionBehavior(QAbstractItemView.SelectItems)
 
         self.verticalLayout_24.addWidget(self.resultsTableView)

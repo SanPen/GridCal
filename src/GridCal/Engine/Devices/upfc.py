@@ -134,6 +134,17 @@ class UPFC(EditableDevice):
         # branch type: Line, Transformer, etc...
         self.branch_type = BranchType.UPFC
 
+    def change_base(self, Sbase_old, Sbase_new):
+        b = Sbase_new / Sbase_old
+
+        self.Rl *= b
+        self.Xl *= b
+        self.Bl *= b
+        self.Rs *= b
+        self.Xs *= b
+        self.Rsh *= b
+        self.Xs *= b
+
     def get_properties_dict(self, version=3):
         """
         Get json dictionary

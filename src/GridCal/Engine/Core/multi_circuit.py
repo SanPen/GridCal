@@ -2192,3 +2192,20 @@ class MultiCircuit:
             elif branch.bus_from.zone == z2 and branch.bus_to.zone == z1:
                 lst.append((k, branch, -1.0))
         return lst
+
+    def change_base(self, Sbase_new):
+        """
+        Change the elements base impedance
+        :param Sbase_new: new base impedance in MVA
+        """
+        Sbase_old = self.Sbase
+
+        # get all the branches with impedance
+        elms = self.get_branches_wo_hvdc()
+
+        # change the base at each element
+        for elm in elms:
+            elm.change_base(Sbase_old, Sbase_new)
+
+        # assign the new base
+        self.Sbase = Sbase_new

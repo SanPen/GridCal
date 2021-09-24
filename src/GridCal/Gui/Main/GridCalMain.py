@@ -4840,7 +4840,10 @@ class MainGUI(QMainWindow):
         """
         Update the circuit base values from the UI
         """
-        self.circuit.Sbase = self.ui.sbase_doubleSpinBox.value()
+
+        Sbase_new = self.ui.sbase_doubleSpinBox.value()
+        self.circuit.change_base(Sbase_new)
+
         self.circuit.fBase = self.ui.fbase_doubleSpinBox.value()
 
     def explosion_factor_change(self):
@@ -5529,45 +5532,77 @@ class MainGUI(QMainWindow):
 
             if len(sel_idx) > 0:
 
-                # check if the selected element is in use
-                used = False
-                # used_objects = self.circuit.get_node_elements_by_type2(objects[0].device_type)
-                used_objects = self.circuit.get_elements_by_type(objects[0].device_type)
+                ok = yes_no_question('Are you sure that you want to delete the selected elements?', 'Delete')
+                if ok:
 
-                # prompt to delete if the object is not in use...
-                if not used:
+                    # get the unique rows
+                    unique = set()
+                    for idx in sel_idx:
+                        unique.add(idx.row())
 
-                    ok = yes_no_question('Are you sure that you want to delete the selected elements?', 'Delete')
-                    if ok:
+                    unique = list(unique)
+                    unique.sort(reverse=True)
+                    for r in unique:
 
-                        # get the unique rows
-                        unique = set()
-                        for idx in sel_idx:
-                            unique.add(idx.row())
+                        if objects[r].graphic_obj is not None:
+                            # this is a more complete function than the circuit one because it removes the
+                            # graphical items too, and for loads and generators it deletes them properly
+                            objects[r].graphic_obj.remove(ask=False)
+                        else:
+                            objects.pop(r)
 
-                        unique = list(unique)
-                        unique.sort(reverse=True)
-                        for r in unique:
-
-                            if objects[r].graphic_obj is not None:
-                                # this is a more complete function than the circuit one because it removes the
-                                # graphical items too, and for loads and generators it deletes them properly
-                                objects[r].graphic_obj.remove(ask=False)
-                            else:
-                                objects.pop(r)
-
-                        # update the view
-                        self.display_filter(objects)
-                        self.update_area_combos()
-                        self.update_date_dependent_combos()
-                    else:
-                        pass
+                    # update the view
+                    self.display_filter(objects)
+                    self.update_area_combos()
+                    self.update_date_dependent_combos()
                 else:
-                    info_msg('The object(s) is in use, so it cannot be deleted :(')
+                    pass
             else:
                 info_msg('Select some cells')
         else:
             pass
+
+    def delete_shit(self, min_island=1):
+        """
+        Delete small islands, disconnected stuff and other garbage
+        :return:
+        """
+        numerical_circuit_ = core.compile_snapshot_opf_circuit(circuit=self.circuit, apply_temperature=False,)
+        islands = numerical_circuit_.split_into_islands()
+
+        buses_to_delete = list()
+        for island in islands:
+            if island.nbus <= min_island:
+                for r in island.original_bus_idx:
+                    buses_to_delete.append(self.circuit.buses[r])
+
+        for elm in buses_to_delete:
+            if elm.graphic_obj is not None:
+                # this is a more complete function than the circuit one because it removes the
+                # graphical items too, and for loads and generators it deletes them properly
+                print('Deleted ', elm.name)
+                elm.graphic_obj.remove(ask=False)
+
+        # search other elements to delete
+        for dev_lst in [self.circuit.lines,
+                        self.circuit.dc_lines,
+                        self.circuit.vsc_devices,
+                        self.circuit.hvdc_lines,
+                        self.circuit.transformers2w,
+                        self.circuit.get_generators(),
+                        self.circuit.get_loads(),
+                        self.circuit.get_shunts(),
+                        self.circuit.get_batteries(),
+                        self.circuit.get_static_generators(),
+                        ]:
+            for elm in dev_lst:
+                if not elm.active:
+                    if elm.graphic_obj is not None:
+                        # this is a more complete function than the circuit one because it removes the
+                        # graphical items too, and for loads and generators it deletes them properly
+                        print('Deleted ', elm.name)
+                        elm.graphic_obj.remove(ask=False)
+
 
     def add_objects(self):
         """

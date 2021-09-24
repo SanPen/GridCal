@@ -213,6 +213,14 @@ class VSC(EditableDevice):
     def get_weight(self):
         return np.sqrt(self.R1 * self.R1 + self.X1 * self.X1)
 
+    def change_base(self, Sbase_old, Sbase_new):
+        b = Sbase_new / Sbase_old
+
+        self.R1 *= b
+        self.X1 *= b
+        self.G0 *= b
+        self.Beq *= b
+
     def correct_buses_connection(self):
         """
         Fix the buses connection (from: DC, To: AC)

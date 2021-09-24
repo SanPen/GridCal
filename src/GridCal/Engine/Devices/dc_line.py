@@ -186,6 +186,12 @@ class DcLine(EditableDevice):
         """
         return self.R * (1 + self.alpha * (self.temp_oper - self.temp_base))
 
+    def change_base(self, Sbase_old, Sbase_new):
+
+        b = Sbase_new / Sbase_old
+
+        self.R *= b
+
     def get_weight(self):
         return self.R
 
