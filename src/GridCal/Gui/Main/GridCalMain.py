@@ -5531,12 +5531,8 @@ class MainGUI(QMainWindow):
 
                 # check if the selected element is in use
                 used = False
-                used_objects = self.circuit.get_node_elements_by_type2(objects[0].device_type)
-                unique_tags = {x.idtag for x in used_objects}
-                for i in sel_idx:
-                    for tag in unique_tags:
-                        if objects[i.row()].idtag == tag:
-                            used = True
+                # used_objects = self.circuit.get_node_elements_by_type2(objects[0].device_type)
+                used_objects = self.circuit.get_elements_by_type(objects[0].device_type)
 
                 # prompt to delete if the object is not in use...
                 if not used:
@@ -5552,12 +5548,13 @@ class MainGUI(QMainWindow):
                         unique = list(unique)
                         unique.sort(reverse=True)
                         for r in unique:
-                            obj = objects.pop(r)
 
-                            if obj.graphic_obj is not None:
+                            if objects[r].graphic_obj is not None:
                                 # this is a more complete function than the circuit one because it removes the
                                 # graphical items too, and for loads and generators it deletes them properly
-                                obj.graphic_obj.remove(ask=False)
+                                objects[r].graphic_obj.remove(ask=False)
+                            else:
+                                objects.pop(r)
 
                         # update the view
                         self.display_filter(objects)

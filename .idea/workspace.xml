@@ -26,7 +26,6 @@
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -557,13 +556,6 @@
       <workItem from="1621367763953" duration="1167000" />
       <workItem from="1621405201458" duration="3088000" />
     </task>
-    <task id="LOCAL-00124" summary="Time series clustering working">
-      <created>1619076408981</created>
-      <option name="number" value="00124" />
-      <option name="presentableId" value="LOCAL-00124" />
-      <option name="project" value="LOCAL" />
-      <updated>1619076408981</updated>
-    </task>
     <task id="LOCAL-00125" summary="Fixed time series clustering with islands">
       <created>1619080624205</created>
       <option name="number" value="00125" />
@@ -900,7 +892,14 @@
       <option name="project" value="LOCAL" />
       <updated>1632467759498</updated>
     </task>
-    <option name="localTasksCounter" value="173" />
+    <task id="LOCAL-00173" summary="fixed issue with stupid replacement">
+      <created>1632470002827</created>
+      <option name="number" value="00173" />
+      <option name="presentableId" value="LOCAL-00173" />
+      <option name="project" value="LOCAL" />
+      <updated>1632470002827</updated>
+    </task>
+    <option name="localTasksCounter" value="174" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -925,7 +924,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Modified the svg to not be dependent on the font" />
     <MESSAGE value="Improved the ATC calculation (it is now closer to the TLTG)" />
     <MESSAGE value="Fixed the multiple slack error in the PTDF calculation" />
     <MESSAGE value="Added generation scaling by installed power" />
@@ -950,7 +948,8 @@
     <MESSAGE value="Added inter-area report in the power flow results" />
     <MESSAGE value="Refactored the .raw transformer conversions&#10;Added the angle limits in the buses data" />
     <MESSAGE value="Added the results as session properties" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added the results as session properties" />
+    <MESSAGE value="fixed issue with stupid replacement" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed issue with stupid replacement" />
   </component>
   <component name="WindowStateProjectService">
     <state width="409" height="659" key="Git.Branch.Popup" />
