@@ -23,6 +23,10 @@ def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1):
         bus_data.bus_names[i] = bus.name
         bus_data.Vmin[i] = bus.Vmin
         bus_data.Vmax[i] = bus.Vmax
+
+        bus_data.angle_min[i] = bus.angle_min
+        bus_data.angle_max[i] = bus.angle_max
+
         bus_data.bus_types[i] = bus.determine_bus_type().value
 
         if bus.area in areas_dict.keys():

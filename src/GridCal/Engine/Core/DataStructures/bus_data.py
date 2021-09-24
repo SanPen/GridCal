@@ -29,6 +29,8 @@ class BusData:
         self.Vbus = np.ones((nbus, ntime), dtype=complex)
         self.Vmin = np.ones(nbus, dtype=float)
         self.Vmax = np.ones(nbus, dtype=float)
+        self.angle_min = np.ones(nbus, dtype=float) * -3.14
+        self.angle_max = np.ones(nbus, dtype=float) * 3.14
         self.bus_types = np.empty(nbus, dtype=int)
         self.bus_types_prof = np.zeros((nbus, ntime), dtype=int)
         self.bus_installed_power = np.zeros(nbus, dtype=float)
@@ -57,6 +59,8 @@ class BusData:
         data.Vbus = self.Vbus[tidx]
         data.Vmin = self.Vmin[elm_idx]
         data.Vmax = self.Vmax[elm_idx]
+        data.angle_min = self.angle_min[elm_idx]
+        data.angle_max = self.angle_max[elm_idx]
 
         data.bus_types = self.bus_types[elm_idx]
         data.bus_types_prof = self.bus_types_prof[tidx]

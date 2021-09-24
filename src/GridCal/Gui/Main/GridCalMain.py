@@ -3933,7 +3933,7 @@ class MainGUI(QMainWindow):
 
                 warning_msg('Some islands did not solve.\n'
                             'Check that all branches have rating and \n'
-                            'that there is a generator at the slack node.', 'OPF')
+                            'that there is a generator at the slack node.', 'Ntc-Opf')
 
         if not self.session.is_anything_running():
             self.UNLOCK()

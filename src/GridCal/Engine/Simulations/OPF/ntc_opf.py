@@ -460,11 +460,13 @@ class OpfNTC(Opf):
         :param set_ref_to_zero:
         :return:
         """
-        theta = np.array([self.solver.NumVar(-6.28, 6.28, 'theta' + str(i)) for i in range(self.numerical_circuit.nbus)])
+        theta = np.array([self.solver.NumVar(self.numerical_circuit.bus_data.angle_min[i],
+                                             self.numerical_circuit.bus_data.angle_max[i],
+                                             'theta' + str(i)) for i in range(self.numerical_circuit.nbus)])
 
-        # if set_ref_to_zero:
-        #     for i in self.numerical_circuit.vd:
-        #         self.solver.Add(theta[i] == 0, "Slack_angle_zero_" + str(i))
+        if set_ref_to_zero:
+            for i in self.numerical_circuit.vd:
+                self.solver.Add(theta[i] == 0, "Slack_angle_zero_" + str(i))
 
         return theta
 

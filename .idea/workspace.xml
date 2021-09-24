@@ -25,9 +25,14 @@
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/bus_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/bus_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/circuit_to_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/bus.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -239,8 +244,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.setup" />
+        <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.upload_to_pypi" />
         <item itemvalue="Python.ntc_opf_v6" />
       </list>
@@ -557,13 +562,6 @@
       <workItem from="1620122664571" duration="8108000" />
       <workItem from="1621367763953" duration="1167000" />
       <workItem from="1621405201458" duration="3088000" />
-    </task>
-    <task id="LOCAL-00120" summary="Fixed issue with pandas dataframes not recognizing the index :/">
-      <created>1617909513824</created>
-      <option name="number" value="00120" />
-      <option name="presentableId" value="LOCAL-00120" />
-      <option name="project" value="LOCAL" />
-      <updated>1617909513825</updated>
     </task>
     <task id="LOCAL-00121" summary="Deleted the special imports">
       <created>1617915928300</created>
@@ -901,7 +899,14 @@
       <option name="project" value="LOCAL" />
       <updated>1632221092546</updated>
     </task>
-    <option name="localTasksCounter" value="169" />
+    <task id="LOCAL-00169" summary="Added inter-area report in the power flow results">
+      <created>1632248178370</created>
+      <option name="number" value="00169" />
+      <option name="presentableId" value="LOCAL-00169" />
+      <option name="project" value="LOCAL" />
+      <updated>1632248178370</updated>
+    </task>
+    <option name="localTasksCounter" value="170" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -926,7 +931,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed minor time series error" />
     <MESSAGE value="Added update rates function" />
     <MESSAGE value="Increased version" />
     <MESSAGE value="Modified the svg to not be dependent on the font" />
@@ -951,7 +955,8 @@
     <MESSAGE value="Added contingency analysis to the NTC OPF" />
     <MESSAGE value="Added contingency analysis to the NTC OPF&#10;- Removed kirchhoff tolerances" />
     <MESSAGE value="Improved clipboard export" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved clipboard export" />
+    <MESSAGE value="Added inter-area report in the power flow results" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added inter-area report in the power flow results" />
   </component>
   <component name="WindowStateProjectService">
     <state width="409" height="659" key="Git.Branch.Popup" />

@@ -329,176 +329,176 @@ class PowerFlowResults(ResultsTemplate):
             labels = self.bus_names
             y = np.abs(self.voltage)
             y_label = '(p.u.)'
-            title = 'Bus voltage '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BusVoltageAngle:
             labels = self.bus_names
             y = np.angle(self.voltage, deg=True)
             y_label = '(deg)'
-            title = 'Bus voltage '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BusActivePower:
             labels = self.bus_names
             y = self.Sbus.real
             y_label = '(MW)'
-            title = 'Bus Active power '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BusReactivePower:
             labels = self.bus_names
             y = self.Sbus.imag
             y_label = '(MVAr)'
-            title = 'Bus Reactive power '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BusVoltagePolar:
             labels = self.bus_names
             y = self.voltage
             y_label = '(p.u.)'
-            title = 'Bus voltage '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchPower:
             labels = self.branch_names
             y = self.Sf
             y_label = '(MVA)'
-            title = 'Branch power '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchActivePowerFrom:
             labels = self.branch_names
             y = self.Sf.real
             y_label = '(MW)'
-            title = 'Branch active power '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchReactivePowerFrom:
             labels = self.branch_names
             y = self.Sf.imag
             y_label = '(MVAr)'
-            title = 'Branch reactive power '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchActivePowerTo:
             labels = self.branch_names
             y = self.St.real
             y_label = '(MW)'
-            title = 'Branch active power '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchReactivePowerTo:
             labels = self.branch_names
             y = self.St.imag
             y_label = '(MVAr)'
-            title = 'Branch reactive power '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.Transformer2WTapModule:
             labels = self.transformer_names
             y = self.transformer_tap_module
             y_label = '(p.u.)'
-            title = 'Transformer tap module '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchCurrent:
             labels = self.branch_names
             y = self.If
             y_label = '(p.u.)'
-            title = 'Branch current '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchActiveCurrentFrom:
             labels = self.branch_names
             y = self.If.real
             y_label = '(p.u.)'
-            title = 'Branch active current '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchReactiveCurrentFrom:
             labels = self.branch_names
             y = self.If.imag
             y_label = '(p.u.)'
-            title = 'Branch reactive current '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchActiveCurrentTo:
             labels = self.branch_names
             y = self.It.real
             y_label = '(p.u.)'
-            title = 'Branch active current '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchReactiveCurrentTo:
             labels = self.branch_names
             y = self.It.imag
             y_label = '(p.u.)'
-            title = 'Branch reactive current '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchLoading:
             labels = self.branch_names
             y = np.abs(self.loading) * 100
             y_label = '(%)'
-            title = 'Branch loading '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchLosses:
             labels = self.branch_names
             y = self.losses
             y_label = '(MVA)'
-            title = 'Branch losses '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchActiveLosses:
             labels = self.branch_names
             y = self.losses.real
             y_label = '(MW)'
-            title = 'Branch active losses '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchReactiveLosses:
             labels = self.branch_names
             y = self.losses.imag
             y_label = '(MVAr)'
-            title = 'Branch reactive losses '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchVoltage:
             labels = self.branch_names
             y = np.abs(self.Vbranch)
             y_label = '(p.u.)'
-            title = 'Branch voltage drop '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchAngles:
             labels = self.branch_names
             y = np.angle(self.Vbranch, deg=True)
             y_label = '(deg)'
-            title = 'Branch voltage angle '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchTapModule:
             labels = self.branch_names
             y = self.ma
             y_label = '(p.u.)'
-            title = 'Branch tap module '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchTapAngle:
             labels = self.branch_names
             y = self.theta
             y_label = '(rad)'
-            title = 'Branch tap angle '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchBeq:
             labels = self.branch_names
             y = self.Beq
             y_label = '(p.u.)'
-            title = 'Branch Beq '
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.HvdcLosses:
             labels = self.hvdc_names
             y = self.hvdc_losses
             y_label = '(MW)'
-            title = result_type.value
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.HvdcPowerFrom:
             labels = self.hvdc_names
             y = self.hvdc_Pf
             y_label = '(MW)'
-            title = result_type.value
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.HvdcPowerTo:
             labels = self.hvdc_names
             y = self.hvdc_Pt
             y_label = '(MW)'
-            title = result_type.value
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.InterAreaExchange:
-            labels = ['from:' + a for a in self.area_names]
-            columns = ['to:' + a for a in self.area_names]
+            labels = [a + '->' for a in self.area_names]
+            columns = ['->' + a for a in self.area_names]
             y = self.get_inter_area_flows().real
             y_label = '(MW)'
-            title = result_type.value
+            title = result_type.value[0]
 
         else:
             raise Exception('Unsupported result type: ' + str(result_type))
@@ -523,7 +523,10 @@ class PowerFlowResults(ResultsTemplate):
         vr = self.voltage.real
         vi = self.voltage.imag
         bus_data = np.c_[vr, vi, vm, va]
-        bus_cols = ['Real voltage (p.u.)', 'Imag Voltage (p.u.)', 'Voltage module (p.u.)', 'Voltage angle (rad)']
+        bus_cols = ['Real voltage (p.u.)',
+                    'Imag Voltage (p.u.)',
+                    'Voltage module (p.u.)',
+                    'Voltage angle (rad)']
         df_bus = pd.DataFrame(data=bus_data, columns=bus_cols)
 
         # branch results
@@ -537,8 +540,14 @@ class PowerFlowResults(ResultsTemplate):
         tm = self.transformer_tap_module
 
         branch_data = np.c_[sr, si, sm, ld, la, lr, ls, tm]
-        branch_cols = ['Real power (MW)', 'Imag power (MVAr)', 'Power module (MVA)', 'Loading(%)',
-                       'Losses (MW)', 'Losses (MVAr)', 'Losses (MVA)', 'Tap module']
+        branch_cols = ['Real power (MW)',
+                       'Imag power (MVAr)',
+                       'Power module (MVA)',
+                       'Loading(%)',
+                       'Losses (MW)',
+                       'Losses (MVAr)',
+                       'Losses (MVA)',
+                       'Tap module']
         df_branch = pd.DataFrame(data=branch_data, columns=branch_cols)
 
         return df_bus, df_branch
