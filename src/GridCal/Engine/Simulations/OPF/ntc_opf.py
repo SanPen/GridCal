@@ -823,8 +823,8 @@ class OpfNTC(Opf):
 
         if self.skip_generation_limits:
             print('Skipping generation limits')
-            Pg_max += 1e6
-            Pg_min -= 1e6
+            Pg_max = self.inf * np.ones(self.numerical_circuit.ngen)
+            Pg_min = -self.inf * np.ones(self.numerical_circuit.ngen)
 
         # load
         Pl = (self.numerical_circuit.load_active * self.numerical_circuit.load_s.real) / Sbase

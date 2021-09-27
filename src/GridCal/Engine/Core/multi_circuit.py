@@ -347,7 +347,7 @@ class MultiCircuit:
         """
         return self.get_branches_wo_hvdc() + self.hvdc_lines
 
-    def get_loads(self):
+    def get_loads(self) -> List[Load]:
         """
         Returns a list of :ref:`Load<load>` objects in the grid.
         """
@@ -368,7 +368,7 @@ class MultiCircuit:
                 lst.append(elm.name)
         return np.array(lst)
 
-    def get_static_generators(self):
+    def get_static_generators(self) -> List[StaticGenerator]:
         """
         Returns a list of :ref:`StaticGenerator<static_generator>` objects in the grid.
         """
@@ -389,7 +389,7 @@ class MultiCircuit:
                 lst.append(elm.name)
         return np.array(lst)
 
-    def get_shunts(self):
+    def get_shunts(self) -> List[Shunt]:
         """
         Returns a list of :ref:`Shunt<shunt>` objects in the grid.
         """
@@ -410,7 +410,7 @@ class MultiCircuit:
                 lst.append(elm.name)
         return np.array(lst)
 
-    def get_generators(self):
+    def get_generators(self) -> List[Generator]:
         """
         Returns a list of :ref:`Generator<generator>` objects in the grid.
         """
@@ -431,7 +431,7 @@ class MultiCircuit:
                 lst.append(elm.name)
         return np.array(lst)
 
-    def get_batteries(self):
+    def get_batteries(self) -> List[Battery]:
         """
         Returns a list of :ref:`Battery<battery>` objects in the grid.
         """

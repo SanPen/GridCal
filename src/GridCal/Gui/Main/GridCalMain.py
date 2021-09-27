@@ -1183,11 +1183,12 @@ class MainGUI(QMainWindow):
 
                 if len(self.circuit.buses) > 1500:
                     quit_msg = "The grid is quite large, hence the schematic might be slow.\n" \
-                               "Do you want to disable the schematic?\n" \
+                               "Do you want to enable the schematic?\n" \
                                "(you can always enable the drawing later)"
-                    reply = QMessageBox.question(self, 'Disable schematic', quit_msg, QMessageBox.Yes, QMessageBox.No)
+                    reply = QMessageBox.question(self, 'Enable schematic', quit_msg,
+                                                 QMessageBox.Yes, QMessageBox.No)
 
-                    if reply == QMessageBox.Yes:
+                    if reply == QMessageBox.No:
                         self.ui.draw_schematic_checkBox.setChecked(False)
                         self.set_grid_editor_state()
 

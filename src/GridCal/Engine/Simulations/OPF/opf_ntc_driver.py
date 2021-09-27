@@ -395,8 +395,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 labels.append(self.hvdc_names[k])
                 y.append([self.hvdc_Pf[k] * sign])
 
+            y.append([np.array(y).sum()])
             y = np.array(y)
-            labels = np.array(labels)
+            labels = np.array(labels + ['Total'])
             y_label = '(MW)'
             title = result_type.value
 
