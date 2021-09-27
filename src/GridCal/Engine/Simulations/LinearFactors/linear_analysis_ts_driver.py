@@ -214,11 +214,6 @@ class LinearAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
         self.elapsed = time.time() - a
 
-        # send the finnish signal
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
-
 
 if __name__ == '__main__':
     from matplotlib import pyplot as plt

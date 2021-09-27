@@ -102,8 +102,3 @@ class TransientStability(DriverTemplate):
                                      callback=self.status)
 
         self.results = res
-
-        # send the finnish signal
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()

@@ -560,5 +560,3 @@ class OptimalNetTransferCapacity(DriverTemplate):
         self.opf()
         end = time.time()
         self.elapsed = end - start
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()

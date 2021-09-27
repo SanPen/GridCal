@@ -404,9 +404,5 @@ class ShortCircuitDriver(DriverTemplate):
         self.grid.short_circuit_results = results
         self._is_running = False
 
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
-
     def isRunning(self):
         return self._is_running

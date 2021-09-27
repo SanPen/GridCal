@@ -212,8 +212,3 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
         end = time.time()
         self.elapsed = end - start
-
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
-

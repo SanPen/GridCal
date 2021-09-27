@@ -204,7 +204,11 @@ class BusViewerGUI(QMainWindow):
                                                    explode_factor=1.0,
                                                    prog_func=None,
                                                    text_func=print)
-        self.grid_editor.center_nodes()
+
+        for bus in buses:
+            bus.graphic_obj.arrange_children()
+
+        self.center_nodes()
 
 
 if __name__ == "__main__":

@@ -202,7 +202,7 @@ class LogsDialogue(QtWidgets.QDialog):
         self.logs_table.setFirstColumnSpanned(0, QtCore.QModelIndex(), True)
         self.logs_table.setFirstColumnSpanned(1, QtCore.QModelIndex(), True)
         self.logs_table.setAnimated(True)
-        MTreeExpandHook(self.logs_table)
+        # MTreeExpandHook(self.logs_table)
 
         if expand_all:
             self.logs_table.expandAll()

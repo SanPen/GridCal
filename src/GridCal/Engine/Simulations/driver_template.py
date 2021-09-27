@@ -60,7 +60,7 @@ class DriverTemplate:
         Cancel the simulation
         """
         self.__cancel__ = True
-        self.progress_signal.emit(0.0)
+        self.progress_signal.emit(0)
         self.progress_text.emit('Cancelled!')
         self.done_signal.emit()
 
