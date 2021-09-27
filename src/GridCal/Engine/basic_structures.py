@@ -696,7 +696,7 @@ class Logger:
         :param expected_value
         :return:
         """
-        self.entries.append(LogEntry(msg, LogSeverity.Information, device, value, expected_value))
+        self.entries.append(LogEntry(msg, LogSeverity.Information, device, str(value), str(expected_value)))
 
     def add_warning(self, msg, device="", value="", expected_value=""):
         """
@@ -707,7 +707,7 @@ class Logger:
         :param expected_value
         :return:
         """
-        self.entries.append(LogEntry(msg, LogSeverity.Warning, device, value, expected_value))
+        self.entries.append(LogEntry(msg, LogSeverity.Warning, device, str(value), str(expected_value)))
 
     def add_error(self, msg, device="", value="", expected_value=""):
         """
@@ -718,7 +718,7 @@ class Logger:
         :param expected_value
         :return:
         """
-        self.entries.append(LogEntry(msg, LogSeverity.Error, device, value, expected_value))
+        self.entries.append(LogEntry(msg, LogSeverity.Error, device, str(value), str(expected_value)))
 
     def add(self, msg, severity: LogSeverity = LogSeverity.Error, device="", value="", expected_value=""):
         """
@@ -730,7 +730,7 @@ class Logger:
         :param expected_value
         :return:
         """
-        self.entries.append(LogEntry(msg, severity, device, value, expected_value))
+        self.entries.append(LogEntry(msg, severity, device, str(value), str(expected_value)))
 
     def to_dict(self):
         """
@@ -807,6 +807,9 @@ class Logger:
         return self
 
     def __len__(self):
+        return len(self.entries)
+
+    def size(self):
         return len(self.entries)
 
 

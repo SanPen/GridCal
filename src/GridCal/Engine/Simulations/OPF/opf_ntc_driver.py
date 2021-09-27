@@ -504,11 +504,16 @@ class OptimalNetTransferCapacity(DriverTemplate):
                          weight_generation_delta=self.options.weight_generation_delta,
                          weight_kirchoff=self.options.weight_kirchoff,
                          weight_overloads=self.options.weight_overloads,
-                         weight_hvdc_control=self.options.weight_hvdc_control
+                         weight_hvdc_control=self.options.weight_hvdc_control,
+                         logger=self.logger
                          )
         # Solve
         self.progress_text.emit('Solving NTC OPF...')
         converged = problem.solve()
+        err = problem.error()
+
+        if not converged:
+            self.logger.add_error('Did not converge', 'NTC OPF', str(err), self.options.tolerance)
 
         # pack the results
         self.results = OptimalNetTransferCapacityResults(bus_names=numerical_circuit.bus_data.bus_names,

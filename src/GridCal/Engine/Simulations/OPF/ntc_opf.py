@@ -23,7 +23,7 @@ import numpy as np
 from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers, pywraplp
 from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType, GenerationNtcFormulation
-
+from GridCal.Engine.basic_structures import Logger
 
 import pandas as pd
 from scipy.sparse.csc import csc_matrix
@@ -212,7 +212,8 @@ class OpfNTC(Opf):
                  weight_generation_delta=1e0,
                  weight_kirchoff=1e5,
                  weight_overloads=1e5,
-                 weight_hvdc_control=1e0):
+                 weight_hvdc_control=1e0,
+                 logger: Logger=None):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
@@ -271,6 +272,8 @@ class OpfNTC(Opf):
         self.n1flow_f = None
         self.contingency_br_idx = []
 
+        self.logger = logger
+
         # this builds the formulation right away
         Opf.__init__(self, numerical_circuit=numerical_circuit, solver_type=solver_type)
 
@@ -311,8 +314,17 @@ class OpfNTC(Opf):
             if self.numerical_circuit.generator_data.generator_active[gen_idx] and \
                     self.numerical_circuit.generator_data.generator_dispatchable[gen_idx]:
                 name = 'Gen_up_{0}@bus{1}'.format(gen_idx, bus_idx)
+
+                ul = Pmax[gen_idx] - Pgen[gen_idx]
+
+                if ul <= 0:
+                    self.logger.add_error('Pmax < Pgen in a regulation up generator', 'Generator index {0}'.format(gen_idx), ul)
+
+                if Pmin[gen_idx] >= Pmax[gen_idx]:
+                    self.logger.add_error('Pmin >= Pmax', 'Generator index {0}'.format(gen_idx), Pmin[gen_idx])
+
                 generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-                delta[gen_idx] = self.solver.NumVar(0, Pmax[gen_idx] - Pgen[gen_idx], name + '_delta')
+                delta[gen_idx] = self.solver.NumVar(0, ul, name + '_delta')
                 delta_slack_1[gen_idx] = self.solver.NumVar(0, self.inf, name + '_delta_slack_up')
                 delta_slack_2[gen_idx] = self.solver.NumVar(0, self.inf, name + '_delta_slack_down')
                 self.solver.Add(delta[gen_idx] == generation[gen_idx] - Pgen[gen_idx] + delta_slack_1[gen_idx] - delta_slack_2[gen_idx], 'Delta_up_gen{}'.format(gen_idx))
@@ -330,8 +342,16 @@ class OpfNTC(Opf):
             if self.numerical_circuit.generator_data.generator_active[gen_idx] and \
                     self.numerical_circuit.generator_data.generator_dispatchable[gen_idx]:
                 name = 'Gen_down_{0}@bus{1}'.format(gen_idx, bus_idx)
+                ll = -Pgen[gen_idx]
+
+                if ll > 0:
+                    self.logger.add_error('-Pgen > 0 in a regulation down generator', 'Generator index {0}'.format(gen_idx), ll)
+
+                if Pmin[gen_idx] >= Pmax[gen_idx]:
+                    self.logger.add_error('Pmin >= Pmax', 'Generator index {0}'.format(gen_idx), Pmin[gen_idx])
+
                 generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-                delta[gen_idx] = self.solver.NumVar(-Pgen[gen_idx], 0, name + '_delta')
+                delta[gen_idx] = self.solver.NumVar(ll, 0, name + '_delta')
 
                 delta_slack_1[gen_idx] = self.solver.NumVar(0, self.inf, name + '_delta_slack_up')
                 delta_slack_2[gen_idx] = self.solver.NumVar(0, self.inf, name + '_delta_slack_down')
@@ -405,7 +425,12 @@ class OpfNTC(Opf):
 
             if self.numerical_circuit.generator_data.generator_active[gen_idx] and \
                     self.numerical_circuit.generator_data.generator_dispatchable[gen_idx]:
+
                 name = 'Gen_up_{0}@bus{1}'.format(gen_idx, bus_idx)
+
+                if Pmin[gen_idx] >= Pmax[gen_idx]:
+                    self.logger.add_error('Pmin >= Pmax', 'Generator index {0}'.format(gen_idx), Pmin[gen_idx])
+
                 generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
                 delta[gen_idx] = self.solver.NumVar(0, self.inf, name + '_delta')
                 delta_slack_1[gen_idx] = self.solver.NumVar(0, self.inf, name + '_delta_slack_up')
@@ -426,7 +451,12 @@ class OpfNTC(Opf):
 
             if self.numerical_circuit.generator_data.generator_active[gen_idx] and \
                     self.numerical_circuit.generator_data.generator_dispatchable[gen_idx]:
+
                 name = 'Gen_down_{0}@bus{1}'.format(gen_idx, bus_idx)
+
+                if Pmin[gen_idx] >= Pmax[gen_idx]:
+                    self.logger.add_error('Pmin >= Pmax', 'Generator index {0}'.format(gen_idx), Pmin[gen_idx])
+
                 generation[gen_idx] = self.solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
                 delta[gen_idx] = self.solver.NumVar(-self.inf, 0, name + '_delta')
                 delta_slack_1[gen_idx] = self.solver.NumVar(0, self.inf, name + '_delta_slack_up')
@@ -460,9 +490,17 @@ class OpfNTC(Opf):
         :param set_ref_to_zero:
         :return:
         """
-        theta = np.array([self.solver.NumVar(self.numerical_circuit.bus_data.angle_min[i],
-                                             self.numerical_circuit.bus_data.angle_max[i],
-                                             'theta' + str(i)) for i in range(self.numerical_circuit.nbus)])
+        theta = np.zeros(self.numerical_circuit.nbus, dtype=object)
+
+        for i in range(self.numerical_circuit.nbus):
+
+            if self.numerical_circuit.bus_data.angle_min[i] > self.numerical_circuit.bus_data.angle_max[i]:
+                self.logger.add_error('Theta min > Theta max', 'Bus {0}'.format(i),
+                                      self.numerical_circuit.bus_data.angle_min[i])
+
+            theta[i] = self.solver.NumVar(self.numerical_circuit.bus_data.angle_min[i],
+                                          self.numerical_circuit.bus_data.angle_max[i],
+                                          'theta' + str(i))
 
         if set_ref_to_zero:
             for i in self.numerical_circuit.vd:
@@ -557,6 +595,12 @@ class OpfNTC(Opf):
                     monitor[m] = nc.branch_data.monitor_loading[m]
 
                 if monitor[m]:
+
+                    if rates[m] <= 0:
+                        self.logger.add_error('Rate = 0',
+                                              'Branch:{0}'.format(m) + ';' +
+                                              self.numerical_circuit.branch_data.branch_names[m], rates[m])
+
                     # rating restriction in the sense from-to: eq.17
                     overload1[m] = self.solver.NumVar(0, self.inf, 'overload1_' + str(m))
                     self.solver.Add(flow_f[m] <= (rates[m] + overload1[m]), "ft_rating_" + str(m))
@@ -640,6 +684,10 @@ class OpfNTC(Opf):
                 P0 = nc.hvdc_data.Pt[i, t] / nc.Sbase
 
                 if nc.hvdc_data.control_mode[i] == HvdcControlType.type_0_free:
+
+                    if rates[i] <= 0:
+                        self.logger.add_error('Rate = 0', 'HVDC:{0}'.format(i), rates[i])
+
                     flow_f[i] = self.solver.NumVar(-rates[i], rates[i], 'hvdc_flow_' + str(i))
 
                     # formulate the hvdc flow as an AC line equivalent
@@ -952,13 +1000,14 @@ class OpfNTC(Opf):
 
         return self.converged()
 
-    def converged(self):
+    def error(self):
         if self.status == pywraplp.Solver.OPTIMAL:
-            x = self.all_slacks.solution_value()
-            print('All slacks sum:', x)
-            return abs(x) < self.tolerance
+            return self.all_slacks.solution_value()
         else:
-            return False
+            return 99999
+
+    def converged(self):
+        return abs(self.error()) < self.tolerance
 
     @staticmethod
     def extract(arr, make_abs=False):  # override this method to call ORTools instead of PuLP

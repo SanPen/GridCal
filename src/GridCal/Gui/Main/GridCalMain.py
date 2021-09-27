@@ -3927,11 +3927,9 @@ class MainGUI(QMainWindow):
                                          )
             self.update_available_results()
 
-            if not results.converged:
-
-                warning_msg('Some islands did not solve.\n'
-                            'Check that all branches have rating and \n'
-                            'that there is a generator at the slack node.', 'Ntc-Opf')
+        if len(drv.logger) > 0:
+            dlg = LogsDialogue(drv.name, drv.logger)
+            dlg.exec_()
 
         if not self.session.is_anything_running():
             self.UNLOCK()
