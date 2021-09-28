@@ -121,6 +121,11 @@ class ResultTypes(Enum):
     NetTransferCapacity = 'Net transfer capacity', DeviceType.BranchDevice
     AvailableTransferCapacityReport = 'ATC Report', DeviceType.NoDevice
 
+    # inputs analysis
+    ZoneAnalysis = 'Zone analysis', DeviceType.NoDevice
+    CountryAnalysis = 'Country analysis', DeviceType.NoDevice
+    AreaAnalysis = 'Area analysis', DeviceType.NoDevice
+
     def __str__(self):
         return self.value
 

@@ -7458,6 +7458,7 @@ QProgressBar::chunk{
     <addaction name="actionPower_flow"/>
     <addaction name="actionPower_Flow_Time_series"/>
     <addaction name="actionClustering_time_series"/>
+    <addaction name="actionInputs_analysis"/>
     <addaction name="separator"/>
     <addaction name="actionShort_Circuit"/>
     <addaction name="separator"/>
@@ -7523,7 +7524,6 @@ QProgressBar::chunk{
    <addaction name="separator"/>
    <addaction name="actionPower_flow"/>
    <addaction name="actionPower_Flow_Time_series"/>
-   <addaction name="actionClustering_time_series"/>
    <addaction name="actionShort_Circuit"/>
    <addaction name="actionVoltage_stability"/>
    <addaction name="actionSigma_analysis"/>
@@ -7551,6 +7551,7 @@ QProgressBar::chunk{
    <addaction name="actionDelete_selected"/>
    <addaction name="separator"/>
    <addaction name="actionStorage_location_suggestion"/>
+   <addaction name="actionInputs_analysis"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
    <addaction name="separator"/>
    <addaction name="actionShow_color_controls"/>
@@ -8222,6 +8223,18 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Set schematic (x,y) from (lat,lon)</string>
+   </property>
+  </action>
+  <action name="actionInputs_analysis">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/inputs_analysis.svg</normaloff>:/Icons/icons/inputs_analysis.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Inputs analysis</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
    </property>
   </action>
  </widget>

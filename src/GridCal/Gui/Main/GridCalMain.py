@@ -355,6 +355,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionGrid_Reduction.triggered.connect(self.reduce_grid)
 
+        self.ui.actionInputs_analysis.triggered.connect(self.run_inputs_analysis)
+
         self.ui.actionStorage_location_suggestion.triggered.connect(self.storage_location)
 
         self.ui.actionLaunch_data_analysis_tool.triggered.connect(self.display_grid_analysis)
@@ -4006,6 +4008,20 @@ class MainGUI(QMainWindow):
         else:
             pass
 
+    def post_reduce_grid(self):
+        """
+        Actions after reducing
+        """
+
+        self.remove_simulation(sim.SimulationTypes.TopologyReduction_run)
+
+        self.create_schematic_from_api(explode_factor=1)
+
+        self.clear_results()
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()
+
     def run_find_node_groups(self):
         """
         Run the node groups algorithm
@@ -4064,16 +4080,46 @@ class MainGUI(QMainWindow):
                             color = QColor(r * 255, g * 255, b * 255, a * 255)
                             bus.graphic_obj.add_big_marker(color=color, tool_tip_text='Group ' + str(c))
 
-    def post_reduce_grid(self):
-        """
-        Actions after reducing
+    def run_inputs_analysis(self):
         """
 
-        self.remove_simulation(sim.SimulationTypes.TopologyReduction_run)
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
 
-        self.create_schematic_from_api(explode_factor=1)
+            if not self.session.is_this_running(sim.SimulationTypes.InputsAnalysis_run):
 
-        self.clear_results()
+                self.remove_simulation(sim.SimulationTypes.InputsAnalysis_run)
+
+                # set power flow object instance
+                drv = sim.InputsAnalysisDriver(self.circuit)
+
+                self.LOCK()
+                self.session.run(drv,
+                                 post_func=self.post_inputs_analysis,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
+
+            else:
+                warning_msg('Another inputs analysis is being run...')
+        else:
+            pass
+
+    def post_inputs_analysis(self):
+        """
+
+        :return:
+        """
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.InputsAnalysis_run)
+
+        if results is not None:
+
+            self.remove_simulation(sim.SimulationTypes.InputsAnalysis_run)
+            self.update_available_results()
+
+        if len(drv.logger) > 0:
+            dlg = LogsDialogue(drv.name, drv.logger)
+            dlg.exec_()
 
         if not self.session.is_anything_running():
             self.UNLOCK()
