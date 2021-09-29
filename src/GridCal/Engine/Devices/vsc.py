@@ -221,6 +221,12 @@ class VSC(EditableDevice):
         self.G0 *= b
         self.Beq *= b
 
+    def get_coordinates(self):
+        """
+        Get the line defining coordinates
+        """
+        return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]
+
     def correct_buses_connection(self):
         """
         Fix the buses connection (from: DC, To: AC)

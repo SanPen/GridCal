@@ -1020,8 +1020,6 @@ class MainGUI(QMainWindow):
         # clear the file name
         self.file_name = ''
 
-        #self.grid_editor = GridEditor(self.circuit)
-
         self.grid_editor.clear()
 
         # delete all widgets
@@ -4388,6 +4386,7 @@ class MainGUI(QMainWindow):
         self.available_results_dict = dict()
         self.ui.resultsTableView.setModel(None)
         self.ui.available_results_to_color_comboBox.model().clear()
+        self.ui.simulation_results_step_comboBox.model().clear()
         self.ui.results_treeView.setModel(None)
 
         self.ui.catalogueTableView.setModel(None)
@@ -6284,7 +6283,8 @@ def run(use_native_dialogues=True):
     # dark.set_app(app)
 
     window = MainGUI(use_native_dialogues=use_native_dialogues)
-    window.resize(int(1.61 * 700.0), 700)  # golden ratio :)
+    h = 710
+    window.resize(int(1.61 * h), h)  # golden ratio :)
     window.show()
     sys.exit(app.exec_())
 

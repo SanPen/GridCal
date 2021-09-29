@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/bus_icon.svg</file>
     <file>icons/inputs_analysis.svg</file>
     <file>icons/ntc_opf_ts.svg</file>
     <file>icons/ntc_opf.svg</file>
