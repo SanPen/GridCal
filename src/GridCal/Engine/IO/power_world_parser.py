@@ -51,6 +51,10 @@ def interpret_line(line, splitter=','):
 
 
 def find_between(s, start, end):
+    # if start in s and end in s:
+    #     return (s.split(start))[1].split(end)[0]
+    # else:
+    #     return ""
     return (s.split(start))[1].split(end)[0]
 
 
@@ -137,16 +141,22 @@ def parse_buses(data_lst: List[List], substations_dict: Dict[int, dev.Substation
         code = raw[0]
         area_idx = raw[9]
         zone_idx = raw[10]
-        st_idx = raw[26]  # or maybe 28
-        substation = substations_dict[st_idx]
+
         lat = raw[19]
         lon = raw[20]
         active = 1 - raw[18]
-        if lat == 0:
-            lat = substation.latitude
 
-        if lon == 0:
-            lon = substation.longitude
+        if substations_dict is not None:
+            st_idx = raw[26]  # or maybe 28
+            substation = substations_dict[st_idx]
+
+            if lat == 0:
+                lat = substation.latitude
+
+            if lon == 0:
+                lon = substation.longitude
+        else:
+            substation = None
 
         bus_volt[code] = raw[6]
 
@@ -327,6 +337,9 @@ class PowerWorldParser:
                 if line[0] != '@':
                     txt += line
 
+        # fix stupid line partition
+        txt = txt.replace('/\n', '')
+
         expected_sections = ['title',
                              'comments',
                              'solution parameters',
@@ -343,6 +356,7 @@ class PowerWorldParser:
                              'interface data',
                              'interface branch data',
                              'dc bus data',
+                             'dc line data',
                              'dc converter data',
                              'z table data',
                              'gcd data',
@@ -352,27 +366,35 @@ class PowerWorldParser:
                              'ba data',
                              'end']
 
+        # find which of the expected are actually there
+        present_sections = list()
+        for a in expected_sections:
+            if a in txt:
+                present_sections.append(a)
+
         # split the text file into sections
-        txt = txt.replace('/\n', '')
         sections_dict = dict()
-        for i in range(len(expected_sections)-1):
-            a = expected_sections[i]
-            b = expected_sections[i + 1]
-            raw_txt = find_between(txt, a, b)
-            lines = raw_txt.split('\n')
+        for i in range(len(present_sections)-1):
+            a = present_sections[i]
+            b = present_sections[i + 1]
+            if a in txt and b in txt:
+                raw_txt = find_between(txt, a, b)
+                lines = raw_txt.split('\n')
 
-            if len(lines) > 0:
-                if '[' in lines[0]:
-                    new_lines = list()
-                    header = lines[0].split(']')[1].split()
-                    for j in range(1, len(lines)):
-                        line_data = split_line(lines[j])
-                        if len(line_data) > 0:
-                            new_lines.append(line_data)
+                if len(lines) > 0:
+                    if '[' in lines[0]:
+                        new_lines = list()
+                        header = lines[0].split(']')[1].split()
+                        for j in range(1, len(lines)):
+                            line_data = split_line(lines[j])
+                            if len(line_data) > 0:
+                                new_lines.append(line_data)
 
-                    sections_dict[a] = {'header': header, 'data': new_lines}
+                        sections_dict[a] = {'header': header, 'data': new_lines}
+                else:
+                    sections_dict[a] = {'header': '', 'data': lines}
             else:
-                sections_dict[a] = {'header': '', 'data': lines}
+                sections_dict[a] = {'header': '', 'data': list()}
 
         return sections_dict
 
@@ -387,10 +409,15 @@ class PowerWorldParser:
 
         data_dict = self.read_and_split()
 
-        substations_dict = parse_substations(data_dict['substation data']['data'])
+        if 'substation data' in data_dict.keys():
+            substations_dict = parse_substations(data_dict['substation data']['data'])
+            grid.substations = list(substations_dict.values())
+        else:
+            substations_dict = None
+
         buses_dict, bus_volt = parse_buses(data_dict['bus data']['data'], substations_dict)
 
-        grid.substations = list(substations_dict.values())
+        # create devices
         grid.buses = list(buses_dict.values())
         grid.lines = parse_branches(data_dict['branch data']['data'], buses_dict)
         grid.transformers2w = parse_transformers(data_dict['transformer data']['data'], buses_dict)
@@ -405,7 +432,8 @@ class PowerWorldParser:
 
 if __name__ == '__main__':
 
-    f = '/home/santi/Descargas/ACTIVSg500/ACTIVSg500.EPC'
+    # f = '/home/santi/Descargas/ACTIVSg500/ACTIVSg500.EPC'
+    f = r'C:\Users\SPV86\Downloads\IEEE300\IEEE300Bus.epc'
 
     parser = PowerWorldParser(f)
     parser.parse_case()
