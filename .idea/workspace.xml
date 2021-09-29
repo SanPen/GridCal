@@ -23,17 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improve the power world parser">
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons/bus_icon.svg" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added Activs500g">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/upfc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/upfc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/vsc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/vsc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Visualization/visualization.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Visualization/visualization.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -632,21 +624,7 @@
       <workItem from="1632764073720" duration="601000" />
       <workItem from="1632810180431" duration="14045000" />
       <workItem from="1632915709734" duration="3229000" />
-      <workItem from="1632933306045" duration="5613000" />
-    </task>
-    <task id="LOCAL-00150" summary="Fixed the Setup for the new pypi requirements">
-      <created>1625666331264</created>
-      <option name="number" value="00150" />
-      <option name="presentableId" value="LOCAL-00150" />
-      <option name="project" value="LOCAL" />
-      <updated>1625666331264</updated>
-    </task>
-    <task id="LOCAL-00151" summary="Improved the CSV import&#10;Fixed some maps">
-      <created>1625770686085</created>
-      <option name="number" value="00151" />
-      <option name="presentableId" value="LOCAL-00151" />
-      <option name="project" value="LOCAL" />
-      <updated>1625770686086</updated>
+      <workItem from="1632933306045" duration="6992000" />
     </task>
     <task id="LOCAL-00152" summary="Fixed line editor not updating the length">
       <created>1626122714452</created>
@@ -977,7 +955,21 @@
       <option name="project" value="LOCAL" />
       <updated>1632923884534</updated>
     </task>
-    <option name="localTasksCounter" value="199" />
+    <task id="LOCAL-00199" summary="Small bug fixes:&#10;- Added the coordinates in the branches that were missing&#10;- After a very long time, the bus drag and drop has a icon!&#10;- Fixed the kV tooltip thing">
+      <created>1632949796379</created>
+      <option name="number" value="00199" />
+      <option name="presentableId" value="LOCAL-00199" />
+      <option name="project" value="LOCAL" />
+      <updated>1632949796379</updated>
+    </task>
+    <task id="LOCAL-00200" summary="Added Activs500g">
+      <created>1632949829511</created>
+      <option name="number" value="00200" />
+      <option name="presentableId" value="LOCAL-00200" />
+      <option name="project" value="LOCAL" />
+      <updated>1632949829511</updated>
+    </task>
+    <option name="localTasksCounter" value="201" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1011,8 +1003,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Minor changes to setup.py" />
-    <MESSAGE value="Improved ATC reporting&#10;Included Real flows in theATC time series" />
     <MESSAGE value="Improved area selection for the ATC. Now multiple Areas can be selected" />
     <MESSAGE value="Fixed critical bug related to the voltages&#10;&#10;Fixed handling of the node groups threading" />
     <MESSAGE value="Improved the about dialogue" />
@@ -1036,7 +1026,9 @@
     <MESSAGE value="Added inputs analysis" />
     <MESSAGE value="Updated version" />
     <MESSAGE value="Improve the power world parser" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improve the power world parser" />
+    <MESSAGE value="Small bug fixes:&#10;- Added the coordinates in the branches that were missing&#10;- After a very long time, the bus drag and drop has a icon!&#10;- Fixed the kV tooltip thing" />
+    <MESSAGE value="Added Activs500g" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added Activs500g" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1123,7 +1115,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>5067</line>
+          <line>5068</line>
           <option name="timeStamp" value="303" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1314,12 +1306,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>2500</line>
+          <line>2501</line>
           <option name="timeStamp" value="698" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>2134</line>
+          <line>2135</line>
           <option name="timeStamp" value="717" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1369,7 +1361,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>2366</line>
+          <line>2367</line>
           <option name="timeStamp" value="770" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1379,12 +1371,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>2978</line>
+          <line>2979</line>
           <option name="timeStamp" value="798" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>2957</line>
+          <line>2958</line>
           <option name="timeStamp" value="799" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1497,7 +1489,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research2_py.coverage" NAME="Nosetests in PTDF_research2.py Coverage Results" MODIFIED="1600161918846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$time_series.coverage" NAME="time_series Coverage Results" MODIFIED="1617809423186" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Tutorials" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_power_flow_py.coverage" NAME="Nosetests in test_power_flow.py Coverage Results" MODIFIED="1617046155983" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1632949686899" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1632950824452" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$binary_ga.coverage" NAME="binary_ga Coverage Results" MODIFIED="1615226727819" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_matrix_slicing_py.coverage" NAME="Nosetests in test_matrix_slicing.py Coverage Results" MODIFIED="1609500376313" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$psse_parser.coverage" NAME="psse_parser Coverage Results" MODIFIED="1594285082315" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />

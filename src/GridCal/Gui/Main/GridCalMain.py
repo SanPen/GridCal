@@ -1086,7 +1086,8 @@ class MainGUI(QMainWindow):
         Open file from a Qt thread to remain responsive
         """
 
-        files_types = "Formats (*.gridcal *.gch5 *.xlsx *.xls *.sqlite *.dgs *.m *.raw *.RAW *.json *.xml *.zip *.dpx)"
+        files_types = "Formats (*.gridcal *.gch5 *.xlsx *.xls *.sqlite *.dgs " \
+                      "*.m *.raw *.RAW *.json *.xml *.zip *.dpx *.epc)"
         # files_types = ''
         # call dialog to select the file
 
