@@ -144,7 +144,8 @@ class MainGUI(QMainWindow):
         self.ui.transferMethodComboBox.setCurrentIndex(1)
 
         self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
-                                    '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.zip', '.dpx']
+                                    '.dgs', '.m', '.raw', '.RAW', '.json', '.xml',
+                                    '.zip', '.dpx', '.epc']
 
         # ptdf grouping modes
         self.ptdf_group_modes = OrderedDict()
