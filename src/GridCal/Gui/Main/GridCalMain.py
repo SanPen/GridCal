@@ -852,14 +852,11 @@ class MainGUI(QMainWindow):
         print('\tapp.export_diagram(): Prompt to export the diagram in png.')
         print('\tapp.create_schematic_from_api(): Create the schematic from the circuit information.')
         print('\tapp.adjust_all_node_width(): Adjust the width of all the nodes according to their name.')
+        print('\tapp.numerical_circuit: get compilation of the assets.')
+        print('\tapp.islands: get compilation of the assets split into the topological islands.')
 
         print('\n\nCircuit functions:')
-        print('\tapp.circuit.compile_snapshot(): Compile the grid(s) snapshot mode')
-        print('\tapp.circuit.compile_time_series(): Compile the grid(s) time series mode')
         print('\tapp.circuit.plot_graph(): Plot a graph in a Matplotlib window. Call plt.show() after.')
-        print('\tapp.circuit.load_file("file_name.xlsx/.m/.raw/.dgs"): Load GridCal compatible file')
-        print('\tapp.circuit.save_file("file_name.xlsx"): Save GridCal file')
-        print('\tapp.circuit.export_pf("file_name.xlsx"): Export power flow results to Excel')
 
         print('\n\nPower flow results:')
         print('\tapp.session.power_flow.voltage:\t the nodal voltages in per unit')
@@ -6268,6 +6265,17 @@ class MainGUI(QMainWindow):
         lst_br = self.circuit.get_inter_areas_branches(areas_from, areas_to)
         lst_br_hvdc = self.circuit.get_inter_areas_hvdc_branches(areas_from, areas_to)
         return True, lst_from, lst_to, lst_br, lst_br_hvdc
+
+    @property
+    def numerical_circuit(self):
+        return self.get_snapshot_circuit()
+
+    @property
+    def islands(self):
+        numerical_circuit = core.compile_snapshot_circuit(circuit=self.circuit)
+        calculation_inputs = numerical_circuit.split_into_islands()
+        return calculation_inputs
+
 
 
 def run(use_native_dialogues=True):
