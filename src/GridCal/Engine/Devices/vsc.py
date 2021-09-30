@@ -271,7 +271,9 @@ class VSC(EditableDevice):
                  ConverterControlType.type_II_4: 4,
                  ConverterControlType.type_II_5: 5,
                  ConverterControlType.type_III_6: 6,
-                 ConverterControlType.type_III_7: 7}
+                 ConverterControlType.type_III_7: 7,
+                 ConverterControlType.type_IV_I: 8,
+                 ConverterControlType.type_IV_II: 9}
         if version == 2:
             d = {'id': self.idtag,
                  'type': 'vsc',

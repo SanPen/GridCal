@@ -553,18 +553,16 @@ class SnapshotData:
                 self.iVscL.append(k)
                 self.any_control = True
 
-            elif tpe == ConverterControlType.type_III_8:  # 6:Droop+Qac
-                self.iPfdp_va.append(k)
-                self.iQtma.append(k)
-
+            elif tpe == ConverterControlType.type_IV_I:  # 8:Vdc
+                self.iBeqv.append(k)
                 self.iVscL.append(k)
+
                 self.any_control = True
 
-            elif tpe == ConverterControlType.type_III_9:  # 4a:Droop-slack
-                self.iPfdp_va.append(k)
-                self.iVtma.append(k)
+            elif tpe == ConverterControlType.type_IV_II:  # 9:Pdc
+                self.iPfsh.append(k)
+                self.iBeqz.append(k)
 
-                self.iVscL.append(k)
                 self.any_control = True
 
             elif tpe == 0:

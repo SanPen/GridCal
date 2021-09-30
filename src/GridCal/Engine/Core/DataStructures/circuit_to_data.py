@@ -728,6 +728,9 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         elif elm.control_mode == ConverterControlType.type_III_7:  # 7:Droop+Vac
             Vbus[t] = elm.Vac_set
 
+        elif elm.control_mode == ConverterControlType.type_IV_I:  # 8:Vdc
+            Vbus[f] = elm.Vdc_set
+
     # DC-lines
     for i, elm in enumerate(circuit.dc_lines):
         ii = i + nline + ntr + nvsc
