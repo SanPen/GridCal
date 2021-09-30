@@ -10,6 +10,25 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+Version 4.2.1
+^^^^^^^^^^^^^^^
+
+- Added Early PowerWorld grids converter
+- Added inputs analysis (Area, Zone, Country analysis)
+- Added logging to the NTC OPF
+- Added contingencies to the NTC OPF
+- Added icon to the bus drag and drop (finally)
+- Added vsc control modes Vdc and Pdc
+- Added console commands to access the session results
+- Added console commands `app.numerical_circuit`and `app.islands`.
+- Added console command `app.delete_shit()` to delete all the useless islands and disconnected equipment.
+
+- Fixed bug and improved clipboard results export
+- Fixed glitch when importing profiles
+- Fixed the kV not being calculated in the results' tool tips
+
+
+
 Version 4.2.0
 ^^^^^^^^^^^^^^^
 
