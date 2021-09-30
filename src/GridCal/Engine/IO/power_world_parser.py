@@ -135,7 +135,7 @@ def parse_substations(data_lst: List[List]):
 
 
 def parse_buses(data_lst: List[List], substations_dict: Dict[int, dev.Substation]):
-    data = dict()
+    buses_dict = dict()
     bus_volt = dict()
     for raw in data_lst:
         code = raw[0]
@@ -160,25 +160,62 @@ def parse_buses(data_lst: List[List], substations_dict: Dict[int, dev.Substation
 
         bus_volt[code] = raw[6]
 
-        data[code] = dev.Bus(name=raw[1],
-                             idtag=None,
-                             code=code,
-                             vnom=raw[2],
-                             vmin=0.9,
-                             vmax=1.1,
-                             angle_min=-6.28, angle_max=6.28, r_fault=0.0, x_fault=0.0,
-                             xpos=0, ypos=0, height=0, width=0,
-                             active=active,
-                             is_slack=False,
-                             is_dc=False,
-                             area=None,
-                             zone=None,
-                             substation=substation,
-                             country=None,
-                             longitude=lon,
-                             latitude=lat)
+        buses_dict[code] = dev.Bus(name=raw[1],
+                                   idtag=None,
+                                   code=code,
+                                   vnom=raw[2],
+                                   vmin=0.9,
+                                   vmax=1.1,
+                                   angle_min=-6.28, angle_max=6.28, r_fault=0.0, x_fault=0.0,
+                                   xpos=0, ypos=0, height=0, width=0,
+                                   active=active,
+                                   is_slack=False,
+                                   is_dc=False,
+                                   area=None,
+                                   zone=None,
+                                   substation=substation,
+                                   country=None,
+                                   longitude=lon,
+                                   latitude=lat)
 
-    return data, bus_volt
+    return buses_dict, bus_volt
+
+
+def parse_dc_buses(data_lst: List[List]):
+    buses_dict = dict()
+    bus_volt = dict()
+    for raw in data_lst:
+        code = raw[0]
+        area_idx = raw[4]
+        zone_idx = raw[5]
+
+        lat = 0
+        lon = 0
+        active = True
+
+        substation = None
+
+        bus_volt[code] = raw[6] / raw[7]
+
+        buses_dict[code] = dev.Bus(name=raw[1],
+                                   idtag=None,
+                                   code=code,
+                                   vnom=raw[7],
+                                   vmin=0.9,
+                                   vmax=1.1,
+                                   angle_min=-6.28, angle_max=6.28, r_fault=0.0, x_fault=0.0,
+                                   xpos=0, ypos=0, height=0, width=0,
+                                   active=active,
+                                   is_slack=False,
+                                   is_dc=True,
+                                   area=None,
+                                   zone=None,
+                                   substation=substation,
+                                   country=None,
+                                   longitude=lon,
+                                   latitude=lat)
+
+    return buses_dict, bus_volt
 
 
 def parse_transformers(data_lst: List[List], buses_dict: Dict[int, dev.Bus]):
@@ -245,6 +282,52 @@ def parse_branches(data_lst: List[List], buses_dict: Dict[int, dev.Bus]):
     return data
 
 
+def parse_dc_lines(data_lst: List[List], buses_dict: Dict[int, dev.Bus], Sbase=100):
+    data = list()
+    for raw in data_lst:
+        name = '{0}_{1}_{2}'.format(raw[1], raw[4], raw[6])
+        code = '{0}_{1}_{2}'.format(raw[0], raw[3], raw[6])
+        bus_f = buses_dict[raw[0]]
+        bus_t = buses_dict[raw[3]]
+        rate = raw[14]
+        zbase = bus_f.Vnom * bus_f.Vnom / Sbase
+        r = raw[11] / zbase
+        elm = dev.DcLine(bus_from=bus_f,
+                         bus_to=bus_t,
+                         name=name,
+                         idtag=None,
+                         code=code,
+                         r=r,
+                         rate=rate,
+                         active=True,)
+
+        data.append(elm)
+
+    return data
+
+
+def parse_dc_converters(data_lst: List[List], buses_dict: Dict[int, dev.Bus], dc_buses_dict: Dict[int, dev.Bus]):
+    data = list()
+    for raw in data_lst:
+        name = '{0}_{1}_{2}'.format(raw[1], raw[4], raw[6])
+        code = '{0}_{1}_{2}'.format(raw[0], raw[3], raw[6])
+        bus_t = buses_dict[raw[0]]
+        bus_f = dc_buses_dict[raw[3]]
+        rate = 100.0
+
+        elm = dev.VSC(bus_from=bus_f,
+                      bus_to=bus_t,
+                      name=name,
+                      idtag=None,
+                      code=code,
+                      rate=rate,
+                      active=True,)
+
+        data.append(elm)
+
+    return data
+
+
 def parse_loads(data_lst: List[List], buses_dict: Dict[int, dev.Bus]):
     data = list()
     for raw in data_lst:
@@ -305,12 +388,12 @@ class PowerWorldParser:
 
     def __init__(self, file_name):
         """
-        Parse PSSe file
+        Parse PowerWorld EPC file
         Args:
             file_name: file name or path
         """
         self.parsers = dict()
-        self.versions = [33, 32, 30, 29]
+        self.versions = []
 
         self.logger = Logger()
 
@@ -318,7 +401,7 @@ class PowerWorldParser:
 
         self.circuit, self.logger = self.parse_case()
 
-        self.circuit.comments = 'Converted from the PSS/e .raw file ' \
+        self.circuit.comments = 'Converted from the PowerWorld .epc file ' \
                                 + os.path.basename(file_name) + '\n\n' + str(self.logger)
 
     def read_and_split(self) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
@@ -419,11 +502,30 @@ class PowerWorldParser:
 
         # create devices
         grid.buses = list(buses_dict.values())
-        grid.lines = parse_branches(data_dict['branch data']['data'], buses_dict)
-        grid.transformers2w = parse_transformers(data_dict['transformer data']['data'], buses_dict)
 
-        parse_loads(data_dict['load data']['data'], buses_dict)
-        parse_generators(data_dict['generator data']['data'], buses_dict, bus_volt)
+        if 'branch data' in data_dict.keys():
+            grid.lines = parse_branches(data_dict['branch data']['data'], buses_dict)
+
+        if 'transformer data' in data_dict.keys():
+            grid.transformers2w = parse_transformers(data_dict['transformer data']['data'], buses_dict)
+
+        if 'load data' in data_dict.keys():
+            parse_loads(data_dict['load data']['data'], buses_dict)
+
+        if 'generator data' in data_dict.keys():
+            parse_generators(data_dict['generator data']['data'], buses_dict, bus_volt)
+
+        if 'dc bus data' in data_dict.keys():
+            # augments buses_dict and bus_volt
+            dc_buses_dict, dc_bus_volt = parse_dc_buses(data_dict['dc bus data']['data'])
+            grid.buses += list(dc_buses_dict.values())
+
+            if 'dc line data' in data_dict.keys():
+                grid.dc_lines = parse_dc_lines(data_dict['dc line data']['data'], dc_buses_dict)
+
+            if 'dc converter data' in data_dict.keys():
+                grid.vsc_devices = parse_dc_converters(data_dict['dc converter data']['data'], buses_dict, dc_buses_dict)
+
 
         grid.fill_xy_from_lat_lon()
 
