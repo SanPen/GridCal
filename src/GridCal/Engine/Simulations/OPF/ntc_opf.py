@@ -712,6 +712,13 @@ class OpfNTC(Opf):
                     Pinj[_f] -= flow_f[i]
                     Pinj[_t] += flow_f[i]
 
+                # elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset:
+                #     # simple injections model
+                #     P0 = self.solver.NumVar(-rates[i], rates[i], 'hvdc_pf_' + str(i))
+                #     flow_f[i] = P0 + hvdc_control1[i] - hvdc_control2[i]
+                #     Pinj[_f] -= flow_f[i]
+                #     Pinj[_t] += flow_f[i]
+
         return flow_f, overload1, overload2, hvdc_control1, hvdc_control2
 
     def formulate_objective(self, node_balance_slack_1, node_balance_slack_2,

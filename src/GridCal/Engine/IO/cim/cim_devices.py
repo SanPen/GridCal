@@ -51,7 +51,7 @@ def str2num(val: str):
 
 class GeneralContainer:
 
-    def __init__(self, rfid, tpe):
+    def __init__(self, rfid, tpe, resources=list(), class_replacements=dict()):
         """
         General CIM object container
         :param rfid: RFID
@@ -70,6 +70,9 @@ class GeneralContainer:
         # pick the object id
         self.rfid = rfid
         self.uuid = rfid2uuid(rfid)
+
+        self.class_replacements = class_replacements
+        self.resources = resources
 
         self.name = ''
 
