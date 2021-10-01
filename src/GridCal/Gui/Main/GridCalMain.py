@@ -2421,9 +2421,10 @@ class MainGUI(QMainWindow):
             warning_msg('There are no power flow results.\nIs there any slack bus or generator?', 'Power flow')
             # QtGui.QGuiApplication.processEvents()
 
-        if len(drv.logger) > 0:
-            dlg = LogsDialogue('Power flow', drv.logger)
-            dlg.exec_()
+        if drv is not None:
+            if len(drv.logger) > 0:
+                dlg = LogsDialogue('Power flow', drv.logger)
+                dlg.exec_()
 
         if not self.session.is_anything_running():
             self.UNLOCK()
