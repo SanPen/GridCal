@@ -256,7 +256,10 @@ class OpfTimeSeries:
         """
         val = np.zeros(arr.shape)
         for i, j in product(range(val.shape[0]), range(val.shape[1])):
-            val[i, j] = arr[i, j].value()
+            if isinstance(arr[i, j], int) or isinstance(arr[i, j], float):
+                val[i, j] = arr[i, j]
+            else:
+                val[i, j] = arr[i, j].value()
         if make_abs:
             val = np.abs(val)
 

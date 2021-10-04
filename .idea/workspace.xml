@@ -23,12 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="finalized version 4.2.1">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/branch_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/branch_data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_driver.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -106,19 +104,19 @@
     <option name="mySaveCallSignatures" value="true" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\AboutDialogue\icons" />
-      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
-      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\Session" />
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/src/tests/data/results/comparison" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\research" />
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\Session" />
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
       <recent name="$PROJECT_DIR$/doc/formats" />
       <recent name="$PROJECT_DIR$/src/research/power_flow" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\AboutDialogue\icons" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\Session" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/src/tests/data/results/comparison" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -638,13 +636,6 @@
       <workItem from="1632764073720" duration="601000" />
       <workItem from="1632810180431" duration="7195000" />
     </task>
-    <task id="LOCAL-00148" summary="Improved loading and saving">
-      <created>1620386057023</created>
-      <option name="number" value="00148" />
-      <option name="presentableId" value="LOCAL-00148" />
-      <option name="project" value="LOCAL" />
-      <updated>1620386057023</updated>
-    </task>
     <task id="LOCAL-00149" summary="Fixed voltage profiles initialization">
       <created>1625665538038</created>
       <option name="number" value="00149" />
@@ -981,7 +972,14 @@
       <option name="project" value="LOCAL" />
       <updated>1632817908414</updated>
     </task>
-    <option name="localTasksCounter" value="197" />
+    <task id="LOCAL-00197" summary="some improvements">
+      <created>1633359829568</created>
+      <option name="number" value="00197" />
+      <option name="presentableId" value="LOCAL-00197" />
+      <option name="project" value="LOCAL" />
+      <updated>1633359829568</updated>
+    </task>
+    <option name="localTasksCounter" value="198" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1016,7 +1014,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved the ATC by allowing power flow inputs&#10;Added the NTC column to the report&#10;Improved coordinates import GUI" />
     <MESSAGE value="Improvements in handling bad inputs" />
     <MESSAGE value="Minor changes to setup.py" />
     <MESSAGE value="Improved ATC reporting&#10;Included Real flows in theATC time series" />
@@ -1041,7 +1038,8 @@
     <MESSAGE value="Updated GUI" />
     <MESSAGE value="Improved the slack checking" />
     <MESSAGE value="Added inputs analysis" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added inputs analysis" />
+    <MESSAGE value="some improvements" />
+    <option name="LAST_COMMIT_MESSAGE" value="some improvements" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1329,12 +1327,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py</url>
-          <line>178</line>
-          <option name="timeStamp" value="724" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py</url>
-          <line>360</line>
+          <line>372</line>
           <option name="timeStamp" value="725" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1409,18 +1402,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py</url>
-          <line>315</line>
-          <option name="timeStamp" value="807" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py</url>
-          <line>344</line>
+          <line>356</line>
           <option name="timeStamp" value="808" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py</url>
-          <line>182</line>
-          <option name="timeStamp" value="810" />
+          <line>343</line>
+          <option name="timeStamp" value="812" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py</url>
+          <line>186</line>
+          <option name="timeStamp" value="814" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

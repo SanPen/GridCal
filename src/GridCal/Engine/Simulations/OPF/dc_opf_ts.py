@@ -158,9 +158,9 @@ def add_dc_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem: LpPro
 
 
 def add_branch_loading_restriction(problem: LpProblem,
-                                   theta_f, theta_t, Bseries,
+                                   theta, ys, F, T,
                                    ratings, ratings_slack_from, ratings_slack_to,
-                                   monitor_idx):
+                                   monitored, active):
     """
     Add the branch loading restrictions
     :param problem: LpProblem instance
@@ -172,18 +172,24 @@ def add_branch_loading_restriction(problem: LpProblem,
     :param ratings_slack_to: Array of branch loading slack variables in the to-from sense
     :return: Nothing
     """
-    m = ratings_slack_to.shape[1]
+    nbr, nt = ratings_slack_to.shape
 
     # from-to branch power restriction
-    load_f = Bseries * (theta_f - theta_t)
+    Pbr_f = np.zeros((nbr, nt), dtype=object)
 
-    lpAddRestrictions3(problem=problem,
-                       lhs=np.array([-ratings[:, i] - ratings_slack_to[:, i] for i in monitor_idx]).transpose(),
-                       var=load_f[:, monitor_idx],
-                       rhs=np.array([ratings[:, i] + ratings_slack_from[:, i] for i in monitor_idx]).transpose(),
-                       name='2_side_branch_rate')
+    for m, t in product(range(nbr), range(nt)):
+        if active[m, t]:
 
-    return load_f
+            # compute the flow
+            Pbr_f[m, t] = ys[m] * (theta[F[m], t] - theta[T[m], t])
+
+            if monitored[m]:
+                problem.add(Pbr_f[m, t] <= ratings[m, t] + ratings_slack_from[m, t], 'upper_rate_{0}_{1}'.format(m, t))
+                problem.add(-ratings[m, t] - ratings_slack_to[m, t] <= Pbr_f[m, t], 'lower_rate_{0}_{1}'.format(m, t))
+        else:
+            Pbr_f[m, t] = 0
+
+    return Pbr_f
 
 
 def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Efficiency, Pb, E, dt):
@@ -286,10 +292,11 @@ class OpfDcTimeSeries(OpfTimeSeries):
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates[:, a:b] / Sbase
-        ys = 1 / (self.numerical_circuit.branch_R + 1j * self.numerical_circuit.branch_X)
-        Bseries = (self.numerical_circuit.branch_active[:, a:b].T * ys.imag).T
+        br_active = self.numerical_circuit.branch_data.branch_active[:, a:b]
+        ys = - 1.0 / self.numerical_circuit.branch_X
+        F = self.numerical_circuit.F
+        T = self.numerical_circuit.T
         cost_br = self.numerical_circuit.branch_cost[:, a:b]
-        monitor_idx = np.where(self.numerical_circuit.branch_data.monitor_loading == 1)[0]
 
         # Compute time delta in hours
         dt = np.zeros(nt)  # here nt = end_idx - start_idx
@@ -307,8 +314,6 @@ class OpfDcTimeSeries(OpfTimeSeries):
         theta = lpMakeVars(name='theta', shape=(n, nt),
                            lower=self.numerical_circuit.bus_data.angle_min,
                            upper=self.numerical_circuit.bus_data.angle_max)
-        theta_f = theta[self.numerical_circuit.F, :]
-        theta_t = theta[self.numerical_circuit.T, :]
         branch_rating_slack1 = lpMakeVars(name='FSlack1', shape=(m, nt), lower=0, upper=None)
         branch_rating_slack2 = lpMakeVars(name='FSlack2', shape=(m, nt), lower=0, upper=None)
 
@@ -336,9 +341,16 @@ class OpfDcTimeSeries(OpfTimeSeries):
         nodal_restrictions = add_dc_nodal_power_balance(self.numerical_circuit, problem, theta, P,
                                                         start_=self.start_idx, end_=self.end_idx)
 
-        load_f = add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, branch_ratings,
-                                                branch_rating_slack1, branch_rating_slack2,
-                                                monitor_idx)
+        load_f = add_branch_loading_restriction(problem,
+                                                theta=theta,
+                                                ys=ys,
+                                                F=F,
+                                                T=T,
+                                                ratings=branch_ratings,
+                                                ratings_slack_from=branch_rating_slack1,
+                                                ratings_slack_to=branch_rating_slack2,
+                                                monitored=self.numerical_circuit.branch_data.monitor_loading,
+                                                active=br_active)
 
         # if there are batteries, add the batteries
         if nb > 0:
