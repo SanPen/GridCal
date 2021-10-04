@@ -14,6 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
+from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.ThirdParty.pulp import *
 from ortools.linear_solver import pywraplp
@@ -178,7 +179,9 @@ class Opf:
 
 class OpfTimeSeries:
 
-    def __init__(self, numerical_circuit, start_idx, end_idx, solver: MIPSolvers=MIPSolvers.CBC, skip_formulation=True):
+    def __init__(self, numerical_circuit: OpfTimeCircuit,
+                 start_idx, end_idx, solver: MIPSolvers=MIPSolvers.CBC,
+                 skip_formulation=True):
         """
 
         :param numerical_circuit:

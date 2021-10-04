@@ -103,63 +103,64 @@ def add_dc_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem: LpPro
     :return: Nothing, the restrictions are added to the problem
     """
 
-    nodal_restrictions = lpAddRestrictions2(problem=problem,
-                                            lhs=lpDot(numerical_circuit.Bbus, theta),
-                                            rhs=P[:, :],
-                                            name='Nodal_power_balance_all',
-                                            op='=')
+    # nodal_restrictions = lpAddRestrictions2(problem=problem,
+    #                                         lhs=lpDot(numerical_circuit.Bbus, theta),
+    #                                         rhs=P[:, :],
+    #                                         name='Nodal_power_balance_all',
+    #                                         op='=')
 
     # do the topological computation
-    # calc_inputs = numerical_circuit.split_into_islands(ignore_single_node_islands=True)
+    calc_inputs = numerical_circuit.split_into_islands(ignore_single_node_islands=True)
 
     # generate the time indices to simulate
-    # if end_ == -1:
-    #     end_ = len(numerical_circuit.time_array)
+    if end_ == -1:
+        end_ = len(numerical_circuit.time_array)
 
     # For every island, run the time series
-    # nodal_restrictions = np.empty((numerical_circuit.nbus, end_ - start_), dtype=object)
-    # for i, calc_inpt in enumerate(calc_inputs):
-    #
-    #     # find the original indices
-    #     bus_original_idx = np.array(calc_inpt.original_bus_idx)
-    #
-    #     # re-pack the variables for the island and time interval
-    #     P_island = P[bus_original_idx, :]  # the sizes already reflect the correct time span
-    #     theta_island = theta[bus_original_idx, :]  # the sizes already reflect the correct time span
-    #     B_island = calc_inpt.Ybus.imag
-    #
-    #     pqpv = calc_inpt.pqpv
-    #     vd = calc_inpt.vd
-    #
-    #     # Add nodal power balance for the non slack nodes
-    #     idx = bus_original_idx[pqpv]
-    #     nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
-    #                                                  lhs=lpDot(B_island[np.ix_(pqpv, pqpv)], theta_island[pqpv, :]),
-    #                                                  rhs=P_island[pqpv, :],
-    #                                                  name='Nodal_power_balance_pqpv_is' + str(i),
-    #                                                  op='=')
-    #
-    #     # Add nodal power balance for the slack nodes
-    #     idx = bus_original_idx[vd]
-    #     nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
-    #                                                  lhs=lpDot(B_island[vd, :], theta_island),
-    #                                                  rhs=P_island[vd, :],
-    #                                                  name='Nodal_power_balance_vd_is' + str(i),
-    #                                                  op='=')
-    #
-    #     # slack angles equal to zero
-    #     lpAddRestrictions2(problem=problem,
-    #                        lhs=theta_island[vd, :],
-    #                        rhs=np.zeros_like(theta_island[vd, :]),
-    #                        name='Theta_vd_zero_is' + str(i),
-    #                        op='=')
+    nodal_restrictions = np.empty((numerical_circuit.nbus, end_ - start_), dtype=object)
+    for i, calc_inpt in enumerate(calc_inputs):
+
+        # find the original indices
+        bus_original_idx = np.array(calc_inpt.original_bus_idx)
+
+        # re-pack the variables for the island and time interval
+        P_island = P[bus_original_idx, :]  # the sizes already reflect the correct time span
+        theta_island = theta[bus_original_idx, :]  # the sizes already reflect the correct time span
+        B_island = calc_inpt.Ybus.imag
+
+        pqpv = calc_inpt.pqpv
+        vd = calc_inpt.vd
+
+        # Add nodal power balance for the non slack nodes
+        idx = bus_original_idx[pqpv]
+        nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
+                                                     lhs=lpDot(B_island[np.ix_(pqpv, pqpv)], theta_island[pqpv, :]),
+                                                     rhs=P_island[pqpv, :],
+                                                     name='Nodal_power_balance_pqpv_is' + str(i),
+                                                     op='=')
+
+        # Add nodal power balance for the slack nodes
+        idx = bus_original_idx[vd]
+        nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
+                                                     lhs=lpDot(B_island[vd, :], theta_island),
+                                                     rhs=P_island[vd, :],
+                                                     name='Nodal_power_balance_vd_is' + str(i),
+                                                     op='=')
+
+        # slack angles equal to zero
+        lpAddRestrictions2(problem=problem,
+                           lhs=theta_island[vd, :],
+                           rhs=np.zeros_like(theta_island[vd, :]),
+                           name='Theta_vd_zero_is' + str(i),
+                           op='=')
 
     return nodal_restrictions
 
 
 def add_branch_loading_restriction(problem: LpProblem,
                                    theta_f, theta_t, Bseries,
-                                   ratings, ratings_slack_from, ratings_slack_to):
+                                   ratings, ratings_slack_from, ratings_slack_to,
+                                   monitor_idx):
     """
     Add the branch loading restrictions
     :param problem: LpProblem instance
@@ -177,9 +178,9 @@ def add_branch_loading_restriction(problem: LpProblem,
     load_f = Bseries * (theta_f - theta_t)
 
     lpAddRestrictions3(problem=problem,
-                       lhs=np.array([-ratings[:, i] - ratings_slack_to[:, i] for i in range(m)]).transpose(),
-                       var=load_f,
-                       rhs=np.array([ratings[:, i] + ratings_slack_from[:, i] for i in range(m)]).transpose(),
+                       lhs=np.array([-ratings[:, i] - ratings_slack_to[:, i] for i in monitor_idx]).transpose(),
+                       var=load_f[:, monitor_idx],
+                       rhs=np.array([ratings[:, i] + ratings_slack_from[:, i] for i in monitor_idx]).transpose(),
                        name='2_side_branch_rate')
 
     return load_f
@@ -288,6 +289,7 @@ class OpfDcTimeSeries(OpfTimeSeries):
         ys = 1 / (self.numerical_circuit.branch_R + 1j * self.numerical_circuit.branch_X)
         Bseries = (self.numerical_circuit.branch_active[:, a:b].T * ys.imag).T
         cost_br = self.numerical_circuit.branch_cost[:, a:b]
+        monitor_idx = np.where(self.numerical_circuit.branch_data.monitor_loading == 1)[0]
 
         # Compute time delta in hours
         dt = np.zeros(nt)  # here nt = end_idx - start_idx
@@ -302,7 +304,9 @@ class OpfDcTimeSeries(OpfTimeSeries):
         Pb = lpMakeVars(name='Pb', shape=(nb, nt), lower=Pb_min, upper=Pb_max)
         E = lpMakeVars(name='E', shape=(nb, nt), lower=Capacity * minSoC, upper=Capacity * maxSoC)
         load_slack = lpMakeVars(name='LSlack', shape=(nl, nt), lower=0, upper=None)
-        theta = lpMakeVars(name='theta', shape=(n, nt), lower=-3.14, upper=3.14)
+        theta = lpMakeVars(name='theta', shape=(n, nt),
+                           lower=self.numerical_circuit.bus_data.angle_min,
+                           upper=self.numerical_circuit.bus_data.angle_max)
         theta_f = theta[self.numerical_circuit.F, :]
         theta_t = theta[self.numerical_circuit.T, :]
         branch_rating_slack1 = lpMakeVars(name='FSlack1', shape=(m, nt), lower=0, upper=None)
@@ -333,7 +337,8 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                                         start_=self.start_idx, end_=self.end_idx)
 
         load_f = add_branch_loading_restriction(problem, theta_f, theta_t, Bseries, branch_ratings,
-                                                branch_rating_slack1, branch_rating_slack2)
+                                                branch_rating_slack1, branch_rating_slack2,
+                                                monitor_idx)
 
         # if there are batteries, add the batteries
         if nb > 0:
