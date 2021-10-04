@@ -321,11 +321,20 @@ class OpfDcTimeSeries(OpfTimeSeries):
         problem = LpProblem(name='DC_OPF_Time_Series')
 
         # add the objective function
-        problem += get_objective_function(Pg, Pb, load_slack, branch_rating_slack1, branch_rating_slack2,
-                                          cost_g, cost_b, cost_l, cost_br)
+        problem += get_objective_function(Pg=Pg,
+                                          Pb=Pb,
+                                          LSlack=load_slack,
+                                          FSlack1=branch_rating_slack1,
+                                          FSlack2=branch_rating_slack2,
+                                          cost_g=cost_g,
+                                          cost_b=cost_b,
+                                          cost_l=cost_l,
+                                          cost_br=cost_br)
 
         # set the fixed generation values
-        set_fix_generation(problem=problem, Pg=Pg, P_profile=P_profile,
+        set_fix_generation(problem=problem,
+                           Pg=Pg,
+                           P_profile=P_profile,
                            enabled_for_dispatch=enabled_for_dispatch)
 
         # compute the power injections
@@ -338,10 +347,14 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                  Pl=Pl)
 
         # set the nodal restrictions
-        nodal_restrictions = add_dc_nodal_power_balance(self.numerical_circuit, problem, theta, P,
-                                                        start_=self.start_idx, end_=self.end_idx)
+        nodal_restrictions = add_dc_nodal_power_balance(numerical_circuit=self.numerical_circuit,
+                                                        problem=problem,
+                                                        theta=theta,
+                                                        P=P,
+                                                        start_=self.start_idx,
+                                                        end_=self.end_idx)
 
-        load_f = add_branch_loading_restriction(problem,
+        load_f = add_branch_loading_restriction(problem=problem,
                                                 theta=theta,
                                                 ys=ys,
                                                 F=F,
@@ -354,7 +367,11 @@ class OpfDcTimeSeries(OpfTimeSeries):
 
         # if there are batteries, add the batteries
         if nb > 0:
-            add_battery_discharge_restriction(problem, SoC0, Capacity, Efficiency, Pb, E, dt)
+            add_battery_discharge_restriction(problem=problem,
+                                              SoC0=SoC0,
+                                              Capacity=Capacity,
+                                              Efficiency=Efficiency,
+                                              Pb=Pb, E=E, dt=dt)
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device

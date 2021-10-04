@@ -26,7 +26,6 @@
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -636,13 +635,6 @@
       <workItem from="1632764073720" duration="601000" />
       <workItem from="1632810180431" duration="7195000" />
     </task>
-    <task id="LOCAL-00149" summary="Fixed voltage profiles initialization">
-      <created>1625665538038</created>
-      <option name="number" value="00149" />
-      <option name="presentableId" value="LOCAL-00149" />
-      <option name="project" value="LOCAL" />
-      <updated>1625665538038</updated>
-    </task>
     <task id="LOCAL-00150" summary="Fixed the Setup for the new pypi requirements">
       <created>1625666331264</created>
       <option name="number" value="00150" />
@@ -979,7 +971,14 @@
       <option name="project" value="LOCAL" />
       <updated>1633359829568</updated>
     </task>
-    <option name="localTasksCounter" value="198" />
+    <task id="LOCAL-00198" summary="Improved OPF-Time series">
+      <created>1633367060510</created>
+      <option name="number" value="00198" />
+      <option name="presentableId" value="LOCAL-00198" />
+      <option name="project" value="LOCAL" />
+      <updated>1633367060510</updated>
+    </task>
+    <option name="localTasksCounter" value="199" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1014,7 +1013,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improvements in handling bad inputs" />
     <MESSAGE value="Minor changes to setup.py" />
     <MESSAGE value="Improved ATC reporting&#10;Included Real flows in theATC time series" />
     <MESSAGE value="Improved area selection for the ATC. Now multiple Areas can be selected" />
@@ -1039,7 +1037,8 @@
     <MESSAGE value="Improved the slack checking" />
     <MESSAGE value="Added inputs analysis" />
     <MESSAGE value="some improvements" />
-    <option name="LAST_COMMIT_MESSAGE" value="some improvements" />
+    <MESSAGE value="Improved OPF-Time series" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved OPF-Time series" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1327,7 +1326,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py</url>
-          <line>372</line>
+          <line>389</line>
           <option name="timeStamp" value="725" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1403,11 +1402,6 @@
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py</url>
           <line>356</line>
-          <option name="timeStamp" value="808" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py</url>
-          <line>343</line>
           <option name="timeStamp" value="812" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
