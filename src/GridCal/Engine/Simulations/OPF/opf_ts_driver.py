@@ -176,7 +176,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
         n = len(groups)
         i = 1
-        energy_0 = None
+        energy_0 = self.numerical_circuit.battery_data.battery_soc_0 * self.numerical_circuit.battery_data.battery_enom
         while i < n and not self.__cancel__:
 
             start_ = groups[i - 1]

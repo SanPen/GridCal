@@ -103,51 +103,56 @@ def add_dc_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem: LpPro
     :return: Nothing, the restrictions are added to the problem
     """
 
+    nodal_restrictions = lpAddRestrictions2(problem=problem,
+                                            lhs=lpDot(numerical_circuit.Bbus, theta),
+                                            rhs=P[:, :],
+                                            name='Nodal_power_balance_all',
+                                            op='=')
+
     # do the topological computation
-    calc_inputs = numerical_circuit.split_into_islands(ignore_single_node_islands=True)
+    # calc_inputs = numerical_circuit.split_into_islands(ignore_single_node_islands=True)
 
     # generate the time indices to simulate
-    if end_ == -1:
-        end_ = len(numerical_circuit.time_array)
-
-    nodal_restrictions = np.empty((numerical_circuit.nbus, end_ - start_), dtype=object)
+    # if end_ == -1:
+    #     end_ = len(numerical_circuit.time_array)
 
     # For every island, run the time series
-    for i, calc_inpt in enumerate(calc_inputs):
-
-        # find the original indices
-        bus_original_idx = np.array(calc_inpt.original_bus_idx)
-
-        # re-pack the variables for the island and time interval
-        P_island = P[bus_original_idx, :]  # the sizes already reflect the correct time span
-        theta_island = theta[bus_original_idx, :]  # the sizes already reflect the correct time span
-        B_island = calc_inpt.Ybus.imag
-
-        pqpv = calc_inpt.pqpv
-        vd = calc_inpt.vd
-
-        # Add nodal power balance for the non slack nodes
-        idx = bus_original_idx[pqpv]
-        nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
-                                                     lhs=lpDot(B_island[np.ix_(pqpv, pqpv)], theta_island[pqpv, :]),
-                                                     rhs=P_island[pqpv, :],
-                                                     name='Nodal_power_balance_pqpv_is' + str(i),
-                                                     op='=')
-
-        # Add nodal power balance for the slack nodes
-        idx = bus_original_idx[vd]
-        nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
-                                                     lhs=lpDot(B_island[vd, :], theta_island),
-                                                     rhs=P_island[vd, :],
-                                                     name='Nodal_power_balance_vd_is' + str(i),
-                                                     op='=')
-
-        # slack angles equal to zero
-        lpAddRestrictions2(problem=problem,
-                           lhs=theta_island[vd, :],
-                           rhs=np.zeros_like(theta_island[vd, :]),
-                           name='Theta_vd_zero_is' + str(i),
-                           op='=')
+    # nodal_restrictions = np.empty((numerical_circuit.nbus, end_ - start_), dtype=object)
+    # for i, calc_inpt in enumerate(calc_inputs):
+    #
+    #     # find the original indices
+    #     bus_original_idx = np.array(calc_inpt.original_bus_idx)
+    #
+    #     # re-pack the variables for the island and time interval
+    #     P_island = P[bus_original_idx, :]  # the sizes already reflect the correct time span
+    #     theta_island = theta[bus_original_idx, :]  # the sizes already reflect the correct time span
+    #     B_island = calc_inpt.Ybus.imag
+    #
+    #     pqpv = calc_inpt.pqpv
+    #     vd = calc_inpt.vd
+    #
+    #     # Add nodal power balance for the non slack nodes
+    #     idx = bus_original_idx[pqpv]
+    #     nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
+    #                                                  lhs=lpDot(B_island[np.ix_(pqpv, pqpv)], theta_island[pqpv, :]),
+    #                                                  rhs=P_island[pqpv, :],
+    #                                                  name='Nodal_power_balance_pqpv_is' + str(i),
+    #                                                  op='=')
+    #
+    #     # Add nodal power balance for the slack nodes
+    #     idx = bus_original_idx[vd]
+    #     nodal_restrictions[idx] = lpAddRestrictions2(problem=problem,
+    #                                                  lhs=lpDot(B_island[vd, :], theta_island),
+    #                                                  rhs=P_island[vd, :],
+    #                                                  name='Nodal_power_balance_vd_is' + str(i),
+    #                                                  op='=')
+    #
+    #     # slack angles equal to zero
+    #     lpAddRestrictions2(problem=problem,
+    #                        lhs=theta_island[vd, :],
+    #                        rhs=np.zeros_like(theta_island[vd, :]),
+    #                        name='Theta_vd_zero_is' + str(i),
+    #                        op='=')
 
     return nodal_restrictions
 
@@ -213,7 +218,7 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
         # set the energy value Et = E(t-1) + dt * Pb / eff
         lpAddRestrictions2(problem=problem,
                            lhs=E[:, t],
-                           rhs=E[:, t-1] - dt[i] * Pb[:, t] * eff_inv,
+                           rhs=E[:, t - 1] - dt[i] * Pb[:, t] * eff_inv,
                            name='initial_soc_t' + str(t) + '_',
                            op='=')
 
@@ -286,8 +291,11 @@ class OpfDcTimeSeries(OpfTimeSeries):
 
         # Compute time delta in hours
         dt = np.zeros(nt)  # here nt = end_idx - start_idx
-        for t in range(1, nt):
-            dt[t - 1] = (self.numerical_circuit.time_array[a + t] - self.numerical_circuit.time_array[a + t - 1]).seconds / 3600
+        for t in range(1, nt + 1):
+            if a + t < nt:
+                dt[t - 1] = (self.numerical_circuit.time_array[a + t] - self.numerical_circuit.time_array[a + t - 1]).seconds / 3600
+            else:
+                dt[t - 1] = 1.0
 
         # create LP variables
         Pg = lpMakeVars(name='Pg', shape=(ng, nt), lower=Pg_min, upper=Pg_max)

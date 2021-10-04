@@ -275,7 +275,7 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.battery_pmax[k] = elm.Pmax
                 data.battery_pmin[k] = elm.Pmin
                 data.battery_enom[k] = elm.Enom
-                data.battery_min_soc[k] = elm.max_soc
+                data.battery_min_soc[k] = elm.min_soc
                 data.battery_max_soc[k] = elm.max_soc
                 data.battery_soc_0[k] = elm.soc_0
                 data.battery_discharge_efficiency[k] = elm.discharge_efficiency
@@ -296,7 +296,7 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.battery_pmax[k] = elm.Pmax
                 data.battery_pmin[k] = elm.Pmin
                 data.battery_enom[k] = elm.Enom
-                data.battery_min_soc[k] = elm.max_soc
+                data.battery_min_soc[k] = elm.min_soc
                 data.battery_max_soc[k] = elm.max_soc
                 data.battery_soc_0[k] = elm.soc_0
                 data.battery_discharge_efficiency[k] = elm.discharge_efficiency
