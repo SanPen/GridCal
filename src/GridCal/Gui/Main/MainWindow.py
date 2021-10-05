@@ -1749,6 +1749,327 @@ class Ui_mainWindow(object):
         self.gridLayout_9.addWidget(self.frame_13, 0, 0, 1, 1)
 
         self.settings_tabWidget.addTab(self.tab_3, icon5, "")
+        self.tab_5 = QWidget()
+        self.tab_5.setObjectName(u"tab_5")
+        self.gridLayout_11 = QGridLayout(self.tab_5)
+        self.gridLayout_11.setObjectName(u"gridLayout_11")
+        self.frame_21 = QFrame(self.tab_5)
+        self.frame_21.setObjectName(u"frame_21")
+        self.frame_21.setFrameShape(QFrame.NoFrame)
+        self.frame_21.setFrameShadow(QFrame.Raised)
+        self.gridLayout_2 = QGridLayout(self.frame_21)
+        self.gridLayout_2.setObjectName(u"gridLayout_2")
+        self.label_18 = QLabel(self.frame_21)
+        self.label_18.setObjectName(u"label_18")
+
+        self.gridLayout_2.addWidget(self.label_18, 9, 0, 1, 1)
+
+        self.label_8 = QLabel(self.frame_21)
+        self.label_8.setObjectName(u"label_8")
+
+        self.gridLayout_2.addWidget(self.label_8, 3, 0, 1, 1)
+
+        self.vs_departure_comboBox = QComboBox(self.frame_21)
+        self.vs_departure_comboBox.setObjectName(u"vs_departure_comboBox")
+
+        self.gridLayout_2.addWidget(self.vs_departure_comboBox, 9, 3, 1, 1)
+
+        self.vs_target_comboBox = QComboBox(self.frame_21)
+        self.vs_target_comboBox.setObjectName(u"vs_target_comboBox")
+
+        self.gridLayout_2.addWidget(self.vs_target_comboBox, 10, 3, 1, 1)
+
+        self.label_25 = QLabel(self.frame_21)
+        self.label_25.setObjectName(u"label_25")
+
+        self.gridLayout_2.addWidget(self.label_25, 9, 4, 1, 1)
+
+        self.label_29 = QLabel(self.frame_21)
+        self.label_29.setObjectName(u"label_29")
+
+        self.gridLayout_2.addWidget(self.label_29, 2, 0, 1, 1)
+
+        self.vs_max_iterations_spinBox = QSpinBox(self.frame_21)
+        self.vs_max_iterations_spinBox.setObjectName(u"vs_max_iterations_spinBox")
+        self.vs_max_iterations_spinBox.setMinimum(1)
+        self.vs_max_iterations_spinBox.setMaximum(300)
+        self.vs_max_iterations_spinBox.setValue(20)
+
+        self.gridLayout_2.addWidget(self.vs_max_iterations_spinBox, 2, 1, 1, 1)
+
+        self.verticalSpacer_7 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_2.addItem(self.verticalSpacer_7, 4, 0, 1, 1)
+
+        self.label_19 = QLabel(self.frame_21)
+        self.label_19.setObjectName(u"label_19")
+
+        self.gridLayout_2.addWidget(self.label_19, 9, 2, 1, 1)
+
+        self.line_17 = QFrame(self.frame_21)
+        self.line_17.setObjectName(u"line_17")
+        palette9 = QPalette()
+        palette9.setBrush(QPalette.Active, QPalette.WindowText, brush2)
+        palette9.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
+        palette9.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_17.setPalette(palette9)
+        self.line_17.setFrameShadow(QFrame.Plain)
+        self.line_17.setLineWidth(4)
+        self.line_17.setFrameShape(QFrame.HLine)
+
+        self.gridLayout_2.addWidget(self.line_17, 1, 0, 1, 6)
+
+        self.line_25 = QFrame(self.frame_21)
+        self.line_25.setObjectName(u"line_25")
+        palette10 = QPalette()
+        palette10.setBrush(QPalette.Active, QPalette.WindowText, brush2)
+        palette10.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
+        palette10.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_25.setPalette(palette10)
+        self.line_25.setFrameShadow(QFrame.Plain)
+        self.line_25.setLineWidth(4)
+        self.line_25.setFrameShape(QFrame.HLine)
+
+        self.gridLayout_2.addWidget(self.line_25, 7, 2, 1, 2)
+
+        self.label_20 = QLabel(self.frame_21)
+        self.label_20.setObjectName(u"label_20")
+
+        self.gridLayout_2.addWidget(self.label_20, 10, 2, 1, 1)
+
+        self.line_12 = QFrame(self.frame_21)
+        self.line_12.setObjectName(u"line_12")
+        palette11 = QPalette()
+        palette11.setBrush(QPalette.Active, QPalette.WindowText, brush2)
+        palette11.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
+        palette11.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_12.setPalette(palette11)
+        self.line_12.setFrameShadow(QFrame.Plain)
+        self.line_12.setLineWidth(4)
+        self.line_12.setFrameShape(QFrame.HLine)
+
+        self.gridLayout_2.addWidget(self.line_12, 7, 0, 1, 2)
+
+        self.atcRadioButton = QRadioButton(self.frame_21)
+        self.atcRadioButton.setObjectName(u"atcRadioButton")
+
+        self.gridLayout_2.addWidget(self.atcRadioButton, 8, 4, 1, 2)
+
+        self.frame_44 = QFrame(self.frame_21)
+        self.frame_44.setObjectName(u"frame_44")
+        self.frame_44.setFrameShape(QFrame.NoFrame)
+        self.frame_44.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_16 = QHBoxLayout(self.frame_44)
+        self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
+        self.horizontalLayout_16.setContentsMargins(0, 0, 0, 0)
+        self.label_74 = QLabel(self.frame_44)
+        self.label_74.setObjectName(u"label_74")
+        self.label_74.setMinimumSize(QSize(24, 24))
+        self.label_74.setMaximumSize(QSize(24, 24))
+        self.label_74.setPixmap(QPixmap(u":/Icons/icons/continuation_power_flow.svg"))
+        self.label_74.setScaledContents(True)
+
+        self.horizontalLayout_16.addWidget(self.label_74)
+
+        self.label_46 = QLabel(self.frame_44)
+        self.label_46.setObjectName(u"label_46")
+        palette12 = QPalette()
+        palette12.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette12.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
+        palette12.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_46.setPalette(palette12)
+        self.label_46.setFont(font)
+        self.label_46.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
+
+        self.horizontalLayout_16.addWidget(self.label_46)
+
+
+        self.gridLayout_2.addWidget(self.frame_44, 0, 0, 1, 6)
+
+        self.vc_stop_at_comboBox = QComboBox(self.frame_21)
+        self.vc_stop_at_comboBox.setObjectName(u"vc_stop_at_comboBox")
+
+        self.gridLayout_2.addWidget(self.vc_stop_at_comboBox, 3, 1, 1, 1)
+
+        self.line_11 = QFrame(self.frame_21)
+        self.line_11.setObjectName(u"line_11")
+        palette13 = QPalette()
+        palette13.setBrush(QPalette.Active, QPalette.WindowText, brush2)
+        palette13.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
+        palette13.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_11.setPalette(palette13)
+        self.line_11.setFrameShadow(QFrame.Plain)
+        self.line_11.setLineWidth(4)
+        self.line_11.setFrameShape(QFrame.HLine)
+
+        self.gridLayout_2.addWidget(self.line_11, 7, 4, 1, 2)
+
+        self.alpha_doubleSpinBox = QDoubleSpinBox(self.frame_21)
+        self.alpha_doubleSpinBox.setObjectName(u"alpha_doubleSpinBox")
+        self.alpha_doubleSpinBox.setMinimum(-99.000000000000000)
+        self.alpha_doubleSpinBox.setValue(2.000000000000000)
+
+        self.gridLayout_2.addWidget(self.alpha_doubleSpinBox, 9, 1, 1, 1)
+
+        self.start_vs_from_default_radioButton = QRadioButton(self.frame_21)
+        self.start_vs_from_default_radioButton.setObjectName(u"start_vs_from_default_radioButton")
+        self.start_vs_from_default_radioButton.setChecked(True)
+
+        self.gridLayout_2.addWidget(self.start_vs_from_default_radioButton, 8, 0, 1, 2)
+
+        self.start_vs_from_selected_radioButton = QRadioButton(self.frame_21)
+        self.start_vs_from_selected_radioButton.setObjectName(u"start_vs_from_selected_radioButton")
+
+        self.gridLayout_2.addWidget(self.start_vs_from_selected_radioButton, 8, 2, 1, 2)
+
+
+        self.gridLayout_11.addWidget(self.frame_21, 0, 0, 1, 1)
+
+        self.verticalSpacer_5 = QSpacerItem(20, 156, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_11.addItem(self.verticalSpacer_5, 1, 0, 1, 1)
+
+        self.horizontalSpacer_11 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.gridLayout_11.addItem(self.horizontalSpacer_11, 0, 1, 1, 1)
+
+        self.settings_tabWidget.addTab(self.tab_5, icon10, "")
+        self.tab_4 = QWidget()
+        self.tab_4.setObjectName(u"tab_4")
+        self.gridLayout_10 = QGridLayout(self.tab_4)
+        self.gridLayout_10.setObjectName(u"gridLayout_10")
+        self.verticalSpacer_2 = QSpacerItem(20, 260, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_10.addItem(self.verticalSpacer_2, 1, 0, 1, 1)
+
+        self.frame_30 = QFrame(self.tab_4)
+        self.frame_30.setObjectName(u"frame_30")
+        self.frame_30.setFrameShape(QFrame.NoFrame)
+        self.frame_30.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_20 = QVBoxLayout(self.frame_30)
+        self.verticalLayout_20.setObjectName(u"verticalLayout_20")
+        self.frame_43 = QFrame(self.frame_30)
+        self.frame_43.setObjectName(u"frame_43")
+        self.frame_43.setFrameShape(QFrame.NoFrame)
+        self.frame_43.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_15 = QHBoxLayout(self.frame_43)
+        self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
+        self.horizontalLayout_15.setContentsMargins(0, 0, 0, 0)
+        self.label_72 = QLabel(self.frame_43)
+        self.label_72.setObjectName(u"label_72")
+        self.label_72.setMinimumSize(QSize(24, 24))
+        self.label_72.setMaximumSize(QSize(24, 24))
+        self.label_72.setPixmap(QPixmap(u":/Icons/icons/dcopf.svg"))
+        self.label_72.setScaledContents(True)
+
+        self.horizontalLayout_15.addWidget(self.label_72)
+
+        self.label_73 = QLabel(self.frame_43)
+        self.label_73.setObjectName(u"label_73")
+        palette14 = QPalette()
+        palette14.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette14.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
+        palette14.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_73.setPalette(palette14)
+        self.label_73.setFont(font)
+        self.label_73.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
+
+        self.horizontalLayout_15.addWidget(self.label_73)
+
+
+        self.verticalLayout_20.addWidget(self.frame_43)
+
+        self.line_16 = QFrame(self.frame_30)
+        self.line_16.setObjectName(u"line_16")
+        palette15 = QPalette()
+        palette15.setBrush(QPalette.Active, QPalette.WindowText, brush2)
+        palette15.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
+        palette15.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_16.setPalette(palette15)
+        self.line_16.setFrameShadow(QFrame.Plain)
+        self.line_16.setLineWidth(4)
+        self.line_16.setFrameShape(QFrame.HLine)
+
+        self.verticalLayout_20.addWidget(self.line_16)
+
+        self.frame_2 = QFrame(self.frame_30)
+        self.frame_2.setObjectName(u"frame_2")
+        self.frame_2.setFrameShape(QFrame.NoFrame)
+        self.frame_2.setFrameShadow(QFrame.Raised)
+        self.gridLayout_3 = QGridLayout(self.frame_2)
+        self.gridLayout_3.setObjectName(u"gridLayout_3")
+        self.considerContingenciesOpfCheckBox = QCheckBox(self.frame_2)
+        self.considerContingenciesOpfCheckBox.setObjectName(u"considerContingenciesOpfCheckBox")
+
+        self.gridLayout_3.addWidget(self.considerContingenciesOpfCheckBox, 6, 0, 1, 2)
+
+        self.label_42 = QLabel(self.frame_2)
+        self.label_42.setObjectName(u"label_42")
+
+        self.gridLayout_3.addWidget(self.label_42, 0, 0, 1, 1)
+
+        self.label_44 = QLabel(self.frame_2)
+        self.label_44.setObjectName(u"label_44")
+
+        self.gridLayout_3.addWidget(self.label_44, 4, 0, 1, 1)
+
+        self.opf_time_grouping_comboBox = QComboBox(self.frame_2)
+        self.opf_time_grouping_comboBox.setObjectName(u"opf_time_grouping_comboBox")
+
+        self.gridLayout_3.addWidget(self.opf_time_grouping_comboBox, 1, 1, 1, 1)
+
+        self.opfTolSpinBox = QSpinBox(self.frame_2)
+        self.opfTolSpinBox.setObjectName(u"opfTolSpinBox")
+        self.opfTolSpinBox.setMinimum(-99)
+
+        self.gridLayout_3.addWidget(self.opfTolSpinBox, 4, 1, 1, 1)
+
+        self.label_10 = QLabel(self.frame_2)
+        self.label_10.setObjectName(u"label_10")
+
+        self.gridLayout_3.addWidget(self.label_10, 3, 0, 1, 1)
+
+        self.skipOpfGenerationLimitsCheckBox = QCheckBox(self.frame_2)
+        self.skipOpfGenerationLimitsCheckBox.setObjectName(u"skipOpfGenerationLimitsCheckBox")
+
+        self.gridLayout_3.addWidget(self.skipOpfGenerationLimitsCheckBox, 5, 0, 1, 2)
+
+        self.mip_solver_comboBox = QComboBox(self.frame_2)
+        self.mip_solver_comboBox.setObjectName(u"mip_solver_comboBox")
+
+        self.gridLayout_3.addWidget(self.mip_solver_comboBox, 3, 1, 1, 1)
+
+        self.label_4 = QLabel(self.frame_2)
+        self.label_4.setObjectName(u"label_4")
+
+        self.gridLayout_3.addWidget(self.label_4, 1, 0, 1, 1)
+
+        self.lpf_solver_comboBox = QComboBox(self.frame_2)
+        self.lpf_solver_comboBox.setObjectName(u"lpf_solver_comboBox")
+
+        self.gridLayout_3.addWidget(self.lpf_solver_comboBox, 0, 1, 1, 1)
+
+        self.opfZonalGroupByComboBox = QComboBox(self.frame_2)
+        self.opfZonalGroupByComboBox.setObjectName(u"opfZonalGroupByComboBox")
+
+        self.gridLayout_3.addWidget(self.opfZonalGroupByComboBox, 2, 1, 1, 1)
+
+        self.label_103 = QLabel(self.frame_2)
+        self.label_103.setObjectName(u"label_103")
+
+        self.gridLayout_3.addWidget(self.label_103, 2, 0, 1, 1)
+
+
+        self.verticalLayout_20.addWidget(self.frame_2)
+
+
+        self.gridLayout_10.addWidget(self.frame_30, 0, 0, 1, 1)
+
+        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.gridLayout_10.addItem(self.horizontalSpacer_10, 0, 1, 1, 1)
+
+        self.settings_tabWidget.addTab(self.tab_4, icon15, "")
         self.tab_9 = QWidget()
         self.tab_9.setObjectName(u"tab_9")
         self.horizontalLayout_8 = QHBoxLayout(self.tab_9)
@@ -1761,11 +2082,11 @@ class Ui_mainWindow(object):
         self.gridLayout_13.setObjectName(u"gridLayout_13")
         self.label_61 = QLabel(self.frame_64)
         self.label_61.setObjectName(u"label_61")
-        palette9 = QPalette()
-        palette9.setBrush(QPalette.Active, QPalette.WindowText, brush)
-        palette9.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
-        palette9.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_61.setPalette(palette9)
+        palette16 = QPalette()
+        palette16.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette16.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
+        palette16.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_61.setPalette(palette16)
         self.label_61.setFont(font)
 
         self.gridLayout_13.addWidget(self.label_61, 5, 1, 1, 1)
@@ -1851,11 +2172,11 @@ class Ui_mainWindow(object):
 
         self.label_95 = QLabel(self.frame_64)
         self.label_95.setObjectName(u"label_95")
-        palette10 = QPalette()
-        palette10.setBrush(QPalette.Active, QPalette.WindowText, brush)
-        palette10.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
-        palette10.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_95.setPalette(palette10)
+        palette17 = QPalette()
+        palette17.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette17.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
+        palette17.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_95.setPalette(palette17)
         self.label_95.setFont(font)
 
         self.gridLayout_13.addWidget(self.label_95, 1, 1, 1, 1)
@@ -1871,11 +2192,11 @@ class Ui_mainWindow(object):
 
         self.line_26 = QFrame(self.frame_64)
         self.line_26.setObjectName(u"line_26")
-        palette11 = QPalette()
-        palette11.setBrush(QPalette.Active, QPalette.WindowText, brush2)
-        palette11.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
-        palette11.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_26.setPalette(palette11)
+        palette18 = QPalette()
+        palette18.setBrush(QPalette.Active, QPalette.WindowText, brush2)
+        palette18.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
+        palette18.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_26.setPalette(palette18)
         self.line_26.setFrameShadow(QFrame.Plain)
         self.line_26.setLineWidth(4)
         self.line_26.setFrameShape(QFrame.HLine)
@@ -1897,11 +2218,11 @@ class Ui_mainWindow(object):
 
         self.line_23 = QFrame(self.frame_64)
         self.line_23.setObjectName(u"line_23")
-        palette12 = QPalette()
-        palette12.setBrush(QPalette.Active, QPalette.WindowText, brush2)
-        palette12.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
-        palette12.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_23.setPalette(palette12)
+        palette19 = QPalette()
+        palette19.setBrush(QPalette.Active, QPalette.WindowText, brush2)
+        palette19.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
+        palette19.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_23.setPalette(palette19)
         self.line_23.setFrameShadow(QFrame.Plain)
         self.line_23.setLineWidth(4)
         self.line_23.setFrameShape(QFrame.HLine)
@@ -1984,11 +2305,11 @@ class Ui_mainWindow(object):
 
         self.line_27 = QFrame(self.frame_65)
         self.line_27.setObjectName(u"line_27")
-        palette13 = QPalette()
-        palette13.setBrush(QPalette.Active, QPalette.WindowText, brush2)
-        palette13.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
-        palette13.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_27.setPalette(palette13)
+        palette20 = QPalette()
+        palette20.setBrush(QPalette.Active, QPalette.WindowText, brush2)
+        palette20.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
+        palette20.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_27.setPalette(palette20)
         self.line_27.setFrameShadow(QFrame.Plain)
         self.line_27.setLineWidth(4)
         self.line_27.setFrameShape(QFrame.HLine)
@@ -1997,11 +2318,11 @@ class Ui_mainWindow(object):
 
         self.label_96 = QLabel(self.frame_65)
         self.label_96.setObjectName(u"label_96")
-        palette14 = QPalette()
-        palette14.setBrush(QPalette.Active, QPalette.WindowText, brush)
-        palette14.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
-        palette14.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_96.setPalette(palette14)
+        palette21 = QPalette()
+        palette21.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette21.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
+        palette21.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_96.setPalette(palette21)
         self.label_96.setFont(font)
 
         self.gridLayout_15.addWidget(self.label_96, 3, 1, 1, 2)
@@ -2094,296 +2415,6 @@ class Ui_mainWindow(object):
         self.horizontalLayout_8.addItem(self.horizontalSpacer_8)
 
         self.settings_tabWidget.addTab(self.tab_9, icon46, "")
-        self.tab_5 = QWidget()
-        self.tab_5.setObjectName(u"tab_5")
-        self.gridLayout_11 = QGridLayout(self.tab_5)
-        self.gridLayout_11.setObjectName(u"gridLayout_11")
-        self.frame_21 = QFrame(self.tab_5)
-        self.frame_21.setObjectName(u"frame_21")
-        self.frame_21.setFrameShape(QFrame.NoFrame)
-        self.frame_21.setFrameShadow(QFrame.Raised)
-        self.gridLayout_2 = QGridLayout(self.frame_21)
-        self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.label_18 = QLabel(self.frame_21)
-        self.label_18.setObjectName(u"label_18")
-
-        self.gridLayout_2.addWidget(self.label_18, 9, 0, 1, 1)
-
-        self.label_8 = QLabel(self.frame_21)
-        self.label_8.setObjectName(u"label_8")
-
-        self.gridLayout_2.addWidget(self.label_8, 3, 0, 1, 1)
-
-        self.vs_departure_comboBox = QComboBox(self.frame_21)
-        self.vs_departure_comboBox.setObjectName(u"vs_departure_comboBox")
-
-        self.gridLayout_2.addWidget(self.vs_departure_comboBox, 9, 3, 1, 1)
-
-        self.vs_target_comboBox = QComboBox(self.frame_21)
-        self.vs_target_comboBox.setObjectName(u"vs_target_comboBox")
-
-        self.gridLayout_2.addWidget(self.vs_target_comboBox, 10, 3, 1, 1)
-
-        self.label_25 = QLabel(self.frame_21)
-        self.label_25.setObjectName(u"label_25")
-
-        self.gridLayout_2.addWidget(self.label_25, 9, 4, 1, 1)
-
-        self.label_29 = QLabel(self.frame_21)
-        self.label_29.setObjectName(u"label_29")
-
-        self.gridLayout_2.addWidget(self.label_29, 2, 0, 1, 1)
-
-        self.vs_max_iterations_spinBox = QSpinBox(self.frame_21)
-        self.vs_max_iterations_spinBox.setObjectName(u"vs_max_iterations_spinBox")
-        self.vs_max_iterations_spinBox.setMinimum(1)
-        self.vs_max_iterations_spinBox.setMaximum(300)
-        self.vs_max_iterations_spinBox.setValue(20)
-
-        self.gridLayout_2.addWidget(self.vs_max_iterations_spinBox, 2, 1, 1, 1)
-
-        self.verticalSpacer_7 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.gridLayout_2.addItem(self.verticalSpacer_7, 4, 0, 1, 1)
-
-        self.label_19 = QLabel(self.frame_21)
-        self.label_19.setObjectName(u"label_19")
-
-        self.gridLayout_2.addWidget(self.label_19, 9, 2, 1, 1)
-
-        self.line_17 = QFrame(self.frame_21)
-        self.line_17.setObjectName(u"line_17")
-        palette15 = QPalette()
-        palette15.setBrush(QPalette.Active, QPalette.WindowText, brush2)
-        palette15.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
-        palette15.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_17.setPalette(palette15)
-        self.line_17.setFrameShadow(QFrame.Plain)
-        self.line_17.setLineWidth(4)
-        self.line_17.setFrameShape(QFrame.HLine)
-
-        self.gridLayout_2.addWidget(self.line_17, 1, 0, 1, 6)
-
-        self.line_25 = QFrame(self.frame_21)
-        self.line_25.setObjectName(u"line_25")
-        palette16 = QPalette()
-        palette16.setBrush(QPalette.Active, QPalette.WindowText, brush2)
-        palette16.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
-        palette16.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_25.setPalette(palette16)
-        self.line_25.setFrameShadow(QFrame.Plain)
-        self.line_25.setLineWidth(4)
-        self.line_25.setFrameShape(QFrame.HLine)
-
-        self.gridLayout_2.addWidget(self.line_25, 7, 2, 1, 2)
-
-        self.label_20 = QLabel(self.frame_21)
-        self.label_20.setObjectName(u"label_20")
-
-        self.gridLayout_2.addWidget(self.label_20, 10, 2, 1, 1)
-
-        self.line_12 = QFrame(self.frame_21)
-        self.line_12.setObjectName(u"line_12")
-        palette17 = QPalette()
-        palette17.setBrush(QPalette.Active, QPalette.WindowText, brush2)
-        palette17.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
-        palette17.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_12.setPalette(palette17)
-        self.line_12.setFrameShadow(QFrame.Plain)
-        self.line_12.setLineWidth(4)
-        self.line_12.setFrameShape(QFrame.HLine)
-
-        self.gridLayout_2.addWidget(self.line_12, 7, 0, 1, 2)
-
-        self.atcRadioButton = QRadioButton(self.frame_21)
-        self.atcRadioButton.setObjectName(u"atcRadioButton")
-
-        self.gridLayout_2.addWidget(self.atcRadioButton, 8, 4, 1, 2)
-
-        self.frame_44 = QFrame(self.frame_21)
-        self.frame_44.setObjectName(u"frame_44")
-        self.frame_44.setFrameShape(QFrame.NoFrame)
-        self.frame_44.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_16 = QHBoxLayout(self.frame_44)
-        self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
-        self.horizontalLayout_16.setContentsMargins(0, 0, 0, 0)
-        self.label_74 = QLabel(self.frame_44)
-        self.label_74.setObjectName(u"label_74")
-        self.label_74.setMinimumSize(QSize(24, 24))
-        self.label_74.setMaximumSize(QSize(24, 24))
-        self.label_74.setPixmap(QPixmap(u":/Icons/icons/continuation_power_flow.svg"))
-        self.label_74.setScaledContents(True)
-
-        self.horizontalLayout_16.addWidget(self.label_74)
-
-        self.label_46 = QLabel(self.frame_44)
-        self.label_46.setObjectName(u"label_46")
-        palette18 = QPalette()
-        palette18.setBrush(QPalette.Active, QPalette.WindowText, brush)
-        palette18.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
-        palette18.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_46.setPalette(palette18)
-        self.label_46.setFont(font)
-        self.label_46.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
-
-        self.horizontalLayout_16.addWidget(self.label_46)
-
-
-        self.gridLayout_2.addWidget(self.frame_44, 0, 0, 1, 6)
-
-        self.vc_stop_at_comboBox = QComboBox(self.frame_21)
-        self.vc_stop_at_comboBox.setObjectName(u"vc_stop_at_comboBox")
-
-        self.gridLayout_2.addWidget(self.vc_stop_at_comboBox, 3, 1, 1, 1)
-
-        self.line_11 = QFrame(self.frame_21)
-        self.line_11.setObjectName(u"line_11")
-        palette19 = QPalette()
-        palette19.setBrush(QPalette.Active, QPalette.WindowText, brush2)
-        palette19.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
-        palette19.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_11.setPalette(palette19)
-        self.line_11.setFrameShadow(QFrame.Plain)
-        self.line_11.setLineWidth(4)
-        self.line_11.setFrameShape(QFrame.HLine)
-
-        self.gridLayout_2.addWidget(self.line_11, 7, 4, 1, 2)
-
-        self.alpha_doubleSpinBox = QDoubleSpinBox(self.frame_21)
-        self.alpha_doubleSpinBox.setObjectName(u"alpha_doubleSpinBox")
-        self.alpha_doubleSpinBox.setMinimum(-99.000000000000000)
-        self.alpha_doubleSpinBox.setValue(2.000000000000000)
-
-        self.gridLayout_2.addWidget(self.alpha_doubleSpinBox, 9, 1, 1, 1)
-
-        self.start_vs_from_default_radioButton = QRadioButton(self.frame_21)
-        self.start_vs_from_default_radioButton.setObjectName(u"start_vs_from_default_radioButton")
-        self.start_vs_from_default_radioButton.setChecked(True)
-
-        self.gridLayout_2.addWidget(self.start_vs_from_default_radioButton, 8, 0, 1, 2)
-
-        self.start_vs_from_selected_radioButton = QRadioButton(self.frame_21)
-        self.start_vs_from_selected_radioButton.setObjectName(u"start_vs_from_selected_radioButton")
-
-        self.gridLayout_2.addWidget(self.start_vs_from_selected_radioButton, 8, 2, 1, 2)
-
-
-        self.gridLayout_11.addWidget(self.frame_21, 0, 0, 1, 1)
-
-        self.verticalSpacer_5 = QSpacerItem(20, 156, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.gridLayout_11.addItem(self.verticalSpacer_5, 1, 0, 1, 1)
-
-        self.horizontalSpacer_11 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.gridLayout_11.addItem(self.horizontalSpacer_11, 0, 1, 1, 1)
-
-        self.settings_tabWidget.addTab(self.tab_5, icon10, "")
-        self.tab_4 = QWidget()
-        self.tab_4.setObjectName(u"tab_4")
-        self.gridLayout_10 = QGridLayout(self.tab_4)
-        self.gridLayout_10.setObjectName(u"gridLayout_10")
-        self.verticalSpacer_2 = QSpacerItem(20, 260, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.gridLayout_10.addItem(self.verticalSpacer_2, 1, 0, 1, 1)
-
-        self.frame_30 = QFrame(self.tab_4)
-        self.frame_30.setObjectName(u"frame_30")
-        self.frame_30.setFrameShape(QFrame.NoFrame)
-        self.frame_30.setFrameShadow(QFrame.Raised)
-        self.verticalLayout_20 = QVBoxLayout(self.frame_30)
-        self.verticalLayout_20.setObjectName(u"verticalLayout_20")
-        self.frame_43 = QFrame(self.frame_30)
-        self.frame_43.setObjectName(u"frame_43")
-        self.frame_43.setFrameShape(QFrame.NoFrame)
-        self.frame_43.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_15 = QHBoxLayout(self.frame_43)
-        self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
-        self.horizontalLayout_15.setContentsMargins(0, 0, 0, 0)
-        self.label_72 = QLabel(self.frame_43)
-        self.label_72.setObjectName(u"label_72")
-        self.label_72.setMinimumSize(QSize(24, 24))
-        self.label_72.setMaximumSize(QSize(24, 24))
-        self.label_72.setPixmap(QPixmap(u":/Icons/icons/dcopf.svg"))
-        self.label_72.setScaledContents(True)
-
-        self.horizontalLayout_15.addWidget(self.label_72)
-
-        self.label_73 = QLabel(self.frame_43)
-        self.label_73.setObjectName(u"label_73")
-        palette20 = QPalette()
-        palette20.setBrush(QPalette.Active, QPalette.WindowText, brush)
-        palette20.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
-        palette20.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_73.setPalette(palette20)
-        self.label_73.setFont(font)
-        self.label_73.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
-
-        self.horizontalLayout_15.addWidget(self.label_73)
-
-
-        self.verticalLayout_20.addWidget(self.frame_43)
-
-        self.line_16 = QFrame(self.frame_30)
-        self.line_16.setObjectName(u"line_16")
-        palette21 = QPalette()
-        palette21.setBrush(QPalette.Active, QPalette.WindowText, brush2)
-        palette21.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
-        palette21.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_16.setPalette(palette21)
-        self.line_16.setFrameShadow(QFrame.Plain)
-        self.line_16.setLineWidth(4)
-        self.line_16.setFrameShape(QFrame.HLine)
-
-        self.verticalLayout_20.addWidget(self.line_16)
-
-        self.frame_2 = QFrame(self.frame_30)
-        self.frame_2.setObjectName(u"frame_2")
-        self.frame_2.setFrameShape(QFrame.NoFrame)
-        self.frame_2.setFrameShadow(QFrame.Raised)
-        self.gridLayout_3 = QGridLayout(self.frame_2)
-        self.gridLayout_3.setObjectName(u"gridLayout_3")
-        self.lpf_solver_comboBox = QComboBox(self.frame_2)
-        self.lpf_solver_comboBox.setObjectName(u"lpf_solver_comboBox")
-
-        self.gridLayout_3.addWidget(self.lpf_solver_comboBox, 0, 1, 1, 1)
-
-        self.label_4 = QLabel(self.frame_2)
-        self.label_4.setObjectName(u"label_4")
-
-        self.gridLayout_3.addWidget(self.label_4, 1, 0, 1, 1)
-
-        self.label_42 = QLabel(self.frame_2)
-        self.label_42.setObjectName(u"label_42")
-
-        self.gridLayout_3.addWidget(self.label_42, 0, 0, 1, 1)
-
-        self.opf_time_grouping_comboBox = QComboBox(self.frame_2)
-        self.opf_time_grouping_comboBox.setObjectName(u"opf_time_grouping_comboBox")
-
-        self.gridLayout_3.addWidget(self.opf_time_grouping_comboBox, 1, 1, 1, 1)
-
-        self.label_10 = QLabel(self.frame_2)
-        self.label_10.setObjectName(u"label_10")
-
-        self.gridLayout_3.addWidget(self.label_10, 2, 0, 1, 1)
-
-        self.mip_solver_comboBox = QComboBox(self.frame_2)
-        self.mip_solver_comboBox.setObjectName(u"mip_solver_comboBox")
-
-        self.gridLayout_3.addWidget(self.mip_solver_comboBox, 2, 1, 1, 1)
-
-
-        self.verticalLayout_20.addWidget(self.frame_2)
-
-
-        self.gridLayout_10.addWidget(self.frame_30, 0, 0, 1, 1)
-
-        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.gridLayout_10.addItem(self.horizontalSpacer_10, 0, 1, 1, 1)
-
-        self.settings_tabWidget.addTab(self.tab_4, icon15, "")
         self.tab_6 = QWidget()
         self.tab_6.setObjectName(u"tab_6")
         self.gridLayout_12 = QGridLayout(self.tab_6)
@@ -4086,6 +4117,45 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_3), QCoreApplication.translate("mainWindow", u"Power flow settings", None))
 #endif // QT_CONFIG(tooltip)
+        self.label_18.setText(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Lambda factor</p></body></html>", None))
+        self.label_8.setText(QCoreApplication.translate("mainWindow", u"Stop at", None))
+        self.label_25.setText(QCoreApplication.translate("mainWindow", u"Refer to the NTC areas (NTC tab)", None))
+        self.label_29.setText(QCoreApplication.translate("mainWindow", u"Max. Iterations", None))
+        self.label_19.setText(QCoreApplication.translate("mainWindow", u"Now", None))
+        self.label_20.setText(QCoreApplication.translate("mainWindow", u"Target", None))
+        self.atcRadioButton.setText(QCoreApplication.translate("mainWindow", u"Available transfer capacity", None))
+        self.label_74.setText("")
+        self.label_46.setText(QCoreApplication.translate("mainWindow", u"Continuation power flow", None))
+        self.start_vs_from_default_radioButton.setText(QCoreApplication.translate("mainWindow", u"Use alpha target from current situation", None))
+        self.start_vs_from_selected_radioButton.setText(QCoreApplication.translate("mainWindow", u"Use departure and target\n"
+"points from time series", None))
+        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_5), QCoreApplication.translate("mainWindow", u"CPF", None))
+#if QT_CONFIG(tooltip)
+        self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_5), QCoreApplication.translate("mainWindow", u"Continuation power flow settings", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_72.setText("")
+        self.label_73.setText(QCoreApplication.translate("mainWindow", u"Optimal Power Flow", None))
+        self.considerContingenciesOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider contingencies", None))
+        self.label_42.setText(QCoreApplication.translate("mainWindow", u"Method", None))
+        self.label_44.setText(QCoreApplication.translate("mainWindow", u"Tolerance", None))
+#if QT_CONFIG(tooltip)
+        self.opf_time_grouping_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Choose the time grouping to possibly shorten the solution time.</p><p>This splits the time series by week, month, etc. and the subproblems are solved sequentially.</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.opfTolSpinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e", None))
+        self.label_10.setText(QCoreApplication.translate("mainWindow", u"MIP solver", None))
+        self.skipOpfGenerationLimitsCheckBox.setText(QCoreApplication.translate("mainWindow", u"Skip generation limits", None))
+#if QT_CONFIG(tooltip)
+        self.mip_solver_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Choose the external mixed integer programming solver", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_4.setText(QCoreApplication.translate("mainWindow", u"Time grouping", None))
+#if QT_CONFIG(tooltip)
+        self.lpf_solver_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Choose the optimal power flow method", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_103.setText(QCoreApplication.translate("mainWindow", u"Zone grouping", None))
+        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"OPF", None))
+#if QT_CONFIG(tooltip)
+        self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Optimal power flow settings", None))
+#endif // QT_CONFIG(tooltip)
         self.label_61.setText(QCoreApplication.translate("mainWindow", u"Linear method", None))
         self.label_21.setText(QCoreApplication.translate("mainWindow", u"Areas to", None))
         self.label_41.setText(QCoreApplication.translate("mainWindow", u"Areas from", None))
@@ -4149,40 +4219,6 @@ class Ui_mainWindow(object):
         self.weightsHVDCControlSpinBox.setSuffix("")
         self.weightsHVDCControlSpinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_9), QCoreApplication.translate("mainWindow", u"NTC", None))
-        self.label_18.setText(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Lambda factor</p></body></html>", None))
-        self.label_8.setText(QCoreApplication.translate("mainWindow", u"Stop at", None))
-        self.label_25.setText(QCoreApplication.translate("mainWindow", u"Refer to the NTC areas (NTC tab)", None))
-        self.label_29.setText(QCoreApplication.translate("mainWindow", u"Max. Iterations", None))
-        self.label_19.setText(QCoreApplication.translate("mainWindow", u"Now", None))
-        self.label_20.setText(QCoreApplication.translate("mainWindow", u"Target", None))
-        self.atcRadioButton.setText(QCoreApplication.translate("mainWindow", u"Available transfer capacity", None))
-        self.label_74.setText("")
-        self.label_46.setText(QCoreApplication.translate("mainWindow", u"Continuation power flow", None))
-        self.start_vs_from_default_radioButton.setText(QCoreApplication.translate("mainWindow", u"Use alpha target from current situation", None))
-        self.start_vs_from_selected_radioButton.setText(QCoreApplication.translate("mainWindow", u"Use departure and target\n"
-"points from time series", None))
-        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_5), QCoreApplication.translate("mainWindow", u"CPF", None))
-#if QT_CONFIG(tooltip)
-        self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_5), QCoreApplication.translate("mainWindow", u"Continuation power flow settings", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_72.setText("")
-        self.label_73.setText(QCoreApplication.translate("mainWindow", u"Optimal Power Flow", None))
-#if QT_CONFIG(tooltip)
-        self.lpf_solver_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Choose the optimal power flow method", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_4.setText(QCoreApplication.translate("mainWindow", u"Time grouping", None))
-        self.label_42.setText(QCoreApplication.translate("mainWindow", u"Method", None))
-#if QT_CONFIG(tooltip)
-        self.opf_time_grouping_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Choose the time grouping to possibly shorten the solution time.</p><p>This splits the time series by week, month, etc. and the subproblems are solved sequentially.</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_10.setText(QCoreApplication.translate("mainWindow", u"MIP solver", None))
-#if QT_CONFIG(tooltip)
-        self.mip_solver_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Choose the external mixed integer programming solver", None))
-#endif // QT_CONFIG(tooltip)
-        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"OPF", None))
-#if QT_CONFIG(tooltip)
-        self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Optimal power flow settings", None))
-#endif // QT_CONFIG(tooltip)
         self.tolerance_stochastic_spinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e-", None))
         self.label_75.setText("")
         self.label_47.setText(QCoreApplication.translate("mainWindow", u"Stochastic power flow", None))

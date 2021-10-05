@@ -17,6 +17,7 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
+from GridCal.Engine.basic_structures import ZonalGrouping
 from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
@@ -24,7 +25,7 @@ from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 from GridCal.ThirdParty.pulp import *
 
 
-def get_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
+def get_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2, FCSlack1, FCSlack2,
                            cost_g, cost_b, cost_l, cost_br):
     """
     Add the objective function to the problem
@@ -33,6 +34,8 @@ def get_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
     :param LSlack: Load slack LpVars (nl, nt)
     :param FSlack1: Branch overload slack1 (m, nt)
     :param FSlack2: Branch overload slack2 (m, nt)
+    :param FCSlack1: Branch contingency overload slack1 (m, nt)
+    :param FCSlack2: Branch contingency overload slack2 (m, nt)
     :param cost_g: Cost of the generators (ng, nt)
     :param cost_b: Cost of the batteries (nb, nt)
     :param cost_l: Cost of the loss of load (nl, nt)
@@ -47,6 +50,8 @@ def get_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
     f_obj += lpSum(cost_l * LSlack)
 
     f_obj += lpSum(cost_br * (FSlack1 + FSlack2))
+
+    f_obj += cost_br * lpSum(FCSlack1) + cost_br * lpSum(FCSlack2)
 
     return f_obj
 
@@ -192,6 +197,60 @@ def add_branch_loading_restriction(problem: LpProblem,
     return Pbr_f
 
 
+def formulate_contingency(problem: LpProblem, numerical_circuit: OpfTimeCircuit, flow_f, ratings, LODF, monitor):
+    """
+
+    :param problem:
+    :param numerical_circuit:
+    :param flow_f:
+    :param LODF:
+    :param monitor:
+    :return:
+    """
+    nbr, nt = ratings.shape
+
+    # get the indices of the branches marked for contingency
+    con_br_idx = numerical_circuit.branch_data.get_contingency_enabled_indices()
+
+    # formulate contingency flows
+    # this is done in a separated loop because all te flow variables must exist beforehand
+    flow_lst = list()
+    indices = list()  # (t, m, contingency_m)
+    overload1_lst = list()
+    overload2_lst = list()
+
+    for t, m in product(range(nt), range(nbr)):  # for every branch
+
+        if monitor[m]:  # the monitor variable is pre-computed in the previous loop
+            _f = numerical_circuit.branch_data.F[m]
+            _t = numerical_circuit.branch_data.T[m]
+
+            for ic, c in enumerate(con_br_idx):  # for every contingency
+
+                if m != c:
+
+                    # compute the N-1 flow
+                    contingency_flow = flow_f[m, t] + LODF[m, c] * flow_f[c, t]
+
+                    # rating restriction in the sense from-to
+                    overload1 = LpVariable("n-1_overload1_{0}_{1}_{2}".format(t, m, c), 0, 99999)
+                    problem.add(contingency_flow <= (ratings[m, t] + overload1),
+                                "n-1_ft_up_rating_{0}_{1}_{2}".format(t, m, c))
+
+                    # rating restriction in the sense to-from
+                    overload2 = LpVariable("n-1_overload2_{0}_{1}_{2}".format(t, m, c), 0, 99999)
+                    problem.add((-ratings[m, t] - overload2) <= contingency_flow,
+                                "n-1_tf_down_rating_{0}_{1}_{2}".format(t, m, c))
+
+                    # store the variables
+                    flow_lst.append(contingency_flow)
+                    overload1_lst.append(overload1)
+                    overload2_lst.append(overload2)
+                    indices.append((t, m, c))
+
+    return flow_lst, overload1_lst, overload2_lst, con_br_idx
+
+
 def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Efficiency, Pb, E, dt):
     """
     Add the batteries capacity restrictions
@@ -233,7 +292,8 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
 class OpfDcTimeSeries(OpfTimeSeries):
 
     def __init__(self, numerical_circuit: OpfTimeCircuit, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
-                 batteries_energy_0=None):
+                 batteries_energy_0=None, zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
+                 skip_generation_limits=False, consider_contingencies=False, LODF=None):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
@@ -241,16 +301,24 @@ class OpfDcTimeSeries(OpfTimeSeries):
         :param end_idx: end index of the time series
         :param solver: MIP solver_type to use
         :param batteries_energy_0: initial state of the batteries, if None the default values are taken
+        :param zonal_grouping:
+        :param skip_generation_limits:
+
         """
         OpfTimeSeries.__init__(self, numerical_circuit=numerical_circuit, start_idx=start_idx, end_idx=end_idx,
                                solver=solver, skip_formulation=True)
+
+        self.zonal_grouping = zonal_grouping
+        self.skip_generation_limits = skip_generation_limits
+        self.consider_contingencies = consider_contingencies
+        self.LODF = LODF
 
         # build the formulation
         self.problem = self.formulate(batteries_energy_0=batteries_energy_0)
 
     def formulate(self, batteries_energy_0=None):
         """
-        Formulate the AC OPF time series in the non-sequential fashion (all to the solver_type at once)
+        Formulate the DC OPF time series in the non-sequential fashion (all to the solver_type at once)
         :param batteries_energy_0: initial energy state of the batteries (if none, the default is taken)
         :return: PuLP Problem instance
         """
@@ -280,8 +348,13 @@ class OpfDcTimeSeries(OpfTimeSeries):
         cost_b = self.numerical_circuit.battery_cost[:, a:b]
 
         # generator
-        Pg_max = self.numerical_circuit.generator_pmax / Sbase
-        Pg_min = self.numerical_circuit.generator_pmin / Sbase
+        if self.skip_generation_limits:
+            Pg_max = np.zeros(self.numerical_circuit.ngen) * 99999999.0
+            Pg_min = np.zeros(self.numerical_circuit.ngen) * -99999999.0
+        else:
+            Pg_max = self.numerical_circuit.generator_pmax / Sbase
+            Pg_min = self.numerical_circuit.generator_pmin / Sbase
+
         P_profile = self.numerical_circuit.generator_p[:, a:b] / Sbase
         cost_g = self.numerical_circuit.generator_cost[:, a:b]
         enabled_for_dispatch = self.numerical_circuit.generator_dispatchable
@@ -320,17 +393,6 @@ class OpfDcTimeSeries(OpfTimeSeries):
         # declare problem
         problem = LpProblem(name='DC_OPF_Time_Series')
 
-        # add the objective function
-        problem += get_objective_function(Pg=Pg,
-                                          Pb=Pb,
-                                          LSlack=load_slack,
-                                          FSlack1=branch_rating_slack1,
-                                          FSlack2=branch_rating_slack2,
-                                          cost_g=cost_g,
-                                          cost_b=cost_b,
-                                          cost_l=cost_l,
-                                          cost_br=cost_br)
-
         # set the fixed generation values
         set_fix_generation(problem=problem,
                            Pg=Pg,
@@ -354,16 +416,24 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                                         start_=self.start_idx,
                                                         end_=self.end_idx)
 
-        load_f = add_branch_loading_restriction(problem=problem,
-                                                theta=theta,
-                                                ys=ys,
-                                                F=F,
-                                                T=T,
-                                                ratings=branch_ratings,
-                                                ratings_slack_from=branch_rating_slack1,
-                                                ratings_slack_to=branch_rating_slack2,
-                                                monitored=self.numerical_circuit.branch_data.monitor_loading,
-                                                active=br_active)
+        # add branch restrictions
+        if self.zonal_grouping == ZonalGrouping.NoGrouping:
+            load_f = add_branch_loading_restriction(problem=problem,
+                                                    theta=theta,
+                                                    ys=ys,
+                                                    F=F,
+                                                    T=T,
+                                                    ratings=branch_ratings,
+                                                    ratings_slack_from=branch_rating_slack1,
+                                                    ratings_slack_to=branch_rating_slack2,
+                                                    monitored=self.numerical_circuit.branch_data.monitor_loading,
+                                                    active=br_active)
+
+        elif self.zonal_grouping == ZonalGrouping.All:
+            load_f = np.zeros((self.numerical_circuit.nbr, nt))
+
+        else:
+            raise ValueError()
 
         # if there are batteries, add the batteries
         if nb > 0:
@@ -372,6 +442,32 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                               Capacity=Capacity,
                                               Efficiency=Efficiency,
                                               Pb=Pb, E=E, dt=dt)
+
+        if self.consider_contingencies:
+            flow_lst, overload1_lst, overload2_lst, con_br_idx = formulate_contingency(problem=problem,
+                                                                                       numerical_circuit=self.numerical_circuit,
+                                                                                       flow_f=load_f,
+                                                                                       ratings=branch_ratings,
+                                                                                       LODF=self.LODF,
+                                                                                       monitor=self.numerical_circuit.branch_data.monitor_loading)
+        else:
+            flow_lst = list()
+            con_br_idx = list()
+            overload1_lst = list()
+            overload2_lst = list()
+
+        # add the objective function
+        problem += get_objective_function(Pg=Pg,
+                                          Pb=Pb,
+                                          LSlack=load_slack,
+                                          FSlack1=branch_rating_slack1,
+                                          FSlack2=branch_rating_slack2,
+                                          FCSlack1=overload1_lst,
+                                          FCSlack2=overload2_lst,
+                                          cost_g=cost_g,
+                                          cost_b=cost_b,
+                                          cost_l=cost_l,
+                                          cost_br=cost_br)
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
@@ -409,7 +505,7 @@ if __name__ == '__main__':
     pf_options = PowerFlowOptions()
 
     options = OptimalPowerFlowOptions(solver=solver,
-                                      grouping=grouping,
+                                      time_grouping=grouping,
                                       mip_solver=mip_solver,
                                       power_flow_options=pf_options)
 

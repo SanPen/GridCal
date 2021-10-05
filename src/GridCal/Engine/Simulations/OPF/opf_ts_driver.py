@@ -116,7 +116,11 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                       start_idx=start_,
                                       end_idx=end_,
                                       solver=self.options.mip_solver,
-                                      batteries_energy_0=batteries_energy_0)
+                                      batteries_energy_0=batteries_energy_0,
+                                      zonal_grouping=self.options.zonal_grouping,
+                                      skip_generation_limits=self.options.skip_generation_limits,
+                                      consider_contingencies=self.options.consider_contingencies,
+                                      LODF=self.options.LODF)
 
         elif self.options.solver == SolverType.AC_OPF:
 

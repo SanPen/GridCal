@@ -13,8 +13,12 @@ Hence if something goes wrong, you need to re-upload with a new Version number.
 Version 4.2.2
 ^^^^^^^^^^^^^^^
 
-- Fixed CIM export
-- Fixed Batteries min_soc bug when running time series OPF
+- Fixed CIM export.
+- Fixed Batteries min_soc bug when running time series OPF.
+
+- Added contingencies to the DC-OPF time series.
+- Added possibility of copper plate grouping.
+
 
 
 Version 4.2.1

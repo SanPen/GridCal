@@ -17,7 +17,7 @@ import numpy as np
 import time
 
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Engine.basic_structures import TimeGrouping, MIPSolvers
+from GridCal.Engine.basic_structures import TimeGrouping, MIPSolvers, ZonalGrouping
 from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.OPF.ac_opf import OpfAc
@@ -38,25 +38,36 @@ class OptimalPowerFlowOptions:
 
     def __init__(self, verbose=False,
                  solver: SolverType = SolverType.DC_OPF,
-                 grouping: TimeGrouping = TimeGrouping.NoGrouping,
+                 time_grouping: TimeGrouping = TimeGrouping.NoGrouping,
+                 zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                  mip_solver=MIPSolvers.CBC,
                  faster_less_accurate=False,
-                 power_flow_options=None, bus_types=None):
+                 power_flow_options=None,
+                 bus_types=None,
+                 consider_contingencies=False,
+                 skip_generation_limits=False,
+                 tolerance=1.0,
+                 LODF=None):
         """
         Optimal power flow options
         :param verbose:
-        :param solver: OPF solver_type type
-        :param grouping:
+        :param solver:
+        :param time_grouping:
+        :param zonal_grouping:
         :param mip_solver:
         :param faster_less_accurate:
         :param power_flow_options:
         :param bus_types:
+        :param consider_contingencies:
+        :param skip_generation_limits:
+        :param tolerance:
+        :param LODF:
         """
         self.verbose = verbose
 
         self.solver = solver
 
-        self.grouping = grouping
+        self.grouping = time_grouping
 
         self.mip_solver = mip_solver
 
@@ -65,6 +76,16 @@ class OptimalPowerFlowOptions:
         self.power_flow_options = power_flow_options
 
         self.bus_types = bus_types
+
+        self.zonal_grouping = zonal_grouping
+
+        self.skip_generation_limits = skip_generation_limits
+
+        self.consider_contingencies = consider_contingencies
+
+        self.LODF = LODF
+
+        self.tolerance = tolerance
 
 
 class OptimalPowerFlow(DriverTemplate):

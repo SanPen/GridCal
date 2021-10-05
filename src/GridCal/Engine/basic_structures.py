@@ -534,6 +534,25 @@ class TimeGrouping(Enum):
             return s
 
 
+class ZonalGrouping(Enum):
+    NoGrouping = 'No grouping'
+    Area = 'Area'
+    All = 'All (copper plate)'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return ZonalGrouping[s]
+        except KeyError:
+            return s
+
+
 
 
 

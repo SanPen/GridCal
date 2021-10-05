@@ -199,6 +199,12 @@ class MainGUI(QMainWindow):
         self.opf_time_groups[bs.TimeGrouping.Hourly.value] = bs.TimeGrouping.Hourly
         self.ui.opf_time_grouping_comboBox.setModel(get_list_model(list(self.opf_time_groups.keys())))
 
+        self.opf_zonal_groups = OrderedDict()
+        self.opf_zonal_groups[bs.ZonalGrouping.NoGrouping.value] = bs.ZonalGrouping.NoGrouping
+        # self.opf_zonal_groups[bs.ZonalGrouping.Area.value] = bs.ZonalGrouping.Area
+        self.opf_zonal_groups[bs.ZonalGrouping.All.value] = bs.ZonalGrouping.All
+        self.ui.opfZonalGroupByComboBox.setModel(get_list_model(list(self.opf_zonal_groups.keys())))
+
         self.mip_solvers_dict = OrderedDict()
         self.mip_solvers_dict[bs.MIPSolvers.CBC.value] = bs.MIPSolvers.CBC
         self.mip_solvers_dict[bs.MIPSolvers.SCIP.value] = bs.MIPSolvers.SCIP
@@ -3689,13 +3695,34 @@ class MainGUI(QMainWindow):
                     # get the power flow options from the GUI
                     solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
                     mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
-                    grouping = self.opf_time_groups[self.ui.opf_time_grouping_comboBox.currentText()]
+                    time_grouping = self.opf_time_groups[self.ui.opf_time_grouping_comboBox.currentText()]
+                    zonal_grouping = self.opf_zonal_groups[self.ui.opfZonalGroupByComboBox.currentText()]
                     pf_options = self.get_selected_power_flow_options()
+                    consider_contingencies = self.ui.considerContingenciesOpfCheckBox.isChecked()
+                    skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
+                    tolerance = 10**self.ui.opfTolSpinBox.value()
+
+                    # try to acquire the linear results
+                    linear_results = self.session.linear_power_flow
+                    if linear_results is not None:
+                        LODF = linear_results.LODF
+                    else:
+                        LODF = None
+                        if consider_contingencies:
+                            warning_msg("To consider contingencies, the LODF matrix is required.\n"
+                                        "Run a linear simulation first", "OPF time series")
+                            return
 
                     options = sim.OptimalPowerFlowOptions(solver=solver,
-                                                          grouping=grouping,
+                                                          time_grouping=time_grouping,
+                                                          zonal_grouping=zonal_grouping,
                                                           mip_solver=mip_solver,
-                                                          power_flow_options=pf_options)
+                                                          power_flow_options=pf_options,
+                                                          consider_contingencies=consider_contingencies,
+                                                          skip_generation_limits=skip_generation_limits,
+                                                          tolerance=tolerance,
+                                                          LODF=LODF
+                                                          )
 
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1
