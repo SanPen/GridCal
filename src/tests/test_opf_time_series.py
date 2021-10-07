@@ -38,7 +38,7 @@ def test_opf_ts():
     opf_options = OptimalPowerFlowOptions(verbose=False,
                                           solver=SolverType.DC_OPF,
                                           power_flow_options=power_flow_options,
-                                          grouping=TimeGrouping.Daily)
+                                          time_grouping=TimeGrouping.Daily)
     s = 23
     e = 143
     opf_ts = OptimalPowerFlowTimeSeries(grid=main_circuit,

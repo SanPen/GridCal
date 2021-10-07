@@ -33,3 +33,4 @@ from GridCal.Engine.Devices.wire import *
 from GridCal.Engine.Devices.measurement import *
 from GridCal.Engine.Devices.groupings import *
 from GridCal.Engine.Devices.templates import *
+from GridCal.Engine.Devices.enumerations import *

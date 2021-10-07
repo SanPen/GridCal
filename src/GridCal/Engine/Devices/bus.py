@@ -80,7 +80,8 @@ class Bus(EditableDevice):
 
     """
 
-    def __init__(self, name="Bus", idtag=None, code='', vnom=10, vmin=0.9, vmax=1.1, r_fault=0.0, x_fault=0.0,
+    def __init__(self, name="Bus", idtag=None, code='', vnom=10, vmin=0.9, vmax=1.1,
+                 angle_min=-6.28, angle_max=6.28, r_fault=0.0, x_fault=0.0,
                  xpos=0, ypos=0, height=0, width=0, active=True, is_slack=False, is_dc=False,
                  area=None, zone=None, substation=None, country=None, longitude=0.0, latitude=0.0):
 
@@ -100,9 +101,13 @@ class Bus(EditableDevice):
                                                   'Vnom': GCProp('kV', float,
                                                                  'Nominal line voltage of the bus.'),
                                                   'Vmin': GCProp('p.u.', float,
-                                                                 'Lower range of allowed voltage.'),
+                                                                 'Lower range of allowed voltage module.'),
                                                   'Vmax': GCProp('p.u.', float,
-                                                                 'Higher range of allowed range.'),
+                                                                 'Higher range of allowed voltage module.'),
+                                                  'angle_min': GCProp('rad.', float,
+                                                                      'Lower range of allowed voltage angle.'),
+                                                  'angle_max': GCProp('rad.', float,
+                                                                      'Higher range of allowed voltage angle.'),
                                                   'r_fault': GCProp('p.u.', float,
                                                                     'Resistance of the fault.\n'
                                                                     'This is used for short circuit studies.'),
@@ -129,6 +134,10 @@ class Bus(EditableDevice):
 
         # maximum voltage limit
         self.Vmax = vmax
+
+        self.angle_min = angle_min
+
+        self.angle_max = angle_max
 
         # summation of lower reactive power limits connected
         self.Qmin_sum = 0

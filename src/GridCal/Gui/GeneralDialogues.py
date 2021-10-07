@@ -18,7 +18,7 @@ from datetime import datetime
 from PySide2 import QtCore, QtGui, QtWidgets
 
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Gui.GuiFunctions import ObjectsModel, get_tree_model
+from GridCal.Gui.GuiFunctions import ObjectsModel, get_tree_model, get_list_model
 
 
 class ProfileTypes(Enum):
@@ -103,56 +103,6 @@ class NewProfilesStructureDialogue(QtWidgets.QDialog):
 
         return steps, step_length, step_unit, time_base.toPython()
 
-#
-# class LogsModel(QtCore.QAbstractTableModel):
-#
-#     def __init__(self, logs: Logger, parent=None):
-#
-#         QtCore.QAbstractTableModel.__init__(self, parent)
-#
-#         self.logs = logs
-#
-#     def flags(self, index):
-#         return QtCore.Qt.ItemIsEnabled
-#
-#     def rowCount(self, parent=None):
-#         return len(self.logs)
-#
-#     def columnCount(self, parent=None):
-#         return 2
-#
-#     def headerData(self, section, orientation, role=None):
-#         """
-#
-#         :param section:
-#         :param orientation:
-#         :param role:
-#         :return:
-#         """
-#         if role == QtCore.Qt.DisplayRole and orientation == QtCore.Qt.Horizontal:
-#             if section == 0:
-#                 return "Severity"
-#             elif section == 1:
-#                 return "Message"
-#         return None
-#
-#     def data(self, index, role=None):
-#         """
-#
-#         :param index:
-#         :param role:
-#         :return:
-#         """
-#         if index.isValid() and role == QtCore.Qt.DisplayRole:
-#
-#             if index.column() == 0:
-#                 return str(self.logs.severity[index.row()])
-#
-#             elif index.column() == 1:
-#                 return str(self.logs.messages[index.row()])
-#
-#         return None
-
 
 def fill_tree_from_logs(logger: Logger):
     """
@@ -195,6 +145,7 @@ def fill_tree_from_logs(logger: Logger):
                 message_child.appendRow([time_child, elm_child, value_child, expected_val_child])
 
             message_child.setEditable(editable)
+
             severity_child.appendRow(message_child)
 
         severity_child.setEditable(editable)
@@ -203,11 +154,40 @@ def fill_tree_from_logs(logger: Logger):
     return model
 
 
+class MTreeExpandHook(QtCore.QObject):
+    """
+    MTreeExpandHook( QTreeView )
+    """
+
+    def __init__(self, tree):
+        super(MTreeExpandHook, self).__init__()
+        self.setParent(tree)
+        # NOTE viewport for click event listen
+        tree.viewport().installEventFilter(self)
+        self.tree = tree
+
+    def eventFilter(self, receiver, event):
+        if (
+            # NOTE mouse left click
+            event.type() == QtCore.QEvent.Type.MouseButtonPress
+            # NOTE keyboard shift press
+            and event.modifiers() & QtCore.Qt.ShiftModifier
+        ):
+            # NOTE get mouse local position
+            pos = self.tree.mapFromGlobal(QtGui.QCursor.pos())
+            index = self.tree.indexAt(pos)
+            if not self.tree.isExpanded(index):
+                # NOTE expand all child
+                self.tree.expandRecursively(index)
+                return True
+        return super(MTreeExpandHook, self).eventFilter(self.tree, event)
+
+
 class LogsDialogue(QtWidgets.QDialog):
     """
     New profile dialogue window
     """
-    def __init__(self, name, logs: Logger()):
+    def __init__(self, name, logs: Logger(), expand_all=True):
         super(LogsDialogue, self).__init__()
         self.setObjectName("self")
         self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
@@ -222,6 +202,10 @@ class LogsDialogue(QtWidgets.QDialog):
         self.logs_table.setFirstColumnSpanned(0, QtCore.QModelIndex(), True)
         self.logs_table.setFirstColumnSpanned(1, QtCore.QModelIndex(), True)
         self.logs_table.setAnimated(True)
+        # MTreeExpandHook(self.logs_table)
+
+        if expand_all:
+            self.logs_table.expandAll()
 
         # accept button
         self.accept_btn = QtWidgets.QPushButton()

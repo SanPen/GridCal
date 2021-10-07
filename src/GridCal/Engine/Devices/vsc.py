@@ -213,6 +213,20 @@ class VSC(EditableDevice):
     def get_weight(self):
         return np.sqrt(self.R1 * self.R1 + self.X1 * self.X1)
 
+    def change_base(self, Sbase_old, Sbase_new):
+        b = Sbase_new / Sbase_old
+
+        self.R1 *= b
+        self.X1 *= b
+        self.G0 *= b
+        self.Beq *= b
+
+    def get_coordinates(self):
+        """
+        Get the line defining coordinates
+        """
+        return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]
+
     def correct_buses_connection(self):
         """
         Fix the buses connection (from: DC, To: AC)
@@ -257,7 +271,9 @@ class VSC(EditableDevice):
                  ConverterControlType.type_II_4: 4,
                  ConverterControlType.type_II_5: 5,
                  ConverterControlType.type_III_6: 6,
-                 ConverterControlType.type_III_7: 7}
+                 ConverterControlType.type_III_7: 7,
+                 ConverterControlType.type_IV_I: 8,
+                 ConverterControlType.type_IV_II: 9}
         if version == 2:
             d = {'id': self.idtag,
                  'type': 'vsc',

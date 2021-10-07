@@ -175,9 +175,3 @@ class TimeSeriesClustering(TimeSeries):
         self.results = self.run_single_thread(time_indices=self.sampled_time_idx)
 
         self.elapsed = time.time() - a
-
-        # send the finnish signal
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
-

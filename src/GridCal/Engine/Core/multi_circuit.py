@@ -347,7 +347,7 @@ class MultiCircuit:
         """
         return self.get_branches_wo_hvdc() + self.hvdc_lines
 
-    def get_loads(self):
+    def get_loads(self) -> List[Load]:
         """
         Returns a list of :ref:`Load<load>` objects in the grid.
         """
@@ -368,7 +368,7 @@ class MultiCircuit:
                 lst.append(elm.name)
         return np.array(lst)
 
-    def get_static_generators(self):
+    def get_static_generators(self) -> List[StaticGenerator]:
         """
         Returns a list of :ref:`StaticGenerator<static_generator>` objects in the grid.
         """
@@ -389,7 +389,7 @@ class MultiCircuit:
                 lst.append(elm.name)
         return np.array(lst)
 
-    def get_shunts(self):
+    def get_shunts(self) -> List[Shunt]:
         """
         Returns a list of :ref:`Shunt<shunt>` objects in the grid.
         """
@@ -410,7 +410,7 @@ class MultiCircuit:
                 lst.append(elm.name)
         return np.array(lst)
 
-    def get_generators(self):
+    def get_generators(self) -> List[Generator]:
         """
         Returns a list of :ref:`Generator<generator>` objects in the grid.
         """
@@ -431,7 +431,7 @@ class MultiCircuit:
                 lst.append(elm.name)
         return np.array(lst)
 
-    def get_batteries(self):
+    def get_batteries(self) -> List[Battery]:
         """
         Returns a list of :ref:`Battery<battery>` objects in the grid.
         """
@@ -2192,3 +2192,20 @@ class MultiCircuit:
             elif branch.bus_from.zone == z2 and branch.bus_to.zone == z1:
                 lst.append((k, branch, -1.0))
         return lst
+
+    def change_base(self, Sbase_new):
+        """
+        Change the elements base impedance
+        :param Sbase_new: new base impedance in MVA
+        """
+        Sbase_old = self.Sbase
+
+        # get all the branches with impedance
+        elms = self.get_branches_wo_hvdc()
+
+        # change the base at each element
+        for elm in elms:
+            elm.change_base(Sbase_old, Sbase_new)
+
+        # assign the new base
+        self.Sbase = Sbase_new

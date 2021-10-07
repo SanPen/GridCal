@@ -411,7 +411,3 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                 self.results.apply_from_island(result_series[i],
                                                islands[i].original_bus_idx,
                                                islands[i].original_branch_idx)
-
-        print('done!')
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()

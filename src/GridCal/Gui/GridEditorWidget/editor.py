@@ -116,7 +116,7 @@ class EditorGraphicsView(QGraphicsView):
             elm = None
             data = QByteArray()
             stream = QDataStream(data, QIODevice.WriteOnly)
-            stream.writeQString('Bus')
+            stream.writeQString('Add bus')
             if obj_type == data:
                 name = 'Bus ' + str(len(self.scene_.circuit.buses))
 
@@ -529,7 +529,11 @@ class GridEditor(QSplitter):
 
         # initialize library of items
         self.libItems = list()
-        self.libItems.append(QStandardItem(object_factory.get_box(), 'Bus'))
+        bus_icon = QIcon()
+        bus_icon.addPixmap(QPixmap(":/Icons/icons/bus_icon.svg"))
+        item = QStandardItem(bus_icon, "Add bus")
+        item.setToolTip("Drag & drop this into the schematic")
+        self.libItems.append(item)
         for i in self.libItems:
             self.libraryModel.appendRow(i)
 
@@ -558,6 +562,7 @@ class GridEditor(QSplitter):
 
         self.name_label = QLineEdit()
         self.name_label.setText(str(self.circuit.name))
+        self.name_label.setToolTip('Name of the model')
         self.name_layout.addWidget(self.name_label)
         self.name_editor_frame.setLayout(self.name_layout)
 
@@ -1265,6 +1270,7 @@ class GridEditor(QSplitter):
 
     def clear(self):
         self.diagramView.scene_.clear()
+        self.name_label.setText("")
 
     def schematic_from_api(self, explode_factor=1.0, prog_func=None, text_func=None):
         """

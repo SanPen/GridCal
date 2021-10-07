@@ -199,10 +199,6 @@ class ReliabilityStudy(DriverTemplate):
 
         run_events(nc=numerical_circuit, events_list=evt)
 
-        print('done!')
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
-
     def cancel(self):
         self.__cancel__ = True
 

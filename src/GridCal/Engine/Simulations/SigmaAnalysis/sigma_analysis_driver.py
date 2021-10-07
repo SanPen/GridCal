@@ -400,11 +400,6 @@ class SigmaAnalysisDriver(DriverTemplate):
                                           options=self.options,
                                           logger=self.logger)
 
-        # send the finnish signal
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
-
     def cancel(self):
         self.__cancel__ = True
 

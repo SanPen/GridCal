@@ -1090,6 +1090,94 @@ class PSSeTransformer:
         else:
             logger.add_warning('Transformer not implemented for version', str(version))
 
+    def get_impedances(self, CW, CZ, CM, V1, V2, sbase, logger, code):
+        """
+
+        CW	Winding I/O code
+        1	Turns ratio (pu on bus base kV)
+        2	Winding voltage kV
+        3	Turns ratio (pu on nominal winding kV)
+
+        CZ	Impedance I/O code
+        1	Z pu (winding kV system MVA)
+        2	Z pu (winding kV winding MVA)
+        3	Load loss (W) & |Z| (pu)
+
+        CM	Admittance I/O code
+        1	Y pu (system base)
+        2	No load loss (W) & Exciting I (pu)
+
+
+        :param CW:
+        :param CZ:
+        :param CM:
+        :return:
+        """
+
+        g = self.MAG1
+        b = self.MAG2
+        tap_mod = self.WINDV1 / self.WINDV2
+        tap_angle = np.deg2rad(self.ANG1)
+
+        # if self.CW == 2 or self.CW == 3:
+        #     tap_mod *= bus_to.Vnom / bus_from.Vnom
+        #
+        # if self.CW == 3:
+        #     tap_mod *= self.NOMV1 / self.NOMV2
+
+        """
+        CW	Winding I/O code
+        1	Turns ratio (pu on bus base kV)
+        2	Winding voltage kV
+        3	Turns ratio (pu on nominal winding kV)        
+        """
+
+        if CW == 1:
+            tap_mod = self.WINDV1 / self.WINDV2
+
+        elif CW == 2:
+            tap_mod = (self.WINDV1 / V1) / (self.WINDV2 / V2)
+
+        elif CW == 3:
+            tap_mod = (self.WINDV1 / self.WINDV2) * (self.NOMV1 / self.NOMV2)
+
+        """
+        CZ	Impedance I/O code
+        1	Z pu (winding kV system MVA)
+        2	Z pu (winding kV winding MVA)
+        3	Load loss (W) & |Z| (pu)
+        """
+
+        if CZ == 1:
+            # the transformer values are in system base
+            r = self.R1_2
+            x = self.X1_2
+
+        elif CZ == 2:
+            # pu on Winding 1 to 2 MVA base (SBASE1-2) and winding voltage base
+            logger.add_warning('Transformer not in system base', code)
+
+            if self.SBASE1_2 > 0:
+                zb = sbase / self.SBASE1_2
+                r = self.R1_2 * zb
+                x = self.X1_2 * zb
+
+            else:
+                logger.add_error('Transformer SBASE1_2 is zero', code)
+
+        elif CZ == 3:
+            # R1-2 is the load loss in watts, and X1-2 is the impedance magnitude
+            # in pu on Winding 1 to 2 MVA base (SBASE1-2) and winding voltage base
+            r = self.R1_2 * 1e-6 / self.SBASE1_2 / sbase
+            x = np.sqrt(self.X1_2 * self.X1_2 - r * r)
+            logger.add_warning('Transformer not in system base', code)
+
+        else:
+            raise Exception('Unknown impedance combination CZ=' + str(self.CZ))
+
+
+        return r, x, g, b, tap_mod, tap_angle
+
     def get_object(self, psse_bus_dict, sbase, logger: Logger):
         """
         Return Newton branch object
@@ -1126,12 +1214,6 @@ class PSSeTransformer:
             bus_from = psse_bus_dict[self.I]
             bus_to = psse_bus_dict[self.J]
 
-            # 11000_AGUAYO_400_12004_ABANTO_400_1_CKT
-            # if self.NAME != "":
-            # name = "{0}:{1}_{2}_{3}_{4}_{5}_{6}_{7}".format(self.NAME,
-            #                                                 self.I, bus_from.name, bus_from.Vnom,
-            #                                                 self.J, bus_to.name, bus_to.Vnom, self.CKT)
-            # else:
             name = "{0}_{1}_{2}_{3}_{4}_{5}_{6}".format(self.I, bus_from.name, bus_from.Vnom,
                                                         self.J, bus_to.name, bus_to.Vnom, self.CKT)
 
@@ -1140,36 +1222,13 @@ class PSSeTransformer:
             code = str(self.I) + '_' + str(self.J) + '_' + str(self.CKT)
             code = code.strip().replace("'", "")
 
+            r, x, g, b, tap_mod, tap_angle = self.get_impedances(self.CW, self.CZ, self.CM,
+                                                                 bus_to.Vnom, bus_from.Vnom,
+                                                                 sbase, logger, code)
+
             """            
             PSS/e's randomness:            
             """
-            zbs = bus_from.Vnom * bus_from.Vnom / sbase
-
-            r = self.R1_2
-            x = self.X1_2
-            g = self.MAG1
-            b = self.MAG2
-            tap_mod = self.WINDV1 / self.WINDV2
-            use_winding_base_voltage = True
-
-            if self.CZ == 3:
-                r *= 1e-6 / self.SBASE1_2 / sbase
-                x = np.sqrt(self.X1_2 * self.X1_2 - r * r)
-
-            if self.CZ == 2:
-                if self.SBASE1_2 > 0:
-                    zb = sbase / self.SBASE1_2
-                    r *= zb
-                    x *= zb
-                else:
-                    logger.add_error('Transformer SBASE1_2 is zero', code)
-
-            # adjust tap
-            if self.CW == 2 or self.CW == 3:
-                tap_mod *= bus_to.Vnom / bus_from.Vnom
-
-            if self.CW == 3:
-                tap_mod *= self.NOMV1 / self.NOMV2
 
             if self.NOMV1 == 0:
                 V1 = bus_from.Vnom
@@ -1197,7 +1256,7 @@ class PSSeTransformer:
                                 rate=self.RATA1,
                                 contingency_factor=round(contingency_factor, 6),
                                 tap=tap_mod,
-                                shift_angle=np.deg2rad(self.ANG1),
+                                shift_angle=tap_angle,
                                 active=bool(self.STAT),
                                 mttf=0,
                                 mttr=0)

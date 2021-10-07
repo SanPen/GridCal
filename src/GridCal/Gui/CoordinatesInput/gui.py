@@ -21,12 +21,14 @@ class Ui_Dialog(object):
         Dialog.resize(769, 420)
         self.verticalLayout = QVBoxLayout(Dialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setContentsMargins(-1, 0, -1, 9)
         self.frame = QFrame(Dialog)
         self.frame.setObjectName(u"frame")
         self.frame.setMaximumSize(QSize(16777215, 40))
         self.frame.setFrameShape(QFrame.NoFrame)
         self.frame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_5 = QHBoxLayout(self.frame)
+        self.horizontalLayout_5.setSpacing(1)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.open_button = QPushButton(self.frame)
@@ -64,13 +66,14 @@ class Ui_Dialog(object):
         self.frame_4.setFrameShadow(QFrame.Raised)
         self.verticalLayout_2 = QVBoxLayout(self.frame_4)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.verticalLayout_2.setContentsMargins(-1, 0, -1, 0)
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.frame_2 = QFrame(self.frame_4)
         self.frame_2.setObjectName(u"frame_2")
         self.frame_2.setFrameShape(QFrame.NoFrame)
         self.frame_2.setFrameShadow(QFrame.Raised)
         self.formLayout = QFormLayout(self.frame_2)
         self.formLayout.setObjectName(u"formLayout")
+        self.formLayout.setContentsMargins(-1, 0, -1, -1)
         self.xComboBox = QComboBox(self.frame_2)
         self.xComboBox.setObjectName(u"xComboBox")
 
@@ -111,10 +114,6 @@ class Ui_Dialog(object):
 
         self.formLayout.setWidget(5, QFormLayout.LabelRole, self.longitudeCheckBox)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.formLayout.setItem(6, QFormLayout.LabelRole, self.verticalSpacer)
-
         self.nameRadioButton = QRadioButton(self.frame_2)
         self.nameRadioButton.setObjectName(u"nameRadioButton")
         self.nameRadioButton.setChecked(True)
@@ -139,6 +138,10 @@ class Ui_Dialog(object):
 
         self.verticalLayout_2.addWidget(self.frame_2)
 
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.verticalLayout_2.addItem(self.verticalSpacer)
+
         self.splitter.addWidget(self.frame_4)
         self.frame_6 = QFrame(self.splitter)
         self.frame_6.setObjectName(u"frame_6")
@@ -146,7 +149,7 @@ class Ui_Dialog(object):
         self.frame_6.setFrameShadow(QFrame.Raised)
         self.verticalLayout_3 = QVBoxLayout(self.frame_6)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.verticalLayout_3.setContentsMargins(0, 0, 0, -1)
+        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.assignation_table = QTableView(self.frame_6)
         self.assignation_table.setObjectName(u"assignation_table")
 

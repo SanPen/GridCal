@@ -306,11 +306,6 @@ class TopologyReduction(DriverTemplate):
             progress = (i+1) / total * 100
             self.progress_signal.emit(progress)
 
-        # display progress
-        self.progress_text.emit('Done')
-        self.progress_signal.emit(0.0)
-        self.done_signal.emit()
-
     def cancel(self):
         """
         Cancel the simulation

@@ -82,6 +82,7 @@ class ResultTypes(Enum):
     HvdcOverloads = 'HVDC overloads', DeviceType.HVDCLineDevice
     NodeSlacks = 'Nodal slacks', DeviceType.BusDevice
     GenerationDelta = 'Generation deltas', DeviceType.GeneratorDevice
+    GenerationDeltaSlacks = 'Generation delta slacks', DeviceType.GeneratorDevice
     InterAreaExchange = 'Inter-Area exchange', DeviceType.NoDevice
 
     # Short-circuit
@@ -94,6 +95,8 @@ class ResultTypes(Enum):
     OTDF = 'Outage transfer distribution factors', DeviceType.BranchDevice
 
     MaxOverloads = 'Maximum contingency flow', DeviceType.BranchDevice
+    ContingencyFlows = 'Contingency flow', DeviceType.BranchDevice
+    ContingencyLoading = 'Contingency loading', DeviceType.BranchDevice
     WorstContingencyFlows = 'Worst contingency Sf', DeviceType.BranchDevice
     WorstContingencyLoading = 'Worst contingency loading', DeviceType.BranchDevice
     ContingencyFrequency = 'Contingency frequency', DeviceType.BranchDevice
@@ -117,6 +120,11 @@ class ResultTypes(Enum):
     AvailableTransferCapacityBeta = 'Sensitivity to the exchange (N-1)', DeviceType.BranchDevice
     NetTransferCapacity = 'Net transfer capacity', DeviceType.BranchDevice
     AvailableTransferCapacityReport = 'ATC Report', DeviceType.NoDevice
+
+    # inputs analysis
+    ZoneAnalysis = 'Zone analysis', DeviceType.NoDevice
+    CountryAnalysis = 'Country analysis', DeviceType.NoDevice
+    AreaAnalysis = 'Area analysis', DeviceType.NoDevice
 
     def __str__(self):
         return self.value

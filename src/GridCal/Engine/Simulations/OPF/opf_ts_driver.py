@@ -116,7 +116,11 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                       start_idx=start_,
                                       end_idx=end_,
                                       solver=self.options.mip_solver,
-                                      batteries_energy_0=batteries_energy_0)
+                                      batteries_energy_0=batteries_energy_0,
+                                      zonal_grouping=self.options.zonal_grouping,
+                                      skip_generation_limits=self.options.skip_generation_limits,
+                                      consider_contingencies=self.options.consider_contingencies,
+                                      LODF=self.options.LODF)
 
         elif self.options.solver == SolverType.AC_OPF:
 
@@ -176,7 +180,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
         n = len(groups)
         i = 1
-        energy_0 = None
+        energy_0 = self.numerical_circuit.battery_data.battery_soc_0 * self.numerical_circuit.battery_data.battery_enom
         while i < n and not self.__cancel__:
 
             start_ = groups[i - 1]
@@ -191,7 +195,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
             energy_0 = self.results.battery_energy[end_ - 1, :]
 
-            self.progress_text.emit('Running OPF for the time group ' + str(i) + ' in external solver_type...')
+            self.progress_text.emit('Running OPF for the time group ' + str(i) + ' in external solver...')
             progress = ((start_ - self.start_ + 1) / (self.end_ - self.start_)) * 100
             self.progress_signal.emit(progress)
 
@@ -212,8 +216,3 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
         end = time.time()
         self.elapsed = end - start
-
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
-

@@ -400,8 +400,6 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         end = time.time()
         self.elapsed = end - start
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
 
     def get_steps(self):
         """

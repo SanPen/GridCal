@@ -392,11 +392,6 @@ class StochasticPowerFlowDriver(DriverTemplate):
             elif self.simulation_type == StochasticPowerFlowType.LatinHypercube:
                 self.results = self.run_single_thread_lhs()
 
-        # send the finnish signal
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
-
     def cancel(self):
         """
         Cancel the simulation

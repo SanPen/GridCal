@@ -14,6 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
 from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
+from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.ThirdParty.pulp import *
 from ortools.linear_solver import pywraplp
@@ -42,11 +43,13 @@ class Opf:
 
         self.solver_type = solver_type
 
-        self.solver = pywraplp.Solver.CreateSolver(self.solver_type.value)
-
         self.status = 100000  # a number that is not likely to be an enumeration value so converged returns false
 
-        self.problem = self.formulate()
+        self.solver = pywraplp.Solver.CreateSolver(self.solver_type.value)
+
+        if self.solver is not None:
+
+            self.problem = self.formulate()
 
     def formulate(self):
         """
@@ -176,7 +179,9 @@ class Opf:
 
 class OpfTimeSeries:
 
-    def __init__(self, numerical_circuit, start_idx, end_idx, solver: MIPSolvers=MIPSolvers.CBC, skip_formulation=True):
+    def __init__(self, numerical_circuit: OpfTimeCircuit,
+                 start_idx, end_idx, solver: MIPSolvers=MIPSolvers.CBC,
+                 skip_formulation=True):
         """
 
         :param numerical_circuit:
@@ -251,7 +256,10 @@ class OpfTimeSeries:
         """
         val = np.zeros(arr.shape)
         for i, j in product(range(val.shape[0]), range(val.shape[1])):
-            val[i, j] = arr[i, j].value()
+            if isinstance(arr[i, j], int) or isinstance(arr[i, j], float):
+                val[i, j] = arr[i, j]
+            else:
+                val[i, j] = arr[i, j].value()
         if make_abs:
             val = np.abs(val)
 
