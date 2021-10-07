@@ -10,6 +10,13 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+
+Version 4.2.3
+^^^^^^^^^^^^^^^
+
+- Fixed memory leak in the TowerBuilderGui handling
+
+
 Version 4.2.2
 ^^^^^^^^^^^^^^^
 
@@ -18,7 +25,6 @@ Version 4.2.2
 
 - Added contingencies to the DC-OPF time series.
 - Added possibility of copper plate grouping.
-
 
 
 Version 4.2.1
@@ -37,7 +43,6 @@ Version 4.2.1
 - Fixed bug and improved clipboard results export
 - Fixed glitch when importing profiles
 - Fixed the kV not being calculated in the results' tool tips
-
 
 
 Version 4.2.0

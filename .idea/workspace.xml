@@ -23,9 +23,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="4.2.2">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/change_log.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/change_log.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -97,7 +99,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../../powerplant-coding-challenge" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
@@ -130,7 +132,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.setup">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -249,9 +251,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.setup" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_file" />
-        <item itemvalue="Python.setup" />
         <item itemvalue="Python.inputs_analysis_driver" />
         <item itemvalue="Python.ntc_opf" />
       </list>
@@ -635,13 +637,6 @@
       <workItem from="1632764073720" duration="601000" />
       <workItem from="1632810180431" duration="7195000" />
     </task>
-    <task id="LOCAL-00152" summary="Fixed line editor not updating the length">
-      <created>1626122714452</created>
-      <option name="number" value="00152" />
-      <option name="presentableId" value="LOCAL-00152" />
-      <option name="project" value="LOCAL" />
-      <updated>1626122714452</updated>
-    </task>
     <task id="LOCAL-00153" summary="Fixed the icon display under windows">
       <created>1626124810212</created>
       <option name="number" value="00153" />
@@ -978,7 +973,14 @@
       <option name="project" value="LOCAL" />
       <updated>1633452773775</updated>
     </task>
-    <option name="localTasksCounter" value="201" />
+    <task id="LOCAL-00201" summary="Critical bug fixed: The TowerBuilderGui dd not have a global pointer, &#10;hence the garbage collector was causing clean crashes">
+      <created>1633591598037</created>
+      <option name="number" value="00201" />
+      <option name="presentableId" value="LOCAL-00201" />
+      <option name="project" value="LOCAL" />
+      <updated>1633591598037</updated>
+    </task>
+    <option name="localTasksCounter" value="202" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1013,7 +1015,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved ATC reporting&#10;Included Real flows in theATC time series" />
     <MESSAGE value="Improved area selection for the ATC. Now multiple Areas can be selected" />
     <MESSAGE value="Fixed critical bug related to the voltages&#10;&#10;Fixed handling of the node groups threading" />
     <MESSAGE value="Improved the about dialogue" />
@@ -1038,7 +1039,8 @@
     <MESSAGE value="some improvements" />
     <MESSAGE value="Improved OPF-Time series" />
     <MESSAGE value="Improved OPF-Time series with contingencies" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved OPF-Time series with contingencies" />
+    <MESSAGE value="Critical bug fixed: The TowerBuilderGui dd not have a global pointer, &#10;hence the garbage collector was causing clean crashes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Critical bug fixed: The TowerBuilderGui dd not have a global pointer, &#10;hence the garbage collector was causing clean crashes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

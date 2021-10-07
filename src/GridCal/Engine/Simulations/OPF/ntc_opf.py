@@ -411,12 +411,14 @@ class OpfNTC(Opf):
 
         sum_gen_1 = 0
         for bus_idx, gen_idx in gens1:
-            if self.numerical_circuit.generator_data.generator_active[gen_idx]:
+            if self.numerical_circuit.generator_data.generator_active[gen_idx] and \
+                    self.numerical_circuit.generator_data.generator_dispatchable[gen_idx]:
                 sum_gen_1 += Pgen[gen_idx]
 
         sum_gen_2 = 0
         for bus_idx, gen_idx in gens2:
-            if self.numerical_circuit.generator_data.generator_active[gen_idx]:
+            if self.numerical_circuit.generator_data.generator_active[gen_idx] and \
+                    self.numerical_circuit.generator_data.generator_dispatchable[gen_idx]:
                 sum_gen_2 += Pgen[gen_idx]
 
         power_shift = self.solver.NumVar(0, self.inf, 'Area_slack')
