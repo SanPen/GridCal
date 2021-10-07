@@ -290,6 +290,7 @@ class MainGUI(QMainWindow):
         self.object_select_window: ObjectSelectWindow = None
         self.coordinates_window: CoordinatesInputGUI = None
         self.about_msg_window: AboutDialogueGuiGUI = None
+        self.tower_builder_window: TowerBuilderGUI = None
 
         self.file_name = ''
 
@@ -5020,9 +5021,9 @@ class MainGUI(QMainWindow):
                     tower = self.circuit.overhead_line_types[idx]
 
                     # launch editor
-                    dialogue = TowerBuilderGUI(tower=tower, wires_catalogue=self.circuit.wire_types)
-                    dialogue.resize(int(1.81 * 700.0), 700)
-                    dialogue.exec()
+                    self.tower_builder_window = TowerBuilderGUI(tower=tower, wires_catalogue=self.circuit.wire_types)
+                    self.tower_builder_window.resize(int(1.81 * 700.0), 700)
+                    self.tower_builder_window.exec()
 
                     something_happened = True
 
@@ -5642,10 +5643,18 @@ class MainGUI(QMainWindow):
         islands = numerical_circuit_.split_into_islands()
 
         buses_to_delete = list()
+        buses_to_delete_idx = list()
         for island in islands:
             if island.nbus <= min_island:
                 for r in island.original_bus_idx:
                     buses_to_delete.append(self.circuit.buses[r])
+                    buses_to_delete_idx.append(r)
+
+        for r, bus in enumerate(self.circuit.buses):
+            if not bus.active:
+                if r not in buses_to_delete_idx:
+                    buses_to_delete.append(bus)
+                    buses_to_delete_idx.append(r)
 
         for elm in buses_to_delete:
             if elm.graphic_obj is not None:
