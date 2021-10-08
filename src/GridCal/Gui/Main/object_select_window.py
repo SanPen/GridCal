@@ -26,8 +26,8 @@ class SampleObject:
 
 
 class ObjectSelectWindow(QDialog):
-    def __init__(self, title, object_list):
-        QDialog.__init__(self)
+    def __init__(self, title, object_list, parent=None):
+        QDialog.__init__(self, parent)
 
         self.setWindowTitle(title)
 

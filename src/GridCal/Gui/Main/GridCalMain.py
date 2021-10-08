@@ -822,7 +822,7 @@ class MainGUI(QMainWindow):
         :return:
         """
 
-        self.about_msg_window = AboutDialogueGuiGUI()
+        self.about_msg_window = AboutDialogueGuiGUI(self)
         self.about_msg_window.setVisible(True)
 
     @staticmethod
@@ -4294,7 +4294,7 @@ class MainGUI(QMainWindow):
         :return:
         """
         if prop == 'area':
-            self.object_select_window = ObjectSelectWindow('Area', self.circuit.areas)
+            self.object_select_window = ObjectSelectWindow('Area', self.circuit.areas, parent=self)
             self.object_select_window.setModal(True)
             self.object_select_window.exec_()
 
@@ -4304,7 +4304,7 @@ class MainGUI(QMainWindow):
                     print('Set {0} into bus {1}'.format(self.object_select_window.selected_object.name, bus.name))
 
         elif prop == 'country':
-            self.object_select_window = ObjectSelectWindow('country', self.circuit.countries)
+            self.object_select_window = ObjectSelectWindow('country', self.circuit.countries, parent=self)
             self.object_select_window.setModal(True)
             self.object_select_window.exec_()
 
@@ -5021,9 +5021,12 @@ class MainGUI(QMainWindow):
                     tower = self.circuit.overhead_line_types[idx]
 
                     # launch editor
-                    self.tower_builder_window = TowerBuilderGUI(tower=tower, wires_catalogue=self.circuit.wire_types)
+                    self.tower_builder_window = TowerBuilderGUI(parent=self,
+                                                                tower=tower,
+                                                                wires_catalogue=self.circuit.wire_types)
                     self.tower_builder_window.resize(int(1.81 * 700.0), 700)
                     self.tower_builder_window.exec()
+                    gc.collect()
 
                     something_happened = True
 
@@ -6019,12 +6022,14 @@ class MainGUI(QMainWindow):
                         self.post_file_sync_items_processed()
                     else:
                         # there are newer changes but we do not want to automatically accept them
-                        self.file_sync_window = SyncDialogueWindow(self.file_sync_thread)  # will pause the thread
+                        self.file_sync_window = SyncDialogueWindow(parent=self,
+                                                                   file_sync_thread=self.file_sync_thread)  # will pause the thread
                         self.file_sync_window.setModal(True)
                         self.file_sync_window.show()
                 else:
                     # we want to check all the conflicts
-                    self.file_sync_window = SyncDialogueWindow(self.file_sync_thread)  # will pause the thread
+                    self.file_sync_window = SyncDialogueWindow(parent=self,
+                                                               file_sync_thread=self.file_sync_thread)  # will pause the thread
                     self.file_sync_window.setModal(True)
                     self.file_sync_window.show()
             else:
