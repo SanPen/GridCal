@@ -275,7 +275,9 @@ class OpfNTC(Opf):
         self.logger = logger
 
         # this builds the formulation right away
-        Opf.__init__(self, numerical_circuit=numerical_circuit, solver_type=solver_type)
+        Opf.__init__(self, numerical_circuit=numerical_circuit,
+                     solver_type=solver_type,
+                     ortools=True)
 
     def formulate_optimal_generation(self, ngen, Cgen, Pgen, Pmax, Pmin, a1, a2, t=0):
         """

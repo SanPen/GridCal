@@ -23,14 +23,16 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Passed the parent (main window) to most of the sub-windows">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improved the design of the tower builder">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/LineBuilderDialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/LineBuilderDialogue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/gui.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/gui.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/table_models.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/table_models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/update_gui_file.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/update_gui_file.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/branch_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/branch_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solver_interfaces/cplex.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solver_interfaces/cplex.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -122,8 +124,8 @@
       <recent name="$PROJECT_DIR$/src/research/power_flow" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.update_gui_file">
-    <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
+    <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" singleton="false" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -230,15 +232,15 @@
     <list>
       <item itemvalue="Python.zip_file_mgmt" />
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python tests.Nosetests in test_tutorials.py" />
       <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.LineBuilderDialogue" />
+      <item itemvalue="Python tests.Nosetests in test_tutorials.py" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.LineBuilderDialogue" />
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.zip_file_mgmt" />
         <item itemvalue="Python tests.Nosetests in test_tutorials.py" />
       </list>
@@ -631,14 +633,9 @@
       <workItem from="1633720322637" duration="657000" />
       <workItem from="1633729733367" duration="2031000" />
       <workItem from="1633767794296" duration="325000" />
-      <workItem from="1633772059194" duration="2313000" />
-    </task>
-    <task id="LOCAL-00161" summary="Further simplified the passing of results to the schematic for representation">
-      <created>1626448618999</created>
-      <option name="number" value="00161" />
-      <option name="presentableId" value="LOCAL-00161" />
-      <option name="project" value="LOCAL" />
-      <updated>1626448618999</updated>
+      <workItem from="1633772059194" duration="9102000" />
+      <workItem from="1633787830301" duration="791000" />
+      <workItem from="1633789071270" duration="2584000" />
     </task>
     <task id="LOCAL-00162" summary="Moved file drivers to the Session Gui package">
       <created>1626516195984</created>
@@ -976,7 +973,14 @@
       <option name="project" value="LOCAL" />
       <updated>1633732210351</updated>
     </task>
-    <option name="localTasksCounter" value="210" />
+    <task id="LOCAL-00210" summary="Improved the design of the tower builder">
+      <created>1633774436210</created>
+      <option name="number" value="00210" />
+      <option name="presentableId" value="LOCAL-00210" />
+      <option name="project" value="LOCAL" />
+      <updated>1633774436211</updated>
+    </task>
+    <option name="localTasksCounter" value="211" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1010,7 +1014,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed minor indexing error&#10;The ATC report generation is more straight forward" />
     <MESSAGE value="Extended the contingency branch selection to the ATC" />
     <MESSAGE value="Extended the contingency branch selection to the contingency calculation" />
     <MESSAGE value="Added HVDC base flow to the ATC calculation" />
@@ -1035,7 +1038,8 @@
     <MESSAGE value="improved some bugs" />
     <MESSAGE value="Fixed CIM export" />
     <MESSAGE value="Passed the parent (main window) to most of the sub-windows" />
-    <option name="LAST_COMMIT_MESSAGE" value="Passed the parent (main window) to most of the sub-windows" />
+    <MESSAGE value="Improved the design of the tower builder" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved the design of the tower builder" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1396,6 +1400,16 @@
           <line>199</line>
           <option name="timeStamp" value="808" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py</url>
+          <line>297</line>
+          <option name="timeStamp" value="813" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solver_interfaces/cplex.py</url>
+          <line>59</line>
+          <option name="timeStamp" value="816" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
@@ -1508,7 +1522,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research2_py.coverage" NAME="Nosetests in PTDF_research2.py Coverage Results" MODIFIED="1600161918846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$time_series.coverage" NAME="time_series Coverage Results" MODIFIED="1617809423186" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Tutorials" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_power_flow_py.coverage" NAME="Nosetests in test_power_flow.py Coverage Results" MODIFIED="1632998750088" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1633772105580" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1633790073251" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$binary_ga.coverage" NAME="binary_ga Coverage Results" MODIFIED="1615226727819" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_opf_py.coverage" NAME="Nosetests in test_opf.py Coverage Results" MODIFIED="1632998728805" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_line_losses_py.coverage" NAME="Nosetests in test_line_losses.py Coverage Results" MODIFIED="1632998681674" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />

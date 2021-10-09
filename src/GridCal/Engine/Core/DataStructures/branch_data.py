@@ -163,6 +163,33 @@ class BranchData:
         """
         return tp.get_elements_of_the_island(self.C_branch_bus_f + self.C_branch_bus_t, bus_idx)
 
+    def get_ac_indices(self):
+        return np.where(self.branch_dc == 0)[0]
+
+    def get_dc_indices(self):
+        return np.where(self.branch_dc == 1)[0]
+
+    def get_linear_series_admittance(self, t=0):
+        """
+        Get the linear version of the series admittance for ACDC systems
+        :param t: time step index
+        :return: Array of the length of the number of branches with 1/X or 1/R depending whether if it is AC or DC
+        """
+        dc = self.get_dc_indices()
+        ac = self.get_ac_indices()
+        m_abs = np.abs(self.m[:, t])
+        if len(dc):
+            # compose the vector for AC-DC grids where the R is needed for this matrix
+            # even if conceptually we only want the susceptance
+            b = np.zeros(self.nbr)
+            active = self.branch_active[:, t]
+            b[ac] = 1.0 / (m_abs[ac] * self.X[ac] * active[ac] + 1e-20)  # for ac branches
+            b[dc] = 1.0 / (m_abs[dc] * self.R[dc] * active[dc] + 1e-20)  # for dc branches
+        else:
+            b = 1.0 / (m_abs * self.X * self.branch_active[:, t] + 1e-20)  # for ac branches
+
+        return b
+
     def get_contingency_enabled_indices(self):
 
         return np.where(self.contingency_enabled == 1)[0]

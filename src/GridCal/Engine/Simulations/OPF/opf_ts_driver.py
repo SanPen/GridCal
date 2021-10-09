@@ -147,7 +147,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
         if not remote:
             self.progress_signal.emit(0.0)
-            self.progress_text.emit('Running all in an external solver_type, this may take a while...')
+            self.progress_text.emit('Running all in an external solver, this may take a while...')
 
         # solve the problem
         status = problem.solve()

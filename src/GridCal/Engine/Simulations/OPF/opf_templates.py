@@ -22,7 +22,7 @@ from ortools.linear_solver import pywraplp
 
 class Opf:
 
-    def __init__(self, numerical_circuit: SnapshotOpfData, solver_type: MIPSolvers = MIPSolvers.CBC):
+    def __init__(self, numerical_circuit: SnapshotOpfData, solver_type: MIPSolvers = MIPSolvers.CBC, ortools=False):
         """
         Optimal power flow template class
         :param numerical_circuit: NumericalCircuit instance
@@ -45,7 +45,10 @@ class Opf:
 
         self.status = 100000  # a number that is not likely to be an enumeration value so converged returns false
 
-        self.solver = pywraplp.Solver.CreateSolver(self.solver_type.value)
+        if ortools:
+            self.solver = pywraplp.Solver.CreateSolver(self.solver_type.value)
+        else:
+            self.solver = solver_type
 
         if self.solver is not None:
 

@@ -144,30 +144,37 @@ def add_dc_nodal_power_balance(numerical_circuit, problem: pl.LpProblem, theta, 
     return nodal_restrictions
 
 
-def add_branch_loading_restriction(problem: pl.LpProblem, theta_f, theta_t, Bseries,
-                                   rating, ratings_slack_from, ratings_slack_to):
+def add_branch_loading_restriction(problem: pl.LpProblem, F, T, theta, ys,
+                                   active, monitored, ratings, ratings_slack_from, ratings_slack_to):
     """
     Add the branch loading restrictions
     :param problem: LpProblem instance
     :param theta_f: voltage angles at the "from" side of the branches (m)
     :param theta_t: voltage angles at the "to" side of the branches (m)
-    :param Bseries: Array of branch susceptances (m)
-    :param rating: Array of branch ratings (m)
+    :param ys: Array of branch susceptances (m)
+    :param ratings: Array of branch ratings (m)
     :param ratings_slack_from: Array of branch loading slack variables in the from-to sense
     :param ratings_slack_to: Array of branch loading slack variables in the to-from sense
     :return: load_f and load_t arrays (LP+float)
     """
-
-    load_f = Bseries * (theta_f - theta_t)
+    nbr = len(ratings)
 
     # from-to branch power restriction
-    pl.lpAddRestrictions3(problem=problem,
-                          lhs=-rating - ratings_slack_to,
-                          var=load_f,
-                          rhs=rating + ratings_slack_from,
-                          name='2_side_branch_rate')
+    Pbr_f = np.zeros(nbr, dtype=object)
 
-    return load_f
+    for m in range(nbr):
+        if active[m]:
+
+            # compute the flow
+            Pbr_f[m] = ys[m] * (theta[F[m]] - theta[T[m]])
+
+            if monitored[m]:
+                problem.add(Pbr_f[m] <= ratings[m] + ratings_slack_from[m], 'upper_rate_{0}'.format(m))
+                problem.add(-ratings[m] - ratings_slack_to[m] <= Pbr_f[m], 'lower_rate_{0}'.format(m))
+        else:
+            Pbr_f[m] = 0
+
+    return Pbr_f
 
 
 class OpfDc(Opf):
@@ -210,9 +217,10 @@ class OpfDc(Opf):
         cost_l = self.numerical_circuit.load_cost
 
         # branch
+        branch_active = self.numerical_circuit.branch_data.branch_active[:, 0]
+        branch_monitored = self.numerical_circuit.branch_data.monitor_loading
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
-        Ys = 1 / (self.numerical_circuit.branch_R + 1j * self.numerical_circuit.branch_X)
-        Bseries = (self.numerical_circuit.branch_active * Ys).imag
+        Ys = - self.numerical_circuit.branch_data.get_linear_series_admittance(t=0)
         cost_br = self.numerical_circuit.branch_cost
 
         # create LP variables
@@ -227,18 +235,6 @@ class OpfDc(Opf):
 
         # declare problem
         problem = pl.LpProblem(name='DC_OPF')
-
-        # add generator bound restrictions
-        # pl.lpAddRestrictions2(problem, lhs=Pg_min, rhs=Pg, name='Pg_min', op='<=')
-        # pl.lpAddRestrictions2(problem, lhs=Pg, rhs=Pg_max, name='Pg_max', op='<=')
-        # pl.lpAddRestrictions2(problem, lhs=Pb_min, rhs=Pb, name='Pb_min', op='<=')
-        # pl.lpAddRestrictions2(problem, lhs=Pb, rhs=Pb_max, name='Pb_max', op='<=')
-
-        # add the objective function
-        problem += add_objective_function(Pg, Pb, load_slack,
-                                          branch_rating_slack1,
-                                          branch_rating_slack2,
-                                          cost_g, cost_b, cost_l, cost_br)
 
         # set the fixed generation values
         set_fix_generation(problem=problem, Pg=Pg, P_fix=P_fix, enabled_for_dispatch=enabled_for_dispatch)
@@ -257,12 +253,21 @@ class OpfDc(Opf):
 
         # add the branch loading restriction
         load_f = add_branch_loading_restriction(problem=problem,
-                                                theta_f=theta_f,
-                                                theta_t=theta_t,
-                                                Bseries=Bseries,
-                                                rating=branch_ratings,
+                                                F=self.numerical_circuit.F,
+                                                T=self.numerical_circuit.T,
+                                                theta=theta,
+                                                ys=Ys,
+                                                active=branch_active,
+                                                monitored=branch_monitored,
+                                                ratings=branch_ratings,
                                                 ratings_slack_from=branch_rating_slack1,
                                                 ratings_slack_to=branch_rating_slack2)
+
+        # add the objective function
+        problem += add_objective_function(Pg, Pb, load_slack,
+                                          branch_rating_slack1,
+                                          branch_rating_slack2,
+                                          cost_g, cost_b, cost_l, cost_br)
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device

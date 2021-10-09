@@ -366,7 +366,7 @@ class OpfDcTimeSeries(OpfTimeSeries):
         # branch
         branch_ratings = self.numerical_circuit.branch_rates[:, a:b] / Sbase
         br_active = self.numerical_circuit.branch_data.branch_active[:, a:b]
-        ys = - 1.0 / self.numerical_circuit.branch_X
+        ys = - self.numerical_circuit.branch_data.get_linear_series_admittance(t=0)
         F = self.numerical_circuit.F
         T = self.numerical_circuit.T
         cost_br = self.numerical_circuit.branch_cost[:, a:b]

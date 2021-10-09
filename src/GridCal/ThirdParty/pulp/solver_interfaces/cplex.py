@@ -45,7 +45,7 @@ class CPLEX_CMD(LpSolver_CMD):
     def actualSolve(self, lp):
         """Solve a well formulated lp problem"""
         if not self.executable(self.path):
-            raise PulpSolverError("PuLP: cannot execute "+self.path)
+            raise PulpSolverError("PuLP: cannot execute " + self.path)
         if not self.keepFiles:
             uuid = uuid4().hex
             tmpLp = os.path.join(self.tmpDir, "%s-pulp.lp" % uuid)
