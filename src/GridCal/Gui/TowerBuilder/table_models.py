@@ -32,15 +32,16 @@ Typical values of earth
 class WiresTable(QtCore.QAbstractTableModel):
 
     def __init__(self, parent=None):
+
         QtCore.QAbstractTableModel.__init__(self, parent)
 
-        self.header = ['Name', 'R (Ohm/km)', 'GMR (m)']
+        self.header = ['Name', 'R (Ohm/km)', 'GMR (m)', 'max current (kA)']
 
-        self.index_prop = {0: 'name', 1: 'r', 2: 'gmr'}
+        self.index_prop = {0: 'name', 1: 'r', 2: 'gmr', 3: 'max_current'}
 
-        self.converter = {0: str, 1: float, 2: float}
+        self.converter = {0: str, 1: float, 2: float, 3: float}
 
-        self.editable = [True, True, True]
+        self.editable = [True, True, True, True]
 
         self.wires = list()
 

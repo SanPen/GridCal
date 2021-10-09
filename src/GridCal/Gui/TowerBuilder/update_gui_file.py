@@ -14,8 +14,7 @@ if __name__ == '__main__':
     call(['pyside2-rcc', 'icons.qrc', '-o', 'icons_rc.py'])
 
     # update ui handler file
-    call(['pyside2-uic', '-x', filename_ui, '-o', filename])
-
+    call(['pyside2-uic', filename_ui, '-o', filename])
 
     # replace annoying text import
     # Read in the file
