@@ -678,7 +678,7 @@ class OpfNTC(Opf):
 
         for i in range(self.numerical_circuit.nhvdc):
 
-            if nc.hvdc_data.active[i]:
+            if nc.hvdc_data.active[i, t]:
 
                 _f = F[i]
                 _t = T[i]
@@ -710,18 +710,18 @@ class OpfNTC(Opf):
                     overload2[i] = self.solver.NumVar(0, self.inf, 'overload_hvdc2_' + str(i))
                     self.solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "hvdc_tf_rating_" + str(i))
 
-                elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset:
-                    # simple injections model
+                elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset and not nc.hvdc_data.dispatchable[i]:
+                    # simple injections model: The power is set by the user
                     flow_f[i] = P0 + hvdc_control1[i] - hvdc_control2[i]
                     Pinj[_f] -= flow_f[i]
                     Pinj[_t] += flow_f[i]
 
-                # elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset:
-                #     # simple injections model
-                #     P0 = self.solver.NumVar(-rates[i], rates[i], 'hvdc_pf_' + str(i))
-                #     flow_f[i] = P0 + hvdc_control1[i] - hvdc_control2[i]
-                #     Pinj[_f] -= flow_f[i]
-                #     Pinj[_t] += flow_f[i]
+                elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset and nc.hvdc_data.dispatchable[i]:
+                    # simple injections model, the power is a variable and it is optimized
+                    P0 = self.solver.NumVar(-rates[i], rates[i], 'hvdc_pf_' + str(i))
+                    flow_f[i] = P0 + hvdc_control1[i] - hvdc_control2[i]
+                    Pinj[_f] -= flow_f[i]
+                    Pinj[_t] += flow_f[i]
 
         return flow_f, overload1, overload2, hvdc_control1, hvdc_control2
 

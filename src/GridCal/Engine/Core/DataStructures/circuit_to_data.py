@@ -836,6 +836,7 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, time_series=False,
 
         # hvdc values
         data.names[i] = elm.name
+        data.dispatchable[i] = int(elm.dispatchable)
 
         if time_series:
             data.active[i, :] = elm.active_prof
