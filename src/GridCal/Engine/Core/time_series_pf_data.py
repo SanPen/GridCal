@@ -429,12 +429,16 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                                                         Vbus=nc.bus_data.Vbus,
                                                         apply_temperature=apply_temperature,
                                                         branch_tolerance_mode=branch_tolerance_mode,
-                                                        time_series=True, ntime=ntime)
+                                                        time_series=True,
+                                                        ntime=ntime,
+                                                        opf_results=opf_results)
 
     nc.hvdc_data = ds.circuit_to_data.get_hvdc_data(circuit=circuit,
                                                     bus_dict=bus_dict,
                                                     bus_types=nc.bus_data.bus_types,
-                                                    time_series=True, ntime=ntime)
+                                                    time_series=True,
+                                                    ntime=ntime,
+                                                    opf_results=opf_results)
 
     nc.consolidate_information()
 

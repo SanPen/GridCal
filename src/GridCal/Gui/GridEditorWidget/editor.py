@@ -381,39 +381,132 @@ class DiagramScene(QGraphicsScene):
                 # plot the profiles
                 plt.show()
 
-    def plot_hvdc_branch(self, api_obj):
+    def plot_hvdc_branch(self, i, api_object):
         """
 
-        :param api_obj:
+        :param api_object:
         :return:
         """
         fig = plt.figure(figsize=(12, 8))
-
         ax_1 = fig.add_subplot(211)
-        ax_2 = fig.add_subplot(212, sharex=ax_1)
+        # ax_2 = fig.add_subplot(212, sharex=ax_1)
+        ax_2 = fig.add_subplot(212)
 
+        # set time
         x = self.circuit.time_profile
+        x_cl = x
 
         if x is not None:
             if len(x) > 0:
-                # loading
-                y = api_obj.Pset_prof / (api_obj.rate_prof + 1e-9) * 100.0
-                df = pd.DataFrame(data=y, index=x, columns=[api_obj.name])
-                ax_1.set_title('Loading', fontsize=14)
-                ax_1.set_ylabel('Loading [%]', fontsize=11)
-                df.plot(ax=ax_1)
 
-                # losses
-                y = api_obj.Pset_prof * api_obj.loss_factor
-                df = pd.DataFrame(data=y, index=x, columns=[api_obj.name])
-                ax_2.set_title('Losses', fontsize=14)
-                ax_2.set_ylabel('Losses [MVA]', fontsize=11)
-                df.plot(ax=ax_2)
+                p = np.arange(len(x)).astype(float) / len(x)
+
+                # search available results
+                power_data = dict()
+                loading_data = dict()
+                loading_st_data = None
+                loading_clustering_data = None
+                power_clustering_data = None
+
+                for key, driver in self.results_dictionary.items():
+                    if hasattr(driver, 'results'):
+                        if driver.results is not None:
+                            if key == SimulationTypes.TimeSeries_run:
+                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+
+                            elif key == SimulationTypes.ClusteringTimeSeries_run:
+                                x_cl = x[driver.sampled_time_idx]
+                                power_clustering_data = driver.results.hvdc_Pf[:, i]
+                                loading_clustering_data = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+
+                            elif key == SimulationTypes.LinearAnalysis_TS_run:
+                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+
+                            elif key == SimulationTypes.OPFTimeSeries_run:
+                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+
+                # add the rating
+                # power_data['Rates+'] = api_object.rate_prof
+                # power_data['Rates-'] = -api_object.rate_prof
+
+                # loading
+                if len(loading_data.keys()):
+                    df = pd.DataFrame(data=loading_data, index=p)
+                    ax_1.set_title('Probability x < value', fontsize=14)
+                    ax_1.set_ylabel('Loading [%]', fontsize=11)
+                    df.plot(ax=ax_1)
+
+                if loading_clustering_data is not None:
+                    p_st = np.arange(len(loading_clustering_data)).astype(float) / len(loading_clustering_data)
+                    df = pd.DataFrame(data=loading_clustering_data,
+                                      index=p_st,
+                                      columns=[SimulationTypes.ClusteringTimeSeries_run.value])
+                    ax_1.set_title('Probability x < value', fontsize=14)
+                    ax_1.set_ylabel('Loading [%]', fontsize=11)
+                    df.plot(ax=ax_1)
+
+                if loading_st_data is not None:
+                    p_st = np.arange(len(loading_st_data)).astype(float) / len(loading_st_data)
+                    df = pd.DataFrame(data=loading_st_data,
+                                      index=p_st,
+                                      columns=[SimulationTypes.StochasticPowerFlow.value])
+                    ax_1.set_title('Probability x < value', fontsize=14)
+                    ax_1.set_ylabel('Loading [%]', fontsize=11)
+                    df.plot(ax=ax_1)
+
+                # power
+                if len(power_data.keys()):
+                    df = pd.DataFrame(data=power_data, index=x)
+                    ax_2.set_title('Power', fontsize=14)
+                    ax_2.set_ylabel('Power [MW]', fontsize=11)
+                    df.plot(ax=ax_2)
+                    ax_2.plot(x, api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
+                    ax_2.plot(x, -api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
+
+                if power_clustering_data is not None:
+                    df = pd.DataFrame(data=power_clustering_data,
+                                      index=x_cl,
+                                      columns=[SimulationTypes.ClusteringTimeSeries_run.value])
+                    ax_2.set_title('Power', fontsize=14)
+                    ax_2.set_ylabel('Power [MW]', fontsize=11)
+                    df.plot(ax=ax_2)
 
                 plt.legend()
-                fig.suptitle(api_obj.name, fontsize=20)
+                fig.suptitle(api_object.name, fontsize=20)
 
+                # plot the profiles
                 plt.show()
+
+
+        # fig = plt.figure(figsize=(12, 8))
+        #
+        # ax_1 = fig.add_subplot(211)
+        # ax_2 = fig.add_subplot(212, sharex=ax_1)
+        #
+        # x = self.circuit.time_profile
+        # if x is not None:
+        #     if len(x) > 0:
+        #         # loading
+        #         y = api_object.Pset_prof / (api_object.rate_prof + 1e-9) * 100.0
+        #         df = pd.DataFrame(data=y, index=x, columns=[api_object.name])
+        #         ax_1.set_title('Loading', fontsize=14)
+        #         ax_1.set_ylabel('Loading [%]', fontsize=11)
+        #         df.plot(ax=ax_1)
+        #
+        #         # losses
+        #         y = api_object.Pset_prof * api_object.loss_factor
+        #         df = pd.DataFrame(data=y, index=x, columns=[api_object.name])
+        #         ax_2.set_title('Losses', fontsize=14)
+        #         ax_2.set_ylabel('Losses [MVA]', fontsize=11)
+        #         df.plot(ax=ax_2)
+        #
+        #         plt.legend()
+        #         fig.suptitle(api_object.name, fontsize=20)
+        #
+        #         plt.show()
 
     def set_rate_to_profile(self, api_object):
         """

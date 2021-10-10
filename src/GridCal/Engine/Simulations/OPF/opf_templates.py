@@ -141,7 +141,7 @@ class Opf:
         return the branch overloads (time, device)
         :return: 2D array
         """
-        return self.extract(self.Pinj)
+        return self.extract(self.Pinj) * self.numerical_circuit.Sbase
 
     def get_phase_shifts(self):
         """
@@ -232,6 +232,8 @@ class OpfTimeSeries:
         :param start_idx:
         :param end_idx:
         """
+        self.logger = Logger()
+
         self.numerical_circuit = numerical_circuit
         self.start_idx = start_idx
         self.end_idx = end_idx
@@ -241,6 +243,12 @@ class OpfTimeSeries:
         self.Pg = None
         self.Pb = None
         self.Pl = None
+
+        self.Pinj = None
+        self.hvdc_flow = None
+        self.hvdc_slacks = None
+        self.phase_shift = None
+
         self.E = None
         self.s_from = None
         self.s_to = None
@@ -330,6 +338,34 @@ class OpfTimeSeries:
         :return: 2D array
         """
         return self.extract2D(self.s_from, make_abs=False) / self.rating
+
+    def get_power_injections(self):
+        """
+        return the branch overloads (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.Pinj) * self.numerical_circuit.Sbase
+
+    def get_phase_shifts(self):
+        """
+        return the branch phase_shifts (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.phase_shift)
+
+    def get_hvdc_flows(self):
+        """
+        return the branch overloads (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.hvdc_flow) * self.numerical_circuit.Sbase
+
+    def get_hvdc_slacks(self):
+        """
+        return the branch overloads (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.hvdc_slacks)* self.numerical_circuit.Sbase
 
     def get_branch_power(self):
         """

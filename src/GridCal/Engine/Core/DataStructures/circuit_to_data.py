@@ -629,17 +629,24 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.X[ii] = elm.X
         data.G[ii] = elm.G
         data.B[ii] = elm.B
-
-        if opf_results is not None:
-            data.m[ii] = opf_results.phase_shift[ii]
-        else:
-            data.m[ii] = elm.tap_module
-
+        data.m[ii] = elm.tap_module
         data.m_max[ii] = elm.tap_module_max
         data.m_min[ii] = elm.tap_module_min
-        data.theta[ii] = elm.angle
+
+        if time_series:
+            if opf_results is not None:
+                data.theta[ii, :] = opf_results.phase_shift[:, ii]
+            else:
+                data.theta[ii, :] = elm.angle
+        else:
+            if opf_results is not None:
+                data.theta[ii] = opf_results.phase_shift[ii]
+            else:
+                data.theta[ii] = elm.angle
+
         data.theta_min[ii] = elm.angle_min
         data.theta_max[ii] = elm.angle_max
+
         data.Pfset[ii] = elm.Pset
 
         data.control_mode[ii] = elm.control_mode
@@ -688,19 +695,25 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.X[ii] = elm.X1
         data.G0[ii] = elm.G0
         data.Beq[ii] = elm.Beq
-
-        if opf_results is not None:
-            data.m[ii] = opf_results.phase_shift[ii]
-        else:
-            data.m[ii] = elm.m
-
+        data.m[ii] = elm.m
         data.m_max[ii] = elm.m_max
         data.m_min[ii] = elm.m_min
         data.alpha1[ii] = elm.alpha1
         data.alpha2[ii] = elm.alpha2
         data.alpha3[ii] = elm.alpha3
         data.k[ii] = elm.k  # 0.8660254037844386  # sqrt(3)/2 (do not confuse with k droop)
-        data.theta[ii] = elm.theta
+
+        if time_series:
+            if opf_results is not None:
+                data.theta[ii, :] = opf_results.phase_shift[:, ii]
+            else:
+                data.theta[ii, :] = elm.theta
+        else:
+            if opf_results is not None:
+                data.theta[ii] = opf_results.phase_shift[ii]
+            else:
+                data.theta[ii] = elm.theta
+
         data.theta_min[ii] = elm.theta_min
         data.theta_max[ii] = elm.theta_max
         data.Pfset[ii] = elm.Pdc_set
@@ -858,8 +871,8 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, time_series=False,
             data.rate[i, :] = elm.rate_prof
 
             if opf_results is not None:
-                data.Pf[i, :] = -opf_results.hvdc_Pf[i, :]
-                data.Pt[i, :] = opf_results.hvdc_Pf[i, :]
+                data.Pf[i, :] = -opf_results.hvdc_Pf[:, i]
+                data.Pt[i, :] = opf_results.hvdc_Pf[:, i]
             else:
                 data.Pf[i, :], data.Pt[i, :] = elm.get_from_and_to_power()
 

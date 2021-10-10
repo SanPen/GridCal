@@ -3770,16 +3770,23 @@ class MainGUI(QMainWindow):
 
             if results is not None:
                 if self.ui.draw_schematic_checkBox.isChecked():
-                    voltage = results.voltage.max(axis=0)
-                    loading = results.loading.max(axis=0)
-                    Sf = results.Sf.max(axis=0)
 
                     viz.colour_the_schematic(circuit=self.circuit,
                                              Sbus=None,
-                                             Sf=Sf,
-                                             voltages=voltage,
-                                             loadings=loading,
+                                             Sf=results.Sf[0, :],
+                                             voltages=results.voltage[0, :],
+                                             loadings=results.loading[0, :],
                                              types=results.bus_types,
+                                             losses=None,
+                                             St=None,
+                                             hvdc_sending_power=results.hvdc_Pf[0, :],
+                                             hvdc_losses=None,
+                                             hvdc_loading=results.hvdc_loading[0, :],
+                                             failed_br_idx=None,
+                                             loading_label='loading',
+                                             ma=None,
+                                             theta=results.phase_shift[0, :],
+                                             Beq=None,
                                              use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                              min_branch_width=self.ui.min_branch_size_spinBox.value(),
                                              max_branch_width=self.ui.max_branch_size_spinBox.value(),

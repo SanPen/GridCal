@@ -59,12 +59,14 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                                          load_names=self.numerical_circuit.load_names,
                                                          generator_names=self.numerical_circuit.generator_names,
                                                          battery_names=self.numerical_circuit.battery_names,
-                                                         n=self.grid.get_bus_number(),
-                                                         m=self.grid.get_branch_number(),
-                                                         nt=len(self.grid.time_profile),
-                                                         ngen=len(self.grid.get_generators()),
-                                                         nbat=len(self.grid.get_batteries()),
-                                                         nload=len(self.grid.get_loads()),
+                                                         hvdc_names=self.numerical_circuit.hvdc_names,
+                                                         n=self.numerical_circuit.nbus,
+                                                         m=self.numerical_circuit.nbr,
+                                                         nt=self.numerical_circuit.ntime,
+                                                         ngen=self.numerical_circuit.ngen,
+                                                         nbat=self.numerical_circuit.nbatt,
+                                                         nload=self.numerical_circuit.nload,
+                                                         nhvdc=self.numerical_circuit.nhvdc,
                                                          time=self.grid.time_profile,
                                                          bus_types=self.numerical_circuit.bus_types)
 
@@ -80,12 +82,14 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                                          load_names=self.numerical_circuit.load_names,
                                                          generator_names=self.numerical_circuit.generator_names,
                                                          battery_names=self.numerical_circuit.battery_names,
-                                                         n=self.grid.get_bus_number(),
-                                                         m=self.grid.get_branch_number(),
-                                                         nt=len(self.grid.time_profile),
-                                                         ngen=len(self.grid.get_generators()),
-                                                         nbat=len(self.grid.get_batteries()),
-                                                         nload=len(self.grid.get_loads()),
+                                                         hvdc_names=self.numerical_circuit.hvdc_names,
+                                                         n=self.numerical_circuit.nbus,
+                                                         m=self.numerical_circuit.nbr,
+                                                         nt=self.numerical_circuit.ntime,
+                                                         ngen=self.numerical_circuit.ngen,
+                                                         nbat=self.numerical_circuit.nbatt,
+                                                         nload=self.numerical_circuit.nload,
+                                                         nhvdc=self.numerical_circuit.nhvdc,
                                                          time=self.grid.time_profile,
                                                          bus_types=self.numerical_circuit.bus_types)
 
@@ -164,6 +168,12 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
         self.results.overloads[a:b, :] = problem.get_overloads()
         self.results.loading[a:b, :] = problem.get_loading()
         self.results.shadow_prices[a:b, :] = problem.get_shadow_prices()
+
+        self.results.Sbus[a:b, :] = problem.get_power_injections()
+        self.results.hvdc_Pf[a:b, :] = problem.get_hvdc_flows()
+        self.results.hvdc_overloads[a:b, :] = problem.get_hvdc_slacks()
+        self.results.hvdc_loading[a:b, :] = self.results.hvdc_Pf[a:b, :] / self.numerical_circuit.hvdc_data.rate[:, a:b].transpose()
+        self.results.phase_shift[a:b, :] = problem.get_phase_shifts()
 
         return self.results
 

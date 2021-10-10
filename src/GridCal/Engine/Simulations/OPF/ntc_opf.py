@@ -558,7 +558,7 @@ class OpfNTC(Opf):
         flow_f = np.zeros(nc.nbr, dtype=object)
         overload1 = np.zeros(nc.nbr, dtype=object)
         overload2 = np.zeros(nc.nbr, dtype=object)
-        tau = np.ones(nc.nbr, dtype=object)
+        tau = np.zeros(nc.nbr, dtype=object)
         monitor = np.zeros(nc.nbr, dtype=bool)
         rates = nc.Rates / nc.Sbase
 

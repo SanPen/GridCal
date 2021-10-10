@@ -176,7 +176,7 @@ def add_branch_loading_restriction(problem: pl.LpProblem, nc: SnapshotOpfData,
 
     # from-to branch power restriction
     Pbr_f = np.zeros(nbr, dtype=object)
-    tau = np.ones(nbr, dtype=object)
+    tau = np.zeros(nbr, dtype=object)
 
     for m in range(nbr):
         if active[m]:
@@ -189,7 +189,7 @@ def add_branch_loading_restriction(problem: pl.LpProblem, nc: SnapshotOpfData,
 
             # compute the flow
             if nc.branch_data.control_mode[m] == TransformerControlType.Pt:
-                # is a phase shifter
+                # is a phase shifter device (like phase shifter transformer or VSC with P control)
                 tau[m] = LpVariable('Tau_{}'.format(m), nc.branch_data.theta_min[m], nc.branch_data.theta_max[m])
                 Pbr_f[m] = bk * (theta[F[m]] - theta[T[m]] + tau[m])
             else:
@@ -386,6 +386,7 @@ class OpfDc(Opf):
         self.Pg = Pg
         self.Pb = Pb
         self.Pl = Pl
+
         self.Pinj = P
 
         self.phase_shift = tau

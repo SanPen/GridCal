@@ -11,6 +11,14 @@ this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
 
+Version 4.2.4
+^^^^^^^^^^^^^^^
+
+- Added HVDC and phase shifter optimization to the DC OPF and time series OPF
+- Linked the HVDC and phase shifting from th OPF to the PF
+- Removed AC linear OPF for the time being
+
+
 Version 4.2.3
 ^^^^^^^^^^^^^^^
 

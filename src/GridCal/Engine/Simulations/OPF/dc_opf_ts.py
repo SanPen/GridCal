@@ -18,14 +18,16 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 from GridCal.Engine.basic_structures import ZonalGrouping
-from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
+from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries, LpProblem, LpVariable, Logger
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
+from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType, GenerationNtcFormulation
 
 from GridCal.ThirdParty.pulp import *
 
 
 def get_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2, FCSlack1, FCSlack2,
+                           hvdc_overload1, hvdc_overload2, hvdc_control1_slacks, hvdc_control2_slacks,
                            cost_g, cost_b, cost_l, cost_br):
     """
     Add the objective function to the problem
@@ -52,6 +54,10 @@ def get_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2, FCSlack1, FCSlack2,
     f_obj += lpSum(cost_br * (FSlack1 + FSlack2))
 
     f_obj += cost_br * lpSum(FCSlack1) + cost_br * lpSum(FCSlack2)
+
+    f_obj += cost_br * lpSum(hvdc_overload1) + cost_br * lpSum(hvdc_overload2)
+
+    f_obj += cost_br * lpSum(hvdc_control1_slacks) + cost_br * lpSum(hvdc_control2_slacks)
 
     return f_obj
 
@@ -163,7 +169,8 @@ def add_dc_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem: LpPro
 
 
 def add_branch_loading_restriction(problem: LpProblem,
-                                   theta, ys, F, T,
+                                   nc: OpfTimeCircuit,
+                                   theta, F, T,
                                    ratings, ratings_slack_from, ratings_slack_to,
                                    monitored, active):
     """
@@ -181,12 +188,26 @@ def add_branch_loading_restriction(problem: LpProblem,
 
     # from-to branch power restriction
     Pbr_f = np.zeros((nbr, nt), dtype=object)
+    tau = np.zeros((nbr, nt), dtype=object)
 
     for m, t in product(range(nbr), range(nt)):
         if active[m, t]:
 
+            # compute the branch susceptance
+            if nc.branch_data.branch_dc[m]:
+                bk = -1.0 / nc.branch_data.R[m]
+            else:
+                bk = -1.0 / nc.branch_data.X[m]
+
             # compute the flow
-            Pbr_f[m, t] = ys[m] * (theta[F[m], t] - theta[T[m], t])
+            if nc.branch_data.control_mode[m] == TransformerControlType.Pt:
+                # is a phase shifter device (like phase shifter transformer or VSC with P control)
+                tau[m, t] = LpVariable('Tau_{0}_{1}'.format(m, t), nc.branch_data.theta_min[m], nc.branch_data.theta_max[m])
+                Pbr_f[m, t] = bk * (theta[F[m], t] - theta[T[m], t] + tau[m, t])
+            else:
+                # regular branch
+                tau[m, t] = 0.0
+                Pbr_f[m, t] = bk * (theta[F[m], t] - theta[T[m], t])
 
             if monitored[m]:
                 problem.add(Pbr_f[m, t] <= ratings[m, t] + ratings_slack_from[m, t], 'upper_rate_{0}_{1}'.format(m, t))
@@ -194,7 +215,7 @@ def add_branch_loading_restriction(problem: LpProblem,
         else:
             Pbr_f[m, t] = 0
 
-    return Pbr_f
+    return Pbr_f, tau
 
 
 def formulate_contingency(problem: LpProblem, numerical_circuit: OpfTimeCircuit, flow_f, ratings, LODF, monitor):
@@ -289,6 +310,75 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
                            op='=')
 
 
+def formulate_hvdc_flow(problem: LpProblem, angles, Pinj, rates, active, Pt, control_mode, dispatchable, r, F, T,
+                        logger: Logger = Logger(), inf=999999):
+    """
+
+    :param problem:
+    :param nc:
+    :param angles:
+    :param Pinj:
+    :param t:
+    :param logger:
+    :param inf:
+    :return:
+    """
+    nhvdc, nt = rates.shape
+
+    flow_f = np.zeros((nhvdc, nt), dtype=object)
+    overload1 = np.zeros((nhvdc, nt), dtype=object)
+    overload2 = np.zeros((nhvdc, nt), dtype=object)
+    hvdc_control1 = np.zeros((nhvdc, nt), dtype=object)
+    hvdc_control2 = np.zeros((nhvdc, nt), dtype=object)
+
+    for t, i in product(range(nt), range(nhvdc)):
+
+        if active[i, t]:
+
+            _f = F[i]
+            _t = T[i]
+
+            hvdc_control1[i, t] = LpVariable('hvdc_control1_{0}_{1}'.format(i, t), 0, inf)
+            hvdc_control2[i, t] = LpVariable('hvdc_control2_{0}_{1}'.format(i, t), 0, inf)
+            P0 = Pt[i, t]
+
+            if control_mode[i] == HvdcControlType.type_0_free:
+
+                if rates[i, t] <= 0:
+                    logger.add_error('Rate = 0', 'HVDC:{0} t:{1}'.format(i, t), rates[i, t])
+
+                # formulate the hvdc flow as an AC line equivalent
+                bk = 1.0 / r[i]  # TODO: yes, I know... DC...
+                flow_f[i, t] = P0 + bk * (angles[_f, t] - angles[_t, t]) + hvdc_control1[i, t] - hvdc_control2[i, t]
+
+                # add the injections matching the flow
+                Pinj[_f, t] -= flow_f[i, t]
+                Pinj[_t, t] += flow_f[i, t]
+
+                # rating restriction in the sense from-to: eq.17
+                overload1[i, t] = LpVariable('overload_hvdc1_{0}_{1}'.format(i, t), 0, inf)
+                problem.add(flow_f[i, t] <= (rates[i, t] + overload1[i, t]), "hvdc_ft_rating_{0}_{1}".format(i, t))
+
+                # rating restriction in the sense to-from: eq.18
+                overload2[i, t] = LpVariable('overload_hvdc2_{0}_{1}'.format(i, t), 0, inf)
+                problem.add((-rates[i, t] - overload2[i, t]) <= flow_f[i, t], "hvdc_tf_rating_{0}_{1}".format(i, t))
+
+            elif control_mode[i] == HvdcControlType.type_1_Pset and not dispatchable[i]:
+                # simple injections model: The power is set by the user
+                flow_f[i, t] = P0 + hvdc_control1[i, t] - hvdc_control2[i, t]
+                Pinj[_f, t] -= flow_f[i, t]
+                Pinj[_t, t] += flow_f[i, t]
+
+            elif control_mode[i] == HvdcControlType.type_1_Pset and dispatchable[i]:
+                # simple injections model, the power is a variable and it is optimized
+                P0 = LpVariable('hvdc_pf_{0}_{1}'.format(i, t), -rates[i, t], rates[i, t])
+                flow_f[i, t] = P0 + hvdc_control1[i, t] - hvdc_control2[i, t]
+                Pinj[_f, t] -= flow_f[i, t]
+                Pinj[_t, t] += flow_f[i, t]
+
+    return flow_f, overload1, overload2, hvdc_control1, hvdc_control2
+
+
 class OpfDcTimeSeries(OpfTimeSeries):
 
     def __init__(self, numerical_circuit: OpfTimeCircuit, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
@@ -366,7 +456,6 @@ class OpfDcTimeSeries(OpfTimeSeries):
         # branch
         branch_ratings = self.numerical_circuit.branch_rates[:, a:b] / Sbase
         br_active = self.numerical_circuit.branch_data.branch_active[:, a:b]
-        ys = - self.numerical_circuit.branch_data.get_linear_series_admittance(t=0)
         F = self.numerical_circuit.F
         T = self.numerical_circuit.T
         cost_br = self.numerical_circuit.branch_cost[:, a:b]
@@ -408,6 +497,22 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                  LSlack=load_slack,
                                  Pl=Pl)
 
+        # formulate the simple HVDC models
+        hvdc_flow_f, hvdc_overload1, hvdc_overload2, \
+        hvdc_control1_slacks, hvdc_control2_slacks = formulate_hvdc_flow(problem=problem,
+                                                                         angles=theta,
+                                                                         Pinj=P,
+                                                                         rates=self.numerical_circuit.hvdc_data.rate[:, a:b] / Sbase,
+                                                                         active=self.numerical_circuit.hvdc_data.active[:, a:b],
+                                                                         Pt=self.numerical_circuit.hvdc_data.Pt[:, a:b],
+                                                                         control_mode=self.numerical_circuit.hvdc_data.control_mode,
+                                                                         dispatchable=self.numerical_circuit.hvdc_data.dispatchable,
+                                                                         r=self.numerical_circuit.hvdc_data.r,
+                                                                         F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
+                                                                         T=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
+                                                                         logger=self.logger,
+                                                                         inf=999999)
+
         # set the nodal restrictions
         nodal_restrictions = add_dc_nodal_power_balance(numerical_circuit=self.numerical_circuit,
                                                         problem=problem,
@@ -418,19 +523,20 @@ class OpfDcTimeSeries(OpfTimeSeries):
 
         # add branch restrictions
         if self.zonal_grouping == ZonalGrouping.NoGrouping:
-            load_f = add_branch_loading_restriction(problem=problem,
-                                                    theta=theta,
-                                                    ys=ys,
-                                                    F=F,
-                                                    T=T,
-                                                    ratings=branch_ratings,
-                                                    ratings_slack_from=branch_rating_slack1,
-                                                    ratings_slack_to=branch_rating_slack2,
-                                                    monitored=self.numerical_circuit.branch_data.monitor_loading,
-                                                    active=br_active)
+            load_f, tau = add_branch_loading_restriction(problem=problem,
+                                                         nc=self.numerical_circuit,
+                                                         theta=theta,
+                                                         F=F,
+                                                         T=T,
+                                                         ratings=branch_ratings,
+                                                         ratings_slack_from=branch_rating_slack1,
+                                                         ratings_slack_to=branch_rating_slack2,
+                                                         monitored=self.numerical_circuit.branch_data.monitor_loading,
+                                                         active=br_active)
 
         elif self.zonal_grouping == ZonalGrouping.All:
             load_f = np.zeros((self.numerical_circuit.nbr, nt))
+            tau = np.ones((self.numerical_circuit.nbr, nt))
 
         else:
             raise ValueError()
@@ -464,6 +570,10 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                           FSlack2=branch_rating_slack2,
                                           FCSlack1=overload1_lst,
                                           FCSlack2=overload2_lst,
+                                          hvdc_overload1=hvdc_overload1,
+                                          hvdc_overload2=hvdc_overload2,
+                                          hvdc_control1_slacks=hvdc_control1_slacks,
+                                          hvdc_control2_slacks=hvdc_control2_slacks,
                                           cost_g=cost_g,
                                           cost_b=cost_b,
                                           cost_l=cost_l,
@@ -475,6 +585,14 @@ class OpfDcTimeSeries(OpfTimeSeries):
         self.Pg = Pg.transpose()
         self.Pb = Pb.transpose()
         self.Pl = Pl.transpose()
+
+        self.Pinj = P.transpose()
+
+        self.phase_shift = tau.transpose()
+
+        self.hvdc_flow = hvdc_flow_f.transpose()
+        self.hvdc_slacks = (hvdc_overload1 + hvdc_overload2).transpose()
+
         self.E = E.transpose()
         self.load_shedding = load_slack.transpose()
         self.s_from = load_f.transpose()

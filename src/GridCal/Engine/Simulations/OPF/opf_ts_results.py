@@ -23,8 +23,8 @@ from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
-    def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names,
-                 n, m, nt, ngen=0, nbat=0, nload=0, time=None, bus_types=()):
+    def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names,
+                 n, m, nt, ngen=0, nbat=0, nload=0, nhvdc=0, time=None, bus_types=()):
         """
         OPF Time Series results constructor
         :param n: number of buses
@@ -43,6 +43,10 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                     ResultTypes.BranchPower,
                                                     ResultTypes.BranchLoading,
                                                     ResultTypes.BranchOverloads,
+                                                    ResultTypes.BranchTapAngle,
+                                                    ResultTypes.HvdcPowerFrom,
+                                                    ResultTypes.HvdcLoading,
+                                                    ResultTypes.HvdcOverloads,
                                                     ResultTypes.LoadShedding,
                                                     ResultTypes.ControlledGeneratorShedding,
                                                     ResultTypes.ControlledGeneratorPower,
@@ -74,6 +78,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.load_names = load_names
         self.generator_names = generator_names
         self.battery_names = battery_names
+        self.hvdc_names = hvdc_names
 
         self.bus_types = bus_types
 
@@ -100,6 +105,13 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.shadow_prices = np.zeros((nt, n), dtype=float)
 
         self.Sf = np.zeros((nt, m), dtype=complex)
+
+
+        self.hvdc_Pf = np.zeros((nt, nhvdc), dtype=float)
+        self.hvdc_loading = np.zeros((nt, nhvdc), dtype=float)
+        self.hvdc_overloads = np.zeros((nt, nhvdc), dtype=float)
+
+        self.phase_shift = np.zeros((nt, m), dtype=float)
 
         self.generator_power = np.zeros((nt, ngen), dtype=float)
 
@@ -200,6 +212,30 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             y = self.losses.real
             y_label = '(MW)'
             title = 'Branch losses '
+
+        elif result_type == ResultTypes.BranchTapAngle:
+            labels = self.branch_names
+            y = np.rad2deg(self.phase_shift)
+            y_label = '(deg)'
+            title = 'Branch tap angle '
+
+        elif result_type == ResultTypes.HvdcPowerFrom:
+            labels = self.hvdc_names
+            y = self.hvdc_Pf
+            y_label = '(MW)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.HvdcOverloads:
+            labels = self.hvdc_names
+            y = self.hvdc_overloads
+            y_label = '(MW)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.HvdcLoading:
+            labels = self.hvdc_names
+            y = self.hvdc_loading * 100.0
+            y_label = '(%)'
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.LoadShedding:
             labels = self.load_names
