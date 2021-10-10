@@ -359,39 +359,81 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
 
     bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
 
-    nc.bus_data = ds.circuit_to_data.get_bus_data(circuit, time_series=True, ntime=ntime)
+    nc.bus_data = ds.circuit_to_data.get_bus_data(circuit=circuit, time_series=True, ntime=ntime)
 
-    nc.load_data = ds.circuit_to_data.get_load_data(circuit, bus_dict, opf_results, time_series=True, ntime=ntime)
+    nc.load_data = ds.circuit_to_data.get_load_data(circuit=circuit,
+                                                    bus_dict=bus_dict,
+                                                    opf_results=opf_results,
+                                                    time_series=True,
+                                                    ntime=ntime)
 
-    nc.static_generator_data = ds.circuit_to_data.get_static_generator_data(circuit, bus_dict,
-                                                                            time_series=True, ntime=ntime)
+    nc.static_generator_data = ds.circuit_to_data.get_static_generator_data(circuit=circuit,
+                                                                            bus_dict=bus_dict,
+                                                                            time_series=True,
+                                                                            ntime=ntime)
 
-    nc.generator_data = ds.circuit_to_data.get_generator_data(circuit, bus_dict, nc.bus_data.Vbus, logger, opf_results,
-                                                              time_series=True, ntime=ntime)
+    nc.generator_data = ds.circuit_to_data.get_generator_data(circuit=circuit,
+                                                              bus_dict=bus_dict,
+                                                              Vbus=nc.bus_data.Vbus,
+                                                              logger=logger,
+                                                              opf_results=opf_results,
+                                                              time_series=True,
+                                                              ntime=ntime)
 
-    nc.battery_data = ds.circuit_to_data.get_battery_data(circuit, bus_dict, nc.bus_data.Vbus, logger, opf_results,
-                                                          time_series=True, ntime=ntime)
+    nc.battery_data = ds.circuit_to_data.get_battery_data(circuit=circuit,
+                                                          bus_dict=bus_dict,
+                                                          Vbus=nc.bus_data.Vbus,
+                                                          logger=logger,
+                                                          opf_results=opf_results,
+                                                          time_series=True,
+                                                          ntime=ntime)
 
-    nc.shunt_data = ds.circuit_to_data.get_shunt_data(circuit, bus_dict, nc.bus_data.Vbus, logger,
-                                                      time_series=True, ntime=ntime)
+    nc.shunt_data = ds.circuit_to_data.get_shunt_data(circuit=circuit,
+                                                      bus_dict=bus_dict,
+                                                      Vbus=nc.bus_data.Vbus,
+                                                      logger=logger,
+                                                      time_series=True,
+                                                      ntime=ntime)
 
-    nc.line_data = ds.circuit_to_data.get_line_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode,
-                                                    time_series=True, ntime=ntime)
+    nc.line_data = ds.circuit_to_data.get_line_data(circuit=circuit,
+                                                    bus_dict=bus_dict,
+                                                    apply_temperature=apply_temperature,
+                                                    branch_tolerance_mode=branch_tolerance_mode,
+                                                    time_series=True,
+                                                    ntime=ntime)
 
-    nc.transformer_data = ds.circuit_to_data.get_transformer_data(circuit, bus_dict, time_series=True, ntime=ntime)
+    nc.transformer_data = ds.circuit_to_data.get_transformer_data(circuit=circuit,
+                                                                  bus_dict=bus_dict,
+                                                                  time_series=True,
+                                                                  ntime=ntime)
 
-    nc.vsc_data = ds.circuit_to_data.get_vsc_data(circuit, bus_dict, time_series=True, ntime=ntime)
+    nc.vsc_data = ds.circuit_to_data.get_vsc_data(circuit=circuit,
+                                                  bus_dict=bus_dict,
+                                                  time_series=True,
+                                                  ntime=ntime)
 
-    nc.dc_line_data = ds.circuit_to_data.get_dc_line_data(circuit, bus_dict, apply_temperature, branch_tolerance_mode,
-                                                          time_series=True, ntime=ntime)
+    nc.dc_line_data = ds.circuit_to_data.get_dc_line_data(circuit=circuit,
+                                                          bus_dict=bus_dict,
+                                                          apply_temperature=apply_temperature,
+                                                          branch_tolerance_mode=branch_tolerance_mode,
+                                                          time_series=True,
+                                                          ntime=ntime)
 
-    nc.upfc_data = ds.circuit_to_data.get_upfc_data(circuit, bus_dict, time_series=True, ntime=ntime)
+    nc.upfc_data = ds.circuit_to_data.get_upfc_data(circuit=circuit,
+                                                    bus_dict=bus_dict,
+                                                    time_series=True,
+                                                    ntime=ntime)
 
-    nc.branch_data = ds.circuit_to_data.get_branch_data(circuit, bus_dict, nc.bus_data.Vbus,
-                                                        apply_temperature, branch_tolerance_mode,
+    nc.branch_data = ds.circuit_to_data.get_branch_data(circuit=circuit,
+                                                        bus_dict=bus_dict,
+                                                        Vbus=nc.bus_data.Vbus,
+                                                        apply_temperature=apply_temperature,
+                                                        branch_tolerance_mode=branch_tolerance_mode,
                                                         time_series=True, ntime=ntime)
 
-    nc.hvdc_data = ds.circuit_to_data.get_hvdc_data(circuit, bus_dict, nc.bus_data.bus_types,
+    nc.hvdc_data = ds.circuit_to_data.get_hvdc_data(circuit=circuit,
+                                                    bus_dict=bus_dict,
+                                                    bus_types=nc.bus_data.bus_types,
                                                     time_series=True, ntime=ntime)
 
     nc.consolidate_information()

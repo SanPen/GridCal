@@ -150,15 +150,22 @@ class OptimalPowerFlow(DriverTemplate):
         gn = problem.get_generator_power()
         gn[gn == None] = 0
 
+        hvdc_power = problem.get_hvdc_flows()
+        hvdc_loading = hvdc_power / (numerical_circuit.hvdc_data.rate[:, 0] + 1e-20)
+
         # pack the results
         self.results = OptimalPowerFlowResults(bus_names=numerical_circuit.bus_data.bus_names,
                                                branch_names=numerical_circuit.branch_data.branch_names,
                                                load_names=numerical_circuit.load_data.load_names,
                                                generator_names=numerical_circuit.generator_data.generator_names,
                                                battery_names=numerical_circuit.battery_data.battery_names,
-                                               Sbus=None,
+                                               Sbus=problem.get_power_injections(),
                                                voltage=problem.get_voltage(),
                                                load_shedding=ld,
+                                               hvdc_names=numerical_circuit.hvdc_names,
+                                               hvdc_power=hvdc_power,
+                                               hvdc_loading=hvdc_loading,
+                                               hvdc_overloads=problem.get_hvdc_slacks(),
                                                generator_shedding=np.zeros_like(gn),
                                                battery_power=bt,
                                                controlled_generation_power=gn,

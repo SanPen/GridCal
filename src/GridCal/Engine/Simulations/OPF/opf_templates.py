@@ -18,6 +18,7 @@ from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.ThirdParty.pulp import *
 from ortools.linear_solver import pywraplp
+from GridCal.Engine.basic_structures import Logger
 
 
 class Opf:
@@ -29,10 +30,17 @@ class Opf:
         """
         self.numerical_circuit = numerical_circuit
 
+        self.logger = Logger()
+
         self.theta = None
         self.Pg = None
         self.Pb = None
         self.Pl = None
+
+        self.Pinj = None
+        self.hvdc_flow = None
+        self.hvdc_slacks = None
+
         self.E = None
         self.s_from = None
         self.s_to = None
@@ -102,7 +110,10 @@ class Opf:
         """
         val = np.zeros(arr.shape)
         for i in range(val.shape[0]):
-            val[i] = arr[i].value()
+            if isinstance(arr[i], int) or isinstance(arr[i], float):
+                val[i] = arr[i]
+            else:
+                val[i] = arr[i].value()
         if make_abs:
             val = np.abs(val)
 
@@ -122,6 +133,27 @@ class Opf:
         :return: 2D array
         """
         return self.extract(self.overloads)
+
+    def get_power_injections(self):
+        """
+        return the branch overloads (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.Pinj)
+
+    def get_hvdc_flows(self):
+        """
+        return the branch overloads (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.hvdc_flow) * self.numerical_circuit.Sbase
+
+    def get_hvdc_slacks(self):
+        """
+        return the branch overloads (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.hvdc_slacks)
 
     def get_loading(self):
         """

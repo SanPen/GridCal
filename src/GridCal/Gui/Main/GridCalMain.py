@@ -3658,6 +3658,8 @@ class MainGUI(QMainWindow):
                                              types=results.bus_types,
                                              Sf=results.Sf,
                                              Sbus=results.Sbus,
+                                             hvdc_sending_power=results.hvdc_Pf,
+                                             hvdc_loading=results.hvdc_loading,
                                              use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                              min_branch_width=self.ui.min_branch_size_spinBox.value(),
                                              max_branch_width=self.ui.max_branch_size_spinBox.value(),

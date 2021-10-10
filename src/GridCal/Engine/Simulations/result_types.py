@@ -51,6 +51,7 @@ class ResultTypes(Enum):
 
     HvdcLosses = 'HVDC losses', DeviceType.HVDCLineDevice
     HvdcPowerFrom = 'HVDC power "from"', DeviceType.HVDCLineDevice
+    HvdcLoading = 'HVDC loading', DeviceType.HVDCLineDevice
     HvdcPowerTo = 'HVDC power "to"', DeviceType.HVDCLineDevice
 
     # StochasticPowerFlowDriver

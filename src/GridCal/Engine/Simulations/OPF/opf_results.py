@@ -45,16 +45,22 @@ class OptimalPowerFlowResults(ResultsTemplate):
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names,
                  Sbus=None, voltage=None, load_shedding=None, generator_shedding=None,
                  battery_power=None, controlled_generation_power=None,
-                 Sf=None, overloads=None, loading=None, losses=None, converged=None, bus_types=None):
+                 Sf=None, overloads=None, loading=None, losses=None,
+                 hvdc_names=None, hvdc_power=None, hvdc_loading=None, hvdc_overloads=None,
+                 converged=None, bus_types=None):
 
         ResultsTemplate.__init__(self,
                                  name='OPF',
                                  available_results=[ResultTypes.BusVoltageModule,
                                                     ResultTypes.BusVoltageAngle,
+                                                    ResultTypes.BusPower,
                                                     ResultTypes.BranchPower,
                                                     ResultTypes.BranchLoading,
                                                     ResultTypes.BranchOverloads,
                                                     ResultTypes.LoadShedding,
+                                                    ResultTypes.HvdcPowerFrom,
+                                                    ResultTypes.HvdcLoading,
+                                                    ResultTypes.HvdcOverloads,
                                                     ResultTypes.ControlledGeneratorShedding,
                                                     ResultTypes.ControlledGeneratorPower,
                                                     ResultTypes.BatteryPower],
@@ -71,6 +77,10 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                  'bus_types',
                                                  'overloads',
                                                  'loading',
+                                                 'hvdc_names',
+                                                 'hvdc_power',
+                                                 'hvdc_loading',
+                                                 'hvdc_overloads',
                                                  'battery_power',
                                                  'generator_power',
                                                  'converged'])
@@ -96,6 +106,11 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.loading = loading
 
         self.losses = losses
+
+        self.hvdc_names = hvdc_names
+        self.hvdc_Pf = hvdc_power
+        self.hvdc_loading = hvdc_loading
+        self.hvdc_overloads = hvdc_overloads
 
         self.battery_power = battery_power
 
@@ -229,6 +244,18 @@ class OptimalPowerFlowResults(ResultsTemplate):
             y = self.battery_power
             y_label = '(MW)'
             title = 'Battery power'
+
+        elif result_type == ResultTypes.HvdcPowerFrom:
+            labels = self.hvdc_names
+            y = self.hvdc_Pf
+            y_label = '(MW)'
+            title = 'HVDC power'
+
+        elif result_type == ResultTypes.HvdcOverloads:
+            labels = self.hvdc_names
+            y = self.hvdc_overloads
+            y_label = '(MW)'
+            title = 'HVDC overloads'
 
         else:
             labels = []

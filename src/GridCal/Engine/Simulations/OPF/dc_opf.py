@@ -19,11 +19,14 @@ That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
 import GridCal.ThirdParty.pulp as pl
-# from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
-from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
+from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
+from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers, Logger, LpVariable
+from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType, GenerationNtcFormulation
 
 
 def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
+                           hvdc_overload1, hvdc_overload2,
+                           hvdc_control1_slacks, hvdc_control2_slacks,
                            cost_g, cost_b, cost_l, cost_br):
     """
     Add the objective function to the problem
@@ -32,6 +35,10 @@ def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
     :param LSlack: Load slack LpVars (nl, nt)
     :param FSlack1: Branch overload slack1 (m, nt)
     :param FSlack2: Branch overload slack2 (m, nt)
+    :param hvdc_overload1: HVDC overload (nhvdc, nt)
+    :param hvdc_overload2: HVDC overload (nhvdc, nt)
+    :param hvdc_control1_slacks: HVDC control slack 1 (nhvdc, nt)
+    :param hvdc_control2_slacks: HVDC control slack 2 (nhvdc, nt)
     :param cost_g: Cost of the generators (ng, nt)
     :param cost_b: Cost of the batteries (nb, nt)
     :param cost_l: Cost of the loss of load (nl, nt)
@@ -46,6 +53,8 @@ def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
     f_obj += pl.lpSum(cost_l * LSlack)
 
     f_obj += pl.lpSum(cost_br * (FSlack1 + FSlack2))
+
+    f_obj += pl.lpSum(cost_br * (hvdc_overload1 + hvdc_overload2 + hvdc_control1_slacks + hvdc_control2_slacks))
 
     return f_obj
 
@@ -85,7 +94,7 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     return pl.lpDot(C_bus_gen, Pg) + pl.lpDot(C_bus_bat, Pb) - pl.lpDot(C_bus_load, Pl - LSlack)
 
 
-def add_dc_nodal_power_balance(numerical_circuit, problem: pl.LpProblem, theta, P):
+def add_dc_nodal_power_balance(numerical_circuit: SnapshotOpfData, problem: pl.LpProblem, theta, P):
     """
     Add the nodal power balance
     :param numerical_circuit: NumericalCircuit instance
@@ -144,14 +153,17 @@ def add_dc_nodal_power_balance(numerical_circuit, problem: pl.LpProblem, theta, 
     return nodal_restrictions
 
 
-def add_branch_loading_restriction(problem: pl.LpProblem, F, T, theta, ys,
-                                   active, monitored, ratings, ratings_slack_from, ratings_slack_to):
+def add_branch_loading_restriction(problem: pl.LpProblem, F, T, theta, ys, active, monitored,
+                                   ratings, ratings_slack_from, ratings_slack_to):
     """
     Add the branch loading restrictions
     :param problem: LpProblem instance
-    :param theta_f: voltage angles at the "from" side of the branches (m)
-    :param theta_t: voltage angles at the "to" side of the branches (m)
-    :param ys: Array of branch susceptances (m)
+    :param F:
+    :param T:
+    :param theta: voltage angles
+    :param ys: Array of branch linear admittances (m)
+    :param active: Array of branch active states
+    :param monitored: Array of branch monitoring
     :param ratings: Array of branch ratings (m)
     :param ratings_slack_from: Array of branch loading slack variables in the from-to sense
     :param ratings_slack_to: Array of branch loading slack variables in the to-from sense
@@ -177,6 +189,77 @@ def add_branch_loading_restriction(problem: pl.LpProblem, F, T, theta, ys,
     return Pbr_f
 
 
+def formulate_hvdc_flow(problem: pl.LpProblem, nc: SnapshotOpfData, angles, Pinj, t=0,
+                        logger: Logger = Logger(), inf=999999):
+    """
+
+    :param problem:
+    :param nc:
+    :param angles:
+    :param Pinj:
+    :param t:
+    :param logger:
+    :param inf:
+    :return:
+    """
+    rates = nc.hvdc_data.rate[:, t] / nc.Sbase
+    F = nc.hvdc_data.get_bus_indices_f()
+    T = nc.hvdc_data.get_bus_indices_t()
+
+    flow_f = np.zeros(nc.nhvdc, dtype=object)
+    overload1 = np.zeros(nc.nhvdc, dtype=object)
+    overload2 = np.zeros(nc.nhvdc, dtype=object)
+    hvdc_control1 = np.zeros(nc.nhvdc, dtype=object)
+    hvdc_control2 = np.zeros(nc.nhvdc, dtype=object)
+
+    for i in range(nc.nhvdc):
+
+        if nc.hvdc_data.active[i, t]:
+
+            _f = F[i]
+            _t = T[i]
+
+            hvdc_control1[i] = LpVariable('hvdc_control1_' + str(i), 0, inf)
+            hvdc_control2[i] = LpVariable('hvdc_control2_' + str(i), 0, inf)
+            P0 = nc.hvdc_data.Pt[i, t] / nc.Sbase
+
+            if nc.hvdc_data.control_mode[i] == HvdcControlType.type_0_free:
+
+                if rates[i] <= 0:
+                    logger.add_error('Rate = 0', 'HVDC:{0}'.format(i), rates[i])
+
+                # formulate the hvdc flow as an AC line equivalent
+                bk = 1.0 / nc.hvdc_data.r[i]  # TODO: yes, I know... DC...
+                flow_f[i] = P0 + bk * (angles[_f] - angles[_t]) + hvdc_control1[i] - hvdc_control2[i]
+
+                # add the injections matching the flow
+                Pinj[_f] -= flow_f[i]
+                Pinj[_t] += flow_f[i]
+
+                # rating restriction in the sense from-to: eq.17
+                overload1[i] = LpVariable('overload_hvdc1_' + str(i), 0, inf)
+                problem.add(flow_f[i] <= (rates[i] + overload1[i]), "hvdc_ft_rating_" + str(i))
+
+                # rating restriction in the sense to-from: eq.18
+                overload2[i] = LpVariable('overload_hvdc2_' + str(i), 0, inf)
+                problem.add((-rates[i] - overload2[i]) <= flow_f[i], "hvdc_tf_rating_" + str(i))
+
+            elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset and not nc.hvdc_data.dispatchable[i]:
+                # simple injections model: The power is set by the user
+                flow_f[i] = P0 + hvdc_control1[i] - hvdc_control2[i]
+                Pinj[_f] -= flow_f[i]
+                Pinj[_t] += flow_f[i]
+
+            elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset and nc.hvdc_data.dispatchable[i]:
+                # simple injections model, the power is a variable and it is optimized
+                P0 = LpVariable('hvdc_pf_' + str(i), -rates[i], rates[i])
+                flow_f[i] = P0 + hvdc_control1[i] - hvdc_control2[i]
+                Pinj[_f] -= flow_f[i]
+                Pinj[_t] += flow_f[i]
+
+    return flow_f, overload1, overload2, hvdc_control1, hvdc_control2
+
+
 class OpfDc(Opf):
 
     def __init__(self, numerical_circuit, solver_type: MIPSolvers = MIPSolvers.CBC):
@@ -184,6 +267,8 @@ class OpfDc(Opf):
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
         """
+
+
         Opf.__init__(self, numerical_circuit=numerical_circuit, solver_type=solver_type)
 
     def formulate(self):
@@ -245,6 +330,16 @@ class OpfDc(Opf):
                                  C_bus_load=self.numerical_circuit.load_data.C_bus_load,
                                  LSlack=load_slack, Pl=Pl)
 
+        # formulate the simple HVDC models
+        hvdc_flow_f, hvdc_overload1, hvdc_overload2, \
+        hvdc_control1_slacks, hvdc_control2_slacks = formulate_hvdc_flow(problem=problem,
+                                                                         nc=self.numerical_circuit,
+                                                                         angles=theta,
+                                                                         Pinj=P,
+                                                                         t=0,
+                                                                         logger=self.logger,
+                                                                         inf=999999)
+
         # add the DC grid restrictions (with real slack losses)
         nodal_restrictions = add_dc_nodal_power_balance(numerical_circuit=self.numerical_circuit,
                                                         problem=problem,
@@ -267,6 +362,8 @@ class OpfDc(Opf):
         problem += add_objective_function(Pg, Pb, load_slack,
                                           branch_rating_slack1,
                                           branch_rating_slack2,
+                                          hvdc_overload1, hvdc_overload2,
+                                          hvdc_control1_slacks, hvdc_control2_slacks,
                                           cost_g, cost_b, cost_l, cost_br)
 
         # Assign variables to keep
@@ -275,6 +372,11 @@ class OpfDc(Opf):
         self.Pg = Pg
         self.Pb = Pb
         self.Pl = Pl
+        self.Pinj = P
+
+        self.hvdc_flow = hvdc_flow_f
+        self.hvdc_slacks = hvdc_overload1 + hvdc_overload2
+
         self.load_shedding = load_slack
         self.s_from = load_f
         self.s_to = -load_f
