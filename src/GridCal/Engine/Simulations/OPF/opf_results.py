@@ -47,6 +47,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                  battery_power=None, controlled_generation_power=None,
                  Sf=None, overloads=None, loading=None, losses=None,
                  hvdc_names=None, hvdc_power=None, hvdc_loading=None, hvdc_overloads=None,
+                 phase_shift=None,
                  converged=None, bus_types=None):
 
         ResultsTemplate.__init__(self,
@@ -57,6 +58,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                     ResultTypes.BranchPower,
                                                     ResultTypes.BranchLoading,
                                                     ResultTypes.BranchOverloads,
+                                                    ResultTypes.BranchTapAngle,
                                                     ResultTypes.LoadShedding,
                                                     ResultTypes.HvdcPowerFrom,
                                                     ResultTypes.HvdcLoading,
@@ -81,6 +83,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                  'hvdc_power',
                                                  'hvdc_loading',
                                                  'hvdc_overloads',
+                                                 'phase_shift',
                                                  'battery_power',
                                                  'generator_power',
                                                  'converged'])
@@ -111,6 +114,8 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.hvdc_Pf = hvdc_power
         self.hvdc_loading = hvdc_loading
         self.hvdc_overloads = hvdc_overloads
+
+        self.phase_shift = phase_shift
 
         self.battery_power = battery_power
 
@@ -220,6 +225,12 @@ class OptimalPowerFlowResults(ResultsTemplate):
             y = self.losses.real
             y_label = '(MW)'
             title = 'Branch losses'
+
+        elif result_type == ResultTypes.BranchTapAngle:
+            labels = self.branch_names
+            y = np.rad2deg(self.phase_shift)
+            y_label = '(deg)'
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.LoadShedding:
             labels = self.load_names

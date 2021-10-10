@@ -217,7 +217,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.hvdc_Pf = hvdc_flow
         self.hvdc_loading = hvdc_loading
-        self.hvdc_slacks = hvdc_slacks
+        self.hvdc_overloads = hvdc_slacks
 
         self.phase_shift = phase_shift
 
@@ -335,6 +335,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = '(MW)'
             title = 'Branch losses'
 
+        elif result_type == ResultTypes.BranchTapAngle:
+            labels = self.branch_names
+            y = np.rad2deg(self.phase_shift)
+            y_label = '(deg)'
+            title = result_type.value[0]
+
         elif result_type == ResultTypes.NodeSlacks:
             labels = self.bus_names
             y = self.node_slacks
@@ -367,7 +373,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         elif result_type == ResultTypes.HvdcOverloads:
             labels = self.hvdc_names
-            y = self.hvdc_slacks
+            y = self.hvdc_overloads
             y_label = '(MW)'
             title = result_type.value[0]
 

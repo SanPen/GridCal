@@ -153,11 +153,13 @@ def add_dc_nodal_power_balance(numerical_circuit: SnapshotOpfData, problem: pl.L
     return nodal_restrictions
 
 
-def add_branch_loading_restriction(problem: pl.LpProblem, F, T, theta, ys, active, monitored,
+def add_branch_loading_restriction(problem: pl.LpProblem, nc: SnapshotOpfData,
+                                   F, T, theta, ys, active, monitored,
                                    ratings, ratings_slack_from, ratings_slack_to):
     """
     Add the branch loading restrictions
     :param problem: LpProblem instance
+    :param nc: SnapshotOpfData instance
     :param F:
     :param T:
     :param theta: voltage angles
@@ -173,12 +175,19 @@ def add_branch_loading_restriction(problem: pl.LpProblem, F, T, theta, ys, activ
 
     # from-to branch power restriction
     Pbr_f = np.zeros(nbr, dtype=object)
+    tau = np.ones(nbr, dtype=object)
 
     for m in range(nbr):
         if active[m]:
 
             # compute the flow
-            Pbr_f[m] = ys[m] * (theta[F[m]] - theta[T[m]])
+            if nc.branch_data.control_mode[m] == TransformerControlType.Pt:
+                # is a phase shifter
+                tau[m] = LpVariable('Tau_{}'.format(m), nc.branch_data.theta_min[m], nc.branch_data.theta_max[m])
+                Pbr_f[m] = ys[m] * (theta[F[m]] - theta[T[m]] + tau[m])
+            else:
+                # is a regular branch
+                Pbr_f[m] = ys[m] * (theta[F[m]] - theta[T[m]])
 
             if monitored[m]:
                 problem.add(Pbr_f[m] <= ratings[m] + ratings_slack_from[m], 'upper_rate_{0}'.format(m))
@@ -186,7 +195,7 @@ def add_branch_loading_restriction(problem: pl.LpProblem, F, T, theta, ys, activ
         else:
             Pbr_f[m] = 0
 
-    return Pbr_f
+    return Pbr_f, tau
 
 
 def formulate_hvdc_flow(problem: pl.LpProblem, nc: SnapshotOpfData, angles, Pinj, t=0,
@@ -267,8 +276,6 @@ class OpfDc(Opf):
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
         """
-
-
         Opf.__init__(self, numerical_circuit=numerical_circuit, solver_type=solver_type)
 
     def formulate(self):
@@ -306,15 +313,16 @@ class OpfDc(Opf):
         branch_monitored = self.numerical_circuit.branch_data.monitor_loading
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
         Ys = - self.numerical_circuit.branch_data.get_linear_series_admittance(t=0)
+
         cost_br = self.numerical_circuit.branch_cost
 
         # create LP variables
         Pg = pl.lpMakeVars(name='Pg', shape=ng, lower=Pg_min, upper=Pg_max)
         Pb = pl.lpMakeVars(name='Pb', shape=nb, lower=Pb_min, upper=Pb_max)
         load_slack = pl.lpMakeVars(name='LSlack', shape=nl, lower=0, upper=None)
-        theta = pl.lpMakeVars(name='theta', shape=n, lower=-3.14, upper=3.14)
-        theta_f = theta[self.numerical_circuit.F]
-        theta_t = theta[self.numerical_circuit.T]
+        theta = pl.lpMakeVars(name='theta', shape=n,
+                              lower=self.numerical_circuit.bus_data.angle_min,
+                              upper=self.numerical_circuit.bus_data.angle_max)
         branch_rating_slack1 = pl.lpMakeVars(name='FSlack1', shape=m, lower=0, upper=None)
         branch_rating_slack2 = pl.lpMakeVars(name='FSlack2', shape=m, lower=0, upper=None)
 
@@ -347,16 +355,17 @@ class OpfDc(Opf):
                                                         P=P)
 
         # add the branch loading restriction
-        load_f = add_branch_loading_restriction(problem=problem,
-                                                F=self.numerical_circuit.F,
-                                                T=self.numerical_circuit.T,
-                                                theta=theta,
-                                                ys=Ys,
-                                                active=branch_active,
-                                                monitored=branch_monitored,
-                                                ratings=branch_ratings,
-                                                ratings_slack_from=branch_rating_slack1,
-                                                ratings_slack_to=branch_rating_slack2)
+        load_f, tau = add_branch_loading_restriction(problem=problem,
+                                                     nc=self.numerical_circuit,
+                                                     F=self.numerical_circuit.F,
+                                                     T=self.numerical_circuit.T,
+                                                     theta=theta,
+                                                     ys=Ys,
+                                                     active=branch_active,
+                                                     monitored=branch_monitored,
+                                                     ratings=branch_ratings,
+                                                     ratings_slack_from=branch_rating_slack1,
+                                                     ratings_slack_to=branch_rating_slack2)
 
         # add the objective function
         problem += add_objective_function(Pg, Pb, load_slack,
@@ -373,6 +382,8 @@ class OpfDc(Opf):
         self.Pb = Pb
         self.Pl = Pl
         self.Pinj = P
+
+        self.phase_shift = tau
 
         self.hvdc_flow = hvdc_flow_f
         self.hvdc_slacks = hvdc_overload1 + hvdc_overload2

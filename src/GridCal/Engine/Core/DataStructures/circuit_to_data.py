@@ -629,7 +629,12 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.X[ii] = elm.X
         data.G[ii] = elm.G
         data.B[ii] = elm.B
-        data.m[ii] = elm.tap_module
+
+        if opf_results is not None:
+            data.m[ii] = opf_results.phase_shift[ii]
+        else:
+            data.m[ii] = elm.tap_module
+
         data.m_max[ii] = elm.tap_module_max
         data.m_min[ii] = elm.tap_module_min
         data.theta[ii] = elm.angle
@@ -683,7 +688,12 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.X[ii] = elm.X1
         data.G0[ii] = elm.G0
         data.Beq[ii] = elm.Beq
-        data.m[ii] = elm.m
+
+        if opf_results is not None:
+            data.m[ii] = opf_results.phase_shift[ii]
+        else:
+            data.m[ii] = elm.m
+
         data.m_max[ii] = elm.m_max
         data.m_min[ii] = elm.m_min
         data.alpha1[ii] = elm.alpha1

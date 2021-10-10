@@ -166,6 +166,7 @@ class OptimalPowerFlow(DriverTemplate):
                                                hvdc_power=hvdc_power,
                                                hvdc_loading=hvdc_loading,
                                                hvdc_overloads=problem.get_hvdc_slacks(),
+                                               phase_shift=problem.get_phase_shifts(),
                                                generator_shedding=np.zeros_like(gn),
                                                battery_power=bt,
                                                controlled_generation_power=gn,

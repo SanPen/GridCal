@@ -41,6 +41,8 @@ class Opf:
         self.hvdc_flow = None
         self.hvdc_slacks = None
 
+        self.phase_shift = None
+
         self.E = None
         self.s_from = None
         self.s_to = None
@@ -140,6 +142,13 @@ class Opf:
         :return: 2D array
         """
         return self.extract(self.Pinj)
+
+    def get_phase_shifts(self):
+        """
+        return the branch phase_shifts (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.phase_shift)
 
     def get_hvdc_flows(self):
         """

@@ -3661,6 +3661,7 @@ class MainGUI(QMainWindow):
                                              hvdc_sending_power=results.hvdc_Pf,
                                              hvdc_loading=results.hvdc_loading,
                                              use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                             theta=results.phase_shift,
                                              min_branch_width=self.ui.min_branch_size_spinBox.value(),
                                              max_branch_width=self.ui.max_branch_size_spinBox.value(),
                                              min_bus_width=self.ui.min_node_size_spinBox.value(),
