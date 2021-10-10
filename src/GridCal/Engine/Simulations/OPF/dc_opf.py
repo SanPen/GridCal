@@ -54,7 +54,8 @@ def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
 
     f_obj += pl.lpSum(cost_br * (FSlack1 + FSlack2))
 
-    f_obj += pl.lpSum(cost_br * (hvdc_overload1 + hvdc_overload2 + hvdc_control1_slacks + hvdc_control2_slacks))
+    if len(hvdc_overload1) > 0:
+        f_obj += pl.lpSum(cost_br * (hvdc_overload1 + hvdc_overload2 + hvdc_control1_slacks + hvdc_control2_slacks))
 
     return f_obj
 
@@ -154,7 +155,7 @@ def add_dc_nodal_power_balance(numerical_circuit: SnapshotOpfData, problem: pl.L
 
 
 def add_branch_loading_restriction(problem: pl.LpProblem, nc: SnapshotOpfData,
-                                   F, T, theta, ys, active, monitored,
+                                   F, T, theta, active, monitored,
                                    ratings, ratings_slack_from, ratings_slack_to):
     """
     Add the branch loading restrictions
@@ -180,14 +181,20 @@ def add_branch_loading_restriction(problem: pl.LpProblem, nc: SnapshotOpfData,
     for m in range(nbr):
         if active[m]:
 
+            # compute the branch susceptance
+            if nc.branch_data.branch_dc[m]:
+                bk = -1.0 / nc.branch_data.R[m]
+            else:
+                bk = -1.0 / nc.branch_data.X[m]
+
             # compute the flow
             if nc.branch_data.control_mode[m] == TransformerControlType.Pt:
                 # is a phase shifter
                 tau[m] = LpVariable('Tau_{}'.format(m), nc.branch_data.theta_min[m], nc.branch_data.theta_max[m])
-                Pbr_f[m] = ys[m] * (theta[F[m]] - theta[T[m]] + tau[m])
+                Pbr_f[m] = bk * (theta[F[m]] - theta[T[m]] + tau[m])
             else:
                 # is a regular branch
-                Pbr_f[m] = ys[m] * (theta[F[m]] - theta[T[m]])
+                Pbr_f[m] = bk * (theta[F[m]] - theta[T[m]])
 
             if monitored[m]:
                 problem.add(Pbr_f[m] <= ratings[m] + ratings_slack_from[m], 'upper_rate_{0}'.format(m))
@@ -312,7 +319,6 @@ class OpfDc(Opf):
         branch_active = self.numerical_circuit.branch_data.branch_active[:, 0]
         branch_monitored = self.numerical_circuit.branch_data.monitor_loading
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
-        Ys = - self.numerical_circuit.branch_data.get_linear_series_admittance(t=0)
 
         cost_br = self.numerical_circuit.branch_cost
 
@@ -360,7 +366,6 @@ class OpfDc(Opf):
                                                      F=self.numerical_circuit.F,
                                                      T=self.numerical_circuit.T,
                                                      theta=theta,
-                                                     ys=Ys,
                                                      active=branch_active,
                                                      monitored=branch_monitored,
                                                      ratings=branch_ratings,

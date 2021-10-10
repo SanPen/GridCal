@@ -573,8 +573,6 @@ class OpfNTC(Opf):
                 flow_f[m] = self.solver.NumVar(-self.inf, self.inf, 'pftk_' + str(m))
 
                 # compute the branch susceptance
-                # bk = (1.0 / complex(nc.branch_data.R[m], nc.branch_data.X[m])).imag  # this seems to be problematic. Should it be negative?
-
                 if nc.branch_data.branch_dc[m]:
                     bk = 1.0 / nc.branch_data.R[m]
                 else:
