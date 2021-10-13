@@ -15,7 +15,12 @@ Version 4.2.4
 ^^^^^^^^^^^^^^^
 
 - Added HVDC and phase shifter optimization to the DC OPF and time series OPF
+- Added contingency report to all the OPF modes
+- Added transformer angle and tap module profiles
+- Added dispatchable HVDC devices to the optimization
+
 - Linked the HVDC and phase shifting from th OPF to the PF
+
 - Removed AC linear OPF for the time being
 
 
