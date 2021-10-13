@@ -378,8 +378,12 @@ class OpfDc(Opf):
         cost_b = self.numerical_circuit.battery_cost
 
         # generator
-        Pg_max = self.numerical_circuit.generator_pmax / Sbase
-        Pg_min = self.numerical_circuit.generator_pmin / Sbase
+        if self.skip_generation_limits:
+            Pg_max = np.zeros(self.numerical_circuit.ngen) + 99999
+            Pg_min = np.zeros(self.numerical_circuit.ngen) - 99999
+        else:
+            Pg_max = self.numerical_circuit.generator_pmax / Sbase
+            Pg_min = self.numerical_circuit.generator_pmin / Sbase
         cost_g = self.numerical_circuit.generator_cost
         P_fix = self.numerical_circuit.generator_p / Sbase
         enabled_for_dispatch = self.numerical_circuit.generator_dispatchable
