@@ -69,6 +69,8 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                                          nhvdc=self.numerical_circuit.nhvdc,
                                                          time=self.grid.time_profile,
                                                          bus_types=self.numerical_circuit.bus_types)
+        self.results.rates = self.numerical_circuit.branch_data.branch_rates
+        self.results.contingency_rates = self.numerical_circuit.branch_data.branch_contingency_rates
 
         self.all_solved = True
 
@@ -92,6 +94,8 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                                          nhvdc=self.numerical_circuit.nhvdc,
                                                          time=self.grid.time_profile,
                                                          bus_types=self.numerical_circuit.bus_types)
+        self.results.rates = self.numerical_circuit.branch_data.branch_rates
+        self.results.contingency_rates = self.numerical_circuit.branch_data.branch_contingency_rates
 
     def get_steps(self):
         """
@@ -174,6 +178,10 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
         self.results.hvdc_overloads[a:b, :] = problem.get_hvdc_slacks()
         self.results.hvdc_loading[a:b, :] = self.results.hvdc_Pf[a:b, :] / self.numerical_circuit.hvdc_data.rate[:, a:b].transpose()
         self.results.phase_shift[a:b, :] = problem.get_phase_shifts()
+
+        self.results.contingency_flows_list += problem.get_contingency_flows_list().tolist()
+        self.results.contingency_indices_list += problem.contingency_indices_list
+        self.results.contingency_flows_slacks_list += problem.get_contingency_flows_slacks_list().tolist()
 
         return self.results
 

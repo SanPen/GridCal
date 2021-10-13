@@ -629,21 +629,24 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.X[ii] = elm.X
         data.G[ii] = elm.G
         data.B[ii] = elm.B
-        data.m[ii] = elm.tap_module
-        data.m_max[ii] = elm.tap_module_max
-        data.m_min[ii] = elm.tap_module_min
 
         if time_series:
             if opf_results is not None:
+                data.m[ii] = elm.tap_module
                 data.theta[ii, :] = opf_results.phase_shift[:, ii]
             else:
-                data.theta[ii, :] = elm.angle
+                data.m[ii] = elm.tap_module_prof
+                data.theta[ii, :] = elm.angle_prof
         else:
             if opf_results is not None:
+                data.m[ii] = elm.tap_module
                 data.theta[ii] = opf_results.phase_shift[ii]
             else:
+                data.m[ii] = elm.tap_module
                 data.theta[ii] = elm.angle
 
+        data.m_min[ii] = elm.tap_module_min
+        data.m_max[ii] = elm.tap_module_max
         data.theta_min[ii] = elm.angle_min
         data.theta_max[ii] = elm.angle_max
 

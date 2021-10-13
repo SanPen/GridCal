@@ -125,7 +125,12 @@ class OptimalPowerFlow(DriverTemplate):
 
         if self.options.solver == SolverType.DC_OPF:
             # DC optimal power flow
-            problem = OpfDc(numerical_circuit=numerical_circuit, solver_type=self.options.mip_solver)
+            problem = OpfDc(numerical_circuit=numerical_circuit,
+                            solver_type=self.options.mip_solver,
+                            zonal_grouping=self.options.zonal_grouping,
+                            skip_generation_limits=self.options.skip_generation_limits,
+                            consider_contingencies=self.options.consider_contingencies,
+                            LODF=self.options.LODF)
 
         elif self.options.solver == SolverType.AC_OPF:
             # AC optimal power flow
@@ -173,6 +178,11 @@ class OptimalPowerFlow(DriverTemplate):
                                                Sf=Sbr,
                                                overloads=problem.get_overloads(),
                                                loading=problem.get_loading(),
+                                               contingency_flows_list=problem.get_contingency_flows_list(),
+                                               contingency_indices_list=problem.contingency_indices_list,
+                                               contingency_flows_slacks_list=problem.get_contingency_flows_slacks_list(),
+                                               rates=numerical_circuit.branch_data.branch_rates[:, 0],
+                                               contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0],
                                                converged=bool(problem.converged()),
                                                bus_types=numerical_circuit.bus_types)
 

@@ -44,6 +44,9 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                     ResultTypes.BranchLoading,
                                                     ResultTypes.BranchOverloads,
                                                     ResultTypes.BranchTapAngle,
+
+                                                    ResultTypes.ContingencyFlowsReport,
+
                                                     ResultTypes.HvdcPowerFrom,
                                                     ResultTypes.HvdcLoading,
                                                     ResultTypes.HvdcOverloads,
@@ -120,6 +123,13 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.battery_power = np.zeros((nt, nbat), dtype=float)
 
         self.battery_energy = np.zeros((nt, nbat), dtype=float)
+
+        self.contingency_flows_list = list()
+        self.contingency_indices_list = list()  # [(t, m, c), ...]
+        self.contingency_flows_slacks_list = list()
+
+        self.rates = np.zeros(m)
+        self.contingency_rates = np.zeros(m)
 
         self.converged = np.empty(nt, dtype=bool)
 
@@ -266,6 +276,30 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             y = self.battery_energy
             y_label = '(MWh)'
             title = 'Battery energy'
+
+        elif result_type == ResultTypes.ContingencyFlowsReport:
+            y = list()
+            index = list()
+            for i in range(len(self.contingency_flows_list)):
+                if self.contingency_flows_list[i] != 0.0:
+                    t, m, c = self.contingency_indices_list[i]
+                    y.append((t, m, c,
+                              str(self.time[t]), self.branch_names[m], self.branch_names[c],
+                              self.contingency_flows_list[i], self.Sf[t, m].real,
+                              self.contingency_flows_list[i] / self.contingency_rates[c, t] * 100,
+                              self.Sf[t, m].real / self.rates[m, t] * 100))
+                    index.append(i)
+
+            labels = ['Time index', 'Monitored idx ', 'Contingency idx',
+                      'Time', 'Monitored', 'Contingency',
+                      'ContingencyFlow (MW)', 'Base flow (MW)',
+                      'ContingencyFlow (%)', 'Base flow (%)']
+            y = np.array(y, dtype=object)
+            y_label = ''
+            title = result_type.value[0]
+
+            return ResultsTable(data=y, index=index, columns=labels, title=title,
+                                ylabel=y_label, xlabel='', units=y_label)
 
         else:
             labels = ''

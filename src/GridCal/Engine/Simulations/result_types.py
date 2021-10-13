@@ -122,6 +122,8 @@ class ResultTypes(Enum):
     NetTransferCapacity = 'Net transfer capacity', DeviceType.BranchDevice
     AvailableTransferCapacityReport = 'ATC Report', DeviceType.NoDevice
 
+    ContingencyFlowsReport = 'Contingency Report', DeviceType.NoDevice
+
     # inputs analysis
     ZoneAnalysis = 'Zone analysis', DeviceType.NoDevice
     CountryAnalysis = 'Country analysis', DeviceType.NoDevice

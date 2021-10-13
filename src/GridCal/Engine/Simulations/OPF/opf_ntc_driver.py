@@ -141,12 +141,13 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names,
                  Sbus=None, voltage=None, load_shedding=None, generator_shedding=None,
-                 battery_power=None, controlled_generation_power=None,
-                 Sf=None, contingency_flows=None, contingency_loading=None,
+                 battery_power=None, controlled_generation_power=None, Sf=None,
                  overloads=None, loading=None, losses=None, converged=None, bus_types=None,
                  hvdc_flow=None, hvdc_slacks=None, hvdc_loading=None, node_slacks=None, phase_shift=None,
                  generation_delta=None, generation_delta_slacks=None,
-                 inter_area_branches=list(), inter_area_hvdc=list(), alpha=None):
+                 inter_area_branches=list(), inter_area_hvdc=list(), alpha=None,
+                 contingency_flows_list=None, contingency_indices_list=None, contingency_flows_slacks_list=None,
+                 rates=None, contingency_rates=None):
 
         ResultsTemplate.__init__(self,
                                  name='OPF',
@@ -155,9 +156,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.BranchPower,
                                                     ResultTypes.BranchLoading,
                                                     ResultTypes.BranchOverloads,
-                                                    ResultTypes.ContingencyFlows,
-                                                    ResultTypes.ContingencyLoading,
                                                     ResultTypes.BranchTapAngle,
+
+                                                    ResultTypes.ContingencyFlowsReport,
+
                                                     ResultTypes.HvdcPowerFrom,
                                                     ResultTypes.HvdcOverloads,
                                                     ResultTypes.NodeSlacks,
@@ -211,10 +213,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.Sf = Sf
 
-        self.contingency_flows = contingency_flows
-
-        self.contingency_loading = contingency_loading
-
         self.hvdc_Pf = hvdc_flow
         self.hvdc_loading = hvdc_loading
         self.hvdc_overloads = hvdc_slacks
@@ -238,6 +236,13 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.converged = converged
 
         self.alpha = alpha
+
+        self.contingency_flows_list = contingency_flows_list
+        self.contingency_indices_list = contingency_indices_list  # [(t, m, c), ...]
+        self.contingency_flows_slacks_list = contingency_flows_slacks_list
+
+        self.rates = rates
+        self.contingency_rates = contingency_rates
 
         self.plot_bars_limit = 100
 
@@ -314,20 +319,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y = np.abs(self.overloads)
             y_label = '(MW)'
             title = 'Branch overloads'
-
-        elif result_type == ResultTypes.ContingencyFlows:
-            labels = self.branch_names
-            columns = labels
-            y = np.abs(self.contingency_flows)
-            y_label = '(MW)'
-            title = result_type.value[0]
-
-        elif result_type == ResultTypes.ContingencyLoading:
-            labels = self.branch_names
-            columns = labels
-            y = np.abs(self.contingency_loading)
-            y_label = '(%)'
-            title = result_type.value[0]
 
         elif result_type == ResultTypes.BranchLosses:
             labels = self.branch_names
@@ -406,6 +397,28 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             labels = np.array(labels + ['Total'])
             y_label = '(MW)'
             title = result_type.value
+
+        elif result_type == ResultTypes.ContingencyFlowsReport:
+
+            y = list()
+            labels = list()
+            for i in range(len(self.contingency_flows_list)):
+                if self.contingency_flows_list[i] != 0.0:
+                    m, c = self.contingency_indices_list[i]
+                    y.append((m, c,
+                              self.branch_names[m], self.branch_names[c],
+                              self.contingency_flows_list[i], self.Sf[m],
+                              self.contingency_flows_list[i] / self.contingency_rates[c] * 100,
+                              self.Sf[m] / self.rates[m] * 100))
+                    labels.append(i)
+
+            columns = ['Monitored idx ', 'Contingency idx',
+                       'Monitored', 'Contingency',
+                       'ContingencyFlow (MW)', 'Base flow (MW)',
+                       'ContingencyFlow (%)', 'Base flow (%)']
+            y = np.array(y, dtype=object)
+            y_label = ''
+            title = result_type.value[0]
 
         else:
             labels = []
@@ -536,8 +549,6 @@ class OptimalNetTransferCapacity(DriverTemplate):
                                                          battery_power=np.zeros((numerical_circuit.nbatt, 1)),
                                                          controlled_generation_power=problem.get_generator_power(),
                                                          Sf=problem.get_branch_power(),
-                                                         contingency_flows=problem.get_contingency_flows(),
-                                                         contingency_loading=problem.get_contingency_loading(),
                                                          overloads=problem.get_overloads(),
                                                          loading=problem.get_loading(),
                                                          converged=bool(converged),
@@ -552,6 +563,11 @@ class OptimalNetTransferCapacity(DriverTemplate):
                                                          inter_area_branches=problem.inter_area_branches,
                                                          inter_area_hvdc=problem.inter_area_hvdc,
                                                          alpha=alpha,
+                                                         contingency_flows_list=problem.get_contingency_flows_list(),
+                                                         contingency_indices_list=problem.contingency_indices_list,
+                                                         contingency_flows_slacks_list=problem.get_contingency_flows_slacks_list(),
+                                                         rates=numerical_circuit.branch_data.branch_rates[:, 0],
+                                                         contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0]
                                                          )
 
         self.progress_text.emit('Done!')

@@ -19,12 +19,13 @@ That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
 import GridCal.ThirdParty.pulp as pl
+from GridCal.Engine.basic_structures import ZonalGrouping
 from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers, Logger, LpVariable
 from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType, GenerationNtcFormulation
 
 
-def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
+def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2, FCSlack1, FCSlack2,
                            hvdc_overload1, hvdc_overload2,
                            hvdc_control1_slacks, hvdc_control2_slacks,
                            cost_g, cost_b, cost_l, cost_br):
@@ -35,6 +36,8 @@ def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
     :param LSlack: Load slack LpVars (nl, nt)
     :param FSlack1: Branch overload slack1 (m, nt)
     :param FSlack2: Branch overload slack2 (m, nt)
+    :param FCSlack1: Branch contingency overload slack1 [list]
+    :param FCSlack2: Branch contingency overload slack2 [List]
     :param hvdc_overload1: HVDC overload (nhvdc, nt)
     :param hvdc_overload2: HVDC overload (nhvdc, nt)
     :param hvdc_control1_slacks: HVDC control slack 1 (nhvdc, nt)
@@ -54,8 +57,10 @@ def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2,
 
     f_obj += pl.lpSum(cost_br * (FSlack1 + FSlack2))
 
+    f_obj += pl.lpSum(FCSlack1 + FCSlack2)
+
     if len(hvdc_overload1) > 0:
-        f_obj += pl.lpSum(cost_br * (hvdc_overload1 + hvdc_overload2 + hvdc_control1_slacks + hvdc_control2_slacks))
+        f_obj += pl.lpSum(hvdc_overload1 + hvdc_overload2 + hvdc_control1_slacks + hvdc_control2_slacks)
 
     return f_obj
 
@@ -205,6 +210,59 @@ def add_branch_loading_restriction(problem: pl.LpProblem, nc: SnapshotOpfData,
     return Pbr_f, tau
 
 
+def formulate_contingency(problem: pl.LpProblem, numerical_circuit: SnapshotOpfData, flow_f, ratings, LODF, monitor):
+    """
+    Formulate contingencies
+    :param problem:
+    :param numerical_circuit:
+    :param flow_f:
+    :param ratings:
+    :param LODF:
+    :param monitor:
+    :return:
+    """
+    nbr = ratings.shape[0]
+
+    # get the indices of the branches marked for contingency
+    con_br_idx = numerical_circuit.branch_data.get_contingency_enabled_indices()
+
+    # formulate contingency flows
+    # this is done in a separated loop because all te flow variables must exist beforehand
+    flow_lst = list()
+    indices = list()  # (t, m, contingency_m)
+    overload1_lst = list()
+    overload2_lst = list()
+
+    for m in range(nbr):  # for every branch
+
+        if monitor[m]:  # the monitor variable is pre-computed in the previous loop
+            _f = numerical_circuit.branch_data.F[m]
+            _t = numerical_circuit.branch_data.T[m]
+
+            for ic, c in enumerate(con_br_idx):  # for every contingency
+
+                if m != c:
+
+                    # compute the N-1 flow
+                    contingency_flow = flow_f[m] + LODF[m, c] * flow_f[c]
+
+                    # rating restriction in the sense from-to
+                    overload1 = LpVariable("n-1_overload1_{0}_{1}".format(m, c), 0, 99999)
+                    problem.add(contingency_flow <= (ratings[m] + overload1), "n-1_ft_up_rating_{0}_{1}".format(m, c))
+
+                    # rating restriction in the sense to-from
+                    overload2 = LpVariable("n-1_overload2_{0}_{1}".format(m, c), 0, 99999)
+                    problem.add((-ratings[m] - overload2) <= contingency_flow, "n-1_tf_down_rating_{0}_{1}".format(m, c))
+
+                    # store the variables
+                    flow_lst.append(contingency_flow)
+                    overload1_lst.append(overload1)
+                    overload2_lst.append(overload2)
+                    indices.append((m, c))
+
+    return flow_lst, overload1_lst, overload2_lst, indices
+
+
 def formulate_hvdc_flow(problem: pl.LpProblem, nc: SnapshotOpfData, angles, Pinj, t=0,
                         logger: Logger = Logger(), inf=999999):
     """
@@ -278,11 +336,24 @@ def formulate_hvdc_flow(problem: pl.LpProblem, nc: SnapshotOpfData, angles, Pinj
 
 class OpfDc(Opf):
 
-    def __init__(self, numerical_circuit, solver_type: MIPSolvers = MIPSolvers.CBC):
+    def __init__(self, numerical_circuit, solver_type: MIPSolvers = MIPSolvers.CBC,
+                 zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
+                 skip_generation_limits=False, consider_contingencies=False, LODF=None):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
+        :param solver_type:
+        :param zonal_grouping:
+        :param skip_generation_limits:
+        :param consider_contingencies:
+        :param LODF:
         """
+
+        self.zonal_grouping = zonal_grouping
+        self.skip_generation_limits = skip_generation_limits
+        self.consider_contingencies = consider_contingencies
+        self.LODF = LODF
+
         Opf.__init__(self, numerical_circuit=numerical_circuit, solver_type=solver_type)
 
     def formulate(self):
@@ -372,10 +443,26 @@ class OpfDc(Opf):
                                                      ratings_slack_from=branch_rating_slack1,
                                                      ratings_slack_to=branch_rating_slack2)
 
+        if self.consider_contingencies:
+            con_flow_lst, con_overload1_lst, con_overload2_lst, \
+            con_idx = formulate_contingency(problem=problem,
+                                            numerical_circuit=self.numerical_circuit,
+                                            flow_f=load_f,
+                                            ratings=branch_ratings,
+                                            LODF=self.LODF,
+                                            monitor=self.numerical_circuit.branch_data.monitor_loading)
+        else:
+            con_flow_lst = list()
+            con_idx = list()
+            con_overload1_lst = list()
+            con_overload2_lst = list()
+
         # add the objective function
         problem += add_objective_function(Pg, Pb, load_slack,
                                           branch_rating_slack1,
                                           branch_rating_slack2,
+                                          con_overload1_lst,
+                                          con_overload2_lst,
                                           hvdc_overload1, hvdc_overload2,
                                           hvdc_control1_slacks, hvdc_control2_slacks,
                                           cost_g, cost_b, cost_l, cost_br)
@@ -400,6 +487,10 @@ class OpfDc(Opf):
         self.overloads = branch_rating_slack1 + branch_rating_slack2
         self.rating = branch_ratings
         self.nodal_restrictions = nodal_restrictions
+
+        self.contingency_flows_list = con_flow_lst
+        self.contingency_indices_list = con_idx  # [(t, m, c), ...]
+        self.contingency_flows_slacks_list = con_overload1_lst
 
         return problem
 

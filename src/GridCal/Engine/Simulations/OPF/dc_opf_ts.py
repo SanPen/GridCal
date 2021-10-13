@@ -269,7 +269,7 @@ def formulate_contingency(problem: LpProblem, numerical_circuit: OpfTimeCircuit,
                     overload2_lst.append(overload2)
                     indices.append((t, m, c))
 
-    return flow_lst, overload1_lst, overload2_lst, con_br_idx
+    return flow_lst, overload1_lst, overload2_lst, indices
 
 
 def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Efficiency, Pb, E, dt):
@@ -550,17 +550,18 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                               Pb=Pb, E=E, dt=dt)
 
         if self.consider_contingencies:
-            flow_lst, overload1_lst, overload2_lst, con_br_idx = formulate_contingency(problem=problem,
-                                                                                       numerical_circuit=self.numerical_circuit,
-                                                                                       flow_f=load_f,
-                                                                                       ratings=branch_ratings,
-                                                                                       LODF=self.LODF,
-                                                                                       monitor=self.numerical_circuit.branch_data.monitor_loading)
+            con_flow_lst, con_overload1_lst, con_overload2_lst, \
+            con_br_idx = formulate_contingency(problem=problem,
+                                               numerical_circuit=self.numerical_circuit,
+                                               flow_f=load_f,
+                                               ratings=branch_ratings,
+                                               LODF=self.LODF,
+                                               monitor=self.numerical_circuit.branch_data.monitor_loading)
         else:
-            flow_lst = list()
+            con_flow_lst = list()
             con_br_idx = list()
-            overload1_lst = list()
-            overload2_lst = list()
+            con_overload1_lst = list()
+            con_overload2_lst = list()
 
         # add the objective function
         problem += get_objective_function(Pg=Pg,
@@ -568,8 +569,8 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                           LSlack=load_slack,
                                           FSlack1=branch_rating_slack1,
                                           FSlack2=branch_rating_slack2,
-                                          FCSlack1=overload1_lst,
-                                          FCSlack2=overload2_lst,
+                                          FCSlack1=con_overload1_lst,
+                                          FCSlack2=con_overload2_lst,
                                           hvdc_overload1=hvdc_overload1,
                                           hvdc_overload2=hvdc_overload2,
                                           hvdc_control1_slacks=hvdc_control1_slacks,
@@ -600,6 +601,10 @@ class OpfDcTimeSeries(OpfTimeSeries):
         self.overloads = (branch_rating_slack1 + branch_rating_slack2).transpose()
         self.rating = branch_ratings.T
         self.nodal_restrictions = nodal_restrictions
+
+        self.contingency_flows_list = con_flow_lst
+        self.contingency_indices_list = con_br_idx  # [(t, m, c), ...]
+        self.contingency_flows_slacks_list = con_overload1_lst
 
         return problem
 

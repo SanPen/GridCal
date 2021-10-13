@@ -45,11 +45,16 @@ class Opf:
 
         self.E = None
         self.s_from = None
+
         self.s_to = None
         self.overloads = None
         self.rating = None
         self.load_shedding = None
         self.nodal_restrictions = None
+
+        self.contingency_flows_list = list()
+        self.contingency_indices_list = list()  # [(m, c), ...]
+        self.contingency_flows_slacks_list = list()
 
         self.solver_type = solver_type
 
@@ -119,6 +124,15 @@ class Opf:
         if make_abs:
             val = np.abs(val)
 
+        return val
+
+    def extract_list(self, lst):
+        val = np.zeros(len(lst))
+        for i in range(val.shape[0]):
+            if isinstance(lst[i], int) or isinstance(lst[i], float):
+                val[i] = lst[i]
+            else:
+                val[i] = lst[i].value()
         return val
 
     def get_voltage(self):
@@ -206,6 +220,20 @@ class Opf:
         """
         return self.extract(self.Pl) * self.numerical_circuit.Sbase
 
+    def get_contingency_flows_list(self):
+        """
+        return the load shedding (time, device)
+        :return: 2D array
+        """
+        return self.extract_list(self.contingency_flows_list) * self.numerical_circuit.Sbase
+
+    def get_contingency_flows_slacks_list(self):
+        """
+        return the load shedding (time, device)
+        :return: 2D array
+        """
+        return self.extract_list(self.contingency_flows_slacks_list) * self.numerical_circuit.Sbase
+
     def get_shadow_prices(self):
         """
         Extract values fro the 2D array of LP variables
@@ -256,6 +284,10 @@ class OpfTimeSeries:
         self.rating = None
         self.load_shedding = None
         self.nodal_restrictions = None
+
+        self.contingency_flows_list = list()
+        self.contingency_indices_list = list()  # [(t, m, c), ...]
+        self.contingency_flows_slacks_list = list()
 
         if not skip_formulation:
             self.problem = self.formulate()
@@ -315,6 +347,15 @@ class OpfTimeSeries:
         if make_abs:
             val = np.abs(val)
 
+        return val
+
+    def extract_list(self, lst):
+        val = np.zeros(len(lst))
+        for i in range(val.shape[0]):
+            if isinstance(lst[i], int) or isinstance(lst[i], float):
+                val[i] = lst[i]
+            else:
+                val[i] = lst[i].value()
         return val
 
     def get_voltage(self):
@@ -408,6 +449,20 @@ class OpfTimeSeries:
         :return: 2D array
         """
         return self.extract2D(self.Pl) * self.numerical_circuit.Sbase
+
+    def get_contingency_flows_list(self):
+        """
+        return the load shedding (time, device)
+        :return: 2D array
+        """
+        return self.extract_list(self.contingency_flows_list) * self.numerical_circuit.Sbase
+
+    def get_contingency_flows_slacks_list(self):
+        """
+        return the load shedding (time, device)
+        :return: 2D array
+        """
+        return self.extract_list(self.contingency_flows_slacks_list) * self.numerical_circuit.Sbase
 
     def get_shadow_prices(self):
         """
