@@ -210,7 +210,7 @@ def add_branch_loading_restriction(problem: pl.LpProblem, nc: SnapshotOpfData,
     return Pbr_f, tau
 
 
-def formulate_contingency(problem: pl.LpProblem, numerical_circuit: SnapshotOpfData, flow_f, ratings, LODF, monitor):
+def formulate_contingency(problem: pl.LpProblem, numerical_circuit: SnapshotOpfData, flow_f, ratings, LODF, monitor, lodf_tolerance):
     """
     Formulate contingencies
     :param problem:
@@ -241,7 +241,7 @@ def formulate_contingency(problem: pl.LpProblem, numerical_circuit: SnapshotOpfD
 
             for ic, c in enumerate(con_br_idx):  # for every contingency
 
-                if m != c:
+                if m != c and abs(LODF[m, c]) >= lodf_tolerance:
 
                     # compute the N-1 flow
                     contingency_flow = flow_f[m] + LODF[m, c] * flow_f[c]
@@ -338,7 +338,8 @@ class OpfDc(Opf):
 
     def __init__(self, numerical_circuit, solver_type: MIPSolvers = MIPSolvers.CBC,
                  zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
-                 skip_generation_limits=False, consider_contingencies=False, LODF=None):
+                 skip_generation_limits=False, consider_contingencies=False, LODF=None,
+                 lodf_tolerance=0.001):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
@@ -353,6 +354,7 @@ class OpfDc(Opf):
         self.skip_generation_limits = skip_generation_limits
         self.consider_contingencies = consider_contingencies
         self.LODF = LODF
+        self.lodf_tolerance = lodf_tolerance
 
         Opf.__init__(self, numerical_circuit=numerical_circuit, solver_type=solver_type)
 
@@ -450,7 +452,8 @@ class OpfDc(Opf):
                                             flow_f=load_f,
                                             ratings=branch_ratings,
                                             LODF=self.LODF,
-                                            monitor=self.numerical_circuit.branch_data.monitor_loading)
+                                            monitor=self.numerical_circuit.branch_data.monitor_loading,
+                                            lodf_tolerance=self.lodf_tolerance)
         else:
             con_flow_lst = list()
             con_idx = list()

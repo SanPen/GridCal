@@ -128,7 +128,8 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                       zonal_grouping=self.options.zonal_grouping,
                                       skip_generation_limits=self.options.skip_generation_limits,
                                       consider_contingencies=self.options.consider_contingencies,
-                                      LODF=self.options.LODF)
+                                      LODF=self.options.LODF,
+                                      lodf_tolerance=self.options.lodf_tolerance)
 
         elif self.options.solver == SolverType.AC_OPF:
 

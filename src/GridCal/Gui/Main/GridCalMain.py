@@ -3623,6 +3623,7 @@ class MainGUI(QMainWindow):
                 consider_contingencies = self.ui.considerContingenciesOpfCheckBox.isChecked()
                 skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
                 tolerance = 10 ** self.ui.opfTolSpinBox.value()
+                lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
 
                 # try to acquire the linear results
                 linear_results = self.session.linear_power_flow
@@ -3643,7 +3644,8 @@ class MainGUI(QMainWindow):
                                                       consider_contingencies=consider_contingencies,
                                                       skip_generation_limits=skip_generation_limits,
                                                       tolerance=tolerance,
-                                                      LODF=LODF)
+                                                      LODF=LODF,
+                                                      lodf_tolerance=lodf_tolerance)
 
                 self.ui.progress_label.setText('Running optimal power flow...')
                 QtGui.QGuiApplication.processEvents()
@@ -3730,6 +3732,7 @@ class MainGUI(QMainWindow):
                     consider_contingencies = self.ui.considerContingenciesOpfCheckBox.isChecked()
                     skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
                     tolerance = 10**self.ui.opfTolSpinBox.value()
+                    lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
 
                     # try to acquire the linear results
                     linear_results = self.session.linear_power_flow
@@ -3750,7 +3753,8 @@ class MainGUI(QMainWindow):
                                                           consider_contingencies=consider_contingencies,
                                                           skip_generation_limits=skip_generation_limits,
                                                           tolerance=tolerance,
-                                                          LODF=LODF
+                                                          LODF=LODF,
+                                                          lodf_tolerance=lodf_tolerance
                                                           )
 
                     start = self.ui.profile_start_slider.value()

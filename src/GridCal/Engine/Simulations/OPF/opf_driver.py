@@ -47,7 +47,8 @@ class OptimalPowerFlowOptions:
                  consider_contingencies=False,
                  skip_generation_limits=False,
                  tolerance=1.0,
-                 LODF=None):
+                 LODF=None,
+                 lodf_tolerance=0.001):
         """
         Optimal power flow options
         :param verbose:
@@ -86,6 +87,8 @@ class OptimalPowerFlowOptions:
         self.LODF = LODF
 
         self.tolerance = tolerance
+
+        self.lodf_tolerance = lodf_tolerance
 
 
 class OptimalPowerFlow(DriverTemplate):
@@ -130,7 +133,8 @@ class OptimalPowerFlow(DriverTemplate):
                             zonal_grouping=self.options.zonal_grouping,
                             skip_generation_limits=self.options.skip_generation_limits,
                             consider_contingencies=self.options.consider_contingencies,
-                            LODF=self.options.LODF)
+                            LODF=self.options.LODF,
+                            lodf_tolerance=self.options.lodf_tolerance)
 
         elif self.options.solver == SolverType.AC_OPF:
             # AC optimal power flow
