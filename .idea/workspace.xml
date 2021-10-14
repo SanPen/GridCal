@@ -204,11 +204,11 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Batch.upload_to_pypi" />
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python tests.Nosetests in test_api_helm.py" />
       <item itemvalue="Python tests.Nosetests in test_demo_5_node.py" />
-      <item itemvalue="Batch.upload_to_pypi" />
     </list>
     <recent_temporary>
       <list>
