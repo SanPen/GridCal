@@ -56,7 +56,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
     :param Jp:
     :param Yp:
     :param Yi:
-    :param Ys:
+    :param Ys: Array of branch series admittances
     :param dSbus_dVa_x:
     :param dSbus_dVm_x:
     :param dSf_dVa_x:
@@ -215,7 +215,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
     # column 2: derivatives w.r.t Vm -----------------------------------------------------------------------------------
     for j in pq:  # sliced columns
 
-        # J11
+        # J12
         if npvpq:
             for k in range(Yp[j], Yp[j + 1]):  # rows of A[:, j]
 
@@ -229,7 +229,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                     Ji[nnz] = ii
                     nnz += 1
 
-        # J21 J31 J41
+        # J22 J32 J42
         offset = npvpq
         if ni2:
             for k in range(Yp[j], Yp[j + 1]):  # rows of A[:, j]
@@ -244,7 +244,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                     Ji[nnz] = ii + offset
                     nnz += 1
 
-        # J51
+        # J52
         offset += ni2
         if nPfsh:
             for k in range(dSf_dVm_p[j], dSf_dVm_p[j + 1]):  # rows of A[:, j]
@@ -259,7 +259,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                     Ji[nnz] = ii + offset
                     nnz += 1
 
-        # J61 J71
+        # J62 J72
         offset += nPfsh
         if ni4:
             for k in range(dSf_dVm_p[j], dSf_dVm_p[j + 1]):  # rows of A[:, j]
@@ -274,7 +274,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                     Ji[nnz] = ii + offset
                     nnz += 1
 
-        # J81
+        # J82
         offset += ni4
         if nQtma:
             for k in range(dSt_dVm_p[j], dSt_dVm_p[j + 1]):  # rows of A[:, j]
@@ -289,7 +289,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                     Ji[nnz] = ii + offset
                     nnz += 1
 
-        # J91
+        # J92
         offset += nQtma
         if nPfdp:
 
@@ -318,7 +318,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
 
         for j in range(nBeqz + nBeqv):  # sliced columns
 
-            # J11
+            # J13
             if npvpq:
                 for k in range(dSbus_dBeq_indptr[j], dSbus_dBeq_indptr[j + 1]):  # rows of A[:, j]
 
@@ -332,7 +332,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                         Ji[nnz] = ii
                         nnz += 1
 
-            # J21 J31 J41
+            # J23 J33 J43
             offset = npvpq
             if ni2:
                 for k in range(dSbus_dBeq_indptr[j], dSbus_dBeq_indptr[j + 1]):  # rows of A[:, j]
@@ -347,7 +347,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                         Ji[nnz] = ii + offset
                         nnz += 1
 
-            # J51
+            # J53
             offset += ni2
             if nPfsh:
                 for k in range(dSf_dBeqx_indptr[j], dSf_dBeqx_indptr[j + 1]):  # rows of A[:, j]
@@ -362,7 +362,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                         Ji[nnz] = ii + offset
                         nnz += 1
 
-            # J61 J71
+            # J63 J73
             offset += nPfsh
             if ni4:
                 for k in range(dSf_dBeqx_indptr[j], dSf_dBeqx_indptr[j + 1]):  # rows of A[:, j]
@@ -377,7 +377,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                         Ji[nnz] = ii + offset
                         nnz += 1
 
-            # J81
+            # J83
             offset += ni4
             # if nQtma:  # --> The Jacobian is always zero :|
             #     for k in range(dSt_dBeqz.indptr[j], dSt_dBeqz.indptr[j + 1]):  # rows of A[:, j]
@@ -392,7 +392,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
             #             Ji[nnz] = ii + offset
             #             nnz += 1
 
-            # J91
+            # J93
             offset += nQtma
             if nPfdp:
                 for k in range(dSf_dBeqx_indptr[j], dSf_dBeqx_indptr[j + 1]):  # rows of A[:, j]
@@ -422,7 +422,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
 
         for j in range(nQfma + nQtma + nVtma):  # sliced columns
 
-            # J11
+            # J14
             if npvpq:
                 for k in range(dSbus_dma_indptr[j], dSbus_dma_indptr[j + 1]):  # rows of A[:, j]
 
@@ -436,7 +436,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                         Ji[nnz] = ii
                         nnz += 1
 
-            # J21 J31 J41
+            # J24 J34 J44
             offset = npvpq
             if ni2:
                 for k in range(dSbus_dma_indptr[j], dSbus_dma_indptr[j + 1]):  # rows of A[:, j]
@@ -451,7 +451,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                         Ji[nnz] = ii + offset
                         nnz += 1
 
-            # J51
+            # J54
             offset += ni2
             if nPfsh:
                 for k in range(dSf_dma_indptr[j], dSf_dma_indptr[j + 1]):  # rows of A[:, j]
@@ -466,7 +466,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                         Ji[nnz] = ii + offset
                         nnz += 1
 
-            # J61 J71
+            # J64 J74
             offset += nPfsh
             if ni4:
                 for k in range(dSf_dma_indptr[j], dSf_dma_indptr[j + 1]):  # rows of A[:, j]
@@ -481,7 +481,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                         Ji[nnz] = ii + offset
                         nnz += 1
 
-            # J81
+            # J84
             offset += ni4
             if nQtma:
                 for k in range(dSt_dma_indptr[j], dSt_dma_indptr[j + 1]):  # rows of A[:, j]
@@ -496,7 +496,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                         Ji[nnz] = ii + offset
                         nnz += 1
 
-            # J91
+            # J94
             offset += nQtma
             if nPfdp:
                 for k in range(dSf_dma_indptr[j], dSf_dma_indptr[j + 1]):  # rows of A[:, j]
@@ -526,7 +526,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
 
         for j in range(nPfsh + nPfdp):  # sliced columns
 
-            # J11
+            # J15
             if npvpq:
                 for k in range(dSbus_dsh_indptr[j], dSbus_dsh_indptr[j + 1]):  # rows of A[:, j]
 
@@ -540,7 +540,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                         Ji[nnz] = ii
                         nnz += 1
 
-            # J21 J31 J41
+            # J25 J35 J45
             offset = npvpq
             if ni2:
                 for k in range(dSbus_dsh_indptr[j], dSbus_dsh_indptr[j + 1]):  # rows of A[:, j]
@@ -555,7 +555,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                         Ji[nnz] = ii + offset
                         nnz += 1
 
-            # J51
+            # J55
             offset += ni2
             if nPfsh:
                 for k in range(dSf_dsh_indptr[j], dSf_dsh_indptr[j + 1]):  # rows of A[:, j]
@@ -570,7 +570,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                         Ji[nnz] = ii + offset
                         nnz += 1
 
-            # J61 J71
+            # J65 J75
             offset += nPfsh
             if ni4:
                 for k in range(dSf_dsh_indptr[j], dSf_dsh_indptr[j + 1]):  # rows of A[:, j]
@@ -585,7 +585,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                         Ji[nnz] = ii + offset
                         nnz += 1
 
-            # J81
+            # J85
             offset += ni4
             if nQtma:
                 for k in range(dSt_dsh_indptr[j], dSt_dsh_indptr[j + 1]):  # rows of A[:, j]
@@ -600,7 +600,7 @@ def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                         Ji[nnz] = ii + offset
                         nnz += 1
 
-            # J91
+            # J95
             offset += nQtma
             if nPfdp:
                 for k in range(dSf_dsh_indptr[j], dSf_dsh_indptr[j + 1]):  # rows of A[:, j]
@@ -676,13 +676,13 @@ def fubm_jacobian(nb, nl, iPfsh, iPfdp, iQfma, iQtma, iVtma, iBeqz, iBeqv, VfBeq
     i4 = np.r_[iQfma, iBeqz]
     ni2 = len(i2)
     ni4 = len(i4)
+    E = V / np.abs(V)
 
     # compose the derivatives of the power injections w.r.t Va and Vm
-    dSbus_dVm_x, dSbus_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus.data, Ybus.indptr, Ybus.indices, V)
+    dSbus_dVm_x, dSbus_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus.data, Ybus.indptr, Ybus.indices, V, E)
 
     # compose the derivatives of the branch flow w.r.t Va and Vm
     Vc = np.conj(V)
-    E = V / np.abs(V)
     dSf_dVa, dSf_dVm = deriv.dSf_dV_fast(Yf, V, Vc, E, F, Cf)
 
     if nQtma:

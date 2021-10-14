@@ -87,15 +87,19 @@ class ConverterControlType(Enum):
     # vdc_droop_vac = '7:VdcDroop+Vac'
 
     type_0_free = '0:Free'
+
     type_I_1 = '1:Vac'
     type_I_2 = '2:Pdc+Qac'
     type_I_3 = '3:Pdc+Vac'
+
     type_II_4 = '4:Vdc+Qac'
     type_II_5 = '5:Vdc+Vac'
+
     type_III_6 = '6:Droop+Qac'
     type_III_7 = '7:Droop+Vac'
-    type_III_8 = '8:DroopVa+Qac'
-    type_III_9 = '9:DroopVa+Vac'
+
+    type_IV_I = '8:Vdc'
+    type_IV_II = '9:Pdc'
 
     def __str__(self):
         return str(self.value)
@@ -135,6 +139,11 @@ class HvdcControlType(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
+
+
+class GenerationNtcFormulation(Enum):
+    Proportional = 'Proportional'
+    Optimal = 'Optimal'
 
 
 class TimeFrame(Enum):

@@ -427,7 +427,7 @@ if __name__ == '__main__':
     pf_options = PowerFlowOptions()
 
     options = OptimalPowerFlowOptions(solver=solver,
-                                      grouping=grouping,
+                                      time_grouping=grouping,
                                       mip_solver=mip_solver,
                                       power_flow_options=pf_options)
 

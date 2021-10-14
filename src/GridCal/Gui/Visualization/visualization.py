@@ -136,7 +136,7 @@ def colour_sub_schematic(Sbase,
                 tooltip += '\n'
 
                 tooltip += "%-10s %10.4f < %10.4fº [p.u.]\n" % ("V", vabs[i], vang[i])
-                tooltip += "%-10s %10.4f < %10.4fº [kV]\n" % ("V", vabs[i], vang[i])
+                tooltip += "%-10s %10.4f < %10.4fº [kV]\n" % ("V", vabs[i] * bus.Vnom, vang[i])
 
                 if Sbus is not None:
                     tooltip += "%-10s %10.4f [MW]\n" % ("P", Sbus[i].real)
@@ -163,7 +163,10 @@ def colour_sub_schematic(Sbase,
                 if len(hvdc_sending_power) > 0:
                     max_flow = max(max_flow, np.abs(hvdc_sending_power).max())
 
-            Sfnorm = Sfabs / max_flow
+            if max_flow != 0:
+                Sfnorm = Sfabs / max_flow
+            else:
+                Sfnorm = Sfabs
 
             for i, branch in enumerate(branches):
                 if branch.graphic_obj is not None:

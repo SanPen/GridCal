@@ -396,8 +396,11 @@ def data_frames_to_circuit(data: Dict):
 
                             else:
                                 # regular types (int, str, float, etc...)
-                                val = dtype(df[object_property_name].values[i])
-                                setattr(devices[i], object_property_name, val)
+                                try:
+                                    val = dtype(df[object_property_name].values[i])
+                                    setattr(devices[i], object_property_name, val)
+                                except ValueError:
+                                    circuit.logger.add_error('type error', devices[i].name, df[object_property_name].values[i])
 
                         # search the profiles in the data and assign them
                         if object_property_name in template_elm.properties_with_profile.keys():

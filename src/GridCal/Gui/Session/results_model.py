@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+import io
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -20,21 +21,6 @@ from PySide2.QtWidgets import *
 from PySide2 import QtCore
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
-
-
-def fast_data_to_text(data, columns, index):
-    # header first
-    txt = '\t' + '\t'.join(columns) + '\n'
-
-    # data
-    for t, index_value in enumerate(index):
-        try:
-            if data[t, :].sum() != 0.0:
-                txt += str(index_value) + '\t' + '\t'.join([str(x) for x in data[t, :]]) + '\n'
-        except TypeError:
-            txt += str(index_value) + '\t' + '\t'.join([str(x) for x in data[t, :]]) + '\n'
-
-    return txt
 
 
 def fast_data_to_numpy_text(data):
@@ -244,9 +230,10 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
         if n > 0:
 
-            index, columns, data = self.get_data()
-
-            txt = fast_data_to_text(data, columns, index)
+            df = self.get_data_frame()
+            s = io.StringIO()
+            df.to_csv(s, sep='\t')
+            txt = s.getvalue()
 
             # copy to clipboard
             cb = QApplication.clipboard()

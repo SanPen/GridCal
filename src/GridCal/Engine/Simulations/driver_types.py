@@ -41,6 +41,7 @@ class SimulationTypes(Enum):
     NetTransferCapacityTS_run = 'Available transfer capacity time series'
     SigmaAnalysis_run = "Sigma Analysis"
     NodeGrouping_run = "Node groups"
+    InputsAnalysis_run = 'Inputs Analysis'
 
     def __str__(self):
         return self.value

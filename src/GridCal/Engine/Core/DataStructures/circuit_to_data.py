@@ -23,6 +23,10 @@ def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1):
         bus_data.bus_names[i] = bus.name
         bus_data.Vmin[i] = bus.Vmin
         bus_data.Vmax[i] = bus.Vmax
+
+        bus_data.angle_min[i] = bus.angle_min
+        bus_data.angle_max[i] = bus.angle_max
+
         bus_data.bus_types[i] = bus.determine_bus_type().value
 
         if bus.area in areas_dict.keys():
@@ -271,7 +275,7 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.battery_pmax[k] = elm.Pmax
                 data.battery_pmin[k] = elm.Pmin
                 data.battery_enom[k] = elm.Enom
-                data.battery_min_soc[k] = elm.max_soc
+                data.battery_min_soc[k] = elm.min_soc
                 data.battery_max_soc[k] = elm.max_soc
                 data.battery_soc_0[k] = elm.soc_0
                 data.battery_discharge_efficiency[k] = elm.discharge_efficiency
@@ -292,7 +296,7 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
                 data.battery_pmax[k] = elm.Pmax
                 data.battery_pmin[k] = elm.Pmin
                 data.battery_enom[k] = elm.Enom
-                data.battery_min_soc[k] = elm.max_soc
+                data.battery_min_soc[k] = elm.min_soc
                 data.battery_max_soc[k] = elm.max_soc
                 data.battery_soc_0[k] = elm.soc_0
                 data.battery_discharge_efficiency[k] = elm.discharge_efficiency
@@ -723,6 +727,9 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
 
         elif elm.control_mode == ConverterControlType.type_III_7:  # 7:Droop+Vac
             Vbus[t] = elm.Vac_set
+
+        elif elm.control_mode == ConverterControlType.type_IV_I:  # 8:Vdc
+            Vbus[f] = elm.Vdc_set
 
     # DC-lines
     for i, elm in enumerate(circuit.dc_lines):

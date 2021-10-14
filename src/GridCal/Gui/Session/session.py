@@ -298,3 +298,71 @@ class SimulationSession:
                 if drv.isRunning():
                     return True
         return False
+
+    @property
+    def power_flow(self):
+        return self.get_driver_results(SimulationTypes.PowerFlow_run)[1]
+
+    @property
+    def power_flow_ts(self):
+        return self.get_driver_results(SimulationTypes.TimeSeries_run)[1]
+
+    @property
+    def power_flow_cluster_ts(self):
+        return self.get_driver_results(SimulationTypes.ClusteringTimeSeries_run)[1]
+
+    @property
+    def optimal_power_flow(self):
+        return self.get_driver_results(SimulationTypes.OPF_run)[1]
+
+    @property
+    def optimal_power_flow_ts(self):
+        return self.get_driver_results(SimulationTypes.OPFTimeSeries_run)[1]
+
+    @property
+    def short_circuit(self):
+        return self.get_driver_results(SimulationTypes.ShortCircuit_run)[1]
+
+    @property
+    def linear_power_flow(self):
+        return self.get_driver_results(SimulationTypes.LinearAnalysis_run)[1]
+
+    @property
+    def linear_power_flow_ts(self):
+        return self.get_driver_results(SimulationTypes.LinearAnalysis_TS_run)[1]
+
+    @property
+    def contingency(self):
+        return self.get_driver_results(SimulationTypes.ContingencyAnalysis_run)[1]
+
+    @property
+    def contingency_ts(self):
+        return self.get_driver_results(SimulationTypes.ContingencyAnalysisTS_run)[1]
+
+    @property
+    def continuation_power_flow(self):
+        return self.get_driver_results(SimulationTypes.ContinuationPowerFlow_run)[1]
+
+    @property
+    def net_transfer_capacity(self):
+        return self.get_driver_results(SimulationTypes.NetTransferCapacity_run)[1]
+
+    @property
+    def net_transfer_capacity_ts(self):
+        return self.get_driver_results(SimulationTypes.NetTransferCapacityTS_runy_run)[1]
+
+    @property
+    def optimal_net_transfer_capacity(self):
+        return self.get_driver_results(SimulationTypes.OPF_NTC_run)[1]
+
+    @property
+    def stochastic_power_flow(self):
+        return self.get_driver_results(SimulationTypes.StochasticPowerFlow)[1]
+
+    @property
+    def sigma_analysis(self):
+        return self.get_driver_results(SimulationTypes.SigmaAnalysis_run)[1]
+
+    @property
+    def cascade(self):
+        return self.get_driver_results(SimulationTypes.Cascade_run)[1]

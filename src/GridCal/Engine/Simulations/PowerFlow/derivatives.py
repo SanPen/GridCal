@@ -38,7 +38,7 @@ def dSbus_dV(Ybus, V):
 
 
 @nb.njit(cache=True)
-def dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V):
+def dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V, E):
     """
     Compute the power injection derivatives w.r.t the voltage module and angle
     :param Yx: data of Ybus in CSC format
@@ -63,7 +63,6 @@ def dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V):
     # init buffer vector
     n = len(Yp) - 1
     Ibus = np.zeros(n, dtype=np.complex128)
-    E = V / np.abs(V)
     dS_dVm = Yx.copy()
     dS_dVa = Yx.copy()
 
@@ -160,15 +159,16 @@ def dSbus_dV_numba_sparse_csr(Yx, Yp, Yj, V, E, Ibus):  # pragma: no cover
     return dS_dVm, dS_dVa
 
 
-def dSbus_dV_csc(Ybus, V):
+def dSbus_dV_csc(Ybus, V, E):
     """
     Call the numba sparse constructor of the derivatives
     :param Ybus: Ybus in CSC format
     :param V: Voltages vector
+    :param E: Voltages unitary vector
     :return: dS_dVm, dS_dVa in CSC format
     """
     # compute the derivatives' data fast
-    dS_dVm, dS_dVa = dSbus_dV_numba_sparse_csc(Ybus.data, Ybus.indptr, Ybus.indices, V)
+    dS_dVm, dS_dVa = dSbus_dV_numba_sparse_csc(Ybus.data, Ybus.indptr, Ybus.indices, V, E)
 
     # generate sparse CSC matrices with computed data and return them
     return sp.csc_matrix((dS_dVa, Ybus.indices, Ybus.indptr)), \

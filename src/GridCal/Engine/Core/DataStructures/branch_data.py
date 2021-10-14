@@ -120,17 +120,20 @@ class BranchData:
         data.tap_f = self.tap_t[elm_idx]
         data.Kdp = self.Kdp[elm_idx]
         data.Kdp_va = self.Kdp_va[elm_idx]
-
+        data.branch_dc = self.branch_dc[elm_idx]
         data.alpha1 = self.alpha1[elm_idx]
         data.alpha2 = self.alpha2[elm_idx]
         data.alpha3 = self.alpha3[elm_idx]
 
         data.control_mode = self.control_mode[elm_idx]
+        data.contingency_enabled = self.contingency_enabled[elm_idx]
+        data.monitor_loading = self.monitor_loading[elm_idx]
+
         data.branch_active = self.branch_active[tidx]
-        data.branch_dc = self.branch_dc[tidx]
         data.branch_rates = self.branch_rates[tidx]
         data.branch_contingency_rates = self.branch_contingency_rates[tidx]
         data.m = self.m[tidx]
+
         data.m_min = self.m_min[elm_idx]
         data.m_max = self.m_max[elm_idx]
         data.theta = self.theta[tidx]
@@ -143,9 +146,6 @@ class BranchData:
         data.Qtset = self.Qtset[tidx]
         data.vf_set = self.vf_set[tidx]
         data.vt_set = self.vt_set[tidx]
-
-        data.contingency_enabled = self.contingency_enabled[tidx]
-        data.monitor_loading = self.monitor_loading[tidx]
 
         data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(elm_idx, bus_idx)]
         data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(elm_idx, bus_idx)]

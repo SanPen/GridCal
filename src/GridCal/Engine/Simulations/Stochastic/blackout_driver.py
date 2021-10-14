@@ -307,11 +307,6 @@ class Cascading(DriverTemplate):
 
         print('Grid split into ', len(calculation_inputs), ' islands after', it, ' steps')
 
-        # send the finnish signal
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
-
     def get_failed_idx(self):
         """
         Return the array of all failed branches

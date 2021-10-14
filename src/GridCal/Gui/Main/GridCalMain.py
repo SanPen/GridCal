@@ -144,7 +144,8 @@ class MainGUI(QMainWindow):
         self.ui.transferMethodComboBox.setCurrentIndex(1)
 
         self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
-                                    '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.zip', '.dpx']
+                                    '.dgs', '.m', '.raw', '.RAW', '.json', '.xml',
+                                    '.zip', '.dpx', '.epc']
 
         # ptdf grouping modes
         self.ptdf_group_modes = OrderedDict()
@@ -197,6 +198,12 @@ class MainGUI(QMainWindow):
         self.opf_time_groups[bs.TimeGrouping.Daily.value] = bs.TimeGrouping.Daily
         self.opf_time_groups[bs.TimeGrouping.Hourly.value] = bs.TimeGrouping.Hourly
         self.ui.opf_time_grouping_comboBox.setModel(get_list_model(list(self.opf_time_groups.keys())))
+
+        self.opf_zonal_groups = OrderedDict()
+        self.opf_zonal_groups[bs.ZonalGrouping.NoGrouping.value] = bs.ZonalGrouping.NoGrouping
+        # self.opf_zonal_groups[bs.ZonalGrouping.Area.value] = bs.ZonalGrouping.Area
+        self.opf_zonal_groups[bs.ZonalGrouping.All.value] = bs.ZonalGrouping.All
+        self.ui.opfZonalGroupByComboBox.setModel(get_list_model(list(self.opf_zonal_groups.keys())))
 
         self.mip_solvers_dict = OrderedDict()
         self.mip_solvers_dict[bs.MIPSolvers.CBC.value] = bs.MIPSolvers.CBC
@@ -283,6 +290,7 @@ class MainGUI(QMainWindow):
         self.object_select_window: ObjectSelectWindow = None
         self.coordinates_window: CoordinatesInputGUI = None
         self.about_msg_window: AboutDialogueGuiGUI = None
+        self.tower_builder_window: TowerBuilderGUI = None
 
         self.file_name = ''
 
@@ -355,6 +363,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionGrid_Reduction.triggered.connect(self.reduce_grid)
 
+        self.ui.actionInputs_analysis.triggered.connect(self.run_inputs_analysis)
+
         self.ui.actionStorage_location_suggestion.triggered.connect(self.storage_location)
 
         self.ui.actionLaunch_data_analysis_tool.triggered.connect(self.display_grid_analysis)
@@ -390,6 +400,8 @@ class MainGUI(QMainWindow):
         self.ui.actionSync.triggered.connect(self.file_sync_toggle)
 
         self.ui.actionDrawSchematic.triggered.connect(self.draw_schematic)
+
+        self.ui.actionSet_schematic_positions_from_GPS_coordinates.triggered.connect(self.set_xy_from_lat_lon)
 
         self.ui.actionSigma_analysis.triggered.connect(self.sigma_analysis)
 
@@ -847,69 +859,64 @@ class MainGUI(QMainWindow):
         print('\tapp.export_diagram(): Prompt to export the diagram in png.')
         print('\tapp.create_schematic_from_api(): Create the schematic from the circuit information.')
         print('\tapp.adjust_all_node_width(): Adjust the width of all the nodes according to their name.')
+        print('\tapp.numerical_circuit: get compilation of the assets.')
+        print('\tapp.islands: get compilation of the assets split into the topological islands.')
 
         print('\n\nCircuit functions:')
-        print('\tapp.circuit.compile_snapshot(): Compile the grid(s) snapshot mode')
-        print('\tapp.circuit.compile_time_series(): Compile the grid(s) time series mode')
         print('\tapp.circuit.plot_graph(): Plot a graph in a Matplotlib window. Call plt.show() after.')
-        print('\tapp.circuit.load_file("file_name.xlsx/.m/.raw/.dgs"): Load GridCal compatible file')
-        print('\tapp.circuit.save_file("file_name.xlsx"): Save GridCal file')
-        print('\tapp.circuit.export_pf("file_name.xlsx"): Export power flow results to Excel')
 
         print('\n\nPower flow results:')
-        print('\tapp.power_flow.voltage:\t the nodal voltages in per unit')
-        print('\tapp.power_flow.current:\t the branch currents in per unit')
-        print('\tapp.power_flow.loading:\t the branch loading in %')
-        print('\tapp.power_flow.losses:\t the branch losses in per unit')
-        print('\tapp.power_flow.power:\t the nodal power injections in per unit')
-        print('\tapp.power_flow.power_from:\t the branch power injections in per unit at the "from" side')
-        print('\tapp.power_flow.power_to:\t the branch power injections in per unit at the "to" side')
+        print('\tapp.session.power_flow.voltage:\t the nodal voltages in per unit')
+        print('\tapp.session.power_flow.current:\t the branch currents in per unit')
+        print('\tapp.session.power_flow.loading:\t the branch loading in %')
+        print('\tapp.session.power_flow.losses:\t the branch losses in per unit')
+        print('\tapp.session.power_flow.power:\t the nodal power injections in per unit')
+        print('\tapp.session.power_flow.Sf:\t the branch power injections in per unit at the "from" side')
+        print('\tapp.session.power_flow.St:\t the branch power injections in per unit at the "to" side')
 
         print('\n\nShort circuit results:')
-        print('\tapp.short_circuit.voltage:\t the nodal voltages in per unit')
-        print('\tapp.short_circuit.current:\t the branch currents in per unit')
-        print('\tapp.short_circuit.loading:\t the branch loading in %')
-        print('\tapp.short_circuit.losses:\t the branch losses in per unit')
-        print('\tapp.short_circuit.power:\t the nodal power injections in per unit')
-        print('\tapp.short_circuit.power_from:\t the branch power injections in per unit at the "from" side')
-        print('\tapp.short_circuit.power_to:\t the branch power injections in per unit at the "to" side')
-        print('\tapp.short_circuit.short_circuit_power:\t Short circuit power in MVA of the grid nodes')
+        print('\tapp.session.short_circuit.voltage:\t the nodal voltages in per unit')
+        print('\tapp.session.short_circuit.current:\t the branch currents in per unit')
+        print('\tapp.session.short_circuit.loading:\t the branch loading in %')
+        print('\tapp.session.short_circuit.losses:\t the branch losses in per unit')
+        print('\tapp.session.short_circuit.power:\t the nodal power injections in per unit')
+        print('\tapp.session.short_circuit.power_from:\t the branch power injections in per unit at the "from" side')
+        print('\tapp.session.short_circuit.power_to:\t the branch power injections in per unit at the "to" side')
+        print('\tapp.session.short_circuit.short_circuit_power:\t Short circuit power in MVA of the grid nodes')
 
         print('\n\nOptimal power flow results:')
-        print('\tapp.optimal_power_flow.voltage:\t the nodal voltages angles in rad')
-        print('\tapp.optimal_power_flow.load_shedding:\t the branch loading in %')
-        print('\tapp.optimal_power_flow.losses:\t the branch losses in per unit')
-        print('\tapp.optimal_power_flow.Sbus:\t the nodal power injections in MW')
-        print('\tapp.optimal_power_flow.Sf:\t the branch power Sf')
-        print('\tapp.optimal_power_flow.losses:\t the branch losses in MVA')
-        print('\tapp.optimal_power_flow.short_circuit_power:\t Short circuit power in MVA of the grid nodes')
+        print('\tapp.session.optimal_power_flow.voltage:\t the nodal voltages angles in rad')
+        print('\tapp.session.optimal_power_flow.load_shedding:\t the branch loading in %')
+        print('\tapp.session.optimal_power_flow.losses:\t the branch losses in per unit')
+        print('\tapp.session.optimal_power_flow.Sbus:\t the nodal power injections in MW')
+        print('\tapp.session.optimal_power_flow.Sf:\t the branch power Sf')
 
         print('\n\nTime series power flow results:')
-        print('\tapp.time_series.time:\t Profiles time index (pandas DateTimeIndex object)')
-        print('\tapp.time_series.load_profiles:\t Load profiles matrix (row: time, col: node)')
-        print('\tapp.time_series.gen_profiles:\t Generation profiles matrix (row: time, col: node)')
-        print('\tapp.time_series.voltages:\t nodal voltages results matrix (row: time, col: node)')
-        print('\tapp.time_series.currents:\t branches currents results matrix (row: time, col: branch)')
-        print('\tapp.time_series.loadings:\t branches loadings results matrix (row: time, col: branch)')
-        print('\tapp.time_series.losses:\t branches losses results matrix (row: time, col: branch)')
+        print('\tapp.session.power_flow_ts.time:\t Profiles time index (pandas DateTimeIndex object)')
+        print('\tapp.session.power_flow_ts.load_profiles:\t Load profiles matrix (row: time, col: node)')
+        print('\tapp.session.power_flow_ts.gen_profiles:\t Generation profiles matrix (row: time, col: node)')
+        print('\tapp.session.power_flow_ts.voltages:\t nodal voltages results matrix (row: time, col: node)')
+        print('\tapp.session.power_flow_ts.currents:\t branches currents results matrix (row: time, col: branch)')
+        print('\tapp.session.power_flow_ts.loadings:\t branches loadings results matrix (row: time, col: branch)')
+        print('\tapp.session.power_flow_ts.losses:\t branches losses results matrix (row: time, col: branch)')
 
         print('\n\nVoltage stability power flow results:')
-        print('\tapp.voltage_stability.continuation_voltage:\t Voltage values for every power multiplication factor.')
-        print('\tapp.voltage_stability.continuation_lambda:\t Value of power multiplication factor applied')
-        print('\tapp.voltage_stability.continuation_power:\t Power values for every power multiplication factor.')
+        print('\tapp.session.continuation_power_flow.voltage:\t Voltage values for every power multiplication factor.')
+        print('\tapp.session.continuation_power_flow.lambda:\t Value of power multiplication factor applied')
+        print('\tapp.session.continuation_power_flow.Sf:\t Power values for every power multiplication factor.')
 
         print('\n\nMonte Carlo power flow results:')
-        print('\tapp.stochastic_pf.V_avg:\t nodal voltage average result.')
-        print('\tapp.stochastic_pf.I_avg:\t branch current average result.')
-        print('\tapp.stochastic_pf.Loading_avg:\t branch loading average result.')
-        print('\tapp.stochastic_pf.Losses_avg:\t branch losses average result.')
-        print('\tapp.stochastic_pf.V_std:\t nodal voltage standard deviation result.')
-        print('\tapp.stochastic_pf.I_std:\t branch current standard deviation result.')
-        print('\tapp.stochastic_pf.Loading_std:\t branch loading standard deviation result.')
-        print('\tapp.stochastic_pf.Losses_std:\t branch losses standard deviation result.')
-        print('\tapp.stochastic_pf.V_avg_series:\t nodal voltage average series.')
-        print('\tapp.stochastic_pf.V_std_series:\t branch current standard deviation series.')
-        print('\tapp.stochastic_pf.error_series:\t Monte Carlo error series (the convergence value).')
+        print('\tapp.session.stochastic_power_flow.V_avg:\t nodal voltage average result.')
+        print('\tapp.session.stochastic_power_flow.I_avg:\t branch current average result.')
+        print('\tapp.session.stochastic_power_flow.Loading_avg:\t branch loading average result.')
+        print('\tapp.session.stochastic_power_flow.Losses_avg:\t branch losses average result.')
+        print('\tapp.session.stochastic_power_flow.V_std:\t nodal voltage standard deviation result.')
+        print('\tapp.session.stochastic_power_flow.I_std:\t branch current standard deviation result.')
+        print('\tapp.session.stochastic_power_flow.Loading_std:\t branch loading standard deviation result.')
+        print('\tapp.session.stochastic_power_flow.Losses_std:\t branch losses standard deviation result.')
+        print('\tapp.session.stochastic_power_flow.V_avg_series:\t nodal voltage average series.')
+        print('\tapp.session.stochastic_power_flow.V_std_series:\t branch current standard deviation series.')
+        print('\tapp.session.stochastic_power_flow.error_series:\t Monte Carlo error series (the convergence value).')
         print('The same for app.latin_hypercube_sampling')
 
     def clc(self):
@@ -1017,8 +1024,6 @@ class MainGUI(QMainWindow):
         # clear the file name
         self.file_name = ''
 
-        #self.grid_editor = GridEditor(self.circuit)
-
         self.grid_editor.clear()
 
         # delete all widgets
@@ -1085,7 +1090,8 @@ class MainGUI(QMainWindow):
         Open file from a Qt thread to remain responsive
         """
 
-        files_types = "Formats (*.gridcal *.gch5 *.xlsx *.xls *.sqlite *.dgs *.m *.raw *.RAW *.json *.xml *.zip *.dpx)"
+        files_types = "Formats (*.gridcal *.gch5 *.xlsx *.xls *.sqlite *.dgs " \
+                      "*.m *.raw *.RAW *.json *.xml *.zip *.dpx *.epc)"
         # files_types = ''
         # call dialog to select the file
 
@@ -1183,11 +1189,12 @@ class MainGUI(QMainWindow):
 
                 if len(self.circuit.buses) > 1500:
                     quit_msg = "The grid is quite large, hence the schematic might be slow.\n" \
-                               "Do you want to disable the schematic?\n" \
+                               "Do you want to enable the schematic?\n" \
                                "(you can always enable the drawing later)"
-                    reply = QMessageBox.question(self, 'Disable schematic', quit_msg, QMessageBox.Yes, QMessageBox.No)
+                    reply = QMessageBox.question(self, 'Enable schematic', quit_msg,
+                                                 QMessageBox.Yes, QMessageBox.No)
 
-                    if reply == QMessageBox.Yes:
+                    if reply == QMessageBox.No:
                         self.ui.draw_schematic_checkBox.setChecked(False)
                         self.set_grid_editor_state()
 
@@ -1598,6 +1605,16 @@ class MainGUI(QMainWindow):
         Sandbox to call create_schematic_from_api from the action item without affecting the explode factor variable
         """
         self.create_schematic_from_api()
+
+    def set_xy_from_lat_lon(self):
+        """
+        Get the x, y coordinates of the buses from their latitude and longitude
+        """
+        if len(self.circuit.buses) > 0:
+            if yes_no_question("All nodes will be moved as a conversion to a 2D plane of their latitude and longitude. "
+                               "Are you sure of this?"):
+                self.circuit.fill_xy_from_lat_lon()
+                self.create_schematic_from_api()
 
     def create_schematic_from_api(self, explode_factor=1.0):
         """
@@ -2411,9 +2428,10 @@ class MainGUI(QMainWindow):
             warning_msg('There are no power flow results.\nIs there any slack bus or generator?', 'Power flow')
             # QtGui.QGuiApplication.processEvents()
 
-        if len(drv.logger) > 0:
-            dlg = LogsDialogue('Power flow', drv.logger)
-            dlg.exec_()
+        if drv is not None:
+            if len(drv.logger) > 0:
+                dlg = LogsDialogue('Power flow', drv.logger)
+                dlg.exec_()
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -3678,13 +3696,34 @@ class MainGUI(QMainWindow):
                     # get the power flow options from the GUI
                     solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
                     mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
-                    grouping = self.opf_time_groups[self.ui.opf_time_grouping_comboBox.currentText()]
+                    time_grouping = self.opf_time_groups[self.ui.opf_time_grouping_comboBox.currentText()]
+                    zonal_grouping = self.opf_zonal_groups[self.ui.opfZonalGroupByComboBox.currentText()]
                     pf_options = self.get_selected_power_flow_options()
+                    consider_contingencies = self.ui.considerContingenciesOpfCheckBox.isChecked()
+                    skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
+                    tolerance = 10**self.ui.opfTolSpinBox.value()
+
+                    # try to acquire the linear results
+                    linear_results = self.session.linear_power_flow
+                    if linear_results is not None:
+                        LODF = linear_results.LODF
+                    else:
+                        LODF = None
+                        if consider_contingencies:
+                            warning_msg("To consider contingencies, the LODF matrix is required.\n"
+                                        "Run a linear simulation first", "OPF time series")
+                            return
 
                     options = sim.OptimalPowerFlowOptions(solver=solver,
-                                                          grouping=grouping,
+                                                          time_grouping=time_grouping,
+                                                          zonal_grouping=zonal_grouping,
                                                           mip_solver=mip_solver,
-                                                          power_flow_options=pf_options)
+                                                          power_flow_options=pf_options,
+                                                          consider_contingencies=consider_contingencies,
+                                                          skip_generation_limits=skip_generation_limits,
+                                                          tolerance=tolerance,
+                                                          LODF=LODF
+                                                          )
 
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1
@@ -3825,9 +3864,46 @@ class MainGUI(QMainWindow):
 
                 mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
 
+                if self.ui.optimalRedispatchRadioButton.isChecked():
+                    generation_formulation = dev.GenerationNtcFormulation.Optimal
+                elif self.ui.proportionalRedispatchRadioButton.isChecked():
+                    generation_formulation = dev.GenerationNtcFormulation.Proportional
+                else:
+                    generation_formulation = dev.GenerationNtcFormulation.Optimal
+
+                monitor_only_sensitive_branches = self.ui.monitorOnlySensitiveBranchesCheckBox.isChecked()
+                skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
+                branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
+                dT = self.ui.atcPerturbanceSpinBox.value()
+                mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
+                consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
+                tolerance = 10.0 ** self.ui.ntcOpfTolSpinBox.value()
+                weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
+                weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
+                weight_generation_delta = 10.0 ** self.ui.weightGenDeltaSpinBox.value()
+                weight_overloads = 10.0 ** self.ui.weightsOverloadsSpinBox.value()
+                weight_hvdc_control = 10.0 ** self.ui.weightsHVDCControlSpinBox.value()
+                maximize_exchange_flows = self.ui.ntcMaximizeExchangeFlowCheckBox.isChecked()
+
                 options = sim.OptimalNetTransferCapacityOptions(area_from_bus_idx=idx_from,
                                                                 area_to_bus_idx=idx_to,
-                                                                mip_solver=mip_solver)
+                                                                mip_solver=mip_solver,
+                                                                generation_formulation=generation_formulation,
+                                                                monitor_only_sensitive_branches=monitor_only_sensitive_branches,
+                                                                branch_sensitivity_threshold=branch_sensitivity_threshold,
+                                                                skip_generation_limits=skip_generation_limits,
+                                                                consider_contingencies=consider_contingencies,
+                                                                maximize_exchange_flows=maximize_exchange_flows,
+                                                                tolerance=tolerance,
+                                                                sensitivity_dT=dT,
+                                                                sensitivity_mode=mode,
+                                                                weight_power_shift=weight_power_shift,
+                                                                weight_generation_cost=weight_generation_cost,
+                                                                weight_generation_delta=weight_generation_delta,
+                                                                weight_kirchoff=0,
+                                                                weight_overloads=weight_overloads,
+                                                                weight_hvdc_control=weight_hvdc_control
+                                                                )
 
                 self.ui.progress_label.setText('Running optimal power flow...')
                 QtGui.QGuiApplication.processEvents()
@@ -3856,37 +3932,33 @@ class MainGUI(QMainWindow):
 
             self.remove_simulation(sim.SimulationTypes.OPF_NTC_run)
 
-            if results.converged:
+            if self.ui.draw_schematic_checkBox.isChecked():
 
-                if self.ui.draw_schematic_checkBox.isChecked():
+                viz.colour_the_schematic(circuit=self.circuit,
+                                         Sbus=results.Sbus,
+                                         Sf=results.Sf,
+                                         St=-results.Sf,
+                                         voltages=results.voltage,
+                                         loadings=results.loading,
+                                         types=results.bus_types,
+                                         losses=results.losses,
+                                         hvdc_loading=results.hvdc_loading,
+                                         hvdc_sending_power=results.hvdc_Pf,
+                                         hvdc_losses=None,
+                                         ma=None,
+                                         theta=results.phase_shift,
+                                         Beq=None,
+                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                         max_bus_width=self.ui.max_node_size_spinBox.value()
+                                         )
+            self.update_available_results()
 
-                    viz.colour_the_schematic(circuit=self.circuit,
-                                             Sbus=results.Sbus,
-                                             Sf=results.Sf,
-                                             St=-results.Sf,
-                                             voltages=results.voltage,
-                                             loadings=results.loading,
-                                             types=results.bus_types,
-                                             losses=results.losses,
-                                             hvdc_loading=results.hvdc_loading,
-                                             hvdc_sending_power=results.hvdc_Pf,
-                                             hvdc_losses=None,
-                                             ma=None,
-                                             theta=results.phase_shift,
-                                             Beq=None,
-                                             use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                             min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                             max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                             min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                             max_bus_width=self.ui.max_node_size_spinBox.value()
-                                             )
-                self.update_available_results()
-
-            else:
-
-                warning_msg('Some islands did not solve.\n'
-                            'Check that all branches have rating and \n'
-                            'that there is a generator at the slack node.', 'OPF')
+        if len(drv.logger) > 0:
+            dlg = LogsDialogue(drv.name, drv.logger)
+            dlg.exec_()
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -3962,6 +4034,20 @@ class MainGUI(QMainWindow):
         else:
             pass
 
+    def post_reduce_grid(self):
+        """
+        Actions after reducing
+        """
+
+        self.remove_simulation(sim.SimulationTypes.TopologyReduction_run)
+
+        self.create_schematic_from_api(explode_factor=1)
+
+        self.clear_results()
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()
+
     def run_find_node_groups(self):
         """
         Run the node groups algorithm
@@ -4020,16 +4106,46 @@ class MainGUI(QMainWindow):
                             color = QColor(r * 255, g * 255, b * 255, a * 255)
                             bus.graphic_obj.add_big_marker(color=color, tool_tip_text='Group ' + str(c))
 
-    def post_reduce_grid(self):
-        """
-        Actions after reducing
+    def run_inputs_analysis(self):
         """
 
-        self.remove_simulation(sim.SimulationTypes.TopologyReduction_run)
+        :return:
+        """
+        if len(self.circuit.buses) > 0:
 
-        self.create_schematic_from_api(explode_factor=1)
+            if not self.session.is_this_running(sim.SimulationTypes.InputsAnalysis_run):
 
-        self.clear_results()
+                self.remove_simulation(sim.SimulationTypes.InputsAnalysis_run)
+
+                # set power flow object instance
+                drv = sim.InputsAnalysisDriver(self.circuit)
+
+                self.LOCK()
+                self.session.run(drv,
+                                 post_func=self.post_inputs_analysis,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
+
+            else:
+                warning_msg('Another inputs analysis is being run...')
+        else:
+            pass
+
+    def post_inputs_analysis(self):
+        """
+
+        :return:
+        """
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.InputsAnalysis_run)
+
+        if results is not None:
+
+            self.remove_simulation(sim.SimulationTypes.InputsAnalysis_run)
+            self.update_available_results()
+
+        if len(drv.logger) > 0:
+            dlg = LogsDialogue(drv.name, drv.logger)
+            dlg.exec_()
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -4297,6 +4413,7 @@ class MainGUI(QMainWindow):
         self.available_results_dict = dict()
         self.ui.resultsTableView.setModel(None)
         self.ui.available_results_to_color_comboBox.model().clear()
+        self.ui.simulation_results_step_comboBox.model().clear()
         self.ui.results_treeView.setModel(None)
 
         self.ui.catalogueTableView.setModel(None)
@@ -4795,7 +4912,10 @@ class MainGUI(QMainWindow):
         """
         Update the circuit base values from the UI
         """
-        self.circuit.Sbase = self.ui.sbase_doubleSpinBox.value()
+
+        Sbase_new = self.ui.sbase_doubleSpinBox.value()
+        self.circuit.change_base(Sbase_new)
+
         self.circuit.fBase = self.ui.fbase_doubleSpinBox.value()
 
     def explosion_factor_change(self):
@@ -4901,9 +5021,9 @@ class MainGUI(QMainWindow):
                     tower = self.circuit.overhead_line_types[idx]
 
                     # launch editor
-                    dialogue = TowerBuilderGUI(tower=tower, wires_catalogue=self.circuit.wire_types)
-                    dialogue.resize(int(1.81 * 700.0), 700)
-                    dialogue.exec()
+                    self.tower_builder_window = TowerBuilderGUI(tower=tower, wires_catalogue=self.circuit.wire_types)
+                    self.tower_builder_window.resize(int(1.81 * 700.0), 700)
+                    self.tower_builder_window.exec()
 
                     something_happened = True
 
@@ -5484,48 +5604,85 @@ class MainGUI(QMainWindow):
 
             if len(sel_idx) > 0:
 
-                # check if the selected element is in use
-                used = False
-                used_objects = self.circuit.get_node_elements_by_type2(objects[0].device_type)
-                unique_tags = {x.idtag for x in used_objects}
-                for i in sel_idx:
-                    for tag in unique_tags:
-                        if objects[i.row()].idtag == tag:
-                            used = True
+                ok = yes_no_question('Are you sure that you want to delete the selected elements?', 'Delete')
+                if ok:
 
-                # prompt to delete if the object is not in use...
-                if not used:
+                    # get the unique rows
+                    unique = set()
+                    for idx in sel_idx:
+                        unique.add(idx.row())
 
-                    ok = yes_no_question('Are you sure that you want to delete the selected elements?', 'Delete')
-                    if ok:
+                    unique = list(unique)
+                    unique.sort(reverse=True)
+                    for r in unique:
 
-                        # get the unique rows
-                        unique = set()
-                        for idx in sel_idx:
-                            unique.add(idx.row())
+                        if objects[r].graphic_obj is not None:
+                            # this is a more complete function than the circuit one because it removes the
+                            # graphical items too, and for loads and generators it deletes them properly
+                            objects[r].graphic_obj.remove(ask=False)
+                        else:
+                            objects.pop(r)
 
-                        unique = list(unique)
-                        unique.sort(reverse=True)
-                        for r in unique:
-                            obj = objects.pop(r)
-
-                            if obj.graphic_obj is not None:
-                                # this is a more complete function than the circuit one because it removes the
-                                # graphical items too, and for loads and generators it deletes them properly
-                                obj.graphic_obj.remove(ask=False)
-
-                        # update the view
-                        self.display_filter(objects)
-                        self.update_area_combos()
-                        self.update_date_dependent_combos()
-                    else:
-                        pass
+                    # update the view
+                    self.display_filter(objects)
+                    self.update_area_combos()
+                    self.update_date_dependent_combos()
                 else:
-                    info_msg('The object(s) is in use, so it cannot be deleted :(')
+                    pass
             else:
                 info_msg('Select some cells')
         else:
             pass
+
+    def delete_shit(self, min_island=1):
+        """
+        Delete small islands, disconnected stuff and other garbage
+        :return:
+        """
+        numerical_circuit_ = core.compile_snapshot_opf_circuit(circuit=self.circuit, apply_temperature=False,)
+        islands = numerical_circuit_.split_into_islands()
+
+        buses_to_delete = list()
+        buses_to_delete_idx = list()
+        for island in islands:
+            if island.nbus <= min_island:
+                for r in island.original_bus_idx:
+                    buses_to_delete.append(self.circuit.buses[r])
+                    buses_to_delete_idx.append(r)
+
+        for r, bus in enumerate(self.circuit.buses):
+            if not bus.active:
+                if r not in buses_to_delete_idx:
+                    buses_to_delete.append(bus)
+                    buses_to_delete_idx.append(r)
+
+        for elm in buses_to_delete:
+            if elm.graphic_obj is not None:
+                # this is a more complete function than the circuit one because it removes the
+                # graphical items too, and for loads and generators it deletes them properly
+                print('Deleted ', elm.name)
+                elm.graphic_obj.remove(ask=False)
+
+        # search other elements to delete
+        for dev_lst in [self.circuit.lines,
+                        self.circuit.dc_lines,
+                        self.circuit.vsc_devices,
+                        self.circuit.hvdc_lines,
+                        self.circuit.transformers2w,
+                        self.circuit.get_generators(),
+                        self.circuit.get_loads(),
+                        self.circuit.get_shunts(),
+                        self.circuit.get_batteries(),
+                        self.circuit.get_static_generators(),
+                        ]:
+            for elm in dev_lst:
+                if not elm.active:
+                    if elm.graphic_obj is not None:
+                        # this is a more complete function than the circuit one because it removes the
+                        # graphical items too, and for loads and generators it deletes them properly
+                        print('Deleted ', elm.name)
+                        elm.graphic_obj.remove(ask=False)
+
 
     def add_objects(self):
         """
@@ -6146,6 +6303,17 @@ class MainGUI(QMainWindow):
         lst_br_hvdc = self.circuit.get_inter_areas_hvdc_branches(areas_from, areas_to)
         return True, lst_from, lst_to, lst_br, lst_br_hvdc
 
+    @property
+    def numerical_circuit(self):
+        return self.get_snapshot_circuit()
+
+    @property
+    def islands(self):
+        numerical_circuit = core.compile_snapshot_circuit(circuit=self.circuit)
+        calculation_inputs = numerical_circuit.split_into_islands()
+        return calculation_inputs
+
+
 
 def run(use_native_dialogues=True):
     """
@@ -6161,7 +6329,8 @@ def run(use_native_dialogues=True):
     # dark.set_app(app)
 
     window = MainGUI(use_native_dialogues=use_native_dialogues)
-    window.resize(int(1.61 * 700.0), 700)  # golden ratio :)
+    h = 710
+    window.resize(int(1.61 * h), h)  # golden ratio :)
     window.show()
     sys.exit(app.exec_())
 

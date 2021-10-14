@@ -134,6 +134,17 @@ class UPFC(EditableDevice):
         # branch type: Line, Transformer, etc...
         self.branch_type = BranchType.UPFC
 
+    def change_base(self, Sbase_old, Sbase_new):
+        b = Sbase_new / Sbase_old
+
+        self.Rl *= b
+        self.Xl *= b
+        self.Bl *= b
+        self.Rs *= b
+        self.Xs *= b
+        self.Rsh *= b
+        self.Xs *= b
+
     def get_properties_dict(self, version=3):
         """
         Get json dictionary
@@ -212,6 +223,12 @@ class UPFC(EditableDevice):
                 'x': 'p.u.',
                 'b': 'p.u.',
                 'g': 'p.u.'}
+
+    def get_coordinates(self):
+        """
+        Get the branch defining coordinates
+        """
+        return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]
 
     def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
         """

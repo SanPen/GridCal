@@ -199,8 +199,6 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
         end = time.time()
         self.elapsed = end - start
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
 
 
 if __name__ == '__main__':
