@@ -160,7 +160,8 @@ class HvdcLine(EditableDevice):
                  overload_cost=1000.0,   min_firing_angle_f=-1.0, max_firing_angle_f=1.0, min_firing_angle_t=-1.0,
                  max_firing_angle_t=1.0, active_prof=np.ones(0, dtype=bool), rate_prof=np.zeros(0),
                  Pset_prof=np.zeros(0), Vset_f_prof=np.ones(0), Vset_t_prof=np.ones(0), overload_cost_prof=np.zeros(0),
-                 contingency_factor=1.0, control_mode: HvdcControlType=HvdcControlType.type_1_Pset):
+                 contingency_factor=1.0, control_mode: HvdcControlType=HvdcControlType.type_1_Pset,
+                 dispatchable=False):
         """
         HVDC Line model
         :param bus_from: Bus from
@@ -201,6 +202,8 @@ class HvdcLine(EditableDevice):
                                                   'bus_to': GCProp('', DeviceType.BusDevice,
                                                                    'Name of the bus at the "to" side of the line.'),
                                                   'active': GCProp('', bool, 'Is the line active?'),
+
+                                                  'dispatchable': GCProp('', bool, 'Is the line power optimizable?'),
 
                                                   'rate': GCProp('MVA', float, 'Thermal rating power of the line.'),
 
@@ -261,6 +264,8 @@ class HvdcLine(EditableDevice):
 
         # line length in km
         self.length = length
+
+        self.dispatchable = dispatchable
 
         self.Pset = Pset
 

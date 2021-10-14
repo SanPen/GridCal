@@ -424,7 +424,9 @@ class Transformer2W(EditableDevice):
                  temp_base=20, temp_oper=20, alpha=0.00330,
                  control_mode: TransformerControlType = TransformerControlType.fixed,
                  template: TransformerType = None,
-                 rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None, contingency_factor=1.0,
+                 rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
+                 tap_module_prof=None, angle_prof=None,
+                 contingency_factor=1.0,
                  contingency_enabled=True, monitor_loading=True):
 
         EditableDevice.__init__(self,
@@ -498,6 +500,8 @@ class Transformer2W(EditableDevice):
                                 non_editable_attributes=['bus_from', 'bus_to', 'template'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'rate': 'rate_prof',
+                                                         'tap_module': 'tap_module_prof',
+                                                         'angle': 'angle_prof',
                                                          'temp_oper': 'temp_oper_prof',
                                                          'Cost': 'Cost_prof'})
 
@@ -563,8 +567,11 @@ class Transformer2W(EditableDevice):
         else:
             self.tap_module = self.tap_changer.get_tap()
 
+        self.tap_module_prof = tap_module_prof
+
         # Tap angle
         self.angle = shift_angle
+        self.angle_prof = angle_prof
 
         self.tap_module_max = tap_module_max
         self.tap_module_min = tap_module_min

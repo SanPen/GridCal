@@ -269,13 +269,13 @@ class OpfNTC(Opf):
         self.nodal_slacks = None
         self.inter_area_branches = None
         self.inter_area_hvdc = None
-        self.n1flow_f = None
-        self.contingency_br_idx = []
 
         self.logger = logger
 
         # this builds the formulation right away
-        Opf.__init__(self, numerical_circuit=numerical_circuit, solver_type=solver_type)
+        Opf.__init__(self, numerical_circuit=numerical_circuit,
+                     solver_type=solver_type,
+                     ortools=True)
 
     def formulate_optimal_generation(self, ngen, Cgen, Pgen, Pmax, Pmin, a1, a2, t=0):
         """
@@ -571,8 +571,6 @@ class OpfNTC(Opf):
                 flow_f[m] = self.solver.NumVar(-self.inf, self.inf, 'pftk_' + str(m))
 
                 # compute the branch susceptance
-                # bk = (1.0 / complex(nc.branch_data.R[m], nc.branch_data.X[m])).imag  # this seems to be problematic. Should it be negative?
-
                 if nc.branch_data.branch_dc[m]:
                     bk = 1.0 / nc.branch_data.R[m]
                 else:
@@ -628,9 +626,10 @@ class OpfNTC(Opf):
 
         # formulate contingency flows
         # this is done in a separated loop because all te flow variables must exist beforehand
-        flow_n1f = np.zeros((nc.nbr, len(con_br_idx)), dtype=object)
-        overload1 = np.zeros((nc.nbr, len(con_br_idx)), dtype=object)
-        overload2 = np.zeros((nc.nbr, len(con_br_idx)), dtype=object)
+        flow_n1f = list()
+        overloads1 = list()
+        overloads2 = list()
+        con_idx = list()
         for m in range(nc.nbr):  # for every branch
 
             if monitor[m]:  # the monitor variable is pre-computed in the previous loop
@@ -642,17 +641,23 @@ class OpfNTC(Opf):
                     if m != c and alpha_abs[c] > self.branch_sensitivity_threshold:
 
                         # compute the N-1 flow
-                        flow_n1f[m, ic] = flow_f[m] + self.LODF[m, c] * flow_f[c]
+                        flow_n1 = flow_f[m] + self.LODF[m, c] * flow_f[c]
 
                         # rating restriction in the sense from-to
-                        overload1[m, ic] = self.solver.NumVar(0, self.inf, 'n-1_overload1_' + str(m) + ',' + str(c))
-                        self.solver.Add(flow_n1f[m, ic] <= (rates[m] + overload1[m, ic]), "n-1_ft_rating_" + str(m) + ',' + str(c))
+                        overload1 = self.solver.NumVar(0, self.inf, 'n-1_overload1_' + str(m) + ',' + str(c))
+                        self.solver.Add(flow_n1 <= (rates[m] + overload1), "n-1_ft_rating_" + str(m) + ',' + str(c))
 
                         # rating restriction in the sense to-from
-                        overload2[m] = self.solver.NumVar(0, self.inf, 'n-1_overload2_' + str(m) + ',' + str(c))
-                        self.solver.Add((-rates[m] - overload2[m, ic]) <= flow_n1f[m, ic], "n-1_tf_rating_" + str(m) + ',' + str(c))
+                        overload2 = self.solver.NumVar(0, self.inf, 'n-1_overload2_' + str(m) + ',' + str(c))
+                        self.solver.Add((-rates[m] - overload2) <= flow_n1, "n-1_tf_rating_" + str(m) + ',' + str(c))
 
-        return flow_n1f, overload1, overload2, con_br_idx
+                        # store vars
+                        con_idx.append((m, c))
+                        flow_n1f.append(flow_n1)
+                        overloads1.append(overload1)
+                        overloads2.append(overload2)
+
+        return flow_n1f, overloads1, overloads2, con_idx
 
     def formulate_hvdc_flow(self, angles, Pinj, t=0):
         """
@@ -676,7 +681,7 @@ class OpfNTC(Opf):
 
         for i in range(self.numerical_circuit.nhvdc):
 
-            if nc.hvdc_data.active[i]:
+            if nc.hvdc_data.active[i, t]:
 
                 _f = F[i]
                 _t = T[i]
@@ -708,18 +713,18 @@ class OpfNTC(Opf):
                     overload2[i] = self.solver.NumVar(0, self.inf, 'overload_hvdc2_' + str(i))
                     self.solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "hvdc_tf_rating_" + str(i))
 
-                elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset:
-                    # simple injections model
+                elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset and not nc.hvdc_data.dispatchable[i]:
+                    # simple injections model: The power is set by the user
                     flow_f[i] = P0 + hvdc_control1[i] - hvdc_control2[i]
                     Pinj[_f] -= flow_f[i]
                     Pinj[_t] += flow_f[i]
 
-                # elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset:
-                #     # simple injections model
-                #     P0 = self.solver.NumVar(-rates[i], rates[i], 'hvdc_pf_' + str(i))
-                #     flow_f[i] = P0 + hvdc_control1[i] - hvdc_control2[i]
-                #     Pinj[_f] -= flow_f[i]
-                #     Pinj[_t] += flow_f[i]
+                elif nc.hvdc_data.control_mode[i] == HvdcControlType.type_1_Pset and nc.hvdc_data.dispatchable[i]:
+                    # simple injections model, the power is a variable and it is optimized
+                    P0 = self.solver.NumVar(-rates[i], rates[i], 'hvdc_pf_' + str(i))
+                    flow_f[i] = P0 + hvdc_control1[i] - hvdc_control2[i]
+                    Pinj[_f] -= flow_f[i]
+                    Pinj[_t] += flow_f[i]
 
         return flow_f, overload1, overload2, hvdc_control1, hvdc_control2
 
@@ -916,13 +921,11 @@ class OpfNTC(Opf):
             n1flow_f, n1overload1, n1overload2, con_br_idx = self.formulate_contingency(flow_f=flow_f,
                                                                                         alpha_abs=alpha_abs,
                                                                                         monitor=monitor)
-            n1overload1 = n1overload1.reshape(1, -1)[0]
-            n1overload2 = n1overload2.reshape(1, -1)[0]
         else:
-            n1overload1 = np.zeros(self.numerical_circuit.nbr)
-            n1overload2 = np.zeros(self.numerical_circuit.nbr)
-            con_br_idx = np.zeros(0, dtype=int)
-            n1flow_f = np.zeros((self.numerical_circuit.nbr, len(con_br_idx)), dtype=object)
+            n1overload1 = list()
+            n1overload2 = list()
+            con_br_idx = list()
+            n1flow_f = list()
 
         # formulate the HVDC flows
         hvdc_flow_f, hvdc_overload1, hvdc_overload2, \
@@ -985,6 +988,11 @@ class OpfNTC(Opf):
         self.inter_area_branches = inter_area_branches
         self.inter_area_hvdc = inter_area_hvdc
 
+        # n1flow_f, n1overload1, n1overload2, con_br_idx
+        self.contingency_flows_list = n1flow_f
+        self.contingency_indices_list = con_br_idx  # [(t, m, c), ...]
+        self.contingency_flows_slacks_list = n1overload1
+
         return self.solver
 
     def save_lp(self, fname="ortools.lp"):
@@ -1037,21 +1045,35 @@ class OpfNTC(Opf):
 
         return val
 
-    def get_contingency_flows(self):
+    def get_contingency_flows_list(self):
         """
         Square matrix of contingency flows (n branch, n contingency branch)
         :return:
         """
 
-        nbr = self.numerical_circuit.nbr
-        x = np.zeros((nbr, nbr))
+        x = np.zeros(len(self.contingency_flows_list))
 
-        for i in range(nbr):
-            for ij, j in enumerate(self.contingency_br_idx):
-                try:
-                    x[i, j] = self.n1flow_f[i, ij].solution_value() * self.numerical_circuit.Sbase
-                except AttributeError:
-                    x[i, j] = float(self.n1flow_f[i, ij]) * self.numerical_circuit.Sbase
+        for i in range(len(self.contingency_flows_list)):
+            try:
+                x[i] = self.contingency_flows_list[i].solution_value() * self.numerical_circuit.Sbase
+            except AttributeError:
+                x[i] = float(self.contingency_flows_list[i]) * self.numerical_circuit.Sbase
+
+        return x
+
+    def get_contingency_flows_slacks_list(self):
+        """
+        Square matrix of contingency flows (n branch, n contingency branch)
+        :return:
+        """
+
+        x = np.zeros(len(self.n1flow_f))
+
+        for i in range(len(self.n1flow_f)):
+            try:
+                x[i] = self.contingency_flows_list[i].solution_value() * self.numerical_circuit.Sbase
+            except AttributeError:
+                x[i] = float(self.contingency_flows_slacks_list[i]) * self.numerical_circuit.Sbase
 
         return x
 
@@ -1061,15 +1083,13 @@ class OpfNTC(Opf):
         :return:
         """
 
-        nbr = self.numerical_circuit.nbr
-        x = np.zeros((nbr, nbr))
+        x = np.zeros(len(self.n1flow_f))
 
-        for i in range(nbr):
-            for ij, j in enumerate(self.contingency_br_idx):
-                try:
-                    x[i, j] = self.n1flow_f[i, ij].solution_value() * self.numerical_circuit.Sbase / (self.rating[i] + 1e-20)
-                except AttributeError:
-                    x[i, j] = float(self.n1flow_f[i, ij]) * self.numerical_circuit.Sbase / (self.rating[i] + 1e-20)
+        for i in range(len(self.n1flow_f)):
+            try:
+                x[i] = self.n1flow_f[i].solution_value() * self.numerical_circuit.Sbase / (self.rating[i] + 1e-20)
+            except AttributeError:
+                x[i] = float(self.n1flow_f[i]) * self.numerical_circuit.Sbase / (self.rating[i] + 1e-20)
 
         return x
 

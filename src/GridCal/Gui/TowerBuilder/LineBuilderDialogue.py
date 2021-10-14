@@ -24,7 +24,7 @@ from GridCal.Gui.GuiFunctions import PandasModel
 from GridCal.Gui.GeneralDialogues import LogsDialogue
 
 
-class TowerBuilderGUI(QtWidgets.QDialog):
+class TowerBuilderGUI(QDialog):
 
     def __init__(self, parent=None, tower: Tower = None, wires_catalogue=list()):
         """
@@ -33,7 +33,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         :param tower:
         :param wires_catalogue:
         """
-        QtWidgets.QDialog.__init__(self, parent)
+        QDialog.__init__(self, parent)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.setWindowTitle('Line builder')
@@ -60,13 +60,17 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.ui.wires_tableView.setModel(self.wires_table)
         self.ui.tower_tableView.setModel(self.tower_driver)
 
+        # set divider
+        self.ui.main_splitter.setStretchFactor(0, 2)
+        self.ui.main_splitter.setStretchFactor(1, 3)
+
         # button clicks
         # self.ui.add_wire_pushButton.clicked.connect(self.add_wire_to_collection)
         # self.ui.delete_wire_pushButton.clicked.connect(self.delete_wire_from_collection)
         self.ui.add_to_tower_pushButton.clicked.connect(self.add_wire_to_tower)
         self.ui.delete_from_tower_pushButton.clicked.connect(self.delete_wire_from_tower)
         self.ui.compute_pushButton.clicked.connect(self.compute)
-
+        self.ui.acceptButton.clicked.connect(self.accept)
         self.ui.name_lineEdit.textChanged.connect(self.name_changed)
 
     def msg(self, text, title="Warning"):
@@ -147,7 +151,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
             self.plot()
         else:
-            self.msg('Select a wire from the tower')
+            self.msg('Select a wire from the wire composition')
 
     def compute(self):
         """
@@ -185,16 +189,25 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
                 # Admittances in uS/km
                 cols = ['Phase' + str(i) for i in self.tower_driver.tower.y_phases_abcn]
-                z_df = pd.DataFrame(data=self.tower_driver.tower.y_abcn * 1e6, columns=cols, index=cols)
+                z_df = pd.DataFrame(data=self.tower_driver.tower.y_abcn.imag * 1e6, columns=cols, index=cols)
                 self.ui.y_tableView_abcn.setModel(PandasModel(z_df))
 
                 cols = ['Phase' + str(i) for i in self.tower_driver.tower.y_phases_abc]
-                z_df = pd.DataFrame(data=self.tower_driver.tower.y_abc * 1e6, columns=cols, index=cols)
+                z_df = pd.DataFrame(data=self.tower_driver.tower.y_abc.imag * 1e6, columns=cols, index=cols)
                 self.ui.y_tableView_abc.setModel(PandasModel(z_df))
 
                 cols = ['Sequence ' + str(i) for i in range(3)]
-                z_df = pd.DataFrame(data=self.tower_driver.tower.y_seq * 1e6, columns=cols, index=cols)
+                z_df = pd.DataFrame(data=self.tower_driver.tower.y_seq.imag * 1e6, columns=cols, index=cols)
                 self.ui.y_tableView_seq.setModel(PandasModel(z_df))
+
+                # set auto adjust headers
+                self.ui.z_tableView_abcn.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+                self.ui.z_tableView_abc.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+                self.ui.z_tableView_seq.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+
+                self.ui.y_tableView_abcn.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+                self.ui.y_tableView_abc.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+                self.ui.y_tableView_seq.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
                 # plot
                 self.plot()
@@ -262,13 +275,13 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
 if __name__ == "__main__":
 
-    app = QtWidgets.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     window = TowerBuilderGUI()
 
     window.example_2()
     window.compute()
 
-    window.resize(1.81 * 700.0, 700.0)  # golden ratio
+    window.resize(1.61 * 600.0, 600.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
 

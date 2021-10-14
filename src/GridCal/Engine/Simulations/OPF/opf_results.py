@@ -45,15 +45,29 @@ class OptimalPowerFlowResults(ResultsTemplate):
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names,
                  Sbus=None, voltage=None, load_shedding=None, generator_shedding=None,
                  battery_power=None, controlled_generation_power=None,
-                 Sf=None, overloads=None, loading=None, losses=None, converged=None, bus_types=None):
+                 Sf=None, overloads=None, loading=None, losses=None,
+                 hvdc_names=None, hvdc_power=None, hvdc_loading=None, hvdc_overloads=None,
+                 phase_shift=None,
+                 contingency_flows_list=None, contingency_indices_list=None, contingency_flows_slacks_list=None,
+                 rates=None, contingency_rates=None,
+                 converged=None, bus_types=None):
 
         ResultsTemplate.__init__(self,
                                  name='OPF',
                                  available_results=[ResultTypes.BusVoltageModule,
                                                     ResultTypes.BusVoltageAngle,
+                                                    ResultTypes.BusPower,
                                                     ResultTypes.BranchPower,
                                                     ResultTypes.BranchLoading,
                                                     ResultTypes.BranchOverloads,
+                                                    ResultTypes.BranchTapAngle,
+
+                                                    ResultTypes.ContingencyFlowsReport,
+
+                                                    ResultTypes.HvdcPowerFrom,
+                                                    ResultTypes.HvdcLoading,
+                                                    ResultTypes.HvdcOverloads,
+
                                                     ResultTypes.LoadShedding,
                                                     ResultTypes.ControlledGeneratorShedding,
                                                     ResultTypes.ControlledGeneratorPower,
@@ -71,6 +85,11 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                  'bus_types',
                                                  'overloads',
                                                  'loading',
+                                                 'hvdc_names',
+                                                 'hvdc_power',
+                                                 'hvdc_loading',
+                                                 'hvdc_overloads',
+                                                 'phase_shift',
                                                  'battery_power',
                                                  'generator_power',
                                                  'converged'])
@@ -97,11 +116,25 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
         self.losses = losses
 
+        self.hvdc_names = hvdc_names
+        self.hvdc_Pf = hvdc_power
+        self.hvdc_loading = hvdc_loading
+        self.hvdc_overloads = hvdc_overloads
+
+        self.phase_shift = phase_shift
+
         self.battery_power = battery_power
 
         self.generator_shedding = generator_shedding
 
         self.generator_power = controlled_generation_power
+
+        self.contingency_flows_list = contingency_flows_list
+        self.contingency_indices_list = contingency_indices_list  # [(t, m, c), ...]
+        self.contingency_flows_slacks_list = contingency_flows_slacks_list
+
+        self.rates = rates
+        self.contingency_rates = contingency_rates
 
         self.converged = converged
 
@@ -163,6 +196,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
         :param result_type: type of results (string)
         :return: DataFrame of the results (or None if the result was not understood)
         """
+        columns = [result_type.value[0]]
 
         if result_type == ResultTypes.BusVoltageModule:
             labels = self.bus_names
@@ -206,6 +240,12 @@ class OptimalPowerFlowResults(ResultsTemplate):
             y_label = '(MW)'
             title = 'Branch losses'
 
+        elif result_type == ResultTypes.BranchTapAngle:
+            labels = self.branch_names
+            y = np.rad2deg(self.phase_shift)
+            y_label = '(deg)'
+            title = result_type.value[0]
+
         elif result_type == ResultTypes.LoadShedding:
             labels = self.load_names
             y = self.load_shedding
@@ -230,6 +270,40 @@ class OptimalPowerFlowResults(ResultsTemplate):
             y_label = '(MW)'
             title = 'Battery power'
 
+        elif result_type == ResultTypes.HvdcPowerFrom:
+            labels = self.hvdc_names
+            y = self.hvdc_Pf
+            y_label = '(MW)'
+            title = 'HVDC power'
+
+        elif result_type == ResultTypes.HvdcOverloads:
+            labels = self.hvdc_names
+            y = self.hvdc_overloads
+            y_label = '(MW)'
+            title = 'HVDC overloads'
+
+        elif result_type == ResultTypes.ContingencyFlowsReport:
+
+            y = list()
+            labels = list()
+            for i in range(len(self.contingency_flows_list)):
+                if self.contingency_flows_list[i] != 0.0:
+                    m, c = self.contingency_indices_list[i]
+                    y.append((m, c,
+                              self.branch_names[m], self.branch_names[c],
+                              self.contingency_flows_list[i], self.Sf[m],
+                              self.contingency_flows_list[i] / self.contingency_rates[c] * 100,
+                              self.Sf[m] / self.rates[m] * 100))
+                    labels.append(i)
+
+            columns = ['Monitored idx ', 'Contingency idx',
+                       'Monitored', 'Contingency',
+                       'ContingencyFlow (MW)', 'Base flow (MW)',
+                       'ContingencyFlow (%)', 'Base flow (%)']
+            y = np.array(y, dtype=object)
+            y_label = ''
+            title = result_type.value[0]
+
         else:
             labels = []
             y = np.zeros(0)
@@ -238,7 +312,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
         mdl = ResultsTable(data=y,
                            index=labels,
-                           columns=[result_type.value[0]],
+                           columns=columns,
                            title=title,
                            ylabel=y_label,
                            xlabel='',

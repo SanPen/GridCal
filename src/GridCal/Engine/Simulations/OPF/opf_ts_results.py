@@ -23,8 +23,8 @@ from GridCal.Engine.Simulations.results_template import ResultsTemplate
 
 class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
-    def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names,
-                 n, m, nt, ngen=0, nbat=0, nload=0, time=None, bus_types=()):
+    def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names,
+                 n, m, nt, ngen=0, nbat=0, nload=0, nhvdc=0, time=None, bus_types=()):
         """
         OPF Time Series results constructor
         :param n: number of buses
@@ -43,6 +43,13 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                     ResultTypes.BranchPower,
                                                     ResultTypes.BranchLoading,
                                                     ResultTypes.BranchOverloads,
+                                                    ResultTypes.BranchTapAngle,
+
+                                                    ResultTypes.ContingencyFlowsReport,
+
+                                                    ResultTypes.HvdcPowerFrom,
+                                                    ResultTypes.HvdcLoading,
+                                                    ResultTypes.HvdcOverloads,
                                                     ResultTypes.LoadShedding,
                                                     ResultTypes.ControlledGeneratorShedding,
                                                     ResultTypes.ControlledGeneratorPower,
@@ -74,6 +81,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.load_names = load_names
         self.generator_names = generator_names
         self.battery_names = battery_names
+        self.hvdc_names = hvdc_names
 
         self.bus_types = bus_types
 
@@ -101,6 +109,13 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         self.Sf = np.zeros((nt, m), dtype=complex)
 
+
+        self.hvdc_Pf = np.zeros((nt, nhvdc), dtype=float)
+        self.hvdc_loading = np.zeros((nt, nhvdc), dtype=float)
+        self.hvdc_overloads = np.zeros((nt, nhvdc), dtype=float)
+
+        self.phase_shift = np.zeros((nt, m), dtype=float)
+
         self.generator_power = np.zeros((nt, ngen), dtype=float)
 
         self.generator_shedding = np.zeros((nt, ngen), dtype=float)
@@ -108,6 +123,13 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.battery_power = np.zeros((nt, nbat), dtype=float)
 
         self.battery_energy = np.zeros((nt, nbat), dtype=float)
+
+        self.contingency_flows_list = list()
+        self.contingency_indices_list = list()  # [(t, m, c), ...]
+        self.contingency_flows_slacks_list = list()
+
+        self.rates = np.zeros(m)
+        self.contingency_rates = np.zeros(m)
 
         self.converged = np.empty(nt, dtype=bool)
 
@@ -201,6 +223,30 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             y_label = '(MW)'
             title = 'Branch losses '
 
+        elif result_type == ResultTypes.BranchTapAngle:
+            labels = self.branch_names
+            y = np.rad2deg(self.phase_shift)
+            y_label = '(deg)'
+            title = 'Branch tap angle '
+
+        elif result_type == ResultTypes.HvdcPowerFrom:
+            labels = self.hvdc_names
+            y = self.hvdc_Pf
+            y_label = '(MW)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.HvdcOverloads:
+            labels = self.hvdc_names
+            y = self.hvdc_overloads
+            y_label = '(MW)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.HvdcLoading:
+            labels = self.hvdc_names
+            y = self.hvdc_loading * 100.0
+            y_label = '(%)'
+            title = result_type.value[0]
+
         elif result_type == ResultTypes.LoadShedding:
             labels = self.load_names
             y = self.load_shedding
@@ -230,6 +276,30 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             y = self.battery_energy
             y_label = '(MWh)'
             title = 'Battery energy'
+
+        elif result_type == ResultTypes.ContingencyFlowsReport:
+            y = list()
+            index = list()
+            for i in range(len(self.contingency_flows_list)):
+                if self.contingency_flows_list[i] != 0.0:
+                    t, m, c = self.contingency_indices_list[i]
+                    y.append((t, m, c,
+                              str(self.time[t]), self.branch_names[m], self.branch_names[c],
+                              self.contingency_flows_list[i], self.Sf[t, m].real,
+                              self.contingency_flows_list[i] / self.contingency_rates[c, t] * 100,
+                              self.Sf[t, m].real / self.rates[m, t] * 100))
+                    index.append(i)
+
+            labels = ['Time index', 'Monitored idx ', 'Contingency idx',
+                      'Time', 'Monitored', 'Contingency',
+                      'ContingencyFlow (MW)', 'Base flow (MW)',
+                      'ContingencyFlow (%)', 'Base flow (%)']
+            y = np.array(y, dtype=object)
+            y_label = ''
+            title = result_type.value[0]
+
+            return ResultsTable(data=y, index=index, columns=labels, title=title,
+                                ylabel=y_label, xlabel='', units=y_label)
 
         else:
             labels = ''

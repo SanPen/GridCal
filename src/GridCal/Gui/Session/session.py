@@ -51,7 +51,7 @@ def get_results_object_dictionary():
            (LinearAnalysisResults(0, 0, (), (), ()), SimulationTypes.LinearAnalysis_run),
            (LinearAnalysisTimeSeriesResults(0, 0, (), (), (), ()), SimulationTypes.LinearAnalysis_TS_run),
            (OptimalPowerFlowResults((), (), (), (), ()), SimulationTypes.OPF_run),
-           (OptimalPowerFlowTimeSeriesResults((), (), (), (), (), 0, 0, 0), SimulationTypes.OPFTimeSeries_run),
+           (OptimalPowerFlowTimeSeriesResults((), (), (), (), (), (), 0, 0, 0), SimulationTypes.OPFTimeSeries_run),
            (PowerFlowResults(0, 0, 0, 0, (), (), (), (), ()), SimulationTypes.PowerFlow_run),
            (TimeSeriesResults(0, 0, 0, 0, (), (), (), (), (), ()), SimulationTypes.TimeSeries_run),
            (ShortCircuitResults(0, 0, 0, (), (), (), ()), SimulationTypes.ShortCircuit_run),

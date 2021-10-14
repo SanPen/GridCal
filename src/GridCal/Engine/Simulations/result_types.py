@@ -51,6 +51,7 @@ class ResultTypes(Enum):
 
     HvdcLosses = 'HVDC losses', DeviceType.HVDCLineDevice
     HvdcPowerFrom = 'HVDC power "from"', DeviceType.HVDCLineDevice
+    HvdcLoading = 'HVDC loading', DeviceType.HVDCLineDevice
     HvdcPowerTo = 'HVDC power "to"', DeviceType.HVDCLineDevice
 
     # StochasticPowerFlowDriver
@@ -120,6 +121,8 @@ class ResultTypes(Enum):
     AvailableTransferCapacityBeta = 'Sensitivity to the exchange (N-1)', DeviceType.BranchDevice
     NetTransferCapacity = 'Net transfer capacity', DeviceType.BranchDevice
     AvailableTransferCapacityReport = 'ATC Report', DeviceType.NoDevice
+
+    ContingencyFlowsReport = 'Contingency Report', DeviceType.NoDevice
 
     # inputs analysis
     ZoneAnalysis = 'Zone analysis', DeviceType.NoDevice

@@ -112,6 +112,12 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
         self.Pb = Pb
         self.Pl = Pl
         self.E = E
+
+        self.Pinj = self.numerical_circuit.Sbus.transpose().real
+        self.hvdc_flow = np.zeros((nt, self.numerical_circuit.nhvdc))
+        self.hvdc_slacks = np.zeros((nt, self.numerical_circuit.nhvdc))
+        self.phase_shift = np.zeros((nt, m))
+
         self.load_shedding = np.zeros((nt, nl))
         self.s_from = np.zeros((nt, m))
         self.s_to = np.zeros((nt, m))

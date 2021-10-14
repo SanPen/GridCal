@@ -356,7 +356,8 @@ class HvdcGraphicItem(QGraphicsLineItem):
         """
         # Ridiculously large call to get the main GUI that hosts this bus graphic
         # time series object from the last simulation
-        self.diagramScene.plot_hvdc_branch(self.api_object)
+        i = self.diagramScene.circuit.hvdc_lines.index(self.api_object)
+        self.diagramScene.plot_hvdc_branch(i, self.api_object)
 
     def assign_rate_to_profile(self):
         """

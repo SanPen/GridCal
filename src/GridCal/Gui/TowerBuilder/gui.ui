@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Tower creation</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
     <number>1</number>
    </property>
@@ -26,16 +26,28 @@
    <property name="bottomMargin">
     <number>1</number>
    </property>
-   <item>
+   <item row="4" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
       <number>0</number>
      </property>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
-       <string>Tower</string>
+       <string>Tower designer</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_6">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QSplitter" name="main_splitter">
          <property name="orientation">
@@ -50,16 +62,16 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_5">
            <property name="leftMargin">
-            <number>1</number>
+            <number>0</number>
            </property>
            <property name="topMargin">
-            <number>1</number>
+            <number>0</number>
            </property>
            <property name="rightMargin">
-            <number>1</number>
+            <number>0</number>
            </property>
            <property name="bottomMargin">
-            <number>1</number>
+            <number>0</number>
            </property>
            <item>
             <widget class="QFrame" name="frame_5">
@@ -155,162 +167,190 @@
             </widget>
            </item>
            <item>
-            <widget class="QFrame" name="frame_2">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
+            <widget class="QSplitter" name="splitter">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
              </property>
-             <property name="frameShape">
-              <enum>QFrame::NoFrame</enum>
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
              </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_9">
-              <property name="leftMargin">
-               <number>1</number>
+             <widget class="QFrame" name="frame_3">
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
               </property>
-              <property name="topMargin">
-               <number>1</number>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
               </property>
-              <property name="rightMargin">
-               <number>1</number>
+              <layout class="QVBoxLayout" name="verticalLayout_8">
+               <item>
+                <widget class="QLabel" name="label_12">
+                 <property name="text">
+                  <string>Wire catalogue</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QTableView" name="wires_tableView"/>
+               </item>
+               <item>
+                <widget class="QFrame" name="frame_7">
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_4">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QPushButton" name="add_to_tower_pushButton">
+                    <property name="toolTip">
+                     <string>Add wire</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="icons.qrc">
+                      <normaloff>:/Icons/icons/plus.svg</normaloff>:/Icons/icons/plus.svg</iconset>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_3">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>990</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QFrame" name="frame_4">
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
               </property>
-              <property name="bottomMargin">
-               <number>1</number>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
               </property>
-              <item>
-               <widget class="QSplitter" name="splitter">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-                <widget class="QFrame" name="frame_3">
+              <layout class="QVBoxLayout" name="verticalLayout_4">
+               <property name="leftMargin">
+                <number>9</number>
+               </property>
+               <property name="topMargin">
+                <number>9</number>
+               </property>
+               <property name="rightMargin">
+                <number>9</number>
+               </property>
+               <property name="bottomMargin">
+                <number>9</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="label_10">
+                 <property name="text">
+                  <string>Wire compisition</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QTableView" name="tower_tableView"/>
+               </item>
+               <item>
+                <widget class="QFrame" name="frame">
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
                   <enum>QFrame::Raised</enum>
                  </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_8">
+                 <layout class="QHBoxLayout" name="horizontalLayout_2">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
                   <item>
-                   <widget class="QLabel" name="label_12">
+                   <widget class="QPushButton" name="delete_from_tower_pushButton">
+                    <property name="toolTip">
+                     <string>Delete wire</string>
+                    </property>
                     <property name="text">
-                     <string>Wire catalogue</string>
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="icons.qrc">
+                      <normaloff>:/Icons/icons/minus.svg</normaloff>:/Icons/icons/minus.svg</iconset>
                     </property>
                    </widget>
                   </item>
                   <item>
-                   <widget class="QTableView" name="wires_tableView"/>
+                   <spacer name="horizontalSpacer">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
                   </item>
-                 </layout>
-                </widget>
-                <widget class="QFrame" name="frame_4">
-                 <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
-                 </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_4">
                   <item>
-                   <widget class="QLabel" name="label_10">
+                   <widget class="QPushButton" name="compute_pushButton">
+                    <property name="toolTip">
+                     <string>Compute matrices</string>
+                    </property>
                     <property name="text">
-                     <string>Wire compisition</string>
+                     <string/>
                     </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QTableView" name="tower_tableView"/>
-                  </item>
-                  <item>
-                   <widget class="QFrame" name="frame">
-                    <property name="frameShape">
-                     <enum>QFrame::NoFrame</enum>
+                    <property name="icon">
+                     <iconset resource="icons.qrc">
+                      <normaloff>:/Icons/icons/calc.svg</normaloff>:/Icons/icons/calc.svg</iconset>
                     </property>
-                    <property name="frameShadow">
-                     <enum>QFrame::Raised</enum>
+                    <property name="iconSize">
+                     <size>
+                      <width>16</width>
+                      <height>16</height>
+                     </size>
                     </property>
-                    <layout class="QHBoxLayout" name="horizontalLayout_2">
-                     <property name="leftMargin">
-                      <number>0</number>
-                     </property>
-                     <property name="rightMargin">
-                      <number>0</number>
-                     </property>
-                     <property name="bottomMargin">
-                      <number>0</number>
-                     </property>
-                     <item>
-                      <widget class="QPushButton" name="add_to_tower_pushButton">
-                       <property name="toolTip">
-                        <string>Add wire</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset resource="icons.qrc">
-                         <normaloff>:/Icons/icons/plus.svg</normaloff>:/Icons/icons/plus.svg</iconset>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="delete_from_tower_pushButton">
-                       <property name="toolTip">
-                        <string>Delete wire</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset resource="icons.qrc">
-                         <normaloff>:/Icons/icons/minus.svg</normaloff>:/Icons/icons/minus.svg</iconset>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <spacer name="horizontalSpacer">
-                       <property name="orientation">
-                        <enum>Qt::Horizontal</enum>
-                       </property>
-                       <property name="sizeHint" stdset="0">
-                        <size>
-                         <width>40</width>
-                         <height>20</height>
-                        </size>
-                       </property>
-                      </spacer>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="compute_pushButton">
-                       <property name="toolTip">
-                        <string>Compute matrices</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset resource="icons.qrc">
-                         <normaloff>:/Icons/icons/calc.svg</normaloff>:/Icons/icons/calc.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>32</width>
-                         <height>32</height>
-                        </size>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
                    </widget>
                   </item>
                  </layout>
                 </widget>
-               </widget>
-              </item>
-             </layout>
+               </item>
+              </layout>
+             </widget>
             </widget>
            </item>
           </layout>
@@ -345,6 +385,56 @@
            <item>
             <widget class="MatplotlibWidget" name="plotwidget" native="true"/>
            </item>
+           <item>
+            <widget class="QFrame" name="frame_9">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>24</height>
+              </size>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <spacer name="horizontalSpacer_4">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>19</width>
+                  <height>19</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="acceptButton">
+                <property name="text">
+                 <string>Accept</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
           </layout>
          </widget>
         </widget>
@@ -353,75 +443,80 @@
      </widget>
      <widget class="QWidget" name="tab">
       <attribute name="title">
-       <string>Z series</string>
+       <string>Impedance matrices</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>   Z series (Ohm / km) for ABCN</string>
+        <widget class="QFrame" name="frame_10">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTableView" name="z_tableView_abcn"/>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>   Z series (Ohm / km) for ABC</string>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
          </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>   Y shunt (uS / km) for ABCN</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>   Z series (Ohm / km) for ABC</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QTableView" name="z_tableView_abcn"/>
+          </item>
+          <item row="1" column="1">
+           <widget class="QTableView" name="y_tableView_abcn"/>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>   Z series (Ohm / km) in sequence components</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QTableView" name="z_tableView_abc"/>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>   Z series (Ohm / km) for ABCN</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QTableView" name="z_tableView_seq"/>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>   Y shunt (uS / km) for ABC</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QTableView" name="y_tableView_abc"/>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>   Y shunt (uS / km) for the sequence components</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QTableView" name="y_tableView_seq"/>
+          </item>
+         </layout>
         </widget>
-       </item>
-       <item>
-        <widget class="QTableView" name="z_tableView_abc"/>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_7">
-         <property name="text">
-          <string>   Z series (Ohm / km) in sequence components</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTableView" name="z_tableView_seq"/>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tab_3">
-      <attribute name="title">
-       <string>Y shunt</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>   Y shunt (uS / km) for ABCN</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTableView" name="y_tableView_abcn"/>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>   Y shunt (uS / km) for ABC</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTableView" name="y_tableView_abc"/>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>   Y shunt (uS / km) for the sequence components</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTableView" name="y_tableView_seq"/>
        </item>
       </layout>
      </widget>

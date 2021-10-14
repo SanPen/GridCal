@@ -187,7 +187,7 @@ class MainGUI(QMainWindow):
         # opf solvers dictionary
         self.lp_solvers_dict = OrderedDict()
         self.lp_solvers_dict[bs.SolverType.DC_OPF.value] = bs.SolverType.DC_OPF
-        self.lp_solvers_dict[bs.SolverType.AC_OPF.value] = bs.SolverType.AC_OPF
+        # self.lp_solvers_dict[bs.SolverType.AC_OPF.value] = bs.SolverType.AC_OPF
         self.lp_solvers_dict[bs.SolverType.Simple_OPF.value] = bs.SolverType.Simple_OPF
         self.ui.lpf_solver_comboBox.setModel(get_list_model(list(self.lp_solvers_dict.keys())))
 
@@ -822,7 +822,7 @@ class MainGUI(QMainWindow):
         :return:
         """
 
-        self.about_msg_window = AboutDialogueGuiGUI()
+        self.about_msg_window = AboutDialogueGuiGUI(self)
         self.about_msg_window.setVisible(True)
 
     @staticmethod
@@ -3613,19 +3613,46 @@ class MainGUI(QMainWindow):
 
                 self.remove_simulation(sim.SimulationTypes.OPF_run)
 
-                self.LOCK()
 
                 # get the power flow options from the GUI
                 solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
                 mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
+                time_grouping = self.opf_time_groups[self.ui.opf_time_grouping_comboBox.currentText()]
+                zonal_grouping = self.opf_zonal_groups[self.ui.opfZonalGroupByComboBox.currentText()]
                 pf_options = self.get_selected_power_flow_options()
+                consider_contingencies = self.ui.considerContingenciesOpfCheckBox.isChecked()
+                skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
+                tolerance = 10 ** self.ui.opfTolSpinBox.value()
+                lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
+
+                # try to acquire the linear results
+                linear_results = self.session.linear_power_flow
+                if linear_results is not None:
+                    LODF = linear_results.LODF
+                else:
+                    LODF = None
+                    if consider_contingencies:
+                        warning_msg("To consider contingencies, the LODF matrix is required.\n"
+                                    "Run a linear simulation first", "OPF time series")
+                        return
+
                 options = sim.OptimalPowerFlowOptions(solver=solver,
+                                                      time_grouping=time_grouping,
+                                                      zonal_grouping=zonal_grouping,
                                                       mip_solver=mip_solver,
-                                                      power_flow_options=pf_options)
+                                                      power_flow_options=pf_options,
+                                                      consider_contingencies=consider_contingencies,
+                                                      skip_generation_limits=skip_generation_limits,
+                                                      tolerance=tolerance,
+                                                      LODF=LODF,
+                                                      lodf_tolerance=lodf_tolerance)
 
                 self.ui.progress_label.setText('Running optimal power flow...')
                 QtGui.QGuiApplication.processEvents()
                 pf_options = self.get_selected_power_flow_options()
+
+                self.LOCK()
+
                 # set power flow object instance
                 drv = sim.OptimalPowerFlow(self.circuit, options, pf_options)
 
@@ -3658,7 +3685,10 @@ class MainGUI(QMainWindow):
                                              types=results.bus_types,
                                              Sf=results.Sf,
                                              Sbus=results.Sbus,
+                                             hvdc_sending_power=results.hvdc_Pf,
+                                             hvdc_loading=results.hvdc_loading,
                                              use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                             theta=results.phase_shift,
                                              min_branch_width=self.ui.min_branch_size_spinBox.value(),
                                              max_branch_width=self.ui.max_branch_size_spinBox.value(),
                                              min_bus_width=self.ui.min_node_size_spinBox.value(),
@@ -3702,6 +3732,7 @@ class MainGUI(QMainWindow):
                     consider_contingencies = self.ui.considerContingenciesOpfCheckBox.isChecked()
                     skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
                     tolerance = 10**self.ui.opfTolSpinBox.value()
+                    lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
 
                     # try to acquire the linear results
                     linear_results = self.session.linear_power_flow
@@ -3722,7 +3753,8 @@ class MainGUI(QMainWindow):
                                                           consider_contingencies=consider_contingencies,
                                                           skip_generation_limits=skip_generation_limits,
                                                           tolerance=tolerance,
-                                                          LODF=LODF
+                                                          LODF=LODF,
+                                                          lodf_tolerance=lodf_tolerance
                                                           )
 
                     start = self.ui.profile_start_slider.value()
@@ -3767,16 +3799,23 @@ class MainGUI(QMainWindow):
 
             if results is not None:
                 if self.ui.draw_schematic_checkBox.isChecked():
-                    voltage = results.voltage.max(axis=0)
-                    loading = results.loading.max(axis=0)
-                    Sf = results.Sf.max(axis=0)
 
                     viz.colour_the_schematic(circuit=self.circuit,
                                              Sbus=None,
-                                             Sf=Sf,
-                                             voltages=voltage,
-                                             loadings=loading,
+                                             Sf=results.Sf[0, :],
+                                             voltages=results.voltage[0, :],
+                                             loadings=results.loading[0, :],
                                              types=results.bus_types,
+                                             losses=None,
+                                             St=None,
+                                             hvdc_sending_power=results.hvdc_Pf[0, :],
+                                             hvdc_losses=None,
+                                             hvdc_loading=results.hvdc_loading[0, :],
+                                             failed_br_idx=None,
+                                             loading_label='loading',
+                                             ma=None,
+                                             theta=results.phase_shift[0, :],
+                                             Beq=None,
                                              use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                              min_branch_width=self.ui.min_branch_size_spinBox.value(),
                                              max_branch_width=self.ui.max_branch_size_spinBox.value(),
@@ -4294,7 +4333,7 @@ class MainGUI(QMainWindow):
         :return:
         """
         if prop == 'area':
-            self.object_select_window = ObjectSelectWindow('Area', self.circuit.areas)
+            self.object_select_window = ObjectSelectWindow('Area', self.circuit.areas, parent=self)
             self.object_select_window.setModal(True)
             self.object_select_window.exec_()
 
@@ -4304,7 +4343,7 @@ class MainGUI(QMainWindow):
                     print('Set {0} into bus {1}'.format(self.object_select_window.selected_object.name, bus.name))
 
         elif prop == 'country':
-            self.object_select_window = ObjectSelectWindow('country', self.circuit.countries)
+            self.object_select_window = ObjectSelectWindow('country', self.circuit.countries, parent=self)
             self.object_select_window.setModal(True)
             self.object_select_window.exec_()
 
@@ -5021,9 +5060,12 @@ class MainGUI(QMainWindow):
                     tower = self.circuit.overhead_line_types[idx]
 
                     # launch editor
-                    self.tower_builder_window = TowerBuilderGUI(tower=tower, wires_catalogue=self.circuit.wire_types)
+                    self.tower_builder_window = TowerBuilderGUI(parent=self,
+                                                                tower=tower,
+                                                                wires_catalogue=self.circuit.wire_types)
                     self.tower_builder_window.resize(int(1.81 * 700.0), 700)
                     self.tower_builder_window.exec()
+                    gc.collect()
 
                     something_happened = True
 
@@ -6019,12 +6061,14 @@ class MainGUI(QMainWindow):
                         self.post_file_sync_items_processed()
                     else:
                         # there are newer changes but we do not want to automatically accept them
-                        self.file_sync_window = SyncDialogueWindow(self.file_sync_thread)  # will pause the thread
+                        self.file_sync_window = SyncDialogueWindow(parent=self,
+                                                                   file_sync_thread=self.file_sync_thread)  # will pause the thread
                         self.file_sync_window.setModal(True)
                         self.file_sync_window.show()
                 else:
                     # we want to check all the conflicts
-                    self.file_sync_window = SyncDialogueWindow(self.file_sync_thread)  # will pause the thread
+                    self.file_sync_window = SyncDialogueWindow(parent=self,
+                                                               file_sync_thread=self.file_sync_thread)  # will pause the thread
                     self.file_sync_window.setModal(True)
                     self.file_sync_window.show()
             else:

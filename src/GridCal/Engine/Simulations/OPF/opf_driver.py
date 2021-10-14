@@ -47,7 +47,8 @@ class OptimalPowerFlowOptions:
                  consider_contingencies=False,
                  skip_generation_limits=False,
                  tolerance=1.0,
-                 LODF=None):
+                 LODF=None,
+                 lodf_tolerance=0.001):
         """
         Optimal power flow options
         :param verbose:
@@ -87,6 +88,8 @@ class OptimalPowerFlowOptions:
 
         self.tolerance = tolerance
 
+        self.lodf_tolerance = lodf_tolerance
+
 
 class OptimalPowerFlow(DriverTemplate):
     name = 'Optimal power flow'
@@ -125,7 +128,13 @@ class OptimalPowerFlow(DriverTemplate):
 
         if self.options.solver == SolverType.DC_OPF:
             # DC optimal power flow
-            problem = OpfDc(numerical_circuit=numerical_circuit, solver_type=self.options.mip_solver)
+            problem = OpfDc(numerical_circuit=numerical_circuit,
+                            solver_type=self.options.mip_solver,
+                            zonal_grouping=self.options.zonal_grouping,
+                            skip_generation_limits=self.options.skip_generation_limits,
+                            consider_contingencies=self.options.consider_contingencies,
+                            LODF=self.options.LODF,
+                            lodf_tolerance=self.options.lodf_tolerance)
 
         elif self.options.solver == SolverType.AC_OPF:
             # AC optimal power flow
@@ -150,21 +159,34 @@ class OptimalPowerFlow(DriverTemplate):
         gn = problem.get_generator_power()
         gn[gn == None] = 0
 
+        hvdc_power = problem.get_hvdc_flows()
+        hvdc_loading = hvdc_power / (numerical_circuit.hvdc_data.rate[:, 0] + 1e-20)
+
         # pack the results
         self.results = OptimalPowerFlowResults(bus_names=numerical_circuit.bus_data.bus_names,
                                                branch_names=numerical_circuit.branch_data.branch_names,
                                                load_names=numerical_circuit.load_data.load_names,
                                                generator_names=numerical_circuit.generator_data.generator_names,
                                                battery_names=numerical_circuit.battery_data.battery_names,
-                                               Sbus=None,
+                                               Sbus=problem.get_power_injections(),
                                                voltage=problem.get_voltage(),
                                                load_shedding=ld,
+                                               hvdc_names=numerical_circuit.hvdc_names,
+                                               hvdc_power=hvdc_power,
+                                               hvdc_loading=hvdc_loading,
+                                               hvdc_overloads=problem.get_hvdc_slacks(),
+                                               phase_shift=problem.get_phase_shifts(),
                                                generator_shedding=np.zeros_like(gn),
                                                battery_power=bt,
                                                controlled_generation_power=gn,
                                                Sf=Sbr,
                                                overloads=problem.get_overloads(),
                                                loading=problem.get_loading(),
+                                               contingency_flows_list=problem.get_contingency_flows_list(),
+                                               contingency_indices_list=problem.contingency_indices_list,
+                                               contingency_flows_slacks_list=problem.get_contingency_flows_slacks_list(),
+                                               rates=numerical_circuit.branch_data.branch_rates[:, 0],
+                                               contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0],
                                                converged=bool(problem.converged()),
                                                bus_types=numerical_circuit.bus_types)
 

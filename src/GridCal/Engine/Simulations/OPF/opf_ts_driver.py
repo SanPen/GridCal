@@ -59,14 +59,18 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                                          load_names=self.numerical_circuit.load_names,
                                                          generator_names=self.numerical_circuit.generator_names,
                                                          battery_names=self.numerical_circuit.battery_names,
-                                                         n=self.grid.get_bus_number(),
-                                                         m=self.grid.get_branch_number(),
-                                                         nt=len(self.grid.time_profile),
-                                                         ngen=len(self.grid.get_generators()),
-                                                         nbat=len(self.grid.get_batteries()),
-                                                         nload=len(self.grid.get_loads()),
+                                                         hvdc_names=self.numerical_circuit.hvdc_names,
+                                                         n=self.numerical_circuit.nbus,
+                                                         m=self.numerical_circuit.nbr,
+                                                         nt=self.numerical_circuit.ntime,
+                                                         ngen=self.numerical_circuit.ngen,
+                                                         nbat=self.numerical_circuit.nbatt,
+                                                         nload=self.numerical_circuit.nload,
+                                                         nhvdc=self.numerical_circuit.nhvdc,
                                                          time=self.grid.time_profile,
                                                          bus_types=self.numerical_circuit.bus_types)
+        self.results.rates = self.numerical_circuit.branch_data.branch_rates
+        self.results.contingency_rates = self.numerical_circuit.branch_data.branch_contingency_rates
 
         self.all_solved = True
 
@@ -80,14 +84,18 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                                          load_names=self.numerical_circuit.load_names,
                                                          generator_names=self.numerical_circuit.generator_names,
                                                          battery_names=self.numerical_circuit.battery_names,
-                                                         n=self.grid.get_bus_number(),
-                                                         m=self.grid.get_branch_number(),
-                                                         nt=len(self.grid.time_profile),
-                                                         ngen=len(self.grid.get_generators()),
-                                                         nbat=len(self.grid.get_batteries()),
-                                                         nload=len(self.grid.get_loads()),
+                                                         hvdc_names=self.numerical_circuit.hvdc_names,
+                                                         n=self.numerical_circuit.nbus,
+                                                         m=self.numerical_circuit.nbr,
+                                                         nt=self.numerical_circuit.ntime,
+                                                         ngen=self.numerical_circuit.ngen,
+                                                         nbat=self.numerical_circuit.nbatt,
+                                                         nload=self.numerical_circuit.nload,
+                                                         nhvdc=self.numerical_circuit.nhvdc,
                                                          time=self.grid.time_profile,
                                                          bus_types=self.numerical_circuit.bus_types)
+        self.results.rates = self.numerical_circuit.branch_data.branch_rates
+        self.results.contingency_rates = self.numerical_circuit.branch_data.branch_contingency_rates
 
     def get_steps(self):
         """
@@ -120,7 +128,8 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                       zonal_grouping=self.options.zonal_grouping,
                                       skip_generation_limits=self.options.skip_generation_limits,
                                       consider_contingencies=self.options.consider_contingencies,
-                                      LODF=self.options.LODF)
+                                      LODF=self.options.LODF,
+                                      lodf_tolerance=self.options.lodf_tolerance)
 
         elif self.options.solver == SolverType.AC_OPF:
 
@@ -147,7 +156,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
         if not remote:
             self.progress_signal.emit(0.0)
-            self.progress_text.emit('Running all in an external solver_type, this may take a while...')
+            self.progress_text.emit('Running all in an external solver, this may take a while...')
 
         # solve the problem
         status = problem.solve()
@@ -164,6 +173,16 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
         self.results.overloads[a:b, :] = problem.get_overloads()
         self.results.loading[a:b, :] = problem.get_loading()
         self.results.shadow_prices[a:b, :] = problem.get_shadow_prices()
+
+        self.results.Sbus[a:b, :] = problem.get_power_injections()
+        self.results.hvdc_Pf[a:b, :] = problem.get_hvdc_flows()
+        self.results.hvdc_overloads[a:b, :] = problem.get_hvdc_slacks()
+        self.results.hvdc_loading[a:b, :] = self.results.hvdc_Pf[a:b, :] / self.numerical_circuit.hvdc_data.rate[:, a:b].transpose()
+        self.results.phase_shift[a:b, :] = problem.get_phase_shifts()
+
+        self.results.contingency_flows_list += problem.get_contingency_flows_list().tolist()
+        self.results.contingency_indices_list += problem.contingency_indices_list
+        self.results.contingency_flows_slacks_list += problem.get_contingency_flows_slacks_list().tolist()
 
         return self.results
 

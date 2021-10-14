@@ -35,6 +35,8 @@ class HvdcData:
 
         self.control_mode = np.zeros(nhvdc, dtype=object)
 
+        self.dispatchable = np.zeros(nhvdc, dtype=int)
+
         self.active = np.zeros((nhvdc, ntime), dtype=bool)
         self.rate = np.zeros((nhvdc, ntime))
 
@@ -69,6 +71,7 @@ class HvdcData:
 
         data.names = self.names[elm_idx]
         data.active = self.active[elm_idx]
+        data.dispatchable = self.dispatchable[elm_idx]
 
         data.rate = self.rate[tidx]
         data.Pf = self.Pf[tidx]

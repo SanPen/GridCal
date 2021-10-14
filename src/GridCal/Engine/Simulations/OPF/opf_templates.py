@@ -18,34 +18,52 @@ from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.ThirdParty.pulp import *
 from ortools.linear_solver import pywraplp
+from GridCal.Engine.basic_structures import Logger
 
 
 class Opf:
 
-    def __init__(self, numerical_circuit: SnapshotOpfData, solver_type: MIPSolvers = MIPSolvers.CBC):
+    def __init__(self, numerical_circuit: SnapshotOpfData, solver_type: MIPSolvers = MIPSolvers.CBC, ortools=False):
         """
         Optimal power flow template class
         :param numerical_circuit: NumericalCircuit instance
         """
         self.numerical_circuit = numerical_circuit
 
+        self.logger = Logger()
+
         self.theta = None
         self.Pg = None
         self.Pb = None
         self.Pl = None
+
+        self.Pinj = None
+        self.hvdc_flow = None
+        self.hvdc_slacks = None
+
+        self.phase_shift = None
+
         self.E = None
         self.s_from = None
+
         self.s_to = None
         self.overloads = None
         self.rating = None
         self.load_shedding = None
         self.nodal_restrictions = None
 
+        self.contingency_flows_list = list()
+        self.contingency_indices_list = list()  # [(m, c), ...]
+        self.contingency_flows_slacks_list = list()
+
         self.solver_type = solver_type
 
         self.status = 100000  # a number that is not likely to be an enumeration value so converged returns false
 
-        self.solver = pywraplp.Solver.CreateSolver(self.solver_type.value)
+        if ortools:
+            self.solver = pywraplp.Solver.CreateSolver(self.solver_type.value)
+        else:
+            self.solver = solver_type
 
         if self.solver is not None:
 
@@ -99,10 +117,22 @@ class Opf:
         """
         val = np.zeros(arr.shape)
         for i in range(val.shape[0]):
-            val[i] = arr[i].value()
+            if isinstance(arr[i], int) or isinstance(arr[i], float):
+                val[i] = arr[i]
+            else:
+                val[i] = arr[i].value()
         if make_abs:
             val = np.abs(val)
 
+        return val
+
+    def extract_list(self, lst):
+        val = np.zeros(len(lst))
+        for i in range(val.shape[0]):
+            if isinstance(lst[i], int) or isinstance(lst[i], float):
+                val[i] = lst[i]
+            else:
+                val[i] = lst[i].value()
         return val
 
     def get_voltage(self):
@@ -119,6 +149,34 @@ class Opf:
         :return: 2D array
         """
         return self.extract(self.overloads)
+
+    def get_power_injections(self):
+        """
+        return the branch overloads (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.Pinj) * self.numerical_circuit.Sbase
+
+    def get_phase_shifts(self):
+        """
+        return the branch phase_shifts (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.phase_shift)
+
+    def get_hvdc_flows(self):
+        """
+        return the branch overloads (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.hvdc_flow) * self.numerical_circuit.Sbase
+
+    def get_hvdc_slacks(self):
+        """
+        return the branch overloads (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.hvdc_slacks)
 
     def get_loading(self):
         """
@@ -162,6 +220,20 @@ class Opf:
         """
         return self.extract(self.Pl) * self.numerical_circuit.Sbase
 
+    def get_contingency_flows_list(self):
+        """
+        return the load shedding (time, device)
+        :return: 2D array
+        """
+        return self.extract_list(self.contingency_flows_list) * self.numerical_circuit.Sbase
+
+    def get_contingency_flows_slacks_list(self):
+        """
+        return the load shedding (time, device)
+        :return: 2D array
+        """
+        return self.extract_list(self.contingency_flows_slacks_list) * self.numerical_circuit.Sbase
+
     def get_shadow_prices(self):
         """
         Extract values fro the 2D array of LP variables
@@ -188,6 +260,8 @@ class OpfTimeSeries:
         :param start_idx:
         :param end_idx:
         """
+        self.logger = Logger()
+
         self.numerical_circuit = numerical_circuit
         self.start_idx = start_idx
         self.end_idx = end_idx
@@ -197,6 +271,12 @@ class OpfTimeSeries:
         self.Pg = None
         self.Pb = None
         self.Pl = None
+
+        self.Pinj = None
+        self.hvdc_flow = None
+        self.hvdc_slacks = None
+        self.phase_shift = None
+
         self.E = None
         self.s_from = None
         self.s_to = None
@@ -204,6 +284,10 @@ class OpfTimeSeries:
         self.rating = None
         self.load_shedding = None
         self.nodal_restrictions = None
+
+        self.contingency_flows_list = list()
+        self.contingency_indices_list = list()  # [(t, m, c), ...]
+        self.contingency_flows_slacks_list = list()
 
         if not skip_formulation:
             self.problem = self.formulate()
@@ -265,6 +349,15 @@ class OpfTimeSeries:
 
         return val
 
+    def extract_list(self, lst):
+        val = np.zeros(len(lst))
+        for i in range(val.shape[0]):
+            if isinstance(lst[i], int) or isinstance(lst[i], float):
+                val[i] = lst[i]
+            else:
+                val[i] = lst[i].value()
+        return val
+
     def get_voltage(self):
         """
         return the complex voltages (time, device)
@@ -286,6 +379,34 @@ class OpfTimeSeries:
         :return: 2D array
         """
         return self.extract2D(self.s_from, make_abs=False) / self.rating
+
+    def get_power_injections(self):
+        """
+        return the branch overloads (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.Pinj) * self.numerical_circuit.Sbase
+
+    def get_phase_shifts(self):
+        """
+        return the branch phase_shifts (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.phase_shift)
+
+    def get_hvdc_flows(self):
+        """
+        return the branch overloads (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.hvdc_flow) * self.numerical_circuit.Sbase
+
+    def get_hvdc_slacks(self):
+        """
+        return the branch overloads (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.hvdc_slacks) * self.numerical_circuit.Sbase
 
     def get_branch_power(self):
         """
@@ -328,6 +449,20 @@ class OpfTimeSeries:
         :return: 2D array
         """
         return self.extract2D(self.Pl) * self.numerical_circuit.Sbase
+
+    def get_contingency_flows_list(self):
+        """
+        return the load shedding (time, device)
+        :return: 2D array
+        """
+        return self.extract_list(self.contingency_flows_list) * self.numerical_circuit.Sbase
+
+    def get_contingency_flows_slacks_list(self):
+        """
+        return the load shedding (time, device)
+        :return: 2D array
+        """
+        return self.extract_list(self.contingency_flows_slacks_list) * self.numerical_circuit.Sbase
 
     def get_shadow_prices(self):
         """
