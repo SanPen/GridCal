@@ -21,9 +21,14 @@ from enum import Enum
 from typing import List, Dict, Tuple
 import numpy as np
 from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
-from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers, pywraplp
+from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
 from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType, GenerationNtcFormulation
 from GridCal.Engine.basic_structures import Logger
+
+try:
+    from ortools.linear_solver import pywraplp
+except ModuleNotFoundError:
+    print('ORTOOLS not found :(')
 
 import pandas as pd
 from scipy.sparse.csc import csc_matrix

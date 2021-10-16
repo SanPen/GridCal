@@ -19,15 +19,15 @@ import numpy as np
 import chardet
 import pandas as pd
 import zipfile
-from typing import List, Dict
+from typing import List, Dict, Any
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.IO.generic_io_functions import parse_config_df
-from GridCal.Gui.Session.session import SimulationSession
+# from GridCal.Gui.Session.session import SimulationSession
 
 
 def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip",
                             text_func=None, progress_func=None,
-                            sessions: List[SimulationSession] = []):
+                            sessions: List[Any] = []):
     """
     Save a list of DataFrames to a zip file without saving to disk the csv files
     :param dfs: dictionary of pandas dataFrames {name: DataFrame}

@@ -17,9 +17,12 @@ from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
 from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.ThirdParty.pulp import *
-from ortools.linear_solver import pywraplp
 from GridCal.Engine.basic_structures import Logger
 
+try:
+    from ortools.linear_solver import pywraplp
+except ModuleNotFoundError:
+    print('ORTOOLS not found :(')
 
 class Opf:
 
