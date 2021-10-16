@@ -24,6 +24,7 @@ try:
 except ModuleNotFoundError:
     print('ORTOOLS not found :(')
 
+
 class Opf:
 
     def __init__(self, numerical_circuit: SnapshotOpfData, solver_type: MIPSolvers = MIPSolvers.CBC, ortools=False):
