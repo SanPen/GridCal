@@ -39,7 +39,6 @@ from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 # GUI imports
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
-from GridCal.Gui.ConsoleWidget import ConsoleWidget
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GIS.gis_dialogue import GISWindow
 from GridCal.Gui.GeneralDialogues import *
@@ -56,6 +55,13 @@ from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.Session.session import SimulationSession
 from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
 from GridCal.__version__ import __GridCal_VERSION__
+
+try:
+    from GridCal.Gui.ConsoleWidget import ConsoleWidget
+    qt_console_available = True
+except ModuleNotFoundError:
+    print('No qtconsole available')
+    qt_console_available = False
 
 __author__ = 'Santiago Peñate Vera'
 
@@ -676,29 +682,30 @@ class MainGUI(QMainWindow):
         """
         Create console
         """
-        if self.console is not None:
-            self.ui.main_console_tab.layout().removeWidget(self.console)
+        if qt_console_available:
+            if self.console is not None:
+                self.ui.main_console_tab.layout().removeWidget(self.console)
 
-        self.console = ConsoleWidget(customBanner="GridCal console.\n\n"
-                                                  "type hlp() to see the available specific commands.\n\n"
-                                                  "the following libraries are already loaded:\n"
-                                                  "np: numpy\n"
-                                                  "pd: pandas\n"
-                                                  "plt: matplotlib\n"
-                                                  "app: This instance of GridCal\n"
-                                                  "circuit: The current grid\n\n")
+            self.console = ConsoleWidget(customBanner="GridCal console.\n\n"
+                                                      "type hlp() to see the available specific commands.\n\n"
+                                                      "the following libraries are already loaded:\n"
+                                                      "np: numpy\n"
+                                                      "pd: pandas\n"
+                                                      "plt: matplotlib\n"
+                                                      "app: This instance of GridCal\n"
+                                                      "circuit: The current grid\n\n")
 
-        # add the console widget to the user interface
-        self.ui.main_console_tab.layout().addWidget(self.console)
+            # add the console widget to the user interface
+            self.ui.main_console_tab.layout().addWidget(self.console)
 
-        # push some variables to the console
-        self.console.push_vars({"hlp": self.print_console_help,
-                                "np": np,
-                                "pd": pd,
-                                "plt": plt,
-                                "clc": self.clc,
-                                'app': self,
-                                'circuit': self.circuit})
+            # push some variables to the console
+            self.console.push_vars({"hlp": self.print_console_help,
+                                    "np": np,
+                                    "pd": pd,
+                                    "plt": plt,
+                                    "clc": self.clc,
+                                    'app': self,
+                                    'circuit': self.circuit})
 
     def clear_stuff_running(self):
         """

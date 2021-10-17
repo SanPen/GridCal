@@ -17,11 +17,11 @@ import sys
 import os
 from typing import List, Dict, Tuple
 from uuid import getnode as get_mac, uuid4
-from datetime import timedelta
+from datetime import timedelta, datetime
 import networkx as nx
 from scipy.sparse import csc_matrix, lil_matrix
 from GridCal.Engine.basic_structures import Logger
-from GridCal.Gui.GeneralDialogues import *
+# from GridCal.Gui.GeneralDialogues import *
 from GridCal.Engine.Devices import *
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 from GridCal.Engine.Devices.editable_device import DeviceType
