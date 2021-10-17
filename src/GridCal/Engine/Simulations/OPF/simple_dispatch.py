@@ -92,6 +92,12 @@ class OpfSimple(Opf):
         self.Pb = Pb
         self.Pl = Pl
         self.E = E
+
+        self.Pinj = self.numerical_circuit.Sbus.transpose().real
+        self.hvdc_flow = np.zeros(self.numerical_circuit.nhvdc)
+        self.hvdc_slacks = np.zeros(self.numerical_circuit.nhvdc)
+        self.phase_shift = np.zeros(m)
+
         self.load_shedding = np.zeros(nl)
         self.s_from = np.zeros(m)
         self.s_to = np.zeros(m)

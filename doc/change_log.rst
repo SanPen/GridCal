@@ -11,6 +11,12 @@ this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
 
+Version 4.2.5
+^^^^^^^^^^^^^^^
+
+- Fixed simple OPF dispatch
+
+
 Version 4.2.4
 ^^^^^^^^^^^^^^^
 

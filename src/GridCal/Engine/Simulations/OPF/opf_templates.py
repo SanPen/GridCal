@@ -406,7 +406,7 @@ class OpfTimeSeries:
         return the branch overloads (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.hvdc_slacks)* self.numerical_circuit.Sbase
+        return self.extract2D(self.hvdc_slacks) * self.numerical_circuit.Sbase
 
     def get_branch_power(self):
         """
