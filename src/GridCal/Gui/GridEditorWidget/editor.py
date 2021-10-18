@@ -16,9 +16,11 @@ import sys
 import os
 import numpy as np
 import pandas as pd
-
+from typing import List
 import networkx as nx
 from warnings import warn
+
+
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 from PySide2.QtGui import *
@@ -1332,7 +1334,7 @@ class GridEditor(QSplitter):
                                        prog_func=prog_func,
                                        text_func=text_func)
 
-    def align_schematic(self):
+    def align_schematic(self, buses: List[Bus] = []):
         """
         Align the scene view to the content
         """
@@ -1342,8 +1344,13 @@ class GridEditor(QSplitter):
         max_x = -sys.maxsize
         max_y = -sys.maxsize
 
+        if len(buses):
+            lst = buses
+        else:
+            lst = self.circuit.buses
+
         # Align lines
-        for bus in self.circuit.buses:
+        for bus in lst:
             bus.graphic_obj.arrange_children()
             # get the item position
             x = bus.graphic_obj.pos().x()

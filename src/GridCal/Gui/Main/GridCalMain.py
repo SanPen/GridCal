@@ -1025,7 +1025,15 @@ class MainGUI(QMainWindow):
         Center the nodes in the screen
         """
         if self.grid_editor is not None:
-            self.grid_editor.align_schematic()
+
+            selected = self.get_selected_buses()
+
+            if len(selected) == 0:
+                buses = self.circuit.buses
+            else:
+                buses = [b for i, b in selected]
+
+            self.grid_editor.align_schematic(buses=buses)
 
     def new_project_now(self):
         """
