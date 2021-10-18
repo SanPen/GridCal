@@ -17,6 +17,7 @@ import gc
 import os.path
 import platform
 import time
+import webbrowser
 from collections import OrderedDict
 from typing import List, Tuple
 
@@ -62,6 +63,13 @@ try:
 except ModuleNotFoundError:
     print('No qtconsole available')
     qt_console_available = False
+
+try:
+    from PySide2.QtWebEngineWidgets import QWebEngineView as QWebView, QWebEnginePage as QWebPage
+    qt_web_engine_available = True
+except ModuleNotFoundError:
+    qt_web_engine_available = False
+
 
 __author__ = 'Santiago Peñate Vera'
 
@@ -837,7 +845,6 @@ class MainGUI(QMainWindow):
         """
         Open the online documentation in a web browser
         """
-        import webbrowser
         webbrowser.open('https://gridcal.readthedocs.io/en/latest/', new=2)
 
     @staticmethod
@@ -845,7 +852,6 @@ class MainGUI(QMainWindow):
         """
         Open the gplv3 in a web browser
         """
-        import webbrowser
         webbrowser.open('https://www.gnu.org/licenses/gpl-3.0.en.html', new=2)
 
     @staticmethod
@@ -4705,11 +4711,17 @@ class MainGUI(QMainWindow):
                 raise Exception('Not implemented :(')
 
             if html:
-                self.files_to_delete_at_exit.append(file_name)
-                dialogue = GISWindow(external_file_path=file_name)
-                dialogue.resize(int(1.61 * 600.0), 600)
-                self.gis_dialogues.append(dialogue)
-                dialogue.show()
+
+                if qt_web_engine_available:
+
+                    self.files_to_delete_at_exit.append(file_name)
+                    dialogue = GISWindow(external_file_path=file_name)
+                    dialogue.resize(int(1.61 * 600.0), 600)
+                    self.gis_dialogues.append(dialogue)
+                    dialogue.show()
+                else:
+                    # open in the web browser
+                    webbrowser.open('file://' + file_name)
 
     def colour_next_simulation_step(self):
         """

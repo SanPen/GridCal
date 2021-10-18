@@ -3,6 +3,7 @@ import os
 from PySide2.QtWidgets import *
 import folium
 from shutil import copyfile
+import webbrowser
 
 try:
     from PySide2.QtWebEngineWidgets import QWebEngineView as QWebView, QWebEnginePage as QWebPage
@@ -40,6 +41,8 @@ class GISWindow(QMainWindow):
             self.ui.webFrame.setContentsMargins(0, 0, 0, 0)
             self.web_layout.setContentsMargins(0, 0, 0, 0)
             self.webView.setUrl(QtCore.QUrl.fromLocalFile(self.file_path))
+        else:
+            webbrowser.open('file://' + self.file_path)
 
         # # action linking
         self.ui.actionSave_map.triggered.connect(self.save)

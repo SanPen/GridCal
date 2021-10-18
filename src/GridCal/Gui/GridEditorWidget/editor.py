@@ -71,7 +71,7 @@ class EditorGraphicsView(QGraphicsView):
         @param editor:
         """
         QGraphicsView.__init__(self, scene, parent)
-
+        self._zoom = 0
         self.setDragMode(QGraphicsView.RubberBandDrag)
         self.setRubberBandSelectionMode(Qt.IntersectsItemShape)
         self.setMouseTracking(True)
