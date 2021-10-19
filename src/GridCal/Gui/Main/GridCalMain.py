@@ -6385,8 +6385,7 @@ class MainGUI(QMainWindow):
         return calculation_inputs
 
 
-
-def run(use_native_dialogues=True):
+def run(use_native_dialogues=False):
     """
     Main function to run the GUI
     :return:

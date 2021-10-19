@@ -402,20 +402,37 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
             y = list()
             labels = list()
-            for i in range(len(self.contingency_flows_list)):
-                if self.contingency_flows_list[i] != 0.0:
-                    m, c = self.contingency_indices_list[i]
-                    y.append((m, c,
-                              self.branch_names[m], self.branch_names[c],
-                              self.contingency_flows_list[i], self.Sf[m],
-                              self.contingency_flows_list[i] / self.contingency_rates[c] * 100,
-                              self.Sf[m] / self.rates[m] * 100))
-                    labels.append(i)
+            # for k in range(len(self.contingency_flows_list)):
+            #     if self.contingency_flows_list[k] != 0.0:
+            #         m, c = self.contingency_indices_list[k]
+            #         y.append((m, c,
+            #                   self.branch_names[m],
+            #                   self.branch_names[c],
+            #                   self.contingency_flows_list[k],
+            #                   self.Sf[m],
+            #                   self.contingency_flows_list[k] / self.contingency_rates[c] * 100,
+            #                   self.Sf[m] / self.rates[m] * 100))
+            #         labels.append(k)
 
-            columns = ['Monitored idx ', 'Contingency idx',
-                       'Monitored', 'Contingency',
-                       'ContingencyFlow (MW)', 'Base flow (MW)',
-                       'ContingencyFlow (%)', 'Base flow (%)']
+            for (m, c), contingency_flow in zip(self.contingency_indices_list, self.contingency_flows_list):
+                if contingency_flow != 0.0:
+                    y.append((m, c,
+                              self.branch_names[m],
+                              self.branch_names[c],
+                              contingency_flow,
+                              self.Sf[m],
+                              contingency_flow / self.contingency_rates[c] * 100,
+                              self.Sf[m] / self.rates[m] * 100))
+                    labels.append(len(y))
+
+            columns = ['Monitored idx',
+                       'Contingency idx',
+                       'Monitored',
+                       'Contingency',
+                       'ContingencyFlow (MW)',
+                       'Base flow (MW)',
+                       'ContingencyFlow (%)',
+                       'Base flow (%)']
             y = np.array(y, dtype=object)
             y_label = ''
             title = result_type.value[0]

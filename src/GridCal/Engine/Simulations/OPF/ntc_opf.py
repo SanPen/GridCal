@@ -616,9 +616,9 @@ class OpfNTC(Opf):
 
         return flow_f, overload1, overload2, tau, monitor
 
-    def formulate_contingency(self, flow_f, alpha_abs, monitor):
+    def formulate_contingency(self, flow_f, monitor):
         """
-
+        Formulate the N-1 contingencies
         :param flow_f:
         :param monitor:
         :return:
@@ -628,6 +628,7 @@ class OpfNTC(Opf):
 
         # get the indices of the branches marked for contingency
         con_br_idx = self.numerical_circuit.branch_data.get_contingency_enabled_indices()
+        mon_br_idx = np.where(monitor == True)[0]
 
         # formulate contingency flows
         # this is done in a separated loop because all te flow variables must exist beforehand
@@ -635,32 +636,30 @@ class OpfNTC(Opf):
         overloads1 = list()
         overloads2 = list()
         con_idx = list()
-        for m in range(nc.nbr):  # for every branch
+        for m in mon_br_idx:  # for every monitored branch
+            _f = nc.branch_data.F[m]
+            _t = nc.branch_data.T[m]
 
-            if monitor[m]:  # the monitor variable is pre-computed in the previous loop
-                _f = nc.branch_data.F[m]
-                _t = nc.branch_data.T[m]
+            for c in con_br_idx:  # for every contingency
 
-                for ic, c in enumerate(con_br_idx):  # for every contingency
+                if m != c and self.LODF[m, c] > self.branch_sensitivity_threshold:
 
-                    if m != c and alpha_abs[c] > self.branch_sensitivity_threshold:
+                    # compute the N-1 flow
+                    flow_n1 = flow_f[m] + self.LODF[m, c] * flow_f[c]
 
-                        # compute the N-1 flow
-                        flow_n1 = flow_f[m] + self.LODF[m, c] * flow_f[c]
+                    # rating restriction in the sense from-to
+                    overload1 = self.solver.NumVar(0, self.inf, 'n-1_overload1_' + str(m) + ',' + str(c))
+                    self.solver.Add(flow_n1 <= (rates[m] + overload1), "n-1_ft_rating_" + str(m) + ',' + str(c))
 
-                        # rating restriction in the sense from-to
-                        overload1 = self.solver.NumVar(0, self.inf, 'n-1_overload1_' + str(m) + ',' + str(c))
-                        self.solver.Add(flow_n1 <= (rates[m] + overload1), "n-1_ft_rating_" + str(m) + ',' + str(c))
+                    # rating restriction in the sense to-from
+                    overload2 = self.solver.NumVar(0, self.inf, 'n-1_overload2_' + str(m) + ',' + str(c))
+                    self.solver.Add((-rates[m] - overload2) <= flow_n1, "n-1_tf_rating_" + str(m) + ',' + str(c))
 
-                        # rating restriction in the sense to-from
-                        overload2 = self.solver.NumVar(0, self.inf, 'n-1_overload2_' + str(m) + ',' + str(c))
-                        self.solver.Add((-rates[m] - overload2) <= flow_n1, "n-1_tf_rating_" + str(m) + ',' + str(c))
-
-                        # store vars
-                        con_idx.append((m, c))
-                        flow_n1f.append(flow_n1)
-                        overloads1.append(overload1)
-                        overloads2.append(overload2)
+                    # store vars
+                    con_idx.append((m, c))
+                    flow_n1f.append(flow_n1)
+                    overloads1.append(overload1)
+                    overloads2.append(overload2)
 
         return flow_n1f, overloads1, overloads2, con_idx
 
@@ -924,7 +923,6 @@ class OpfNTC(Opf):
         # formulate the contingencies
         if self.consider_contingencies:
             n1flow_f, n1overload1, n1overload2, con_br_idx = self.formulate_contingency(flow_f=flow_f,
-                                                                                        alpha_abs=alpha_abs,
                                                                                         monitor=monitor)
         else:
             n1overload1 = list()
