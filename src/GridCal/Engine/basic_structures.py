@@ -18,7 +18,7 @@ import pandas as pd
 import numpy as np
 import datetime
 
-# from GridCal.Gui.plot_config import LINEWIDTH, plt
+from GridCal.Gui.plot_config import LINEWIDTH, plt
 
 
 class BusMode(Enum):
@@ -493,6 +493,7 @@ class StatisticalCharacterization:
 
 
 class MIPSolvers(Enum):
+    GLOP = "GLOP"
     CBC = 'CBC'
     SCIP = 'SCIP'
     CPLEX = 'CPLEX'
