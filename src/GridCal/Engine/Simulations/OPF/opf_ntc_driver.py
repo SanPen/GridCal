@@ -415,7 +415,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                               self.Sf[m] / self.rates[m] * 100))
                     labels.append(len(y))
             y = np.array(y)
-            idx = np.argsort(y[:, 8])  # sort by ContingencyFlow (%)
+            idx = np.flip(np.argsort(np.abs(y[:, 8].astype(float))))  # sort by ContingencyFlow (%)
             y = y[idx, :]
             columns = ['Monitored idx',
                        'Contingency idx',

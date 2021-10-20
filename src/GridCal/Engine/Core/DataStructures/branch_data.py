@@ -164,10 +164,18 @@ class BranchData:
         return tp.get_elements_of_the_island(self.C_branch_bus_f + self.C_branch_bus_t, bus_idx)
 
     def get_ac_indices(self):
+        """
+
+        :return:
+        """
         return np.where(self.branch_dc == 0)[0]
 
     def get_dc_indices(self):
-        return np.where(self.branch_dc == 1)[0]
+        """
+
+        :return:
+        """
+        return np.where(self.branch_dc != 0)[0]
 
     def get_linear_series_admittance(self, t=0):
         """
@@ -190,15 +198,19 @@ class BranchData:
 
         return b
 
+    def get_monitor_enabled_indices(self):
+        """
+
+        :return:
+        """
+        return np.where(self.monitor_loading == 1)[0]
+
     def get_contingency_enabled_indices(self):
+        """
 
+        :return:
+        """
         return np.where(self.contingency_enabled == 1)[0]
-
-    def get_dc_indices(self):
-        return np.where(self.branch_dc != 0)[0]
-
-    def get_ac_indices(self):
-        return np.where(self.branch_dc == 0)[0]
 
     def __len__(self):
         return self.nbr

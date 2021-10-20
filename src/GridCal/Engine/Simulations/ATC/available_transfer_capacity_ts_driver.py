@@ -314,7 +314,8 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         nt = len(nc.time_array)
 
         # get the branch indices to analyze
-        br_idx = linear_analysis.numerical_circuit.branch_data.get_contingency_enabled_indices()
+        br_idx = nc.branch_data.get_monitor_enabled_indices()
+        con_br_idx = nc.branch_data.get_contingency_enabled_indices()
 
         # declare the results
         self.results = AvailableTransferCapacityTimeSeriesResults(br_idx=br_idx,
@@ -369,7 +370,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             beta_mat, beta_used, atc_n, atc_mc, atc_final, \
             atc_limiting_contingency_branch, \
             atc_limiting_contingency_flow = compute_atc(br_idx=br_idx,
-                                                        ptdf=linear_analysis.PTDF,
+                                                        contingency_br_idx=con_br_idx,
                                                         lodf=linear_analysis.LODF,
                                                         alpha=alpha,
                                                         flows=flows[t, :],
