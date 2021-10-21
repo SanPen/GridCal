@@ -264,6 +264,7 @@ class OpfNTC(Opf):
 
         # results
         self.all_slacks = None
+        self.all_slacks_sum = None
         self.Pg_delta = None
         self.area_balance_slack = None
         self.generation_delta_slacks = None
@@ -616,10 +617,11 @@ class OpfNTC(Opf):
 
         return flow_f, overload1, overload2, tau, monitor
 
-    def formulate_contingency(self, flow_f, monitor):
+    def formulate_contingency(self, flow_f, alpha_abs, monitor):
         """
-        Formulate the N-1 contingencies
+
         :param flow_f:
+        :param alpha_abs:
         :param monitor:
         :return:
         """
@@ -643,7 +645,6 @@ class OpfNTC(Opf):
             for c in con_br_idx:  # for every contingency
 
                 if m != c and self.LODF[m, c] > self.branch_sensitivity_threshold:
-
                     # compute the N-1 flow
                     flow_n1 = flow_f[m] + self.LODF[m, c] * flow_f[c]
 
@@ -805,9 +806,16 @@ class OpfNTC(Opf):
         # objective function
         self.solver.Minimize(f)
 
-        all_slacks = node_balance_slacks + branch_overload + hvdc_overload + hvdc_control + delta_slacks + contingency_branch_overload
+        all_slacks_sum = node_balance_slacks + branch_overload + hvdc_overload + hvdc_control + delta_slacks + contingency_branch_overload
 
-        return all_slacks
+        slacks = [node_balance_slack_1, node_balance_slack_2,
+                  overload1, overload2,
+                  n1overload1, n1overload2,
+                  hvdc_overload1, hvdc_overload2,
+                  hvdc_control1, hvdc_control2,
+                  delta_slack_1, delta_slack_2]
+
+        return all_slacks_sum, slacks
 
     def formulate(self):
         """
@@ -923,6 +931,7 @@ class OpfNTC(Opf):
         # formulate the contingencies
         if self.consider_contingencies:
             n1flow_f, n1overload1, n1overload2, con_br_idx = self.formulate_contingency(flow_f=flow_f,
+                                                                                        alpha_abs=alpha_abs,
                                                                                         monitor=monitor)
         else:
             n1overload1 = list()
@@ -940,7 +949,7 @@ class OpfNTC(Opf):
         node_balance_slack_2 = self.formulate_node_balance(angles=theta, Pinj=Pinj)
 
         # formulate the objective
-        self.all_slacks = self.formulate_objective(node_balance_slack_1=node_balance_slack_1,
+        self.all_slacks_sum, self.all_slacks = self.formulate_objective(node_balance_slack_1=node_balance_slack_1,
                                                    node_balance_slack_2=node_balance_slack_2,
                                                    inter_area_branches=inter_area_branches,
                                                    flows_f=flow_f,
@@ -1018,11 +1027,29 @@ class OpfNTC(Opf):
 
         # self.save_lp()
 
+        self.log_slacks()
+
         return self.converged()
+
+    def log_slacks(self):
+        """
+        Record in the logger all the slacks that are not zero
+        :return:
+        """
+        if self.all_slacks is not None:
+            for var_array in self.all_slacks:
+                for var in var_array:
+                    if isinstance(var, float) or isinstance(var, int):
+                        val = var
+                    else:
+                        val = var.solution_value()
+
+                    if abs(val) > 0:
+                        self.logger.add_error('Slack variable is over the tolerance', var.name(), val, self.tolerance)
 
     def error(self):
         if self.status == pywraplp.Solver.OPTIMAL:
-            return self.all_slacks.solution_value()
+            return self.all_slacks_sum.solution_value()
         else:
             return 99999
 

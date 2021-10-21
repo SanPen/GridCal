@@ -546,6 +546,8 @@ class OptimalNetTransferCapacity(DriverTemplate):
         if not converged:
             self.logger.add_error('Did not converge', 'NTC OPF', str(err), self.options.tolerance)
 
+            self.logger += problem.logger
+
         # pack the results
         self.results = OptimalNetTransferCapacityResults(bus_names=numerical_circuit.bus_data.bus_names,
                                                          branch_names=numerical_circuit.branch_data.branch_names,
