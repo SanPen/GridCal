@@ -1,8 +1,7 @@
 from sklearn.neighbors import KNeighborsRegressor
 import numpy as np
 
-from GridCal.Engine import PowerFlowOptions, PowerFlowDriver, FileOpen, SolverType, ReactivePowerControlMode, \
-    TapsControlMode, BranchImpedanceMode, SampledTimeSeries
+import GridCal.Engine as gce
 from GridCal.Engine.Simulations.Stochastic.lhs_driver import LatinHypercubeSampling
 
 

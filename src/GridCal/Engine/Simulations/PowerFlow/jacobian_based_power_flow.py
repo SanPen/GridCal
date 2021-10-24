@@ -24,7 +24,7 @@ import numpy as np
 
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 from GridCal.Engine.Simulations.PowerFlow.numba_functions import calc_power_csr_numba, diag
-from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import AC_jacobian
+from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import AC_jacobian, AC_jacobian2
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.basic_structures import ReactivePowerControlMode
 from GridCal.Engine.Simulations.PowerFlow.discrete_controls import control_q_inside_method
@@ -320,9 +320,20 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             # evaluate Jacobian
             # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
             J = AC_jacobian(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
+            # J = AC_jacobian2(Ybus, Scalc, V, pq, pv)
+
+            print(V.real)
+            print(V.imag)
+            print(Scalc.real)
+            print(Scalc.imag)
+            print(J.todense())
 
             # compute update step
             dx = linear_solver(J, f)
+
+            print(dx)
+
+            print("\n")
 
             # reassign the solution vector
             dVa[pvpq] = dx[:npvpq]

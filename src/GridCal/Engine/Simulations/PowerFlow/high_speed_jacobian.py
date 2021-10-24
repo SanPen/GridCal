@@ -28,12 +28,13 @@
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 # WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-from numba import jit
+import numba as nb
+from numba import jit, njit
 from numpy import conj, abs
 from numpy import complex128, float64, int32
 from numpy.core.multiarray import zeros, empty
-from scipy.sparse import csr_matrix
+import numpy as np
+from scipy.sparse import csr_matrix, csc_matrix
 import GridCal.Engine.Simulations.PowerFlow.derivatives as deriv
 
 
@@ -284,3 +285,145 @@ def AC_jacobian(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq):
     # generate scipy sparse matrix
     nj = npv + npq + npq
     return csr_matrix((Jx, Jj, Jp), shape=(nj, nj))
+
+
+
+
+@njit()
+def jacobian_numba(nbus, Gi, Gp, Gx, Bx, P, Q, E, F, pq, pvpq):
+    """
+    Compute the Tinney version of the AC jacobian without any sin, cos or abs
+    (Lynn book page 89)
+    :param G: Conductance matrix in CSC format
+    :param B: Susceptance matrix in CSC format
+    :param P: Real computed power
+    :param Q: Imaginary computed power
+    :param E: Real voltage
+    :param F: Imaginary voltage
+    :param pq: array pf pq indices
+    :param pv: array of pv indices
+    :return: CSC Jacobian matrix
+    """
+    npqpv = len(pvpq)
+    n_rows = len(pvpq) + len(pq)
+    n_cols = len(pvpq) + len(pq)
+    nnz = 0
+    p = 0
+    Jx = np.empty(len(Gx) * 4, dtype=nb.float64)  # data
+    Ji = np.empty(len(Gx) * 4, dtype=nb.int32)  # indices
+    Jp = np.empty(n_cols + 1, dtype=nb.int32)  # pointers
+    Jp[p] = 0
+
+    # generate lookup for the non immediate axis (for CSC it is the rows) -> index lookup
+    lookup_pvpq = np.zeros(nbus, dtype=nb.int32)
+    lookup_pvpq[pvpq] = np.arange(len(pvpq), dtype=nb.int32)
+
+    lookup_pq = np.zeros(nbus, dtype=nb.int32)
+    lookup_pq[pq] = np.arange(len(pq), dtype=nb.int32)
+
+    # lookup_pvpq = np.zeros(np.max(Gi) + 1, dtype=nb.int32)
+    # lookup_pvpq[pvpq] = np.arange(npvpq)
+
+    for j in pvpq:  # sliced columns
+
+        # fill in J1
+        for k in range(Gp[j], Gp[j + 1]):  # rows of A[:, j]
+
+            # row index translation to the "rows" space
+            i = Gi[k]
+            ii = lookup_pvpq[i]
+
+            if pvpq[ii] == i:  # rows
+                # entry found
+                if i != j:
+                    Jx[nnz] = F[i] * (Gx[k] * E[j] - Bx[k] * F[j]) - \
+                              E[i] * (Bx[k] * E[j] + Gx[k] * F[j])
+                else:
+                    Jx[nnz] = - Q[i] - Bx[k] * (E[i] * E[i] + F[i] * F[i])
+
+                Ji[nnz] = ii
+                nnz += 1
+
+        # fill in J3
+        for k in range(Gp[j], Gp[j + 1]):  # rows of A[:, j]
+
+            # row index translation to the "rows" space
+            i = Gi[k]
+            ii = lookup_pq[i]
+
+            if pq[ii] == i:  # rows
+                # entry found
+                if i != j:
+                    Jx[nnz] = - E[i] * (Gx[k] * E[j] - Bx[k] * F[j]) \
+                              - F[i] * (Bx[k] * E[j] + Gx[k] * F[j])
+                else:
+                    Jx[nnz] = P[i] - Gx[k] * (E[i] * E[i] + F[i] * F[i])
+
+                Ji[nnz] = ii + npqpv
+                nnz += 1
+
+        p += 1
+        Jp[p] = nnz
+
+    # J2 and J4
+    for j in pq:  # sliced columns
+
+        # fill in J2
+        for k in range(Gp[j], Gp[j + 1]):  # rows of A[:, j]
+
+            # row index translation to the "rows" space
+            i = Gi[k]
+            ii = lookup_pvpq[i]
+
+            if pvpq[ii] == i:  # rows
+                # entry found
+                if i != j:
+                    Jx[nnz] = (E[i] * (Gx[k] * E[j] - Bx[k] * F[j]) + F[i] * (Bx[k] * E[j] + Gx[k] * F[j])) / E[j]
+                else:
+                    Jx[nnz] = P[i] + Gx[k] * (E[i] * E[i] + F[i] * F[i])
+
+                Ji[nnz] = ii
+                nnz += 1
+
+        # fill in J4
+        for k in range(Gp[j], Gp[j + 1]):  # rows of A[:, j]
+
+            # row index translation to the "rows" space
+            i = Gi[k]
+            ii = lookup_pq[i]
+
+            if pq[ii] == i:  # rows
+                # entry found
+                if i != j:
+                    Jx[nnz] = (F[i] * (Gx[k] * E[j] - Bx[k] * F[j]) - E[i] * (Bx[k] * E[j] + Gx[k] * F[j])) / E[j]
+                else:
+                    Jx[nnz] = Q[i] - Bx[k] * (E[i] * E[i] + F[i] * F[i])
+
+                Ji[nnz] = ii + npqpv
+                nnz += 1
+
+        p += 1
+        Jp[p] = nnz
+
+    # last pointer entry
+    Jp[p] = nnz
+
+    # reseize
+    # Jx = np.resize(Jx, nnz)
+    # Ji = np.resize(Ji, nnz)
+
+    return Jx, Ji, Jp, n_rows, n_cols, nnz
+
+
+def AC_jacobian2(Y, S, V, pq, pv):
+
+    Jx, Ji, Jp, n_rows, n_cols, nnz = jacobian_numba(nbus=len(S),
+                                                     Gi=Y.indices, Gp=Y.indptr, Gx=Y.data.real,
+                                                     Bx=Y.data.imag, P=S.real, Q=S.imag,
+                                                     E=V.real, F=V.imag,
+                                                     pq=pq, pvpq=np.r_[pv, pq])
+
+    Jx = np.resize(Jx, nnz)
+    Ji = np.resize(Ji, nnz)
+
+    return csc_matrix((Jx, Ji, Jp), shape=(n_rows, n_cols))
