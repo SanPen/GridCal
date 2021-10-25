@@ -290,7 +290,7 @@ def AC_jacobian(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq):
 
 
 @njit()
-def jacobian_numba(nbus, Gi, Gp, Gx, Bx, P, Q, E, F, pq, pvpq):
+def jacobian_numba(nbus, Gi, Gp, Gx, Bx, P, Q, E, F, Vm, pq, pvpq):
     """
     Compute the Tinney version of the AC jacobian without any sin, cos or abs
     (Lynn book page 89)
@@ -300,6 +300,7 @@ def jacobian_numba(nbus, Gi, Gp, Gx, Bx, P, Q, E, F, pq, pvpq):
     :param Q: Imaginary computed power
     :param E: Real voltage
     :param F: Imaginary voltage
+    :param Vm: Voltage module
     :param pq: array pf pq indices
     :param pv: array of pv indices
     :return: CSC Jacobian matrix
@@ -378,9 +379,9 @@ def jacobian_numba(nbus, Gi, Gp, Gx, Bx, P, Q, E, F, pq, pvpq):
             if pvpq[ii] == i:  # rows
                 # entry found
                 if i != j:
-                    Jx[nnz] = (E[i] * (Gx[k] * E[j] - Bx[k] * F[j]) + F[i] * (Bx[k] * E[j] + Gx[k] * F[j])) / E[j]
+                    Jx[nnz] = (E[i] * (Gx[k] * E[j] - Bx[k] * F[j]) + F[i] * (Bx[k] * E[j] + Gx[k] * F[j]))  # / Vm[j]
                 else:
-                    Jx[nnz] = P[i] + Gx[k] * (E[i] * E[i] + F[i] * F[i])
+                    Jx[nnz] = (P[i] + Gx[k] * (E[i] * E[i] + F[i] * F[i]))  # / Vm[i]
 
                 Ji[nnz] = ii
                 nnz += 1
@@ -395,9 +396,9 @@ def jacobian_numba(nbus, Gi, Gp, Gx, Bx, P, Q, E, F, pq, pvpq):
             if pq[ii] == i:  # rows
                 # entry found
                 if i != j:
-                    Jx[nnz] = (F[i] * (Gx[k] * E[j] - Bx[k] * F[j]) - E[i] * (Bx[k] * E[j] + Gx[k] * F[j])) / E[j]
+                    Jx[nnz] = (F[i] * (Gx[k] * E[j] - Bx[k] * F[j]) - E[i] * (Bx[k] * E[j] + Gx[k] * F[j]))  # / Vm[j]
                 else:
-                    Jx[nnz] = Q[i] - Bx[k] * (E[i] * E[i] + F[i] * F[i])
+                    Jx[nnz] = (Q[i] - Bx[k] * (E[i] * E[i] + F[i] * F[i]))  # / Vm[i]
 
                 Ji[nnz] = ii + npqpv
                 nnz += 1
@@ -415,12 +416,12 @@ def jacobian_numba(nbus, Gi, Gp, Gx, Bx, P, Q, E, F, pq, pvpq):
     return Jx, Ji, Jp, n_rows, n_cols, nnz
 
 
-def AC_jacobian2(Y, S, V, pq, pv):
+def AC_jacobian2(Y, S, V, Vm, pq, pv):
 
     Jx, Ji, Jp, n_rows, n_cols, nnz = jacobian_numba(nbus=len(S),
                                                      Gi=Y.indices, Gp=Y.indptr, Gx=Y.data.real,
                                                      Bx=Y.data.imag, P=S.real, Q=S.imag,
-                                                     E=V.real, F=V.imag,
+                                                     E=V.real, F=V.imag, Vm=Vm,
                                                      pq=pq, pvpq=np.r_[pv, pq])
 
     Jx = np.resize(Jx, nnz)

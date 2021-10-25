@@ -43,7 +43,7 @@ def jacobian1(G, B, P, Q, E, F, pq, pv):
     n_rows = len(pvpq) + len(pq)
     n_cols = len(pvpq) + len(pq)
 
-    V = E + 1j * F
+    Vm = np.abs(E + 1j * F)
     # Vabs2 = n2p.power(np.abs(V), 2.0)
 
     nnz = 0
@@ -124,9 +124,9 @@ def jacobian1(G, B, P, Q, E, F, pq, pv):
             if pvpq[ii] == i:  # rows
                 # entry found
                 if i != j:
-                    Jx[nnz] = E[i] * (G.data[k] * E[j] - B.data[k] * F[j]) + F[i] * (B.data[k] * E[j] + G.data[k] * F[j])
+                    Jx[nnz] = (E[i] * (G.data[k] * E[j] - B.data[k] * F[j]) + F[i] * (B.data[k] * E[j] + G.data[k] * F[j])) / Vm[j]
                 else:
-                    Jx[nnz] = (P[i] + G.data[k] * (E[i] * E[i] + F[i] * F[i]))
+                    Jx[nnz] = ((P[i] + G.data[k] * (E[i] * E[i] + F[i] * F[i]))) / Vm[i]
 
                 Ji[nnz] = ii
                 nnz += 1
@@ -141,9 +141,9 @@ def jacobian1(G, B, P, Q, E, F, pq, pv):
             if pq[ii] == i:  # rows
                 # entry found
                 if i != j:
-                    Jx[nnz] = F[i] * (G.data[k] * E[j] - B.data[k] * F[j]) - E[i] * (B.data[k] * E[j] + G.data[k] * F[j])
+                    Jx[nnz] = (F[i] * (G.data[k] * E[j] - B.data[k] * F[j]) - E[i] * (B.data[k] * E[j] + G.data[k] * F[j])) / Vm[j]
                 else:
-                    Jx[nnz] = Q[i] - B.data[k] * (E[i] * E[i] + F[i] * F[i])
+                    Jx[nnz] = (Q[i] - B.data[k] * (E[i] * E[i] + F[i] * F[i])) / Vm[i]
 
                 Ji[nnz] = ii + npvpq
                 nnz += 1
@@ -504,4 +504,4 @@ if __name__ == '__main__':
     print(J.toarray())
     print(J.shape)
 
-    print(J4)
+    # print(J4)
