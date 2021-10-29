@@ -18,6 +18,7 @@ import numpy as np
 from GridCal.Engine.Simulations.StateEstimation.state_estimation import solve_se_lm
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults, power_flow_post_process
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Devices.measurement import MeasurementType
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
@@ -204,11 +205,17 @@ class StateEstimation(DriverTemplate):
         """
         n = len(self.grid.buses)
         m = self.grid.get_branch_number()
-        self.se_results = StateEstimationResults()
-        self.se_results.initialize(n, m)
 
-        numerical_circuit = self.grid.compile_snapshot()
-        islands = numerical_circuit.compute()
+        numerical_circuit = compile_snapshot_circuit(self.grid)
+        self.se_results = StateEstimationResults(n=n, m=m,
+                                                 n_tr=numerical_circuit.ntr,
+                                                 bus_names=numerical_circuit.bus_names,
+                                                 branch_names=numerical_circuit.branch_names,
+                                                 transformer_names=numerical_circuit.transformer_data.tr_names,
+                                                 bus_types=numerical_circuit.bus_types)
+        # self.se_results.initialize(n, m)
+
+        islands = numerical_circuit.split_into_islands()
 
         self.se_results.bus_types = numerical_circuit.bus_types
 
@@ -226,28 +233,35 @@ class StateEstimation(DriverTemplate):
                                                 f=island.F,
                                                 t=island.T,
                                                 se_input=se_input,
-                                                ref=island.ref,
+                                                ref=island.vd,
                                                 pq=island.pq,
                                                 pv=island.pv)
 
             # Compute the branches power and the slack buses power
-            Sfb, Stb, If, It, Vbrnach, loading, \
-             losses, Sbus = power_flow_post_process(calculation_inputs=island, V=v_sol)
+            Sfb, Stb, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process(calculation_inputs=island,
+                                                                                       Sbus=island.Sbus,
+                                                                                       V=v_sol,
+                                                                                       branch_rates=island.branch_rates,
+                                                                                       Yf=None, Yt=None)
 
             # pack results into a SE results object
-            results = StateEstimationResults(Sbus=Sbus,
-                                             voltage=v_sol,
-                                             Sbranch=Sfb,
-                                             Ibranch=If,
-                                             loading=loading,
-                                             losses=losses,
-                                             error=[err],
-                                             converged=[converged],
-                                             Qpv=None)
+            results = StateEstimationResults(n=island.nbus,
+                                             m=island.nbr,
+                                             n_tr=island.ntr,
+                                             bus_names=island.bus_names,
+                                             branch_names=island.branch_names,
+                                             transformer_names=island.transformer_data.tr_names,
+                                             bus_types=island.bus_types)
+            results.Sbus = Sbus
+            results.Sf = Sfb
+            results.voltage = v_sol
+            results.losses = losses
+            results.loading = loading
 
             self.se_results.apply_from_island(results,
                                               island.original_bus_idx,
-                                              island.original_branch_idx)
+                                              island.original_branch_idx,
+                                              island.original_tr_idx)
 
 
 if __name__ == '__main__':

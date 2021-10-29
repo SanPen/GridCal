@@ -403,9 +403,9 @@ if __name__ == '__main__':
     b2 = Bus('B2')
     b3 = Bus('B3')
 
-    br1 = Branch(b1, b2, 'Br1', 0.01, 0.03)
-    br2 = Branch(b1, b3, 'Br2', 0.02, 0.05)
-    br3 = Branch(b2, b3, 'Br3', 0.03, 0.08)
+    br1 = Line(b1, b2, 'Br1', r=0.01, x=0.03)
+    br2 = Line(b1, b3, 'Br2', r=0.02, x=0.05)
+    br3 = Line(b2, b3, 'Br3', r=0.03, x=0.08)
 
     # add measurements
     br1.measurements.append(Measurement(0.888, 0.008, MeasurementType.Pflow))
