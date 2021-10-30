@@ -291,7 +291,7 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
     :param Yt: 
     :param f: array with the from bus indices of all the branches
     :param t: array with the to bus indices of all the branches
-    :param inputs: state estimation imput instance (contains the measurements)
+    :param se_input: state estimation input instance (contains the measurements)
     :param ref: 
     :param pq: 
     :param pv: 
@@ -322,7 +322,6 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
     lbmda = 0  # any large number
     f_obj_prev = 1e9  # very large number
 
-    update_jacobian = False
     converged = False
     err = 1e20
     nu = 2.0
