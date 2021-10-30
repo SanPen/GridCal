@@ -435,9 +435,9 @@ if __name__ == '__main__':
     se.run()
 
     print()
-    print('V: ', se.se_results.voltage)
-    print('Vm: ', np.abs(se.se_results.voltage))
-    print('Va: ', np.angle(se.se_results.voltage))
+    print('V: ', se.results.voltage)
+    print('Vm: ', np.abs(se.results.voltage))
+    print('Va: ', np.angle(se.results.voltage))
 
     """
     The validated output is:

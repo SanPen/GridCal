@@ -141,7 +141,7 @@ class StateEstimation(DriverTemplate):
 
         DriverTemplate.__init__(self, grid=circuit)
 
-        self.se_results = None
+        self.results = None
 
     @staticmethod
     def collect_measurements(circuit: MultiCircuit, bus_idx, branch_idx):
@@ -207,17 +207,17 @@ class StateEstimation(DriverTemplate):
         m = self.grid.get_branch_number()
 
         numerical_circuit = compile_snapshot_circuit(self.grid)
-        self.se_results = StateEstimationResults(n=n, m=m,
-                                                 n_tr=numerical_circuit.ntr,
-                                                 bus_names=numerical_circuit.bus_names,
-                                                 branch_names=numerical_circuit.branch_names,
-                                                 transformer_names=numerical_circuit.transformer_data.tr_names,
-                                                 bus_types=numerical_circuit.bus_types)
+        self.results = StateEstimationResults(n=n, m=m,
+                                              n_tr=numerical_circuit.ntr,
+                                              bus_names=numerical_circuit.bus_names,
+                                              branch_names=numerical_circuit.branch_names,
+                                              transformer_names=numerical_circuit.transformer_data.tr_names,
+                                              bus_types=numerical_circuit.bus_types)
         # self.se_results.initialize(n, m)
 
         islands = numerical_circuit.split_into_islands()
 
-        self.se_results.bus_types = numerical_circuit.bus_types
+        self.results.bus_types = numerical_circuit.bus_types
 
         for island in islands:
 
@@ -258,10 +258,10 @@ class StateEstimation(DriverTemplate):
             results.losses = losses
             results.loading = loading
 
-            self.se_results.apply_from_island(results,
-                                              island.original_bus_idx,
-                                              island.original_branch_idx,
-                                              island.original_tr_idx)
+            self.results.apply_from_island(results,
+                                           island.original_bus_idx,
+                                           island.original_branch_idx,
+                                           island.original_tr_idx)
 
 
 if __name__ == '__main__':
