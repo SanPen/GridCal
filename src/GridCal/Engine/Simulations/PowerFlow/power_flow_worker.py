@@ -22,6 +22,7 @@ import GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow as acjb
 import GridCal.Engine.Simulations.PowerFlow.jacobian_based_acdc_power_flow as acdcjb
 import GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow as acfd
 import GridCal.Engine.Simulations.PowerFlow.helm_power_flow as hl
+import GridCal.Engine.Simulations.PowerFlow.gausspf as gs
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
@@ -177,6 +178,16 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
                                    Vset=V0,
                                    pq=pq,
                                    pv=pv)
+
+        elif solver_type == bs.SolverType.GAUSS:
+            solution = gs.gausspf(Ybus=circuit.Ybus,
+                                  Sbus=Sbus,
+                                  V0=V0,
+                                  pv=pv,
+                                  pq=pq,
+                                  tol=options.tolerance,
+                                  max_it=options.max_iter,
+                                  verbose=False)
 
         # Levenberg-Marquardt
         elif solver_type == bs.SolverType.LM:

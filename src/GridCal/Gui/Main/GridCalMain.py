@@ -118,6 +118,7 @@ class MainGUI(QMainWindow):
         self.solvers_dict[bs.SolverType.LM.value] = bs.SolverType.LM
         self.solvers_dict[bs.SolverType.FASTDECOUPLED.value] = bs.SolverType.FASTDECOUPLED
         self.solvers_dict[bs.SolverType.HELM.value] = bs.SolverType.HELM
+        self.solvers_dict[bs.SolverType.GAUSS.value] = bs.SolverType.GAUSS
         self.solvers_dict[bs.SolverType.LACPF.value] = bs.SolverType.LACPF
         self.solvers_dict[bs.SolverType.DC.value] = bs.SolverType.DC
 
