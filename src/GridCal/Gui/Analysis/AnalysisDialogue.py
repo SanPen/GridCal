@@ -23,9 +23,9 @@ class GridErrorLog:
 
         self.logs = dict()
 
-        self.header = ['Object type', 'Name', 'Index', 'Severity', 'Property']
+        self.header = ['Object type', 'Name', 'Index', 'Severity', 'Property', 'Value']
 
-    def add(self, object_type, element_name, element_index, severity, propty, message):
+    def add(self, object_type, element_name, element_index, severity, propty, message, val=''):
         """
 
         :param object_type:
@@ -37,7 +37,7 @@ class GridErrorLog:
         :return:
         """
 
-        e = [object_type, element_name, element_index, severity, propty]
+        e = [object_type, element_name, element_index, severity, propty, val]
 
         if message in self.logs.keys():
             self.logs[message].append(e)
@@ -61,22 +61,24 @@ class GridErrorLog:
         # populate data
         for message_key, entries in self.logs.items():
             parent1 = QtGui.QStandardItem(message_key)
-            for object_type, element_name, element_index, severity, prop in entries:
-                try:
-                    parent1.appendRow([QtGui.QStandardItem(str(object_type)),
-                                       QtGui.QStandardItem(str(element_name)),
-                                       QtGui.QStandardItem(str(element_index)),
-                                       QtGui.QStandardItem(str(severity)),
-                                       QtGui.QStandardItem(str(prop))])
-                except:
-                    print('Failed to append the entry:')
-                    print(entries)
+            for object_type, element_name, element_index, severity, prop, val in entries:
+                children = [QtGui.QStandardItem(str(object_type)),
+                            QtGui.QStandardItem(str(element_name)),
+                            QtGui.QStandardItem(str(element_index)),
+                            QtGui.QStandardItem(str(severity)),
+                            QtGui.QStandardItem(str(prop)),
+                            QtGui.QStandardItem(str(val))]
+                for chld in children:
+                    chld.setEditable(False)
 
+                parent1.appendRow(children)
+
+            parent1.setEditable(False)
             model.appendRow(parent1)
 
         return model
 
-    def save(self, filename):
+    def get_df(self):
         """
         Save analysis to excel
         :param filename:
@@ -88,13 +90,19 @@ class GridErrorLog:
 
             items = self.logs[message]
 
-            for [object_type, element_name, element_index, severity, propty] in items:
+            for [object_type, element_name, element_index, severity, propty, val] in items:
+                data.append([message, object_type, element_name, element_index, severity, propty, val])
 
-                val = [message, object_type, element_name, element_index, severity, propty]
-                data.append(val)
+        hdr = ['Message', 'Object type', 'Name', 'Index', 'Severity', 'Property', 'Value']
+        return pd.DataFrame(data=data, columns=hdr)
 
-        hdr = ['Message', 'Object type', 'Name', 'Index', 'Severity', 'Property']
-        df = pd.DataFrame(data=data, columns=hdr)
+    def save(self, filename):
+        """
+        Save analysis to excel
+        :param filename:
+        :return:
+        """
+        df = self.get_df()
         df.to_excel(filename)
 
 
@@ -378,7 +386,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
                                          propty='X', message='The reactance is exactly zero')
 
             elif object_type in DeviceType.Transformer2WDevice.value:
-                elements = self.circuit.lines
+                elements = self.circuit.transformers2w
 
                 for i, elm in enumerate(elements):
 
@@ -388,7 +396,8 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
 
                     if elm.rate <= 0.0:
                         self.log.add(object_type='Transformer2W', element_name=elm.name, element_index=i,
-                                     severity='High', propty='rate', message='There is no nominal power')
+                                     severity='High', propty='rate', message='There is no nominal power',
+                                     val=elm.rate)
 
                     if elm.R == 0.0 and elm.X == 0.0:
                         self.log.add(object_type='Transformer2W', element_name=elm.name, element_index=i,
@@ -399,13 +408,26 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
                         if elm.R < 0.0:
                             self.log.add(object_type='Transformer2W', element_name=elm.name, element_index=i,
                                          severity='Medium', propty='R',
-                                         message='The resistance is negative, that cannot be.')
+                                         message='The resistance is negative, that cannot be.', val=elm.R)
                         elif elm.R == 0.0:
                             self.log.add(object_type='Transformer2W', element_name=elm.name, element_index=i,
-                                         severity='Low', propty='R', message='The resistance is exactly zero')
+                                         severity='Low', propty='R', message='The resistance is exactly zero',
+                                         val=elm.R)
                         elif elm.X == 0.0:
                             self.log.add(object_type='Transformer2W', element_name=elm.name, element_index=i,
-                                         severity='Low', propty='X', message='The reactance is exactly zero')
+                                         severity='Low', propty='X', message='The reactance is exactly zero',
+                                         val=elm.R)
+
+                    tap_f, tap_t = elm.get_virtual_taps()
+
+                    if 0.95 > tap_f or tap_f > 1.05:
+                        self.log.add(object_type='Transformer2W', element_name=elm.name, element_index=i,
+                                     severity='High', propty='HV or LV',
+                                     message='Large nominal voltage mismatch at the from bus', val=tap_f)
+                    if 0.95 > tap_t or tap_t > 1.05:
+                        self.log.add(object_type='Transformer2W', element_name=elm.name, element_index=i,
+                                     severity='High', propty='HV or LV',
+                                     message='Large nominal voltage mismatch at the to bus', val=tap_t)
 
             elif object_type == DeviceType.BusDevice.value:
                 elements = self.circuit.buses
@@ -419,14 +441,15 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
 
                     if elm.Vnom <= 0.0:
                         self.log.add(object_type='Bus', element_name=elm.name, element_index=i, severity='High',
-                                     propty='Vnom', message='The nominal voltage is <= 0, this causes problems')
+                                     propty='Vnom', message='The nominal voltage is <= 0, this causes problems',
+                                     val=elm.Vnom)
 
                     if elm.name == '':
                         self.log.add(object_type='Bus', element_name=elm.name, element_index=i, severity='High',
                                      propty='name', message='The bus does not have a name')
 
                     if elm.name in names:
-                        self.log.add(object_type='Bus', element_name=elm.name, element_index=i, severity='High',
+                        self.log.add(object_type='Bus', element_name=elm.name, element_index=i, severity='Low',
                                      propty='name', message='The bus name is not unique')
 
                     # add the name to a set
@@ -448,14 +471,16 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
                                      element_index=k,
                                      severity='Medium',
                                      propty='Vset=' + str(obj.Vset) + '<' + str(v_low),
-                                     message='The set point looks too low')
+                                     message='The set point looks too low',
+                                     val=obj.Vset)
                     elif obj.Vset > v_high:
                         self.log.add(object_type='Generator',
                                      element_name=obj,
                                      element_index=k,
                                      severity='Medium',
                                      propty='Vset=' + str(obj.Vset) + '>' + str(v_high),
-                                     message='The set point looks too high')
+                                     message='The set point looks too high',
+                                     val=obj.Vset)
 
             elif object_type == DeviceType.BatteryDevice.value:
                 elements = self.circuit.get_batteries()

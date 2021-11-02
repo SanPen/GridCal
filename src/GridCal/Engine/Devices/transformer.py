@@ -1032,3 +1032,10 @@ class Transformer2W(EditableDevice):
         Get the branch defining coordinates
         """
         return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]
+
+    def delete_virtual_taps(self):
+        """
+        Set the HV and LV parameters such that any virtual tap is null
+        """
+        self.HV = max(self.bus_from.Vnom, self.bus_to.Vnom)
+        self.LV = min(self.bus_from.Vnom, self.bus_to.Vnom)

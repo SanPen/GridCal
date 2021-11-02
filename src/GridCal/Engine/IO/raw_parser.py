@@ -1175,7 +1175,6 @@ class PSSeTransformer:
         else:
             raise Exception('Unknown impedance combination CZ=' + str(self.CZ))
 
-
         return r, x, g, b, tap_mod, tap_angle
 
     def get_object(self, psse_bus_dict, sbase, logger: Logger):

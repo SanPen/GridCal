@@ -265,6 +265,8 @@ class SnapshotData:
                                      'pv',
                                      'vd',
                                      'pqpv',
+                                     'tap_f',
+                                     'tap_t',
                                      'original_bus_idx',
                                      'original_branch_idx',
                                      'original_line_idx',
@@ -1068,6 +1070,16 @@ class SnapshotData:
 
         elif structure_type == 'Ibus':
             df = pd.DataFrame(data=self.Ibus, columns=['Current (p.u.)'], index=self.bus_data.bus_names)
+
+        elif structure_type == 'tap_f':
+            df = pd.DataFrame(data=self.branch_data.tap_f,
+                              columns=['Virtual tap from (p.u.)'],
+                              index=self.branch_data.branch_names)
+
+        elif structure_type == 'tap_t':
+            df = pd.DataFrame(data=self.branch_data.tap_t,
+                              columns=['Virtual tap to (p.u.)'],
+                              index=self.branch_data.branch_names)
 
         elif structure_type == 'Ybus':
             df = pd.DataFrame(data=self.Ybus.toarray(),

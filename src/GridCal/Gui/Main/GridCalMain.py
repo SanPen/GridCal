@@ -5708,7 +5708,6 @@ class MainGUI(QMainWindow):
     def delete_shit(self, min_island=1):
         """
         Delete small islands, disconnected stuff and other garbage
-        :return:
         """
         numerical_circuit_ = core.compile_snapshot_opf_circuit(circuit=self.circuit, apply_temperature=False,)
         islands = numerical_circuit_.split_into_islands()
@@ -5754,6 +5753,12 @@ class MainGUI(QMainWindow):
                         print('Deleted ', elm.name)
                         elm.graphic_obj.remove(ask=False)
 
+    def correct_shit(self):
+        """
+        Correct common flaws such as the transformer virtual taps too high
+        """
+        for elm in self.circuit.transformers2w:
+            elm.delete_virtual_taps()
 
     def add_objects(self):
         """
