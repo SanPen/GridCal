@@ -552,6 +552,10 @@ class MainGUI(QMainWindow):
 
         self.ui.simulationDataStructuresListView.clicked.connect(self.view_simulation_objects_data)
 
+        self.ui.plotArraysButton.clicked.connect(self.plot_simulation_objects_data)
+
+        self.ui.copyArraysButton.clicked.connect(self.copy_simulation_objects_data)
+
         self.ui.catalogueDataStructuresListView.clicked.connect(self.catalogue_element_selected)
 
         # tree-view clicks
@@ -704,6 +708,8 @@ class MainGUI(QMainWindow):
                                                       "plt: matplotlib\n"
                                                       "app: This instance of GridCal\n"
                                                       "circuit: The current grid\n\n")
+
+            self.console.buffer_size = 10000
 
             # add the console widget to the user interface
             self.ui.main_console_tab.layout().addWidget(self.console)
@@ -1849,8 +1855,6 @@ class MainGUI(QMainWindow):
         Simulation data structure clicked
         """
 
-        # TODO: Correct this function to operate correctly with the new engine
-
         i = self.ui.simulation_data_island_comboBox.currentIndex()
 
         if i > -1 and len(self.circuit.buses) > 0:
@@ -1858,14 +1862,51 @@ class MainGUI(QMainWindow):
 
             df = self.calculation_inputs_to_display[i].get_structure(elm_type)
 
-            # df = self.circuit.circuits[i].power_flow_input.get_structure(elm_type)
-
             mdl = PandasModel(df)
 
             self.ui.simulationDataStructureTableView.setModel(mdl)
 
+    def copy_simulation_objects_data(self):
+        """
+        Copy the arrays of the compiled arrays view to the clipboard
+        """
+        mdl = self.ui.simulationDataStructureTableView.model()
+        mdl.copy_to_clipboard()
+
+    def plot_simulation_objects_data(self):
+        """
+        Plot the arrays of the compiled arrays view
+        """
+        mdl = self.ui.simulationDataStructureTableView.model()
+        data = mdl.data_c
+
+        # actually check if the array is 1D or 2D
+        is_2d = len(data.shape) == 2
+        if is_2d:
+            if data.shape[1] <= 1:
+                is_2d = False
+                data = data[:, 0]  # flatten the array
+
+        # declare figure
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
+
+        if is_2d:
+            ax1.spy(data)
+
         else:
-            pass
+            if mdl.data_c.dtype == complex:
+                ax1.scatter(data.real, data.imag)
+                ax1.set_xlabel('Real')
+                ax1.set_ylabel('Imag')
+            else:
+                arr = np.arange(data.shape[0])
+                ax1.scatter(arr, data)
+                ax1.set_xlabel('Position')
+                ax1.set_ylabel('Value')
+
+        fig.tight_layout()
+        plt.show()
 
     def profile_device_type_changed(self):
         """
@@ -5753,12 +5794,47 @@ class MainGUI(QMainWindow):
                         print('Deleted ', elm.name)
                         elm.graphic_obj.remove(ask=False)
 
-    def correct_shit(self):
+    def correct_shit(self, min_vset=0.98, max_vset=1.02):
         """
         Correct common flaws such as the transformer virtual taps too high
+        :param min_vset: minimum set point for the generators
+        :param max_vset: maximum set point for the generators
         """
         for elm in self.circuit.transformers2w:
-            elm.delete_virtual_taps()
+            HV = max(elm.bus_from.Vnom, elm.bus_to.Vnom)
+            LV = min(elm.bus_from.Vnom, elm.bus_to.Vnom)
+
+            if elm.HV != HV or elm.LV != LV:
+                self.console_msg('Corrected transformer HV for {0} from [{1},{2}] to [{3},{4}]'.format(elm.name,
+                                                                                                       elm.LV, elm.HV,
+                                                                                                       LV, HV))
+                elm.HV = HV
+                elm.LV = LV
+
+        for elm in self.circuit.get_generators():
+            if elm.Vset > max_vset:
+                self.console_msg('Corrected generator set point for {0} from {1} to {2}'.format(elm.name,
+                                                                                                elm.Vset, max_vset))
+                elm.Vset = max_vset
+            elif elm.Vset < min_vset:
+                self.console_msg('Corrected generator set point for {0} from {1} to {2}'.format(elm.name, elm.Vset, min_vset))
+                elm.Vset = min_vset
+
+    def correct_branch_monitoring(self, max_loading=1.0):
+        """
+        The NTC optimization and other algorithms will not work if we have overloaded branches in DC monitored
+        We can try to not monitor those to try to get it working
+        """
+        res = self.session.power_flow
+
+        if res is None:
+            self.console_msg('No power flow results.\n')
+        else:
+            branches = self.circuit.get_branches_wo_hvdc()
+            for elm, loading in zip(branches, res.loading):
+                if loading >= max_loading:
+                    elm.monitor_loading = False
+                    self.console_msg('Disabled loading monitoring for {0}, loading: {1}'.format(elm.name, loading))
 
     def add_objects(self):
         """

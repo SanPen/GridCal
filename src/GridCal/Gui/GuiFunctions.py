@@ -433,9 +433,17 @@ class PandasModel(QtCore.QAbstractTableModel):
             # there are no elements
             return list(), list(), list()
 
+    def get_df(self, mode=None):
+        """
+        Get the data as pandas DataFrame
+        :return: DataFrame
+        """
+        index, columns, data = self.get_data(mode=mode)
+        return pd.DataFrame(data=data, index=index, columns=columns)
+
     def save_to_excel(self, file_name, mode):
         """
-
+        Save the data to excel
         Args:
             file_name:
             mode: 'real', 'imag', 'abs'
@@ -467,17 +475,12 @@ class PandasModel(QtCore.QAbstractTableModel):
 
             # data
             for t, index_value in enumerate(index):
-                if data[t, :].sum() != 0.0:
-                    txt += str(index_value) + '\t' + '\t'.join(data[t, :]) + '\n'
+                txt += str(index_value) + '\t' + '\t'.join(data[t, :]) + '\n'
 
             # copy to clipboard
             cb = QApplication.clipboard()
             cb.clear(mode=cb.Clipboard)
             cb.setText(txt, mode=cb.Clipboard)
-
-        else:
-            # there are no elements
-            pass
 
 
 class ObjectsModel(QtCore.QAbstractTableModel):

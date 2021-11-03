@@ -1566,6 +1566,16 @@ p, li { white-space: pre-wrap; }
                 <property name="rightMargin">
                  <number>0</number>
                 </property>
+                <item row="2" column="0" colspan="4">
+                 <widget class="QListView" name="simulationDataStructuresListView"/>
+                </item>
+                <item row="0" column="0" colspan="4">
+                 <widget class="QLabel" name="label_23">
+                  <property name="text">
+                   <string>Island</string>
+                  </property>
+                 </widget>
+                </item>
                 <item row="1" column="0">
                  <widget class="QPushButton" name="compute_simulation_data_pushButton">
                   <property name="maximumSize">
@@ -1585,9 +1595,6 @@ p, li { white-space: pre-wrap; }
                     <normaloff>:/Icons/icons/calculator.svg</normaloff>:/Icons/icons/calculator.svg</iconset>
                   </property>
                  </widget>
-                </item>
-                <item row="3" column="0" colspan="4">
-                 <widget class="QListView" name="simulationDataStructuresListView"/>
                 </item>
                 <item row="1" column="1">
                  <widget class="QPushButton" name="exportSimulationDataButton">
@@ -1612,20 +1619,6 @@ p, li { white-space: pre-wrap; }
                 <item row="1" column="2" colspan="2">
                  <widget class="QComboBox" name="simulation_data_island_comboBox"/>
                 </item>
-                <item row="0" column="0" colspan="4">
-                 <widget class="QLabel" name="label_23">
-                  <property name="text">
-                   <string>Island</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="0" colspan="4">
-                 <widget class="QLabel" name="label_30">
-                  <property name="text">
-                   <string>Data structures</string>
-                  </property>
-                 </widget>
-                </item>
                </layout>
               </widget>
               <widget class="QFrame" name="frame_29">
@@ -1640,10 +1633,65 @@ p, li { white-space: pre-wrap; }
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QLabel" name="label_31">
-                  <property name="text">
-                   <string>Data table</string>
+                 <widget class="QFrame" name="frame_69">
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
                   </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_35">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>20</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QPushButton" name="copyArraysButton">
+                     <property name="toolTip">
+                      <string>Copy array to clipboard</string>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                     <property name="icon">
+                      <iconset resource="icons.qrc">
+                       <normaloff>:/Icons/icons/copy.svg</normaloff>:/Icons/icons/copy.svg</iconset>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="plotArraysButton">
+                     <property name="toolTip">
+                      <string>Plot values</string>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                     <property name="icon">
+                      <iconset resource="icons.qrc">
+                       <normaloff>:/Icons/icons/plot.svg</normaloff>:/Icons/icons/plot.svg</iconset>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="horizontalSpacer_23">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>510</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
                  </widget>
                 </item>
                 <item>

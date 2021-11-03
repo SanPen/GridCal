@@ -1055,17 +1055,22 @@ class Ui_mainWindow(object):
         self.gridLayout_19 = QGridLayout(self.frame_28)
         self.gridLayout_19.setObjectName(u"gridLayout_19")
         self.gridLayout_19.setContentsMargins(-1, -1, 0, -1)
+        self.simulationDataStructuresListView = QListView(self.frame_28)
+        self.simulationDataStructuresListView.setObjectName(u"simulationDataStructuresListView")
+
+        self.gridLayout_19.addWidget(self.simulationDataStructuresListView, 2, 0, 1, 4)
+
+        self.label_23 = QLabel(self.frame_28)
+        self.label_23.setObjectName(u"label_23")
+
+        self.gridLayout_19.addWidget(self.label_23, 0, 0, 1, 4)
+
         self.compute_simulation_data_pushButton = QPushButton(self.frame_28)
         self.compute_simulation_data_pushButton.setObjectName(u"compute_simulation_data_pushButton")
         self.compute_simulation_data_pushButton.setMaximumSize(QSize(32, 16777215))
         self.compute_simulation_data_pushButton.setIcon(icon59)
 
         self.gridLayout_19.addWidget(self.compute_simulation_data_pushButton, 1, 0, 1, 1)
-
-        self.simulationDataStructuresListView = QListView(self.frame_28)
-        self.simulationDataStructuresListView.setObjectName(u"simulationDataStructuresListView")
-
-        self.gridLayout_19.addWidget(self.simulationDataStructuresListView, 3, 0, 1, 4)
 
         self.exportSimulationDataButton = QPushButton(self.frame_28)
         self.exportSimulationDataButton.setObjectName(u"exportSimulationDataButton")
@@ -1079,16 +1084,6 @@ class Ui_mainWindow(object):
 
         self.gridLayout_19.addWidget(self.simulation_data_island_comboBox, 1, 2, 1, 2)
 
-        self.label_23 = QLabel(self.frame_28)
-        self.label_23.setObjectName(u"label_23")
-
-        self.gridLayout_19.addWidget(self.label_23, 0, 0, 1, 4)
-
-        self.label_30 = QLabel(self.frame_28)
-        self.label_30.setObjectName(u"label_30")
-
-        self.gridLayout_19.addWidget(self.label_30, 2, 0, 1, 4)
-
         self.simulationDataSplitter.addWidget(self.frame_28)
         self.frame_29 = QFrame(self.simulationDataSplitter)
         self.frame_29.setObjectName(u"frame_29")
@@ -1097,10 +1092,31 @@ class Ui_mainWindow(object):
         self.verticalLayout_28 = QVBoxLayout(self.frame_29)
         self.verticalLayout_28.setObjectName(u"verticalLayout_28")
         self.verticalLayout_28.setContentsMargins(0, -1, -1, -1)
-        self.label_31 = QLabel(self.frame_29)
-        self.label_31.setObjectName(u"label_31")
+        self.frame_69 = QFrame(self.frame_29)
+        self.frame_69.setObjectName(u"frame_69")
+        self.frame_69.setFrameShape(QFrame.NoFrame)
+        self.frame_69.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_35 = QHBoxLayout(self.frame_69)
+        self.horizontalLayout_35.setObjectName(u"horizontalLayout_35")
+        self.horizontalLayout_35.setContentsMargins(0, 20, -1, 0)
+        self.copyArraysButton = QPushButton(self.frame_69)
+        self.copyArraysButton.setObjectName(u"copyArraysButton")
+        self.copyArraysButton.setIcon(icon50)
 
-        self.verticalLayout_28.addWidget(self.label_31)
+        self.horizontalLayout_35.addWidget(self.copyArraysButton)
+
+        self.plotArraysButton = QPushButton(self.frame_69)
+        self.plotArraysButton.setObjectName(u"plotArraysButton")
+        self.plotArraysButton.setIcon(icon72)
+
+        self.horizontalLayout_35.addWidget(self.plotArraysButton)
+
+        self.horizontalSpacer_23 = QSpacerItem(510, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_35.addItem(self.horizontalSpacer_23)
+
+
+        self.verticalLayout_28.addWidget(self.frame_69)
 
         self.simulationDataStructureTableView = QTableView(self.frame_29)
         self.simulationDataStructureTableView.setObjectName(u"simulationDataStructureTableView")
@@ -4006,6 +4022,7 @@ class Ui_mainWindow(object):
         self.label_36.setText(QCoreApplication.translate("mainWindow", u"Start", None))
         self.label_35.setText(QCoreApplication.translate("mainWindow", u"End", None))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.timeEventsTab), QCoreApplication.translate("mainWindow", u"Time events", None))
+        self.label_23.setText(QCoreApplication.translate("mainWindow", u"Island", None))
 #if QT_CONFIG(tooltip)
         self.compute_simulation_data_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Update the islands dispayed", None))
 #endif // QT_CONFIG(tooltip)
@@ -4014,9 +4031,14 @@ class Ui_mainWindow(object):
         self.exportSimulationDataButton.setToolTip(QCoreApplication.translate("mainWindow", u"Export simulation data", None))
 #endif // QT_CONFIG(tooltip)
         self.exportSimulationDataButton.setText("")
-        self.label_23.setText(QCoreApplication.translate("mainWindow", u"Island", None))
-        self.label_30.setText(QCoreApplication.translate("mainWindow", u"Data structures", None))
-        self.label_31.setText(QCoreApplication.translate("mainWindow", u"Data table", None))
+#if QT_CONFIG(tooltip)
+        self.copyArraysButton.setToolTip(QCoreApplication.translate("mainWindow", u"Copy array to clipboard", None))
+#endif // QT_CONFIG(tooltip)
+        self.copyArraysButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.plotArraysButton.setToolTip(QCoreApplication.translate("mainWindow", u"Plot values", None))
+#endif // QT_CONFIG(tooltip)
+        self.plotArraysButton.setText("")
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.compiledArraysTab), QCoreApplication.translate("mainWindow", u"Compiled arrays", None))
 #if QT_CONFIG(tooltip)
         self.comments_textEdit.setToolTip(QCoreApplication.translate("mainWindow", u"Write here some comments about the grid", None))
