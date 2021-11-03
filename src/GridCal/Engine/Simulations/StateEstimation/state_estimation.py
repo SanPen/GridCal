@@ -286,24 +286,22 @@ def Jacobian_SE(Ybus, Yf, Yt, V, f, t, inputs, pvpq):
     return H, h, S
 
 
-def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
+def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv) -> NumericPowerFlowResults:
     """
     Solve the state estimation problem using the Levenberg-Marquadt method
-    :param Ybus: 
-    :param Yf: 
-    :param Yt: 
+    :param Ybus: Admittance matrix
+    :param Yf: Admittance matrix of the from branches
+    :param Yt: Admittance matrix of the to branches
     :param f: array with the from bus indices of all the branches
     :param t: array with the to bus indices of all the branches
     :param se_input: state estimation input instance (contains the measurements)
-    :param ref: 
-    :param pq: 
-    :param pv: 
-    :return: 
+    :param ref: array of slack node indices
+    :param pq: array of pq node indices
+    :param pv: array of pv node indices
+    :return: NumericPowerFlowResults instance
     """
     start_time = time.time()
     pvpq = np.r_[pv, pq]
-    vm_idx = np.r_[se_input.vm_m_idx, ref]
-    vm_idx.sort()
     npvpq = len(pvpq)
     npq = len(pq)
     nvd = len(ref)
@@ -321,7 +319,6 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
     max_iter = 100
     iter_ = 0
     Idn = csc_matrix(np.identity(2 * n - nvd))  # identity matrix
-    # x = np.r_[np.angle(V)[pvpq], np.abs(V)]
     Va = np.angle(V)
     Vm = np.abs(V)
     lbmda = 0  # any large number
