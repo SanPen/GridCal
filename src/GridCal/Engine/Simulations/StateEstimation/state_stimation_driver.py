@@ -15,6 +15,7 @@
 
 import numpy as np
 
+import GridCal.Engine.basic_structures as bs
 from GridCal.Engine.Simulations.StateEstimation.state_estimation import solve_se_lm
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults, power_flow_post_process
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -227,20 +228,27 @@ class StateEstimation(DriverTemplate):
                                                  branch_idx=island.original_branch_idx)
 
             # run solver
-            v_sol, err, converged = solve_se_lm(Ybus=island.Ybus,
-                                                Yf=island.Yf,
-                                                Yt=island.Yt,
-                                                f=island.F,
-                                                t=island.T,
-                                                se_input=se_input,
-                                                ref=island.vd,
-                                                pq=island.pq,
-                                                pv=island.pv)
+            report = bs.ConvergenceReport()
+            solution = solve_se_lm(Ybus=island.Ybus,
+                                   Yf=island.Yf,
+                                   Yt=island.Yt,
+                                   f=island.F,
+                                   t=island.T,
+                                   se_input=se_input,
+                                   ref=island.vd,
+                                   pq=island.pq,
+                                   pv=island.pv)
+
+            report.add(method=bs.SolverType.LM,
+                       converged=solution.converged,
+                       error=solution.norm_f,
+                       elapsed=solution.elapsed,
+                       iterations=solution.iterations)
 
             # Compute the branches power and the slack buses power
             Sfb, Stb, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process(calculation_inputs=island,
                                                                                        Sbus=island.Sbus,
-                                                                                       V=v_sol,
+                                                                                       V=solution.V,
                                                                                        branch_rates=island.branch_rates,
                                                                                        Yf=None, Yt=None)
 
@@ -254,9 +262,10 @@ class StateEstimation(DriverTemplate):
                                              bus_types=island.bus_types)
             results.Sbus = Sbus
             results.Sf = Sfb
-            results.voltage = v_sol
+            results.voltage = solution.V
             results.losses = losses
             results.loading = loading
+            results.convergence_reports.append(report)
 
             self.results.apply_from_island(results,
                                            island.original_bus_idx,

@@ -1,7 +1,10 @@
+import time
+
 from scipy.sparse import hstack as sphs, vstack as spvs, csc_matrix, csr_matrix
 from scipy.sparse.linalg import spsolve
 import numpy as np
 from numpy import conj, arange
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 
 
 def dSbus_dV(Ybus, V):
@@ -280,7 +283,7 @@ def Jacobian_SE(Ybus, Yf, Yt, V, f, t, inputs, pvpq):
     # pack the mismatch vector
     h = np.r_[h1, h2, h3, h4, h5, h6]
 
-    return H, h
+    return H, h, S
 
 
 def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
@@ -297,8 +300,10 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
     :param pv: 
     :return: 
     """
-
+    start_time = time.time()
     pvpq = np.r_[pv, pq]
+    vm_idx = np.r_[se_input.vm_m_idx, ref]
+    vm_idx.sort()
     npvpq = len(pvpq)
     npq = len(pq)
     nvd = len(ref)
@@ -327,7 +332,7 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
     nu = 2.0
 
     # first computation of the jacobian and free term
-    H, h = Jacobian_SE(Ybus, Yf, Yt, V, f, t, se_input, pvpq)
+    H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, f, t, se_input, pvpq)
 
     while not converged and iter_ < max_iter:
 
@@ -367,13 +372,13 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
 
             # modify the solution
             dVa = dx[0:npvpq]
-            dVm = dx[npvpq:npvpq + npq + 1]
+            dVm = dx[npvpq::]
             Va[pvpq] += dVa
             Vm += dVm
             V = Vm * np.exp(1j * Va)
 
             # update Jacobian
-            H, h = Jacobian_SE(Ybus, Yf, Yt, V, f, t, se_input, pvpq)
+            H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, f, t, se_input, pvpq)
 
         else:
             lbmda = lbmda * nu
@@ -387,7 +392,9 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
         f_obj_prev = f_obj
         iter_ += 1
 
-    return V, err, converged
+    elapsed = time.time() - start_time
+
+    return NumericPowerFlowResults(V, converged, err, Scalc, None, None, None, None, None, None, iter_, elapsed)
 
 
 if __name__ == '__main__':

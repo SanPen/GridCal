@@ -32,53 +32,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
 
-class ConvergenceReport:
-
-    def __init__(self):
-        self.methods_ = list()
-        self.converged_ = list()
-        self.error_ = list()
-        self.elapsed_ = list()
-        self.iterations_ = list()
-
-    def add(self, method, converged, error, elapsed, iterations):
-        self.methods_.append(method)
-        self.converged_.append(converged)
-        self.error_.append(error)
-        self.elapsed_.append(elapsed)
-        self.iterations_.append(iterations)
-
-    def converged(self):
-        if len(self.converged_) > 0:
-            return self.converged_[-1]
-        else:
-            return False
-
-    def error(self):
-        if len(self.error_) > 0:
-            return self.error_[-1]
-        else:
-            return 0
-
-    def elapsed(self):
-        if len(self.elapsed_) > 0:
-            return self.elapsed_[-1]
-        else:
-            return 0
-
-    def to_dataframe(self):
-        data = {'Method': self.methods_,
-                'Converged?': self.converged_,
-                'Error': self.error_,
-                'Elapsed (s)': self.elapsed_,
-                'Iterations': self.iterations_}
-
-        df = pd.DataFrame(data)
-
-        return df
-
-
-def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus,
+def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.ConvergenceReport, V0, Sbus, Ibus,
           pq, pv, ref, pqpv, logger=bs.Logger()) -> NumericPowerFlowResults:
     """
     Run a power flow simulation using the selected method (no outer loop controls).
@@ -346,7 +300,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     # get the original types and compile this class' own lists of node types for thread independence
     bus_types = circuit.bus_types.copy()
 
-    report = ConvergenceReport()
+    report = bs.ConvergenceReport()
     solution = NumericPowerFlowResults(V=voltage_solution,
                                        converged=False,
                                        norm_f=1e200,
