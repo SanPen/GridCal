@@ -1070,17 +1070,23 @@ class OpfNTC(Opf):
                 ub = cst.Ub()
                 lb = cst.lb()
                 if abs(value) >= self.tolerance:
-                    print('Constraint name {0}, ub {1}, lb {2}, value {3}'.format(name, ub, lb, value))
-                    self.logger.add_error('Non zero constraint', name, value, self.tolerance)
+                    # print('Constraint name {0}, ub {1}, lb {2}, value {3}'.format(name, ub, lb, value))
+                    # self.logger.add_error('Non zero constraint', name, value, self.tolerance)
 
                     if abs(ub - lb) < 0.01:
-                        self.logger.add_error('Constraint upper and lower bounds are very close', name, lb, ub)
+                        self.logger.add_warning('Constraint upper and lower bounds are very close', name, lb, ub)
 
                     if value > ub:
                         self.logger.add_error('Constraint value greater than the upper bound', name, value, ub)
 
-                    if value < lb:
+                    elif value < lb:
                         self.logger.add_error('Constraint value lower than the lower bound', name, value, lb)
+
+                    elif abs(value - lb) < 1e-3:
+                        self.logger.add_warning('Constraint is at lower bound', name, value, lb)
+
+                    elif abs(value - ub) < 1e-3:
+                        self.logger.add_warning('Constraint is at upper bound', name, value, ub)
 
             # add the LP
             # self.logger.add_info(msg=self.solver.ExportModelAsLpFormat(obfuscated=False))
