@@ -21,7 +21,7 @@ Vm = [1.0, 0.8337707704259578, 1.04999995, 1.0193026645563943, 0.974289188370734
 for p, q, vm, bus in zip(P_inj, Q_inj, Vm, circuit.buses):
     bus.measurements.append(ge.Measurement(p, 0.01, ge.MeasurementType.Pinj))
     bus.measurements.append(ge.Measurement(q, 0.01, ge.MeasurementType.Qinj))
-    bus.measurements.append(ge.Measurement(vm, 0.01, ge.MeasurementType.Vmag))
+    #bus.measurements.append(ge.Measurement(vm, 0.01, ge.MeasurementType.Vmag))
 
 se = ge.StateEstimation(circuit=circuit)
 

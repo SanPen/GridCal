@@ -371,10 +371,10 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
             nu = 2.0
 
             # modify the solution
-            dVa = dx[0:npvpq]
-            dVm = dx[npvpq::]
+            dVa = dx[:npvpq]
+            dVm = dx[npvpq:]
             Va[pvpq] += dVa
-            Vm += dVm
+            Vm += dVm  # yes, this is for all the buses
             V = Vm * np.exp(1j * Va)
 
             # update Jacobian
