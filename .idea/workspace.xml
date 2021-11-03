@@ -23,17 +23,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added logger to te slacks of the NTC">
-      <change beforePath="$PROJECT_DIR$/.idea/GridCal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/GridCal.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/change_log.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/change_log.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GuiFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GuiFunctions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/AnalysisDialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/AnalysisDialogue.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Session/file_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Session/file_handler.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -138,7 +133,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.setup">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -250,9 +245,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.setup" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_file" />
-        <item itemvalue="Python.setup" />
         <item itemvalue="Python.test_power_flow" />
         <item itemvalue="Python tests.Nosetests in test_demo_5_node.py" />
       </list>
@@ -636,13 +631,6 @@
       <workItem from="1632764073720" duration="601000" />
       <workItem from="1632810180431" duration="7195000" />
     </task>
-    <task id="LOCAL-00158" summary="Fixes the wrong abs coming from the OPF">
-      <created>1626287957806</created>
-      <option name="number" value="00158" />
-      <option name="presentableId" value="LOCAL-00158" />
-      <option name="project" value="LOCAL" />
-      <updated>1626287957806</updated>
-    </task>
     <task id="LOCAL-00159" summary="GUI session now handles all the threading">
       <created>1626445169505</created>
       <option name="number" value="00159" />
@@ -979,7 +967,14 @@
       <option name="project" value="LOCAL" />
       <updated>1634798467656</updated>
     </task>
-    <option name="localTasksCounter" value="207" />
+    <task id="LOCAL-00207" summary="4.2.7">
+      <created>1635927649882</created>
+      <option name="number" value="00207" />
+      <option name="presentableId" value="LOCAL-00207" />
+      <option name="project" value="LOCAL" />
+      <updated>1635927649883</updated>
+    </task>
+    <option name="localTasksCounter" value="208" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1014,7 +1009,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved .RAW reading" />
     <MESSAGE value="Improved voltage formation" />
     <MESSAGE value="Added the ability to select branches for contingency&#10;ATC (snapshot) taked into account the contingency_enabled property" />
     <MESSAGE value="Fixed minor indexing error&#10;The ATC report generation is more straight forward" />
@@ -1039,7 +1033,8 @@
     <MESSAGE value="Fixed the ntc-opf contingency report" />
     <MESSAGE value="added the contingency filter into the linear NTC" />
     <MESSAGE value="Added logger to te slacks of the NTC" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added logger to te slacks of the NTC" />
+    <MESSAGE value="4.2.7" />
+    <option name="LAST_COMMIT_MESSAGE" value="4.2.7" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1449,6 +1444,11 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
           <line>5807</line>
           <option name="timeStamp" value="824" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
+          <line>1045</line>
+          <option name="timeStamp" value="825" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

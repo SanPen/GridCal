@@ -10,6 +10,11 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+Version 4.2.8
+^^^^^^^^^^^^^^^
+
+- Added very detailed NTC-opf logger
+
 Version 4.2.7
 ^^^^^^^^^^^^^^^
 
@@ -22,6 +27,7 @@ Version 4.2.7
 - Added again the Gauss-Seidel power flow mainly aimed at the education sector.
 - Added correct_branches_monitoring function to the GUI to be accessed as a console command.
 - Added correct_shit function to correct virtual taps and generator set points to the GUI to be accessed as a console command.
+
 - Changed the contingency report of the ATC and NTC simulations to include all the contingencies despite it being massive.
 - Fixed syntax error with the state estimator.
 - Improved Power World .epc format parser.

@@ -360,30 +360,34 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
                                                                'Vnom=0, this is terrible.' + s)
 
                     if elm.name == '':
-                        self.log.add(object_type='Line', element_name=elm.name, element_index=i, severity='High',
+                        self.log.add(object_type='Line', element_name=elm.name, element_index=i, severity='Low',
                                      propty='name', message='The branch does not have a name')
 
-                    if elm.rate <= 0.0:
+                    if elm.rate < 0.0:
                         self.log.add(object_type='Line', element_name=elm.name, element_index=i, severity='High',
-                                     propty='rate', message='There is no nominal power')
-
-                    if elm.R == 0.0 and elm.X == 0.0:
+                                     propty='rate', message='The rating is negative. This cannot be.')
+                    elif elm.rate == 0.0:
                         self.log.add(object_type='Line', element_name=elm.name, element_index=i, severity='High',
-                                     propty='R+X', message='There is no impedance, set at least a very low value')
+                                     propty='rate', message='There is no nominal power, this is bad.')
 
-                    else:
-                        if elm.R < 0.0:
-                            self.log.add(object_type='Line', element_name=elm.name, element_index=i,
-                                         severity='Medium',
-                                         propty='R', message='The resistance is negative, that cannot be.')
-                        elif elm.R == 0.0:
-                            self.log.add(object_type='Line', element_name=elm.name, element_index=i,
-                                         severity='Low',
-                                         propty='R', message='The resistance is exactly zero')
-                        elif elm.X == 0.0:
-                            self.log.add(object_type='Line', element_name=elm.name, element_index=i,
-                                         severity='Low',
-                                         propty='X', message='The reactance is exactly zero')
+                    if elm.R < 0.0:
+                        self.log.add(object_type='Line', element_name=elm.name, element_index=i,
+                                     severity='High',
+                                     propty='R', message='The resistance is negative, that cannot be.')
+                    elif elm.R == 0.0:
+                        self.log.add(object_type='Line', element_name=elm.name, element_index=i,
+                                     severity='Low',
+                                     propty='R', message='The resistance is exactly zero.')
+                    if elm.X == 0.0:
+                        self.log.add(object_type='Line', element_name=elm.name, element_index=i,
+                                     severity='High',
+                                     propty='X',
+                                     message='The reactance is exactly zero. This hurts numerical conditioning.')
+
+                    if elm.B == 0.0:
+                        self.log.add(object_type='Line', element_name=elm.name, element_index=i, severity='High',
+                                     propty='B',
+                                     message='There is no susceptance, this hurts numerical conditioning.')
 
             elif object_type in DeviceType.Transformer2WDevice.value:
                 elements = self.circuit.transformers2w
