@@ -162,7 +162,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
                                                     ResultTypes.HvdcPowerFrom,
                                                     ResultTypes.HvdcOverloads,
-                                                    ResultTypes.NodeSlacks,
                                                     ResultTypes.BatteryPower,
                                                     ResultTypes.ControlledGeneratorPower,
                                                     ResultTypes.GenerationDelta,
@@ -332,11 +331,11 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = '(deg)'
             title = result_type.value[0]
 
-        elif result_type == ResultTypes.NodeSlacks:
-            labels = self.bus_names
-            y = self.node_slacks
-            y_label = '(MW)'
-            title = result_type.value[0]
+        # elif result_type == ResultTypes.NodeSlacks:
+        #     labels = self.bus_names
+        #     y = self.node_slacks
+        #     y_label = '(MW)'
+        #     title = result_type.value[0]
 
         elif result_type == ResultTypes.GenerationDeltaSlacks:
             labels = self.generator_names
@@ -569,7 +568,6 @@ class OptimalNetTransferCapacity(DriverTemplate):
                                                          hvdc_flow=problem.get_hvdc_flow(),
                                                          hvdc_loading=problem.get_hvdc_loading(),
                                                          hvdc_slacks=problem.get_hvdc_slacks(),
-                                                         node_slacks=problem.get_node_slacks(),
                                                          phase_shift=problem.get_phase_angles(),
                                                          generation_delta=problem.get_generator_delta(),
                                                          generation_delta_slacks=problem.get_generator_delta_slacks(),

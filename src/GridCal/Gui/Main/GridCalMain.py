@@ -6445,11 +6445,11 @@ class MainGUI(QMainWindow):
         for a1 in areas_from:
             if a1 in areas_to:
                 error_msg("The area from '{0}' is in the list of areas to. This cannot be.".format(a1.name), 'Incompatible areas')
-                return False, [], [], []
+                return False, [], [], [], []
         for a2 in areas_to:
             if a2 in areas_from:
                 error_msg("The area to '{0}' is in the list of areas from. This cannot be.".format(a2.name), 'Incompatible areas')
-                return False, [], [], []
+                return False, [], [], [], []
 
         lst_from = self.circuit.get_areas_buses(areas_from)
         lst_to = self.circuit.get_areas_buses(areas_to)

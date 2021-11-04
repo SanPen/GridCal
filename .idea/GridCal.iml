@@ -8,14 +8,14 @@
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/dist" />
       <excludeFolder url="file://$MODULE_DIR$/doc/_build" />
+      <excludeFolder url="file://$MODULE_DIR$/src/GridCal-4.2.6a2" />
+      <excludeFolder url="file://$MODULE_DIR$/src/GridCal.egg-info" />
       <excludeFolder url="file://$MODULE_DIR$/src/build" />
       <excludeFolder url="file://$MODULE_DIR$/src/dist" />
       <excludeFolder url="file://$MODULE_DIR$/src/research" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
-      <excludeFolder url="file://$MODULE_DIR$/src/GridCal-4.2.6a2" />
-      <excludeFolder url="file://$MODULE_DIR$/src/GridCal.egg-info" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.9" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.7 (development)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">
