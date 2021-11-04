@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+from typing import List
 from enum import Enum
 import pandas as pd
 import numpy as np
@@ -652,6 +653,7 @@ class LogSeverity(Enum):
     Error = 'Error'
     Warning = 'Warning'
     Information = 'Information'
+    Divergence = 'Divergence'
 
     def __str__(self):
         return self.value
@@ -694,9 +696,9 @@ class Logger:
 
     def __init__(self):
 
-        self.entries = list()  # List[LogEntry]
+        self.entries: List[LogEntry] = list()
 
-    def append(self, txt):
+    def append(self, txt: str):
         """
 
         :param txt:
@@ -707,7 +709,7 @@ class Logger:
     def has_logs(self):
         return len(self.entries) > 0
 
-    def add_info(self, msg, device="", value="", expected_value=""):
+    def add_info(self, msg: str, device="", value="", expected_value=""):
         """
 
         :param msg:
@@ -739,6 +741,19 @@ class Logger:
         :return:
         """
         self.entries.append(LogEntry(msg, LogSeverity.Error, device, str(value), str(expected_value)))
+
+    def add_divergence(self, msg, device="", value=0, expected_value=0, tol=1e-6):
+        """
+
+        :param msg:
+        :param device:
+        :param value:
+        :param expected_value
+        :return:
+        """
+
+        if abs(value - expected_value) > tol:
+            self.entries.append(LogEntry(msg, LogSeverity.Divergence, device, str(value), str(expected_value)))
 
     def add(self, msg, severity: LogSeverity = LogSeverity.Error, device="", value="", expected_value=""):
         """
