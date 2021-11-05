@@ -352,7 +352,7 @@ def check_optimal_generation(generator_active, generator_names, dispatchable, Cg
     # check area equality
     sum_a1 = sum(dgen1)
     sum_a2 = sum(dgen2)
-    res = sum_a1 == sum_a2
+    res = sum_a1 == -sum_a2
 
     if not res:
         logger.add_divergence('Area equality not met', 'grid', sum_a1, sum_a2)
@@ -628,6 +628,34 @@ def formulate_node_balance(solver: pywraplp.Solver, nbus, Bbus, angles, Pinj, bu
     for balance, power in zip(node_balance, Pinj):
         if bus_active[i] and not isinstance(balance, int):  # balance is 0 for isolated buses
             solver.Add(balance == power, "Node_power_balance_{0}_{1}".format(i, bus_names[i]))
+        i += 1
+
+    return node_balance
+
+
+def check_node_balance(Bbus, angles, Pinj, bus_active, bus_names, logger: Logger):
+    """
+
+    :param solver:
+    :param nbus:
+    :param Bbus:
+    :param angles:
+    :param Pinj:
+    :param bus_active:
+    :param bus_names:
+    :return:
+    """
+    node_balance = Bbus * angles
+
+    # equal the balance to the generation: eq.13,14 (equality)
+    i = 0
+    for balance, power in zip(node_balance, Pinj):
+        if bus_active[i] and not isinstance(balance, int):  # balance is 0 for isolated buses
+            res = balance == power
+
+            if not res:
+                logger.add_divergence('Kirchoff not met', bus_names[i], balance, power)
+
         i += 1
 
     return node_balance
@@ -1562,18 +1590,25 @@ class OpfNTC(Opf):
         # time index
         t = 0
 
-        # get the inter-area branches and their sign
-        inter_area_branches = get_inter_areas_branches(nbr=m,
-                                                       F=self.numerical_circuit.branch_data.F,
-                                                       T=self.numerical_circuit.branch_data.T,
-                                                       buses_areas_1=self.area_from_bus_idx,
-                                                       buses_areas_2=self.area_to_bus_idx)
+        # check that the slacks are 0
+        if self.all_slacks is not None:
+            for var_array in self.all_slacks:
+                for var in var_array:
+                    if isinstance(var, float) or isinstance(var, int):
+                        val = var
+                    else:
+                        val = var.solution_value()
 
-        inter_area_hvdc = get_inter_areas_branches(nbr=self.numerical_circuit.nhvdc,
-                                                   F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
-                                                   T=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
-                                                   buses_areas_1=self.area_from_bus_idx,
-                                                   buses_areas_2=self.area_to_bus_idx)
+                    if abs(val) > 0:
+                        self.logger.add_divergence('Slack variable is over the tolerance', var.name(), val, 0)
+
+        # check variables
+        for var in self.solver.variables():
+
+            if var.solution_value() > var.Ub():
+                self.logger.add_divergence('Variable over the upper bound', var.name(), var.solution_value(), var.Ub())
+            if var.solution_value() < var.Lb():
+                self.logger.add_divergence('Variable under the lower bound', var.name(), var.solution_value(), var.Lb())
 
         # formulate the generation
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
@@ -1656,6 +1691,19 @@ class OpfNTC(Opf):
                         logger=self.logger,
                         t=t)
 
+        Pinj = formulate_power_injections(load_injections_per_bus=self.numerical_circuit.load_data.get_injections_per_bus(),
+                                          Cgen=Cgen,
+                                          generation=self.extract(self.Pg),
+                                          Sbase=self.numerical_circuit.Sbase,
+                                          t=t)
+
+        check_node_balance(Bbus=self.numerical_circuit.Bbus,
+                           angles=self.extract(self.theta),
+                           Pinj=Pinj,
+                           bus_active=self.numerical_circuit.bus_data.bus_active,
+                           bus_names=self.numerical_circuit.bus_data.bus_names,
+                           logger=self.logger)
+
     def save_lp(self, file_name="ntc_opf_problem.lp"):
         """
         Save problem in LP format
@@ -1678,53 +1726,13 @@ class OpfNTC(Opf):
         """
         self.status = self.solver.Solve()
 
-        self.log_problem()
+        converged = self.converged()
 
-        return self.converged()
-
-    def log_problem(self, tol=1e-4):
-        """
-        Record in the logger all the slacks that are not zero
-        :return:
-        """
-        if self.all_slacks is not None:
-            for var_array in self.all_slacks:
-                for var in var_array:
-                    if isinstance(var, float) or isinstance(var, int):
-                        val = var
-                    else:
-                        val = var.solution_value()
-
-                    if abs(val) > 0:
-                        self.logger.add_error('Slack variable is over the tolerance', var.name(), val, self.tolerance)
-
+        # check the solution
+        if not converged:
             self.check()
 
-            # constraint_values = self.solver.ComputeConstraintActivities()
-            #
-            # for value, cst in zip(constraint_values, self.solver.constraints()):
-            #     name = cst.name()
-            #     ub = cst.Ub()
-            #     lb = cst.lb()
-            #     # if abs(value) >= self.tolerance:
-            #     if not (lb <= value <= ub):   # if the value is outside of boundaries...
-            #
-            #         if value > ub:
-            #             # if abs(value - ub) > tol:
-            #             self.logger.add_error('Constraint value > upper bound', name, value, ub)
-            #
-            #         elif value < lb:
-            #             # if abs(value - lb) > tol:
-            #             self.logger.add_error('Constraint value < lower bound', name, value, lb)
-            #
-            #         elif abs(value - lb) < tol:
-            #             self.logger.add_warning('Constraint is at lower bound', name, value, lb)
-            #
-            #         elif abs(value - ub) < tol:
-            #             self.logger.add_warning('Constraint is at upper bound', name, value, ub)
-
-            # add the LP
-            # self.logger.add_info(msg=self.solver.ExportModelAsLpFormat(obfuscated=False))
+        return converged
 
     def error(self):
         """
