@@ -23,9 +23,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Moved NTC-OPF formulation out of the class">
-      <change beforePath="$PROJECT_DIR$/.idea/GridCal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/GridCal.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
     </list>
@@ -672,13 +670,6 @@
       <workItem from="1635955126039" duration="28000" />
       <workItem from="1635957977516" duration="3081000" />
     </task>
-    <task id="LOCAL-00181" summary="Added the ability to select branches for contingency&#10;ATC (snapshot) taked into account the contingency_enabled property">
-      <created>1627551118086</created>
-      <option name="number" value="00181" />
-      <option name="presentableId" value="LOCAL-00181" />
-      <option name="project" value="LOCAL" />
-      <updated>1627551118086</updated>
-    </task>
     <task id="LOCAL-00182" summary="Fixed minor indexing error&#10;The ATC report generation is more straight forward">
       <created>1627551718682</created>
       <option name="number" value="00182" />
@@ -1015,7 +1006,14 @@
       <option name="project" value="LOCAL" />
       <updated>1636030544681</updated>
     </task>
-    <option name="localTasksCounter" value="230" />
+    <task id="LOCAL-00230" summary="Added node balance check in the NTC opf">
+      <created>1636104721959</created>
+      <option name="number" value="00230" />
+      <option name="presentableId" value="LOCAL-00230" />
+      <option name="project" value="LOCAL" />
+      <updated>1636104721959</updated>
+    </task>
+    <option name="localTasksCounter" value="231" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1050,7 +1048,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added console commands `app.numerical_circuit`and `app.islands`." />
     <MESSAGE value="finalized version 4.2.1" />
     <MESSAGE value="improved some bugs" />
     <MESSAGE value="Fixed CIM export" />
@@ -1075,7 +1072,8 @@
     <MESSAGE value="improved NTC report" />
     <MESSAGE value="Fixed silly error with SE" />
     <MESSAGE value="Moved NTC-OPF formulation out of the class" />
-    <option name="LAST_COMMIT_MESSAGE" value="Moved NTC-OPF formulation out of the class" />
+    <MESSAGE value="Added node balance check in the NTC opf" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added node balance check in the NTC opf" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1460,6 +1458,21 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
           <line>290</line>
           <option name="timeStamp" value="853" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
+          <line>432</line>
+          <option name="timeStamp" value="854" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
+          <line>550</line>
+          <option name="timeStamp" value="855" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
+          <line>460</line>
+          <option name="timeStamp" value="856" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -339,7 +339,7 @@ def check_optimal_generation(generator_active, generator_names, dispatchable, Cg
             dgen1.append(delta[gen_idx])
 
             if not res:
-                logger.add_divergence('Delta up condition not met', generator_names[gen_idx], generation[gen_idx] - Pgen[gen_idx], delta[gen_idx])
+                logger.add_divergence('Delta up condition not met (delta[i] == generation[i] - Pgen[i])', generator_names[gen_idx], generation[gen_idx] - Pgen[gen_idx], delta[gen_idx])
 
     for bus_idx, gen_idx in gens2:
         if generator_active[gen_idx] and dispatchable[gen_idx]:
@@ -347,7 +347,7 @@ def check_optimal_generation(generator_active, generator_names, dispatchable, Cg
             dgen2.append(delta[gen_idx])
 
             if not res:
-                logger.add_divergence('Delta down condition not met', generator_names[gen_idx], generation[gen_idx] - Pgen[gen_idx], delta[gen_idx])
+                logger.add_divergence('Delta down condition not met (delta[i] == generation[i] - Pgen[i])', generator_names[gen_idx], generation[gen_idx] - Pgen[gen_idx], delta[gen_idx])
 
     # check area equality
     sum_a1 = sum(dgen1)
@@ -528,13 +528,13 @@ def check_proportional_generation(generator_active, dispatchable, generator_cost
         if generator_active[gen_idx] and dispatchable[gen_idx]:
 
             prop = abs(Pgen[gen_idx] / sum_gen_1)
-            res = delta[gen_idx] == prop * power_shift  # , 'Delta_equal_to_proportional_power_shift_' + name)
+            res = delta[gen_idx] == prop * power_shift
             if not res:
-                logger.add_divergence("Delta up equal to it's share of the power shift", generator_names[gen_idx], delta[gen_idx], prop * power_shift)
+                logger.add_divergence("Delta up equal to it's share of the power shift (delta[i] == prop * power_shift)", generator_names[gen_idx], delta[gen_idx], prop * power_shift)
 
-            res = generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx]  #  + delta_slack_1[gen_idx] - delta_slack_2[gen_idx], 'Generation_due_to_forced_delta_' + name)
+            res = generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx]
             if not res:
-                logger.add_divergence('Delta up condition not met', generator_names[gen_idx], generation[gen_idx], Pgen[gen_idx] + delta[gen_idx])
+                logger.add_divergence('Delta up condition not met (generation[i] == Pgen[i] + delta[i])', generator_names[gen_idx], generation[gen_idx], Pgen[gen_idx] + delta[gen_idx])
 
             dgen1.append(delta[gen_idx])
 
@@ -544,13 +544,13 @@ def check_proportional_generation(generator_active, dispatchable, generator_cost
         if generator_active[gen_idx] and dispatchable[gen_idx]:
 
             prop = abs(Pgen[gen_idx] / sum_gen_2)
-            res = delta[gen_idx] == -prop * power_shift  # , 'Delta_equal_to_proportional_power_shift_' + name)
+            res = delta[gen_idx] == -prop * power_shift
             if not res:
-                logger.add_divergence("Delta down equal to it's share of the power shift", generator_names[gen_idx], delta[gen_idx], -prop * power_shift)
+                logger.add_divergence("Delta down equal to it's share of the power shift (delta[i] == -prop * power_shift)", generator_names[gen_idx], delta[gen_idx], -prop * power_shift)
 
-            res = generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx]  # + delta_slack_1[gen_idx] - delta_slack_2[gen_idx], 'Generation_due_to_forced_delta_' + name)
+            res = generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx]
             if not res:
-                logger.add_divergence('Delta down condition not met', generator_names[gen_idx], generation[gen_idx], Pgen[gen_idx] + delta[gen_idx])
+                logger.add_divergence('Delta down condition not met (generation[i] == Pgen[i] + delta[i])', generator_names[gen_idx], generation[gen_idx], Pgen[gen_idx] + delta[gen_idx])
 
             dgen2.append(delta[gen_idx])
 
@@ -654,7 +654,7 @@ def check_node_balance(Bbus, angles, Pinj, bus_active, bus_names, logger: Logger
             res = balance == power
 
             if not res:
-                logger.add_divergence('Kirchoff not met', bus_names[i], balance, power)
+                logger.add_divergence('Kirchhoff not met (balance == power)', bus_names[i], balance, power)
 
         i += 1
 
@@ -803,14 +803,14 @@ def check_branches_flow(nbr, Rates, Sbase,
                 res = flow_f[m] == bk * (angles[_f] - angles[_t] + tau[m])
 
                 if not res:
-                    logger.add_divergence('Phase shifter flow setting', branch_names[m], flow_f[m], bk * (angles[_f] - angles[_t] + tau[m]))
+                    logger.add_divergence('Phase shifter flow setting (flow_f[m] == bk * (angles[f] - angles[t] + tau[m]))', branch_names[m], flow_f[m], bk * (angles[_f] - angles[_t] + tau[m]))
 
             else:
                 # branch power from-to eq.15
                 res = flow_f[m] == bk * (angles[_f] - angles[_t])
 
                 if not res:
-                    logger.add_divergence('Branch flow setting', branch_names[m], flow_f[m], bk * (angles[_f] - angles[_t]))
+                    logger.add_divergence('Branch flow setting (flow_f[m] == bk * (angles[f] - angles[t]))', branch_names[m], flow_f[m], bk * (angles[_f] - angles[_t]))
 
             # determine the monitoring logic
             if monitor_only_sensitive_branches:
@@ -827,12 +827,12 @@ def check_branches_flow(nbr, Rates, Sbase,
                 res = flow_f[m] <= rates[m]
 
                 if not res:
-                    logger.add_divergence('Positive flow rating violated', branch_names[m], flow_f[m], rates[m])
+                    logger.add_divergence('Positive flow rating violated (flow_f[m] <= rates[m])', branch_names[m], flow_f[m], rates[m])
 
                 # rating restriction in the sense to-from: eq.18
                 res = -rates[m] <= flow_f[m]
                 if not res:
-                    logger.add_divergence('Negative flow rating violated', branch_names[m], flow_f[m], -rates[m])
+                    logger.add_divergence('Negative flow rating violated (-rates[m] <= flow_f[m])', branch_names[m], flow_f[m], -rates[m])
 
     return monitor
 
@@ -941,13 +941,13 @@ def check_contingency(ContingencyRates, Sbase,
                 res = flow_n1 <= rates[m]
 
                 if not res:
-                    logger.add_divergence('Positive contingency flow rating violated', branch_names[m] + '@' + branch_names[c], flow_n1, rates[m])
+                    logger.add_divergence('Positive contingency flow rating violated (flow_n1 <= rates[m])', branch_names[m] + '@' + branch_names[c], flow_n1, rates[m])
 
                 # rating restriction in the sense to-from
                 res = -rates[m] <= flow_n1
 
                 if not res:
-                    logger.add_divergence('Negative contingency flow rating violated', branch_names[m] + '@' + branch_names[c], flow_n1, -rates[m])
+                    logger.add_divergence('Negative contingency flow rating violated (-rates[m] <= flow_n1)', branch_names[m] + '@' + branch_names[c], flow_n1, -rates[m])
 
 
 def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names,
@@ -1081,26 +1081,26 @@ def check_hvdc_flow(nhvdc, names,
                 res = flow_f[i] == P0 + bk * (angles[_f] - angles[_t])   # + hvdc_control1[i] - hvdc_control2[i], 'hvdc_power_flow_' + suffix)
 
                 if not res:
-                    logger.add_divergence('HVDC free flow violation', names[i], flow_f[i], P0 + bk * (angles[_f] - angles[_t]))
+                    logger.add_divergence('HVDC free flow violation (flow_f[i] == P0 + bk * (angles[f] - angles[t]))', names[i], flow_f[i], P0 + bk * (angles[_f] - angles[_t]))
 
                 # rating restriction in the sense from-to: eq.17
                 res = flow_f[i] <= rates[i]  # , "hvdc_ft_rating_" + suffix)
 
                 if not res:
-                    logger.add_divergence('HVDC positive rating violation', names[i], flow_f[i], rates[i])
+                    logger.add_divergence('HVDC positive rating violation (flow_f[i] <= rates[i])', names[i], flow_f[i], rates[i])
 
                 # rating restriction in the sense to-from: eq.18
                 res = -rates[i] <= flow_f[i]  # , "hvdc_tf_rating_" + suffix)
 
                 if not res:
-                    logger.add_divergence('HVDC negative rating violation', names[i], flow_f[i], -rates[i])
+                    logger.add_divergence('HVDC negative rating violation (-rates[i] <= flow_f[i])', names[i], flow_f[i], -rates[i])
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and not dispatchable[i]:
                 # simple injections model: The power is set by the user
                 res = flow_f[i] == P0
 
                 if not res:
-                    logger.add_divergence('HVDC Pset, non dispatchable control not met', names[i], flow_f[i], P0)
+                    logger.add_divergence('HVDC Pset, non dispatchable control not met (flow_f[i] == P0)', names[i], flow_f[i], P0)
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and dispatchable[i]:
                 # simple injections model, the power is a variable and it is optimized
