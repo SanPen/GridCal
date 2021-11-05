@@ -404,19 +404,19 @@ def formulate_proportional_generation(solver: pywraplp.Solver,
 
     sum_gen_1 = 0
     for bus_idx, gen_idx in gens1:
-        if generator_active[gen_idx] and generator_dispatchable[gen_idx]:
+        if generator_active[gen_idx] and generator_dispatchable[gen_idx] and Pgen[gen_idx] > 0:
             sum_gen_1 += Pgen[gen_idx]
 
     sum_gen_2 = 0
     for bus_idx, gen_idx in gens2:
-        if generator_active[gen_idx] and generator_dispatchable[gen_idx]:
+        if generator_active[gen_idx] and generator_dispatchable[gen_idx] and Pgen[gen_idx] > 0:
             sum_gen_2 += Pgen[gen_idx]
 
     power_shift = solver.NumVar(0, inf, 'Area_slack')
 
     for bus_idx, gen_idx in gens1:
 
-        if generator_active[gen_idx] and generator_dispatchable[gen_idx]:
+        if generator_active[gen_idx] and generator_dispatchable[gen_idx] and Pgen[gen_idx] > 0:
 
             name = 'Gen_up_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
 
@@ -443,7 +443,7 @@ def formulate_proportional_generation(solver: pywraplp.Solver,
 
     for bus_idx, gen_idx in gens2:
 
-        if generator_active[gen_idx] and generator_dispatchable[gen_idx]:
+        if generator_active[gen_idx] and generator_dispatchable[gen_idx] and Pgen[gen_idx] > 0:
 
             name = 'Gen_down_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
 
@@ -451,7 +451,7 @@ def formulate_proportional_generation(solver: pywraplp.Solver,
                 logger.add_error('Pmin >= Pmax', 'Generator index {0}'.format(gen_idx), Pmin[gen_idx])
 
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-            delta[gen_idx] = solver.NumVar(-inf, 0, name + '_delta')
+            delta[gen_idx] = solver.NumVar(-Pgen[gen_idx], 0, name + '_delta')
             delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
             delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
 
@@ -474,8 +474,11 @@ def formulate_proportional_generation(solver: pywraplp.Solver,
         if generator_active[gen_idx]:
             generation[gen_idx] = Pgen[gen_idx]
 
-    solver.Add(solver.Sum(dgen1) == power_shift, 'Area equality_1')
-    solver.Add(solver.Sum(dgen2) == - power_shift, 'Area equality_2')
+    solver.Add(solver.Sum(dgen1) == power_shift, 'Strict area equality_1')
+    solver.Add(solver.Sum(dgen2) == - power_shift, 'Strict area equality_2')
+
+    # solver.Add(solver.Sum(dgen1) >= 0, 'Generation in the area 1 > 0')
+    # solver.Add(solver.Sum(dgen2) <= 0, 'Generation in the area 2 < 0')
 
     return generation, delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, gen_cost, delta_slack_1, delta_slack_2
 
@@ -510,47 +513,52 @@ def check_proportional_generation(generator_active, dispatchable, generator_cost
     dgen1 = list()
     dgen2 = list()
 
-    gen_a1_idx = list()
-    gen_a2_idx = list()
-
     sum_gen_1 = 0
     for bus_idx, gen_idx in gens1:
-        if generator_active[gen_idx] and dispatchable[gen_idx]:
+        if generator_active[gen_idx] and dispatchable[gen_idx] and Pgen[gen_idx] > 0:
             sum_gen_1 += Pgen[gen_idx]
 
     sum_gen_2 = 0
     for bus_idx, gen_idx in gens2:
-        if generator_active[gen_idx] and dispatchable[gen_idx]:
+        if generator_active[gen_idx] and dispatchable[gen_idx] and Pgen[gen_idx] > 0:
             sum_gen_2 += Pgen[gen_idx]
 
+    # check area 1
     for bus_idx, gen_idx in gens1:
 
-        if generator_active[gen_idx] and dispatchable[gen_idx]:
+        if generator_active[gen_idx] and dispatchable[gen_idx] and Pgen[gen_idx] > 0:
 
             prop = abs(Pgen[gen_idx] / sum_gen_1)
             res = delta[gen_idx] == prop * power_shift
             if not res:
-                logger.add_divergence("Delta up equal to it's share of the power shift (delta[i] == prop * power_shift)", generator_names[gen_idx], delta[gen_idx], prop * power_shift)
+                logger.add_divergence("Delta up equal to it's share of the power shift "
+                                      "(delta[i] == prop * power_shift)",
+                                      generator_names[gen_idx], delta[gen_idx], prop * power_shift)
 
             res = generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx]
             if not res:
-                logger.add_divergence('Delta up condition not met (generation[i] == Pgen[i] + delta[i])', generator_names[gen_idx], generation[gen_idx], Pgen[gen_idx] + delta[gen_idx])
+                logger.add_divergence('Delta up condition not met (generation[i] == Pgen[i] + delta[i])',
+                                      generator_names[gen_idx], generation[gen_idx], Pgen[gen_idx] + delta[gen_idx])
 
             dgen1.append(delta[gen_idx])
 
-
+    # check area 2
     for bus_idx, gen_idx in gens2:
 
-        if generator_active[gen_idx] and dispatchable[gen_idx]:
+        if generator_active[gen_idx] and dispatchable[gen_idx] and Pgen[gen_idx] > 0:
 
             prop = abs(Pgen[gen_idx] / sum_gen_2)
             res = delta[gen_idx] == -prop * power_shift
             if not res:
-                logger.add_divergence("Delta down equal to it's share of the power shift (delta[i] == -prop * power_shift)", generator_names[gen_idx], delta[gen_idx], -prop * power_shift)
+                logger.add_divergence("Delta down equal to it's share of the power shift "
+                                      "(delta[i] == -prop * power_shift)",
+                                      generator_names[gen_idx], delta[gen_idx], -prop * power_shift)
 
             res = generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx]
             if not res:
-                logger.add_divergence('Delta down condition not met (generation[i] == Pgen[i] + delta[i])', generator_names[gen_idx], generation[gen_idx], Pgen[gen_idx] + delta[gen_idx])
+                logger.add_divergence('Delta down condition not met '
+                                      '(generation[i] == Pgen[i] + delta[i])',
+                                      generator_names[gen_idx], generation[gen_idx], Pgen[gen_idx] + delta[gen_idx])
 
             dgen2.append(delta[gen_idx])
 
@@ -1171,6 +1179,7 @@ def formulate_objective(solver: pywraplp.Solver,
     delta_slacks = solver.Sum(delta_slack_1) + solver.Sum(delta_slack_2)
 
     # formulate objective function
+    # f = 0
     f = - weight_power_shift * area_1_gen_delta
     f -= weight_power_shift * power_shift
 
@@ -1323,6 +1332,12 @@ class OpfNTC(Opf):
         # load
         Pl = (self.numerical_circuit.load_active * self.numerical_circuit.load_s.real) / Sbase
         cost_l = self.numerical_circuit.load_cost
+
+        # modify Pg_fix until it is identical to Pload
+        total_load = Pl.sum()
+        total_gen = Pg_fix.sum()
+        diff = total_gen - total_load
+        Pg_fix -= diff * (Pg_fix / total_gen)
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
@@ -1727,6 +1742,8 @@ class OpfNTC(Opf):
         self.status = self.solver.Solve()
 
         converged = self.converged()
+
+        self.save_lp('ntc_opf.lp')
 
         # check the solution
         if not converged:

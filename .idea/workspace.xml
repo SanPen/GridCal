@@ -670,13 +670,6 @@
       <workItem from="1635955126039" duration="28000" />
       <workItem from="1635957977516" duration="3081000" />
     </task>
-    <task id="LOCAL-00182" summary="Fixed minor indexing error&#10;The ATC report generation is more straight forward">
-      <created>1627551718682</created>
-      <option name="number" value="00182" />
-      <option name="presentableId" value="LOCAL-00182" />
-      <option name="project" value="LOCAL" />
-      <updated>1627551718682</updated>
-    </task>
     <task id="LOCAL-00183" summary="Extended the contingency branch selection to the ATC">
       <created>1627571383097</created>
       <option name="number" value="00183" />
@@ -1013,7 +1006,14 @@
       <option name="project" value="LOCAL" />
       <updated>1636104721959</updated>
     </task>
-    <option name="localTasksCounter" value="231" />
+    <task id="LOCAL-00231" summary="Added more explicative values">
+      <created>1636106809618</created>
+      <option name="number" value="00231" />
+      <option name="presentableId" value="LOCAL-00231" />
+      <option name="project" value="LOCAL" />
+      <updated>1636106809618</updated>
+    </task>
+    <option name="localTasksCounter" value="232" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1048,7 +1048,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="finalized version 4.2.1" />
     <MESSAGE value="improved some bugs" />
     <MESSAGE value="Fixed CIM export" />
     <MESSAGE value="Passed the parent (main window) to most of the sub-windows" />
@@ -1073,7 +1072,8 @@
     <MESSAGE value="Fixed silly error with SE" />
     <MESSAGE value="Moved NTC-OPF formulation out of the class" />
     <MESSAGE value="Added node balance check in the NTC opf" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added node balance check in the NTC opf" />
+    <MESSAGE value="Added more explicative values" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added more explicative values" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1460,19 +1460,10 @@
           <option name="timeStamp" value="853" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <condition expression="'14130_AT' == generator_names[gen_idx]" language="Python" />
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
           <line>432</line>
-          <option name="timeStamp" value="854" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>550</line>
-          <option name="timeStamp" value="855" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>460</line>
-          <option name="timeStamp" value="856" />
+          <option name="timeStamp" value="862" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
