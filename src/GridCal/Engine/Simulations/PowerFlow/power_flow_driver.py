@@ -17,7 +17,7 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_pf
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+# from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
@@ -31,7 +31,7 @@ class PowerFlowDriver(DriverTemplate):
     Power flow wrapper to use with Qt
     """
 
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, opf_results: OptimalPowerFlowResults = None):
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, opf_results: "OptimalPowerFlowResults" = None):
         """
         PowerFlowDriver class constructor
         :param grid: MultiCircuit instance

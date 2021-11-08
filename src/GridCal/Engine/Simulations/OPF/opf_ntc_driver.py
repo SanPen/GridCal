@@ -16,12 +16,9 @@ from enum import Enum
 import numpy as np
 import time
 
-from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.basic_structures import TimeGrouping, MIPSolvers
-from GridCal.Engine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Simulations.OPF.ntc_opf import OpfNTC, GenerationNtcFormulation
-from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
+from GridCal.Engine.Simulations.OPF.ntc_opf import OpfNTC, GenerationNtcFormulation, get_inter_areas_branches
 from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
@@ -31,6 +28,8 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisDriver, ContingencyAnalysisOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
+from GridCal.Engine.basic_structures import SolverType
 
 ########################################################################################################################
 # Optimal Power flow classes
@@ -511,21 +510,85 @@ class OptimalNetTransferCapacity(DriverTemplate):
         else:
             alpha = np.ones(numerical_circuit.nbr)
 
-        # run contingency analysis first
-        self.progress_text.emit('Pre-solving base state...')
+        base_problems = False
+
+        # run dc power flow --------------------------------------------------------------------------------------------
+        self.progress_text.emit('Pre-solving base state (DC power flow)...')
+        pf_options = PowerFlowOptions(solver_type=SolverType.DC)
+        pf_drv = PowerFlowDriver(grid=self.grid, options=pf_options)
+        pf_drv.run()
+        indices = np.where(np.abs(pf_drv.results.loading.real) >= 1.0)
+        for m in zip(indices[0]):
+            elm_name = '{0}'.format(numerical_circuit.branch_names[m])
+            self.logger.add_error('Base overload', elm_name, pf_drv.results.loading[m].real * 100, 100)
+            base_problems = True
+
+        # run contingency analysis -------------------------------------------------------------------------------------
+        self.progress_text.emit('Pre-solving base state (Contingency analysis)...')
         options = ContingencyAnalysisOptions(distributed_slack=False)
         cnt_drv = ContingencyAnalysisDriver(grid=self.grid, options=options)
         cnt_drv.run()
-        indices = np.where(np.abs(cnt_drv.results.loading) >= 1.0)
-
-        base_problems = False
+        indices = np.where(np.abs(cnt_drv.results.loading.real) >= 1.0)
+        get_contingency_flows_list = list()
+        contingency_indices_list = list()
+        contingency_flows_slacks_list = list()
         for m, c in zip(indices[0], indices[1]):
             elm_name = '{0} @ {1}'.format(numerical_circuit.branch_names[m], numerical_circuit.branch_names[c])
             self.logger.add_error('Base contingency overload', elm_name, cnt_drv.results.loading[m, c].real * 100, 100)
+            get_contingency_flows_list.append(cnt_drv.results.loading[m, c].real)
+            contingency_flows_slacks_list.append(0.0)
+            contingency_indices_list.append((m, c))
             base_problems = True
 
-        if not base_problems:
+        if base_problems:
 
+            # get the inter-area branches and their sign
+            inter_area_branches = get_inter_areas_branches(nbr=numerical_circuit.nbr,
+                                                           F=numerical_circuit.branch_data.F,
+                                                           T=numerical_circuit.branch_data.T,
+                                                           buses_areas_1=self.options.area_from_bus_idx,
+                                                           buses_areas_2=self.options.area_to_bus_idx)
+
+            inter_area_hvdc = get_inter_areas_branches(nbr=numerical_circuit.nhvdc,
+                                                       F=numerical_circuit.hvdc_data.get_bus_indices_f(),
+                                                       T=numerical_circuit.hvdc_data.get_bus_indices_t(),
+                                                       buses_areas_1=self.options.area_from_bus_idx,
+                                                       buses_areas_2=self.options.area_to_bus_idx)
+
+            # pack the results
+            self.results = OptimalNetTransferCapacityResults(bus_names=numerical_circuit.bus_data.bus_names,
+                                                             branch_names=numerical_circuit.branch_data.branch_names,
+                                                             load_names=numerical_circuit.load_data.load_names,
+                                                             generator_names=numerical_circuit.generator_data.generator_names,
+                                                             battery_names=numerical_circuit.battery_data.battery_names,
+                                                             hvdc_names=numerical_circuit.hvdc_data.names,
+                                                             Sbus=numerical_circuit.Sbus.real,
+                                                             voltage=pf_drv.results.voltage,
+                                                             load_shedding=np.zeros((numerical_circuit.nload, 1)),
+                                                             generator_shedding=np.zeros((numerical_circuit.ngen, 1)),
+                                                             battery_power=np.zeros((numerical_circuit.nbatt, 1)),
+                                                             controlled_generation_power=numerical_circuit.generator_data.generator_p,
+                                                             Sf=pf_drv.results.Sf.real,
+                                                             overloads=np.zeros(numerical_circuit.nbr),
+                                                             loading=pf_drv.results.loading,
+                                                             converged=False,
+                                                             bus_types=numerical_circuit.bus_types,
+                                                             hvdc_flow=pf_drv.results.hvdc_Pt,
+                                                             hvdc_loading=pf_drv.results.hvdc_loading,
+                                                             hvdc_slacks=np.zeros(numerical_circuit.nhvdc),
+                                                             phase_shift=pf_drv.results.theta,
+                                                             generation_delta=np.zeros(numerical_circuit.ngen),
+                                                             generation_delta_slacks=np.zeros(numerical_circuit.ngen),
+                                                             inter_area_branches=inter_area_branches,
+                                                             inter_area_hvdc=inter_area_hvdc,
+                                                             alpha=alpha,
+                                                             contingency_flows_list=get_contingency_flows_list,
+                                                             contingency_indices_list=contingency_indices_list,
+                                                             contingency_flows_slacks_list=contingency_flows_slacks_list,
+                                                             rates=numerical_circuit.branch_data.branch_rates[:, 0],
+                                                             contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0]
+                                                             )
+        else:
             self.progress_text.emit('Formulating NTC OPF...')
 
             # DDefine the problem
