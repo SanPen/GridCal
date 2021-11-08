@@ -519,9 +519,10 @@ class OptimalNetTransferCapacity(DriverTemplate):
         pf_drv.run()
         indices = np.where(np.abs(pf_drv.results.loading.real) >= 1.0)
         for m in zip(indices[0]):
-            elm_name = '{0}'.format(numerical_circuit.branch_names[m])
-            self.logger.add_error('Base overload', elm_name, pf_drv.results.loading[m].real * 100, 100)
-            base_problems = True
+            if numerical_circuit.branch_data.monitor_loading[m]:
+                elm_name = '{0}'.format(numerical_circuit.branch_names[m])
+                self.logger.add_error('Base overload', elm_name, pf_drv.results.loading[m].real * 100, 100)
+                base_problems = True
 
         # run contingency analysis -------------------------------------------------------------------------------------
         self.progress_text.emit('Pre-solving base state (Contingency analysis)...')
@@ -533,12 +534,13 @@ class OptimalNetTransferCapacity(DriverTemplate):
         contingency_indices_list = list()
         contingency_flows_slacks_list = list()
         for m, c in zip(indices[0], indices[1]):
-            elm_name = '{0} @ {1}'.format(numerical_circuit.branch_names[m], numerical_circuit.branch_names[c])
-            self.logger.add_error('Base contingency overload', elm_name, cnt_drv.results.loading[m, c].real * 100, 100)
-            get_contingency_flows_list.append(cnt_drv.results.loading[m, c].real)
-            contingency_flows_slacks_list.append(0.0)
-            contingency_indices_list.append((m, c))
-            base_problems = True
+            if numerical_circuit.branch_data.monitor_loading[m] and numerical_circuit.branch_data.contingency_enabled[c]:
+                elm_name = '{0} @ {1}'.format(numerical_circuit.branch_names[m], numerical_circuit.branch_names[c])
+                self.logger.add_error('Base contingency overload', elm_name, cnt_drv.results.loading[m, c].real * 100, 100)
+                get_contingency_flows_list.append(cnt_drv.results.Sf[m, c].real)
+                contingency_flows_slacks_list.append(0.0)
+                contingency_indices_list.append((m, c))
+                base_problems = True
 
         if base_problems:
 
@@ -570,7 +572,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
                                                              controlled_generation_power=numerical_circuit.generator_data.generator_p,
                                                              Sf=pf_drv.results.Sf.real,
                                                              overloads=np.zeros(numerical_circuit.nbr),
-                                                             loading=pf_drv.results.loading,
+                                                             loading=pf_drv.results.loading.real,
                                                              converged=False,
                                                              bus_types=numerical_circuit.bus_types,
                                                              hvdc_flow=pf_drv.results.hvdc_Pt,
