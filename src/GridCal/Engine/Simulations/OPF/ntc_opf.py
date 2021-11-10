@@ -370,7 +370,9 @@ def check_optimal_generation(generator_active, generator_names, dispatchable, Cg
             dgen1.append(delta[gen_idx])
 
             if not res:
-                logger.add_divergence('Delta up condition not met (delta[i] == generation[i] - Pgen[i])', generator_names[gen_idx], generation[gen_idx] - Pgen[gen_idx], delta[gen_idx])
+                logger.add_divergence('Delta up condition not met '
+                                      '(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx])',
+                                      generator_names[gen_idx], generation[gen_idx] - Pgen[gen_idx], delta[gen_idx])
 
     for bus_idx, gen_idx in gens2:
         if generator_active[gen_idx] and dispatchable[gen_idx]:
@@ -378,7 +380,9 @@ def check_optimal_generation(generator_active, generator_names, dispatchable, Cg
             dgen2.append(delta[gen_idx])
 
             if not res:
-                logger.add_divergence('Delta down condition not met (delta[i] == generation[i] - Pgen[i])', generator_names[gen_idx], generation[gen_idx] - Pgen[gen_idx], delta[gen_idx])
+                logger.add_divergence('Delta down condition not met '
+                                      '(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx])',
+                                      generator_names[gen_idx], generation[gen_idx] - Pgen[gen_idx], delta[gen_idx])
 
     # check area equality
     sum_a1 = sum(dgen1)
@@ -573,16 +577,16 @@ def check_proportional_generation(generator_active, dispatchable, generator_cost
         if generator_active[gen_idx] and dispatchable[gen_idx] and Pgen[gen_idx] > 0:
 
             prop = abs(Pgen[gen_idx] / sum_gen_2)
-            res = delta[gen_idx] == -prop * power_shift
+            res = delta[gen_idx] == prop * power_shift
             if not res:
                 logger.add_divergence("Delta down equal to it's share of the power shift "
-                                      "(delta[i] == -prop * power_shift)",
+                                      "(delta[i] == prop * power_shift)",
                                       generator_names[gen_idx], delta[gen_idx], -prop * power_shift)
 
-            res = generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx]
+            res = generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx]
             if not res:
                 logger.add_divergence('Delta down condition not met '
-                                      '(generation[i] == Pgen[i] + delta[i])',
+                                      '(generation[i] == Pgen[i] - delta[i])',
                                       generator_names[gen_idx], generation[gen_idx], Pgen[gen_idx] + delta[gen_idx])
 
             dgen2.append(delta[gen_idx])
@@ -590,10 +594,10 @@ def check_proportional_generation(generator_active, dispatchable, generator_cost
     # check area equality
     sum_a1 = sum(dgen1)
     sum_a2 = sum(dgen2)
-    res = sum_a1 == - sum_a2
+    res = sum_a1 == sum_a2
 
     if not res:
-        logger.add_divergence('Area equality not met', 'grid', sum_a1, - sum_a2)
+        logger.add_divergence('Area equality not met', 'grid', sum_a1, sum_a2)
 
 
 def formulate_angles(solver: pywraplp.Solver, nbus, vd, bus_names, angle_min, angle_max, logger: Logger,
@@ -737,29 +741,6 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
     for m in range(nbr):
 
         if branch_active[m]:
-            _f = F[m]
-            _t = T[m]
-
-            # declare the flow variable with ample limits
-            flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
-
-            # compute the branch susceptance
-            if branch_dc[m]:
-                bk = 1.0 / R[m]
-            else:
-                bk = 1.0 / X[m]
-
-            if control_mode[m] == TransformerControlType.Pt:  # is a phase shifter
-                # create the phase shift variable
-                tau[m] = solver.NumVar(theta_min[m], theta_max[m],
-                                       'phase_shift_{0}_{1}'.format(m, branch_names[m]))
-                # branch power from-to eq.15
-                solver.Add(flow_f[m] == bk * (angles[_f] - angles[_t] + tau[m]),
-                           'phase_shifter_power_flow_{0}_{1}'.format(m, branch_names[m]))
-            else:
-                # branch power from-to eq.15
-                solver.Add(flow_f[m] == bk * (angles[_f] - angles[_t]),
-                           'branch_power_flow_{0}_{1}'.format(m, branch_names[m]))
 
             # determine the monitoring logic
             if monitor_only_sensitive_branches:
@@ -771,6 +752,30 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
                 monitor[m] = monitor_loading[m]
 
             if monitor[m]:
+
+                _f = F[m]
+                _t = T[m]
+
+                # declare the flow variable with ample limits
+                flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
+
+                # compute the branch susceptance
+                if branch_dc[m]:
+                    bk = 1.0 / R[m]
+                else:
+                    bk = 1.0 / X[m]
+
+                if control_mode[m] == TransformerControlType.Pt:  # is a phase shifter
+                    # create the phase shift variable
+                    tau[m] = solver.NumVar(theta_min[m], theta_max[m],
+                                           'phase_shift_{0}_{1}'.format(m, branch_names[m]))
+                    # branch power from-to eq.15
+                    solver.Add(flow_f[m] == bk * (angles[_f] - angles[_t] + tau[m]),
+                               'phase_shifter_power_flow_{0}_{1}'.format(m, branch_names[m]))
+                else:
+                    # branch power from-to eq.15
+                    solver.Add(flow_f[m] == bk * (angles[_f] - angles[_t]),
+                               'branch_power_flow_{0}_{1}'.format(m, branch_names[m]))
 
                 if rates[m] <= 0:
                     logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
@@ -822,28 +827,6 @@ def check_branches_flow(nbr, Rates, Sbase,
     for m in range(nbr):
 
         if branch_active[m]:
-            _f = F[m]
-            _t = T[m]
-
-            # compute the branch susceptance
-            if branch_dc[m]:
-                bk = 1.0 / R[m]
-            else:
-                bk = 1.0 / X[m]
-
-            if control_mode[m] == TransformerControlType.Pt:  # is a phase shifter
-                # branch power from-to eq.15
-                res = flow_f[m] == bk * (angles[_f] - angles[_t] + tau[m])
-
-                if not res:
-                    logger.add_divergence('Phase shifter flow setting (flow_f[m] == bk * (angles[f] - angles[t] + tau[m]))', branch_names[m], flow_f[m], bk * (angles[_f] - angles[_t] + tau[m]))
-
-            else:
-                # branch power from-to eq.15
-                res = flow_f[m] == bk * (angles[_f] - angles[_t])
-
-                if not res:
-                    logger.add_divergence('Branch flow setting (flow_f[m] == bk * (angles[f] - angles[t]))', branch_names[m], flow_f[m], bk * (angles[_f] - angles[_t]))
 
             # determine the monitoring logic
             if monitor_only_sensitive_branches:
@@ -855,6 +838,32 @@ def check_branches_flow(nbr, Rates, Sbase,
                 monitor[m] = monitor_loading[m]
 
             if monitor[m]:
+
+                _f = F[m]
+                _t = T[m]
+
+                # compute the branch susceptance
+                if branch_dc[m]:
+                    bk = 1.0 / R[m]
+                else:
+                    bk = 1.0 / X[m]
+
+                if control_mode[m] == TransformerControlType.Pt:  # is a phase shifter
+                    # branch power from-to eq.15
+                    res = flow_f[m] == bk * (angles[_f] - angles[_t] + tau[m])
+
+                    if not res:
+                        logger.add_divergence(
+                            'Phase shifter flow setting (flow_f[m] == bk * (angles[f] - angles[t] + tau[m]))',
+                            branch_names[m], flow_f[m], bk * (angles[_f] - angles[_t] + tau[m]))
+
+                else:
+                    # branch power from-to eq.15
+                    res = flow_f[m] == bk * (angles[_f] - angles[_t])
+
+                    if not res:
+                        logger.add_divergence('Branch flow setting (flow_f[m] == bk * (angles[f] - angles[t]))',
+                                              branch_names[m], flow_f[m], bk * (angles[_f] - angles[_t]))
 
                 # rating restriction in the sense from-to: eq.17
                 res = flow_f[m] <= rates[m]
