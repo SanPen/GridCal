@@ -613,8 +613,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
                              weight_kirchoff=self.options.weight_kirchoff,
                              weight_overloads=self.options.weight_overloads,
                              weight_hvdc_control=self.options.weight_hvdc_control,
-                             logger=self.logger
-                             )
+                             logger=self.logger)
             # Solve
             self.progress_text.emit('Solving NTC OPF...')
             converged = problem.solve()

@@ -451,58 +451,61 @@ def formulate_proportional_generation(solver: pywraplp.Solver,
 
     for bus_idx, gen_idx in gens1:
 
-        if generator_active[gen_idx] and generator_dispatchable[gen_idx] and Pgen[gen_idx] > 0:
+        if generator_active[gen_idx]:
 
-            name = 'Gen_up_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
+            if generator_dispatchable[gen_idx] and Pgen[gen_idx] > 0:
 
-            if Pmin[gen_idx] >= Pmax[gen_idx]:
-                logger.add_error('Pmin >= Pmax', 'Generator index {0}'.format(gen_idx), Pmin[gen_idx])
+                name = 'Gen_up_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
 
-            generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-            delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
-            delta_slack_1[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_up_' + name)
-            delta_slack_2[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_down_' + name)
-            prop = round(abs(Pgen[gen_idx] / sum_gen_1), 6)
-            solver.Add(delta[gen_idx] == prop * power_shift, 'Delta_equal_to_proportional_power_shift_' + name)
+                if Pmin[gen_idx] >= Pmax[gen_idx]:
+                    logger.add_error('Pmin >= Pmax', 'Generator index {0}'.format(gen_idx), Pmin[gen_idx])
 
-            solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx] + delta_slack_1[gen_idx] - delta_slack_2[gen_idx], 'Generation_due_to_forced_delta_' + name)
+                generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
+                delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
+                delta_slack_1[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_up_' + name)
+                delta_slack_2[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_down_' + name)
 
-        else:
-            generation[gen_idx] = Pgen[gen_idx]
-            delta[gen_idx] = 0
+                prop = round(abs(Pgen[gen_idx] / sum_gen_1), 6)
+                solver.Add(delta[gen_idx] == prop * power_shift, 'Delta_equal_to_proportional_power_shift_' + name)
+                solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx] + delta_slack_1[gen_idx] - delta_slack_2[gen_idx], 'Generation_due_to_forced_delta_' + name)
 
-        dgen1.append(delta[gen_idx])
-        generation1.append(generation[gen_idx])
-        Pgen1.append(Pgen[gen_idx])
-        gen_a1_idx.append(gen_idx)
+            else:
+                generation[gen_idx] = Pgen[gen_idx]
+                delta[gen_idx] = 0
+
+            dgen1.append(delta[gen_idx])
+            generation1.append(generation[gen_idx])
+            Pgen1.append(Pgen[gen_idx])
+            gen_a1_idx.append(gen_idx)
 
     for bus_idx, gen_idx in gens2:
 
-        if generator_active[gen_idx] and generator_dispatchable[gen_idx] and Pgen[gen_idx] > 0:
+        if generator_active[gen_idx]:
 
-            name = 'Gen_down_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
+            if generator_dispatchable[gen_idx] and Pgen[gen_idx] > 0:
 
-            if Pmin[gen_idx] >= Pmax[gen_idx]:
-                logger.add_error('Pmin >= Pmax', 'Generator index {0}'.format(gen_idx), Pmin[gen_idx])
+                name = 'Gen_down_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
 
-            generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-            delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
-            delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
-            delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
+                if Pmin[gen_idx] >= Pmax[gen_idx]:
+                    logger.add_error('Pmin >= Pmax', 'Generator index {0}'.format(gen_idx), Pmin[gen_idx])
 
-            prop = round(abs(Pgen[gen_idx] / sum_gen_2), 6)
-            solver.Add(delta[gen_idx] == prop * power_shift, 'Delta_down_gen{}'.format(gen_idx))
+                generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
+                delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
+                delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
+                delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
 
-            solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx] + delta_slack_1[gen_idx] - delta_slack_2[gen_idx], 'Gen_down_gen{}'.format(gen_idx))
+                prop = round(abs(Pgen[gen_idx] / sum_gen_2), 6)
+                solver.Add(delta[gen_idx] == prop * power_shift, 'Delta_down_gen{}'.format(gen_idx))
+                solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx] + delta_slack_1[gen_idx] - delta_slack_2[gen_idx], 'Gen_down_gen{}'.format(gen_idx))
 
-        else:
-            generation[gen_idx] = Pgen[gen_idx]
-            delta[gen_idx] = 0
+            else:
+                generation[gen_idx] = Pgen[gen_idx]
+                delta[gen_idx] = 0
 
-        dgen2.append(delta[gen_idx])
-        generation2.append(generation[gen_idx])
-        Pgen2.append(Pgen[gen_idx])
-        gen_a2_idx.append(gen_idx)
+            dgen2.append(delta[gen_idx])
+            generation2.append(generation[gen_idx])
+            Pgen2.append(Pgen[gen_idx])
+            gen_a2_idx.append(gen_idx)
 
     # set the generation in the non inter-area ones
     for bus_idx, gen_idx in gens_out:
