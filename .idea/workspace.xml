@@ -23,9 +23,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Refactored the order of the generation formulation in NTC-OPF">
-      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/KULeuven_5node.gridcal" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/PTDF/PTDF_ku_leuven.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added the KU Leuven investigation about the PTDF etc...&#10;Modified the NTC-OPF objective to only maximize the inter-area flows while minimizing the slacks">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
@@ -128,7 +126,7 @@
       <recent name="$PROJECT_DIR$/src/research/power_flow" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.PTDF_ku_leuven">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -248,8 +246,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.PTDF_ku_leuven" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.PTDF_ku_leuven" />
         <item itemvalue="Python.line_arrow" />
         <item itemvalue="Python.jacobian_lynn_cartesian" />
         <item itemvalue="Python.setup" />
@@ -675,14 +673,7 @@
       <workItem from="1636482316185" duration="630000" />
       <workItem from="1636531307098" duration="3424000" />
       <workItem from="1636616099940" duration="7881000" />
-      <workItem from="1636714098985" duration="5162000" />
-    </task>
-    <task id="LOCAL-00189" summary="Improved changelog">
-      <created>1631556959174</created>
-      <option name="number" value="00189" />
-      <option name="presentableId" value="LOCAL-00189" />
-      <option name="project" value="LOCAL" />
-      <updated>1631556959174</updated>
+      <workItem from="1636714098985" duration="6696000" />
     </task>
     <task id="LOCAL-00190" summary="Final version number 4.2.0">
       <created>1631559296819</created>
@@ -1020,7 +1011,14 @@
       <option name="project" value="LOCAL" />
       <updated>1636623381800</updated>
     </task>
-    <option name="localTasksCounter" value="238" />
+    <task id="LOCAL-00238" summary="Added the KU Leuven investigation about the PTDF etc...&#10;Modified the NTC-OPF objective to only maximize the inter-area flows while minimizing the slacks">
+      <created>1636724427798</created>
+      <option name="number" value="00238" />
+      <option name="presentableId" value="LOCAL-00238" />
+      <option name="project" value="LOCAL" />
+      <updated>1636724427799</updated>
+    </task>
+    <option name="localTasksCounter" value="239" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1054,7 +1052,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Implemented dispatcheable in the HVDC line and implemented the NTC OPF mode" />
     <MESSAGE value="implemented HVDC dispatch in the OPF&#10;Joined it to the power flow non-destructive feed&#10;Added attributes in the compilation functions" />
     <MESSAGE value="Added branch tap angle optimization in the OPF" />
     <MESSAGE value="OPF sign corrected" />
@@ -1079,7 +1076,8 @@
     <MESSAGE value="changed version" />
     <MESSAGE value="Fixed indices in the NTC pre-solve and the linear contingency analysis" />
     <MESSAGE value="Refactored the order of the generation formulation in NTC-OPF" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactored the order of the generation formulation in NTC-OPF" />
+    <MESSAGE value="Added the KU Leuven investigation about the PTDF etc...&#10;Modified the NTC-OPF objective to only maximize the inter-area flows while minimizing the slacks" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added the KU Leuven investigation about the PTDF etc...&#10;Modified the NTC-OPF objective to only maximize the inter-area flows while minimizing the slacks" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1595,7 +1593,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research2_py.coverage" NAME="Nosetests in PTDF_research2.py Coverage Results" MODIFIED="1600161918846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$time_series.coverage" NAME="time_series Coverage Results" MODIFIED="1617809423186" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Tutorials" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_power_flow_py.coverage" NAME="Nosetests in test_power_flow.py Coverage Results" MODIFIED="1632998750088" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1636716437752" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1636725255226" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$binary_ga.coverage" NAME="binary_ga Coverage Results" MODIFIED="1615226727819" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_opf_py.coverage" NAME="Nosetests in test_opf.py Coverage Results" MODIFIED="1632998728805" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_line_losses_py.coverage" NAME="Nosetests in test_line_losses.py Coverage Results" MODIFIED="1634139762786" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />

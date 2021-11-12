@@ -531,22 +531,25 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 base_problems = True
 
         # run contingency analysis -------------------------------------------------------------------------------------
-        self.progress_text.emit('Pre-solving base state (Contingency analysis)...')
-        options = ContingencyAnalysisOptions(distributed_slack=False)
-        cnt_drv = ContingencyAnalysisDriver(grid=self.grid, options=options)
-        cnt_drv.run()
-        indices = np.where(np.abs(cnt_drv.results.loading.real) >= 1.0)
         get_contingency_flows_list = list()
         contingency_indices_list = list()
         contingency_flows_slacks_list = list()
-        for m, c in zip(indices[0], indices[1]):
-            if numerical_circuit.branch_data.monitor_loading[m] and numerical_circuit.branch_data.contingency_enabled[c]:
-                elm_name = '{0} @ {1}'.format(numerical_circuit.branch_names[m], numerical_circuit.branch_names[c])
-                self.logger.add_error('Base contingency overload', elm_name, cnt_drv.results.loading[m, c].real * 100, 100)
-                get_contingency_flows_list.append(cnt_drv.results.Sf[m, c].real)
-                contingency_flows_slacks_list.append(0.0)
-                contingency_indices_list.append((m, c))
-                base_problems = True
+
+        if self.options.consider_contingencies:
+            self.progress_text.emit('Pre-solving base state (Contingency analysis)...')
+            options = ContingencyAnalysisOptions(distributed_slack=False)
+            cnt_drv = ContingencyAnalysisDriver(grid=self.grid, options=options)
+            cnt_drv.run()
+            indices = np.where(np.abs(cnt_drv.results.loading.real) >= 1.0)
+
+            for m, c in zip(indices[0], indices[1]):
+                if numerical_circuit.branch_data.monitor_loading[m] and numerical_circuit.branch_data.contingency_enabled[c]:
+                    elm_name = '{0} @ {1}'.format(numerical_circuit.branch_names[m], numerical_circuit.branch_names[c])
+                    self.logger.add_error('Base contingency overload', elm_name, cnt_drv.results.loading[m, c].real * 100, 100)
+                    get_contingency_flows_list.append(cnt_drv.results.Sf[m, c].real)
+                    contingency_flows_slacks_list.append(0.0)
+                    contingency_indices_list.append((m, c))
+                    base_problems = True
 
         if base_problems:
 

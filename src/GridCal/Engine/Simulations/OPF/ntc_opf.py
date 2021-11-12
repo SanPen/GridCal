@@ -1214,8 +1214,10 @@ def formulate_objective(solver: pywraplp.Solver,
     delta_slacks = solver.Sum(delta_slack_1) + solver.Sum(delta_slack_2)
 
     # formulate objective function
-    # f = -weight_power_shift * power_shift
-    f = -weight_power_shift * flow_from_a1_to_a2
+    f = -weight_power_shift * power_shift
+
+    if maximize_exchange_flows:
+        f -= weight_power_shift * flow_from_a1_to_a2
 
     f += weight_generation_cost * gen_cost_f
     f += weight_generation_delta * delta_slacks
