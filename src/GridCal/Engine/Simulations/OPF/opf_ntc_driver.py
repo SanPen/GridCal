@@ -413,9 +413,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                               contingency_flow / self.contingency_rates[m] * 100,
                               self.Sf[m] / self.rates[m] * 100))
                     labels.append(len(y))
-            y = np.array(y)
-            idx = np.flip(np.argsort(np.abs(y[:, 8].astype(float))))  # sort by ContingencyFlow (%)
-            y = y[idx, :]
+
             columns = ['Monitored idx',
                        'Contingency idx',
                        'Monitored',
@@ -426,7 +424,15 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                        'Base rates (MW)',
                        'ContingencyFlow (%)',
                        'Base flow (%)']
-            y = np.array(y, dtype=object)
+
+            y = np.array(y)
+            if len(y.shape) == 2:
+                idx = np.flip(np.argsort(np.abs(y[:, 8].astype(float))))  # sort by ContingencyFlow (%)
+                y = y[idx, :]
+                y = np.array(y, dtype=object)
+            else:
+                y = np.zeros((0, len(columns)), dtype=object)
+
             y_label = ''
             title = result_type.value[0]
 

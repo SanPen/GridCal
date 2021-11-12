@@ -1189,6 +1189,17 @@ def formulate_objective(solver: pywraplp.Solver,
     :return:
     """
 
+    # maximize the power from->to
+    flows_ft = np.zeros(len(inter_area_branches), dtype=object)
+    for i, (k, sign) in enumerate(inter_area_branches):
+        flows_ft[i] = sign * flows_f[k]
+
+    flows_hvdc_ft = np.zeros(len(inter_area_hvdc), dtype=object)
+    for i, (k, sign) in enumerate(inter_area_hvdc):
+        flows_hvdc_ft[i] = sign * hvdc_flow_f[k]
+
+    flow_from_a1_to_a2 = solver.Sum(flows_ft) + solver.Sum(flows_hvdc_ft)
+
     # include the cost of generation
     gen_cost_f = solver.Sum(gen_cost * generation_delta)
 
@@ -1203,7 +1214,8 @@ def formulate_objective(solver: pywraplp.Solver,
     delta_slacks = solver.Sum(delta_slack_1) + solver.Sum(delta_slack_2)
 
     # formulate objective function
-    f = -weight_power_shift * power_shift
+    # f = -weight_power_shift * power_shift
+    f = -weight_power_shift * flow_from_a1_to_a2
 
     f += weight_generation_cost * gen_cost_f
     f += weight_generation_delta * delta_slacks
@@ -1224,48 +1236,6 @@ def formulate_objective(solver: pywraplp.Solver,
               delta_slack_1, delta_slack_2]
 
     return all_slacks_sum, slacks
-
-
-def solve_power_flow(Bbus, Pinj, bus_active, bus_names, angle_min, angle_max, vd, logger: Logger):
-
-    solver = pywraplp.Solver.CreateSolver("CBC")
-
-    nbus = len(Pinj)
-    theta_p = np.zeros(nbus, dtype=object)
-    theta_n = np.zeros(nbus, dtype=object)
-    for i in range(nbus):
-
-        if angle_min[i] > angle_max[i]:
-            logger.add_error('Theta min > Theta max', 'Bus {0}'.format(i), angle_min[i])
-
-        theta_p[i] = solver.NumVar(0, angle_max[i], 'theta_p_{0}'.format(i))
-        theta_n[i] = solver.NumVar(0, -angle_min[i], 'theta_n_{0}'.format(i))
-
-    for i in vd:
-        solver.Add(theta_p[i] == 0, 'theta_p{} zero'.format(i))
-        solver.Add(theta_n[i] == 0, 'theta_n{} zero'.format(i))
-
-    angles = theta_p - theta_n
-    node_balance = lpDot(Bbus, angles)
-
-    i = 0
-
-    for balance, power in zip(node_balance, Pinj):
-        if bus_active[i] and not isinstance(balance, int):  # balance is 0 for isolated buses
-            solver.Add(balance == power, "Node_power_balance_{0}".format(i))
-        i += 1
-
-    # objective function
-    f = solver.Sum(theta_p) + solver.Sum(theta_n)
-    solver.Minimize(f)
-
-    save_lp(solver, file_name='power_flow.lp')
-
-    status = solver.Solve()
-
-    angles_val = extract(angles)
-
-    print()
 
 
 class OpfNTC(Opf):
