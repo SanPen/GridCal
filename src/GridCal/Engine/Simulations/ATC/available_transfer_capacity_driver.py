@@ -245,7 +245,8 @@ def compute_atc(br_idx, contingency_br_idx, lodf, alpha, flows, rates, contingen
 
 
 @nb.njit()
-def compute_atc_list(br_idx, contingency_br_idx, lodf, alpha, flows, rates, contingency_rates, threshold=0.005):
+def compute_atc_list(br_idx, contingency_br_idx, lodf, alpha, flows, rates, contingency_rates, base_exchange,
+                     threshold, time_idx):
     """
     Compute all lines' ATC
     :param br_idx: array of branch indices to analyze
@@ -255,7 +256,9 @@ def compute_atc_list(br_idx, contingency_br_idx, lodf, alpha, flows, rates, cont
     :param flows: branches power injected at the "from" side [MW]
     :param rates: all branches rates vector
     :param contingency_rates: all branches contingency rates vector
+    :param base_exchange: amount already exchanges between areas
     :param threshold: value that determines if a line is studied for the ATC calculation
+    :param time_idx: time index of the calculation
     :return:
              beta_mat: Matrix of beta values (branch, contingency_branch)
              beta: vector of actual beta value used for each branch (n-branch)
@@ -301,13 +304,25 @@ def compute_atc_list(br_idx, contingency_br_idx, lodf, alpha, flows, rates, cont
                         else:
                             atc_mc = (-contingency_rates[m] - contingency_flow) / beta
 
+                        final_atc = min(atc_mc, atc_n)
+                        ntc = final_atc + base_exchange
+
                         # refine the ATC to the most restrictive value every time
-                        results.append((m, c,
-                                        alpha[m], beta, lodf[m, c],
-                                        atc_n, atc_mc, min(atc_mc, atc_n),
-                                        flows[m], contingency_flow,
+                        results.append((time_idx,  # 0
+                                        m,
+                                        c,
+                                        alpha[m],
+                                        beta,
+                                        lodf[m, c],  # 5
+                                        atc_n,
+                                        atc_mc,
+                                        final_atc,
+                                        ntc,
+                                        flows[m],  # 10
+                                        contingency_flow,
                                         flows[m] / (rates[m] + 1e-9) * 100.0,
-                                        contingency_flow / (contingency_rates[m] + 1e-9) * 100.0))
+                                        contingency_flow / (contingency_rates[m] + 1e-9) * 100.0,
+                                        base_exchange))
 
     return results
 
@@ -348,7 +363,8 @@ class AvailableTransferCapacityResults(ResultsTemplate):
 
         :return:
         """
-        self.report_headers = ['Branch',
+        self.report_headers = ['Time',
+                               'Branch',
                                'Base flow',
                                'Rate',
                                'Alpha',
@@ -365,39 +381,57 @@ class AvailableTransferCapacityResults(ResultsTemplate):
 
         rep = np.array(self.raw_report)
 
-        # results.append((m, c,                                                         0, 1
-        #                 alpha[m], beta, lodf[m, c],                                   2, 3, 4
-        #                 atc_n, atc_mc, atc_final                                      5, 6, 7
-        #                 flows[m], contingency_flow,                                   8, 9
-        #                 flows[m] / (rates[m] + 1e-9) * 100.0,                         10
-        #                 contingency_flow / (contingency_rates[m] + 1e-9) * 100.0))    11
-
         # sort by ATC
         if len(self.raw_report):
             self.report_indices = np.arange(0, len(rep))
-            self.report[:, 0] = self.branch_names[rep[:, 0].astype(int)]  # Branch name
-            self.report[:, 1] = rep[:, 8]  # 'Base flow'
-            self.report[:, 2] = self.rates[rep[:, 0].astype(int)]  # 'Rate',
-            self.report[:, 3] = rep[:, 2]  # 'Alpha'
-            self.report[:, 4] = rep[:, 5]  # 'ATC normal'
 
-            # contingency info
-            self.report[:, 5] = self.branch_names[rep[:, 1].astype(int)]  # 'Limiting contingency branch'
-            self.report[:, 6] = rep[:, 9]  # 'Limiting contingency flow'
-            self.report[:, 7] = self.contingency_rates[rep[:, 1].astype(int)]  # 'Contingency rate'
-            self.report[:, 8] = rep[:, 3]  # 'Beta'
-            self.report[:, 9] = rep[:, 6]  # 'Contingency ATC'
-            self.report[:, 10] = rep[:, 7]  # ATC
-            self.report[:, 11] = self.base_exchange  # Base exchange flow
-            self.report[:, 12] = rep[:, 7] + self.base_exchange  # NTC
+            # time
+            self.report[:, 0] = 0
 
-            # sort by NTC
-            idx = np.argsort(rep[:, 7])
-            self.report = self.report[idx, :]
+            # Branch name
+            self.report[:, 1] = self.branch_names[rep[:, 1].astype(int)]
 
-            # trim by abs alpha > threshold
-            loading = np.abs(self.report[:, 1] / (self.report[:, 2] + 1e-20))
-            idx = np.where((np.abs(self.report[:, 3]) > threshold) & (loading <= 1.0))[0]
+            # Base flow'
+            self.report[:, 2] = rep[:, 10]
+
+            # rate
+            self.report[:, 3] = self.rates[rep[:, 1].astype(int)]  # 'Rate', (time, branch)
+
+            # alpha
+            self.report[:, 4] = rep[:, 3]
+
+            # 'ATC normal'
+            self.report[:, 5] = rep[:, 6]
+
+            # contingency info -----
+
+            # 'Limiting contingency branch'
+            self.report[:, 6] = self.branch_names[rep[:, 2].astype(int)]
+
+            # 'Limiting contingency flow'
+            self.report[:, 7] = rep[:, 11]
+
+            # 'Contingency rate' (time, branch)
+            self.report[:, 8] = self.contingency_rates[rep[:, 2].astype(int)]
+
+            # 'Beta'
+            self.report[:, 9] = rep[:, 4]
+
+            # 'Contingency ATC'
+            self.report[:, 10] = rep[:, 7]
+
+            # ATC
+            self.report[:, 11] = rep[:, 8]
+
+            # Base exchange flow
+            self.report[:, 12] = rep[:, 14]
+
+            # NTC
+            self.report[:, 13] = rep[:, 9] + self.base_exchange
+
+            # trim by abs alpha > threshold and loading <= 1
+            loading = np.abs(self.report[:, 2] / (self.report[:, 3] + 1e-20))
+            idx = np.where((np.abs(self.report[:, 4]) > threshold) & (loading <= 1.0))[0]
 
             self.report = self.report[idx, :]
         else:
@@ -557,17 +591,23 @@ class AvailableTransferCapacityDriver(DriverTemplate):
                 base_exchange += (self.options.inter_area_hvdc_branch_sense * self.options.Pf_hvdc[self.options.idx_hvdc_br]).sum()
 
         # compute ATC
-        results = compute_atc_list(br_idx=br_idx,
-                                   contingency_br_idx=con_br_idx,
-                                   lodf=linear.LODF,
-                                   alpha=alpha,
-                                   flows=flows,
-                                   rates=nc.Rates,
-                                   contingency_rates=nc.ContingencyRates,
-                                   threshold=self.options.threshold)
+        report = compute_atc_list(br_idx=br_idx,
+                                  contingency_br_idx=con_br_idx,
+                                  lodf=linear.LODF,
+                                  alpha=alpha,
+                                  flows=flows,
+                                  rates=nc.Rates,
+                                  contingency_rates=nc.ContingencyRates,
+                                  base_exchange=base_exchange,
+                                  time_idx=0,
+                                  threshold=self.options.threshold)
+        report = np.array(report, dtype=object)
+
+        # sort by NTC
+        report = report[report[:, 9].argsort()]
 
         # post-process and store the results
-        self.results.raw_report = results
+        self.results.raw_report = report
         self.results.base_exchange = base_exchange
         self.results.make_report(threshold=self.options.threshold)
 
