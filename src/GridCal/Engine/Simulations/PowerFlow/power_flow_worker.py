@@ -250,6 +250,9 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
             # for any other method, raise exception
             raise Exception(solver_type.value + ' Not supported in power flow mode')
 
+        # record the solution type
+        solution.method = solver_type
+
         # record the method used, if it improved the solution
         if solution.norm_f < final_solution.norm_f:
             report.add(method=solver_type,
@@ -364,7 +367,8 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                                                                                V=solution.V,
                                                                                branch_rates=branch_rates,
                                                                                Yf=solution.Yf,
-                                                                               Yt=solution.Yt)
+                                                                               Yt=solution.Yt,
+                                                                               method=solution.method)
 
     # voltage, Sf, loading, losses, error, converged, Qpv
     results = PowerFlowResults(n=circuit.nbus,
@@ -398,7 +402,8 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     return results
 
 
-def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_rates, Yf=None, Yt=None):
+def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_rates, Yf=None, Yt=None,
+                            method: bs.SolverType = None):
     """
     Compute the power Sf trough the branches.
 
@@ -418,36 +423,49 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
     vd = calculation_inputs.vd
     pv = calculation_inputs.pv
 
-    # power at the slack nodes
-    Sbus[vd] = V[vd] * np.conj(calculation_inputs.Ybus[vd, :].dot(V))
-
-    # Reactive power at the pv nodes
-    P = Sbus[pv].real
-    Q = (V[pv] * np.conj(calculation_inputs.Ybus[pv, :].dot(V))).imag
-    Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
-
-    if Yf is None:
-        Yf = calculation_inputs.Yf
-    if Yt is None:
-        Yt = calculation_inputs.Yt
-
-    # Branches current, loading, etc
     Vf = calculation_inputs.Cf * V
     Vt = calculation_inputs.Ct * V
-    If = Yf * V
-    It = Yt * V
-    Sf = Vf * np.conj(If)
-    St = Vt * np.conj(It)
 
-    # Branch losses in MVA
-    losses = (Sf + St) * calculation_inputs.Sbase
+    if method not in [bs.SolverType.DC]:
+        # power at the slack nodes
+        Sbus[vd] = V[vd] * np.conj(calculation_inputs.Ybus[vd, :].dot(V))
 
-    # branch voltage increment
-    Vbranch = Vf - Vt
+        # Reactive power at the pv nodes
+        P = Sbus[pv].real
+        Q = (V[pv] * np.conj(calculation_inputs.Ybus[pv, :].dot(V))).imag
+        Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
 
-    # Branch power in MVA
-    Sfb = Sf * calculation_inputs.Sbase
-    Stb = St * calculation_inputs.Sbase
+        if Yf is None:
+            Yf = calculation_inputs.Yf
+        if Yt is None:
+            Yt = calculation_inputs.Yt
+
+        # Branches current, loading, etc
+        If = Yf * V
+        It = Yt * V
+        Sf = Vf * np.conj(If)
+        St = Vt * np.conj(It)
+
+        # Branch losses in MVA
+        losses = (Sf + St) * calculation_inputs.Sbase
+
+        # branch voltage increment
+        Vbranch = Vf - Vt
+
+        # Branch power in MVA
+        Sfb = Sf * calculation_inputs.Sbase
+        Stb = St * calculation_inputs.Sbase
+    else:
+        # DC power flow
+        theta_f = np.angle(Vf, deg=False)
+        theta_t = np.angle(Vt, deg=False)
+        Vbranch = theta_f - theta_t
+        Sf = (1.0 / calculation_inputs.branch_data.X) * Vbranch
+        Sfb = Sf * calculation_inputs.Sbase
+        Stb = Sf * calculation_inputs.Sbase
+        If = Sfb
+        It = Stb
+        losses = np.zeros(calculation_inputs.nbr)
 
     # Branch loading in p.u.
     loading = Sfb / (branch_rates + 1e-9)

@@ -23,7 +23,7 @@ from GridCal.Engine.Simulations.results_template import ResultsTemplate
 class NumericPowerFlowResults:
 
     def __init__(self, V, converged, norm_f, Scalc, ma=None, theta=None, Beq=None, Ybus=None, Yf=None, Yt=None,
-                 iterations=0, elapsed=0):
+                 iterations=0, elapsed=0, method=None):
         """
         Object to store the results returned by a numeric power flow routine
         :param V: Voltage vector
@@ -51,6 +51,7 @@ class NumericPowerFlowResults:
         self.Yt = Yt
         self.iterations = iterations
         self.elapsed = elapsed
+        self.method = None
 
 
 class PowerFlowResults(ResultsTemplate):
