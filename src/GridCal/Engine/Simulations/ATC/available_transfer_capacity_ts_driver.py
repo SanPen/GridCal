@@ -294,6 +294,10 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             # sort by NTC
             report = report[report[:, 9].argsort()]
 
+            # curtail report
+            if self.options.max_report_elements > 0:
+                report = report[:self.options.max_report_elements, :]
+
             # post-process and store the results
             if self.results.raw_report is None:
                 self.results.raw_report = report

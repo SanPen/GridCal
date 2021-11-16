@@ -2866,7 +2866,7 @@ class MainGUI(QMainWindow):
                 distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 threshold = self.ui.atcThresholdSpinBox.value()
-
+                max_report_elements = self.ui.ntcReportLimitingElementsSpinBox.value()
                 # available transfer capacity inter areas
                 compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
 
@@ -2924,7 +2924,8 @@ class MainGUI(QMainWindow):
                                                                Pf_hvdc=Pf_hvdc,
                                                                dT=dT,
                                                                threshold=threshold,
-                                                               mode=mode)
+                                                               mode=mode,
+                                                               max_report_elements=max_report_elements)
 
                 drv = sim.AvailableTransferCapacityDriver(grid=self.circuit,
                                                           options=options)
@@ -2979,6 +2980,7 @@ class MainGUI(QMainWindow):
                     distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
                     dT = self.ui.atcPerturbanceSpinBox.value()
                     threshold = self.ui.atcThresholdSpinBox.value()
+                    max_report_elements = self.ui.ntcReportLimitingElementsSpinBox.value()
 
                     # available transfer capacity inter areas
                     compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
@@ -3037,7 +3039,8 @@ class MainGUI(QMainWindow):
                                                                    Pf_hvdc=Pf_hvdc,
                                                                    dT=dT,
                                                                    threshold=threshold,
-                                                                   mode=mode)
+                                                                   mode=mode,
+                                                                   max_report_elements=max_report_elements)
 
                     start_ = self.ui.profile_start_slider.value()
                     end_ = self.ui.profile_end_slider.value()

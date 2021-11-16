@@ -2154,13 +2154,6 @@ class Ui_mainWindow(object):
         self.frame_66.setFrameShadow(QFrame.Raised)
         self.gridLayout_16 = QGridLayout(self.frame_66)
         self.gridLayout_16.setObjectName(u"gridLayout_16")
-        self.atcPerturbanceSpinBox = QDoubleSpinBox(self.frame_66)
-        self.atcPerturbanceSpinBox.setObjectName(u"atcPerturbanceSpinBox")
-        self.atcPerturbanceSpinBox.setMaximum(999999999999.000000000000000)
-        self.atcPerturbanceSpinBox.setValue(100.000000000000000)
-
-        self.gridLayout_16.addWidget(self.atcPerturbanceSpinBox, 0, 1, 1, 1)
-
         self.label_91 = QLabel(self.frame_66)
         self.label_91.setObjectName(u"label_91")
 
@@ -2181,6 +2174,19 @@ class Ui_mainWindow(object):
 
         self.gridLayout_16.addWidget(self.label_77, 2, 0, 1, 1)
 
+        self.usePfValuesForAtcCheckBox = QCheckBox(self.frame_66)
+        self.usePfValuesForAtcCheckBox.setObjectName(u"usePfValuesForAtcCheckBox")
+        self.usePfValuesForAtcCheckBox.setChecked(True)
+
+        self.gridLayout_16.addWidget(self.usePfValuesForAtcCheckBox, 4, 0, 1, 1)
+
+        self.atcPerturbanceSpinBox = QDoubleSpinBox(self.frame_66)
+        self.atcPerturbanceSpinBox.setObjectName(u"atcPerturbanceSpinBox")
+        self.atcPerturbanceSpinBox.setMaximum(999999999999.000000000000000)
+        self.atcPerturbanceSpinBox.setValue(100.000000000000000)
+
+        self.gridLayout_16.addWidget(self.atcPerturbanceSpinBox, 0, 1, 1, 1)
+
         self.atcThresholdSpinBox = QDoubleSpinBox(self.frame_66)
         self.atcThresholdSpinBox.setObjectName(u"atcThresholdSpinBox")
         self.atcThresholdSpinBox.setDecimals(4)
@@ -2189,11 +2195,17 @@ class Ui_mainWindow(object):
 
         self.gridLayout_16.addWidget(self.atcThresholdSpinBox, 1, 1, 1, 1)
 
-        self.usePfValuesForAtcCheckBox = QCheckBox(self.frame_66)
-        self.usePfValuesForAtcCheckBox.setObjectName(u"usePfValuesForAtcCheckBox")
-        self.usePfValuesForAtcCheckBox.setChecked(True)
+        self.label_30 = QLabel(self.frame_66)
+        self.label_30.setObjectName(u"label_30")
 
-        self.gridLayout_16.addWidget(self.usePfValuesForAtcCheckBox, 3, 0, 1, 1)
+        self.gridLayout_16.addWidget(self.label_30, 3, 0, 1, 1)
+
+        self.ntcReportLimitingElementsSpinBox = QSpinBox(self.frame_66)
+        self.ntcReportLimitingElementsSpinBox.setObjectName(u"ntcReportLimitingElementsSpinBox")
+        self.ntcReportLimitingElementsSpinBox.setMinimum(-1)
+        self.ntcReportLimitingElementsSpinBox.setValue(10)
+
+        self.gridLayout_16.addWidget(self.ntcReportLimitingElementsSpinBox, 3, 1, 1, 1)
 
 
         self.gridLayout_13.addWidget(self.frame_66, 7, 0, 1, 2)
@@ -2231,10 +2243,6 @@ class Ui_mainWindow(object):
 
         self.gridLayout_13.addWidget(self.line_26, 2, 0, 1, 2)
 
-        self.verticalSpacer_9 = QSpacerItem(20, 150, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.gridLayout_13.addItem(self.verticalSpacer_9, 8, 1, 1, 1)
-
         self.label_92 = QLabel(self.frame_64)
         self.label_92.setObjectName(u"label_92")
         self.label_92.setMinimumSize(QSize(24, 24))
@@ -2256,6 +2264,10 @@ class Ui_mainWindow(object):
         self.line_23.setFrameShape(QFrame.HLine)
 
         self.gridLayout_13.addWidget(self.line_23, 6, 0, 1, 2)
+
+        self.verticalSpacer_9 = QSpacerItem(20, 150, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_13.addItem(self.verticalSpacer_9, 8, 0, 1, 2)
 
 
         self.horizontalLayout_8.addWidget(self.frame_64)
@@ -4197,17 +4209,21 @@ class Ui_mainWindow(object):
         self.label_61.setText(QCoreApplication.translate("mainWindow", u"Linear method", None))
         self.label_21.setText(QCoreApplication.translate("mainWindow", u"Areas to", None))
         self.label_41.setText(QCoreApplication.translate("mainWindow", u"Areas from", None))
+        self.label_91.setText(QCoreApplication.translate("mainWindow", u"Perturbance power", None))
+        self.label_62.setText(QCoreApplication.translate("mainWindow", u"Transfer sensitivity threshold", None))
+        self.label_77.setText(QCoreApplication.translate("mainWindow", u"Transfer method", None))
+        self.usePfValuesForAtcCheckBox.setText(QCoreApplication.translate("mainWindow", u"Use power flow values if available", None))
 #if QT_CONFIG(tooltip)
         self.atcPerturbanceSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Amount of power used to compute the branches sensitivity to the transfer", None))
 #endif // QT_CONFIG(tooltip)
         self.atcPerturbanceSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
-        self.label_91.setText(QCoreApplication.translate("mainWindow", u"Perturbance power", None))
-        self.label_62.setText(QCoreApplication.translate("mainWindow", u"Transfer sensitivity threshold", None))
-        self.label_77.setText(QCoreApplication.translate("mainWindow", u"Transfer method", None))
 #if QT_CONFIG(tooltip)
         self.atcThresholdSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Threshold used to discard insensitive branches", None))
 #endif // QT_CONFIG(tooltip)
-        self.usePfValuesForAtcCheckBox.setText(QCoreApplication.translate("mainWindow", u"Use power flow values if available", None))
+        self.label_30.setText(QCoreApplication.translate("mainWindow", u"Number of elements to report", None))
+#if QT_CONFIG(tooltip)
+        self.ntcReportLimitingElementsSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Top NTC limiting elements. Set to -1 to display all.", None))
+#endif // QT_CONFIG(tooltip)
         self.label_95.setText(QCoreApplication.translate("mainWindow", u"Net Transfer Capacity (General)", None))
         self.label_90.setText("")
         self.label_92.setText("")

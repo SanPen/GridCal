@@ -4128,22 +4128,6 @@ points from time series</string>
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_16">
-                  <item row="0" column="1">
-                   <widget class="QDoubleSpinBox" name="atcPerturbanceSpinBox">
-                    <property name="toolTip">
-                     <string>Amount of power used to compute the branches sensitivity to the transfer</string>
-                    </property>
-                    <property name="suffix">
-                     <string> MW</string>
-                    </property>
-                    <property name="maximum">
-                     <double>999999999999.000000000000000</double>
-                    </property>
-                    <property name="value">
-                     <double>100.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="0" column="0">
                    <widget class="QLabel" name="label_91">
                     <property name="text">
@@ -4168,6 +4152,32 @@ points from time series</string>
                     </property>
                    </widget>
                   </item>
+                  <item row="4" column="0">
+                   <widget class="QCheckBox" name="usePfValuesForAtcCheckBox">
+                    <property name="text">
+                     <string>Use power flow values if available</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QDoubleSpinBox" name="atcPerturbanceSpinBox">
+                    <property name="toolTip">
+                     <string>Amount of power used to compute the branches sensitivity to the transfer</string>
+                    </property>
+                    <property name="suffix">
+                     <string> MW</string>
+                    </property>
+                    <property name="maximum">
+                     <double>999999999999.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>100.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="1" column="1">
                    <widget class="QDoubleSpinBox" name="atcThresholdSpinBox">
                     <property name="toolTip">
@@ -4185,12 +4195,22 @@ points from time series</string>
                    </widget>
                   </item>
                   <item row="3" column="0">
-                   <widget class="QCheckBox" name="usePfValuesForAtcCheckBox">
+                   <widget class="QLabel" name="label_30">
                     <property name="text">
-                     <string>Use power flow values if available</string>
+                     <string>Number of elements to report</string>
                     </property>
-                    <property name="checked">
-                     <bool>true</bool>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QSpinBox" name="ntcReportLimitingElementsSpinBox">
+                    <property name="toolTip">
+                     <string>Top NTC limiting elements. Set to -1 to display all.</string>
+                    </property>
+                    <property name="minimum">
+                     <number>-1</number>
+                    </property>
+                    <property name="value">
+                     <number>10</number>
                     </property>
                    </widget>
                   </item>
@@ -4321,19 +4341,6 @@ points from time series</string>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="1">
-                <spacer name="verticalSpacer_9">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>150</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_92">
                  <property name="minimumSize">
@@ -4408,6 +4415,19 @@ points from time series</string>
                   <enum>Qt::Horizontal</enum>
                  </property>
                 </widget>
+               </item>
+               <item row="8" column="0" colspan="2">
+                <spacer name="verticalSpacer_9">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>150</height>
+                  </size>
+                 </property>
+                </spacer>
                </item>
               </layout>
              </widget>

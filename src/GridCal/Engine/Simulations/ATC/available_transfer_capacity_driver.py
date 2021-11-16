@@ -475,7 +475,8 @@ class AvailableTransferCapacityOptions:
     def __init__(self, distributed_slack=True, correct_values=True, use_provided_flows=False,
                  bus_idx_from=list(), bus_idx_to=list(), idx_br=list(), sense_br=list(), Pf=None,
                  idx_hvdc_br=list(), sense_hvdc_br=list(), Pf_hvdc=None,
-                 dT=100.0, threshold=0.02, mode: AvailableTransferMode = AvailableTransferMode.Generation):
+                 dT=100.0, threshold=0.02, mode: AvailableTransferMode = AvailableTransferMode.Generation,
+                 max_report_elements=-1):
         """
 
         :param distributed_slack:
@@ -488,6 +489,7 @@ class AvailableTransferCapacityOptions:
         :param dT:
         :param threshold:
         :param mode:
+        :param max_report_elements: maximum number of elements to show in the report (-1 for all)
         """
         self.distributed_slack = distributed_slack
         self.correct_values = correct_values
@@ -505,6 +507,8 @@ class AvailableTransferCapacityOptions:
         self.dT = dT
         self.threshold = threshold
         self.mode = mode
+
+        self.max_report_elements = max_report_elements
 
 
 class AvailableTransferCapacityDriver(DriverTemplate):
@@ -605,6 +609,10 @@ class AvailableTransferCapacityDriver(DriverTemplate):
 
         # sort by NTC
         report = report[report[:, 9].argsort()]
+
+        # curtail report
+        if self.options.max_report_elements > 0:
+            report = report[:self.options.max_report_elements, :]
 
         # post-process and store the results
         self.results.raw_report = report
