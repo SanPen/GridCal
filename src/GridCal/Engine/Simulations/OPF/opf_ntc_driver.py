@@ -166,6 +166,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.ControlledGeneratorPower,
                                                     ResultTypes.GenerationDelta,
                                                     ResultTypes.GenerationDeltaSlacks,
+                                                    ResultTypes.LoadShedding,
                                                     ResultTypes.AvailableTransferCapacityAlpha,
                                                     ResultTypes.InterAreaExchange
                                                     ],
@@ -376,6 +377,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         elif result_type == ResultTypes.GenerationDelta:
             labels = self.generator_names
             y = self.generation_delta
+            y_label = '(MW)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.LoadShedding:
+            labels = self.load_names
+            y = self.load_shedding
             y_label = '(MW)'
             title = result_type.value[0]
 
@@ -642,7 +649,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
                                                              hvdc_names=numerical_circuit.hvdc_data.names,
                                                              Sbus=problem.get_power_injections(),
                                                              voltage=problem.get_voltage(),
-                                                             load_shedding=np.zeros((numerical_circuit.nload, 1)),
+                                                             load_shedding=problem.get_load_shedding(),
                                                              generator_shedding=np.zeros((numerical_circuit.ngen, 1)),
                                                              battery_power=np.zeros((numerical_circuit.nbatt, 1)),
                                                              controlled_generation_power=problem.get_generator_power(),

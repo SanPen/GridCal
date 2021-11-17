@@ -635,7 +635,8 @@ def formulate_angles(solver: pywraplp.Solver, nbus, vd, bus_names, angle_min, an
     return theta
 
 
-def formulate_power_injections(load_injections_per_bus, Cgen, generation, Sbase, t=0):
+def formulate_power_injections(solver: pywraplp.Solver, load_injections_per_bus, Cgen, generation,
+                               Cload, load_active, load_power, Sbase):
     """
 
     :param Cgen:
@@ -644,9 +645,40 @@ def formulate_power_injections(load_injections_per_bus, Cgen, generation, Sbase,
     :return:
     """
     gen_injections = lpExpand(Cgen, generation)
-    load_fixed_injections = load_injections_per_bus[:, t].real / Sbase  # with sign already
+    load_fixed_injections = load_injections_per_bus / Sbase  # with sign already (these are negative)
 
-    return gen_injections + load_fixed_injections
+    # add the load shedding
+    nl = len(load_active)
+    load_shedding = np.zeros(nl, dtype=object)
+    for i in range(nl):
+        if load_active[i] and load_power[i] > 0:
+            load_shedding[i] = solver.NumVar(0, load_power[i] / Sbase, 'load_shedding_{0}'.format(i))
+    load_shedding_per_bus = lpExpand(Cload, load_shedding)
+
+    return gen_injections + load_fixed_injections + load_shedding_per_bus, load_shedding
+    # return gen_injections + load_fixed_injections, load_shedding
+
+
+def check_power_injections(load_injections_per_bus, Cgen, generation,
+                           Sbase, Cload, load_shedding):
+    """
+
+    :param solver:
+    :param load_injections_per_bus:
+    :param Cgen:
+    :param generation:
+    :param Cload:
+    :param load_active:
+    :param load_power:
+    :param Sbase:
+    :param load_shedding_per_bus:
+    :param t:
+    :return:
+    """
+    gen_injections = Cgen * generation
+    load_fixed_injections = load_injections_per_bus / Sbase  # with sign already (these are negative)
+    load_shedding_per_bus = Cload * load_shedding
+    return gen_injections + load_fixed_injections + load_shedding_per_bus
 
 
 def formulate_node_balance(solver: pywraplp.Solver, Bbus, angles, Pinj, bus_active, bus_names):
@@ -1158,7 +1190,8 @@ def formulate_objective(solver: pywraplp.Solver,
                         power_shift, dgen1, gen_cost, generation_delta,
                         delta_slack_1, delta_slack_2,
                         weight_power_shift, maximize_exchange_flows, weight_generation_cost,
-                        weight_generation_delta, weight_overloads, weight_hvdc_control):
+                        weight_generation_delta, weight_overloads, weight_hvdc_control,
+                        load_shedding):
     """
 
     :param solver:
@@ -1186,6 +1219,7 @@ def formulate_objective(solver: pywraplp.Solver,
     :param weight_generation_delta:
     :param weight_overloads:
     :param weight_hvdc_control:
+    :param load_shedding:
     :return:
     """
 
@@ -1213,6 +1247,8 @@ def formulate_objective(solver: pywraplp.Solver,
 
     delta_slacks = solver.Sum(delta_slack_1) + solver.Sum(delta_slack_2)
 
+    load_shedding_sum = solver.Sum(load_shedding)
+
     # formulate objective function
     f = -weight_power_shift * power_shift
 
@@ -1225,6 +1261,7 @@ def formulate_objective(solver: pywraplp.Solver,
     f += weight_overloads * contingency_branch_overload
     f += weight_overloads * hvdc_overload
     f += weight_hvdc_control * hvdc_control
+    f += weight_generation_delta * load_shedding_sum
 
     # objective function
     solver.Minimize(f)
@@ -1466,11 +1503,14 @@ class OpfNTC(Opf):
                                  logger=self.logger)
 
         # formulate the power injections
-        Pinj = formulate_power_injections(load_injections_per_bus=self.numerical_circuit.load_data.get_injections_per_bus(),
-                                          Cgen=Cgen,
-                                          generation=generation,
-                                          Sbase=self.numerical_circuit.Sbase,
-                                          t=t)
+        Pinj, load_shedding = formulate_power_injections(solver=self.solver,
+                                                         load_injections_per_bus=self.numerical_circuit.load_data.get_injections_per_bus().real[:, t],
+                                                         Cgen=Cgen,
+                                                         generation=generation,
+                                                         Cload=self.numerical_circuit.load_data.C_bus_load,
+                                                         load_active=self.numerical_circuit.load_data.load_active[:, t],
+                                                         load_power=self.numerical_circuit.load_data.load_s.real[:, t],
+                                                         Sbase=self.numerical_circuit.Sbase)
 
         # formulate the flows
         flow_f, overload1, overload2, tau, monitor = formulate_branches_flow(solver=self.solver,
@@ -1540,7 +1580,7 @@ class OpfNTC(Opf):
                                               Bbus=self.numerical_circuit.Bbus,
                                               angles=theta,
                                               Pinj=Pinj,
-                                              bus_active=self.numerical_circuit.bus_data.bus_active,
+                                              bus_active=self.numerical_circuit.bus_data.bus_active[:, t],
                                               bus_names=self.numerical_circuit.bus_data.bus_names)
 
         # formulate the objective
@@ -1568,7 +1608,8 @@ class OpfNTC(Opf):
                                                                    weight_generation_cost=self.weight_generation_cost,
                                                                    weight_generation_delta=self.weight_generation_delta,
                                                                    weight_overloads=self.weight_overloads,
-                                                                   weight_hvdc_control=self.weight_hvdc_control)
+                                                                   weight_hvdc_control=self.weight_hvdc_control,
+                                                                   load_shedding=load_shedding)
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
@@ -1577,6 +1618,8 @@ class OpfNTC(Opf):
         self.Pg_delta = generation_delta
         self.area_balance_slack = power_shift
         self.generation_delta_slacks = delta_slack_1 - delta_slack_2
+
+        self.load_shedding = load_shedding
 
         # self.Pb = Pb
         self.Pl = Pl
@@ -1753,16 +1796,17 @@ class OpfNTC(Opf):
                         logger=self.logger,
                         t=t)
 
-        Pinj = formulate_power_injections(load_injections_per_bus=self.numerical_circuit.load_data.get_injections_per_bus(),
-                                          Cgen=Cgen,
-                                          generation=self.extract(self.Pg),
-                                          Sbase=self.numerical_circuit.Sbase,
-                                          t=t)
+        Pinj = check_power_injections(load_injections_per_bus=self.numerical_circuit.load_data.get_injections_per_bus().real[:, t],
+                                      Cgen=Cgen,
+                                      generation=self.extract(self.Pg),
+                                      Sbase=self.numerical_circuit.Sbase,
+                                      Cload=self.numerical_circuit.load_data.C_bus_load,
+                                      load_shedding=self.extract(self.load_shedding))
 
         check_node_balance(Bbus=self.numerical_circuit.Bbus,
                            angles=self.extract(self.theta),
                            Pinj=Pinj,
-                           bus_active=self.numerical_circuit.bus_data.bus_active,
+                           bus_active=self.numerical_circuit.bus_data.bus_active[:, t],
                            bus_names=self.numerical_circuit.bus_data.bus_names,
                            logger=self.logger)
 
