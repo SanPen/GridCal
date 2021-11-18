@@ -25,8 +25,11 @@
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/MANIFEST.in" beforeDir="false" afterPath="$PROJECT_DIR$/src/MANIFEST.in" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/research/power_flow/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/research/three_phase/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/setup.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -139,7 +142,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.setup">
     <configuration name="5_bus_se" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -250,8 +253,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.setup" />
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python tests.Nosetests in test_state_estimation.py" />
         <item itemvalue="Python.5_bus_se" />
@@ -673,13 +676,6 @@
       <workItem from="1636356870558" duration="6910000" />
       <workItem from="1636368471973" duration="5512000" />
     </task>
-    <task id="LOCAL-00188" summary="Fixed slight bug with the transformer templates division by zero">
-      <created>1629201241945</created>
-      <option name="number" value="00188" />
-      <option name="presentableId" value="LOCAL-00188" />
-      <option name="project" value="LOCAL" />
-      <updated>1629201241945</updated>
-    </task>
     <task id="LOCAL-00189" summary="Improved changelog">
       <created>1631556959174</created>
       <option name="number" value="00189" />
@@ -1016,7 +1012,14 @@
       <option name="project" value="LOCAL" />
       <updated>1637060640155</updated>
     </task>
-    <option name="localTasksCounter" value="237" />
+    <task id="LOCAL-00237" summary="Added load shedding">
+      <created>1637154367875</created>
+      <option name="number" value="00237" />
+      <option name="presentableId" value="LOCAL-00237" />
+      <option name="project" value="LOCAL" />
+      <updated>1637154367875</updated>
+    </task>
+    <option name="localTasksCounter" value="238" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1051,7 +1054,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Implemented dispatcheable in the HVDC line and implemented the NTC OPF mode" />
     <MESSAGE value="implemented HVDC dispatch in the OPF&#10;Joined it to the power flow non-destructive feed&#10;Added attributes in the compilation functions" />
     <MESSAGE value="Added branch tap angle optimization in the OPF" />
     <MESSAGE value="OPF sign corrected" />
@@ -1076,7 +1078,8 @@
     <MESSAGE value="changed version" />
     <MESSAGE value="started implementing the df flow calculation" />
     <MESSAGE value="Added the GUI top ATC report limit" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added the GUI top ATC report limit" />
+    <MESSAGE value="Added load shedding" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added load shedding" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
