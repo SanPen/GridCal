@@ -280,7 +280,6 @@ class DiagramScene(QGraphicsScene):
         """
         fig = plt.figure(figsize=(12, 8))
         ax_1 = fig.add_subplot(211)
-        # ax_2 = fig.add_subplot(212, sharex=ax_1)
         ax_2 = fig.add_subplot(212)
 
         # set time
@@ -315,10 +314,10 @@ class DiagramScene(QGraphicsScene):
                                 power_data[key.value] = driver.results.Sf.real[:, i]
                                 loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
 
-                            elif key == SimulationTypes.NetTransferCapacityTS_run:
-                                power_data[key.value] = driver.results.atc[:, i]
-                                atc_perc = driver.results.atc[:, i] / (api_object.rate_prof + 1e-9)
-                                loading_data[key.value] = np.sort(np.abs(atc_perc * 100.0))
+                            # elif key == SimulationTypes.NetTransferCapacityTS_run:
+                            #     power_data[key.value] = driver.results.atc[:, i]
+                            #     atc_perc = driver.results.atc[:, i] / (api_object.rate_prof + 1e-9)
+                            #     loading_data[key.value] = np.sort(np.abs(atc_perc * 100.0))
 
                             elif key == SimulationTypes.ContingencyAnalysisTS_run:
                                 power_data[key.value] = driver.results.worst_flows.real[:, i]

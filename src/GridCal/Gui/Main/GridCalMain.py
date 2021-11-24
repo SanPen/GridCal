@@ -4064,6 +4064,7 @@ class MainGUI(QMainWindow):
 
         if len(drv.logger) > 0:
             dlg = LogsDialogue(drv.name, drv.logger)
+            dlg.setModal(True)
             dlg.exec_()
 
         if not self.session.is_anything_running():
