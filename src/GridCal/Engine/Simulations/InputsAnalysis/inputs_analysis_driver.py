@@ -12,7 +12,10 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 class InputsAnalysisResults(ResultsTemplate):
 
     def __init__(self, grid: MultiCircuit):
-
+        """
+        Construct the analysis
+        :param grid:
+        """
         ResultsTemplate.__init__(self,
                                  name='Inputs analysis',
                                  available_results=[ResultTypes.ZoneAnalysis,
@@ -34,10 +37,14 @@ class InputsAnalysisResults(ResultsTemplate):
         self.static_gen_data = self.get_static_generators_df()
 
     def get_generators_df(self):
+        """
+
+        :return:
+        """
         dta = list()
         for elm in self.grid.get_generators():
             dta.append([elm.name,
-                            elm.P,
+                            elm.P * elm.active,
                             elm.Pf,
                             elm.Snom,
                             elm.Pmin, elm.Pmax,
@@ -54,10 +61,14 @@ class InputsAnalysisResults(ResultsTemplate):
         return pd.DataFrame(data=dta, columns=cols)
 
     def get_batteries_df(self):
+        """
+
+        :return:
+        """
         dta = list()
         for elm in self.grid.get_batteries():
             dta.append([elm.name,
-                            elm.P,
+                            elm.P * elm.active,
                             elm.Pf,
                             elm.Snom,
                             elm.Pmin, elm.Pmax,
@@ -74,12 +85,15 @@ class InputsAnalysisResults(ResultsTemplate):
         return pd.DataFrame(data=dta, columns=cols)
 
     def get_loads_df(self):
+        """
 
+        :return:
+        """
         dta = list()
         for elm in self.grid.get_loads():
             dta.append([elm.name,
-                        elm.P,
-                        elm.Q,
+                        elm.P * elm.active,
+                        elm.Q * elm.active,
                         elm.bus.zone.name,
                         elm.bus.area.name,
                         elm.bus.substation.name,
@@ -89,12 +103,15 @@ class InputsAnalysisResults(ResultsTemplate):
         return pd.DataFrame(data=dta, columns=cols)
 
     def get_static_generators_df(self):
+        """
 
+        :return:
+        """
         dta = list()
         for elm in self.grid.get_static_generators():
             dta.append([elm.name,
-                        elm.P,
-                        elm.Q,
+                        elm.P * elm.active,
+                        elm.Q * elm.active,
                         elm.bus.zone.name,
                         elm.bus.area.name,
                         elm.bus.substation.name,
@@ -103,8 +120,12 @@ class InputsAnalysisResults(ResultsTemplate):
                 'Zone', 'Area', 'Substation', 'Country']
         return pd.DataFrame(data=dta, columns=cols)
 
-    def group_by(self, group):
-
+    def group_by(self, group: str):
+        """
+        Return a DataFrame grouped by Area, Zone or Country
+        :param group: "Area", "Zone" or "Country"
+        :return: Group DataFrame
+        """
         if group == 'Area':
             labels = self.area_names
         elif group == 'Zone':
@@ -112,7 +133,7 @@ class InputsAnalysisResults(ResultsTemplate):
         elif group == 'Country':
             labels = self.country_names
         else:
-            raise Exception('Unknown grouping')
+            raise Exception('Unknown grouping:' + str(group))
 
         n = len(labels)
         cols_gen = ['P', 'Pmin', 'Pmax', 'Qmin', 'Qmax']

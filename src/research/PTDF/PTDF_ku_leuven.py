@@ -24,7 +24,7 @@ from scipy.sparse import hstack as hs, vstack as vs
 from scipy.sparse.linalg import factorized, spsolve, inv
 from matplotlib import pyplot as plt
 import GridCal.Engine as gce
-
+from GridCal.Engine.Simulations.PowerFlow.derivatives import derivatives_sh
 
 def getPTDF(circuit: gce.SnapshotData):
     """
@@ -47,26 +47,19 @@ def getPTDF(circuit: gce.SnapshotData):
     return PTDF
 
 
-def getPSDF(circuit: gce.SnapshotData):
+def getPSDF(circuit: gce.SnapshotData, PTDF):
     """
     Phase shifter distribution factors
     According to: https://www.mech.kuleuven.be/en/tme/research/energy_environment/Pdf/wpen2014-12.pdf
     :param circuit:
     :return:
     """
-    pqpv = np.sort(circuit.pqpv)
     Bd = sp.diags(circuit.branch_data.X)
     A = circuit.Cf + circuit.Ct
     M1 = Bd * A
-    M2 = A.T * M1
-
-    M1p = M1[:, pqpv]
-    M2p = M2[np.ix_(pqpv, pqpv)].tocsc()
-
-    PTDF = np.zeros((circuit.nbr, circuit.nbus))
-    PTDF[:, pqpv] = (M1p * sp.linalg.inv(M2p)).toarray()
 
     PSDF = Bd - PTDF * M1.T
+
     return PSDF
 
 if __name__ == '__main__':
@@ -91,6 +84,20 @@ if __name__ == '__main__':
     nc = gce.compile_snapshot_circuit(grid)
 
     PTDF_ = getPTDF(circuit=nc)
-    PSDF_ = getPSDF(circuit=nc)
-    print(PTDF_)
-    print(PSDF_)
+    PSDF_ = getPSDF(circuit=nc, PTDF=PTDF_)
+
+    Ys = 1 / (nc.branch_data.R + 1j * nc.branch_data.X)
+    dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh = derivatives_sh(nb=nc.nbus,
+                                                       nl=nc.nbr,
+                                                       iPxsh=np.arange(nc.nbr),
+                                                       F=nc.F,
+                                                       T=nc.T,
+                                                       Ys=Ys,
+                                                       k2=np.ones(nc.nbr),
+                                                       tap=np.ones(nc.nbr),
+                                                       V=np.ones(nc.nbr))
+
+
+    print("PTDF:\n", PTDF_)
+    print("PSDF:\n", PSDF_)
+    print("PSDF (dSf_dPfsh):\n", dSf_dPfsh.toarray())
