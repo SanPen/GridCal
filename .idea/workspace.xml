@@ -23,12 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Finalized NTC-OPF docstrings">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="NTC-OPF fix: Apply the generation and load active state in the Pfix calculation">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/generator_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/generator_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/load_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/load_data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -681,14 +678,7 @@
       <workItem from="1637670997668" duration="1772000" />
       <workItem from="1637743884214" duration="79000" />
       <workItem from="1637746662628" duration="6983000" />
-      <workItem from="1637825202484" duration="14868000" />
-    </task>
-    <task id="LOCAL-00196" summary="Added inputs analysis">
-      <created>1632817908413</created>
-      <option name="number" value="00196" />
-      <option name="presentableId" value="LOCAL-00196" />
-      <option name="project" value="LOCAL" />
-      <updated>1632817908414</updated>
+      <workItem from="1637825202484" duration="17003000" />
     </task>
     <task id="LOCAL-00197" summary="Updated version">
       <created>1632818610677</created>
@@ -1026,7 +1016,14 @@
       <option name="project" value="LOCAL" />
       <updated>1637841707890</updated>
     </task>
-    <option name="localTasksCounter" value="245" />
+    <task id="LOCAL-00245" summary="NTC-OPF fix: Apply the generation and load active state in the Pfix calculation">
+      <created>1637847849201</created>
+      <option name="number" value="00245" />
+      <option name="presentableId" value="LOCAL-00245" />
+      <option name="project" value="LOCAL" />
+      <updated>1637847849201</updated>
+    </task>
+    <option name="localTasksCounter" value="246" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1060,7 +1057,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added PTDF contingency tolerance" />
     <MESSAGE value="Implemented the skip generation in the dc opf" />
     <MESSAGE value="Version 4.2.4" />
     <MESSAGE value="Implemented optional way to open the web maps when the pyside webdriver is not available" />
@@ -1085,7 +1081,8 @@
     <MESSAGE value="fixed the inputs analysis by adding the active status in the calculations" />
     <MESSAGE value="Improved docstrings" />
     <MESSAGE value="Finalized NTC-OPF docstrings" />
-    <option name="LAST_COMMIT_MESSAGE" value="Finalized NTC-OPF docstrings" />
+    <MESSAGE value="NTC-OPF fix: Apply the generation and load active state in the Pfix calculation" />
+    <option name="LAST_COMMIT_MESSAGE" value="NTC-OPF fix: Apply the generation and load active state in the Pfix calculation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1486,11 +1483,6 @@
           <line>89</line>
           <option name="timeStamp" value="862" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>654</line>
-          <option name="timeStamp" value="868" />
-        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
@@ -1611,7 +1603,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research2_py.coverage" NAME="Nosetests in PTDF_research2.py Coverage Results" MODIFIED="1600161918846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$time_series.coverage" NAME="time_series Coverage Results" MODIFIED="1617809423186" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Tutorials" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_power_flow_py.coverage" NAME="Nosetests in test_power_flow.py Coverage Results" MODIFIED="1632998750088" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1637847196553" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1637849571390" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$binary_ga.coverage" NAME="binary_ga Coverage Results" MODIFIED="1615226727819" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_opf_py.coverage" NAME="Nosetests in test_opf.py Coverage Results" MODIFIED="1632998728805" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_line_losses_py.coverage" NAME="Nosetests in test_line_losses.py Coverage Results" MODIFIED="1634139762786" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />

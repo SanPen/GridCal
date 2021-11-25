@@ -625,12 +625,11 @@ def formulate_angles(solver: pywraplp.Solver, nbus, vd, bus_names, angle_min, an
     return theta
 
 
-def formulate_power_injections(solver: pywraplp.Solver, load_injections_per_bus, Cgen, generation,
+def formulate_power_injections(solver: pywraplp.Solver, Cgen, generation,
                                Cload, load_active, load_power, Sbase):
     """
     Formulate the power injections
     :param solver: Solver instance to which add the equations
-    :param load_injections_per_bus: Array of load injections per bus
     :param Cgen: CSC connectivity matrix of generators and buses [ngen, nbus]
     :param generation: Array of generation LP variables
     :param Cload: CSC connectivity matrix of load and buses [nload, nbus]
@@ -641,8 +640,8 @@ def formulate_power_injections(solver: pywraplp.Solver, load_injections_per_bus,
         - power injections array
         - load shedding variables
     """
-    gen_injections = lpExpand(Cgen, generation)
-    load_fixed_injections = load_injections_per_bus / Sbase  # with sign already (these are negative)
+    gen_injections_per_bus = lpExpand(Cgen, generation)
+    load_fixed_injections = Cload * load_power
 
     # add the load shedding
     nl = len(load_active)
@@ -652,25 +651,23 @@ def formulate_power_injections(solver: pywraplp.Solver, load_injections_per_bus,
             load_shedding[i] = solver.NumVar(0, load_power[i] / Sbase, 'load_shedding_{0}'.format(i))
     load_shedding_per_bus = lpExpand(Cload, load_shedding)
 
-    return gen_injections + load_fixed_injections + load_shedding_per_bus, load_shedding
+    return gen_injections_per_bus - load_fixed_injections + load_shedding_per_bus, load_shedding
 
 
-def check_power_injections(load_injections_per_bus, Cgen, generation,
-                           Sbase, Cload, load_shedding):
+def check_power_injections(load_power, Cgen, generation,
+                           Cload, load_shedding):
     """
     Check the power injections formulas once solved the problem
-    :param load_injections_per_bus: Array of load injections per bus
     :param Cgen: CSC connectivity matrix of generators and buses [ngen, nbus]
     :param generation: Array of generation values (resulting of the LP solution)
-    :param Sbase: Base power (i.e. 100 MVA)
     :param Cload: CSC connectivity matrix of load and buses [nload, nbus]
     :param load_shedding: Array of load shedding values (resulting of the LP solution)
     :return: Array of bus power injections
     """
     gen_injections = Cgen * generation
-    load_fixed_injections = load_injections_per_bus / Sbase  # with sign already (these are negative)
+    load_fixed_injections = Cload * load_power
     load_shedding_per_bus = Cload * load_shedding
-    return gen_injections + load_fixed_injections + load_shedding_per_bus
+    return gen_injections - load_fixed_injections + load_shedding_per_bus
 
 
 def formulate_node_balance(solver: pywraplp.Solver, Bbus, angles, Pinj, bus_active, bus_names):
@@ -1360,6 +1357,8 @@ class OpfNTC(Opf):
         self.inf = 99999999999999
 
         # results
+        self.gen_a1_idx = None
+        self.gen_a2_idx = None
         self.all_slacks = None
         self.all_slacks_sum = None
         self.Pg_delta = None
@@ -1416,10 +1415,10 @@ class OpfNTC(Opf):
             Pg_min = -self.inf * np.ones(self.numerical_circuit.ngen)
 
         # load
-        Pl = self.numerical_circuit.load_data.get_effective_load().real[:, t] / Sbase
+        Pl_fix = self.numerical_circuit.load_data.get_effective_load().real[:, t] / Sbase
 
         # modify Pg_fix until it is identical to Pload
-        total_load = Pl.sum()
+        total_load = Pl_fix.sum()
         total_gen = Pg_fix.sum()
         diff = total_gen - total_load
         Pg_fix -= diff * (Pg_fix / total_gen)
@@ -1431,7 +1430,6 @@ class OpfNTC(Opf):
         # --------------------------------------------------------------------------------------------------------------
         # Formulate the problem
         # --------------------------------------------------------------------------------------------------------------
-
 
         # get the inter-area branches and their sign
         inter_area_branches = get_inter_areas_branches(nbr=m,
@@ -1503,12 +1501,11 @@ class OpfNTC(Opf):
 
         # formulate the power injections
         Pinj, load_shedding = formulate_power_injections(solver=self.solver,
-                                                         load_injections_per_bus=self.numerical_circuit.load_data.get_injections_per_bus().real[:, t],
                                                          Cgen=Cgen,
                                                          generation=generation,
                                                          Cload=self.numerical_circuit.load_data.C_bus_load,
                                                          load_active=self.numerical_circuit.load_data.load_active[:, t],
-                                                         load_power=self.numerical_circuit.load_data.load_s.real[:, t],
+                                                         load_power=Pl_fix,
                                                          Sbase=self.numerical_circuit.Sbase)
 
         # formulate the flows
@@ -1620,8 +1617,11 @@ class OpfNTC(Opf):
 
         self.load_shedding = load_shedding
 
+        self.gen_a1_idx = gen_a1_idx
+        self.gen_a2_idx = gen_a2_idx
+
         # self.Pb = Pb
-        self.Pl = Pl
+        self.Pl = Pl_fix
         self.Pinj = Pinj
         # self.load_shedding = load_slack
         self.s_from = flow_f
@@ -1652,6 +1652,8 @@ class OpfNTC(Opf):
         Formulate the Net Transfer Capacity problem
         :return:
         """
+        # time index
+        t = 0
 
         # general indices
         n = self.numerical_circuit.nbus
@@ -1677,12 +1679,10 @@ class OpfNTC(Opf):
             Pg_min = -self.inf * np.ones(self.numerical_circuit.ngen)
 
         # load
+        Pl_fix = self.numerical_circuit.load_data.get_effective_load().real[:, t] / Sbase
 
         # branch
         alpha_abs = np.abs(self.alpha)
-
-        # time index
-        t = 0
 
         # check that the slacks are 0
         if self.all_slacks is not None:
@@ -1785,10 +1785,9 @@ class OpfNTC(Opf):
                         logger=self.logger,
                         t=t)
 
-        Pinj = check_power_injections(load_injections_per_bus=self.numerical_circuit.load_data.get_injections_per_bus().real[:, t],
+        Pinj = check_power_injections(load_power=Pl_fix,
                                       Cgen=Cgen,
                                       generation=self.extract(self.Pg),
-                                      Sbase=self.numerical_circuit.Sbase,
                                       Cload=self.numerical_circuit.load_data.C_bus_load,
                                       load_shedding=self.extract(self.load_shedding))
 
@@ -1918,7 +1917,9 @@ class OpfNTC(Opf):
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.extract(self.Pg_delta, make_abs=False) * self.numerical_circuit.Sbase
+        x = self.extract(self.Pg_delta, make_abs=False) * self.numerical_circuit.Sbase
+        x[self.gen_a2_idx] *= -1  # this is so that the deltas in the receiving area appear negative in the final vector
+        return x
 
     def get_generator_delta_slacks(self):
         """
