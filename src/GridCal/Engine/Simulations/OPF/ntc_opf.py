@@ -383,7 +383,7 @@ def formulate_proportional_generation(solver: pywraplp.Solver,
                                       generator_names, Sbase, logger, inf,
                                       ngen, Cgen, Pgen, Pmax, Pmin, a1, a2, t=0):
     """
-
+    Formulate the generation increments in a proportional fashion
     :param solver: Solver instance to which add the equations
     :param generator_active: Array of generation active values (True / False)
     :param generator_dispatchable: Array of Generator dispatchable variables (True / False)
@@ -400,7 +400,16 @@ def formulate_proportional_generation(solver: pywraplp.Solver,
     :param a1: array of bus indices of the area 1
     :param a2: array of bus indices of the area 2
     :param t: Time index (i.e 0)
-    :return:
+        :return: Many arrays of variables:
+        - generation: Array of generation LP variables
+        - delta: Array of generation delta LP variables
+        - gen_a1_idx: Indices of the generators in the area 1
+        - gen_a2_idx: Indices of the generators in the area 2
+        - power_shift: Power shift LP variable
+        - dgen1: List of generation delta LP variables in the area 1
+        - gen_cost: Array of generation costs
+        - delta_slack_1: Array of generation delta LP Slack variables up
+        - delta_slack_2: Array of generation delta LP Slack variables down
     """
     gens1, gens2, gens_out = get_generators_per_areas(Cgen, a1, a2)
     gen_cost = generator_cost[:, t] * Sbase  # pass from $/MWh to $/p.u.h
@@ -504,24 +513,21 @@ def check_proportional_generation(generator_active, dispatchable, generator_cost
                                   Cgen, Pgen, a1, a2, t, generation, delta, power_shift):
     """
 
-    :param solver:
-    :param generator_active:
-    :param dispatchable:
-    :param generator_cost:
-    :param generator_names:
-    :param Sbase:
-    :param logger:
-    :param inf:
-    :param ngen:
-    :param Cgen:
-    :param Pgen:
-    :param Pmax:
-    :param Pmin:
-    :param a1:
-    :param a2:
-    :param t:
-    :param add_slacks:
-    :return:
+    :param generator_active: Array of generation active values (True / False)
+    :param dispatchable: Array of Generator dispatchable variables (True / False)
+    :param generator_cost: Array of generator costs
+    :param generator_names: Array of Generator names
+    :param Sbase: Base power (i.e. 100 MVA)
+    :param logger: Logger instance
+    :param Cgen: CSC connectivity matrix of generators and buses [ngen, nbus]
+    :param Pgen: Array of generator active power values in p.u.
+    :param a1: array of bus indices of the area 1
+    :param a2: array of bus indices of the area 2
+    :param t: Time index (i.e 0)
+    :param generation: Array of generation values (resulting of the LP solution)
+    :param delta: Array of generation delta values (resulting of the LP solution)
+    :param power_shift: power shift LP variable
+    :return: Nothing
     """
     gens1, gens2, gens_out = get_generators_per_areas(Cgen, a1, a2)
     gen_cost = generator_cost[:, t] * Sbase  # pass from $/MWh to $/p.u.h
@@ -590,16 +596,16 @@ def check_proportional_generation(generator_active, dispatchable, generator_cost
 def formulate_angles(solver: pywraplp.Solver, nbus, vd, bus_names, angle_min, angle_max, logger: Logger,
                      set_ref_to_zero=True):
     """
-
-    :param solver:
-    :param nbus:
-    :param vd:
-    :param bus_names:
-    :param angle_min:
-    :param angle_max:
-    :param logger:
-    :param set_ref_to_zero:
-    :return:
+    Formulate the angles
+    :param solver: Solver instance to which add the equations
+    :param nbus: number of buses
+    :param vd: array of slack nodes
+    :param bus_names: Array of bus names
+    :param angle_min: Array of bus minimum angles
+    :param angle_max: Array of bus maximum angles
+    :param logger: Logger instance
+    :param set_ref_to_zero: Set reference bus angle to zero?
+    :return: Array of bus angles LP variables
     """
     theta = np.zeros(nbus, dtype=object)
 
@@ -622,11 +628,18 @@ def formulate_angles(solver: pywraplp.Solver, nbus, vd, bus_names, angle_min, an
 def formulate_power_injections(solver: pywraplp.Solver, load_injections_per_bus, Cgen, generation,
                                Cload, load_active, load_power, Sbase):
     """
-
-    :param Cgen:
-    :param generation:
-    :param t:
+    Formulate the power injections
+    :param solver: Solver instance to which add the equations
+    :param load_injections_per_bus: Array of load injections per bus
+    :param Cgen: CSC connectivity matrix of generators and buses [ngen, nbus]
+    :param generation: Array of generation LP variables
+    :param Cload: CSC connectivity matrix of load and buses [nload, nbus]
+    :param load_active: Array of load active state
+    :param load_power: Array of load power
+    :param Sbase: Base power (i.e. 100 MVA)
     :return:
+        - power injections array
+        - load shedding variables
     """
     gen_injections = lpExpand(Cgen, generation)
     load_fixed_injections = load_injections_per_bus / Sbase  # with sign already (these are negative)
@@ -640,24 +653,19 @@ def formulate_power_injections(solver: pywraplp.Solver, load_injections_per_bus,
     load_shedding_per_bus = lpExpand(Cload, load_shedding)
 
     return gen_injections + load_fixed_injections + load_shedding_per_bus, load_shedding
-    # return gen_injections + load_fixed_injections, load_shedding
 
 
 def check_power_injections(load_injections_per_bus, Cgen, generation,
                            Sbase, Cload, load_shedding):
     """
-
-    :param solver:
-    :param load_injections_per_bus:
-    :param Cgen:
-    :param generation:
-    :param Cload:
-    :param load_active:
-    :param load_power:
-    :param Sbase:
-    :param load_shedding_per_bus:
-    :param t:
-    :return:
+    Check the power injections formulas once solved the problem
+    :param load_injections_per_bus: Array of load injections per bus
+    :param Cgen: CSC connectivity matrix of generators and buses [ngen, nbus]
+    :param generation: Array of generation values (resulting of the LP solution)
+    :param Sbase: Base power (i.e. 100 MVA)
+    :param Cload: CSC connectivity matrix of load and buses [nload, nbus]
+    :param load_shedding: Array of load shedding values (resulting of the LP solution)
+    :return: Array of bus power injections
     """
     gen_injections = Cgen * generation
     load_fixed_injections = load_injections_per_bus / Sbase  # with sign already (these are negative)
@@ -667,54 +675,52 @@ def check_power_injections(load_injections_per_bus, Cgen, generation,
 
 def formulate_node_balance(solver: pywraplp.Solver, Bbus, angles, Pinj, bus_active, bus_names):
     """
-
-    :param solver:
-    :param nbus:
-    :param Bbus:
-    :param angles:
-    :param Pinj:
-    :param bus_active:
-    :param bus_names:
-    :return:
+    Formulate the nodal power balance
+    :param solver: Solver instance to which add the equations
+    :param Bbus: Susceptance matrix in CSC format
+    :param angles: Array of voltage angles LP variables
+    :param Pinj: Array of power injections per bus (mix of values and LP variables)
+    :param bus_active: Array of bus active status
+    :param bus_names: Array of bus names.
+    :return: Array of calculated power (mix of values and LP variables)
     """
-    node_balance = lpDot(Bbus, angles)
+    calculated_power = lpDot(Bbus, angles)
 
     # equal the balance to the generation: eq.13,14 (equality)
     i = 0
-    for balance, power in zip(node_balance, Pinj):
-        if bus_active[i] and not isinstance(balance, int):  # balance is 0 for isolated buses
-            solver.Add(balance == power, "Node_power_balance_{0}_{1}".format(i, bus_names[i]))
+    for p_calc, p_set in zip(calculated_power, Pinj):
+        if bus_active[i] and not isinstance(p_calc, int):  # balance is 0 for isolated buses
+            solver.Add(p_calc == p_set, "Node_power_balance_{0}_{1}".format(i, bus_names[i]))
         i += 1
 
-    return node_balance
+    return calculated_power
 
 
 def check_node_balance(Bbus, angles, Pinj, bus_active, bus_names, logger: Logger):
     """
-
-    :param solver:
-    :param nbus:
-    :param Bbus:
-    :param angles:
-    :param Pinj:
-    :param bus_active:
-    :param bus_names:
-    :return:
+    Formulate the power balance
+    :param Bbus: Susceptance matrix in CSC format
+    :param angles: Array of voltage angles LP variables
+    :param Pinj: Power injections array
+    :param bus_active: Array of bus active status
+    :param bus_names: Array of bus names.
+    :param logger: logger instance
+    :return: Array of computed powers per bus (only values)
     """
-    node_balance = Bbus * angles
+    calculated_power = Bbus * angles
 
     # equal the balance to the generation: eq.13,14 (equality)
     i = 0
-    for balance, power in zip(node_balance, Pinj):
-        if bus_active[i] and not isinstance(balance, int):  # balance is 0 for isolated buses
-            res = balance == power
+    for p_calc, p_set in zip(calculated_power, Pinj):
+        if bus_active[i] and not isinstance(p_calc, int):  # balance is 0 for isolated buses
+            res = p_calc == p_set
 
             if not res:
-                logger.add_divergence('Kirchhoff not met (balance == power)', bus_names[i], balance, power)
+                logger.add_divergence('Kirchhoff not met (balance == power)', bus_names[i], p_calc, p_set)
 
         i += 1
 
-    return node_balance
+    return calculated_power
 
 
 def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
@@ -724,29 +730,33 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
                             angles, alpha_abs, logger):
     """
 
-    :param solver:
-    :param nbr:
-    :param Rates:
-    :param Sbase:
-    :param branch_active:
-    :param branch_names:
-    :param branch_dc:
-    :param theta_min:
-    :param theta_max:
-    :param control_mode:
-    :param R:
-    :param X:
-    :param F:
-    :param T:
-    :param inf:
-    :param monitor_loading:
-    :param branch_sensitivity_threshold:
-    :param monitor_only_sensitive_branches:
-    :param angles: node angles array
-    :param alpha_abs: absolute branch sensitivities array
-    :param logger:
-    :param add_slacks:
+    :param solver: Solver instance to which add the equations
+    :param nbr: number of branches
+    :param Rates: array of branch rates
+    :param Sbase: Base power (i.e. 100 MVA)
+    :param branch_active: array of branch active states
+    :param branch_names: array of branch names
+    :param branch_dc: array of branch DC status (True/False)
+    :param theta_min: Array of branch minimum angles
+    :param theta_max: Array of branch maximum angles
+    :param control_mode: Array of branch control modes
+    :param R: Array of branch resistance values
+    :param X: Array of branch reactance values
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param inf: Value representing the infinite (i.e. 1e20)
+    :param monitor_loading: Array of branch monitor loading status (True/False)
+    :param branch_sensitivity_threshold: minimum branch sensitivity to the exchange (used to filter branches out)
+    :param monitor_only_sensitive_branches: Flag to monitor only sensitive branches
+    :param angles: array of bus voltage angles (LP variables)
+    :param alpha_abs: Array of absolute branch sensitivity to the exchange
+    :param logger: logger instance
     :return:
+        - flow_f: Array of formulated branch flows (LP variblaes)
+        - overload1: Array of overload LP variables in the positive sense
+        - overload2: Array of overload LP variables in the negative sense
+        - tau: Array branch phase shift angles (mix of values and LP variables)
+        - monitor: Array of final monitor status per branch after applying the logic
     """
 
     flow_f = np.zeros(nbr, dtype=object)
@@ -816,27 +826,26 @@ def check_branches_flow(nbr, Rates, Sbase,
                         angles, alpha_abs, logger: Logger, flow_f, tau):
     """
 
-    :param nbr:
-    :param Rates:
-    :param Sbase:
-    :param monitor:
-    :param branch_active:
-    :param branch_names:
-    :param branch_dc:
-    :param control_mode:
-    :param R:
-    :param X:
-    :param F:
-    :param T:
-    :param monitor_loading:
-    :param branch_sensitivity_threshold:
-    :param monitor_only_sensitive_branches:
-    :param angles:
-    :param alpha_abs:
-    :param logger:
-    :param flow_f:
-    :param tau:
-    :return:
+    :param nbr: number of branches
+    :param Rates: array of branch rates
+    :param Sbase: Base power (i.e. 100 MVA)
+    :param branch_active: array of branch active states
+    :param branch_names: array of branch names
+    :param branch_dc: array of branch DC status (True/False)
+    :param control_mode: Array of branch control modes
+    :param R: Array of branch resistance values
+    :param X: Array of branch reactance values
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param monitor_loading: Array of branch monitor loading status (True/False)
+    :param branch_sensitivity_threshold: minimum branch sensitivity to the exchange (used to filter branches out)
+    :param monitor_only_sensitive_branches: Flag to monitor only sensitive branches
+    :param angles: array of bus voltage angles (LP variables)
+    :param alpha_abs: Array of absolute branch sensitivity to the exchange
+    :param logger: logger instance
+    :param flow_f: Array of branch flow solutions
+    :param tau: Array branch phase shift angle solutions
+    :return: Array of final monitor status per branch after applying the logic
     """
 
     rates = Rates / Sbase
@@ -904,20 +913,24 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
                           branch_sensitivity_threshold,
                           flow_f, monitor):
     """
-
-    :param solver:
-    :param ContingencyRates:
-    :param Sbase:
-    :param branch_names:
-    :param contingency_enabled_indices:
-    :param LODF:
-    :param F:
-    :param T:
-    :param inf:
-    :param branch_sensitivity_threshold:
-    :param flow_f:
-    :param monitor:
+    Formulate the contingency flows
+    :param solver: Solver instance to which add the equations
+    :param ContingencyRates: array of branch contingency rates
+    :param Sbase: Base power (i.e. 100 MVA)
+    :param branch_names: array of branch names
+    :param contingency_enabled_indices: array of branch indices enables for contingency
+    :param LODF: LODF matrix
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param inf: Value representing the infinite (i.e. 1e20)
+    :param branch_sensitivity_threshold: minimum branch sensitivity to the exchange (used to filter branches out)
+    :param flow_f: Array of formulated branch flows (LP variblaes)
+    :param monitor: Array of final monitor status per branch after applying the logic
     :return:
+        - flow_n1f: List of contingency flows LP variables
+        - overload1: Array of contingency overload LP variables in the positive sense
+        - overload2: Array of contingency overload LP variables in the negative sense
+        - con_idx: list of accepted contingency monitored and failed indices [(monitored, failed), ...]
     """
     rates = ContingencyRates / Sbase
 
@@ -966,19 +979,19 @@ def check_contingency(ContingencyRates, Sbase,
                       branch_sensitivity_threshold,
                       flow_f, monitor, logger: Logger):
     """
-
-    :param ContingencyRates:
-    :param Sbase:
-    :param branch_names:
-    :param contingency_enabled_indices:
-    :param LODF:
-    :param F:
-    :param T:
-    :param branch_sensitivity_threshold:
-    :param flow_f:
-    :param monitor:
-    :param logger:
-    :return:
+    Check the resulting contingency flows
+    :param ContingencyRates: array of branch contingency rates
+    :param Sbase: Base power (i.e. 100 MVA)
+    :param branch_names: array of branch names
+    :param contingency_enabled_indices: array of branch indices enables for contingency
+    :param LODF: LODF matrix
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param branch_sensitivity_threshold: minimum branch sensitivity to the exchange (used to filter branches out)
+    :param flow_f: Array of formulated branch flows (LP variblaes)
+    :param monitor: Array of final monitor status per branch after applying the logic
+    :param logger: logger instance
+    :return: Nothing
     """
     rates = ContingencyRates / Sbase
 
@@ -1016,25 +1029,30 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names,
                         rate, angles, active, Pt, r, control_mode, dispatchable,
                         F, T, Pinj, Sbase, inf, logger, t=0):
     """
-
-    :param solver:
-    :param nhvdc:
-    :param names:
-    :param rate:
-    :param angles:
-    :param active:
-    :param Pt:
-    :param r:
-    :param control_mode:
-    :param dispatchable:
-    :param F:
-    :param T:
-    :param Pinj:
-    :param Sbase:
-    :param inf:
-    :param logger:
-    :param t:
+    Formulate the HVDC flow
+    :param solver: Solver instance to which add the equations
+    :param nhvdc: number of HVDC devices
+    :param names: Array of HVDC names
+    :param rate: Array of HVDC rates
+    :param angles: Array of bus voltage angles (LP Variables)
+    :param active: Array of HVDC active status (True / False)
+    :param Pt: Array of HVDC sending power
+    :param r: Array of HVDC resistance values (this is used as the HVDC power/angle droop)
+    :param control_mode: Array of HVDC control modes
+    :param dispatchable: Array of HVDC dispatchable status (True/False)
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param Pinj: Array of power injections (Mix of values and LP variables)
+    :param Sbase: Base power (i.e. 100 MVA)
+    :param inf: Value representing the infinite (i.e. 1e20)
+    :param logger: logger instance
+    :param t: time index
     :return:
+        - flow_f: Array of formulated HVDC flows (mix of values and variables)
+        - overload1: Array of overload LP variables in the positive sense
+        - overload2: Array of overload LP variables in the negative sense
+        - hvdc_control1: Array of HVDC slack LP variables in the positive sense
+        - hvdc_control2: Array of HVDC slack LP variables in the negative sense
     """
     rates = rate[:, t] / Sbase
 
@@ -1101,23 +1119,23 @@ def check_hvdc_flow(nhvdc, names,
                     rate, angles, active, Pt, r, control_mode, dispatchable,
                     F, T, Sbase, flow_f, logger: Logger, t=0):
     """
-
-    :param nhvdc:
-    :param names:
-    :param rate:
-    :param angles:
-    :param active:
-    :param Pt:
-    :param r:
-    :param control_mode:
-    :param dispatchable:
-    :param F:
-    :param T:
-    :param Sbase:
-    :param flow_f:
-    :param logger:
-    :param t:
-    :return:
+    Check the HVDC flows
+    :param nhvdc: number of HVDC devices
+    :param names: Array of HVDC names
+    :param rate: Array of HVDC rates
+    :param angles: Array of bus voltage angles (values from the problem)
+    :param active: Array of HVDC active status (True / False)
+    :param Pt: Array of HVDC sending power
+    :param r: Array of HVDC resistance values (this is used as the HVDC power/angle droop)
+    :param control_mode: Array of HVDC control modes
+    :param dispatchable: Array of HVDC dispatchable status (True/False)
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param Sbase: Base power (i.e. 100 MVA)
+    :param flow_f: Array of formulated HVDC flows (values from the problem)
+    :param logger: logger instance
+    :param t: time index
+    :return: None
     """
     rates = rate[:, t] / Sbase
 
@@ -1179,33 +1197,35 @@ def formulate_objective(solver: pywraplp.Solver,
                         load_shedding):
     """
 
-    :param solver:
-    :param inter_area_branches:
-    :param flows_f:
-    :param overload1:
-    :param overload2:
-    :param n1overload1:
-    :param n1overload2:
-    :param inter_area_hvdc:
-    :param hvdc_flow_f:
-    :param hvdc_overload1:
-    :param hvdc_overload2:
-    :param hvdc_control1:
-    :param hvdc_control2:
-    :param power_shift:
-    :param dgen1:
-    :param gen_cost:
-    :param generation_delta:
-    :param delta_slack_1:
-    :param delta_slack_2:
-    :param weight_power_shift:
-    :param maximize_exchange_flows:
-    :param weight_generation_cost:
-    :param weight_generation_delta:
-    :param weight_overloads:
-    :param weight_hvdc_control:
-    :param load_shedding:
+    :param solver: Solver instance to which add the equations
+    :param inter_area_branches: Array of indices of the inter-area branch indices (excluding HVDC)
+    :param flows_f: Array of branch flows (LP variables)
+    :param overload1: Array of branch overloads in the positive sense (LP variables)
+    :param overload2: Array of branch overloads in the negative sense (LP variables)
+    :param n1overload1: List of branch contingency overloads in the positive sense (LP variables)
+    :param n1overload2: List of branch contingency overloads in the negative sense (LP variables)
+    :param inter_area_hvdc: Array of inter-area HVDC line indices
+    :param hvdc_flow_f: Array of HVDC flows
+    :param hvdc_overload1: Array of overload LP variables in the positive sense
+    :param hvdc_overload2: Array of overload LP variables in the negative sense
+    :param hvdc_control1: Array of HVDC slack LP variables in the positive sense
+    :param hvdc_control2: Array of HVDC slack LP variables in the negative sense
+    :param power_shift: Array of branch phase shift angles (mix of values and LP variables)
+    :param dgen1: List of generation delta LP variables in the area 1
+    :param gen_cost: Array of generation costs
+    :param generation_delta:  Array of generation delta LP variables
+    :param delta_slack_1: Array of generation delta LP Slack variables up
+    :param delta_slack_2: Array of generation delta LP Slack variables down
+    :param weight_power_shift: Power shift maximization weight
+    :param maximize_exchange_flows: Exchange flows weight
+    :param weight_generation_cost: Generation cost minimization weight
+    :param weight_generation_delta: Generation delta slacks minimization
+    :param weight_overloads: Branch overload minimization weight
+    :param weight_hvdc_control: HVDC control mismatch minimization weight
+    :param load_shedding: Array of load shedding LP variables
     :return:
+        - all_slacks_sum: summation of all the slacks
+        - slacks: List of all the slack variables' arrays
     """
 
     # maximize the power from->to
@@ -1283,17 +1303,29 @@ class OpfNTC(Opf):
                  weight_kirchoff=1e5,
                  weight_overloads=1e5,
                  weight_hvdc_control=1e0,
-                 logger: Logger=None):
+                 logger: Logger = None):
         """
         DC time series linear optimal power flow
-        :param numerical_circuit: NumericalCircuit instance
-        :param area_from_bus_idx: indices of the buses of the area 1
+        :param numerical_circuit:  NumericalCircuit instance
+        :param area_from_bus_idx:  indices of the buses of the area 1
         :param area_to_bus_idx: indices of the buses of the area 2
+        :param alpha: Array of branch sensitivities to the exchange
+        :param LODF: LODF matrix
         :param solver_type: type of linear solver
         :param generation_formulation: type of generation formulation
         :param monitor_only_sensitive_branches: Monitor the loading of only the sensitive branches?
-        :param branch_sensitivity_threshold: branch sensitivity
-        :param skip_generation_limits:
+        :param branch_sensitivity_threshold: branch sensitivity used to filter out the branches whose sensitivity is under the threshold
+        :param skip_generation_limits: Skip the generation limits?
+        :param consider_contingencies: Consider contingencies?
+        :param maximize_exchange_flows: Maximize the exchange flow?
+        :param tolerance: Solution tolerance
+        :param weight_power_shift: Power shift maximization weight
+        :param weight_generation_cost: Generation cost minimization weight
+        :param weight_generation_delta: Generation delta slacks minimization
+        :param weight_kirchoff: (unused)
+        :param weight_overloads: Branch overload minimization weight
+        :param weight_hvdc_control: HVDC control mismatch minimization weight
+        :param logger: logger instance
         """
 
         self.area_from_bus_idx = area_from_bus_idx

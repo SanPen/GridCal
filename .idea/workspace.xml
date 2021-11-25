@@ -23,7 +23,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="fixed the inputs analysis by adding the active status in the calculations">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improved docstrings">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
     </list>
@@ -678,14 +678,7 @@
       <workItem from="1637670997668" duration="1772000" />
       <workItem from="1637743884214" duration="79000" />
       <workItem from="1637746662628" duration="6983000" />
-      <workItem from="1637825202484" duration="4542000" />
-    </task>
-    <task id="LOCAL-00194" summary="Updated GUI">
-      <created>1631868574905</created>
-      <option name="number" value="00194" />
-      <option name="presentableId" value="LOCAL-00194" />
-      <option name="project" value="LOCAL" />
-      <updated>1631868574905</updated>
+      <workItem from="1637825202484" duration="10567000" />
     </task>
     <task id="LOCAL-00195" summary="Improved the slack checking">
       <created>1631909251803</created>
@@ -1023,7 +1016,14 @@
       <option name="project" value="LOCAL" />
       <updated>1637828256218</updated>
     </task>
-    <option name="localTasksCounter" value="243" />
+    <task id="LOCAL-00243" summary="Improved docstrings">
+      <created>1637830758308</created>
+      <option name="number" value="00243" />
+      <option name="presentableId" value="LOCAL-00243" />
+      <option name="project" value="LOCAL" />
+      <updated>1637830758308</updated>
+    </task>
+    <option name="localTasksCounter" value="244" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1057,7 +1057,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added transformer angle and tap module profiles" />
     <MESSAGE value="Added contingencies to the OPF simulations&#10;Added the contingency report as a compromise to show the contingencies" />
     <MESSAGE value="Added PTDF contingency tolerance" />
     <MESSAGE value="Implemented the skip generation in the dc opf" />
@@ -1082,7 +1081,8 @@
     <MESSAGE value="Not working yet" />
     <MESSAGE value="merged the atc refactor" />
     <MESSAGE value="fixed the inputs analysis by adding the active status in the calculations" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed the inputs analysis by adding the active status in the calculations" />
+    <MESSAGE value="Improved docstrings" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved docstrings" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1482,18 +1482,6 @@
           <url>file://$PROJECT_DIR$/src/research/PTDF/PTDF_ku_leuven.py</url>
           <line>89</line>
           <option name="timeStamp" value="862" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <condition expression="prop &lt; 0" language="Python" />
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>452</line>
-          <option name="timeStamp" value="863" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <condition expression="prop &lt; 0" language="Python" />
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>481</line>
-          <option name="timeStamp" value="866" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
