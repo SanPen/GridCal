@@ -142,9 +142,11 @@ def extract(arr, make_abs=False):  # override this method to call ORTools instea
 
     return val
 
-def save_lp(solver, file_name="ntc_opf_problem.lp"):
+
+def save_lp(solver: pywraplp.Solver, file_name="ntc_opf_problem.lp"):
     """
     Save problem in LP format
+    :param solver: Solver instance
     :param file_name: name of the file (.lp or .mps supported)
     """
     # save the problem in LP format to debug
@@ -161,11 +163,15 @@ def save_lp(solver, file_name="ntc_opf_problem.lp"):
 
 def get_inter_areas_branches(nbr, F, T, buses_areas_1, buses_areas_2):
     """
-    Get the inter-area branches.
+    Get the branches that join two areas
+    :param nbr: Number of branches
+    :param F: Array of From node indices
+    :param T: Array of To node indices
     :param buses_areas_1: Area from
     :param buses_areas_2: Area to
     :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
     """
+
     lst: List[Tuple[int, float]] = list()
     for k in range(nbr):
         if F[k] in buses_areas_1 and T[k] in buses_areas_2:
@@ -175,13 +181,13 @@ def get_inter_areas_branches(nbr, F, T, buses_areas_1, buses_areas_2):
     return lst
 
 
-def get_generators_connectivity(Cgen, buses_in_a1, buses_in_a2):
+def get_generators_per_areas(Cgen, buses_in_a1, buses_in_a2):
     """
-
-    :param Cgen:
-    :param buses_in_a1:
-    :param buses_in_a2:
-    :return:
+    Get the generators that belong to the Area 1, Area 2 and the rest of areas
+    :param Cgen: CSC connectivity matrix of generators and buses [ngen, nbus]
+    :param buses_in_a1: List of bus indices of the area 1
+    :param buses_in_a2: List of bus indices of the area 2
+    :return: Tree lists: (gens_in_a1, gens_in_a2, gens_out) each of the lists contains (bus index, generator index) tuples
     """
     assert isinstance(Cgen, csc_matrix)
 
@@ -201,66 +207,41 @@ def get_generators_connectivity(Cgen, buses_in_a1, buses_in_a2):
     return gens_in_a1, gens_in_a2, gens_out
 
 
-def compose_branches_df(num, solver_power_vars, overloads1, overloads2):
-
-    data = list()
-    for k in range(num.nbr):
-        val = solver_power_vars[k].solution_value() * num.Sbase
-        row = [
-            num.branch_data.branch_names[k],
-            val,
-            val / num.Rates[k],
-            overloads1[k].solution_value(),
-            overloads2[k].solution_value()
-        ]
-        data.append(row)
-
-    cols = ['Name', 'Power (MW)', 'Loading', 'SlackF', 'SlackT']
-    return pd.DataFrame(data, columns=cols)
-
-
-def compose_generation_df(nc, generation, dgen_arr, Pgen_arr):
-
-    data = list()
-    for i, (var, dgen, pgen) in enumerate(zip(generation, dgen_arr, Pgen_arr)):
-        if not isinstance(var, float):
-            data.append([str(var),
-                         '',
-                         var.Lb() * nc.Sbase,
-                         var.solution_value() * nc.Sbase,
-                         pgen * nc.Sbase,
-                         dgen.solution_value() * nc.Sbase,
-                         var.Ub() * nc.Sbase])
-
-    cols = ['Name', 'Bus', 'LB', 'Power (MW)', 'Set (MW)', 'Delta (MW)', 'UB']
-    return pd.DataFrame(data=data, columns=cols)
-
-
 def formulate_optimal_generation(solver: pywraplp.Solver,
                                  generator_active, dispatchable, generator_cost,
                                  generator_names, Sbase, logger, inf,
                                  ngen, Cgen, Pgen, Pmax, Pmin, a1, a2, t=0):
     """
-
-    :param solver:
-    :param generator_active:
-    :param dispatchable:
-    :param generator_cost:
-    :param generator_names:
-    :param Sbase:
-    :param logger:
-    :param inf:
-    :param ngen:
-    :param Cgen:
-    :param Pgen:
-    :param Pmax:
-    :param Pmin:
-    :param a1:
-    :param a2:
-    :param t:
-    :return:
+    Formulate the Generation in an optimal fashion. This means that the generator increments
+    attend to the generation cost and not to a proportional dispatch rule
+    :param solver: Solver instance to which add the equations
+    :param generator_active: Array of generation active values (True / False)
+    :param dispatchable: Array of Generator dispatchable variables (True / False)
+    :param generator_cost: Array of generator costs
+    :param generator_names: Array of Generator names
+    :param Sbase: Base power (i.e. 100 MVA)
+    :param logger: Logger instance
+    :param inf: Value representing the infinite value (i.e. 1e20)
+    :param ngen: Number of generators
+    :param Cgen: CSC connectivity matrix of generators and buses [ngen, nbus]
+    :param Pgen: Array of generator active power values in p.u.
+    :param Pmax: Array of generator maximum active power values in p.u.
+    :param Pmin: Array of generator minimum active power values in p.u.
+    :param a1: array of bus indices of the area 1
+    :param a2: array of bus indices of the area 2
+    :param t: Time index (i.e 0)
+    :return: Many arrays of variables:
+        - generation: Array of generation LP variables
+        - delta: Array of generation delta LP variables
+        - gen_a1_idx: Indices of the generators in the area 1
+        - gen_a2_idx: Indices of the generators in the area 2
+        - power_shift: Power shift LP variable
+        - dgen1: List of generation delta LP variables in the area 1
+        - gen_cost: used generation cost
+        - delta_slack_1: Array of generation delta LP Slack variables up
+        - delta_slack_2: Array of generation delta LP Slack variables down
     """
-    gens1, gens2, gens_out = get_generators_connectivity(Cgen, a1, a2)
+    gens1, gens2, gens_out = get_generators_per_areas(Cgen, a1, a2)
     gen_cost = generator_cost[:, t] * Sbase  # pass from $/MWh to $/p.u.h
     generation = np.zeros(ngen, dtype=object)
     delta = np.zeros(ngen, dtype=object)
@@ -279,6 +260,7 @@ def formulate_optimal_generation(solver: pywraplp.Solver,
     gen_a1_idx = list()
     gen_a2_idx = list()
 
+    # generators in the sending area
     for bus_idx, gen_idx in gens1:
 
         if generator_active[gen_idx] and dispatchable[gen_idx]:
@@ -292,7 +274,8 @@ def formulate_optimal_generation(solver: pywraplp.Solver,
             # delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
             delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
 
-            solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx] - delta_slack_2[gen_idx], 'Delta_up_gen{}'.format(gen_idx))
+            solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx] - delta_slack_2[gen_idx],
+                       'Delta_up_gen{}'.format(gen_idx))
 
             dgen1.append(delta[gen_idx])
 
@@ -304,6 +287,7 @@ def formulate_optimal_generation(solver: pywraplp.Solver,
         Pgen1.append(Pgen[gen_idx])
         gen_a1_idx.append(gen_idx)
 
+    # Generators in the receiving area
     for bus_idx, gen_idx in gens2:
 
         if generator_active[gen_idx] and dispatchable[gen_idx]:
@@ -318,7 +302,8 @@ def formulate_optimal_generation(solver: pywraplp.Solver,
             delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
             # delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
 
-            solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx] + delta_slack_1[gen_idx], 'Delta_down_gen{}'.format(gen_idx))
+            solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx] + delta_slack_1[gen_idx],
+                       'Delta_down_gen{}'.format(gen_idx))
 
             dgen2.append(delta[gen_idx])
 
@@ -330,7 +315,7 @@ def formulate_optimal_generation(solver: pywraplp.Solver,
         Pgen2.append(Pgen[gen_idx])
         gen_a2_idx.append(gen_idx)
 
-    # set the generation in the non inter-area ones
+    # fix the generation at the rest of generators
     for bus_idx, gen_idx in gens_out:
         if generator_active[gen_idx]:
             generation[gen_idx] = Pgen[gen_idx]
@@ -346,20 +331,20 @@ def formulate_optimal_generation(solver: pywraplp.Solver,
 def check_optimal_generation(generator_active, generator_names, dispatchable, Cgen, Pgen, a1, a2,
                              generation, delta, logger: Logger):
     """
-
-    :param generator_active:
-    :param generator_names:
-    :param dispatchable:
-    :param Cgen:
-    :param Pgen:
-    :param a1:
-    :param a2:
-    :param generation:
-    :param delta:
-    :param logger:
-    :return:
+    Check the results of the optimal generation increments
+    :param generator_active: Array of generation active values (True / False)
+    :param generator_names: Array of Generator names
+    :param dispatchable: Array of Generator dispatchable variables (True / False)
+    :param Cgen: CSC connectivity matrix of generators and buses [ngen, nbus]
+    :param Pgen: Array of generator active power values in p.u.
+    :param a1: array of bus indices of the area 1
+    :param a2: array of bus indices of the area 2
+    :param generation: Array of generation values (resulting of the LP solution)
+    :param delta: Array of generation delta values (resulting of the LP solution)
+    :param logger: Logger instance
+    :return: Nothing
     """
-    gens1, gens2, gens_out = get_generators_connectivity(Cgen, a1, a2)
+    gens1, gens2, gens_out = get_generators_per_areas(Cgen, a1, a2)
 
     dgen1 = list()
     dgen2 = list()
@@ -372,7 +357,7 @@ def check_optimal_generation(generator_active, generator_names, dispatchable, Cg
             if not res:
                 logger.add_divergence('Delta up condition not met '
                                       '(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx])',
-                                      generator_names[gen_idx], generation[gen_idx] - Pgen[gen_idx], delta[gen_idx])
+                                      generator_names[gen_idx], generation[gen_idx], Pgen[gen_idx] + delta[gen_idx])
 
     for bus_idx, gen_idx in gens2:
         if generator_active[gen_idx] and dispatchable[gen_idx]:
@@ -382,7 +367,7 @@ def check_optimal_generation(generator_active, generator_names, dispatchable, Cg
             if not res:
                 logger.add_divergence('Delta down condition not met '
                                       '(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx])',
-                                      generator_names[gen_idx], generation[gen_idx] - Pgen[gen_idx], delta[gen_idx])
+                                      generator_names[gen_idx], generation[gen_idx], Pgen[gen_idx] - delta[gen_idx])
 
     # check area equality
     sum_a1 = sum(dgen1)
@@ -399,26 +384,25 @@ def formulate_proportional_generation(solver: pywraplp.Solver,
                                       ngen, Cgen, Pgen, Pmax, Pmin, a1, a2, t=0):
     """
 
-    :param solver:
-    :param generator_active:
-    :param generator_dispatchable:
-    :param generator_cost:
-    :param generator_names:
-    :param Sbase:
-    :param logger:
-    :param inf:
-    :param ngen:
-    :param Cgen:
-    :param Pgen:
-    :param Pmax:
-    :param Pmin:
-    :param a1:
-    :param a2:
-    :param t:
-    :param add_slacks:
+    :param solver: Solver instance to which add the equations
+    :param generator_active: Array of generation active values (True / False)
+    :param generator_dispatchable: Array of Generator dispatchable variables (True / False)
+    :param generator_cost: Array of generator costs
+    :param generator_names: Array of Generator names
+    :param Sbase: Base power (i.e. 100 MVA)
+    :param logger: Logger instance
+    :param inf: Value representing the infinite value (i.e. 1e20)
+    :param ngen: Number of generators
+    :param Cgen: CSC connectivity matrix of generators and buses [ngen, nbus]
+    :param Pgen: Array of generator active power values in p.u.
+    :param Pmax: Array of generator maximum active power values in p.u.
+    :param Pmin: Array of generator minimum active power values in p.u.
+    :param a1: array of bus indices of the area 1
+    :param a2: array of bus indices of the area 2
+    :param t: Time index (i.e 0)
     :return:
     """
-    gens1, gens2, gens_out = get_generators_connectivity(Cgen, a1, a2)
+    gens1, gens2, gens_out = get_generators_per_areas(Cgen, a1, a2)
     gen_cost = generator_cost[:, t] * Sbase  # pass from $/MWh to $/p.u.h
     generation = np.zeros(ngen, dtype=object)
     delta = np.zeros(ngen, dtype=object)
@@ -539,7 +523,7 @@ def check_proportional_generation(generator_active, dispatchable, generator_cost
     :param add_slacks:
     :return:
     """
-    gens1, gens2, gens_out = get_generators_connectivity(Cgen, a1, a2)
+    gens1, gens2, gens_out = get_generators_per_areas(Cgen, a1, a2)
     gen_cost = generator_cost[:, t] * Sbase  # pass from $/MWh to $/p.u.h
 
     dgen1 = list()
@@ -584,13 +568,13 @@ def check_proportional_generation(generator_active, dispatchable, generator_cost
             if not res:
                 logger.add_divergence("Delta down equal to it's share of the power shift "
                                       "(delta[i] == prop * power_shift)",
-                                      generator_names[gen_idx], delta[gen_idx], -prop * power_shift)
+                                      generator_names[gen_idx], delta[gen_idx], prop * power_shift)
 
             res = generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx]
             if not res:
                 logger.add_divergence('Delta down condition not met '
                                       '(generation[i] == Pgen[i] - delta[i])',
-                                      generator_names[gen_idx], generation[gen_idx], Pgen[gen_idx] + delta[gen_idx])
+                                      generator_names[gen_idx], generation[gen_idx], Pgen[gen_idx] - delta[gen_idx])
 
             dgen2.append(delta[gen_idx])
 
@@ -933,7 +917,6 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
     :param branch_sensitivity_threshold:
     :param flow_f:
     :param monitor:
-    :param add_slacks:
     :return:
     """
     rates = ContingencyRates / Sbase
@@ -978,10 +961,10 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
 
 
 def check_contingency(ContingencyRates, Sbase,
-                          branch_names, contingency_enabled_indices,
-                          LODF, F, T,
-                          branch_sensitivity_threshold,
-                          flow_f, monitor, logger: Logger):
+                      branch_names, contingency_enabled_indices,
+                      LODF, F, T,
+                      branch_sensitivity_threshold,
+                      flow_f, monitor, logger: Logger):
     """
 
     :param ContingencyRates:
@@ -1018,13 +1001,15 @@ def check_contingency(ContingencyRates, Sbase,
                 res = flow_n1 <= rates[m]
 
                 if not res:
-                    logger.add_divergence('Positive contingency flow rating violated (flow_n1 <= rates[m])', branch_names[m] + '@' + branch_names[c], flow_n1, rates[m])
+                    logger.add_divergence('Positive contingency flow rating violated (flow_n1 <= rates[m])',
+                                          branch_names[m] + '@' + branch_names[c], flow_n1, rates[m])
 
                 # rating restriction in the sense to-from
                 res = -rates[m] <= flow_n1
 
                 if not res:
-                    logger.add_divergence('Negative contingency flow rating violated (-rates[m] <= flow_n1)', branch_names[m] + '@' + branch_names[c], flow_n1, -rates[m])
+                    logger.add_divergence('Negative contingency flow rating violated (-rates[m] <= flow_n1)',
+                                          branch_names[m] + '@' + branch_names[c], flow_n1, -rates[m])
 
 
 def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names,
@@ -1049,7 +1034,6 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names,
     :param inf:
     :param logger:
     :param t:
-    :param add_slacks:
     :return:
     """
     rates = rate[:, t] / Sbase
@@ -1082,8 +1066,8 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names,
 
                 # formulate the hvdc flow as an AC line equivalent
                 bk = 1.0 / r[i]  # TODO: yes, I know... DC...
-                solver.Add(flow_f[i] == P0 + bk * (angles[_f] - angles[_t]) + hvdc_control1[i] - hvdc_control2[i], 'hvdc_power_flow_' + suffix)
-                # solver.Add(flow_f[i] == P0 + bk * (angles[_f] - angles[_t]), 'hvdc_power_flow_' + suffix)
+                solver.Add(flow_f[i] == P0 + bk * (angles[_f] - angles[_t]) + hvdc_control1[i] - hvdc_control2[i],
+                           'hvdc_power_flow_' + suffix)
 
                 # add the injections matching the flow
                 Pinj[_f] -= flow_f[i]
@@ -1118,7 +1102,6 @@ def check_hvdc_flow(nhvdc, names,
                     F, T, Sbase, flow_f, logger: Logger, t=0):
     """
 
-    :param solver:
     :param nhvdc:
     :param names:
     :param rate:
@@ -1130,12 +1113,10 @@ def check_hvdc_flow(nhvdc, names,
     :param dispatchable:
     :param F:
     :param T:
-    :param Pinj:
     :param Sbase:
-    :param inf:
+    :param flow_f:
     :param logger:
     :param t:
-    :param add_slacks:
     :return:
     """
     rates = rate[:, t] / Sbase
@@ -1155,29 +1136,33 @@ def check_hvdc_flow(nhvdc, names,
 
                 # formulate the hvdc flow as an AC line equivalent
                 bk = 1.0 / r[i]  # TODO: yes, I know... DC...
-                res = flow_f[i] == P0 + bk * (angles[_f] - angles[_t])   # + hvdc_control1[i] - hvdc_control2[i], 'hvdc_power_flow_' + suffix)
+                res = flow_f[i] == P0 + bk * (angles[_f] - angles[_t])
 
                 if not res:
-                    logger.add_divergence('HVDC free flow violation (flow_f[i] == P0 + bk * (angles[f] - angles[t]))', names[i], flow_f[i], P0 + bk * (angles[_f] - angles[_t]))
+                    logger.add_divergence('HVDC free flow violation (flow_f[i] == P0 + bk * (angles[f] - angles[t]))',
+                                          names[i], flow_f[i], P0 + bk * (angles[_f] - angles[_t]))
 
                 # rating restriction in the sense from-to: eq.17
-                res = flow_f[i] <= rates[i]  # , "hvdc_ft_rating_" + suffix)
+                res = flow_f[i] <= rates[i]
 
                 if not res:
-                    logger.add_divergence('HVDC positive rating violation (flow_f[i] <= rates[i])', names[i], flow_f[i], rates[i])
+                    logger.add_divergence('HVDC positive rating violation (flow_f[i] <= rates[i])',
+                                          names[i], flow_f[i], rates[i])
 
                 # rating restriction in the sense to-from: eq.18
-                res = -rates[i] <= flow_f[i]  # , "hvdc_tf_rating_" + suffix)
+                res = -rates[i] <= flow_f[i]
 
                 if not res:
-                    logger.add_divergence('HVDC negative rating violation (-rates[i] <= flow_f[i])', names[i], flow_f[i], -rates[i])
+                    logger.add_divergence('HVDC negative rating violation (-rates[i] <= flow_f[i])',
+                                          names[i], flow_f[i], -rates[i])
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and not dispatchable[i]:
                 # simple injections model: The power is set by the user
                 res = flow_f[i] == P0
 
                 if not res:
-                    logger.add_divergence('HVDC Pset, non dispatchable control not met (flow_f[i] == P0)', names[i], flow_f[i], P0)
+                    logger.add_divergence('HVDC Pset, non dispatchable control not met (flow_f[i] == P0)',
+                                          names[i], flow_f[i], P0)
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and dispatchable[i]:
                 # simple injections model, the power is a variable and it is optimized

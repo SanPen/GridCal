@@ -23,11 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="merged the atc refactor">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="fixed the inputs analysis by adding the active status in the calculations">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/KULeuven_5node.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/KULeuven_5node.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/InputsAnalysis/inputs_analysis_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/InputsAnalysis/inputs_analysis_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PTDF/PTDF_ku_leuven.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/PTDF/PTDF_ku_leuven.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -680,14 +678,7 @@
       <workItem from="1637670997668" duration="1772000" />
       <workItem from="1637743884214" duration="79000" />
       <workItem from="1637746662628" duration="6983000" />
-      <workItem from="1637825202484" duration="1803000" />
-    </task>
-    <task id="LOCAL-00193" summary="Improved NTC formulation by converting the areaSlack to power shift and removing a potential conflict">
-      <created>1631696007310</created>
-      <option name="number" value="00193" />
-      <option name="presentableId" value="LOCAL-00193" />
-      <option name="project" value="LOCAL" />
-      <updated>1631696007310</updated>
+      <workItem from="1637825202484" duration="4542000" />
     </task>
     <task id="LOCAL-00194" summary="Updated GUI">
       <created>1631868574905</created>
@@ -1025,7 +1016,14 @@
       <option name="project" value="LOCAL" />
       <updated>1637750281780</updated>
     </task>
-    <option name="localTasksCounter" value="242" />
+    <task id="LOCAL-00242" summary="fixed the inputs analysis by adding the active status in the calculations">
+      <created>1637828256217</created>
+      <option name="number" value="00242" />
+      <option name="presentableId" value="LOCAL-00242" />
+      <option name="project" value="LOCAL" />
+      <updated>1637828256218</updated>
+    </task>
+    <option name="localTasksCounter" value="243" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1059,7 +1057,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Implemented HVDC and phase shift into the OPF time series" />
     <MESSAGE value="added transformer angle and tap module profiles" />
     <MESSAGE value="Added contingencies to the OPF simulations&#10;Added the contingency report as a compromise to show the contingencies" />
     <MESSAGE value="Added PTDF contingency tolerance" />
@@ -1084,7 +1081,8 @@
     <MESSAGE value="Not checking the continegencies in the contingency NTC if it is not going to check them" />
     <MESSAGE value="Not working yet" />
     <MESSAGE value="merged the atc refactor" />
-    <option name="LAST_COMMIT_MESSAGE" value="merged the atc refactor" />
+    <MESSAGE value="fixed the inputs analysis by adding the active status in the calculations" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed the inputs analysis by adding the active status in the calculations" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1466,11 +1464,6 @@
           <option name="timeStamp" value="851" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>320</line>
-          <option name="timeStamp" value="853" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/research/PTDF/PTDF_ku_leuven.py</url>
           <line>100</line>
           <option name="timeStamp" value="854" />
@@ -1493,18 +1486,13 @@
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="prop &lt; 0" language="Python" />
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>468</line>
+          <line>452</line>
           <option name="timeStamp" value="863" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>565</line>
-          <option name="timeStamp" value="865" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="prop &lt; 0" language="Python" />
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>497</line>
+          <line>481</line>
           <option name="timeStamp" value="866" />
         </line-breakpoint>
       </breakpoints>
