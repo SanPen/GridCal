@@ -1387,6 +1387,9 @@ class OpfNTC(Opf):
 
         self.inf = self.solver.infinity()
 
+        # time index
+        t = 0
+
         # general indices
         n = self.numerical_circuit.nbus
         m = self.numerical_circuit.nbr
@@ -1404,9 +1407,7 @@ class OpfNTC(Opf):
         # generator
         Pg_max = self.numerical_circuit.generator_pmax / Sbase
         Pg_min = self.numerical_circuit.generator_pmin / Sbase
-        cost_g = self.numerical_circuit.generator_cost
-        Pg_fix = self.numerical_circuit.generator_p / Sbase
-        enabled_for_dispatch = self.numerical_circuit.generator_dispatchable
+        Pg_fix = self.numerical_circuit.generator_data.get_effective_generation()[:, t] / Sbase
         Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
 
         if self.skip_generation_limits:
@@ -1415,8 +1416,7 @@ class OpfNTC(Opf):
             Pg_min = -self.inf * np.ones(self.numerical_circuit.ngen)
 
         # load
-        Pl = (self.numerical_circuit.load_active * self.numerical_circuit.load_s.real) / Sbase
-        cost_l = self.numerical_circuit.load_cost
+        Pl = self.numerical_circuit.load_data.get_effective_load().real[:, t] / Sbase
 
         # modify Pg_fix until it is identical to Pload
         total_load = Pl.sum()
@@ -1426,30 +1426,12 @@ class OpfNTC(Opf):
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
-        Ys = 1 / (self.numerical_circuit.branch_R + 1j * self.numerical_circuit.branch_X)
-        Bseries = (self.numerical_circuit.branch_active * Ys).imag
-        cost_br = self.numerical_circuit.branch_cost
         alpha_abs = np.abs(self.alpha)
-
-        # --------------------------------------------------------------------------------------------------------------
-        # pre-solve to identify base infeasibilities
-        # --------------------------------------------------------------------------------------------------------------
-        # Cannot solve the power flow problem via optimization
-        # solve_power_flow(Bbus=self.numerical_circuit.Bbus,
-        #                  Pinj=self.numerical_circuit.Sbus.real,
-        #                  bus_active=self.numerical_circuit.bus_data.bus_active,
-        #                  vd=self.numerical_circuit.vd,
-        #                  bus_names=self.numerical_circuit.bus_data.bus_names,
-        #                  angle_min=self.numerical_circuit.bus_data.angle_min,
-        #                  angle_max=self.numerical_circuit.bus_data.angle_max,
-        #                  logger=self.logger)
 
         # --------------------------------------------------------------------------------------------------------------
         # Formulate the problem
         # --------------------------------------------------------------------------------------------------------------
 
-        # time index
-        t = 0
 
         # get the inter-area branches and their sign
         inter_area_branches = get_inter_areas_branches(nbr=m,
@@ -1686,11 +1668,7 @@ class OpfNTC(Opf):
         Cbat = self.numerical_circuit.battery_data.C_bus_batt.tocsc()
 
         # generator
-        Pg_max = self.numerical_circuit.generator_pmax / Sbase
-        Pg_min = self.numerical_circuit.generator_pmin / Sbase
-        cost_g = self.numerical_circuit.generator_cost
-        Pg_fix = self.numerical_circuit.generator_p / Sbase
-        enabled_for_dispatch = self.numerical_circuit.generator_dispatchable
+        Pg_fix = self.numerical_circuit.generator_data.get_effective_generation() / Sbase
         Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
 
         if self.skip_generation_limits:
@@ -1699,14 +1677,8 @@ class OpfNTC(Opf):
             Pg_min = -self.inf * np.ones(self.numerical_circuit.ngen)
 
         # load
-        Pl = (self.numerical_circuit.load_active * self.numerical_circuit.load_s.real) / Sbase
-        cost_l = self.numerical_circuit.load_cost
 
         # branch
-        branch_ratings = self.numerical_circuit.branch_rates / Sbase
-        Ys = 1 / (self.numerical_circuit.branch_R + 1j * self.numerical_circuit.branch_X)
-        Bseries = (self.numerical_circuit.branch_active * Ys).imag
-        cost_br = self.numerical_circuit.branch_cost
         alpha_abs = np.abs(self.alpha)
 
         # time index

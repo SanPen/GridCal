@@ -64,8 +64,11 @@ class LoadData:
     def get_island(self, bus_idx):
         return tp.get_elements_of_the_island(self.C_bus_load.T, bus_idx)
 
+    def get_effective_load(self):
+        return self.load_s * self.load_active
+
     def get_injections_per_bus(self):
-        return - self.C_bus_load * (self.load_s * self.load_active)
+        return - self.C_bus_load * self.get_effective_load()
 
     def __len__(self):
         return self.nload

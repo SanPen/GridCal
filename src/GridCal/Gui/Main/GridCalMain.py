@@ -5775,7 +5775,7 @@ class MainGUI(QMainWindow):
             if elm.graphic_obj is not None:
                 # this is a more complete function than the circuit one because it removes the
                 # graphical items too, and for loads and generators it deletes them properly
-                print('Deleted ', elm.name)
+                print('Deleted ', elm.device_type.value, elm.name)
                 elm.graphic_obj.remove(ask=False)
 
         # search other elements to delete
@@ -5795,7 +5795,7 @@ class MainGUI(QMainWindow):
                     if elm.graphic_obj is not None:
                         # this is a more complete function than the circuit one because it removes the
                         # graphical items too, and for loads and generators it deletes them properly
-                        print('Deleted ', elm.name)
+                        print('Deleted ', elm.device_type.value, elm.name)
                         elm.graphic_obj.remove(ask=False)
 
     def correct_shit(self, min_vset=0.98, max_vset=1.02):
