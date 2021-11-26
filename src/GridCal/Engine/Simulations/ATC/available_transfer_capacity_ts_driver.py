@@ -264,7 +264,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             # cluster and re-assign the time indices
             time_indices, \
-            sampled_probabilities = kmeans_approximate_sampling(X, n_points=self.options.cluster_number)
+                sampled_probabilities = kmeans_approximate_sampling(X, n_points=self.options.cluster_number)
 
         # get the power injections
         P = nc.Sbus.real  # these are in p.u.

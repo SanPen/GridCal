@@ -23,9 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added clustering to the regular ATC time series">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="small refactor on the new atc clustering code">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_ts_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -679,14 +679,7 @@
       <workItem from="1637743884214" duration="79000" />
       <workItem from="1637746662628" duration="6983000" />
       <workItem from="1637825202484" duration="17003000" />
-      <workItem from="1637911586543" duration="10056000" />
-    </task>
-    <task id="LOCAL-00199" summary="Small bug fixes:&#10;- Added the coordinates in the branches that were missing&#10;- After a very long time, the bus drag and drop has a icon!&#10;- Fixed the kV tooltip thing">
-      <created>1632949796379</created>
-      <option name="number" value="00199" />
-      <option name="presentableId" value="LOCAL-00199" />
-      <option name="project" value="LOCAL" />
-      <updated>1632949796379</updated>
+      <workItem from="1637911586543" duration="11137000" />
     </task>
     <task id="LOCAL-00200" summary="Added Activs500g">
       <created>1632949829511</created>
@@ -1024,7 +1017,14 @@
       <option name="project" value="LOCAL" />
       <updated>1637927958986</updated>
     </task>
-    <option name="localTasksCounter" value="248" />
+    <task id="LOCAL-00248" summary="small refactor on the new atc clustering code">
+      <created>1637928771818</created>
+      <option name="number" value="00248" />
+      <option name="presentableId" value="LOCAL-00248" />
+      <option name="project" value="LOCAL" />
+      <updated>1637928771818</updated>
+    </task>
+    <option name="localTasksCounter" value="249" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1058,7 +1058,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Implemented optional way to open the web maps when the pyside webdriver is not available" />
     <MESSAGE value="implemented simpler zoom by selecting and adjusting the screen" />
     <MESSAGE value="For apple M1 use GLOP when using ortools" />
     <MESSAGE value="4.2.6" />
@@ -1083,7 +1082,8 @@
     <MESSAGE value="NTC-OPF fix: Apply the generation and load active state in the Pfix calculation" />
     <MESSAGE value="Improved the DC power by adding the phase shifter effects" />
     <MESSAGE value="Added clustering to the regular ATC time series" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added clustering to the regular ATC time series" />
+    <MESSAGE value="small refactor on the new atc clustering code" />
+    <option name="LAST_COMMIT_MESSAGE" value="small refactor on the new atc clustering code" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
