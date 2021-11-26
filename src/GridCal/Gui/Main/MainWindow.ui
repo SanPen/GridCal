@@ -2456,6 +2456,31 @@ p, li { white-space: pre-wrap; }
                    </widget>
                   </item>
                   <item>
+                   <widget class="QLabel" name="label_105">
+                    <property name="minimumSize">
+                     <size>
+                      <width>24</width>
+                      <height>24</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>24</width>
+                      <height>24</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="pixmap">
+                     <pixmap resource="icons.qrc">:/Icons/icons/atc_ts_clustering.svg</pixmap>
+                    </property>
+                    <property name="scaledContents">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
                    <widget class="QLabel" name="label_93">
                     <property name="palette">
                      <palette>
@@ -2500,7 +2525,7 @@ p, li { white-space: pre-wrap; }
                      </font>
                     </property>
                     <property name="text">
-                     <string>Time series clustering</string>
+                     <string>Clustering</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
@@ -2674,7 +2699,7 @@ p, li { white-space: pre-wrap; }
                <item row="15" column="0">
                 <widget class="QSpinBox" name="cluster_number_spinBox">
                  <property name="toolTip">
-                  <string>Number of clusters in case of clustering</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of clusters, this affects all the simulations that deal with clustering&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="suffix">
                   <string> Clusters</string>
@@ -4023,7 +4048,7 @@ points from time series</string>
           <widget class="QWidget" name="tab_9">
            <attribute name="icon">
             <iconset resource="icons.qrc">
-             <normaloff>:/Icons/icons/ntc_opf.svg</normaloff>:/Icons/icons/ntc_opf.svg</iconset>
+             <normaloff>:/Icons/icons/atc.svg</normaloff>:/Icons/icons/atc.svg</iconset>
            </attribute>
            <attribute name="title">
             <string>NTC</string>
@@ -4038,55 +4063,6 @@ points from time series</string>
                <enum>QFrame::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_13">
-               <item row="5" column="1">
-                <widget class="QLabel" name="label_61">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>85</red>
-                       <green>87</green>
-                       <blue>83</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>85</red>
-                       <green>87</green>
-                       <blue>83</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <pointsize>16</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Linear method</string>
-                 </property>
-                </widget>
-               </item>
                <item row="3" column="0" colspan="2">
                 <widget class="QFrame" name="frame_63">
                  <property name="frameShape">
@@ -4217,8 +4193,21 @@ points from time series</string>
                  </layout>
                 </widget>
                </item>
-               <item row="1" column="1">
-                <widget class="QLabel" name="label_95">
+               <item row="8" column="0" colspan="2">
+                <spacer name="verticalSpacer_9">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>150</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="5" column="1">
+                <widget class="QLabel" name="label_61">
                  <property name="palette">
                   <palette>
                    <active>
@@ -4262,7 +4251,7 @@ points from time series</string>
                   </font>
                  </property>
                  <property name="text">
-                  <string>Net Transfer Capacity (General)</string>
+                  <string>Linear method</string>
                  </property>
                 </widget>
                </item>
@@ -4291,56 +4280,6 @@ points from time series</string>
                  </property>
                 </widget>
                </item>
-               <item row="2" column="0" colspan="2">
-                <widget class="Line" name="line_26">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <property name="lineWidth">
-                  <number>4</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_92">
                  <property name="minimumSize">
@@ -4359,7 +4298,7 @@ points from time series</string>
                   <string/>
                  </property>
                  <property name="pixmap">
-                  <pixmap resource="icons.qrc">:/Icons/icons/ntc_opf.svg</pixmap>
+                  <pixmap resource="icons.qrc">:/Icons/icons/atc.svg</pixmap>
                  </property>
                  <property name="scaledContents">
                   <bool>true</bool>
@@ -4416,18 +4355,104 @@ points from time series</string>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="0" colspan="2">
-                <spacer name="verticalSpacer_9">
+               <item row="1" column="1">
+                <widget class="QLabel" name="label_95">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>16</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Net Transfer Capacity (General)</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0" colspan="2">
+                <widget class="Line" name="line_26">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>4</number>
+                 </property>
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Horizontal</enum>
                  </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>150</height>
-                  </size>
-                 </property>
-                </spacer>
+                </widget>
                </item>
               </layout>
              </widget>
@@ -7610,6 +7635,7 @@ QProgressBar::chunk{
     <addaction name="actionOTDF_time_series"/>
     <addaction name="actionATC"/>
     <addaction name="actionATC_Time_Series"/>
+    <addaction name="actionATC_clustering"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
@@ -8364,6 +8390,18 @@ QProgressBar::chunk{
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>
+   </property>
+  </action>
+  <action name="actionATC_clustering">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/atc_ts_clustering.svg</normaloff>:/Icons/icons/atc_ts_clustering.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Available transfer capacity with clustering</string>
+   </property>
+   <property name="toolTip">
+    <string>Perform the ATC time series study with clustering</string>
    </property>
   </action>
  </widget>

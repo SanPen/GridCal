@@ -476,20 +476,26 @@ class AvailableTransferCapacityOptions:
                  bus_idx_from=list(), bus_idx_to=list(), idx_br=list(), sense_br=list(), Pf=None,
                  idx_hvdc_br=list(), sense_hvdc_br=list(), Pf_hvdc=None,
                  dT=100.0, threshold=0.02, mode: AvailableTransferMode = AvailableTransferMode.Generation,
-                 max_report_elements=-1):
+                 max_report_elements=-1, use_clustering=False, cluster_number=100):
         """
 
         :param distributed_slack:
         :param correct_values:
+        :param use_provided_flows:
         :param bus_idx_from:
         :param bus_idx_to:
         :param idx_br:
         :param sense_br:
         :param Pf:
+        :param idx_hvdc_br:
+        :param sense_hvdc_br:
+        :param Pf_hvdc:
         :param dT:
         :param threshold:
         :param mode:
         :param max_report_elements: maximum number of elements to show in the report (-1 for all)
+        :param use_clustering:
+        :param n_clusters:
         """
         self.distributed_slack = distributed_slack
         self.correct_values = correct_values
@@ -509,6 +515,9 @@ class AvailableTransferCapacityOptions:
         self.mode = mode
 
         self.max_report_elements = max_report_elements
+
+        self.use_clustering = use_clustering
+        self.cluster_number = cluster_number
 
 
 class AvailableTransferCapacityDriver(DriverTemplate):

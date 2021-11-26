@@ -232,27 +232,25 @@ def compute_linear_admittances(nbr, X, R, m, active, Cf, Ct, ac, dc):
     else:
         b = 1.0 / (m_abs * X * active + 1e-20)  # for ac branches
 
-    b_tt = sp.diags(b)
+    b_tt = sp.diags(b)  # This is Bd from the
     Bf = b_tt * Cf - b_tt * Ct
     Bt = -b_tt * Cf + b_tt * Ct
     Bbus = Cf.T * Bf + Ct.T * Bt
-
     Btheta = (b_tt * (Cf + Ct)).T
 
     """
     According to the KULeuven document "DC power flow in unit commitment models"
-    The DC power flow is
+    The DC power flow is:
     
     Pbus = (A^T x Bd x A) x bus_angles + (Bd x A)^T x branch_angles
     
-    this is also:
+    Identifying the already computed matrices, it becomes:
     
     Pbus = Bbus x bus_angles + Btheta x branch_angles
     
     If we solve for bus angles:
     
     bus_angles = Bbus^-1 x (Pbus - Btheta x branch_angles)
-    
     """
 
     return Bbus, Bf, Btheta
