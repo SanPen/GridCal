@@ -470,7 +470,7 @@ def formulate_proportional_generation(solver: pywraplp.Solver,
 
                 solver.Add(
                     generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx]
-                    + delta_slack_1[gen_idx] - delta_slack_2[gen_idx],
+                    ,#+ delta_slack_1[gen_idx] - delta_slack_2[gen_idx],
                     'Generation_due_to_forced_delta_' + name
                 )
 
@@ -510,7 +510,7 @@ def formulate_proportional_generation(solver: pywraplp.Solver,
                 )
                 solver.Add(
                     generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx]
-                    + delta_slack_1[gen_idx] - delta_slack_2[gen_idx],
+                    ,# + delta_slack_1[gen_idx] - delta_slack_2[gen_idx],
                     'Gen_down_gen{}'.format(gen_idx)
                 )
 
@@ -807,6 +807,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
 
                 # declare the flow variable with ample limits
                 flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
+                # flow_f[m] = solver.NumVar(-rates[m], rates[m], 'pftk_{0}_{1}'.format(m, branch_names[m]))
 
                 # compute the branch susceptance
                 if branch_dc[m]:
@@ -972,9 +973,20 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
 
             if m != c and LODF[m, c] > branch_sensitivity_threshold:
                 # compute the N-1 flow
-                flow_n1 = flow_f[m] + LODF[m, c] * flow_f[c]
+                lodf = LODF[m, c]
+
+                if lodf > 1:
+                    lodf = 1
+
+                elif lodf < -1:
+                    lodf = -1
 
                 suffix = "{0}_{1} @ {2}_{3}".format(m, branch_names[m], c, branch_names[c])
+
+                flow_n1 = flow_f[m] + lodf * flow_f[c]
+                #flow_n1 = solver.NumVar(-rates[m], rates[m], 'n-1_flow__' + suffix)
+                #solver.Add(flow_n1 == flow_f[m] + lodf * flow_f[c], "n-1_ft_rating_" + suffix)
+
 
                 # rating restriction in the sense from-to
                 overload1 = solver.NumVar(0, inf, 'n-1_overload1__' + suffix)
