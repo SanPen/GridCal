@@ -1693,7 +1693,7 @@ class OpfNTC(Opf):
         Cbat = self.numerical_circuit.battery_data.C_bus_batt.tocsc()
 
         # generator
-        Pg_fix = self.numerical_circuit.generator_data.get_effective_generation() / Sbase
+        Pg_fix = self.numerical_circuit.generator_data.get_effective_generation()[:, t] / Sbase
         Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
 
         if self.skip_generation_limits:

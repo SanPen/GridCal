@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-
+import io
 from enum import Enum
 from datetime import datetime
 from PySide2 import QtCore, QtGui, QtWidgets
@@ -216,10 +216,15 @@ class LogsDialogue(QtWidgets.QDialog):
         self.save_btn.setText('Save')
         self.save_btn.clicked.connect(self.save_click)
 
+        self.copy_btn = QtWidgets.QPushButton()
+        self.copy_btn.setText('Copy')
+        self.copy_btn.clicked.connect(self.copy_click)
+
         self.btn_frame = QtWidgets.QFrame()
         self.btn_layout = QtWidgets.QHBoxLayout(self.btn_frame)
         self.btn_spacer = QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Expanding)
         self.btn_layout.addWidget(self.save_btn)
+        self.btn_layout.addWidget(self.copy_btn)
         self.btn_layout.addSpacerItem(self.btn_spacer)
         self.btn_layout.addWidget(self.accept_btn)
         self.btn_frame.setLayout(self.btn_layout)
@@ -245,21 +250,35 @@ class LogsDialogue(QtWidgets.QDialog):
         """
         Save the logs to excel or CSV
         """
-        file, filter = QtWidgets.QFileDialog.getSaveFileName(self, "Export results", '',
-                                                             filter="CSV (*.csv);;Excel files (*.xlsx)",)
+        file, filter_ = QtWidgets.QFileDialog.getSaveFileName(self, "Export results", '',
+                                                              filter="CSV (*.csv);;Excel files (*.xlsx)",)
 
         if file != '':
-            if 'xlsx' in filter:
+            if 'xlsx' in filter_:
                 f = file
                 if not f.endswith('.xlsx'):
                     f += '.xlsx'
                 self.logs.to_xlsx(f)
 
-            if 'csv' in filter:
+            if 'csv' in filter_:
                 f = file
                 if not f.endswith('.csv'):
                     f += '.csv'
                 self.logs.to_csv(f)
+
+    def copy_click(self):
+        """
+        Copy logs to the clipboard
+        """
+        df = self.logs.to_df()
+        s = io.StringIO()
+        df.to_csv(s, sep='\t')
+        txt = s.getvalue()
+
+        # copy to clipboard
+        cb = QtWidgets.QApplication.clipboard()
+        cb.clear(mode=cb.Clipboard)
+        cb.setText(txt, mode=cb.Clipboard)
 
 
 class ElementsDialogue(QtWidgets.QDialog):

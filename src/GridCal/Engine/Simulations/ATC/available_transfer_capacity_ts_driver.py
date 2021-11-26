@@ -26,6 +26,7 @@ from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
+from GridCal.Engine.Simulations.Clustering.clustering import kmeans_approximate_sampling
 
 
 class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
@@ -208,7 +209,8 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         start = time.time()
 
         self.progress_signal.emit(0)
-
+        nc = compile_time_circuit(self.grid)
+        nt = len(nc.time_array)
         time_indices = self.get_time_indices()
 
         # declare the linear analysis
@@ -217,9 +219,6 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                             distributed_slack=self.options.distributed_slack,
                                             correct_values=self.options.correct_values)
         linear_analysis.run()
-
-        nc = compile_time_circuit(self.grid)
-        nt = len(nc.time_array)
 
         # get the branch indices to analyze
         br_idx = nc.branch_data.get_monitor_enabled_indices()
@@ -231,6 +230,17 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                                                   rates=nc.Rates,
                                                                   contingency_rates=nc.ContingencyRates,
                                                                   time_array=nc.time_array[time_indices])
+
+        if self.options.use_clustering:
+            self.progress_text.emit('Clustering...')
+            X = nc.Sbus
+            X = X[:, time_indices].real.T
+            self.sampled_time_idx, self.sampled_probabilities = kmeans_approximate_sampling(X,
+                                                                                            n_points=self.options.cluster_number)
+            # reassign the time indices
+            time_indices = self.sampled_time_idx
+
+
         # get the power injections
         P = nc.Sbus.real  # these are in p.u.
 

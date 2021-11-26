@@ -403,6 +403,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionATC_Time_Series.triggered.connect(self.run_available_transfer_capacity_ts)
 
+        self.ui.actionATC_clustering.triggered.connect(self.run_available_transfer_capacity_clustering)
+
         self.ui.actionReset_console.triggered.connect(self.create_console)
 
         self.ui.actionTry_to_fix_buses_location.triggered.connect(self.try_to_fix_buses_location)
@@ -2967,7 +2969,7 @@ class MainGUI(QMainWindow):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
-    def run_available_transfer_capacity_ts(self):
+    def run_available_transfer_capacity_ts(self, use_clustering=False):
         """
         Run a Power Transfer Distribution Factors analysis
         :return:
@@ -3026,7 +3028,7 @@ class MainGUI(QMainWindow):
                         return
 
                     mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
-
+                    cluster_number = self.ui.cluster_number_spinBox.value()
                     options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack,
                                                                    use_provided_flows=use_provided_flows,
                                                                    bus_idx_from=idx_from,
@@ -3040,7 +3042,9 @@ class MainGUI(QMainWindow):
                                                                    dT=dT,
                                                                    threshold=threshold,
                                                                    mode=mode,
-                                                                   max_report_elements=max_report_elements)
+                                                                   max_report_elements=max_report_elements,
+                                                                   use_clustering=use_clustering,
+                                                                   cluster_number=cluster_number)
 
                     start_ = self.ui.profile_start_slider.value()
                     end_ = self.ui.profile_end_slider.value()
@@ -3062,6 +3066,13 @@ class MainGUI(QMainWindow):
                 error_msg('There are no time series!')
         else:
             pass
+
+    def run_available_transfer_capacity_clustering(self):
+        """
+        Run the ATC time series using clustering
+        :return:
+        """
+        self.run_available_transfer_capacity_ts(use_clustering=True)
 
     def post_available_transfer_capacity_ts(self):
         """
