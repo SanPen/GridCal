@@ -26,20 +26,39 @@ from matplotlib import pyplot as plt
 import GridCal.Engine as gce
 from GridCal.Engine.Simulations.PowerFlow.derivatives import derivatives_sh
 
-def getPTDF(circuit: gce.SnapshotData):
+
+def getPTDF1(circuit: gce.SnapshotData):
     """
     PTDF according to: https://www.mech.kuleuven.be/en/tme/research/energy_environment/Pdf/wpen2014-12.pdf
-    :param circuit:
-    :return:
+    formula 3.8
+    :param circuit: SnapshotData instance
+    :return: Power Transfer Distribution Factors matrix (branch, bus)
     """
     pqpv = np.sort(circuit.pqpv)
     Bd = sp.diags(circuit.branch_data.X)
-    A = circuit.Cf + circuit.Ct
-    M1 = Bd * A
-    M2 = A.T * M1
+    A = circuit.A
+    M1 = Bd * A  # Equivalent of Bf
+    M2 = A.T * M1  # Equivalent of Bbus
 
     M1p = M1[:, pqpv]
     M2p = M2[np.ix_(pqpv, pqpv)].tocsc()
+
+    PTDF = np.zeros((circuit.nbr, circuit.nbus))
+    PTDF[:, pqpv] = (M1p * sp.linalg.inv(M2p)).toarray()
+
+    return PTDF
+
+
+def getPTDF(circuit: gce.SnapshotData):
+    """
+    PTDF according to: https://www.mech.kuleuven.be/en/tme/research/energy_environment/Pdf/wpen2014-12.pdf
+    formula 3.8, modified to use GridCal's pre-computed matrices
+    :param circuit: SnapshotData instance
+    :return: Power Transfer Distribution Factors matrix (branch, bus)
+    """
+    pqpv = np.sort(circuit.pqpv)
+    M1p = circuit.Bf[:, pqpv]
+    M2p = circuit.Bbus[np.ix_(pqpv, pqpv)].tocsc()  # csc is more efficient for SPLU
 
     PTDF = np.zeros((circuit.nbr, circuit.nbus))
     PTDF[:, pqpv] = (M1p * sp.linalg.inv(M2p)).toarray()
@@ -51,16 +70,19 @@ def getPSDF(circuit: gce.SnapshotData, PTDF):
     """
     Phase shifter distribution factors
     According to: https://www.mech.kuleuven.be/en/tme/research/energy_environment/Pdf/wpen2014-12.pdf
-    :param circuit:
-    :return:
+    formula 4.6
+    :param circuit: SnapshotData instance
+    :param PTDF: Power Transfer Distribution Factors matrix
+    :return: Phase shifter distribution factors matrix  (branch, branch)
     """
     Bd = sp.diags(circuit.branch_data.X)
-    A = circuit.Cf + circuit.Ct
+    A = circuit.A
     M1 = Bd * A
 
     PSDF = Bd - PTDF * M1.T
 
     return PSDF
+
 
 if __name__ == '__main__':
     from GridCal.Engine import FileOpen
@@ -73,6 +95,7 @@ if __name__ == '__main__':
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
+    # fname = r'C:\Users\SPV86\Documents\Git\GitHub\GridCal\Grids_and_profiles\grids\IEEE 14.xlsx'
     fname = r'C:\Users\SPV86\Documents\Git\GitHub\GridCal\Grids_and_profiles\grids\KULeuven_5node.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'

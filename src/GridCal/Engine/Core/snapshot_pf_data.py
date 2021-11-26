@@ -209,6 +209,7 @@ class SnapshotData:
 
         self.Cf_ = None
         self.Ct_ = None
+        self.A_ = None
 
         self.Vbus_ = None
         self.Sbus_ = None
@@ -789,7 +790,10 @@ class SnapshotData:
 
     @property
     def ac_indices(self):
-
+        """
+        Array of indices of the AC branches
+        :return: array of indices
+        """
         if self.ac_ is None:
             self.ac_ = self.branch_data.get_ac_indices()
 
@@ -797,6 +801,10 @@ class SnapshotData:
 
     @property
     def dc_indices(self):
+        """
+        Array of indices of the DC branches
+        :return: array of indices
+        """
         if self.dc_ is None:
             self.dc_ = self.branch_data.get_dc_indices()
 
@@ -804,7 +812,10 @@ class SnapshotData:
 
     @property
     def Cf(self):
-
+        """
+        Connectivity matrix of the "from" nodes
+        :return: CSC matrix
+        """
         # compute on demand and store
         if self.Cf_ is None:
             self.Cf_, self.Ct_ = ycalc.compute_connectivity(branch_active=self.branch_data.branch_active[:, 0],
@@ -818,7 +829,10 @@ class SnapshotData:
 
     @property
     def Ct(self):
-
+        """
+        Connectivity matrix of the "to" nodes
+        :return: CSC matrix
+        """
         # compute on demand and store
         if self.Ct_ is None:
             self.Cf_, self.Ct_ = ycalc.compute_connectivity(branch_active=self.branch_data.branch_active[:, 0],
@@ -831,7 +845,23 @@ class SnapshotData:
         return self.Ct_
 
     @property
+    def A(self):
+        """
+        Connectivity matrix
+        :return: CSC matrix
+        """
+
+        if self.A_ is None:
+            self.A_ = (self.Cf - self.Ct).tocsc()
+
+        return self.A_
+
+    @property
     def Ybus(self):
+        """
+        Admittance matrix
+        :return: CSC matrix
+        """
 
         # compute admittances on demand
         if self.Admittances is None:
@@ -858,7 +888,10 @@ class SnapshotData:
 
     @property
     def Yf(self):
-
+        """
+        Admittance matrix of the "from" nodes with the branches
+        :return: CSC matrix
+        """
         if self.Admittances is None:
             x = self.Ybus  # call the constructor of Yf
 
@@ -866,7 +899,10 @@ class SnapshotData:
 
     @property
     def Yt(self):
-
+        """
+        Admittance matrix of the "to" nodes with the branches
+        :return: CSC matrix
+        """
         if self.Admittances is None:
             x = self.Ybus  # call the constructor of Yt
 
@@ -874,7 +910,10 @@ class SnapshotData:
 
     @property
     def Yseries(self):
-
+        """
+        Admittance matrix of the series elements of the pi model of the branches
+        :return: CSC matrix
+        """
         # compute admittances on demand
         if self.Yseries_ is None:
 
@@ -900,7 +939,10 @@ class SnapshotData:
 
     @property
     def Yshunt(self):
-
+        """
+        Array of shunt admittances of the pi model of the branches (used in HELM mostly)
+        :return: Array of complex values
+        """
         if self.Yshunt_ is None:
             x = self.Yseries  # call the constructor of Yshunt
 
@@ -912,7 +954,10 @@ class SnapshotData:
 
     @property
     def B1(self):
-
+        """
+        B' matrix of the fast decoupled method
+        :return:
+        """
         if self.B1_ is None:
 
             self.B1_, self.B2_ = ycalc.compute_fast_decoupled_admittances(X=self.branch_data.X,
@@ -926,7 +971,10 @@ class SnapshotData:
 
     @property
     def B2(self):
-
+        """
+        B'' matrix of the fast decoupled method
+        :return:
+        """
         if self.B2_ is None:
             x = self.B1  # call the constructor of B2
 
@@ -934,7 +982,10 @@ class SnapshotData:
 
     @property
     def Bbus(self):
-
+        """
+        Susceptance matrix for the linear methods
+        :return:
+        """
         if self.Bbus_ is None:
             self.Bbus_, self.Bf_, self.Btheta_ = ycalc.compute_linear_admittances(nbr=self.nbr,
                                                                                   X=self.branch_data.X,
@@ -952,7 +1003,10 @@ class SnapshotData:
 
     @property
     def Bf(self):
-
+        """
+        Susceptance matrix of the "from" nodes to the branches
+        :return:
+        """
         if self.Bf_ is None:
             x = self.Bbus  # call the constructor of Bf
 
