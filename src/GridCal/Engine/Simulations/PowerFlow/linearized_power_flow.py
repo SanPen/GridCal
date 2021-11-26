@@ -25,22 +25,22 @@ linear_solver = get_linear_solver()
 sparse = get_sparse_type()
 
 
-def dcpf(Ybus, Bpqpv, Bref, Sbus, Ibus, V0, ref, pvpq, pq, pv) -> NumericPowerFlowResults:
+def dcpf(Ybus, Bpqpv, Bref, Btheta, Sbus, Ibus, V0, theta, ref, pvpq, pq, pv) -> NumericPowerFlowResults:
     """
-    Solves a DC power flow.
+    Solves a linear-DC power flow.
     :param Ybus: Normal circuit admittance matrix
+    :param Bpqpv: Susceptance matrix reduced
+    :param Bref: Susceptane matrix sliced for the slack node
+    :param Btheta: Susceptance matrix of the branches to nodes (used to include the phase shifters)
     :param Sbus: Complex power injections at all the nodes
     :param Ibus: Complex current injections at all the nodes
     :param V0: Array of complex seed voltage (it contains the ref voltages)
+    :param theta: Array of branch angles
     :param ref: array of the indices of the slack nodes
     :param pvpq: array of the indices of the non-slack nodes
     :param pq: array of the indices of the pq nodes
     :param pv: array of the indices of the pv nodes
-    :return:
-        Complex voltage solution
-        Converged: Always true
-        Solution error
-        Computed power injections given the found solution
+    :return: NumericPowerFlowResults instance
     """
 
     start = time.time()
@@ -56,7 +56,9 @@ def dcpf(Ybus, Bpqpv, Bref, Sbus, Ibus, V0, ref, pvpq, pq, pv) -> NumericPowerFl
 
         # compose the reduced power injections
         # Since we have removed the slack nodes, we must account their influence as injections Bref * Va_ref
-        Pinj = Sbus[pvpq].real + (- Bref * Va_ref + Ibus[pvpq].real) * Vm[pvpq]
+        # We also nee to account for the effect of the phase shifters
+        Pps = Btheta * theta
+        Pinj = Sbus[pvpq].real + (- Bref * Va_ref + Ibus[pvpq].real) * Vm[pvpq] - Pps[pvpq]
 
         # update angles for non-reference buses
         Va[pvpq] = linear_solver(Bpqpv, Pinj)

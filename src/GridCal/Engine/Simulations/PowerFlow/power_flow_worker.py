@@ -33,6 +33,7 @@ from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
 
 def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.ConvergenceReport, V0, Sbus, Ibus,
+          ma, theta, Beq,
           pq, pv, ref, pqpv, logger=bs.Logger()) -> NumericPowerFlowResults:
     """
     Run a power flow simulation using the selected method (no outer loop controls).
@@ -115,9 +116,11 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
             solution = aclin.dcpf(Ybus=circuit.Ybus,
                                   Bpqpv=circuit.Bpqpv,
                                   Bref=circuit.Bref,
+                                  Btheta=circuit.Btheta,
                                   Sbus=Sbus,
                                   Ibus=Ibus,
                                   V0=V0,
+                                  theta=theta,
                                   ref=ref,
                                   pvpq=pqpv,
                                   pq=pq,
@@ -281,7 +284,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
 
 
 def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
-                          voltage_solution, Sbus, Ibus, branch_rates,
+                          voltage_solution, Sbus, Ibus, ma, theta, Beq, branch_rates,
                           pq, pv, vd, pqpv, logger=bs.Logger()) -> "PowerFlowResults":
     """
     Run a power flow simulation for a single circuit using the selected outer loop
@@ -308,9 +311,9 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                                        converged=False,
                                        norm_f=1e200,
                                        Scalc=Sbus,
-                                       ma=circuit.branch_data.m[:, 0],
-                                       theta=circuit.branch_data.theta[:, 0],
-                                       Beq=circuit.branch_data.Beq[:, 0],
+                                       ma=ma,
+                                       theta=theta,
+                                       Beq=Beq,
                                        Ybus=circuit.Ybus,
                                        Yf=circuit.Yf,
                                        Yt=circuit.Yt,
@@ -334,6 +337,9 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                          V0=voltage_solution,
                          Sbus=Sbus,
                          Ibus=Ibus,
+                         ma=ma,
+                         theta=theta,
+                         Beq=Beq,
                          pq=pq,
                          pv=pv,
                          ref=vd,
@@ -355,6 +361,9 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                                  V0=solution.V,
                                  Sbus=Sbus + delta,
                                  Ibus=Ibus,
+                                 ma=ma,
+                                 theta=theta,
+                                 Beq=Beq,
                                  pq=pq,
                                  pv=pv,
                                  ref=vd,
@@ -473,7 +482,7 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
     return Sfb, Stb, If, It, Vbranch, loading, losses, Sbus
 
 
-def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, branch_rates,
+def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, ma, theta, Beq, branch_rates,
                      pq, pv, vd, pqpv,
                      options: PowerFlowOptions, logger: bs.Logger) -> "PowerFlowResults":
     """
@@ -498,6 +507,7 @@ def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, branch_rates,
                                     voltage_solution=Vbus,
                                     Sbus=Sbus,
                                     Ibus=Ibus,
+                                    ma=ma, theta=theta, Beq=Beq,
                                     branch_rates=branch_rates,
                                     pq=pq,
                                     pv=pv,
@@ -554,6 +564,9 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                        Vbus=calculation_input.Vbus,
                                        Sbus=calculation_input.Sbus,
                                        Ibus=calculation_input.Ibus,
+                                       ma=calculation_input.branch_data.m[:, 0],
+                                       theta=calculation_input.branch_data.theta[:, 0],
+                                       Beq=calculation_input.branch_data.Beq[:, 0],
                                        branch_rates=calculation_input.Rates,
                                        pq=calculation_input.pq,
                                        pv=calculation_input.pv,
@@ -581,6 +594,9 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                    Vbus=calculation_inputs[0].Vbus,
                                    Sbus=calculation_inputs[0].Sbus,
                                    Ibus=calculation_inputs[0].Ibus,
+                                   ma=calculation_inputs[0].branch_data.m[:, 0],
+                                   theta=calculation_inputs[0].branch_data.theta[:, 0],
+                                   Beq=calculation_inputs[0].branch_data.Beq[:, 0],
                                    branch_rates=calculation_inputs[0].Rates,
                                    pq=calculation_inputs[0].pq,
                                    pv=calculation_inputs[0].pv,

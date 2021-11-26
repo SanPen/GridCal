@@ -237,7 +237,25 @@ def compute_linear_admittances(nbr, X, R, m, active, Cf, Ct, ac, dc):
     Bt = -b_tt * Cf + b_tt * Ct
     Bbus = Cf.T * Bf + Ct.T * Bt
 
-    return Bbus, Bf
+    Btheta = (b_tt * (Cf + Ct)).T
+
+    """
+    According to the KULeuven document "DC power flow in unit commitment models"
+    The DC power flow is
+    
+    Pbus = (A^T x Bd x A) x bus_angles + (Bd x A)^T x branch_angles
+    
+    this is also:
+    
+    Pbus = Bbus x bus_angles + Btheta x branch_angles
+    
+    If we solve for bus angles:
+    
+    bus_angles = Bbus^-1 x (Pbus - Btheta x branch_angles)
+    
+    """
+
+    return Bbus, Bf, Btheta
 
 
 class Admittance:

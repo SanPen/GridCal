@@ -233,6 +233,7 @@ class SnapshotData:
         # Admittances for Linear
         self.Bbus_ = None
         self.Bf_ = None
+        self.Btheta_ = None
         self.Bpqpv_ = None
         self.Bref_ = None
 
@@ -935,15 +936,15 @@ class SnapshotData:
     def Bbus(self):
 
         if self.Bbus_ is None:
-            self.Bbus_, self.Bf_ = ycalc.compute_linear_admittances(nbr=self.nbr,
-                                                                    X=self.branch_data.X,
-                                                                    R=self.branch_data.R,
-                                                                    m=self.branch_data.m[:, 0],
-                                                                    active=self.branch_data.branch_active[:, 0],
-                                                                    Cf=self.Cf,
-                                                                    Ct=self.Ct,
-                                                                    ac=self.ac_indices,
-                                                                    dc=self.dc_indices)
+            self.Bbus_, self.Bf_, self.Btheta_ = ycalc.compute_linear_admittances(nbr=self.nbr,
+                                                                                  X=self.branch_data.X,
+                                                                                  R=self.branch_data.R,
+                                                                                  m=self.branch_data.m[:, 0],
+                                                                                  active=self.branch_data.branch_active[:, 0],
+                                                                                  Cf=self.Cf,
+                                                                                  Ct=self.Ct,
+                                                                                  ac=self.ac_indices,
+                                                                                  dc=self.dc_indices)
             self.Bpqpv_ = self.Bbus_[np.ix_(self.pqpv, self.pqpv)]
             self.Bref_ = self.Bbus_[np.ix_(self.pqpv, self.vd)]
 
@@ -956,6 +957,14 @@ class SnapshotData:
             x = self.Bbus  # call the constructor of Bf
 
         return self.Bf_
+
+    @property
+    def Btheta(self):
+
+        if self.Bf_ is None:
+            x = self.Bbus  # call the constructor of Bf
+
+        return self.Btheta_
 
     @property
     def Bpqpv(self):
