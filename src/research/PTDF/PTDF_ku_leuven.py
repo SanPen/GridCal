@@ -30,7 +30,7 @@ from GridCal.Engine.Simulations.PowerFlow.derivatives import derivatives_sh
 def getPTDF1(circuit: gce.SnapshotData):
     """
     PTDF according to: https://www.mech.kuleuven.be/en/tme/research/energy_environment/Pdf/wpen2014-12.pdf
-    formula 3.8
+    formula 3.8, this is exactly as the document describes
     :param circuit: SnapshotData instance
     :return: Power Transfer Distribution Factors matrix (branch, bus)
     """
@@ -96,7 +96,8 @@ if __name__ == '__main__':
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
     # fname = r'C:\Users\SPV86\Documents\Git\GitHub\GridCal\Grids_and_profiles\grids\IEEE 14.xlsx'
-    fname = r'C:\Users\SPV86\Documents\Git\GitHub\GridCal\Grids_and_profiles\grids\KULeuven_5node.gridcal'
+    # fname = r'C:\Users\SPV86\Documents\Git\GitHub\GridCal\Grids_and_profiles\grids\KULeuven_5node.gridcal'
+    fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\KULeuven_5node.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
     # fname = 'helm_data1.gridcal'
