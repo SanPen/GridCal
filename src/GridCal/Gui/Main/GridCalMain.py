@@ -6399,7 +6399,7 @@ class MainGUI(QMainWindow):
 
         if self.results_mdl is not None:
             text = self.ui.sear_results_lineEdit.text()
-            mdl = self.results_mdl.search_in_columns(text)
+            mdl = self.results_mdl.search(text)
 
             if mdl is not None:
                 self.ui.resultsTableView.setModel(mdl)
