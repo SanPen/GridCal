@@ -768,6 +768,31 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
 
         if branch_active[m]:
 
+            # compute the flow
+            _f = F[m]
+            _t = T[m]
+
+            # declare the flow variable with ample limits
+            flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
+
+            # compute the branch susceptance
+            if branch_dc[m]:
+                bk = 1.0 / R[m]
+            else:
+                bk = 1.0 / X[m]
+
+            if control_mode[m] == TransformerControlType.Pt:  # is a phase shifter
+                # create the phase shift variable
+                tau[m] = solver.NumVar(theta_min[m], theta_max[m],
+                                       'phase_shift_{0}_{1}'.format(m, branch_names[m]))
+                # branch power from-to eq.15
+                solver.Add(flow_f[m] == bk * (angles[_f] - angles[_t] + tau[m]),
+                           'phase_shifter_power_flow_{0}_{1}'.format(m, branch_names[m]))
+            else:
+                # branch power from-to eq.15
+                solver.Add(flow_f[m] == bk * (angles[_f] - angles[_t]),
+                           'branch_power_flow_{0}_{1}'.format(m, branch_names[m]))
+
             # determine the monitoring logic
             if monitor_only_sensitive_branches:
                 if monitor_loading[m] and alpha_abs[m] > branch_sensitivity_threshold:
@@ -778,30 +803,6 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
                 monitor[m] = monitor_loading[m]
 
             if monitor[m]:
-
-                _f = F[m]
-                _t = T[m]
-
-                # declare the flow variable with ample limits
-                flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
-
-                # compute the branch susceptance
-                if branch_dc[m]:
-                    bk = 1.0 / R[m]
-                else:
-                    bk = 1.0 / X[m]
-
-                if control_mode[m] == TransformerControlType.Pt:  # is a phase shifter
-                    # create the phase shift variable
-                    tau[m] = solver.NumVar(theta_min[m], theta_max[m],
-                                           'phase_shift_{0}_{1}'.format(m, branch_names[m]))
-                    # branch power from-to eq.15
-                    solver.Add(flow_f[m] == bk * (angles[_f] - angles[_t] + tau[m]),
-                               'phase_shifter_power_flow_{0}_{1}'.format(m, branch_names[m]))
-                else:
-                    # branch power from-to eq.15
-                    solver.Add(flow_f[m] == bk * (angles[_f] - angles[_t]),
-                               'branch_power_flow_{0}_{1}'.format(m, branch_names[m]))
 
                 if rates[m] <= 0:
                     logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
