@@ -402,7 +402,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y = np.array(y)
             labels = np.array(labels + ['Total'])
             y_label = '(MW)'
-            title = result_type.value
+            title = result_type.value[0]
 
         elif result_type == ResultTypes.ContingencyFlowsReport:
 

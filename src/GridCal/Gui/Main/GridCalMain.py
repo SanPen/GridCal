@@ -561,7 +561,7 @@ class MainGUI(QMainWindow):
         self.ui.catalogueDataStructuresListView.clicked.connect(self.catalogue_element_selected)
 
         # tree-view clicks
-        self.ui.results_treeView.clicked.connect(self.on_objects_tree_view_click)
+        self.ui.results_treeView.clicked.connect(self.results_tree_view_click)
 
         # Table clicks
         self.ui.cascade_tableView.clicked.connect(self.cascade_table_click)
@@ -4836,7 +4836,7 @@ class MainGUI(QMainWindow):
 
             self.ui.simulation_results_step_comboBox.setModel(mdl)
 
-    def on_objects_tree_view_click(self, index):
+    def results_tree_view_click(self, index):
         """
         Display the simulation results on the results table
         """
@@ -6394,15 +6394,17 @@ class MainGUI(QMainWindow):
     def search_in_results(self):
         """
         Search in the results model
-        :return:
         """
 
         if self.results_mdl is not None:
-            text = self.ui.sear_results_lineEdit.text()
-            mdl = self.results_mdl.search(text)
+            text = self.ui.sear_results_lineEdit.text().strip()
 
-            if mdl is not None:
-                self.ui.resultsTableView.setModel(mdl)
+            if text != '':
+                mdl = self.results_mdl.search(text)
+            else:
+                mdl = None
+
+            self.ui.resultsTableView.setModel(mdl)
 
     def get_snapshot_circuit(self):
         """
