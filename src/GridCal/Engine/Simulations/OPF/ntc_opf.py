@@ -270,16 +270,18 @@ def formulate_optimal_generation(solver: pywraplp.Solver,
                 logger.add_error('Pmin >= Pmax', 'Generator index {0}'.format(gen_idx), Pmin[gen_idx])
 
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-            delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
+            # delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
             # delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
-            delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
+            # delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
 
-            solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx] - delta_slack_2[gen_idx],
-                       'Delta_up_gen{}'.format(gen_idx))
+            # solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx] - delta_slack_2[gen_idx],
+            #            'Delta_up_gen{}'.format(gen_idx))
 
             dgen1.append(delta[gen_idx])
 
         else:
+            # name = 'Gen_down_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
+            # generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             generation[gen_idx] = Pgen[gen_idx]
             delta[gen_idx] = 0
 
@@ -297,18 +299,20 @@ def formulate_optimal_generation(solver: pywraplp.Solver,
                 logger.add_error('Pmin >= Pmax', 'Generator index {0}'.format(gen_idx), Pmin[gen_idx])
 
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-            delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
+            # delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
 
-            delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
+            # delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
             # delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
 
-            solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx] + delta_slack_1[gen_idx],
-                       'Delta_down_gen{}'.format(gen_idx))
+            # solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx] + delta_slack_1[gen_idx],
+            #            'Delta_down_gen{}'.format(gen_idx))
 
             dgen2.append(delta[gen_idx])
 
         else:
-            generation[gen_idx] = Pgen[gen_idx]
+            name = 'Gen_down_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
+            generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
+            # generation[gen_idx] = Pgen[gen_idx]
             delta[gen_idx] = 0
 
         generation2.append(generation[gen_idx])
@@ -319,11 +323,15 @@ def formulate_optimal_generation(solver: pywraplp.Solver,
     for bus_idx, gen_idx in gens_out:
         if generator_active[gen_idx]:
             generation[gen_idx] = Pgen[gen_idx]
+            # name = 'Gen_down_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
+            # generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
 
     # enforce area equality
-    power_shift = solver.NumVar(0, inf, 'power_shift')
-    solver.Add(solver.Sum(dgen1) == power_shift, 'power_shift_assignment')
-    solver.Add(solver.Sum(dgen1) == solver.Sum(dgen2), 'Area equality_2')
+    # power_shift = solver.NumVar(0, inf, 'power_shift')
+    # solver.Add(solver.Sum(dgen1) == power_shift, 'power_shift_assignment')
+    # solver.Add(solver.Sum(dgen1) == solver.Sum(dgen2), 'Area equality_2')
+
+    power_shift = solver.Sum(generation1)
 
     return generation, delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, gen_cost, delta_slack_1, delta_slack_2
 
@@ -1253,13 +1261,13 @@ def formulate_objective(solver: pywraplp.Solver,
     load_shedding_sum = solver.Sum(load_shedding)
 
     # formulate objective function
-    f = -weight_power_shift * power_shift
+    #f = -weight_power_shift * power_shift
 
-    if maximize_exchange_flows:
-        f -= weight_power_shift * flow_from_a1_to_a2
+    #if maximize_exchange_flows:
+    f = -weight_power_shift * flow_from_a1_to_a2
 
     f += weight_generation_cost * gen_cost_f
-    f += weight_generation_delta * delta_slacks
+    # f += weight_generation_delta * delta_slacks
     f += weight_overloads * branch_overload
     f += weight_overloads * contingency_branch_overload
     f += weight_overloads * hvdc_overload

@@ -48,6 +48,7 @@ class OptimalNetTransferCapacityOptions:
                  skip_generation_limits=False,
                  consider_contingencies=True,
                  maximize_exchange_flows=True,
+                 perform_previous_checks=True,
                  tolerance=1e-2,
                  sensitivity_dT=100.0,
                  sensitivity_mode: AvailableTransferMode = AvailableTransferMode.InstalledPower,
@@ -107,6 +108,8 @@ class OptimalNetTransferCapacityOptions:
         self.sensitivity_dT = sensitivity_dT
 
         self.sensitivity_mode = sensitivity_mode
+
+        self.perform_previous_checks = perform_previous_checks
 
         self.weight_power_shift = weight_power_shift
         self.weight_generation_cost = weight_generation_cost
@@ -524,39 +527,42 @@ class OptimalNetTransferCapacity(DriverTemplate):
             alpha = np.ones(numerical_circuit.nbr)
 
         base_problems = False
+        if self.options.perform_previous_checks:
 
-        # run dc power flow --------------------------------------------------------------------------------------------
-        self.progress_text.emit('Pre-solving base state (DC power flow)...')
-        pf_options = PowerFlowOptions(solver_type=SolverType.DC)
-        pf_drv = PowerFlowDriver(grid=self.grid, options=pf_options)
-        pf_drv.run()
-        indices = np.where(np.abs(pf_drv.results.loading.real) >= 1.0)
-        for m in zip(indices[0]):
-            if numerical_circuit.branch_data.monitor_loading[m]:
-                elm_name = '{0}'.format(numerical_circuit.branch_names[m])
-                self.logger.add_error('Base overload', elm_name, pf_drv.results.loading[m].real * 100, 100)
-                base_problems = True
-
-        # run contingency analysis -------------------------------------------------------------------------------------
-        get_contingency_flows_list = list()
-        contingency_indices_list = list()
-        contingency_flows_slacks_list = list()
-
-        if self.options.consider_contingencies:
-            self.progress_text.emit('Pre-solving base state (Contingency analysis)...')
-            options = ContingencyAnalysisOptions(distributed_slack=False)
-            cnt_drv = ContingencyAnalysisDriver(grid=self.grid, options=options)
-            cnt_drv.run()
-            indices = np.where(np.abs(cnt_drv.results.loading.real) >= 1.0)
-
-            for m, c in zip(indices[0], indices[1]):
-                if numerical_circuit.branch_data.monitor_loading[m] and numerical_circuit.branch_data.contingency_enabled[c]:
-                    elm_name = '{0} @ {1}'.format(numerical_circuit.branch_names[m], numerical_circuit.branch_names[c])
-                    self.logger.add_error('Base contingency overload', elm_name, cnt_drv.results.loading[m, c].real * 100, 100)
-                    get_contingency_flows_list.append(cnt_drv.results.Sf[m, c].real)
-                    contingency_flows_slacks_list.append(0.0)
-                    contingency_indices_list.append((m, c))
+            # run dc power flow ----------------------------------------------------------------------------------------
+            self.progress_text.emit('Pre-solving base state (DC power flow)...')
+            pf_options = PowerFlowOptions(solver_type=SolverType.DC)
+            pf_drv = PowerFlowDriver(grid=self.grid, options=pf_options)
+            pf_drv.run()
+            indices = np.where(np.abs(pf_drv.results.loading.real) >= 1.0)
+            for m in zip(indices[0]):
+                if numerical_circuit.branch_data.monitor_loading[m]:
+                    elm_name = '{0}'.format(numerical_circuit.branch_names[m])
+                    self.logger.add_error('Base overload', elm_name, pf_drv.results.loading[m].real * 100, 100)
                     base_problems = True
+
+            # run contingency analysis ---------------------------------------------------------------------------------
+            get_contingency_flows_list = list()
+            contingency_indices_list = list()
+            contingency_flows_slacks_list = list()
+
+            if self.options.consider_contingencies:
+                self.progress_text.emit('Pre-solving base state (Contingency analysis)...')
+                options = ContingencyAnalysisOptions(distributed_slack=False)
+                cnt_drv = ContingencyAnalysisDriver(grid=self.grid, options=options)
+                cnt_drv.run()
+                indices = np.where(np.abs(cnt_drv.results.loading.real) >= 1.0)
+
+                for m, c in zip(indices[0], indices[1]):
+                    if numerical_circuit.branch_data.monitor_loading[m] and numerical_circuit.branch_data.contingency_enabled[c]:
+                        elm_name = '{0} @ {1}'.format(numerical_circuit.branch_names[m], numerical_circuit.branch_names[c])
+                        self.logger.add_error('Base contingency overload', elm_name, cnt_drv.results.loading[m, c].real * 100, 100)
+                        get_contingency_flows_list.append(cnt_drv.results.Sf[m, c].real)
+                        contingency_flows_slacks_list.append(0.0)
+                        contingency_indices_list.append((m, c))
+                        base_problems = True
+        else:
+            pass
 
         if base_problems:
 

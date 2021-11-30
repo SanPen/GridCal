@@ -11,9 +11,7 @@ __pycache__
 .idea/
 .idea/*
 .idea/inspectionProfiles
-.idea/workspace.xml
-.idea/misc.xml
-.idea/GridCal.iml
+
 
 /build
 /dist

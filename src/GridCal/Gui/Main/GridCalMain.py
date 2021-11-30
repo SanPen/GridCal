@@ -3983,10 +3983,13 @@ class MainGUI(QMainWindow):
 
                 if self.ui.optimalRedispatchRadioButton.isChecked():
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
+                    perform_previous_checks = False
                 elif self.ui.proportionalRedispatchRadioButton.isChecked():
                     generation_formulation = dev.GenerationNtcFormulation.Proportional
+                    perform_previous_checks = True
                 else:
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
+                    perform_previous_checks = False
 
                 monitor_only_sensitive_branches = self.ui.monitorOnlySensitiveBranchesCheckBox.isChecked()
                 skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
@@ -3995,6 +3998,9 @@ class MainGUI(QMainWindow):
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
                 consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
                 tolerance = 10.0 ** self.ui.ntcOpfTolSpinBox.value()
+
+                #perform_previous_checks = self.ui.ntcFeasibilityCheckCheckBox.isChecked()
+
                 weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
                 weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
                 weight_generation_delta = 10.0 ** self.ui.weightGenDeltaSpinBox.value()
@@ -4014,6 +4020,7 @@ class MainGUI(QMainWindow):
                                                                 tolerance=tolerance,
                                                                 sensitivity_dT=dT,
                                                                 sensitivity_mode=mode,
+                                                                perform_previous_checks=perform_previous_checks,
                                                                 weight_power_shift=weight_power_shift,
                                                                 weight_generation_cost=weight_generation_cost,
                                                                 weight_generation_delta=weight_generation_delta,

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1210</width>
+    <width>1347</width>
     <height>764</height>
    </rect>
   </property>
@@ -2696,25 +2696,6 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="15" column="0">
-                <widget class="QSpinBox" name="cluster_number_spinBox">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of clusters, this affects all the simulations that deal with clustering&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="suffix">
-                  <string> Clusters</string>
-                 </property>
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>999999</number>
-                 </property>
-                 <property name="value">
-                  <number>100</number>
-                 </property>
-                </widget>
-               </item>
                <item row="7" column="0">
                 <widget class="QCheckBox" name="temperature_correction_checkBox">
                  <property name="toolTip">
@@ -2736,6 +2717,25 @@ p, li { white-space: pre-wrap; }
                 <widget class="QLabel" name="label_50">
                  <property name="text">
                   <string>Transformer taps control mode</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="15" column="0" colspan="2">
+                <widget class="QSpinBox" name="cluster_number_spinBox">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of clusters, this affects all the simulations that deal with clustering&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="suffix">
+                  <string> Clusters</string>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>999999</number>
+                 </property>
+                 <property name="value">
+                  <number>100</number>
                  </property>
                 </widget>
                </item>
@@ -4501,14 +4501,14 @@ points from time series</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="6" column="0">
+                  <item row="7" column="0">
                    <widget class="QLabel" name="label_101">
                     <property name="text">
                      <string>Tolerance</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="6" column="1">
+                  <item row="7" column="1">
                    <widget class="QSpinBox" name="ntcOpfTolSpinBox">
                     <property name="toolTip">
                      <string>This value determines if the convergence is reached</string>
@@ -4567,6 +4567,16 @@ points from time series</string>
                    <widget class="QCheckBox" name="ntcMaximizeExchangeFlowCheckBox">
                     <property name="text">
                      <string>Maximize exchange flow</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="6" column="0" colspan="2">
+                   <widget class="QCheckBox" name="ntcFeasibilityCheckCheckBox">
+                    <property name="text">
+                     <string>Check feasibility</string>
                     </property>
                     <property name="checked">
                      <bool>true</bool>
@@ -4726,7 +4736,6 @@ points from time series</string>
                    <widget class="QLabel" name="label_102">
                     <property name="font">
                      <font>
-                      <weight>75</weight>
                       <bold>true</bold>
                      </font>
                     </property>
@@ -7544,8 +7553,8 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1210</width>
-     <height>21</height>
+     <width>1347</width>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
