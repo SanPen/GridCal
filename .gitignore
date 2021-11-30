@@ -6,9 +6,14 @@ __pycache__
 /doc/_static
 
 
- /**/.idea/*
+/**/.idea/*
+**/.idea
+.idea/
 .idea/*
 .idea/inspectionProfiles
+.idea/workspace.xml
+.idea/misc.xml
+.idea/GridCal.iml
 
 /build
 /dist
