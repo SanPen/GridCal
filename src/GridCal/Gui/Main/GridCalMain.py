@@ -2078,35 +2078,33 @@ class MainGUI(QMainWindow):
 
             if len(indices) == 0:
                 # no index was selected
+                for i, elm in enumerate(objects):
 
-                if operation == '+':
-                    for i, elm in enumerate(objects):
-                        setattr(elm, attr, getattr(elm, attr) + value)
+                    tpe = getattr(elm, attr).dtype
+
+                    if operation == '+':
+                        setattr(elm, attr, (getattr(elm, attr) + value).astype(tpe))
                         mod_cols.append(i)
 
-                elif operation == '-':
-                    for i, elm in enumerate(objects):
-                        setattr(elm, attr, getattr(elm, attr) - value)
+                    elif operation == '-':
+                        setattr(elm, attr, (getattr(elm, attr) - value).astype(tpe))
                         mod_cols.append(i)
 
-                elif operation == '*':
-                    for i, elm in enumerate(objects):
-                        setattr(elm, attr, getattr(elm, attr) * value)
+                    elif operation == '*':
+                        setattr(elm, attr, (getattr(elm, attr) * value).astype(tpe))
                         mod_cols.append(i)
 
-                elif operation == '/':
-                    for i, elm in enumerate(objects):
-                        setattr(elm, attr, getattr(elm, attr) / value)
+                    elif operation == '/':
+                        setattr(elm, attr, (getattr(elm, attr) / value).astype(tpe))
                         mod_cols.append(i)
 
-                elif operation == 'set':
-                    for i, elm in enumerate(objects):
+                    elif operation == 'set':
                         arr = getattr(elm, attr)
-                        setattr(elm, attr, np.ones(len(arr)) * value)
+                        setattr(elm, attr, (np.ones(len(arr)) * value).astype(tpe))
                         mod_cols.append(i)
 
-                else:
-                    raise Exception('Operation not supported: ' + str(operation))
+                    else:
+                        raise Exception('Operation not supported: ' + str(operation))
 
             else:
                 # indices were selected ...
@@ -2114,6 +2112,7 @@ class MainGUI(QMainWindow):
                 for idx in indices:
 
                     elm = objects[idx.column()]
+                    tpe = type(getattr(elm, attr))
 
                     if operation == '+':
                         getattr(elm, attr)[idx.row()] += value
@@ -3983,13 +3982,13 @@ class MainGUI(QMainWindow):
 
                 if self.ui.optimalRedispatchRadioButton.isChecked():
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
-                    perform_previous_checks = False
+                    # perform_previous_checks = False
                 elif self.ui.proportionalRedispatchRadioButton.isChecked():
                     generation_formulation = dev.GenerationNtcFormulation.Proportional
-                    perform_previous_checks = True
+                    # perform_previous_checks = True
                 else:
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
-                    perform_previous_checks = False
+                    # perform_previous_checks = False
 
                 monitor_only_sensitive_branches = self.ui.monitorOnlySensitiveBranchesCheckBox.isChecked()
                 skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
@@ -3999,7 +3998,7 @@ class MainGUI(QMainWindow):
                 consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
                 tolerance = 10.0 ** self.ui.ntcOpfTolSpinBox.value()
 
-                #perform_previous_checks = self.ui.ntcFeasibilityCheckCheckBox.isChecked()
+                perform_previous_checks = self.ui.ntcFeasibilityCheckCheckBox.isChecked()
 
                 weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
                 weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()

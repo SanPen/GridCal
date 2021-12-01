@@ -4484,7 +4484,7 @@ points from time series</string>
                      <string>Proportional redispatch</string>
                     </property>
                     <property name="checked">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                    </widget>
                   </item>
@@ -4522,6 +4522,9 @@ points from time series</string>
                     <property name="minimum">
                      <number>-99</number>
                     </property>
+                    <property name="value">
+                     <number>-3</number>
+                    </property>
                    </widget>
                   </item>
                   <item row="4" column="0" colspan="2">
@@ -4546,7 +4549,7 @@ points from time series</string>
                      <string>Skip generation limits</string>
                     </property>
                     <property name="checked">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                    </widget>
                   </item>
@@ -4556,10 +4559,10 @@ points from time series</string>
                      <string>The generation is modified so that the transference is maximal.</string>
                     </property>
                     <property name="text">
-                     <string>Optimal redispatch</string>
+                     <string>Optimal dispatch</string>
                     </property>
                     <property name="checked">
-                     <bool>false</bool>
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -4579,7 +4582,7 @@ points from time series</string>
                      <string>Check feasibility</string>
                     </property>
                     <property name="checked">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                    </widget>
                   </item>
@@ -4736,6 +4739,7 @@ points from time series</string>
                    <widget class="QLabel" name="label_102">
                     <property name="font">
                      <font>
+                      <weight>75</weight>
                       <bold>true</bold>
                      </font>
                     </property>
@@ -4762,6 +4766,9 @@ points from time series</string>
                     <property name="minimum">
                      <number>-99</number>
                     </property>
+                    <property name="value">
+                     <number>3</number>
+                    </property>
                    </widget>
                   </item>
                   <item row="2" column="0">
@@ -4783,7 +4790,7 @@ points from time series</string>
                      <number>-99</number>
                     </property>
                     <property name="value">
-                     <number>-2</number>
+                     <number>1</number>
                     </property>
                    </widget>
                   </item>
@@ -4806,7 +4813,7 @@ points from time series</string>
                      <number>-99</number>
                     </property>
                     <property name="value">
-                     <number>5</number>
+                     <number>0</number>
                     </property>
                    </widget>
                   </item>
@@ -4829,7 +4836,7 @@ points from time series</string>
                      <number>-99</number>
                     </property>
                     <property name="value">
-                     <number>5</number>
+                     <number>1</number>
                     </property>
                    </widget>
                   </item>
@@ -7554,7 +7561,7 @@ QProgressBar::chunk{
      <x>0</x>
      <y>0</y>
      <width>1347</width>
-     <height>24</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">

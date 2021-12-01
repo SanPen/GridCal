@@ -270,6 +270,8 @@ def formulate_optimal_generation(solver: pywraplp.Solver,
                 logger.add_error('Pmin >= Pmax', 'Generator index {0}'.format(gen_idx), Pmin[gen_idx])
 
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
+            delta[gen_idx] = generation[gen_idx] - Pgen[gen_idx]
+
             # delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
             # delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
             # delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
@@ -299,8 +301,9 @@ def formulate_optimal_generation(solver: pywraplp.Solver,
                 logger.add_error('Pmin >= Pmax', 'Generator index {0}'.format(gen_idx), Pmin[gen_idx])
 
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-            # delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
+            delta[gen_idx] = Pgen[gen_idx] - generation[gen_idx]
 
+            # delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
             # delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
             # delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
 
@@ -420,7 +423,7 @@ def formulate_proportional_generation(solver: pywraplp.Solver,
         - delta_slack_2: Array of generation delta LP Slack variables down
     """
     gens1, gens2, gens_out = get_generators_per_areas(Cgen, a1, a2)
-    gen_cost = generator_cost[:, t] * Sbase  # pass from $/MWh to $/p.u.h
+    gen_cost = np.ones(ngen)
     generation = np.zeros(ngen, dtype=object)
     delta = np.zeros(ngen, dtype=object)
     delta_slack_1 = np.zeros(ngen, dtype=object)
@@ -1200,7 +1203,7 @@ def formulate_objective(solver: pywraplp.Solver,
                         delta_slack_1, delta_slack_2,
                         weight_power_shift, maximize_exchange_flows, weight_generation_cost,
                         weight_generation_delta, weight_overloads, weight_hvdc_control,
-                        load_shedding):
+                        load_shedding, load_cost):
     """
 
     :param solver: Solver instance to which add the equations
@@ -1229,6 +1232,7 @@ def formulate_objective(solver: pywraplp.Solver,
     :param weight_overloads: Branch overload minimization weight
     :param weight_hvdc_control: HVDC control mismatch minimization weight
     :param load_shedding: Array of load shedding LP variables
+    :param load_cost: Array of cost of the load shedding per load
     :return:
         - all_slacks_sum: summation of all the slacks
         - slacks: List of all the slack variables' arrays
@@ -1258,7 +1262,7 @@ def formulate_objective(solver: pywraplp.Solver,
 
     delta_slacks = solver.Sum(delta_slack_1) + solver.Sum(delta_slack_2)
 
-    load_shedding_sum = solver.Sum(load_shedding)
+    load_shedding_sum = solver.Sum(load_shedding * load_cost)
 
     # formulate objective function
     #f = -weight_power_shift * power_shift
@@ -1475,6 +1479,8 @@ class OpfNTC(Opf):
                                                                         a2=self.area_to_bus_idx,
                                                                         t=t)
 
+            load_cost = self.numerical_circuit.load_data.load_cost[:, t]
+
         elif self.generation_formulation == GenerationNtcFormulation.Proportional:
 
             generation, generation_delta, \
@@ -1496,6 +1502,9 @@ class OpfNTC(Opf):
                                                                              a1=self.area_from_bus_idx,
                                                                              a2=self.area_to_bus_idx,
                                                                              t=t)
+
+            load_cost = np.ones(self.numerical_circuit.nload)
+
         else:
             raise Exception('Unknown generation mode')
 
@@ -1614,7 +1623,8 @@ class OpfNTC(Opf):
                                                                    weight_generation_delta=self.weight_generation_delta,
                                                                    weight_overloads=self.weight_overloads,
                                                                    weight_hvdc_control=self.weight_hvdc_control,
-                                                                   load_shedding=load_shedding)
+                                                                   load_shedding=load_shedding,
+                                                                   load_cost=load_cost)
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
