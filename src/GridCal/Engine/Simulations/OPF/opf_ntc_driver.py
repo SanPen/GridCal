@@ -49,6 +49,7 @@ class OptimalNetTransferCapacityOptions:
                  consider_contingencies=True,
                  maximize_exchange_flows=True,
                  perform_previous_checks=True,
+                 dispatch_all_areas=False,
                  tolerance=1e-2,
                  sensitivity_dT=100.0,
                  sensitivity_mode: AvailableTransferMode = AvailableTransferMode.InstalledPower,
@@ -102,6 +103,8 @@ class OptimalNetTransferCapacityOptions:
         self.consider_contingencies = consider_contingencies
 
         self.maximize_exchange_flows = maximize_exchange_flows
+
+        self.dispatch_all_areas = dispatch_all_areas
 
         self.tolerance = tolerance
 
@@ -628,6 +631,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
                              skip_generation_limits=self.options.skip_generation_limits,
                              consider_contingencies=self.options.consider_contingencies,
                              maximize_exchange_flows=self.options.maximize_exchange_flows,
+                             dispatch_all_areas=self.options.dispatch_all_areas,
                              tolerance=self.options.tolerance,
                              weight_power_shift=self.options.weight_power_shift,
                              weight_generation_cost=self.options.weight_generation_cost,

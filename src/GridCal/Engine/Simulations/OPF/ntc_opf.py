@@ -210,7 +210,7 @@ def get_generators_per_areas(Cgen, buses_in_a1, buses_in_a2):
 def formulate_optimal_generation(solver: pywraplp.Solver,
                                  generator_active, dispatchable, generator_cost,
                                  generator_names, Sbase, logger, inf,
-                                 ngen, Cgen, Pgen, Pmax, Pmin, a1, a2, t=0):
+                                 ngen, Cgen, Pgen, Pmax, Pmin, a1, a2, t=0, dispatch_all_areas=False):
     """
     Formulate the Generation in an optimal fashion. This means that the generator increments
     attend to the generation cost and not to a proportional dispatch rule
@@ -313,9 +313,9 @@ def formulate_optimal_generation(solver: pywraplp.Solver,
             dgen2.append(delta[gen_idx])
 
         else:
-            name = 'Gen_down_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
-            generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-            # generation[gen_idx] = Pgen[gen_idx]
+            # name = 'Gen_down_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
+            # generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
+            generation[gen_idx] = Pgen[gen_idx]
             delta[gen_idx] = 0
 
         generation2.append(generation[gen_idx])
@@ -324,10 +324,28 @@ def formulate_optimal_generation(solver: pywraplp.Solver,
 
     # fix the generation at the rest of generators
     for bus_idx, gen_idx in gens_out:
-        if generator_active[gen_idx]:
+        # if generator_active[gen_idx]:
+        #     generation[gen_idx] = Pgen[gen_idx]
+        #     name = 'Gen_down_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
+        #     generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
+
+        if dispatch_all_areas:
+
+            if generator_active[gen_idx] and dispatchable[gen_idx]:
+                name = 'Gen_down_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
+
+                if Pmin[gen_idx] >= Pmax[gen_idx]:
+                    logger.add_error('Pmin >= Pmax', 'Generator index {0}'.format(gen_idx), Pmin[gen_idx])
+
+                generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
+                delta[gen_idx] = Pgen[gen_idx] - generation[gen_idx]
+
+            else:
+                generation[gen_idx] = Pgen[gen_idx]
+                delta[gen_idx] = 0
+        else:
             generation[gen_idx] = Pgen[gen_idx]
-            # name = 'Gen_down_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
-            # generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
+            delta[gen_idx] = 0
 
     # enforce area equality
     # power_shift = solver.NumVar(0, inf, 'power_shift')
@@ -1306,6 +1324,7 @@ class OpfNTC(Opf):
                  skip_generation_limits=False,
                  consider_contingencies=True,
                  maximize_exchange_flows=True,
+                 dispatch_all_areas=False,
                  tolerance=1e-2,
                  weight_power_shift=1e0,
                  weight_generation_cost=1e-2,
@@ -1353,6 +1372,8 @@ class OpfNTC(Opf):
         self.consider_contingencies = consider_contingencies
 
         self.maximize_exchange_flows = maximize_exchange_flows
+
+        self.dispatch_all_areas = dispatch_all_areas
 
         self.tolerance = tolerance
 
@@ -1477,7 +1498,8 @@ class OpfNTC(Opf):
                                                                         Pmin=Pg_min,
                                                                         a1=self.area_from_bus_idx,
                                                                         a2=self.area_to_bus_idx,
-                                                                        t=t)
+                                                                        t=t,
+                                                                        dispatch_all_areas=self.dispatch_all_areas)
 
             load_cost = self.numerical_circuit.load_data.load_cost[:, t]
 

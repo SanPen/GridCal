@@ -511,6 +511,8 @@ class MainGUI(QMainWindow):
 
         self.ui.copy_results_pushButton.clicked.connect(self.copy_results_data)
 
+        self.ui.copyObjectsTableButton.clicked.connect(self.copy_objects_data)
+
         self.ui.copy_numpy_button.clicked.connect(self.copy_results_data_as_numpy)
 
         self.ui.undo_pushButton.clicked.connect(self.undo)
@@ -4000,6 +4002,8 @@ class MainGUI(QMainWindow):
 
                 perform_previous_checks = self.ui.ntcFeasibilityCheckCheckBox.isChecked()
 
+                dispatch_all_areas = self.ui.ntcDispatchAllAreasCheckBox.isChecked()
+
                 weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
                 weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
                 weight_generation_delta = 10.0 ** self.ui.weightGenDeltaSpinBox.value()
@@ -4016,6 +4020,7 @@ class MainGUI(QMainWindow):
                                                                 skip_generation_limits=skip_generation_limits,
                                                                 consider_contingencies=consider_contingencies,
                                                                 maximize_exchange_flows=maximize_exchange_flows,
+                                                                dispatch_all_areas=dispatch_all_areas,
                                                                 tolerance=tolerance,
                                                                 sensitivity_dT=dT,
                                                                 sensitivity_mode=mode,
@@ -4960,6 +4965,17 @@ class MainGUI(QMainWindow):
             print('Copied!')
         else:
             warning_msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
+
+    def copy_objects_data(self):
+        """
+        Copy the current displayed objects table to the clipboard
+        """
+        mdl = self.ui.dataStructureTableView.model()
+        if mdl is not None:
+            mdl.copy_to_clipboard()
+            print('Copied!')
+        else:
+            warning_msg('There is no data displayed, please display one', 'Copy profile to clipboard')
 
     def copy_results_data_as_numpy(self):
         """

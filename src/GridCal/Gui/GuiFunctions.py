@@ -633,6 +633,31 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         else:
             return self.c
 
+    def data_raw(self, r, c):
+        """
+        Get the data to display
+        :param index:
+        :return:
+        """
+
+        if self.transposed:
+            obj_idx = c
+            attr_idx = r
+        else:
+            obj_idx = r
+            attr_idx = c
+
+        attr = self.attributes[attr_idx]
+        tpe = self.attribute_types[attr_idx]
+
+        if tpe is Bus:
+            return getattr(self.objects[obj_idx], attr).name
+        elif tpe is BranchType:
+            # conv = BranchType(None)
+            return BranchType(getattr(self.objects[obj_idx], attr))
+        else:
+            return getattr(self.objects[obj_idx], attr)
+
     def data_with_type(self, index):
         """
         Get the data to display
@@ -783,6 +808,47 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 setattr(self.objects[obj_idx], self.attributes[attr_idx], value)
             else:
                 pass  # the column cannot be edited
+
+    def get_data(self):
+        """
+
+        :return:
+        """
+        nrows = self.rowCount()
+        ncols = self.columnCount()
+        data = np.empty((nrows, ncols), dtype=object)
+
+        for j in range(ncols):
+            for i in range(nrows):
+                data[i, j] = self.data_raw(r=i, c=j)
+
+        columns = [self.headerData(i, orientation=QtCore.Qt.Horizontal, role=QtCore.Qt.DisplayRole) for i in range(ncols)]
+        index = [self.headerData(i, orientation=QtCore.Qt.Vertical, role=QtCore.Qt.DisplayRole) for i in range(nrows)]
+
+        return index, columns, data
+
+    def copy_to_clipboard(self):
+        """
+
+        :return:
+        """
+        if self.columnCount() > 0:
+
+            index, columns, data = self.get_data()
+
+            data = data.astype(str)
+
+            # header first
+            txt = '\t' + '\t'.join(columns) + '\n'
+
+            # data
+            for t, index_value in enumerate(index):
+                txt += str(index_value) + '\t' + '\t'.join(data[t, :]) + '\n'
+
+            # copy to clipboard
+            cb = QApplication.clipboard()
+            cb.clear(mode=cb.Clipboard)
+            cb.setText(txt, mode=cb.Clipboard)
 
 
 class BranchObjectModel(ObjectsModel):

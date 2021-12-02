@@ -614,6 +614,12 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_28.addWidget(self.busViewerButton)
 
+        self.copyObjectsTableButton = QPushButton(self.frame_54)
+        self.copyObjectsTableButton.setObjectName(u"copyObjectsTableButton")
+        self.copyObjectsTableButton.setIcon(icon51)
+
+        self.horizontalLayout_28.addWidget(self.copyObjectsTableButton)
+
         self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_28.addItem(self.horizontalSpacer_6)
@@ -2313,14 +2319,14 @@ class Ui_mainWindow(object):
         self.label_101 = QLabel(self.frame_67)
         self.label_101.setObjectName(u"label_101")
 
-        self.formLayout_2.setWidget(7, QFormLayout.LabelRole, self.label_101)
+        self.formLayout_2.setWidget(8, QFormLayout.LabelRole, self.label_101)
 
         self.ntcOpfTolSpinBox = QSpinBox(self.frame_67)
         self.ntcOpfTolSpinBox.setObjectName(u"ntcOpfTolSpinBox")
         self.ntcOpfTolSpinBox.setMinimum(-99)
         self.ntcOpfTolSpinBox.setValue(-3)
 
-        self.formLayout_2.setWidget(7, QFormLayout.FieldRole, self.ntcOpfTolSpinBox)
+        self.formLayout_2.setWidget(8, QFormLayout.FieldRole, self.ntcOpfTolSpinBox)
 
         self.considerContingenciesNtcOpfCheckBox = QCheckBox(self.frame_67)
         self.considerContingenciesNtcOpfCheckBox.setObjectName(u"considerContingenciesNtcOpfCheckBox")
@@ -2350,7 +2356,12 @@ class Ui_mainWindow(object):
         self.ntcFeasibilityCheckCheckBox.setObjectName(u"ntcFeasibilityCheckCheckBox")
         self.ntcFeasibilityCheckCheckBox.setChecked(False)
 
-        self.formLayout_2.setWidget(6, QFormLayout.SpanningRole, self.ntcFeasibilityCheckCheckBox)
+        self.formLayout_2.setWidget(7, QFormLayout.SpanningRole, self.ntcFeasibilityCheckCheckBox)
+
+        self.ntcDispatchAllAreasCheckBox = QCheckBox(self.frame_67)
+        self.ntcDispatchAllAreasCheckBox.setObjectName(u"ntcDispatchAllAreasCheckBox")
+
+        self.formLayout_2.setWidget(6, QFormLayout.LabelRole, self.ntcDispatchAllAreasCheckBox)
 
 
         self.gridLayout_15.addWidget(self.frame_67, 6, 0, 1, 3)
@@ -2415,6 +2426,7 @@ class Ui_mainWindow(object):
         self.weightPowerShiftSpinBox = QSpinBox(self.frame_68)
         self.weightPowerShiftSpinBox.setObjectName(u"weightPowerShiftSpinBox")
         self.weightPowerShiftSpinBox.setMinimum(-99)
+        self.weightPowerShiftSpinBox.setValue(0)
 
         self.formLayout.setWidget(1, QFormLayout.FieldRole, self.weightPowerShiftSpinBox)
 
@@ -2450,7 +2462,7 @@ class Ui_mainWindow(object):
         self.weightsOverloadsSpinBox = QSpinBox(self.frame_68)
         self.weightsOverloadsSpinBox.setObjectName(u"weightsOverloadsSpinBox")
         self.weightsOverloadsSpinBox.setMinimum(-99)
-        self.weightsOverloadsSpinBox.setValue(0)
+        self.weightsOverloadsSpinBox.setValue(3)
 
         self.formLayout.setWidget(4, QFormLayout.FieldRole, self.weightsOverloadsSpinBox)
 
@@ -3929,6 +3941,10 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.busViewerButton.setText("")
 #if QT_CONFIG(tooltip)
+        self.copyObjectsTableButton.setToolTip(QCoreApplication.translate("mainWindow", u"Copy the displayed table to the clipboard", None))
+#endif // QT_CONFIG(tooltip)
+        self.copyObjectsTableButton.setText("")
+#if QT_CONFIG(tooltip)
         self.processTemplatesPushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Process templates", None))
 #endif // QT_CONFIG(tooltip)
         self.processTemplatesPushButton.setText("")
@@ -4279,9 +4295,10 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.optimalRedispatchRadioButton.setToolTip(QCoreApplication.translate("mainWindow", u"The generation is modified so that the transference is maximal.", None))
 #endif // QT_CONFIG(tooltip)
-        self.optimalRedispatchRadioButton.setText(QCoreApplication.translate("mainWindow", u"Optimal redispatch", None))
+        self.optimalRedispatchRadioButton.setText(QCoreApplication.translate("mainWindow", u"Optimal dispatch", None))
         self.ntcMaximizeExchangeFlowCheckBox.setText(QCoreApplication.translate("mainWindow", u"Maximize exchange flow", None))
         self.ntcFeasibilityCheckCheckBox.setText(QCoreApplication.translate("mainWindow", u"Check feasibility", None))
+        self.ntcDispatchAllAreasCheckBox.setText(QCoreApplication.translate("mainWindow", u"Dispatch all areas", None))
         self.label_97.setText("")
         self.label_96.setText(QCoreApplication.translate("mainWindow", u"Optimization method", None))
         self.label_102.setText(QCoreApplication.translate("mainWindow", u"Objective function weights", None))

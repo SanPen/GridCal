@@ -169,6 +169,8 @@ class ResultsTable:
         :return:
         """
         txt = txt.strip()
+        cols = np.array(self.cols_c).astype(str)
+        index = np.array(self.index_c).astype(str)
 
         if txt.startswith('<'):
 
@@ -224,14 +226,14 @@ class ResultsTable:
             # search by similar text
             row_idx = list()
             txt2 = str(txt).lower()
-            for i, val in enumerate(self.index_c.astype(str)):
+            for i, val in enumerate(index):
                 if txt2 in val.lower():
                     row_idx.append(i)
             row_idx = np.array(row_idx, dtype=int)
 
             col_idx = list()
             txt2 = str(txt).lower()
-            for i, val in enumerate(self.cols_c.astype(str)):
+            for i, val in enumerate(cols):
                 if txt2 in val.lower():
                     col_idx.append(i)
             col_idx = np.array(col_idx, dtype=int)
