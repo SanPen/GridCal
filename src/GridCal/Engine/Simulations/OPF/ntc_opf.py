@@ -460,7 +460,8 @@ def formulate_proportional_generation(solver: pywraplp.Solver,
                 delta_slack_1[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_up_' + name)
                 delta_slack_2[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_down_' + name)
 
-                prop = round(abs(Pgen[gen_idx] / sum_gen_1), 6)
+                # prop = round(abs(Pgen[gen_idx] / sum_gen_1), 6)
+                prop = round(Pgen[gen_idx] / sum_gen_1, 6)
                 # prop = Pgen[gen_idx] / sum_gen_1
 
                 solver.Add(
@@ -470,8 +471,8 @@ def formulate_proportional_generation(solver: pywraplp.Solver,
 
                 solver.Add(
                     generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx]
-                    ,#+ delta_slack_1[gen_idx] - delta_slack_2[gen_idx],
-                    'Generation_due_to_forced_delta_' + name
+                    # + delta_slack_1[gen_idx] - delta_slack_2[gen_idx]
+                    , 'Generation_due_to_forced_delta_' + name
                 )
 
             else:
@@ -746,7 +747,8 @@ def check_node_balance(Bbus, angles, Pinj, bus_active, bus_names, logger: Logger
 def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
                             branch_active, branch_names, branch_dc,
                             theta_min, theta_max, control_mode, R, X, F, T, inf,
-                            monitor_loading, branch_sensitivity_threshold, monitor_only_sensitive_branches,
+                            monitor_loading, branch_sensitivity_threshold,
+                            monitor_only_sensitive_branches,
                             angles, alpha_abs, logger):
     """
 
@@ -830,6 +832,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
                 if rates[m] <= 0:
                     logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
 
+
                 # rating restriction in the sense from-to: eq.17
                 overload1[m] = solver.NumVar(0, inf, 'overload1_{0}_{1}'.format(m, branch_names[m]))
                 solver.Add(flow_f[m] <= (rates[m] + overload1[m]), "ft_rating_{0}_{1}".format(m, branch_names[m]))
@@ -837,6 +840,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
                 # rating restriction in the sense to-from: eq.18
                 overload2[m] = solver.NumVar(0, inf, 'overload2_{0}_{1}'.format(m, branch_names[m]))
                 solver.Add((-rates[m] - overload2[m]) <= flow_f[m], "tf_rating_{0}_{1}".format(m, branch_names[m]))
+
 
     return flow_f, overload1, overload2, tau, monitor
 
@@ -984,17 +988,17 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
                 suffix = "{0}_{1} @ {2}_{3}".format(m, branch_names[m], c, branch_names[c])
 
                 flow_n1 = flow_f[m] + lodf * flow_f[c]
-                #flow_n1 = solver.NumVar(-rates[m], rates[m], 'n-1_flow__' + suffix)
-                #solver.Add(flow_n1 == flow_f[m] + lodf * flow_f[c], "n-1_ft_rating_" + suffix)
+                flow_n1 = solver.NumVar(-rates[m], rates[m], 'n-1_flow__' + suffix)
+                solver.Add(flow_n1 == flow_f[m] + lodf * flow_f[c], "n-1_ft_rating_" + suffix)
 
 
                 # rating restriction in the sense from-to
                 overload1 = solver.NumVar(0, inf, 'n-1_overload1__' + suffix)
-                solver.Add(flow_n1 <= (rates[m] + overload1), "n-1_ft_rating_" + suffix)
-
-                # rating restriction in the sense to-from
+                # solver.Add(flow_n1 <= (rates[m] + overload1), "n-1_ft_rating_" + suffix)
+                #
+                # # rating restriction in the sense to-from
                 overload2 = solver.NumVar(0, inf, 'n-1_overload2_' + suffix)
-                solver.Add((-rates[m] - overload2) <= flow_n1, "n-1_tf_rating_" + suffix)
+                # solver.Add((-rates[m] - overload2) <= flow_n1, "n-1_tf_rating_" + suffix)
 
                 # store vars
                 con_idx.append((m, c))

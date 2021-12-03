@@ -23,9 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="split theta in positive and negative variables">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="looking in overload flows [check signs]">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,7 +75,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="ToolWindowDatabase.ShowToolbar" value="false" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../indizen/reeview" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
     <property name="settings.editor.selected.configurable" value="http.certificates" />
   </component>
@@ -552,13 +553,6 @@
       <workItem from="1616261080829" duration="12802000" />
       <workItem from="1616444990256" duration="4870000" />
     </task>
-    <task id="LOCAL-00089" summary="Requirements for readthedocs">
-      <created>1610557431259</created>
-      <option name="number" value="00089" />
-      <option name="presentableId" value="LOCAL-00089" />
-      <option name="project" value="LOCAL" />
-      <updated>1610557431259</updated>
-    </task>
     <task id="LOCAL-00090" summary="Improvements in the Json Export">
       <created>1610640502120</created>
       <option name="number" value="00090" />
@@ -895,7 +889,14 @@
       <option name="project" value="LOCAL" />
       <updated>1637925547623</updated>
     </task>
-    <option name="localTasksCounter" value="138" />
+    <task id="LOCAL-00138" summary="looking in overload flows [check signs]">
+      <created>1637934525916</created>
+      <option name="number" value="00138" />
+      <option name="presentableId" value="LOCAL-00138" />
+      <option name="project" value="LOCAL" />
+      <updated>1637934525916</updated>
+    </task>
+    <option name="localTasksCounter" value="139" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -941,7 +942,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Finished refactoring IDONE.py" />
     <MESSAGE value="Done refactoring IDONE" />
     <MESSAGE value="added logger to IDONE" />
     <MESSAGE value="Fixed little bugs with the numba decorators" />
@@ -966,7 +966,8 @@
     <MESSAGE value="new IEE 14 network with hvdc and shifter and others" />
     <MESSAGE value="split theta in positive and negative variables" />
     <MESSAGE value="merged with devel [fixed ntc opf report]" />
-    <option name="LAST_COMMIT_MESSAGE" value="merged with devel [fixed ntc opf report]" />
+    <MESSAGE value="looking in overload flows [check signs]" />
+    <option name="LAST_COMMIT_MESSAGE" value="looking in overload flows [check signs]" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1309,7 +1310,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>1865</line>
+          <line>1869</line>
           <option name="timeStamp" value="640" />
         </line-breakpoint>
       </breakpoints>
