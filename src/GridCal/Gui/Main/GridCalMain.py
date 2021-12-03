@@ -511,6 +511,8 @@ class MainGUI(QMainWindow):
 
         self.ui.copy_results_pushButton.clicked.connect(self.copy_results_data)
 
+        self.ui.copyObjectsTableButton.clicked.connect(self.copy_objects_data)
+
         self.ui.copy_numpy_button.clicked.connect(self.copy_results_data_as_numpy)
 
         self.ui.undo_pushButton.clicked.connect(self.undo)
@@ -561,7 +563,7 @@ class MainGUI(QMainWindow):
         self.ui.catalogueDataStructuresListView.clicked.connect(self.catalogue_element_selected)
 
         # tree-view clicks
-        self.ui.results_treeView.clicked.connect(self.on_objects_tree_view_click)
+        self.ui.results_treeView.clicked.connect(self.results_tree_view_click)
 
         # Table clicks
         self.ui.cascade_tableView.clicked.connect(self.cascade_table_click)
@@ -2078,35 +2080,33 @@ class MainGUI(QMainWindow):
 
             if len(indices) == 0:
                 # no index was selected
+                for i, elm in enumerate(objects):
 
-                if operation == '+':
-                    for i, elm in enumerate(objects):
-                        setattr(elm, attr, getattr(elm, attr) + value)
+                    tpe = getattr(elm, attr).dtype
+
+                    if operation == '+':
+                        setattr(elm, attr, (getattr(elm, attr) + value).astype(tpe))
                         mod_cols.append(i)
 
-                elif operation == '-':
-                    for i, elm in enumerate(objects):
-                        setattr(elm, attr, getattr(elm, attr) - value)
+                    elif operation == '-':
+                        setattr(elm, attr, (getattr(elm, attr) - value).astype(tpe))
                         mod_cols.append(i)
 
-                elif operation == '*':
-                    for i, elm in enumerate(objects):
-                        setattr(elm, attr, getattr(elm, attr) * value)
+                    elif operation == '*':
+                        setattr(elm, attr, (getattr(elm, attr) * value).astype(tpe))
                         mod_cols.append(i)
 
-                elif operation == '/':
-                    for i, elm in enumerate(objects):
-                        setattr(elm, attr, getattr(elm, attr) / value)
+                    elif operation == '/':
+                        setattr(elm, attr, (getattr(elm, attr) / value).astype(tpe))
                         mod_cols.append(i)
 
-                elif operation == 'set':
-                    for i, elm in enumerate(objects):
+                    elif operation == 'set':
                         arr = getattr(elm, attr)
-                        setattr(elm, attr, np.ones(len(arr)) * value)
+                        setattr(elm, attr, (np.ones(len(arr)) * value).astype(tpe))
                         mod_cols.append(i)
 
-                else:
-                    raise Exception('Operation not supported: ' + str(operation))
+                    else:
+                        raise Exception('Operation not supported: ' + str(operation))
 
             else:
                 # indices were selected ...
@@ -2114,6 +2114,7 @@ class MainGUI(QMainWindow):
                 for idx in indices:
 
                     elm = objects[idx.column()]
+                    tpe = type(getattr(elm, attr))
 
                     if operation == '+':
                         getattr(elm, attr)[idx.row()] += value
@@ -3983,10 +3984,13 @@ class MainGUI(QMainWindow):
 
                 if self.ui.optimalRedispatchRadioButton.isChecked():
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
+                    # perform_previous_checks = False
                 elif self.ui.proportionalRedispatchRadioButton.isChecked():
                     generation_formulation = dev.GenerationNtcFormulation.Proportional
+                    # perform_previous_checks = True
                 else:
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
+                    # perform_previous_checks = False
 
                 monitor_only_sensitive_branches = self.ui.monitorOnlySensitiveBranchesCheckBox.isChecked()
                 skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
@@ -3995,6 +3999,11 @@ class MainGUI(QMainWindow):
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
                 consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
                 tolerance = 10.0 ** self.ui.ntcOpfTolSpinBox.value()
+
+                perform_previous_checks = self.ui.ntcFeasibilityCheckCheckBox.isChecked()
+
+                dispatch_all_areas = self.ui.ntcDispatchAllAreasCheckBox.isChecked()
+
                 weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
                 weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
                 weight_generation_delta = 10.0 ** self.ui.weightGenDeltaSpinBox.value()
@@ -4011,9 +4020,11 @@ class MainGUI(QMainWindow):
                                                                 skip_generation_limits=skip_generation_limits,
                                                                 consider_contingencies=consider_contingencies,
                                                                 maximize_exchange_flows=maximize_exchange_flows,
+                                                                dispatch_all_areas=dispatch_all_areas,
                                                                 tolerance=tolerance,
                                                                 sensitivity_dT=dT,
                                                                 sensitivity_mode=mode,
+                                                                perform_previous_checks=perform_previous_checks,
                                                                 weight_power_shift=weight_power_shift,
                                                                 weight_generation_cost=weight_generation_cost,
                                                                 weight_generation_delta=weight_generation_delta,
@@ -4837,7 +4848,7 @@ class MainGUI(QMainWindow):
 
             self.ui.simulation_results_step_comboBox.setModel(mdl)
 
-    def on_objects_tree_view_click(self, index):
+    def results_tree_view_click(self, index):
         """
         Display the simulation results on the results table
         """
@@ -4955,6 +4966,17 @@ class MainGUI(QMainWindow):
             print('Copied!')
         else:
             warning_msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
+
+    def copy_objects_data(self):
+        """
+        Copy the current displayed objects table to the clipboard
+        """
+        mdl = self.ui.dataStructureTableView.model()
+        if mdl is not None:
+            mdl.copy_to_clipboard()
+            print('Copied!')
+        else:
+            warning_msg('There is no data displayed, please display one', 'Copy profile to clipboard')
 
     def copy_results_data_as_numpy(self):
         """
@@ -6395,15 +6417,17 @@ class MainGUI(QMainWindow):
     def search_in_results(self):
         """
         Search in the results model
-        :return:
         """
 
         if self.results_mdl is not None:
-            text = self.ui.sear_results_lineEdit.text()
-            mdl = self.results_mdl.search_in_columns(text)
+            text = self.ui.sear_results_lineEdit.text().strip()
 
-            if mdl is not None:
-                self.ui.resultsTableView.setModel(mdl)
+            if text != '':
+                mdl = self.results_mdl.search(text)
+            else:
+                mdl = None
+
+            self.ui.resultsTableView.setModel(mdl)
 
     def get_snapshot_circuit(self):
         """

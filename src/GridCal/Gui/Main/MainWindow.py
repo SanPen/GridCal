@@ -18,7 +18,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1210, 764)
+        mainWindow.resize(1347, 764)
         mainWindow.setBaseSize(QSize(0, 0))
         icon = QIcon()
         icon.addFile(u":/Program icon/GridCal_icon.svg", QSize(), QIcon.Normal, QIcon.Off)
@@ -613,6 +613,12 @@ class Ui_mainWindow(object):
         self.busViewerButton.setIcon(icon33)
 
         self.horizontalLayout_28.addWidget(self.busViewerButton)
+
+        self.copyObjectsTableButton = QPushButton(self.frame_54)
+        self.copyObjectsTableButton.setObjectName(u"copyObjectsTableButton")
+        self.copyObjectsTableButton.setIcon(icon51)
+
+        self.horizontalLayout_28.addWidget(self.copyObjectsTableButton)
 
         self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -1544,14 +1550,6 @@ class Ui_mainWindow(object):
 
         self.gridLayout_21.addWidget(self.dispatch_storage_checkBox, 13, 0, 1, 1)
 
-        self.cluster_number_spinBox = QSpinBox(self.frame_18)
-        self.cluster_number_spinBox.setObjectName(u"cluster_number_spinBox")
-        self.cluster_number_spinBox.setMinimum(1)
-        self.cluster_number_spinBox.setMaximum(999999)
-        self.cluster_number_spinBox.setValue(100)
-
-        self.gridLayout_21.addWidget(self.cluster_number_spinBox, 15, 0, 1, 1)
-
         self.temperature_correction_checkBox = QCheckBox(self.frame_18)
         self.temperature_correction_checkBox.setObjectName(u"temperature_correction_checkBox")
 
@@ -1566,6 +1564,14 @@ class Ui_mainWindow(object):
         self.label_50.setObjectName(u"label_50")
 
         self.gridLayout_21.addWidget(self.label_50, 5, 0, 1, 2)
+
+        self.cluster_number_spinBox = QSpinBox(self.frame_18)
+        self.cluster_number_spinBox.setObjectName(u"cluster_number_spinBox")
+        self.cluster_number_spinBox.setMinimum(1)
+        self.cluster_number_spinBox.setMaximum(999999)
+        self.cluster_number_spinBox.setValue(100)
+
+        self.gridLayout_21.addWidget(self.cluster_number_spinBox, 15, 0, 1, 2)
 
 
         self.gridLayout_9.addWidget(self.frame_18, 0, 1, 1, 1)
@@ -2300,7 +2306,7 @@ class Ui_mainWindow(object):
         self.formLayout_2.setObjectName(u"formLayout_2")
         self.proportionalRedispatchRadioButton = QRadioButton(self.frame_67)
         self.proportionalRedispatchRadioButton.setObjectName(u"proportionalRedispatchRadioButton")
-        self.proportionalRedispatchRadioButton.setChecked(True)
+        self.proportionalRedispatchRadioButton.setChecked(False)
 
         self.formLayout_2.setWidget(0, QFormLayout.SpanningRole, self.proportionalRedispatchRadioButton)
 
@@ -2313,13 +2319,14 @@ class Ui_mainWindow(object):
         self.label_101 = QLabel(self.frame_67)
         self.label_101.setObjectName(u"label_101")
 
-        self.formLayout_2.setWidget(6, QFormLayout.LabelRole, self.label_101)
+        self.formLayout_2.setWidget(8, QFormLayout.LabelRole, self.label_101)
 
         self.ntcOpfTolSpinBox = QSpinBox(self.frame_67)
         self.ntcOpfTolSpinBox.setObjectName(u"ntcOpfTolSpinBox")
         self.ntcOpfTolSpinBox.setMinimum(-99)
+        self.ntcOpfTolSpinBox.setValue(-3)
 
-        self.formLayout_2.setWidget(6, QFormLayout.FieldRole, self.ntcOpfTolSpinBox)
+        self.formLayout_2.setWidget(8, QFormLayout.FieldRole, self.ntcOpfTolSpinBox)
 
         self.considerContingenciesNtcOpfCheckBox = QCheckBox(self.frame_67)
         self.considerContingenciesNtcOpfCheckBox.setObjectName(u"considerContingenciesNtcOpfCheckBox")
@@ -2329,13 +2336,13 @@ class Ui_mainWindow(object):
 
         self.skipNtcGenerationLimitsCheckBox = QCheckBox(self.frame_67)
         self.skipNtcGenerationLimitsCheckBox.setObjectName(u"skipNtcGenerationLimitsCheckBox")
-        self.skipNtcGenerationLimitsCheckBox.setChecked(True)
+        self.skipNtcGenerationLimitsCheckBox.setChecked(False)
 
         self.formLayout_2.setWidget(3, QFormLayout.SpanningRole, self.skipNtcGenerationLimitsCheckBox)
 
         self.optimalRedispatchRadioButton = QRadioButton(self.frame_67)
         self.optimalRedispatchRadioButton.setObjectName(u"optimalRedispatchRadioButton")
-        self.optimalRedispatchRadioButton.setChecked(False)
+        self.optimalRedispatchRadioButton.setChecked(True)
 
         self.formLayout_2.setWidget(1, QFormLayout.SpanningRole, self.optimalRedispatchRadioButton)
 
@@ -2344,6 +2351,17 @@ class Ui_mainWindow(object):
         self.ntcMaximizeExchangeFlowCheckBox.setChecked(True)
 
         self.formLayout_2.setWidget(5, QFormLayout.SpanningRole, self.ntcMaximizeExchangeFlowCheckBox)
+
+        self.ntcFeasibilityCheckCheckBox = QCheckBox(self.frame_67)
+        self.ntcFeasibilityCheckCheckBox.setObjectName(u"ntcFeasibilityCheckCheckBox")
+        self.ntcFeasibilityCheckCheckBox.setChecked(False)
+
+        self.formLayout_2.setWidget(7, QFormLayout.SpanningRole, self.ntcFeasibilityCheckCheckBox)
+
+        self.ntcDispatchAllAreasCheckBox = QCheckBox(self.frame_67)
+        self.ntcDispatchAllAreasCheckBox.setObjectName(u"ntcDispatchAllAreasCheckBox")
+
+        self.formLayout_2.setWidget(6, QFormLayout.LabelRole, self.ntcDispatchAllAreasCheckBox)
 
 
         self.gridLayout_15.addWidget(self.frame_67, 6, 0, 1, 3)
@@ -2408,6 +2426,7 @@ class Ui_mainWindow(object):
         self.weightPowerShiftSpinBox = QSpinBox(self.frame_68)
         self.weightPowerShiftSpinBox.setObjectName(u"weightPowerShiftSpinBox")
         self.weightPowerShiftSpinBox.setMinimum(-99)
+        self.weightPowerShiftSpinBox.setValue(0)
 
         self.formLayout.setWidget(1, QFormLayout.FieldRole, self.weightPowerShiftSpinBox)
 
@@ -2419,7 +2438,7 @@ class Ui_mainWindow(object):
         self.weightGenCostSpinBox = QSpinBox(self.frame_68)
         self.weightGenCostSpinBox.setObjectName(u"weightGenCostSpinBox")
         self.weightGenCostSpinBox.setMinimum(-99)
-        self.weightGenCostSpinBox.setValue(-2)
+        self.weightGenCostSpinBox.setValue(0)
 
         self.formLayout.setWidget(2, QFormLayout.FieldRole, self.weightGenCostSpinBox)
 
@@ -2431,7 +2450,7 @@ class Ui_mainWindow(object):
         self.weightGenDeltaSpinBox = QSpinBox(self.frame_68)
         self.weightGenDeltaSpinBox.setObjectName(u"weightGenDeltaSpinBox")
         self.weightGenDeltaSpinBox.setMinimum(-99)
-        self.weightGenDeltaSpinBox.setValue(5)
+        self.weightGenDeltaSpinBox.setValue(0)
 
         self.formLayout.setWidget(3, QFormLayout.FieldRole, self.weightGenDeltaSpinBox)
 
@@ -2443,7 +2462,7 @@ class Ui_mainWindow(object):
         self.weightsOverloadsSpinBox = QSpinBox(self.frame_68)
         self.weightsOverloadsSpinBox.setObjectName(u"weightsOverloadsSpinBox")
         self.weightsOverloadsSpinBox.setMinimum(-99)
-        self.weightsOverloadsSpinBox.setValue(5)
+        self.weightsOverloadsSpinBox.setValue(3)
 
         self.formLayout.setWidget(4, QFormLayout.FieldRole, self.weightsOverloadsSpinBox)
 
@@ -3505,7 +3524,7 @@ class Ui_mainWindow(object):
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(mainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1210, 21))
+        self.menuBar.setGeometry(QRect(0, 0, 1347, 21))
         self.menuProject = QMenu(self.menuBar)
         self.menuProject.setObjectName(u"menuProject")
         self.menuAbout = QMenu(self.menuBar)
@@ -3922,6 +3941,10 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.busViewerButton.setText("")
 #if QT_CONFIG(tooltip)
+        self.copyObjectsTableButton.setToolTip(QCoreApplication.translate("mainWindow", u"Copy the displayed table to the clipboard", None))
+#endif // QT_CONFIG(tooltip)
+        self.copyObjectsTableButton.setText("")
+#if QT_CONFIG(tooltip)
         self.processTemplatesPushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Process templates", None))
 #endif // QT_CONFIG(tooltip)
         self.processTemplatesPushButton.setText("")
@@ -4134,15 +4157,15 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.dispatch_storage_checkBox.setText(QCoreApplication.translate("mainWindow", u"dispatch storage", None))
 #if QT_CONFIG(tooltip)
-        self.cluster_number_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Number of clusters, this affects all the simulations that deal with clustering</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.cluster_number_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" Clusters", None))
-#if QT_CONFIG(tooltip)
         self.temperature_correction_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Correct the branches resistance using the temperature", None))
 #endif // QT_CONFIG(tooltip)
         self.temperature_correction_checkBox.setText(QCoreApplication.translate("mainWindow", u"Apply temperature correction", None))
         self.label_22.setText("")
         self.label_50.setText(QCoreApplication.translate("mainWindow", u"Transformer taps control mode", None))
+#if QT_CONFIG(tooltip)
+        self.cluster_number_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Number of clusters, this affects all the simulations that deal with clustering</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.cluster_number_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" Clusters", None))
         self.label_63.setText("")
         self.label_17.setText(QCoreApplication.translate("mainWindow", u"Power flow", None))
         self.label_2.setText(QCoreApplication.translate("mainWindow", u"Solver", None))
@@ -4272,8 +4295,10 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.optimalRedispatchRadioButton.setToolTip(QCoreApplication.translate("mainWindow", u"The generation is modified so that the transference is maximal.", None))
 #endif // QT_CONFIG(tooltip)
-        self.optimalRedispatchRadioButton.setText(QCoreApplication.translate("mainWindow", u"Optimal redispatch", None))
+        self.optimalRedispatchRadioButton.setText(QCoreApplication.translate("mainWindow", u"Optimal dispatch", None))
         self.ntcMaximizeExchangeFlowCheckBox.setText(QCoreApplication.translate("mainWindow", u"Maximize exchange flow", None))
+        self.ntcFeasibilityCheckCheckBox.setText(QCoreApplication.translate("mainWindow", u"Check feasibility", None))
+        self.ntcDispatchAllAreasCheckBox.setText(QCoreApplication.translate("mainWindow", u"Dispatch all areas", None))
         self.label_97.setText("")
         self.label_96.setText(QCoreApplication.translate("mainWindow", u"Optimization method", None))
         self.label_102.setText(QCoreApplication.translate("mainWindow", u"Objective function weights", None))

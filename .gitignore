@@ -6,9 +6,12 @@ __pycache__
 /doc/_static
 
 
- /**/.idea/*
+/**/.idea/*
+**/.idea
+.idea/
 .idea/*
 .idea/inspectionProfiles
+
 
 /build
 /dist

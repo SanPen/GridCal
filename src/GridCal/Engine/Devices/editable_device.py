@@ -65,7 +65,7 @@ class EditableDevice:
         else:
             self.idtag = idtag.replace('_', '').replace('-', '')
 
-        self.name = name
+        self._name = name
 
         self.code = code
 
@@ -103,6 +103,14 @@ class EditableDevice:
 
     def __eq__(self, other):
         return self.idtag == other.idtag
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, val: str):
+        self._name = val
 
     def get_save_data(self):
         """

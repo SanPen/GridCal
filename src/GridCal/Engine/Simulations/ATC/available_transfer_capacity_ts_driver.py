@@ -176,6 +176,32 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
         return mdl
 
 
+class AvailableTransferCapacityClusteringResults(AvailableTransferCapacityTimeSeriesResults):
+
+    def __init__(self, br_names, bus_names, rates, contingency_rates, time_array, sampled_time_idx,
+                 sampled_probabilities):
+        """
+
+        :param br_names:
+        :param bus_names:
+        :param rates:
+        :param contingency_rates:
+        :param time_array:
+        :param sampled_time_idx:
+        :param sampled_probabilities:
+        """
+        AvailableTransferCapacityTimeSeriesResults.__init__(self, br_names=br_names,
+                                                            bus_names=bus_names,
+                                                            rates=rates,
+                                                            contingency_rates=contingency_rates,
+                                                            time_array=time_array)
+
+        # self.available_results.append(ResultTypes.P)
+
+        self.sampled_time_idx = sampled_time_idx
+        self.sampled_probabilities = sampled_probabilities
+
+
 class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
     tpe = SimulationTypes.NetTransferCapacityTS_run
     name = tpe.value
@@ -235,11 +261,10 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.progress_text.emit('Clustering...')
             X = nc.Sbus
             X = X[:, time_indices].real.T
-            self.sampled_time_idx, self.sampled_probabilities = kmeans_approximate_sampling(X,
-                                                                                            n_points=self.options.cluster_number)
-            # reassign the time indices
-            time_indices = self.sampled_time_idx
 
+            # cluster and re-assign the time indices
+            time_indices, \
+                sampled_probabilities = kmeans_approximate_sampling(X, n_points=self.options.cluster_number)
 
         # get the power injections
         P = nc.Sbus.real  # these are in p.u.

@@ -125,6 +125,14 @@ class BusGraphicItem(QGraphicsRectItem):
         # Update size:
         self.change_size(self.w, self.h)
 
+    def set_label(self, val: str):
+        """
+        Set the label content
+        :param val:
+        :return:
+        """
+        self.label.setPlainText(val)
+
     def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent'):
         """
         On mouse move of this object...

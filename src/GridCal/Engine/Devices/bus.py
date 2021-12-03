@@ -204,6 +204,16 @@ class Bus(EditableDevice):
         self.longitude = longitude
         self.latitude = latitude
 
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, val: str):
+        self._name = val
+        if self.graphic_obj is not None:
+            self.graphic_obj.set_label(self._name)
+
     def delete_children(self):
         """
         Delete all the children

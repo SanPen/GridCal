@@ -110,7 +110,7 @@ def compute_acptdf(Ybus, Yseries, Yf, Yt, Cf, V, pq, pv, distribute_slack):
     return PTDF
 
 
-def make_lodf(circuit: SnapshotCircuit, PTDF, correct_values=True):
+def make_lodf(circuit, PTDF, correct_values=True):
     """
 
     :param circuit:
@@ -120,7 +120,7 @@ def make_lodf(circuit: SnapshotCircuit, PTDF, correct_values=True):
     nl = circuit.nbr
 
     # compute the connectivity matrix
-    Cft = circuit.C_branch_bus_f - circuit.C_branch_bus_t
+    Cft = circuit.A
 
     H = PTDF * Cft.T
 
@@ -247,7 +247,7 @@ def get_n_minus_1_flows(circuit: MultiCircuit):
 
             pf = PowerFlowDriver(circuit, opt)
             pf.run()
-            Pmat[:, c] = pf.results.Sbranch.real
+            Pmat[:, c] = pf.results.Sf.real
 
             branch.active = True
 
@@ -260,21 +260,21 @@ def check_lodf(grid: MultiCircuit):
 
     # assume 1 island
     nc = compile_snapshot_circuit(grid)
-    islands = split_into_islands(nc)
+    islands = nc.split_into_islands()
     circuit = islands[0]
 
     PTDF = compute_acptdf(Ybus=circuit.Ybus,
                           Yseries=circuit.Yseries,
                           Yf=circuit.Yf,
                           Yt=circuit.Yt,
-                          Cf=circuit.C_branch_bus_f,
+                          Cf=circuit.Cf,
                           V=circuit.Vbus,
                           pq=circuit.pq,
                           pv=circuit.pv,
                           distribute_slack=True)
     LODF = make_lodf(circuit, PTDF)
 
-    Pbus = circuit.get_injections(False).real
+    Pbus = circuit.get_injections(False).real[:, 0]
     flows_n = np.dot(PTDF, Pbus)
 
     nl = circuit.nbr
@@ -294,7 +294,7 @@ def test_ptdf(grid):
     :return:
     """
     nc = compile_snapshot_circuit(grid)
-    islands = split_into_islands(nc)
+    islands = nc.split_into_islands()
     circuit = islands[0]  # pick the first island
 
     pf_driver = PowerFlowDriver(grid, PowerFlowOptions())
@@ -304,7 +304,7 @@ def test_ptdf(grid):
                           Yseries=circuit.Yseries,
                           Yf=circuit.Yf,
                           Yt=circuit.Yt,
-                          Cf=circuit.C_branch_bus_f,
+                          Cf=circuit.Cf,
                           V=circuit.Vbus,
                           pq=circuit.pq,
                           pv=circuit.pv,
@@ -328,7 +328,8 @@ if __name__ == '__main__':
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
+    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
+    fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\KULeuven_5node.gridcal'
     # fname = 'helm_data1.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14 PQ only.gridcal'
     # fname = 'IEEE 14 PQ only full.gridcal'
@@ -341,14 +342,14 @@ if __name__ == '__main__':
     name = os.path.splitext(fname.split(os.sep)[-1])[0]
     method = 'ACPTDF (No Jacobian, V=1)'
     nc_ = compile_snapshot_circuit(grid_)
-    islands_ = split_into_islands(nc_)
+    islands_ = nc_.split_into_islands()
     circuit_ = islands_[0]
 
     H_ = compute_acptdf(Ybus=circuit_.Ybus,
                         Yseries=circuit_.Yseries,
                         Yf=circuit_.Yf,
                         Yt=circuit_.Yt,
-                        Cf=circuit_.C_branch_bus_f,
+                        Cf=circuit_.Cf,
                         V=circuit_.Vbus,
                         pq=circuit_.pq,
                         pv=circuit_.pv,
