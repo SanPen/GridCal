@@ -23,9 +23,9 @@ You can choose to install GridCal through pip or just get a standalone setup rea
 
 - From your python distribution on any OS: `pip install GridCal`
 
-- [GridCal for windows x64](https://drive.google.com/open?id=1F_zr8gZ6HXp7wGLcnOxzSVJqXP-XZ4T9)
+- [GridCal for windows x64](https://45a5077a-25c4-47e3-9a30-f60734789b44.filesusr.com/archives/f651ec_0ea805a09a8841ea8e5e2cfd6fbd8598.zip?dn=GridCalsetup.zip)
 
-- [GridCal for linux x64](https://drive.google.com/open?id=1atPCEKxapp7UsI_dFahr3XGwoaH96Tg5)
+- [GridCal for linux x64](https://45a5077a-25c4-47e3-9a30-f60734789b44.filesusr.com/archives/f651ec_7e2426b48b7849af9d19325f709f7b17.zip?dn=GridCal_linux.tar.zip)
 
 For more options and details follow the
 [installation instructions](https://gridcal.readthedocs.io/en/latest/getting_started/install.html).
