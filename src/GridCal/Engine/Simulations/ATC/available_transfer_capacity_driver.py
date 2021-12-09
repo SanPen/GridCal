@@ -156,92 +156,93 @@ def compute_alpha(ptdf, P0, Pinstalled, idx1, idx2, bus_types, dT=1.0, mode=0):
 
     return alpha
 
-
-@nb.njit()
-def compute_atc(br_idx, contingency_br_idx, lodf, alpha, flows, rates, contingency_rates, threshold=0.005):
-    """
-    Compute all lines' ATC
-    :param br_idx: array of branch indices to analyze
-    :param contingency_br_idx: array of branch indices to fail
-    :param lodf: Line outage distribution factors (n-branch, n-outage branch)
-    :param alpha: Branch sensitivities to the exchange [p.u.]
-    :param flows: branches power injected at the "from" side [MW]
-    :param rates: all branches rates vector
-    :param contingency_rates: all branches contingency rates vector
-    :param threshold: value that determines if a line is studied for the ATC calculation
-    :return:
-             beta_mat: Matrix of beta values (branch, contingency_branch)
-             beta: vector of actual beta value used for each branch (n-branch)
-             atc_n: vector of ATC values in "N" (n-branch)
-             atc_final: vector of ATC in "N" or "N-1" whatever is more limiting (n-branch)
-             atc_limiting_contingency_branch: most limiting contingency branch index vector (n-branch)
-             atc_limiting_contingency_flow: most limiting contingency flow vector (n-branch)
-    """
-
-    nbr = len(br_idx)
-
-    # explore the ATC
-    atc_n = np.zeros(nbr)
-    atc_mc = np.zeros(nbr)
-    atc_final = np.zeros(nbr)
-    beta_mat = np.zeros((nbr, nbr))
-    beta_used = np.zeros(nbr)
-    atc_limiting_contingency_branch = np.zeros(nbr)
-    atc_limiting_contingency_flow = np.zeros(nbr)
-    # processed = list()
-    # mm = 0
-    for im, m in enumerate(br_idx):  # for each branch
-
-        if abs(alpha[m]) > threshold and abs(flows[m]) < rates[m]:  # if the branch is relevant enough for the ATC...
-
-            # compute the ATC in "N"
-            if alpha[m] == 0:
-                atc_final[im] = np.inf
-            elif alpha[m] > 0:
-                atc_final[im] = (rates[m] - flows[m]) / alpha[m]
-            else:
-                atc_final[im] = (-rates[m] - flows[m]) / alpha[m]
-
-            # remember the ATC in "N"
-            atc_n[im] = atc_final[im]
-
-            # set to the current branch, since we don't know if there will be any contingency that make the ATC worse
-            atc_limiting_contingency_branch[im] = m
-
-            # explore the ATC in "N-1"
-            for ic, c in enumerate(contingency_br_idx):  # for each contingency
-                # compute the exchange sensitivity in contingency conditions
-                beta_mat[im, ic] = alpha[m] + lodf[m, c] * alpha[c]
-
-                if m != c:
-
-                    # compute the contingency flow
-                    contingency_flow = flows[m] + lodf[m, c] * flows[c]
-
-                    # set the default values (worst contingency by itself, not comparing with the base situation)
-                    if abs(contingency_flow) > abs(atc_limiting_contingency_flow[im]):
-                        atc_limiting_contingency_flow[im] = contingency_flow  # default
-                        atc_limiting_contingency_branch[im] = c
-
-                    # now here, do compare with the base situation
-                    if abs(beta_mat[im, ic]) > threshold and abs(contingency_flow) <= contingency_rates[m]:
-
-                        # compute the ATC in "N-1"
-                        if beta_mat[im, ic] == 0:
-                            atc_mc[im] = np.inf
-                        elif beta_mat[im, ic] > 0:
-                            atc_mc[im] = (contingency_rates[m] - contingency_flow) / beta_mat[im, ic]
-                        else:
-                            atc_mc[im] = (-contingency_rates[m] - contingency_flow) / beta_mat[im, ic]
-
-                        # refine the ATC to the most restrictive value every time
-                        if abs(atc_mc[im]) < abs(atc_final[im]):
-                            atc_final[im] = atc_mc[im]
-                            beta_used[im] = beta_mat[im, ic]
-                            atc_limiting_contingency_flow[im] = contingency_flow
-                            atc_limiting_contingency_branch[im] = c
-
-    return beta_mat, beta_used, atc_n, atc_mc, atc_final, atc_limiting_contingency_branch, atc_limiting_contingency_flow
+#
+# @nb.njit()
+# def compute_atc(br_idx, contingency_br_idx, lodf, alpha, flows, rates, contingency_rates, threshold=0.005):
+#     """
+#     Compute all lines' ATC
+#     :param br_idx: array of branch indices to analyze
+#     :param contingency_br_idx: array of branch indices to fail
+#     :param lodf: Line outage distribution factors (n-branch, n-outage branch)
+#     :param alpha: Branch sensitivities to the exchange [p.u.]
+#     :param flows: branches power injected at the "from" side [MW]
+#     :param rates: all branches rates vector
+#     :param contingency_rates: all branches contingency rates vector
+#     :param threshold: value that determines if a line is studied for the ATC calculation
+#     :return:
+#              beta_mat: Matrix of beta values (branch, contingency_branch)
+#              beta: vector of actual beta value used for each branch (n-branch)
+#              atc_n: vector of ATC values in "N" (n-branch)
+#              atc_final: vector of ATC in "N" or "N-1" whatever is more limiting (n-branch)
+#              atc_limiting_contingency_branch: most limiting contingency branch index vector (n-branch)
+#              atc_limiting_contingency_flow: most limiting contingency flow vector (n-branch)
+#     """
+#
+#     nbr = len(br_idx)
+#
+#     # explore the ATC
+#     atc_n = np.zeros(nbr)
+#     atc_mc = np.zeros(nbr)
+#     atc_final = np.zeros(nbr)
+#     beta_mat = np.zeros((nbr, nbr))
+#     beta_used = np.zeros(nbr)
+#     atc_limiting_contingency_branch = np.zeros(nbr)
+#     atc_limiting_contingency_flow = np.zeros(nbr)
+#     # processed = list()
+#     # mm = 0
+#     for im, m in enumerate(br_idx):  # for each branch
+#
+#         # if abs(alpha[m]) > threshold and abs(flows[m]) < rates[m]:  # if the branch is relevant enough for the ATC...
+#         if abs(alpha[m]) > threshold:  # if the branch is relevant enough for the ATC...
+#
+#             # compute the ATC in "N"
+#             if alpha[m] == 0:
+#                 atc_final[im] = np.inf
+#             elif alpha[m] > 0:
+#                 atc_final[im] = (rates[m] - flows[m]) / alpha[m]
+#             else:
+#                 atc_final[im] = (-rates[m] - flows[m]) / alpha[m]
+#
+#             # remember the ATC in "N"
+#             atc_n[im] = atc_final[im]
+#
+#             # set to the current branch, since we don't know if there will be any contingency that make the ATC worse
+#             atc_limiting_contingency_branch[im] = m
+#
+#             # explore the ATC in "N-1"
+#             for ic, c in enumerate(contingency_br_idx):  # for each contingency
+#                 # compute the exchange sensitivity in contingency conditions
+#                 beta_mat[im, ic] = alpha[m] + lodf[m, c] * alpha[c]
+#
+#                 if m != c:
+#
+#                     # compute the contingency flow
+#                     contingency_flow = flows[m] + lodf[m, c] * flows[c]
+#
+#                     # set the default values (worst contingency by itself, not comparing with the base situation)
+#                     if abs(contingency_flow) > abs(atc_limiting_contingency_flow[im]):
+#                         atc_limiting_contingency_flow[im] = contingency_flow  # default
+#                         atc_limiting_contingency_branch[im] = c
+#
+#                     # now here, do compare with the base situation
+#                     if abs(beta_mat[im, ic]) > threshold and abs(contingency_flow) <= contingency_rates[m]:
+#
+#                         # compute the ATC in "N-1"
+#                         if beta_mat[im, ic] == 0:
+#                             atc_mc[im] = np.inf
+#                         elif beta_mat[im, ic] > 0:
+#                             atc_mc[im] = (contingency_rates[m] - contingency_flow) / beta_mat[im, ic]
+#                         else:
+#                             atc_mc[im] = (-contingency_rates[m] - contingency_flow) / beta_mat[im, ic]
+#
+#                         # refine the ATC to the most restrictive value every time
+#                         if abs(atc_mc[im]) < abs(atc_final[im]):
+#                             atc_final[im] = atc_mc[im]
+#                             beta_used[im] = beta_mat[im, ic]
+#                             atc_limiting_contingency_flow[im] = contingency_flow
+#                             atc_limiting_contingency_branch[im] = c
+#
+#     return beta_mat, beta_used, atc_n, atc_mc, atc_final, atc_limiting_contingency_branch, atc_limiting_contingency_flow
 
 
 @nb.njit()
@@ -272,7 +273,8 @@ def compute_atc_list(br_idx, contingency_br_idx, lodf, alpha, flows, rates, cont
 
     for im, m in enumerate(br_idx):  # for each branch
 
-        if abs(alpha[m]) > threshold and abs(flows[m]) < rates[m]:  # if the branch is relevant enough for the ATC...
+        # if abs(alpha[m]) > threshold and abs(flows[m]) < rates[m]:  # if the branch is relevant enough for the ATC...
+        if abs(alpha[m]) > threshold:  # if the branch is relevant enough for the ATC...
 
             # compute the ATC in "N"
             if alpha[m] == 0:
@@ -288,41 +290,41 @@ def compute_atc_list(br_idx, contingency_br_idx, lodf, alpha, flows, rates, cont
                 # compute the exchange sensitivity in contingency conditions
                 beta = alpha[m] + lodf[m, c] * alpha[c]
 
-                if m != c and abs(lodf[m, c]) > threshold:
+                if m != c and abs(lodf[m, c]) > threshold and abs(beta) > threshold:
 
                     # compute the contingency flow
                     contingency_flow = flows[m] + lodf[m, c] * flows[c]
 
                     # now here, do compare with the base situation
-                    if abs(contingency_flow) <= contingency_rates[m]:
+                    # if abs(contingency_flow) <= contingency_rates[m]:
 
-                        # compute the ATC in "N-1"
-                        if beta == 0:
-                            atc_mc = np.inf
-                        elif beta > 0:
-                            atc_mc = (contingency_rates[m] - contingency_flow) / beta
-                        else:
-                            atc_mc = (-contingency_rates[m] - contingency_flow) / beta
+                    # compute the ATC in "N-1"
+                    if beta == 0:
+                        atc_mc = np.inf
+                    elif beta > 0:
+                        atc_mc = (contingency_rates[m] - contingency_flow) / beta
+                    else:
+                        atc_mc = (-contingency_rates[m] - contingency_flow) / beta
 
-                        final_atc = min(atc_mc, atc_n)
-                        ntc = final_atc + base_exchange
+                    final_atc = min(atc_mc, atc_n)
+                    ntc = final_atc + base_exchange
 
-                        # refine the ATC to the most restrictive value every time
-                        results.append((time_idx,           # 0
-                                        m,                  # 1
-                                        c,                  # 2
-                                        alpha[m],           # 3
-                                        beta,               # 4
-                                        lodf[m, c],         # 5
-                                        atc_n,              # 6
-                                        atc_mc,             # 7
-                                        final_atc,          # 8
-                                        ntc,                # 9
-                                        flows[m],           # 10
-                                        contingency_flow,   # 11
-                                        flows[m] / (rates[m] + 1e-9) * 100.0,  # 12
-                                        contingency_flow / (contingency_rates[m] + 1e-9) * 100.0,  # 13
-                                        base_exchange))    # 14
+                    # refine the ATC to the most restrictive value every time
+                    results.append((time_idx,           # 0
+                                    m,                  # 1
+                                    c,                  # 2
+                                    alpha[m],           # 3
+                                    beta,               # 4
+                                    lodf[m, c],         # 5
+                                    atc_n,              # 6
+                                    atc_mc,             # 7
+                                    final_atc,          # 8
+                                    ntc,                # 9
+                                    flows[m],           # 10
+                                    contingency_flow,   # 11
+                                    flows[m] / (rates[m] + 1e-9) * 100.0,  # 12
+                                    contingency_flow / (contingency_rates[m] + 1e-9) * 100.0,  # 13
+                                    base_exchange))    # 14
 
     return results
 

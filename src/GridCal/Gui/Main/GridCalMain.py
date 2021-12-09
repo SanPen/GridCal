@@ -2733,8 +2733,27 @@ class MainGUI(QMainWindow):
 
                 self.LOCK()
 
+
+                if self.ui.usePfValuesForAtcCheckBox.isChecked():
+                    pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
+                    if pf_results is not None:
+                        Pf = pf_results.Sf.real
+                        Pf_hvdc = pf_results.hvdc_Pf.real
+                        use_provided_flows = True
+                    else:
+                        warning_msg('There were no power flow values available. Linear flows will be used.')
+                        use_provided_flows = False
+                        Pf_hvdc = None
+                        Pf = None
+                else:
+                    use_provided_flows = False
+                    Pf = None
+                    Pf_hvdc = None
+
                 distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
-                options = sim.ContingencyAnalysisOptions(distributed_slack=distributed_slack)
+                options = sim.ContingencyAnalysisOptions(distributed_slack=distributed_slack,
+                                                         use_provided_flows=use_provided_flows,
+                                                         Pf=Pf)
 
                 drv = sim.ContingencyAnalysisDriver(grid=self.circuit, options=options)
 
@@ -2801,8 +2820,26 @@ class MainGUI(QMainWindow):
 
                     self.LOCK()
 
+                    if self.ui.usePfValuesForAtcCheckBox.isChecked():
+                        pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
+                        if pf_results is not None:
+                            Pf = pf_results.Sf.real
+                            Pf_hvdc = pf_results.hvdc_Pf.real
+                            use_provided_flows = True
+                        else:
+                            warning_msg('There were no power flow values available. Linear flows will be used.')
+                            use_provided_flows = False
+                            Pf_hvdc = None
+                            Pf = None
+                    else:
+                        use_provided_flows = False
+                        Pf_hvdc = None
+                        Pf = None
+
                     options = sim.ContingencyAnalysisOptions(
-                        distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
+                        distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
+                        use_provided_flows=use_provided_flows,
+                        Pf=Pf)
 
                     drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit, options=options)
 
