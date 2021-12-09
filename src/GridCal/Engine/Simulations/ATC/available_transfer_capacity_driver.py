@@ -308,21 +308,21 @@ def compute_atc_list(br_idx, contingency_br_idx, lodf, alpha, flows, rates, cont
                         ntc = final_atc + base_exchange
 
                         # refine the ATC to the most restrictive value every time
-                        results.append((time_idx,  # 0
-                                        m,
-                                        c,
-                                        alpha[m],
-                                        beta,
-                                        lodf[m, c],  # 5
-                                        atc_n,
-                                        atc_mc,
-                                        final_atc,
-                                        ntc,
-                                        flows[m],  # 10
-                                        contingency_flow,
-                                        flows[m] / (rates[m] + 1e-9) * 100.0,
-                                        contingency_flow / (contingency_rates[m] + 1e-9) * 100.0,
-                                        base_exchange))
+                        results.append((time_idx,           # 0
+                                        m,                  # 1
+                                        c,                  # 2
+                                        alpha[m],           # 3
+                                        beta,               # 4
+                                        lodf[m, c],         # 5
+                                        atc_n,              # 6
+                                        atc_mc,             # 7
+                                        final_atc,          # 8
+                                        ntc,                # 9
+                                        flows[m],           # 10
+                                        contingency_flow,   # 11
+                                        flows[m] / (rates[m] + 1e-9) * 100.0,  # 12
+                                        contingency_flow / (contingency_rates[m] + 1e-9) * 100.0,  # 13
+                                        base_exchange))    # 14
 
     return results
 
@@ -383,19 +383,23 @@ class AvailableTransferCapacityResults(ResultsTemplate):
 
         # sort by ATC
         if len(self.raw_report):
+
+            m = rep[:, 1].astype(int)
+            c = rep[:, 2].astype(int)
+
             self.report_indices = np.arange(0, len(rep))
 
             # time
             self.report[:, 0] = 0
 
             # Branch name
-            self.report[:, 1] = self.branch_names[rep[:, 1].astype(int)]
+            self.report[:, 1] = self.branch_names[m]
 
             # Base flow'
             self.report[:, 2] = rep[:, 10]
 
             # rate
-            self.report[:, 3] = self.rates[rep[:, 1].astype(int)]  # 'Rate', (time, branch)
+            self.report[:, 3] = self.rates[m]  # 'Rate', (time, branch)
 
             # alpha
             self.report[:, 4] = rep[:, 3]
@@ -406,13 +410,13 @@ class AvailableTransferCapacityResults(ResultsTemplate):
             # contingency info -----
 
             # 'Limiting contingency branch'
-            self.report[:, 6] = self.branch_names[rep[:, 2].astype(int)]
+            self.report[:, 6] = self.branch_names[c]
 
             # 'Limiting contingency flow'
             self.report[:, 7] = rep[:, 11]
 
             # 'Contingency rate' (time, branch)
-            self.report[:, 8] = self.contingency_rates[rep[:, 2].astype(int)]
+            self.report[:, 8] = self.contingency_rates[m]
 
             # 'Beta'
             self.report[:, 9] = rep[:, 4]
@@ -420,14 +424,14 @@ class AvailableTransferCapacityResults(ResultsTemplate):
             # 'Contingency ATC'
             self.report[:, 10] = rep[:, 7]
 
-            # ATC
+            # Final ATC (worst between normal ATC and contingency ATC)
             self.report[:, 11] = rep[:, 8]
 
             # Base exchange flow
             self.report[:, 12] = rep[:, 14]
 
             # NTC
-            self.report[:, 13] = rep[:, 9] + self.base_exchange
+            self.report[:, 13] = rep[:, 9]
 
             # trim by abs alpha > threshold and loading <= 1
             loading = np.abs(self.report[:, 2] / (self.report[:, 3] + 1e-20))
