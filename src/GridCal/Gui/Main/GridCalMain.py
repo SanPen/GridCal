@@ -594,6 +594,10 @@ class MainGUI(QMainWindow):
         # check boxes
         self.ui.draw_schematic_checkBox.clicked.connect(self.set_grid_editor_state)
 
+        # Radio Button
+        self.ui.proportionalRedispatchRadioButton.clicked.connect(self.default_options_opf_ntc_proportional)
+        self.ui.optimalRedispatchRadioButton.clicked.connect(self.default_options_opf_ntc_optimal)
+
         ################################################################################################################
         # Other actions
         ################################################################################################################
@@ -3944,6 +3948,32 @@ class MainGUI(QMainWindow):
                 warning_msg('There are no time series.\nLoad time series are needed for this simulation.')
         else:
             pass
+
+    def default_options_opf_ntc_optimal(self):
+        self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
+        self.ui.skipNtcGenerationLimitsCheckBox.setChecked(False)
+        self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
+        self.ui.ntcMaximizeExchangeFlowCheckBox.setChecked(True)
+        self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
+        self.ui.ntcFeasibilityCheckCheckBox.setChecked(False)
+        self.ui.weightPowerShiftSpinBox.setValue(0)
+        self.ui.weightGenCostSpinBox.setValue(0)
+        self.ui.weightGenDeltaSpinBox.setValue(0)
+        self.ui.weightsOverloadsSpinBox.setValue(0)
+        self.ui.weightsHVDCControlSpinBox.setValue(0)
+
+    def default_options_opf_ntc_proportional(self):
+        self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
+        self.ui.skipNtcGenerationLimitsCheckBox.setChecked(True)
+        self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
+        self.ui.ntcMaximizeExchangeFlowCheckBox.setChecked(True)
+        self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
+        self.ui.ntcFeasibilityCheckCheckBox.setChecked(True)
+        self.ui.weightPowerShiftSpinBox.setValue(5)
+        self.ui.weightGenCostSpinBox.setValue(0)
+        self.ui.weightGenDeltaSpinBox.setValue(0)
+        self.ui.weightsOverloadsSpinBox.setValue(0)
+        self.ui.weightsHVDCControlSpinBox.setValue(0)
 
     def run_opf_ntc(self):
         """

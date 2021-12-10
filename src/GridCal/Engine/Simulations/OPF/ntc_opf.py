@@ -1474,11 +1474,8 @@ class OpfNTC(Opf):
         # load
         Pl_fix = self.numerical_circuit.load_data.get_effective_load().real[:, t] / Sbase
 
-        # modify Pg_fix until it is identical to Pload
-        total_load = Pl_fix.sum()
-        total_gen = Pg_fix.sum()
-        diff = total_gen - total_load
-        Pg_fix -= diff * (Pg_fix / total_gen)
+
+
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
