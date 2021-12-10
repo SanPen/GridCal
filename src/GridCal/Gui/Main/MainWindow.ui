@@ -4162,7 +4162,7 @@ points from time series</string>
                   </font>
                  </property>
                  <property name="text">
-                  <string>Linear method</string>
+                  <string>Linear NTC</string>
                  </property>
                 </widget>
                </item>
@@ -4627,7 +4627,7 @@ points from time series</string>
                   </font>
                  </property>
                  <property name="text">
-                  <string>Optimization method</string>
+                  <string>NTC optimization</string>
                  </property>
                 </widget>
                </item>
