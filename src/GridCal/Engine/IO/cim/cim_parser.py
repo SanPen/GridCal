@@ -723,7 +723,8 @@ class CIMImport:
         if self.progress_func is not None:
             self.progress_func(val)
 
-    def parse_model(self, cim: CIMCircuit, circuit: MultiCircuit):
+    @staticmethod
+    def parse_model(cim: CIMCircuit, circuit: MultiCircuit):
         """
 
         :param cim:
@@ -975,7 +976,6 @@ class CIMImport:
         for f in lst2:
             name, file_extension = os.path.splitext(f)
             self.emit_text('Parsing xml structure of ' + name)
-
             self.cim.parse_xml_text(text_lines=data[f])
 
         # replace CIM references in the CIM objects

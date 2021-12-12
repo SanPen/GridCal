@@ -110,62 +110,62 @@ class MultiCircuit:
         # Should be able to accept Branches, Lines and Transformers alike
         # self.branches = list()
 
-        self.lines = list()  # type: List[Line]
+        self.lines: List[Line] = list()
 
-        self.dc_lines = list()  # type: List[DcLine]
+        self.dc_lines: List[DcLine] = list()
 
-        self.transformers2w = list()  # type: List[Transformer2W]
+        self.transformers2w: List[Transformer2W] = list()
 
-        self.hvdc_lines = list()  # type: List[HvdcLine]
+        self.hvdc_lines: List[HvdcLine] = list()
 
-        self.vsc_devices = list()  # type: List[VSC]
+        self.vsc_devices: List[VSC] = list()
 
-        self.upfc_devices = list()  # type List[UPFC]
+        self.upfc_devices: List[UPFC] = list()
 
-        self.switch_devices = list()  # type List[Switch]
+        self.switch_devices: List[Switch] = list()
 
         # array of branch indices in the master circuit
         self.branch_original_idx = list()
 
         # Should accept buses
-        self.buses = list()  # type: List[Bus]
+        self.buses: List[Bus] = list()
 
         # array of bus indices in the master circuit
         self.bus_original_idx = list()
 
         # Dictionary relating the bus object to its index. Updated upon compilation
-        self.buses_dict = dict()  # type: Dict[Bus, int]
+        self.buses_dict: Dict[Bus, int] = dict()
 
         # List of overhead line objects
-        self.overhead_line_types = list()  # type: List[Tower]
+        self.overhead_line_types: List[Tower] = list()
 
         # list of wire types
-        self.wire_types = list()  # type: List[Wire]
+        self.wire_types: List[Wire] = list()
 
         # underground cable lines
-        self.underground_cable_types = list()  # type: List[UndergroundLineType]
+        self.underground_cable_types: List[UndergroundLineType] = list()
 
         # sequence modelled lines
-        self.sequence_line_types = list()  # type: List[SequenceLineType]
+        self.sequence_line_types: List[SequenceLineType] = list()
 
         # List of transformer types
-        self.transformer_types = list()  # type: List[TransformerType]
+        self.transformer_types: List[TransformerType] = list()
 
         # list of substations
         self.default_substation = Substation('Default substation')
-        self.substations = [self.default_substation]  # type: List[Substation]
+        self.substations: List[Substation] = [self.default_substation]
 
         # list of areas
         self.default_area = Area('Default area')
-        self.areas = [self.default_area]  # type: List[Area]
+        self.areas: List[Area] = [self.default_area]
 
         # list of zones
         self.default_zone = Zone('Default zone')
-        self.zones = [self.default_zone]  # type: List[Zone]
+        self.zones: List[Zone] = [self.default_zone]
 
         # list of countries
         self.default_country = Country('Default country')
-        self.countries = [self.default_country]  # type: List[Country]
+        self.countries: List[Country] = [self.default_country]
 
         # logger of events
         self.logger = Logger()
@@ -198,6 +198,7 @@ class MultiCircuit:
         self.objects_with_profiles = [Bus(),
                                       Load(),
                                       StaticGenerator(),
+                                      ExternalGrid(),
                                       Generator(),
                                       Battery(),
                                       Shunt(),
@@ -368,6 +369,27 @@ class MultiCircuit:
                 lst.append(elm.name)
         return np.array(lst)
 
+    def get_external_grids(self) -> List[ExternalGrid]:
+        """
+        Returns a list of :ref:`ExternalGrid<external_grid>` objects in the grid.
+        """
+        lst = list()
+        for bus in self.buses:
+            for elm in bus.external_grids:
+                elm.bus = bus
+            lst = lst + bus.external_grids
+        return lst
+
+    def get_external_grid_names(self):
+        """
+        Returns a list of :ref:`ExternalGrid<external_grid>` names.
+        """
+        lst = list()
+        for bus in self.buses:
+            for elm in bus.external_grids:
+                lst.append(elm.name)
+        return np.array(lst)
+
     def get_static_generators(self) -> List[StaticGenerator]:
         """
         Returns a list of :ref:`StaticGenerator<static_generator>` objects in the grid.
@@ -484,6 +506,9 @@ class MultiCircuit:
         elif element_type == DeviceType.ShuntDevice:
             return self.get_shunts()
 
+        elif element_type == DeviceType.ExternalGridDevice:
+            return self.get_external_grids()
+
         elif element_type == DeviceType.LineDevice:
             return self.lines
 
@@ -557,6 +582,9 @@ class MultiCircuit:
         elif element_type == DeviceType.ShuntDevice:
             return self.get_shunts()
 
+        elif element_type == DeviceType.ExternalGridDevice:
+            return self.get_external_grids()
+
         elif element_type == DeviceType.SubstationDevice:
             return [x.substation for x in self.buses]
 
@@ -583,6 +611,8 @@ class MultiCircuit:
         loads = self.get_loads()
         for i, gen in enumerate(loads):
             gen.P_prof -= results.load_shedding[:, i]
+
+        # TODO: implement more devices
 
     def copy(self):
         """
@@ -648,8 +678,12 @@ class MultiCircuit:
 
         return catalogue_dict
 
-    def get_catalogue_dict_by_name(self, type_class=None):
-
+    def get_catalogue_dict_by_name(self, type_class: str = None):
+        """
+        Get the catalogue elements by name
+        :param type_class:
+        :return:
+        """
         d = dict()
 
         # ['Wires', 'Overhead lines', 'Underground lines', 'Sequence lines', 'Transformers']
@@ -782,7 +816,7 @@ class MultiCircuit:
             **time_base** (datetime, datetime.now()): Date to start from
         """
 
-        index = [None] * steps
+        index = np.empty(steps, dtype=object)
         for i in range(steps):
             if step_unit == 'h':
                 index[i] = time_base + timedelta(hours=i * step_length)
@@ -826,57 +860,6 @@ class MultiCircuit:
         for branch_list in self.get_branch_lists():
             for elm in branch_list:
                 elm.ensure_profiles_exist(self.time_profile)
-
-    def get_node_elements_by_type(self, element_type: DeviceType):
-        """
-        Get set of elements and their parent nodes.
-
-        Arguments:
-
-            **element_type** (str): Element type, either "Load", "StaticGenerator",
-            "Generator", "Battery" or "Shunt"
-
-        Returns:
-
-            List of elements, list of matching parent buses
-        """
-        elements = list()
-        parent_buses = list()
-
-        if element_type == DeviceType.LoadDevice:
-            for bus in self.buses:
-                for elm in bus.loads:
-                    elements.append(elm)
-                    parent_buses.append(bus)
-
-        elif element_type == DeviceType.StaticGeneratorDevice:
-            for bus in self.buses:
-                for elm in bus.static_generators:
-                    elements.append(elm)
-                    parent_buses.append(bus)
-
-        elif element_type == DeviceType.GeneratorDevice:
-            for bus in self.buses:
-                for elm in bus.controlled_generators:
-                    elements.append(elm)
-                    parent_buses.append(bus)
-
-        elif element_type == DeviceType.BatteryDevice:
-            for bus in self.buses:
-                for elm in bus.batteries:
-                    elements.append(elm)
-                    parent_buses.append(bus)
-
-        elif element_type == DeviceType.ShuntDevice:
-            for bus in self.buses:
-                for elm in bus.shunts:
-                    elements.append(elm)
-                    parent_buses.append(bus)
-
-        else:
-            pass
-
-        return elements, parent_buses
 
     def get_bus_dict(self):
         """
@@ -1171,6 +1154,30 @@ class MultiCircuit:
             api_obj.create_profiles(self.time_profile)
 
         bus.static_generators.append(api_obj)
+
+        return api_obj
+
+    def add_external_grid(self, bus: Bus, api_obj=None):
+        """
+        Add a :ref:`Load<load>` object to a :ref:`Bus<bus>`.
+
+        Arguments:
+
+            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
+
+            **api_obj** (:ref:`Load<load>`): :ref:`Load<load>` object
+        """
+        if api_obj is None:
+            api_obj = ExternalGrid()
+        api_obj.bus = bus
+
+        if self.time_profile is not None:
+            api_obj.create_profiles(self.time_profile)
+
+        if api_obj.name == 'External grid':
+            api_obj.name += '@' + bus.name
+
+        bus.loads.append(api_obj)
 
         return api_obj
 

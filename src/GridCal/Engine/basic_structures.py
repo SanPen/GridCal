@@ -44,6 +44,24 @@ class BusMode(Enum):
             return s
 
 
+class ExternalGridMode(Enum):
+    PQ = 1
+    VD = 2
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return ExternalGridMode[s]
+        except KeyError:
+            return s
+
+
 class BranchImpedanceMode(Enum):
     Specified = 0
     Upper = 1
