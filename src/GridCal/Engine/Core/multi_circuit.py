@@ -756,7 +756,7 @@ class MultiCircuit:
         """
         """
         if self.time_profile is not None:
-            t = self.time_profile.astype(int).tolist()
+            t = self.time_profile.view(int).tolist()
         else:
             t = list()
         return {'time': t}

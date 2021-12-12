@@ -91,17 +91,21 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
         if len(self.raw_report):
             self.report_indices = np.arange(0, len(rep))
 
+            t = rep[:, 0].astype(int)
+            m = rep[:, 1].astype(int)
+            c = rep[:, 2].astype(int)
+
             # time
-            self.report[:, 0] = self.time_array[rep[:, 0].astype(int)].strftime('%d/%m/%Y %H:%M').values
+            self.report[:, 0] = self.time_array[t].strftime('%d/%m/%Y %H:%M').values
 
             # Branch name
-            self.report[:, 1] = self.branch_names[rep[:, 1].astype(int)]
+            self.report[:, 1] = self.branch_names[m]
 
             # Base flow'
             self.report[:, 2] = rep[:, 10]
 
             # rate
-            self.report[:, 3] = self.rates[rep[:, 0].astype(int), rep[:, 1].astype(int)]  # 'Rate', (time, branch)
+            self.report[:, 3] = self.rates[t, m]  # 'Rate', (time, branch)
 
             # alpha
             self.report[:, 4] = rep[:, 3]
@@ -112,13 +116,13 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
             # contingency info -----
 
             # 'Limiting contingency branch'
-            self.report[:, 6] = self.branch_names[rep[:, 2].astype(int)]
+            self.report[:, 6] = self.branch_names[c]
 
             # 'Limiting contingency flow'
             self.report[:, 7] = rep[:, 11]
 
             # 'Contingency rate' (time, branch)
-            self.report[:, 8] = self.contingency_rates[rep[:, 0].astype(int), rep[:, 2].astype(int)]
+            self.report[:, 8] = self.contingency_rates[t, m]
 
             # 'Beta'
             self.report[:, 9] = rep[:, 4]
@@ -133,7 +137,7 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
             self.report[:, 12] = rep[:, 14]
 
             # NTC
-            self.report[:, 13] = rep[:, 9] + self.base_exchange
+            self.report[:, 13] = rep[:, 9]
 
             # trim by abs alpha > threshold and loading <= 1
             loading = np.abs(self.report[:, 2] / (self.report[:, 3] + 1e-20))

@@ -594,6 +594,10 @@ class MainGUI(QMainWindow):
         # check boxes
         self.ui.draw_schematic_checkBox.clicked.connect(self.set_grid_editor_state)
 
+        # Radio Button
+        self.ui.proportionalRedispatchRadioButton.clicked.connect(self.default_options_opf_ntc_proportional)
+        self.ui.optimalRedispatchRadioButton.clicked.connect(self.default_options_opf_ntc_optimal)
+
         ################################################################################################################
         # Other actions
         ################################################################################################################
@@ -2733,8 +2737,27 @@ class MainGUI(QMainWindow):
 
                 self.LOCK()
 
+
+                if self.ui.usePfValuesForAtcCheckBox.isChecked():
+                    pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
+                    if pf_results is not None:
+                        Pf = pf_results.Sf.real
+                        Pf_hvdc = pf_results.hvdc_Pf.real
+                        use_provided_flows = True
+                    else:
+                        warning_msg('There were no power flow values available. Linear flows will be used.')
+                        use_provided_flows = False
+                        Pf_hvdc = None
+                        Pf = None
+                else:
+                    use_provided_flows = False
+                    Pf = None
+                    Pf_hvdc = None
+
                 distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
-                options = sim.ContingencyAnalysisOptions(distributed_slack=distributed_slack)
+                options = sim.ContingencyAnalysisOptions(distributed_slack=distributed_slack,
+                                                         use_provided_flows=use_provided_flows,
+                                                         Pf=Pf)
 
                 drv = sim.ContingencyAnalysisDriver(grid=self.circuit, options=options)
 
@@ -2801,8 +2824,26 @@ class MainGUI(QMainWindow):
 
                     self.LOCK()
 
+                    if self.ui.usePfValuesForAtcCheckBox.isChecked():
+                        pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
+                        if pf_results is not None:
+                            Pf = pf_results.Sf.real
+                            Pf_hvdc = pf_results.hvdc_Pf.real
+                            use_provided_flows = True
+                        else:
+                            warning_msg('There were no power flow values available. Linear flows will be used.')
+                            use_provided_flows = False
+                            Pf_hvdc = None
+                            Pf = None
+                    else:
+                        use_provided_flows = False
+                        Pf_hvdc = None
+                        Pf = None
+
                     options = sim.ContingencyAnalysisOptions(
-                        distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
+                        distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
+                        use_provided_flows=use_provided_flows,
+                        Pf=Pf)
 
                     drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit, options=options)
 
@@ -3944,6 +3985,40 @@ class MainGUI(QMainWindow):
                 warning_msg('There are no time series.\nLoad time series are needed for this simulation.')
         else:
             pass
+
+    def default_options_opf_ntc_optimal(self):
+        """
+        Set the default options for the NTC optimization in the optimal setting
+        :return:
+        """
+        self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
+        self.ui.skipNtcGenerationLimitsCheckBox.setChecked(False)
+        self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
+        self.ui.ntcMaximizeExchangeFlowCheckBox.setChecked(True)
+        self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
+        self.ui.ntcFeasibilityCheckCheckBox.setChecked(False)
+        self.ui.weightPowerShiftSpinBox.setValue(0)
+        self.ui.weightGenCostSpinBox.setValue(0)
+        self.ui.weightGenDeltaSpinBox.setValue(0)
+        self.ui.weightsOverloadsSpinBox.setValue(0)
+        self.ui.weightsHVDCControlSpinBox.setValue(0)
+
+    def default_options_opf_ntc_proportional(self):
+        """
+        Set the default options for the NTC optimization in the proportional setting
+        :return:
+        """
+        self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
+        self.ui.skipNtcGenerationLimitsCheckBox.setChecked(True)
+        self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
+        self.ui.ntcMaximizeExchangeFlowCheckBox.setChecked(True)
+        self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
+        self.ui.ntcFeasibilityCheckCheckBox.setChecked(True)
+        self.ui.weightPowerShiftSpinBox.setValue(5)
+        self.ui.weightGenCostSpinBox.setValue(0)
+        self.ui.weightGenDeltaSpinBox.setValue(5)
+        self.ui.weightsOverloadsSpinBox.setValue(5)
+        self.ui.weightsHVDCControlSpinBox.setValue(3)
 
     def run_opf_ntc(self):
         """

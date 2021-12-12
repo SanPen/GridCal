@@ -878,6 +878,8 @@ class Transformer2W(EditableDevice):
                  'rate': self.rate,
                  'Vnomf': v_from,
                  'Vnomt': v_to,
+                 'hv': self.HV,
+                 'lv': self.LV,
                  'r': self.R,
                  'x': self.X,
                  'g': self.G,
@@ -926,6 +928,8 @@ class Transformer2W(EditableDevice):
 
                  'Vnomf': v_from,
                  'Vnomt': v_to,
+                 'hv': self.HV,
+                 'lv': self.LV,
                  'r': self.R,
                  'x': self.X,
                  'g': self.G,

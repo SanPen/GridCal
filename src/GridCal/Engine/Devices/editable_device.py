@@ -43,7 +43,7 @@ class GCProp:
 
 class EditableDevice:
 
-    def __init__(self, name, active, device_type: DeviceType,
+    def __init__(self, name, active: bool, device_type: DeviceType,
                  editable_headers: Dict[str, GCProp],
                  non_editable_attributes: List[str],
                  properties_with_profile: Dict[str, Optional[Any]],
