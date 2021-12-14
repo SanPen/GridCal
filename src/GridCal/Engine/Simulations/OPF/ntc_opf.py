@@ -488,8 +488,8 @@ def formulate_proportional_generation(solver: pywraplp.Solver,
                 delta_slack_1[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_up_' + name)
                 delta_slack_2[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_down_' + name)
 
-                # prop = round(abs(Pgen[gen_idx] / sum_gen_1), 6)
-                prop = Pgen[gen_idx] / sum_gen_1
+                prop = round(abs(Pgen[gen_idx] / sum_gen_1), 6)
+                # prop = Pgen[gen_idx] / sum_gen_1
 
                 solver.Add(delta[gen_idx] == prop * power_shift, 'Delta_up_gen{}'.format(gen_idx))
                 solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx]
@@ -521,8 +521,8 @@ def formulate_proportional_generation(solver: pywraplp.Solver,
                 delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
                 delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
 
-                # prop = round(abs(Pgen[gen_idx] / sum_gen_2), 6)
-                prop = Pgen[gen_idx] / sum_gen_2
+                prop = round(abs(Pgen[gen_idx] / sum_gen_2), 6)
+                # prop = Pgen[gen_idx] / sum_gen_2
 
                 solver.Add(delta[gen_idx] == prop * power_shift, 'Delta_down_gen{}'.format(gen_idx))
                 solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx]
@@ -948,7 +948,7 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
                           branch_names, contingency_enabled_indices,
                           LODF, F, T, inf,
                           branch_sensitivity_threshold,
-                          flow_f, monitor):
+                          flow_f, monitor, replacement_value=0):
     """
     Formulate the contingency flows
     :param solver: Solver instance to which add the equations
@@ -992,10 +992,14 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
                 lodf = LODF[m, c]
 
                 if lodf > 1:
-                    lodf = 1
+                    print('lodf era ', lodf, 'reemplazado a', replacement_value,
+                          'para',branch_names[m], 'ante el disparo de',branch_names[c])
+                    lodf = replacement_value
 
                 elif lodf < -1:
-                    lodf = -1
+                    print('lodf era ', lodf, 'reemplazado a', replacement_value,
+                          'para',branch_names[m], 'ante el disparo de',branch_names[c])
+                    lodf = -replacement_value
 
                 suffix = "{0}_{1} @ {2}_{3}".format(m, branch_names[m], c, branch_names[c])
 
@@ -1312,7 +1316,7 @@ def formulate_objective(solver: pywraplp.Solver,
     f = -weight_power_shift * flow_from_a1_to_a2
 
     f += weight_generation_cost * gen_cost_f
-    # f += weight_generation_delta * delta_slacks
+    f += weight_generation_delta * delta_slacks
     f += weight_overloads * branch_overload
     f += weight_overloads * contingency_branch_overload
     f += weight_overloads * hvdc_overload

@@ -63,7 +63,7 @@ def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
     return H
 
 
-def make_lodf(Cf, Ct, PTDF, correct_values=True, fix_value=0):
+def make_lodf(Cf, Ct, PTDF, correct_values=True, replace_value=0):
     """
     Compute the LODF matrix
     :param Cf: Branch "from" -bus connectivity matrix
@@ -106,11 +106,11 @@ def make_lodf(Cf, Ct, PTDF, correct_values=True, fix_value=0):
     if correct_values:
         i1, j1 = np.where(LODF > 1)
         for i, j in zip(i1, j1):
-            LODF[i, j] = fix_value
+            LODF[i, j] = replace_value
 
         i2, j2 = np.where(LODF < -1)
         for i, j in zip(i2, j2):
-            LODF[i, j] = -fix_value
+            LODF[i, j] = -replace_value
 
     return LODF
 
