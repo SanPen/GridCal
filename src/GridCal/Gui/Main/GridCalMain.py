@@ -159,7 +159,7 @@ class MainGUI(QMainWindow):
         self.ui.transferMethodComboBox.setCurrentIndex(1)
 
         self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
-                                    '.dgs', '.m', '.raw', '.RAW', '.json', '.xml',
+                                    '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.rawx',
                                     '.zip', '.dpx', '.epc']
 
         # ptdf grouping modes
@@ -1124,7 +1124,7 @@ class MainGUI(QMainWindow):
         """
 
         files_types = "Formats (*.gridcal *.gch5 *.xlsx *.xls *.sqlite *.dgs " \
-                      "*.m *.raw *.RAW *.json *.xml *.zip *.dpx *.epc)"
+                      "*.m *.raw *.RAW *.rawx *.json *.xml *.zip *.dpx *.epc)"
         # files_types = ''
         # call dialog to select the file
 
@@ -1350,6 +1350,7 @@ class MainGUI(QMainWindow):
                       "Excel (*.xlsx);;" \
                       "CIM (*.xml);;" \
                       "Json (*.json);;" \
+                      "Rawx (*.rawx);;" \
                       "Sqlite (*.sqlite)"
 
         # call dialog to select the file
@@ -1383,6 +1384,7 @@ class MainGUI(QMainWindow):
                 extension['CIM (*.xml)'] = '.xml'
                 extension['JSON (*.json)'] = '.json'
                 extension['GridCal zip (*.gridcal)'] = '.gridcal'
+                extension['PSSe rawx (*.rawx)'] = '.rawx'
                 extension['GridCal HDF5 (*.gch5)'] = '.gch5'
                 extension['Sqlite (*.sqlite)'] = '.sqlite'
 

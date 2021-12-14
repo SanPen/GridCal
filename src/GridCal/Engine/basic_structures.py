@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Any
+from typing import List, Any, Dict
 from enum import Enum
 import pandas as pd
 import numpy as np
@@ -894,14 +894,26 @@ class ConvergenceReport:
         return df
 
 
+def get_list_dim(a):
+    if not type(a) == list:
+        return []
+    return [len(a)] + get_list_dim(a[0])
+
 
 class CompressedJsonStruct:
     """
     Compressed json block
     """
     def __init__(self, fields: List[str] = None, data: List[Any] = None):
-        self.__fields: List[str] = list() if fields is None else fields
+        self.__fields: List[str] = list()
         self.__data: List[Any] = list() if data is None else data
+
+        if fields is not None:
+            self.__fields = fields
+
+        if data is not None:
+            self.set_data(data)
+
         self.__fields_pos_dict: Dict[str, int] = self.get_position_dict()
 
     def get_position_dict(self):
@@ -917,7 +929,18 @@ class CompressedJsonStruct:
         self.__fields_pos_dict = self.get_position_dict()
 
     def set_data(self, dta: List[Any]):
-        self.__data = dta
+
+        dim = get_list_dim(dta)
+
+        if dim == 2:
+            self.__data = dta
+        elif dim == 1:
+            self.__data = [dta]
+        else:
+            raise Exception('The list has the wrong number of dimensions: ' + str(dim))
+
+        if len(self.__data[0]) != len(self.__fields):
+            raise Exception("Data length does not match the fields length")
 
     def get_data(self):
         return self.__data
@@ -929,7 +952,8 @@ class CompressedJsonStruct:
         return self.__fields_pos_dict[prop]
 
     def get_final_dict(self):
-        return {'fields': self.__fields, 'data': self.__data}
+        return {'fields': self.__fields,
+                'data': self.__data[0] if len(self.__data) == 1 else self.__data}
 
     def get_dict_at(self, i):
         return {f: val for f, val in zip(self.__fields, self.__data[i])}

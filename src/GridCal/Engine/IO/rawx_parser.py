@@ -20,6 +20,7 @@ import GridCal.Engine.Devices as dev
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 def parse_circuit(circuit: MultiCircuit, block: CompressedJsonStruct):
     """
 
@@ -50,6 +51,7 @@ def get_circuit_block(circuit: MultiCircuit, fields) -> CompressedJsonStruct:
     return block
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 def parse_buses(circuit: MultiCircuit, block: CompressedJsonStruct) -> Dict[int, Any]:
     """
 
@@ -118,6 +120,7 @@ def get_buses_block(circuit: MultiCircuit, fields) -> CompressedJsonStruct:
     return block
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 def get_loads_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, int]) -> CompressedJsonStruct:
     """
 
@@ -128,13 +131,9 @@ def get_loads_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, int])
     """
     block = CompressedJsonStruct(fields=fields)
     block.declare_n_entries(circuit.get_bus_number())
-
+    i = 0
     for k, bus in enumerate(circuit.get_buses()):
-
-        i = 0
         for k2, elm in enumerate(bus.loads):
-            # ["ibus", "loadid", "stat", "area", "zone", "pl", "ql", "ip", "iq", "yp", "yq",
-            # "owner", "scale", "intrpt", "dgenp", "dgenq", "dgenm", "loadtype"]
 
             block.set_at(i, "ibus", rev_bus_dict[elm.bus])
             block.set_at(i,  "loadid", k2 + 1)
@@ -168,7 +167,9 @@ def parse_loads(circuit: MultiCircuit, block: CompressedJsonStruct, buses_dict: 
     :param buses_dict:
     :return:
     """
-    # ["ibus", "loadid", "stat", "area", "zone", "pl", "ql", "ip", "iq", "yp", "yq", "owner", "scale", "intrpt", "dgenp", "dgenq", "dgenm", "loadtype"]
+
+    # ["ibus", "loadid", "stat", "area", "zone", "pl", "ql", "ip", "iq", "yp", "yq",
+    # "owner", "scale", "intrpt", "dgenp", "dgenq", "dgenm", "loadtype"]
 
     for i in range(block.get_row_number()):
         data = block.get_dict_at(i)
@@ -191,6 +192,69 @@ def parse_loads(circuit: MultiCircuit, block: CompressedJsonStruct, buses_dict: 
         circuit.add_load(elm.bus, elm)
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+def get_fixed_shunts_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, int]) -> CompressedJsonStruct:
+    """
+
+    :param circuit:
+    :param fields:
+    :param rev_bus_dict: dictionary of buses and their assigned psse number
+    :return:
+    """
+    block = CompressedJsonStruct(fields=fields)
+
+    n = 0
+    for k, bus in enumerate(circuit.get_buses()):
+        for k2, elm in enumerate(bus.shunts):
+            if not elm.is_controlled:
+                n += 1
+
+    block.declare_n_entries(n)
+
+    # "ibus", "shntid", "stat", "gl", "bl"
+    i = 0
+    for k, bus in enumerate(circuit.get_buses()):
+        for k2, elm in enumerate(bus.shunts):
+
+            if not elm.is_controlled:
+                block.set_at(i, "ibus", rev_bus_dict[elm.bus])
+                block.set_at(i,  "shntid", k2 + 1)
+                block.set_at(i,  "stat", int(elm.active))
+                block.set_at(i,  "gl", elm.G)
+                block.set_at(i,  "bl", elm.B)
+
+                i += 1
+
+    return block
+
+
+def parse_fixed_shunts(circuit: MultiCircuit, block: CompressedJsonStruct, buses_dict: Dict[int, Any]):
+    """
+
+    :param circuit:
+    :param block:
+    :param buses_dict:
+    :return:
+    """
+
+    # "ibus", "shntid", "stat", "gl", "bl"
+
+    for i in range(block.get_row_number()):
+        data = block.get_dict_at(i)
+
+        elm = dev.Load()
+
+        elm.bus = buses_dict[data['ibus']]
+        elm.code = "{0}_{1}".format(elm.bus.code, data['shntid'])
+        elm.active = bool(data['stat'])
+        elm.is_controlled = False
+        elm.G = data['gl']
+        elm.B = data['bl']
+
+        circuit.add_shunt(elm.bus, elm)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 def get_generators_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, int]) -> CompressedJsonStruct:
     """
 
@@ -276,7 +340,7 @@ def parse_generators(circuit: MultiCircuit, block: CompressedJsonStruct, buses_d
         circuit.add_generator(elm.bus, elm)
 
 
-
+# ----------------------------------------------------------------------------------------------------------------------
 
 
 def get_rawx_structure():
@@ -353,16 +417,22 @@ def rawx_parse(fname: str) -> [MultiCircuit, Logger]:
 
             elif entry == 'general':
                 pass
+
             elif entry == 'gauss':
                 pass
+
             elif entry == 'newton':
                 pass
+
             elif entry == 'adjust':
                 pass
+
             elif entry == 'tysl':
                 pass
+
             elif entry == 'rating':
                 pass
+
             elif entry == 'bus':
                 bus_dict = parse_buses(circuit=circuit, block=block)
 
@@ -370,57 +440,80 @@ def rawx_parse(fname: str) -> [MultiCircuit, Logger]:
                 parse_loads(circuit=circuit, block=block, buses_dict=bus_dict)
 
             elif entry == 'fixshunt':
-                pass
+                parse_fixed_shunts(circuit=circuit, block=block, buses_dict=bus_dict)
 
             elif entry == 'generator':
                 parse_generators(circuit=circuit, block=block, buses_dict=bus_dict)
 
             elif entry == 'acline':
                 pass
+
             elif entry == 'sysswd':
                 pass
+
             elif entry == 'transformer':
                 pass
+
             elif entry == 'area':
                 pass
+
             elif entry == 'twotermdc':
                 pass
+
             elif entry == 'vscdc':
                 pass
+
             elif entry == 'impcor':
                 pass
+
             elif entry == 'ntermdc':
                 pass
+
             elif entry == 'ntermdcconv':
                 pass
+
             elif entry == 'ntermdcbus':
                 pass
+
             elif entry == 'ntermdclink':
                 pass
+
             elif entry == 'msline':
                 pass
+
             elif entry == 'zone':
                 pass
+
             elif entry == 'iatrans':
                 pass
+
             elif entry == 'owner':
                 pass
+
             elif entry == 'facts':
                 pass
+
             elif entry == 'swshunt':
                 pass
+
             elif entry == 'gne':
                 pass
+
             elif entry == 'indmach':
                 pass
+
             elif entry == 'sub':
                 pass
+
             elif entry == 'subnode':
                 pass
+
             elif entry == 'subswd':
                 pass
+
             elif entry == 'subterm':
                 pass
+
             else:
                 logger.add_warning('Unkown rawx structure ' + entry)
 
@@ -452,15 +545,25 @@ def rawx_writer(fname: str, circuit: MultiCircuit) -> Logger:
             data[entry] = get_circuit_block(circuit=circuit, fields=fields).get_final_dict()
 
         elif entry == 'general':
-            pass
+            # this is fixed
+            data[entry].set_data([0.0001, 0.7, 5.0, 4, 20, 0])
+
         elif entry == 'gauss':
-            pass
+            # this is fixed
+            data[entry].set_data([100, 1.6, 1.6, 1.0, 0.0001])
+
         elif entry == 'newton':
-            pass
+            # this is fixed
+            data[entry].set_data([100, 0.25, 0.01, 0.1, 0.00001, 0.99, 0.99])
+
         elif entry == 'adjust':
-            pass
+            # this is fixed
+            data[entry].set_data([0.005, 1.0, 0.05, 100.0, 99, 10])
+
         elif entry == 'tysl':
-            pass
+            # this is fixed
+            data[entry].set_data([20, 1.0, 0.00001])
+
         elif entry == 'rating':
 
             # this is fixed
@@ -485,56 +588,80 @@ def rawx_writer(fname: str, circuit: MultiCircuit) -> Logger:
             data[entry] = get_loads_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict).get_final_dict()
 
         elif entry == 'fixshunt':
-            pass
+            data[entry] = get_fixed_shunts_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict).get_final_dict()
+
         elif entry == 'generator':
             data[entry] = get_generators_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict).get_final_dict()
 
         elif entry == 'acline':
             pass
+
         elif entry == 'sysswd':
             pass
+
         elif entry == 'transformer':
             pass
+
         elif entry == 'area':
             pass
+
         elif entry == 'twotermdc':
             pass
+
         elif entry == 'vscdc':
             pass
+
         elif entry == 'impcor':
             pass
+
         elif entry == 'ntermdc':
             pass
+
         elif entry == 'ntermdcconv':
             pass
+
         elif entry == 'ntermdcbus':
             pass
+
         elif entry == 'ntermdclink':
             pass
+
         elif entry == 'msline':
             pass
+
         elif entry == 'zone':
             pass
+
         elif entry == 'iatrans':
             pass
+
         elif entry == 'owner':
             pass
+
         elif entry == 'facts':
             pass
+
         elif entry == 'swshunt':
             pass
+
         elif entry == 'gne':
             pass
+
         elif entry == 'indmach':
             pass
+
         elif entry == 'sub':
             pass
+
         elif entry == 'subnode':
             pass
+
         elif entry == 'subswd':
             pass
+
         elif entry == 'subterm':
             pass
+
         else:
             logger.add_warning('Unkown rawx structure ' + entry)
 
