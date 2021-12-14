@@ -250,7 +250,7 @@ class Bus(EditableDevice):
         else:
             raise Exception('Device type not understood:' + str(device.device_type))
 
-    def determine_bus_type(self):
+    def determine_bus_type(self) -> BusMode:
         """
         Infer the bus type from the devices attached to it
         @return: self.type

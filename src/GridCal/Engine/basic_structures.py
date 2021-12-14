@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List
+from typing import List, Any
 from enum import Enum
 import pandas as pd
 import numpy as np
@@ -892,6 +892,66 @@ class ConvergenceReport:
         df = pd.DataFrame(data)
 
         return df
+
+
+
+class CompressedJsonStruct:
+    """
+    Compressed json block
+    """
+    def __init__(self, fields: List[str] = None, data: List[Any] = None):
+        self.__fields: List[str] = list() if fields is None else fields
+        self.__data: List[Any] = list() if data is None else data
+        self.__fields_pos_dict: Dict[str, int] = self.get_position_dict()
+
+    def get_position_dict(self):
+        return {val: i for i, val in enumerate(self.__fields)}
+
+    def set_fields(self, fields: List[str]):
+        """
+        Set the block fields and initialize the reverse index lookup
+        :param fields: list of property names
+        :return:
+        """
+        self.__fields = fields
+        self.__fields_pos_dict = self.get_position_dict()
+
+    def set_data(self, dta: List[Any]):
+        self.__data = dta
+
+    def get_data(self):
+        return self.__data
+
+    def get_row_number(self):
+        return len(self.__data)
+
+    def get_col_index(self, prop):
+        return self.__fields_pos_dict[prop]
+
+    def get_final_dict(self):
+        return {'fields': self.__fields, 'data': self.__data}
+
+    def get_dict_at(self, i):
+        return {f: val for f, val in zip(self.__fields, self.__data[i])}
+
+    def declare_n_entries(self, n):
+        """
+        Add n entries to the data
+        :param n:
+        :return:
+        """
+        nf = len(self.__fields)
+        self.__data = [[None] * nf for i in range(n)]
+
+    def set_at(self, i, col_name, val):
+        """
+        Set value at a position, counts that the data has been declared
+        :param i: column index (object index)
+        :param col_name: name of the property
+        :param val: value to set
+        """
+        j = self.get_col_index(prop=col_name)
+        self.__data[i][j] = val
 
 
 
