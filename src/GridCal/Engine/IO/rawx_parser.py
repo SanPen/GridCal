@@ -18,6 +18,7 @@ import json
 from GridCal.Engine.basic_structures import Logger, CompressedJsonStruct
 import GridCal.Engine.Devices as dev
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
+from GridCal.Engine.IO.raw_parser import get_psse_transformer_impedances
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -269,7 +270,7 @@ def get_generators_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, 
     for i, elm in enumerate(circuit.get_generators()):
 
         if "_" in elm.code:
-            machine_id = elm.code.split("-")[1]
+            machine_id = elm.code.split("_")[1]
         else:
             machine_id = ""
 
@@ -342,9 +343,328 @@ def parse_generators(circuit: MultiCircuit, block: CompressedJsonStruct, buses_d
 
 # ----------------------------------------------------------------------------------------------------------------------
 
+def get_lines_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, int]) -> CompressedJsonStruct:
+    """
+
+    :param circuit:
+    :param fields:
+    :param rev_bus_dict:
+    :return:
+    """
+    block = CompressedJsonStruct(fields=fields)
+    block.declare_n_entries(circuit.get_bus_number())
+
+    for i, elm in enumerate(circuit.get_lines()):
+
+        if "_" in elm.code:
+            ckt = elm.code.split("_")[2]
+        else:
+            ckt = "1"
+
+        block.set_at(i,  "ibus", rev_bus_dict[elm.bus_from])
+        block.set_at(i,   "jbus", rev_bus_dict[elm.bus_to])
+        block.set_at(i,   "ckt", ckt)
+        block.set_at(i,   "rpu", elm.R)
+        block.set_at(i,   "xpu", elm.X)
+        block.set_at(i,   "bpu", elm.B)
+        block.set_at(i,   "name", elm.name)
+        block.set_at(i,   "rate1", elm.rate)
+        block.set_at(i,   "rate2", elm.rate * elm.contingency_factor)
+        block.set_at(i,   "rate3", elm.rate)
+        block.set_at(i,   "rate4", elm.rate)
+        block.set_at(i,   "rate5", elm.rate)
+        block.set_at(i,   "rate6", elm.rate)
+        block.set_at(i,   "rate7", elm.rate)
+        block.set_at(i,   "rate8", elm.rate)
+        block.set_at(i,   "rate9", elm.rate)
+        block.set_at(i,   "rate10", elm.rate)
+        block.set_at(i,   "rate11", elm.rate)
+        block.set_at(i,   "rate12", elm.rate)
+        block.set_at(i,   "gi", 0)
+        block.set_at(i,   "bi", 0)
+        block.set_at(i,   "gj", 0)
+        block.set_at(i,   "bj", 0)
+        block.set_at(i,   "stat", int(elm.active))
+        block.set_at(i,   "met", None)
+        block.set_at(i,   "len", elm.length)
+        block.set_at(i,   "o1", None)
+        block.set_at(i,   "f1", None)
+        block.set_at(i,   "o2", None)
+        block.set_at(i,   "f2", None)
+        block.set_at(i,   "o3", None)
+        block.set_at(i,   "f3", None)
+        block.set_at(i,   "o4", None)
+        block.set_at(i,   "f4", None)
+
+        return block
+
+
+def parse_lines(circuit: MultiCircuit, block: CompressedJsonStruct, buses_dict: Dict[int, Any]):
+    """
+
+    :param circuit:
+    :param block:
+    :param buses_dict:
+    :return:
+    """
+    # "ibus", "jbus", "ckt", "rpu", "xpu", "bpu", "name",
+    # "rate1", "rate2", "rate3", "rate4", "rate5", "rate6", "rate7", "rate8", "rate9", "rate10", "rate11", "rate12",
+    # "gi", "bi", "gj", "bj", "stat", "met", "len",
+    # "o1", "f1", "o2", "f2", "o3", "f3", "o4", "f4"]
+
+    for i in range(block.get_row_number()):
+        data = block.get_dict_at(i)
+
+        elm = dev.Line()
+        code = "{0}_{1}_{2}".format(elm.bus_from.code, elm.bus_to.code, data['ckt'])
+        elm.bus_from = buses_dict[data['ibus']]
+        elm.bus_to = buses_dict[data['jbus']]
+        elm.active = bool(data['stat'])
+        elm.code = code
+        elm.name = data['name']
+
+        elm.length = data['len']
+
+        elm.rate = data['rate1']
+        if float(data['rate1']) != 0:
+            elm.contingency_factor = float(data['rate1']) / float(data['rate2'])
+
+        elm.R = data['rpu']
+        elm.X = data['xpu']
+        elm.B = data['bpu']
+
+        circuit.add_line(elm)
+
+        # add the lie compensations as shunt devices
+
+        if data['gi'] != 0 or data['bi'] != 0:
+            sh1 = dev.Shunt(name='Line compensation', code=code, G=data['gi'], B=data['bi'])
+            circuit.add_shunt(elm.bus_from, sh1)
+
+        if data['gj'] != 0 or data['bj'] != 0:
+            sh1 = dev.Shunt(name='Line compensation', code=code, G=data['gj'], B=data['bj'])
+            circuit.add_shunt(elm.bus_to, sh1)
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+def get_transformers_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, int]) -> CompressedJsonStruct:
+    """
+
+    :param circuit:
+    :param fields:
+    :param rev_bus_dict:
+    :return:
+    """
+    block = CompressedJsonStruct(fields=fields)
+    block.declare_n_entries(circuit.get_bus_number())
+
+    for i, elm in enumerate(circuit.get_transformers2w()):
+
+        if "_" in elm.code:
+            ckt = elm.code.split("_")[2]
+        else:
+            ckt = "1"
+
+        v1, v2 = elm.get_from_to_nominal_voltages()
+
+        block.set_at(i,  "ibus", rev_bus_dict[elm.bus_from])
+        block.set_at(i,   "jbus", rev_bus_dict[elm.bus_to])
+        block.set_at(i,   "kbus", 0)
+        block.set_at(i,   "ckt", str(ckt))
+        block.set_at(i,   "cw", 1)
+        block.set_at(i,   "cz", 1)
+        block.set_at(i,   "cm", 1)
+        block.set_at(i,   "mag1", 0)
+        block.set_at(i,   "mag2", 0)
+        block.set_at(i,   "nmet", 2)
+        block.set_at(i,   "name", elm.name)
+        block.set_at(i,   "stat", int(elm.active))
+        block.set_at(i,   "o1", None)
+        block.set_at(i,   "f1", None)
+        block.set_at(i,   "o2", None)
+        block.set_at(i,   "f2", None)
+        block.set_at(i,   "o3", None)
+        block.set_at(i,   "f3", None)
+        block.set_at(i,   "o4", None)
+        block.set_at(i,   "f4", None)
+        block.set_at(i,   "vecgrp", "")
+        block.set_at(i,   "zcod", None)
+        block.set_at(i,   "r1_2", elm.R)
+        block.set_at(i,   "x1_2", elm.X)
+        block.set_at(i,   "sbase1_2", 100)
+        block.set_at(i,   "r2_3", 0)
+        block.set_at(i,   "x2_3", 0)
+        block.set_at(i,   "sbase2_3", 0)
+        block.set_at(i,   "r3_1", 0)
+        block.set_at(i,   "x3_1", 0)
+        block.set_at(i,   "sbase3_1", 0)
+        block.set_at(i,   "vmstar", 0)
+        block.set_at(i,   "anstar", 0)
+        block.set_at(i,   "windv1", elm.tap_module)
+        block.set_at(i,   "nomv1", 1.0)
+        block.set_at(i,   "ang1", elm.angle)
+        block.set_at(i,   "wdg1rate1", elm.rate)
+        block.set_at(i,   "wdg1rate2", elm.rate)
+        block.set_at(i,   "wdg1rate3", elm.rate)
+        block.set_at(i,   "wdg1rate4", elm.rate)
+        block.set_at(i,   "wdg1rate5", elm.rate)
+        block.set_at(i,   "wdg1rate6", elm.rate)
+        block.set_at(i,   "wdg1rate7", elm.rate)
+        block.set_at(i,   "wdg1rate8", elm.rate)
+        block.set_at(i,   "wdg1rate9", elm.rate)
+        block.set_at(i,   "wdg1rate10", elm.rate)
+        block.set_at(i,   "wdg1rate11", elm.rate)
+        block.set_at(i,   "wdg1rate12", elm.rate)
+        block.set_at(i,   "cod1", 0)
+        block.set_at(i,   "cont1", 0)
+        block.set_at(i,   "node1", 0)
+        block.set_at(i,   "rma1", elm.tap_module)
+        block.set_at(i,   "rmi1", elm.tap_module)
+        block.set_at(i,   "vma1", 1.1)
+        block.set_at(i,   "vmi1", 0.9)
+        block.set_at(i,   "ntp1", None)
+        block.set_at(i,   "tab1", 0)
+        block.set_at(i,   "cr1", 0)
+        block.set_at(i,   "cx1", 0)
+        block.set_at(i,   "cnxa1", 0)
+        block.set_at(i,   "windv2", 1.0)
+        block.set_at(i,   "nomv2", v2)
+        block.set_at(i,   "ang2", None)
+        block.set_at(i,   "wdg2rate1", None)
+        block.set_at(i,   "wdg2rate2", None)
+        block.set_at(i,   "wdg2rate3", None)
+        block.set_at(i,   "wdg2rate4", None)
+        block.set_at(i,   "wdg2rate5", None)
+        block.set_at(i,   "wdg2rate6", None)
+        block.set_at(i,   "wdg2rate7", None)
+        block.set_at(i,   "wdg2rate8", None)
+        block.set_at(i,   "wdg2rate9", None)
+        block.set_at(i,   "wdg2rate10", None)
+        block.set_at(i,   "wdg2rate11", None)
+        block.set_at(i,   "wdg2rate12", None)
+        block.set_at(i,   "cod2", None)
+        block.set_at(i,   "cont2", None)
+        block.set_at(i,   "node2", None)
+        block.set_at(i,   "rma2", None)
+        block.set_at(i,   "rmi2", None)
+        block.set_at(i,   "vma2", None)
+        block.set_at(i,   "vmi2", None)
+        block.set_at(i,   "ntp2", None)
+        block.set_at(i,   "tab2", None)
+        block.set_at(i,   "cr2", None)
+        block.set_at(i,   "cx2", None)
+        block.set_at(i,   "cnxa2", None)
+        block.set_at(i,   "windv3", None)
+        block.set_at(i,   "nomv3", None)
+        block.set_at(i,   "ang3", None)
+        block.set_at(i,   "wdg3rate1", None)
+        block.set_at(i,   "wdg3rate2", None)
+        block.set_at(i,   "wdg3rate3", None)
+        block.set_at(i,   "wdg3rate4", None)
+        block.set_at(i,   "wdg3rate5", None)
+        block.set_at(i,   "wdg3rate6", None)
+        block.set_at(i,   "wdg3rate7", None)
+        block.set_at(i,   "wdg3rate8", None)
+        block.set_at(i,   "wdg3rate9", None)
+        block.set_at(i,   "wdg3rate10", None)
+        block.set_at(i,   "wdg3rate11", None)
+        block.set_at(i,   "wdg3rate12", None)
+        block.set_at(i,   "cod3", None)
+        block.set_at(i,   "cont3", None)
+        block.set_at(i,   "node3", None)
+        block.set_at(i,   "rma3", None)
+        block.set_at(i,   "rmi3", None)
+        block.set_at(i,   "vma3", None)
+        block.set_at(i,   "vmi3", None)
+        block.set_at(i,   "ntp3", None)
+        block.set_at(i,   "tab3", None)
+        block.set_at(i,   "cr3", None)
+        block.set_at(i,   "cx3", None)
+        block.set_at(i,   "cnxa3", None)
+
+        return block
+
+
+def parse_transformers(circuit: MultiCircuit, block: CompressedJsonStruct, buses_dict: Dict[int, Any], logger=Logger()):
+    """
+
+    :param circuit:
+    :param block:
+    :param buses_dict:
+    :return:
+    """
+    # ibus	 "jbus"	 "kbus"	 "ckt"	 "cw"	 "cz"	 "cm"	 "mag1"	 "mag2"	 "nmet"
+    # "name"	 "stat"	 "o1"	 "f1"	 "o2"	 "f2"	 "o3"	 "f3"	 "o4"	 "f4"
+    # "vecgrp"	 "zcod"	 "r1_2"	 "x1_2"
+    # "sbase1_2"	 "r2_3"	 "x2_3"	 "sbase2_3"
+    # "r3_1"	 "x3_1"	 "sbase3_1"
+    # "vmstar"	 "anstar"	 "windv1"
+    # "nomv1"	 "ang1"
+    # "wdg1rate1"	 "wdg1rate2"	 "wdg1rate3"	 "wdg1rate4"	 "wdg1rate5"	 "wdg1rate6"
+    # "wdg1rate7"	 "wdg1rate8"	 "wdg1rate9"	 "wdg1rate10"	 "wdg1rate11"	 "wdg1rate12"
+    # "cod1"	 "cont1"	 "node1"	 "rma1"	 "rmi1"	 "vma1"	 "vmi1"	 "ntp1"
+    # "tab1"	 "cr1"	 "cx1"	 "cnxa1"	 "windv2"	 "nomv2"	 "ang2"
+    # "wdg2rate1"	 "wdg2rate2"	 "wdg2rate3"	 "wdg2rate4"	 "wdg2rate5"	 "wdg2rate6"
+    # "wdg2rate7"	 "wdg2rate8"	 "wdg2rate9"	 "wdg2rate10"	 "wdg2rate11"	 "wdg2rate12"
+    # "cod2"	 "cont2"	 "node2"	 "rma2"	 "rmi2"	 "vma2"	 "vmi2"	 "ntp2"
+    # "tab2"	 "cr2"	 "cx2"	 "cnxa2"	 "windv3"	 "nomv3"	 "ang3"
+    # "wdg3rate1"	 "wdg3rate2"	 "wdg3rate3"	 "wdg3rate4"	 "wdg3rate5"	 "wdg3rate6"
+    # "wdg3rate7"	 "wdg3rate8"	 "wdg3rate9"	 "wdg3rate10"	 "wdg3rate11"	 "wdg3rate12"
+    # "cod3"	 "cont3"	 "node3"	 "rma3"	 "rmi3"	 "vma3"	 "vmi3"	 "ntp3"
+    # "tab3"	 "cr3"	 "cx3"	 "cnxa3"
+
+    for i in range(block.get_row_number()):
+        data = block.get_dict_at(i)
+
+        elm = dev.Transformer2W()
+        code = "{0}_{1}_{2}".format(elm.bus_from.code, elm.bus_to.code, data['ckt'])
+        elm.bus_from = buses_dict[data['ibus']]
+        elm.bus_to = buses_dict[data['jbus']]
+        elm.active = bool(data['stat'])
+        elm.code = code
+        elm.name = data['name']
+
+        r, x, g, b, tap_mod, tap_angle = get_psse_transformer_impedances(CW=data['cw'],
+                                                                         CZ=data['cz'],
+                                                                         CM=data['cm'],
+                                                                         V1=elm.bus_from.Vnom,
+                                                                         V2=elm.bus_to.Vnom,
+                                                                         sbase=100,
+                                                                         logger=logger,
+                                                                         code=code,
+                                                                         MAG1=data['mag1'],
+                                                                         MAG2=data['mag2'],
+                                                                         WINDV1=data['windv1'],
+                                                                         WINDV2=data['windv2'],
+                                                                         ANG1=data['ang1'],
+                                                                         NOMV1=data['nomv1'],
+                                                                         NOMV2=data['nomv2'],
+                                                                         R1_2=data['r1_2'],
+                                                                         X1_2=data['x1_2'],
+                                                                         SBASE1_2=data['sbase1_2'])
+
+        elm.rate = data['rate1']
+        if float(data['rate1']) != 0:
+            elm.contingency_factor = float(data['rate1']) / float(data['rate2'])
+
+        elm.R = r
+        elm.X = x
+        elm.G = g
+        elm.B = b
+        elm.angle = tap_angle
+        elm.tap_module = tap_mod
+
+        circuit.add_transformer2w(elm)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+
 
 def get_rawx_structure():
-
+    """
+    This enumerates the expected structures inside the rawx JSON structure
+    :return: dictionary {key: list of properties}
+    """
     return {'caseid': ["ic", "sbase", "rev", "xfrrat", "nxfrat", "basfrq", "title1", "title2"],
             'general': ["thrshz", "pqbrak", "blowup", "maxisollvls", "camaxreptsln", "chkdupcntlbl"],
             'gauss': ["itmx", "accp", "accq", "accm", "tol"],
@@ -381,14 +701,14 @@ def get_rawx_structure():
             'subterm': ["isub", "inode", "type", "eqid", "ibus", "jbus", "kbus"]}
 
 
-def rawx_parse(fname: str) -> [MultiCircuit, Logger]:
+def rawx_parse(file_name: str) -> [MultiCircuit, Logger]:
     """
-
-    :param fname:
-    :return:
+    Parse a rawx file from PSSe
+    :param file_name: file name
+    :return: [MultiCircuit, Logger] instances
     """
     # read json file into dictionary
-    data = json.load(open(fname))
+    data = json.load(open(file_name))
 
     # get structures
     struct = get_rawx_structure()
@@ -446,13 +766,13 @@ def rawx_parse(fname: str) -> [MultiCircuit, Logger]:
                 parse_generators(circuit=circuit, block=block, buses_dict=bus_dict)
 
             elif entry == 'acline':
-                pass
+                parse_lines(circuit=circuit, block=block, buses_dict=bus_dict)
 
             elif entry == 'sysswd':
                 pass
 
             elif entry == 'transformer':
-                pass
+                parse_transformers(circuit=circuit, block=block, buses_dict=bus_dict)
 
             elif entry == 'area':
                 pass
@@ -523,10 +843,10 @@ def rawx_parse(fname: str) -> [MultiCircuit, Logger]:
     return circuit, logger
 
 
-def rawx_writer(fname: str, circuit: MultiCircuit) -> Logger:
+def rawx_writer(file_name: str, circuit: MultiCircuit) -> Logger:
     """
     RAWx export
-    :param fname: file name to save to
+    :param file_name: file name to save to
     :param circuit: MultiCircuit instance
     :return: Logger instance
     """
@@ -594,13 +914,13 @@ def rawx_writer(fname: str, circuit: MultiCircuit) -> Logger:
             data[entry] = get_generators_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict).get_final_dict()
 
         elif entry == 'acline':
-            pass
+            data[entry] = get_lines_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict).get_final_dict()
 
         elif entry == 'sysswd':
             pass
 
         elif entry == 'transformer':
-            pass
+            data[entry] = get_transformers_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict).get_final_dict()
 
         elif entry == 'area':
             pass
@@ -667,7 +987,7 @@ def rawx_writer(fname: str, circuit: MultiCircuit) -> Logger:
 
     # save the data into a file
     rawx = {'network': data}
-    with open(fname, 'w') as fp:
+    with open(file_name, 'w') as fp:
         fp.write(json.dumps(rawx, indent=True))
 
     return logger

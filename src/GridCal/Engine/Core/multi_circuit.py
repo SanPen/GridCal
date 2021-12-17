@@ -348,6 +348,27 @@ class MultiCircuit:
         """
         return self.get_branches_wo_hvdc() + self.hvdc_lines
 
+    def get_lines(self) -> List[Line]:
+        return self.lines
+
+    def get_transformers2w(self) -> List[Transformer2W]:
+        return self.transformers2w
+
+    def get_vsc(self) -> List[VSC]:
+        return self.vsc_devices
+
+    def get_dc_lines(self) -> List[DcLine]:
+        return self.dc_lines
+
+    def get_upfc(self) -> List[UPFC]:
+        return self.upfc_devices
+
+    def get_switches(self) -> List[Switch]:
+        return self.switch_devices
+
+    def get_hvdc(self) -> List[HvdcLine]:
+        return self.hvdc_lines
+
     def get_loads(self) -> List[Load]:
         """
         Returns a list of :ref:`Load<load>` objects in the grid.
