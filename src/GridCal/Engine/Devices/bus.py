@@ -562,10 +562,10 @@ class Bus(EditableDevice):
                     'lat': self.latitude,
                     'lon': self.longitude,
                     'alt': 0.0,
-                    'country': self.country.idtag,
-                    'area': self.area.idtag,
-                    'zone': self.zone.idtag,
-                    'substation': self.substation.idtag
+                    'country': self.country.idtag if self.country is not None else "",
+                    'area': self.area.idtag if self.area is not None else "",
+                    'zone': self.zone.idtag if self.zone is not None else "",
+                    'substation': self.substation.idtag if self.substation is not None else ""
                     }
         else:
             return dict()

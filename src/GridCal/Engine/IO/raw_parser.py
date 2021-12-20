@@ -1226,13 +1226,6 @@ class PSSeTransformer:
             code = str(self.I) + '_' + str(self.J) + '_' + str(self.CKT)
             code = code.strip().replace("'", "")
 
-            r, x, g, b, tap_mod, tap_angle = get_psse_transformer_impedances(self.CW, self.CZ, self.CM,
-                                                                             bus_to.Vnom, bus_from.Vnom,
-                                                                             sbase, logger, code,
-                                                                             self.MAG1, self.MAG2, self.WINDV1, self.WINDV2,
-                                                                             self.ANG1, self.NOMV1, self.NOMV2,
-                                                                             self.R1_2, self.X1_2, self.SBASE1_2)
-
             """            
             PSS/e's randomness:            
             """
@@ -1248,6 +1241,14 @@ class PSSeTransformer:
                 V2 = self.NOMV2
 
             contingency_factor = self.RATB1 / self.RATA1 if self.RATA1 > 0.0 else 1.0
+
+            r, x, g, b, tap_mod, tap_angle = get_psse_transformer_impedances(self.CW, self.CZ, self.CM,
+                                                                             V1, V2,
+                                                                             sbase, logger, code,
+                                                                             self.MAG1, self.MAG2, self.WINDV1,
+                                                                             self.WINDV2,
+                                                                             self.ANG1, self.NOMV1, self.NOMV2,
+                                                                             self.R1_2, self.X1_2, self.SBASE1_2)
 
             elm = Transformer2W(bus_from=bus_from,
                                 bus_to=bus_to,
