@@ -18,6 +18,7 @@ import numpy as np
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
+import GridCal.Engine.basic_structures as bs
 
 
 class DummySignal:
@@ -34,7 +35,12 @@ class DriverTemplate:
     tpe = SimulationTypes.TemplateDriver
     name = 'Template'
 
-    def __init__(self, grid: MultiCircuit):
+    def __init__(self, grid: MultiCircuit, engine: bs.EngineType = bs.EngineType.GridCal):
+        """
+
+        :param grid:
+        :param engine:
+        """
         self.progress_signal = DummySignal()
         self.progress_text = DummySignal(str)
         self.done_signal = DummySignal()
@@ -42,6 +48,8 @@ class DriverTemplate:
         self.grid = grid
 
         self.results = None
+
+        self.engine = engine
 
         self.elapsed = 0
 

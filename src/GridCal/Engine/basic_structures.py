@@ -291,6 +291,25 @@ class SyncIssueType(Enum):
             return s
 
 
+class EngineType(Enum):
+    GridCal = 'GridCal'
+    Bentayga = 'Bentayga'
+    Newton = 'NewtonNative'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return EngineType[s]
+        except KeyError:
+            return s
+
+
 class CDF:
     """
     Inverse Cumulative density function of a given array of data

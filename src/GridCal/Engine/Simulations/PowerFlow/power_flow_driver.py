@@ -21,6 +21,9 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
+from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE, to_newton_native, newton_power_flow
+from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
+import GridCal.Engine.basic_structures as bs
 
 
 class PowerFlowDriver(DriverTemplate):
@@ -30,8 +33,8 @@ class PowerFlowDriver(DriverTemplate):
     """
     Power flow wrapper to use with Qt
     """
-
-    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, opf_results: "OptimalPowerFlowResults" = None):
+    def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, opf_results: "OptimalPowerFlowResults" = None,
+                 engine: bs.EngineType = bs.EngineType.GridCal):
         """
         PowerFlowDriver class constructor
         :param grid: MultiCircuit instance
@@ -39,7 +42,7 @@ class PowerFlowDriver(DriverTemplate):
         :param opf_results: OptimalPowerFlowResults instance
         """
 
-        DriverTemplate.__init__(self, grid=grid)
+        DriverTemplate.__init__(self, grid=grid, engine=engine)
 
         # Options to use
         self.options = options
@@ -68,9 +71,48 @@ class PowerFlowDriver(DriverTemplate):
         Pack run_pf for the QThread
         :return:
         """
-        self.results = multi_island_pf(multi_circuit=self.grid,
-                                       options=self.options,
-                                       opf_results=self.opf_results,
-                                       logger=self.logger)
-        self.convergence_reports = self.results.convergence_reports
 
+        if self.engine == bs.EngineType.Newton and not NEWTON_AVAILBALE:
+            self.engine = bs.EngineType.GridCal
+            self.logger.add_warning('Failed back to GridCal')
+
+        if self.engine == bs.EngineType.Bentayga and not BENTAYGA_AVAILABLE:
+            self.engine = bs.EngineType.GridCal
+            self.logger.add_warning('Failed back to GridCal')
+
+        if self.engine == bs.EngineType.GridCal:
+            self.results = multi_island_pf(multi_circuit=self.grid,
+                                           options=self.options,
+                                           opf_results=self.opf_results,
+                                           logger=self.logger)
+            self.convergence_reports = self.results.convergence_reports
+
+        elif self.engine == bs.EngineType.Newton:
+
+            nc = to_newton_native(self.grid)
+            res = newton_power_flow(nc, self.options)
+
+            self.results = PowerFlowResults(n=nc.bus_data.active.shape[0],
+                                            m=nc.branch_data.active.shape[0],
+                                            n_tr=nc.transformer_data.active.shape[0],
+                                            n_hvdc=nc.transformer_data.active.shape[0],
+                                            bus_names=nc.bus_data.names,
+                                            branch_names=nc.branch_data.names,
+                                            transformer_names=nc.transformer_data.names,
+                                            hvdc_names=nc.hvdc_data.names,
+                                            bus_types=nc.bus_data.types)
+
+            self.results.voltage = res.voltage
+            self.results.Sbus = res.Sbus
+            self.results.Sf = res.Sf
+            self.results.St = res.St
+            self.results.loading = res.Loading
+            self.results.losses = res.Losses
+            self.results.Vbranch = res.VBranch
+
+
+        elif self.engine == bs.EngineType.Bentayga:
+            pass
+
+        else:
+            raise Exception('Engine ' + self.engine.value + ' not implemented for ' + self.name)

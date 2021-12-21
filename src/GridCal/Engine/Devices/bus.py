@@ -389,6 +389,27 @@ class Bus(EditableDevice):
 
         return Qmin, Qmax
 
+    def get_voltage_guess(self, logger=None):
+        """
+        Determine the voltage initial guess
+        :param logger: Logger object
+        :return: voltage guess
+        """
+        vm = 1.0
+        va = 0.0
+        v = complex(1, 0)
+
+        for lst in [self.controlled_generators, self.batteries]:
+            for elm in lst:
+                if vm == 1.0:
+                    v = complex(elm.Vset, 0)
+                    vm = elm.Vset
+                elif elm.Vset != vm:
+                    if logger is not None:
+                        logger.append('Different set points at ' + self.name + ': ' + str(elm.Vset) + ' !=' + str(v))
+
+        return v
+
     def plot_profiles(self, time_profile, ax_load=None, ax_voltage=None, time_series_driver=None, my_index=0):
         """
         plot the profiles of this bus

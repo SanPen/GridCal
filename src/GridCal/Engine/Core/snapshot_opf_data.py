@@ -17,7 +17,7 @@ from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
-import GridCal.Engine.Core.DataStructures as ds
+import GridCal.Engine.Core.Compilers.circuit_to_data as gc_compiler
 
 
 class SnapshotOpfData(SnapshotData):
@@ -45,10 +45,10 @@ class SnapshotOpfData(SnapshotData):
                               sbase=sbase, ntime=1)
 
         # overwrite with their opf version
-        self.branch_data = ds.BranchOpfData(nbr=self.nbr, nbus=nbus, ntime=self.ntime)
-        self.load_data = ds.LoadOpfData(nload=nload, nbus=nbus, ntime=self.ntime)
-        self.battery_data = ds.BatteryOpfData(nbatt=nbatt, nbus=nbus, ntime=self.ntime)
-        self.generator_data = ds.GeneratorOpfData(ngen=ngen, nbus=nbus, ntime=self.ntime)
+        self.branch_data = gc_compiler.BranchOpfData(nbr=self.nbr, nbus=nbus, ntime=self.ntime)
+        self.load_data = gc_compiler.LoadOpfData(nload=nload, nbus=nbus, ntime=self.ntime)
+        self.battery_data = gc_compiler.BatteryOpfData(nbatt=nbatt, nbus=nbus, ntime=self.ntime)
+        self.generator_data = gc_compiler.GeneratorOpfData(ngen=ngen, nbus=nbus, ntime=self.ntime)
 
     @property
     def battery_pmax(self):
@@ -212,61 +212,61 @@ def compile_snapshot_opf_circuit(circuit: MultiCircuit, apply_temperature=False,
 
     bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
 
-    nc.bus_data = ds.circuit_to_data.get_bus_data(circuit=circuit)
+    nc.bus_data = gc_compiler.get_bus_data(circuit=circuit)
 
-    nc.load_data = ds.circuit_to_data.get_load_data(circuit=circuit,
-                                                    bus_dict=bus_dict,
-                                                    opf=True)
+    nc.load_data = gc_compiler.get_load_data(circuit=circuit,
+                                             bus_dict=bus_dict,
+                                             opf=True)
 
-    nc.static_generator_data = ds.circuit_to_data.get_static_generator_data(circuit=circuit,
-                                                                            bus_dict=bus_dict)
+    nc.static_generator_data = gc_compiler.get_static_generator_data(circuit=circuit,
+                                                                     bus_dict=bus_dict)
 
-    nc.generator_data = ds.circuit_to_data.get_generator_data(circuit=circuit,
-                                                              bus_dict=bus_dict,
-                                                              Vbus=nc.bus_data.Vbus,
-                                                              logger=logger,
-                                                              opf=True)
+    nc.generator_data = gc_compiler.get_generator_data(circuit=circuit,
+                                                       bus_dict=bus_dict,
+                                                       Vbus=nc.bus_data.Vbus,
+                                                       logger=logger,
+                                                       opf=True)
 
-    nc.battery_data = ds.circuit_to_data.get_battery_data(circuit=circuit,
-                                                          bus_dict=bus_dict,
-                                                          Vbus=nc.bus_data.Vbus,
-                                                          logger=logger,
-                                                          opf=True)
+    nc.battery_data = gc_compiler.get_battery_data(circuit=circuit,
+                                                   bus_dict=bus_dict,
+                                                   Vbus=nc.bus_data.Vbus,
+                                                   logger=logger,
+                                                   opf=True)
 
-    nc.shunt_data = ds.circuit_to_data.get_shunt_data(circuit=circuit,
-                                                      bus_dict=bus_dict,
-                                                      Vbus=nc.bus_data.Vbus,
-                                                      logger=logger)
+    nc.shunt_data = gc_compiler.get_shunt_data(circuit=circuit,
+                                               bus_dict=bus_dict,
+                                               Vbus=nc.bus_data.Vbus,
+                                               logger=logger)
 
-    nc.line_data = ds.circuit_to_data.get_line_data(circuit=circuit,
-                                                    bus_dict=bus_dict,
-                                                    apply_temperature=apply_temperature,
-                                                    branch_tolerance_mode=branch_tolerance_mode,)
+    nc.line_data = gc_compiler.get_line_data(circuit=circuit,
+                                             bus_dict=bus_dict,
+                                             apply_temperature=apply_temperature,
+                                             branch_tolerance_mode=branch_tolerance_mode, )
 
-    nc.transformer_data = ds.circuit_to_data.get_transformer_data(circuit=circuit,
-                                                                  bus_dict=bus_dict)
+    nc.transformer_data = gc_compiler.get_transformer_data(circuit=circuit,
+                                                           bus_dict=bus_dict)
 
-    nc.vsc_data = ds.circuit_to_data.get_vsc_data(circuit=circuit,
-                                                  bus_dict=bus_dict)
+    nc.vsc_data = gc_compiler.get_vsc_data(circuit=circuit,
+                                           bus_dict=bus_dict)
 
-    nc.upfc_data = ds.circuit_to_data.get_upfc_data(circuit=circuit,
-                                                    bus_dict=bus_dict)
+    nc.upfc_data = gc_compiler.get_upfc_data(circuit=circuit,
+                                             bus_dict=bus_dict)
 
-    nc.dc_line_data = ds.circuit_to_data.get_dc_line_data(circuit=circuit,
-                                                          bus_dict=bus_dict,
-                                                          apply_temperature=apply_temperature,
-                                                          branch_tolerance_mode=branch_tolerance_mode)
+    nc.dc_line_data = gc_compiler.get_dc_line_data(circuit=circuit,
+                                                   bus_dict=bus_dict,
+                                                   apply_temperature=apply_temperature,
+                                                   branch_tolerance_mode=branch_tolerance_mode)
 
-    nc.branch_data = ds.circuit_to_data.get_branch_data(circuit=circuit,
-                                                        bus_dict=bus_dict,
-                                                        Vbus=nc.bus_data.Vbus,
-                                                        apply_temperature=apply_temperature,
-                                                        branch_tolerance_mode=branch_tolerance_mode,
-                                                        opf=True)
+    nc.branch_data = gc_compiler.get_branch_data(circuit=circuit,
+                                                 bus_dict=bus_dict,
+                                                 Vbus=nc.bus_data.Vbus,
+                                                 apply_temperature=apply_temperature,
+                                                 branch_tolerance_mode=branch_tolerance_mode,
+                                                 opf=True)
 
-    nc.hvdc_data = ds.circuit_to_data.get_hvdc_data(circuit=circuit,
-                                                    bus_dict=bus_dict,
-                                                    bus_types=nc.bus_data.bus_types)
+    nc.hvdc_data = gc_compiler.get_hvdc_data(circuit=circuit,
+                                             bus_dict=bus_dict,
+                                             bus_types=nc.bus_data.bus_types)
 
     nc.consolidate_information()
 

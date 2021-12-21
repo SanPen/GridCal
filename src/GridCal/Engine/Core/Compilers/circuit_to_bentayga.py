@@ -5,12 +5,21 @@ from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Devices.enumerations import ConverterControlType, TransformerControlType
 from GridCal.Engine.Core.DataStructures import *
 
+try:
+    import bentayga as btg
+    BENTAYGA_AVAILABLE = True
+    print('Bentayga v' + btg.get_version())
+except ImportError:
+    BENTAYGA_AVAILABLE = False
+    print('Bentayga is not available')
 
-def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1):
+
+def get_bus_data_ben(circuit: MultiCircuit, time_series=False, ntime=1):
     """
 
     :param circuit:
     :param time_series:
+    :param ntime:
     :return:
     """
     bus_data = BusData(nbus=len(circuit.buses), ntime=ntime)
