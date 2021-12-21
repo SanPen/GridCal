@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
-
+import numpy as np
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import multi_island_pf
@@ -109,7 +109,13 @@ class PowerFlowDriver(DriverTemplate):
             self.results.loading = res.Loading
             self.results.losses = res.Losses
             self.results.Vbranch = res.VBranch
-
+            self.results.F = (nc.Cf * np.arange(nc.Cf.shape[1])).astype(int)
+            self.results.T = (nc.Ct * np.arange(nc.Ct.shape[1])).astype(int)
+            self.results.hvdc_F = (nc.hvdc_data.Cf * np.arange(nc.hvdc_data.Cf.shape[1])).astype(int)
+            self.results.hvdc_T = (nc.hvdc_data.Ct * np.arange(nc.hvdc_data.Ct.shape[1])).astype(int)
+            self.results.bus_area_indices = self.grid.get_bus_area_indices()
+            self.results.area_names = [a.name for a in self.grid.areas]
+            print('newton error:', res.error)
 
         elif self.engine == bs.EngineType.Bentayga:
             pass

@@ -56,7 +56,8 @@ class NumericPowerFlowResults:
 
 class PowerFlowResults(ResultsTemplate):
 
-    def __init__(self, n, m, n_tr, n_hvdc, bus_names, branch_names, transformer_names, hvdc_names, bus_types):
+    def __init__(self, n, m, n_tr, n_hvdc, bus_names, branch_names, transformer_names, hvdc_names, bus_types,
+                 area_names=None):
         """
         A **PowerFlowResults** object is create as an attribute of the
         :ref:`PowerFlowMP<pf_mp>` (as PowerFlowMP.results) when the power flow is run. It
@@ -146,7 +147,7 @@ class PowerFlowResults(ResultsTemplate):
         self.hvdc_F = None
         self.hvdc_T = None
         self.bus_area_indices = None
-        self.area_names = None
+        self.area_names = area_names
 
         self.Sbus = np.zeros(n, dtype=complex)
 
