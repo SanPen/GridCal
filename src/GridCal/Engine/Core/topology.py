@@ -19,7 +19,7 @@ import numba as nb
 from scipy.sparse import csc_matrix, diags
 
 
-def find_islands(adj: csc_matrix):
+def find_islands(adj: csc_matrix, active: np.ndarray):
     """
     Method to get the islands of a graph
     This is the non-recursive version
@@ -41,7 +41,7 @@ def find_islands(adj: csc_matrix):
     for node in range(node_number):
 
         # if the node has not been visited...
-        if not visited[node]:
+        if not visited[node] and active[node]:
 
             # add new island, because the recursive process has already visited all the island connected to v
             # if island_idx >= len(islands):
@@ -73,7 +73,7 @@ def find_islands(adj: csc_matrix):
                     end = adj.indptr[v + 1]
                     for i in range(start, end):
                         k = adj.indices[i]  # get the row index in the CSC scheme
-                        if not visited[k]:
+                        if not visited[k] and active[k]:
                             stack.append(k)
             # ------------------------------------------------------------------------------------------------------
 

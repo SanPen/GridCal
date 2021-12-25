@@ -1378,7 +1378,7 @@ class SnapshotData:
                                     bus_active=self.bus_data.bus_active[:, 0])
 
         # find the matching islands
-        idx_islands = tp.find_islands(A)
+        idx_islands = tp.find_islands(A, active=self.bus_data.bus_active[:, 0])
 
         if len(idx_islands) == 1:
             # numeric_circuit.compute_all()  # compute the internal magnitudes

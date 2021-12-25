@@ -269,7 +269,7 @@ class TimeCircuit(SnapshotData):
                                         bus_active=self.bus_data.bus_active[:, 0])
 
             # find the matching islands
-            idx_islands = tp.find_islands(A)
+            idx_islands = tp.find_islands(A, active=self.bus_data.bus_active[:, 0])
 
             if len(idx_islands) == 1:  # only one state and only one island -> just copy the data
 
@@ -302,7 +302,7 @@ class TimeCircuit(SnapshotData):
                                             bus_active=self.bus_data.bus_active[:, t_array])
 
                 # find the matching islands
-                idx_islands = tp.find_islands(A)
+                idx_islands = tp.find_islands(A, active=self.bus_data.bus_active[:, t_array])
 
                 if len(idx_islands) == 1:  # many time states, one island -> slice only by time ------------------------
 
