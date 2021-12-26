@@ -182,9 +182,6 @@ class MultiCircuit:
         # dictionary of branch objects -> branch indices
         self.branch_dictionary = dict()
 
-        # are there time series??
-        self.has_time_series = False
-
         # names of the buses
         self.bus_names = None
 
@@ -232,6 +229,10 @@ class MultiCircuit:
 
     def __str__(self):
         return str(self.name)
+
+    @property
+    def has_time_series(self):
+        return self.time_profile is not None
 
     def get_bus_number(self):
         """
