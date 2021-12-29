@@ -3,7 +3,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Devices.enumerations import ConverterControlType, TransformerControlType
-from GridCal.Engine.Core.DataStructures import *
+from GridCal.Engine.Devices import *
 
 try:
     import bentayga as btg
@@ -14,163 +14,126 @@ except ImportError:
     print('Bentayga is not available')
 
 
-def get_bus_data_ben(circuit: MultiCircuit, time_series=False, ntime=1):
+def add_btg_buses(circuit: MultiCircuit, btgCircuit: btg.Circuit, time_series: bool, ntime=1):
     """
 
     :param circuit:
-    :param time_series:
+    :param btgCircuit:
     :param ntime:
     :return:
     """
-    bus_data = BusData(nbus=len(circuit.buses), ntime=ntime)
-
     areas_dict = {elm: k for k, elm in enumerate(circuit.areas)}
+    bus_dict = dict()
 
     for i, bus in enumerate(circuit.buses):
 
-        # bus parameters
-        bus_data.bus_names[i] = bus.name
-        bus_data.Vmin[i] = bus.Vmin
-        bus_data.Vmax[i] = bus.Vmax
+        elm = btg.Node(uuid=bus.idtag, name=bus.name, time_steps=ntime,
+                       is_slack=bus.is_slack, is_dc=bus.is_dc,
+                       nominal_voltage=bus.Vnom)
 
-        bus_data.angle_min[i] = bus.angle_min
-        bus_data.angle_max[i] = bus.angle_max
-
-        bus_data.bus_types[i] = bus.determine_bus_type().value
-
-        if bus.area in areas_dict.keys():
-            bus_data.areas[i] = areas_dict[bus.area]
+        if time_series and ntime > 1:
+            elm.active = bus.active_prof.astype(int)
         else:
-            bus_data.areas[i] = 0
+            elm.active = bus.active
 
-        if time_series:
-            bus_data.bus_active[i, :] = bus.active_prof
-            bus_data.bus_types_prof[i, :] = bus.determine_bus_type_prof()
-        else:
-            bus_data.bus_active[i] = bus.active
+        btgCircuit.add_node(elm)
+        bus_dict[elm.uuid] = elm
 
-    return bus_data
+    return bus_dict
 
 
-def get_load_data(circuit: MultiCircuit, bus_dict, opf_results=None, time_series=False, opf=False, ntime=1):
+def add_btg_loads(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_series: bool, ntime=1):
     """
 
     :param circuit:
+    :param btgCircuit:
     :param bus_dict:
-    :param opf_results:
     :param time_series:
-    :param opf:
     :param ntime:
     :return:
     """
 
     devices = circuit.get_loads()
-
-    if opf:
-        data = LoadOpfData(nload=len(devices), nbus=len(circuit.buses), ntime=ntime)
-    else:
-        data = LoadData(nload=len(devices), nbus=len(circuit.buses), ntime=ntime)
-
     for k, elm in enumerate(devices):
 
-        i = bus_dict[elm.bus]
-
-        data.load_names[k] = elm.name
-        data.load_active[k] = elm.active
+        load = btg.Load(uuid=elm.idtag,
+                        name=elm.name,
+                        bus=bus_dict[elm.bus.idtag],
+                        time_steps=ntime,
+                        P0=elm.P,
+                        Q0=elm.Q)
 
         if time_series:
-            data.load_s[k, :] = elm.P_prof + 1j * elm.Q_prof
-
-            if opf:
-                data.load_cost[k, :] = elm.Cost_prof
-
-            if opf_results is not None:
-                data.load_s[k, :] -= opf_results.load_shedding[:, k]
-
+            load.active = elm.active_prof
+            load.P = elm.P_prof
+            load.Q = elm.Q_prof
         else:
-            data.load_s[k] = complex(elm.P, elm.Q)
+            load.active = elm.active
 
-            if opf:
-                data.load_cost[k] = elm.Cost
-
-            if opf_results is not None:
-                data.load_s[k] -= opf_results.load_shedding[k]
-
-        data.C_bus_load[i, k] = 1
-
-    return data
+        btgCircuit.add_load(load)
 
 
-def get_static_generator_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
+def add_btg_static_generators(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_series: bool, ntime=1):
     """
 
     :param circuit:
+    :param btgCircuit:
     :param bus_dict:
     :param time_series:
+    :param ntime:
     :return:
     """
     devices = circuit.get_static_generators()
-
-    data = StaticGeneratorData(nstagen=len(devices), nbus=len(circuit.buses), ntime=ntime)
-
     for k, elm in enumerate(devices):
 
-        i = bus_dict[elm.bus]
-
-        data.static_generator_names[k] = elm.name
+        load = btg.Load(uuid=elm.idtag,
+                        name=elm.name,
+                        bus=bus_dict[elm.bus.idtag],
+                        time_steps=ntime,
+                        P0=-elm.P,
+                        Q0=-elm.Q)
 
         if time_series:
-            data.static_generator_active[k, :] = elm.active_prof
-            data.static_generator_s[k, :] = elm.P_prof + 1j * elm.Q_prof
+            load.active = elm.active_prof
+            load.P = -elm.P_prof
+            load.Q = -elm.Q_prof
         else:
-            data.static_generator_active[k] = elm.active
-            data.static_generator_s[k] = complex(elm.P, elm.Q)
+            load.active = elm.active
 
-        data.C_bus_static_generator[i, k] = 1
-
-    return data
+        btgCircuit.add_load(load)
 
 
-def get_shunt_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, time_series=False, ntime=1):
+def add_btg_shunts(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_series: bool, ntime=1):
     """
 
     :param circuit:
+    :param btgCircuit:
     :param bus_dict:
     :param time_series:
+    :param ntime:
     :return:
     """
     devices = circuit.get_shunts()
-
-    data = ShuntData(nshunt=len(devices), nbus=len(circuit.buses), ntime=ntime)
-
     for k, elm in enumerate(devices):
 
-        i = bus_dict[elm.bus]
-
-        data.shunt_names[k] = elm.name
-        data.shunt_controlled[k] = elm.is_controlled
-        data.shunt_b_min[k] = elm.Bmin
-        data.shunt_b_max[k] = elm.Bmax
+        sh = btg.ShuntFixed(uuid=elm.idtag,
+                            name=elm.name,
+                            bus=bus_dict[elm.bus.idtag],
+                            time_steps=ntime,
+                            G0=elm.G,
+                            B0=elm.B)
 
         if time_series:
-            data.shunt_active[k, :] = elm.active_prof
-            data.shunt_admittance[k, :] = elm.G_prof + 1j * elm.B_prof
+            sh.active = elm.active_prof
+            sh.G = elm.G_prof
+            sh.B = elm.B_prof
         else:
-            data.shunt_active[k] = elm.active
-            data.shunt_admittance[k] = complex(elm.G, elm.B)
+            sh.active = elm.active
 
-        if Vbus[i, 0].real == 1.0:
-            Vbus[i, :] = complex(elm.Vset, 0)
-        elif elm.Vset != Vbus[i, 0]:
-            logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
-
-        data.C_bus_shunt[i, k] = 1
-
-    return data
+        btgCircuit.add_shunt_fixed(sh)
 
 
-def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
-                       opf_results: "OptimalPowerFlowResults" = None, time_series=False, opf=False, ntime=1):
+def add_btg_generators(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_series: bool, ntime=1):
     """
 
     :param circuit:
@@ -185,64 +148,31 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
     """
     devices = circuit.get_generators()
 
-    if opf:
-        data = GeneratorOpfData(ngen=len(devices), nbus=len(circuit.buses), ntime=ntime)
-    else:
-        data = GeneratorData(ngen=len(devices), nbus=len(circuit.buses), ntime=ntime)
-
     for k, elm in enumerate(devices):
 
-        i = bus_dict[elm.bus]
+        gen = btg.Generator(uuid=elm.idtag,
+                            name=elm.name,
+                            bus=bus_dict[elm.bus.idtag],
+                            time_steps=ntime,
+                            P0=elm.G,
+                            Q0=elm.B,
+                            Vset0=elm.vset)
 
-        data.generator_names[k] = elm.name
-        data.generator_qmin[k] = elm.Qmin
-        data.generator_qmax[k] = elm.Qmax
-        data.generator_controllable[k] = elm.is_controlled
-        data.generator_installed_p[k] = elm.Snom
+        gen.generation_cost = elm.Cost
 
         if time_series:
-            data.generator_p[k] = elm.P_prof
-            data.generator_active[k] = elm.active_prof
-            data.generator_pf[k] = elm.Pf_prof
-            data.generator_v[k] = elm.Vset_prof
-
-            if opf:
-                data.generator_dispatchable[k] = elm.enabled_dispatch
-                data.generator_pmax[k] = elm.Pmax
-                data.generator_pmin[k] = elm.Pmin
-                data.generator_cost[k] = elm.Cost_prof
-                data.generator_cost[k] = elm.Cost_prof
-
-            if opf_results is not None:
-                data.generator_p[k, :] = opf_results.generator_power[:, k] - opf_results.generator_shedding[:, k]
-
+            gen.active = elm.active_prof
+            gen.P = elm.P_prof
+            gen.vset = elm.Vset_prof
         else:
-            data.generator_p[k] = elm.P
-            data.generator_active[k] = elm.active
-            data.generator_pf[k] = elm.Pf
-            data.generator_v[k] = elm.Vset
+            gen.active = elm.active
+            gen.P = elm.P
+            gen.vset = elm.Vset
 
-            if opf:
-                data.generator_dispatchable[k] = elm.enabled_dispatch
-                data.generator_pmax[k] = elm.Pmax
-                data.generator_pmin[k] = elm.Pmin
-                data.generator_cost[k] = elm.Cost
-
-            if opf_results is not None:
-                data.generator_p[k] = opf_results.generator_power[k] - opf_results.generator_shedding[k]
-
-        data.C_bus_gen[i, k] = 1
-
-        if Vbus[i, 0].real == 1.0:
-            Vbus[i, :] = complex(elm.Vset, 0)
-        elif elm.Vset != Vbus[i, 0]:
-            logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
-
-    return data
+        btgCircuit.add_generator(gen)
 
 
-def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
-                     opf_results=None, time_series=False, opf=False, ntime=1):
+def get_battery_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_series: bool, ntime=1):
     """
 
     :param circuit:
@@ -257,72 +187,33 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
     """
     devices = circuit.get_batteries()
 
-    if opf:
-        data = BatteryOpfData(nbatt=len(devices), nbus=len(circuit.buses), ntime=ntime)
-    else:
-        data = BatteryData(nbatt=len(devices), nbus=len(circuit.buses), ntime=ntime)
-
     for k, elm in enumerate(devices):
 
-        i = bus_dict[elm.bus]
+        gen = btg.Battery(uuid=elm.idtag,
+                          name=elm.name,
+                          bus=bus_dict[elm.bus.idtag],
+                          time_steps=ntime,
+                          capacity=elm.Enom,
+                          P0=elm.G,
+                          Q0=elm.B,
+                          Vset0=elm.vset)
 
-        data.battery_names[k] = elm.name
-        data.battery_qmin[k] = elm.Qmin
-        data.battery_qmax[k] = elm.Qmax
-
-        data.battery_controllable[k] = elm.is_controlled
-        data.battery_installed_p[k] = elm.Snom
+        gen.soc_max = elm.max_soc
+        gen.soc_min = elm.min_soc
+        gen.charge_efficiency = elm.charge_efficiency
+        gen.discharge_efficiency = elm.discharge_efficiency
+        gen.generation_cost = elm.Cost
 
         if time_series:
-            data.battery_p[k, :] = elm.P_prof
-            data.battery_active[k, :] = elm.active_prof
-            data.battery_pf[k, :] = elm.Pf_prof
-            data.battery_v[k, :] = elm.Vset_prof
-
-            if opf:
-                data.battery_dispatchable[k] = elm.enabled_dispatch
-                data.battery_pmax[k] = elm.Pmax
-                data.battery_pmin[k] = elm.Pmin
-                data.battery_enom[k] = elm.Enom
-                data.battery_min_soc[k] = elm.min_soc
-                data.battery_max_soc[k] = elm.max_soc
-                data.battery_soc_0[k] = elm.soc_0
-                data.battery_discharge_efficiency[k] = elm.discharge_efficiency
-                data.battery_charge_efficiency[k] = elm.charge_efficiency
-                data.battery_cost[k] = elm.Cost_prof
-
-            if opf_results is not None:
-                data.battery_p[k, :] = opf_results.battery_power[:, k]
-
+            gen.active = elm.active_prof
+            gen.P = elm.P_prof
+            gen.vset = elm.Vset_prof
         else:
-            data.battery_p[k] = elm.P
-            data.battery_active[k] = elm.active
-            data.battery_pf[k] = elm.Pf
-            data.battery_v[k] = elm.Vset
+            gen.active = elm.active
+            gen.P = elm.P
+            gen.vset = elm.Vset
 
-            if opf:
-                data.battery_dispatchable[k] = elm.enabled_dispatch
-                data.battery_pmax[k] = elm.Pmax
-                data.battery_pmin[k] = elm.Pmin
-                data.battery_enom[k] = elm.Enom
-                data.battery_min_soc[k] = elm.min_soc
-                data.battery_max_soc[k] = elm.max_soc
-                data.battery_soc_0[k] = elm.soc_0
-                data.battery_discharge_efficiency[k] = elm.discharge_efficiency
-                data.battery_charge_efficiency[k] = elm.charge_efficiency
-                data.battery_cost[k] = elm.Cost
-
-            if opf_results is not None:
-                data.battery_p[k] = opf_results.battery_power[k]
-
-        data.C_bus_batt[i, k] = 1
-
-        if Vbus[i, 0].real == 1.0:
-            Vbus[i, :] = complex(elm.Vset, 0)
-        elif elm.Vset != Vbus[i, 0]:
-            logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
-
-    return data
+        btgCircuit.add_battery(gen)
 
 
 def get_line_data(circuit: MultiCircuit, bus_dict,

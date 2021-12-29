@@ -70,13 +70,11 @@ def set_branch_values(nc: nn.NativeNumericCircuit,
     nc.set_branch_t(idx, t)
 
 
-def to_newton_native(circuit: MultiCircuit, use_voltage_guess=False, logger: Logger = Logger()) -> nn.NativeNumericCircuit:
+def to_newton_native(circuit: MultiCircuit) -> nn.NativeNumericCircuit:
     """
     Compile the information of a circuit and generate the pertinent power flow islands
     :param circuit: MultiCircuit instance
-    :param use_voltage_guess: Use the stored voltage guess?
-    :param logger: logger information
-    :return: list of NumericIslands
+    :return: NativeNumericCircuit
     """
 
     bus_dictionary = dict()
