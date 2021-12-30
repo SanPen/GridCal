@@ -45,7 +45,7 @@ def epsilon(Sn, n, E):
     """
     Zero = complex(0)
     One = complex(1)
-    Tiny = np.finfo(complex).min
+    Tiny = np.finfo(complex).tiny  # np.finfo(complex).min
     Huge = np.finfo(complex).max
 
     E[n] = Sn

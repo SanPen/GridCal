@@ -241,12 +241,19 @@ class MultiCircuit:
         """
         return len(self.buses)
 
+    def get_branch_lists_wo_hvdc(self):
+        """
+        GEt list of the branch lists
+        :return:
+        """
+        return [self.lines, self.transformers2w,  self.vsc_devices, self.dc_lines, self.upfc_devices]
+
     def get_branch_lists(self):
         """
         GEt list of the branch lists
         :return:
         """
-        return [self.lines, self.transformers2w, self.hvdc_lines, self.vsc_devices, self.dc_lines, self.upfc_devices]
+        return self.get_branch_lists_wo_hvdc() + self.hvdc_lines
 
     def get_branch_number(self):
         """
@@ -255,6 +262,16 @@ class MultiCircuit:
         """
         m = 0
         for branch_list in self.get_branch_lists():
+            m += len(branch_list)
+        return m
+
+    def get_branch_number_wo_hvdc(self):
+        """
+        return the number of branches (of all types)
+        :return: number
+        """
+        m = 0
+        for branch_list in self.get_branch_lists_wo_hvdc():
             m += len(branch_list)
         return m
 
@@ -355,6 +372,9 @@ class MultiCircuit:
     def get_transformers2w(self) -> List[Transformer2W]:
         return self.transformers2w
 
+    def get_transformers2w_number(self) -> int:
+        return len(self.transformers2w)
+
     def get_vsc(self) -> List[VSC]:
         return self.vsc_devices
 
@@ -369,6 +389,9 @@ class MultiCircuit:
 
     def get_hvdc(self) -> List[HvdcLine]:
         return self.hvdc_lines
+
+    def get_hvdc_number(self) -> int:
+        return len(self.hvdc_lines)
 
     def get_loads(self) -> List[Load]:
         """

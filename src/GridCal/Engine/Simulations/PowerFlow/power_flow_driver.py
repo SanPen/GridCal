@@ -22,7 +22,7 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE, to_newton_native, newton_power_flow
-from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
+from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf
 import GridCal.Engine.basic_structures as bs
 
 
@@ -118,7 +118,38 @@ class PowerFlowDriver(DriverTemplate):
             print('newton error:', res.error)
 
         elif self.engine == bs.EngineType.Bentayga:
-            pass
+
+            res = bentayga_pf(self.grid, self.options)
+
+            self.results = PowerFlowResults(n=self.grid.get_bus_number(),
+                                            m=self.grid.get_branch_number_wo_hvdc(),
+                                            n_tr=self.grid.get_transformers2w_number(),
+                                            n_hvdc=self.grid.get_hvdc_number(),
+                                            bus_names=res.bus_names,
+                                            branch_names=res.branch_names,
+                                            transformer_names=[],
+                                            hvdc_names=res.hvdc_names,
+                                            bus_types=res.bus_types)
+
+            self.results.voltage = res.V[0, :]
+            self.results.Sbus = res.S[0, :]
+            self.results.Sf = res.Sf[0, :]
+            self.results.St = res.St[0, :]
+            self.results.loading = res.loading[0, :]
+            self.results.losses = res.losses[0, :]
+            self.results.Vbranch = res.Vbranch[0, :]
+            self.results.If = res.If[0, :]
+            self.results.It = res.It[0, :]
+            self.results.Beq = res.Beq[0, :]
+            self.results.m = res.tap_modules[0, :]
+            self.results.theta = res.tap_angles[0, :]
+            self.results.F = res.F
+            self.results.T = res.T
+            self.results.hvdc_F = res.F_hvdc
+            self.results.hvdc_T = res.T_hvdc
+            self.results.bus_area_indices = self.grid.get_bus_area_indices()
+            self.results.area_names = [a.name for a in self.grid.areas]
+            print('Bentayga error:', res.error)
 
         else:
             raise Exception('Engine ' + self.engine.value + ' not implemented for ' + self.name)
