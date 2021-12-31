@@ -1377,3 +1377,10 @@ class GridEditor(QSplitter):
 
 
 
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
+    circuit = MultiCircuit()
+    window = GridEditor(circuit)
+    window.show()
+    sys.exit(app.exec_())
