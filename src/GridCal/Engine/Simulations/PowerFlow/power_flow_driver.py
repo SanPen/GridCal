@@ -119,7 +119,7 @@ class PowerFlowDriver(DriverTemplate):
 
         elif self.engine == bs.EngineType.Bentayga:
 
-            res = bentayga_pf(self.grid, self.options)
+            res = bentayga_pf(self.grid, self.options, time_series=False)
 
             self.results = PowerFlowResults(n=self.grid.get_bus_number(),
                                             m=self.grid.get_branch_number_wo_hvdc(),
@@ -149,7 +149,7 @@ class PowerFlowDriver(DriverTemplate):
             self.results.hvdc_T = res.T_hvdc
             self.results.bus_area_indices = self.grid.get_bus_area_indices()
             self.results.area_names = [a.name for a in self.grid.areas]
-            print('Bentayga error:', res.error)
+            print('Bentayga error:', res.stats)
 
         else:
             raise Exception('Engine ' + self.engine.value + ' not implemented for ' + self.name)

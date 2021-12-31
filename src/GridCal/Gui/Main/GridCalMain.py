@@ -3388,11 +3388,13 @@ class MainGUI(QMainWindow):
                     options = self.get_selected_power_flow_options()
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1
+                    engine = self.get_preferred_engine()
                     drv = sim.TimeSeries(grid=self.circuit,
                                          options=options,
                                          opf_time_series_results=opf_time_series_results,
                                          start_=start,
-                                         end_=end)
+                                         end_=end,
+                                         engine=engine)
 
                     self.session.run(drv,
                                      post_func=self.post_time_series,

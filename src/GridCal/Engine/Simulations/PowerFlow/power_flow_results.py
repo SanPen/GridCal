@@ -237,7 +237,6 @@ class PowerFlowResults(ResultsTemplate):
         val.loading = self.loading.copy()
         val.transformer_tap_module = self.transformer_tap_module.copy()
         val.losses = self.losses.copy()
-        val.overloads = self.overloads.copy()
 
         return val
 

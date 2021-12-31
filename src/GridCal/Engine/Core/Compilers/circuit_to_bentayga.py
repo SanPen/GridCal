@@ -32,7 +32,7 @@ def add_btg_buses(circuit: MultiCircuit, btgCircuit: btg.Circuit, time_series: b
                        nominal_voltage=bus.Vnom)
 
         if time_series and ntime > 1:
-            elm.active = bus.active_prof.astype(int)
+            elm.active = bus.active_prof.astype(np.uintc)
         else:
             elm.active = np.ones(ntime, dtype=np.uintc) * int(bus.active)
 
@@ -64,7 +64,7 @@ def add_btg_loads(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time
                         Q0=elm.Q)
 
         if time_series:
-            load.active = elm.active_prof
+            load.active = elm.active_prof.astype(np.uintc)
             load.P = elm.P_prof
             load.Q = elm.Q_prof
         else:
@@ -94,7 +94,7 @@ def add_btg_static_generators(circuit: MultiCircuit, btgCircuit: btg.Circuit, bu
                         Q0=-elm.Q)
 
         if time_series:
-            load.active = elm.active_prof
+            load.active = elm.active_prof.astype(np.uintc)
             load.P = -elm.P_prof
             load.Q = -elm.Q_prof
         else:
@@ -124,7 +124,7 @@ def add_btg_shunts(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, tim
                             B0=elm.B)
 
         if time_series:
-            sh.active = elm.active_prof
+            sh.active = elm.active_prof.astype(np.uintc)
             sh.G = elm.G_prof
             sh.B = elm.B_prof
         else:
@@ -161,7 +161,7 @@ def add_btg_generators(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict,
         gen.generation_cost = elm.Cost
 
         if time_series:
-            gen.active = elm.active_prof
+            gen.active = elm.active_prof.astype(np.uintc)
             gen.P = elm.P_prof
             gen.vset = elm.Vset_prof
         else:
@@ -205,7 +205,7 @@ def get_battery_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, t
         gen.generation_cost = elm.Cost
 
         if time_series:
-            gen.active = elm.active_prof
+            gen.active = elm.active_prof.astype(np.uintc)
             gen.P = elm.P_prof
             gen.vset = elm.Vset_prof
         else:
@@ -245,7 +245,7 @@ def add_btg_line(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_
         lne.contingency_enabled = np.ones(ntime, dtype=np.uintc) * int(elm.contingency_enabled)
 
         if time_series:
-            lne.active = elm.active_prof
+            lne.active = elm.active_prof.astype(np.uintc)
             lne.rates = elm.rate_prof
             lne.contingency_rates = elm.rate_prof * elm.contingency_factor
 
@@ -278,7 +278,7 @@ def get_transformer_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dic
         tr2.contingency_enabled = np.ones(ntime, dtype=np.uintc) * int(elm.contingency_enabled)
 
         if time_series:
-            tr2.active = elm.active_prof
+            tr2.active = elm.active_prof.astype(np.uintc)
             tr2.rates = elm.rate_prof
             tr2.contingency_rates = elm.rate_prof * elm.contingency_factor
             tr2.tap = elm.tap_module_prof
@@ -330,7 +330,7 @@ def get_vsc_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_
         vsc.contingency_enabled = np.ones(ntime, dtype=np.uintc) * int(elm.contingency_enabled)
 
         if time_series:
-            vsc.active = elm.active_prof
+            vsc.active = elm.active_prof.astype(np.uintc)
             vsc.rates = elm.rate_prof
             vsc.contingency_rates = elm.rate_prof * elm.contingency_factor
 
@@ -363,7 +363,7 @@ def get_dc_line_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, t
         lne.contingency_enabled = np.ones(ntime, dtype=np.uintc) * int(elm.contingency_enabled)
 
         if time_series:
-            lne.active = elm.active_prof
+            lne.active = elm.active_prof.astype(np.uintc)
             lne.rates = elm.rate_prof
             lne.contingency_rates = elm.rate_prof * elm.contingency_factor
 
@@ -404,7 +404,7 @@ def get_hvdc_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time
         # hvdc.contingency_enabled = elm.contingency_enabled
 
         if time_series:
-            hvdc.active = elm.active_prof
+            hvdc.active = elm.active_prof.astype(np.uintc)
             hvdc.rates = elm.rate_prof
             hvdc.v_set_f = elm.Vset_f_prof
             hvdc.v_set_t = elm.Vset_t_prof
@@ -417,11 +417,11 @@ def get_hvdc_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time
 
 def to_bentayga(circuit: MultiCircuit, time_series: bool):
 
-    btgCircuit = btg.Circuit()
-
     ntime = circuit.get_time_number() if time_series else 1
     if ntime == 0:
         ntime = 1
+
+    btgCircuit = btg.Circuit(uuid=circuit.idtag, name=circuit.name, time_steps=ntime)
 
     bus_dict = add_btg_buses(circuit, btgCircuit, time_series, ntime)
     add_btg_loads(circuit, btgCircuit, bus_dict, time_series, ntime)
@@ -438,9 +438,9 @@ def to_bentayga(circuit: MultiCircuit, time_series: bool):
     return btgCircuit
 
 
-def bentayga_pf(circuit: MultiCircuit, gridcal_pf_options):
+def bentayga_pf(circuit: MultiCircuit, gridcal_pf_options, time_series=False):
 
-    btgCircuit = to_bentayga(circuit, time_series=False)
+    btgCircuit = to_bentayga(circuit, time_series=time_series)
 
     pf_options = btg.PowerFlowOptions(btg.PowerFlowSolvers.NewtonRaphson,
                                       tolerance=gridcal_pf_options.tolerance,
