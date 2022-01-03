@@ -85,6 +85,49 @@ class ResultsTable:
         sliced_model.format_string = self.format_string
         return sliced_model
 
+    def slice_rows(self, idx):
+        """
+        Make rows slicing
+        :param idx: indices of the columns
+        :return: Nothing
+        """
+        sliced_model = ResultsTable(data=self.data_c[idx, :],
+                                    columns=self.cols_c,
+                                    index=[self.index_c[i] for i in idx],
+                                    palette=None,
+                                    title=self.title,
+                                    xlabel=self.xlabel,
+                                    ylabel=self.ylabel,
+                                    units=self.units,
+                                    editable=self.editable,
+                                    editable_min_idx=self.editable_min_idx,
+                                    decimals=6)
+
+        sliced_model.format_string = self.format_string
+        return sliced_model
+
+    def slice_all(self, row_idx, col_idx):
+        """
+        Make rows slicing
+        :param row_idx: indices of the rows
+        :param col_idx: indices of the columns
+        :return: Nothing
+        """
+        sliced_model = ResultsTable(data=self.data_c[row_idx, :][:, col_idx],
+                                    columns=[self.cols_c[i] for i in col_idx],
+                                    index=[self.index_c[i] for i in row_idx],
+                                    palette=None,
+                                    title=self.title,
+                                    xlabel=self.xlabel,
+                                    ylabel=self.ylabel,
+                                    units=self.units,
+                                    editable=self.editable,
+                                    editable_min_idx=self.editable_min_idx,
+                                    decimals=6)
+
+        sliced_model.format_string = self.format_string
+        return sliced_model
+
     def search_in_columns(self, txt):
         """
         Search stuff
@@ -96,11 +139,119 @@ class ResultsTable:
         for i, val in enumerate(self.cols_c):
             if txt2 in val.lower():
                 idx.append(i)
-        idx = np.array(idx)
+        idx = np.array(idx, dtype=int)
         if len(idx) > 0:
             return self.slice_cols(idx)
         else:
             return None
+
+    def search_in_rows(self, txt):
+        """
+        Search stuff
+        :param txt:
+        :return:
+        """
+        idx = list()
+        txt2 = str(txt).lower()
+        for i, val in enumerate(self.index_c):
+            if txt2 in val.lower():
+                idx.append(i)
+        idx = np.array(idx, dtype=int)
+        if len(idx) > 0:
+            return self.slice_rows(idx)
+        else:
+            return None
+
+    def search(self, txt: str):
+        """
+        Search stuff
+        :param txt:
+        :return:
+        """
+        txt = txt.strip()
+        cols = np.array(self.cols_c).astype(str)
+        index = np.array(self.index_c).astype(str)
+
+        if txt.startswith('<'):
+
+            txt = txt.replace(' ', '')
+            try:
+                val = float(txt[1:])
+                row_idx, col_idx = np.where(self.data_c < val)
+
+                if len(self.cols_c) == 1:
+                    return self.slice_rows(row_idx)
+                else:
+                    row_idx = np.unique(row_idx)
+                    col_idx = np.unique(col_idx)
+                    return self.slice_all(row_idx, col_idx)
+
+            except ValueError:
+                return None
+
+        elif txt.startswith('>'):
+
+            txt = txt.replace(' ', '')
+            try:
+                val = float(txt[1:])
+                row_idx, col_idx = np.where(self.data_c > val)
+
+                if len(self.cols_c) == 1:
+                    return self.slice_rows(row_idx)
+                else:
+                    row_idx = np.unique(row_idx)
+                    col_idx = np.unique(col_idx)
+                    return self.slice_all(row_idx, col_idx)
+
+            except ValueError:
+                return None
+
+        elif txt.startswith('!='):
+
+            txt = txt.replace(' ', '')
+            try:
+                val = float(txt[2:])
+                row_idx, col_idx = np.where(self.data_c != val)
+
+                if len(self.cols_c) == 1:
+                    return self.slice_rows(row_idx)
+                else:
+                    row_idx = np.unique(row_idx)
+                    col_idx = np.unique(col_idx)
+                    return self.slice_all(row_idx, col_idx)
+
+            except ValueError:
+                return None
+        else:
+            # search by similar text
+            row_idx = list()
+            txt2 = str(txt).lower()
+            for i, val in enumerate(index):
+                if txt2 in val.lower():
+                    row_idx.append(i)
+            row_idx = np.array(row_idx, dtype=int)
+
+            col_idx = list()
+            txt2 = str(txt).lower()
+            for i, val in enumerate(cols):
+                if txt2 in val.lower():
+                    col_idx.append(i)
+            col_idx = np.array(col_idx, dtype=int)
+
+            if len(col_idx) > 0:
+
+                if len(row_idx) == 0:
+                    # if some col was found but no row, pick all
+                    row_idx = np.arange(len(self.index_c))
+
+            else:
+                if len(row_idx) > 0:
+                    # if some row was found, but no column, pick all
+                    col_idx = np.arange(len(self.cols_c))
+
+            return self.slice_all(row_idx, col_idx)
+
+        return None
 
     def copy_to_column(self, row, col):
         """

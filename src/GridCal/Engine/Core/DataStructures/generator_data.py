@@ -87,6 +87,9 @@ class GeneratorData:
         Q = pf_sign * self.generator_p * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
         return self.generator_p + 1.0j * Q
 
+    def get_effective_generation(self):
+        return self.generator_p * self.generator_active
+
     def get_injections_per_bus(self):
         return self.C_bus_gen * (self.get_injections() * self.generator_active)
 

@@ -204,7 +204,7 @@ def compute_fast_decoupled_admittances(X, B, m, mf, mt, Cf, Ct):
     B2t = sp.diags(b2_tf) * Cf - sp.diags(b2_tt) * Ct
     B2 = Cf.T * B2f + Ct.T * B2t
 
-    return B1, B2
+    return B1.tocsc(), B2.tocsc()
 
 
 def compute_linear_admittances(nbr, X, R, m, active, Cf, Ct, ac, dc):
@@ -232,12 +232,28 @@ def compute_linear_admittances(nbr, X, R, m, active, Cf, Ct, ac, dc):
     else:
         b = 1.0 / (m_abs * X * active + 1e-20)  # for ac branches
 
-    b_tt = sp.diags(b)
+    b_tt = sp.diags(b)  # This is Bd from the
     Bf = b_tt * Cf - b_tt * Ct
     Bt = -b_tt * Cf + b_tt * Ct
     Bbus = Cf.T * Bf + Ct.T * Bt
+    Btheta = (b_tt * (Cf + Ct)).T
 
-    return Bbus, Bf
+    """
+    According to the KULeuven document "DC power flow in unit commitment models"
+    The DC power flow is:
+    
+    Pbus = (A^T x Bd x A) x bus_angles + (Bd x A)^T x branch_angles
+    
+    Identifying the already computed matrices, it becomes:
+    
+    Pbus = Bbus x bus_angles + Btheta x branch_angles
+    
+    If we solve for bus angles:
+    
+    bus_angles = Bbus^-1 x (Pbus - Btheta x branch_angles)
+    """
+
+    return Bbus, Bf, Btheta
 
 
 class Admittance:

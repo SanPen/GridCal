@@ -26,7 +26,7 @@ import GridCal.Engine.Core.topology as tp
 from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 from GridCal.Engine.Core.common_functions import compile_types
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
-import GridCal.Engine.Core.DataStructures as ds
+import GridCal.Engine.Core.Compilers.circuit_to_data as gc_compiler
 import GridCal.Engine.Core.admittance_matrices as ycalc
 from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType
 
@@ -173,20 +173,20 @@ class SnapshotData:
         # --------------------------------------------------------------------------------------------------------------
         # Data structures
         # --------------------------------------------------------------------------------------------------------------
-        self.bus_data = ds.BusData(nbus=nbus, ntime=ntime)
-        self.branch_data = ds.BranchData(nbr=self.nbr, nbus=nbus, ntime=ntime)
-        self.line_data = ds.LinesData(nline=nline, nbus=nbus, ntime=ntime)
-        self.dc_line_data = ds.DcLinesData(ndcline=ndcline, nbus=nbus, ntime=ntime)
-        self.transformer_data = ds.TransformerData(ntr=ntr, nbus=nbus, ntime=ntime)
-        self.vsc_data = ds.VscData(nvsc=nvsc, nbus=nbus, ntime=ntime)
-        self.upfc_data = ds.UpfcData(nelm=nupfc, nbus=nbus, ntime=ntime)
-        self.hvdc_data = ds.HvdcData(nhvdc=nhvdc, nbus=nbus, ntime=ntime)
+        self.bus_data = gc_compiler.BusData(nbus=nbus, ntime=ntime)
+        self.branch_data = gc_compiler.BranchData(nbr=self.nbr, nbus=nbus, ntime=ntime)
+        self.line_data = gc_compiler.LinesData(nline=nline, nbus=nbus, ntime=ntime)
+        self.dc_line_data = gc_compiler.DcLinesData(ndcline=ndcline, nbus=nbus, ntime=ntime)
+        self.transformer_data = gc_compiler.TransformerData(ntr=ntr, nbus=nbus, ntime=ntime)
+        self.vsc_data = gc_compiler.VscData(nvsc=nvsc, nbus=nbus, ntime=ntime)
+        self.upfc_data = gc_compiler.UpfcData(nelm=nupfc, nbus=nbus, ntime=ntime)
+        self.hvdc_data = gc_compiler.HvdcData(nhvdc=nhvdc, nbus=nbus, ntime=ntime)
 
-        self.load_data = ds.LoadData(nload=nload, nbus=nbus, ntime=ntime)
-        self.static_generator_data = ds.StaticGeneratorData(nstagen=nstagen, nbus=nbus, ntime=ntime)
-        self.battery_data = ds.BatteryData(nbatt=nbatt, nbus=nbus, ntime=ntime)
-        self.generator_data = ds.GeneratorData(ngen=ngen, nbus=nbus, ntime=ntime)
-        self.shunt_data = ds.ShuntData(nshunt=nshunt, nbus=nbus, ntime=ntime)
+        self.load_data = gc_compiler.LoadData(nload=nload, nbus=nbus, ntime=ntime)
+        self.static_generator_data = gc_compiler.StaticGeneratorData(nstagen=nstagen, nbus=nbus, ntime=ntime)
+        self.battery_data = gc_compiler.BatteryData(nbatt=nbatt, nbus=nbus, ntime=ntime)
+        self.generator_data = gc_compiler.GeneratorData(ngen=ngen, nbus=nbus, ntime=ntime)
+        self.shunt_data = gc_compiler.ShuntData(nshunt=nshunt, nbus=nbus, ntime=ntime)
 
         self.original_bus_idx = np.arange(self.nbus)
         self.original_branch_idx = np.arange(self.nbr)
@@ -209,6 +209,7 @@ class SnapshotData:
 
         self.Cf_ = None
         self.Ct_ = None
+        self.A_ = None
 
         self.Vbus_ = None
         self.Sbus_ = None
@@ -233,6 +234,7 @@ class SnapshotData:
         # Admittances for Linear
         self.Bbus_ = None
         self.Bf_ = None
+        self.Btheta_ = None
         self.Bpqpv_ = None
         self.Bref_ = None
 
@@ -265,6 +267,8 @@ class SnapshotData:
                                      'pv',
                                      'vd',
                                      'pqpv',
+                                     'tap_f',
+                                     'tap_t',
                                      'original_bus_idx',
                                      'original_branch_idx',
                                      'original_line_idx',
@@ -786,7 +790,10 @@ class SnapshotData:
 
     @property
     def ac_indices(self):
-
+        """
+        Array of indices of the AC branches
+        :return: array of indices
+        """
         if self.ac_ is None:
             self.ac_ = self.branch_data.get_ac_indices()
 
@@ -794,6 +801,10 @@ class SnapshotData:
 
     @property
     def dc_indices(self):
+        """
+        Array of indices of the DC branches
+        :return: array of indices
+        """
         if self.dc_ is None:
             self.dc_ = self.branch_data.get_dc_indices()
 
@@ -801,7 +812,10 @@ class SnapshotData:
 
     @property
     def Cf(self):
-
+        """
+        Connectivity matrix of the "from" nodes
+        :return: CSC matrix
+        """
         # compute on demand and store
         if self.Cf_ is None:
             self.Cf_, self.Ct_ = ycalc.compute_connectivity(branch_active=self.branch_data.branch_active[:, 0],
@@ -815,7 +829,10 @@ class SnapshotData:
 
     @property
     def Ct(self):
-
+        """
+        Connectivity matrix of the "to" nodes
+        :return: CSC matrix
+        """
         # compute on demand and store
         if self.Ct_ is None:
             self.Cf_, self.Ct_ = ycalc.compute_connectivity(branch_active=self.branch_data.branch_active[:, 0],
@@ -828,7 +845,23 @@ class SnapshotData:
         return self.Ct_
 
     @property
+    def A(self):
+        """
+        Connectivity matrix
+        :return: CSC matrix
+        """
+
+        if self.A_ is None:
+            self.A_ = (self.Cf - self.Ct).tocsc()
+
+        return self.A_
+
+    @property
     def Ybus(self):
+        """
+        Admittance matrix
+        :return: CSC matrix
+        """
 
         # compute admittances on demand
         if self.Admittances is None:
@@ -855,7 +888,10 @@ class SnapshotData:
 
     @property
     def Yf(self):
-
+        """
+        Admittance matrix of the "from" nodes with the branches
+        :return: CSC matrix
+        """
         if self.Admittances is None:
             x = self.Ybus  # call the constructor of Yf
 
@@ -863,7 +899,10 @@ class SnapshotData:
 
     @property
     def Yt(self):
-
+        """
+        Admittance matrix of the "to" nodes with the branches
+        :return: CSC matrix
+        """
         if self.Admittances is None:
             x = self.Ybus  # call the constructor of Yt
 
@@ -871,7 +910,10 @@ class SnapshotData:
 
     @property
     def Yseries(self):
-
+        """
+        Admittance matrix of the series elements of the pi model of the branches
+        :return: CSC matrix
+        """
         # compute admittances on demand
         if self.Yseries_ is None:
 
@@ -897,7 +939,10 @@ class SnapshotData:
 
     @property
     def Yshunt(self):
-
+        """
+        Array of shunt admittances of the pi model of the branches (used in HELM mostly)
+        :return: Array of complex values
+        """
         if self.Yshunt_ is None:
             x = self.Yseries  # call the constructor of Yshunt
 
@@ -909,7 +954,10 @@ class SnapshotData:
 
     @property
     def B1(self):
-
+        """
+        B' matrix of the fast decoupled method
+        :return:
+        """
         if self.B1_ is None:
 
             self.B1_, self.B2_ = ycalc.compute_fast_decoupled_admittances(X=self.branch_data.X,
@@ -923,7 +971,10 @@ class SnapshotData:
 
     @property
     def B2(self):
-
+        """
+        B'' matrix of the fast decoupled method
+        :return:
+        """
         if self.B2_ is None:
             x = self.B1  # call the constructor of B2
 
@@ -931,17 +982,20 @@ class SnapshotData:
 
     @property
     def Bbus(self):
-
+        """
+        Susceptance matrix for the linear methods
+        :return:
+        """
         if self.Bbus_ is None:
-            self.Bbus_, self.Bf_ = ycalc.compute_linear_admittances(nbr=self.nbr,
-                                                                    X=self.branch_data.X,
-                                                                    R=self.branch_data.R,
-                                                                    m=self.branch_data.m[:, 0],
-                                                                    active=self.branch_data.branch_active[:, 0],
-                                                                    Cf=self.Cf,
-                                                                    Ct=self.Ct,
-                                                                    ac=self.ac_indices,
-                                                                    dc=self.dc_indices)
+            self.Bbus_, self.Bf_, self.Btheta_ = ycalc.compute_linear_admittances(nbr=self.nbr,
+                                                                                  X=self.branch_data.X,
+                                                                                  R=self.branch_data.R,
+                                                                                  m=self.branch_data.m[:, 0],
+                                                                                  active=self.branch_data.branch_active[:, 0],
+                                                                                  Cf=self.Cf,
+                                                                                  Ct=self.Ct,
+                                                                                  ac=self.ac_indices,
+                                                                                  dc=self.dc_indices)
             self.Bpqpv_ = self.Bbus_[np.ix_(self.pqpv, self.pqpv)]
             self.Bref_ = self.Bbus_[np.ix_(self.pqpv, self.vd)]
 
@@ -949,11 +1003,22 @@ class SnapshotData:
 
     @property
     def Bf(self):
-
+        """
+        Susceptance matrix of the "from" nodes to the branches
+        :return:
+        """
         if self.Bf_ is None:
             x = self.Bbus  # call the constructor of Bf
 
         return self.Bf_
+
+    @property
+    def Btheta(self):
+
+        if self.Bf_ is None:
+            x = self.Bbus  # call the constructor of Bf
+
+        return self.Btheta_
 
     @property
     def Bpqpv(self):
@@ -1068,6 +1133,16 @@ class SnapshotData:
 
         elif structure_type == 'Ibus':
             df = pd.DataFrame(data=self.Ibus, columns=['Current (p.u.)'], index=self.bus_data.bus_names)
+
+        elif structure_type == 'tap_f':
+            df = pd.DataFrame(data=self.branch_data.tap_f,
+                              columns=['Virtual tap from (p.u.)'],
+                              index=self.branch_data.branch_names)
+
+        elif structure_type == 'tap_t':
+            df = pd.DataFrame(data=self.branch_data.tap_t,
+                              columns=['Virtual tap to (p.u.)'],
+                              index=self.branch_data.branch_names)
 
         elif structure_type == 'Ybus':
             df = pd.DataFrame(data=self.Ybus.toarray(),
@@ -1303,7 +1378,7 @@ class SnapshotData:
                                     bus_active=self.bus_data.bus_active[:, 0])
 
         # find the matching islands
-        idx_islands = tp.find_islands(A)
+        idx_islands = tp.find_islands(A, active=self.bus_data.bus_active[:, 0])
 
         if len(idx_islands) == 1:
             # numeric_circuit.compute_all()  # compute the internal magnitudes
@@ -1361,65 +1436,65 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
 
     bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
 
-    nc.bus_data = ds.circuit_to_data.get_bus_data(circuit=circuit)
+    nc.bus_data = gc_compiler.get_bus_data(circuit=circuit)
 
-    nc.load_data = ds.circuit_to_data.get_load_data(circuit=circuit,
-                                                    bus_dict=bus_dict,
-                                                    opf_results=opf_results)
+    nc.load_data = gc_compiler.get_load_data(circuit=circuit,
+                                             bus_dict=bus_dict,
+                                             opf_results=opf_results)
 
-    nc.static_generator_data = ds.circuit_to_data.get_static_generator_data(circuit=circuit,
-                                                                            bus_dict=bus_dict)
+    nc.static_generator_data = gc_compiler.get_static_generator_data(circuit=circuit,
+                                                                     bus_dict=bus_dict)
 
-    nc.generator_data = ds.circuit_to_data.get_generator_data(circuit=circuit,
-                                                              bus_dict=bus_dict,
-                                                              Vbus=nc.bus_data.Vbus,
-                                                              logger=logger,
-                                                              opf_results=opf_results)
+    nc.generator_data = gc_compiler.get_generator_data(circuit=circuit,
+                                                       bus_dict=bus_dict,
+                                                       Vbus=nc.bus_data.Vbus,
+                                                       logger=logger,
+                                                       opf_results=opf_results)
 
-    nc.battery_data = ds.circuit_to_data.get_battery_data(circuit=circuit,
-                                                          bus_dict=bus_dict,
-                                                          Vbus=nc.bus_data.Vbus,
-                                                          logger=logger,
-                                                          opf_results=opf_results)
+    nc.battery_data = gc_compiler.get_battery_data(circuit=circuit,
+                                                   bus_dict=bus_dict,
+                                                   Vbus=nc.bus_data.Vbus,
+                                                   logger=logger,
+                                                   opf_results=opf_results)
 
-    nc.shunt_data = ds.circuit_to_data.get_shunt_data(circuit=circuit,
-                                                      bus_dict=bus_dict,
-                                                      Vbus=nc.bus_data.Vbus,
-                                                      logger=logger)
+    nc.shunt_data = gc_compiler.get_shunt_data(circuit=circuit,
+                                               bus_dict=bus_dict,
+                                               Vbus=nc.bus_data.Vbus,
+                                               logger=logger)
 
-    nc.line_data = ds.circuit_to_data.get_line_data(circuit=circuit,
-                                                    bus_dict=bus_dict,
-                                                    apply_temperature=apply_temperature,
-                                                    branch_tolerance_mode=branch_tolerance_mode)
+    nc.line_data = gc_compiler.get_line_data(circuit=circuit,
+                                             bus_dict=bus_dict,
+                                             apply_temperature=apply_temperature,
+                                             branch_tolerance_mode=branch_tolerance_mode)
 
-    nc.transformer_data = ds.circuit_to_data.get_transformer_data(circuit=circuit,
-                                                                  bus_dict=bus_dict)
+    nc.transformer_data = gc_compiler.get_transformer_data(circuit=circuit,
+                                                           bus_dict=bus_dict)
 
-    nc.vsc_data = ds.circuit_to_data.get_vsc_data(circuit=circuit,
-                                                  bus_dict=bus_dict)
+    nc.vsc_data = gc_compiler.get_vsc_data(circuit=circuit,
+                                           bus_dict=bus_dict)
 
-    nc.upfc_data = ds.circuit_to_data.get_upfc_data(circuit=circuit,
-                                                    bus_dict=bus_dict)
+    nc.upfc_data = gc_compiler.get_upfc_data(circuit=circuit,
+                                             bus_dict=bus_dict)
 
-    nc.dc_line_data = ds.circuit_to_data.get_dc_line_data(circuit=circuit,
-                                                          bus_dict=bus_dict,
-                                                          apply_temperature=apply_temperature,
-                                                          branch_tolerance_mode=branch_tolerance_mode)
+    nc.dc_line_data = gc_compiler.get_dc_line_data(circuit=circuit,
+                                                   bus_dict=bus_dict,
+                                                   apply_temperature=apply_temperature,
+                                                   branch_tolerance_mode=branch_tolerance_mode)
 
-    nc.upfc_data = ds.circuit_to_data.get_upfc_data(circuit=circuit,
-                                                    bus_dict=bus_dict)
+    nc.upfc_data = gc_compiler.get_upfc_data(circuit=circuit,
+                                             bus_dict=bus_dict)
 
-    nc.branch_data = ds.circuit_to_data.get_branch_data(circuit=circuit,
-                                                        bus_dict=bus_dict,
-                                                        Vbus=nc.bus_data.Vbus,
-                                                        apply_temperature=apply_temperature,
-                                                        branch_tolerance_mode=branch_tolerance_mode,
-                                                        opf_results=opf_results)
+    nc.branch_data = gc_compiler.get_branch_data(circuit=circuit,
+                                                 bus_dict=bus_dict,
+                                                 Vbus=nc.bus_data.Vbus,
+                                                 apply_temperature=apply_temperature,
+                                                 branch_tolerance_mode=branch_tolerance_mode,
+                                                 opf_results=opf_results)
 
-    nc.hvdc_data = ds.circuit_to_data.get_hvdc_data(circuit=circuit,
-                                                    bus_dict=bus_dict,
-                                                    bus_types=nc.bus_data.bus_types,
-                                                    opf_results=opf_results)
+    nc.hvdc_data = gc_compiler.get_hvdc_data(circuit=circuit,
+                                             bus_dict=bus_dict,
+                                             bus_types=nc.bus_data.bus_types,
+                                             opf_results=opf_results)
 
     nc.consolidate_information()
 

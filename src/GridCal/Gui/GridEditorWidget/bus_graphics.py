@@ -125,6 +125,14 @@ class BusGraphicItem(QGraphicsRectItem):
         # Update size:
         self.change_size(self.w, self.h)
 
+    def set_label(self, val: str):
+        """
+        Set the label content
+        :param val:
+        :return:
+        """
+        self.label.setPlainText(val)
+
     def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent'):
         """
         On mouse move of this object...
@@ -284,18 +292,6 @@ class BusGraphicItem(QGraphicsRectItem):
         pe.setChecked(self.api_object.active)
         pe.triggered.connect(self.enable_disable_toggle)
 
-        pl = menu.addAction('Plot profiles')
-        plot_icon = QIcon()
-        plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
-        pl.setIcon(plot_icon)
-        pl.triggered.connect(self.plot_profiles)
-
-        arr = menu.addAction('Arrange')
-        arr_icon = QIcon()
-        arr_icon.addPixmap(QPixmap(":/Icons/icons/automatic_layout.svg"))
-        arr.setIcon(arr_icon)
-        arr.triggered.connect(self.arrange_children)
-
         sc = menu.addAction('Short circuit')
         sc_icon = QIcon()
         sc_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
@@ -311,6 +307,25 @@ class BusGraphicItem(QGraphicsRectItem):
         dc.setCheckable(True)
         dc.setChecked(self.api_object.is_dc)
         dc.triggered.connect(self.enable_disable_dc)
+
+        pl = menu.addAction('Plot profiles')
+        plot_icon = QIcon()
+        plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
+        pl.setIcon(plot_icon)
+        pl.triggered.connect(self.plot_profiles)
+
+        arr = menu.addAction('Arrange')
+        arr_icon = QIcon()
+        arr_icon.addPixmap(QPixmap(":/Icons/icons/automatic_layout.svg"))
+        arr.setIcon(arr_icon)
+        arr.triggered.connect(self.arrange_children)
+
+        ra5 = menu.addAction('Assign active state to profile')
+        ra5_icon = QIcon()
+        ra5_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
+        ra5.setIcon(ra5_icon)
+        ra5.triggered.connect(self.assign_status_to_profile)
+
 
         ra3 = menu.addAction('Delete all the connections')
         del2_icon = QIcon()
@@ -364,6 +379,12 @@ class BusGraphicItem(QGraphicsRectItem):
 
         menu.exec_(event.screenPos())
 
+    def assign_status_to_profile(self):
+        """
+        Assign the snapshot rate to the profile
+        """
+        self.diagramScene.set_active_status_to_profile(self.api_object)
+
     def delete_all_connections(self):
         """
         Delete all bus connections
@@ -405,21 +426,32 @@ class BusGraphicItem(QGraphicsRectItem):
         @return:
         """
         if self.api_object is not None:
+
+            # change the bus state (snapshot)
             self.api_object.active = not self.api_object.active
 
+            # change the branches state (snapshot)
+            for host in self.terminal.hosting_connections:
+                if host.api_object is not None:
+                    host.set_enable(val=self.api_object.active)
+
             if self.api_object.active:
-
                 self.set_tile_color(QBrush(ACTIVE['color']))
-
-                for host in self.terminal.hosting_connections:
-                    if host.api_object is not None:
-                        host.set_enable(val=True)
             else:
                 self.set_tile_color(QBrush(DEACTIVATED['color']))
 
-                for host in self.terminal.hosting_connections:
-                    if host.api_object is not None:
-                        host.set_enable(val=False)
+            if self.diagramScene.circuit.has_time_series:
+                ok = yes_no_question('Do you want to update the time series active status accordingly?',
+                                     'Update time series active status')
+
+                if ok:
+                    # change the bus state (time series)
+                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
+
+                    # change the branches state (time series)
+                    for host in self.terminal.hosting_connections:
+                        if host.api_object is not None:
+                            self.diagramScene.set_active_status_to_profile(host.api_object, override_question=True)
 
     def enable_disable_sc(self):
         """

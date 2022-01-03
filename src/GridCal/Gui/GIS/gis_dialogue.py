@@ -1,9 +1,16 @@
 import sys
 import os
 from PySide2.QtWidgets import *
-from PySide2.QtWebEngineWidgets import QWebEngineView as QWebView, QWebEnginePage as QWebPage
 import folium
 from shutil import copyfile
+import webbrowser
+
+try:
+    from PySide2.QtWebEngineWidgets import QWebEngineView as QWebView, QWebEnginePage as QWebPage
+    qt_web_engine_available = True
+except ModuleNotFoundError:
+    qt_web_engine_available = False
+    print('QtWebEngineWidgets not found :(')
 
 from GridCal.Gui.GIS.gui import *
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
@@ -21,19 +28,21 @@ class GISWindow(QMainWindow):
         self.ui.setupUi(self)
         self.setWindowTitle('GridCal - GIS')
 
-        # create web browser for the map
-        self.web_layout = QtWidgets.QVBoxLayout(self.ui.webFrame)
-        self.webView = QWebView()
-        self.web_layout.addWidget(self.webView)
-        self.ui.webFrame.setContentsMargins(0, 0, 0, 0)
-        self.web_layout.setContentsMargins(0, 0, 0, 0)
-
         if os.path.exists(external_file_path):
             self.file_path = external_file_path
         else:
             self.file_path = self.generate_blank_map_html(lon_avg=40.430, lat_avg=3.56)
 
-        self.webView.setUrl(QtCore.QUrl.fromLocalFile(self.file_path))
+        # create web browser for the map
+        if qt_web_engine_available:
+            self.web_layout = QtWidgets.QVBoxLayout(self.ui.webFrame)
+            self.webView = QWebView()
+            self.web_layout.addWidget(self.webView)
+            self.ui.webFrame.setContentsMargins(0, 0, 0, 0)
+            self.web_layout.setContentsMargins(0, 0, 0, 0)
+            self.webView.setUrl(QtCore.QUrl.fromLocalFile(self.file_path))
+        else:
+            webbrowser.open('file://' + self.file_path)
 
         # # action linking
         self.ui.actionSave_map.triggered.connect(self.save)

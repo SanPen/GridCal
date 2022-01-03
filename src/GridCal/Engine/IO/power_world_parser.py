@@ -447,15 +447,17 @@ class PowerWorldParser:
                              'owner data',
                              'qtable data',
                              'ba data',
+                             'injgroup data',
+                             'injgrpelem data',
                              'end']
 
-        # find which of the expected are actually there
+        # find which of the expected sections are actually in the file
         present_sections = list()
         for a in expected_sections:
             if a in txt:
                 present_sections.append(a)
 
-        # split the text file into sections
+        # split the text file into the found sections
         sections_dict = dict()
         for i in range(len(present_sections)-1):
             a = present_sections[i]

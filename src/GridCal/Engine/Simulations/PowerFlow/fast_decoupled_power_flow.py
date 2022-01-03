@@ -11,18 +11,18 @@ np.set_printoptions(linewidth=320)
 def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> NumericPowerFlowResults:
     """
     Fast decoupled power flow
-    :param Vbus:
-    :param Sbus:
-    :param Ibus:
-    :param Ybus:
-    :param B1:
-    :param B2:
-    :param pq:
-    :param pv:
-    :param pqpv:
-    :param tol:
-    :param max_it:
-    :return:
+    :param Vbus: array of initial voltages
+    :param Sbus: array of power injections
+    :param Ibus: array of current injections
+    :param Ybus: Admittance matrix
+    :param B1: B' matrix for the fast decoupled algorithm
+    :param B2: B'' matrix for the fast decoupled algorithm
+    :param pq: array of pq indices
+    :param pv: array of pv indices
+    :param pqpv: array of pqpv indices
+    :param tol: desired tolerance
+    :param max_it: maximum number of iterations
+    :return: NumericPowerFlowResults instance
     """
 
     start = time.time()

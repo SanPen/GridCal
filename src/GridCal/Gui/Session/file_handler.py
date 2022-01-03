@@ -179,8 +179,10 @@ class FileSaveThread(QThread):
                                 progress_func=self.progress_signal.emit,
                                 simulation_drivers=self.simulation_drivers,
                                 sessions=self.sessions)
-
-        self.logger = file_handler.save()
+        try:
+            self.logger = file_handler.save()
+        except PermissionError:
+            self.logger.add_error("File permission denied. Do you have the file open? Do you have write permissions?")
 
         self.valid = True
 

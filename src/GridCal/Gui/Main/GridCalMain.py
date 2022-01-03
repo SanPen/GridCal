@@ -17,6 +17,7 @@ import gc
 import os.path
 import platform
 import time
+import webbrowser
 from collections import OrderedDict
 from typing import List, Tuple
 
@@ -35,11 +36,12 @@ import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.grid_analysis as grid_analysis
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
+from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE
+from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 
 # GUI imports
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
-from GridCal.Gui.ConsoleWidget import ConsoleWidget
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GIS.gis_dialogue import GISWindow
 from GridCal.Gui.GeneralDialogues import *
@@ -56,6 +58,20 @@ from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.Session.session import SimulationSession
 from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
 from GridCal.__version__ import __GridCal_VERSION__
+
+try:
+    from GridCal.Gui.ConsoleWidget import ConsoleWidget
+    qt_console_available = True
+except ModuleNotFoundError:
+    print('No qtconsole available')
+    qt_console_available = False
+
+try:
+    from PySide2.QtWebEngineWidgets import QWebEngineView as QWebView, QWebEnginePage as QWebPage
+    qt_web_engine_available = True
+except ModuleNotFoundError:
+    qt_web_engine_available = False
+
 
 __author__ = 'Santiago Peñate Vera'
 
@@ -104,6 +120,7 @@ class MainGUI(QMainWindow):
         self.solvers_dict[bs.SolverType.LM.value] = bs.SolverType.LM
         self.solvers_dict[bs.SolverType.FASTDECOUPLED.value] = bs.SolverType.FASTDECOUPLED
         self.solvers_dict[bs.SolverType.HELM.value] = bs.SolverType.HELM
+        self.solvers_dict[bs.SolverType.GAUSS.value] = bs.SolverType.GAUSS
         self.solvers_dict[bs.SolverType.LACPF.value] = bs.SolverType.LACPF
         self.solvers_dict[bs.SolverType.DC.value] = bs.SolverType.DC
 
@@ -144,7 +161,7 @@ class MainGUI(QMainWindow):
         self.ui.transferMethodComboBox.setCurrentIndex(1)
 
         self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
-                                    '.dgs', '.m', '.raw', '.RAW', '.json', '.xml',
+                                    '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.rawx',
                                     '.zip', '.dpx', '.epc']
 
         # ptdf grouping modes
@@ -207,6 +224,7 @@ class MainGUI(QMainWindow):
 
         self.mip_solvers_dict = OrderedDict()
         self.mip_solvers_dict[bs.MIPSolvers.CBC.value] = bs.MIPSolvers.CBC
+        self.mip_solvers_dict[bs.MIPSolvers.GLOP.value] = bs.MIPSolvers.GLOP
         self.mip_solvers_dict[bs.MIPSolvers.SCIP.value] = bs.MIPSolvers.SCIP
         self.mip_solvers_dict[bs.MIPSolvers.CPLEX.value] = bs.MIPSolvers.CPLEX
         self.mip_solvers_dict[bs.MIPSolvers.GUROBI.value] = bs.MIPSolvers.GUROBI
@@ -217,6 +235,16 @@ class MainGUI(QMainWindow):
         self.ui.vc_stop_at_comboBox.setModel(get_list_model([sim.CpfStopAt.Nose.value,
                                                              sim.CpfStopAt.ExtraOverloads.value]))
         self.ui.vc_stop_at_comboBox.setCurrentIndex(0)
+
+        # available engines
+        engine_lst = [bs.EngineType.GridCal]
+        if NEWTON_AVAILBALE:
+            engine_lst.append(bs.EngineType.Newton)
+        if BENTAYGA_AVAILABLE:
+            engine_lst.append(bs.EngineType.Bentayga)
+        self.ui.engineComboBox.setModel(get_list_model([x.value for x in engine_lst]))
+        self.ui.engineComboBox.setCurrentIndex(0)
+        self.engine_dict = {x.value: x for x in engine_lst}
 
         # do not allow MP under windows because it crashes
         if platform.system() == 'Windows':
@@ -387,6 +415,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionATC_Time_Series.triggered.connect(self.run_available_transfer_capacity_ts)
 
+        self.ui.actionATC_clustering.triggered.connect(self.run_available_transfer_capacity_clustering)
+
         self.ui.actionReset_console.triggered.connect(self.create_console)
 
         self.ui.actionTry_to_fix_buses_location.triggered.connect(self.try_to_fix_buses_location)
@@ -493,6 +523,8 @@ class MainGUI(QMainWindow):
 
         self.ui.copy_results_pushButton.clicked.connect(self.copy_results_data)
 
+        self.ui.copyObjectsTableButton.clicked.connect(self.copy_objects_data)
+
         self.ui.copy_numpy_button.clicked.connect(self.copy_results_data_as_numpy)
 
         self.ui.undo_pushButton.clicked.connect(self.undo)
@@ -536,10 +568,14 @@ class MainGUI(QMainWindow):
 
         self.ui.simulationDataStructuresListView.clicked.connect(self.view_simulation_objects_data)
 
+        self.ui.plotArraysButton.clicked.connect(self.plot_simulation_objects_data)
+
+        self.ui.copyArraysButton.clicked.connect(self.copy_simulation_objects_data)
+
         self.ui.catalogueDataStructuresListView.clicked.connect(self.catalogue_element_selected)
 
         # tree-view clicks
-        self.ui.results_treeView.clicked.connect(self.on_objects_tree_view_click)
+        self.ui.results_treeView.clicked.connect(self.results_tree_view_click)
 
         # Table clicks
         self.ui.cascade_tableView.clicked.connect(self.cascade_table_click)
@@ -569,6 +605,10 @@ class MainGUI(QMainWindow):
 
         # check boxes
         self.ui.draw_schematic_checkBox.clicked.connect(self.set_grid_editor_state)
+
+        # Radio Button
+        self.ui.proportionalRedispatchRadioButton.clicked.connect(self.default_options_opf_ntc_proportional)
+        self.ui.optimalRedispatchRadioButton.clicked.connect(self.default_options_opf_ntc_optimal)
 
         ################################################################################################################
         # Other actions
@@ -600,6 +640,14 @@ class MainGUI(QMainWindow):
         """
         if not self.any_thread_running():
             self.LOCK(False)
+
+    def get_preferred_engine(self):
+        """
+        Get the currently selected engine
+        :return:
+        """
+        val = self.ui.engineComboBox.currentText()
+        return self.engine_dict[val]
 
     def get_simulation_threads(self):
         """
@@ -676,29 +724,32 @@ class MainGUI(QMainWindow):
         """
         Create console
         """
-        if self.console is not None:
-            self.ui.main_console_tab.layout().removeWidget(self.console)
+        if qt_console_available:
+            if self.console is not None:
+                self.ui.main_console_tab.layout().removeWidget(self.console)
 
-        self.console = ConsoleWidget(customBanner="GridCal console.\n\n"
-                                                  "type hlp() to see the available specific commands.\n\n"
-                                                  "the following libraries are already loaded:\n"
-                                                  "np: numpy\n"
-                                                  "pd: pandas\n"
-                                                  "plt: matplotlib\n"
-                                                  "app: This instance of GridCal\n"
-                                                  "circuit: The current grid\n\n")
+            self.console = ConsoleWidget(customBanner="GridCal console.\n\n"
+                                                      "type hlp() to see the available specific commands.\n\n"
+                                                      "the following libraries are already loaded:\n"
+                                                      "np: numpy\n"
+                                                      "pd: pandas\n"
+                                                      "plt: matplotlib\n"
+                                                      "app: This instance of GridCal\n"
+                                                      "circuit: The current grid\n\n")
 
-        # add the console widget to the user interface
-        self.ui.main_console_tab.layout().addWidget(self.console)
+            self.console.buffer_size = 10000
 
-        # push some variables to the console
-        self.console.push_vars({"hlp": self.print_console_help,
-                                "np": np,
-                                "pd": pd,
-                                "plt": plt,
-                                "clc": self.clc,
-                                'app': self,
-                                'circuit': self.circuit})
+            # add the console widget to the user interface
+            self.ui.main_console_tab.layout().addWidget(self.console)
+
+            # push some variables to the console
+            self.console.push_vars({"hlp": self.print_console_help,
+                                    "np": np,
+                                    "pd": pd,
+                                    "plt": plt,
+                                    "clc": self.clc,
+                                    'app': self,
+                                    'circuit': self.circuit})
 
     def clear_stuff_running(self):
         """
@@ -830,7 +881,6 @@ class MainGUI(QMainWindow):
         """
         Open the online documentation in a web browser
         """
-        import webbrowser
         webbrowser.open('https://gridcal.readthedocs.io/en/latest/', new=2)
 
     @staticmethod
@@ -838,7 +888,6 @@ class MainGUI(QMainWindow):
         """
         Open the gplv3 in a web browser
         """
-        import webbrowser
         webbrowser.open('https://www.gnu.org/licenses/gpl-3.0.en.html', new=2)
 
     @staticmethod
@@ -1012,7 +1061,15 @@ class MainGUI(QMainWindow):
         Center the nodes in the screen
         """
         if self.grid_editor is not None:
-            self.grid_editor.align_schematic()
+
+            selected = self.get_selected_buses()
+
+            if len(selected) == 0:
+                buses = self.circuit.buses
+            else:
+                buses = [b for i, b in selected]
+
+            self.grid_editor.align_schematic(buses=buses)
 
     def new_project_now(self):
         """
@@ -1091,7 +1148,7 @@ class MainGUI(QMainWindow):
         """
 
         files_types = "Formats (*.gridcal *.gch5 *.xlsx *.xls *.sqlite *.dgs " \
-                      "*.m *.raw *.RAW *.json *.xml *.zip *.dpx *.epc)"
+                      "*.m *.raw *.RAW *.rawx *.json *.xml *.zip *.dpx *.epc)"
         # files_types = ''
         # call dialog to select the file
 
@@ -1317,6 +1374,7 @@ class MainGUI(QMainWindow):
                       "Excel (*.xlsx);;" \
                       "CIM (*.xml);;" \
                       "Json (*.json);;" \
+                      "Rawx (*.rawx);;" \
                       "Sqlite (*.sqlite)"
 
         # call dialog to select the file
@@ -1350,6 +1408,7 @@ class MainGUI(QMainWindow):
                 extension['CIM (*.xml)'] = '.xml'
                 extension['JSON (*.json)'] = '.json'
                 extension['GridCal zip (*.gridcal)'] = '.gridcal'
+                extension['PSSe rawx (*.rawx)'] = '.rawx'
                 extension['GridCal HDF5 (*.gch5)'] = '.gch5'
                 extension['Sqlite (*.sqlite)'] = '.sqlite'
 
@@ -1826,8 +1885,6 @@ class MainGUI(QMainWindow):
         Simulation data structure clicked
         """
 
-        # TODO: Correct this function to operate correctly with the new engine
-
         i = self.ui.simulation_data_island_comboBox.currentIndex()
 
         if i > -1 and len(self.circuit.buses) > 0:
@@ -1835,14 +1892,51 @@ class MainGUI(QMainWindow):
 
             df = self.calculation_inputs_to_display[i].get_structure(elm_type)
 
-            # df = self.circuit.circuits[i].power_flow_input.get_structure(elm_type)
-
             mdl = PandasModel(df)
 
             self.ui.simulationDataStructureTableView.setModel(mdl)
 
+    def copy_simulation_objects_data(self):
+        """
+        Copy the arrays of the compiled arrays view to the clipboard
+        """
+        mdl = self.ui.simulationDataStructureTableView.model()
+        mdl.copy_to_clipboard()
+
+    def plot_simulation_objects_data(self):
+        """
+        Plot the arrays of the compiled arrays view
+        """
+        mdl = self.ui.simulationDataStructureTableView.model()
+        data = mdl.data_c
+
+        # actually check if the array is 1D or 2D
+        is_2d = len(data.shape) == 2
+        if is_2d:
+            if data.shape[1] <= 1:
+                is_2d = False
+                data = data[:, 0]  # flatten the array
+
+        # declare figure
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
+
+        if is_2d:
+            ax1.spy(data)
+
         else:
-            pass
+            if mdl.data_c.dtype == complex:
+                ax1.scatter(data.real, data.imag)
+                ax1.set_xlabel('Real')
+                ax1.set_ylabel('Imag')
+            else:
+                arr = np.arange(data.shape[0])
+                ax1.scatter(arr, data)
+                ax1.set_xlabel('Position')
+                ax1.set_ylabel('Value')
+
+        fig.tight_layout()
+        plt.show()
 
     def profile_device_type_changed(self):
         """
@@ -2012,35 +2106,33 @@ class MainGUI(QMainWindow):
 
             if len(indices) == 0:
                 # no index was selected
+                for i, elm in enumerate(objects):
 
-                if operation == '+':
-                    for i, elm in enumerate(objects):
-                        setattr(elm, attr, getattr(elm, attr) + value)
+                    tpe = getattr(elm, attr).dtype
+
+                    if operation == '+':
+                        setattr(elm, attr, (getattr(elm, attr) + value).astype(tpe))
                         mod_cols.append(i)
 
-                elif operation == '-':
-                    for i, elm in enumerate(objects):
-                        setattr(elm, attr, getattr(elm, attr) - value)
+                    elif operation == '-':
+                        setattr(elm, attr, (getattr(elm, attr) - value).astype(tpe))
                         mod_cols.append(i)
 
-                elif operation == '*':
-                    for i, elm in enumerate(objects):
-                        setattr(elm, attr, getattr(elm, attr) * value)
+                    elif operation == '*':
+                        setattr(elm, attr, (getattr(elm, attr) * value).astype(tpe))
                         mod_cols.append(i)
 
-                elif operation == '/':
-                    for i, elm in enumerate(objects):
-                        setattr(elm, attr, getattr(elm, attr) / value)
+                    elif operation == '/':
+                        setattr(elm, attr, (getattr(elm, attr) / value).astype(tpe))
                         mod_cols.append(i)
 
-                elif operation == 'set':
-                    for i, elm in enumerate(objects):
+                    elif operation == 'set':
                         arr = getattr(elm, attr)
-                        setattr(elm, attr, np.ones(len(arr)) * value)
+                        setattr(elm, attr, (np.ones(len(arr)) * value).astype(tpe))
                         mod_cols.append(i)
 
-                else:
-                    raise Exception('Operation not supported: ' + str(operation))
+                    else:
+                        raise Exception('Operation not supported: ' + str(operation))
 
             else:
                 # indices were selected ...
@@ -2048,6 +2140,7 @@ class MainGUI(QMainWindow):
                 for idx in indices:
 
                     elm = objects[idx.column()]
+                    tpe = type(getattr(elm, attr))
 
                     if operation == '+':
                         getattr(elm, attr)[idx.row()] += value
@@ -2368,7 +2461,8 @@ class MainGUI(QMainWindow):
                 self.ui.progress_label.setText('Running power flow...')
                 QtGui.QGuiApplication.processEvents()
                 # set power flow object instance
-                drv = sim.PowerFlowDriver(self.circuit, options, opf_results)
+                engine = self.get_preferred_engine()
+                drv = sim.PowerFlowDriver(self.circuit, options, opf_results, engine=engine)
 
                 self.session.run(drv,
                                  post_func=self.post_power_flow,
@@ -2666,8 +2760,27 @@ class MainGUI(QMainWindow):
 
                 self.LOCK()
 
+
+                if self.ui.usePfValuesForAtcCheckBox.isChecked():
+                    pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
+                    if pf_results is not None:
+                        Pf = pf_results.Sf.real
+                        Pf_hvdc = pf_results.hvdc_Pf.real
+                        use_provided_flows = True
+                    else:
+                        warning_msg('There were no power flow values available. Linear flows will be used.')
+                        use_provided_flows = False
+                        Pf_hvdc = None
+                        Pf = None
+                else:
+                    use_provided_flows = False
+                    Pf = None
+                    Pf_hvdc = None
+
                 distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
-                options = sim.ContingencyAnalysisOptions(distributed_slack=distributed_slack)
+                options = sim.ContingencyAnalysisOptions(distributed_slack=distributed_slack,
+                                                         use_provided_flows=use_provided_flows,
+                                                         Pf=Pf)
 
                 drv = sim.ContingencyAnalysisDriver(grid=self.circuit, options=options)
 
@@ -2734,8 +2847,26 @@ class MainGUI(QMainWindow):
 
                     self.LOCK()
 
+                    if self.ui.usePfValuesForAtcCheckBox.isChecked():
+                        pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
+                        if pf_results is not None:
+                            Pf = pf_results.Sf.real
+                            Pf_hvdc = pf_results.hvdc_Pf.real
+                            use_provided_flows = True
+                        else:
+                            warning_msg('There were no power flow values available. Linear flows will be used.')
+                            use_provided_flows = False
+                            Pf_hvdc = None
+                            Pf = None
+                    else:
+                        use_provided_flows = False
+                        Pf_hvdc = None
+                        Pf = None
+
                     options = sim.ContingencyAnalysisOptions(
-                        distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
+                        distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
+                        use_provided_flows=use_provided_flows,
+                        Pf=Pf)
 
                     drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit, options=options)
 
@@ -2802,7 +2933,7 @@ class MainGUI(QMainWindow):
                 distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 threshold = self.ui.atcThresholdSpinBox.value()
-
+                max_report_elements = self.ui.ntcReportLimitingElementsSpinBox.value()
                 # available transfer capacity inter areas
                 compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
 
@@ -2860,7 +2991,8 @@ class MainGUI(QMainWindow):
                                                                Pf_hvdc=Pf_hvdc,
                                                                dT=dT,
                                                                threshold=threshold,
-                                                               mode=mode)
+                                                               mode=mode,
+                                                               max_report_elements=max_report_elements)
 
                 drv = sim.AvailableTransferCapacityDriver(grid=self.circuit,
                                                           options=options)
@@ -2902,7 +3034,7 @@ class MainGUI(QMainWindow):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
-    def run_available_transfer_capacity_ts(self):
+    def run_available_transfer_capacity_ts(self, use_clustering=False):
         """
         Run a Power Transfer Distribution Factors analysis
         :return:
@@ -2915,6 +3047,7 @@ class MainGUI(QMainWindow):
                     distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
                     dT = self.ui.atcPerturbanceSpinBox.value()
                     threshold = self.ui.atcThresholdSpinBox.value()
+                    max_report_elements = self.ui.ntcReportLimitingElementsSpinBox.value()
 
                     # available transfer capacity inter areas
                     compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
@@ -2960,7 +3093,7 @@ class MainGUI(QMainWindow):
                         return
 
                     mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
-
+                    cluster_number = self.ui.cluster_number_spinBox.value()
                     options = sim.AvailableTransferCapacityOptions(distributed_slack=distributed_slack,
                                                                    use_provided_flows=use_provided_flows,
                                                                    bus_idx_from=idx_from,
@@ -2973,7 +3106,10 @@ class MainGUI(QMainWindow):
                                                                    Pf_hvdc=Pf_hvdc,
                                                                    dT=dT,
                                                                    threshold=threshold,
-                                                                   mode=mode)
+                                                                   mode=mode,
+                                                                   max_report_elements=max_report_elements,
+                                                                   use_clustering=use_clustering,
+                                                                   cluster_number=cluster_number)
 
                     start_ = self.ui.profile_start_slider.value()
                     end_ = self.ui.profile_end_slider.value()
@@ -2995,6 +3131,13 @@ class MainGUI(QMainWindow):
                 error_msg('There are no time series!')
         else:
             pass
+
+    def run_available_transfer_capacity_clustering(self):
+        """
+        Run the ATC time series using clustering
+        :return:
+        """
+        self.run_available_transfer_capacity_ts(use_clustering=True)
 
     def post_available_transfer_capacity_ts(self):
         """
@@ -3245,11 +3388,13 @@ class MainGUI(QMainWindow):
                     options = self.get_selected_power_flow_options()
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1
+                    engine = self.get_preferred_engine()
                     drv = sim.TimeSeries(grid=self.circuit,
                                          options=options,
                                          opf_time_series_results=opf_time_series_results,
                                          start_=start,
-                                         end_=end)
+                                         end_=end,
+                                         engine=engine)
 
                     self.session.run(drv,
                                      post_func=self.post_time_series,
@@ -3866,6 +4011,40 @@ class MainGUI(QMainWindow):
         else:
             pass
 
+    def default_options_opf_ntc_optimal(self):
+        """
+        Set the default options for the NTC optimization in the optimal setting
+        :return:
+        """
+        self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
+        self.ui.skipNtcGenerationLimitsCheckBox.setChecked(False)
+        self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
+        self.ui.ntcMaximizeExchangeFlowCheckBox.setChecked(True)
+        self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
+        self.ui.ntcFeasibilityCheckCheckBox.setChecked(False)
+        self.ui.weightPowerShiftSpinBox.setValue(0)
+        self.ui.weightGenCostSpinBox.setValue(0)
+        self.ui.weightGenDeltaSpinBox.setValue(0)
+        self.ui.weightsOverloadsSpinBox.setValue(0)
+        self.ui.weightsHVDCControlSpinBox.setValue(0)
+
+    def default_options_opf_ntc_proportional(self):
+        """
+        Set the default options for the NTC optimization in the proportional setting
+        :return:
+        """
+        self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
+        self.ui.skipNtcGenerationLimitsCheckBox.setChecked(True)
+        self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
+        self.ui.ntcMaximizeExchangeFlowCheckBox.setChecked(True)
+        self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
+        self.ui.ntcFeasibilityCheckCheckBox.setChecked(True)
+        self.ui.weightPowerShiftSpinBox.setValue(5)
+        self.ui.weightGenCostSpinBox.setValue(0)
+        self.ui.weightGenDeltaSpinBox.setValue(5)
+        self.ui.weightsOverloadsSpinBox.setValue(5)
+        self.ui.weightsHVDCControlSpinBox.setValue(3)
+
     def run_opf_ntc(self):
         """
         Run OPF simulation
@@ -3905,10 +4084,13 @@ class MainGUI(QMainWindow):
 
                 if self.ui.optimalRedispatchRadioButton.isChecked():
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
+                    # perform_previous_checks = False
                 elif self.ui.proportionalRedispatchRadioButton.isChecked():
                     generation_formulation = dev.GenerationNtcFormulation.Proportional
+                    # perform_previous_checks = True
                 else:
                     generation_formulation = dev.GenerationNtcFormulation.Optimal
+                    # perform_previous_checks = False
 
                 monitor_only_sensitive_branches = self.ui.monitorOnlySensitiveBranchesCheckBox.isChecked()
                 skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
@@ -3917,6 +4099,11 @@ class MainGUI(QMainWindow):
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
                 consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
                 tolerance = 10.0 ** self.ui.ntcOpfTolSpinBox.value()
+
+                perform_previous_checks = self.ui.ntcFeasibilityCheckCheckBox.isChecked()
+
+                dispatch_all_areas = self.ui.ntcDispatchAllAreasCheckBox.isChecked()
+
                 weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
                 weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
                 weight_generation_delta = 10.0 ** self.ui.weightGenDeltaSpinBox.value()
@@ -3933,9 +4120,11 @@ class MainGUI(QMainWindow):
                                                                 skip_generation_limits=skip_generation_limits,
                                                                 consider_contingencies=consider_contingencies,
                                                                 maximize_exchange_flows=maximize_exchange_flows,
+                                                                dispatch_all_areas=dispatch_all_areas,
                                                                 tolerance=tolerance,
                                                                 sensitivity_dT=dT,
                                                                 sensitivity_mode=mode,
+                                                                perform_previous_checks=perform_previous_checks,
                                                                 weight_power_shift=weight_power_shift,
                                                                 weight_generation_cost=weight_generation_cost,
                                                                 weight_generation_delta=weight_generation_delta,
@@ -3997,6 +4186,7 @@ class MainGUI(QMainWindow):
 
         if len(drv.logger) > 0:
             dlg = LogsDialogue(drv.name, drv.logger)
+            dlg.setModal(True)
             dlg.exec_()
 
         if not self.session.is_anything_running():
@@ -4698,11 +4888,17 @@ class MainGUI(QMainWindow):
                 raise Exception('Not implemented :(')
 
             if html:
-                self.files_to_delete_at_exit.append(file_name)
-                dialogue = GISWindow(external_file_path=file_name)
-                dialogue.resize(int(1.61 * 600.0), 600)
-                self.gis_dialogues.append(dialogue)
-                dialogue.show()
+
+                if qt_web_engine_available:
+
+                    self.files_to_delete_at_exit.append(file_name)
+                    dialogue = GISWindow(external_file_path=file_name)
+                    dialogue.resize(int(1.61 * 600.0), 600)
+                    self.gis_dialogues.append(dialogue)
+                    dialogue.show()
+                else:
+                    # open in the web browser
+                    webbrowser.open('file://' + file_name)
 
     def colour_next_simulation_step(self):
         """
@@ -4751,7 +4947,7 @@ class MainGUI(QMainWindow):
 
             self.ui.simulation_results_step_comboBox.setModel(mdl)
 
-    def on_objects_tree_view_click(self, index):
+    def results_tree_view_click(self, index):
         """
         Display the simulation results on the results table
         """
@@ -4869,6 +5065,17 @@ class MainGUI(QMainWindow):
             print('Copied!')
         else:
             warning_msg('There is no profile displayed, please display one', 'Copy profile to clipboard')
+
+    def copy_objects_data(self):
+        """
+        Copy the current displayed objects table to the clipboard
+        """
+        mdl = self.ui.dataStructureTableView.model()
+        if mdl is not None:
+            mdl.copy_to_clipboard()
+            print('Copied!')
+        else:
+            warning_msg('There is no data displayed, please display one', 'Copy profile to clipboard')
 
     def copy_results_data_as_numpy(self):
         """
@@ -5679,7 +5886,6 @@ class MainGUI(QMainWindow):
     def delete_shit(self, min_island=1):
         """
         Delete small islands, disconnected stuff and other garbage
-        :return:
         """
         numerical_circuit_ = core.compile_snapshot_opf_circuit(circuit=self.circuit, apply_temperature=False,)
         islands = numerical_circuit_.split_into_islands()
@@ -5702,7 +5908,7 @@ class MainGUI(QMainWindow):
             if elm.graphic_obj is not None:
                 # this is a more complete function than the circuit one because it removes the
                 # graphical items too, and for loads and generators it deletes them properly
-                print('Deleted ', elm.name)
+                print('Deleted ', elm.device_type.value, elm.name)
                 elm.graphic_obj.remove(ask=False)
 
         # search other elements to delete
@@ -5722,9 +5928,50 @@ class MainGUI(QMainWindow):
                     if elm.graphic_obj is not None:
                         # this is a more complete function than the circuit one because it removes the
                         # graphical items too, and for loads and generators it deletes them properly
-                        print('Deleted ', elm.name)
+                        print('Deleted ', elm.device_type.value, elm.name)
                         elm.graphic_obj.remove(ask=False)
 
+    def correct_shit(self, min_vset=0.98, max_vset=1.02):
+        """
+        Correct common flaws such as the transformer virtual taps too high
+        :param min_vset: minimum set point for the generators
+        :param max_vset: maximum set point for the generators
+        """
+        for elm in self.circuit.transformers2w:
+            HV = max(elm.bus_from.Vnom, elm.bus_to.Vnom)
+            LV = min(elm.bus_from.Vnom, elm.bus_to.Vnom)
+
+            if elm.HV != HV or elm.LV != LV:
+                self.console_msg('Corrected transformer HV for {0} from [{1},{2}] to [{3},{4}]'.format(elm.name,
+                                                                                                       elm.LV, elm.HV,
+                                                                                                       LV, HV))
+                elm.HV = HV
+                elm.LV = LV
+
+        for elm in self.circuit.get_generators():
+            if elm.Vset > max_vset:
+                self.console_msg('Corrected generator set point for {0} from {1} to {2}'.format(elm.name,
+                                                                                                elm.Vset, max_vset))
+                elm.Vset = max_vset
+            elif elm.Vset < min_vset:
+                self.console_msg('Corrected generator set point for {0} from {1} to {2}'.format(elm.name, elm.Vset, min_vset))
+                elm.Vset = min_vset
+
+    def correct_branch_monitoring(self, max_loading=1.0):
+        """
+        The NTC optimization and other algorithms will not work if we have overloaded branches in DC monitored
+        We can try to not monitor those to try to get it working
+        """
+        res = self.session.power_flow
+
+        if res is None:
+            self.console_msg('No power flow results.\n')
+        else:
+            branches = self.circuit.get_branches_wo_hvdc()
+            for elm, loading in zip(branches, res.loading):
+                if loading >= max_loading:
+                    elm.monitor_loading = False
+                    self.console_msg('Disabled loading monitoring for {0}, loading: {1}'.format(elm.name, loading))
 
     def add_objects(self):
         """
@@ -6269,15 +6516,17 @@ class MainGUI(QMainWindow):
     def search_in_results(self):
         """
         Search in the results model
-        :return:
         """
 
         if self.results_mdl is not None:
-            text = self.ui.sear_results_lineEdit.text()
-            mdl = self.results_mdl.search_in_columns(text)
+            text = self.ui.sear_results_lineEdit.text().strip()
 
-            if mdl is not None:
-                self.ui.resultsTableView.setModel(mdl)
+            if text != '':
+                mdl = self.results_mdl.search(text)
+            else:
+                mdl = None
+
+            self.ui.resultsTableView.setModel(mdl)
 
     def get_snapshot_circuit(self):
         """
@@ -6335,11 +6584,11 @@ class MainGUI(QMainWindow):
         for a1 in areas_from:
             if a1 in areas_to:
                 error_msg("The area from '{0}' is in the list of areas to. This cannot be.".format(a1.name), 'Incompatible areas')
-                return False, [], [], []
+                return False, [], [], [], []
         for a2 in areas_to:
             if a2 in areas_from:
                 error_msg("The area to '{0}' is in the list of areas from. This cannot be.".format(a2.name), 'Incompatible areas')
-                return False, [], [], []
+                return False, [], [], [], []
 
         lst_from = self.circuit.get_areas_buses(areas_from)
         lst_to = self.circuit.get_areas_buses(areas_to)
@@ -6358,8 +6607,7 @@ class MainGUI(QMainWindow):
         return calculation_inputs
 
 
-
-def run(use_native_dialogues=True):
+def run(use_native_dialogues=False):
     """
     Main function to run the GUI
     :return:

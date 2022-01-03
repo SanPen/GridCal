@@ -13,12 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+import platform
+
 from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
 from GridCal.Engine.Core.time_series_opf_data import OpfTimeCircuit
 from GridCal.Engine.basic_structures import MIPSolvers
 from GridCal.ThirdParty.pulp import *
-from ortools.linear_solver import pywraplp
 from GridCal.Engine.basic_structures import Logger
+
+try:
+    from ortools.linear_solver import pywraplp
+except ModuleNotFoundError:
+    print('ORTOOLS not found :(')
 
 
 class Opf:
@@ -61,7 +67,12 @@ class Opf:
         self.status = 100000  # a number that is not likely to be an enumeration value so converged returns false
 
         if ortools:
-            self.solver = pywraplp.Solver.CreateSolver(self.solver_type.value)
+            if platform.system() == 'Darwin':
+                self.solver = pywraplp.Solver.CreateSolver("GLOP")
+                print('Forced the use of GLOP')
+            else:
+                self.solver = pywraplp.Solver.CreateSolver(self.solver_type.value)
+
         else:
             self.solver = solver_type
 

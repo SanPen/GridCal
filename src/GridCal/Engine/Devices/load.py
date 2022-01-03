@@ -175,7 +175,7 @@ class Load(EditableDevice):
                     'name': self.name,
                     'name_code': self.code,
                     'bus': self.bus.idtag,
-                    'active': self.active,
+                    'active': bool(self.active),
                     'g': self.G,
                     'b': self.B,
                     'ir': self.Ir,

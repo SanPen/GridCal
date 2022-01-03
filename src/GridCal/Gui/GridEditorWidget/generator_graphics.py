@@ -189,6 +189,14 @@ class GeneratorGraphicItem(QGraphicsItemGroup):
             else:
                 self.set_enable(True)
 
+            if self.diagramScene.circuit.has_time_series:
+                ok = yes_no_question('Do you want to update the time series active status accordingly?',
+                                     'Update time series active status')
+
+                if ok:
+                    # change the bus state (time series)
+                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
+
     def enable_disable_control_toggle(self):
         """
         Enable / Disable device voltage control

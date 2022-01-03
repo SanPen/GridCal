@@ -29,7 +29,7 @@ from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacob
 from GridCal.Engine.Core.common_functions import compile_types, find_different_states
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
 # from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
-import GridCal.Engine.Core.DataStructures as ds
+import GridCal.Engine.Core.Compilers.circuit_to_data as gc_compiler
 
 
 sparse_type = get_sparse_type()
@@ -269,7 +269,7 @@ class TimeCircuit(SnapshotData):
                                         bus_active=self.bus_data.bus_active[:, 0])
 
             # find the matching islands
-            idx_islands = tp.find_islands(A)
+            idx_islands = tp.find_islands(A, active=self.bus_data.bus_active[:, 0])
 
             if len(idx_islands) == 1:  # only one state and only one island -> just copy the data
 
@@ -302,7 +302,7 @@ class TimeCircuit(SnapshotData):
                                             bus_active=self.bus_data.bus_active[:, t_array])
 
                 # find the matching islands
-                idx_islands = tp.find_islands(A)
+                idx_islands = tp.find_islands(A, active=self.bus_data.bus_active[:, t_array])
 
                 if len(idx_islands) == 1:  # many time states, one island -> slice only by time ------------------------
 
@@ -359,86 +359,86 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
 
     bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
 
-    nc.bus_data = ds.circuit_to_data.get_bus_data(circuit=circuit, time_series=True, ntime=ntime)
+    nc.bus_data = gc_compiler.get_bus_data(circuit=circuit, time_series=True, ntime=ntime)
 
-    nc.load_data = ds.circuit_to_data.get_load_data(circuit=circuit,
-                                                    bus_dict=bus_dict,
-                                                    opf_results=opf_results,
-                                                    time_series=True,
-                                                    ntime=ntime)
+    nc.load_data = gc_compiler.get_load_data(circuit=circuit,
+                                             bus_dict=bus_dict,
+                                             opf_results=opf_results,
+                                             time_series=True,
+                                             ntime=ntime)
 
-    nc.static_generator_data = ds.circuit_to_data.get_static_generator_data(circuit=circuit,
-                                                                            bus_dict=bus_dict,
-                                                                            time_series=True,
-                                                                            ntime=ntime)
+    nc.static_generator_data = gc_compiler.get_static_generator_data(circuit=circuit,
+                                                                     bus_dict=bus_dict,
+                                                                     time_series=True,
+                                                                     ntime=ntime)
 
-    nc.generator_data = ds.circuit_to_data.get_generator_data(circuit=circuit,
-                                                              bus_dict=bus_dict,
-                                                              Vbus=nc.bus_data.Vbus,
-                                                              logger=logger,
-                                                              opf_results=opf_results,
-                                                              time_series=True,
-                                                              ntime=ntime)
+    nc.generator_data = gc_compiler.get_generator_data(circuit=circuit,
+                                                       bus_dict=bus_dict,
+                                                       Vbus=nc.bus_data.Vbus,
+                                                       logger=logger,
+                                                       opf_results=opf_results,
+                                                       time_series=True,
+                                                       ntime=ntime)
 
-    nc.battery_data = ds.circuit_to_data.get_battery_data(circuit=circuit,
-                                                          bus_dict=bus_dict,
-                                                          Vbus=nc.bus_data.Vbus,
-                                                          logger=logger,
-                                                          opf_results=opf_results,
-                                                          time_series=True,
-                                                          ntime=ntime)
+    nc.battery_data = gc_compiler.get_battery_data(circuit=circuit,
+                                                   bus_dict=bus_dict,
+                                                   Vbus=nc.bus_data.Vbus,
+                                                   logger=logger,
+                                                   opf_results=opf_results,
+                                                   time_series=True,
+                                                   ntime=ntime)
 
-    nc.shunt_data = ds.circuit_to_data.get_shunt_data(circuit=circuit,
-                                                      bus_dict=bus_dict,
-                                                      Vbus=nc.bus_data.Vbus,
-                                                      logger=logger,
-                                                      time_series=True,
-                                                      ntime=ntime)
+    nc.shunt_data = gc_compiler.get_shunt_data(circuit=circuit,
+                                               bus_dict=bus_dict,
+                                               Vbus=nc.bus_data.Vbus,
+                                               logger=logger,
+                                               time_series=True,
+                                               ntime=ntime)
 
-    nc.line_data = ds.circuit_to_data.get_line_data(circuit=circuit,
-                                                    bus_dict=bus_dict,
-                                                    apply_temperature=apply_temperature,
-                                                    branch_tolerance_mode=branch_tolerance_mode,
-                                                    time_series=True,
-                                                    ntime=ntime)
+    nc.line_data = gc_compiler.get_line_data(circuit=circuit,
+                                             bus_dict=bus_dict,
+                                             apply_temperature=apply_temperature,
+                                             branch_tolerance_mode=branch_tolerance_mode,
+                                             time_series=True,
+                                             ntime=ntime)
 
-    nc.transformer_data = ds.circuit_to_data.get_transformer_data(circuit=circuit,
-                                                                  bus_dict=bus_dict,
-                                                                  time_series=True,
-                                                                  ntime=ntime)
+    nc.transformer_data = gc_compiler.get_transformer_data(circuit=circuit,
+                                                           bus_dict=bus_dict,
+                                                           time_series=True,
+                                                           ntime=ntime)
 
-    nc.vsc_data = ds.circuit_to_data.get_vsc_data(circuit=circuit,
-                                                  bus_dict=bus_dict,
-                                                  time_series=True,
-                                                  ntime=ntime)
+    nc.vsc_data = gc_compiler.get_vsc_data(circuit=circuit,
+                                           bus_dict=bus_dict,
+                                           time_series=True,
+                                           ntime=ntime)
 
-    nc.dc_line_data = ds.circuit_to_data.get_dc_line_data(circuit=circuit,
-                                                          bus_dict=bus_dict,
-                                                          apply_temperature=apply_temperature,
-                                                          branch_tolerance_mode=branch_tolerance_mode,
-                                                          time_series=True,
-                                                          ntime=ntime)
+    nc.dc_line_data = gc_compiler.get_dc_line_data(circuit=circuit,
+                                                   bus_dict=bus_dict,
+                                                   apply_temperature=apply_temperature,
+                                                   branch_tolerance_mode=branch_tolerance_mode,
+                                                   time_series=True,
+                                                   ntime=ntime)
 
-    nc.upfc_data = ds.circuit_to_data.get_upfc_data(circuit=circuit,
-                                                    bus_dict=bus_dict,
-                                                    time_series=True,
-                                                    ntime=ntime)
+    nc.upfc_data = gc_compiler.get_upfc_data(circuit=circuit,
+                                             bus_dict=bus_dict,
+                                             time_series=True,
+                                             ntime=ntime)
 
-    nc.branch_data = ds.circuit_to_data.get_branch_data(circuit=circuit,
-                                                        bus_dict=bus_dict,
-                                                        Vbus=nc.bus_data.Vbus,
-                                                        apply_temperature=apply_temperature,
-                                                        branch_tolerance_mode=branch_tolerance_mode,
-                                                        time_series=True,
-                                                        ntime=ntime,
-                                                        opf_results=opf_results)
+    nc.branch_data = gc_compiler.get_branch_data(circuit=circuit,
+                                                 bus_dict=bus_dict,
+                                                 Vbus=nc.bus_data.Vbus,
+                                                 apply_temperature=apply_temperature,
+                                                 branch_tolerance_mode=branch_tolerance_mode,
+                                                 time_series=True,
+                                                 ntime=ntime,
+                                                 opf_results=opf_results)
 
-    nc.hvdc_data = ds.circuit_to_data.get_hvdc_data(circuit=circuit,
-                                                    bus_dict=bus_dict,
-                                                    bus_types=nc.bus_data.bus_types,
-                                                    time_series=True,
-                                                    ntime=ntime,
-                                                    opf_results=opf_results)
+    nc.hvdc_data = gc_compiler.get_hvdc_data(circuit=circuit,
+                                             bus_dict=bus_dict,
+                                             bus_types=nc.bus_data.bus_types,
+                                             time_series=True,
+                                             ntime=ntime,
+                                             opf_results=opf_results)
 
     nc.consolidate_information()
 

@@ -157,7 +157,19 @@ class ResultsModel(QtCore.QAbstractTableModel):
         mdl = self.table.search_in_columns(txt)
 
         if mdl is not None:
-            print('Found')
+            return ResultsModel(mdl)
+        else:
+            return None
+
+    def search(self, txt):
+        """
+        Search stuff
+        :param txt:
+        :return:
+        """
+        mdl = self.table.search(txt)
+
+        if mdl is not None:
             return ResultsModel(mdl)
         else:
             return None

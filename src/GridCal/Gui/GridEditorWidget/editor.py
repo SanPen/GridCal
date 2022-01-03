@@ -16,9 +16,11 @@ import sys
 import os
 import numpy as np
 import pandas as pd
-
+from typing import List
 import networkx as nx
 from warnings import warn
+
+
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 from PySide2.QtGui import *
@@ -71,7 +73,7 @@ class EditorGraphicsView(QGraphicsView):
         @param editor:
         """
         QGraphicsView.__init__(self, scene, parent)
-
+        self._zoom = 0
         self.setDragMode(QGraphicsView.RubberBandDrag)
         self.setRubberBandSelectionMode(Qt.IntersectsItemShape)
         self.setMouseTracking(True)
@@ -278,7 +280,6 @@ class DiagramScene(QGraphicsScene):
         """
         fig = plt.figure(figsize=(12, 8))
         ax_1 = fig.add_subplot(211)
-        # ax_2 = fig.add_subplot(212, sharex=ax_1)
         ax_2 = fig.add_subplot(212)
 
         # set time
@@ -313,10 +314,10 @@ class DiagramScene(QGraphicsScene):
                                 power_data[key.value] = driver.results.Sf.real[:, i]
                                 loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
 
-                            elif key == SimulationTypes.NetTransferCapacityTS_run:
-                                power_data[key.value] = driver.results.atc[:, i]
-                                atc_perc = driver.results.atc[:, i] / (api_object.rate_prof + 1e-9)
-                                loading_data[key.value] = np.sort(np.abs(atc_perc * 100.0))
+                            # elif key == SimulationTypes.NetTransferCapacityTS_run:
+                            #     power_data[key.value] = driver.results.atc[:, i]
+                            #     atc_perc = driver.results.atc[:, i] / (api_object.rate_prof + 1e-9)
+                            #     loading_data[key.value] = np.sort(np.abs(atc_perc * 100.0))
 
                             elif key == SimulationTypes.ContingencyAnalysisTS_run:
                                 power_data[key.value] = driver.results.worst_flows.real[:, i]
@@ -480,34 +481,6 @@ class DiagramScene(QGraphicsScene):
                 # plot the profiles
                 plt.show()
 
-
-        # fig = plt.figure(figsize=(12, 8))
-        #
-        # ax_1 = fig.add_subplot(211)
-        # ax_2 = fig.add_subplot(212, sharex=ax_1)
-        #
-        # x = self.circuit.time_profile
-        # if x is not None:
-        #     if len(x) > 0:
-        #         # loading
-        #         y = api_object.Pset_prof / (api_object.rate_prof + 1e-9) * 100.0
-        #         df = pd.DataFrame(data=y, index=x, columns=[api_object.name])
-        #         ax_1.set_title('Loading', fontsize=14)
-        #         ax_1.set_ylabel('Loading [%]', fontsize=11)
-        #         df.plot(ax=ax_1)
-        #
-        #         # losses
-        #         y = api_object.Pset_prof * api_object.loss_factor
-        #         df = pd.DataFrame(data=y, index=x, columns=[api_object.name])
-        #         ax_2.set_title('Losses', fontsize=14)
-        #         ax_2.set_ylabel('Losses [MVA]', fontsize=11)
-        #         df.plot(ax=ax_2)
-        #
-        #         plt.legend()
-        #         fig.suptitle(api_object.name, fontsize=20)
-        #
-        #         plt.show()
-
     def set_rate_to_profile(self, api_object):
         """
 
@@ -515,51 +488,61 @@ class DiagramScene(QGraphicsScene):
         """
         if api_object is not None:
             if api_object.rate_prof is not None:
-                quit_msg = "Are you sure that you want to overwrite the rates profile with the snapshot value?"
-                reply = QMessageBox.question(self.parent_, 'Overwrite the profile', quit_msg, QMessageBox.Yes, QMessageBox.No)
+                quit_msg = str(api_object.name) + \
+                           "\nAre you sure that you want to overwrite the rates profile with the snapshot value?"
+                reply = QMessageBox.question(self.parent_, 'Overwrite the profile', quit_msg,
+                                             QMessageBox.Yes, QMessageBox.No)
 
                 if reply == QMessageBox.Yes:
                     api_object.rate_prof *= 0
                     api_object.rate_prof += api_object.rate
 
-    def set_active_status_to_profile(self, api_object):
+    def set_active_status_to_profile(self, api_object, override_question=False):
         """
 
         :param api_object:
+        :param override_question:
+        :return:
         """
         if api_object is not None:
             if api_object.active_prof is not None:
-                quit_msg = "Are you sure that you want to overwrite the rates profile with the snapshot value?"
-                reply = QMessageBox.question(self.parent_, 'Overwrite the profile', quit_msg, QMessageBox.Yes, QMessageBox.No)
+                if not override_question:
+                    quit_msg = str(api_object.name) + \
+                               "\nAre you sure that you want to overwrite the active profile with the snapshot value?"
+                    reply = QMessageBox.question(self.parent_, 'Overwrite the active profile', quit_msg,
+                                                 QMessageBox.Yes, QMessageBox.No)
+                    ok = reply == QMessageBox.Yes
+                else:
+                    ok = True
 
-                if reply == QMessageBox.Yes:
+                if ok:
                     shape = api_object.active_prof.shape
                     if api_object.active:
                         api_object.active_prof = np.ones(shape, dtype=bool)
                     else:
                         api_object.active_prof = np.zeros(shape, dtype=bool)
 
-    def mouseMoveEvent(self, mouseEvent):
+    def mouseMoveEvent(self, event):
         """
 
-        @param mouseEvent:
+        @param event:
         @return:
         """
-        self.parent_.scene_mouse_move_event(mouseEvent)
+        self.parent_.scene_mouse_move_event(event)
 
         # call the parent event
-        super(DiagramScene, self).mouseMoveEvent(mouseEvent)
+        super(DiagramScene, self).mouseMoveEvent(event)
 
-    def mouseReleaseEvent(self, mouseEvent):
+    def mouseReleaseEvent(self, event):
         """
 
-        @param mouseEvent:
+        @param event:
         @return:
         """
-        self.parent_.scene_mouse_release_event(mouseEvent)
+        self.parent_.scene_mouse_release_event(event)
 
         # call mouseReleaseEvent on "me" (continue with the rest of the actions)
-        super(DiagramScene, self).mouseReleaseEvent(mouseEvent)
+        super(DiagramScene, self).mouseReleaseEvent(event)
 
 
 class ObjectFactory(object):
@@ -1332,7 +1315,7 @@ class GridEditor(QSplitter):
                                        prog_func=prog_func,
                                        text_func=text_func)
 
-    def align_schematic(self):
+    def align_schematic(self, buses: List[Bus] = []):
         """
         Align the scene view to the content
         """
@@ -1342,8 +1325,13 @@ class GridEditor(QSplitter):
         max_x = -sys.maxsize
         max_y = -sys.maxsize
 
+        if len(buses):
+            lst = buses
+        else:
+            lst = self.circuit.buses
+
         # Align lines
-        for bus in self.circuit.buses:
+        for bus in lst:
             bus.graphic_obj.arrange_children()
             # get the item position
             x = bus.graphic_obj.pos().x()
@@ -1389,3 +1377,10 @@ class GridEditor(QSplitter):
 
 
 
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
+    circuit = MultiCircuit()
+    window = GridEditor(circuit)
+    window.show()
+    sys.exit(app.exec_())

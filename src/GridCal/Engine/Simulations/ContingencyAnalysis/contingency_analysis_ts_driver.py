@@ -156,8 +156,19 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
         self.progress_text.emit('Computing branch base loading...')
         Pbus = ts_numeric_circuit.Sbus.real
-        flows = linear_analysis.get_flows_time_series(Pbus)
         rates = ts_numeric_circuit.ContingencyRates.T
+
+        # get flow
+        if self.options.use_provided_flows:
+            flows = self.options.Pf
+
+            if self.options.Pf is None:
+                msg = 'The option to use the provided flows is enabled, but no flows are available'
+                self.logger.add_error(msg)
+                raise Exception(msg)
+        else:
+            # compute the base Sf
+            flows = linear_analysis.get_flows_time_series(Pbus)  # will be converted to MW internally
 
         self.progress_text.emit('Computing N-1 loading...')
 

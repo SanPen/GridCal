@@ -1,7 +1,10 @@
+import time
+
 from scipy.sparse import hstack as sphs, vstack as spvs, csc_matrix, csr_matrix
 from scipy.sparse.linalg import spsolve
 import numpy as np
 from numpy import conj, arange
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 
 
 def dSbus_dV(Ybus, V):
@@ -280,24 +283,24 @@ def Jacobian_SE(Ybus, Yf, Yt, V, f, t, inputs, pvpq):
     # pack the mismatch vector
     h = np.r_[h1, h2, h3, h4, h5, h6]
 
-    return H, h
+    return H, h, S
 
 
-def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
+def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv) -> NumericPowerFlowResults:
     """
     Solve the state estimation problem using the Levenberg-Marquadt method
-    :param Ybus: 
-    :param Yf: 
-    :param Yt: 
+    :param Ybus: Admittance matrix
+    :param Yf: Admittance matrix of the from branches
+    :param Yt: Admittance matrix of the to branches
     :param f: array with the from bus indices of all the branches
     :param t: array with the to bus indices of all the branches
-    :param inputs: state estimation imput instance (contains the measurements)
-    :param ref: 
-    :param pq: 
-    :param pv: 
-    :return: 
+    :param se_input: state estimation input instance (contains the measurements)
+    :param ref: array of slack node indices
+    :param pq: array of pq node indices
+    :param pv: array of pv node indices
+    :return: NumericPowerFlowResults instance
     """
-
+    start_time = time.time()
     pvpq = np.r_[pv, pq]
     npvpq = len(pvpq)
     npq = len(pq)
@@ -316,19 +319,17 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
     max_iter = 100
     iter_ = 0
     Idn = csc_matrix(np.identity(2 * n - nvd))  # identity matrix
-    # x = np.r_[np.angle(V)[pvpq], np.abs(V)]
     Va = np.angle(V)
     Vm = np.abs(V)
     lbmda = 0  # any large number
     f_obj_prev = 1e9  # very large number
 
-    update_jacobian = False
     converged = False
     err = 1e20
     nu = 2.0
 
     # first computation of the jacobian and free term
-    H, h = Jacobian_SE(Ybus, Yf, Yt, V, f, t, se_input, pvpq)
+    H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, f, t, se_input, pvpq)
 
     while not converged and iter_ < max_iter:
 
@@ -367,14 +368,14 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
             nu = 2.0
 
             # modify the solution
-            dVa = dx[0:npvpq]
-            dVm = dx[npvpq:npvpq + npq + 1]
+            dVa = dx[:npvpq]
+            dVm = dx[npvpq:]
             Va[pvpq] += dVa
-            Vm += dVm
+            Vm += dVm  # yes, this is for all the buses
             V = Vm * np.exp(1j * Va)
 
             # update Jacobian
-            H, h = Jacobian_SE(Ybus, Yf, Yt, V, f, t, se_input, pvpq)
+            H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, f, t, se_input, pvpq)
 
         else:
             lbmda = lbmda * nu
@@ -388,7 +389,9 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv):
         f_obj_prev = f_obj
         iter_ += 1
 
-    return V, err, converged
+    elapsed = time.time() - start_time
+
+    return NumericPowerFlowResults(V, converged, err, Scalc, None, None, None, None, None, None, iter_, elapsed)
 
 
 if __name__ == '__main__':
@@ -403,9 +406,9 @@ if __name__ == '__main__':
     b2 = Bus('B2')
     b3 = Bus('B3')
 
-    br1 = Branch(b1, b2, 'Br1', 0.01, 0.03)
-    br2 = Branch(b1, b3, 'Br2', 0.02, 0.05)
-    br3 = Branch(b2, b3, 'Br3', 0.03, 0.08)
+    br1 = Line(b1, b2, 'Br1', r=0.01, x=0.03)
+    br2 = Line(b1, b3, 'Br2', r=0.02, x=0.05)
+    br3 = Line(b2, b3, 'Br3', r=0.03, x=0.08)
 
     # add measurements
     br1.measurements.append(Measurement(0.888, 0.008, MeasurementType.Pflow))
@@ -436,9 +439,9 @@ if __name__ == '__main__':
     se.run()
 
     print()
-    print('V: ', se.se_results.voltage)
-    print('Vm: ', np.abs(se.se_results.voltage))
-    print('Va: ', np.angle(se.se_results.voltage))
+    print('V: ', se.results.voltage)
+    print('Vm: ', np.abs(se.results.voltage))
+    print('Va: ', np.angle(se.results.voltage))
 
     """
     The validated output is:

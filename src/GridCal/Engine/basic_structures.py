@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+from typing import List, Any, Dict
 from enum import Enum
 import pandas as pd
 import numpy as np
@@ -39,6 +40,24 @@ class BusMode(Enum):
     def argparse(s):
         try:
             return BusMode[s]
+        except KeyError:
+            return s
+
+
+class ExternalGridMode(Enum):
+    PQ = 1
+    VD = 2
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return ExternalGridMode[s]
         except KeyError:
             return s
 
@@ -272,6 +291,25 @@ class SyncIssueType(Enum):
             return s
 
 
+class EngineType(Enum):
+    GridCal = 'GridCal'
+    Bentayga = 'Bentayga'
+    Newton = 'NewtonNative'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return EngineType[s]
+        except KeyError:
+            return s
+
+
 class CDF:
     """
     Inverse Cumulative density function of a given array of data
@@ -493,6 +531,7 @@ class StatisticalCharacterization:
 
 
 class MIPSolvers(Enum):
+    GLOP = "GLOP"
     CBC = 'CBC'
     SCIP = 'SCIP'
     CPLEX = 'CPLEX'
@@ -651,6 +690,7 @@ class LogSeverity(Enum):
     Error = 'Error'
     Warning = 'Warning'
     Information = 'Information'
+    Divergence = 'Divergence'
 
     def __str__(self):
         return self.value
@@ -693,9 +733,9 @@ class Logger:
 
     def __init__(self):
 
-        self.entries = list()  # List[LogEntry]
+        self.entries: List[LogEntry] = list()
 
-    def append(self, txt):
+    def append(self, txt: str):
         """
 
         :param txt:
@@ -706,7 +746,7 @@ class Logger:
     def has_logs(self):
         return len(self.entries) > 0
 
-    def add_info(self, msg, device="", value="", expected_value=""):
+    def add_info(self, msg: str, device="", value="", expected_value=""):
         """
 
         :param msg:
@@ -738,6 +778,19 @@ class Logger:
         :return:
         """
         self.entries.append(LogEntry(msg, LogSeverity.Error, device, str(value), str(expected_value)))
+
+    def add_divergence(self, msg, device="", value=0, expected_value=0, tol=1e-6):
+        """
+
+        :param msg:
+        :param device:
+        :param value:
+        :param expected_value
+        :return:
+        """
+
+        if abs(value - expected_value) > tol:
+            self.entries.append(LogEntry(msg, LogSeverity.Divergence, device, str(value), str(expected_value)))
 
     def add(self, msg, severity: LogSeverity = LogSeverity.Error, device="", value="", expected_value=""):
         """
@@ -830,6 +883,150 @@ class Logger:
 
     def size(self):
         return len(self.entries)
+
+
+class ConvergenceReport:
+
+    def __init__(self):
+        self.methods_ = list()
+        self.converged_ = list()
+        self.error_ = list()
+        self.elapsed_ = list()
+        self.iterations_ = list()
+
+    def add(self, method, converged, error, elapsed, iterations):
+        self.methods_.append(method)
+        self.converged_.append(converged)
+        self.error_.append(error)
+        self.elapsed_.append(elapsed)
+        self.iterations_.append(iterations)
+
+    def converged(self):
+        if len(self.converged_) > 0:
+            return self.converged_[-1]
+        else:
+            return False
+
+    def error(self):
+        if len(self.error_) > 0:
+            return self.error_[-1]
+        else:
+            return 0
+
+    def elapsed(self):
+        if len(self.elapsed_) > 0:
+            return self.elapsed_[-1]
+        else:
+            return 0
+
+    def to_dataframe(self):
+        data = {'Method': self.methods_,
+                'Converged?': self.converged_,
+                'Error': self.error_,
+                'Elapsed (s)': self.elapsed_,
+                'Iterations': self.iterations_}
+
+        df = pd.DataFrame(data)
+
+        return df
+
+
+def get_list_dim(a):
+    if not type(a) == list:
+        return 0
+    else:
+        if len(a) > 0:
+            if type(a[0]) == list:
+                return 2
+            else:
+                return 1
+        else:
+            return 1
+
+
+class CompressedJsonStruct:
+    """
+    Compressed json block
+    """
+    def __init__(self, fields: List[str] = None, data: List[Any] = None):
+        self.__fields: List[str] = list()
+        self.__data: List[Any] = list() if data is None else data
+
+        if fields is not None:
+            self.__fields = fields
+
+        if data is not None:
+            self.set_data(data)
+
+        self.__fields_pos_dict: Dict[str, int] = self.get_position_dict()
+
+    def get_position_dict(self):
+        return {val: i for i, val in enumerate(self.__fields)}
+
+    def set_fields(self, fields: List[str]):
+        """
+        Set the block fields and initialize the reverse index lookup
+        :param fields: list of property names
+        :return:
+        """
+        self.__fields = fields
+        self.__fields_pos_dict = self.get_position_dict()
+
+    def set_data(self, dta: List[Any]):
+        """
+        Set the data and check its consistency
+        :param dta: list of lists
+        :return: Nothing
+        """
+        if type(dta) == list:
+            if len(dta) > 0:
+
+                dim = get_list_dim(dta)
+
+                if dim == 2:
+                    self.__data = dta
+                elif dim == 1:
+                    self.__data = [dta]
+                else:
+                    raise Exception('The list has the wrong number of dimensions: ' + str(dim))
+
+                if len(self.__data[0]) != len(self.__fields):
+                    raise Exception("Data length does not match the fields length")
+
+    def get_data(self):
+        return self.__data
+
+    def get_row_number(self):
+        return len(self.__data)
+
+    def get_col_index(self, prop):
+        return self.__fields_pos_dict[prop]
+
+    def get_final_dict(self):
+        return {'fields': self.__fields,
+                'data': self.__data[0] if len(self.__data) == 1 else self.__data}
+
+    def get_dict_at(self, i):
+        return {f: val for f, val in zip(self.__fields, self.__data[i])}
+
+    def declare_n_entries(self, n):
+        """
+        Add n entries to the data
+        :param n:
+        :return:
+        """
+        nf = len(self.__fields)
+        self.__data = [[None] * nf for i in range(n)]
+
+    def set_at(self, i, col_name, val):
+        """
+        Set value at a position, counts that the data has been declared
+        :param i: column index (object index)
+        :param col_name: name of the property
+        :param val: value to set
+        """
+        j = self.get_col_index(prop=col_name)
+        self.__data[i][j] = val
 
 
 if __name__ == '__main__':

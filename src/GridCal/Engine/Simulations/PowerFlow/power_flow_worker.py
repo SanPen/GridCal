@@ -22,6 +22,7 @@ import GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow as acjb
 import GridCal.Engine.Simulations.PowerFlow.jacobian_based_acdc_power_flow as acdcjb
 import GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow as acfd
 import GridCal.Engine.Simulations.PowerFlow.helm_power_flow as hl
+import GridCal.Engine.Simulations.PowerFlow.gausspf as gs
 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
@@ -31,53 +32,8 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
 
-class ConvergenceReport:
-
-    def __init__(self):
-        self.methods_ = list()
-        self.converged_ = list()
-        self.error_ = list()
-        self.elapsed_ = list()
-        self.iterations_ = list()
-
-    def add(self, method, converged, error, elapsed, iterations):
-        self.methods_.append(method)
-        self.converged_.append(converged)
-        self.error_.append(error)
-        self.elapsed_.append(elapsed)
-        self.iterations_.append(iterations)
-
-    def converged(self):
-        if len(self.converged_) > 0:
-            return self.converged_[-1]
-        else:
-            return False
-
-    def error(self):
-        if len(self.error_) > 0:
-            return self.error_[-1]
-        else:
-            return 0
-
-    def elapsed(self):
-        if len(self.elapsed_) > 0:
-            return self.elapsed_[-1]
-        else:
-            return 0
-
-    def to_dataframe(self):
-        data = {'Method': self.methods_,
-                'Converged?': self.converged_,
-                'Error': self.error_,
-                'Elapsed (s)': self.elapsed_,
-                'Iterations': self.iterations_}
-
-        df = pd.DataFrame(data)
-
-        return df
-
-
-def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceReport, V0, Sbus, Ibus,
+def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.ConvergenceReport, V0, Sbus, Ibus,
+          ma, theta, Beq,
           pq, pv, ref, pqpv, logger=bs.Logger()) -> NumericPowerFlowResults:
     """
     Run a power flow simulation using the selected method (no outer loop controls).
@@ -160,9 +116,11 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
             solution = aclin.dcpf(Ybus=circuit.Ybus,
                                   Bpqpv=circuit.Bpqpv,
                                   Bref=circuit.Bref,
+                                  Btheta=circuit.Btheta,
                                   Sbus=Sbus,
                                   Ibus=Ibus,
                                   V0=V0,
+                                  theta=theta,
                                   ref=ref,
                                   pvpq=pqpv,
                                   pq=pq,
@@ -177,6 +135,16 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
                                    Vset=V0,
                                    pq=pq,
                                    pv=pv)
+
+        elif solver_type == bs.SolverType.GAUSS:
+            solution = gs.gausspf(Ybus=circuit.Ybus,
+                                  Sbus=Sbus,
+                                  V0=V0,
+                                  pv=pv,
+                                  pq=pq,
+                                  tol=options.tolerance,
+                                  max_it=options.max_iter,
+                                  verbose=False)
 
         # Levenberg-Marquardt
         elif solver_type == bs.SolverType.LM:
@@ -285,6 +253,9 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
             # for any other method, raise exception
             raise Exception(solver_type.value + ' Not supported in power flow mode')
 
+        # record the solution type
+        solution.method = solver_type
+
         # record the method used, if it improved the solution
         if solution.norm_f < final_solution.norm_f:
             report.add(method=solver_type,
@@ -313,7 +284,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: ConvergenceR
 
 
 def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
-                          voltage_solution, Sbus, Ibus, branch_rates,
+                          voltage_solution, Sbus, Ibus, ma, theta, Beq, branch_rates,
                           pq, pv, vd, pqpv, logger=bs.Logger()) -> "PowerFlowResults":
     """
     Run a power flow simulation for a single circuit using the selected outer loop
@@ -335,14 +306,14 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     # get the original types and compile this class' own lists of node types for thread independence
     bus_types = circuit.bus_types.copy()
 
-    report = ConvergenceReport()
+    report = bs.ConvergenceReport()
     solution = NumericPowerFlowResults(V=voltage_solution,
                                        converged=False,
                                        norm_f=1e200,
                                        Scalc=Sbus,
-                                       ma=circuit.branch_data.m[:, 0],
-                                       theta=circuit.branch_data.theta[:, 0],
-                                       Beq=circuit.branch_data.Beq[:, 0],
+                                       ma=ma,
+                                       theta=theta,
+                                       Beq=Beq,
                                        Ybus=circuit.Ybus,
                                        Yf=circuit.Yf,
                                        Yt=circuit.Yt,
@@ -366,6 +337,9 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                          V0=voltage_solution,
                          Sbus=Sbus,
                          Ibus=Ibus,
+                         ma=ma,
+                         theta=theta,
+                         Beq=Beq,
                          pq=pq,
                          pv=pv,
                          ref=vd,
@@ -387,6 +361,9 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                                  V0=solution.V,
                                  Sbus=Sbus + delta,
                                  Ibus=Ibus,
+                                 ma=ma,
+                                 theta=theta,
+                                 Beq=Beq,
                                  pq=pq,
                                  pv=pv,
                                  ref=vd,
@@ -399,7 +376,8 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                                                                                V=solution.V,
                                                                                branch_rates=branch_rates,
                                                                                Yf=solution.Yf,
-                                                                               Yt=solution.Yt)
+                                                                               Yt=solution.Yt,
+                                                                               method=solution.method)
 
     # voltage, Sf, loading, losses, error, converged, Qpv
     results = PowerFlowResults(n=circuit.nbus,
@@ -433,7 +411,8 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
     return results
 
 
-def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_rates, Yf=None, Yt=None):
+def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_rates, Yf=None, Yt=None,
+                            method: bs.SolverType = None):
     """
     Compute the power Sf trough the branches.
 
@@ -453,36 +432,49 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
     vd = calculation_inputs.vd
     pv = calculation_inputs.pv
 
-    # power at the slack nodes
-    Sbus[vd] = V[vd] * np.conj(calculation_inputs.Ybus[vd, :].dot(V))
-
-    # Reactive power at the pv nodes
-    P = Sbus[pv].real
-    Q = (V[pv] * np.conj(calculation_inputs.Ybus[pv, :].dot(V))).imag
-    Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
-
-    if Yf is None:
-        Yf = calculation_inputs.Yf
-    if Yt is None:
-        Yt = calculation_inputs.Yt
-
-    # Branches current, loading, etc
     Vf = calculation_inputs.Cf * V
     Vt = calculation_inputs.Ct * V
-    If = Yf * V
-    It = Yt * V
-    Sf = Vf * np.conj(If)
-    St = Vt * np.conj(It)
 
-    # Branch losses in MVA
-    losses = (Sf + St) * calculation_inputs.Sbase
+    if method not in [bs.SolverType.DC]:
+        # power at the slack nodes
+        Sbus[vd] = V[vd] * np.conj(calculation_inputs.Ybus[vd, :].dot(V))
 
-    # branch voltage increment
-    Vbranch = Vf - Vt
+        # Reactive power at the pv nodes
+        P = Sbus[pv].real
+        Q = (V[pv] * np.conj(calculation_inputs.Ybus[pv, :].dot(V))).imag
+        Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
 
-    # Branch power in MVA
-    Sfb = Sf * calculation_inputs.Sbase
-    Stb = St * calculation_inputs.Sbase
+        if Yf is None:
+            Yf = calculation_inputs.Yf
+        if Yt is None:
+            Yt = calculation_inputs.Yt
+
+        # Branches current, loading, etc
+        If = Yf * V
+        It = Yt * V
+        Sf = Vf * np.conj(If)
+        St = Vt * np.conj(It)
+
+        # Branch losses in MVA
+        losses = (Sf + St) * calculation_inputs.Sbase
+
+        # branch voltage increment
+        Vbranch = Vf - Vt
+
+        # Branch power in MVA
+        Sfb = Sf * calculation_inputs.Sbase
+        Stb = St * calculation_inputs.Sbase
+    else:
+        # DC power flow
+        theta_f = np.angle(Vf, deg=False)
+        theta_t = np.angle(Vt, deg=False)
+        Vbranch = theta_f - theta_t
+        Sf = (1.0 / calculation_inputs.branch_data.X) * Vbranch
+        Sfb = Sf * calculation_inputs.Sbase
+        Stb = Sf * calculation_inputs.Sbase
+        If = Sfb
+        It = Stb
+        losses = np.zeros(calculation_inputs.nbr)
 
     # Branch loading in p.u.
     loading = Sfb / (branch_rates + 1e-9)
@@ -490,7 +482,7 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
     return Sfb, Stb, If, It, Vbranch, loading, losses, Sbus
 
 
-def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, branch_rates,
+def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, ma, theta, Beq, branch_rates,
                      pq, pv, vd, pqpv,
                      options: PowerFlowOptions, logger: bs.Logger) -> "PowerFlowResults":
     """
@@ -515,6 +507,7 @@ def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, branch_rates,
                                     voltage_solution=Vbus,
                                     Sbus=Sbus,
                                     Ibus=Ibus,
+                                    ma=ma, theta=theta, Beq=Beq,
                                     branch_rates=branch_rates,
                                     pq=pq,
                                     pv=pv,
@@ -571,6 +564,9 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                        Vbus=calculation_input.Vbus,
                                        Sbus=calculation_input.Sbus,
                                        Ibus=calculation_input.Ibus,
+                                       ma=calculation_input.branch_data.m[:, 0],
+                                       theta=calculation_input.branch_data.theta[:, 0],
+                                       Beq=calculation_input.branch_data.Beq[:, 0],
                                        branch_rates=calculation_input.Rates,
                                        pq=calculation_input.pq,
                                        pv=calculation_input.pv,
@@ -598,6 +594,9 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                    Vbus=calculation_inputs[0].Vbus,
                                    Sbus=calculation_inputs[0].Sbus,
                                    Ibus=calculation_inputs[0].Ibus,
+                                   ma=calculation_inputs[0].branch_data.m[:, 0],
+                                   theta=calculation_inputs[0].branch_data.theta[:, 0],
+                                   Beq=calculation_inputs[0].branch_data.Beq[:, 0],
                                    branch_rates=calculation_inputs[0].Rates,
                                    pq=calculation_inputs[0].pq,
                                    pv=calculation_inputs[0].pv,

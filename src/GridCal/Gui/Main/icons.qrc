@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/ml.svg</file>
+    <file>icons/area_transfer.svg</file>
+    <file>icons/atc_ts_clustering.svg</file>
     <file>icons/bus_icon.svg</file>
     <file>icons/inputs_analysis.svg</file>
     <file>icons/ntc_opf_ts.svg</file>

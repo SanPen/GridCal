@@ -11,6 +11,7 @@ def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1):
 
     :param circuit:
     :param time_series:
+    :param ntime:
     :return:
     """
     bus_data = BusData(nbus=len(circuit.buses), ntime=ntime)

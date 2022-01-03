@@ -37,4 +37,4 @@ class Measurement:
         self.val = value
         self.sigma = uncertainty
         self.measurement_type = mtype
-        idtag = idtag
+        self.idtag = idtag

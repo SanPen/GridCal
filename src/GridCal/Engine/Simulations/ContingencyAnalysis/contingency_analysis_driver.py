@@ -52,11 +52,16 @@ def enumerate_states_n_k(m, k=1):
 
 class ContingencyAnalysisOptions:
 
-    def __init__(self, distributed_slack=True, correct_values=True):
+    def __init__(self, distributed_slack=True, correct_values=True,
+                 use_provided_flows=False, Pf=None):
 
         self.distributed_slack = distributed_slack
 
         self.correct_values = correct_values
+
+        self.use_provided_flows = use_provided_flows
+
+        self.Pf = Pf
 
 
 class ContingencyAnalysisDriver(DriverTemplate):
@@ -116,23 +121,27 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         # get the contingency branch indices
         br_idx = linear_analysis.numerical_circuit.branch_data.get_contingency_enabled_indices()
+        mon_idx = linear_analysis.numerical_circuit.branch_data.get_monitor_enabled_indices()
         Pbus = self.numerical_circuit.get_injections(False).real[:, 0]
         PTDF = linear_analysis.PTDF
         LODF = linear_analysis.LODF
 
         # compute the branch Sf in "n"
-        flows_n = np.dot(PTDF, Pbus)
+        if self.options.use_provided_flows:
+            flows_n = self.options.Pf
+
+            if self.options.Pf is None:
+                msg = 'The option to use the provided flows is enabled, but no flows are available'
+                self.logger.add_error(msg)
+                raise Exception(msg)
+        else:
+            flows_n = linear_analysis.get_flows(self.numerical_circuit.Sbus)
 
         self.progress_text.emit('Computing loading...')
 
         for ic, c in enumerate(br_idx):  # branch that fails (contingency)
-
-            # results.Sf[:, c] = flows_n[:] + LODF[:, c] * flows_n[c]
-            # results.loading[:, c] = results.Sf[:, c] / (self.numerical_circuit.ContingencyRates + 1e-9)
-            # results.S[c, :] = Pbus
-
-            results.Sf[br_idx, c] = flows_n[br_idx] + LODF[br_idx, c] * flows_n[c]
-            results.loading[br_idx, c] = results.Sf[br_idx, c] / (self.numerical_circuit.ContingencyRates[br_idx] + 1e-9)
+            results.Sf[mon_idx, c] = flows_n[mon_idx] + LODF[mon_idx, c] * flows_n[c]
+            results.loading[mon_idx, c] = results.Sf[mon_idx, c] / (self.numerical_circuit.ContingencyRates[mon_idx] + 1e-9)
             results.S[c, :] = Pbus
 
             self.progress_signal.emit((ic + 1) / len(br_idx) * 100)
@@ -156,7 +165,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
 if __name__ == '__main__':
     import os
     import pandas as pd
-    from GridCal.Engine import FileOpen, SolverType,PowerFlowOptions
+    from GridCal.Engine import FileOpen, SolverType, PowerFlowOptions
 
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
