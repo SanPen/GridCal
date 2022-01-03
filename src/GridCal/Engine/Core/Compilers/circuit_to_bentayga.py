@@ -412,7 +412,7 @@ def get_hvdc_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time
         else:
             hvdc.contingency_rates = elm.rate * elm.contingency_factor
 
-        btgCircuit.add_transformer_all(hvdc)
+        btgCircuit.add_hvdc_line(hvdc)
 
 
 def to_bentayga(circuit: MultiCircuit, time_series: bool):

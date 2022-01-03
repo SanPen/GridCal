@@ -547,7 +547,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
     z[2 * nb] = 1.0
 
     # generate lookup pvpq -> index pvpq (used in createJ)
-    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+    pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
     pvpq_lookup[pvpq] = np.arange(len(pvpq))
 
     # compute total bus installed power

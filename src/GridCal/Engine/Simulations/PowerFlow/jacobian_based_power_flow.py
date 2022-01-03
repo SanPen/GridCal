@@ -293,7 +293,7 @@ def NR_LS_lynn(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0
     if npvpq > 0:
 
         # generate lookup pvpq -> index pvpq (used in createJ)
-        pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+        pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
         pvpq_lookup[pvpq] = np.arange(npvpq)
 
         # evaluate F(x0)
@@ -384,7 +384,7 @@ def NR_LS_lynn(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0
                     npv = len(pv)
                     npq = len(pq)
                     npvpq = npv + npq
-                    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+                    pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
                     pvpq_lookup[pvpq] = np.arange(npvpq)
 
                     # recompute the error based on the new Sbus
@@ -456,7 +456,7 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     if npvpq > 0:
 
         # generate lookup pvpq -> index pvpq (used in createJ)
-        pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+        pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
         pvpq_lookup[pvpq] = np.arange(npvpq)
 
         # evaluate F(x0)
@@ -559,7 +559,7 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                     npv = len(pv)
                     npq = len(pq)
                     npvpq = npv + npq
-                    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+                    pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
                     pvpq_lookup[pvpq] = np.arange(npvpq)
 
                     # recompute the error based on the new Sbus
@@ -763,7 +763,7 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
     if npvpq > 0:
 
         # generate lookup pvpq -> index pvpq (used in createJ)
-        pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+        pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
         pvpq_lookup[pvpq] = np.arange(len(pvpq))
 
         # evaluate F(x0)
@@ -842,7 +842,7 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
                     npv = len(pv)
                     npq = len(pq)
                     npvpq = npv + npq
-                    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+                    pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
                     pvpq_lookup[pvpq] = np.arange(npvpq)
 
                     # recompute the error based on the new Sbus
@@ -916,7 +916,7 @@ def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max
         Idn = sp.diags(np.ones(nn))  # csc_matrix identity
 
         # generate lookup pvpq -> index pvpq (used in createJ)
-        pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+        pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
         pvpq_lookup[pvpq] = np.arange(len(pvpq))
 
         while not converged and iter_ < max_it:
@@ -1004,7 +1004,7 @@ def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max
                     npv = len(pv)
                     npq = len(pq)
                     npvpq = npv + npq
-                    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+                    pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
                     pvpq_lookup[pvpq] = np.arange(npvpq)
 
                     nn = 2 * npq + npv
