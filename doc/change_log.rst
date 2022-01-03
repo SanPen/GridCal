@@ -110,7 +110,7 @@ Version 4.2.0
 - Added the ability to save the results into the file, loading and unloading from the file. This is a massive feature.
 - Added contingency analysis colouring.
 - Added ATC generation scaling based on the installed power.
-- Added NTV calculation using optimal dispatch (blue lambda).
+- Added NTC calculation using optimal dispatch (blue lambda).
 - Added time series bus type series. Now the bus types change upon the generators' availability.
 
 - Better detection of power imbalances in the analysis tool.
