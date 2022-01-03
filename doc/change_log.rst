@@ -10,6 +10,24 @@ This section describes the changes introduced at each Version.
 this is because the stupid policy of pypi to not allow to correct packages.
 Hence if something goes wrong, you need to re-upload with a new Version number.
 
+Version 4.3.1
+^^^^^^^^^^^^^^^
+
+- Fixed State Estimation error.
+- Fixed: The buses name change immediately change the GUI bus name tag.
+
+- Added NTC-OPF pre-solve diagnostic.
+- Added ATC clustering simulation.
+- Added DC power flow phase shifter effects.
+- Added Newton interface for power flow.
+- Added bentayga interface for power flow and time series.
+
+- Improved: Better island detection when buses are disconnected.
+
+- Modified the ATC report to be similar to the NTC-OPF report.
+
+- Rearranged the settings (added ML and Areas tabs)
+
 Version 4.2.8
 ^^^^^^^^^^^^^^^
 

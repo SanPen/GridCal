@@ -2245,6 +2245,37 @@ class MultiCircuit:
                 lst.append((k, branch, -1.0))
         return lst
 
+    def get_branch_area_connectivity_matrix(self, a1: List[Area], a2: List[Area]):
+        """
+        Get the inter area connectivity matrix
+        :param a1: list of sending areas
+        :param a2: list of receiving areas
+        :return: Connectivity of the branches to each sending or receiving area groups (branches, 2)
+        """
+        area_dict = {a: i for i, a in enumerate(self.areas)}
+
+        area1_list = [area_dict[a] for a in a1]
+        area2_list = [area_dict[a] for a in a2]
+
+        branches = self.get_branches()  # all including HVDC
+
+        conn = lil_matrix((len(branches), 2), dtype=int)
+
+        for k, elm in enumerate(branches):
+            i = area_dict[elm.bus_from.area]
+            j = area_dict[elm.bus_to.area]
+            if i != j:
+                if (i in area1_list) and (j in area2_list):
+                    # from->to matches the areas
+                    conn[k, 0] = 1
+                    conn[k, 1] = -1
+                elif (i in area2_list) and (j in area1_list):
+                    # reverse the sign
+                    conn[k, 0] = -1
+                    conn[k, 1] = 1
+
+        return conn.tocsc()
+
     def change_base(self, Sbase_new):
         """
         Change the elements base impedance
