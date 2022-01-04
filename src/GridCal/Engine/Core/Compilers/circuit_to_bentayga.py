@@ -437,6 +437,8 @@ def to_bentayga(circuit: MultiCircuit, time_series: bool):
     get_dc_line_data(circuit, btgCircuit, bus_dict, time_series, ntime)
     get_hvdc_data(circuit, btgCircuit, bus_dict, time_series, ntime)
 
+
+
     return btgCircuit
 
 
@@ -451,3 +453,47 @@ def bentayga_pf(circuit: MultiCircuit, gridcal_pf_options, time_series=False):
     pf_res = btg.run_power_flow(circuit=btgCircuit, options=pf_options, logger=logger, parallel=True)
 
     return pf_res
+
+
+def debug_bentayga_circuit_at(btgCircuit: btg.Circuit, t: int = None):
+
+    if t is None:
+        t = 0
+
+    data = btg.compile_at(btgCircuit, t=t)
+
+    for i in range(len(data)):
+
+        print('_' * 200)
+        print('Island', i)
+        print('_' * 200)
+
+        print("Ybus")
+        print(data[i].admittances.Ybus.toarray())
+
+        print('Yseries')
+        print(data[i].split_admittances.Yseries.toarray())
+
+        print('Yshunt')
+        print(data[i].split_admittances.Yshunt)
+
+        print("Bbus")
+        print(data[i].linear_admittances.Bbus.toarray())
+
+        print('B1')
+        print(data[i].fast_decoupled_admittances.B1.toarray())
+
+        print('B2')
+        print(data[i].fast_decoupled_admittances.B2.toarray())
+
+        print('Sbus')
+        print(data[i].Sbus)
+
+        print('Vbus')
+        print(data[i].Vbus)
+
+        print('Qmin')
+        print(data[i].Qmin_bus)
+
+        print('Qmax')
+        print(data[i].Qmax_bus)

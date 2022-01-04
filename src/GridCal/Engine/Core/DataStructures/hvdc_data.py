@@ -39,9 +39,11 @@ class HvdcData:
         self.active = np.zeros((nhvdc, ntime), dtype=bool)
         self.rate = np.zeros((nhvdc, ntime))
 
-        self.Pf = np.zeros((nhvdc, ntime))
+        self.r = np.zeros(nhvdc)
+
+        self.Pset = np.zeros((nhvdc, ntime))
         self.Pt = np.zeros((nhvdc, ntime))
-        self.losses = np.zeros((nhvdc, ntime))
+
         self.Vset_f = np.zeros((nhvdc, ntime))
         self.Vset_t = np.zeros((nhvdc, ntime))
 
@@ -74,9 +76,10 @@ class HvdcData:
         data.dispatchable = self.dispatchable[elm_idx]
 
         data.rate = self.rate[tidx]
-        data.Pf = self.Pf[tidx]
-        data.Pt = self.Pt[tidx]
-        data.losses = self.losses[tidx]
+        data.Pset = self.Pset[tidx]
+
+        data.r = self.r[elm_idx]
+
         data.Vset_f = self.Vset_f[tidx]
         data.Vset_t = self.Vset_t[tidx]
 
@@ -108,15 +111,6 @@ class HvdcData:
         """
         return tp.get_elements_of_the_island(self.C_hvdc_bus_f + self.C_hvdc_bus_t, bus_idx)
 
-    def get_injections_per_bus(self):
-        F = self.C_hvdc_bus_f.T * (self.active * self.Pf)
-        T = self.C_hvdc_bus_t.T * (self.active * self.Pt)
-        return F + T
-
-    @property
-    def Pbus(self):
-        return self.get_injections_per_bus()
-
     def get_qmax_from_per_bus(self):
         """
         Max reactive power in the From Bus
@@ -144,12 +138,6 @@ class HvdcData:
         :return: (nbus, nt) Qmin To
         """
         return self.C_hvdc_bus_t.T * (self.Qmin_t * self.active.T).T
-
-    def get_loading(self):
-        return self.Pf / (self.rate + 1e-20)
-
-    def get_losses(self):
-        return self.losses
 
     def __len__(self):
         return self.nhvdc

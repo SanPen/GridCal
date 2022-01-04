@@ -845,7 +845,7 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
     return data
 
 
-def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, Sbase, time_series=False, ntime=1,
+def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, time_series=False, ntime=1,
                   opf_results: "OptimalPowerFlowResults" = None):
     """
 
@@ -876,10 +876,9 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, Sbase, time_series
             data.angle_droop[i, :] = elm.angle_droop_prof
 
             if opf_results is not None:
-                data.Pf[i, :] = -opf_results.hvdc_Pf[:, i]
-                data.Pt[i, :] = opf_results.hvdc_Pf[:, i]
+                data.Pset[i, :] = -opf_results.hvdc_Pf[:, i]
             else:
-                data.Pf[i, :], data.Pt[i, :], data.losses[i, :] = elm.get_from_and_to_power_profiles(0, 0, Sbase)
+                data.Pset[i, :] = elm.Pset_prof
 
             data.Vset_f[i, :] = elm.Vset_f_prof
             data.Vset_t[i, :] = elm.Vset_t_prof
@@ -887,12 +886,13 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, Sbase, time_series
             data.active[i] = elm.active
             data.rate[i] = elm.rate
             data.angle_droop[i] = elm.angle_droop
+            data.r[i] = elm.r
 
             if opf_results is not None:
-                data.Pf[i] = -opf_results.hvdc_Pf[i]
+                data.Pset[i] = -opf_results.hvdc_Pf[i]
                 data.Pt[i] = opf_results.hvdc_Pf[i]
             else:
-                data.Pf[i], data.Pt[i], data.losses[i] = elm.get_from_and_to_power(0, 0, Sbase)
+                data.Pset[i] = elm.Pset
 
             data.Vset_f[i] = elm.Vset_f
             data.Vset_t[i] = elm.Vset_t

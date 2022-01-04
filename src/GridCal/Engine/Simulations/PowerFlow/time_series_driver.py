@@ -597,6 +597,10 @@ class TimeSeries(DriverTemplate):
         results.T = res.T
         results.hvdc_F = res.F_hvdc
         results.hvdc_T = res.T_hvdc
+        results.hvdc_Pf = res.hvdc_Pf
+        results.hvdc_Pt = res.hvdc_Pt
+        results.hvdc_loading = res.hvdc_loading
+        results.hvdc_losses = res.hvdc_losses
 
         return results
 

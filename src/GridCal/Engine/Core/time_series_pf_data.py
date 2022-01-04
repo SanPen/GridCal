@@ -163,7 +163,7 @@ class TimeCircuit(SnapshotData):
 
     @property
     def hvdc_Pf(self):
-        return self.hvdc_data.Pf
+        return self.hvdc_data.Pset
 
     @property
     def hvdc_Pt(self):
@@ -438,8 +438,7 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                                              bus_types=nc.bus_data.bus_types,
                                              time_series=True,
                                              ntime=ntime,
-                                             opf_results=opf_results,
-                                             Sbase=nc.Sbase)
+                                             opf_results=opf_results)
 
     nc.consolidate_information()
 

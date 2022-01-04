@@ -461,6 +461,7 @@ class HvdcLine(EditableDevice):
                                                           Sbase=Sbase,
                                                           r1=self.r,
                                                           angle_droop=self.angle_droop,
+                                                          rate=self.rate_prof[t],
                                                           free=self.control_mode == HvdcControlType.type_0_free)
 
         return Pf, Pt
@@ -558,62 +559,68 @@ class HvdcLine(EditableDevice):
         :return:
         """
         if version == 2:
-            return {'id': self.idtag,
-                    'type': 'hvdc',
-                    'phases': 'ps',
-                    'name': self.name,
-                    'name_code': self.code,
-                    'bus_from': self.bus_from.idtag,
-                    'bus_to': self.bus_to.idtag,
-                    'active': self.active,
-                    'rate': self.rate,
-                    'r': 0,
-                    'length': self.length,
-                    'loss_factor': self.loss_factor,
-                    'vset_from': self.Vset_f,
-                    'vset_to': self.Vset_t,
-                    'Pset': self.Pset,
-                    'min_firing_angle_f': self.min_firing_angle_f,
-                    'max_firing_angle_f': self.max_firing_angle_f,
-                    'min_firing_angle_t': self.min_firing_angle_t,
-                    'max_firing_angle_t': self.max_firing_angle_t,
-                    'overload_cost': self.overload_cost,
-                    'base_temperature': 20,
-                    'operational_temperature': 20,
-                    'alpha': 0.00330,
-                    'locations': []
-                    }
+            d = {'id': self.idtag,
+                 'type': 'hvdc',
+                 'phases': 'ps',
+                 'name': self.name,
+                 'name_code': self.code,
+                 'bus_from': self.bus_from.idtag,
+                 'bus_to': self.bus_to.idtag,
+                 'active': self.active,
+                 'rate': self.rate,
+                 'control_mode': self.control_mode.value,
+                 'r': self.r,
+                 'length': self.length,
+                 'loss_factor': self.loss_factor,
+                 'angle_droop': self.angle_droop,
+                 'vset_from': self.Vset_f,
+                 'vset_to': self.Vset_t,
+                 'Pset': self.Pset,
+                 'min_firing_angle_f': self.min_firing_angle_f,
+                 'max_firing_angle_f': self.max_firing_angle_f,
+                 'min_firing_angle_t': self.min_firing_angle_t,
+                 'max_firing_angle_t': self.max_firing_angle_t,
+                 'overload_cost': self.overload_cost,
+                 'base_temperature': 20,
+                 'operational_temperature': 20,
+                 'alpha': 0.00330,
+                 'locations': []
+                 }
         elif version == 3:
-            return {'id': self.idtag,
-                    'type': 'hvdc',
-                    'phases': 'ps',
-                    'name': self.name,
-                    'name_code': self.code,
-                    'bus_from': self.bus_from.idtag,
-                    'bus_to': self.bus_to.idtag,
-                    'active': self.active,
-                    'rate': self.rate,
-                    'contingency_factor1': self.contingency_factor,
-                    'contingency_factor2': self.contingency_factor,
-                    'contingency_factor3': self.contingency_factor,
-                    'r': 0,
-                    'length': self.length,
-                    'loss_factor': self.loss_factor,
-                    'vset_from': self.Vset_f,
-                    'vset_to': self.Vset_t,
-                    'Pset': self.Pset,
-                    'min_firing_angle_f': self.min_firing_angle_f,
-                    'max_firing_angle_f': self.max_firing_angle_f,
-                    'min_firing_angle_t': self.min_firing_angle_t,
-                    'max_firing_angle_t': self.max_firing_angle_t,
-                    'overload_cost': self.overload_cost,
-                    'base_temperature': 20,
-                    'operational_temperature': 20,
-                    'alpha': 0.00330,
-                    'locations': []
-                    }
+            d = {'id': self.idtag,
+                 'type': 'hvdc',
+                 'phases': 'ps',
+                 'name': self.name,
+                 'name_code': self.code,
+                 'bus_from': self.bus_from.idtag,
+                 'bus_to': self.bus_to.idtag,
+                 'active': self.active,
+                 'rate': self.rate,
+                 'control_mode': self.control_mode.value,
+                 'contingency_factor1': self.contingency_factor,
+                 'contingency_factor2': self.contingency_factor,
+                 'contingency_factor3': self.contingency_factor,
+                 'r': self.r,
+                 'length': self.length,
+                 'loss_factor': self.loss_factor,
+                 'angle_droop': self.angle_droop,
+                 'vset_from': self.Vset_f,
+                 'vset_to': self.Vset_t,
+                 'Pset': self.Pset,
+                 'min_firing_angle_f': self.min_firing_angle_f,
+                 'max_firing_angle_f': self.max_firing_angle_f,
+                 'min_firing_angle_t': self.min_firing_angle_t,
+                 'max_firing_angle_t': self.max_firing_angle_t,
+                 'overload_cost': self.overload_cost,
+                 'base_temperature': 20,
+                 'operational_temperature': 20,
+                 'alpha': 0.00330,
+                 'locations': []
+                 }
         else:
-            return dict()
+            d = dict()
+
+        return d
 
     def get_profiles_dict(self, version=3):
         """
@@ -625,8 +632,8 @@ class HvdcLine(EditableDevice):
             active_prof = self.active_prof.tolist()
             rate_prof = self.rate_prof.tolist()
             pset_prof = self.Pset_prof.tolist()
-            vset_prof_f = self.Vset_f_prof
-            vset_prof_t = self.Vset_t_prof
+            vset_prof_f = self.Vset_f_prof.tolist()
+            vset_prof_t = self.Vset_t_prof.tolist()
             cost_prof = self.overload_cost_prof.tolist()
         else:
             active_prof = list()

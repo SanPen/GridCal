@@ -305,10 +305,7 @@ class SnapshotData:
         # battery
         Sbus += self.battery_data.get_injections_per_bus()
 
-        # HVDC forced power
-        # if self.nhvdc:
-        #     # Pf and Pt come with the correct sign already
-        #     Sbus += self.hvdc_data.get_injections_per_bus()
+        # HVDC forced power is not handled here because of the possible islands
 
         if normalize:
             Sbus /= self.Sbase
@@ -772,21 +769,6 @@ class SnapshotData:
     def branch_rates(self):
         return self.branch_data.branch_rates[:, 0]
 
-    @property
-    def hvdc_Pf(self):
-        return self.hvdc_data.Pf[:, 0]
-
-    @property
-    def hvdc_Pt(self):
-        return self.hvdc_data.Pt[:, 0]
-
-    @property
-    def hvdc_loading(self):
-        return self.hvdc_data.get_loading()[:, 0]
-
-    @property
-    def hvdc_losses(self):
-        return self.hvdc_data.get_losses()[:, 0]
 
     @property
     def ac_indices(self):
@@ -1494,8 +1476,7 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
     nc.hvdc_data = gc_compiler.get_hvdc_data(circuit=circuit,
                                              bus_dict=bus_dict,
                                              bus_types=nc.bus_data.bus_types,
-                                             opf_results=opf_results,
-                                             Sbase=nc.Sbase)
+                                             opf_results=opf_results)
 
     nc.consolidate_information()
 
