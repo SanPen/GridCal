@@ -306,9 +306,9 @@ class SnapshotData:
         Sbus += self.battery_data.get_injections_per_bus()
 
         # HVDC forced power
-        if self.nhvdc:
-            # Pf and Pt come with the correct sign already
-            Sbus += self.hvdc_data.get_injections_per_bus()
+        # if self.nhvdc:
+        #     # Pf and Pt come with the correct sign already
+        #     Sbus += self.hvdc_data.get_injections_per_bus()
 
         if normalize:
             Sbus /= self.Sbase
@@ -1494,7 +1494,8 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
     nc.hvdc_data = gc_compiler.get_hvdc_data(circuit=circuit,
                                              bus_dict=bus_dict,
                                              bus_types=nc.bus_data.bus_types,
-                                             opf_results=opf_results)
+                                             opf_results=opf_results,
+                                             Sbase=nc.Sbase)
 
     nc.consolidate_information()
 

@@ -1804,11 +1804,14 @@ class MultiCircuit:
         :return: average separation
         """
         separation = 0.0
-        branches = self.get_branch_lists()
-        for branch in branches:
-            s = np.sqrt((branch.bus_from.x - branch.bus_to.x)**2 + (branch.bus_from.y - branch.bus_to.y)**2)
-            separation += s
-        return separation / len(branches)
+        branch_lists = self.get_branch_lists()
+        n = 0
+        for branch_lst in branch_lists:
+            for branch in branch_lst:
+                s = np.sqrt((branch.bus_from.x - branch.bus_to.x)**2 + (branch.bus_from.y - branch.bus_to.y)**2)
+                separation += s
+                n += 1
+        return separation / n
 
     def add_circuit(self, circuit: "MultiCircuit", angle):
         """
@@ -1835,9 +1838,8 @@ class MultiCircuit:
         y0 = xm + r * np.sin(a)
 
         # modify the coordinates of the new circuit
-        min_x2, max_x2, min_y2, max_y2 = self.get_boundaries(circuit.buses)
-        branches2 = circuit.lines + circuit.transformers2w + circuit.hvdc_lines
-        sep2 = self.average_separation(branches2)
+        min_x2, max_x2, min_y2, max_y2 = self.get_boundaries()
+        sep2 = self.average_separation()
         factor = sep2 / sep1
         for bus in circuit.buses:
             bus.x = x0 + (bus.x - min_x2) * factor
@@ -1853,14 +1855,29 @@ class MultiCircuit:
                 for branch in lst:
                     branch.create_profiles(index=self.time_profile)
 
-        self.buses += circuit.buses
-        self.lines += circuit.lines
-        self.transformers2w += circuit.transformers2w
-        self.hvdc_lines += circuit.hvdc_lines
-        self.vsc_devices += circuit.vsc_devices
-        self.dc_lines += circuit.dc_lines
+        self.add_devices_list(self.buses, circuit.buses)
+        self.add_devices_list(self.lines, circuit.lines)
+        self.add_devices_list(self.transformers2w, circuit.transformers2w)
+        self.add_devices_list(self.hvdc_lines, circuit.hvdc_lines)
+        self.add_devices_list(self.vsc_devices, circuit.vsc_devices)
+        self.add_devices_list(self.dc_lines, circuit.dc_lines)
 
         return circuit.buses
+
+    def add_devices_list(self, original_list, new_list):
+        """
+        Add a list of devices to another keeping coherence
+        :param original_list:
+        :param new_list:
+        :return:
+        """
+        existing_uuids = {e.idtag for e in original_list}
+
+        for elm in new_list:
+            if elm.idtag in existing_uuids:
+                print(elm.name , 'uuid is repeated..generating new one')
+                elm.generate_uuid()
+            original_list.append(elm)
 
     def snapshot_balance(self):
         """

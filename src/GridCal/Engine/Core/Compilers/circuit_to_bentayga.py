@@ -409,8 +409,10 @@ def get_hvdc_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time
             hvdc.v_set_f = elm.Vset_f_prof
             hvdc.v_set_t = elm.Vset_t_prof
             hvdc.contingency_rates = elm.rate_prof * elm.contingency_factor
+            hvdc.angle_droop = elm.angle_droop_prof
         else:
             hvdc.contingency_rates = elm.rate * elm.contingency_factor
+            hvdc.angle_droop = elm.angle_droop
 
         btgCircuit.add_hvdc_line(hvdc)
 

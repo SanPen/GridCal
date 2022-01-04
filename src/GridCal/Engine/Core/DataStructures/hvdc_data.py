@@ -30,8 +30,7 @@ class HvdcData:
 
         self.names = np.zeros(nhvdc, dtype=object)
 
-        self.loss_factor = np.zeros(nhvdc)
-        self.r = np.zeros(nhvdc)
+        self.angle_droop = np.zeros((nhvdc, ntime))
 
         self.control_mode = np.zeros(nhvdc, dtype=object)
 
@@ -42,6 +41,7 @@ class HvdcData:
 
         self.Pf = np.zeros((nhvdc, ntime))
         self.Pt = np.zeros((nhvdc, ntime))
+        self.losses = np.zeros((nhvdc, ntime))
         self.Vset_f = np.zeros((nhvdc, ntime))
         self.Vset_t = np.zeros((nhvdc, ntime))
 
@@ -76,12 +76,12 @@ class HvdcData:
         data.rate = self.rate[tidx]
         data.Pf = self.Pf[tidx]
         data.Pt = self.Pt[tidx]
+        data.losses = self.losses[tidx]
         data.Vset_f = self.Vset_f[tidx]
         data.Vset_t = self.Vset_t[tidx]
 
-        data.loss_factor = self.loss_factor[elm_idx]
+        data.angle_droop = self.angle_droop[elm_idx]
 
-        data.r = self.r[elm_idx]
         data.control_mode = self.control_mode[elm_idx]
 
         data.Qmin_f = self.Qmin_f[elm_idx]
@@ -149,7 +149,7 @@ class HvdcData:
         return self.Pf / (self.rate + 1e-20)
 
     def get_losses(self):
-        return (self.Pf.T * self.loss_factor).T
+        return self.losses
 
     def __len__(self):
         return self.nhvdc

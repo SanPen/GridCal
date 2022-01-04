@@ -1053,7 +1053,7 @@ def check_contingency(ContingencyRates, Sbase,
 
 
 def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names,
-                        rate, angles, active, Pt, r, control_mode, dispatchable,
+                        rate, angles, active, Pt, angle_droop, control_mode, dispatchable,
                         F, T, Pinj, Sbase, inf, logger, t=0):
     """
     Formulate the HVDC flow
@@ -1064,7 +1064,7 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names,
     :param angles: Array of bus voltage angles (LP Variables)
     :param active: Array of HVDC active status (True / False)
     :param Pt: Array of HVDC sending power
-    :param r: Array of HVDC resistance values (this is used as the HVDC power/angle droop)
+    :param angle_droop: Array of HVDC resistance values (this is used as the HVDC power/angle droop)
     :param control_mode: Array of HVDC control modes
     :param dispatchable: Array of HVDC dispatchable status (True/False)
     :param F: Array of branch "from" bus indices
@@ -1110,8 +1110,8 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names,
                 flow_f[i] = solver.NumVar(-rates[i], rates[i], 'hvdc_flow_' + suffix)
 
                 # formulate the hvdc flow as an AC line equivalent
-                bk = 1.0 / r[i]  # TODO: yes, I know... DC...
-                solver.Add(flow_f[i] == P0 + bk * (angles[_f] - angles[_t]) + hvdc_control1[i] - hvdc_control2[i],
+                angle_droop2 = angle_droop[i] * 0.017453 / Sbase  # to pass from MW/deg to p.u./rad -> * pi / 180 / (sbase=100)
+                solver.Add(flow_f[i] == P0 + angle_droop2 * (angles[_f] - angles[_t]) + hvdc_control1[i] - hvdc_control2[i],
                            'hvdc_power_flow_' + suffix)
 
                 # add the injections matching the flow
@@ -1600,7 +1600,7 @@ class OpfNTC(Opf):
                                                            angles=theta,
                                                            active=self.numerical_circuit.hvdc_data.active,
                                                            Pt=self.numerical_circuit.hvdc_data.Pt,
-                                                           r=self.numerical_circuit.hvdc_data.r,
+                                                           angle_droop=self.numerical_circuit.hvdc_data.angle_droop[:, t],
                                                            control_mode=self.numerical_circuit.hvdc_data.control_mode,
                                                            dispatchable=self.numerical_circuit.hvdc_data.dispatchable,
                                                            F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),

@@ -438,7 +438,8 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                                              bus_types=nc.bus_data.bus_types,
                                              time_series=True,
                                              ntime=ntime,
-                                             opf_results=opf_results)
+                                             opf_results=opf_results,
+                                             Sbase=nc.Sbase)
 
     nc.consolidate_information()
 

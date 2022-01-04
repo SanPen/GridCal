@@ -22,7 +22,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, get_hvdc_power
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
@@ -442,11 +442,16 @@ class TimeSeries(DriverTemplate):
 
         time_series_results.bus_types = time_circuit.bus_types
 
+        # compose total buses-> bus index dict
+        bus_dict = self.grid.get_bus_index_dict()
+
         # For every island, run the time series
         for island_index, calculation_input in enumerate(time_islands):
 
-            # fill in Vbus, Sbus Ibus
-            # calculation_input.consolidate()
+            # compose the HVDC power injections
+            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(self.grid,
+                                                                                        bus_dict,
+                                                                                        theta=np.zeros(time_circuit.nbus))
 
             # Are we dispatching storage? if so, generate a dictionary of battery -> bus index
             # to be able to set the batteries values into the vector S
