@@ -147,10 +147,10 @@ class PowerFlowDriver(DriverTemplate):
             self.results.T = res.T
             self.results.hvdc_F = res.F_hvdc
             self.results.hvdc_T = res.T_hvdc
-            self.results.hvdc_Pf = res.hvdc_Pf
-            self.results.hvdc_Pt = res.hvdc_Pt
-            self.results.hvdc_loading = res.hvdc_loading
-            self.results.hvdc_losses = res.hvdc_losses
+            self.results.hvdc_Pf = res.hvdc_Pf[0, :]
+            self.results.hvdc_Pt = res.hvdc_Pt[0, :]
+            self.results.hvdc_loading = res.hvdc_loading[0, :]
+            self.results.hvdc_losses = res.hvdc_losses[0, :]
             self.results.bus_area_indices = self.grid.get_bus_area_indices()
             self.results.area_names = [a.name for a in self.grid.areas]
             print('Bentayga error:', res.stats)

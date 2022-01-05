@@ -561,8 +561,9 @@ class TimeSeries(DriverTemplate):
         # set the HVDC results here since the HVDC is not a branch in this modality
         time_series_results.hvdc_Pf = -time_circuit.hvdc_Pf.T
         time_series_results.hvdc_Pt = -time_circuit.hvdc_Pt.T
-        time_series_results.hvdc_loading = time_circuit.hvdc_loading.T
-        time_series_results.hvdc_losses = time_circuit.hvdc_losses.T
+        # TODO: Fix HVDC for time series
+        # time_series_results.hvdc_loading = time_circuit.hvdc_loading.T
+        # time_series_results.hvdc_losses = time_circuit.hvdc_losses.T
 
         return time_series_results
 

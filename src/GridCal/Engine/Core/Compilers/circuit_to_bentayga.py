@@ -437,8 +437,6 @@ def to_bentayga(circuit: MultiCircuit, time_series: bool):
     get_dc_line_data(circuit, btgCircuit, bus_dict, time_series, ntime)
     get_hvdc_data(circuit, btgCircuit, bus_dict, time_series, ntime)
 
-
-
     return btgCircuit
 
 

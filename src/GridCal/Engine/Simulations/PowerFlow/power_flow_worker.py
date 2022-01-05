@@ -592,7 +592,10 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                bus_types=nc.bus_data.bus_types)
 
     # initialize the all controls var
-    all_controls_ok = n_free == 0
+    if nc.nhvdc > 0:
+        all_controls_ok = n_free == 0
+    else:
+        all_controls_ok = False  # to run the first time
     iter = 0
     while not all_controls_ok:
 
