@@ -31,7 +31,7 @@ except ImportError:
     print('Newton native unavailable')
 
 
-def set_branch_values(nc: nn.NativeNumericCircuit,
+def set_branch_values(nc: "nn.NativeNumericCircuit",
                       idx, name, active, f, t, rate, r, x, g, b, m, theta, vtap_f, vtap_t):
     """
     Set the the main parameters of a branch
@@ -70,7 +70,7 @@ def set_branch_values(nc: nn.NativeNumericCircuit,
     nc.set_branch_t(idx, t)
 
 
-def to_newton_native(circuit: MultiCircuit) -> nn.NativeNumericCircuit:
+def to_newton_native(circuit: MultiCircuit) -> "nn.NativeNumericCircuit":
     """
     Compile the information of a circuit and generate the pertinent power flow islands
     :param circuit: MultiCircuit instance
@@ -304,7 +304,7 @@ def to_newton_native(circuit: MultiCircuit) -> nn.NativeNumericCircuit:
     return nc
 
 
-def newton_power_flow(nc: nn.NativeNumericCircuit, gridcal_pf_options):
+def newton_power_flow(nc: "nn.NativeNumericCircuit", gridcal_pf_options):
     """
 
     :param nc: NativeNumericCircuit instance

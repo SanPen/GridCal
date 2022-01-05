@@ -14,7 +14,7 @@ except ImportError:
     print('Bentayga is not available')
 
 
-def add_btg_buses(circuit: MultiCircuit, btgCircuit: btg.Circuit, time_series: bool, ntime=1):
+def add_btg_buses(circuit: MultiCircuit, btgCircuit: "btg.Circuit", time_series: bool, ntime=1):
     """
 
     :param circuit:
@@ -42,7 +42,7 @@ def add_btg_buses(circuit: MultiCircuit, btgCircuit: btg.Circuit, time_series: b
     return bus_dict
 
 
-def add_btg_loads(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_series: bool, ntime=1):
+def add_btg_loads(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
     :param circuit:
@@ -73,7 +73,7 @@ def add_btg_loads(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time
         btgCircuit.add_load(load)
 
 
-def add_btg_static_generators(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_series: bool, ntime=1):
+def add_btg_static_generators(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
     :param circuit:
@@ -103,7 +103,7 @@ def add_btg_static_generators(circuit: MultiCircuit, btgCircuit: btg.Circuit, bu
         btgCircuit.add_load(load)
 
 
-def add_btg_shunts(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_series: bool, ntime=1):
+def add_btg_shunts(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
     :param circuit:
@@ -133,7 +133,7 @@ def add_btg_shunts(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, tim
         btgCircuit.add_shunt_fixed(sh)
 
 
-def add_btg_generators(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_series: bool, ntime=1):
+def add_btg_generators(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
     :param circuit:
@@ -172,7 +172,7 @@ def add_btg_generators(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict,
         btgCircuit.add_generator(gen)
 
 
-def get_battery_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_series: bool, ntime=1):
+def get_battery_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
     :param circuit:
@@ -216,7 +216,7 @@ def get_battery_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, t
         btgCircuit.add_battery(gen)
 
 
-def add_btg_line(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_series: bool, ntime=1):
+def add_btg_line(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
     :param circuit:
@@ -252,7 +252,7 @@ def add_btg_line(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_
         btgCircuit.add_ac_line(lne)
 
 
-def get_transformer_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_series: bool, ntime=1):
+def get_transformer_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
     :param circuit:
@@ -290,7 +290,7 @@ def get_transformer_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dic
         btgCircuit.add_transformer_all(tr2)
 
 
-def get_vsc_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_series: bool, ntime=1):
+def get_vsc_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
     :param circuit:
@@ -337,7 +337,7 @@ def get_vsc_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_
         btgCircuit.add_vsc(vsc)
 
 
-def get_dc_line_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_series: bool, ntime=1):
+def get_dc_line_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
     :param circuit:
@@ -370,7 +370,7 @@ def get_dc_line_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, t
         btgCircuit.add_dc_line(lne)
 
 
-def get_hvdc_data(circuit: MultiCircuit, btgCircuit: btg.Circuit, bus_dict, time_series: bool, ntime=1):
+def get_hvdc_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
     :param circuit:
@@ -455,7 +455,7 @@ def bentayga_pf(circuit: MultiCircuit, gridcal_pf_options, time_series=False):
     return pf_res
 
 
-def debug_bentayga_circuit_at(btgCircuit: btg.Circuit, t: int = None):
+def debug_bentayga_circuit_at(btgCircuit: "btg.Circuit", t: int = None):
 
     if t is None:
         t = 0
