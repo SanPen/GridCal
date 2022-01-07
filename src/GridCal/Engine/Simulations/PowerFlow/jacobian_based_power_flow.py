@@ -908,12 +908,12 @@ def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max
 
             # evaluate the solution error F(x0)
             Scalc = V * np.conj(Ybus * V - Ibus)
-            mis = Scalc - Sbus  # compute the mismatch
-            dz = np.r_[mis[pvpq].real, mis[pq].imag]  # mismatch in the Jacobian order
+            dS = Scalc - Sbus  # compute the mismatch
+            dz = np.r_[dS[pvpq].real, dS[pq].imag]  # mismatch in the Jacobian order
 
             # system matrix
             # H1 = H^t
-            H1 = H.transpose().tocsr()
+            H1 = H.transpose()  # .tocsr()
 
             # H2 = H1·H
             H2 = H1.dot(H)
@@ -964,8 +964,8 @@ def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max
 
             # check convergence
             Scalc = V * np.conj(Ybus.dot(V))
-            ds = Sbus - Scalc
-            e = np.r_[ds[pvpq].real, ds[pq].imag]
+            dS = Sbus - Scalc
+            e = np.r_[dS[pvpq].real, dS[pq].imag]
             normF = 0.5 * np.dot(e, e)
 
             # review reactive power limits
