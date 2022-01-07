@@ -13,6 +13,9 @@ except ImportError:
     BENTAYGA_AVAILABLE = False
     print('Bentayga is not available')
 
+# integer type for Bentayga (bentayga's uword)
+BINT = np.ulonglong
+
 
 def add_btg_buses(circuit: MultiCircuit, btgCircuit: "btg.Circuit", time_series: bool, ntime=1):
     """
@@ -32,9 +35,9 @@ def add_btg_buses(circuit: MultiCircuit, btgCircuit: "btg.Circuit", time_series:
                        nominal_voltage=bus.Vnom)
 
         if time_series and ntime > 1:
-            elm.active = bus.active_prof.astype(np.uintc)
+            elm.active = bus.active_prof.astype(BINT)
         else:
-            elm.active = np.ones(ntime, dtype=np.uintc) * int(bus.active)
+            elm.active = np.ones(ntime, dtype=BINT) * int(bus.active)
 
         btgCircuit.add_node(elm)
         bus_dict[elm.uuid] = elm
@@ -64,11 +67,11 @@ def add_btg_loads(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, ti
                         Q0=elm.Q)
 
         if time_series:
-            load.active = elm.active_prof.astype(np.uintc)
+            load.active = elm.active_prof.astype(BINT)
             load.P = elm.P_prof
             load.Q = elm.Q_prof
         else:
-            load.active = np.ones(ntime, dtype=np.uintc) * int(elm.active)
+            load.active = np.ones(ntime, dtype=BINT) * int(elm.active)
 
         btgCircuit.add_load(load)
 
@@ -94,11 +97,11 @@ def add_btg_static_generators(circuit: MultiCircuit, btgCircuit: "btg.Circuit", 
                         Q0=-elm.Q)
 
         if time_series:
-            load.active = elm.active_prof.astype(np.uintc)
+            load.active = elm.active_prof.astype(BINT)
             load.P = -elm.P_prof
             load.Q = -elm.Q_prof
         else:
-            load.active = np.ones(ntime, dtype=np.uintc) * int(elm.active)
+            load.active = np.ones(ntime, dtype=BINT) * int(elm.active)
 
         btgCircuit.add_load(load)
 
@@ -124,11 +127,11 @@ def add_btg_shunts(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, t
                             B0=elm.B)
 
         if time_series:
-            sh.active = elm.active_prof.astype(np.uintc)
+            sh.active = elm.active_prof.astype(BINT)
             sh.G = elm.G_prof
             sh.B = elm.B_prof
         else:
-            sh.active = np.ones(ntime, dtype=np.uintc) * int(elm.active)
+            sh.active = np.ones(ntime, dtype=BINT) * int(elm.active)
 
         btgCircuit.add_shunt_fixed(sh)
 
@@ -161,11 +164,11 @@ def add_btg_generators(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dic
         gen.generation_cost = elm.Cost
 
         if time_series:
-            gen.active = elm.active_prof.astype(np.uintc)
+            gen.active = elm.active_prof.astype(BINT)
             gen.P = elm.P_prof
             gen.vset = elm.Vset_prof
         else:
-            gen.active = np.ones(ntime, dtype=np.uintc) * int(elm.active)
+            gen.active = np.ones(ntime, dtype=BINT) * int(elm.active)
             gen.P = np.ones(ntime, dtype=float) * elm.P
             gen.vset = np.ones(ntime, dtype=float) * elm.Vset
 
@@ -205,11 +208,11 @@ def get_battery_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict,
         gen.generation_cost = elm.Cost
 
         if time_series:
-            gen.active = elm.active_prof.astype(np.uintc)
+            gen.active = elm.active_prof.astype(BINT)
             gen.P = elm.P_prof
             gen.vset = elm.Vset_prof
         else:
-            gen.active = np.ones(ntime, dtype=np.uintc) * int(elm.active)
+            gen.active = np.ones(ntime, dtype=BINT) * int(elm.active)
             gen.P = np.ones(ntime, dtype=float) * elm.P
             gen.vset = np.ones(ntime, dtype=float) * elm.Vset
 
@@ -241,11 +244,11 @@ def add_btg_line(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, tim
                          x1=elm.X,
                          b1=elm.B)
 
-        lne.monitor_loading = np.ones(ntime, dtype=np.uintc) * int(elm.monitor_loading)
-        lne.contingency_enabled = np.ones(ntime, dtype=np.uintc) * int(elm.contingency_enabled)
+        lne.monitor_loading = np.ones(ntime, dtype=BINT) * int(elm.monitor_loading)
+        lne.contingency_enabled = np.ones(ntime, dtype=BINT) * int(elm.contingency_enabled)
 
         if time_series:
-            lne.active = elm.active_prof.astype(np.uintc)
+            lne.active = elm.active_prof.astype(BINT)
             lne.rates = elm.rate_prof
             lne.contingency_rates = elm.rate_prof * elm.contingency_factor
 
@@ -274,11 +277,11 @@ def get_transformer_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_d
                                    g1=elm.G,
                                    b1=elm.B)
 
-        tr2.monitor_loading = np.ones(ntime, dtype=np.uintc) * int(elm.monitor_loading)
-        tr2.contingency_enabled = np.ones(ntime, dtype=np.uintc) * int(elm.contingency_enabled)
+        tr2.monitor_loading = np.ones(ntime, dtype=BINT) * int(elm.monitor_loading)
+        tr2.contingency_enabled = np.ones(ntime, dtype=BINT) * int(elm.contingency_enabled)
 
         if time_series:
-            tr2.active = elm.active_prof.astype(np.uintc)
+            tr2.active = elm.active_prof.astype(BINT)
             tr2.rates = elm.rate_prof
             tr2.contingency_rates = elm.rate_prof * elm.contingency_factor
             tr2.tap = elm.tap_module_prof
@@ -326,11 +329,11 @@ def get_vsc_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, tim
                       alpha2=elm.alpha2,
                       alpha3=elm.alpha3)
 
-        vsc.monitor_loading = np.ones(ntime, dtype=np.uintc) * int(elm.monitor_loading)
-        vsc.contingency_enabled = np.ones(ntime, dtype=np.uintc) * int(elm.contingency_enabled)
+        vsc.monitor_loading = np.ones(ntime, dtype=BINT) * int(elm.monitor_loading)
+        vsc.contingency_enabled = np.ones(ntime, dtype=BINT) * int(elm.contingency_enabled)
 
         if time_series:
-            vsc.active = elm.active_prof.astype(np.uintc)
+            vsc.active = elm.active_prof.astype(BINT)
             vsc.rates = elm.rate_prof
             vsc.contingency_rates = elm.rate_prof * elm.contingency_factor
 
@@ -359,11 +362,11 @@ def get_dc_line_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict,
                          active_default=elm.active,
                          r1=elm.R)
 
-        lne.monitor_loading = np.ones(ntime, dtype=np.uintc) * int(elm.monitor_loading)
-        lne.contingency_enabled = np.ones(ntime, dtype=np.uintc) * int(elm.contingency_enabled)
+        lne.monitor_loading = np.ones(ntime, dtype=BINT) * int(elm.monitor_loading)
+        lne.contingency_enabled = np.ones(ntime, dtype=BINT) * int(elm.contingency_enabled)
 
         if time_series:
-            lne.active = elm.active_prof.astype(np.uintc)
+            lne.active = elm.active_prof.astype(BINT)
             lne.rates = elm.rate_prof
             lne.contingency_rates = elm.rate_prof * elm.contingency_factor
 
@@ -404,7 +407,7 @@ def get_hvdc_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, ti
         # hvdc.contingency_enabled = elm.contingency_enabled
 
         if time_series:
-            hvdc.active = elm.active_prof.astype(np.uintc)
+            hvdc.active = elm.active_prof.astype(BINT)
             hvdc.rates = elm.rate_prof
             hvdc.v_set_f = elm.Vset_f_prof
             hvdc.v_set_t = elm.Vset_t_prof
