@@ -13,7 +13,7 @@ except ImportError:
     BENTAYGA_AVAILABLE = False
     print('Bentayga is not available')
 
-# integer type for Bentayga (bentayga's uword)
+# numpy integer type for bentayga's uword
 BINT = np.ulonglong
 
 

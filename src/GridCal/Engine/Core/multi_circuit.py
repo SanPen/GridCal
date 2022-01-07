@@ -341,8 +341,6 @@ class MultiCircuit:
 
         self.branch_dictionary = dict()
 
-        self.has_time_series = False
-
         self.bus_names = None
 
         self.branch_names = None
