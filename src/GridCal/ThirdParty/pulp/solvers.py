@@ -208,10 +208,14 @@ except(ImportError):
 class LpSolver:
     """A generic LP Solver"""
 
-    def __init__(self, mip=True, msg=True, options=[], *args, **kwargs):
+    def __init__(self, mip=True, msg=True, options=None, *args, **kwargs):
         self.mip = mip
         self.msg = msg
-        self.options = options
+
+        if options is None:
+            self.options = list()
+        else:
+            self.options = options
 
     def available(self):
         """True if the solver is available"""
@@ -359,7 +363,13 @@ class LpSolver:
 class LpSolver_CMD(LpSolver):
     """A generic command line LP Solver"""
 
-    def __init__(self, path=None, keepFiles=0, mip=1, msg=1, options=[]):
+    def __init__(self, path=None, keepFiles=0, mip=1, msg=1, options=None):
+
+        if options is None:
+            self.options = list()
+        else:
+            self.options = options
+
         LpSolver.__init__(self, mip, msg, options)
         if path is None:
             self.path = self.defaultPath()

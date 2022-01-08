@@ -482,12 +482,6 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             J = AC_jacobian(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
             # J = AC_jacobian2(Ybus, Scalc, V, Vm, pq, pv)
 
-            # print(V.real)
-            # print(V.imag)
-            # print(Scalc.real)
-            # print(Scalc.imag)
-            # print(J.todense())
-
             # compute update step
             dx = linear_solver(J, f)
 
@@ -511,13 +505,8 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             while back_track_condition and l_iter < max_it and mu > tol:
 
                 # restore the previous values if we are backtracking (the first iteration is the normal NR procedure)
-                if l_iter > 0:
-                    Va = prev_Va.copy()
-                    Vm = prev_Vm.copy()
-
-                # update voltage the Newton way
-                Vm -= mu * dVm
-                Va -= mu * dVa
+                Vm = prev_Vm - mu * dVm
+                Va = prev_Va - mu * dVa
                 V = Vm * np.exp(1.0j * Va)
 
                 # compute the mismatch function f(x_new)
@@ -526,15 +515,16 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                 f = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
                 norm_f_new = np.linalg.norm(f, np.inf)
 
+                # print("mu:", mu,  "|| new err: ",  norm_f_new,  ", err: ", norm_f)
+
                 back_track_condition = norm_f_new > norm_f
                 mu *= acceleration_parameter
                 l_iter += 1
 
             if l_iter > 1 and back_track_condition:
-                # this means that not even the backtracking was able to correct the solution so, restore and end
-                Va = prev_Va.copy()
-                Vm = prev_Vm.copy()
-                V = Vm * np.exp(1.0j * Va)
+                # this means that not even the backtracking was able to correct the
+                # solution so, restore and end
+                V = prev_Vm * np.exp(1.0j * prev_Va)
 
                 end = time.time()
                 elapsed = end - start

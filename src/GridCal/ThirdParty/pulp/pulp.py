@@ -281,10 +281,13 @@ class LpVariable(LpElement):
         self.expression = e
         self.addVariableToConstraints(e)
 
-    def matrix(self, name, indexs, lowBound=None, upBound=None, cat=LpContinuous, indexStart=[]):
+    def matrix(self, name, indexs, lowBound=None, upBound=None, cat=LpContinuous, indexStart=None):
 
         if not isinstance(indexs, tuple):
             indexs = (indexs,)
+
+        if indexStart is None:
+            indexStart = list()
 
         if "%" not in name:
             name += "_%s" * len(indexs)
@@ -299,7 +302,7 @@ class LpVariable(LpElement):
 
     matrix = classmethod(matrix)
 
-    def dicts(self, name, indexs, lowBound=None, upBound=None, cat=LpContinuous, indexStart=[]):
+    def dicts(self, name, indexs, lowBound=None, upBound=None, cat=LpContinuous, indexStart=None):
         """
         Creates a dictionary of LP variables
 
@@ -318,6 +321,9 @@ class LpVariable(LpElement):
 
         :return: A dictionary of LP Variables
         """
+        if indexStart is None:
+            indexStart = list()
+
         if not isinstance(indexs, tuple): indexs = (indexs,)
         if "%" not in name: name += "_%s" * len(indexs)
 

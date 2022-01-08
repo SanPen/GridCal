@@ -161,11 +161,7 @@ class LinearAnalysisDriver(DriverTemplate):
         self.options = options
 
         # OPF results
-        self.results = LinearAnalysisResults(n_br=0,
-                                             n_bus=0,
-                                             br_names=[],
-                                             bus_names=[],
-                                             bus_types=[])
+        self.results: LinearAnalysisResults = None
 
         self.all_solved = True
 

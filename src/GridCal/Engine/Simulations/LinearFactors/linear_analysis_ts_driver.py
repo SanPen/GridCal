@@ -158,12 +158,7 @@ class LinearAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
         self.options = options
 
-        self.results = LinearAnalysisTimeSeriesResults(n=0,
-                                                       m=0,
-                                                       time_array=[],
-                                                       bus_names=[],
-                                                       bus_types=[],
-                                                       branch_names=[])
+        self.results: LinearAnalysisTimeSeriesResults = None
 
         self.ptdf_driver = LinearAnalysis(grid=self.grid, distributed_slack=self.options.distribute_slack)
 
