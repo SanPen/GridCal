@@ -11,6 +11,7 @@ def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1):
 
     :param circuit:
     :param time_series:
+    :param ntime:
     :return:
     """
     bus_data = BusData(nbus=len(circuit.buses), ntime=ntime)
@@ -872,30 +873,30 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, time_series=False,
         if time_series:
             data.active[i, :] = elm.active_prof
             data.rate[i, :] = elm.rate_prof
+            data.angle_droop[i, :] = elm.angle_droop_prof
 
             if opf_results is not None:
-                data.Pf[i, :] = -opf_results.hvdc_Pf[:, i]
-                data.Pt[i, :] = opf_results.hvdc_Pf[:, i]
+                data.Pset[i, :] = -opf_results.hvdc_Pf[:, i]
             else:
-                data.Pf[i, :], data.Pt[i, :] = elm.get_from_and_to_power()
+                data.Pset[i, :] = elm.Pset_prof
 
             data.Vset_f[i, :] = elm.Vset_f_prof
             data.Vset_t[i, :] = elm.Vset_t_prof
         else:
             data.active[i] = elm.active
             data.rate[i] = elm.rate
+            data.angle_droop[i] = elm.angle_droop
+            data.r[i] = elm.r
 
             if opf_results is not None:
-                data.Pf[i] = -opf_results.hvdc_Pf[i]
+                data.Pset[i] = -opf_results.hvdc_Pf[i]
                 data.Pt[i] = opf_results.hvdc_Pf[i]
             else:
-                data.Pf[i], data.Pt[i] = elm.get_from_and_to_power()
+                data.Pset[i] = elm.Pset
 
             data.Vset_f[i] = elm.Vset_f
             data.Vset_t[i] = elm.Vset_t
 
-        data.loss_factor[i] = elm.loss_factor
-        data.r[i] = elm.r
         data.control_mode[i] = elm.control_mode
 
         data.Qmin_f[i] = elm.Qmin_f

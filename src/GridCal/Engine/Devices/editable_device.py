@@ -84,6 +84,9 @@ class EditableDevice:
 
         self.properties_with_profile = properties_with_profile
 
+    def generate_uuid(self):
+        self.idtag = uuid.uuid4().hex
+
     def __str__(self) -> AnyStr:
         """
         Name of the object

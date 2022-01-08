@@ -22,11 +22,14 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowRes
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf
+from GridCal.Engine.Simulations.PowerFlow.power_flow_worker import single_island_pf, get_hvdc_power
 from GridCal.Engine.Core.time_series_pf_data import compile_time_circuit, BranchImpedanceMode
 from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
+from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE, to_newton_native, newton_power_flow
+from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf
+import GridCal.Engine.basic_structures as bs
 
 
 class TimeSeriesResults(PowerFlowResults):
@@ -384,13 +387,13 @@ class TimeSeries(DriverTemplate):
     name = tpe.value
 
     def __init__(self, grid: MultiCircuit, options: PowerFlowOptions, opf_time_series_results=None,
-                 start_=0, end_=None):
+                 start_=0, end_=None, engine: bs.EngineType = bs.EngineType.GridCal):
         """
         TimeSeries constructor
         @param grid: MultiCircuit instance
         @param options: PowerFlowOptions instance
         """
-        DriverTemplate.__init__(self, grid)
+        DriverTemplate.__init__(self, grid, engine=engine)
 
         # reference the grid directly
         # self.grid = grid
@@ -439,11 +442,16 @@ class TimeSeries(DriverTemplate):
 
         time_series_results.bus_types = time_circuit.bus_types
 
+        # compose total buses-> bus index dict
+        bus_dict = self.grid.get_bus_index_dict()
+
         # For every island, run the time series
         for island_index, calculation_input in enumerate(time_islands):
 
-            # fill in Vbus, Sbus Ibus
-            # calculation_input.consolidate()
+            # compose the HVDC power injections
+            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(self.grid,
+                                                                                        bus_dict,
+                                                                                        theta=np.zeros(time_circuit.nbus))
 
             # Are we dispatching storage? if so, generate a dictionary of battery -> bus index
             # to be able to set the batteries values into the vector S
@@ -553,10 +561,49 @@ class TimeSeries(DriverTemplate):
         # set the HVDC results here since the HVDC is not a branch in this modality
         time_series_results.hvdc_Pf = -time_circuit.hvdc_Pf.T
         time_series_results.hvdc_Pt = -time_circuit.hvdc_Pt.T
-        time_series_results.hvdc_loading = time_circuit.hvdc_loading.T
-        time_series_results.hvdc_losses = time_circuit.hvdc_losses.T
+        # TODO: Fix HVDC for time series
+        # time_series_results.hvdc_loading = time_circuit.hvdc_loading.T
+        # time_series_results.hvdc_losses = time_circuit.hvdc_losses.T
 
         return time_series_results
+
+    def run_bentayga(self):
+
+        res = bentayga_pf(self.grid, self.options, time_series=True)
+
+        results = TimeSeriesResults(n=self.grid.get_bus_number(),
+                                    m=self.grid.get_branch_number_wo_hvdc(),
+                                    n_tr=self.grid.get_transformers2w_number(),
+                                    n_hvdc=self.grid.get_hvdc_number(),
+                                    bus_names=res.bus_names,
+                                    branch_names=res.branch_names,
+                                    transformer_names=[],
+                                    hvdc_names=res.hvdc_names,
+                                    bus_types=res.bus_types,
+                                    time_array=self.grid.time_profile)
+
+        results.voltage = res.V
+        results.S = res.S
+        results.Sf = res.Sf
+        results.St = res.St
+        results.loading = res.loading
+        results.losses = res.losses
+        results.Vbranch = res.Vbranch
+        results.If = res.If
+        results.It = res.It
+        results.Beq = res.Beq
+        results.m = res.tap_modules
+        results.theta = res.tap_angles
+        results.F = res.F
+        results.T = res.T
+        results.hvdc_F = res.F_hvdc
+        results.hvdc_T = res.T_hvdc
+        results.hvdc_Pf = res.hvdc_Pf
+        results.hvdc_Pt = res.hvdc_Pt
+        results.hvdc_loading = res.hvdc_loading
+        results.hvdc_losses = res.hvdc_losses
+
+        return results
 
     def run(self):
         """
@@ -570,6 +617,14 @@ class TimeSeries(DriverTemplate):
             self.end_ = len(self.grid.time_profile)
         time_indices = np.arange(self.start_, self.end_)
 
-        self.results = self.run_single_thread(time_indices)
+        if self.engine == bs.EngineType.GridCal:
+            self.results = self.run_single_thread(time_indices)
+
+        elif self.engine == bs.EngineType.Newton:
+            pass
+
+        elif self.engine == bs.EngineType.Bentayga:
+
+            self.results = self.run_bentayga()
 
         self.elapsed = time.time() - a

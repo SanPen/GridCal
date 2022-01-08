@@ -763,4 +763,12 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------------------
+Linking exceptions
+-------------------------------------------------------------------------
+
+Both the Bentayga and NewtonNative packages are propietary libraries that
+are exempt of sharing the source code when linked from GridCal.
+
+The author of GridCal (Santiago Peñate-Vera) Is also the author of Bentayga
+and NewtonNative, hence the ability to make the exemptions.
 

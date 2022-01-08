@@ -36,6 +36,8 @@ import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.grid_analysis as grid_analysis
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
+from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE
+from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 
 # GUI imports
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
@@ -233,6 +235,16 @@ class MainGUI(QMainWindow):
         self.ui.vc_stop_at_comboBox.setModel(get_list_model([sim.CpfStopAt.Nose.value,
                                                              sim.CpfStopAt.ExtraOverloads.value]))
         self.ui.vc_stop_at_comboBox.setCurrentIndex(0)
+
+        # available engines
+        engine_lst = [bs.EngineType.GridCal]
+        if NEWTON_AVAILBALE:
+            engine_lst.append(bs.EngineType.Newton)
+        if BENTAYGA_AVAILABLE:
+            engine_lst.append(bs.EngineType.Bentayga)
+        self.ui.engineComboBox.setModel(get_list_model([x.value for x in engine_lst]))
+        self.ui.engineComboBox.setCurrentIndex(0)
+        self.engine_dict = {x.value: x for x in engine_lst}
 
         # do not allow MP under windows because it crashes
         if platform.system() == 'Windows':
@@ -628,6 +640,14 @@ class MainGUI(QMainWindow):
         """
         if not self.any_thread_running():
             self.LOCK(False)
+
+    def get_preferred_engine(self):
+        """
+        Get the currently selected engine
+        :return:
+        """
+        val = self.ui.engineComboBox.currentText()
+        return self.engine_dict[val]
 
     def get_simulation_threads(self):
         """
@@ -2441,7 +2461,8 @@ class MainGUI(QMainWindow):
                 self.ui.progress_label.setText('Running power flow...')
                 QtGui.QGuiApplication.processEvents()
                 # set power flow object instance
-                drv = sim.PowerFlowDriver(self.circuit, options, opf_results)
+                engine = self.get_preferred_engine()
+                drv = sim.PowerFlowDriver(self.circuit, options, opf_results, engine=engine)
 
                 self.session.run(drv,
                                  post_func=self.post_power_flow,
@@ -3367,11 +3388,13 @@ class MainGUI(QMainWindow):
                     options = self.get_selected_power_flow_options()
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1
+                    engine = self.get_preferred_engine()
                     drv = sim.TimeSeries(grid=self.circuit,
                                          options=options,
                                          opf_time_series_results=opf_time_series_results,
                                          start_=start,
-                                         end_=end)
+                                         end_=end,
+                                         engine=engine)
 
                     self.session.run(drv,
                                      post_func=self.post_time_series,

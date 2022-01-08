@@ -389,6 +389,27 @@ class Bus(EditableDevice):
 
         return Qmin, Qmax
 
+    def get_voltage_guess(self, logger=None):
+        """
+        Determine the voltage initial guess
+        :param logger: Logger object
+        :return: voltage guess
+        """
+        vm = 1.0
+        va = 0.0
+        v = complex(1, 0)
+
+        for lst in [self.controlled_generators, self.batteries]:
+            for elm in lst:
+                if vm == 1.0:
+                    v = complex(elm.Vset, 0)
+                    vm = elm.Vset
+                elif elm.Vset != vm:
+                    if logger is not None:
+                        logger.append('Different set points at ' + self.name + ': ' + str(elm.Vset) + ' !=' + str(v))
+
+        return v
+
     def plot_profiles(self, time_profile, ax_load=None, ax_voltage=None, time_series_driver=None, my_index=0):
         """
         plot the profiles of this bus
@@ -562,10 +583,10 @@ class Bus(EditableDevice):
                     'lat': self.latitude,
                     'lon': self.longitude,
                     'alt': 0.0,
-                    'country': self.country.idtag,
-                    'area': self.area.idtag,
-                    'zone': self.zone.idtag,
-                    'substation': self.substation.idtag
+                    'country': self.country.idtag if self.country is not None else "",
+                    'area': self.area.idtag if self.area is not None else "",
+                    'zone': self.zone.idtag if self.zone is not None else "",
+                    'substation': self.substation.idtag if self.substation is not None else ""
                     }
         else:
             return dict()

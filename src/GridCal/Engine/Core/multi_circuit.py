@@ -182,9 +182,6 @@ class MultiCircuit:
         # dictionary of branch objects -> branch indices
         self.branch_dictionary = dict()
 
-        # are there time series??
-        self.has_time_series = False
-
         # names of the buses
         self.bus_names = None
 
@@ -233,6 +230,10 @@ class MultiCircuit:
     def __str__(self):
         return str(self.name)
 
+    @property
+    def has_time_series(self):
+        return self.time_profile is not None
+
     def get_bus_number(self):
         """
         Return the number of buses
@@ -240,12 +241,19 @@ class MultiCircuit:
         """
         return len(self.buses)
 
+    def get_branch_lists_wo_hvdc(self):
+        """
+        GEt list of the branch lists
+        :return:
+        """
+        return [self.lines, self.transformers2w,  self.vsc_devices, self.dc_lines, self.upfc_devices]
+
     def get_branch_lists(self):
         """
         GEt list of the branch lists
         :return:
         """
-        return [self.lines, self.transformers2w, self.hvdc_lines, self.vsc_devices, self.dc_lines, self.upfc_devices]
+        return self.get_branch_lists_wo_hvdc() + [self.hvdc_lines]
 
     def get_branch_number(self):
         """
@@ -254,6 +262,16 @@ class MultiCircuit:
         """
         m = 0
         for branch_list in self.get_branch_lists():
+            m += len(branch_list)
+        return m
+
+    def get_branch_number_wo_hvdc(self):
+        """
+        return the number of branches (of all types)
+        :return: number
+        """
+        m = 0
+        for branch_list in self.get_branch_lists_wo_hvdc():
             m += len(branch_list)
         return m
 
@@ -323,8 +341,6 @@ class MultiCircuit:
 
         self.branch_dictionary = dict()
 
-        self.has_time_series = False
-
         self.bus_names = None
 
         self.branch_names = None
@@ -347,6 +363,33 @@ class MultiCircuit:
         :return: lines + transformers 2w + hvdc
         """
         return self.get_branches_wo_hvdc() + self.hvdc_lines
+
+    def get_lines(self) -> List[Line]:
+        return self.lines
+
+    def get_transformers2w(self) -> List[Transformer2W]:
+        return self.transformers2w
+
+    def get_transformers2w_number(self) -> int:
+        return len(self.transformers2w)
+
+    def get_vsc(self) -> List[VSC]:
+        return self.vsc_devices
+
+    def get_dc_lines(self) -> List[DcLine]:
+        return self.dc_lines
+
+    def get_upfc(self) -> List[UPFC]:
+        return self.upfc_devices
+
+    def get_switches(self) -> List[Switch]:
+        return self.switch_devices
+
+    def get_hvdc(self) -> List[HvdcLine]:
+        return self.hvdc_lines
+
+    def get_hvdc_number(self) -> int:
+        return len(self.hvdc_lines)
 
     def get_loads(self) -> List[Load]:
         """
@@ -1759,11 +1802,14 @@ class MultiCircuit:
         :return: average separation
         """
         separation = 0.0
-        branches = self.get_branch_lists()
-        for branch in branches:
-            s = np.sqrt((branch.bus_from.x - branch.bus_to.x)**2 + (branch.bus_from.y - branch.bus_to.y)**2)
-            separation += s
-        return separation / len(branches)
+        branch_lists = self.get_branch_lists()
+        n = 0
+        for branch_lst in branch_lists:
+            for branch in branch_lst:
+                s = np.sqrt((branch.bus_from.x - branch.bus_to.x)**2 + (branch.bus_from.y - branch.bus_to.y)**2)
+                separation += s
+                n += 1
+        return separation / n
 
     def add_circuit(self, circuit: "MultiCircuit", angle):
         """
@@ -1790,9 +1836,8 @@ class MultiCircuit:
         y0 = xm + r * np.sin(a)
 
         # modify the coordinates of the new circuit
-        min_x2, max_x2, min_y2, max_y2 = self.get_boundaries(circuit.buses)
-        branches2 = circuit.lines + circuit.transformers2w + circuit.hvdc_lines
-        sep2 = self.average_separation(branches2)
+        min_x2, max_x2, min_y2, max_y2 = self.get_boundaries()
+        sep2 = self.average_separation()
         factor = sep2 / sep1
         for bus in circuit.buses:
             bus.x = x0 + (bus.x - min_x2) * factor
@@ -1808,14 +1853,29 @@ class MultiCircuit:
                 for branch in lst:
                     branch.create_profiles(index=self.time_profile)
 
-        self.buses += circuit.buses
-        self.lines += circuit.lines
-        self.transformers2w += circuit.transformers2w
-        self.hvdc_lines += circuit.hvdc_lines
-        self.vsc_devices += circuit.vsc_devices
-        self.dc_lines += circuit.dc_lines
+        self.add_devices_list(self.buses, circuit.buses)
+        self.add_devices_list(self.lines, circuit.lines)
+        self.add_devices_list(self.transformers2w, circuit.transformers2w)
+        self.add_devices_list(self.hvdc_lines, circuit.hvdc_lines)
+        self.add_devices_list(self.vsc_devices, circuit.vsc_devices)
+        self.add_devices_list(self.dc_lines, circuit.dc_lines)
 
         return circuit.buses
+
+    def add_devices_list(self, original_list, new_list):
+        """
+        Add a list of devices to another keeping coherence
+        :param original_list:
+        :param new_list:
+        :return:
+        """
+        existing_uuids = {e.idtag for e in original_list}
+
+        for elm in new_list:
+            if elm.idtag in existing_uuids:
+                print(elm.name , 'uuid is repeated..generating new one')
+                elm.generate_uuid()
+            original_list.append(elm)
 
     def snapshot_balance(self):
         """
@@ -2199,6 +2259,37 @@ class MultiCircuit:
             elif branch.bus_from.zone == z2 and branch.bus_to.zone == z1:
                 lst.append((k, branch, -1.0))
         return lst
+
+    def get_branch_area_connectivity_matrix(self, a1: List[Area], a2: List[Area]):
+        """
+        Get the inter area connectivity matrix
+        :param a1: list of sending areas
+        :param a2: list of receiving areas
+        :return: Connectivity of the branches to each sending or receiving area groups (branches, 2)
+        """
+        area_dict = {a: i for i, a in enumerate(self.areas)}
+
+        area1_list = [area_dict[a] for a in a1]
+        area2_list = [area_dict[a] for a in a2]
+
+        branches = self.get_branches()  # all including HVDC
+
+        conn = lil_matrix((len(branches), 2), dtype=int)
+
+        for k, elm in enumerate(branches):
+            i = area_dict[elm.bus_from.area]
+            j = area_dict[elm.bus_to.area]
+            if i != j:
+                if (i in area1_list) and (j in area2_list):
+                    # from->to matches the areas
+                    conn[k, 0] = 1
+                    conn[k, 1] = -1
+                elif (i in area2_list) and (j in area1_list):
+                    # reverse the sign
+                    conn[k, 0] = -1
+                    conn[k, 1] = 1
+
+        return conn.tocsc()
 
     def change_base(self, Sbase_new):
         """

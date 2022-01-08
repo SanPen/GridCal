@@ -291,6 +291,25 @@ class SyncIssueType(Enum):
             return s
 
 
+class EngineType(Enum):
+    GridCal = 'GridCal'
+    Bentayga = 'Bentayga'
+    Newton = 'NewtonNative'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return EngineType[s]
+        except KeyError:
+            return s
+
+
 class CDF:
     """
     Inverse Cumulative density function of a given array of data
@@ -914,8 +933,15 @@ class ConvergenceReport:
 
 def get_list_dim(a):
     if not type(a) == list:
-        return []
-    return [len(a)] + get_list_dim(a[0])
+        return 0
+    else:
+        if len(a) > 0:
+            if type(a[0]) == list:
+                return 2
+            else:
+                return 1
+        else:
+            return 1
 
 
 class CompressedJsonStruct:
@@ -947,18 +973,25 @@ class CompressedJsonStruct:
         self.__fields_pos_dict = self.get_position_dict()
 
     def set_data(self, dta: List[Any]):
+        """
+        Set the data and check its consistency
+        :param dta: list of lists
+        :return: Nothing
+        """
+        if type(dta) == list:
+            if len(dta) > 0:
 
-        dim = get_list_dim(dta)
+                dim = get_list_dim(dta)
 
-        if dim == 2:
-            self.__data = dta
-        elif dim == 1:
-            self.__data = [dta]
-        else:
-            raise Exception('The list has the wrong number of dimensions: ' + str(dim))
+                if dim == 2:
+                    self.__data = dta
+                elif dim == 1:
+                    self.__data = [dta]
+                else:
+                    raise Exception('The list has the wrong number of dimensions: ' + str(dim))
 
-        if len(self.__data[0]) != len(self.__fields):
-            raise Exception("Data length does not match the fields length")
+                if len(self.__data[0]) != len(self.__fields):
+                    raise Exception("Data length does not match the fields length")
 
     def get_data(self):
         return self.__data
@@ -994,7 +1027,6 @@ class CompressedJsonStruct:
         """
         j = self.get_col_index(prop=col_name)
         self.__data[i][j] = val
-
 
 
 if __name__ == '__main__':
