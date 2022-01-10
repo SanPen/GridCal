@@ -663,8 +663,8 @@ class Bus(EditableDevice):
         :return: Nothing
         """
         if self.graphic_obj is not None:
-            self.x = self.graphic_obj.pos().x()
-            self.y = self.graphic_obj.pos().y()
+            self.x = int(self.graphic_obj.pos().x())
+            self.y = int(self.graphic_obj.pos().y())
             self.w, self.h = self.graphic_obj.rect().getCoords()[2:4]
 
     def delete_profiles(self):
