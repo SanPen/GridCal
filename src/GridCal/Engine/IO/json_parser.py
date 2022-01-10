@@ -174,6 +174,12 @@ def parse_json_data(data) -> MultiCircuit:
     return circuit
 
 
+def set_object_properties(elm, prop: list, entry: dict):
+    for jprop, gcprop in prop:
+        if jprop in entry.keys():
+            setattr(elm, gcprop, entry[jprop])
+
+
 def parse_json_data_v3(data: dict, logger: Logger):
     """
     New Json parser
@@ -374,8 +380,8 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 circuit.add_shunt(elm.bus, elm)
 
         if "Line" in devices.keys():
-            lines = devices["Line"]
-            for entry in lines:
+
+            for entry in devices["Line"]:
                 elm = Line(bus_from=bus_dict[entry['bus_from']],
                            bus_to=bus_dict[entry['bus_to']],
                            name=str(entry['name']),
@@ -441,10 +447,9 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 circuit.add_transformer2w(elm)
 
         if "TransformerNw" in devices.keys():
-            transformers = devices["TransformerNw"]
 
-            for tentry in transformers:
-                for entry in tentry['windings']:
+            for tr_entry in devices["TransformerNw"]:
+                for entry in tr_entry['windings']:
                     v1 = float(entry['Vnomf'])
                     v2 = float(entry['Vnomt'])
 
@@ -457,10 +462,10 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                     elm = Transformer2W(bus_from=bus_dict[entry['bus_from']],
                                         bus_to=bus_dict[entry['bus_to']],
-                                        name=str(tentry['name']),
+                                        name=str(tr_entry['name']),
                                         idtag=str(entry['id']),
                                         code=str(entry['name_code']),
-                                        active=bool(tentry['active']),
+                                        active=bool(tr_entry['active']),
                                         r=float(entry['r']),
                                         x=float(entry['x']),
                                         g=float(entry['g']),
@@ -472,12 +477,96 @@ def parse_json_data_v3(data: dict, logger: Logger):
                     circuit.add_transformer2w(elm)
 
         if "VSC" in devices.keys():
-            vsc = devices["VSC"]
 
-            # TODO: call correct_buses_connection()
+            # json property -> gc property name
+            prop = [('id', 'idtag'),
+                    ('name', 'name'),
+                    ('name_code', 'code'),
+                    ('active', 'active'),
+                    ('rate', 'rate'),
+                    ('contingency_factor1', 'contingency_factor'),
+                    ('r', 'R1'),
+                    ('x', 'X1'),
+                    ('g', 'G0'),
+                    ('m', 'm'),
+                    ('m_min', 'm_min'),
+                    ('m_max', 'm_max'),
+                    ('theta', 'theta'),
+                    ('theta_min', 'theta_min'),
+                    ('theta_max', 'theta_max'),
+                    ('Beq', 'Beq'),
+                    ('Beq_min', 'Beq_min'),
+                    ('Beq_max', 'Beq_max'),
+                    ('alpha1', 'alpha1'),
+                    ('alpha2', 'alpha2'),
+                    ('alpha3', 'alpha3'),
+                    ('k', 'k'),
+                    ('kdp', 'kdp'),
+                    ('Pfset', 'Pdc_set'),
+                    ('Qfset', 'Qac_set'),
+                    ('vac_set', 'Vac_set'),
+                    ('vdc_set', 'Vdc_set'),
+                    ]
+
+            modes = {0: ConverterControlType.type_0_free,
+                     1: ConverterControlType.type_I_1,
+                     2: ConverterControlType.type_I_2,
+                     3: ConverterControlType.type_I_3,
+                     4: ConverterControlType.type_II_4,
+                     5: ConverterControlType.type_II_5,
+                     6: ConverterControlType.type_III_6,
+                     7: ConverterControlType.type_III_7,
+                     8: ConverterControlType.type_IV_I,
+                     9: ConverterControlType.type_IV_II}
+
+            for entry in devices["VSC"]:
+
+                elm = VSC()
+                elm.bus_from = bus_dict[entry['bus_from']]
+                elm.bus_to = bus_dict[entry['bus_to']]
+                set_object_properties(elm, prop, entry)
+
+                if "control_mode" in entry.keys():
+                    elm.control_mode = modes[entry["control_mode"]]
+                elif "mode" in entry.keys():
+                    elm.control_mode = modes[entry["mode"]]
+
+                circuit.add_vsc(elm)
 
         if "HVDC Line" in devices.keys():
-            hvdc = devices["HVDC Line"]
+
+            hvdc_ctrl_dict = {HvdcControlType.type_1_Pset.value, HvdcControlType.type_1_Pset,
+                              HvdcControlType.type_0_free.value, HvdcControlType.type_0_free}
+
+            prop = [('id', 'idtag'),
+                    ('name', 'name'),
+                    ('name_code', 'code'),
+                    ('active', 'active'),
+                    ('rate', 'rate'),
+                    ('Pset', 'Pset'),
+                    ('vset_from', 'Vset_f'),
+                    ('vset_to', 'Vset_t'),
+                    ('contingency_factor1', 'contingency_factor'),
+                    ('length', 'length'),
+                    ('r', 'r'),
+                    ('angle_droop', 'angle_droop'),
+                    ('min_firing_angle_f', 'min_firing_angle_f'),
+                    ('max_firing_angle_f', 'max_firing_angle_f'),
+                    ('min_firing_angle_t', 'min_firing_angle_t'),
+                    ('max_firing_angle_t', 'max_firing_angle_t'),
+                    ('overload_cost', 'overload_cost'), ]
+
+            for entry in devices["HVDC Line"]:
+
+                elm = HvdcLine()
+                elm.bus_from = bus_dict[entry['bus_from']]
+                elm.bus_to = bus_dict[entry['bus_to']]
+                set_object_properties(elm, prop, entry)
+
+                if "control_mode" in entry.keys():
+                    elm.control_mode = hvdc_ctrl_dict[entry["control_mode"]]
+
+                circuit.add_hvdc(elm)
 
         # fill x, y
         circuit.fill_xy_from_lat_lon()
