@@ -4190,10 +4190,11 @@ class MainGUI(QMainWindow):
                                          )
             self.update_available_results()
 
-        if len(drv.logger) > 0:
-            dlg = LogsDialogue(drv.name, drv.logger)
-            dlg.setModal(True)
-            dlg.exec_()
+        if drv.logger is not None:
+            if len(drv.logger) > 0:
+                dlg = LogsDialogue(drv.name, drv.logger)
+                dlg.setModal(True)
+                dlg.exec_()
 
         if not self.session.is_anything_running():
             self.UNLOCK()

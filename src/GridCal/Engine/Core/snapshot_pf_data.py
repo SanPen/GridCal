@@ -1362,29 +1362,29 @@ class SnapshotData:
         # find the matching islands
         idx_islands = tp.find_islands(A, active=self.bus_data.bus_active[:, 0])
 
-        if len(idx_islands) == 1:
-            # numeric_circuit.compute_all()  # compute the internal magnitudes
-            return [self]
+        # if len(idx_islands) == 1:
+        #     # numeric_circuit.compute_all()  # compute the internal magnitudes
+        #     return [self]
+        #
+        # else:
 
-        else:
+        circuit_islands = list()  # type: List[SnapshotData]
 
-            circuit_islands = list()  # type: List[SnapshotData]
+        for bus_idx in idx_islands:
 
-            for bus_idx in idx_islands:
+            if ignore_single_node_islands:
 
-                if ignore_single_node_islands:
-
-                    if len(bus_idx) > 1:
-                        island = self.get_island(bus_idx)
-                        # island.compute_all()  # compute the internal magnitudes
-                        circuit_islands.append(island)
-
-                else:
+                if len(bus_idx) > 1:
                     island = self.get_island(bus_idx)
                     # island.compute_all()  # compute the internal magnitudes
                     circuit_islands.append(island)
 
-            return circuit_islands
+            else:
+                island = self.get_island(bus_idx)
+                # island.compute_all()  # compute the internal magnitudes
+                circuit_islands.append(island)
+
+        return circuit_islands
 
 
 def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,

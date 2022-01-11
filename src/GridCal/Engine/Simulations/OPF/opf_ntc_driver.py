@@ -493,14 +493,16 @@ class OptimalNetTransferCapacity(DriverTemplate):
     def compute_exchange_sensitivity(self, linear, numerical_circuit):
 
         # compute the branch exchange sensitivity (alpha)
-        alpha = compute_alpha(ptdf=linear.PTDF,
-                              P0=numerical_circuit.Sbus.real,
-                              Pinstalled=numerical_circuit.bus_installed_power,
-                              idx1=self.options.area_from_bus_idx,
-                              idx2=self.options.area_to_bus_idx,
-                              bus_types=numerical_circuit.bus_types.astype(np.int),
-                              dT=self.options.sensitivity_dT,
-                              mode=self.options.sensitivity_mode.value)
+        alpha = compute_alpha(
+            ptdf=linear.PTDF,
+            P0=numerical_circuit.Sbus.real,
+            Pinstalled=numerical_circuit.bus_installed_power,
+            idx1=self.options.area_from_bus_idx,
+            idx2=self.options.area_to_bus_idx,
+            bus_types=numerical_circuit.bus_types.astype(np.int),
+            dT=self.options.sensitivity_dT,
+            mode=self.options.sensitivity_mode.value
+        )
 
         return alpha
 
@@ -511,9 +513,11 @@ class OptimalNetTransferCapacity(DriverTemplate):
         """
         self.progress_text.emit('Compiling...')
 
-        numerical_circuit = compile_snapshot_opf_circuit(circuit=self.grid,
-                                                         apply_temperature=self.pf_options.apply_temperature_correction,
-                                                         branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
+        numerical_circuit = compile_snapshot_opf_circuit(
+            circuit=self.grid,
+            apply_temperature=self.pf_options.apply_temperature_correction,
+            branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode
+        )
 
         self.progress_text.emit('Running linear analysis...')
 
@@ -557,9 +561,20 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 indices = np.where(np.abs(cnt_drv.results.loading.real) >= 1.0)
 
                 for m, c in zip(indices[0], indices[1]):
-                    if numerical_circuit.branch_data.monitor_loading[m] and numerical_circuit.branch_data.contingency_enabled[c]:
-                        elm_name = '{0} @ {1}'.format(numerical_circuit.branch_names[m], numerical_circuit.branch_names[c])
-                        self.logger.add_error('Base contingency overload', elm_name, cnt_drv.results.loading[m, c].real * 100, 100)
+                    if numerical_circuit.branch_data.monitor_loading[m] and \
+                       numerical_circuit.branch_data.contingency_enabled[c]:
+
+                        elm_name = '{0} @ {1}'.format(
+                            numerical_circuit.branch_names[m],
+                            numerical_circuit.branch_names[c]
+                        )
+
+                        self.logger.add_error(
+                            'Base contingency overload',
+                            elm_name, cnt_drv.results.loading[m, c].real * 100,
+                            100
+                        )
+
                         get_contingency_flows_list.append(cnt_drv.results.Sf[m, c].real)
                         contingency_flows_slacks_list.append(0.0)
                         contingency_indices_list.append((m, c))
@@ -570,76 +585,84 @@ class OptimalNetTransferCapacity(DriverTemplate):
         if base_problems:
 
             # get the inter-area branches and their sign
-            inter_area_branches = get_inter_areas_branches(nbr=numerical_circuit.nbr,
-                                                           F=numerical_circuit.branch_data.F,
-                                                           T=numerical_circuit.branch_data.T,
-                                                           buses_areas_1=self.options.area_from_bus_idx,
-                                                           buses_areas_2=self.options.area_to_bus_idx)
+            inter_area_branches = get_inter_areas_branches(
+                nbr=numerical_circuit.nbr,
+                F=numerical_circuit.branch_data.F,
+                T=numerical_circuit.branch_data.T,
+                buses_areas_1=self.options.area_from_bus_idx,
+                buses_areas_2=self.options.area_to_bus_idx
+            )
 
-            inter_area_hvdc = get_inter_areas_branches(nbr=numerical_circuit.nhvdc,
-                                                       F=numerical_circuit.hvdc_data.get_bus_indices_f(),
-                                                       T=numerical_circuit.hvdc_data.get_bus_indices_t(),
-                                                       buses_areas_1=self.options.area_from_bus_idx,
-                                                       buses_areas_2=self.options.area_to_bus_idx)
+            inter_area_hvdc = get_inter_areas_branches(
+                nbr=numerical_circuit.nhvdc,
+                F=numerical_circuit.hvdc_data.get_bus_indices_f(),
+                T=numerical_circuit.hvdc_data.get_bus_indices_t(),
+                buses_areas_1=self.options.area_from_bus_idx,
+                buses_areas_2=self.options.area_to_bus_idx
+            )
 
             # pack the results
-            self.results = OptimalNetTransferCapacityResults(bus_names=numerical_circuit.bus_data.bus_names,
-                                                             branch_names=numerical_circuit.branch_data.branch_names,
-                                                             load_names=numerical_circuit.load_data.load_names,
-                                                             generator_names=numerical_circuit.generator_data.generator_names,
-                                                             battery_names=numerical_circuit.battery_data.battery_names,
-                                                             hvdc_names=numerical_circuit.hvdc_data.names,
-                                                             Sbus=numerical_circuit.Sbus.real,
-                                                             voltage=pf_drv.results.voltage,
-                                                             load_shedding=np.zeros((numerical_circuit.nload, 1)),
-                                                             generator_shedding=np.zeros((numerical_circuit.ngen, 1)),
-                                                             battery_power=np.zeros((numerical_circuit.nbatt, 1)),
-                                                             controlled_generation_power=numerical_circuit.generator_data.generator_p,
-                                                             Sf=pf_drv.results.Sf.real,
-                                                             overloads=np.zeros(numerical_circuit.nbr),
-                                                             loading=pf_drv.results.loading.real,
-                                                             converged=False,
-                                                             bus_types=numerical_circuit.bus_types,
-                                                             hvdc_flow=pf_drv.results.hvdc_Pt,
-                                                             hvdc_loading=pf_drv.results.hvdc_loading,
-                                                             hvdc_slacks=np.zeros(numerical_circuit.nhvdc),
-                                                             phase_shift=pf_drv.results.theta,
-                                                             generation_delta=np.zeros(numerical_circuit.ngen),
-                                                             generation_delta_slacks=np.zeros(numerical_circuit.ngen),
-                                                             inter_area_branches=inter_area_branches,
-                                                             inter_area_hvdc=inter_area_hvdc,
-                                                             alpha=alpha,
-                                                             contingency_flows_list=get_contingency_flows_list,
-                                                             contingency_indices_list=contingency_indices_list,
-                                                             contingency_flows_slacks_list=contingency_flows_slacks_list,
-                                                             rates=numerical_circuit.branch_data.branch_rates[:, 0],
-                                                             contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0]
-                                                             )
+            self.results = OptimalNetTransferCapacityResults(
+                bus_names=numerical_circuit.bus_data.bus_names,
+                branch_names=numerical_circuit.branch_data.branch_names,
+                load_names=numerical_circuit.load_data.load_names,
+                generator_names=numerical_circuit.generator_data.generator_names,
+                battery_names=numerical_circuit.battery_data.battery_names,
+                hvdc_names=numerical_circuit.hvdc_data.names,
+                Sbus=numerical_circuit.Sbus.real,
+                voltage=pf_drv.results.voltage,
+                load_shedding=np.zeros((numerical_circuit.nload, 1)),
+                generator_shedding=np.zeros((numerical_circuit.ngen, 1)),
+                battery_power=np.zeros((numerical_circuit.nbatt, 1)),
+                controlled_generation_power=numerical_circuit.generator_data.generator_p,
+                Sf=pf_drv.results.Sf.real,
+                overloads=np.zeros(numerical_circuit.nbr),
+                loading=pf_drv.results.loading.real,
+                converged=False,
+                bus_types=numerical_circuit.bus_types,
+                hvdc_flow=pf_drv.results.hvdc_Pt,
+                hvdc_loading=pf_drv.results.hvdc_loading,
+                hvdc_slacks=np.zeros(numerical_circuit.nhvdc),
+                phase_shift=pf_drv.results.theta,
+                generation_delta=np.zeros(numerical_circuit.ngen),
+                generation_delta_slacks=np.zeros(numerical_circuit.ngen),
+                inter_area_branches=inter_area_branches,
+                inter_area_hvdc=inter_area_hvdc,
+                alpha=alpha,
+                contingency_flows_list=get_contingency_flows_list,
+                contingency_indices_list=contingency_indices_list,
+                contingency_flows_slacks_list=contingency_flows_slacks_list,
+                rates=numerical_circuit.branch_data.branch_rates[:, 0],
+                contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0]
+            )
         else:
             self.progress_text.emit('Formulating NTC OPF...')
 
             # DDefine the problem
-            problem = OpfNTC(numerical_circuit,
-                             area_from_bus_idx=self.options.area_from_bus_idx,
-                             area_to_bus_idx=self.options.area_to_bus_idx,
-                             alpha=alpha,
-                             LODF=linear.LODF,
-                             solver_type=self.options.mip_solver,
-                             generation_formulation=self.options.generation_formulation,
-                             monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
-                             branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
-                             skip_generation_limits=self.options.skip_generation_limits,
-                             consider_contingencies=self.options.consider_contingencies,
-                             maximize_exchange_flows=self.options.maximize_exchange_flows,
-                             dispatch_all_areas=self.options.dispatch_all_areas,
-                             tolerance=self.options.tolerance,
-                             weight_power_shift=self.options.weight_power_shift,
-                             weight_generation_cost=self.options.weight_generation_cost,
-                             weight_generation_delta=self.options.weight_generation_delta,
-                             weight_kirchoff=self.options.weight_kirchoff,
-                             weight_overloads=self.options.weight_overloads,
-                             weight_hvdc_control=self.options.weight_hvdc_control,
-                             logger=self.logger)
+            problem = OpfNTC(
+                numerical_circuit,
+                area_from_bus_idx=self.options.area_from_bus_idx,
+                area_to_bus_idx=self.options.area_to_bus_idx,
+                alpha=alpha,
+                LODF=linear.LODF,
+                solver_type=self.options.mip_solver,
+                generation_formulation=self.options.generation_formulation,
+                monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
+                branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
+                skip_generation_limits=self.options.skip_generation_limits,
+                consider_contingencies=self.options.consider_contingencies,
+                maximize_exchange_flows=self.options.maximize_exchange_flows,
+                dispatch_all_areas=self.options.dispatch_all_areas,
+                tolerance=self.options.tolerance,
+                weight_power_shift=self.options.weight_power_shift,
+                weight_generation_cost=self.options.weight_generation_cost,
+                weight_generation_delta=self.options.weight_generation_delta,
+                weight_kirchoff=self.options.weight_kirchoff,
+                weight_overloads=self.options.weight_overloads,
+                weight_hvdc_control=self.options.weight_hvdc_control,
+                logger=self.logger
+            )
+
             # Solve
             self.progress_text.emit('Solving NTC OPF...')
             converged = problem.solve()
@@ -651,38 +674,39 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 self.logger += problem.logger
 
             # pack the results
-            self.results = OptimalNetTransferCapacityResults(bus_names=numerical_circuit.bus_data.bus_names,
-                                                             branch_names=numerical_circuit.branch_data.branch_names,
-                                                             load_names=numerical_circuit.load_data.load_names,
-                                                             generator_names=numerical_circuit.generator_data.generator_names,
-                                                             battery_names=numerical_circuit.battery_data.battery_names,
-                                                             hvdc_names=numerical_circuit.hvdc_data.names,
-                                                             Sbus=problem.get_power_injections(),
-                                                             voltage=problem.get_voltage(),
-                                                             load_shedding=problem.get_load_shedding(),
-                                                             generator_shedding=np.zeros((numerical_circuit.ngen, 1)),
-                                                             battery_power=np.zeros((numerical_circuit.nbatt, 1)),
-                                                             controlled_generation_power=problem.get_generator_power(),
-                                                             Sf=problem.get_branch_power(),
-                                                             overloads=problem.get_overloads(),
-                                                             loading=problem.get_loading(),
-                                                             converged=bool(converged),
-                                                             bus_types=numerical_circuit.bus_types,
-                                                             hvdc_flow=problem.get_hvdc_flow(),
-                                                             hvdc_loading=problem.get_hvdc_loading(),
-                                                             hvdc_slacks=problem.get_hvdc_slacks(),
-                                                             phase_shift=problem.get_phase_angles(),
-                                                             generation_delta=problem.get_generator_delta(),
-                                                             generation_delta_slacks=problem.get_generator_delta_slacks(),
-                                                             inter_area_branches=problem.inter_area_branches,
-                                                             inter_area_hvdc=problem.inter_area_hvdc,
-                                                             alpha=alpha,
-                                                             contingency_flows_list=problem.get_contingency_flows_list(),
-                                                             contingency_indices_list=problem.contingency_indices_list,
-                                                             contingency_flows_slacks_list=problem.get_contingency_flows_slacks_list(),
-                                                             rates=numerical_circuit.branch_data.branch_rates[:, 0],
-                                                             contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0]
-                                                             )
+            self.results = OptimalNetTransferCapacityResults(
+                bus_names=numerical_circuit.bus_data.bus_names,
+                branch_names=numerical_circuit.branch_data.branch_names,
+                load_names=numerical_circuit.load_data.load_names,
+                generator_names=numerical_circuit.generator_data.generator_names,
+                battery_names=numerical_circuit.battery_data.battery_names,
+                hvdc_names=numerical_circuit.hvdc_data.names,
+                Sbus=problem.get_power_injections(),
+                voltage=problem.get_voltage(),
+                load_shedding=problem.get_load_shedding(),
+                generator_shedding=np.zeros((numerical_circuit.ngen, 1)),
+                battery_power=np.zeros((numerical_circuit.nbatt, 1)),
+                controlled_generation_power=problem.get_generator_power(),
+                Sf=problem.get_branch_power(),
+                overloads=problem.get_overloads(),
+                loading=problem.get_loading(),
+                converged=bool(converged),
+                bus_types=numerical_circuit.bus_types,
+                hvdc_flow=problem.get_hvdc_flow(),
+                hvdc_loading=problem.get_hvdc_loading(),
+                hvdc_slacks=problem.get_hvdc_slacks(),
+                phase_shift=problem.get_phase_angles(),
+                generation_delta=problem.get_generator_delta(),
+                generation_delta_slacks=problem.get_generator_delta_slacks(),
+                inter_area_branches=problem.inter_area_branches,
+                inter_area_hvdc=problem.inter_area_hvdc,
+                alpha=alpha,
+                contingency_flows_list=problem.get_contingency_flows_list(),
+                contingency_indices_list=problem.contingency_indices_list,
+                contingency_flows_slacks_list=problem.get_contingency_flows_slacks_list(),
+                rates=numerical_circuit.branch_data.branch_rates[:, 0],
+                contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0]
+            )
 
         self.progress_text.emit('Done!')
 

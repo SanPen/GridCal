@@ -271,25 +271,25 @@ class TimeCircuit(SnapshotData):
             # find the matching islands
             idx_islands = tp.find_islands(A, active=self.bus_data.bus_active[:, 0])
 
-            if len(idx_islands) == 1:  # only one state and only one island -> just copy the data
+            # if len(idx_islands) == 1:  # only one state and only one island -> just copy the data
+            #
+            #     return [self]
+            #
+            # else:  # one state, many islands -> split by bus index, keep the time
 
-                return [self]
+            for bus_idx in idx_islands:
 
-            else:  # one state, many islands -> split by bus index, keep the time
+                if ignore_single_node_islands:
 
-                for bus_idx in idx_islands:
-
-                    if ignore_single_node_islands:
-
-                        if len(bus_idx) > 1:
-                            island = self.get_island(bus_idx, all_time)
-                            circuit_islands.append(island)
-
-                    else:
+                    if len(bus_idx) > 1:
                         island = self.get_island(bus_idx, all_time)
                         circuit_islands.append(island)
 
-                return circuit_islands
+                else:
+                    island = self.get_island(bus_idx, all_time)
+                    circuit_islands.append(island)
+
+            return circuit_islands
 
         else:  # ------------------------------------------------------------------------------------------------------
 
@@ -304,25 +304,27 @@ class TimeCircuit(SnapshotData):
                 # find the matching islands
                 idx_islands = tp.find_islands(A, active=self.bus_data.bus_active[:, t_array])
 
-                if len(idx_islands) == 1:  # many time states, one island -> slice only by time ------------------------
+                # if len(idx_islands) == 1:  # many time states, one island -> slice only by time ------------------------
+                #
+                #     island = self.get_island(all_buses, t_array)  # convert the circuit to an island
+                #
+                #     circuit_islands.append(island)
+                #
+                # else:
 
-                    island = self.get_island(all_buses, t_array)  # convert the circuit to an island
+                # any time states, many islands -> slice by both time and bus index -----------------------------
 
-                    circuit_islands.append(island)
+                for bus_idx in idx_islands:
 
-                else:  # any time states, many islands -> slice by both time and bus index -----------------------------
+                    if ignore_single_node_islands:
 
-                    for bus_idx in idx_islands:
-
-                        if ignore_single_node_islands:
-
-                            if len(bus_idx) > 1:
-                                island = self.get_island(bus_idx, t_array)
-                                circuit_islands.append(island)
-
-                        else:
+                        if len(bus_idx) > 1:
                             island = self.get_island(bus_idx, t_array)
                             circuit_islands.append(island)
+
+                    else:
+                        island = self.get_island(bus_idx, t_array)
+                        circuit_islands.append(island)
 
             return circuit_islands
 

@@ -103,7 +103,18 @@ def make_lodf(Cf, Ct, PTDF, correct_values=True):
     for i in range(nl):
         LODF[i, i] = - 1.0
 
-    if correct_values:
+    if correct_values:  # TODO check more efficient way
+
+        # correct stupid values
+        i1, j1 = np.where(LODF > 1.2)
+        for i, j in zip(i1, j1):
+            LODF[i, j] = 0
+
+        i2, j2 = np.where(LODF < -1.2)
+        for i, j in zip(i2, j2):
+            LODF[i, j] = 0
+
+        # ensure +-1 values
         i1, j1 = np.where(LODF > 1)
         for i, j in zip(i1, j1):
             LODF[i, j] = 1
