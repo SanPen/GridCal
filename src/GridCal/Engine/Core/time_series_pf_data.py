@@ -185,6 +185,13 @@ class TimeCircuit(SnapshotData):
         :return: SnapshotData
         """
 
+        # if the island is the same as the original bus indices, no slicing is needed
+        if len(bus_idx) == len(self.original_bus_idx):
+            if np.all(bus_idx == self.original_bus_idx):
+                if len(time_idx) == len(self.original_time_idx):
+                    if np.all(time_idx == self.original_time_idx):
+                        return self
+
         # find the indices of the devices of the island
         line_idx = self.line_data.get_island(bus_idx)
         dc_line_idx = self.dc_line_data.get_island(bus_idx)
