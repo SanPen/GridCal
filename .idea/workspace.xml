@@ -23,10 +23,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="new functions to manage ntc_opf options">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="fixed overflow x,y coordinates">
+      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/4Bus_SalvadorAchaDaza.gridcal" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/research/PTDF/Sensitivity_research_AchaDaza.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -525,20 +528,6 @@
       <workItem from="1617632797911" duration="3094000" />
       <workItem from="1617652313409" duration="1856000" />
     </task>
-    <task id="LOCAL-00076" summary="Added ACDC levenberg marquadt">
-      <created>1609456014608</created>
-      <option name="number" value="00076" />
-      <option name="presentableId" value="LOCAL-00076" />
-      <option name="project" value="LOCAL" />
-      <updated>1609456014608</updated>
-    </task>
-    <task id="LOCAL-00077" summary="60% faster ACDC power flow by dynamic Jacobian composition">
-      <created>1609515682212</created>
-      <option name="number" value="00077" />
-      <option name="presentableId" value="LOCAL-00077" />
-      <option name="project" value="LOCAL" />
-      <updated>1609515682213</updated>
-    </task>
     <task id="LOCAL-00078" summary="Slight performance improvement by converting the fubm derivatives to numba">
       <created>1609770900307</created>
       <option name="number" value="00078" />
@@ -868,7 +857,21 @@
       <option name="project" value="LOCAL" />
       <updated>1639141365154</updated>
     </task>
-    <option name="localTasksCounter" value="125" />
+    <task id="LOCAL-00125" summary="lodf correction with a given replacement value">
+      <created>1639493879188</created>
+      <option name="number" value="00125" />
+      <option name="presentableId" value="LOCAL-00125" />
+      <option name="project" value="LOCAL" />
+      <updated>1639493879188</updated>
+    </task>
+    <task id="LOCAL-00126" summary="fixed overflow x,y coordinates">
+      <created>1641809626046</created>
+      <option name="number" value="00126" />
+      <option name="presentableId" value="LOCAL-00126" />
+      <option name="project" value="LOCAL" />
+      <updated>1641809626046</updated>
+    </task>
+    <option name="localTasksCounter" value="127" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -902,8 +905,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Minimal changes" />
-    <MESSAGE value="Fixed numba headers not working. Replaced by the generic call njit()" />
     <MESSAGE value="minor check when dropping files" />
     <MESSAGE value="Fixed Pdc and Qac in the VSC devices and some main file examples&#10;Finalized removing specific numba decorators" />
     <MESSAGE value="Fixed PTDF rates profile usage&#10;Fixed plotting from the schematic" />
@@ -927,7 +928,9 @@
     <MESSAGE value="Imported some changes from master" />
     <MESSAGE value="workspace" />
     <MESSAGE value="new functions to manage ntc_opf options" />
-    <option name="LAST_COMMIT_MESSAGE" value="new functions to manage ntc_opf options" />
+    <MESSAGE value="lodf correction with a given replacement value" />
+    <MESSAGE value="fixed overflow x,y coordinates" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed overflow x,y coordinates" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -951,11 +954,6 @@
           <url>file://$PROJECT_DIR$/src/research/slicing_experiments.py</url>
           <line>271</line>
           <option name="timeStamp" value="56" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/linearized_power_flow.py</url>
-          <line>84</line>
-          <option name="timeStamp" value="95" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/research/power_world_format/power_world_epc.py</url>
@@ -1139,11 +1137,6 @@
           <option name="timeStamp" value="428" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/admittance_matrices.py</url>
-          <line>280</line>
-          <option name="timeStamp" value="431" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/research/power_flow/fubm/derivatives_research0.py</url>
           <line>239</line>
           <option name="timeStamp" value="435" />
@@ -1209,11 +1202,6 @@
           <option name="timeStamp" value="537" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py</url>
-          <line>80</line>
-          <option name="timeStamp" value="538" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf.py</url>
           <line>213</line>
           <option name="timeStamp" value="541" />
@@ -1232,11 +1220,6 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Analysis/AnalysisDialogue.py</url>
           <line>565</line>
           <option name="timeStamp" value="620" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py</url>
-          <line>108</line>
-          <option name="timeStamp" value="623" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
