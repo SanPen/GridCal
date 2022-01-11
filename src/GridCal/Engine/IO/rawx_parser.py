@@ -13,8 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Tuple
 import json
+import numpy as np
 from GridCal.Engine.basic_structures import Logger, CompressedJsonStruct
 import GridCal.Engine.Devices as dev
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -34,7 +35,7 @@ def parse_circuit(circuit: MultiCircuit, block: CompressedJsonStruct):
     circuit.fBase = data['basfrq']
     circuit.Sbase = data['sbase']
     circuit.name = data['title1']
-    circuit.comments = data['title1'] + '\n' + data['title2']
+    circuit.comments = str(data['title1']) + "\n" + str(data['title2'])
 
 
 def get_circuit_block(circuit: MultiCircuit, fields) -> CompressedJsonStruct:
@@ -53,7 +54,96 @@ def get_circuit_block(circuit: MultiCircuit, fields) -> CompressedJsonStruct:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def parse_buses(circuit: MultiCircuit, block: CompressedJsonStruct) -> Dict[int, Any]:
+def parse_areas(circuit: MultiCircuit, block: CompressedJsonStruct) -> Dict[int, Any]:
+    """
+    Parse PSSe areas
+    :param circuit: Multi-circuit
+    :param block: block to parse
+    :return: dictionary to match the PSSe area code to the actual area object
+    """
+    # "iarea", "isw", "pdes", "ptol", "arname"
+    area_dict = dict()
+
+    for i in range(block.get_row_number()):
+        data = block.get_dict_at(i)
+        area = dev.Area()
+        area.code = data['iarea']
+        # area.code = data['isw']  # swing bus -> 0
+        # area.code = data['pdes']  # desired exchange (MW) -> 0
+        # area.code = data['ptol']  # tolerance (MW) -> 99999
+        area.name = data['arname']
+
+        circuit.add_area(area)
+        area_dict[area.code] = area
+
+    return area_dict
+
+
+def get_areas_block(circuit: MultiCircuit, fields) -> CompressedJsonStruct:
+    """
+    Generate PSSe areas from the GridCal Areas
+    :param circuit: Multi-circuit
+    :param fields:
+    :return: CompressedJsonStruct block
+    """
+    block = CompressedJsonStruct(fields=fields)
+    block.declare_n_entries(circuit.get_area_number())
+
+    for i, area in enumerate(circuit.get_areas()):
+        # "iarea", "isw", "pdes", "ptol", "arname"
+        block.set_at(i, 'iarea', i + 1)
+        block.set_at(i, 'isw', 0)
+        block.set_at(i, 'pdes', 0)
+        block.set_at(i, 'ptol', 99999)
+        block.set_at(i, 'arname', area.name)
+
+    return block
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def parse_zones(circuit: MultiCircuit, block: CompressedJsonStruct) -> Dict[int, Any]:
+    """
+    Parse PSSe areas
+    :param circuit: Multi-circuit
+    :param block: block to parse
+    :return: dictionary to match the PSSe area code to the actual area object
+    """
+    # "izone", "zoname"
+    area_zone = dict()
+
+    for i in range(block.get_row_number()):
+        data = block.get_dict_at(i)
+        zone = dev.Zone()
+        zone.code = data['izone']
+        zone.name = data['zoname']
+
+        circuit.add_zone(zone)
+        area_zone[zone.code] = zone
+
+    return area_zone
+
+
+def get_zones_block(circuit: MultiCircuit, fields) -> CompressedJsonStruct:
+    """
+    Generate PSSe areas from the GridCal Areas
+    :param circuit: Multi-circuit
+    :param fields:
+    :return: CompressedJsonStruct block
+    """
+    block = CompressedJsonStruct(fields=fields)
+    block.declare_n_entries(circuit.get_zone_number())
+
+    for i, area in enumerate(circuit.get_zones()):
+        # "izone", "zoname"
+        block.set_at(i, 'izone', i + 1)
+        block.set_at(i, 'zoname', area.name)
+
+    return block
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def parse_buses(circuit: MultiCircuit, block: CompressedJsonStruct) \
+        -> Tuple[Dict[int, Any], Dict[Any, Tuple[int, int]]]:
     """
 
     :param circuit:
@@ -62,7 +152,7 @@ def parse_buses(circuit: MultiCircuit, block: CompressedJsonStruct) -> Dict[int,
     """
     # ["ibus", "name", "baskv", "ide", "area", "zone", "owner", "vm", "va", "nvhi", "nvlo", "evhi", "evlo"]
     bus_dict = dict()
-
+    bus_area = dict()
     for i in range(block.get_row_number()):
         data = block.get_dict_at(i)
         bus = dev.Bus()
@@ -78,12 +168,16 @@ def parse_buses(circuit: MultiCircuit, block: CompressedJsonStruct) -> Dict[int,
         # dictionary with the psse index and the bus object
         bus_dict[data['ibus']] = bus
 
+        # keep the relation to the areas and zones to match properly later
+        bus_area[bus] = (data['area'], data['zone'])
+
+        # add to the circuit
         circuit.add_bus(bus)
 
-    return bus_dict
+    return bus_dict, bus_area
 
 
-def get_buses_block(circuit: MultiCircuit, fields) -> CompressedJsonStruct:
+def get_buses_block(circuit: MultiCircuit, fields) -> Tuple[CompressedJsonStruct, Dict[Any, int]]:
     """
 
     :param circuit:
@@ -93,6 +187,11 @@ def get_buses_block(circuit: MultiCircuit, fields) -> CompressedJsonStruct:
     block = CompressedJsonStruct(fields=fields)
     block.declare_n_entries(circuit.get_bus_number())
 
+    areas_dict = {elm: i+1 for i, elm in enumerate(circuit.get_areas())}
+    zones_dict = {elm: i+1 for i, elm in enumerate(circuit.get_zones())}
+    se_dict = {elm: i+1 for i, elm in enumerate(circuit.get_substations())}
+    rev_bus_dict = dict()
+
     for i, bus in enumerate(circuit.get_buses()):
         # ["ibus", "name", "baskv", "ide", "area", "zone", "owner", "vm", "va", "nvhi", "nvlo", "evhi", "evlo"]
 
@@ -100,14 +199,22 @@ def get_buses_block(circuit: MultiCircuit, fields) -> CompressedJsonStruct:
         if not bus.active:
             bus_tpe = 4
 
-        block.set_at(i, 'ibus', i + 1)
-        block.set_at(i, 'ibus', i + 1)
+        i_area = areas_dict[bus.area]
+        i_zone = zones_dict[bus.zone]
+
+        try:
+            i_psse = int(bus.code)
+        except:
+            i_psse = i + 1
+
+        block.set_at(i, 'ibus', i_psse)
+        block.set_at(i, 'ibus', i_psse)
         block.set_at(i, 'name', bus.name[:12])
         block.set_at(i, 'baskv', bus.Vnom)
         block.set_at(i, 'ide', bus_tpe)
-        block.set_at(i, 'area', 0)
-        block.set_at(i, 'zone', 0)
-        block.set_at(i, 'owner', 0)
+        block.set_at(i, 'area', i_area)
+        block.set_at(i, 'zone', i_zone)
+        block.set_at(i, 'owner', 1)
 
         block.set_at(i, 'vm', 1.0)
         block.set_at(i, 'va', 0)
@@ -118,7 +225,9 @@ def get_buses_block(circuit: MultiCircuit, fields) -> CompressedJsonStruct:
         block.set_at(i, 'evhi', 1.1)
         block.set_at(i, 'evlo', 0.9)
 
-    return block
+        rev_bus_dict[bus] = i_psse
+
+    return block, rev_bus_dict
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -132,6 +241,10 @@ def get_loads_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, int])
     """
     block = CompressedJsonStruct(fields=fields)
     block.declare_n_entries(circuit.get_bus_number())
+
+    areas_dict = {elm: i+1 for i, elm in enumerate(circuit.get_areas())}
+    zones_dict = {elm: i+1 for i, elm in enumerate(circuit.get_zones())}
+
     i = 0
     for k, bus in enumerate(circuit.get_buses()):
         for k2, elm in enumerate(bus.loads):
@@ -139,8 +252,8 @@ def get_loads_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, int])
             block.set_at(i, "ibus", rev_bus_dict[elm.bus])
             block.set_at(i,  "loadid", k2 + 1)
             block.set_at(i,  "stat", int(elm.active))
-            block.set_at(i,  "area", 0)
-            block.set_at(i,  "zone", 0)
+            block.set_at(i,  "area", areas_dict[elm.bus.area])
+            block.set_at(i,  "zone", zones_dict[elm.bus.zone])
             block.set_at(i,  "pl", elm.P)
             block.set_at(i,  "ql", elm.Q)
             block.set_at(i,  "ip", elm.Ir)
@@ -148,7 +261,7 @@ def get_loads_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, int])
             block.set_at(i,  "yp", elm.G)
             block.set_at(i,  "yq", elm.B)
             block.set_at(i,  "owner", 0)
-            block.set_at(i,  "scale", 1.0)
+            block.set_at(i,  "scale", 0)  # scale yes/no
             block.set_at(i,  "intrpt", 0)
             block.set_at(i,  "dgenp", 0)
             block.set_at(i,  "dgenq", 0)
@@ -243,7 +356,7 @@ def parse_fixed_shunts(circuit: MultiCircuit, block: CompressedJsonStruct, buses
     for i in range(block.get_row_number()):
         data = block.get_dict_at(i)
 
-        elm = dev.Load()
+        elm = dev.Shunt()
 
         elm.bus = buses_dict[data['ibus']]
         elm.code = "{0}_{1}".format(elm.bus.code, data['shntid'])
@@ -251,6 +364,41 @@ def parse_fixed_shunts(circuit: MultiCircuit, block: CompressedJsonStruct, buses
         elm.is_controlled = False
         elm.G = data['gl']
         elm.B = data['bl']
+
+        circuit.add_shunt(elm.bus, elm)
+
+
+def parse_switched_shunts(circuit: MultiCircuit, block: CompressedJsonStruct, buses_dict: Dict[int, Any]):
+    """
+
+    :param circuit:
+    :param block:
+    :param buses_dict:
+    :return:
+    """
+
+    # "ibus", "shntid", "modsw", "adjm", "stat", "vswhi", "vswlo", "swreg", "nreg",
+    # "rmpct", "rmidnt", "binit", "s1", "n1", "b1", "s2", "n2", "b2", "s3", "n3", "b3",
+    # "s4", "n4", "b4", "s5", "n5", "b5", "s6", "n6", "b6", "s7", "n7", "b7", "s8", "n8", "b8"
+
+    for i in range(block.get_row_number()):
+        data = block.get_dict_at(i)
+
+        elm = dev.Shunt()
+
+        elm.bus = buses_dict[data['ibus']]
+        elm.code = "{0}_{1}".format(elm.bus.code, data['shntid'])
+        elm.active = bool(data['stat'])
+        elm.is_controlled = True
+
+        g = 0.0
+        if data['modsw'] in [1, 2]:
+            b = data['binit'] * data['rmpct'] / 100.0
+        else:
+            b = data['binit']
+
+        elm.G = g
+        elm.B = b
 
         circuit.add_shunt(elm.bus, elm)
 
@@ -342,8 +490,7 @@ def parse_generators(circuit: MultiCircuit, block: CompressedJsonStruct, buses_d
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-
-def get_lines_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, int]) -> CompressedJsonStruct:
+def get_ac_lines_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, int]) -> CompressedJsonStruct:
     """
 
     :param circuit:
@@ -399,7 +546,7 @@ def get_lines_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, int])
         return block
 
 
-def parse_lines(circuit: MultiCircuit, block: CompressedJsonStruct, buses_dict: Dict[int, Any]):
+def parse_ac_lines(circuit: MultiCircuit, block: CompressedJsonStruct, buses_dict: Dict[int, Any]):
     """
 
     :param circuit:
@@ -416,17 +563,22 @@ def parse_lines(circuit: MultiCircuit, block: CompressedJsonStruct, buses_dict: 
         data = block.get_dict_at(i)
 
         elm = dev.Line()
-        code = "{0}_{1}_{2}".format(elm.bus_from.code, elm.bus_to.code, data['ckt'])
+
         elm.bus_from = buses_dict[data['ibus']]
         elm.bus_to = buses_dict[data['jbus']]
         elm.active = bool(data['stat'])
+
+        code = "{0}_{1}_{2}".format(elm.bus_from.code, elm.bus_to.code, data['ckt'])
         elm.code = code
-        elm.name = data['name']
+
+        elm.name = str(data['name']).strip()
+        if elm.name == '':
+            elm.name = code
 
         elm.length = data['len']
 
         elm.rate = data['rate1']
-        if float(data['rate1']) != 0:
+        if float(data['rate2']) != 0:
             elm.contingency_factor = float(data['rate1']) / float(data['rate2'])
 
         elm.R = data['rpu']
@@ -445,8 +597,135 @@ def parse_lines(circuit: MultiCircuit, block: CompressedJsonStruct, buses_dict: 
             sh1 = dev.Shunt(name='Line compensation', code=code, G=data['gj'], B=data['bj'])
             circuit.add_shunt(elm.bus_to, sh1)
 
-# ----------------------------------------------------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------------------------------------------------
+def get_twotermdc_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, int]) -> CompressedJsonStruct:
+    """
+
+    :param circuit:
+    :param fields:
+    :param rev_bus_dict:
+    :return:
+    """
+    block = CompressedJsonStruct(fields=fields)
+    block.declare_n_entries(circuit.get_hvdc_number())
+
+    for i, elm in enumerate(circuit.get_hvdc()):
+
+        block.set_at(i, "name", elm.name)
+        block.set_at(i,  "mdc", 1)
+        block.set_at(i,  "rdc", elm.r)
+        block.set_at(i,  "setvl", elm.Pset)
+        block.set_at(i,  "vschd", None)
+        block.set_at(i,  "vcmod", None)
+        block.set_at(i,  "rcomp", None)
+        block.set_at(i,  "delti", None)
+        block.set_at(i,  "met", None)
+        block.set_at(i,  "dcvmin", None)
+        block.set_at(i,  "cccitmx", None)
+        block.set_at(i,  "cccacc", None)
+        block.set_at(i,  "ipr", rev_bus_dict[elm.bus_from])
+        block.set_at(i,  "nbr", None)
+        block.set_at(i,  "anmxr", elm.max_firing_angle_f)
+        block.set_at(i,  "anmnr", elm.min_firing_angle_f)
+        block.set_at(i,  "rcr", None)
+        block.set_at(i,  "xcr", None)
+        block.set_at(i,  "ebasr", None)
+        block.set_at(i,  "trr", None)
+        block.set_at(i,  "tapr", None)
+        block.set_at(i,  "tmxr", None)
+        block.set_at(i,  "tmnr", None)
+        block.set_at(i,  "stpr", None)
+        block.set_at(i,  "icr", None)
+        block.set_at(i,  "ndr", None)
+        block.set_at(i,  "ifr", None)
+        block.set_at(i,  "itr", None)
+        block.set_at(i,  "idr", None)
+        block.set_at(i,  "xcapr", None)
+        block.set_at(i,  "ipi", rev_bus_dict[elm.bus_to])
+        block.set_at(i,  "nbi", None)
+        block.set_at(i,  "anmxi", elm.max_firing_angle_t)
+        block.set_at(i,  "anmni", elm.min_firing_angle_t)
+        block.set_at(i,  "rci", None)
+        block.set_at(i,  "xci", None)
+        block.set_at(i,  "ebasi", None)
+        block.set_at(i,  "tri", None)
+        block.set_at(i,  "tapi", None)
+        block.set_at(i,  "tmxi", None)
+        block.set_at(i,  "tmni", None)
+        block.set_at(i,  "stpi", None)
+        block.set_at(i,  "ici", None)
+        block.set_at(i,  "ndi", None)
+        block.set_at(i,  "ifi", None)
+        block.set_at(i,  "iti", None)
+        block.set_at(i,  "idi", None)
+        block.set_at(i,  "xcapi", None)
+
+        return block
+
+
+def parse_twotermdc_lines(circuit: MultiCircuit, block: CompressedJsonStruct, buses_dict: Dict[int, Any]):
+    """
+
+    :param circuit:
+    :param block:
+    :param buses_dict:
+    :return:
+    """
+    # "name", "mdc", "rdc", "setvl", "vschd", "vcmod", "rcomp", "delti", "met",
+    # "dcvmin", "cccitmx", "cccacc", "ipr", "nbr", "anmxr", "anmnr", "rcr", "xcr",
+    # "ebasr", "trr", "tapr", "tmxr", "tmnr", "stpr", "icr", "ndr", "ifr", "itr", "idr",
+    # "xcapr", "ipi", "nbi", "anmxi", "anmni", "rci", "xci", "ebasi", "tri", "tapi", "tmxi",
+    # "tmni", "stpi", "ici", "ndi", "ifi", "iti", "idi", "xcapi"
+
+    for i in range(block.get_row_number()):
+        data = block.get_dict_at(i)
+
+        bus_from = buses_dict[data['ipr']]
+        bus_to = buses_dict[data['ipi']]
+        code = "{0}_{1}_{2}".format(bus_from.code, bus_to.code, '1')
+        name1 = str(data['name']).replace("'", "").replace('"', "").replace('/', '').strip()
+        if name1 == '':
+            name1 = code
+
+        if data['mdc'] == 1 or data['mdc'] == 0:
+            # SETVL is in MW
+            specified_power = data['setvl']
+        elif data['mdc'] == 2:
+            # SETVL is in A, specified_power in MW
+            specified_power = data['setvl'] * data['vschd'] / 1000.0
+        else:
+            # doesn't say, so zero
+            specified_power = 0.0
+
+        z_base = data['vschd'] * data['vschd'] / circuit.Sbase
+        r_pu = data['rdc'] / z_base
+
+        Vset_f = 1.0
+        Vset_t = 1.0
+
+        # set the HVDC line active
+        active = bus_from.active and bus_to.active
+
+        obj = dev.HvdcLine(bus_from=bus_from,  # Rectifier as of PSSe
+                           bus_to=bus_to,  # inverter as of PSSe
+                           active=active,
+                           name=name1,
+                           idtag=code,
+                           Pset=specified_power,
+                           Vset_f=Vset_f,
+                           Vset_t=Vset_t,
+                           rate=specified_power,
+                           r=r_pu,
+                           min_firing_angle_f=np.deg2rad(data['anmnr']),
+                           max_firing_angle_f=np.deg2rad(data['anmxr']),
+                           min_firing_angle_t=np.deg2rad(data['anmni']),
+                           max_firing_angle_t=np.deg2rad(data['anmxi']))
+
+        circuit.add_hvdc(obj)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 def get_transformers_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, int]) -> CompressedJsonStruct:
     """
 
@@ -582,7 +861,7 @@ def get_transformers_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any
         block.set_at(i,   "cx3", None)
         block.set_at(i,   "cnxa3", None)
 
-        return block
+    return block
 
 
 def parse_transformers(circuit: MultiCircuit, block: CompressedJsonStruct, buses_dict: Dict[int, Any], logger=Logger()):
@@ -616,19 +895,27 @@ def parse_transformers(circuit: MultiCircuit, block: CompressedJsonStruct, buses
     for i in range(block.get_row_number()):
         data = block.get_dict_at(i)
 
-        elm = dev.Transformer2W()
-        code = "{0}_{1}_{2}".format(elm.bus_from.code, elm.bus_to.code, data['ckt'])
-        elm.bus_from = buses_dict[data['ibus']]
-        elm.bus_to = buses_dict[data['jbus']]
-        elm.active = bool(data['stat'])
-        elm.code = code
-        elm.name = data['name']
+        # get the buses
+        bus_from = buses_dict[data['ibus']]
+        bus_to = buses_dict[data['jbus']]
+
+        code = "{0}_{1}_{2}".format(bus_from.code, bus_to.code, data['ckt'])
+
+        if data['nomv1'] == 0:
+            V1 = bus_from.Vnom
+        else:
+            V1 = data['nomv1']
+
+        if data['nomv2'] == 0:
+            V2 = bus_to.Vnom
+        else:
+            V2 = data['nomv2']
 
         r, x, g, b, tap_mod, tap_angle = get_psse_transformer_impedances(CW=data['cw'],
                                                                          CZ=data['cz'],
                                                                          CM=data['cm'],
-                                                                         V1=elm.bus_from.Vnom,
-                                                                         V2=elm.bus_to.Vnom,
+                                                                         V1=V1,
+                                                                         V2=V2,
                                                                          sbase=100,
                                                                          logger=logger,
                                                                          code=code,
@@ -643,16 +930,29 @@ def parse_transformers(circuit: MultiCircuit, block: CompressedJsonStruct, buses
                                                                          X1_2=data['x1_2'],
                                                                          SBASE1_2=data['sbase1_2'])
 
-        elm.rate = data['rate1']
-        if float(data['rate1']) != 0:
-            elm.contingency_factor = float(data['rate1']) / float(data['rate2'])
+        if float(data['wdg1rate2']) != 0:
+            contingency_factor = float(data['wdg1rate1']) / float(data['wdg1rate2'])
+        else:
+            contingency_factor = 1.0
 
-        elm.R = r
-        elm.X = x
-        elm.G = g
-        elm.B = b
-        elm.angle = tap_angle
-        elm.tap_module = tap_mod
+        elm = dev.Transformer2W(bus_from=bus_from,
+                                bus_to=bus_to,
+                                idtag=None,
+                                code=code,
+                                name=data['name'],
+                                HV=V1,
+                                LV=V2,
+                                r=r,
+                                x=x,
+                                g=g,
+                                b=b,
+                                rate=data['wdg1rate1'],
+                                contingency_factor=round(contingency_factor, 6),
+                                tap=tap_mod,
+                                shift_angle=tap_angle,
+                                active=bool(data['stat']),
+                                mttf=0,
+                                mttr=0)
 
         circuit.add_transformer2w(elm)
 
@@ -724,7 +1024,9 @@ def rawx_parse(file_name: str) -> [MultiCircuit, Logger]:
 
     # bus dictionary
     bus_dict = dict()
-
+    areas_dict = dict()
+    zones_dict = dict()
+    bus_area = dict()
     for entry, fields in struct.items():
         if entry in data2.keys():
 
@@ -754,7 +1056,7 @@ def rawx_parse(file_name: str) -> [MultiCircuit, Logger]:
                 pass
 
             elif entry == 'bus':
-                bus_dict = parse_buses(circuit=circuit, block=block)
+                bus_dict, bus_area = parse_buses(circuit=circuit, block=block)
 
             elif entry == 'load':
                 parse_loads(circuit=circuit, block=block, buses_dict=bus_dict)
@@ -766,7 +1068,7 @@ def rawx_parse(file_name: str) -> [MultiCircuit, Logger]:
                 parse_generators(circuit=circuit, block=block, buses_dict=bus_dict)
 
             elif entry == 'acline':
-                parse_lines(circuit=circuit, block=block, buses_dict=bus_dict)
+                parse_ac_lines(circuit=circuit, block=block, buses_dict=bus_dict)
 
             elif entry == 'sysswd':
                 pass
@@ -775,10 +1077,10 @@ def rawx_parse(file_name: str) -> [MultiCircuit, Logger]:
                 parse_transformers(circuit=circuit, block=block, buses_dict=bus_dict)
 
             elif entry == 'area':
-                pass
+                areas_dict = parse_areas(circuit=circuit, block=block)
 
             elif entry == 'twotermdc':
-                pass
+                parse_twotermdc_lines(circuit=circuit, block=block, buses_dict=bus_dict)
 
             elif entry == 'vscdc':
                 pass
@@ -802,7 +1104,7 @@ def rawx_parse(file_name: str) -> [MultiCircuit, Logger]:
                 pass
 
             elif entry == 'zone':
-                pass
+                zones_dict = parse_zones(circuit=circuit, block=block)
 
             elif entry == 'iatrans':
                 pass
@@ -814,7 +1116,7 @@ def rawx_parse(file_name: str) -> [MultiCircuit, Logger]:
                 pass
 
             elif entry == 'swshunt':
-                pass
+                parse_switched_shunts(circuit=circuit, block=block, buses_dict=bus_dict)
 
             elif entry == 'gne':
                 pass
@@ -840,6 +1142,12 @@ def rawx_parse(file_name: str) -> [MultiCircuit, Logger]:
         else:
             logger.add_warning(entry + " not found")
 
+    # force the buses parsing
+    # this piece is here to ensure that all the elements are already present
+    for bus, (id_area, id_zone) in bus_area.items():
+        bus.area = areas_dict[id_area]
+        bus.zone = zones_dict[id_zone]
+
     return circuit, logger
 
 
@@ -858,36 +1166,36 @@ def rawx_writer(file_name: str, circuit: MultiCircuit) -> Logger:
     for entry, fields in struct.items():
 
         # default structure
-        data[entry] = CompressedJsonStruct(fields=fields)
+        block = CompressedJsonStruct(fields=fields)
 
         # fill the structure accordingly
         if entry == 'caseid':
-            data[entry] = get_circuit_block(circuit=circuit, fields=fields).get_final_dict()
+            block = get_circuit_block(circuit=circuit, fields=fields)
 
         elif entry == 'general':
             # this is fixed
-            data[entry].set_data([0.0001, 0.7, 5.0, 4, 20, 0])
+            block.set_data([0.0001, 0.7, 5.0, 4, 20, 0])
 
         elif entry == 'gauss':
             # this is fixed
-            data[entry].set_data([100, 1.6, 1.6, 1.0, 0.0001])
+            block.set_data([100, 1.6, 1.6, 1.0, 0.0001])
 
         elif entry == 'newton':
             # this is fixed
-            data[entry].set_data([100, 0.25, 0.01, 0.1, 0.00001, 0.99, 0.99])
+            block.set_data([100, 0.25, 0.01, 0.1, 0.00001, 0.99, 0.99])
 
         elif entry == 'adjust':
             # this is fixed
-            data[entry].set_data([0.005, 1.0, 0.05, 100.0, 99, 10])
+            block.set_data([0.005, 1.0, 0.05, 100.0, 99, 10])
 
         elif entry == 'tysl':
             # this is fixed
-            data[entry].set_data([20, 1.0, 0.00001])
+            block.set_data([20, 1.0, 0.00001])
 
         elif entry == 'rating':
 
             # this is fixed
-            data[entry].set_data([[1, "RATE1", "RATING SET 1"],
+            block.set_data([[1, "RATE1", "RATING SET 1"],
                                  [2, "RATE2", "RATING SET 2"],
                                  [3, "RATE3", "RATING SET 3"],
                                  [4, "RATE4", "RATING SET 4"],
@@ -902,31 +1210,30 @@ def rawx_writer(file_name: str, circuit: MultiCircuit) -> Logger:
 
         elif entry == 'bus':
             block, rev_bus_dict = get_buses_block(circuit=circuit, fields=fields)
-            data[entry] = block.get_final_dict()
 
         elif entry == 'load':
-            data[entry] = get_loads_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict).get_final_dict()
+            block = get_loads_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict)
 
         elif entry == 'fixshunt':
-            data[entry] = get_fixed_shunts_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict).get_final_dict()
+            block = get_fixed_shunts_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict)
 
         elif entry == 'generator':
-            data[entry] = get_generators_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict).get_final_dict()
+            block = get_generators_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict)
 
         elif entry == 'acline':
-            data[entry] = get_lines_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict).get_final_dict()
+            block = get_ac_lines_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict)
 
         elif entry == 'sysswd':
             pass
 
         elif entry == 'transformer':
-            data[entry] = get_transformers_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict).get_final_dict()
+            block = get_transformers_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict)
 
         elif entry == 'area':
-            pass
+            block = get_areas_block(circuit=circuit, fields=fields)
 
         elif entry == 'twotermdc':
-            pass
+            block = get_twotermdc_block(circuit=circuit, fields=fields, rev_bus_dict=rev_bus_dict)
 
         elif entry == 'vscdc':
             pass
@@ -950,13 +1257,13 @@ def rawx_writer(file_name: str, circuit: MultiCircuit) -> Logger:
             pass
 
         elif entry == 'zone':
-            pass
+            block = get_zones_block(circuit=circuit, fields=fields)
 
         elif entry == 'iatrans':
             pass
 
         elif entry == 'owner':
-            pass
+            block.set_data([1, "Default"])
 
         elif entry == 'facts':
             pass
@@ -984,6 +1291,9 @@ def rawx_writer(file_name: str, circuit: MultiCircuit) -> Logger:
 
         else:
             logger.add_warning('Unkown rawx structure ' + entry)
+
+        # get the dictionary
+        data[entry] = block.get_final_dict()
 
     # save the data into a file
     rawx = {'network': data}

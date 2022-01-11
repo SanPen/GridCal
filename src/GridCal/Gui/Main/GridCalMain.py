@@ -1795,6 +1795,10 @@ class MainGUI(QMainWindow):
             elm = dev.Shunt()
             elements = self.circuit.get_shunts()
 
+        elif elm_type == DeviceType.ExternalGridDevice.value:
+            elm = dev.ExternalGrid()
+            elements = self.circuit.get_external_grids()
+
         elif elm_type == DeviceType.LineDevice.value:
             elm = dev.Line(None, None)
             elements = self.circuit.lines

@@ -509,22 +509,10 @@ class Transformer2W(EditableDevice):
         self.bus_from = bus_from
         self.bus_to = bus_to
 
-        if bus_from is not None:
-            vh = max(bus_from.Vnom, bus_to.Vnom)
-            vl = min(bus_from.Vnom, bus_to.Vnom)
-        else:
-            vh = 1.0
-            vl = 1.0
-
-        if HV is None:
-            self.HV = vh
-        else:
-            self.HV = HV
-
-        if LV is None:
-            self.LV = vl
-        else:
-            self.LV = LV
+        # set the high and low voltage values
+        self.HV = 0
+        self.LV = 0
+        self.set_hv_and_lv(HV, LV)
 
         # List of measurements
         self.measurements = list()
@@ -610,6 +598,29 @@ class Transformer2W(EditableDevice):
                      'reactance': BranchType.Reactance}
 
         self.inv_conv = {val: key for key, val in self.conv.items()}
+
+    def set_hv_and_lv(self, HV, LV):
+        """
+        set the high and low voltage values
+        :param HV: higher voltage value (kV)
+        :param LV: lower voltage value (kV)
+        """
+        if self.bus_from is not None:
+            vh = max(self.bus_from.Vnom, self.bus_to.Vnom)
+            vl = min(self.bus_from.Vnom, self.bus_to.Vnom)
+        else:
+            vh = 1.0
+            vl = 1.0
+
+        if HV is None:
+            self.HV = vh
+        else:
+            self.HV = HV
+
+        if LV is None:
+            self.LV = vl
+        else:
+            self.LV = LV
 
     @property
     def R_corrected(self):
