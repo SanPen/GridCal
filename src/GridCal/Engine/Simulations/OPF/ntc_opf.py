@@ -540,14 +540,14 @@ def formulate_proportional_generation(
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
 
-            delta_slack_1[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_up_' + name)
-            delta_slack_2[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_down_' + name)
+            # delta_slack_1[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_up_' + name)
+            # delta_slack_2[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_down_' + name)
 
             prop = round(abs(Pgen[gen_idx] / sum_gen_1), 6)
 
             solver.Add(delta[gen_idx] == prop * power_shift, 'Delta_up_gen{}'.format(gen_idx))
             solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx]
-                       + delta_slack_1[gen_idx] - delta_slack_2[gen_idx]
+                       # + delta_slack_1[gen_idx] - delta_slack_2[gen_idx]
                        , 'Gen_up_gen{}'.format(gen_idx))
 
         else:
@@ -571,14 +571,14 @@ def formulate_proportional_generation(
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
 
-            delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
-            delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
+            # delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
+            # delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
 
             prop = round(abs(Pgen[gen_idx] / sum_gen_2), 6)
 
             solver.Add(delta[gen_idx] == prop * power_shift, 'Delta_down_gen{}'.format(gen_idx))
             solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx]
-                       + delta_slack_1[gen_idx] - delta_slack_2[gen_idx]
+                       # + delta_slack_1[gen_idx] - delta_slack_2[gen_idx]
                        , 'Gen_down_gen{}'.format(gen_idx))
 
         else:
@@ -1384,7 +1384,7 @@ def formulate_objective(solver: pywraplp.Solver,
     f = -weight_power_shift * flow_from_a1_to_a2
 
     f += weight_generation_cost * gen_cost_f
-    f += weight_generation_delta * delta_slacks
+    # f += weight_generation_delta * delta_slacks
     f += weight_overloads * branch_overload
     f += weight_overloads * contingency_branch_overload
     f += weight_overloads * hvdc_overload
