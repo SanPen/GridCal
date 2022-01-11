@@ -2309,3 +2309,12 @@ class MultiCircuit:
 
         # assign the new base
         self.Sbase = Sbase_new
+
+    def fuse_devices(self):
+        """
+        Fuse all the different devices in a node to a single device per node
+        :return:
+        """
+        for bus in self.buses:
+            bus.fuse_devices()
+

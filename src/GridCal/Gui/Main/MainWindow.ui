@@ -7205,6 +7205,7 @@ QProgressBar::chunk{
     <addaction name="actionFind_node_groups"/>
     <addaction name="actionDrawSchematic"/>
     <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
+    <addaction name="actionFuse_devices"/>
     <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="actionAdd_default_catalogue"/>
@@ -8010,6 +8011,18 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>Perform the ATC time series study with clustering</string>
+   </property>
+  </action>
+  <action name="actionFuse_devices">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/fusion.svg</normaloff>:/Icons/icons/fusion.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Fuse devices</string>
+   </property>
+   <property name="toolTip">
+    <string>Fuse devices into a single device of each category per node</string>
    </property>
   </action>
  </widget>
