@@ -23,11 +23,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="merging">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="commented generation delta slacks on ntc_opf">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/time_series_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/time_series_driver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -525,13 +525,6 @@
       <workItem from="1617632797911" duration="3094000" />
       <workItem from="1617652313409" duration="1856000" />
     </task>
-    <task id="LOCAL-00080" summary="Added pipy version check">
-      <created>1610134117950</created>
-      <option name="number" value="00080" />
-      <option name="presentableId" value="LOCAL-00080" />
-      <option name="project" value="LOCAL" />
-      <updated>1610134117951</updated>
-    </task>
     <task id="LOCAL-00081" summary="- Removed the outer loop controls&#10;- Added Q control to the AC only NR, LM and Iwamoto algorithms&#10;- in-loop Q control seems to work fine">
       <created>1610197022573</created>
       <option name="number" value="00081" />
@@ -868,7 +861,14 @@
       <option name="project" value="LOCAL" />
       <updated>1641900126787</updated>
     </task>
-    <option name="localTasksCounter" value="129" />
+    <task id="LOCAL-00129" summary="commented generation delta slacks on ntc_opf">
+      <created>1641902193841</created>
+      <option name="number" value="00129" />
+      <option name="presentableId" value="LOCAL-00129" />
+      <option name="project" value="LOCAL" />
+      <updated>1641902193841</updated>
+    </task>
+    <option name="localTasksCounter" value="130" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -903,7 +903,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed PTDF rates profile usage&#10;Fixed plotting from the schematic" />
     <MESSAGE value="Added search function (WIP)" />
     <MESSAGE value="Fixed tests" />
     <MESSAGE value="Added PGD v1" />
@@ -928,7 +927,8 @@
     <MESSAGE value="fixed overflow x,y coordinates" />
     <MESSAGE value="preparing to merge" />
     <MESSAGE value="merging" />
-    <option name="LAST_COMMIT_MESSAGE" value="merging" />
+    <MESSAGE value="commented generation delta slacks on ntc_opf" />
+    <option name="LAST_COMMIT_MESSAGE" value="commented generation delta slacks on ntc_opf" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1218,6 +1218,16 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Analysis/AnalysisDialogue.py</url>
           <line>565</line>
           <option name="timeStamp" value="620" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py</url>
+          <line>495</line>
+          <option name="timeStamp" value="627" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py</url>
+          <line>62</line>
+          <option name="timeStamp" value="629" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

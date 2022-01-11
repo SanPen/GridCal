@@ -879,8 +879,11 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
             _t = T[m]
 
             # declare the flow variable with ample limits
-            flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
-            # flow_f[m] = solver.NumVar(-rates[m], rates[m], 'pftk_{0}_{1}'.format(m, branch_names[m]))
+            # flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
+            if monitor[m]:
+                flow_f[m] = solver.NumVar(-rates[m], rates[m], 'pftk_{0}_{1}'.format(m, branch_names[m]))
+            else:
+                flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
 
             # compute the branch susceptance
             if branch_dc[m]:
@@ -915,12 +918,12 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
                     logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
 
                 # rating restriction in the sense from-to: eq.17
-                overload1[m] = solver.NumVar(0, inf, 'overload1_{0}_{1}'.format(m, branch_names[m]))
-                solver.Add(flow_f[m] <= (rates[m] + overload1[m]), "ft_rating_{0}_{1}".format(m, branch_names[m]))
+                # overload1[m] = solver.NumVar(0, inf, 'overload1_{0}_{1}'.format(m, branch_names[m]))
+                # solver.Add(flow_f[m] <= (rates[m] + overload1[m]), "ft_rating_{0}_{1}".format(m, branch_names[m]))
 
                 # rating restriction in the sense to-from: eq.18
-                overload2[m] = solver.NumVar(0, inf, 'overload2_{0}_{1}'.format(m, branch_names[m]))
-                solver.Add((-rates[m] - overload2[m]) <= flow_f[m], "tf_rating_{0}_{1}".format(m, branch_names[m]))
+                # overload2[m] = solver.NumVar(0, inf, 'overload2_{0}_{1}'.format(m, branch_names[m]))
+                # solver.Add((-rates[m] - overload2[m]) <= flow_f[m], "tf_rating_{0}_{1}".format(m, branch_names[m]))
 
     return flow_f, overload1, overload2, tau, monitor
 
@@ -1076,21 +1079,21 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
                 flow_n1 = flow_f[m] + lodf * flow_f[c]
 
                 flow_n1 = solver.NumVar(-rates[m], rates[m], 'n-1_flow__' + suffix)
-                solver.Add(flow_n1 == flow_f[m] + lodf * flow_f[c], "n-1_ft_rating_" + suffix)
+                solver.Add(flow_n1 == flow_f[m] + lodf * flow_f[c], "n-1_flow_assigment_" + suffix)
 
                 # rating restriction in the sense from-to
-                overload1 = solver.NumVar(0, inf, 'n-1_overload1__' + suffix)
-                solver.Add(flow_n1 <= (rates[m] + overload1), "n-1_ft_rating_" + suffix)
+                # overload1 = solver.NumVar(0, inf, 'n-1_overload1__' + suffix)
+                # solver.Add(flow_n1 <= (rates[m] + overload1), "n-1_overload_ft_rating_" + suffix)
 
                 # rating restriction in the sense to-from
-                overload2 = solver.NumVar(0, inf, 'n-1_overload2_' + suffix)
-                solver.Add((-rates[m] - overload2) <= flow_n1, "n-1_tf_rating_" + suffix)
+                # overload2 = solver.NumVar(0, inf, 'n-1_overload2_' + suffix)
+                # solver.Add((-rates[m] - overload2) <= flow_n1, "n-1_overload_tf_rating_" + suffix)
 
                 # store vars
                 con_idx.append((m, c))
                 flow_n1f.append(flow_n1)
-                overloads1.append(overload1)
-                overloads2.append(overload2)
+                # overloads1.append(overload1)
+                # overloads2.append(overload2)
 
     return flow_n1f, overloads1, overloads2, con_idx
 
@@ -1193,8 +1196,8 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names,
 
             suffix = "{0}_{1}".format(i, names[i])
 
-            hvdc_control1[i] = solver.NumVar(0, inf, 'hvdc_control1_' + suffix)
-            hvdc_control2[i] = solver.NumVar(0, inf, 'hvdc_control2_' + suffix)
+            # hvdc_control1[i] = solver.NumVar(0, inf, 'hvdc_control1_' + suffix)
+            # hvdc_control2[i] = solver.NumVar(0, inf, 'hvdc_control2_' + suffix)
             P0 = Pt[i, t] / Sbase
 
             if control_mode[i] == HvdcControlType.type_0_free:
@@ -1205,21 +1208,23 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names,
                 flow_f[i] = solver.NumVar(-rates[i], rates[i], 'hvdc_flow_' + suffix)
 
                 # formulate the hvdc flow as an AC line equivalent
-                angle_droop2 = angle_droop[i] * 0.017453 / Sbase  # to pass from MW/deg to p.u./rad -> * pi / 180 / (sbase=100)
-                solver.Add(flow_f[i] == P0 + angle_droop2 * (angles[_f] - angles[_t]) + hvdc_control1[i] - hvdc_control2[i],
-                           'hvdc_power_flow_' + suffix)
+                angle_droop2 = angle_droop[i] * 57.295779513 / Sbase  # to pass from MW/deg to p.u./rad -> * 180 / pi / (sbase=100)
+                solver.Add(
+                    flow_f[i] == P0 + angle_droop2 * (angles[_f] - angles[_t]) + hvdc_control1[i] - hvdc_control2[i],
+                    'hvdc_power_flow_' + suffix
+                )
 
                 # add the injections matching the flow
                 Pinj[_f] -= flow_f[i]
                 Pinj[_t] += flow_f[i]
 
                 # rating restriction in the sense from-to: eq.17
-                overload1[i] = solver.NumVar(0, inf, 'overload_hvdc1_' + suffix)
-                solver.Add(flow_f[i] <= (rates[i] + overload1[i]), "hvdc_ft_rating_" + suffix)
+                # overload1[i] = solver.NumVar(0, inf, 'overload_hvdc1_' + suffix)
+                # solver.Add(flow_f[i] <= (rates[i] + overload1[i]), "hvdc_ft_rating_" + suffix)
 
                 # rating restriction in the sense to-from: eq.18
-                overload2[i] = solver.NumVar(0, inf, 'overload_hvdc2_' + suffix)
-                solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "hvdc_tf_rating_" + suffix)
+                # overload2[i] = solver.NumVar(0, inf, 'overload_hvdc2_' + suffix)
+                # solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "hvdc_tf_rating_" + suffix)
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and not dispatchable[i]:
                 # simple injections model: The power is set by the user
@@ -1385,8 +1390,8 @@ def formulate_objective(solver: pywraplp.Solver,
 
     f += weight_generation_cost * gen_cost_f
     # f += weight_generation_delta * delta_slacks
-    f += weight_overloads * branch_overload
-    f += weight_overloads * contingency_branch_overload
+    # f += weight_overloads * branch_overload
+    # f += weight_overloads * contingency_branch_overload
     f += weight_overloads * hvdc_overload
     f += weight_hvdc_control * hvdc_control
     f += weight_generation_delta * load_shedding_sum

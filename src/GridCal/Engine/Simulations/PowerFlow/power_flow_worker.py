@@ -591,92 +591,57 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                hvdc_names=nc.hvdc_data.names,
                                bus_types=nc.bus_data.bus_types)
 
-    # initialize the all controls var
-    if nc.nhvdc > 0:
-        all_controls_ok = n_free == 0
-    else:
-        all_controls_ok = False  # to run the first time
-    iter = 0
-    while not all_controls_ok:
+    # simulate each island and merge the results
+    for i, calculation_input in enumerate(calculation_inputs):
 
-        if len(calculation_inputs) > 1:
+        if len(calculation_input.vd) > 0:
 
-            # simulate each island and merge the results
-            for i, calculation_input in enumerate(calculation_inputs):
+            # run circuit power flow
+            res = single_island_pf(circuit=calculation_input,
+                                   Vbus=calculation_input.Vbus,
+                                   Sbus=calculation_input.Sbus + Shvdc[calculation_input.original_bus_idx],
+                                   Ibus=calculation_input.Ibus,
+                                   ma=calculation_input.branch_data.m[:, 0],
+                                   theta=calculation_input.branch_data.theta[:, 0],
+                                   Beq=calculation_input.branch_data.Beq[:, 0],
+                                   branch_rates=calculation_input.Rates,
+                                   pq=calculation_input.pq,
+                                   pv=calculation_input.pv,
+                                   vd=calculation_input.vd,
+                                   pqpv=calculation_input.pqpv,
+                                   options=options,
+                                   logger=logger)
 
-                if len(calculation_input.vd) > 0:
-
-                    # run circuit power flow
-                    res = single_island_pf(circuit=calculation_input,
-                                           Vbus=calculation_input.Vbus,
-                                           Sbus=calculation_input.Sbus + Shvdc[calculation_input.original_bus_idx],
-                                           Ibus=calculation_input.Ibus,
-                                           ma=calculation_input.branch_data.m[:, 0],
-                                           theta=calculation_input.branch_data.theta[:, 0],
-                                           Beq=calculation_input.branch_data.Beq[:, 0],
-                                           branch_rates=calculation_input.Rates,
-                                           pq=calculation_input.pq,
-                                           pv=calculation_input.pv,
-                                           vd=calculation_input.vd,
-                                           pqpv=calculation_input.pqpv,
-                                           options=options,
-                                           logger=logger)
-
-                    # merge the results from this island
-                    results.apply_from_island(res,
-                                              calculation_input.original_bus_idx,
-                                              calculation_input.original_branch_idx,
-                                              calculation_input.original_tr_idx)
-
-                else:
-                    logger.add_info('No slack nodes in the island', str(i))
-
-        elif len(calculation_inputs) == 1:
-
-            if len(calculation_inputs[0].vd) > 0:
-                # only one island
-                # run circuit power flow
-                res = single_island_pf(circuit=calculation_inputs[0],
-                                       Vbus=calculation_inputs[0].Vbus,
-                                       Sbus=calculation_inputs[0].Sbus + Shvdc,
-                                       Ibus=calculation_inputs[0].Ibus,
-                                       ma=calculation_inputs[0].branch_data.m[:, 0],
-                                       theta=calculation_inputs[0].branch_data.theta[:, 0],
-                                       Beq=calculation_inputs[0].branch_data.Beq[:, 0],
-                                       branch_rates=calculation_inputs[0].Rates,
-                                       pq=calculation_inputs[0].pq,
-                                       pv=calculation_inputs[0].pv,
-                                       vd=calculation_inputs[0].vd,
-                                       pqpv=calculation_inputs[0].pqpv,
-                                       options=options,
-                                       logger=logger)
-
-                if calculation_inputs[0].nbus == nc.nbus:
-                    # we can confidently say that the island is the only one
-                    results = res
-                else:
-                    # the island is the only valid subset, but does not contain all the buses
-                    # merge the results from this island
-                    results.apply_from_island(res,
-                                              calculation_inputs[0].original_bus_idx,
-                                              calculation_inputs[0].original_branch_idx,
-                                              calculation_inputs[0].original_tr_idx)
-
-            else:
-                logger.add_error('There are no slack nodes')
+            # merge the results from this island
+            results.apply_from_island(res,
+                                      calculation_input.original_bus_idx,
+                                      calculation_input.original_branch_idx,
+                                      calculation_input.original_tr_idx)
 
         else:
-            # no viable islands
-            pass
+            logger.add_info('No slack nodes in the island', str(i))
 
-        if n_free and iter == 0:
-            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(multi_circuit,
-                                                                                        bus_dict,
-                                                                                        theta=np.angle(results.voltage))
-        else:
-            all_controls_ok = True
 
-        iter += 1
+
+    
+    # # initialize the all controls var
+    # if nc.nhvdc > 0:
+    #     all_controls_ok = n_free == 0
+    # else:
+    #     all_controls_ok = False  # to run the first time
+    #
+    # iter = 0
+    #
+    # while not all_controls_ok:
+    #
+    #     if n_free and iter == 0:
+    #         Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(multi_circuit,
+    #                                                                                     bus_dict,
+    #                                                                                     theta=np.angle(results.voltage))
+    #     else:
+    #         all_controls_ok = True
+    #
+    #     iter += 1
 
     # compile HVDC results (available for the complete grid since HVDC line as formulated are split objects
     # Pt is the "generation" at the sending point
