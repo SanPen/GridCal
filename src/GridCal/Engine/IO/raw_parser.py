@@ -398,7 +398,7 @@ class PSSeSwitchedShunt:
         name = name.strip()
 
         # GL and BL come in MW and MVAr
-        # THey must be in siemens
+        # They must be in siemens
         vv = bus.Vnom ** 2.0
 
         if vv == 0:
@@ -755,6 +755,7 @@ class PSSeTwoTerminalDCLine:
                        Vset_f=Vset_f,
                        Vset_t=Vset_t,
                        rate=specified_power,
+                       r=r_pu,
                        min_firing_angle_f=np.deg2rad(self.ANMNR),
                        max_firing_angle_f=np.deg2rad(self.ANMXR),
                        min_firing_angle_t=np.deg2rad(self.ANMNI),

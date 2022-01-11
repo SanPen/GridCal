@@ -226,7 +226,7 @@ class HvdcLine(EditableDevice):
         **template** (BranchTemplate, BranchTemplate()): Basic branch template
     """
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='HVDC Line', idtag=None, active=True,
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='HVDC Line', idtag=None, active=True, code='',
                  rate=1.0, Pset=0.0, r=1e-20, loss_factor=0.0, Vset_f=1.0, Vset_t=1.0, length=1.0, mttf=0.0, mttr=0.0,
                  overload_cost=1000.0,   min_firing_angle_f=-1.0, max_firing_angle_f=1.0, min_firing_angle_t=-1.0,
                  max_firing_angle_t=1.0,  active_prof=np.ones(0, dtype=bool), rate_prof=np.zeros(0),
@@ -264,6 +264,7 @@ class HvdcLine(EditableDevice):
         EditableDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
+                                code=code,
                                 active=active,
                                 device_type=DeviceType.HVDCLineDevice,
                                 editable_headers={'name': GCProp('', str, 'Name of the line.'),

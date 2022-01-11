@@ -663,8 +663,8 @@ class Bus(EditableDevice):
         :return: Nothing
         """
         if self.graphic_obj is not None:
-            self.x = self.graphic_obj.pos().x()
-            self.y = self.graphic_obj.pos().y()
+            self.x = int(self.graphic_obj.pos().x())
+            self.y = int(self.graphic_obj.pos().y())
             self.w, self.h = self.graphic_obj.rect().getCoords()[2:4]
 
     def delete_profiles(self):
@@ -818,4 +818,71 @@ class Bus(EditableDevice):
         if self.country is None:
             self.country = circuit.countries[0]
 
+    @staticmethod
+    def get_fused_device_lst(elm_list, property_names: list):
+        """
+        Fuse all the devices of a list by adding their selected properties
+        :param elm_list: list of devices
+        :param property_names: properties to fuse
+        :return: list of one element
+        """
+        if len(elm_list) > 1:
+            # more than a single element, fuse the list
 
+            elm1 = elm_list[0]  # select the main generator
+            act1 = elm1.active
+            act1_prof = elm1.active_prof
+
+            # declare the final status
+            act_final = act1
+            act_prof_final = act1_prof
+
+            for i in range(1, len(elm_list)):  # for each of the other generators
+                elm2 = elm_list[i]
+                act2 = elm1.active
+                act2_prof = elm1.active_prof
+
+                # modify the final status
+                act_final *= act2
+
+                if act_prof_final is not None:
+                    act_prof_final *= act2_prof
+
+                for prop in property_names:  # sum the properties
+                    if 'prof' not in prop:
+                        # is a regular property
+                        val = getattr(elm1, prop) * act1 + getattr(elm2, prop) * act2
+                        setattr(elm1, prop, val)
+                    else:
+                        if act_prof_final is not None:
+                            # it is a profile property
+                            val = getattr(elm1, prop) * act1_prof + getattr(elm2, prop) * act2_prof
+                            setattr(elm1, prop, val)
+
+            elm1.active = bool(act_final)
+            if act_prof_final is not None:
+                elm1.active_prof = act_prof_final.astype(bool)
+            return [elm1]
+
+        elif len(elm_list) == 1:
+            # single element list, return it as it comes
+            return elm_list
+
+        else:
+            # the list is empty
+            return list()
+
+    def fuse_devices(self):
+        """
+        Fuse the devices into one device per type
+        """
+        self.controlled_generators = self.get_fused_device_lst(self.controlled_generators,
+                                                               ['P', 'Pmin', 'Pmax', 'Qmin', 'Qmax', 'Snom', 'P_prof'])
+        self.batteries = self.get_fused_device_lst(self.batteries,
+                                                   ['P', 'Pmin', 'Pmax', 'Qmin', 'Qmax', 'Snom', 'Enom', 'P_prof'])
+
+        self.loads = self.get_fused_device_lst(self.loads, ['P', 'Q', 'Ir', 'Ii', 'G', 'B', 'P_prof', 'Q_prof'])
+        self.static_generators = self.get_fused_device_lst(self.static_generators, ['P', 'Q', 'P_prof', 'Q_prof'])
+
+        self.shunts = self.get_fused_device_lst(self.shunts, ['G', 'B', 'G_prof', 'B_prof'])
+        self.external_grids = self.get_fused_device_lst(self.external_grids, [])

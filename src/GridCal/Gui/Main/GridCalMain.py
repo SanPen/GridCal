@@ -451,6 +451,8 @@ class MainGUI(QMainWindow):
         self.ui.actionSetSelectedBusArea.triggered.connect(lambda: self.set_selected_bus_property('area'))
         self.ui.actionSetSelectedBusZone.triggered.connect(lambda: self.set_selected_bus_property('zone'))
 
+        self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -1792,6 +1794,10 @@ class MainGUI(QMainWindow):
         elif elm_type == DeviceType.ShuntDevice.value:
             elm = dev.Shunt()
             elements = self.circuit.get_shunts()
+
+        elif elm_type == DeviceType.ExternalGridDevice.value:
+            elm = dev.ExternalGrid()
+            elements = self.circuit.get_external_grids()
 
         elif elm_type == DeviceType.LineDevice.value:
             elm = dev.Line(None, None)
@@ -4184,10 +4190,11 @@ class MainGUI(QMainWindow):
                                          )
             self.update_available_results()
 
-        if len(drv.logger) > 0:
-            dlg = LogsDialogue(drv.name, drv.logger)
-            dlg.setModal(True)
-            dlg.exec_()
+        if drv.logger is not None:
+            if len(drv.logger) > 0:
+                dlg = LogsDialogue(drv.name, drv.logger)
+                dlg.setModal(True)
+                dlg.exec_()
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -6583,11 +6590,13 @@ class MainGUI(QMainWindow):
 
         for a1 in areas_from:
             if a1 in areas_to:
-                error_msg("The area from '{0}' is in the list of areas to. This cannot be.".format(a1.name), 'Incompatible areas')
+                error_msg("The area from '{0}' is in the list of areas to. This cannot be.".format(a1.name),
+                          'Incompatible areas')
                 return False, [], [], [], []
         for a2 in areas_to:
             if a2 in areas_from:
-                error_msg("The area to '{0}' is in the list of areas from. This cannot be.".format(a2.name), 'Incompatible areas')
+                error_msg("The area to '{0}' is in the list of areas from. This cannot be.".format(a2.name),
+                          'Incompatible areas')
                 return False, [], [], [], []
 
         lst_from = self.circuit.get_areas_buses(areas_from)
@@ -6605,6 +6614,17 @@ class MainGUI(QMainWindow):
         numerical_circuit = core.compile_snapshot_circuit(circuit=self.circuit)
         calculation_inputs = numerical_circuit.split_into_islands()
         return calculation_inputs
+
+    def fuse_devices(self):
+        """
+        Fuse the devices per node into a single device per category
+        """
+        ok = yes_no_question("This action will fuse all the devices per node and per category. Are you sure?",
+                             "Fuse devices")
+
+        if ok:
+            self.circuit.fuse_devices()
+            self.draw_schematic()
 
 
 def run(use_native_dialogues=False):

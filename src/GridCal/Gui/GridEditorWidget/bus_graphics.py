@@ -171,7 +171,7 @@ class BusGraphicItem(QGraphicsRectItem):
         :param y: y in pixels
         """
         # self.setPos(self.editor.diagramView.mapToScene(QPoint(x, y)))
-        self.setPos(QPoint(x, y))
+        self.setPos(QPoint(int(x), int(y)))
 
     def set_tile_color(self, brush):
         """

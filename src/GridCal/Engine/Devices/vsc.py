@@ -356,7 +356,7 @@ class VSC(EditableDevice):
                  'vac_set': self.Vac_set,
                  'vdc_set': self.Vdc_set,
 
-                 'mode': modes[self.control_mode]
+                 'control_mode': modes[self.control_mode]
                  }
         else:
             d = dict()
