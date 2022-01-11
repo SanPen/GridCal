@@ -234,6 +234,36 @@ class MultiCircuit:
     def has_time_series(self):
         return self.time_profile is not None
 
+    def get_zones(self):
+        return self.zones
+
+    def get_zone_number(self):
+        """
+        Get number of areas
+        :return: number of areas
+        """
+        return len(self.zones)
+
+    def get_areas(self):
+        return self.areas
+
+    def get_area_number(self):
+        """
+        Get number of areas
+        :return: number of areas
+        """
+        return len(self.areas)
+
+    def get_substations(self):
+        return self.substations
+
+    def get_substation_number(self):
+        """
+        Get number of areas
+        :return: number of areas
+        """
+        return len(self.substations)
+
     def get_bus_number(self):
         """
         Return the number of buses
@@ -2307,3 +2337,12 @@ class MultiCircuit:
 
         # assign the new base
         self.Sbase = Sbase_new
+
+    def fuse_devices(self):
+        """
+        Fuse all the different devices in a node to a single device per node
+        :return:
+        """
+        for bus in self.buses:
+            bus.fuse_devices()
+
