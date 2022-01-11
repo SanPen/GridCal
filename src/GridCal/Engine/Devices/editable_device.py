@@ -43,7 +43,7 @@ class GCProp:
 
 class EditableDevice:
 
-    def __init__(self, name, active, device_type: DeviceType,
+    def __init__(self, name, active: bool, device_type: DeviceType,
                  editable_headers: Dict[str, GCProp],
                  non_editable_attributes: List[str],
                  properties_with_profile: Dict[str, Optional[Any]],
@@ -83,6 +83,9 @@ class EditableDevice:
         self.non_editable_attributes = non_editable_attributes
 
         self.properties_with_profile = properties_with_profile
+
+    def generate_uuid(self):
+        self.idtag = uuid.uuid4().hex
 
     def __str__(self) -> AnyStr:
         """

@@ -246,18 +246,21 @@ def create_J_no_pv(dS_dVm, dS_dVa, Yp, Yj, pvpq_lookup, pvpq, Jx, Jj, Jp):  # pr
         Jp[r + lpvpq + 1] = nnz - nnzStart + Jp[r + lpvpq]
 
 
-def AC_jacobian(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq):
+def AC_jacobian(Ybus, V, pvpq, pq, npv, npq):
     """
     Create the AC Jacobian function with no embedded controls
     :param Ybus: Ybus matrix in CSC format
     :param V: Voltages vector
     :param pvpq: array of pv|pq bus indices
     :param pq: array of pq indices
-    :param pvpq_lookup: array of pv|pq lookup indices
     :param npv: number of pv buses
     :param npq: number of pq buses
     :return: Jacobian Matrix in CSR format
     """
+
+    pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
+    pvpq_lookup[pvpq] = np.arange(len(pvpq))
+
     Ibus = zeros(len(V), dtype=complex128)
 
     # create Jacobian from fast calc of dS_dV

@@ -36,6 +36,8 @@ import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.grid_analysis as grid_analysis
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
+from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE
+from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 
 # GUI imports
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
@@ -159,7 +161,7 @@ class MainGUI(QMainWindow):
         self.ui.transferMethodComboBox.setCurrentIndex(1)
 
         self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
-                                    '.dgs', '.m', '.raw', '.RAW', '.json', '.xml',
+                                    '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.rawx',
                                     '.zip', '.dpx', '.epc']
 
         # ptdf grouping modes
@@ -233,6 +235,16 @@ class MainGUI(QMainWindow):
         self.ui.vc_stop_at_comboBox.setModel(get_list_model([sim.CpfStopAt.Nose.value,
                                                              sim.CpfStopAt.ExtraOverloads.value]))
         self.ui.vc_stop_at_comboBox.setCurrentIndex(0)
+
+        # available engines
+        engine_lst = [bs.EngineType.GridCal]
+        if NEWTON_AVAILBALE:
+            engine_lst.append(bs.EngineType.Newton)
+        if BENTAYGA_AVAILABLE:
+            engine_lst.append(bs.EngineType.Bentayga)
+        self.ui.engineComboBox.setModel(get_list_model([x.value for x in engine_lst]))
+        self.ui.engineComboBox.setCurrentIndex(0)
+        self.engine_dict = {x.value: x for x in engine_lst}
 
         # do not allow MP under windows because it crashes
         if platform.system() == 'Windows':
@@ -628,6 +640,14 @@ class MainGUI(QMainWindow):
         """
         if not self.any_thread_running():
             self.LOCK(False)
+
+    def get_preferred_engine(self):
+        """
+        Get the currently selected engine
+        :return:
+        """
+        val = self.ui.engineComboBox.currentText()
+        return self.engine_dict[val]
 
     def get_simulation_threads(self):
         """
@@ -1128,7 +1148,7 @@ class MainGUI(QMainWindow):
         """
 
         files_types = "Formats (*.gridcal *.gch5 *.xlsx *.xls *.sqlite *.dgs " \
-                      "*.m *.raw *.RAW *.json *.xml *.zip *.dpx *.epc)"
+                      "*.m *.raw *.RAW *.rawx *.json *.xml *.zip *.dpx *.epc)"
         # files_types = ''
         # call dialog to select the file
 
@@ -1354,6 +1374,7 @@ class MainGUI(QMainWindow):
                       "Excel (*.xlsx);;" \
                       "CIM (*.xml);;" \
                       "Json (*.json);;" \
+                      "Rawx (*.rawx);;" \
                       "Sqlite (*.sqlite)"
 
         # call dialog to select the file
@@ -1387,6 +1408,7 @@ class MainGUI(QMainWindow):
                 extension['CIM (*.xml)'] = '.xml'
                 extension['JSON (*.json)'] = '.json'
                 extension['GridCal zip (*.gridcal)'] = '.gridcal'
+                extension['PSSe rawx (*.rawx)'] = '.rawx'
                 extension['GridCal HDF5 (*.gch5)'] = '.gch5'
                 extension['Sqlite (*.sqlite)'] = '.sqlite'
 
@@ -2439,7 +2461,8 @@ class MainGUI(QMainWindow):
                 self.ui.progress_label.setText('Running power flow...')
                 QtGui.QGuiApplication.processEvents()
                 # set power flow object instance
-                drv = sim.PowerFlowDriver(self.circuit, options, opf_results)
+                engine = self.get_preferred_engine()
+                drv = sim.PowerFlowDriver(self.circuit, options, opf_results, engine=engine)
 
                 self.session.run(drv,
                                  post_func=self.post_power_flow,
@@ -2737,8 +2760,27 @@ class MainGUI(QMainWindow):
 
                 self.LOCK()
 
+
+                if self.ui.usePfValuesForAtcCheckBox.isChecked():
+                    pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
+                    if pf_results is not None:
+                        Pf = pf_results.Sf.real
+                        Pf_hvdc = pf_results.hvdc_Pf.real
+                        use_provided_flows = True
+                    else:
+                        warning_msg('There were no power flow values available. Linear flows will be used.')
+                        use_provided_flows = False
+                        Pf_hvdc = None
+                        Pf = None
+                else:
+                    use_provided_flows = False
+                    Pf = None
+                    Pf_hvdc = None
+
                 distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
-                options = sim.ContingencyAnalysisOptions(distributed_slack=distributed_slack)
+                options = sim.ContingencyAnalysisOptions(distributed_slack=distributed_slack,
+                                                         use_provided_flows=use_provided_flows,
+                                                         Pf=Pf)
 
                 drv = sim.ContingencyAnalysisDriver(grid=self.circuit, options=options)
 
@@ -2805,8 +2847,26 @@ class MainGUI(QMainWindow):
 
                     self.LOCK()
 
+                    if self.ui.usePfValuesForAtcCheckBox.isChecked():
+                        pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
+                        if pf_results is not None:
+                            Pf = pf_results.Sf.real
+                            Pf_hvdc = pf_results.hvdc_Pf.real
+                            use_provided_flows = True
+                        else:
+                            warning_msg('There were no power flow values available. Linear flows will be used.')
+                            use_provided_flows = False
+                            Pf_hvdc = None
+                            Pf = None
+                    else:
+                        use_provided_flows = False
+                        Pf_hvdc = None
+                        Pf = None
+
                     options = sim.ContingencyAnalysisOptions(
-                        distributed_slack=self.ui.distributed_slack_checkBox.isChecked())
+                        distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
+                        use_provided_flows=use_provided_flows,
+                        Pf=Pf)
 
                     drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit, options=options)
 
@@ -3328,11 +3388,13 @@ class MainGUI(QMainWindow):
                     options = self.get_selected_power_flow_options()
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1
+                    engine = self.get_preferred_engine()
                     drv = sim.TimeSeries(grid=self.circuit,
                                          options=options,
                                          opf_time_series_results=opf_time_series_results,
                                          start_=start,
-                                         end_=end)
+                                         end_=end,
+                                         engine=engine)
 
                     self.session.run(drv,
                                      post_func=self.post_time_series,
@@ -3950,6 +4012,10 @@ class MainGUI(QMainWindow):
             pass
 
     def default_options_opf_ntc_optimal(self):
+        """
+        Set the default options for the NTC optimization in the optimal setting
+        :return:
+        """
         self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
         self.ui.skipNtcGenerationLimitsCheckBox.setChecked(False)
         self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
@@ -3963,6 +4029,10 @@ class MainGUI(QMainWindow):
         self.ui.weightsHVDCControlSpinBox.setValue(0)
 
     def default_options_opf_ntc_proportional(self):
+        """
+        Set the default options for the NTC optimization in the proportional setting
+        :return:
+        """
         self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
         self.ui.skipNtcGenerationLimitsCheckBox.setChecked(True)
         self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
@@ -3971,9 +4041,9 @@ class MainGUI(QMainWindow):
         self.ui.ntcFeasibilityCheckCheckBox.setChecked(True)
         self.ui.weightPowerShiftSpinBox.setValue(5)
         self.ui.weightGenCostSpinBox.setValue(0)
-        self.ui.weightGenDeltaSpinBox.setValue(0)
-        self.ui.weightsOverloadsSpinBox.setValue(0)
-        self.ui.weightsHVDCControlSpinBox.setValue(0)
+        self.ui.weightGenDeltaSpinBox.setValue(5)
+        self.ui.weightsOverloadsSpinBox.setValue(5)
+        self.ui.weightsHVDCControlSpinBox.setValue(3)
 
     def run_opf_ntc(self):
         """

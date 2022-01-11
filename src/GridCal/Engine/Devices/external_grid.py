@@ -14,6 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import pandas as pd
 from matplotlib import pyplot as plt
+from GridCal.Engine.basic_structures import ExternalGridMode
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 
 
@@ -58,8 +59,9 @@ class ExternalGrid(EditableDevice):
 
     """
 
-    def __init__(self, name='External grid', idtag=None, active=True, Vm=1.0, Va=0.0, Vm_prof=None, Va_prof=None,
-                  mttf=0.0, mttr=0.0):
+    def __init__(self, name='External grid', idtag=None, active=True,
+                 Vm=1.0, Va=0.0, Vm_prof=None, Va_prof=None, P=0.0, Q=0.0, P_prof=None, Q_prof=None,
+                  mttf=0.0, mttr=0.0, cost=1200.0, mode: ExternalGridMode = ExternalGridMode.PQ):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -70,19 +72,31 @@ class ExternalGrid(EditableDevice):
                                                   'idtag': GCProp('', str, 'Unique ID'),
                                                   'bus': GCProp('', DeviceType.BusDevice, 'Connection bus name'),
                                                   'active': GCProp('', bool, 'Is the load active?'),
+                                                  'mode': GCProp('', ExternalGridMode,
+                                                                 'Operation mode of the external grid (voltage or load)'),
                                                   'Vm': GCProp('p.u.', float, 'Active power'),
                                                   'Va': GCProp('radians', float, 'Reactive power'),
+                                                  'P': GCProp('MW', float, 'Active power'),
+                                                  'Q': GCProp('MVAr', float, 'Reactive power'),
                                                   'mttf': GCProp('h', float, 'Mean time to failure'),
                                                   'mttr': GCProp('h', float, 'Mean time to recovery'),
+                                                  'Cost': GCProp('e/MWh', float,
+                                                                 'Cost of not served energy. Used in OPF.')
                                                   },
                                 non_editable_attributes=['bus', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'Vm': 'Vm_prof',
-                                                         'Va': 'Va_prof'})
+                                                         'Va': 'Va_prof',
+                                                         'P': 'P_prof',
+                                                         'Q': 'Q_prof',
+                                                         'Cost': 'Cost_prof'
+                                                         })
 
         self.bus = None
 
         self.active_prof = None
+
+        self.mode = mode
 
         self.mttf = mttf
 
@@ -93,6 +107,14 @@ class ExternalGrid(EditableDevice):
         self.Va = Va
         self.Vm_prof = Vm_prof
         self.Va_prof = Va_prof
+
+        self.P = P
+        self.Q = Q
+        self.P_prof = P_prof
+        self.Q_prof = Q_prof
+
+        self.Cost = cost
+        self.Cost_prof = None
 
     def copy(self):
 
@@ -106,8 +128,16 @@ class ExternalGrid(EditableDevice):
         elm.Vm_prof = self.Vm_prof
         elm.Va_prof = self.Va_prof
 
+        elm.P = self.P
+        elm.Q = self.Q
+        elm.P_prof = self.P_prof
+        elm.Q_prof = self.Q_prof
+
         elm.mttf = self.mttf
         elm.mttr = self.mttr
+
+        elm.Cost = self.Cost
+        elm.Cost_prof = self.Cost_prof
 
         return elm
 
@@ -124,12 +154,18 @@ class ExternalGrid(EditableDevice):
              'bus': self.bus.idtag,
              'active': self.active,
              'Vm': self.Vm,
-             'Va': self.Va}
+             'Va': self.Va,
+             'P': self.P,
+             'Q': self.Q,
+             'Cost': self.Cost}
 
         if self.active_prof is not None:
             d['active_profile'] = self.active_prof.tolist()
             d['Vm_prof'] = self.Vm_prof.tolist()
             d['Va_prof'] = self.Va_prof.tolist()
+            d['P_prof'] = self.P_prof.tolist()
+            d['Q_prof'] = self.Q_prof.tolist()
+            d['Cost_prof'] = self.Cost_prof.tolist()
 
         return d
 
@@ -142,15 +178,21 @@ class ExternalGrid(EditableDevice):
             active_profile = self.active_prof.tolist()
             Vm_prof = self.Vm_prof.tolist()
             Va_prof = self.Va_prof.tolist()
+            P_prof = self.P_prof.tolist()
+            Q_prof = self.Q_prof.tolist()
         else:
             active_profile = list()
             Vm_prof = list()
             Va_prof = list()
+            P_prof = list()
+            Q_prof = list()
 
         return {'id': self.idtag,
                 'active': active_profile,
                 'vm': Vm_prof,
-                'va': Va_prof}
+                'va': Va_prof,
+                'P': P_prof,
+                'Q': Q_prof}
 
     def plot_profiles(self, time=None, show_fig=True):
         """
@@ -165,18 +207,33 @@ class ExternalGrid(EditableDevice):
             ax_1 = fig.add_subplot(211)
             ax_2 = fig.add_subplot(212)
 
-            # P
-            y = self.Vm_prof
-            df = pd.DataFrame(data=y, index=time, columns=[self.name])
-            ax_1.set_title('Voltage module', fontsize=14)
-            ax_1.set_ylabel('p.u.', fontsize=11)
+            if self.mode == ExternalGridMode.VD:
+                y1 = self.Vm_prof
+                title_1 = 'Voltage module'
+                units_1 = 'p.u'
+
+                y2 = self.Va_prof
+                title_2 = 'Voltage angle'
+                units_2 = 'radians'
+            elif self.mode == ExternalGridMode.PQ:
+                y1 = self.P_prof
+                title_1 = 'Active Power'
+                units_1 = 'MW'
+
+                y2 = self.Q_prof
+                title_2 = 'Reactive power'
+                units_2 = 'MVAr'
+            else:
+                raise Exception('Unrecognised external grid mode: ' + str(self.mode))
+
+            ax_1.set_title(title_1, fontsize=14)
+            ax_1.set_ylabel(units_1, fontsize=11)
+            df = pd.DataFrame(data=y1, index=time, columns=[self.name])
             df.plot(ax=ax_1)
 
-            # Q
-            y = self.Va_prof
-            df = pd.DataFrame(data=y, index=time, columns=[self.name])
-            ax_2.set_title('Voltage angle', fontsize=14)
-            ax_2.set_ylabel('radians', fontsize=11)
+            df = pd.DataFrame(data=y2, index=time, columns=[self.name])
+            ax_2.set_title(title_2, fontsize=14)
+            ax_2.set_ylabel(units_2, fontsize=11)
             df.plot(ax=ax_2)
 
             plt.legend()

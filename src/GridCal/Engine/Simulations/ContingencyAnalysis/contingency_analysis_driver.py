@@ -52,11 +52,16 @@ def enumerate_states_n_k(m, k=1):
 
 class ContingencyAnalysisOptions:
 
-    def __init__(self, distributed_slack=True, correct_values=True):
+    def __init__(self, distributed_slack=True, correct_values=True,
+                 use_provided_flows=False, Pf=None):
 
         self.distributed_slack = distributed_slack
 
         self.correct_values = correct_values
+
+        self.use_provided_flows = use_provided_flows
+
+        self.Pf = Pf
 
 
 class ContingencyAnalysisDriver(DriverTemplate):
@@ -122,7 +127,15 @@ class ContingencyAnalysisDriver(DriverTemplate):
         LODF = linear_analysis.LODF
 
         # compute the branch Sf in "n"
-        flows_n = np.dot(PTDF, Pbus)
+        if self.options.use_provided_flows:
+            flows_n = self.options.Pf
+
+            if self.options.Pf is None:
+                msg = 'The option to use the provided flows is enabled, but no flows are available'
+                self.logger.add_error(msg)
+                raise Exception(msg)
+        else:
+            flows_n = linear_analysis.get_flows(self.numerical_circuit.Sbus)
 
         self.progress_text.emit('Computing loading...')
 

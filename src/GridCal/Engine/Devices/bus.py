@@ -17,7 +17,7 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCal.Engine.basic_structures import BusMode
+from GridCal.Engine.basic_structures import BusMode, ExternalGridMode
 from GridCal.Engine.Devices.editable_device import EditableDevice, DeviceType, GCProp
 from GridCal.Engine.Devices.groupings import Area, Substation, Zone, Country
 
@@ -168,6 +168,9 @@ class Bus(EditableDevice):
         # List of Controlled generators attached to this bus
         self.controlled_generators = list()
 
+        # List of External Grids
+        self.external_grids = list()
+
         # List of shunt s attached to this bus
         self.shunts = list()
 
@@ -176,9 +179,6 @@ class Bus(EditableDevice):
 
         # List of static generators attached tot this bus
         self.static_generators = list()
-
-        # List of External grid devices
-        self.external_grids = list()
 
         # List of measurements
         self.measurements = list()
@@ -221,6 +221,7 @@ class Bus(EditableDevice):
         self.batteries.clear()
         self.shunts.clear()
         self.static_generators.clear()
+        self.external_grids.clear()
         self.loads.clear()
         self.controlled_generators.clear()
 
@@ -250,7 +251,7 @@ class Bus(EditableDevice):
         else:
             raise Exception('Device type not understood:' + str(device.device_type))
 
-    def determine_bus_type(self):
+    def determine_bus_type(self) -> BusMode:
         """
         Infer the bus type from the devices attached to it
         @return: self.type
@@ -265,7 +266,7 @@ class Bus(EditableDevice):
             # count the number of active external grids
             ext_on = 0
             for elm in self.external_grids:
-                if elm.active:
+                if elm.active and elm.mode == ExternalGridMode.VD:
                     ext_on += 1
 
             # if there ar any active external grids, set as slack and exit
@@ -316,7 +317,7 @@ class Bus(EditableDevice):
             # count the number of active external grids
             ext_on = 0
             for elm in self.external_grids:
-                if elm.active_prof[t]:
+                if elm.active_prof[t] and elm.mode == ExternalGridMode.VD:
                     ext_on += 1
 
             # if there ar any active external grids, set as slack and exit
@@ -388,13 +389,26 @@ class Bus(EditableDevice):
 
         return Qmin, Qmax
 
-    def initialize_lp_profiles(self):
+    def get_voltage_guess(self, logger=None):
         """
-        Dimension the LP var profiles
-        :return: Nothing
+        Determine the voltage initial guess
+        :param logger: Logger object
+        :return: voltage guess
         """
-        for elm in (self.controlled_generators + self.batteries):
-            elm.initialize_lp_vars()
+        vm = 1.0
+        va = 0.0
+        v = complex(1, 0)
+
+        for lst in [self.controlled_generators, self.batteries]:
+            for elm in lst:
+                if vm == 1.0:
+                    v = complex(elm.Vset, 0)
+                    vm = elm.Vset
+                elif elm.Vset != vm:
+                    if logger is not None:
+                        logger.append('Different set points at ' + self.name + ': ' + str(elm.Vset) + ' !=' + str(v))
+
+        return v
 
     def plot_profiles(self, time_profile, ax_load=None, ax_voltage=None, time_series_driver=None, my_index=0):
         """
@@ -510,6 +524,10 @@ class Bus(EditableDevice):
         for g in self.static_generators:
             bus.static_generators.append(g.copy())
 
+        # List of static generators attached tot this bus
+        for g in self.external_grids:
+            bus.external_grids.append(g.copy())
+
         # Bus type
         bus.type = self.type
 
@@ -565,10 +583,10 @@ class Bus(EditableDevice):
                     'lat': self.latitude,
                     'lon': self.longitude,
                     'alt': 0.0,
-                    'country': self.country.idtag,
-                    'area': self.area.idtag,
-                    'zone': self.zone.idtag,
-                    'substation': self.substation.idtag
+                    'country': self.country.idtag if self.country is not None else "",
+                    'area': self.area.idtag if self.area is not None else "",
+                    'zone': self.zone.idtag if self.zone is not None else "",
+                    'substation': self.substation.idtag if self.substation is not None else ""
                     }
         else:
             return dict()
@@ -621,6 +639,12 @@ class Bus(EditableDevice):
             elm.P = elm.P_prof[t]
             elm.Q = elm.Q_prof[t]
 
+        for elm in self.external_grids:
+            elm.Vm = elm.Vm_prof[t]
+            elm.Va = elm.Va_prof[t]
+            elm.P = elm.P_prof[t]
+            elm.Q = elm.Q_prof[t]
+
         for elm in self.batteries:
             elm.P = elm.P_prof[t]
             elm.Vset = elm.Vset_prof[t]
@@ -653,6 +677,9 @@ class Bus(EditableDevice):
         for elm in self.static_generators:
             elm.delete_profiles()
 
+        for elm in self.external_grids:
+            elm.delete_profiles()
+
         for elm in self.batteries:
             elm.delete_profiles()
 
@@ -676,6 +703,9 @@ class Bus(EditableDevice):
         for elm in self.static_generators:
             elm.create_profiles(index)
 
+        for elm in self.external_grids:
+            elm.create_profiles(index)
+
         for elm in self.batteries:
             elm.create_profiles(index)
 
@@ -697,6 +727,9 @@ class Bus(EditableDevice):
         for elm in self.static_generators:
             elm.set_profile_values(t)
 
+        for elm in self.external_grids:
+            elm.set_profile_values(t)
+
         for elm in self.batteries:
             elm.set_profile_values(t)
 
@@ -706,14 +739,7 @@ class Bus(EditableDevice):
         for elm in self.shunts:
             elm.set_profile_values(t)
 
-    def apply_lp_profiles(self, Sbase):
-        """
-        Sets the lp solution to the regular generators profile
-        """
-        for elm in self.batteries + self.controlled_generators:
-            elm.apply_lp_profile(Sbase)
-
-    def merge(self, other_bus):
+    def merge(self, other_bus: "Bus"):
         """
         Add the elements of the "Other bus" to this bus
         :param other_bus: Another instance of Bus
@@ -723,6 +749,8 @@ class Bus(EditableDevice):
 
         # List of Controlled generators attached to this bus
         self.controlled_generators += other_bus.controlled_generators.copy()
+
+        self.external_grids += other_bus.external_grids.copy()
 
         # List of shunt s attached to this bus
         self.shunts += other_bus.shunts.copy()
@@ -754,16 +782,26 @@ class Bus(EditableDevice):
         Return a list of all the connected objects
         :return: list of connected objects
         """
-        return self.loads + self.controlled_generators + self.batteries + self.static_generators + self.shunts
+        return self.loads + \
+                self.controlled_generators + \
+                self.batteries + \
+                self.static_generators + \
+                self.shunts + \
+                self.external_grids
 
     def get_device_number(self):
         """
         Return a list of all the connected objects
         :return: list of connected objects
         """
-        return len(self.loads) + len(self.controlled_generators) + len(self.batteries) + len(self.static_generators) + len(self.shunts)
+        return len(self.loads) + \
+               len(self.controlled_generators) + \
+               len(self.batteries) + \
+               len(self.static_generators) + \
+               len(self.shunts) + \
+               len(self.external_grids)
 
-    def ensure_area_objects(self, circuit):
+    def ensure_area_objects(self, circuit: "MultiCircuit"):
         """
         Ensure that every grouping parameter has an object
         :param circuit: MultiCircuit instance

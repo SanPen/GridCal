@@ -96,7 +96,7 @@ def dSbus_dV(Ybus, V, I):
     return dS_dVm, dS_dVa
 
 
-def mu(Ybus, Ibus, J, pvpq_lookup, incS, dV, dx, pvpq, pq, npv, npq):
+def mu(Ybus, Ibus, J, incS, dV, dx, pvpq, pq, npv, npq):
     """
     Calculate the Iwamoto acceleration parameter as described in:
     "A Load Flow Calculation Method for Ill-Conditioned Power Systems" by Iwamoto, S. and Tamura, Y."
@@ -116,12 +116,7 @@ def mu(Ybus, Ibus, J, pvpq_lookup, incS, dV, dx, pvpq, pq, npv, npq):
     # theoretically this is the second derivative matrix
     # since the Jacobian (J2) has been calculated with dV instead of V
 
-    # generate lookup pvpq -> index pvpq (used in createJ)
-    # pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
-    # pvpq_lookup[pvpq] = np.arange(len(pvpq))
-
-    J2 = AC_jacobian(Ybus, dV, pvpq, pq, pvpq_lookup, npv, npq)
-    # J2 = Jacobian(Ybus, dV, Ibus, pq, pvpq)
+    J2 = AC_jacobian(Ybus, dV, pvpq, pq, npv, npq)
 
     a = incS
     b = J * dx
@@ -293,7 +288,7 @@ def NR_LS_lynn(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0
     if npvpq > 0:
 
         # generate lookup pvpq -> index pvpq (used in createJ)
-        pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+        pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
         pvpq_lookup[pvpq] = np.arange(npvpq)
 
         # evaluate F(x0)
@@ -384,7 +379,7 @@ def NR_LS_lynn(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0
                     npv = len(pv)
                     npq = len(pq)
                     npvpq = npv + npq
-                    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+                    pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
                     pvpq_lookup[pvpq] = np.arange(npvpq)
 
                     # recompute the error based on the new Sbus
@@ -455,10 +450,6 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
 
     if npvpq > 0:
 
-        # generate lookup pvpq -> index pvpq (used in createJ)
-        pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
-        pvpq_lookup[pvpq] = np.arange(npvpq)
-
         # evaluate F(x0)
         Scalc = V * np.conj(Ybus * V - Ibus)
         dS = Scalc - Sbus  # compute the mismatch
@@ -479,7 +470,7 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
 
             # evaluate Jacobian
             # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
-            J = AC_jacobian(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
+            J = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
             # J = AC_jacobian2(Ybus, Scalc, V, Vm, pq, pv)
 
             # print(V.real)
@@ -559,8 +550,6 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                     npv = len(pv)
                     npq = len(pq)
                     npvpq = npv + npq
-                    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
-                    pvpq_lookup[pvpq] = np.arange(npvpq)
 
                     # recompute the error based on the new Sbus
                     dS = Scalc - Sbus  # complex power mismatch
@@ -762,10 +751,6 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
 
     if npvpq > 0:
 
-        # generate lookup pvpq -> index pvpq (used in createJ)
-        pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
-        pvpq_lookup[pvpq] = np.arange(len(pvpq))
-
         # evaluate F(x0)
         Scalc = V * np.conj(Ybus * V - Ibus)
         mis = Scalc - Sbus  # compute the mismatch
@@ -782,7 +767,7 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
 
             # evaluate Jacobian
             # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
-            J = AC_jacobian(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
+            J = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
 
             # compute update step
             try:
@@ -805,7 +790,7 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
                 # if dV contains zeros will crash the second Jacobian derivative
                 if not (dV == 0.0).any():
                     # calculate the optimal multiplier for enhanced convergence
-                    mu_ = mu(Ybus, Ibus, J, pvpq_lookup, f, dV, dx, pvpq, pq, npv, npq)
+                    mu_ = mu(Ybus, Ibus, J, f, dV, dx, pvpq, pq, npv, npq)
                 else:
                     mu_ = 1.0
             else:
@@ -842,7 +827,7 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
                     npv = len(pv)
                     npq = len(pq)
                     npvpq = npv + npq
-                    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+                    pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
                     pvpq_lookup[pvpq] = np.arange(npvpq)
 
                     # recompute the error based on the new Sbus
@@ -915,25 +900,20 @@ def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max
         nn = 2 * npq + npv
         Idn = sp.diags(np.ones(nn))  # csc_matrix identity
 
-        # generate lookup pvpq -> index pvpq (used in createJ)
-        pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
-        pvpq_lookup[pvpq] = np.arange(len(pvpq))
-
         while not converged and iter_ < max_it:
 
             # evaluate Jacobian
             if update_jacobian:
-                H = AC_jacobian(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
-                # H = Jacobian(Ybus, V, Ibus, pq, pvpq)
+                H = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
 
             # evaluate the solution error F(x0)
             Scalc = V * np.conj(Ybus * V - Ibus)
-            mis = Scalc - Sbus  # compute the mismatch
-            dz = np.r_[mis[pvpq].real, mis[pq].imag]  # mismatch in the Jacobian order
+            dS = Scalc - Sbus  # compute the mismatch
+            dz = np.r_[dS[pvpq].real, dS[pq].imag]  # mismatch in the Jacobian order
 
             # system matrix
             # H1 = H^t
-            H1 = H.transpose().tocsr()
+            H1 = H.transpose()  # .tocsr()
 
             # H2 = H1·H
             H2 = H1.dot(H)
@@ -984,8 +964,8 @@ def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max
 
             # check convergence
             Scalc = V * np.conj(Ybus.dot(V))
-            ds = Sbus - Scalc
-            e = np.r_[ds[pvpq].real, ds[pq].imag]
+            dS = Sbus - Scalc
+            e = np.r_[dS[pvpq].real, dS[pq].imag]
             normF = 0.5 * np.dot(e, e)
 
             # review reactive power limits
@@ -1004,7 +984,7 @@ def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max
                     npv = len(pv)
                     npq = len(pq)
                     npvpq = npv + npq
-                    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
+                    pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
                     pvpq_lookup[pvpq] = np.arange(npvpq)
 
                     nn = 2 * npq + npv

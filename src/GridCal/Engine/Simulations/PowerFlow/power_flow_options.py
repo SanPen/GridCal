@@ -90,7 +90,7 @@ class PowerFlowOptions:
                  distributed_slack=False,
                  ignore_single_node_islands=False,
                  mu=1.0,
-                 backtracking_parameter=0.5):
+                 backtracking_parameter=0.05):
 
         self.solver_type = solver_type
 

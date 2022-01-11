@@ -229,7 +229,7 @@ def cpf_p_jac(parametrization: CpfParametrization, z, V, lam, Vprv, lamprv, pv, 
 
 
 def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
-              parametrization: CpfParametrization, pvpq_lookup):
+              parametrization: CpfParametrization):
     """
     Computes a prediction (approximation) to the next solution of the
     continuation power flow using a normalized tangent predictor.
@@ -258,7 +258,7 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
     nj = npv + npq * 2
 
     # compute Jacobian for the power flow equations
-    J = AC_jacobian(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
+    J = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
 
     dF_dlam = -np.r_[Sxfr[pvpq].real, Sxfr[pq].imag]
 
@@ -301,7 +301,7 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
 
 
 def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parametrization, tol, max_it,
-              pvpq_lookup, verbose, mu_0=1.0, acceleration_parameter=0.5):
+              verbose, mu_0=1.0, acceleration_parameter=0.5):
     """
     Solves the corrector step of a continuation power flow using a full Newton method
     with selected parametrization scheme.
@@ -386,7 +386,7 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
         i += 1
         
         # evaluate Jacobian
-        J = AC_jacobian(Ybus, V, pvpq, pq, pvpq_lookup, npv, npq)
+        J = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
 
         dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
     
@@ -546,10 +546,6 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
     z = np.zeros(2 * nb + 1)
     z[2 * nb] = 1.0
 
-    # generate lookup pvpq -> index pvpq (used in createJ)
-    pvpq_lookup = np.zeros(np.max(Ybus.indices) + 1, dtype=int)
-    pvpq_lookup[pvpq] = np.arange(len(pvpq))
-
     # compute total bus installed power
     total_installed_power = bus_installed_power.sum()
 
@@ -572,8 +568,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
                                 z=z,
                                 Vprv=V_prev,
                                 lamprv=lam_prev,
-                                parametrization=approximation_order,
-                                pvpq_lookup=pvpq_lookup)
+                                parametrization=approximation_order)
 
         # save previous voltage, lambda before updating
         V_prev = V.copy()
@@ -595,7 +590,6 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
                                                      parametrization=approximation_order,
                                                      tol=tol,
                                                      max_it=max_it,
-                                                     pvpq_lookup=pvpq_lookup,
                                                      verbose=verbose)
 
         if distributed_slack:
@@ -622,7 +616,6 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
                                                              parametrization=approximation_order,
                                                              tol=tol,
                                                              max_it=max_it,
-                                                             pvpq_lookup=pvpq_lookup,
                                                              verbose=verbose)
 
         if success:
