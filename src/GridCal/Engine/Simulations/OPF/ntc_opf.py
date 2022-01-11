@@ -540,16 +540,14 @@ def formulate_proportional_generation(
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
 
-            # delta_slack_1[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_up_' + name)
-            # delta_slack_2[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_down_' + name)
+            delta_slack_1[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_up_' + name)
+            delta_slack_2[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_down_' + name)
 
-            # TODO: eliminado el roundd a 6 decimales. No cambia
-            # prop = round(abs(Pgen[gen_idx] / sum_gen_1), 6)
-            prop = Pgen[gen_idx] / sum_gen_1
+            prop = round(abs(Pgen[gen_idx] / sum_gen_1), 6)
 
             solver.Add(delta[gen_idx] == prop * power_shift, 'Delta_up_gen{}'.format(gen_idx))
             solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx]
-                       # + delta_slack_1[gen_idx] - delta_slack_2[gen_idx]
+                       + delta_slack_1[gen_idx] - delta_slack_2[gen_idx]
                        , 'Gen_up_gen{}'.format(gen_idx))
 
         else:
@@ -573,15 +571,14 @@ def formulate_proportional_generation(
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
 
-            # delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
-            # delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
+            delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
+            delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
 
-            # prop = round(abs(Pgen[gen_idx] / sum_gen_2), 6)
-            prop = Pgen[gen_idx] / sum_gen_2
+            prop = round(abs(Pgen[gen_idx] / sum_gen_2), 6)
 
             solver.Add(delta[gen_idx] == prop * power_shift, 'Delta_down_gen{}'.format(gen_idx))
             solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx]
-                       # + delta_slack_1[gen_idx] - delta_slack_2[gen_idx]
+                       + delta_slack_1[gen_idx] - delta_slack_2[gen_idx]
                        , 'Gen_down_gen{}'.format(gen_idx))
 
         else:
@@ -882,8 +879,8 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
             _t = T[m]
 
             # declare the flow variable with ample limits
-            # flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
-            flow_f[m] = solver.NumVar(-rates[m], rates[m], 'pftk_{0}_{1}'.format(m, branch_names[m]))
+            flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
+            # flow_f[m] = solver.NumVar(-rates[m], rates[m], 'pftk_{0}_{1}'.format(m, branch_names[m]))
 
             # compute the branch susceptance
             if branch_dc[m]:
@@ -917,13 +914,13 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
                 if rates[m] <= 0:
                     logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
 
-                # # rating restriction in the sense from-to: eq.17
-                # overload1[m] = solver.NumVar(0, inf, 'overload1_{0}_{1}'.format(m, branch_names[m]))
-                # solver.Add(flow_f[m] <= (rates[m] + overload1[m]), "ft_rating_{0}_{1}".format(m, branch_names[m]))
-                #
-                # # rating restriction in the sense to-from: eq.18
-                # overload2[m] = solver.NumVar(0, inf, 'overload2_{0}_{1}'.format(m, branch_names[m]))
-                # solver.Add((-rates[m] - overload2[m]) <= flow_f[m], "tf_rating_{0}_{1}".format(m, branch_names[m]))
+                # rating restriction in the sense from-to: eq.17
+                overload1[m] = solver.NumVar(0, inf, 'overload1_{0}_{1}'.format(m, branch_names[m]))
+                solver.Add(flow_f[m] <= (rates[m] + overload1[m]), "ft_rating_{0}_{1}".format(m, branch_names[m]))
+
+                # rating restriction in the sense to-from: eq.18
+                overload2[m] = solver.NumVar(0, inf, 'overload2_{0}_{1}'.format(m, branch_names[m]))
+                solver.Add((-rates[m] - overload2[m]) <= flow_f[m], "tf_rating_{0}_{1}".format(m, branch_names[m]))
 
     return flow_f, overload1, overload2, tau, monitor
 
@@ -1081,13 +1078,13 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
                 flow_n1 = solver.NumVar(-rates[m], rates[m], 'n-1_flow__' + suffix)
                 solver.Add(flow_n1 == flow_f[m] + lodf * flow_f[c], "n-1_ft_rating_" + suffix)
 
-                # # rating restriction in the sense from-to
+                # rating restriction in the sense from-to
                 overload1 = solver.NumVar(0, inf, 'n-1_overload1__' + suffix)
-                # solver.Add(flow_n1 <= (rates[m] + overload1), "n-1_ft_rating_" + suffix)
-                #
-                # # rating restriction in the sense to-from
+                solver.Add(flow_n1 <= (rates[m] + overload1), "n-1_ft_rating_" + suffix)
+
+                # rating restriction in the sense to-from
                 overload2 = solver.NumVar(0, inf, 'n-1_overload2_' + suffix)
-                # solver.Add((-rates[m] - overload2) <= flow_n1, "n-1_tf_rating_" + suffix)
+                solver.Add((-rates[m] - overload2) <= flow_n1, "n-1_tf_rating_" + suffix)
 
                 # store vars
                 con_idx.append((m, c))
@@ -1549,8 +1546,11 @@ class OpfNTC(Opf):
         # load
         Pl_fix = self.numerical_circuit.load_data.get_effective_load().real[:, t] / Sbase
 
-
-
+        # modify Pg_fix until it is identical to Pload
+        total_load = Pl_fix.sum()
+        total_gen = Pg_fix.sum()
+        diff = total_gen - total_load
+        Pg_fix -= diff * (Pg_fix / total_gen)
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
