@@ -206,7 +206,8 @@ def get_generators_per_areas(Cgen, buses_in_a1, buses_in_a2):
 
     return gens_in_a1, gens_in_a2, gens_out
 
-def validate_generator_limits(gen_idx, Pgen, Pmax, Pmin):
+
+def validate_generator_limits(gen_idx, Pgen, Pmax, Pmin, logger):
     """
 
     :param gen_idx: generator index to check
@@ -535,7 +536,7 @@ def formulate_proportional_generation(
         if validate_generator_to_increase(gen_idx, generator_active, generator_dispatchable, Pgen, Pmax, Pmin, t):
 
             # add logger message if generator is out of limits
-            validate_generator_limits(gen_idx, Pgen, Pmax, Pmin)
+            validate_generator_limits(gen_idx, Pgen, Pmax, Pmin, logger)
 
             name = 'Gen_up_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
 
@@ -566,7 +567,7 @@ def formulate_proportional_generation(
         if validate_generator_to_decrease(gen_idx, generator_active, generator_dispatchable, Pgen, Pmax, Pmin):
 
             # add logger message if generator is out of limits
-            validate_generator_limits(gen_idx, Pgen, Pmax, Pmin)
+            validate_generator_limits(gen_idx, Pgen, Pmax, Pmin, logger)
 
             name = 'Gen_down_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
 
@@ -703,8 +704,8 @@ def check_proportional_generation(
 
 
 def formulate_angles(
-        solver: pywraplp.Solver, nbus, vd, bus_names, angle_min, angle_max, logger: Logger, set_ref_to_zero=True
-):
+        solver: pywraplp.Solver, nbus, vd, bus_names, angle_min, angle_max,
+        logger: Logger, set_ref_to_zero=True):
     """
     Formulate the angles
     :param solver: Solver instance to which add the equations
@@ -735,7 +736,8 @@ def formulate_angles(
     return theta
 
 
-def formulate_power_injections(solver: pywraplp.Solver, Cgen, generation, Cload, load_active, load_power, Sbase):
+def formulate_power_injections(
+        solver: pywraplp.Solver, Cgen, generation, Cload, load_active, load_power, Sbase):
     """
     Formulate the power injections
     :param solver: Solver instance to which add the equations
@@ -828,11 +830,11 @@ def check_node_balance(Bbus, angles, Pinj, bus_active, bus_names, logger: Logger
     return calculated_power
 
 
-def formulate_branches_flow(
-        solver: pywraplp.Solver, nbr, Rates, Sbase, branch_active, branch_names, branch_dc, theta_min, theta_max,
-        control_mode, R, X, F, T, inf, monitor_loading, branch_sensitivity_threshold, monitor_only_sensitive_branches,
-        angles, alpha_abs, logger
-):
+def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
+                            branch_active, branch_names, branch_dc,
+                            theta_min, theta_max, control_mode, R, X, F, T, inf,
+                            monitor_loading, branch_sensitivity_threshold, monitor_only_sensitive_branches,
+                            angles, alpha_abs, logger):
     """
 
     :param solver: Solver instance to which add the equations
@@ -1029,10 +1031,11 @@ def check_branches_flow(
     return monitor
 
 
-def formulate_contingency(
-        solver: pywraplp.Solver, ContingencyRates, Sbase, branch_names, contingency_enabled_indices,
-        LODF, F, T, inf, branch_sensitivity_threshold, flow_f, monitor, replacement_value=0
-):
+def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
+                          branch_names, contingency_enabled_indices,
+                          LODF, F, T, inf,
+                          branch_sensitivity_threshold,
+                          flow_f, monitor, replacement_value, logger: Logger):
     """
     Formulate the contingency flows
     :param solver: Solver instance to which add the equations
@@ -1076,13 +1079,14 @@ def formulate_contingency(
                 lodf = LODF[m, c]
 
                 if lodf > 1:
-                    print('lodf era ', lodf, 'reemplazado a', replacement_value,
-                          'para',branch_names[m], 'ante el disparo de',branch_names[c])
+                    logger.add_warning("LODF correction", device=branch_names[m] + "@" + branch_names[c],
+                                       value=lodf, expected_value=replacement_value)
+
                     lodf = replacement_value
 
                 elif lodf < -1:
-                    print('lodf era ', lodf, 'reemplazado a', replacement_value,
-                          'para',branch_names[m], 'ante el disparo de',branch_names[c])
+                    logger.add_warning("LODF correction", device=branch_names[m] + "@" + branch_names[c],
+                                       value=lodf, expected_value=-replacement_value)
                     lodf = -replacement_value
 
                 suffix = "{0}_{1} @ {2}_{3}".format(m, branch_names[m], c, branch_names[c])
@@ -1225,8 +1229,7 @@ def formulate_hvdc_flow(
                 flow_f[i] = solver.NumVar(-rates[i], rates[i], 'hvdc_flow_' + suffix)
 
                 # formulate the hvdc flow as an AC line equivalent
-                # to pass from MW/deg to p.u./rad -> * 180 / pi / (sbase=100)
-                angle_droop2 = angle_droop[i] * 57.295779513 / Sbase
+                angle_droop2 = angle_droop[i] * 57.295779513 / Sbase  # to pass from MW/deg to p.u./rad -> * 180 / pi / (sbase=100)
                 solver.Add(
                     flow_f[i] == P0 + angle_droop2 * (angles[_f] - angles[_t]) + hvdc_control1[i] - hvdc_control2[i],
                     'hvdc_power_flow_' + suffix
@@ -1260,11 +1263,9 @@ def formulate_hvdc_flow(
     return flow_f, overload1, overload2, hvdc_control1, hvdc_control2
 
 
-def check_hvdc_flow(
-        nhvdc, names,
-        rate, angles, active, Pt, r, control_mode, dispatchable,
-        F, T, Sbase, flow_f, logger: Logger, t=0
-):
+def check_hvdc_flow(nhvdc, names,
+                    rate, angles, active, Pt, angle_droop, control_mode, dispatchable,
+                    F, T, Sbase, flow_f, logger: Logger, t=0):
     """
     Check the HVDC flows
     :param nhvdc: number of HVDC devices
@@ -1300,7 +1301,7 @@ def check_hvdc_flow(
             if control_mode[i] == HvdcControlType.type_0_free:
 
                 # formulate the hvdc flow as an AC line equivalent
-                bk = 1.0 / r[i]  # TODO: yes, I know... DC...
+                bk = angle_droop2 = angle_droop[i] * 57.295779513 / Sbase
                 res = flow_f[i] == P0 + bk * (angles[_f] - angles[_t])
 
                 if not res:
@@ -1422,8 +1423,8 @@ def formulate_objective(
     # f += weight_generation_delta * delta_slacks
     # f += weight_overloads * branch_overload
     # f += weight_overloads * contingency_branch_overload
-    f += weight_overloads * hvdc_overload
-    f += weight_hvdc_control * hvdc_control
+    # f += weight_overloads * hvdc_overload
+    # f += weight_hvdc_control * hvdc_control
     f += weight_generation_delta * load_shedding_sum
 
     # objective function
@@ -1729,7 +1730,9 @@ class OpfNTC(Opf):
                 inf=self.inf,
                 branch_sensitivity_threshold=self.branch_sensitivity_threshold,
                 flow_f=flow_f,
-                monitor=monitor
+                monitor=monitor,
+                replacement_value=0,
+                logger=self.logger
             )
         else:
             n1overload1 = list()
@@ -1984,7 +1987,7 @@ class OpfNTC(Opf):
             angles=self.extract(self.theta),
             active=self.numerical_circuit.hvdc_data.active,
             Pt=self.numerical_circuit.hvdc_data.Pt,
-            r=self.numerical_circuit.hvdc_data.r,
+            angle_droop=self.numerical_circuit.hvdc_data.angle_droop[:, t],
             control_mode=self.numerical_circuit.hvdc_data.control_mode,
             dispatchable=self.numerical_circuit.hvdc_data.dispatchable,
             F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
