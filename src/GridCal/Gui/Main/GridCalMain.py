@@ -453,6 +453,10 @@ class MainGUI(QMainWindow):
 
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
 
+        self.ui.actionCorrect_inconsistences.triggered.connect(self.correct_inconsistencies)
+
+        self.ui.actionDelete_inconsistences.triggered.connect(self.delete_inconsistencies)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -5896,7 +5900,7 @@ class MainGUI(QMainWindow):
         """
         numerical_circuit_ = core.compile_snapshot_opf_circuit(circuit=self.circuit, apply_temperature=False,)
         islands = numerical_circuit_.split_into_islands()
-
+        logger = Logger()
         buses_to_delete = list()
         buses_to_delete_idx = list()
         for island in islands:
@@ -5916,6 +5920,7 @@ class MainGUI(QMainWindow):
                 # this is a more complete function than the circuit one because it removes the
                 # graphical items too, and for loads and generators it deletes them properly
                 print('Deleted ', elm.device_type.value, elm.name)
+                logger.add_info("Deleted " + str(elm.device_type.value), elm.name)
                 elm.graphic_obj.remove(ask=False)
 
         # search other elements to delete
@@ -5936,7 +5941,10 @@ class MainGUI(QMainWindow):
                         # this is a more complete function than the circuit one because it removes the
                         # graphical items too, and for loads and generators it deletes them properly
                         print('Deleted ', elm.device_type.value, elm.name)
+                        logger.add_info("Deleted " + str(elm.device_type.value), elm.name)
                         elm.graphic_obj.remove(ask=False)
+
+        return logger
 
     def correct_shit(self, min_vset=0.98, max_vset=1.02):
         """
@@ -5944,25 +5952,42 @@ class MainGUI(QMainWindow):
         :param min_vset: minimum set point for the generators
         :param max_vset: maximum set point for the generators
         """
+        logger = Logger()
+
         for elm in self.circuit.transformers2w:
             HV = max(elm.bus_from.Vnom, elm.bus_to.Vnom)
             LV = min(elm.bus_from.Vnom, elm.bus_to.Vnom)
 
-            if elm.HV != HV or elm.LV != LV:
+            if elm.HV != HV:
                 self.console_msg('Corrected transformer HV for {0} from [{1},{2}] to [{3},{4}]'.format(elm.name,
                                                                                                        elm.LV, elm.HV,
                                                                                                        LV, HV))
+
+                logger.add_info("Corrected transformer HV", elm.name, elm.HV, HV)
+
                 elm.HV = HV
+
+            if elm.LV != LV:
+                self.console_msg('Corrected transformer HV for {0} from [{1},{2}] to [{3},{4}]'.format(elm.name,
+                                                                                                       elm.LV, elm.HV,
+                                                                                                       LV, HV))
+
+                logger.add_info("Corrected transformer LV", elm.name, elm.LV, LV)
+
                 elm.LV = LV
 
         for elm in self.circuit.get_generators():
             if elm.Vset > max_vset:
-                self.console_msg('Corrected generator set point for {0} from {1} to {2}'.format(elm.name,
-                                                                                                elm.Vset, max_vset))
+                # self.console_msg('Corrected generator set point for {0} from {1} to {2}'.format(elm.name,elm.Vset, max_vset))
+                logger.add_info("Corrected generator set point", elm.name, elm.Vset, max_vset)
                 elm.Vset = max_vset
+
             elif elm.Vset < min_vset:
-                self.console_msg('Corrected generator set point for {0} from {1} to {2}'.format(elm.name, elm.Vset, min_vset))
+                # self.console_msg('Corrected generator set point for {0} from {1} to {2}'.format(elm.name, elm.Vset, min_vset))
+                logger.add_info("Corrected generator set point", elm.name, elm.Vset, min_vset)
                 elm.Vset = min_vset
+
+        return logger
 
     def correct_branch_monitoring(self, max_loading=1.0):
         """
@@ -6625,6 +6650,38 @@ class MainGUI(QMainWindow):
         if ok:
             self.circuit.fuse_devices()
             self.draw_schematic()
+
+    def correct_inconsistencies(self):
+        """
+        Call correct shit
+        :return:
+        """
+        ok = yes_no_question("This action applies a number of expert rules to correct set points, "
+                             "transformer voltages and other inconsistencies", "Correct inconsistencies")
+
+        if ok:
+            logger = self.correct_shit()
+
+            if len(logger) > 0:
+                dlg = LogsDialogue("correct inconsistencies", logger)
+                dlg.setModal(True)
+                dlg.exec_()
+
+    def delete_inconsistencies(self):
+        """
+        Call delete shit
+        :return:
+        """
+        ok = yes_no_question("This action removes all disconnected devices and remove all small islands",
+                             "Delete inconsistencies")
+
+        if ok:
+            logger = self.delete_shit()
+
+            if len(logger) > 0:
+                dlg = LogsDialogue("Delete inconsistencies", logger)
+                dlg.setModal(True)
+                dlg.exec_()
 
 
 def run(use_native_dialogues=False):

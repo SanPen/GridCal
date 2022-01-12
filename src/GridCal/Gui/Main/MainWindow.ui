@@ -7207,6 +7207,8 @@ QProgressBar::chunk{
     <addaction name="actionDrawSchematic"/>
     <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
     <addaction name="actionFuse_devices"/>
+    <addaction name="actionCorrect_inconsistences"/>
+    <addaction name="actionDelete_inconsistences"/>
     <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="actionAdd_default_catalogue"/>
@@ -7993,7 +7995,7 @@ QProgressBar::chunk{
   <action name="actionInputs_analysis">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/inputs_analysis.svg</normaloff>:/Icons/icons/inputs_analysis.svg</iconset>
+     <normaloff>:/Icons/icons/inputs_analysis 2.svg</normaloff>:/Icons/icons/inputs_analysis 2.svg</iconset>
    </property>
    <property name="text">
     <string>Inputs analysis</string>
@@ -8024,6 +8026,24 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>Fuse devices into a single device of each category per node</string>
+   </property>
+  </action>
+  <action name="actionCorrect_inconsistences">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/gear.svg</normaloff>:/Icons/icons/gear.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Correct inconsistences</string>
+   </property>
+  </action>
+  <action name="actionDelete_inconsistences">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Delete inconsistences</string>
    </property>
   </action>
  </widget>
