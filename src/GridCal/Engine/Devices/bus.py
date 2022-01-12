@@ -830,38 +830,53 @@ class Bus(EditableDevice):
             # more than a single element, fuse the list
 
             elm1 = elm_list[0]  # select the main generator
-            act1 = elm1.active
-            act1_prof = elm1.active_prof
+            act_final = elm1.active
+            act_prof_final = elm1.active_prof
 
-            # declare the final status
-            act_final = act1
-            act_prof_final = act1_prof
-
+            # set the final active value
             for i in range(1, len(elm_list)):  # for each of the other generators
                 elm2 = elm_list[i]
-                act2 = elm2.active
-                act2_prof = elm2.active_prof
 
                 # modify the final status
-                act_final += act2  # equivalent to OR
+                act_final = bool(act_final + elm2.active)  # equivalent to OR
 
                 if act_prof_final is not None:
-                    act_prof_final += act2_prof
+                    act_prof_final = (act_prof_final + elm2.active_prof).astype(bool)
 
-                for prop in property_names:  # sum the properties
+            for prop in property_names:  # sum the properties
+
+                # initialize the value with whatever it is inside elm1
+                if 'prof' not in prop:
+                    # is a regular property
+                    val = getattr(elm1, prop) * elm1.active
+                else:
+                    if act_prof_final is not None:
+                        # it is a profile property
+                        val = getattr(elm1, prop) * elm1.active_prof
+                    else:
+                        val = None
+
+                for i in range(1, len(elm_list)):  # for each of the other generators
+                    elm2 = elm_list[i]
+
                     if 'prof' not in prop:
                         # is a regular property
-                        val = getattr(elm1, prop) * act1 + getattr(elm2, prop) * act2
-                        setattr(elm1, prop, val)
+                        val += getattr(elm2, prop) * elm2.active
                     else:
                         if act_prof_final is not None:
                             # it is a profile property
-                            val = getattr(elm1, prop) * act1_prof + getattr(elm2, prop) * act2_prof
-                            setattr(elm1, prop, val)
+                            val += getattr(elm2, prop) * elm2.active_prof
 
-            elm1.active = bool(act_final)
-            if act_prof_final is not None:
-                elm1.active_prof = act_prof_final.astype(bool)
+                # set the final property value
+                if 'prof' not in prop:
+                    setattr(elm1, prop, val)
+                else:
+                    setattr(elm1, prop, val)
+
+            # set the final active status
+            elm1.active = act_final
+            elm1.active_prof = act_prof_final
+
             return [elm1]
 
         elif len(elm_list) == 1:
