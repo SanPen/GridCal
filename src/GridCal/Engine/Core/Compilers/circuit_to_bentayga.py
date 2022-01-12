@@ -164,7 +164,10 @@ def add_btg_generators(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dic
                             P0=elm.P,
                             Q0=0,
                             Vset0=elm.Vset)
-
+        gen.Qmin = elm.Qmin
+        gen.Qmax = elm.Qmax
+        gen.Pmin = elm.Pmin
+        gen.Pmax = elm.Pmax
         gen.generation_cost = elm.Cost
 
         if time_series:
@@ -210,6 +213,10 @@ def get_battery_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict,
         gen.charge_efficiency = elm.charge_efficiency
         gen.discharge_efficiency = elm.discharge_efficiency
         gen.generation_cost = elm.Cost
+        gen.Qmin = elm.Qmin
+        gen.Qmax = elm.Qmax
+        gen.Pmin = elm.Pmin
+        gen.Pmax = elm.Pmax
 
         if time_series:
             gen.active = elm.active_prof.astype(BINT)
@@ -488,11 +495,11 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
         data.Vbus_ = btg_data.Vbus.reshape(-1, 1)
         data.Sbus_ = btg_data.Sbus.reshape(-1, 1)
         data.Ibus_ = btg_data.Ibus
-        data.branch_data.branch_names = btg_data.branch_data.names
+        data.branch_data.branch_names = np.array(btg_data.branch_data.names)
         data.branch_data.tap_f = btg_data.branch_data.virtual_tap_f
         data.branch_data.tap_t = btg_data.branch_data.virtual_tap_t
 
-        data.bus_data.bus_names = btg_data.bus_data.names
+        data.bus_data.bus_names = np.array(btg_data.bus_data.names)
 
         data.Admittances = FakeAdmittances()
         data.Admittances.Ybus = btg_data.admittances.Ybus
