@@ -7,7 +7,7 @@ This section describes the changes introduced at each Version.
 \* Short releases indicate the fix of a critical bug.
 
 
-Version 4.3.2
+Version 4.3.5
 ^^^^^^^^^^^^^^^
 
 - Fixed State Estimation error.
