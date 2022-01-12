@@ -1285,6 +1285,11 @@ class SnapshotData:
         :return: SnapshotData
         """
 
+        # if the island is the same as the original bus indices, no slicing is needed
+        if len(bus_idx) == len(self.original_bus_idx):
+            if np.all(bus_idx == self.original_bus_idx):
+                return self
+
         # find the indices of the devices of the island
         line_idx = self.line_data.get_island(bus_idx)
         dc_line_idx = self.dc_line_data.get_island(bus_idx)
@@ -1361,12 +1366,6 @@ class SnapshotData:
 
         # find the matching islands
         idx_islands = tp.find_islands(A, active=self.bus_data.bus_active[:, 0])
-
-        # if len(idx_islands) == 1:
-        #     # numeric_circuit.compute_all()  # compute the internal magnitudes
-        #     return [self]
-        #
-        # else:
 
         circuit_islands = list()  # type: List[SnapshotData]
 

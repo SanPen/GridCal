@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 
+import numpy as np
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
@@ -121,6 +122,10 @@ class SnapshotOpfData(SnapshotData):
         :param time_idx: array of time indices (or None for all time indices)
         :return: SnapshotData
         """
+        # if the island is the same as the original bus indices, no slicing is needed
+        if len(bus_idx) == len(self.original_bus_idx):
+            if np.all(bus_idx == self.original_bus_idx):
+                return self
 
         # find the indices of the devices of the island
         line_idx = self.line_data.get_island(bus_idx)
