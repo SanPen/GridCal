@@ -141,7 +141,7 @@ class Ui_mainWindow(object):
         self.actionLaunch_data_analysis_tool = QAction(mainWindow)
         self.actionLaunch_data_analysis_tool.setObjectName(u"actionLaunch_data_analysis_tool")
         icon21 = QIcon()
-        icon21.addFile(u":/Icons/icons/bars.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon21.addFile(u":/Icons/icons/inputs_analysis 2.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.actionLaunch_data_analysis_tool.setIcon(icon21)
         self.actionOnline_documentation = QAction(mainWindow)
         self.actionOnline_documentation.setObjectName(u"actionOnline_documentation")
@@ -302,7 +302,7 @@ class Ui_mainWindow(object):
         self.actionInputs_analysis = QAction(mainWindow)
         self.actionInputs_analysis.setObjectName(u"actionInputs_analysis")
         icon47 = QIcon()
-        icon47.addFile(u":/Icons/icons/inputs_analysis 2.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon47.addFile(u":/Icons/icons/stats.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.actionInputs_analysis.setIcon(icon47)
         self.actionATC_clustering = QAction(mainWindow)
         self.actionATC_clustering.setObjectName(u"actionATC_clustering")
@@ -633,25 +633,39 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_28.addWidget(self.copyObjectsTableButton)
 
+        self.setValueToColumnButton = QPushButton(self.frame_54)
+        self.setValueToColumnButton.setObjectName(u"setValueToColumnButton")
+        icon62 = QIcon()
+        icon62.addFile(u":/Icons/icons/copy2down.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.setValueToColumnButton.setIcon(icon62)
+
+        self.horizontalLayout_28.addWidget(self.setValueToColumnButton)
+
+        self.highlight_by_property_pushButton = QPushButton(self.frame_54)
+        self.highlight_by_property_pushButton.setObjectName(u"highlight_by_property_pushButton")
+        icon63 = QIcon()
+        icon63.addFile(u":/Icons/icons/highlight2.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.highlight_by_property_pushButton.setIcon(icon63)
+
+        self.horizontalLayout_28.addWidget(self.highlight_by_property_pushButton)
+
+        self.clear_highlight_pushButton = QPushButton(self.frame_54)
+        self.clear_highlight_pushButton.setObjectName(u"clear_highlight_pushButton")
+        icon64 = QIcon()
+        icon64.addFile(u":/Icons/icons/unhighlight.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.clear_highlight_pushButton.setIcon(icon64)
+
+        self.horizontalLayout_28.addWidget(self.clear_highlight_pushButton)
+
+        self.delete_and_reduce_pushButton = QPushButton(self.frame_54)
+        self.delete_and_reduce_pushButton.setObjectName(u"delete_and_reduce_pushButton")
+        self.delete_and_reduce_pushButton.setIcon(icon59)
+
+        self.horizontalLayout_28.addWidget(self.delete_and_reduce_pushButton)
+
         self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_28.addItem(self.horizontalSpacer_6)
-
-        self.processTemplatesPushButton = QPushButton(self.frame_54)
-        self.processTemplatesPushButton.setObjectName(u"processTemplatesPushButton")
-        icon62 = QIcon()
-        icon62.addFile(u":/Icons/icons/calculator.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.processTemplatesPushButton.setIcon(icon62)
-
-        self.horizontalLayout_28.addWidget(self.processTemplatesPushButton)
-
-        self.viewTemplatesButton = QPushButton(self.frame_54)
-        self.viewTemplatesButton.setObjectName(u"viewTemplatesButton")
-        icon63 = QIcon()
-        icon63.addFile(u":/Icons/icons/Catalogue.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.viewTemplatesButton.setIcon(icon63)
-
-        self.horizontalLayout_28.addWidget(self.viewTemplatesButton)
 
 
         self.verticalLayout_26.addWidget(self.frame_54)
@@ -670,9 +684,9 @@ class Ui_mainWindow(object):
         self.horizontalLayout_25.setContentsMargins(0, 0, 0, 0)
         self.add_object_pushButton = QPushButton(self.frame_9)
         self.add_object_pushButton.setObjectName(u"add_object_pushButton")
-        icon64 = QIcon()
-        icon64.addFile(u":/Icons/icons/plus.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.add_object_pushButton.setIcon(icon64)
+        icon65 = QIcon()
+        icon65.addFile(u":/Icons/icons/plus.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.add_object_pushButton.setIcon(icon65)
 
         self.horizontalLayout_25.addWidget(self.add_object_pushButton)
 
@@ -682,39 +696,25 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_25.addWidget(self.delete_selected_objects_pushButton)
 
-        self.delete_and_reduce_pushButton = QPushButton(self.frame_9)
-        self.delete_and_reduce_pushButton.setObjectName(u"delete_and_reduce_pushButton")
-        self.delete_and_reduce_pushButton.setIcon(icon59)
-
-        self.horizontalLayout_25.addWidget(self.delete_and_reduce_pushButton)
-
-        self.highlight_by_property_pushButton = QPushButton(self.frame_9)
-        self.highlight_by_property_pushButton.setObjectName(u"highlight_by_property_pushButton")
-        icon65 = QIcon()
-        icon65.addFile(u":/Icons/icons/highlight2.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.highlight_by_property_pushButton.setIcon(icon65)
-
-        self.horizontalLayout_25.addWidget(self.highlight_by_property_pushButton)
-
-        self.clear_highlight_pushButton = QPushButton(self.frame_9)
-        self.clear_highlight_pushButton.setObjectName(u"clear_highlight_pushButton")
-        icon66 = QIcon()
-        icon66.addFile(u":/Icons/icons/unhighlight.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.clear_highlight_pushButton.setIcon(icon66)
-
-        self.horizontalLayout_25.addWidget(self.clear_highlight_pushButton)
-
-        self.setValueToColumnButton = QPushButton(self.frame_9)
-        self.setValueToColumnButton.setObjectName(u"setValueToColumnButton")
-        icon67 = QIcon()
-        icon67.addFile(u":/Icons/icons/copy2down.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.setValueToColumnButton.setIcon(icon67)
-
-        self.horizontalLayout_25.addWidget(self.setValueToColumnButton)
-
         self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_25.addItem(self.horizontalSpacer_9)
+
+        self.processTemplatesPushButton = QPushButton(self.frame_9)
+        self.processTemplatesPushButton.setObjectName(u"processTemplatesPushButton")
+        icon66 = QIcon()
+        icon66.addFile(u":/Icons/icons/calculator.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.processTemplatesPushButton.setIcon(icon66)
+
+        self.horizontalLayout_25.addWidget(self.processTemplatesPushButton)
+
+        self.viewTemplatesButton = QPushButton(self.frame_9)
+        self.viewTemplatesButton.setObjectName(u"viewTemplatesButton")
+        icon67 = QIcon()
+        icon67.addFile(u":/Icons/icons/Catalogue.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.viewTemplatesButton.setIcon(icon67)
+
+        self.horizontalLayout_25.addWidget(self.viewTemplatesButton)
 
 
         self.verticalLayout_26.addWidget(self.frame_9)
@@ -823,7 +823,7 @@ class Ui_mainWindow(object):
 
         self.catalogue_add_pushButton = QPushButton(self.frame_35)
         self.catalogue_add_pushButton.setObjectName(u"catalogue_add_pushButton")
-        self.catalogue_add_pushButton.setIcon(icon64)
+        self.catalogue_add_pushButton.setIcon(icon65)
 
         self.gridLayout_18.addWidget(self.catalogue_add_pushButton, 0, 2, 1, 1)
 
@@ -852,7 +852,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_32.addWidget(self.catalogueSplitter)
 
-        self.tabWidget_3.addTab(self.catalogueTab, icon63, "")
+        self.tabWidget_3.addTab(self.catalogueTab, icon67, "")
         self.timeEventsTab = QWidget()
         self.timeEventsTab.setObjectName(u"timeEventsTab")
         self.verticalLayout_14 = QVBoxLayout(self.timeEventsTab)
@@ -985,7 +985,7 @@ class Ui_mainWindow(object):
         self.horizontalLayout_4.setContentsMargins(1, 2, 1, 2)
         self.profile_add_pushButton = QPushButton(self.frame_12)
         self.profile_add_pushButton.setObjectName(u"profile_add_pushButton")
-        self.profile_add_pushButton.setIcon(icon64)
+        self.profile_add_pushButton.setIcon(icon65)
 
         self.horizontalLayout_4.addWidget(self.profile_add_pushButton)
 
@@ -1092,7 +1092,7 @@ class Ui_mainWindow(object):
         self.compute_simulation_data_pushButton = QPushButton(self.frame_28)
         self.compute_simulation_data_pushButton.setObjectName(u"compute_simulation_data_pushButton")
         self.compute_simulation_data_pushButton.setMaximumSize(QSize(32, 16777215))
-        self.compute_simulation_data_pushButton.setIcon(icon62)
+        self.compute_simulation_data_pushButton.setIcon(icon66)
 
         self.gridLayout_19.addWidget(self.compute_simulation_data_pushButton, 1, 0, 1, 1)
 
@@ -3445,6 +3445,8 @@ class Ui_mainWindow(object):
         self.menuSet_selected_buses.setObjectName(u"menuSet_selected_buses")
         self.menuSimulations = QMenu(self.menuBar)
         self.menuSimulations.setObjectName(u"menuSimulations")
+        self.menuModel = QMenu(self.menuBar)
+        self.menuModel.setObjectName(u"menuModel")
         mainWindow.setMenuBar(self.menuBar)
         self.toolBar = QToolBar(mainWindow)
         self.toolBar.setObjectName(u"toolBar")
@@ -3459,6 +3461,7 @@ class Ui_mainWindow(object):
 
         self.menuBar.addAction(self.menuProject.menuAction())
         self.menuBar.addAction(self.menuActions.menuAction())
+        self.menuBar.addAction(self.menuModel.menuAction())
         self.menuBar.addAction(self.menuSimulations.menuAction())
         self.menuBar.addAction(self.menuAbout.menuAction())
         self.menuProject.addAction(self.actionNew_project)
@@ -3480,20 +3483,12 @@ class Ui_mainWindow(object):
         self.menuActions.addAction(self.actionSmaller_nodes)
         self.menuActions.addAction(self.actionCenter_view)
         self.menuActions.addAction(self.actionAutoatic_layout)
-        self.menuActions.addAction(self.actionDetect_transformers)
-        self.menuActions.addAction(self.actionAuto_rate_branches)
         self.menuActions.addAction(self.actionStorage_location_suggestion)
         self.menuActions.addAction(self.actionApply_new_rates)
         self.menuActions.addAction(self.actionGrid_Reduction)
-        self.menuActions.addAction(self.actionTry_to_fix_buses_location)
         self.menuActions.addAction(self.actionFind_node_groups)
         self.menuActions.addAction(self.actionDrawSchematic)
-        self.menuActions.addAction(self.actionSet_schematic_positions_from_GPS_coordinates)
-        self.menuActions.addAction(self.actionFuse_devices)
-        self.menuActions.addAction(self.actionCorrect_inconsistences)
-        self.menuActions.addAction(self.actionDelete_inconsistences)
         self.menuActions.addSeparator()
-        self.menuActions.addAction(self.actionLaunch_data_analysis_tool)
         self.menuActions.addAction(self.actionAdd_default_catalogue)
         self.menuActions.addAction(self.actionClear_stuff_running_right_now)
         self.menuActions.addAction(self.actionReset_console)
@@ -3529,6 +3524,14 @@ class Ui_mainWindow(object):
         self.menuSimulations.addAction(self.actionATC)
         self.menuSimulations.addAction(self.actionATC_Time_Series)
         self.menuSimulations.addAction(self.actionATC_clustering)
+        self.menuModel.addAction(self.actionAuto_rate_branches)
+        self.menuModel.addAction(self.actionDetect_transformers)
+        self.menuModel.addAction(self.actionTry_to_fix_buses_location)
+        self.menuModel.addAction(self.actionSet_schematic_positions_from_GPS_coordinates)
+        self.menuModel.addAction(self.actionFuse_devices)
+        self.menuModel.addAction(self.actionCorrect_inconsistences)
+        self.menuModel.addAction(self.actionDelete_inconsistences)
+        self.menuModel.addAction(self.actionLaunch_data_analysis_tool)
         self.toolBar.addAction(self.actionNew_project)
         self.toolBar.addAction(self.actionOpen_file)
         self.toolBar.addAction(self.actionSave)
@@ -3539,6 +3542,7 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionShort_Circuit)
         self.toolBar.addAction(self.actionVoltage_stability)
         self.toolBar.addAction(self.actionSigma_analysis)
+        self.toolBar.addAction(self.actionInputs_analysis)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionOPF)
         self.toolBar.addAction(self.actionOPF_time_series)
@@ -3563,7 +3567,6 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionDelete_selected)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionStorage_location_suggestion)
-        self.toolBar.addAction(self.actionInputs_analysis)
         self.toolBar.addAction(self.actionLaunch_data_analysis_tool)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionShow_color_controls)
@@ -3865,25 +3868,9 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.copyObjectsTableButton.setText("")
 #if QT_CONFIG(tooltip)
-        self.processTemplatesPushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Process templates", None))
+        self.setValueToColumnButton.setToolTip(QCoreApplication.translate("mainWindow", u"Set value to column", None))
 #endif // QT_CONFIG(tooltip)
-        self.processTemplatesPushButton.setText("")
-#if QT_CONFIG(tooltip)
-        self.viewTemplatesButton.setToolTip(QCoreApplication.translate("mainWindow", u"View templates catalogue", None))
-#endif // QT_CONFIG(tooltip)
-        self.viewTemplatesButton.setText("")
-#if QT_CONFIG(tooltip)
-        self.add_object_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Add new object", None))
-#endif // QT_CONFIG(tooltip)
-        self.add_object_pushButton.setText("")
-#if QT_CONFIG(tooltip)
-        self.delete_selected_objects_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Delete selection", None))
-#endif // QT_CONFIG(tooltip)
-        self.delete_selected_objects_pushButton.setText("")
-#if QT_CONFIG(tooltip)
-        self.delete_and_reduce_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Delete and reduce.</p><p>Applicable to buses, it removes a bus and places its objects (loads, generators, etc.) into the next feasible bus of higher voltage.</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.delete_and_reduce_pushButton.setText("")
+        self.setValueToColumnButton.setText("")
 #if QT_CONFIG(tooltip)
         self.highlight_by_property_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Highlight the schematic buses based on the values of the selected property", None))
 #endif // QT_CONFIG(tooltip)
@@ -3893,9 +3880,25 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.clear_highlight_pushButton.setText("")
 #if QT_CONFIG(tooltip)
-        self.setValueToColumnButton.setToolTip(QCoreApplication.translate("mainWindow", u"Set value to column", None))
+        self.delete_and_reduce_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Delete and reduce.</p><p>Applicable to buses, it removes a bus and places its objects (loads, generators, etc.) into the next feasible bus of higher voltage.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.setValueToColumnButton.setText("")
+        self.delete_and_reduce_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.add_object_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Add new object", None))
+#endif // QT_CONFIG(tooltip)
+        self.add_object_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.delete_selected_objects_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Delete selection", None))
+#endif // QT_CONFIG(tooltip)
+        self.delete_selected_objects_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.processTemplatesPushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Process templates", None))
+#endif // QT_CONFIG(tooltip)
+        self.processTemplatesPushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.viewTemplatesButton.setToolTip(QCoreApplication.translate("mainWindow", u"View templates catalogue", None))
+#endif // QT_CONFIG(tooltip)
+        self.viewTemplatesButton.setText("")
         self.label_53.setText(QCoreApplication.translate("mainWindow", u"Templates", None))
 #if QT_CONFIG(tooltip)
         self.assignTemplateButton.setToolTip(QCoreApplication.translate("mainWindow", u"Assign template to selected element", None))
@@ -4370,6 +4373,7 @@ class Ui_mainWindow(object):
         self.menuActions.setTitle(QCoreApplication.translate("mainWindow", u"Actions", None))
         self.menuSet_selected_buses.setTitle(QCoreApplication.translate("mainWindow", u"Set selected buses", None))
         self.menuSimulations.setTitle(QCoreApplication.translate("mainWindow", u"Simulations", None))
+        self.menuModel.setTitle(QCoreApplication.translate("mainWindow", u"Model", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("mainWindow", u"toolBar", None))
     # retranslateUi
 

@@ -539,7 +539,7 @@
                      </property>
                      <property name="icon">
                       <iconset resource="icons.qrc">
-                       <normaloff>:/Icons/icons/bars.svg</normaloff>:/Icons/icons/bars.svg</iconset>
+                       <normaloff>:/Icons/icons/inputs_analysis 2.svg</normaloff>:/Icons/icons/inputs_analysis 2.svg</iconset>
                      </property>
                     </widget>
                    </item>
@@ -701,6 +701,62 @@ p, li { white-space: pre-wrap; }
                      </widget>
                     </item>
                     <item>
+                     <widget class="QPushButton" name="setValueToColumnButton">
+                      <property name="toolTip">
+                       <string>Set value to column</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/copy2down.svg</normaloff>:/Icons/icons/copy2down.svg</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="highlight_by_property_pushButton">
+                      <property name="toolTip">
+                       <string>Highlight the schematic buses based on the values of the selected property</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/highlight2.svg</normaloff>:/Icons/icons/highlight2.svg</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="clear_highlight_pushButton">
+                      <property name="toolTip">
+                       <string>Clear the bus highlight</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/unhighlight.svg</normaloff>:/Icons/icons/unhighlight.svg</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="delete_and_reduce_pushButton">
+                      <property name="toolTip">
+                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delete and reduce.&lt;/p&gt;&lt;p&gt;Applicable to buses, it removes a bus and places its objects (loads, generators, etc.) into the next feasible bus of higher voltage.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
                      <spacer name="horizontalSpacer_6">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
@@ -712,34 +768,6 @@ p, li { white-space: pre-wrap; }
                        </size>
                       </property>
                      </spacer>
-                    </item>
-                    <item>
-                     <widget class="QPushButton" name="processTemplatesPushButton">
-                      <property name="toolTip">
-                       <string>Process templates</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="icon">
-                       <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/calculator.svg</normaloff>:/Icons/icons/calculator.svg</iconset>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QPushButton" name="viewTemplatesButton">
-                      <property name="toolTip">
-                       <string>View templates catalogue</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="icon">
-                       <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/Catalogue.svg</normaloff>:/Icons/icons/Catalogue.svg</iconset>
-                      </property>
-                     </widget>
                     </item>
                    </layout>
                   </widget>
@@ -797,62 +825,6 @@ p, li { white-space: pre-wrap; }
                      </widget>
                     </item>
                     <item>
-                     <widget class="QPushButton" name="delete_and_reduce_pushButton">
-                      <property name="toolTip">
-                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delete and reduce.&lt;/p&gt;&lt;p&gt;Applicable to buses, it removes a bus and places its objects (loads, generators, etc.) into the next feasible bus of higher voltage.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="icon">
-                       <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QPushButton" name="highlight_by_property_pushButton">
-                      <property name="toolTip">
-                       <string>Highlight the schematic buses based on the values of the selected property</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="icon">
-                       <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/highlight2.svg</normaloff>:/Icons/icons/highlight2.svg</iconset>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QPushButton" name="clear_highlight_pushButton">
-                      <property name="toolTip">
-                       <string>Clear the bus highlight</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="icon">
-                       <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/unhighlight.svg</normaloff>:/Icons/icons/unhighlight.svg</iconset>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QPushButton" name="setValueToColumnButton">
-                      <property name="toolTip">
-                       <string>Set value to column</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="icon">
-                       <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/copy2down.svg</normaloff>:/Icons/icons/copy2down.svg</iconset>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
                      <spacer name="horizontalSpacer_9">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
@@ -864,6 +836,34 @@ p, li { white-space: pre-wrap; }
                        </size>
                       </property>
                      </spacer>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="processTemplatesPushButton">
+                      <property name="toolTip">
+                       <string>Process templates</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/calculator.svg</normaloff>:/Icons/icons/calculator.svg</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="viewTemplatesButton">
+                      <property name="toolTip">
+                       <string>View templates catalogue</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/Catalogue.svg</normaloff>:/Icons/icons/Catalogue.svg</iconset>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </widget>
@@ -7197,20 +7197,12 @@ QProgressBar::chunk{
     <addaction name="actionSmaller_nodes"/>
     <addaction name="actionCenter_view"/>
     <addaction name="actionAutoatic_layout"/>
-    <addaction name="actionDetect_transformers"/>
-    <addaction name="actionAuto_rate_branches"/>
     <addaction name="actionStorage_location_suggestion"/>
     <addaction name="actionApply_new_rates"/>
     <addaction name="actionGrid_Reduction"/>
-    <addaction name="actionTry_to_fix_buses_location"/>
     <addaction name="actionFind_node_groups"/>
     <addaction name="actionDrawSchematic"/>
-    <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
-    <addaction name="actionFuse_devices"/>
-    <addaction name="actionCorrect_inconsistences"/>
-    <addaction name="actionDelete_inconsistences"/>
     <addaction name="separator"/>
-    <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="actionAdd_default_catalogue"/>
     <addaction name="actionClear_stuff_running_right_now"/>
     <addaction name="actionReset_console"/>
@@ -7249,8 +7241,22 @@ QProgressBar::chunk{
     <addaction name="actionATC_Time_Series"/>
     <addaction name="actionATC_clustering"/>
    </widget>
+   <widget class="QMenu" name="menuModel">
+    <property name="title">
+     <string>Model</string>
+    </property>
+    <addaction name="actionAuto_rate_branches"/>
+    <addaction name="actionDetect_transformers"/>
+    <addaction name="actionTry_to_fix_buses_location"/>
+    <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
+    <addaction name="actionFuse_devices"/>
+    <addaction name="actionCorrect_inconsistences"/>
+    <addaction name="actionDelete_inconsistences"/>
+    <addaction name="actionLaunch_data_analysis_tool"/>
+   </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
+   <addaction name="menuModel"/>
    <addaction name="menuSimulations"/>
    <addaction name="menuAbout"/>
   </widget>
@@ -7294,6 +7300,7 @@ QProgressBar::chunk{
    <addaction name="actionShort_Circuit"/>
    <addaction name="actionVoltage_stability"/>
    <addaction name="actionSigma_analysis"/>
+   <addaction name="actionInputs_analysis"/>
    <addaction name="separator"/>
    <addaction name="actionOPF"/>
    <addaction name="actionOPF_time_series"/>
@@ -7318,7 +7325,6 @@ QProgressBar::chunk{
    <addaction name="actionDelete_selected"/>
    <addaction name="separator"/>
    <addaction name="actionStorage_location_suggestion"/>
-   <addaction name="actionInputs_analysis"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
    <addaction name="separator"/>
    <addaction name="actionShow_color_controls"/>
@@ -7605,7 +7611,7 @@ QProgressBar::chunk{
   <action name="actionLaunch_data_analysis_tool">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/bars.svg</normaloff>:/Icons/icons/bars.svg</iconset>
+     <normaloff>:/Icons/icons/inputs_analysis 2.svg</normaloff>:/Icons/icons/inputs_analysis 2.svg</iconset>
    </property>
    <property name="text">
     <string>Launch data analysis tool</string>
@@ -7995,7 +8001,7 @@ QProgressBar::chunk{
   <action name="actionInputs_analysis">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/inputs_analysis 2.svg</normaloff>:/Icons/icons/inputs_analysis 2.svg</iconset>
+     <normaloff>:/Icons/icons/stats.svg</normaloff>:/Icons/icons/stats.svg</iconset>
    </property>
    <property name="text">
     <string>Inputs analysis</string>
