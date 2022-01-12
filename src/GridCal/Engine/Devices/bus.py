@@ -839,14 +839,14 @@ class Bus(EditableDevice):
 
             for i in range(1, len(elm_list)):  # for each of the other generators
                 elm2 = elm_list[i]
-                act2 = elm1.active
-                act2_prof = elm1.active_prof
+                act2 = elm2.active
+                act2_prof = elm2.active_prof
 
                 # modify the final status
-                act_final *= act2
+                act_final += act2  # equivalent to OR
 
                 if act_prof_final is not None:
-                    act_prof_final *= act2_prof
+                    act_prof_final += act2_prof
 
                 for prop in property_names:  # sum the properties
                     if 'prof' not in prop:

@@ -880,11 +880,10 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
             _t = T[m]
 
             # declare the flow variable with ample limits
-            # flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
-            if monitor[m]:
-                flow_f[m] = solver.NumVar(-rates[m], rates[m], 'pftk_{0}_{1}'.format(m, branch_names[m]))
-            else:
-                flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
+            # if monitor[m]:
+            #     flow_f[m] = solver.NumVar(-rates[m], rates[m], 'pftk_{0}_{1}'.format(m, branch_names[m]))
+            # else:
+            #     flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
 
             # compute the branch susceptance
             if branch_dc[m]:
@@ -915,16 +914,22 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
 
             if monitor[m]:
 
+                # flow_f[m] = solver.NumVar(-rates[m], rates[m], 'pftk_{0}_{1}'.format(m, branch_names[m]))
+                flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
+
                 if rates[m] <= 0:
                     logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
 
                 # rating restriction in the sense from-to: eq.17
-                # overload1[m] = solver.NumVar(0, inf, 'overload1_{0}_{1}'.format(m, branch_names[m]))
-                # solver.Add(flow_f[m] <= (rates[m] + overload1[m]), "ft_rating_{0}_{1}".format(m, branch_names[m]))
+                overload1[m] = solver.NumVar(0, inf, 'overload1_{0}_{1}'.format(m, branch_names[m]))
+                solver.Add(flow_f[m] <= (rates[m] + overload1[m]), "ft_rating_{0}_{1}".format(m, branch_names[m]))
 
                 # rating restriction in the sense to-from: eq.18
-                # overload2[m] = solver.NumVar(0, inf, 'overload2_{0}_{1}'.format(m, branch_names[m]))
-                # solver.Add((-rates[m] - overload2[m]) <= flow_f[m], "tf_rating_{0}_{1}".format(m, branch_names[m]))
+                overload2[m] = solver.NumVar(0, inf, 'overload2_{0}_{1}'.format(m, branch_names[m]))
+                solver.Add((-rates[m] - overload2[m]) <= flow_f[m], "tf_rating_{0}_{1}".format(m, branch_names[m]))
+
+            else:
+                flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
 
     return flow_f, overload1, overload2, tau, monitor
 
@@ -1084,22 +1089,22 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
                 # flow_n1 = flow_f[m] + LODF[m, c] * flow_f[c]
                 flow_n1 = flow_f[m] + lodf * flow_f[c]
 
-                flow_n1 = solver.NumVar(-rates[m], rates[m], 'n-1_flow__' + suffix)
-                solver.Add(flow_n1 == flow_f[m] + lodf * flow_f[c], "n-1_flow_assigment_" + suffix)
+                # flow_n1 = solver.NumVar(-rates[m], rates[m], 'n-1_flow__' + suffix)
+                # solver.Add(flow_n1 == flow_f[m] + lodf * flow_f[c], "n-1_flow_assigment_" + suffix)
 
                 # rating restriction in the sense from-to
-                # overload1 = solver.NumVar(0, inf, 'n-1_overload1__' + suffix)
-                # solver.Add(flow_n1 <= (rates[m] + overload1), "n-1_overload_ft_rating_" + suffix)
+                overload1 = solver.NumVar(0, inf, 'n-1_overload1__' + suffix)
+                solver.Add(flow_n1 <= (rates[m] + overload1), "n-1_overload_ft_rating_" + suffix)
 
                 # rating restriction in the sense to-from
-                # overload2 = solver.NumVar(0, inf, 'n-1_overload2_' + suffix)
-                # solver.Add((-rates[m] - overload2) <= flow_n1, "n-1_overload_tf_rating_" + suffix)
+                overload2 = solver.NumVar(0, inf, 'n-1_overload2_' + suffix)
+                solver.Add((-rates[m] - overload2) <= flow_n1, "n-1_overload_tf_rating_" + suffix)
 
                 # store vars
                 con_idx.append((m, c))
                 flow_n1f.append(flow_n1)
-                # overloads1.append(overload1)
-                # overloads2.append(overload2)
+                overloads1.append(overload1)
+                overloads2.append(overload2)
 
     return flow_n1f, overloads1, overloads2, con_idx
 
@@ -1396,10 +1401,10 @@ def formulate_objective(solver: pywraplp.Solver,
 
     f += weight_generation_cost * gen_cost_f
     # f += weight_generation_delta * delta_slacks
-    # f += weight_overloads * branch_overload
-    # f += weight_overloads * contingency_branch_overload
-    f += weight_overloads * hvdc_overload
-    f += weight_hvdc_control * hvdc_control
+    f += weight_overloads * branch_overload
+    f += weight_overloads * contingency_branch_overload
+    # f += weight_overloads * hvdc_overload
+    # f += weight_hvdc_control * hvdc_control
     f += weight_generation_delta * load_shedding_sum
 
     # objective function
