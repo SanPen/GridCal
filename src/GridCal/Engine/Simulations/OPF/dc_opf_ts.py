@@ -311,17 +311,24 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
                            op='=')
 
 
-def formulate_hvdc_flow(problem: LpProblem, angles, Pinj, rates, active, Pt, control_mode, dispatchable, r, F, T,
+def formulate_hvdc_flow(problem: LpProblem, angles, Pinj, rates, active, Pt, control_mode, dispatchable, angle_droop, F, T,
                         logger: Logger = Logger(), inf=999999):
     """
 
     :param problem:
-    :param nc:
     :param angles:
     :param Pinj:
-    :param t:
+    :param rates:
+    :param active:
+    :param Pt:
+    :param control_mode:
+    :param dispatchable:
+    :param angle_droop:
+    :param F:
+    :param T:
     :param logger:
     :param inf:
+    :param Sbase:
     :return:
     """
     nhvdc, nt = rates.shape
@@ -349,8 +356,7 @@ def formulate_hvdc_flow(problem: LpProblem, angles, Pinj, rates, active, Pt, con
                     logger.add_error('Rate = 0', 'HVDC:{0} t:{1}'.format(i, t), rates[i, t])
 
                 # formulate the hvdc flow as an AC line equivalent
-                bk = 1.0 / r[i]  # TODO: yes, I know... DC...
-                flow_f[i, t] = P0 + bk * (angles[_f, t] - angles[_t, t]) + hvdc_control1[i, t] - hvdc_control2[i, t]
+                flow_f[i, t] = P0 + angle_droop[i, t] * (angles[_f, t] - angles[_t, t]) + hvdc_control1[i, t] - hvdc_control2[i, t]
 
                 # add the injections matching the flow
                 Pinj[_f, t] -= flow_f[i, t]
@@ -509,7 +515,7 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                                                          Pt=self.numerical_circuit.hvdc_data.Pt[:, a:b],
                                                                          control_mode=self.numerical_circuit.hvdc_data.control_mode,
                                                                          dispatchable=self.numerical_circuit.hvdc_data.dispatchable,
-                                                                         r=self.numerical_circuit.hvdc_data.r,
+                                                                         angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase),
                                                                          F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
                                                                          T=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
                                                                          logger=self.logger,

@@ -1219,9 +1219,8 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names,
                 flow_f[i] = solver.NumVar(-rates[i], rates[i], 'hvdc_flow_' + suffix)
 
                 # formulate the hvdc flow as an AC line equivalent
-                angle_droop2 = angle_droop[i] * 57.295779513 / Sbase  # to pass from MW/deg to p.u./rad -> * 180 / pi / (sbase=100)
                 solver.Add(
-                    flow_f[i] == P0 + angle_droop2 * (angles[_f] - angles[_t]) + hvdc_control1[i] - hvdc_control2[i],
+                    flow_f[i] == P0 + angle_droop[i] * (angles[_f] - angles[_t]) + hvdc_control1[i] - hvdc_control2[i],
                     'hvdc_power_flow_' + suffix
                 )
 
@@ -1713,7 +1712,7 @@ class OpfNTC(Opf):
                                                            angles=theta,
                                                            active=self.numerical_circuit.hvdc_data.active,
                                                            Pt=self.numerical_circuit.hvdc_data.Pt,
-                                                           angle_droop=self.numerical_circuit.hvdc_data.angle_droop[:, t],
+                                                           angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase)[:, t],
                                                            control_mode=self.numerical_circuit.hvdc_data.control_mode,
                                                            dispatchable=self.numerical_circuit.hvdc_data.dispatchable,
                                                            F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
@@ -1940,7 +1939,7 @@ class OpfNTC(Opf):
             angles=self.extract(self.theta),
             active=self.numerical_circuit.hvdc_data.active,
             Pt=self.numerical_circuit.hvdc_data.Pt,
-            angle_droop=self.numerical_circuit.hvdc_data.angle_droop[:, t],
+            angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase)[:, t],
             control_mode=self.numerical_circuit.hvdc_data.control_mode,
             dispatchable=self.numerical_circuit.hvdc_data.dispatchable,
             F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
