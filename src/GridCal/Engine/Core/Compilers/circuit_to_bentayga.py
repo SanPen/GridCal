@@ -4,6 +4,10 @@ from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Devices.enumerations import ConverterControlType, TransformerControlType
 from GridCal.Engine.Devices import *
+from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerControlMode, TapsControlMode
+from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+#
+
 
 try:
     import bentayga as btg
@@ -401,6 +405,10 @@ def get_hvdc_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, ti
                             Pset=elm.Pset,
                             v_set_f=elm.Vset_f,
                             v_set_t=elm.Vset_t,
+                            min_firing_angle_f=elm.min_firing_angle_f,
+                            min_firing_angle_t=elm.min_firing_angle_t,
+                            max_firing_angle_f=elm.max_firing_angle_f,
+                            max_firing_angle_t=elm.max_firing_angle_t,
                             control_mode=cmode_dict[elm.control_mode])
 
         # hvdc.monitor_loading = elm.monitor_loading
@@ -443,15 +451,141 @@ def to_bentayga(circuit: MultiCircuit, time_series: bool):
     return btgCircuit
 
 
-def bentayga_pf(circuit: MultiCircuit, gridcal_pf_options, time_series=False):
+class FakeAdmittances:
 
+    def __init__(self):
+        self.Ybus = None
+        self.Yf = None
+        self.Yt = None
+
+def get_snapshots_from_bentayga(circuit: MultiCircuit):
+
+    from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
+
+    btgCircuit = to_bentayga(circuit, time_series=False)
+
+    btg_data_lst = btg.compile_at(btgCircuit, t=0)
+
+    data_lst = list()
+
+    for btg_data in btg_data_lst:
+
+        data = SnapshotData(nbus=0,
+                            nline=0,
+                            ndcline=0,
+                            ntr=0,
+                            nvsc=0,
+                            nupfc=0,
+                            nhvdc=0,
+                            nload=0,
+                            ngen=0,
+                            nbatt=0,
+                            nshunt=0,
+                            nstagen=0,
+                            sbase=0,
+                            ntime=1)
+
+        data.Vbus_ = btg_data.Vbus.reshape(-1, 1)
+        data.Sbus_ = btg_data.Sbus.reshape(-1, 1)
+        data.Ibus_ = btg_data.Ibus
+        data.branch_data.branch_names = btg_data.branch_data.names
+        data.branch_data.tap_f = btg_data.branch_data.virtual_tap_f
+        data.branch_data.tap_t = btg_data.branch_data.virtual_tap_t
+
+        data.bus_data.bus_names = btg_data.bus_data.names
+
+        data.Admittances = FakeAdmittances()
+        data.Admittances.Ybus = btg_data.admittances.Ybus
+        data.Admittances.Yf = btg_data.admittances.Yf
+        data.Admittances.Yt = btg_data.admittances.Yt
+
+        data.Bbus_ = btg_data.linear_admittances.Bbus
+        data.Bf_ = btg_data.linear_admittances.Bf
+
+        data.Yseries_ = btg_data.split_admittances.Yseries
+        data.Yshunt_ = btg_data.split_admittances.Yshunt
+
+        data.B1_ = btg_data.fast_decoupled_admittances.B1
+        data.B2_ = btg_data.fast_decoupled_admittances.B2
+
+        data.Cf_ = btg_data.Cf
+        data.Ct_ = btg_data.Ct
+
+        data.bus_data.bus_types = [x.value for x in btg_data.bus_data.bus_types]
+        data.pq_ = btg_data.bus_types_data.pq
+        data.pv_ = btg_data.bus_types_data.pv
+        data.vd_ = btg_data.bus_types_data.vd
+        data.pqpv_ = btg_data.bus_types_data.pqpv
+
+        data.original_bus_idx = btg_data.bus_data.original_indices
+        data.original_branch_idx = btg_data.branch_data.original_indices
+
+        data.Qmax_bus_ = btg_data.Qmax_bus
+        data.Qmin_bus_ = btg_data.Qmin_bus
+
+        data.iPfsh = btg_data.control_indices.iPfsh
+        data.iQfma = btg_data.control_indices.iQfma
+        data.iBeqz = btg_data.control_indices.iBeqz
+        data.iBeqv = btg_data.control_indices.iBeqv
+        data.iVtma = btg_data.control_indices.iVtma
+        data.iQtma = btg_data.control_indices.iQtma
+        data.iPfdp = btg_data.control_indices.iPfdp
+        # data.iPfdp_va = btg_data.control_indices.iPfdp_va
+        data.iVscL = btg_data.control_indices.iVscL
+        data.VfBeqbus = btg_data.control_indices.iVfBeqBus
+        data.Vtmabus = btg_data.control_indices.iVtmaBus
+
+        data_lst.append(data)
+
+    return data_lst
+
+
+def get_bentayga_pf_options(opt: PowerFlowOptions):
+    """
+    Translate GridCal power flow options to Bentayga power flow options
+    :param opt:
+    :return:
+    """
+    solver_dict = {SolverType.NR: btg.PowerFlowSolvers.NewtonRaphson,
+                   SolverType.DC: btg.PowerFlowSolvers.LinearDc,
+                   # SolverType.HELM: nn.NativeSolverType.HELM,
+                   # SolverType.IWAMOTO: nn.NativeSolverType.IWAMOTO,
+                   SolverType.LM: btg.PowerFlowSolvers.LevenbergMarquardt,
+                   # SolverType.LACPF: nn.NativeSolverType.LACPF,
+                   # SolverType.FASTDECOUPLED: nn.NativeSolverType.FD
+                   }
+
+    q_control_dict = {ReactivePowerControlMode.NoControl: btg.QControlMode.NoControl,
+                      ReactivePowerControlMode.Direct: btg.QControlMode.Direct}
+
+    if opt.solver_type in solver_dict.keys():
+        solver_type = solver_dict[opt.solver_type]
+    else:
+        solver_type = btg.PowerFlowSolvers.NewtonRaphson
+
+    return btg.PowerFlowOptions(solver=solver_type,
+                                tolerance=opt.tolerance,
+                                max_iter=opt.max_iter,
+                                retry_with_other_methods=opt.retry_with_other_methods,
+                                q_control_mode=q_control_dict[opt.control_Q])
+
+
+def bentayga_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False):
+    """
+    Bentayga power flow
+    :param circuit: MultiCircuit instance
+    :param opt: Power Flow Options
+    :param time_series: Compile with GridCal time series?
+    :return: Bentayga Power flow results object
+    """
     btgCircuit = to_bentayga(circuit, time_series=time_series)
 
-    pf_options = btg.PowerFlowOptions(btg.PowerFlowSolvers.NewtonRaphson,
-                                      tolerance=gridcal_pf_options.tolerance,
-                                      max_iter=gridcal_pf_options.max_iter)
+    pf_options = get_bentayga_pf_options(opt)
     logger = btg.Logger()
-    pf_res = btg.run_power_flow(circuit=btgCircuit, options=pf_options, logger=logger, parallel=True)
+    pf_res = btg.run_power_flow(circuit=btgCircuit,
+                                options=pf_options,
+                                logger=logger,
+                                parallel=True)
 
     return pf_res
 

@@ -42,44 +42,40 @@
      inkscape:window-height="1057"
      id="namedview4"
      showgrid="false"
-     inkscape:zoom="0.86915211"
-     inkscape:cx="-211.1253"
-     inkscape:cy="20.134565"
+     inkscape:zoom="1.7383042"
+     inkscape:cx="-63.567699"
+     inkscape:cy="86.578631"
      inkscape:window-x="54"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg2"
      inkscape:pagecheckerboard="0" />
-  <rect
-     style="fill:none;stroke:#00aad4;stroke-width:3.8;stroke-linecap:round;stroke-linejoin:round"
-     id="rect1068"
-     width="141.2296"
-     height="141.80487"
-     x="26.462572"
-     y="39.693859"
-     ry="5.79702" />
-  <rect
-     style="fill:#002255;stroke:#002255;stroke-width:3.8;stroke-linecap:round;stroke-linejoin:round"
-     id="rect844"
-     width="16"
-     height="56"
-     x="57.150547"
-     y="94.620117"
-     ry="5.79702" />
-  <rect
-     style="fill:#0088aa;stroke:#0088aa;stroke-width:3.8;stroke-linecap:round;stroke-linejoin:round"
-     id="rect846"
-     width="16"
-     height="80"
-     x="89.150543"
-     y="70.620117"
-     ry="5.79702" />
-  <rect
-     style="fill:#00aa88;stroke:#00aa88;stroke-width:3.8;stroke-linecap:round;stroke-linejoin:round"
-     id="rect848"
-     width="16"
-     height="32"
-     x="121.15054"
-     y="118.62012"
-     ry="5.79702" />
+  <g
+     id="g828"
+     transform="matrix(1.377566,0,0,1.377566,-36.393109,-35.973294)">
+    <rect
+       style="fill:#002255;stroke:#002255;stroke-width:3.8;stroke-linecap:round;stroke-linejoin:round"
+       id="rect844"
+       width="16"
+       height="56"
+       x="57.150547"
+       y="94.620117"
+       ry="5.79702" />
+    <rect
+       style="fill:#0088aa;stroke:#0088aa;stroke-width:3.8;stroke-linecap:round;stroke-linejoin:round"
+       id="rect846"
+       width="16"
+       height="80"
+       x="89.150543"
+       y="70.620117"
+       ry="5.79702" />
+    <rect
+       style="fill:#00aa88;stroke:#00aa88;stroke-width:3.8;stroke-linecap:round;stroke-linejoin:round"
+       id="rect848"
+       width="16"
+       height="32"
+       x="121.15054"
+       y="118.62012"
+       ry="5.79702" />
+  </g>
 </svg>
