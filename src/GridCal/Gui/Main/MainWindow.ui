@@ -7250,8 +7250,8 @@ QProgressBar::chunk{
     <addaction name="actionTry_to_fix_buses_location"/>
     <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
     <addaction name="actionFuse_devices"/>
-    <addaction name="actionCorrect_inconsistences"/>
-    <addaction name="actionDelete_inconsistences"/>
+    <addaction name="actionCorrect_inconsistencies"/>
+    <addaction name="actionDelete_inconsistencies"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
    </widget>
    <addaction name="menuProject"/>
@@ -8034,22 +8034,28 @@ QProgressBar::chunk{
     <string>Fuse devices into a single device of each category per node</string>
    </property>
   </action>
-  <action name="actionCorrect_inconsistences">
+  <action name="actionCorrect_inconsistencies">
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/Icons/icons/gear.svg</normaloff>:/Icons/icons/gear.svg</iconset>
    </property>
    <property name="text">
-    <string>Correct inconsistences</string>
+    <string>Correct inconsistencies</string>
+   </property>
+   <property name="toolTip">
+    <string>Correct inconsistencies</string>
    </property>
   </action>
-  <action name="actionDelete_inconsistences">
+  <action name="actionDelete_inconsistencies">
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
    </property>
    <property name="text">
-    <string>Delete inconsistences</string>
+    <string>Delete inconsistencies</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete inconsistencies</string>
    </property>
   </action>
  </widget>
