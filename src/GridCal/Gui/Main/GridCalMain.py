@@ -454,9 +454,9 @@ class MainGUI(QMainWindow):
 
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
 
-        self.ui.actionCorrect_inconsistences.triggered.connect(self.correct_inconsistencies)
+        self.ui.actionCorrect_inconsistencies.triggered.connect(self.correct_inconsistencies)
 
-        self.ui.actionDelete_inconsistences.triggered.connect(self.delete_inconsistencies)
+        self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
 
         # Buttons
 
