@@ -543,8 +543,12 @@ class OptimalNetTransferCapacity(DriverTemplate):
             pf_drv.run()
             indices = np.where(np.abs(pf_drv.results.loading.real) >= 1.0)
             for m in zip(indices[0]):
-                if numerical_circuit.branch_data.monitor_loading[m]:
+                if numerical_circuit.branch_data.monitor_loading[m] and \
+                   alpha[m] >= self.options.branch_sensitivity_threshold:
+
                     elm_name = '{0}'.format(numerical_circuit.branch_names[m])
+                    if '60134' in elm_name:
+                        kk =1
                     self.logger.add_error('Base overload', elm_name, pf_drv.results.loading[m].real * 100, 100)
                     base_problems = True
 
@@ -562,7 +566,8 @@ class OptimalNetTransferCapacity(DriverTemplate):
 
                 for m, c in zip(indices[0], indices[1]):
                     if numerical_circuit.branch_data.monitor_loading[m] and \
-                       numerical_circuit.branch_data.contingency_enabled[c]:
+                       numerical_circuit.branch_data.contingency_enabled[c] and \
+                       alpha[m] >= self.options.branch_sensitivity_threshold:
 
                         elm_name = '{0} @ {1}'.format(
                             numerical_circuit.branch_names[m],
