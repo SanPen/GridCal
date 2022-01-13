@@ -878,13 +878,37 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
 
         if branch_active[m]:
 
+            if rates[m] <= 0:
+                logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
+
+            # determine the monitoring logic
+            if monitor_only_sensitive_branches:
+                monitor[m] =  monitor_loading[m] and alpha_abs[m] > branch_sensitivity_threshold
+            else:
+                monitor[m] = monitor_loading[m]
+
+
+            if monitor[m]:
+
+                # declare the flow variable with rate limits
+                flow_f[m] = solver.NumVar(-rates[m], rates[m], 'pftk_{0}_{1}'.format(m, branch_names[m]))
+
+                # rating restriction in the sense from-to: eq.17
+                # overload1[m] = solver.NumVar(0, inf, 'overload1_{0}_{1}'.format(m, branch_names[m]))
+                # solver.Add(flow_f[m] <= (rates[m] + overload1[m]), "ft_rating_{0}_{1}".format(m, branch_names[m]))
+                #
+                # rating restriction in the sense to-from: eq.18
+                # overload2[m] = solver.NumVar(0, inf, 'overload2_{0}_{1}'.format(m, branch_names[m]))
+                # solver.Add((-rates[m] - overload2[m]) <= flow_f[m], "tf_rating_{0}_{1}".format(m, branch_names[m]))
+
+            else:
+                # declare the flow variable with ample limits
+                flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
+
+
             # compute the flow
             _f = F[m]
             _t = T[m]
-
-            # declare the flow variable with ample limits
-            # flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
-
 
             # compute the branch susceptance
             if branch_dc[m]:
@@ -894,42 +918,24 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
 
             if control_mode[m] == TransformerControlType.Pt:  # is a phase shifter
                 # create the phase shift variable
-                tau[m] = solver.NumVar(theta_min[m], theta_max[m],
-                                       'phase_shift_{0}_{1}'.format(m, branch_names[m]))
+                tau[m] = solver.NumVar(
+                    theta_min[m], theta_max[m],
+                    'phase_shift_{0}_{1}'.format(m, branch_names[m])
+                )
+
                 # branch power from-to eq.15
-                solver.Add(flow_f[m] == bk * (angles[_f] - angles[_t] + tau[m]),
-                           'phase_shifter_power_flow_{0}_{1}'.format(m, branch_names[m]))
+                solver.Add(
+                    flow_f[m] == bk * (angles[_f] - angles[_t] + tau[m]),
+                    'phase_shifter_power_flow_{0}_{1}'.format(m, branch_names[m])
+                )
             else:
                 # branch power from-to eq.15
-                solver.Add(flow_f[m] == bk * (angles[_f] - angles[_t]),
-                           'branch_power_flow_{0}_{1}'.format(m, branch_names[m]))
+                solver.Add(
+                    flow_f[m] == bk * (angles[_f] - angles[_t]),
+                    'branch_power_flow_{0}_{1}'.format(m, branch_names[m])
+                )
 
-            # determine the monitoring logic
-            if monitor_only_sensitive_branches:
-                if monitor_loading[m] and alpha_abs[m] > branch_sensitivity_threshold:
-                    monitor[m] = True
-                else:
-                    monitor[m] = False
-            else:
-                monitor[m] = monitor_loading[m]
 
-            if monitor[m]:
-                flow_f[m] = solver.NumVar(-rates[m], rates[m], 'pftk_{0}_{1}'.format(m, branch_names[m]))
-            else:
-                flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
-
-            if monitor[m]:
-
-                if rates[m] <= 0:
-                    logger.add_error('Rate = 0', 'Branch:{0}'.format(m) + ';' + branch_names[m], rates[m])
-
-                # rating restriction in the sense from-to: eq.17
-                # overload1[m] = solver.NumVar(0, inf, 'overload1_{0}_{1}'.format(m, branch_names[m]))
-                # solver.Add(flow_f[m] <= (rates[m] + overload1[m]), "ft_rating_{0}_{1}".format(m, branch_names[m]))
-
-                # rating restriction in the sense to-from: eq.18
-                # overload2[m] = solver.NumVar(0, inf, 'overload2_{0}_{1}'.format(m, branch_names[m]))
-                # solver.Add((-rates[m] - overload2[m]) <= flow_f[m], "tf_rating_{0}_{1}".format(m, branch_names[m]))
 
     return flow_f, overload1, overload2, tau, monitor
 
@@ -971,14 +977,21 @@ def check_branches_flow(
 
         if branch_active[m]:
 
+
             # determine the monitoring logic
             if monitor_only_sensitive_branches:
-                if monitor_loading[m] and alpha_abs[m] > branch_sensitivity_threshold:
-                    monitor[m] = True
-                else:
-                    monitor[m] = False
+                monitor[m] =  monitor_loading[m] and alpha_abs[m] > branch_sensitivity_threshold
             else:
                 monitor[m] = monitor_loading[m]
+
+            # # determine the monitoring logic
+            # if monitor_only_sensitive_branches:
+            #     if monitor_loading[m] and alpha_abs[m] > branch_sensitivity_threshold:
+            #         monitor[m] = True
+            #     else:
+            #         monitor[m] = False
+            # else:
+            #     monitor[m] = monitor_loading[m]
 
             if monitor[m]:
 
@@ -1031,11 +1044,11 @@ def check_branches_flow(
     return monitor
 
 
-def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
-                          branch_names, contingency_enabled_indices,
-                          LODF, F, T, inf,
-                          branch_sensitivity_threshold,
-                          flow_f, monitor, replacement_value, logger: Logger):
+def formulate_contingency(
+        solver: pywraplp.Solver, ContingencyRates, Sbase, branch_names, contingency_enabled_indices,
+        LODF, F, T, inf, branch_sensitivity_threshold, flow_f, monitor, replacement_value,
+        logger: Logger
+):
     """
     Formulate the contingency flows
     :param solver: Solver instance to which add the equations
@@ -1093,7 +1106,7 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
 
                 # compute the N-1 flow
                 # flow_n1 = flow_f[m] + LODF[m, c] * flow_f[c]
-                flow_n1 = flow_f[m] + lodf * flow_f[c]
+                # flow_n1 = flow_f[m] + lodf * flow_f[c]
 
                 flow_n1 = solver.NumVar(-rates[m], rates[m], 'n-1_flow__' + suffix)
                 solver.Add(flow_n1 == flow_f[m] + lodf * flow_f[c], "n-1_flow_assigment_" + suffix)
@@ -1229,7 +1242,9 @@ def formulate_hvdc_flow(
                 flow_f[i] = solver.NumVar(-rates[i], rates[i], 'hvdc_flow_' + suffix)
 
                 # formulate the hvdc flow as an AC line equivalent
-                angle_droop2 = angle_droop[i] * 57.295779513 / Sbase  # to pass from MW/deg to p.u./rad -> * 180 / pi / (sbase=100)
+                # to pass from MW/deg to p.u./rad -> * 180 / pi / (sbase=100)
+                angle_droop2 = angle_droop[i] * 57.295779513 / Sbase
+
                 solver.Add(
                     flow_f[i] == P0 + angle_droop2 * (angles[_f] - angles[_t]) + hvdc_control1[i] - hvdc_control2[i],
                     'hvdc_power_flow_' + suffix
