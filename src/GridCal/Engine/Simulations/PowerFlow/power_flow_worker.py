@@ -594,7 +594,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(multi_circuit,
                                                                                 bus_dict,
                                                                                 theta=np.zeros(nc.nbus))
-
+    Pf_hvdc_prev = Pf_hvdc.copy()
     calculation_inputs = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
 
     results = PowerFlowResults(n=nc.nbus,
@@ -611,6 +611,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     all_controls_ok = False  # to run the first time
 
     control_iter = 0
+    max_control_iter = 10
     while not all_controls_ok:
 
         # simulate each island and merge the results (doesn't matter if there is only a single island) -----------------
@@ -644,12 +645,19 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                 logger.add_info('No slack nodes in the island', str(i))
         # --------------------------------------------------------------------------------------------------------------
 
-        if n_free and control_iter == 0:
+        if n_free and control_iter < max_control_iter:
             Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(multi_circuit,
                                                                                         bus_dict,
                                                                                         theta=np.angle(results.voltage))
-        elif control_iter == 1:
-            all_controls_ok = True
+            hvdc_control_err = np.max(np.abs(Pf_hvdc_prev - Pf_hvdc))
+            Pf_hvdc_prev = Pf_hvdc.copy()
+            print('control err:', hvdc_control_err, '', Pf_hvdc)
+
+            if hvdc_control_err < 0.1:
+                all_controls_ok = True
+
+        # elif control_iter == 1:
+        #     all_controls_ok = True
         else:
             all_controls_ok = True
 
