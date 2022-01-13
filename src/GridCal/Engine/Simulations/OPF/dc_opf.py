@@ -286,6 +286,8 @@ def formulate_hvdc_flow(problem: pl.LpProblem, nc: SnapshotOpfData, angles, Pinj
     hvdc_control1 = np.zeros(nc.nhvdc, dtype=object)
     hvdc_control2 = np.zeros(nc.nhvdc, dtype=object)
 
+    angle_droop = nc.hvdc_data.get_angle_droop_in_pu_rad(nc.Sbase)[:, t]
+
     for i in range(nc.nhvdc):
 
         if nc.hvdc_data.active[i, t]:
@@ -303,8 +305,7 @@ def formulate_hvdc_flow(problem: pl.LpProblem, nc: SnapshotOpfData, angles, Pinj
                     logger.add_error('Rate = 0', 'HVDC:{0}'.format(i), rates[i])
 
                 # formulate the hvdc flow as an AC line equivalent
-                bk = 1.0 / nc.hvdc_data.r[i]  # TODO: yes, I know... DC...
-                flow_f[i] = P0 + bk * (angles[_f] - angles[_t]) + hvdc_control1[i] - hvdc_control2[i]
+                flow_f[i] = P0 + angle_droop[i] * (angles[_f] - angles[_t]) + hvdc_control1[i] - hvdc_control2[i]
 
                 # add the injections matching the flow
                 Pinj[_f] -= flow_f[i]

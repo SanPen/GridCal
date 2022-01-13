@@ -100,7 +100,7 @@ class CPLEX_CMD(LpSolver_CMD):
         lp.status = status
         return status
 
-    def readsol(self,filename):
+    def readsol(self, filename):
         """Read a CPLEX solution file"""
         try:
             import xml.etree.ElementTree as et
@@ -110,10 +110,11 @@ class CPLEX_CMD(LpSolver_CMD):
         solutionheader = solutionXML.find("header")
         statusString = solutionheader.get("solutionStatusString")
         cplexStatus = {
-            "optimal":LpStatusOptimal,
+            "optimal": LpStatusOptimal,
+            "optimal with unscaled infeasibilities": LpStatusOptimal
             }
         if statusString not in cplexStatus:
-            raise PulpSolverError("Unknown status returned by CPLEX: "+statusString)
+            raise PulpSolverError("Unknown status returned by CPLEX: " + statusString)
         status = cplexStatus[statusString]
 
         shadowPrices = {}

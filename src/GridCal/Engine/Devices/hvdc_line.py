@@ -390,52 +390,48 @@ class HvdcLine(EditableDevice):
         Get the power set at both ends accounting for meaningful losses
         :return: power from, power to
         """
-        # A = int(self.Pset > 0)
-        # B = 1 - A
-        # Pf = - self.Pset * A + self.Pset * (1 - self.loss_factor) * B
-        # Pt = self.Pset * A * (1 - self.loss_factor) - self.Pset * B
+        if self.active:
+            Pf, Pt, losses = getFromAndToPowerAt(Pset=self.Pset,
+                                                 theta_f=theta_f,
+                                                 theta_t=theta_t,
+                                                 Vnf=self.bus_from.Vnom,
+                                                 Vnt=self.bus_to.Vnom,
+                                                 v_set_f=self.Vset_f,
+                                                 v_set_t=self.Vset_t,
+                                                 Sbase=Sbase,
+                                                 r1=self.r,
+                                                 angle_droop=self.angle_droop,
+                                                 rate=self.rate,
+                                                 free=self.control_mode == HvdcControlType.type_0_free,
+                                                 in_pu=in_pu)
 
-        Pf, Pt, losses = getFromAndToPowerAt(Pset=self.Pset,
-                                             theta_f=theta_f,
-                                             theta_t=theta_t,
-                                             Vnf=self.bus_from.Vnom,
-                                             Vnt=self.bus_to.Vnom,
-                                             v_set_f=self.Vset_f,
-                                             v_set_t=self.Vset_t,
-                                             Sbase=Sbase,
-                                             r1=self.r,
-                                             angle_droop=self.angle_droop,
-                                             rate=self.rate,
-                                             free=self.control_mode == HvdcControlType.type_0_free,
-                                             in_pu=in_pu)
-
-        return Pf, Pt, losses
+            return Pf, Pt, losses
+        else:
+            return 0, 0, 0
 
     def get_from_and_to_power_at(self, t, theta_f, theta_t, Sbase, in_pu=False):
         """
         Get the power set at both ends accounting for meaningful losses
         :return: power from, power to
         """
-        # A = int(self.Pset > 0)
-        # B = 1 - A
-        # Pf = - self.Pset * A + self.Pset * (1 - self.loss_factor) * B
-        # Pt = self.Pset * A * (1 - self.loss_factor) - self.Pset * B
+        if self.active_prof[t]:
+            Pf, Pt, losses = getFromAndToPowerAt(Pset=self.Pset_prof[t],
+                                                 theta_f=theta_f,
+                                                 theta_t=theta_t,
+                                                 Vnf=self.bus_from.Vnom,
+                                                 Vnt=self.bus_to.Vnom,
+                                                 v_set_f=self.Vset_f_prof[t],
+                                                 v_set_t=self.Vset_t_prof[t],
+                                                 Sbase=Sbase,
+                                                 r1=self.r,
+                                                 angle_droop=self.angle_droop,
+                                                 rate=self.rate_prof[t],
+                                                 free=self.control_mode == HvdcControlType.type_0_free,
+                                                 in_pu=in_pu)
 
-        Pf, Pt, losses = getFromAndToPowerAt(Pset=self.Pset_prof[t],
-                                             theta_f=theta_f,
-                                             theta_t=theta_t,
-                                             Vnf=self.bus_from.Vnom,
-                                             Vnt=self.bus_to.Vnom,
-                                             v_set_f=self.Vset_f_prof[t],
-                                             v_set_t=self.Vset_t_prof[t],
-                                             Sbase=Sbase,
-                                             r1=self.r,
-                                             angle_droop=self.angle_droop,
-                                             rate=self.rate_prof[t],
-                                             free=self.control_mode == HvdcControlType.type_0_free,
-                                             in_pu=in_pu)
-
-        return Pf, Pt, losses
+            return Pf, Pt, losses
+        else:
+            return 0, 0, 0
 
     def get_from_and_to_power_profiles(self, theta_f, theta_t, Sbase):
         """

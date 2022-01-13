@@ -538,15 +538,31 @@ def get_hvdc_power(multi_circuit: MultiCircuit, bus_dict, theta, t=None):
 
         _from = bus_dict[elm.bus_from]
         _to = bus_dict[elm.bus_to]
-        if elm.control_mode == HvdcControlType.type_0_free:
-            n_free += 1
 
         if t is None:
-            Pf, Pt, losses = elm.get_from_and_to_power(theta[_from ], theta[_to], multi_circuit.Sbase, in_pu=True)
-            loading_hvdc[k] = Pf / elm.rate
+            if elm.active:
+                if elm.control_mode == HvdcControlType.type_0_free:
+                    n_free += int(elm.active)  # count only if active
+
+                Pf, Pt, losses = elm.get_from_and_to_power(theta_f=theta[_from], theta_t=theta[_to],
+                                                           Sbase=multi_circuit.Sbase, in_pu=True)
+                loading_hvdc[k] = Pf / elm.rate
+            else:
+                Pf = 0
+                Pt = 0
+                losses = 0
         else:
-            Pf, Pt, losses = elm.get_from_and_to_power_at(t, theta[_from ], theta[_to], multi_circuit.Sbase, in_pu=True)
-            loading_hvdc[k] = Pf / elm.rate_prof[t]
+            if elm.active_prof[t]:
+                if elm.control_mode == HvdcControlType.type_0_free:
+                    n_free += int(elm.active_prof[t])  # count only if active
+
+                Pf, Pt, losses = elm.get_from_and_to_power_at(t=t, theta_f=theta[_from], theta_t=theta[_to],
+                                                              Sbase=multi_circuit.Sbase, in_pu=True)
+                loading_hvdc[k] = Pf / elm.rate_prof[t]
+            else:
+                Pf = 0
+                Pt = 0
+                losses = 0
 
         Shvdc[_from] += Pf
         Shvdc[_to] += Pt
@@ -578,7 +594,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(multi_circuit,
                                                                                 bus_dict,
                                                                                 theta=np.zeros(nc.nbus))
-
+    Pf_hvdc_prev = Pf_hvdc.copy()
     calculation_inputs = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
 
     results = PowerFlowResults(n=nc.nbus,
@@ -592,11 +608,10 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                bus_types=nc.bus_data.bus_types)
 
     # initialize the all controls var
-    if nc.nhvdc > 0:
-        all_controls_ok = n_free == 0
-    else:
-        all_controls_ok = False  # to run the first time
-    _iter = 0
+    all_controls_ok = False  # to run the first time
+
+    control_iter = 0
+    max_control_iter = 10
     while not all_controls_ok:
 
         # simulate each island and merge the results (doesn't matter if there is only a single island) -----------------
@@ -630,14 +645,23 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                 logger.add_info('No slack nodes in the island', str(i))
         # --------------------------------------------------------------------------------------------------------------
 
-        if n_free and _iter == 0:
+        if n_free and control_iter < max_control_iter:
             Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(multi_circuit,
                                                                                         bus_dict,
                                                                                         theta=np.angle(results.voltage))
+            hvdc_control_err = np.max(np.abs(Pf_hvdc_prev - Pf_hvdc))
+            Pf_hvdc_prev = Pf_hvdc.copy()
+            print('control err:', hvdc_control_err, '', Pf_hvdc)
+
+            if hvdc_control_err < 0.1:
+                all_controls_ok = True
+
+        # elif control_iter == 1:
+        #     all_controls_ok = True
         else:
             all_controls_ok = True
 
-        _iter += 1
+        control_iter += 1
 
     # compile HVDC results (available for the complete grid since HVDC line as formulated are split objects
     # Pt is the "generation" at the sending point

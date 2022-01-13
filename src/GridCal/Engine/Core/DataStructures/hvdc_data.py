@@ -139,5 +139,13 @@ class HvdcData:
         """
         return self.C_hvdc_bus_t.T * (self.Qmin_t * self.active.T).T
 
+    def get_angle_droop_in_pu_rad(self, Sbase):
+        """
+        Get the angle droop in pu/rad
+        :param Sbase:
+        :return:
+        """
+        return self.angle_droop * 57.295779513 / Sbase
+
     def __len__(self):
         return self.nhvdc

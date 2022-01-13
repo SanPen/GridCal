@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/stats.svg</file>
     <file>icons/inputs_analysis 2.svg</file>
     <file>icons/fusion.svg</file>
     <file>icons/ml.svg</file>

@@ -35,6 +35,7 @@ import GridCal.Engine.Simulations as sim
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.grid_analysis as grid_analysis
+
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
@@ -5512,11 +5513,23 @@ class MainGUI(QMainWindow):
         """
         if self.circuit is not None:
 
-            numerical_circuit = core.compile_snapshot_circuit(circuit=self.circuit)
+            engine = self.get_preferred_engine()
 
-            calculation_inputs = numerical_circuit.split_into_islands()
+            if engine == bs.EngineType.GridCal:
+                numerical_circuit = core.compile_snapshot_circuit(circuit=self.circuit)
+                calculation_inputs = numerical_circuit.split_into_islands()
+                self.calculation_inputs_to_display = calculation_inputs
 
-            self.calculation_inputs_to_display = calculation_inputs
+            elif engine == bs.EngineType.Bentayga:
+                import GridCal.Engine.Core.Compilers.circuit_to_bentayga as ben
+                self.calculation_inputs_to_display = ben.get_snapshots_from_bentayga(self.circuit)
+
+            else:
+                # fallback to gridcal
+                numerical_circuit = core.compile_snapshot_circuit(circuit=self.circuit)
+                calculation_inputs = numerical_circuit.split_into_islands()
+                self.calculation_inputs_to_display = calculation_inputs
+
             return True
         else:
             self.calculation_inputs_to_display = None
