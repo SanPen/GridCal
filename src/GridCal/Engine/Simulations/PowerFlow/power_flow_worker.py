@@ -610,7 +610,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     # initialize the all controls var
     all_controls_ok = False  # to run the first time
 
-    _iter = 0
+    control_iter = 0
     while not all_controls_ok:
 
         # simulate each island and merge the results (doesn't matter if there is only a single island) -----------------
@@ -644,16 +644,16 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                 logger.add_info('No slack nodes in the island', str(i))
         # --------------------------------------------------------------------------------------------------------------
 
-        if n_free and _iter == 0:
+        if n_free and control_iter == 0:
             Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(multi_circuit,
                                                                                         bus_dict,
                                                                                         theta=np.angle(results.voltage))
-        elif _iter == 1:
+        elif control_iter == 1:
             all_controls_ok = True
         else:
             all_controls_ok = True
 
-        _iter += 1
+        control_iter += 1
 
     # compile HVDC results (available for the complete grid since HVDC line as formulated are split objects
     # Pt is the "generation" at the sending point

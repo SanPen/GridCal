@@ -23,9 +23,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improved bentayga arrays viewer implementation">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed HVDC logic when devices are not active">
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -664,14 +662,7 @@
       <workItem from="1636714098985" duration="5162000" />
       <workItem from="1641245917031" duration="1783000" />
       <workItem from="1641292416750" duration="11537000" />
-      <workItem from="1642058915637" duration="2558000" />
-    </task>
-    <task id="LOCAL-00194" summary="Updated GUI">
-      <created>1631868574905</created>
-      <option name="number" value="00194" />
-      <option name="presentableId" value="LOCAL-00194" />
-      <option name="project" value="LOCAL" />
-      <updated>1631868574905</updated>
+      <workItem from="1642058915637" duration="2959000" />
     </task>
     <task id="LOCAL-00195" summary="Improved the slack checking">
       <created>1631909251803</created>
@@ -1009,7 +1000,14 @@
       <option name="project" value="LOCAL" />
       <updated>1642022491062</updated>
     </task>
-    <option name="localTasksCounter" value="243" />
+    <task id="LOCAL-00243" summary="Fixed HVDC logic when devices are not active">
+      <created>1642064296994</created>
+      <option name="number" value="00243" />
+      <option name="presentableId" value="LOCAL-00243" />
+      <option name="project" value="LOCAL" />
+      <updated>1642064296995</updated>
+    </task>
+    <option name="localTasksCounter" value="244" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1043,7 +1041,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added contingencies to the OPF simulations&#10;Added the contingency report as a compromise to show the contingencies" />
     <MESSAGE value="Added PTDF contingency tolerance" />
     <MESSAGE value="Implemented the skip generation in the dc opf" />
     <MESSAGE value="Version 4.2.4" />
@@ -1068,7 +1065,8 @@
     <MESSAGE value="Fixed HVDC &quot;free&quot; control for OPF" />
     <MESSAGE value="Implemented bentayga inspection from  the compiled arrays view" />
     <MESSAGE value="Improved bentayga arrays viewer implementation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved bentayga arrays viewer implementation" />
+    <MESSAGE value="Fixed HVDC logic when devices are not active" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed HVDC logic when devices are not active" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
