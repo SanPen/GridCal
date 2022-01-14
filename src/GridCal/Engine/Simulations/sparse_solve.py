@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-GridCal
+# GridCal
 # Copyright (C) 2022 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
