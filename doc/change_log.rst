@@ -6,9 +6,10 @@ This section describes the changes introduced at each Version.
 
 \* Short releases indicate the fix of a critical bug.
 
-Version 4.3.6
+Version 4.4.0
 ^^^^^^^^^^^^^^^
 
+- Changed the license to LGPL
 - Improved HVDC power flow control management
 - Added the license directly in the about box, featuring the linking exceptions for Bentayga and Newton.
 - Rearranged menus oon the GUI.

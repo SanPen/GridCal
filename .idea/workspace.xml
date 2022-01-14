@@ -24,7 +24,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Updated to LGPL">
-      <change beforePath="$PROJECT_DIR$/LICENSE.md" beforeDir="false" afterPath="$PROJECT_DIR$/LICENSE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/about.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/about.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/change_log.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/change_log.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/LICENSE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/LICENSE.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -679,14 +682,7 @@
       <workItem from="1641245917031" duration="1783000" />
       <workItem from="1641292416750" duration="11537000" />
       <workItem from="1642058915637" duration="8601000" />
-      <workItem from="1642145208905" duration="5753000" />
-    </task>
-    <task id="LOCAL-00199" summary="Small bug fixes:&#10;- Added the coordinates in the branches that were missing&#10;- After a very long time, the bus drag and drop has a icon!&#10;- Fixed the kV tooltip thing">
-      <created>1632949796379</created>
-      <option name="number" value="00199" />
-      <option name="presentableId" value="LOCAL-00199" />
-      <option name="project" value="LOCAL" />
-      <updated>1632949796379</updated>
+      <workItem from="1642145208905" duration="6757000" />
     </task>
     <task id="LOCAL-00200" summary="Added Activs500g">
       <created>1632949829511</created>
@@ -1024,7 +1020,14 @@
       <option name="project" value="LOCAL" />
       <updated>1642155667785</updated>
     </task>
-    <option name="localTasksCounter" value="248" />
+    <task id="LOCAL-00248" summary="Updated to LGPL">
+      <created>1642155751834</created>
+      <option name="number" value="00248" />
+      <option name="presentableId" value="LOCAL-00248" />
+      <option name="project" value="LOCAL" />
+      <updated>1642155751834</updated>
+    </task>
+    <option name="localTasksCounter" value="249" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
