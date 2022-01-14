@@ -650,14 +650,15 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                                                                         bus_dict,
                                                                                         theta=np.angle(results.voltage))
             hvdc_control_err = np.max(np.abs(Pf_hvdc_prev - Pf_hvdc))
-            Pf_hvdc_prev = Pf_hvdc.copy()
+
             print('control err:', hvdc_control_err, '', Pf_hvdc)
 
             if hvdc_control_err < 0.1:
+                # finalize
                 all_controls_ok = True
-
-        # elif control_iter == 1:
-        #     all_controls_ok = True
+            else:
+                # update
+                Pf_hvdc_prev = Pf_hvdc.copy()
         else:
             all_controls_ok = True
 

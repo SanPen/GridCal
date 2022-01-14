@@ -1,3 +1,5 @@
+import os.path
+
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
@@ -6,13 +8,26 @@ from GridCal.Engine.Devices.enumerations import ConverterControlType, Transforme
 from GridCal.Engine.Devices import *
 from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerControlMode, TapsControlMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-#
+from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 
 
 try:
     import bentayga as btg
-    BENTAYGA_AVAILABLE = True
-    print('Bentayga v' + btg.get_version())
+
+    # activate
+    if not btg.is_license_activated():
+        btg_license = os.path.join(get_create_gridcal_folder(), 'bentayga.lic')
+        if os.path.exists(btg_license):
+            print('Bentayga v' + btg.get_version())
+            btg.activate_license(btg_license)
+            BENTAYGA_AVAILABLE = True
+        else:
+            print('Bentayga v' + btg.get_version(), "installed but not licensed")
+            BENTAYGA_AVAILABLE = False
+    else:
+        print('Bentayga v' + btg.get_version())
+        BENTAYGA_AVAILABLE = True
+
 except ImportError:
     BENTAYGA_AVAILABLE = False
     print('Bentayga is not available')
@@ -464,6 +479,7 @@ class FakeAdmittances:
         self.Ybus = None
         self.Yf = None
         self.Yt = None
+
 
 def get_snapshots_from_bentayga(circuit: MultiCircuit):
 
