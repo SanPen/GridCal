@@ -24,10 +24,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Updated to LGPL">
-      <change beforePath="$PROJECT_DIR$/doc/about.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/about.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/change_log.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/change_log.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/LICENSE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/LICENSE.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/research/power_flow/helm/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/research/power_flow/helm/old/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/Devices/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/Numerical/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/Simulation/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/research/three_phase/Engine/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,7 +60,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="ntc_no_slacks" />
+        <entry key="$PROJECT_DIR$" value="devel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -127,7 +132,16 @@
       <recent name="$PROJECT_DIR$/doc/formats" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.update_gui_file">
+  <component name="RunManager" selected="Batch.upload_to_pypi">
+    <configuration name="upload_to_pypi" type="BatchConfigurationType" factoryName="Batch" temporary="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="WORKING_DIRECTORY" value="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SCRIPT_NAME" value="upload_to_pypi.cmd" />
+      <option name="PARAMETERS" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -226,36 +240,20 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests in test_power_flow.py" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_power_flow.py&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
-      <method v="2" />
-    </configuration>
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.setup" />
-      <item itemvalue="Python tests.Nosetests in test_power_flow.py" />
       <item itemvalue="Python.update_gui_file (1)" />
+      <item itemvalue="Batch.upload_to_pypi" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Batch.upload_to_pypi" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_file (1)" />
         <item itemvalue="Python.setup" />
-        <item itemvalue="Python tests.Nosetests in test_power_flow.py" />
       </list>
     </recent_temporary>
   </component>
