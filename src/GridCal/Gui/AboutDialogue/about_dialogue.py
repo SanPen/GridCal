@@ -1,5 +1,6 @@
 import os
 import sys
+import chardet
 import subprocess
 from PySide2.QtWidgets import QDialog
 from typing import List, Dict
@@ -92,9 +93,16 @@ class AboutDialogueGuiGUI(QDialog):
             self.msg('GridCal updated successfully')
 
     def show_license(self):
+        """
+        Show the license
+        """
         here = os.path.abspath(os.path.dirname(__file__))
         license_file = os.path.join(here, '..', '..', 'LICENSE.txt')
-        with open(license_file, 'r', encoding='windows-1252') as file:
+
+        # make a guess of the file encoding
+        detection = chardet.detect(open(license_file, "rb").read())
+
+        with open(license_file, 'r', encoding=detection['encoding']) as file:
             license_txt = file.read()
 
         self.ui.licenseTextEdit.setPlainText(license_txt)
