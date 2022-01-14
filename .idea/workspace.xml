@@ -23,19 +23,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Integrated bentayga license activation">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/change_log.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/change_log.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_bentayga.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_bentayga.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue/about_dialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue/about_dialogue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue/gui.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue/gui.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/LICENSE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/LICENSE.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/setup.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Updated to LGPL">
+      <change beforePath="$PROJECT_DIR$/LICENSE.md" beforeDir="false" afterPath="$PROJECT_DIR$/LICENSE.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -690,14 +679,7 @@
       <workItem from="1641245917031" duration="1783000" />
       <workItem from="1641292416750" duration="11537000" />
       <workItem from="1642058915637" duration="8601000" />
-      <workItem from="1642145208905" duration="5405000" />
-    </task>
-    <task id="LOCAL-00198" summary="Improve the power world parser">
-      <created>1632923884534</created>
-      <option name="number" value="00198" />
-      <option name="presentableId" value="LOCAL-00198" />
-      <option name="project" value="LOCAL" />
-      <updated>1632923884534</updated>
+      <workItem from="1642145208905" duration="5753000" />
     </task>
     <task id="LOCAL-00199" summary="Small bug fixes:&#10;- Added the coordinates in the branches that were missing&#10;- After a very long time, the bus drag and drop has a icon!&#10;- Fixed the kV tooltip thing">
       <created>1632949796379</created>
@@ -1035,7 +1017,14 @@
       <option name="project" value="LOCAL" />
       <updated>1642146364827</updated>
     </task>
-    <option name="localTasksCounter" value="247" />
+    <task id="LOCAL-00247" summary="Updated to LGPL">
+      <created>1642155667785</created>
+      <option name="number" value="00247" />
+      <option name="presentableId" value="LOCAL-00247" />
+      <option name="project" value="LOCAL" />
+      <updated>1642155667785</updated>
+    </task>
+    <option name="localTasksCounter" value="248" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1069,7 +1058,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Implemented optional way to open the web maps when the pyside webdriver is not available" />
     <MESSAGE value="implemented simpler zoom by selecting and adjusting the screen" />
     <MESSAGE value="For apple M1 use GLOP when using ortools" />
     <MESSAGE value="4.2.6" />
@@ -1094,14 +1082,15 @@
     <MESSAGE value="renamed _iter to iter_control" />
     <MESSAGE value="Modified the outer loop control convergence" />
     <MESSAGE value="Integrated bentayga license activation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Integrated bentayga license activation" />
+    <MESSAGE value="Updated to LGPL" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated to LGPL" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/json_parser.py</url>
-          <line>739</line>
+          <line>741</line>
           <option name="timeStamp" value="29" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1131,7 +1120,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>1000</line>
+          <line>1002</line>
           <option name="timeStamp" value="161" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1181,17 +1170,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>5198</line>
+          <line>5200</line>
           <option name="timeStamp" value="303" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ac_opf_ts.py</url>
-          <line>407</line>
+          <line>409</line>
           <option name="timeStamp" value="328" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py</url>
-          <line>1686</line>
+          <line>1688</line>
           <option name="timeStamp" value="332" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1206,7 +1195,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_power_flow.py</url>
-          <line>59</line>
+          <line>61</line>
           <option name="timeStamp" value="342" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1232,27 +1221,27 @@
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="conv == DeviceType" language="Python" />
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/excel_interface.py</url>
-          <line>276</line>
+          <line>278</line>
           <option name="timeStamp" value="402" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/helm_power_flow.py</url>
-          <line>181</line>
+          <line>183</line>
           <option name="timeStamp" value="407" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_power_flow.py</url>
-          <line>1162</line>
+          <line>1164</line>
           <option name="timeStamp" value="418" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_power_flow.py</url>
-          <line>1188</line>
+          <line>1190</line>
           <option name="timeStamp" value="419" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_power_flow.py</url>
-          <line>1185</line>
+          <line>1187</line>
           <option name="timeStamp" value="420" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1272,7 +1261,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/admittance_matrices.py</url>
-          <line>297</line>
+          <line>299</line>
           <option name="timeStamp" value="431" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1312,38 +1301,33 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/json_parser.py</url>
-          <line>867</line>
+          <line>869</line>
           <option name="timeStamp" value="534" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/json_parser.py</url>
-          <line>874</line>
+          <line>876</line>
           <option name="timeStamp" value="535" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/zip_interface.py</url>
-          <line>344</line>
+          <line>346</line>
           <option name="timeStamp" value="564" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py</url>
-          <line>2079</line>
+          <line>2081</line>
           <option name="timeStamp" value="618" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py</url>
-          <line>2078</line>
+          <line>2080</line>
           <option name="timeStamp" value="619" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/h5_interface.py</url>
-          <line>99</line>
+          <line>101</line>
           <option name="timeStamp" value="625" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/time_series_clustring_driver.py</url>
-          <line>123</line>
-          <option name="timeStamp" value="669" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/research/PTDF/ATC1.py</url>
@@ -1367,47 +1351,47 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>2562</line>
+          <line>2564</line>
           <option name="timeStamp" value="698" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Session/results_model.py</url>
-          <line>160</line>
+          <line>162</line>
           <option name="timeStamp" value="729" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Session/results_model.py</url>
-          <line>162</line>
+          <line>164</line>
           <option name="timeStamp" value="730" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/generator_data.py</url>
-          <line>100</line>
+          <line>102</line>
           <option name="timeStamp" value="740" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_power_flow.py</url>
-          <line>74</line>
+          <line>76</line>
           <option name="timeStamp" value="745" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>3040</line>
+          <line>3042</line>
           <option name="timeStamp" value="798" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>3019</line>
+          <line>3021</line>
           <option name="timeStamp" value="799" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Session/session.py</url>
-          <line>106</line>
+          <line>108</line>
           <option name="timeStamp" value="802" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/power_world_parser.py</url>
-          <line>199</line>
+          <line>201</line>
           <option name="timeStamp" value="808" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1417,27 +1401,27 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/time_series_pf_data.py</url>
-          <line>435</line>
+          <line>437</line>
           <option name="timeStamp" value="821" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py</url>
-          <line>436</line>
+          <line>438</line>
           <option name="timeStamp" value="835" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_driver.py</url>
-          <line>182</line>
+          <line>184</line>
           <option name="timeStamp" value="837" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_driver.py</url>
-          <line>184</line>
+          <line>186</line>
           <option name="timeStamp" value="839" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_driver.py</url>
-          <line>571</line>
+          <line>573</line>
           <option name="timeStamp" value="841" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1457,7 +1441,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>320</line>
+          <line>322</line>
           <option name="timeStamp" value="853" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1472,57 +1456,57 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py</url>
-          <line>80</line>
+          <line>82</line>
           <option name="timeStamp" value="873" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py</url>
-          <line>117</line>
+          <line>119</line>
           <option name="timeStamp" value="874" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py</url>
-          <line>1187</line>
+          <line>1189</line>
           <option name="timeStamp" value="885" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py</url>
-          <line>1190</line>
+          <line>1192</line>
           <option name="timeStamp" value="886" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py</url>
-          <line>1193</line>
+          <line>1195</line>
           <option name="timeStamp" value="887" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py</url>
-          <line>1196</line>
+          <line>1198</line>
           <option name="timeStamp" value="888" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py</url>
-          <line>572</line>
+          <line>574</line>
           <option name="timeStamp" value="890" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py</url>
-          <line>407</line>
+          <line>409</line>
           <option name="timeStamp" value="891" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py</url>
-          <line>682</line>
+          <line>684</line>
           <option name="timeStamp" value="897" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py</url>
-          <line>104</line>
+          <line>106</line>
           <option name="timeStamp" value="898" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py</url>
-          <line>97</line>
+          <line>99</line>
           <option name="timeStamp" value="899" />
         </line-breakpoint>
       </breakpoints>
