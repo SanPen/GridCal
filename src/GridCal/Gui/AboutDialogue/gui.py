@@ -103,6 +103,16 @@ class Ui_AboutDialog(object):
         self.gridLayout_2.addItem(self.verticalSpacer_2, 1, 0, 1, 1)
 
         self.tabWidget.addTab(self.tab_3, "")
+        self.tab_4 = QWidget()
+        self.tab_4.setObjectName(u"tab_4")
+        self.verticalLayout_3 = QVBoxLayout(self.tab_4)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.licenseTextEdit = QTextEdit(self.tab_4)
+        self.licenseTextEdit.setObjectName(u"licenseTextEdit")
+
+        self.verticalLayout_3.addWidget(self.licenseTextEdit)
+
+        self.tabWidget.addTab(self.tab_4, "")
 
         self.verticalLayout_2.addWidget(self.tabWidget)
 
@@ -127,5 +137,6 @@ class Ui_AboutDialog(object):
         self.updateLabel.setText(QCoreApplication.translate("AboutDialog", u"TextLabel", None))
         self.updateButton.setText(QCoreApplication.translate("AboutDialog", u"Update", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("AboutDialog", u"Update", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QCoreApplication.translate("AboutDialog", u"License", None))
     # retranslateUi
 

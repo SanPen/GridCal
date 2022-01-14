@@ -59,6 +59,7 @@ packages = find_packages(exclude=['docs', 'research', 'research.*', 'tests', 'te
 
 package_data = {'GridCal': ['*.md',
                             '*.rst',
+                            'LICENSE.txt',
                             'data/cables.csv',
                             'data/transformers.csv',
                             'data/wires.csv'],

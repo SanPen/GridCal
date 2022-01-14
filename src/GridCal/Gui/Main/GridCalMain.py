@@ -1,17 +1,19 @@
-# This file is part of GridCal.
-#
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GridCal is distributed in the hope that it will be useful,
+GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import datetime as dtelib
 import gc
 import os.path
@@ -399,8 +401,6 @@ class MainGUI(QMainWindow):
         self.ui.actionLaunch_data_analysis_tool.triggered.connect(self.display_grid_analysis)
 
         self.ui.actionOnline_documentation.triggered.connect(self.show_online_docs)
-
-        self.ui.actionLicense.triggered.connect(self.show_license)
 
         self.ui.actionExport_all_results.triggered.connect(self.export_all)
 
@@ -889,13 +889,6 @@ class MainGUI(QMainWindow):
         Open the online documentation in a web browser
         """
         webbrowser.open('https://gridcal.readthedocs.io/en/latest/', new=2)
-
-    @staticmethod
-    def show_license(self):
-        """
-        Open the gplv3 in a web browser
-        """
-        webbrowser.open('https://www.gnu.org/licenses/gpl-3.0.en.html', new=2)
 
     @staticmethod
     def print_console_help():

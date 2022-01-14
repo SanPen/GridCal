@@ -18,7 +18,7 @@ try:
     if not btg.is_license_activated():
         btg_license = os.path.join(get_create_gridcal_folder(), 'bentayga.lic')
         if os.path.exists(btg_license):
-            print('Bentayga v' + btg.get_version())
+            # print('Bentayga v' + btg.get_version())
             btg.activate_license(btg_license)
             BENTAYGA_AVAILABLE = True
         else:

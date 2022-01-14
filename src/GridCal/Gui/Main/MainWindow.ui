@@ -7178,7 +7178,6 @@ QProgressBar::chunk{
      <string>Help</string>
     </property>
     <addaction name="actionOnline_documentation"/>
-    <addaction name="actionLicense"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuActions">
@@ -7846,15 +7845,6 @@ QProgressBar::chunk{
    </property>
    <property name="shortcut">
     <string>Ctrl+G</string>
-   </property>
-  </action>
-  <action name="actionLicense">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/new2.svg</normaloff>:/Icons/icons/new2.svg</iconset>
-   </property>
-   <property name="text">
-    <string>License</string>
    </property>
   </action>
   <action name="actionImportPlexosNodeLoad">

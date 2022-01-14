@@ -62,6 +62,8 @@ class AboutDialogueGuiGUI(QDialog):
         # click
         self.ui.updateButton.clicked.connect(self.update)
 
+        self.show_license()
+
     def msg(self, text, title="Warning"):
         """
         Message box
@@ -88,6 +90,14 @@ class AboutDialogueGuiGUI(QDialog):
             self.msg("The exit code was: %d" % list_files.returncode)
         else:
             self.msg('GridCal updated successfully')
+
+    def show_license(self):
+        here = os.path.abspath(os.path.dirname(__file__))
+        license_file = os.path.join(here, '..', '..', 'LICENSE.txt')
+        with open(license_file, 'r', encoding='windows-1252') as file:
+            license_txt = file.read()
+
+        self.ui.licenseTextEdit.setPlainText(license_txt)
 
 
 if __name__ == "__main__":
