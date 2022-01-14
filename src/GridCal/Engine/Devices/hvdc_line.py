@@ -96,14 +96,14 @@ def getFromAndToPowerAt(Pset, theta_f, theta_t, Vnf, Vnt, v_set_f, v_set_t, Sbas
         # from ->  to
         I = Pcalc / (Vnf * v_set_f)  # current in kA
         loss = r1 * I * I  # losses in MW
-        Pf = Pcalc
+        Pf = - Pcalc
         Pt = -(Pf - loss)
 
     elif Pcalc < 0:
         # to -> from
         I = Pcalc / (Vnt * v_set_t)  # current in kA
         loss = r1 * I * I  # losses in MW
-        Pt = -Pcalc
+        Pt = Pcalc
         Pf = -(Pt - loss)
 
     else:
