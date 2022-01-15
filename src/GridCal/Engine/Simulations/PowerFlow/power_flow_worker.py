@@ -662,7 +662,8 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
             # check oscilations: if Pf changes sign from prev to current, the previous prevails and we end the control
             print('control err:', hvdc_control_err, '', Pf_hvdc)
             if hvdc_control_err > hvdc_control_err_prev:
-                print('oscillating control, ending iterations and reverting to previous state')
+                # print('oscillating control, ending iterations and reverting to previous state')
+                logger.add_error("HVDC free control oscillations detected")
                 all_controls_ok = True
                 # revert the data
                 Losses_hvdc = Losses_hvdc_prev
