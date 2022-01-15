@@ -55,7 +55,8 @@ def colour_sub_schematic(Sbase,
                          loadings,
                          types=None,
                          losses=None,
-                         hvdc_sending_power=None,
+                         hvdc_Pf=None,
+                         hvdc_Pt=None,
                          hvdc_losses=None,
                          hvdc_loading=None,
                          failed_br_idx=None,
@@ -81,7 +82,7 @@ def colour_sub_schematic(Sbase,
     :param loadings: Branches load
     :param types: Buses type
     :param losses: Branches losses
-    :param hvdc_sending_power:
+    :param hvdc_Pf:
     :param hvdc_losses:
     :param hvdc_loading:
     :param failed_br_idx: failed branches
@@ -159,9 +160,9 @@ def colour_sub_schematic(Sbase,
             Sfabs = np.abs(Sf)
             max_flow = Sfabs.max()
 
-            if hvdc_sending_power is not None:
-                if len(hvdc_sending_power) > 0:
-                    max_flow = max(max_flow, np.abs(hvdc_sending_power).max())
+            if hvdc_Pf is not None:
+                if len(hvdc_Pf) > 0:
+                    max_flow = max(max_flow, np.abs(hvdc_Pf).max())
 
             if max_flow != 0:
                 Sfnorm = Sfabs / max_flow
@@ -223,9 +224,9 @@ def colour_sub_schematic(Sbase,
                 color = QtCore.Qt.gray
                 branches[i].graphic_obj.set_pen(QtGui.QPen(color, w, style))
 
-    if hvdc_sending_power is not None:
+    if hvdc_Pf is not None:
 
-        hvdc_sending_power_norm = np.abs(hvdc_sending_power) / max_flow
+        hvdc_sending_power_norm = np.abs(hvdc_Pf) / max_flow
 
         for i, elm in enumerate(hvdc_lines):
 
@@ -247,10 +248,10 @@ def colour_sub_schematic(Sbase,
                 tooltip = str(i) + ': ' + elm.name
                 tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(abs(hvdc_loading[i]) * 100) + ' [%]'
 
-                tooltip += '\nPower (from):\t' + "{:10.4f}".format(hvdc_sending_power[i]) + ' [MW]'
+                tooltip += '\nPower (from):\t' + "{:10.4f}".format(hvdc_Pf[i]) + ' [MW]'
 
                 if hvdc_losses is not None:
-                    tooltip += '\nPower (to):\t' + "{:10.4f}".format(-hvdc_sending_power[i] + hvdc_losses[i]) + ' [MW]'
+                    tooltip += '\nPower (to):\t' + "{:10.4f}".format(hvdc_Pt[i]) + ' [MW]'
                     tooltip += '\nLosses: \t\t' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
 
                 elm.graphic_obj.setToolTipText(tooltip)
@@ -259,7 +260,7 @@ def colour_sub_schematic(Sbase,
 
 def colour_the_schematic(circuit: MultiCircuit, Sbus, Sf, voltages, loadings,
                          types=None, losses=None, St=None,
-                         hvdc_sending_power=None, hvdc_losses=None, hvdc_loading=None,
+                         hvdc_Pf=None, hvdc_Pt=None, hvdc_losses=None, hvdc_loading=None,
                          failed_br_idx=None, loading_label='loading',
                          ma=None,
                          theta=None,
@@ -280,7 +281,7 @@ def colour_the_schematic(circuit: MultiCircuit, Sbus, Sf, voltages, loadings,
     :param types: Buses type
     :param losses: Branches losses
     :param St: power seen from the "to" bus
-    :param hvdc_sending_power:
+    :param hvdc_Pf:
     :param hvdc_losses:
     :param hvdc_loading:
     :param failed_br_idx: failed branches
@@ -303,7 +304,8 @@ def colour_the_schematic(circuit: MultiCircuit, Sbus, Sf, voltages, loadings,
                          loadings=loadings,
                          types=types,
                          losses=losses,
-                         hvdc_sending_power=hvdc_sending_power,
+                         hvdc_Pf=hvdc_Pf,
+                         hvdc_Pt=hvdc_Pt,
                          hvdc_losses=hvdc_losses,
                          hvdc_loading=hvdc_loading,
                          failed_br_idx=failed_br_idx,

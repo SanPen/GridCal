@@ -596,7 +596,12 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(multi_circuit,
                                                                                 bus_dict,
                                                                                 theta=np.zeros(nc.nbus))
+    # remember the initial hvdc control values
+    Losses_hvdc_prev = Losses_hvdc.copy()
     Pf_hvdc_prev = Pf_hvdc.copy()
+    Pt_hvdc_prev = Pt_hvdc.copy()
+    loading_hvdc_prev = loading_hvdc.copy()
+
     calculation_inputs = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
 
     results = PowerFlowResults(n=nc.nbus,
@@ -614,6 +619,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
 
     control_iter = 0
     max_control_iter = 10
+    hvdc_control_err_prev = 1e20
     while not all_controls_ok:
 
         # simulate each island and merge the results (doesn't matter if there is only a single island) -----------------
@@ -653,14 +659,29 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                                                                         theta=np.angle(results.voltage))
             hvdc_control_err = np.max(np.abs(Pf_hvdc_prev - Pf_hvdc))
 
+            # check oscilations: if Pf changes sign from prev to current, the previous prevails and we end the control
             print('control err:', hvdc_control_err, '', Pf_hvdc)
-
-            if hvdc_control_err < 0.1:
-                # finalize
+            if hvdc_control_err > hvdc_control_err_prev:
+                print('oscillating control, ending iterations and reverting to previous state')
                 all_controls_ok = True
+                # revert the data
+                Losses_hvdc = Losses_hvdc_prev
+                Pf_hvdc = Pf_hvdc_prev
+                Pt_hvdc = Pt_hvdc_prev
+                loading_hvdc = loading_hvdc_prev
+
             else:
-                # update
-                Pf_hvdc_prev = Pf_hvdc.copy()
+                if hvdc_control_err < 0.1:
+                    # finalize
+                    all_controls_ok = True
+                else:
+                    # update
+                    hvdc_control_err_prev = hvdc_control_err
+
+                    Losses_hvdc_prev = Losses_hvdc.copy()
+                    Pf_hvdc_prev = Pf_hvdc.copy()
+                    Pt_hvdc_prev = Pt_hvdc.copy()
+                    loading_hvdc_prev = loading_hvdc.copy()
         else:
             all_controls_ok = True
 

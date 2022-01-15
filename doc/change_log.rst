@@ -6,6 +6,12 @@ This section describes the changes introduced at each Version.
 
 \* Short releases indicate the fix of a critical bug.
 
+Version 4.4.3
+^^^^^^^^^^^^^^^
+
+- Added HVDC oscillation control when acting in free mode
+
+
 Version 4.4.2
 ^^^^^^^^^^^^^^^
 
