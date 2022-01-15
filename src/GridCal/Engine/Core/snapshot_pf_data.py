@@ -1240,7 +1240,7 @@ class SnapshotData:
             npq = len(self.pq)
             npv = len(self.pv)
             npqpv = npq + npv
-            cols = ['dS/dVa'] * npqpv + ['dS/dVm'] * npq
+            cols = ['dS/dVa {0}'.format(i) for i in range(npqpv)] + ['dS/dVm {0}'.format(i) for i in range(npq)]
             rows = cols
             df = pd.DataFrame(data=J.toarray(), columns=cols, index=rows)
 

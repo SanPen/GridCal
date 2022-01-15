@@ -6,7 +6,7 @@ This section describes the changes introduced at each Version.
 
 \* Short releases indicate the fix of a critical bug.
 
-Version 4.4.0
+Version 4.4.2
 ^^^^^^^^^^^^^^^
 
 - Changed the license to LGPL

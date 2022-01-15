@@ -1077,70 +1077,62 @@ class Ui_mainWindow(object):
         self.simulationDataStructuresListView = QListView(self.frame_28)
         self.simulationDataStructuresListView.setObjectName(u"simulationDataStructuresListView")
 
-        self.gridLayout_19.addWidget(self.simulationDataStructuresListView, 2, 0, 1, 4)
-
-        self.label_23 = QLabel(self.frame_28)
-        self.label_23.setObjectName(u"label_23")
-
-        self.gridLayout_19.addWidget(self.label_23, 0, 0, 1, 4)
+        self.gridLayout_19.addWidget(self.simulationDataStructuresListView, 1, 0, 1, 4)
 
         self.compute_simulation_data_pushButton = QPushButton(self.frame_28)
         self.compute_simulation_data_pushButton.setObjectName(u"compute_simulation_data_pushButton")
         self.compute_simulation_data_pushButton.setMaximumSize(QSize(32, 16777215))
         self.compute_simulation_data_pushButton.setIcon(icon65)
 
-        self.gridLayout_19.addWidget(self.compute_simulation_data_pushButton, 1, 0, 1, 1)
+        self.gridLayout_19.addWidget(self.compute_simulation_data_pushButton, 0, 0, 1, 1)
 
         self.exportSimulationDataButton = QPushButton(self.frame_28)
         self.exportSimulationDataButton.setObjectName(u"exportSimulationDataButton")
         self.exportSimulationDataButton.setMaximumSize(QSize(32, 16777215))
         self.exportSimulationDataButton.setIcon(icon3)
 
-        self.gridLayout_19.addWidget(self.exportSimulationDataButton, 1, 1, 1, 1)
+        self.gridLayout_19.addWidget(self.exportSimulationDataButton, 0, 1, 1, 1)
 
         self.simulation_data_island_comboBox = QComboBox(self.frame_28)
         self.simulation_data_island_comboBox.setObjectName(u"simulation_data_island_comboBox")
 
-        self.gridLayout_19.addWidget(self.simulation_data_island_comboBox, 1, 2, 1, 2)
+        self.gridLayout_19.addWidget(self.simulation_data_island_comboBox, 0, 2, 1, 2)
 
         self.simulationDataSplitter.addWidget(self.frame_28)
         self.frame_29 = QFrame(self.simulationDataSplitter)
         self.frame_29.setObjectName(u"frame_29")
         self.frame_29.setFrameShape(QFrame.NoFrame)
         self.frame_29.setFrameShadow(QFrame.Raised)
-        self.verticalLayout_28 = QVBoxLayout(self.frame_29)
-        self.verticalLayout_28.setObjectName(u"verticalLayout_28")
-        self.verticalLayout_28.setContentsMargins(0, -1, -1, -1)
-        self.frame_69 = QFrame(self.frame_29)
-        self.frame_69.setObjectName(u"frame_69")
-        self.frame_69.setFrameShape(QFrame.NoFrame)
-        self.frame_69.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_35 = QHBoxLayout(self.frame_69)
-        self.horizontalLayout_35.setObjectName(u"horizontalLayout_35")
-        self.horizontalLayout_35.setContentsMargins(0, 20, -1, 0)
-        self.copyArraysButton = QPushButton(self.frame_69)
-        self.copyArraysButton.setObjectName(u"copyArraysButton")
-        self.copyArraysButton.setIcon(icon53)
-
-        self.horizontalLayout_35.addWidget(self.copyArraysButton)
-
-        self.plotArraysButton = QPushButton(self.frame_69)
-        self.plotArraysButton.setObjectName(u"plotArraysButton")
-        self.plotArraysButton.setIcon(icon74)
-
-        self.horizontalLayout_35.addWidget(self.plotArraysButton)
-
+        self.gridLayout_23 = QGridLayout(self.frame_29)
+        self.gridLayout_23.setObjectName(u"gridLayout_23")
+        self.gridLayout_23.setContentsMargins(0, 8, -1, -1)
         self.horizontalSpacer_23 = QSpacerItem(510, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.horizontalLayout_35.addItem(self.horizontalSpacer_23)
+        self.gridLayout_23.addItem(self.horizontalSpacer_23, 0, 3, 1, 1)
 
+        self.arrayModeComboBox = QComboBox(self.frame_29)
+        self.arrayModeComboBox.setObjectName(u"arrayModeComboBox")
 
-        self.verticalLayout_28.addWidget(self.frame_69)
+        self.gridLayout_23.addWidget(self.arrayModeComboBox, 0, 1, 1, 1)
+
+        self.copyArraysButton = QPushButton(self.frame_29)
+        self.copyArraysButton.setObjectName(u"copyArraysButton")
+        self.copyArraysButton.setMinimumSize(QSize(32, 0))
+        self.copyArraysButton.setIcon(icon53)
+
+        self.gridLayout_23.addWidget(self.copyArraysButton, 0, 0, 1, 1)
+
+        self.plotArraysButton = QPushButton(self.frame_29)
+        self.plotArraysButton.setObjectName(u"plotArraysButton")
+        self.plotArraysButton.setMinimumSize(QSize(32, 0))
+        self.plotArraysButton.setIcon(icon74)
+
+        self.gridLayout_23.addWidget(self.plotArraysButton, 0, 4, 1, 1)
 
         self.simulationDataStructureTableView = QTableView(self.frame_29)
         self.simulationDataStructureTableView.setObjectName(u"simulationDataStructureTableView")
 
-        self.verticalLayout_28.addWidget(self.simulationDataStructureTableView)
+        self.gridLayout_23.addWidget(self.simulationDataStructureTableView, 1, 0, 1, 5)
 
         self.simulationDataSplitter.addWidget(self.frame_29)
 
@@ -3992,7 +3984,6 @@ class Ui_mainWindow(object):
         self.label_36.setText(QCoreApplication.translate("mainWindow", u"Start", None))
         self.label_35.setText(QCoreApplication.translate("mainWindow", u"End", None))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.timeEventsTab), QCoreApplication.translate("mainWindow", u"Time events", None))
-        self.label_23.setText(QCoreApplication.translate("mainWindow", u"Island", None))
 #if QT_CONFIG(tooltip)
         self.compute_simulation_data_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Update the islands dispayed", None))
 #endif // QT_CONFIG(tooltip)

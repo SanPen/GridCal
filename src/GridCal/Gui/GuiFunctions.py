@@ -391,6 +391,21 @@ class PandasModel(QtCore.QAbstractTableModel):
         """
         self.data_c[:, col] = self.data_c[row, col]
 
+    def is_complex(self):
+        return self.data_c.dtype == complex
+
+    def is_2d(self):
+        """
+        actually check if the array is 1D or 2D
+        :return: true if it is really a 2D data set
+        """
+
+        is_2d_ = len(self.data_c.shape) == 2
+        if is_2d_:
+            if self.data_c.shape[1] <= 1:
+                is_2d_ = False
+        return is_2d_
+
     def get_data(self, mode=None):
         """
 
@@ -416,7 +431,7 @@ class PandasModel(QtCore.QAbstractTableModel):
             else:
                 names = [val.name for val in self.cols_c]
 
-            if self.data_c.dtype == complex:
+            if self.is_complex():
 
                 if mode == 'real':
                     values = self.data_c.real
@@ -425,7 +440,7 @@ class PandasModel(QtCore.QAbstractTableModel):
                 elif mode == 'abs':
                     values = np.abs(self.data_c)
                 else:
-                    values = np.abs(self.data_c)
+                    values = self.data_c.astype(object)
 
             else:
                 values = self.data_c

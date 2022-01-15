@@ -253,6 +253,12 @@ class MainGUI(QMainWindow):
         if platform.system() == 'Windows':
             self.ui.use_multiprocessing_checkBox.setEnabled(False)
 
+        # array modes
+        self.ui.arrayModeComboBox.addItem('real')
+        self.ui.arrayModeComboBox.addItem('imag')
+        self.ui.arrayModeComboBox.addItem('abs')
+        self.ui.arrayModeComboBox.addItem('complex')
+
         # list of pointers to the GIS windows
         self.gis_dialogues = list()
         self.files_to_delete_at_exit = list()
@@ -560,6 +566,10 @@ class MainGUI(QMainWindow):
 
         self.ui.loadResultFromDiskButton.clicked.connect(self.load_results_driver)
 
+        self.ui.plotArraysButton.clicked.connect(self.plot_simulation_objects_data)
+
+        self.ui.copyArraysButton.clicked.connect(self.copy_simulation_objects_data)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -575,9 +585,6 @@ class MainGUI(QMainWindow):
 
         self.ui.simulationDataStructuresListView.clicked.connect(self.view_simulation_objects_data)
 
-        self.ui.plotArraysButton.clicked.connect(self.plot_simulation_objects_data)
-
-        self.ui.copyArraysButton.clicked.connect(self.copy_simulation_objects_data)
 
         self.ui.catalogueDataStructuresListView.clicked.connect(self.catalogue_element_selected)
 
@@ -1905,7 +1912,8 @@ class MainGUI(QMainWindow):
         Copy the arrays of the compiled arrays view to the clipboard
         """
         mdl = self.ui.simulationDataStructureTableView.model()
-        mdl.copy_to_clipboard()
+        mode = self.ui.arrayModeComboBox.currentText()
+        mdl.copy_to_clipboard(mode=mode)
 
     def plot_simulation_objects_data(self):
         """
@@ -1914,22 +1922,15 @@ class MainGUI(QMainWindow):
         mdl = self.ui.simulationDataStructureTableView.model()
         data = mdl.data_c
 
-        # actually check if the array is 1D or 2D
-        is_2d = len(data.shape) == 2
-        if is_2d:
-            if data.shape[1] <= 1:
-                is_2d = False
-                data = data[:, 0]  # flatten the array
-
         # declare figure
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
 
-        if is_2d:
+        if mdl.is_2d():
             ax1.spy(data)
 
         else:
-            if mdl.data_c.dtype == complex:
+            if mdl.is_complex():
                 ax1.scatter(data.real, data.imag)
                 ax1.set_xlabel('Real')
                 ax1.set_ylabel('Imag')
