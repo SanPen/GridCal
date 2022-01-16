@@ -79,18 +79,6 @@ def make_lodf(Cf, Ct, PTDF, correct_values=True):
     Cft = Cf - Ct
     H = PTDF * Cft.T
 
-    # old code
-    # h = sp.diags(H.diagonal())
-    # LODF = H / (np.ones((nl, nl)) - h * np.ones(nl))
-
-    # divide each row of H by the vector 1 - H.diagonal
-    # LODF = H / (1 - H.diagonal())
-    #
-    # # replace possible nan and inf
-    # LODF[LODF == -np.inf] = 0
-    # LODF[LODF == np.inf] = 0
-    # LODF = np.nan_to_num(LODF)
-
     # this loop avoids the divisions by zero
     # in those cases the LODF column should be zero
     LODF = np.zeros((nl, nl))

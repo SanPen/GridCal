@@ -66,6 +66,49 @@ def getPTDF(circuit: gce.SnapshotData):
     return PTDF
 
 
+def getPTDF2(circuit: gce.SnapshotData):
+    """
+    PTDF according to: https://www.mech.kuleuven.be/en/tme/research/energy_environment/Pdf/wpen2014-12.pdf
+    formula 3.8, modified to use GridCal's pre-computed matrices
+    :param circuit: SnapshotData instance
+    :return: Power Transfer Distribution Factors matrix (branch, bus)
+    """
+    pqpv = np.sort(circuit.pqpv)
+    M1p = circuit.Bf[:, pqpv]
+    M2p = circuit.Bbus[np.ix_(pqpv, pqpv)].tocsc()  # csc is more efficient for SPLU
+    dP = sp.diags(np.ones(len(circuit.pqpv)))
+    PTDF = np.zeros((circuit.nbr, circuit.nbus))
+    PTDF[:, pqpv] = (M1p * spsolve(M2p, dP)).toarray()
+
+    return PTDF
+
+
+def getPTDF_distributed(circuit: gce.SnapshotData):
+    """
+    PTDF according to: https://www.mech.kuleuven.be/en/tme/research/energy_environment/Pdf/wpen2014-12.pdf
+    formula 3.8, modified to use GridCal's pre-computed matrices
+    :param circuit: SnapshotData instance
+    :return: Power Transfer Distribution Factors matrix (branch, bus)
+    """
+    n = circuit.nbus
+    pqpv = np.sort(circuit.pqpv)
+    Bbus_red = circuit.Bbus[np.ix_(pqpv, pqpv)].tocsc()  # csc is more efficient for SPLU
+
+    # create the right-hand side
+    dP = np.ones((n, n)) * (-1 / (n - 1))
+    for i in range(n):
+        dP[i, i] = 1.0
+
+    # solve the angles
+    dP_red = dP[pqpv, :]
+    dTheta = np.zeros((n, n))
+    dTheta[pqpv, :] = spsolve(Bbus_red, dP_red)
+
+    PTDF = circuit.Bf * dTheta
+
+    return PTDF
+
+
 def getPSDF(circuit: gce.SnapshotData, PTDF):
     """
     Phase shifter distribution factors
@@ -97,7 +140,9 @@ if __name__ == '__main__':
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
     # fname = r'C:\Users\SPV86\Documents\Git\GitHub\GridCal\Grids_and_profiles\grids\IEEE 14.xlsx'
     # fname = r'C:\Users\SPV86\Documents\Git\GitHub\GridCal\Grids_and_profiles\grids\KULeuven_5node.gridcal'
-    fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\KULeuven_5node.gridcal'
+    # fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\KULeuven_5node.gridcal'
+    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/KULeuven_5node.gridcal'
+    fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
     # fname = 'helm_data1.gridcal'
@@ -108,6 +153,8 @@ if __name__ == '__main__':
     nc = gce.compile_snapshot_circuit(grid)
 
     PTDF_ = getPTDF(circuit=nc)
+    PTDF2_ = getPTDF2(circuit=nc)
+    PTDF_dis = getPTDF_distributed(circuit=nc)
     PSDF_ = getPSDF(circuit=nc, PTDF=PTDF_)
 
     Ys = 1 / (nc.branch_data.R + 1j * nc.branch_data.X)
@@ -123,5 +170,7 @@ if __name__ == '__main__':
 
 
     print("PTDF:\n", PTDF_)
+    print("PTDF2:\n", PTDF2_)
+    print("PTDF distributed:\n", PTDF_dis)
     print("PSDF:\n", PSDF_)
     print("PSDF (dSf_dPfsh):\n", dSf_dPfsh.toarray())
