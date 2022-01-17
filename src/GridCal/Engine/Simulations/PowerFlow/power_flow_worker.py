@@ -1,17 +1,19 @@
-# This file is part of GridCal.
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
 #
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
 #
-# GridCal is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import pandas as pd
 import numpy as np
@@ -594,7 +596,12 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(multi_circuit,
                                                                                 bus_dict,
                                                                                 theta=np.zeros(nc.nbus))
+    # remember the initial hvdc control values
+    Losses_hvdc_prev = Losses_hvdc.copy()
     Pf_hvdc_prev = Pf_hvdc.copy()
+    Pt_hvdc_prev = Pt_hvdc.copy()
+    loading_hvdc_prev = loading_hvdc.copy()
+
     calculation_inputs = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
 
     results = PowerFlowResults(n=nc.nbus,
@@ -609,9 +616,10 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
 
     # initialize the all controls var
     all_controls_ok = False  # to run the first time
-
     control_iter = 0
     max_control_iter = 10
+    oscillations_number = 0
+
     while not all_controls_ok:
 
         # simulate each island and merge the results (doesn't matter if there is only a single island) -----------------
@@ -650,14 +658,44 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                                                                         bus_dict,
                                                                                         theta=np.angle(results.voltage))
             hvdc_control_err = np.max(np.abs(Pf_hvdc_prev - Pf_hvdc))
-            Pf_hvdc_prev = Pf_hvdc.copy()
+
+            # check for oscillations
+            oscillating = False
+            for i, (Pfi, Pfi_prev) in enumerate(zip(Pf_hvdc, Pf_hvdc_prev)):
+                if (Pfi > 0 and Pfi_prev < 0) or (Pfi < 0 and Pfi_prev > 0):
+                    logger.add_error("HVDC free control oscillations detected",
+                                     multi_circuit.hvdc_lines[i].name, Pfi, Pfi_prev)
+                    oscillating = True
+
+            # check oscillations: if Pf changes sign from prev to current, the previous prevails and we end the control
             print('control err:', hvdc_control_err, '', Pf_hvdc)
+            if oscillating:
+                oscillations_number += 1
 
-            if hvdc_control_err < 0.1:
-                all_controls_ok = True
+                if oscillations_number > 1:
+                    all_controls_ok = True
+                    # revert the data
+                    Losses_hvdc = Losses_hvdc_prev
+                    Pf_hvdc = Pf_hvdc_prev
+                    Pt_hvdc = Pt_hvdc_prev
+                    loading_hvdc = loading_hvdc_prev
+                else:
+                    # update
+                    Losses_hvdc_prev = Losses_hvdc.copy()
+                    Pf_hvdc_prev = Pf_hvdc.copy()
+                    Pt_hvdc_prev = Pt_hvdc.copy()
+                    loading_hvdc_prev = loading_hvdc.copy()
 
-        # elif control_iter == 1:
-        #     all_controls_ok = True
+            else:
+                if hvdc_control_err < 0.1:
+                    # finalize
+                    all_controls_ok = True
+                else:
+                    # update
+                    Losses_hvdc_prev = Losses_hvdc.copy()
+                    Pf_hvdc_prev = Pf_hvdc.copy()
+                    Pt_hvdc_prev = Pt_hvdc.copy()
+                    loading_hvdc_prev = loading_hvdc.copy()
         else:
             all_controls_ok = True
 

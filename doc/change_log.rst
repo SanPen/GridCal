@@ -6,6 +6,19 @@ This section describes the changes introduced at each Version.
 
 \* Short releases indicate the fix of a critical bug.
 
+Version 4.4.3
+^^^^^^^^^^^^^^^
+
+- Added HVDC oscillation control when acting in free mode
+
+
+Version 4.4.2
+^^^^^^^^^^^^^^^
+
+- Changed the license to LGPL
+- Improved HVDC power flow control management
+- Added the license directly in the about box, featuring the linking exceptions for Bentayga and Newton.
+- Rearranged menus oon the GUI.
 
 Version 4.3.5
 ^^^^^^^^^^^^^^^

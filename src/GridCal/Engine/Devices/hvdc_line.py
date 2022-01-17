@@ -1,17 +1,19 @@
-# This file is part of GridCal.
-#
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GridCal is distributed in the hope that it will be useful,
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
 import pandas as pd
@@ -94,15 +96,15 @@ def getFromAndToPowerAt(Pset, theta_f, theta_t, Vnf, Vnt, v_set_f, v_set_t, Sbas
         # from ->  to
         I = Pcalc / (Vnf * v_set_f)  # current in kA
         loss = r1 * I * I  # losses in MW
-        Pf = Pcalc
-        Pt = -(Pf - loss)
+        Pf = - Pcalc
+        Pt = Pcalc - loss
 
     elif Pcalc < 0:
         # to -> from
         I = Pcalc / (Vnt * v_set_t)  # current in kA
         loss = r1 * I * I  # losses in MW
-        Pt = -Pcalc
-        Pf = -(Pt - loss)
+        Pf = - Pcalc - loss
+        Pt = Pcalc  # is negative
 
     else:
         Pf = 0

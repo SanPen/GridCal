@@ -1,17 +1,19 @@
-# This file is part of GridCal.
-#
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GridCal is distributed in the hope that it will be useful,
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import datetime as dtelib
 import gc
 import os.path
@@ -251,6 +253,12 @@ class MainGUI(QMainWindow):
         if platform.system() == 'Windows':
             self.ui.use_multiprocessing_checkBox.setEnabled(False)
 
+        # array modes
+        self.ui.arrayModeComboBox.addItem('real')
+        self.ui.arrayModeComboBox.addItem('imag')
+        self.ui.arrayModeComboBox.addItem('abs')
+        self.ui.arrayModeComboBox.addItem('complex')
+
         # list of pointers to the GIS windows
         self.gis_dialogues = list()
         self.files_to_delete_at_exit = list()
@@ -399,8 +407,6 @@ class MainGUI(QMainWindow):
         self.ui.actionLaunch_data_analysis_tool.triggered.connect(self.display_grid_analysis)
 
         self.ui.actionOnline_documentation.triggered.connect(self.show_online_docs)
-
-        self.ui.actionLicense.triggered.connect(self.show_license)
 
         self.ui.actionExport_all_results.triggered.connect(self.export_all)
 
@@ -560,6 +566,10 @@ class MainGUI(QMainWindow):
 
         self.ui.loadResultFromDiskButton.clicked.connect(self.load_results_driver)
 
+        self.ui.plotArraysButton.clicked.connect(self.plot_simulation_objects_data)
+
+        self.ui.copyArraysButton.clicked.connect(self.copy_simulation_objects_data)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -575,9 +585,6 @@ class MainGUI(QMainWindow):
 
         self.ui.simulationDataStructuresListView.clicked.connect(self.view_simulation_objects_data)
 
-        self.ui.plotArraysButton.clicked.connect(self.plot_simulation_objects_data)
-
-        self.ui.copyArraysButton.clicked.connect(self.copy_simulation_objects_data)
 
         self.ui.catalogueDataStructuresListView.clicked.connect(self.catalogue_element_selected)
 
@@ -889,13 +896,6 @@ class MainGUI(QMainWindow):
         Open the online documentation in a web browser
         """
         webbrowser.open('https://gridcal.readthedocs.io/en/latest/', new=2)
-
-    @staticmethod
-    def show_license(self):
-        """
-        Open the gplv3 in a web browser
-        """
-        webbrowser.open('https://www.gnu.org/licenses/gpl-3.0.en.html', new=2)
 
     @staticmethod
     def print_console_help():
@@ -1912,7 +1912,8 @@ class MainGUI(QMainWindow):
         Copy the arrays of the compiled arrays view to the clipboard
         """
         mdl = self.ui.simulationDataStructureTableView.model()
-        mdl.copy_to_clipboard()
+        mode = self.ui.arrayModeComboBox.currentText()
+        mdl.copy_to_clipboard(mode=mode)
 
     def plot_simulation_objects_data(self):
         """
@@ -1921,22 +1922,15 @@ class MainGUI(QMainWindow):
         mdl = self.ui.simulationDataStructureTableView.model()
         data = mdl.data_c
 
-        # actually check if the array is 1D or 2D
-        is_2d = len(data.shape) == 2
-        if is_2d:
-            if data.shape[1] <= 1:
-                is_2d = False
-                data = data[:, 0]  # flatten the array
-
         # declare figure
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
 
-        if is_2d:
+        if mdl.is_2d():
             ax1.spy(data)
 
         else:
-            if mdl.data_c.dtype == complex:
+            if mdl.is_complex():
                 ax1.scatter(data.real, data.imag)
                 ax1.set_xlabel('Real')
                 ax1.set_ylabel('Imag')
@@ -2511,7 +2505,8 @@ class MainGUI(QMainWindow):
                                          types=results.bus_types,
                                          losses=results.losses,
                                          hvdc_loading=results.hvdc_loading,
-                                         hvdc_sending_power=results.hvdc_Pf,
+                                         hvdc_Pf=results.hvdc_Pf,
+                                         hvdc_Pt=results.hvdc_Pt,
                                          hvdc_losses=results.hvdc_losses,
                                          ma=results.ma,
                                          theta=results.theta,
@@ -3841,7 +3836,7 @@ class MainGUI(QMainWindow):
                                              types=results.bus_types,
                                              Sf=results.Sf,
                                              Sbus=results.Sbus,
-                                             hvdc_sending_power=results.hvdc_Pf,
+                                             hvdc_Pf=results.hvdc_Pf,
                                              hvdc_loading=results.hvdc_loading,
                                              use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                              theta=results.phase_shift,
@@ -3964,7 +3959,7 @@ class MainGUI(QMainWindow):
                                              types=results.bus_types,
                                              losses=None,
                                              St=None,
-                                             hvdc_sending_power=results.hvdc_Pf[0, :],
+                                             hvdc_Pf=results.hvdc_Pf[0, :],
                                              hvdc_losses=None,
                                              hvdc_loading=results.hvdc_loading[0, :],
                                              failed_br_idx=None,
@@ -4182,7 +4177,7 @@ class MainGUI(QMainWindow):
                                          types=results.bus_types,
                                          losses=results.losses,
                                          hvdc_loading=results.hvdc_loading,
-                                         hvdc_sending_power=results.hvdc_Pf,
+                                         hvdc_Pf=results.hvdc_Pf,
                                          hvdc_losses=None,
                                          ma=None,
                                          theta=results.phase_shift,

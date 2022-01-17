@@ -1,17 +1,19 @@
-# This file is part of GridCal.
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
 #
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
 #
-# GridCal is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
 import numba as nb
@@ -1238,7 +1240,7 @@ class SnapshotData:
             npq = len(self.pq)
             npv = len(self.pv)
             npqpv = npq + npv
-            cols = ['dS/dVa'] * npqpv + ['dS/dVm'] * npq
+            cols = ['dS/dVa {0}'.format(i) for i in range(npqpv)] + ['dS/dVm {0}'.format(i) for i in range(npq)]
             rows = cols
             df = pd.DataFrame(data=J.toarray(), columns=cols, index=rows)
 
