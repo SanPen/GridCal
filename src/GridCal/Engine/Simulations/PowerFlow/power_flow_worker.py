@@ -616,10 +616,10 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
 
     # initialize the all controls var
     all_controls_ok = False  # to run the first time
-
     control_iter = 0
     max_control_iter = 10
-    hvdc_control_err_prev = 1e20
+    oscillations_number = 0
+
     while not all_controls_ok:
 
         # simulate each island and merge the results (doesn't matter if there is only a single island) -----------------
@@ -659,17 +659,32 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                                                                                         theta=np.angle(results.voltage))
             hvdc_control_err = np.max(np.abs(Pf_hvdc_prev - Pf_hvdc))
 
-            # check oscilations: if Pf changes sign from prev to current, the previous prevails and we end the control
+            # check for oscillations
+            oscillating = False
+            for i, (Pfi, Pfi_prev) in enumerate(zip(Pf_hvdc, Pf_hvdc_prev)):
+                if (Pfi > 0 and Pfi_prev < 0) or (Pfi < 0 and Pfi_prev > 0):
+                    logger.add_error("HVDC free control oscillations detected",
+                                     multi_circuit.hvdc_lines[i].name, Pfi, Pfi_prev)
+                    oscillating = True
+
+            # check oscillations: if Pf changes sign from prev to current, the previous prevails and we end the control
             print('control err:', hvdc_control_err, '', Pf_hvdc)
-            if hvdc_control_err > hvdc_control_err_prev:
-                # print('oscillating control, ending iterations and reverting to previous state')
-                logger.add_error("HVDC free control oscillations detected")
-                all_controls_ok = True
-                # revert the data
-                Losses_hvdc = Losses_hvdc_prev
-                Pf_hvdc = Pf_hvdc_prev
-                Pt_hvdc = Pt_hvdc_prev
-                loading_hvdc = loading_hvdc_prev
+            if oscillating:
+                oscillations_number += 1
+
+                if oscillations_number > 1:
+                    all_controls_ok = True
+                    # revert the data
+                    Losses_hvdc = Losses_hvdc_prev
+                    Pf_hvdc = Pf_hvdc_prev
+                    Pt_hvdc = Pt_hvdc_prev
+                    loading_hvdc = loading_hvdc_prev
+                else:
+                    # update
+                    Losses_hvdc_prev = Losses_hvdc.copy()
+                    Pf_hvdc_prev = Pf_hvdc.copy()
+                    Pt_hvdc_prev = Pt_hvdc.copy()
+                    loading_hvdc_prev = loading_hvdc.copy()
 
             else:
                 if hvdc_control_err < 0.1:
@@ -677,8 +692,6 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                     all_controls_ok = True
                 else:
                     # update
-                    hvdc_control_err_prev = hvdc_control_err
-
                     Losses_hvdc_prev = Losses_hvdc.copy()
                     Pf_hvdc_prev = Pf_hvdc.copy()
                     Pt_hvdc_prev = Pt_hvdc.copy()
