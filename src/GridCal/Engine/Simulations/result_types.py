@@ -78,8 +78,8 @@ class ResultTypes(Enum):
     ShadowPrices = 'Bus shadow prices', DeviceType.BusDevice
     BranchOverloads = 'Branch overloads', DeviceType.BranchDevice
     LoadShedding = 'Load shedding', DeviceType.LoadDevice
-    ControlledGeneratorShedding = 'Generator shedding', DeviceType.GeneratorDevice
-    ControlledGeneratorPower = 'Generator power', DeviceType.GeneratorDevice
+    GeneratorShedding = 'Generator shedding', DeviceType.GeneratorDevice
+    GeneratorPower = 'Generator power', DeviceType.GeneratorDevice
 
     # OPF-NTC
     HvdcOverloads = 'HVDC overloads', DeviceType.HVDCLineDevice

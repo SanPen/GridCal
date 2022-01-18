@@ -47,7 +47,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names,
                  Sbus=None, voltage=None, load_shedding=None, generator_shedding=None,
                  battery_power=None, controlled_generation_power=None,
-                 Sf=None, overloads=None, loading=None, losses=None,
+                 Sf=None, St=None, overloads=None, loading=None, losses=None,
                  hvdc_names=None, hvdc_power=None, hvdc_loading=None, hvdc_overloads=None,
                  phase_shift=None,
                  contingency_flows_list=None, contingency_indices_list=None, contingency_flows_slacks_list=None,
@@ -59,7 +59,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                  available_results=[ResultTypes.BusVoltageModule,
                                                     ResultTypes.BusVoltageAngle,
                                                     ResultTypes.BusPower,
-                                                    ResultTypes.BranchPower,
+                                                    ResultTypes.BranchActivePowerFrom,
                                                     ResultTypes.BranchLoading,
                                                     ResultTypes.BranchOverloads,
                                                     ResultTypes.BranchTapAngle,
@@ -71,8 +71,8 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                     ResultTypes.HvdcOverloads,
 
                                                     ResultTypes.LoadShedding,
-                                                    ResultTypes.ControlledGeneratorShedding,
-                                                    ResultTypes.ControlledGeneratorPower,
+                                                    ResultTypes.GeneratorShedding,
+                                                    ResultTypes.GeneratorPower,
                                                     ResultTypes.BatteryPower],
                                  data_variables=['bus_names',
                                                  'branch_names',
@@ -110,6 +110,8 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
         self.Sf = Sf
 
+        self.St = St
+
         self.bus_types = bus_types
 
         self.overloads = overloads
@@ -146,52 +148,6 @@ class OptimalPowerFlowResults(ResultsTemplate):
         rates = nc.Rates
         self.loading = self.Sf / (rates + 1e-9)
 
-    def copy(self):
-        """
-        Return a copy of this
-        @return:
-        """
-        return OptimalPowerFlowResults(bus_names=self.bus_names,
-                                       branch_names=self.branch_names,
-                                       load_names=self.load_names,
-                                       generator_names=self.generator_names,
-                                       battery_names=self.battery_names,
-                                       Sbus=self.Sbus,
-                                       voltage=self.voltage,
-                                       load_shedding=self.load_shedding,
-                                       Sf=self.Sf,
-                                       overloads=self.overloads,
-                                       loading=self.loading,
-                                       generator_shedding=self.generator_shedding,
-                                       battery_power=self.battery_power,
-                                       controlled_generation_power=self.generator_power,
-                                       converged=self.converged)
-
-    def initialize(self, n, m):
-        """
-        Initialize the arrays
-        @param n: number of buses
-        @param m: number of branches
-        @return:
-        """
-        self.Sbus = np.zeros(n, dtype=complex)
-
-        self.voltage = np.zeros(n, dtype=complex)
-
-        self.load_shedding = np.zeros(n, dtype=float)
-
-        self.Sf = np.zeros(m, dtype=complex)
-
-        self.loading = np.zeros(m, dtype=complex)
-
-        self.overloads = np.zeros(m, dtype=complex)
-
-        self.losses = np.zeros(m, dtype=complex)
-
-        self.converged = list()
-
-        self.plot_bars_limit = 100
-
     def mdl(self, result_type) -> "ResultsTable":
         """
         Plot the results
@@ -212,7 +168,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
             y_label = '(Radians)'
             title = 'Bus voltage angle'
 
-        elif result_type == ResultTypes.BranchPower:
+        elif result_type == ResultTypes.BranchActivePowerFrom:
             labels = self.branch_names
             y = self.Sf.real
             y_label = '(MW)'
@@ -254,13 +210,13 @@ class OptimalPowerFlowResults(ResultsTemplate):
             y_label = '(MW)'
             title = 'Load shedding'
 
-        elif result_type == ResultTypes.ControlledGeneratorShedding:
+        elif result_type == ResultTypes.GeneratorShedding:
             labels = self.generator_names
             y = self.generator_shedding
             y_label = '(MW)'
             title = 'Controlled generator shedding'
 
-        elif result_type == ResultTypes.ControlledGeneratorPower:
+        elif result_type == ResultTypes.GeneratorPower:
             labels = self.generator_names
             y = self.generator_power
             y_label = '(MW)'

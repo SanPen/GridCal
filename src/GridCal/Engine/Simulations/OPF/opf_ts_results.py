@@ -53,8 +53,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                     ResultTypes.HvdcLoading,
                                                     ResultTypes.HvdcOverloads,
                                                     ResultTypes.LoadShedding,
-                                                    ResultTypes.ControlledGeneratorShedding,
-                                                    ResultTypes.ControlledGeneratorPower,
+                                                    ResultTypes.GeneratorShedding,
+                                                    ResultTypes.GeneratorPower,
                                                     ResultTypes.BatteryPower,
                                                     ResultTypes.BatteryEnergy],
                                  data_variables=['bus_names',
@@ -255,13 +255,13 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             y_label = '(MW)'
             title = 'Load shedding'
 
-        elif result_type == ResultTypes.ControlledGeneratorPower:
+        elif result_type == ResultTypes.GeneratorPower:
             labels = self.generator_names
             y = self.generator_power
             y_label = '(MW)'
             title = 'Controlled generator power'
 
-        elif result_type == ResultTypes.ControlledGeneratorShedding:
+        elif result_type == ResultTypes.GeneratorShedding:
             labels = self.generator_names
             y = self.generator_shedding
             y_label = '(MW)'

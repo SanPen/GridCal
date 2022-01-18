@@ -514,7 +514,7 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                                                          Pinj=P,
                                                                          rates=self.numerical_circuit.hvdc_data.rate[:, a:b] / Sbase,
                                                                          active=self.numerical_circuit.hvdc_data.active[:, a:b],
-                                                                         Pt=self.numerical_circuit.hvdc_data.Pt[:, a:b],
+                                                                         Pt=self.numerical_circuit.hvdc_data.Pset[:, a:b],
                                                                          control_mode=self.numerical_circuit.hvdc_data.control_mode,
                                                                          dispatchable=self.numerical_circuit.hvdc_data.dispatchable,
                                                                          angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase),

@@ -78,9 +78,7 @@ class Opf:
         else:
             self.solver = solver_type
 
-        if self.solver is not None:
-
-            self.problem = self.formulate()
+        self.problem = None
 
     def formulate(self):
         """
@@ -198,12 +196,19 @@ class Opf:
         """
         return self.extract(self.s_from, make_abs=False) / (self.rating + 1e-12)
 
-    def get_branch_power(self):
+    def get_branch_power_from(self):
         """
         return the branch loading (time, device)
         :return: 2D array
         """
         return self.extract(self.s_from, make_abs=False) * self.numerical_circuit.Sbase
+
+    def get_branch_power_to(self):
+        """
+        return the branch loading (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.s_to, make_abs=False) * self.numerical_circuit.Sbase
 
     def get_battery_power(self):
         """
