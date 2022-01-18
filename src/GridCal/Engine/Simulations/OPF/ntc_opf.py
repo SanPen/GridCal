@@ -1480,7 +1480,8 @@ class OpfNTC(Opf):
                  weight_kirchoff=1e5,
                  weight_overloads=1e5,
                  weight_hvdc_control=1e0,
-                 logger: Logger = None):
+                 logger: Logger = None,
+                 t=0):
         """
         DC time series linear optimal power flow
         :param numerical_circuit:  NumericalCircuit instance
@@ -1503,6 +1504,7 @@ class OpfNTC(Opf):
         :param weight_overloads: Branch overload minimization weight
         :param weight_hvdc_control: HVDC control mismatch minimization weight
         :param logger: logger instance
+        :param t: time index
         """
 
         self.area_from_bus_idx = area_from_bus_idx
@@ -1553,6 +1555,8 @@ class OpfNTC(Opf):
         self.inter_area_branches = None
         self.inter_area_hvdc = None
 
+        self.t = t
+
         self.logger = logger
 
         # this builds the formulation right away
@@ -1568,8 +1572,8 @@ class OpfNTC(Opf):
 
         self.inf = self.solver.infinity()
 
-        # time index
-        t = 0
+        # # time index
+        # t = 0
 
         # general indices
         n = self.numerical_circuit.nbus
@@ -1651,8 +1655,9 @@ class OpfNTC(Opf):
                 Pmin=Pg_min,
                 a1=self.area_from_bus_idx,
                 a2=self.area_to_bus_idx,
-                t=t,
-                dispatch_all_areas=self.dispatch_all_areas
+                dispatch_all_areas=self.dispatch_all_areas,
+                # t=t
+                t = self.t
             )
 
             load_cost = self.numerical_circuit.load_data.load_cost[:, t]
@@ -1678,7 +1683,8 @@ class OpfNTC(Opf):
                 Pmin=Pg_min,
                 a1=self.area_from_bus_idx,
                 a2=self.area_to_bus_idx,
-                t=t
+                # t=t
+                t = self.t
             )
 
             load_cost = np.ones(self.numerical_circuit.nload)
@@ -1775,7 +1781,8 @@ class OpfNTC(Opf):
             Sbase=self.numerical_circuit.Sbase,
             inf=self.inf,
             logger=self.logger,
-            t=t
+            # t=t
+            t=self.t
         )
 
         # formulate the node power balance
