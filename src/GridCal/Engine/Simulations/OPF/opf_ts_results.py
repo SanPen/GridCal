@@ -110,7 +110,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.shadow_prices = np.zeros((nt, n), dtype=float)
 
         self.Sf = np.zeros((nt, m), dtype=complex)
-
+        self.St = np.zeros((nt, m), dtype=complex)
 
         self.hvdc_Pf = np.zeros((nt, nhvdc), dtype=float)
         self.hvdc_loading = np.zeros((nt, nhvdc), dtype=float)

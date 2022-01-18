@@ -131,7 +131,10 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                       skip_generation_limits=self.options.skip_generation_limits,
                                       consider_contingencies=self.options.consider_contingencies,
                                       LODF=self.options.LODF,
-                                      lodf_tolerance=self.options.lodf_tolerance)
+                                      lodf_tolerance=self.options.lodf_tolerance,
+                                      maximize_inter_area_flow=self.options.maximize_flows,
+                                      buses_areas_1=self.options.area_from_bus_idx,
+                                      buses_areas_2=self.options.area_to_bus_idx)
 
         elif self.options.solver == SolverType.AC_OPF:
 
@@ -161,6 +164,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
             self.progress_text.emit('Running all in an external solver, this may take a while...')
 
         # solve the problem
+        problem.formulate(batteries_energy_0=batteries_energy_0)
         status = problem.solve()
         print("Status:", status)
 
@@ -171,7 +175,8 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
         self.results.battery_power[a:b, :] = problem.get_battery_power()
         self.results.battery_energy[a:b, :] = problem.get_battery_energy()
         self.results.generator_power[a:b, :] = problem.get_generator_power()
-        self.results.Sf[a:b, :] = problem.get_branch_power()
+        self.results.Sf[a:b, :] = problem.get_branch_power_from()
+        self.results.St[a:b, :] = problem.get_branch_power_to()
         self.results.overloads[a:b, :] = problem.get_overloads()
         self.results.loading[a:b, :] = problem.get_loading()
         self.results.shadow_prices[a:b, :] = problem.get_shadow_prices()

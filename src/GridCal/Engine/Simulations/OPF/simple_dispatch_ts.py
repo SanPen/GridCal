@@ -148,7 +148,7 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
         """
         return self.s_from / self.rating.T
 
-    def get_branch_power(self):
+    def get_branch_power_from(self):
         """
         return the branch loading (time, device)
         :return: 2D array

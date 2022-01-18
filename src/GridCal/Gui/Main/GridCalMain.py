@@ -3994,13 +3994,13 @@ class MainGUI(QMainWindow):
                 if self.ui.draw_schematic_checkBox.isChecked():
 
                     viz.colour_the_schematic(circuit=self.circuit,
-                                             Sbus=None,
+                                             Sbus=results.Sbus[0, :],
                                              Sf=results.Sf[0, :],
+                                             St=results.St[0, :],
                                              voltages=results.voltage[0, :],
                                              loadings=results.loading[0, :],
                                              types=results.bus_types,
                                              losses=None,
-                                             St=None,
                                              hvdc_Pf=results.hvdc_Pf[0, :],
                                              hvdc_losses=None,
                                              hvdc_loading=results.hvdc_loading[0, :],

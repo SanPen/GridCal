@@ -23,20 +23,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Merged some changes">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added &quot;maximize exchange&quot; option to the normal OPF">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE14 - ntc areas_voltages_hvdc_shifter.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE14 - ntc areas_voltages_hvdc_shifter.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_results.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/simple_dispatch.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/simple_dispatch.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/result_types.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/result_types.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/simple_dispatch_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/simple_dispatch_ts.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -692,14 +685,7 @@
       <workItem from="1642405995681" duration="11562000" />
       <workItem from="1642445073918" duration="3119000" />
       <workItem from="1642492356909" duration="9995000" />
-      <workItem from="1642532568418" duration="3332000" />
-    </task>
-    <task id="LOCAL-00207" summary="Fixed CIM export">
-      <created>1633093145139</created>
-      <option name="number" value="00207" />
-      <option name="presentableId" value="LOCAL-00207" />
-      <option name="project" value="LOCAL" />
-      <updated>1633093145139</updated>
+      <workItem from="1642532568418" duration="7201000" />
     </task>
     <task id="LOCAL-00208" summary="Fixed CIM export">
       <created>1633171413746</created>
@@ -1037,7 +1023,14 @@
       <option name="project" value="LOCAL" />
       <updated>1642507950166</updated>
     </task>
-    <option name="localTasksCounter" value="256" />
+    <task id="LOCAL-00256" summary="Added &quot;maximize exchange&quot; option to the normal OPF">
+      <created>1642536865181</created>
+      <option name="number" value="00256" />
+      <option name="presentableId" value="LOCAL-00256" />
+      <option name="project" value="LOCAL" />
+      <updated>1642536865181</updated>
+    </task>
+    <option name="localTasksCounter" value="257" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1071,7 +1064,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added node balance check in the NTC opf" />
     <MESSAGE value="Added more explicative values" />
     <MESSAGE value="Added N-1 exploration" />
     <MESSAGE value="Added NTC-OPF previous checking using DC power flow and contingency analysis" />
@@ -1096,7 +1088,8 @@
     <MESSAGE value="Improved the oscillation detection" />
     <MESSAGE value="fixed the FUBM indices calculation when islands are present" />
     <MESSAGE value="Merged some changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Merged some changes" />
+    <MESSAGE value="Added &quot;maximize exchange&quot; option to the normal OPF" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added &quot;maximize exchange&quot; option to the normal OPF" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1423,16 +1416,6 @@
           <option name="timeStamp" value="835" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_driver.py</url>
-          <line>184</line>
-          <option name="timeStamp" value="837" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_driver.py</url>
-          <line>186</line>
-          <option name="timeStamp" value="839" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_driver.py</url>
           <line>573</line>
           <option name="timeStamp" value="841" />
@@ -1502,19 +1485,9 @@
           <option name="timeStamp" value="904" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf.py</url>
-          <line>340</line>
-          <option name="timeStamp" value="907" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf.py</url>
-          <line>333</line>
-          <option name="timeStamp" value="908" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf.py</url>
-          <line>326</line>
-          <option name="timeStamp" value="909" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf_ts.py</url>
+          <line>380</line>
+          <option name="timeStamp" value="910" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1641,7 +1614,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research2_py.coverage" NAME="Nosetests in PTDF_research2.py Coverage Results" MODIFIED="1600161918846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$time_series.coverage" NAME="time_series Coverage Results" MODIFIED="1617809423186" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Tutorials" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_power_flow_py.coverage" NAME="Nosetests in test_power_flow.py Coverage Results" MODIFIED="1641911106160" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1642536563032" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1642540616262" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$binary_ga.coverage" NAME="binary_ga Coverage Results" MODIFIED="1615226727819" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_opf_py.coverage" NAME="Nosetests in test_opf.py Coverage Results" MODIFIED="1632998728805" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_line_losses_py.coverage" NAME="Nosetests in test_line_losses.py Coverage Results" MODIFIED="1634139762786" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />

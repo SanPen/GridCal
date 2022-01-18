@@ -426,12 +426,19 @@ class OpfTimeSeries:
         """
         return self.extract2D(self.hvdc_slacks) * self.numerical_circuit.Sbase
 
-    def get_branch_power(self):
+    def get_branch_power_from(self):
         """
         return the branch loading (time, device)
         :return: 2D array
         """
         return self.extract2D(self.s_from, make_abs=False) * self.numerical_circuit.Sbase
+
+    def get_branch_power_to(self):
+        """
+        return the branch loading (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.s_to, make_abs=False) * self.numerical_circuit.Sbase
 
     def get_battery_power(self):
         """
