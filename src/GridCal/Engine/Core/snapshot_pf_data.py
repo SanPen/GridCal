@@ -1350,6 +1350,8 @@ class SnapshotData:
         nc.generator_data = self.generator_data.slice(gen_idx, bus_idx, time_idx)
         nc.shunt_data = self.shunt_data.slice(shunt_idx, bus_idx, time_idx)
 
+        nc.determine_control_indices()
+
         return nc
 
     def split_into_islands(self, ignore_single_node_islands=False) -> List["SnapshotData"]:
@@ -1377,12 +1379,10 @@ class SnapshotData:
 
                 if len(bus_idx) > 1:
                     island = self.get_island(bus_idx)
-                    # island.compute_all()  # compute the internal magnitudes
                     circuit_islands.append(island)
 
             else:
                 island = self.get_island(bus_idx)
-                # island.compute_all()  # compute the internal magnitudes
                 circuit_islands.append(island)
 
         return circuit_islands

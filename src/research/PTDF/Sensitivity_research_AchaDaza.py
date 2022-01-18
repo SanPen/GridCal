@@ -41,6 +41,7 @@ print("W1\n", W1)
 
 print()
 
+# the -1 is because the tap values should be the increments (AKA the deviation over 1)
 f = np.r_[nc.branch_data.m[:, 0] - 1, nc.Sbus.real]
 x = W1.dot(f)
 
