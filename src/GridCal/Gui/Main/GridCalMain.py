@@ -472,7 +472,7 @@ class MainGUI(QMainWindow):
 
         self.ui.delete_profiles_structure_pushButton.clicked.connect(self.delete_profiles_structure)
 
-        self.ui.set_profile_state_button.clicked.connect(self.set_profiles_state_to_grid)
+        # self.ui.set_profile_state_button.clicked.connect(self.set_profiles_state_to_grid)
 
         self.ui.edit_profiles_pushButton.clicked.connect(self.import_profiles)
 

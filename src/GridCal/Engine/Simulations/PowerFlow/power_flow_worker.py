@@ -619,7 +619,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     control_iter = 0
     max_control_iter = 10
     oscillations_number = 0
-
+    lpf_alpha = 0.2
     while not all_controls_ok:
 
         # simulate each island and merge the results (doesn't matter if there is only a single island) -----------------
@@ -672,19 +672,20 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
             if oscillating:
                 oscillations_number += 1
 
-                if oscillations_number > 1:
-                    all_controls_ok = True
-                    # revert the data
-                    Losses_hvdc = Losses_hvdc_prev
-                    Pf_hvdc = Pf_hvdc_prev
-                    Pt_hvdc = Pt_hvdc_prev
-                    loading_hvdc = loading_hvdc_prev
-                else:
-                    # update
-                    Losses_hvdc_prev = Losses_hvdc.copy()
-                    Pf_hvdc_prev = Pf_hvdc.copy()
-                    Pt_hvdc_prev = Pt_hvdc.copy()
-                    loading_hvdc_prev = loading_hvdc.copy()
+                # if oscillations_number > 1:
+                #     all_controls_ok = True
+                #     # revert the data
+
+                Losses_hvdc = Losses_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Losses_hvdc
+                Pf_hvdc = Pf_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Pf_hvdc
+                Pt_hvdc = Pt_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Pt_hvdc
+                loading_hvdc = loading_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * loading_hvdc
+
+                # update
+                Losses_hvdc_prev = Losses_hvdc.copy()
+                Pf_hvdc_prev = Pf_hvdc.copy()
+                Pt_hvdc_prev = Pt_hvdc.copy()
+                loading_hvdc_prev = loading_hvdc.copy()
 
             else:
                 if hvdc_control_err < 0.1:
@@ -704,8 +705,8 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     # compile HVDC results (available for the complete grid since HVDC line as formulated are split objects
     # Pt is the "generation" at the sending point
     # Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc
-    results.hvdc_Pf = Pf_hvdc * nc.Sbase
-    results.hvdc_Pt = Pt_hvdc * nc.Sbase
+    results.hvdc_Pf = - Pf_hvdc * nc.Sbase  # we change the sign to keep the sign convention with AC lines
+    results.hvdc_Pt = - Pt_hvdc * nc.Sbase  # we change the sign to keep the sign convention with AC lines
     results.hvdc_loading = loading_hvdc * 100.0
     results.hvdc_losses = Losses_hvdc * nc.Sbase
 

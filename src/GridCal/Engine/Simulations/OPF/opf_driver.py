@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from enum import Enum
+from typing import List, Dict, Tuple, Any
 import numpy as np
 import time
 
@@ -50,7 +51,10 @@ class OptimalPowerFlowOptions:
                  skip_generation_limits=False,
                  tolerance=1.0,
                  LODF=None,
-                 lodf_tolerance=0.001):
+                 lodf_tolerance=0.001,
+                 maximize_flows=False,
+                 area_from_bus_idx: List = None,
+                 area_to_bus_idx: List = None):
         """
         Optimal power flow options
         :param verbose:
@@ -65,6 +69,10 @@ class OptimalPowerFlowOptions:
         :param skip_generation_limits:
         :param tolerance:
         :param LODF:
+        :param lodf_tolerance:
+        :param maximize_flows:
+        :param area_from_bus_idx:
+        :param area_to_bus_idx:
         """
         self.verbose = verbose
 
@@ -91,6 +99,12 @@ class OptimalPowerFlowOptions:
         self.tolerance = tolerance
 
         self.lodf_tolerance = lodf_tolerance
+
+        self.maximize_flows = maximize_flows
+
+        self.area_from_bus_idx = area_from_bus_idx
+
+        self.area_to_bus_idx = area_to_bus_idx
 
 
 class OptimalPowerFlow(DriverTemplate):
