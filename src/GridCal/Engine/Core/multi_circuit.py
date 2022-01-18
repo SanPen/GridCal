@@ -1714,6 +1714,10 @@ class MultiCircuit:
         for bus in self.buses:
             bus.set_state(t)
 
+        for branch in self.get_branches():
+            branch.set_profile_values(t)
+
+
     def get_bus_branch_connectivity_matrix(self):
         """
         Get the branch-bus connectivity
