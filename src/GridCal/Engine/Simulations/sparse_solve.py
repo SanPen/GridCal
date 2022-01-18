@@ -68,7 +68,7 @@ except ImportError:
     # print(SparseSolver.Pardiso.value + ' failed')
 
 try:
-    from scikits.umfpack import spsolve, splu
+    from scikits.umfpack import spsolve_umfpack
 
     available_sparse_solvers.append(SparseSolver.UMFPACK)
 except ImportError:
@@ -155,7 +155,7 @@ def umfpack_linsolve(A, b):
     :param b:
     :return:
     """
-    return spsolve(A, b)
+    return spsolve_umfpack(A, b)
 
 
 def get_linear_solver(solver_type: SparseSolver = preferred_type):
