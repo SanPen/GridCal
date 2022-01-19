@@ -180,7 +180,6 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
         self.results.Sbus[a:b, :] = problem.get_power_injections()
         self.results.hvdc_Pf[a:b, :] = problem.get_hvdc_flows()
-        self.results.hvdc_overloads[a:b, :] = problem.get_hvdc_slacks()
         self.results.hvdc_loading[a:b, :] = self.results.hvdc_Pf[a:b, :] / self.numerical_circuit.hvdc_data.rate[:, a:b].transpose()
         self.results.phase_shift[a:b, :] = problem.get_phase_shifts()
 

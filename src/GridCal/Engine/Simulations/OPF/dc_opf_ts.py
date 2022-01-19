@@ -31,8 +31,6 @@ from GridCal.Engine.Devices.enumerations import TransformerControlType, Converte
 
 
 def get_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2, FCSlack1, FCSlack2,
-                           hvdc_overload1, hvdc_overload2,
-                           hvdc_control1_slacks, hvdc_control2_slacks,
                            flow_from_a1_to_a2, sum_gen_area_1, sum_gen_area_2,
                            cost_g, cost_b, cost_l, cost_br):
     """
@@ -60,10 +58,6 @@ def get_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2, FCSlack1, FCSlack2,
     f_obj += pl.lpSum(cost_br * (FSlack1 + FSlack2))
 
     f_obj += cost_br * pl.lpSum(FCSlack1) + cost_br * pl.lpSum(FCSlack2)
-
-    f_obj += cost_br * pl.lpSum(hvdc_overload1) + cost_br * pl.lpSum(hvdc_overload2)
-
-    f_obj += cost_br * pl.lpSum(hvdc_control1_slacks) + cost_br * pl.lpSum(hvdc_control2_slacks)
 
     if flow_from_a1_to_a2 is not None:
         f_obj -= pl.lpSum(flow_from_a1_to_a2)  # maximize
@@ -348,10 +342,6 @@ def formulate_hvdc_flow(problem: LpProblem, angles, Pinj, rates, active, Pset,
     nhvdc, nt = rates.shape
 
     flow_f = np.zeros((nhvdc, nt), dtype=object)
-    overload1 = np.zeros((nhvdc, nt), dtype=object)
-    overload2 = np.zeros((nhvdc, nt), dtype=object)
-    hvdc_control1 = np.zeros((nhvdc, nt), dtype=object)
-    hvdc_control2 = np.zeros((nhvdc, nt), dtype=object)
 
     for t, i in product(range(nt), range(nhvdc)):
 
@@ -360,29 +350,28 @@ def formulate_hvdc_flow(problem: LpProblem, angles, Pinj, rates, active, Pset,
             _f = F[i]
             _t = T[i]
 
-            hvdc_control1[i, t] = LpVariable('hvdc_control1_{0}_{1}'.format(i, t), 0, inf)
-            hvdc_control2[i, t] = LpVariable('hvdc_control2_{0}_{1}'.format(i, t), 0, inf)
-
             if control_mode[i] == HvdcControlType.type_0_free:
 
                 if rates[i, t] <= 0:
                     logger.add_error('Rate = 0', 'HVDC:{0} t:{1}'.format(i, t), rates[i, t])
 
                 # formulate the hvdc flow as an AC line equivalent
+                flow_f[i, t] = LpVariable('flow_hvdc1_{0}_{1}'.format(i, t), -rates[i, t], rates[i, t])
                 P0 = Pset[i, t] / Sbase
-                flow_f[i, t] = P0 + angle_droop[i, t] * (angles[_f, t] - angles[_t, t]) + hvdc_control1[i, t] - hvdc_control2[i, t]
+                problem.add(flow_f[i, t] == P0 + angle_droop[i, t] * (angles[_f, t] - angles[_t, t]),
+                            "hvdc_flow_set_{0}_{1}".format(i, t))
 
                 # add the injections matching the flow
                 Pinj[_f, t] -= flow_f[i, t]
                 Pinj[_t, t] += flow_f[i, t]
 
                 # rating restriction in the sense from-to: eq.17
-                overload1[i, t] = LpVariable('overload_hvdc1_{0}_{1}'.format(i, t), 0, inf)
-                problem.add(flow_f[i, t] <= (rates[i, t] + overload1[i, t]), "hvdc_ft_rating_{0}_{1}".format(i, t))
+                # overload1[i, t] = LpVariable('overload_hvdc1_{0}_{1}'.format(i, t), 0, inf)
+                # problem.add(flow_f[i, t] <= (rates[i, t] + overload1[i, t]), "hvdc_ft_rating_{0}_{1}".format(i, t))
 
                 # rating restriction in the sense to-from: eq.18
-                overload2[i, t] = LpVariable('overload_hvdc2_{0}_{1}'.format(i, t), 0, inf)
-                problem.add((-rates[i, t] - overload2[i, t]) <= flow_f[i, t], "hvdc_tf_rating_{0}_{1}".format(i, t))
+                # overload2[i, t] = LpVariable('overload_hvdc2_{0}_{1}'.format(i, t), 0, inf)
+                # problem.add((-rates[i, t] - overload2[i, t]) <= flow_f[i, t], "hvdc_tf_rating_{0}_{1}".format(i, t))
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and not dispatchable[i]:
                 # simple injections model: The power is set by the user
@@ -398,7 +387,7 @@ def formulate_hvdc_flow(problem: LpProblem, angles, Pinj, rates, active, Pset,
                 Pinj[_f, t] -= flow_f[i, t]
                 Pinj[_t, t] += flow_f[i, t]
 
-    return flow_f, overload1, overload2, hvdc_control1, hvdc_control2
+    return flow_f
 
 
 def formulate_inter_area_flow(numerical_circuit: OpfTimeCircuit,
@@ -603,21 +592,20 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                  Pl=Pl)
 
         # formulate the simple HVDC models -----------------------------------------------------------------------------
-        hvdc_flow_f, hvdc_overload1, hvdc_overload2, \
-        hvdc_control1_slacks, hvdc_control2_slacks = formulate_hvdc_flow(problem=self.problem,
-                                                                         angles=theta,
-                                                                         Pinj=P,
-                                                                         rates=self.numerical_circuit.hvdc_data.rate[:, a:b] / Sbase,
-                                                                         active=self.numerical_circuit.hvdc_data.active[:, a:b],
-                                                                         Pset=self.numerical_circuit.hvdc_data.Pset[:, a:b],
-                                                                         control_mode=self.numerical_circuit.hvdc_data.control_mode,
-                                                                         dispatchable=self.numerical_circuit.hvdc_data.dispatchable,
-                                                                         angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase),
-                                                                         F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
-                                                                         T=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
-                                                                         Sbase=Sbase,
-                                                                         logger=self.logger,
-                                                                         inf=999999)
+        hvdc_flow_f = formulate_hvdc_flow(problem=self.problem,
+                                          angles=theta,
+                                          Pinj=P,
+                                          rates=self.numerical_circuit.hvdc_data.rate[:, a:b] / Sbase,
+                                          active=self.numerical_circuit.hvdc_data.active[:, a:b],
+                                          Pset=self.numerical_circuit.hvdc_data.Pset[:, a:b],
+                                          control_mode=self.numerical_circuit.hvdc_data.control_mode,
+                                          dispatchable=self.numerical_circuit.hvdc_data.dispatchable,
+                                          angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase),
+                                          F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
+                                          T=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
+                                          Sbase=Sbase,
+                                          logger=self.logger,
+                                          inf=999999)
 
         # set the nodal restrictions -----------------------------------------------------------------------------------
         nodal_restrictions = add_dc_nodal_power_balance(numerical_circuit=self.numerical_circuit,
@@ -697,10 +685,6 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                                FSlack2=branch_rating_slack2,
                                                FCSlack1=con_overload1_lst,
                                                FCSlack2=con_overload2_lst,
-                                               hvdc_overload1=hvdc_overload1,
-                                               hvdc_overload2=hvdc_overload2,
-                                               hvdc_control1_slacks=hvdc_control1_slacks,
-                                               hvdc_control2_slacks=hvdc_control2_slacks,
                                                flow_from_a1_to_a2=flow_from_a1_to_a2,
                                                sum_gen_area_1=sum_gen_area_1,
                                                sum_gen_area_2=sum_gen_area_2,
@@ -721,7 +705,6 @@ class OpfDcTimeSeries(OpfTimeSeries):
         self.phase_shift = tau.transpose()
 
         self.hvdc_flow = hvdc_flow_f.transpose()
-        self.hvdc_slacks = (hvdc_overload1 + hvdc_overload2).transpose()
 
         self.E = E.transpose()
         self.load_shedding = load_slack.transpose()

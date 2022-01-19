@@ -48,7 +48,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                  Sbus=None, voltage=None, load_shedding=None, generator_shedding=None,
                  battery_power=None, controlled_generation_power=None,
                  Sf=None, St=None, overloads=None, loading=None, losses=None,
-                 hvdc_names=None, hvdc_power=None, hvdc_loading=None, hvdc_overloads=None,
+                 hvdc_names=None, hvdc_power=None, hvdc_loading=None,
                  phase_shift=None,
                  contingency_flows_list=None, contingency_indices_list=None, contingency_flows_slacks_list=None,
                  rates=None, contingency_rates=None,
@@ -68,7 +68,6 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
                                                     ResultTypes.HvdcPowerFrom,
                                                     ResultTypes.HvdcLoading,
-                                                    ResultTypes.HvdcOverloads,
 
                                                     ResultTypes.LoadShedding,
                                                     ResultTypes.GeneratorShedding,
@@ -90,7 +89,6 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                  'hvdc_names',
                                                  'hvdc_power',
                                                  'hvdc_loading',
-                                                 'hvdc_overloads',
                                                  'phase_shift',
                                                  'battery_power',
                                                  'generator_power',
@@ -123,7 +121,6 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.hvdc_names = hvdc_names
         self.hvdc_Pf = hvdc_power
         self.hvdc_loading = hvdc_loading
-        self.hvdc_overloads = hvdc_overloads
 
         self.phase_shift = phase_shift
 
@@ -233,12 +230,6 @@ class OptimalPowerFlowResults(ResultsTemplate):
             y = self.hvdc_Pf
             y_label = '(MW)'
             title = 'HVDC power'
-
-        elif result_type == ResultTypes.HvdcOverloads:
-            labels = self.hvdc_names
-            y = self.hvdc_overloads
-            y_label = '(MW)'
-            title = 'HVDC overloads'
 
         elif result_type == ResultTypes.ContingencyFlowsReport:
 

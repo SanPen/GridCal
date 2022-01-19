@@ -51,7 +51,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
                                                     ResultTypes.HvdcPowerFrom,
                                                     ResultTypes.HvdcLoading,
-                                                    ResultTypes.HvdcOverloads,
+
                                                     ResultTypes.LoadShedding,
                                                     ResultTypes.GeneratorShedding,
                                                     ResultTypes.GeneratorPower,
@@ -114,7 +114,6 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         self.hvdc_Pf = np.zeros((nt, nhvdc), dtype=float)
         self.hvdc_loading = np.zeros((nt, nhvdc), dtype=float)
-        self.hvdc_overloads = np.zeros((nt, nhvdc), dtype=float)
 
         self.phase_shift = np.zeros((nt, m), dtype=float)
 
@@ -234,12 +233,6 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         elif result_type == ResultTypes.HvdcPowerFrom:
             labels = self.hvdc_names
             y = self.hvdc_Pf
-            y_label = '(MW)'
-            title = result_type.value[0]
-
-        elif result_type == ResultTypes.HvdcOverloads:
-            labels = self.hvdc_names
-            y = self.hvdc_overloads
             y_label = '(MW)'
             title = result_type.value[0]
 

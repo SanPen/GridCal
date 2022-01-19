@@ -47,7 +47,6 @@ class Opf:
 
         self.Pinj = None
         self.hvdc_flow = None
-        self.hvdc_slacks = None
 
         self.phase_shift = None
 
@@ -182,13 +181,6 @@ class Opf:
         """
         return self.extract(self.hvdc_flow) * self.numerical_circuit.Sbase
 
-    def get_hvdc_slacks(self):
-        """
-        return the branch overloads (time, device)
-        :return: 2D array
-        """
-        return self.extract(self.hvdc_slacks)
-
     def get_loading(self):
         """
         return the branch loading (time, device)
@@ -292,7 +284,6 @@ class OpfTimeSeries:
 
         self.Pinj = None
         self.hvdc_flow = None
-        self.hvdc_slacks = None
         self.phase_shift = None
 
         self.E = None
@@ -418,13 +409,6 @@ class OpfTimeSeries:
         :return: 2D array
         """
         return self.extract2D(self.hvdc_flow) * self.numerical_circuit.Sbase
-
-    def get_hvdc_slacks(self):
-        """
-        return the branch overloads (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.hvdc_slacks) * self.numerical_circuit.Sbase
 
     def get_branch_power_from(self):
         """
