@@ -90,25 +90,28 @@ class Opf:
 
         return problem
 
-    def solve(self):
+    def solve(self, msg=True):
         """
         Call PuLP to solve the problem
         """
         # self.problem.writeLP('OPF.lp')
         if self.solver_type == MIPSolvers.CBC:
-            params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=1)
+            params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=msg)
 
         elif self.solver_type == MIPSolvers.SCIP:
-            params = SCIP_CMD(msg=1)
+            params = SCIP_CMD(msg=msg)
 
         elif self.solver_type == MIPSolvers.CPLEX:
-            params = CPLEX_CMD(msg=1)
+            params = CPLEX_CMD(msg=msg)
+
+        elif self.solver_type == MIPSolvers.HiGS:
+            params = HiGHS_CMD(msg=msg)
 
         elif self.solver_type == MIPSolvers.GUROBI:
-            params = GUROBI_CMD(msg=1)
+            params = GUROBI_CMD(msg=msg)
 
         elif self.solver_type == MIPSolvers.XPRESS:
-            params = XPRESS(msg=1)
+            params = XPRESS(msg=msg)
 
         else:
             raise Exception('Solver not supported! ' + str(self.solver_type))
@@ -318,6 +321,9 @@ class OpfTimeSeries:
 
         if self.solver == MIPSolvers.CBC:
             params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=msg)
+
+        elif self.solver == MIPSolvers.HiGS:
+            params = HiGHS_CMD(msg=msg)
 
         elif self.solver == MIPSolvers.SCIP:
             params = SCIP_CMD(msg=msg)

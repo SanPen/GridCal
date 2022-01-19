@@ -152,6 +152,9 @@ elif GLPK_CMD().available():
 elif COIN_CMD().available():
     LpSolverDefault = COIN_CMD()
 
+elif HiGHS_CMD().available():
+    LpSolverDefault = HiGHS_CMD()
+
 else:
     LpSolverDefault = None
 
