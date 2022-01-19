@@ -251,7 +251,7 @@ class Opf:
         """
         val = np.zeros(self.nodal_restrictions.shape)
         for i in range(val.shape[0]):
-            if self.nodal_restrictions[i].pi is not None:
+            if self.nodal_restrictions[i] is not None:
                 val[i] = - self.nodal_restrictions[i].pi
         return val.transpose()
 
@@ -479,6 +479,6 @@ class OpfTimeSeries:
         """
         val = np.zeros(self.nodal_restrictions.shape)
         for i, j in product(range(val.shape[0]), range(val.shape[1])):
-            if self.nodal_restrictions[i, j].pi is not None:
+            if self.nodal_restrictions[i, j] is not None:
                 val[i, j] = - self.nodal_restrictions[i, j].pi
         return val.transpose()
