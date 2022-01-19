@@ -586,16 +586,33 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     :return: PowerFlowResults instance
     """
 
-    nc = compile_snapshot_circuit(circuit=multi_circuit,
-                                  apply_temperature=options.apply_temperature_correction,
-                                  branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-                                  opf_results=opf_results)
+    nc = compile_snapshot_circuit(
+        circuit=multi_circuit,
+        apply_temperature=options.apply_temperature_correction,
+        branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+        opf_results=opf_results
+    )
+
+    PowerFlowResults(
+        n=nc.nbus,
+        m=nc.nbr,
+        n_tr=nc.ntr,
+        n_hvdc=nc.nhvdc,
+        bus_names=nc.bus_data.bus_names,
+        branch_names=nc.branch_data.branch_names,
+        transformer_names=nc.transformer_data.tr_names,
+        hvdc_names=nc.hvdc_data.names,
+        bus_types=nc.bus_data.bus_types
+    )
 
     # compose the HVDC power injections
     bus_dict = multi_circuit.get_bus_index_dict()
-    Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(multi_circuit,
-                                                                                bus_dict,
-                                                                                theta=np.zeros(nc.nbus))
+    Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(
+        multi_circuit,
+        bus_dict,
+        theta=np.zeros(nc.nbus)
+    )
+
     # remember the initial hvdc control values
     Losses_hvdc_prev = Losses_hvdc.copy()
     Pf_hvdc_prev = Pf_hvdc.copy()
