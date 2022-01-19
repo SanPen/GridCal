@@ -168,6 +168,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
         a = start_
         b = end_
         self.results.voltage[a:b, :] = problem.get_voltage()
+        self.results.bus_shadow_prices[a:b, :] = problem.get_shadow_prices()
         self.results.load_shedding[a:b, :] = problem.get_load_shedding()
         self.results.battery_power[a:b, :] = problem.get_battery_power()
         self.results.battery_energy[a:b, :] = problem.get_battery_energy()
@@ -176,7 +177,6 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
         self.results.St[a:b, :] = problem.get_branch_power_to()
         self.results.overloads[a:b, :] = problem.get_overloads()
         self.results.loading[a:b, :] = problem.get_loading()
-        self.results.shadow_prices[a:b, :] = problem.get_shadow_prices()
 
         self.results.Sbus[a:b, :] = problem.get_power_injections()
         self.results.hvdc_Pf[a:b, :] = problem.get_hvdc_flows()
@@ -208,7 +208,10 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
             start_ = groups[i - 1]
             end_ = groups[i]
 
+            # show progress message
             print(start_, ':', end_, ' [', end_ - start_, ']')
+            self.progress_text.emit('Running OPF for the time group {0} '
+                                    'start {1} - end {2} in external solver...'.format(i, start_, end_))
 
             if start_ >= self.start_ and end_ <= self.end_:
 
@@ -217,7 +220,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
             energy_0 = self.results.battery_energy[end_ - 1, :]
 
-            self.progress_text.emit('Running OPF for the time group ' + str(i) + ' in external solver...')
+            # update progress bar
             progress = ((start_ - self.start_ + 1) / (self.end_ - self.start_)) * 100
             self.progress_signal.emit(progress)
 

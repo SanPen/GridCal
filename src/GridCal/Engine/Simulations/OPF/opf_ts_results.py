@@ -41,7 +41,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                  name='OPF time series',
                                  available_results=[ResultTypes.BusVoltageModule,
                                                     ResultTypes.BusVoltageAngle,
-                                                    ResultTypes.ShadowPrices,
+                                                    ResultTypes.BusShadowPrices,
+
                                                     ResultTypes.BranchPower,
                                                     ResultTypes.BranchLoading,
                                                     ResultTypes.BranchOverloads,
@@ -107,7 +108,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         self.Sbus = np.zeros((nt, n), dtype=complex)
 
-        self.shadow_prices = np.zeros((nt, n), dtype=float)
+        self.bus_shadow_prices = np.zeros((nt, n), dtype=float)
 
         self.Sf = np.zeros((nt, m), dtype=complex)
         self.St = np.zeros((nt, m), dtype=complex)
@@ -188,10 +189,10 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             y_label = '(Radians)'
             title = 'Bus voltage angle'
 
-        elif result_type == ResultTypes.ShadowPrices:
+        elif result_type == ResultTypes.BusShadowPrices:
             labels = self.bus_names
-            y = self.shadow_prices
-            y_label = '(currency)'
+            y = self.bus_shadow_prices
+            y_label = '(currency / MW)'
             title = 'Bus shadow prices'
 
         elif result_type == ResultTypes.BranchPower:

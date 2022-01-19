@@ -106,7 +106,7 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     return pl.lpDot(C_bus_gen, Pg) + pl.lpDot(C_bus_bat, Pb) - pl.lpDot(C_bus_load, Pl - LSlack)
 
 
-def add_dc_nodal_power_balance(numerical_circuit: SnapshotOpfData, problem: pl.LpProblem, theta, P):
+def formulate_dc_nodal_power_balance(numerical_circuit: SnapshotOpfData, problem: pl.LpProblem, theta, P):
     """
     Add the nodal power balance
     :param numerical_circuit: NumericalCircuit instance
@@ -165,9 +165,9 @@ def add_dc_nodal_power_balance(numerical_circuit: SnapshotOpfData, problem: pl.L
     return nodal_restrictions
 
 
-def add_branch_loading_restriction(problem: pl.LpProblem, nc: SnapshotOpfData,
-                                   F, T, theta, active, monitored,
-                                   ratings, ratings_slack_from, ratings_slack_to):
+def formulate_branch_loading_restriction(problem: pl.LpProblem, nc: SnapshotOpfData,
+                                         F, T, theta, active, monitored,
+                                         ratings, ratings_slack_from, ratings_slack_to):
     """
     Add the branch loading restrictions
     :param problem: LpProblem instance
@@ -498,22 +498,22 @@ class OpfDc(Opf):
                                           inf=999999)
 
         # add the DC grid restrictions (with real slack losses) --------------------------------------------------------
-        nodal_restrictions = add_dc_nodal_power_balance(numerical_circuit=self.numerical_circuit,
-                                                        problem=self.problem,
-                                                        theta=theta,
-                                                        P=P)
+        self.nodal_restrictions = formulate_dc_nodal_power_balance(numerical_circuit=self.numerical_circuit,
+                                                                   problem=self.problem,
+                                                                   theta=theta,
+                                                                   P=P)
 
         # add the branch loading restriction ---------------------------------------------------------------------------
-        flow_f, tau = add_branch_loading_restriction(problem=self.problem,
-                                                     nc=self.numerical_circuit,
-                                                     F=self.numerical_circuit.F,
-                                                     T=self.numerical_circuit.T,
-                                                     theta=theta,
-                                                     active=branch_active,
-                                                     monitored=branch_monitored,
-                                                     ratings=branch_ratings,
-                                                     ratings_slack_from=branch_rating_slack1,
-                                                     ratings_slack_to=branch_rating_slack2)
+        flow_f, tau = formulate_branch_loading_restriction(problem=self.problem,
+                                                           nc=self.numerical_circuit,
+                                                           F=self.numerical_circuit.F,
+                                                           T=self.numerical_circuit.T,
+                                                           theta=theta,
+                                                           active=branch_active,
+                                                           monitored=branch_monitored,
+                                                           ratings=branch_ratings,
+                                                           ratings_slack_from=branch_rating_slack1,
+                                                           ratings_slack_to=branch_rating_slack2)
 
         # formulate contingencies --------------------------------------------------------------------------------------
         if self.consider_contingencies:
@@ -583,7 +583,6 @@ class OpfDc(Opf):
         self.s_to = -flow_f
         self.overloads = branch_rating_slack1 + branch_rating_slack2
         self.rating = branch_ratings
-        self.nodal_restrictions = nodal_restrictions
 
         self.contingency_flows_list = con_flow_lst
         self.contingency_indices_list = con_idx  # [(t, m, c), ...]

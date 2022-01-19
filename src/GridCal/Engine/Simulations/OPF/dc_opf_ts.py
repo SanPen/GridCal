@@ -111,21 +111,15 @@ def get_power_injections(C_bus_gen, Pg, C_bus_bat, Pb, C_bus_load, LSlack, Pl):
     return P
 
 
-def add_dc_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem: LpProblem, theta, P, start_, end_):
+def formulate_dc_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem: LpProblem, theta, P, start_, end_):
     """
     Add the nodal power balance
     :param numerical_circuit: NumericalCircuit instance
     :param problem: LpProblem instance
     :param theta: Voltage angles LpVars (n, nt)
     :param P: Power injection at the buses LpVars (n, nt)
-    :return: Nothing, the restrictions are added to the problem
+    :return: Nothing, the restrictions are added to the problem (nbus, nt)
     """
-
-    # nodal_restrictions = lpAddRestrictions2(problem=problem,
-    #                                         lhs=lpDot(numerical_circuit.Bbus, theta),
-    #                                         rhs=P[:, :],
-    #                                         name='Nodal_power_balance_all',
-    #                                         op='=')
 
     # do the topological computation
     calc_inputs = numerical_circuit.split_into_islands(ignore_single_node_islands=True)
@@ -151,7 +145,7 @@ def add_dc_nodal_power_balance(numerical_circuit: OpfTimeCircuit, problem: LpPro
 
         # Add nodal power balance for the non slack nodes
         idx = bus_original_idx[pqpv]
-        nodal_restrictions[idx]  =pl.lpAddRestrictions2(problem=problem,
+        nodal_restrictions[idx] = pl.lpAddRestrictions2(problem=problem,
                                                         lhs=pl.lpDot(B_island[np.ix_(pqpv, pqpv)], theta_island[pqpv, :]),
                                                         rhs=P_island[pqpv, :],
                                                         name='Nodal_power_balance_pqpv_is' + str(i),
@@ -608,12 +602,12 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                           inf=999999)
 
         # set the nodal restrictions -----------------------------------------------------------------------------------
-        nodal_restrictions = add_dc_nodal_power_balance(numerical_circuit=self.numerical_circuit,
-                                                        problem=self.problem,
-                                                        theta=theta,
-                                                        P=P,
-                                                        start_=self.start_idx,
-                                                        end_=self.end_idx)
+        self.nodal_restrictions = formulate_dc_nodal_power_balance(numerical_circuit=self.numerical_circuit,
+                                                                   problem=self.problem,
+                                                                   theta=theta,
+                                                                   P=P,
+                                                                   start_=self.start_idx,
+                                                                   end_=self.end_idx)
 
         # add branch restrictions --------------------------------------------------------------------------------------
         if self.zonal_grouping == ZonalGrouping.NoGrouping:
@@ -712,7 +706,6 @@ class OpfDcTimeSeries(OpfTimeSeries):
         self.s_to = -flow_f.transpose()
         self.overloads = (branch_rating_slack1 + branch_rating_slack2).transpose()
         self.rating = branch_ratings.T
-        self.nodal_restrictions = nodal_restrictions
 
         self.contingency_flows_list = con_flow_lst
         self.contingency_indices_list = con_br_idx  # [(t, m, c), ...]

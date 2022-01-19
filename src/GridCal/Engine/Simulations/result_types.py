@@ -75,7 +75,7 @@ class ResultTypes(Enum):
     BusVoltageModule = 'Bus voltage module', DeviceType.BusDevice
     BusVoltageAngle = 'Bus voltage angle', DeviceType.BusDevice
     BusPower = 'Bus power', DeviceType.BusDevice
-    ShadowPrices = 'Bus shadow prices', DeviceType.BusDevice
+    BusShadowPrices = 'Bus shadow prices', DeviceType.BusDevice
     BranchOverloads = 'Branch overloads', DeviceType.BranchDevice
     LoadShedding = 'Load shedding', DeviceType.LoadDevice
     GeneratorShedding = 'Generator shedding', DeviceType.GeneratorDevice

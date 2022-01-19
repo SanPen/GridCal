@@ -298,8 +298,7 @@ class OpfTimeSeries:
         self.contingency_indices_list = list()  # [(t, m, c), ...]
         self.contingency_flows_slacks_list = list()
 
-        if not skip_formulation:
-            self.problem = self.formulate()
+        self.problem = None
 
     def formulate(self):
         """

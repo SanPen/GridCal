@@ -49,7 +49,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                  battery_power=None, controlled_generation_power=None,
                  Sf=None, St=None, overloads=None, loading=None, losses=None,
                  hvdc_names=None, hvdc_power=None, hvdc_loading=None,
-                 phase_shift=None,
+                 phase_shift=None, bus_shadow_prices=None,
                  contingency_flows_list=None, contingency_indices_list=None, contingency_flows_slacks_list=None,
                  rates=None, contingency_rates=None,
                  converged=None, bus_types=None):
@@ -58,6 +58,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                  name='OPF',
                                  available_results=[ResultTypes.BusVoltageModule,
                                                     ResultTypes.BusVoltageAngle,
+                                                    ResultTypes.BusShadowPrices,
                                                     ResultTypes.BusPower,
                                                     ResultTypes.BranchActivePowerFrom,
                                                     ResultTypes.BranchLoading,
@@ -130,6 +131,8 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
         self.generator_power = controlled_generation_power
 
+        self.bus_shadow_prices = bus_shadow_prices
+
         self.contingency_flows_list = contingency_flows_list
         self.contingency_indices_list = contingency_indices_list  # [(t, m, c), ...]
         self.contingency_flows_slacks_list = contingency_flows_slacks_list
@@ -164,6 +167,12 @@ class OptimalPowerFlowResults(ResultsTemplate):
             y = np.angle(self.voltage)
             y_label = '(Radians)'
             title = 'Bus voltage angle'
+
+        elif result_type == ResultTypes.BusShadowPrices:
+            labels = self.bus_names
+            y = self.bus_shadow_prices
+            y_label = '(Currency/MW)'
+            title = 'Bus shadow prices'
 
         elif result_type == ResultTypes.BranchActivePowerFrom:
             labels = self.branch_names
