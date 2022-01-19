@@ -33,7 +33,7 @@ from GridCal.Engine.Devices.enumerations import TransformerControlType, Converte
 def get_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2, FCSlack1, FCSlack2,
                            hvdc_overload1, hvdc_overload2,
                            hvdc_control1_slacks, hvdc_control2_slacks,
-                           flow_from_a1_to_a2,
+                           flow_from_a1_to_a2, sum_gen_area_1, sum_gen_area_2,
                            cost_g, cost_b, cost_l, cost_br):
     """
     Add the objective function to the problem
@@ -67,6 +67,10 @@ def get_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2, FCSlack1, FCSlack2,
 
     if flow_from_a1_to_a2 is not None:
         f_obj -= pl.lpSum(flow_from_a1_to_a2)  # maximize
+
+    if sum_gen_area_1 is not None:
+        f_obj -= pl.lpSum(sum_gen_area_1)  # maximize
+        f_obj += pl.lpSum(sum_gen_area_2)  # minimize
 
     return f_obj
 
@@ -382,7 +386,7 @@ def formulate_hvdc_flow(problem: LpProblem, angles, Pinj, rates, active, Pset,
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and not dispatchable[i]:
                 # simple injections model: The power is set by the user
-                P0 = Pset[i, t] / Sbase_
+                P0 = Pset[i, t] / Sbase
                 flow_f[i, t] = P0  # + hvdc_control1[i, t] - hvdc_control2[i, t]
                 Pinj[_f, t] -= flow_f[i, t]
                 Pinj[_t, t] += flow_f[i, t]
@@ -397,17 +401,17 @@ def formulate_hvdc_flow(problem: LpProblem, angles, Pinj, rates, active, Pset,
     return flow_f, overload1, overload2, hvdc_control1, hvdc_control2
 
 
-def formulate_inter_area_exchange(numerical_circuit: OpfTimeCircuit,
-                                  buses_areas_1, buses_areas_2,
-                                  flow_f, hvdc_flow_f):
+def formulate_inter_area_flow(numerical_circuit: OpfTimeCircuit,
+                              buses_areas_1, buses_areas_2,
+                              flow_f, hvdc_flow_f):
     """
-
-    :param numerical_circuit:
-    :param buses_areas_1:
-    :param buses_areas_2:
-    :param flow_f:
-    :param hvdc_flow_f:
-    :return:
+    Formulate the flow that goes through the links from the area 1 (from) to the area 2 (to)
+    :param numerical_circuit: OpfTimeCircuit instance
+    :param buses_areas_1: array of bus indices that compose the area 1 (from)
+    :param buses_areas_2: array of bus indices that compose the area 2 (to)
+    :param flow_f: array of branch flows
+    :param hvdc_flow_f: array of HVDC links flows
+    :return: vector per time step of the sum of flows 1->2 with the correct sign as a PuLP equation
     """
     nhvdc, nt = hvdc_flow_f.shape
 
@@ -433,10 +437,48 @@ def formulate_inter_area_exchange(numerical_circuit: OpfTimeCircuit,
     return flow_from_a1_to_a2
 
 
+def formulate_area_generation_summations(numerical_circuit: OpfTimeCircuit, buses_areas_1, buses_areas_2, Pg):
+    """
+    Compute the summation of the generation in the area 1 and area 2
+    :param numerical_circuit: OpfTimeCircuit instance
+    :param buses_areas_1: array of bus indices that compose the area 1 (from)
+    :param buses_areas_2: array of bus indices that compose the area 2 (to)
+    :param Pg: Array of generator variables
+    :return: Summation of generation in the area 1, summation of the generation in the are 2
+    """
+
+    _, nt = Pg.shape
+
+    gens_in_a1, gens_in_a2, gens_out = numerical_circuit.get_generators_per_areas(buses_in_a1=buses_areas_1,
+                                                                                  buses_in_a2=buses_areas_2)
+
+    bat_in_a1, bat_in_a2, bat_out = numerical_circuit.get_batteries_per_areas(buses_in_a1=buses_areas_1,
+                                                                              buses_in_a2=buses_areas_2)
+
+    sum_a1 = np.zeros(nt, dtype=object)
+    sum_a2 = np.zeros(nt, dtype=object)
+
+    for t in range(nt):
+
+        for bus_idx, gen_idx in gens_in_a1:
+            sum_a1[t] += Pg[gen_idx, t]
+
+        for bus_idx, gen_idx in gens_in_a2:
+            sum_a2[t] += Pg[gen_idx, t]
+
+        for bus_idx, gen_idx in bat_in_a1:
+            sum_a1[t] += Pg[gen_idx, t]
+
+        for bus_idx, gen_idx in bat_in_a2:
+            sum_a2[t] += Pg[gen_idx, t]
+
+    return sum_a1, sum_a2
+
+
 class OpfDcTimeSeries(OpfTimeSeries):
 
     def __init__(self, numerical_circuit: OpfTimeCircuit, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
-                 batteries_energy_0=None, zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
+                 zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                  skip_generation_limits=False, consider_contingencies=False, LODF=None, lodf_tolerance=0.001,
                  maximize_inter_area_flow=False,
                  buses_areas_1=None, buses_areas_2=None):
@@ -446,10 +488,14 @@ class OpfDcTimeSeries(OpfTimeSeries):
         :param start_idx: start index of the time series
         :param end_idx: end index of the time series
         :param solver: MIP solver_type to use
-        :param batteries_energy_0: initial state of the batteries, if None the default values are taken
         :param zonal_grouping:
         :param skip_generation_limits:
-
+        :param consider_contingencies:
+        :param LODF:
+        :param lodf_tolerance:
+        :param maximize_inter_area_flow:
+        :param buses_areas_1:
+        :param buses_areas_2:
         """
         OpfTimeSeries.__init__(self, numerical_circuit=numerical_circuit,
                                start_idx=start_idx, end_idx=end_idx,
@@ -464,9 +510,6 @@ class OpfDcTimeSeries(OpfTimeSeries):
         self.maximize_inter_area_flow = maximize_inter_area_flow
         self.buses_areas_1: List[int] = buses_areas_1
         self.buses_areas_2: List[int] = buses_areas_2
-
-        # build the formulation
-        # self.problem = self.formulate(batteries_energy_0=batteries_energy_0)
 
     def formulate(self, batteries_energy_0=None):
         """
@@ -541,16 +584,16 @@ class OpfDcTimeSeries(OpfTimeSeries):
         branch_rating_slack1 = pl.lpMakeVars(name='FSlack1', shape=(m, nt), lower=0, upper=None)
         branch_rating_slack2 = pl.lpMakeVars(name='FSlack2', shape=(m, nt), lower=0, upper=None)
 
-        # declare problem
+        # declare problem ----------------------------------------------------------------------------------------------
         self.problem = LpProblem(name='DC_OPF_Time_Series')
 
-        # set the fixed generation values
+        # set the fixed generation values ------------------------------------------------------------------------------
         set_fix_generation(problem=self.problem,
                            Pg=Pg,
                            P_profile=P_profile,
                            enabled_for_dispatch=enabled_for_dispatch)
 
-        # compute the power injections
+        # compute the power injections ---------------------------------------------------------------------------------
         P = get_power_injections(C_bus_gen=self.numerical_circuit.generator_data.C_bus_gen,
                                  Pg=Pg,
                                  C_bus_bat=self.numerical_circuit.battery_data.C_bus_batt,
@@ -559,7 +602,7 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                  LSlack=load_slack,
                                  Pl=Pl)
 
-        # formulate the simple HVDC models
+        # formulate the simple HVDC models -----------------------------------------------------------------------------
         hvdc_flow_f, hvdc_overload1, hvdc_overload2, \
         hvdc_control1_slacks, hvdc_control2_slacks = formulate_hvdc_flow(problem=self.problem,
                                                                          angles=theta,
@@ -576,7 +619,7 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                                                          logger=self.logger,
                                                                          inf=999999)
 
-        # set the nodal restrictions
+        # set the nodal restrictions -----------------------------------------------------------------------------------
         nodal_restrictions = add_dc_nodal_power_balance(numerical_circuit=self.numerical_circuit,
                                                         problem=self.problem,
                                                         theta=theta,
@@ -584,7 +627,7 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                                         start_=self.start_idx,
                                                         end_=self.end_idx)
 
-        # add branch restrictions
+        # add branch restrictions --------------------------------------------------------------------------------------
         if self.zonal_grouping == ZonalGrouping.NoGrouping:
             flow_f, tau = add_branch_loading_restriction(problem=self.problem,
                                                          nc=self.numerical_circuit,
@@ -604,7 +647,7 @@ class OpfDcTimeSeries(OpfTimeSeries):
         else:
             raise ValueError()
 
-        # if there are batteries, add the batteries
+        # if there are batteries, add the batteries --------------------------------------------------------------------
         if nb > 0:
             add_battery_discharge_restriction(problem=self.problem,
                                               SoC0=SoC0,
@@ -629,15 +672,24 @@ class OpfDcTimeSeries(OpfTimeSeries):
 
         # maximize the power from->to ----------------------------------------------------------------------------------
         if self.maximize_inter_area_flow:
-            flow_from_a1_to_a2 = formulate_inter_area_exchange(numerical_circuit=self.numerical_circuit,
-                                                               buses_areas_1=self.buses_areas_1,
-                                                               buses_areas_2=self.buses_areas_2,
-                                                               flow_f=flow_f,
-                                                               hvdc_flow_f=hvdc_flow_f)
+            flow_from_a1_to_a2 = formulate_inter_area_flow(numerical_circuit=self.numerical_circuit,
+                                                           buses_areas_1=self.buses_areas_1,
+                                                           buses_areas_2=self.buses_areas_2,
+                                                           flow_f=flow_f,
+                                                           hvdc_flow_f=hvdc_flow_f)
+
+            sum_gen_area_1, sum_gen_area_2 = formulate_area_generation_summations(
+                numerical_circuit=self.numerical_circuit,
+                buses_areas_1=self.buses_areas_1,
+                buses_areas_2=self.buses_areas_2,
+                Pg=Pg)
+
         else:
             flow_from_a1_to_a2 = None
+            sum_gen_area_1 = None
+            sum_gen_area_2 = None
 
-        # add the objective function
+        # add the objective function -----------------------------------------------------------------------------------
         self.problem += get_objective_function(Pg=Pg,
                                                Pb=Pb,
                                                LSlack=load_slack,
@@ -650,6 +702,8 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                                hvdc_control1_slacks=hvdc_control1_slacks,
                                                hvdc_control2_slacks=hvdc_control2_slacks,
                                                flow_from_a1_to_a2=flow_from_a1_to_a2,
+                                               sum_gen_area_1=sum_gen_area_1,
+                                               sum_gen_area_2=sum_gen_area_2,
                                                cost_g=cost_g,
                                                cost_b=cost_b,
                                                cost_l=cost_l,

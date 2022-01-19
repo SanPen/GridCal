@@ -7184,14 +7184,6 @@ QProgressBar::chunk{
     <property name="title">
      <string>Actions</string>
     </property>
-    <widget class="QMenu" name="menuSet_selected_buses">
-     <property name="title">
-      <string>Set selected buses</string>
-     </property>
-     <addaction name="actionSetSelectedBusCountry"/>
-     <addaction name="actionSetSelectedBusZone"/>
-     <addaction name="actionSetSelectedBusArea"/>
-    </widget>
     <addaction name="actionBigger_nodes"/>
     <addaction name="actionSmaller_nodes"/>
     <addaction name="actionCenter_view"/>
@@ -7203,7 +7195,8 @@ QProgressBar::chunk{
     <addaction name="actionClear_stuff_running_right_now"/>
     <addaction name="actionReset_console"/>
     <addaction name="separator"/>
-    <addaction name="menuSet_selected_buses"/>
+    <addaction name="actionOpf_to_Power_flow"/>
+    <addaction name="actionSet_OPF_generation_to_profiles"/>
    </widget>
    <widget class="QMenu" name="menuSimulations">
     <property name="title">
@@ -7213,18 +7206,13 @@ QProgressBar::chunk{
     <addaction name="actionPower_Flow_Time_series"/>
     <addaction name="actionClustering_time_series"/>
     <addaction name="actionInputs_analysis"/>
-    <addaction name="separator"/>
     <addaction name="actionShort_Circuit"/>
-    <addaction name="separator"/>
     <addaction name="actionVoltage_stability"/>
-    <addaction name="separator"/>
     <addaction name="actionSigma_analysis"/>
     <addaction name="separator"/>
     <addaction name="actionOPF"/>
     <addaction name="actionOPF_time_series"/>
     <addaction name="actionOptimal_Net_Transfer_Capacity"/>
-    <addaction name="actionOpf_to_Power_flow"/>
-    <addaction name="actionSet_OPF_generation_to_profiles"/>
     <addaction name="separator"/>
     <addaction name="actionPower_flow_Stochastic"/>
     <addaction name="actionBlackout_cascade"/>
@@ -7236,22 +7224,33 @@ QProgressBar::chunk{
     <addaction name="actionATC"/>
     <addaction name="actionATC_Time_Series"/>
     <addaction name="actionATC_clustering"/>
+    <addaction name="separator"/>
+    <addaction name="actionStorage_location_suggestion"/>
+    <addaction name="actionFind_node_groups"/>
    </widget>
    <widget class="QMenu" name="menuModel">
     <property name="title">
      <string>Model</string>
     </property>
+    <widget class="QMenu" name="menuSet_selected_buses_2">
+     <property name="title">
+      <string>Set selected buses</string>
+     </property>
+     <addaction name="actionSetSelectedBusCountry"/>
+     <addaction name="actionSetSelectedBusZone"/>
+     <addaction name="actionSetSelectedBusArea"/>
+    </widget>
     <addaction name="actionAuto_rate_branches"/>
     <addaction name="actionDetect_transformers"/>
     <addaction name="actionTry_to_fix_buses_location"/>
-    <addaction name="actionStorage_location_suggestion"/>
-    <addaction name="actionFind_node_groups"/>
     <addaction name="actionGrid_Reduction"/>
     <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
     <addaction name="actionFuse_devices"/>
     <addaction name="actionCorrect_inconsistences"/>
     <addaction name="actionDelete_inconsistences"/>
+    <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
+    <addaction name="menuSet_selected_buses_2"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
@@ -7323,7 +7322,6 @@ QProgressBar::chunk{
    <addaction name="actionTry_to_fix_buses_location"/>
    <addaction name="actionDelete_selected"/>
    <addaction name="separator"/>
-   <addaction name="actionStorage_location_suggestion"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
    <addaction name="separator"/>
    <addaction name="actionShow_color_controls"/>

@@ -31,7 +31,7 @@ from GridCal.Engine.Devices.enumerations import TransformerControlType, Converte
 def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2, FCSlack1, FCSlack2,
                            hvdc_overload1, hvdc_overload2,
                            hvdc_control1_slacks, hvdc_control2_slacks,
-                           flow_from_a1_to_a2,
+                           flow_from_a1_to_a2, sum_gen_area_1, sum_gen_area_2,
                            cost_g, cost_b, cost_l, cost_br):
     """
     Add the objective function to the problem
@@ -65,6 +65,10 @@ def add_objective_function(Pg, Pb, LSlack, FSlack1, FSlack2, FCSlack1, FCSlack2,
 
     if flow_from_a1_to_a2 is not None:
         f_obj -= flow_from_a1_to_a2  # maximize
+
+    if sum_gen_area_1 is not None:
+        f_obj -= sum_gen_area_1  # maximize
+        f_obj += sum_gen_area_2  # minimize
 
     if len(hvdc_overload1) > 0:
         f_obj += pl.lpSum(hvdc_overload1 + hvdc_overload2 + hvdc_control1_slacks + hvdc_control2_slacks)
@@ -343,15 +347,15 @@ def formulate_hvdc_flow(problem: pl.LpProblem, nc: SnapshotOpfData, angles, Pinj
     return flow_f, overload1, overload2, hvdc_control1, hvdc_control2
 
 
-def formulate_inter_area_exchange(numerical_circuit: SnapshotOpfData, buses_areas_1, buses_areas_2, flow_f, hvdc_flow_f):
+def formulate_inter_area_flow(numerical_circuit: SnapshotOpfData, buses_areas_1, buses_areas_2, flow_f, hvdc_flow_f):
     """
-
-    :param numerical_circuit:
-    :param buses_areas_1:
-    :param buses_areas_2:
-    :param flow_f:
-    :param hvdc_flow_f:
-    :return:
+    Formulate the flow that goes through the links from the area 1 (from) to the area 2 (to)
+    :param numerical_circuit: SnapshotOpfData instance
+    :param buses_areas_1: array of bus indices that compose the area 1 (from)
+    :param buses_areas_2: array of bus indices that compose the area 2 (to)
+    :param flow_f: array of branch flows
+    :param hvdc_flow_f: array of HVDC links flows
+    :return: Sum of flows 1->2 with the correct sign as a PuLP equation
     """
     inter_area_branches = numerical_circuit.get_inter_areas_branches(buses_areas_1=buses_areas_1,
                                                                      buses_areas_2=buses_areas_2)
@@ -370,6 +374,39 @@ def formulate_inter_area_exchange(numerical_circuit: SnapshotOpfData, buses_area
     return flow_from_a1_to_a2
 
 
+def formulate_area_generation_summations(numerical_circuit: SnapshotOpfData, buses_areas_1, buses_areas_2, Pg):
+    """
+    Compute the summation of the generation in the area 1 and area 2
+    :param numerical_circuit: SnapshotOpfData instance
+    :param buses_areas_1: array of bus indices that compose the area 1 (from)
+    :param buses_areas_2: array of bus indices that compose the area 2 (to)
+    :param Pg: Array of generator variables
+    :return: Summation of generation in the area 1, summation of the generation in the are 2
+    """
+    gens_in_a1, gens_in_a2, gens_out = numerical_circuit.get_generators_per_areas(buses_in_a1=buses_areas_1,
+                                                                                  buses_in_a2=buses_areas_2)
+
+    bat_in_a1, bat_in_a2, bat_out = numerical_circuit.get_batteries_per_areas(buses_in_a1=buses_areas_1,
+                                                                              buses_in_a2=buses_areas_2)
+
+    sum_a1 = 0
+    sum_a2 = 0
+
+    for bus_idx, gen_idx in gens_in_a1:
+        sum_a1 += Pg[gen_idx]
+
+    for bus_idx, gen_idx in gens_in_a2:
+        sum_a2 += Pg[gen_idx]
+
+    for bus_idx, gen_idx in bat_in_a1:
+        sum_a1 += Pg[gen_idx]
+
+    for bus_idx, gen_idx in bat_in_a2:
+        sum_a2 += Pg[gen_idx]
+
+    return sum_a1, sum_a2
+
+
 class OpfDc(Opf):
 
     def __init__(self, numerical_circuit, solver_type: MIPSolvers = MIPSolvers.CBC,
@@ -385,6 +422,9 @@ class OpfDc(Opf):
         :param skip_generation_limits:
         :param consider_contingencies:
         :param LODF:
+        :param maximize_inter_area_flow:
+        :param buses_areas_1:
+        :param buses_areas_2:
         """
         Opf.__init__(self, numerical_circuit=numerical_circuit, solver_type=solver_type)
         self.zonal_grouping = zonal_grouping
@@ -506,24 +546,41 @@ class OpfDc(Opf):
 
         # maximize the power from->to ----------------------------------------------------------------------------------
         if self.maximize_inter_area_flow:
-            flow_from_a1_to_a2 = formulate_inter_area_exchange(numerical_circuit=self.numerical_circuit,
-                                                               buses_areas_1=self.buses_areas_1,
-                                                               buses_areas_2=self.buses_areas_2,
-                                                               flow_f=flow_f,
-                                                               hvdc_flow_f=hvdc_flow_f)
+            flow_from_a1_to_a2 = formulate_inter_area_flow(numerical_circuit=self.numerical_circuit,
+                                                           buses_areas_1=self.buses_areas_1,
+                                                           buses_areas_2=self.buses_areas_2,
+                                                           flow_f=flow_f,
+                                                           hvdc_flow_f=hvdc_flow_f)
+
+            sum_gen_area_1, sum_gen_area_2 = formulate_area_generation_summations(numerical_circuit=self.numerical_circuit,
+                                                                                  buses_areas_1=self.buses_areas_1,
+                                                                                  buses_areas_2=self.buses_areas_2,
+                                                                                  Pg=Pg)
+
         else:
             flow_from_a1_to_a2 = None
+            sum_gen_area_1 = None
+            sum_gen_area_2 = None
 
         # add the objective function -----------------------------------------------------------------------------------
-        self.problem += add_objective_function(Pg, Pb, load_slack,
-                                               branch_rating_slack1,
-                                               branch_rating_slack2,
-                                               con_overload1_lst,
-                                               con_overload2_lst,
-                                               hvdc_overload1, hvdc_overload2,
-                                               hvdc_control1_slacks, hvdc_control2_slacks,
-                                               flow_from_a1_to_a2,
-                                               cost_g, cost_b, cost_l, cost_br)
+        self.problem += add_objective_function(Pg=Pg,
+                                               Pb=Pb,
+                                               LSlack=load_slack,
+                                               FSlack1=branch_rating_slack1,
+                                               FSlack2=branch_rating_slack2,
+                                               FCSlack1=con_overload1_lst,
+                                               FCSlack2=con_overload2_lst,
+                                               hvdc_overload1=hvdc_overload1,
+                                               hvdc_overload2=hvdc_overload2,
+                                               hvdc_control1_slacks=hvdc_control1_slacks,
+                                               hvdc_control2_slacks=hvdc_control2_slacks,
+                                               flow_from_a1_to_a2=flow_from_a1_to_a2,
+                                               sum_gen_area_1=sum_gen_area_1,
+                                               sum_gen_area_2=sum_gen_area_2,
+                                               cost_g=cost_g,
+                                               cost_b=cost_b,
+                                               cost_l=cost_l,
+                                               cost_br=cost_br)
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device

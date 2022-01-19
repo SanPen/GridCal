@@ -126,7 +126,6 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                       start_idx=start_,
                                       end_idx=end_,
                                       solver=self.options.mip_solver,
-                                      batteries_energy_0=batteries_energy_0,
                                       zonal_grouping=self.options.zonal_grouping,
                                       skip_generation_limits=self.options.skip_generation_limits,
                                       consider_contingencies=self.options.consider_contingencies,
@@ -142,8 +141,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
             problem = OpfAcTimeSeries(numerical_circuit=self.numerical_circuit,
                                       start_idx=start_,
                                       end_idx=end_,
-                                      solver=self.options.mip_solver,
-                                      batteries_energy_0=batteries_energy_0)
+                                      solver=self.options.mip_solver)
 
         elif self.options.solver == SolverType.Simple_OPF:
 
@@ -151,7 +149,6 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
             problem = OpfSimpleTimeSeries(numerical_circuit=self.numerical_circuit,
                                           start_idx=start_, end_idx=end_,
                                           solver=self.options.mip_solver,
-                                          batteries_energy_0=batteries_energy_0,
                                           text_prog=self.progress_text.emit,
                                           prog_func=self.progress_signal.emit)
 
