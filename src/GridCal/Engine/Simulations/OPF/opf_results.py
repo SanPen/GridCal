@@ -88,7 +88,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                  'overloads',
                                                  'loading',
                                                  'hvdc_names',
-                                                 'hvdc_power',
+                                                 'hvdc_Pf',
                                                  'hvdc_loading',
                                                  'phase_shift',
                                                  'battery_power',
@@ -120,7 +120,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.losses = losses
 
         self.hvdc_names = hvdc_names
-        self.hvdc_Pf = hvdc_power
+        self.hvdc_Pf = hvdc_Pf
         self.hvdc_loading = hvdc_loading
 
         self.phase_shift = phase_shift

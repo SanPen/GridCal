@@ -186,7 +186,7 @@ class Opf:
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.extract(self.s_from, make_abs=False) / (self.rating + 1e-12)
+        return self.extract(self.s_from, make_abs=False) / (self.rating + 1e-20)
 
     def get_branch_power_from(self):
         """
@@ -386,7 +386,7 @@ class OpfTimeSeries:
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.s_from, make_abs=False) / self.rating
+        return self.extract2D(self.s_from, make_abs=False) / (self.rating + 1e-20)
 
     def get_power_injections(self):
         """

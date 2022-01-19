@@ -23,10 +23,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added shadow prices to both opf and opf-ts">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed bug when the nodal restrictions are None">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_results.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_results.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -682,14 +683,7 @@
       <workItem from="1642445073918" duration="3119000" />
       <workItem from="1642492356909" duration="9995000" />
       <workItem from="1642532568418" duration="7428000" />
-      <workItem from="1642578402785" duration="10814000" />
-    </task>
-    <task id="LOCAL-00212" summary="Implemented dispatcheable in the HVDC line and implemented the NTC OPF mode">
-      <created>1633793367480</created>
-      <option name="number" value="00212" />
-      <option name="presentableId" value="LOCAL-00212" />
-      <option name="project" value="LOCAL" />
-      <updated>1633793367480</updated>
+      <workItem from="1642578402785" duration="13108000" />
     </task>
     <task id="LOCAL-00213" summary="implemented HVDC dispatch in the OPF&#10;Joined it to the power flow non-destructive feed&#10;Added attributes in the compilation functions">
       <created>1633859600935</created>
@@ -1027,7 +1021,14 @@
       <option name="project" value="LOCAL" />
       <updated>1642587559143</updated>
     </task>
-    <option name="localTasksCounter" value="261" />
+    <task id="LOCAL-00261" summary="Fixed bug when the nodal restrictions are None">
+      <created>1642590889867</created>
+      <option name="number" value="00261" />
+      <option name="presentableId" value="LOCAL-00261" />
+      <option name="project" value="LOCAL" />
+      <updated>1642590889867</updated>
+    </task>
+    <option name="localTasksCounter" value="262" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1061,7 +1062,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed indices in the NTC pre-solve and the linear contingency analysis" />
     <MESSAGE value="Refactored the order of the generation formulation in NTC-OPF" />
     <MESSAGE value="4.3.1" />
     <MESSAGE value="Fixed critical bug with NR when many islands" />
@@ -1086,7 +1086,8 @@
     <MESSAGE value="Added inter area generation maximization/minimization&#10;Rearranged menus&#10;Added area &quot;slicing&quot; functions to the snapshot" />
     <MESSAGE value="removed HVDC slack variables from the OPF and OPF-TS formulations" />
     <MESSAGE value="Added shadow prices to both opf and opf-ts" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added shadow prices to both opf and opf-ts" />
+    <MESSAGE value="Fixed bug when the nodal restrictions are None" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed bug when the nodal restrictions are None" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -68,6 +68,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                  'Sbus',
                                                  'voltage',
                                                  'load_shedding',
+                                                 'hvdc_Pf',
+                                                 'hvdc_loading',
                                                  'Sf',
                                                  'overloads',
                                                  'loading',
