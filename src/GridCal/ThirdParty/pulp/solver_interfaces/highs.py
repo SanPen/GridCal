@@ -46,7 +46,7 @@ class HiGHS_CMD(LpSolver_CMD):
         keepFiles=False,
         mip=True,
         msg=True,
-        options=None,
+        options=[],
     ):
         """
         :param bool mip: if False, assume LP even if integer variables
@@ -86,7 +86,7 @@ class HiGHS_CMD(LpSolver_CMD):
         write_lines = [
             "solution_file = %s\n" % tmpSol,
             "write_solution_to_file = true\n",
-            "write_solution_pretty = true\n",
+            #"write_solution_pretty = true\n",
         ]
         with open(tmpOptions, "w") as fp:
             fp.writelines(write_lines)
@@ -218,9 +218,10 @@ class HiGHS_CMD(LpSolver_CMD):
         if not len(content):  # if file is empty, update the status_sol
             return None
         # extract everything between the line Columns and Rows
+        # TODO: reinterpretar la solución bien...
         col_id = content.index("Columns")
         row_id = content.index("Rows")
-        solution = content[col_id + 1 : row_id]
+        solution = content[col_id + 1: row_id]
         # check whether it is an LP or an ILP
         if "T Basis" in content:  # LP
             for var, line in zip(variables, solution):

@@ -96,6 +96,7 @@ References:
 import itertools
 import configparser
 from GridCal.ThirdParty.pulp.solver_interfaces import *
+from GridCal.ThirdParty.pulp import constants as const
 from collections import Iterable
 
 import logging
@@ -1708,6 +1709,39 @@ class LpProblem(object):
         f.close()
         self.restoreObjective(was_none, objective_dummy_var)
 
+    def checkDuplicateVars(self):
+        """
+        Checks if there are at least two variables with the same name
+        :return: 1
+        :raises `const.PulpError`: if there ar duplicates
+        """
+        vs = self.variables()
+
+        repeated_names = {}
+        for v in vs:
+            repeated_names[v.name] = repeated_names.get(v.name, 0) + 1
+        repeated_names = [
+            (key, value) for key, value in list(repeated_names.items()) if value >= 2
+        ]
+        if repeated_names:
+            raise const.PulpError("Repeated variable names:\n" + str(repeated_names))
+        return 1
+
+    def checkLengthVars(self, max_length):
+        """
+        Checks if variables have names smaller than `max_length`
+        :param int max_length: max size for variable name
+        :return:
+        :raises const.PulpError: if there is at least one variable that has a long name
+        """
+        vs = self.variables()
+        long_names = [v.name for v in vs if len(v.name) > max_length]
+        if long_names:
+            raise const.PulpError(
+                "Variable names too long for Lp format\n" + str(long_names)
+            )
+        return 1
+
     def assignVarsVals(self, values):
         variables = self.variablesDict()
         for name in values:
@@ -2430,12 +2464,13 @@ def configSolvers():
 
 
 def pulpTestAll():
-    from .tests import pulpTestSolver
+    from GridCal.ThirdParty.pulp.tests import pulpTestSolver
     solvers = [PULP_CBC_CMD,
                CPLEX_DLL,
                CPLEX_CMD,
                CPLEX_PY,
                COIN_CMD,
+               HiGHS_CMD,
                COINMP_DLL,
                GLPK_CMD,
                XPRESS,
