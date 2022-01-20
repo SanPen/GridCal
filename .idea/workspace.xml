@@ -26,6 +26,7 @@
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Highs working with shadow prices, when HiGHS is in the PATH">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -675,13 +676,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00217" summary="added transformer angle and tap module profiles">
-      <created>1633875493750</created>
-      <option name="number" value="00217" />
-      <option name="presentableId" value="LOCAL-00217" />
-      <option name="project" value="LOCAL" />
-      <updated>1633875493750</updated>
-    </task>
     <task id="LOCAL-00218" summary="Added contingencies to the OPF simulations&#10;Added the contingency report as a compromise to show the contingencies">
       <created>1634136542079</created>
       <option name="number" value="00218" />
@@ -1018,7 +1012,14 @@
       <option name="project" value="LOCAL" />
       <updated>1642665845052</updated>
     </task>
-    <option name="localTasksCounter" value="266" />
+    <task id="LOCAL-00266" summary="changed sense">
+      <created>1642676592075</created>
+      <option name="number" value="00266" />
+      <option name="presentableId" value="LOCAL-00266" />
+      <option name="project" value="LOCAL" />
+      <updated>1642676592075</updated>
+    </task>
+    <option name="localTasksCounter" value="267" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1052,7 +1053,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed HVDC &quot;free&quot; control for OPF" />
     <MESSAGE value="Implemented bentayga inspection from  the compiled arrays view" />
     <MESSAGE value="Improved bentayga arrays viewer implementation" />
     <MESSAGE value="Fixed HVDC logic when devices are not active" />
@@ -1077,7 +1077,8 @@
     <MESSAGE value="Added Highs for windows, not working yet" />
     <MESSAGE value="Highs WIP" />
     <MESSAGE value="Highs working with shadow prices, when HiGHS is in the PATH" />
-    <option name="LAST_COMMIT_MESSAGE" value="Highs working with shadow prices, when HiGHS is in the PATH" />
+    <MESSAGE value="changed sense" />
+    <option name="LAST_COMMIT_MESSAGE" value="changed sense" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
