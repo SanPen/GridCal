@@ -23,9 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="debugging pmode3 convergence">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="added Shvdc lpf">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -54,16 +55,24 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="pruebas_andres" />
+        <entry key="$PROJECT_DIR$" value="devel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RESET_MODE" value="HARD" />
   </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/CoordinatesInput/coordinates_dialogue.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContinuationPowerFlow/continuation_power_flow_driver.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/Session/export_results_driver.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" root0="FORCE_HIGHLIGHTING" />
@@ -95,7 +104,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="ToolWindowDatabase.ShowToolbar" value="false" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Python-PLEXOS-API" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/research/state_estimation" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
@@ -104,18 +113,18 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/doc" />
-      <recent name="$PROJECT_DIR$/src" />
-      <recent name="$PROJECT_DIR$/src/research/power_flow/hvdc/fubm" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Engine/Simulations" />
-      <recent name="$PROJECT_DIR$/src/research/hvdc/fubm" />
+      <recent name="$PROJECT_DIR$/src/research/state_estimation" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\Main\icons" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\AboutDialogue\icons" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\Session" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\research" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\Session" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
       <recent name="$PROJECT_DIR$/doc/formats" />
-      <recent name="$PROJECT_DIR$/src/research/power_flow" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Engine/Sparse" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     </key>
   </component>
   <component name="RunManager" selected="Python.ExecuteGridCal">
@@ -220,8 +229,8 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.profile_dialogue" />
+      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.update_gui_file (1)" />
       <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python tests.Nosetests in test_transformer_controls.py" />
@@ -229,10 +238,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.update_gui_file (1)" />
-        <item itemvalue="Python.update_gui_file" />
-        <item itemvalue="Python.profile_dialogue" />
         <item itemvalue="Python tests.Nosetests in test_transformer_controls.py" />
+        <item itemvalue="Python.update_gui_file" />
+        <item itemvalue="Python.update_gui_file (1)" />
+        <item itemvalue="Python.profile_dialogue" />
       </list>
     </recent_temporary>
   </component>
@@ -523,351 +532,493 @@
       <workItem from="1617540879297" duration="1142000" />
       <workItem from="1617632797911" duration="3094000" />
       <workItem from="1617652313409" duration="1856000" />
+      <workItem from="1617730621442" duration="9547000" />
+      <workItem from="1617902953439" duration="731000" />
+      <workItem from="1617915771224" duration="174000" />
+      <workItem from="1618129444777" duration="640000" />
+      <workItem from="1618135905676" duration="1114000" />
+      <workItem from="1618774909354" duration="3936000" />
+      <workItem from="1618908273485" duration="7636000" />
+      <workItem from="1618945173718" duration="6409000" />
+      <workItem from="1618987367489" duration="712000" />
+      <workItem from="1619016709084" duration="13793000" />
+      <workItem from="1619631136767" duration="2984000" />
+      <workItem from="1619678684518" duration="9419000" />
+      <workItem from="1619764088210" duration="8742000" />
+      <workItem from="1619798217511" duration="7990000" />
+      <workItem from="1619811877012" duration="2422000" />
+      <workItem from="1619860366686" duration="7880000" />
+      <workItem from="1619947882981" duration="10437000" />
+      <workItem from="1619979911950" duration="2730000" />
+      <workItem from="1620023945215" duration="7882000" />
+      <workItem from="1620039756921" duration="1294000" />
+      <workItem from="1620043582054" duration="2078000" />
+      <workItem from="1620046832034" duration="697000" />
+      <workItem from="1620122664571" duration="8108000" />
+      <workItem from="1620238962143" duration="737000" />
+      <workItem from="1620282753704" duration="2111000" />
+      <workItem from="1620367724587" duration="6080000" />
+      <workItem from="1620668289392" duration="1247000" />
+      <workItem from="1625664112275" duration="3917000" />
+      <workItem from="1625673915499" duration="30000" />
+      <workItem from="1625749875528" duration="516000" />
+      <workItem from="1625764769053" duration="4797000" />
+      <workItem from="1625827412259" duration="679000" />
+      <workItem from="1626122245940" duration="3083000" />
+      <workItem from="1626189016389" duration="15000" />
+      <workItem from="1626245588926" duration="448000" />
+      <workItem from="1626253539340" duration="608000" />
+      <workItem from="1626274194384" duration="5781000" />
+      <workItem from="1626283501242" duration="281000" />
+      <workItem from="1626284706213" duration="4588000" />
+      <workItem from="1626339485250" duration="9000" />
+      <workItem from="1626341995795" duration="253000" />
+      <workItem from="1626419879888" duration="23000" />
+      <workItem from="1626424274562" duration="1312000" />
+      <workItem from="1626428859227" duration="792000" />
+      <workItem from="1626442465582" duration="5630000" />
+      <workItem from="1626514504727" duration="2369000" />
+      <workItem from="1626549426876" duration="3530000" />
+      <workItem from="1626554075347" duration="1581000" />
+      <workItem from="1626555853991" duration="1460000" />
+      <workItem from="1626599181837" duration="2583000" />
+      <workItem from="1626691098400" duration="4767000" />
+      <workItem from="1626724982196" duration="618000" />
+      <workItem from="1626763697942" duration="662000" />
+      <workItem from="1626851222026" duration="658000" />
+      <workItem from="1626885996060" duration="1240000" />
+      <workItem from="1626896648179" duration="2307000" />
+      <workItem from="1626935370294" duration="1328000" />
+      <workItem from="1626948355278" duration="9884000" />
+      <workItem from="1626976059440" duration="5831000" />
+      <workItem from="1627119812554" duration="13434000" />
+      <workItem from="1627209818028" duration="600000" />
+      <workItem from="1627284278398" duration="8042000" />
+      <workItem from="1627295798752" duration="1869000" />
+      <workItem from="1627323320680" duration="412000" />
+      <workItem from="1627330396441" duration="1199000" />
+      <workItem from="1627368564559" duration="2890000" />
+      <workItem from="1627454758054" duration="12000" />
+      <workItem from="1627459702892" duration="613000" />
+      <workItem from="1627546650524" duration="8161000" />
+      <workItem from="1627576235635" duration="2989000" />
+      <workItem from="1627627560359" duration="1748000" />
+      <workItem from="1627724252182" duration="1230000" />
+      <workItem from="1627816581686" duration="694000" />
+      <workItem from="1627818804702" duration="2655000" />
+      <workItem from="1627852450749" duration="14000" />
+      <workItem from="1628070700207" duration="2470000" />
+      <workItem from="1629195194793" duration="4229000" />
+      <workItem from="1629698486926" duration="4746000" />
+      <workItem from="1631305007078" duration="1323000" />
+      <workItem from="1631553006226" duration="1499000" />
+      <workItem from="1631600422997" duration="4272000" />
+      <workItem from="1631617025303" duration="14317000" />
+      <workItem from="1631652491451" duration="634000" />
+      <workItem from="1631686727133" duration="10475000" />
+      <workItem from="1631882661154" duration="2939000" />
+      <workItem from="1631907202584" duration="1361000" />
+      <workItem from="1632513802680" duration="1196000" />
+      <workItem from="1632556392083" duration="2867000" />
+      <workItem from="1632724478822" duration="7730000" />
+      <workItem from="1632764073720" duration="601000" />
+      <workItem from="1632810180431" duration="14045000" />
+      <workItem from="1632915709734" duration="3229000" />
+      <workItem from="1632933306045" duration="7119000" />
+      <workItem from="1632982464938" duration="12781000" />
+      <workItem from="1633070946995" duration="7840000" />
+      <workItem from="1633101859656" duration="1909000" />
+      <workItem from="1633171343469" duration="619000" />
+      <workItem from="1633720322637" duration="657000" />
+      <workItem from="1633729733367" duration="2031000" />
+      <workItem from="1633767794296" duration="325000" />
+      <workItem from="1633772059194" duration="9102000" />
+      <workItem from="1633787830301" duration="791000" />
+      <workItem from="1633789071270" duration="7694000" />
+      <workItem from="1633855780926" duration="15843000" />
+      <workItem from="1633933119827" duration="11000" />
+      <workItem from="1633942761979" duration="636000" />
+      <workItem from="1633950153160" duration="452000" />
+      <workItem from="1633962674822" duration="468000" />
+      <workItem from="1634037950002" duration="3130000" />
+      <workItem from="1634106599152" duration="23651000" />
+      <workItem from="1634213938353" duration="1133000" />
+      <workItem from="1634223591028" duration="392000" />
+      <workItem from="1634570464002" duration="2370000" />
+      <workItem from="1634649543353" duration="12917000" />
+      <workItem from="1634737011977" duration="1571000" />
+      <workItem from="1634829000406" duration="36000" />
+      <workItem from="1634829216499" duration="168000" />
+      <workItem from="1635706071416" duration="264000" />
+      <workItem from="1635762680652" duration="605000" />
+      <workItem from="1635768046211" duration="3357000" />
+      <workItem from="1635876621310" duration="2732000" />
+      <workItem from="1635948954969" duration="3919000" />
+      <workItem from="1635955126039" duration="28000" />
+      <workItem from="1635957977516" duration="3081000" />
+      <workItem from="1636234599331" duration="2540000" />
+      <workItem from="1636278312764" duration="4677000" />
+      <workItem from="1636356870558" duration="6910000" />
+      <workItem from="1636368471973" duration="6854000" />
+      <workItem from="1636460431342" duration="1353000" />
+      <workItem from="1636482316185" duration="630000" />
+      <workItem from="1636531307098" duration="3424000" />
+      <workItem from="1636616099940" duration="7881000" />
+      <workItem from="1636714098985" duration="5162000" />
+      <workItem from="1641245917031" duration="1783000" />
+      <workItem from="1641292416750" duration="11537000" />
+      <workItem from="1642058915637" duration="8601000" />
+      <workItem from="1642145208905" duration="6757000" />
+      <workItem from="1642405995681" duration="11562000" />
+      <workItem from="1642445073918" duration="3119000" />
+      <workItem from="1642492356909" duration="9995000" />
+      <workItem from="1642532568418" duration="7428000" />
+      <workItem from="1642578402785" duration="8576000" />
     </task>
-    <task id="LOCAL-00086" summary="Added collaborators to the readme">
-      <created>1610474116837</created>
-      <option name="number" value="00086" />
-      <option name="presentableId" value="LOCAL-00086" />
+    <task id="LOCAL-00211" summary="Fixed branch flow in simple OPF&#10;Removed linear AC OPF for the moment&#10;Fixed PuLP initialization">
+      <created>1633792288255</created>
+      <option name="number" value="00211" />
+      <option name="presentableId" value="LOCAL-00211" />
       <option name="project" value="LOCAL" />
-      <updated>1610474116837</updated>
+      <updated>1633792288256</updated>
     </task>
-    <task id="LOCAL-00087" summary="Added HVDC result types">
-      <created>1610531910348</created>
-      <option name="number" value="00087" />
-      <option name="presentableId" value="LOCAL-00087" />
+    <task id="LOCAL-00212" summary="Implemented dispatcheable in the HVDC line and implemented the NTC OPF mode">
+      <created>1633793367480</created>
+      <option name="number" value="00212" />
+      <option name="presentableId" value="LOCAL-00212" />
       <option name="project" value="LOCAL" />
-      <updated>1610531910349</updated>
+      <updated>1633793367480</updated>
     </task>
-    <task id="LOCAL-00088" summary="Improved docs">
-      <created>1610557091360</created>
-      <option name="number" value="00088" />
-      <option name="presentableId" value="LOCAL-00088" />
+    <task id="LOCAL-00213" summary="implemented HVDC dispatch in the OPF&#10;Joined it to the power flow non-destructive feed&#10;Added attributes in the compilation functions">
+      <created>1633859600935</created>
+      <option name="number" value="00213" />
+      <option name="presentableId" value="LOCAL-00213" />
       <option name="project" value="LOCAL" />
-      <updated>1610557091360</updated>
+      <updated>1633859600936</updated>
     </task>
-    <task id="LOCAL-00089" summary="Requirements for readthedocs">
-      <created>1610557431259</created>
-      <option name="number" value="00089" />
-      <option name="presentableId" value="LOCAL-00089" />
+    <task id="LOCAL-00214" summary="Added branch tap angle optimization in the OPF">
+      <created>1633861130364</created>
+      <option name="number" value="00214" />
+      <option name="presentableId" value="LOCAL-00214" />
       <option name="project" value="LOCAL" />
-      <updated>1610557431259</updated>
+      <updated>1633861130364</updated>
     </task>
-    <task id="LOCAL-00090" summary="added technologies&#10;fixed update check on windows">
-      <created>1611137310447</created>
-      <option name="number" value="00090" />
-      <option name="presentableId" value="LOCAL-00090" />
+    <task id="LOCAL-00215" summary="OPF sign corrected">
+      <created>1633861540378</created>
+      <option name="number" value="00215" />
+      <option name="presentableId" value="LOCAL-00215" />
       <option name="project" value="LOCAL" />
-      <updated>1611137310447</updated>
+      <updated>1633861540378</updated>
     </task>
-    <task id="LOCAL-00091" summary="cim parser improvements">
-      <created>1613665237973</created>
-      <option name="number" value="00091" />
-      <option name="presentableId" value="LOCAL-00091" />
+    <task id="LOCAL-00216" summary="Implemented HVDC and phase shift into the OPF time series">
+      <created>1633874574582</created>
+      <option name="number" value="00216" />
+      <option name="presentableId" value="LOCAL-00216" />
       <option name="project" value="LOCAL" />
-      <updated>1613665237973</updated>
+      <updated>1633874574582</updated>
     </task>
-    <task id="LOCAL-00092" summary="Fixed issues">
-      <created>1614004552628</created>
-      <option name="number" value="00092" />
-      <option name="presentableId" value="LOCAL-00092" />
+    <task id="LOCAL-00217" summary="added transformer angle and tap module profiles">
+      <created>1633875493750</created>
+      <option name="number" value="00217" />
+      <option name="presentableId" value="LOCAL-00217" />
       <option name="project" value="LOCAL" />
-      <updated>1614004552628</updated>
+      <updated>1633875493750</updated>
     </task>
-    <task id="LOCAL-00093" summary="Now zeros do not appear on voltage plots&#10;Fixed little bug on buses tooltip">
-      <created>1614187100702</created>
-      <option name="number" value="00093" />
-      <option name="presentableId" value="LOCAL-00093" />
+    <task id="LOCAL-00218" summary="Added contingencies to the OPF simulations&#10;Added the contingency report as a compromise to show the contingencies">
+      <created>1634136542079</created>
+      <option name="number" value="00218" />
+      <option name="presentableId" value="LOCAL-00218" />
       <option name="project" value="LOCAL" />
-      <updated>1614187100703</updated>
+      <updated>1634136542079</updated>
     </task>
-    <task id="LOCAL-00094" summary="removed the LODF decoupling from the PTDF when distributing the swing">
-      <created>1614617248450</created>
-      <option name="number" value="00094" />
-      <option name="presentableId" value="LOCAL-00094" />
+    <task id="LOCAL-00219" summary="Added PTDF contingency tolerance">
+      <created>1634138472418</created>
+      <option name="number" value="00219" />
+      <option name="presentableId" value="LOCAL-00219" />
       <option name="project" value="LOCAL" />
-      <updated>1614617248450</updated>
+      <updated>1634138472418</updated>
     </task>
-    <task id="LOCAL-00095" summary="changes to handle cim-zip files">
-      <created>1614787302258</created>
-      <option name="number" value="00095" />
-      <option name="presentableId" value="LOCAL-00095" />
+    <task id="LOCAL-00220" summary="Implemented the skip generation in the dc opf">
+      <created>1634138565931</created>
+      <option name="number" value="00220" />
+      <option name="presentableId" value="LOCAL-00220" />
       <option name="project" value="LOCAL" />
-      <updated>1614787302258</updated>
+      <updated>1634138565931</updated>
     </task>
-    <task id="LOCAL-00096" summary="Improved CIM reader">
-      <created>1614874018963</created>
-      <option name="number" value="00096" />
-      <option name="presentableId" value="LOCAL-00096" />
+    <task id="LOCAL-00221" summary="Version 4.2.4">
+      <created>1634139632205</created>
+      <option name="number" value="00221" />
+      <option name="presentableId" value="LOCAL-00221" />
       <option name="project" value="LOCAL" />
-      <updated>1614874018964</updated>
+      <updated>1634139632205</updated>
     </task>
-    <task id="LOCAL-00097" summary="Added ore functions to the CIM objects">
-      <created>1614957235905</created>
-      <option name="number" value="00097" />
-      <option name="presentableId" value="LOCAL-00097" />
+    <task id="LOCAL-00222" summary="Implemented optional way to open the web maps when the pyside webdriver is not available">
+      <created>1634571179268</created>
+      <option name="number" value="00222" />
+      <option name="presentableId" value="LOCAL-00222" />
       <option name="project" value="LOCAL" />
-      <updated>1614957235905</updated>
+      <updated>1634571179269</updated>
     </task>
-    <task id="LOCAL-00098" summary="Minimal changes">
-      <created>1615204702181</created>
-      <option name="number" value="00098" />
-      <option name="presentableId" value="LOCAL-00098" />
+    <task id="LOCAL-00223" summary="implemented simpler zoom by selecting and adjusting the screen">
+      <created>1634571787400</created>
+      <option name="number" value="00223" />
+      <option name="presentableId" value="LOCAL-00223" />
       <option name="project" value="LOCAL" />
-      <updated>1615204702181</updated>
+      <updated>1634571787400</updated>
     </task>
-    <task id="LOCAL-00099" summary="Fixed numba headers not working. Replaced by the generic call njit()">
-      <created>1615305008962</created>
-      <option name="number" value="00099" />
-      <option name="presentableId" value="LOCAL-00099" />
+    <task id="LOCAL-00224" summary="For apple M1 use GLOP when using ortools">
+      <created>1634668672037</created>
+      <option name="number" value="00224" />
+      <option name="presentableId" value="LOCAL-00224" />
       <option name="project" value="LOCAL" />
-      <updated>1615305008962</updated>
+      <updated>1634668672037</updated>
     </task>
-    <task id="LOCAL-00100" summary="minor check when dropping files">
-      <created>1615376057862</created>
-      <option name="number" value="00100" />
-      <option name="presentableId" value="LOCAL-00100" />
+    <task id="LOCAL-00225" summary="4.2.6">
+      <created>1634829329676</created>
+      <option name="number" value="00225" />
+      <option name="presentableId" value="LOCAL-00225" />
       <option name="project" value="LOCAL" />
-      <updated>1615376057864</updated>
+      <updated>1634829329676</updated>
     </task>
-    <task id="LOCAL-00101" summary="Fixed Pdc and Qac in the VSC devices and some main file examples&#10;Finalized removing specific numba decorators">
-      <created>1615547621003</created>
-      <option name="number" value="00101" />
-      <option name="presentableId" value="LOCAL-00101" />
+    <task id="LOCAL-00226" summary="Improved analysis dialogue adding a new column and transformer virtual taps support&#10;Added transformer virtual taps into the array viewer&#10;Added &quot;correct_shit&quot; function to GridCalMain.py">
+      <created>1635877776203</created>
+      <option name="number" value="00226" />
+      <option name="presentableId" value="LOCAL-00226" />
       <option name="project" value="LOCAL" />
-      <updated>1615547621016</updated>
+      <updated>1635877776203</updated>
     </task>
-    <task id="LOCAL-00102" summary="Fixed PTDF rates profile usage&#10;Fixed plotting from the schematic">
-      <created>1616598798933</created>
-      <option name="number" value="00102" />
-      <option name="presentableId" value="LOCAL-00102" />
+    <task id="LOCAL-00227" summary="improved NTC report">
+      <created>1635955145687</created>
+      <option name="number" value="00227" />
+      <option name="presentableId" value="LOCAL-00227" />
       <option name="project" value="LOCAL" />
-      <updated>1616598798933</updated>
+      <updated>1635955145688</updated>
     </task>
-    <task id="LOCAL-00103" summary="Added search function (WIP)">
-      <created>1616687265822</created>
-      <option name="number" value="00103" />
-      <option name="presentableId" value="LOCAL-00103" />
+    <task id="LOCAL-00228" summary="Fixed silly error with SE">
+      <created>1635960324432</created>
+      <option name="number" value="00228" />
+      <option name="presentableId" value="LOCAL-00228" />
       <option name="project" value="LOCAL" />
-      <updated>1616687265822</updated>
+      <updated>1635960324432</updated>
     </task>
-    <task id="LOCAL-00104" summary="Fixed tests">
-      <created>1617046620764</created>
-      <option name="number" value="00104" />
-      <option name="presentableId" value="LOCAL-00104" />
+    <task id="LOCAL-00229" summary="Moved NTC-OPF formulation out of the class">
+      <created>1636030544680</created>
+      <option name="number" value="00229" />
+      <option name="presentableId" value="LOCAL-00229" />
       <option name="project" value="LOCAL" />
-      <updated>1617046620764</updated>
+      <updated>1636030544681</updated>
     </task>
-    <task id="LOCAL-00105" summary="Added PGD v1">
-      <created>1617050566781</created>
-      <option name="number" value="00105" />
-      <option name="presentableId" value="LOCAL-00105" />
+    <task id="LOCAL-00230" summary="Added node balance check in the NTC opf">
+      <created>1636104721959</created>
+      <option name="number" value="00230" />
+      <option name="presentableId" value="LOCAL-00230" />
       <option name="project" value="LOCAL" />
-      <updated>1617050566781</updated>
+      <updated>1636104721959</updated>
     </task>
-    <task id="LOCAL-00106" summary="Published v4.0.0">
-      <created>1617125944900</created>
-      <option name="number" value="00106" />
-      <option name="presentableId" value="LOCAL-00106" />
+    <task id="LOCAL-00231" summary="Added more explicative values">
+      <created>1636106809618</created>
+      <option name="number" value="00231" />
+      <option name="presentableId" value="LOCAL-00231" />
       <option name="project" value="LOCAL" />
-      <updated>1617125944900</updated>
+      <updated>1636106809618</updated>
     </task>
-    <task id="LOCAL-00107" summary="Fixed issue caused by xlrd when getting the sheet names of an excel workbook">
-      <created>1617203397739</created>
-      <option name="number" value="00107" />
-      <option name="presentableId" value="LOCAL-00107" />
+    <task id="LOCAL-00232" summary="Added N-1 exploration">
+      <created>1636368509985</created>
+      <option name="number" value="00232" />
+      <option name="presentableId" value="LOCAL-00232" />
       <option name="project" value="LOCAL" />
-      <updated>1617203397740</updated>
+      <updated>1636368509985</updated>
     </task>
-    <task id="LOCAL-00108" summary="Fixed issue with the wire">
-      <created>1617204060351</created>
-      <option name="number" value="00108" />
-      <option name="presentableId" value="LOCAL-00108" />
+    <task id="LOCAL-00233" summary="Added NTC-OPF previous checking using DC power flow and contingency analysis">
+      <created>1636372248527</created>
+      <option name="number" value="00233" />
+      <option name="presentableId" value="LOCAL-00233" />
       <option name="project" value="LOCAL" />
-      <updated>1617204060351</updated>
+      <updated>1636372248527</updated>
     </task>
-    <task id="LOCAL-00109" summary="Updated readme">
-      <created>1617279742756</created>
-      <option name="number" value="00109" />
-      <option name="presentableId" value="LOCAL-00109" />
+    <task id="LOCAL-00234" summary="changed version">
+      <created>1636372507097</created>
+      <option name="number" value="00234" />
+      <option name="presentableId" value="LOCAL-00234" />
       <option name="project" value="LOCAL" />
-      <updated>1617279742756</updated>
+      <updated>1636372507097</updated>
     </task>
-    <task id="LOCAL-00110" summary="Updated pictures, updated the README.md">
-      <created>1617283697647</created>
-      <option name="number" value="00110" />
-      <option name="presentableId" value="LOCAL-00110" />
+    <task id="LOCAL-00235" summary="Fixed indices in the NTC pre-solve and the linear contingency analysis">
+      <created>1636377923117</created>
+      <option name="number" value="00235" />
+      <option name="presentableId" value="LOCAL-00235" />
       <option name="project" value="LOCAL" />
-      <updated>1617283697647</updated>
+      <updated>1636377923117</updated>
     </task>
-    <task id="LOCAL-00111" summary="updated the README.md">
-      <created>1617284063378</created>
-      <option name="number" value="00111" />
-      <option name="presentableId" value="LOCAL-00111" />
+    <task id="LOCAL-00236" summary="Fixed indices in the NTC pre-solve and the linear contingency analysis">
+      <created>1636378189099</created>
+      <option name="number" value="00236" />
+      <option name="presentableId" value="LOCAL-00236" />
       <option name="project" value="LOCAL" />
-      <updated>1617284063378</updated>
+      <updated>1636378189099</updated>
     </task>
-    <task id="LOCAL-00112" summary="Fixed the shunt voltage control">
-      <created>1617362091712</created>
-      <option name="number" value="00112" />
-      <option name="presentableId" value="LOCAL-00112" />
+    <task id="LOCAL-00237" summary="Refactored the order of the generation formulation in NTC-OPF">
+      <created>1636623381800</created>
+      <option name="number" value="00237" />
+      <option name="presentableId" value="LOCAL-00237" />
       <option name="project" value="LOCAL" />
-      <updated>1617362091713</updated>
+      <updated>1636623381800</updated>
     </task>
-    <task id="LOCAL-00113" summary="Fixed the shunt Q limits for time series&#10;Added is_controlled to the generator and shunt context menus">
-      <created>1617450061708</created>
-      <option name="number" value="00113" />
-      <option name="presentableId" value="LOCAL-00113" />
+    <task id="LOCAL-00238" summary="4.3.1">
+      <created>1641220709358</created>
+      <option name="number" value="00238" />
+      <option name="presentableId" value="LOCAL-00238" />
       <option name="project" value="LOCAL" />
-      <updated>1617450061709</updated>
+      <updated>1641220709358</updated>
     </task>
-    <task id="LOCAL-00114" summary="Updated the readme">
-      <created>1617539403190</created>
-      <option name="number" value="00114" />
-      <option name="presentableId" value="LOCAL-00114" />
+    <task id="LOCAL-00239" summary="Fixed critical bug with NR when many islands">
+      <created>1641247352350</created>
+      <option name="number" value="00239" />
+      <option name="presentableId" value="LOCAL-00239" />
       <option name="project" value="LOCAL" />
-      <updated>1617539403190</updated>
+      <updated>1641247352350</updated>
     </task>
-    <task id="LOCAL-00115" summary="finally found a linear time sparse slicing">
-      <created>1617569812608</created>
-      <option name="number" value="00115" />
-      <option name="presentableId" value="LOCAL-00115" />
+    <task id="LOCAL-00240" summary="Fixed HVDC &quot;free&quot; control for OPF">
+      <created>1642008809064</created>
+      <option name="number" value="00240" />
+      <option name="presentableId" value="LOCAL-00240" />
       <option name="project" value="LOCAL" />
-      <updated>1617569812608</updated>
+      <updated>1642008809064</updated>
     </task>
-    <task id="LOCAL-00116" summary="Fixed OPF snapshot feedback to PF">
-      <created>1617633252517</created>
-      <option name="number" value="00116" />
-      <option name="presentableId" value="LOCAL-00116" />
+    <task id="LOCAL-00241" summary="Implemented bentayga inspection from  the compiled arrays view">
+      <created>1642018867140</created>
+      <option name="number" value="00241" />
+      <option name="presentableId" value="LOCAL-00241" />
       <option name="project" value="LOCAL" />
-      <updated>1617633252518</updated>
+      <updated>1642018867140</updated>
     </task>
-    <task id="LOCAL-00117" summary="Fixed storage location suggestions">
-      <created>1617640806234</created>
-      <option name="number" value="00117" />
-      <option name="presentableId" value="LOCAL-00117" />
+    <task id="LOCAL-00242" summary="Improved bentayga arrays viewer implementation">
+      <created>1642022491062</created>
+      <option name="number" value="00242" />
+      <option name="presentableId" value="LOCAL-00242" />
       <option name="project" value="LOCAL" />
-      <updated>1617640806234</updated>
+      <updated>1642022491062</updated>
     </task>
-    <task id="LOCAL-00118" summary="Made the device plots more robust">
-      <created>1617641677849</created>
-      <option name="number" value="00118" />
-      <option name="presentableId" value="LOCAL-00118" />
+    <task id="LOCAL-00243" summary="Fixed HVDC logic when devices are not active">
+      <created>1642064296994</created>
+      <option name="number" value="00243" />
+      <option name="presentableId" value="LOCAL-00243" />
       <option name="project" value="LOCAL" />
-      <updated>1617641677849</updated>
+      <updated>1642064296995</updated>
     </task>
-    <task id="LOCAL-00119" summary="Some PTDF and import fixes">
-      <created>1617865288488</created>
-      <option name="number" value="00119" />
-      <option name="presentableId" value="LOCAL-00119" />
+    <task id="LOCAL-00244" summary="renamed _iter to iter_control">
+      <created>1642064598748</created>
+      <option name="number" value="00244" />
+      <option name="presentableId" value="LOCAL-00244" />
       <option name="project" value="LOCAL" />
-      <updated>1617865288489</updated>
+      <updated>1642064598748</updated>
     </task>
-    <task id="LOCAL-00120" summary="Some PTDF and import fixes">
-      <created>1617865307968</created>
-      <option name="number" value="00120" />
-      <option name="presentableId" value="LOCAL-00120" />
+    <task id="LOCAL-00245" summary="Modified the outer loop control convergence">
+      <created>1642066133170</created>
+      <option name="number" value="00245" />
+      <option name="presentableId" value="LOCAL-00245" />
       <option name="project" value="LOCAL" />
-      <updated>1617865307969</updated>
+      <updated>1642066133170</updated>
     </task>
-    <task id="LOCAL-00121" summary="Imported some changes from master">
-      <created>1617886405575</created>
-      <option name="number" value="00121" />
-      <option name="presentableId" value="LOCAL-00121" />
+    <task id="LOCAL-00246" summary="Integrated bentayga license activation">
+      <created>1642146364827</created>
+      <option name="number" value="00246" />
+      <option name="presentableId" value="LOCAL-00246" />
       <option name="project" value="LOCAL" />
-      <updated>1617886405575</updated>
+      <updated>1642146364827</updated>
     </task>
-    <task id="LOCAL-00122" summary="workspace">
-      <created>1618207800675</created>
-      <option name="number" value="00122" />
-      <option name="presentableId" value="LOCAL-00122" />
+    <task id="LOCAL-00247" summary="Updated to LGPL">
+      <created>1642155667785</created>
+      <option name="number" value="00247" />
+      <option name="presentableId" value="LOCAL-00247" />
       <option name="project" value="LOCAL" />
-      <updated>1618207800675</updated>
+      <updated>1642155667785</updated>
     </task>
-    <task id="LOCAL-00123" summary="workspace">
-      <created>1618207820332</created>
-      <option name="number" value="00123" />
-      <option name="presentableId" value="LOCAL-00123" />
+    <task id="LOCAL-00248" summary="Updated to LGPL">
+      <created>1642155751834</created>
+      <option name="number" value="00248" />
+      <option name="presentableId" value="LOCAL-00248" />
       <option name="project" value="LOCAL" />
-      <updated>1618207820332</updated>
+      <updated>1642155751834</updated>
     </task>
-    <task id="LOCAL-00124" summary="new functions to manage ntc_opf options">
-      <created>1639141365154</created>
-      <option name="number" value="00124" />
-      <option name="presentableId" value="LOCAL-00124" />
+    <task id="LOCAL-00249" summary="4.4.0">
+      <created>1642158102595</created>
+      <option name="number" value="00249" />
+      <option name="presentableId" value="LOCAL-00249" />
       <option name="project" value="LOCAL" />
-      <updated>1639141365154</updated>
+      <updated>1642158102595</updated>
     </task>
-    <task id="LOCAL-00125" summary="lodf correction with a given replacement value">
-      <created>1639493879188</created>
-      <option name="number" value="00125" />
-      <option name="presentableId" value="LOCAL-00125" />
+    <task id="LOCAL-00250" summary="4.4.2">
+      <created>1642160174005</created>
+      <option name="number" value="00250" />
+      <option name="presentableId" value="LOCAL-00250" />
       <option name="project" value="LOCAL" />
-      <updated>1639493879188</updated>
+      <updated>1642160174005</updated>
     </task>
-    <task id="LOCAL-00126" summary="fixed overflow x,y coordinates">
-      <created>1641809626046</created>
-      <option name="number" value="00126" />
-      <option name="presentableId" value="LOCAL-00126" />
+    <task id="LOCAL-00251" summary="Fixed reverse HVDC sense">
+      <created>1642168997628</created>
+      <option name="number" value="00251" />
+      <option name="presentableId" value="LOCAL-00251" />
       <option name="project" value="LOCAL" />
-      <updated>1641809626046</updated>
+      <updated>1642168997628</updated>
     </task>
-    <task id="LOCAL-00127" summary="preparing to merge">
-      <created>1641898939142</created>
-      <option name="number" value="00127" />
-      <option name="presentableId" value="LOCAL-00127" />
+    <task id="LOCAL-00252" summary="Fixed the license reading">
+      <created>1642169744102</created>
+      <option name="number" value="00252" />
+      <option name="presentableId" value="LOCAL-00252" />
       <option name="project" value="LOCAL" />
-      <updated>1641898939142</updated>
+      <updated>1642169744102</updated>
     </task>
-    <task id="LOCAL-00128" summary="merging">
-      <created>1641900126787</created>
-      <option name="number" value="00128" />
-      <option name="presentableId" value="LOCAL-00128" />
+    <task id="LOCAL-00253" summary="Improved the oscillation detection">
+      <created>1642406835841</created>
+      <option name="number" value="00253" />
+      <option name="presentableId" value="LOCAL-00253" />
       <option name="project" value="LOCAL" />
-      <updated>1641900126787</updated>
+      <updated>1642406835841</updated>
     </task>
-    <task id="LOCAL-00129" summary="commented generation delta slacks on ntc_opf">
-      <created>1641902193841</created>
-      <option name="number" value="00129" />
-      <option name="presentableId" value="LOCAL-00129" />
+    <task id="LOCAL-00254" summary="fixed the FUBM indices calculation when islands are present">
+      <created>1642492727406</created>
+      <option name="number" value="00254" />
+      <option name="presentableId" value="LOCAL-00254" />
       <option name="project" value="LOCAL" />
-      <updated>1641902193841</updated>
+      <updated>1642492727406</updated>
     </task>
-    <task id="LOCAL-00130" summary="deleted slacks in ntc opf.&#10;Fixed powerflow with islands">
-      <created>1641908338260</created>
-      <option name="number" value="00130" />
-      <option name="presentableId" value="LOCAL-00130" />
+    <task id="LOCAL-00255" summary="Merged some changes">
+      <created>1642507950166</created>
+      <option name="number" value="00255" />
+      <option name="presentableId" value="LOCAL-00255" />
       <option name="project" value="LOCAL" />
-      <updated>1641908338260</updated>
+      <updated>1642507950166</updated>
     </task>
-    <task id="LOCAL-00131" summary="reordered parameters">
-      <created>1641975772450</created>
-      <option name="number" value="00131" />
-      <option name="presentableId" value="LOCAL-00131" />
+    <task id="LOCAL-00256" summary="Added &quot;maximize exchange&quot; option to the normal OPF">
+      <created>1642536865181</created>
+      <option name="number" value="00256" />
+      <option name="presentableId" value="LOCAL-00256" />
       <option name="project" value="LOCAL" />
-      <updated>1641975772450</updated>
+      <updated>1642536865181</updated>
     </task>
-    <task id="LOCAL-00132" summary="corrected &quot;inconsitences&quot; 2">
-      <created>1642073139435</created>
-      <option name="number" value="00132" />
-      <option name="presentableId" value="LOCAL-00132" />
+    <task id="LOCAL-00257" summary="Added &quot;maximize exchange&quot; option to the normal OPF-time series">
+      <created>1642540764467</created>
+      <option name="number" value="00257" />
+      <option name="presentableId" value="LOCAL-00257" />
       <option name="project" value="LOCAL" />
-      <updated>1642073139435</updated>
+      <updated>1642540764467</updated>
     </task>
-    <task id="LOCAL-00133" summary="added sensitivity filter in otf base problems checking">
-      <created>1642081524460</created>
-      <option name="number" value="00133" />
-      <option name="presentableId" value="LOCAL-00133" />
+    <task id="LOCAL-00258" summary="Added inter area generation maximization/minimization&#10;Rearranged menus&#10;Added area &quot;slicing&quot; functions to the snapshot">
+      <created>1642583578445</created>
+      <option name="number" value="00258" />
+      <option name="presentableId" value="LOCAL-00258" />
       <option name="project" value="LOCAL" />
-      <updated>1642081524460</updated>
+      <updated>1642583578445</updated>
     </task>
-    <task id="LOCAL-00134" summary="nothing">
-      <created>1642493470715</created>
-      <option name="number" value="00134" />
-      <option name="presentableId" value="LOCAL-00134" />
+    <task id="LOCAL-00259" summary="removed HVDC slack variables from the OPF and OPF-TS formulations">
+      <created>1642585639088</created>
+      <option name="number" value="00259" />
+      <option name="presentableId" value="LOCAL-00259" />
       <option name="project" value="LOCAL" />
-      <updated>1642493470718</updated>
+      <updated>1642585639088</updated>
     </task>
-    <option name="localTasksCounter" value="135" />
+    <option name="localTasksCounter" value="260" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -880,7 +1031,6 @@
         <option value="Default.Author" />
         <option value="Default.Date" />
         <option value="Default.Subject" />
-        <option value="Space.CommitStatus" />
       </list>
     </option>
   </component>
@@ -902,32 +1052,32 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed issue with the wire" />
-    <MESSAGE value="Updated readme" />
-    <MESSAGE value="Updated pictures, updated the README.md" />
-    <MESSAGE value="updated the README.md" />
-    <MESSAGE value="Fixed the shunt voltage control" />
-    <MESSAGE value="Fixed the shunt Q limits for time series&#10;Added is_controlled to the generator and shunt context menus" />
-    <MESSAGE value="Updated the readme" />
-    <MESSAGE value="finally found a linear time sparse slicing" />
-    <MESSAGE value="Fixed OPF snapshot feedback to PF" />
-    <MESSAGE value="Fixed storage location suggestions" />
-    <MESSAGE value="Made the device plots more robust" />
-    <MESSAGE value="Some PTDF and import fixes" />
-    <MESSAGE value="Imported some changes from master" />
-    <MESSAGE value="workspace" />
-    <MESSAGE value="new functions to manage ntc_opf options" />
-    <MESSAGE value="lodf correction with a given replacement value" />
-    <MESSAGE value="fixed overflow x,y coordinates" />
-    <MESSAGE value="preparing to merge" />
-    <MESSAGE value="merging" />
-    <MESSAGE value="commented generation delta slacks on ntc_opf" />
-    <MESSAGE value="deleted slacks in ntc opf.&#10;Fixed powerflow with islands" />
-    <MESSAGE value="reordered parameters" />
-    <MESSAGE value="corrected &quot;inconsitences&quot; 2" />
-    <MESSAGE value="added sensitivity filter in otf base problems checking" />
-    <MESSAGE value="nothing" />
-    <option name="LAST_COMMIT_MESSAGE" value="nothing" />
+    <MESSAGE value="changed version" />
+    <MESSAGE value="Fixed indices in the NTC pre-solve and the linear contingency analysis" />
+    <MESSAGE value="Refactored the order of the generation formulation in NTC-OPF" />
+    <MESSAGE value="4.3.1" />
+    <MESSAGE value="Fixed critical bug with NR when many islands" />
+    <MESSAGE value="Better style and added icon" />
+    <MESSAGE value="Fixed HVDC &quot;free&quot; control for OPF" />
+    <MESSAGE value="Implemented bentayga inspection from  the compiled arrays view" />
+    <MESSAGE value="Improved bentayga arrays viewer implementation" />
+    <MESSAGE value="Fixed HVDC logic when devices are not active" />
+    <MESSAGE value="renamed _iter to iter_control" />
+    <MESSAGE value="Modified the outer loop control convergence" />
+    <MESSAGE value="Integrated bentayga license activation" />
+    <MESSAGE value="Updated to LGPL" />
+    <MESSAGE value="4.4.0" />
+    <MESSAGE value="4.4.2" />
+    <MESSAGE value="Fixed reverse HVDC sense" />
+    <MESSAGE value="Fixed the license reading" />
+    <MESSAGE value="Improved the oscillation detection" />
+    <MESSAGE value="fixed the FUBM indices calculation when islands are present" />
+    <MESSAGE value="Merged some changes" />
+    <MESSAGE value="Added &quot;maximize exchange&quot; option to the normal OPF" />
+    <MESSAGE value="Added &quot;maximize exchange&quot; option to the normal OPF-time series" />
+    <MESSAGE value="Added inter area generation maximization/minimization&#10;Rearranged menus&#10;Added area &quot;slicing&quot; functions to the snapshot" />
+    <MESSAGE value="removed HVDC slack variables from the OPF and OPF-TS formulations" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed HVDC slack variables from the OPF and OPF-TS formulations" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -961,16 +1111,6 @@
           <url>file://$PROJECT_DIR$/src/research/PTDF/PTDF_research.py</url>
           <line>239</line>
           <option name="timeStamp" value="99" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>1013</line>
-          <option name="timeStamp" value="161" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>988</line>
-          <option name="timeStamp" value="162" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/research/power_flow/asd/josep/v3_pv.py</url>
@@ -1018,19 +1158,9 @@
           <option name="timeStamp" value="298" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>4547</line>
-          <option name="timeStamp" value="303" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/NK/n_minus_k_driver.py</url>
           <line>142</line>
           <option name="timeStamp" value="325" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ac_opf_ts.py</url>
-          <line>407</line>
-          <option name="timeStamp" value="328" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py</url>
@@ -1068,16 +1198,6 @@
           <option name="timeStamp" value="356" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>2755</line>
-          <option name="timeStamp" value="397" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/time_series_pf_data.py</url>
-          <line>244</line>
-          <option name="timeStamp" value="398" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="conv == DeviceType" language="Python" />
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/excel_interface.py</url>
           <line>276</line>
@@ -1092,11 +1212,6 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContinuationPowerFlow/continuation_power_flow_driver.py</url>
           <line>364</line>
           <option name="timeStamp" value="408" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py</url>
-          <line>832</line>
-          <option name="timeStamp" value="409" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_power_flow.py</url>
@@ -1179,16 +1294,6 @@
           <option name="timeStamp" value="535" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf.py</url>
-          <line>289</line>
-          <option name="timeStamp" value="537" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/dc_opf.py</url>
-          <line>213</line>
-          <option name="timeStamp" value="541" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/zip_interface.py</url>
           <line>223</line>
           <option name="timeStamp" value="564" />
@@ -1222,11 +1327,6 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py</url>
           <line>52</line>
           <option name="timeStamp" value="634" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>1266</line>
-          <option name="timeStamp" value="638" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

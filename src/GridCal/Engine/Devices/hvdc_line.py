@@ -112,7 +112,6 @@ def getFromAndToPowerAt(Pset, theta_f, theta_t, Vnf, Vnt, v_set_f, v_set_t, Sbas
         Pt = 0
         loss = 0
 
-
     # convert to p.u.
     if in_pu:
         Pf /= Sbase

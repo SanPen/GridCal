@@ -713,14 +713,14 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                 Pf_hvdc = Pf_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Pf_hvdc
                 Pt_hvdc = Pt_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Pt_hvdc
                 loading_hvdc = loading_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * loading_hvdc
-                Shvdc = Shvdc_prev * (1 - lpf_alpha) + lpf_alpha * Shvdc
+                # Shvdc = Shvdc_prev * (1 - lpf_alpha) + lpf_alpha * Shvdc
 
                 # update
                 Losses_hvdc_prev = Losses_hvdc.copy()
                 Pf_hvdc_prev = Pf_hvdc.copy()
                 Pt_hvdc_prev = Pt_hvdc.copy()
                 loading_hvdc_prev = loading_hvdc.copy()
-                Shvdc_prev = Shvdc.copy()
+                # Shvdc_prev = Shvdc.copy()
 
             else:
                 if hvdc_control_err < hvdc_error_threshold:
