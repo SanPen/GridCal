@@ -28,7 +28,7 @@ from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
 class OpfSimpleTimeSeries(OpfTimeSeries):
 
     def __init__(self, numerical_circuit: OpfTimeCircuit, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
-                 batteries_energy_0=None, text_prog=None, prog_func=None):
+                 text_prog=None, prog_func=None):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
@@ -148,7 +148,7 @@ class OpfSimpleTimeSeries(OpfTimeSeries):
         """
         return self.s_from / self.rating.T
 
-    def get_branch_power(self):
+    def get_branch_power_from(self):
         """
         return the branch loading (time, device)
         :return: 2D array

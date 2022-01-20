@@ -1772,7 +1772,7 @@ class OpfNTC(Opf):
             angles=theta,
             active=self.numerical_circuit.hvdc_data.active,
             Pt=self.numerical_circuit.hvdc_data.Pt,
-            angle_droop=self.numerical_circuit.hvdc_data.angle_droop[:, t],
+            angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase)[:, self.t],
             control_mode=self.numerical_circuit.hvdc_data.control_mode,
             dispatchable=self.numerical_circuit.hvdc_data.dispatchable,
             F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
@@ -1784,6 +1784,24 @@ class OpfNTC(Opf):
             # t=t
             t=self.t
         )
+        hvdc_flow_f, hvdc_overload1, hvdc_overload2, \
+        hvdc_control1, hvdc_control2 = formulate_hvdc_flow(solver=self.solver,
+                                                           nhvdc=self.numerical_circuit.nhvdc,
+                                                           names=self.numerical_circuit.hvdc_names,
+                                                           rate=self.numerical_circuit.hvdc_data.rate,
+                                                           angles=theta,
+                                                           active=self.numerical_circuit.hvdc_data.active,
+                                                           Pt=self.numerical_circuit.hvdc_data.Pset,
+                                                           angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase)[:, t],
+                                                           control_mode=self.numerical_circuit.hvdc_data.control_mode,
+                                                           dispatchable=self.numerical_circuit.hvdc_data.dispatchable,
+                                                           F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
+                                                           T=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
+                                                           Pinj=Pinj,
+                                                           Sbase=self.numerical_circuit.Sbase,
+                                                           inf=self.inf,
+                                                           logger=self.logger,
+                                                           t=t)
 
         # formulate the node power balance
         node_balance = formulate_node_balance(
@@ -2010,8 +2028,8 @@ class OpfNTC(Opf):
             rate=self.numerical_circuit.hvdc_data.rate,
             angles=self.extract(self.theta),
             active=self.numerical_circuit.hvdc_data.active,
-            Pt=self.numerical_circuit.hvdc_data.Pt,
-            angle_droop=self.numerical_circuit.hvdc_data.angle_droop[:, self.t],
+            Pt=self.numerical_circuit.hvdc_data.Pset,
+            angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase)[:, t],
             control_mode=self.numerical_circuit.hvdc_data.control_mode,
             dispatchable=self.numerical_circuit.hvdc_data.dispatchable,
             F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),

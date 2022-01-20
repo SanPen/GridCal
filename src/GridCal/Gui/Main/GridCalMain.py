@@ -3764,7 +3764,6 @@ class MainGUI(QMainWindow):
 
                 self.remove_simulation(sim.SimulationTypes.OPF_run)
 
-
                 # get the power flow options from the GUI
                 solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
                 mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
@@ -3775,6 +3774,24 @@ class MainGUI(QMainWindow):
                 skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
                 tolerance = 10 ** self.ui.opfTolSpinBox.value()
                 lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
+                maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
+
+                # available transfer capacity inter areas
+                if maximize_flows:
+                    compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                    idx_from = np.array([i for i, bus in lst_from])
+                    idx_to = np.array([i for i, bus in lst_to])
+
+                    if len(idx_from) == 0:
+                        error_msg('The area "from" has no buses!')
+                        return
+
+                    if len(idx_to) == 0:
+                        error_msg('The area "to" has no buses!')
+                        return
+                else:
+                    idx_from = None
+                    idx_to = None
 
                 # try to acquire the linear results
                 linear_results = self.session.linear_power_flow
@@ -3796,7 +3813,10 @@ class MainGUI(QMainWindow):
                                                       skip_generation_limits=skip_generation_limits,
                                                       tolerance=tolerance,
                                                       LODF=LODF,
-                                                      lodf_tolerance=lodf_tolerance)
+                                                      lodf_tolerance=lodf_tolerance,
+                                                      maximize_flows=maximize_flows,
+                                                      area_from_bus_idx=idx_from,
+                                                      area_to_bus_idx=idx_to)
 
                 self.ui.progress_label.setText('Running optimal power flow...')
                 QtGui.QGuiApplication.processEvents()
@@ -3835,6 +3855,7 @@ class MainGUI(QMainWindow):
                                              loadings=results.loading,
                                              types=results.bus_types,
                                              Sf=results.Sf,
+                                             St=results.St,
                                              Sbus=results.Sbus,
                                              hvdc_Pf=results.hvdc_Pf,
                                              hvdc_loading=results.hvdc_loading,
@@ -3884,6 +3905,24 @@ class MainGUI(QMainWindow):
                     skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
                     tolerance = 10**self.ui.opfTolSpinBox.value()
                     lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
+                    maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
+
+                    # available transfer capacity inter areas
+                    if maximize_flows:
+                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                        idx_from = np.array([i for i, bus in lst_from])
+                        idx_to = np.array([i for i, bus in lst_to])
+
+                        if len(idx_from) == 0:
+                            error_msg('The area "from" has no buses!')
+                            return
+
+                        if len(idx_to) == 0:
+                            error_msg('The area "to" has no buses!')
+                            return
+                    else:
+                        idx_from = None
+                        idx_to = None
 
                     # try to acquire the linear results
                     linear_results = self.session.linear_power_flow
@@ -3905,7 +3944,10 @@ class MainGUI(QMainWindow):
                                                           skip_generation_limits=skip_generation_limits,
                                                           tolerance=tolerance,
                                                           LODF=LODF,
-                                                          lodf_tolerance=lodf_tolerance
+                                                          lodf_tolerance=lodf_tolerance,
+                                                          maximize_flows=maximize_flows,
+                                                          area_from_bus_idx=idx_from,
+                                                          area_to_bus_idx=idx_to
                                                           )
 
                     start = self.ui.profile_start_slider.value()
@@ -3952,13 +3994,13 @@ class MainGUI(QMainWindow):
                 if self.ui.draw_schematic_checkBox.isChecked():
 
                     viz.colour_the_schematic(circuit=self.circuit,
-                                             Sbus=None,
+                                             Sbus=results.Sbus[0, :],
                                              Sf=results.Sf[0, :],
+                                             St=results.St[0, :],
                                              voltages=results.voltage[0, :],
                                              loadings=results.loading[0, :],
                                              types=results.bus_types,
                                              losses=None,
-                                             St=None,
                                              hvdc_Pf=results.hvdc_Pf[0, :],
                                              hvdc_losses=None,
                                              hvdc_loading=results.hvdc_loading[0, :],

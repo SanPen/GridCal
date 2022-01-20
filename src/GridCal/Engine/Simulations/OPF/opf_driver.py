@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from enum import Enum
+from typing import List, Dict, Tuple, Any
 import numpy as np
 import time
 
@@ -50,7 +51,10 @@ class OptimalPowerFlowOptions:
                  skip_generation_limits=False,
                  tolerance=1.0,
                  LODF=None,
-                 lodf_tolerance=0.001):
+                 lodf_tolerance=0.001,
+                 maximize_flows=False,
+                 area_from_bus_idx: List = None,
+                 area_to_bus_idx: List = None):
         """
         Optimal power flow options
         :param verbose:
@@ -65,6 +69,10 @@ class OptimalPowerFlowOptions:
         :param skip_generation_limits:
         :param tolerance:
         :param LODF:
+        :param lodf_tolerance:
+        :param maximize_flows:
+        :param area_from_bus_idx:
+        :param area_to_bus_idx:
         """
         self.verbose = verbose
 
@@ -91,6 +99,12 @@ class OptimalPowerFlowOptions:
         self.tolerance = tolerance
 
         self.lodf_tolerance = lodf_tolerance
+
+        self.maximize_flows = maximize_flows
+
+        self.area_from_bus_idx = area_from_bus_idx
+
+        self.area_to_bus_idx = area_to_bus_idx
 
 
 class OptimalPowerFlow(DriverTemplate):
@@ -136,7 +150,11 @@ class OptimalPowerFlow(DriverTemplate):
                             skip_generation_limits=self.options.skip_generation_limits,
                             consider_contingencies=self.options.consider_contingencies,
                             LODF=self.options.LODF,
-                            lodf_tolerance=self.options.lodf_tolerance)
+                            lodf_tolerance=self.options.lodf_tolerance,
+                            maximize_inter_area_flow=self.options.maximize_flows,
+                            buses_areas_1=self.options.area_from_bus_idx,
+                            buses_areas_2=self.options.area_to_bus_idx
+                            )
 
         elif self.options.solver == SolverType.AC_OPF:
             # AC optimal power flow
@@ -150,10 +168,10 @@ class OptimalPowerFlow(DriverTemplate):
             raise Exception('Solver not recognized ' + str(self.options.solver))
 
         # Solve
+        problem.formulate()
         problem.solve()
 
         # get the branch Sf (it is used more than one time)
-        Sbr = problem.get_branch_power()
         ld = problem.get_load_shedding()
         ld[ld == None] = 0
         bt = problem.get_battery_power()
@@ -176,12 +194,13 @@ class OptimalPowerFlow(DriverTemplate):
                                                hvdc_names=numerical_circuit.hvdc_names,
                                                hvdc_power=hvdc_power,
                                                hvdc_loading=hvdc_loading,
-                                               hvdc_overloads=problem.get_hvdc_slacks(),
                                                phase_shift=problem.get_phase_shifts(),
+                                               bus_shadow_prices=problem.get_shadow_prices(),
                                                generator_shedding=np.zeros_like(gn),
                                                battery_power=bt,
                                                controlled_generation_power=gn,
-                                               Sf=Sbr,
+                                               Sf=problem.get_branch_power_from(),
+                                               St=problem.get_branch_power_to(),
                                                overloads=problem.get_overloads(),
                                                loading=problem.get_loading(),
                                                contingency_flows_list=problem.get_contingency_flows_list(),

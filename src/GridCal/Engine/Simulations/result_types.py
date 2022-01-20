@@ -75,11 +75,11 @@ class ResultTypes(Enum):
     BusVoltageModule = 'Bus voltage module', DeviceType.BusDevice
     BusVoltageAngle = 'Bus voltage angle', DeviceType.BusDevice
     BusPower = 'Bus power', DeviceType.BusDevice
-    ShadowPrices = 'Bus shadow prices', DeviceType.BusDevice
+    BusShadowPrices = 'Bus shadow prices', DeviceType.BusDevice
     BranchOverloads = 'Branch overloads', DeviceType.BranchDevice
     LoadShedding = 'Load shedding', DeviceType.LoadDevice
-    ControlledGeneratorShedding = 'Generator shedding', DeviceType.GeneratorDevice
-    ControlledGeneratorPower = 'Generator power', DeviceType.GeneratorDevice
+    GeneratorShedding = 'Generator shedding', DeviceType.GeneratorDevice
+    GeneratorPower = 'Generator power', DeviceType.GeneratorDevice
 
     # OPF-NTC
     HvdcOverloads = 'HVDC overloads', DeviceType.HVDCLineDevice
