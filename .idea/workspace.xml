@@ -23,10 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="added Shvdc lpf">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="get time as parameter">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -675,13 +674,6 @@
       <workItem from="1642532568418" duration="7428000" />
       <workItem from="1642578402785" duration="8576000" />
     </task>
-    <task id="LOCAL-00211" summary="Fixed branch flow in simple OPF&#10;Removed linear AC OPF for the moment&#10;Fixed PuLP initialization">
-      <created>1633792288255</created>
-      <option name="number" value="00211" />
-      <option name="presentableId" value="LOCAL-00211" />
-      <option name="project" value="LOCAL" />
-      <updated>1633792288256</updated>
-    </task>
     <task id="LOCAL-00212" summary="Implemented dispatcheable in the HVDC line and implemented the NTC OPF mode">
       <created>1633793367480</created>
       <option name="number" value="00212" />
@@ -1018,7 +1010,14 @@
       <option name="project" value="LOCAL" />
       <updated>1642585639088</updated>
     </task>
-    <option name="localTasksCounter" value="260" />
+    <task id="LOCAL-00260" summary="get time as parameter">
+      <created>1642667079697</created>
+      <option name="number" value="00260" />
+      <option name="presentableId" value="LOCAL-00260" />
+      <option name="project" value="LOCAL" />
+      <updated>1642667079697</updated>
+    </task>
+    <option name="localTasksCounter" value="261" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1052,7 +1051,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="changed version" />
     <MESSAGE value="Fixed indices in the NTC pre-solve and the linear contingency analysis" />
     <MESSAGE value="Refactored the order of the generation formulation in NTC-OPF" />
     <MESSAGE value="4.3.1" />
@@ -1077,7 +1075,8 @@
     <MESSAGE value="Added &quot;maximize exchange&quot; option to the normal OPF-time series" />
     <MESSAGE value="Added inter area generation maximization/minimization&#10;Rearranged menus&#10;Added area &quot;slicing&quot; functions to the snapshot" />
     <MESSAGE value="removed HVDC slack variables from the OPF and OPF-TS formulations" />
-    <option name="LAST_COMMIT_MESSAGE" value="removed HVDC slack variables from the OPF and OPF-TS formulations" />
+    <MESSAGE value="get time as parameter" />
+    <option name="LAST_COMMIT_MESSAGE" value="get time as parameter" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

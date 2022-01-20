@@ -709,10 +709,10 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                     Pt_hvdc = Pt_hvdc_prev
                     loading_hvdc = loading_hvdc_prev
 
-                Losses_hvdc = Losses_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Losses_hvdc
-                Pf_hvdc = Pf_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Pf_hvdc
-                Pt_hvdc = Pt_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Pt_hvdc
-                loading_hvdc = loading_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * loading_hvdc
+                # Losses_hvdc = Losses_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Losses_hvdc
+                # Pf_hvdc = Pf_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Pf_hvdc
+                # Pt_hvdc = Pt_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Pt_hvdc
+                # loading_hvdc = loading_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * loading_hvdc
                 # Shvdc = Shvdc_prev * (1 - lpf_alpha) + lpf_alpha * Shvdc
 
                 # update
