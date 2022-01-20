@@ -47,7 +47,12 @@ class ResultsTemplate:
         return data
 
     def get_arrays(self):
-        return {var_name: getattr(self, var_name) for var_name in self.data_variables}
+        """
+        Get a dictionary with the array name and the actual array of the class (it also works with the derived class)
+        :return: {array_name: array}
+        """
+        property_names = [p for p in dir(self) if isinstance(getattr(self, p), np.ndarray)]
+        return {var_name: getattr(self, var_name) for var_name in property_names}
 
     def to_json(self, file_name):
         """
