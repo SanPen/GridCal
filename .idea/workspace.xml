@@ -23,10 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="get time as parameter">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Highs working with shadow prices, when HiGHS is in the PATH">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -103,7 +102,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="ToolWindowDatabase.ShowToolbar" value="false" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/research/state_estimation" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solverdir/highs" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
@@ -112,18 +111,18 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/src/research/state_estimation" />
-      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\Main\icons" />
-      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\AboutDialogue\icons" />
-      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
-      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\Session" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\ThirdParty\pulp\solverdir\highs" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\ThirdParty\pulp\solverdir\highs\linux" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\ThirdParty\pulp\solverdir\highs\linux\64" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\ThirdParty\pulp\solverdir\highs\win" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\ThirdParty\pulp\solverdir\highs\win\x64" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\ThirdParty\pulp\solverdir\highs\win\x64" />
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal" />
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\research" />
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\Session" />
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
-      <recent name="$PROJECT_DIR$/doc/formats" />
     </key>
   </component>
   <component name="RunManager" selected="Python.ExecuteGridCal">
@@ -229,8 +228,8 @@
     </configuration>
     <list>
       <item itemvalue="Python.profile_dialogue" />
-      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.update_gui_file (1)" />
+      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python tests.Nosetests in test_transformer_controls.py" />
     </list>
@@ -672,42 +671,9 @@
       <workItem from="1642445073918" duration="3119000" />
       <workItem from="1642492356909" duration="9995000" />
       <workItem from="1642532568418" duration="7428000" />
-      <workItem from="1642578402785" duration="8576000" />
-    </task>
-    <task id="LOCAL-00212" summary="Implemented dispatcheable in the HVDC line and implemented the NTC OPF mode">
-      <created>1633793367480</created>
-      <option name="number" value="00212" />
-      <option name="presentableId" value="LOCAL-00212" />
-      <option name="project" value="LOCAL" />
-      <updated>1633793367480</updated>
-    </task>
-    <task id="LOCAL-00213" summary="implemented HVDC dispatch in the OPF&#10;Joined it to the power flow non-destructive feed&#10;Added attributes in the compilation functions">
-      <created>1633859600935</created>
-      <option name="number" value="00213" />
-      <option name="presentableId" value="LOCAL-00213" />
-      <option name="project" value="LOCAL" />
-      <updated>1633859600936</updated>
-    </task>
-    <task id="LOCAL-00214" summary="Added branch tap angle optimization in the OPF">
-      <created>1633861130364</created>
-      <option name="number" value="00214" />
-      <option name="presentableId" value="LOCAL-00214" />
-      <option name="project" value="LOCAL" />
-      <updated>1633861130364</updated>
-    </task>
-    <task id="LOCAL-00215" summary="OPF sign corrected">
-      <created>1633861540378</created>
-      <option name="number" value="00215" />
-      <option name="presentableId" value="LOCAL-00215" />
-      <option name="project" value="LOCAL" />
-      <updated>1633861540378</updated>
-    </task>
-    <task id="LOCAL-00216" summary="Implemented HVDC and phase shift into the OPF time series">
-      <created>1633874574582</created>
-      <option name="number" value="00216" />
-      <option name="presentableId" value="LOCAL-00216" />
-      <option name="project" value="LOCAL" />
-      <updated>1633874574582</updated>
+      <workItem from="1642578402785" duration="15289000" />
+      <workItem from="1642603851071" duration="4791000" />
+      <workItem from="1642610723451" duration="5530000" />
     </task>
     <task id="LOCAL-00217" summary="added transformer angle and tap module profiles">
       <created>1633875493750</created>
@@ -1010,14 +976,49 @@
       <option name="project" value="LOCAL" />
       <updated>1642585639088</updated>
     </task>
-    <task id="LOCAL-00260" summary="get time as parameter">
-      <created>1642667079697</created>
+    <task id="LOCAL-00260" summary="Added shadow prices to both opf and opf-ts">
+      <created>1642587559143</created>
       <option name="number" value="00260" />
       <option name="presentableId" value="LOCAL-00260" />
       <option name="project" value="LOCAL" />
-      <updated>1642667079697</updated>
+      <updated>1642587559143</updated>
     </task>
-    <option name="localTasksCounter" value="261" />
+    <task id="LOCAL-00261" summary="Fixed bug when the nodal restrictions are None">
+      <created>1642590889867</created>
+      <option name="number" value="00261" />
+      <option name="presentableId" value="LOCAL-00261" />
+      <option name="project" value="LOCAL" />
+      <updated>1642590889867</updated>
+    </task>
+    <task id="LOCAL-00262" summary="Fixed some little bugs with the OPF">
+      <created>1642596603078</created>
+      <option name="number" value="00262" />
+      <option name="presentableId" value="LOCAL-00262" />
+      <option name="project" value="LOCAL" />
+      <updated>1642596603078</updated>
+    </task>
+    <task id="LOCAL-00263" summary="Added Highs for windows, not working yet">
+      <created>1642609834253</created>
+      <option name="number" value="00263" />
+      <option name="presentableId" value="LOCAL-00263" />
+      <option name="project" value="LOCAL" />
+      <updated>1642609834254</updated>
+    </task>
+    <task id="LOCAL-00264" summary="Highs WIP">
+      <created>1642611851084</created>
+      <option name="number" value="00264" />
+      <option name="presentableId" value="LOCAL-00264" />
+      <option name="project" value="LOCAL" />
+      <updated>1642611851085</updated>
+    </task>
+    <task id="LOCAL-00265" summary="Highs working with shadow prices, when HiGHS is in the PATH">
+      <created>1642665845052</created>
+      <option name="number" value="00265" />
+      <option name="presentableId" value="LOCAL-00265" />
+      <option name="project" value="LOCAL" />
+      <updated>1642665845052</updated>
+    </task>
+    <option name="localTasksCounter" value="266" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1051,11 +1052,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed indices in the NTC pre-solve and the linear contingency analysis" />
-    <MESSAGE value="Refactored the order of the generation formulation in NTC-OPF" />
-    <MESSAGE value="4.3.1" />
-    <MESSAGE value="Fixed critical bug with NR when many islands" />
-    <MESSAGE value="Better style and added icon" />
     <MESSAGE value="Fixed HVDC &quot;free&quot; control for OPF" />
     <MESSAGE value="Implemented bentayga inspection from  the compiled arrays view" />
     <MESSAGE value="Improved bentayga arrays viewer implementation" />
@@ -1075,8 +1071,13 @@
     <MESSAGE value="Added &quot;maximize exchange&quot; option to the normal OPF-time series" />
     <MESSAGE value="Added inter area generation maximization/minimization&#10;Rearranged menus&#10;Added area &quot;slicing&quot; functions to the snapshot" />
     <MESSAGE value="removed HVDC slack variables from the OPF and OPF-TS formulations" />
-    <MESSAGE value="get time as parameter" />
-    <option name="LAST_COMMIT_MESSAGE" value="get time as parameter" />
+    <MESSAGE value="Added shadow prices to both opf and opf-ts" />
+    <MESSAGE value="Fixed bug when the nodal restrictions are None" />
+    <MESSAGE value="Fixed some little bugs with the OPF" />
+    <MESSAGE value="Added Highs for windows, not working yet" />
+    <MESSAGE value="Highs WIP" />
+    <MESSAGE value="Highs working with shadow prices, when HiGHS is in the PATH" />
+    <option name="LAST_COMMIT_MESSAGE" value="Highs working with shadow prices, when HiGHS is in the PATH" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
