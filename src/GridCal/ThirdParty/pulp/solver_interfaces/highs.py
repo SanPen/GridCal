@@ -198,14 +198,14 @@ class HiGHS_CMD(LpSolver_CMD):
             status_sol = constants.LpSolutionNoSolutionFound
             values = None
         else:
-            values = self.readsol(lp.variables(), tmpSol)
+            values, shadowPrices = self.readsol(lp.variables(), tmpSol)
 
         self.delete_tmp_files(tmpMps, tmpSol, tmpOptions, tmpLog)
         lp.assignStatus(status, status_sol)
 
-        if status == constants.LpStatusOptimal:
+        if status != LpStatusInfeasible:
             lp.assignVarsVals(values)
-
+            lp.assignConsPi(shadowPrices)
         return status
 
     @staticmethod
@@ -214,20 +214,44 @@ class HiGHS_CMD(LpSolver_CMD):
         with open(filename) as f:
             content = f.readlines()
         content = [l.strip() for l in content]
-        values = {}
+        values = dict()
+        shadow_prices = dict()
+
         if not len(content):  # if file is empty, update the status_sol
             return None
+
+        def search_first(arr, txt):
+            for i, val in enumerate(arr):
+                if len(val) > 0:
+                    if val[0] == '#':
+                        if txt in val:
+                            return i
+            return None
+
         # extract everything between the line Columns and Rows
-        # TODO: reinterpretar la solución bien...
-        col_id = content.index("Columns")
-        row_id = content.index("Rows")
-        solution = content[col_id + 1: row_id]
+        i1 = search_first(content, "Columns")
+        i2 = search_first(content, "Rows")
+        solution = content[i1 + 1: i2]
+
         # check whether it is an LP or an ILP
-        if "T Basis" in content:  # LP
+        if "# Basis" in content:  # LP
             for var, line in zip(variables, solution):
-                value = line.split()[0]
+                value = line.split()[1]
                 values[var.name] = float(value)
         else:  # ILP
             for var, value in zip(variables, solution):
                 values[var.name] = float(value)
-        return values
+
+        # fill shadow prices
+        i3 = search_first(content, "Dual solution")
+        dual_content = content[i3:]
+        i1 = search_first(dual_content, "Rows")
+        i2 = search_first(dual_content, "Basis")
+        # dual_solution = dual_content[i1 + 1: i2]
+        dual_shadow = dual_content[i1 + 1: i2]
+        for x in dual_shadow:
+            l = x.split(" ")
+            if len(l) == 2:
+                shadow_prices[l[0]] = float(l[1])
+
+        return values, shadow_prices

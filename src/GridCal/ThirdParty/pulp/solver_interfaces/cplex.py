@@ -81,20 +81,32 @@ class CPLEX_CMD(LpSolver_CMD):
         cplex_cmds += "quit\n"
         cplex_cmds = cplex_cmds.encode('UTF-8')
         cplex.communicate(cplex_cmds)
+
         if cplex.returncode != 0:
             raise PulpSolverError("PuLP: Error while trying to execute "+self.path)
+
         if not self.keepFiles:
-            try: os.remove(tmpLp)
-            except: pass
+            try:
+                os.remove(tmpLp)
+            except:
+                pass
+
         if not os.path.exists(tmpSol):
             status = LpStatusInfeasible
         else:
             status, values, reducedCosts, shadowPrices, slacks = self.readsol(tmpSol)
+
         if not self.keepFiles:
-            try: os.remove(tmpSol)
-            except: pass
-            try: os.remove("cplex.log")
-            except: pass
+            try:
+                os.remove(tmpSol)
+            except:
+                pass
+
+            try:
+                os.remove("cplex.log")
+            except:
+                pass
+
         if status != LpStatusInfeasible:
             lp.assignVarsVals(values)
             lp.assignVarsDj(reducedCosts)
@@ -120,8 +132,6 @@ class CPLEX_CMD(LpSolver_CMD):
             raise PulpSolverError("Unknown status returned by CPLEX: " + statusString)
         status = cplexStatus[statusString]
 
-        shadowPrices = {}
-        slacks = {}
         shadowPrices = {}
         slacks = {}
         constraints = solutionXML.find("linearConstraints")

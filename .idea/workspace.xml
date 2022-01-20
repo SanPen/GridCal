@@ -23,15 +23,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added Highs for windows, not working yet">
-      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solverdir/highs/linux/64/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solverdir/highs/linux/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solverdir/highs/osx/64/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solverdir/highs/osx/__init__.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Highs WIP">
+      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/mps_lp.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/pulp.cfg.linux" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/pulp.cfg.linux" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/pulp.cfg.osx" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/pulp.cfg.osx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/pulp.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/pulp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solver_interfaces/cplex.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solver_interfaces/cplex.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solver_interfaces/highs.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solver_interfaces/highs.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -687,14 +685,7 @@
       <workItem from="1642532568418" duration="7428000" />
       <workItem from="1642578402785" duration="15289000" />
       <workItem from="1642603851071" duration="4791000" />
-      <workItem from="1642610723451" duration="1118000" />
-    </task>
-    <task id="LOCAL-00215" summary="OPF sign corrected">
-      <created>1633861540378</created>
-      <option name="number" value="00215" />
-      <option name="presentableId" value="LOCAL-00215" />
-      <option name="project" value="LOCAL" />
-      <updated>1633861540378</updated>
+      <workItem from="1642610723451" duration="3995000" />
     </task>
     <task id="LOCAL-00216" summary="Implemented HVDC and phase shift into the OPF time series">
       <created>1633874574582</created>
@@ -1032,7 +1023,14 @@
       <option name="project" value="LOCAL" />
       <updated>1642609834254</updated>
     </task>
-    <option name="localTasksCounter" value="264" />
+    <task id="LOCAL-00264" summary="Highs WIP">
+      <created>1642611851084</created>
+      <option name="number" value="00264" />
+      <option name="presentableId" value="LOCAL-00264" />
+      <option name="project" value="LOCAL" />
+      <updated>1642611851085</updated>
+    </task>
+    <option name="localTasksCounter" value="265" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1066,7 +1064,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed critical bug with NR when many islands" />
     <MESSAGE value="Better style and added icon" />
     <MESSAGE value="Fixed HVDC &quot;free&quot; control for OPF" />
     <MESSAGE value="Implemented bentayga inspection from  the compiled arrays view" />
@@ -1091,7 +1088,8 @@
     <MESSAGE value="Fixed bug when the nodal restrictions are None" />
     <MESSAGE value="Fixed some little bugs with the OPF" />
     <MESSAGE value="Added Highs for windows, not working yet" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added Highs for windows, not working yet" />
+    <MESSAGE value="Highs WIP" />
+    <option name="LAST_COMMIT_MESSAGE" value="Highs WIP" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1482,24 +1480,24 @@
           <option name="timeStamp" value="904" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py</url>
-          <line>256</line>
-          <option name="timeStamp" value="912" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solvers.py</url>
           <line>441</line>
           <option name="timeStamp" value="913" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solver_interfaces/highs.py</url>
-          <line>162</line>
-          <option name="timeStamp" value="917" />
+          <line>256</line>
+          <option name="timeStamp" value="921" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solver_interfaces/cplex.py</url>
+          <line>112</line>
+          <option name="timeStamp" value="922" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solver_interfaces/highs.py</url>
-          <line>221</line>
-          <option name="timeStamp" value="918" />
+          <line>251</line>
+          <option name="timeStamp" value="923" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1627,7 +1625,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research2_py.coverage" NAME="Nosetests in PTDF_research2.py Coverage Results" MODIFIED="1600161918846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$time_series.coverage" NAME="time_series Coverage Results" MODIFIED="1617809423186" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Tutorials" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_power_flow_py.coverage" NAME="Nosetests in test_power_flow.py Coverage Results" MODIFIED="1641911106160" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1642611422791" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1642665635760" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$binary_ga.coverage" NAME="binary_ga Coverage Results" MODIFIED="1615226727819" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_opf_py.coverage" NAME="Nosetests in test_opf.py Coverage Results" MODIFIED="1632998728805" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_line_losses_py.coverage" NAME="Nosetests in test_line_losses.py Coverage Results" MODIFIED="1634139762786" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
