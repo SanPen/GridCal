@@ -1444,9 +1444,6 @@ def formulate_objective(
     # f += weight_hvdc_control * hvdc_control
     f += weight_generation_delta * load_shedding_sum
 
-    # objective function
-    solver.Minimize(f)
-
     all_slacks_sum = branch_overload + hvdc_overload + hvdc_control + delta_slacks + contingency_branch_overload
 
     slacks = [overload1, overload2,
@@ -1555,8 +1552,6 @@ class OpfNTC(Opf):
         self.inter_area_branches = None
         self.inter_area_hvdc = None
 
-        self.t = t
-
         self.logger = logger
 
         # this builds the formulation right away
@@ -1564,16 +1559,14 @@ class OpfNTC(Opf):
                      solver_type=solver_type,
                      ortools=True)
 
-    def formulate(self, add_slacks=True):
+    def formulate(self, add_slacks=True, t=0):
         """
         Formulate the Net Transfer Capacity problem
+        :param t: time index
         :return:
         """
 
         self.inf = self.solver.infinity()
-
-        # # time index
-        # t = 0
 
         # general indices
         n = self.numerical_circuit.nbus
@@ -1592,7 +1585,7 @@ class OpfNTC(Opf):
         # generator
         Pg_max = self.numerical_circuit.generator_pmax / Sbase
         Pg_min = self.numerical_circuit.generator_pmin / Sbase
-        Pg_fix = self.numerical_circuit.generator_data.get_effective_generation()[:, self.t] / Sbase
+        Pg_fix = self.numerical_circuit.generator_data.get_effective_generation()[:, t] / Sbase
         Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
 
         if self.skip_generation_limits:
@@ -1601,7 +1594,7 @@ class OpfNTC(Opf):
             Pg_min = -self.inf * np.ones(self.numerical_circuit.ngen)
 
         # load
-        Pl_fix = self.numerical_circuit.load_data.get_effective_load().real[:, self.t] / Sbase
+        Pl_fix = self.numerical_circuit.load_data.get_effective_load().real[:, t] / Sbase
 
         # modify Pg_fix until it is identical to Pload
         total_load = Pl_fix.sum()
@@ -1656,11 +1649,10 @@ class OpfNTC(Opf):
                 a1=self.area_from_bus_idx,
                 a2=self.area_to_bus_idx,
                 dispatch_all_areas=self.dispatch_all_areas,
-                # t=t
-                t=self.t
+                t=t
             )
 
-            load_cost = self.numerical_circuit.load_data.load_cost[:, self.t]
+            load_cost = self.numerical_circuit.load_data.load_cost[:, t]
 
         elif self.generation_formulation == GenerationNtcFormulation.Proportional:
 
@@ -1683,8 +1675,7 @@ class OpfNTC(Opf):
                 Pmin=Pg_min,
                 a1=self.area_from_bus_idx,
                 a2=self.area_to_bus_idx,
-                # t=t
-                t=self.t
+                t=t
             )
 
             load_cost = np.ones(self.numerical_circuit.nload)
@@ -1709,7 +1700,7 @@ class OpfNTC(Opf):
             Cgen=Cgen,
             generation=generation,
             Cload=self.numerical_circuit.load_data.C_bus_load,
-            load_active=self.numerical_circuit.load_data.load_active[:, self.t],
+            load_active=self.numerical_circuit.load_data.load_active[:, t],
             load_power=Pl_fix,
             Sbase=self.numerical_circuit.Sbase
         )
@@ -1772,7 +1763,7 @@ class OpfNTC(Opf):
             angles=theta,
             active=self.numerical_circuit.hvdc_data.active,
             Pt=self.numerical_circuit.hvdc_data.Pt,
-            angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase)[:, self.t],
+            angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase)[:, t],
             control_mode=self.numerical_circuit.hvdc_data.control_mode,
             dispatchable=self.numerical_circuit.hvdc_data.dispatchable,
             F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
@@ -1781,27 +1772,8 @@ class OpfNTC(Opf):
             Sbase=self.numerical_circuit.Sbase,
             inf=self.inf,
             logger=self.logger,
-            # t=t
-            t=self.t
+            t=t
         )
-        hvdc_flow_f, hvdc_overload1, hvdc_overload2, \
-        hvdc_control1, hvdc_control2 = formulate_hvdc_flow(solver=self.solver,
-                                                           nhvdc=self.numerical_circuit.nhvdc,
-                                                           names=self.numerical_circuit.hvdc_names,
-                                                           rate=self.numerical_circuit.hvdc_data.rate,
-                                                           angles=theta,
-                                                           active=self.numerical_circuit.hvdc_data.active,
-                                                           Pt=self.numerical_circuit.hvdc_data.Pset,
-                                                           angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase)[:, t],
-                                                           control_mode=self.numerical_circuit.hvdc_data.control_mode,
-                                                           dispatchable=self.numerical_circuit.hvdc_data.dispatchable,
-                                                           F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
-                                                           T=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
-                                                           Pinj=Pinj,
-                                                           Sbase=self.numerical_circuit.Sbase,
-                                                           inf=self.inf,
-                                                           logger=self.logger,
-                                                           t=t)
 
         # formulate the node power balance
         node_balance = formulate_node_balance(
@@ -1809,7 +1781,7 @@ class OpfNTC(Opf):
             Bbus=self.numerical_circuit.Bbus,
             angles=theta,
             Pinj=Pinj,
-            bus_active=self.numerical_circuit.bus_data.bus_active[:, self.t],
+            bus_active=self.numerical_circuit.bus_data.bus_active[:, t],
             bus_names=self.numerical_circuit.bus_data.bus_names
         )
 
@@ -1884,9 +1856,10 @@ class OpfNTC(Opf):
 
         return self.solver
 
-    def check(self):
+    def check(self, t=0):
         """
         Formulate the Net Transfer Capacity problem
+        param t: time index
         :return:
         """
         # time index
@@ -1907,7 +1880,7 @@ class OpfNTC(Opf):
         Cbat = self.numerical_circuit.battery_data.C_bus_batt.tocsc()
 
         # generator
-        Pg_fix = self.numerical_circuit.generator_data.get_effective_generation()[:, self.t] / Sbase
+        Pg_fix = self.numerical_circuit.generator_data.get_effective_generation()[:, t] / Sbase
         Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
 
         if self.skip_generation_limits:
@@ -1916,7 +1889,7 @@ class OpfNTC(Opf):
             Pg_min = -self.inf * np.ones(self.numerical_circuit.ngen)
 
         # load
-        Pl_fix = self.numerical_circuit.load_data.get_effective_load().real[:, self.t] / Sbase
+        Pl_fix = self.numerical_circuit.load_data.get_effective_load().real[:, t] / Sbase
 
         # branch
         alpha_abs = np.abs(self.alpha)
@@ -2037,7 +2010,7 @@ class OpfNTC(Opf):
             Sbase=self.numerical_circuit.Sbase,
             flow_f=self.extract(self.hvdc_flow),
             logger=self.logger,
-            t=self.t
+            t=t
         )
 
         Pinj = check_power_injections(
@@ -2052,7 +2025,7 @@ class OpfNTC(Opf):
             Bbus=self.numerical_circuit.Bbus,
             angles=self.extract(self.theta),
             Pinj=Pinj,
-            bus_active=self.numerical_circuit.bus_data.bus_active[:, self.t],
+            bus_active=self.numerical_circuit.bus_data.bus_active[:, t],
             bus_names=self.numerical_circuit.bus_data.bus_names,
             logger=self.logger
         )
