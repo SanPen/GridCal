@@ -226,7 +226,7 @@ def colour_sub_schematic(Sbase,
 
     if hvdc_Pf is not None:
 
-        hvdc_sending_power_norm = np.abs(hvdc_Pf) / max_flow
+        hvdc_sending_power_norm = np.abs(hvdc_Pf) / (max_flow + 1e-20)
 
         for i, elm in enumerate(hvdc_lines):
 

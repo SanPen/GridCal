@@ -79,16 +79,14 @@ class HiGHS_CMD(LpSolver_CMD):
         if not self.executable(self.path):
             raise PulpSolverError("PuLP: cannot execute " + self.path)
 
-        tmpMps, tmpSol, tmpOptions, tmpLog = self.create_tmp_files(
-            lp.name, "mps", "sol", "HiGHS", "HiGHS_log"
-        )
+        tmp_mps, tmp_sol, tmp_options, tmp_log = self.create_tmp_files(lp.name, "mps", "sol", "HiGHS", "HiGHS_log")
 
         write_lines = [
-            "solution_file = %s\n" % tmpSol,
+            "solution_file = %s\n" % tmp_sol,
             "write_solution_to_file = true\n",
-            #"write_solution_pretty = true\n",
+            'parallel = "on"',
         ]
-        with open(tmpOptions, "w") as fp:
+        with open(tmp_options, "w") as fp:
             fp.writelines(write_lines)
 
         if lp.sense == constants.LpMaximize:
@@ -101,17 +99,17 @@ class HiGHS_CMD(LpSolver_CMD):
             lp += -lp.objective
         lp.checkDuplicateVars()
         lp.checkLengthVars(52)
-        lp.writeMPS(tmpMps)  # , mpsSense=constants.LpMinimize)
+        lp.writeMPS(tmp_mps)  # , mpsSense=constants.LpMinimize)
 
         # just to report duplicated variables:
         try:
-            os.remove(tmpSol)
+            os.remove(tmp_sol)
         except:
             pass
 
         cmd = self.path
-        cmd += " %s" % tmpMps
-        cmd += " --options_file %s" % tmpOptions
+        cmd += " %s" % tmp_mps
+        cmd += " --options_file %s" % tmp_options
 
         for option in self.options:
             cmd += " " + option
@@ -132,7 +130,7 @@ class HiGHS_CMD(LpSolver_CMD):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             universal_newlines=True,
-        ) as proc, open(tmpLog, "w") as log_file:
+        ) as proc, open(tmp_log, "w") as log_file:
             for line in proc.stdout:
                 if self.msg:
                     sys.__stdout__.write(line)
@@ -150,7 +148,7 @@ class HiGHS_CMD(LpSolver_CMD):
         return_code = proc.wait()
 
         if return_code in [0, 1]:
-            with open(tmpLog, "r") as log_file:
+            with open(tmp_log, "r") as log_file:
                 content = log_file.readlines()
             content = [l.strip().split() for l in content]
 
@@ -194,13 +192,13 @@ class HiGHS_CMD(LpSolver_CMD):
         if status == constants.LpStatusUndefined:
             raise PulpSolverError("Pulp: Error while executing", self.path)
 
-        if not os.path.exists(tmpSol) or os.stat(tmpSol).st_size == 0:
+        if not os.path.exists(tmp_sol) or os.stat(tmp_sol).st_size == 0:
             status_sol = constants.LpSolutionNoSolutionFound
             values = None
         else:
-            values, shadowPrices = self.readsol(lp.variables(), tmpSol)
+            values, shadowPrices = self.readsol(lp.variables(), tmp_sol)
 
-        self.delete_tmp_files(tmpMps, tmpSol, tmpOptions, tmpLog)
+        self.delete_tmp_files(tmp_mps, tmp_sol, tmp_options, tmp_log)
         lp.assignStatus(status, status_sol)
 
         if status != LpStatusInfeasible:
