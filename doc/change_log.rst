@@ -6,6 +6,13 @@ This section describes the changes introduced at each Version.
 
 \* Short releases indicate the fix of a critical bug.
 
+Version 4.4.5
+^^^^^^^^^^^^^^^
+
+- Integrated Bentayga's PTDF / LODF calculation
+- Improved HVDC oscillation control when acting in free mode
+- Integrated the Highs solver into the custom pulp implementation
+
 Version 4.4.3
 ^^^^^^^^^^^^^^^
 
