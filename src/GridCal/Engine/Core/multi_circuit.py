@@ -390,7 +390,7 @@ class MultiCircuit:
         Return all the branch objects
         :return: lines + transformers 2w + hvdc
         """
-        return self.lines + self.transformers2w + self.vsc_devices + self.dc_lines + self.upfc_devices + self.switch_devices
+        return self.lines + self.dc_lines + self.transformers2w + self.vsc_devices + self.upfc_devices + self.switch_devices
 
     def get_branches_wo_hvdc_names(self):
         return [e.name for e in self.get_branches_wo_hvdc()]

@@ -1554,9 +1554,6 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
                                                    apply_temperature=apply_temperature,
                                                    branch_tolerance_mode=branch_tolerance_mode)
 
-    nc.upfc_data = gc_compiler.get_upfc_data(circuit=circuit,
-                                             bus_dict=bus_dict)
-
     nc.branch_data = gc_compiler.get_branch_data(circuit=circuit,
                                                  bus_dict=bus_dict,
                                                  Vbus=nc.bus_data.Vbus,
