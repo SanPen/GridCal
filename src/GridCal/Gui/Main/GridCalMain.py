@@ -2647,7 +2647,8 @@ class MainGUI(QMainWindow):
                         distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked(),
                         correct_values=self.ui.ptdf_correct_nonsense_values_checkBox.isChecked())
 
-                    drv = sim.LinearAnalysisDriver(grid=self.circuit, options=options)
+                    engine = self.get_preferred_engine()
+                    drv = sim.LinearAnalysisDriver(grid=self.circuit, options=options, engine=engine)
 
                     self.session.run(drv,
                                      post_func=self.post_linear_analysis,
@@ -4873,15 +4874,15 @@ class MainGUI(QMainWindow):
             elif current_study == sim.LinearAnalysisDriver.name:
                 drv, results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_run)
                 voltage = np.ones(self.circuit.get_bus_number())
-                loading = results.PTDF[:, current_step]
 
                 plot_function(circuit=self.circuit,
-                              Sbus=None,
-                              Sf=loading,
+                              Sbus=results.Sbus,
+                              Sf=results.Sf,
+                              St=-results.Sf,
                               voltages=voltage,
-                              loadings=loading,
+                              loadings=results.loading,
                               types=results.bus_types,
-                              loading_label='Sensitivity',
+                              loading_label='Loading',
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
