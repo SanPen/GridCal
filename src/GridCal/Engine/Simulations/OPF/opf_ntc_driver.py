@@ -1,17 +1,19 @@
-# This file is part of GridCal.
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
 #
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
 #
-# GridCal is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from enum import Enum
 import numpy as np
 import time
@@ -169,7 +171,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.HvdcPowerFrom,
                                                     ResultTypes.HvdcOverloads,
                                                     ResultTypes.BatteryPower,
-                                                    ResultTypes.ControlledGeneratorPower,
+                                                    ResultTypes.GeneratorPower,
                                                     ResultTypes.GenerationDelta,
                                                     ResultTypes.GenerationDeltaSlacks,
                                                     ResultTypes.LoadShedding,
@@ -350,7 +352,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = '(MW)'
             title = result_type.value[0]
 
-        elif result_type == ResultTypes.ControlledGeneratorPower:
+        elif result_type == ResultTypes.GeneratorPower:
             labels = self.generator_names
             y = self.generator_power
             y_label = '(MW)'
@@ -671,7 +673,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
             if not converged:
                 self.logger.add_error('Did not converge', 'NTC OPF', str(err), self.options.tolerance)
 
-                self.logger += problem.logger
+            self.logger += problem.logger
 
             # pack the results
             self.results = OptimalNetTransferCapacityResults(
@@ -687,7 +689,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 generator_shedding=np.zeros((numerical_circuit.ngen, 1)),
                 battery_power=np.zeros((numerical_circuit.nbatt, 1)),
                 controlled_generation_power=problem.get_generator_power(),
-                Sf=problem.get_branch_power(),
+                Sf=problem.get_branch_power_from(),
                 overloads=problem.get_overloads(),
                 loading=problem.get_loading(),
                 converged=bool(converged),

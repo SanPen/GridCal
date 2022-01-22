@@ -596,9 +596,55 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.contingency_enabled[i] = int(elm.contingency_enabled)
         data.monitor_loading[i] = int(elm.monitor_loading)
 
+    # DC-lines
+    offset = nline
+    for i, elm in enumerate(circuit.dc_lines):
+            ii = i + offset
+
+            # generic stuff
+            f = bus_dict[elm.bus_from]
+            t = bus_dict[elm.bus_to]
+
+            data.branch_names[ii] = elm.name
+            data.branch_dc[ii] = 1
+
+            if time_series:
+                data.branch_active[ii, :] = elm.active_prof
+                data.branch_rates[ii, :] = elm.rate_prof
+                data.branch_contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor
+
+                if opf:
+                    data.branch_cost[ii, :] = elm.Cost_prof
+            else:
+                data.branch_active[ii] = elm.active
+                data.branch_rates[ii] = elm.rate
+                data.branch_contingency_rates[ii] = elm.rate * elm.contingency_factor
+
+                if opf:
+                    data.branch_cost[ii] = elm.Cost
+
+            data.C_branch_bus_f[ii, f] = 1
+            data.C_branch_bus_t[ii, t] = 1
+            data.F[ii] = f
+            data.T[ii] = t
+
+            data.contingency_enabled[ii] = int(elm.contingency_enabled)
+            data.monitor_loading[ii] = int(elm.monitor_loading)
+
+            if apply_temperature:
+                data.R[ii] = elm.R_corrected
+            else:
+                data.R[ii] = elm.R
+
+            if branch_tolerance_mode == BranchImpedanceMode.Lower:
+                data.R[ii] *= (1 - elm.tolerance / 100.0)
+            elif branch_tolerance_mode == BranchImpedanceMode.Upper:
+                data.R[ii] *= (1 + elm.tolerance / 100.0)
+
     # 2-winding transformers
+    offset += ndcline
     for i, elm in enumerate(circuit.transformers2w):
-        ii = i + nline
+        ii = i + offset
 
         # generic stuff
         f = bus_dict[elm.bus_from]
@@ -666,8 +712,9 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
             Vbus[t] = elm.vset
 
     # VSC
+    offset += ntr
     for i, elm in enumerate(circuit.vsc_devices):
-        ii = i + nline + ntr
+        ii = i + offset
 
         # generic stuff
         f = bus_dict[elm.bus_from]
@@ -759,53 +806,10 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         elif elm.control_mode == ConverterControlType.type_IV_I:  # 8:Vdc
             Vbus[f] = elm.Vdc_set
 
-    # DC-lines
-    for i, elm in enumerate(circuit.dc_lines):
-        ii = i + nline + ntr + nvsc
-
-        # generic stuff
-        f = bus_dict[elm.bus_from]
-        t = bus_dict[elm.bus_to]
-
-        data.branch_names[ii] = elm.name
-        data.branch_dc[ii] = 1
-
-        if time_series:
-            data.branch_active[ii, :] = elm.active_prof
-            data.branch_rates[ii, :] = elm.rate_prof
-            data.branch_contingency_rates[ii, :] = elm.rate_prof * elm.contingency_factor
-
-            if opf:
-                data.branch_cost[ii, :] = elm.Cost_prof
-        else:
-            data.branch_active[ii] = elm.active
-            data.branch_rates[ii] = elm.rate
-            data.branch_contingency_rates[ii] = elm.rate * elm.contingency_factor
-
-            if opf:
-                data.branch_cost[ii] = elm.Cost
-
-        data.C_branch_bus_f[ii, f] = 1
-        data.C_branch_bus_t[ii, t] = 1
-        data.F[ii] = f
-        data.T[ii] = t
-
-        data.contingency_enabled[ii] = int(elm.contingency_enabled)
-        data.monitor_loading[ii] = int(elm.monitor_loading)
-
-        if apply_temperature:
-            data.R[ii] = elm.R_corrected
-        else:
-            data.R[ii] = elm.R
-
-        if branch_tolerance_mode == BranchImpedanceMode.Lower:
-            data.R[ii] *= (1 - elm.tolerance / 100.0)
-        elif branch_tolerance_mode == BranchImpedanceMode.Upper:
-            data.R[ii] *= (1 + elm.tolerance / 100.0)
-
     # UPFC
+    offset += nvsc
     for i, elm in enumerate(circuit.upfc_devices):
-        ii = i + nline + ntr + nvsc + ndcline
+        ii = i + offset
 
         # generic stuff
         f = bus_dict[elm.bus_from]

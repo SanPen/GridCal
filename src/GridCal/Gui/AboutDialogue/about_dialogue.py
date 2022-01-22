@@ -1,5 +1,6 @@
 import os
 import sys
+import chardet
 import subprocess
 from PySide2.QtWidgets import QDialog
 from typing import List, Dict
@@ -62,6 +63,8 @@ class AboutDialogueGuiGUI(QDialog):
         # click
         self.ui.updateButton.clicked.connect(self.update)
 
+        self.show_license()
+
     def msg(self, text, title="Warning"):
         """
         Message box
@@ -88,6 +91,21 @@ class AboutDialogueGuiGUI(QDialog):
             self.msg("The exit code was: %d" % list_files.returncode)
         else:
             self.msg('GridCal updated successfully')
+
+    def show_license(self):
+        """
+        Show the license
+        """
+        here = os.path.abspath(os.path.dirname(__file__))
+        license_file = os.path.join(here, '..', '..', 'LICENSE.txt')
+
+        # make a guess of the file encoding
+        detection = chardet.detect(open(license_file, "rb").read())
+
+        with open(license_file, 'r', encoding=detection['encoding']) as file:
+            license_txt = file.read()
+
+        self.ui.licenseTextEdit.setPlainText(license_txt)
 
 
 if __name__ == "__main__":

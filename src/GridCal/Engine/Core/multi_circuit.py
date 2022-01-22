@@ -1,17 +1,19 @@
-# This file is part of GridCal.
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
 #
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
 #
-# GridCal is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import sys
 import os
@@ -380,12 +382,18 @@ class MultiCircuit:
     def get_buses(self):
         return self.buses
 
+    def get_bus_names(self):
+        return [e.name for e in self.buses]
+
     def get_branches_wo_hvdc(self):
         """
         Return all the branch objects
         :return: lines + transformers 2w + hvdc
         """
-        return self.lines + self.transformers2w + self.vsc_devices + self.dc_lines + self.upfc_devices + self.switch_devices
+        return self.lines + self.dc_lines + self.transformers2w + self.vsc_devices + self.upfc_devices + self.switch_devices
+
+    def get_branches_wo_hvdc_names(self):
+        return [e.name for e in self.get_branches_wo_hvdc()]
 
     def get_branches(self):
         """
@@ -1711,6 +1719,10 @@ class MultiCircuit:
         """
         for bus in self.buses:
             bus.set_state(t)
+
+        for branch in self.get_branches():
+            branch.set_profile_values(t)
+
 
     def get_bus_branch_connectivity_matrix(self):
         """

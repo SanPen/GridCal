@@ -1,17 +1,19 @@
-# This file is part of GridCal.
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
 #
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
 #
-# GridCal is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import pandas as pd
 import time
@@ -124,12 +126,14 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
                                       start_idx=start_,
                                       end_idx=end_,
                                       solver=self.options.mip_solver,
-                                      batteries_energy_0=batteries_energy_0,
                                       zonal_grouping=self.options.zonal_grouping,
                                       skip_generation_limits=self.options.skip_generation_limits,
                                       consider_contingencies=self.options.consider_contingencies,
                                       LODF=self.options.LODF,
-                                      lodf_tolerance=self.options.lodf_tolerance)
+                                      lodf_tolerance=self.options.lodf_tolerance,
+                                      maximize_inter_area_flow=self.options.maximize_flows,
+                                      buses_areas_1=self.options.area_from_bus_idx,
+                                      buses_areas_2=self.options.area_to_bus_idx)
 
         elif self.options.solver == SolverType.AC_OPF:
 
@@ -137,8 +141,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
             problem = OpfAcTimeSeries(numerical_circuit=self.numerical_circuit,
                                       start_idx=start_,
                                       end_idx=end_,
-                                      solver=self.options.mip_solver,
-                                      batteries_energy_0=batteries_energy_0)
+                                      solver=self.options.mip_solver)
 
         elif self.options.solver == SolverType.Simple_OPF:
 
@@ -146,7 +149,6 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
             problem = OpfSimpleTimeSeries(numerical_circuit=self.numerical_circuit,
                                           start_idx=start_, end_idx=end_,
                                           solver=self.options.mip_solver,
-                                          batteries_energy_0=batteries_energy_0,
                                           text_prog=self.progress_text.emit,
                                           prog_func=self.progress_signal.emit)
 
@@ -159,24 +161,25 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
             self.progress_text.emit('Running all in an external solver, this may take a while...')
 
         # solve the problem
+        problem.formulate(batteries_energy_0=batteries_energy_0)
         status = problem.solve()
         print("Status:", status)
 
         a = start_
         b = end_
         self.results.voltage[a:b, :] = problem.get_voltage()
+        self.results.bus_shadow_prices[a:b, :] = problem.get_shadow_prices()
         self.results.load_shedding[a:b, :] = problem.get_load_shedding()
         self.results.battery_power[a:b, :] = problem.get_battery_power()
         self.results.battery_energy[a:b, :] = problem.get_battery_energy()
         self.results.generator_power[a:b, :] = problem.get_generator_power()
-        self.results.Sf[a:b, :] = problem.get_branch_power()
+        self.results.Sf[a:b, :] = problem.get_branch_power_from()
+        self.results.St[a:b, :] = problem.get_branch_power_to()
         self.results.overloads[a:b, :] = problem.get_overloads()
         self.results.loading[a:b, :] = problem.get_loading()
-        self.results.shadow_prices[a:b, :] = problem.get_shadow_prices()
 
         self.results.Sbus[a:b, :] = problem.get_power_injections()
         self.results.hvdc_Pf[a:b, :] = problem.get_hvdc_flows()
-        self.results.hvdc_overloads[a:b, :] = problem.get_hvdc_slacks()
         self.results.hvdc_loading[a:b, :] = self.results.hvdc_Pf[a:b, :] / self.numerical_circuit.hvdc_data.rate[:, a:b].transpose()
         self.results.phase_shift[a:b, :] = problem.get_phase_shifts()
 
@@ -205,7 +208,10 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
             start_ = groups[i - 1]
             end_ = groups[i]
 
+            # show progress message
             print(start_, ':', end_, ' [', end_ - start_, ']')
+            self.progress_text.emit('Running OPF for the time group {0} '
+                                    'start {1} - end {2} in external solver...'.format(i, start_, end_))
 
             if start_ >= self.start_ and end_ <= self.end_:
 
@@ -214,7 +220,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
 
             energy_0 = self.results.battery_energy[end_ - 1, :]
 
-            self.progress_text.emit('Running OPF for the time group ' + str(i) + ' in external solver...')
+            # update progress bar
             progress = ((start_ - self.start_ + 1) / (self.end_ - self.start_)) * 100
             self.progress_signal.emit(progress)
 

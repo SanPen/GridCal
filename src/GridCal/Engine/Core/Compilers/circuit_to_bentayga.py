@@ -1,14 +1,33 @@
+import os.path
+
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Devices.enumerations import ConverterControlType, TransformerControlType
 from GridCal.Engine.Devices import *
+from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerControlMode, TapsControlMode
+from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from GridCal.Engine.IO.file_system import get_create_gridcal_folder
+
 
 try:
     import bentayga as btg
-    BENTAYGA_AVAILABLE = True
-    print('Bentayga v' + btg.get_version())
+
+    # activate
+    if not btg.is_license_activated():
+        btg_license = os.path.join(get_create_gridcal_folder(), 'bentayga.lic')
+        if os.path.exists(btg_license):
+            # print('Bentayga v' + btg.get_version())
+            btg.activate_license(btg_license)
+            BENTAYGA_AVAILABLE = True
+        else:
+            print('Bentayga v' + btg.get_version(), "installed but not licensed")
+            BENTAYGA_AVAILABLE = False
+    else:
+        print('Bentayga v' + btg.get_version())
+        BENTAYGA_AVAILABLE = True
+
 except ImportError:
     BENTAYGA_AVAILABLE = False
     print('Bentayga is not available')
@@ -17,12 +36,13 @@ except ImportError:
 BINT = np.ulonglong
 
 
-def add_btg_buses(circuit: MultiCircuit, btgCircuit: "btg.Circuit", time_series: bool, ntime=1):
+def add_btg_buses(circuit: MultiCircuit, btg_circuit: "btg.Circuit", time_series: bool, ntime=1):
     """
-
-    :param circuit:
-    :param btgCircuit:
-    :param ntime:
+    Convert the buses to bentayga buses
+    :param circuit: GridCal circuit
+    :param btg_circuit: bentayga circuit
+    :param time_series: compile the time series from GridCal? otherwise just the snapshot
+    :param ntime: number of time steps
     :return:
     """
     areas_dict = {elm: k for k, elm in enumerate(circuit.areas)}
@@ -39,21 +59,20 @@ def add_btg_buses(circuit: MultiCircuit, btgCircuit: "btg.Circuit", time_series:
         else:
             elm.active = np.ones(ntime, dtype=BINT) * int(bus.active)
 
-        btgCircuit.add_node(elm)
+        btg_circuit.add_node(elm)
         bus_dict[elm.uuid] = elm
 
     return bus_dict
 
 
-def add_btg_loads(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def add_btg_loads(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
-    :param circuit:
-    :param btgCircuit:
-    :param bus_dict:
-    :param time_series:
-    :param ntime:
-    :return:
+    :param circuit: GridCal circuit
+    :param btg_circuit: bentayga circuit
+    :param time_series: compile the time series from GridCal? otherwise just the snapshot
+    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param ntime: number of time steps
     """
 
     devices = circuit.get_loads()
@@ -73,18 +92,17 @@ def add_btg_loads(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, ti
         else:
             load.active = np.ones(ntime, dtype=BINT) * int(elm.active)
 
-        btgCircuit.add_load(load)
+        btg_circuit.add_load(load)
 
 
-def add_btg_static_generators(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def add_btg_static_generators(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
-    :param circuit:
-    :param btgCircuit:
-    :param bus_dict:
-    :param time_series:
-    :param ntime:
-    :return:
+    :param circuit: GridCal circuit
+    :param btg_circuit: bentayga circuit
+    :param time_series: compile the time series from GridCal? otherwise just the snapshot
+    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param ntime: number of time steps
     """
     devices = circuit.get_static_generators()
     for k, elm in enumerate(devices):
@@ -103,18 +121,17 @@ def add_btg_static_generators(circuit: MultiCircuit, btgCircuit: "btg.Circuit", 
         else:
             load.active = np.ones(ntime, dtype=BINT) * int(elm.active)
 
-        btgCircuit.add_load(load)
+        btg_circuit.add_load(load)
 
 
-def add_btg_shunts(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def add_btg_shunts(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
-    :param circuit:
-    :param btgCircuit:
-    :param bus_dict:
-    :param time_series:
-    :param ntime:
-    :return:
+    :param circuit: GridCal circuit
+    :param btg_circuit: bentayga circuit
+    :param time_series: compile the time series from GridCal? otherwise just the snapshot
+    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param ntime: number of time steps
     """
     devices = circuit.get_shunts()
     for k, elm in enumerate(devices):
@@ -133,21 +150,17 @@ def add_btg_shunts(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, t
         else:
             sh.active = np.ones(ntime, dtype=BINT) * int(elm.active)
 
-        btgCircuit.add_shunt_fixed(sh)
+        btg_circuit.add_shunt_fixed(sh)
 
 
-def add_btg_generators(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def add_btg_generators(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
-    :param circuit:
-    :param bus_dict:
-    :param Vbus:
-    :param logger:
-    :param opf_results:
-    :param time_series:
-    :param opf:
-    :param ntime:
-    :return:
+    :param circuit: GridCal circuit
+    :param btg_circuit: bentayga circuit
+    :param time_series: compile the time series from GridCal? otherwise just the snapshot
+    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param ntime: number of time steps
     """
     devices = circuit.get_generators()
 
@@ -160,7 +173,10 @@ def add_btg_generators(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dic
                             P0=elm.P,
                             Q0=0,
                             Vset0=elm.Vset)
-
+        gen.Qmin = elm.Qmin
+        gen.Qmax = elm.Qmax
+        gen.Pmin = elm.Pmin
+        gen.Pmax = elm.Pmax
         gen.generation_cost = elm.Cost
 
         if time_series:
@@ -172,21 +188,17 @@ def add_btg_generators(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dic
             gen.P = np.ones(ntime, dtype=float) * elm.P
             gen.vset = np.ones(ntime, dtype=float) * elm.Vset
 
-        btgCircuit.add_generator(gen)
+        btg_circuit.add_generator(gen)
 
 
-def get_battery_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def get_battery_data(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
-    :param circuit:
-    :param bus_dict:
-    :param Vbus:
-    :param logger:
-    :param opf_results:
-    :param time_series:
-    :param opf:
-    :param ntime:
-    :return:
+    :param circuit: GridCal circuit
+    :param btg_circuit: bentayga circuit
+    :param time_series: compile the time series from GridCal? otherwise just the snapshot
+    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param ntime: number of time steps
     """
     devices = circuit.get_batteries()
 
@@ -206,6 +218,10 @@ def get_battery_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict,
         gen.charge_efficiency = elm.charge_efficiency
         gen.discharge_efficiency = elm.discharge_efficiency
         gen.generation_cost = elm.Cost
+        gen.Qmin = elm.Qmin
+        gen.Qmax = elm.Qmax
+        gen.Pmin = elm.Pmin
+        gen.Pmax = elm.Pmax
 
         if time_series:
             gen.active = elm.active_prof.astype(BINT)
@@ -216,18 +232,17 @@ def get_battery_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict,
             gen.P = np.ones(ntime, dtype=float) * elm.P
             gen.vset = np.ones(ntime, dtype=float) * elm.Vset
 
-        btgCircuit.add_battery(gen)
+        btg_circuit.add_battery(gen)
 
 
-def add_btg_line(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def add_btg_line(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
-    :param circuit:
-    :param btgCircuit:
-    :param bus_dict:
-    :param time_series:
-    :param ntime:
-    :return:
+    :param circuit: GridCal circuit
+    :param btg_circuit: bentayga circuit
+    :param time_series: compile the time series from GridCal? otherwise just the snapshot
+    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param ntime: number of time steps
     """
 
     # Compile the lines
@@ -252,15 +267,17 @@ def add_btg_line(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, tim
             lne.rates = elm.rate_prof
             lne.contingency_rates = elm.rate_prof * elm.contingency_factor
 
-        btgCircuit.add_ac_line(lne)
+        btg_circuit.add_ac_line(lne)
 
 
-def get_transformer_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def get_transformer_data(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
-    :param circuit:
-    :param bus_dict:
-    :return:
+    :param circuit: GridCal circuit
+    :param btg_circuit: bentayga circuit
+    :param time_series: compile the time series from GridCal? otherwise just the snapshot
+    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param ntime: number of time steps
     """
     for i, elm in enumerate(circuit.transformers2w):
         tr2 = btg.Transformer2WAll(uuid=elm.idtag,
@@ -290,15 +307,17 @@ def get_transformer_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_d
             tr2.tap = np.ones(ntime, dtype=float) * elm.tap_module
             tr2.phase = np.ones(ntime, dtype=float) * elm.angle
 
-        btgCircuit.add_transformer_all(tr2)
+        btg_circuit.add_transformer_all(tr2)
 
 
-def get_vsc_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def get_vsc_data(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
-    :param circuit:
-    :param bus_dict:
-    :return:
+    :param circuit: GridCal circuit
+    :param btg_circuit: bentayga circuit
+    :param time_series: compile the time series from GridCal? otherwise just the snapshot
+    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param ntime: number of time steps
     """
     for i, elm in enumerate(circuit.vsc_devices):
         vsc = btg.VSC(uuid=elm.idtag,
@@ -337,18 +356,17 @@ def get_vsc_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, tim
             vsc.rates = elm.rate_prof
             vsc.contingency_rates = elm.rate_prof * elm.contingency_factor
 
-        btgCircuit.add_vsc(vsc)
+        btg_circuit.add_vsc(vsc)
 
 
-def get_dc_line_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def get_dc_line_data(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
-    :param circuit:
-    :param btgCircuit:
-    :param bus_dict:
-    :param time_series:
-    :param ntime:
-    :return:
+    :param circuit: GridCal circuit
+    :param btg_circuit: bentayga circuit
+    :param time_series: compile the time series from GridCal? otherwise just the snapshot
+    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param ntime: number of time steps
     """
     # Compile the lines
     for i, elm in enumerate(circuit.dc_lines):
@@ -370,19 +388,17 @@ def get_dc_line_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict,
             lne.rates = elm.rate_prof
             lne.contingency_rates = elm.rate_prof * elm.contingency_factor
 
-        btgCircuit.add_dc_line(lne)
+        btg_circuit.add_dc_line(lne)
 
 
-def get_hvdc_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
+def get_hvdc_data(circuit: MultiCircuit, btg_circuit: "btg.Circuit", bus_dict, time_series: bool, ntime=1):
     """
 
-    :param circuit:
-    :param bus_dict:
-    :param bus_types:
-    :param time_series:
-    :param ntime:
-    :param opf_results:
-    :return:
+    :param circuit: GridCal circuit
+    :param btg_circuit: bentayga circuit
+    :param time_series: compile the time series from GridCal? otherwise just the snapshot
+    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param ntime: number of time steps
     """
 
     cmode_dict = {HvdcControlType.type_0_free: btg.HvdcControlType.free,
@@ -401,6 +417,10 @@ def get_hvdc_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, ti
                             Pset=elm.Pset,
                             v_set_f=elm.Vset_f,
                             v_set_t=elm.Vset_t,
+                            min_firing_angle_f=elm.min_firing_angle_f,
+                            min_firing_angle_t=elm.min_firing_angle_t,
+                            max_firing_angle_f=elm.max_firing_angle_f,
+                            max_firing_angle_t=elm.max_firing_angle_t,
                             control_mode=cmode_dict[elm.control_mode])
 
         # hvdc.monitor_loading = elm.monitor_loading
@@ -417,11 +437,16 @@ def get_hvdc_data(circuit: MultiCircuit, btgCircuit: "btg.Circuit", bus_dict, ti
             hvdc.contingency_rates = elm.rate * elm.contingency_factor
             hvdc.angle_droop = elm.angle_droop
 
-        btgCircuit.add_hvdc_line(hvdc)
+        btg_circuit.add_hvdc_line(hvdc)
 
 
 def to_bentayga(circuit: MultiCircuit, time_series: bool):
-
+    """
+    Convert GridCal circuit to Bentayga
+    :param circuit: MultiCircuit
+    :param time_series: compile the time series from GridCal? otherwise just the snapshot
+    :return: btg.Circuit instance
+    """
     ntime = circuit.get_time_number() if time_series else 1
     if ntime == 0:
         ntime = 1
@@ -443,25 +468,166 @@ def to_bentayga(circuit: MultiCircuit, time_series: bool):
     return btgCircuit
 
 
-def bentayga_pf(circuit: MultiCircuit, gridcal_pf_options, time_series=False):
+class FakeAdmittances:
 
+    def __init__(self):
+        self.Ybus = None
+        self.Yf = None
+        self.Yt = None
+
+
+def get_snapshots_from_bentayga(circuit: MultiCircuit):
+
+    from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
+
+    btgCircuit = to_bentayga(circuit, time_series=False)
+
+    btg_data_lst = btg.compile_at(btgCircuit, t=0)
+
+    data_lst = list()
+
+    for btg_data in btg_data_lst:
+
+        data = SnapshotData(nbus=0,
+                            nline=0,
+                            ndcline=0,
+                            ntr=0,
+                            nvsc=0,
+                            nupfc=0,
+                            nhvdc=0,
+                            nload=0,
+                            ngen=0,
+                            nbatt=0,
+                            nshunt=0,
+                            nstagen=0,
+                            sbase=0,
+                            ntime=1)
+
+        data.Vbus_ = btg_data.Vbus.reshape(-1, 1)
+        data.Sbus_ = btg_data.Sbus.reshape(-1, 1)
+        data.Ibus_ = btg_data.Ibus
+        data.branch_data.branch_names = np.array(btg_data.branch_data.names)
+        data.branch_data.tap_f = btg_data.branch_data.virtual_tap_f
+        data.branch_data.tap_t = btg_data.branch_data.virtual_tap_t
+
+        data.bus_data.bus_names = np.array(btg_data.bus_data.names)
+
+        data.Admittances = FakeAdmittances()
+        data.Admittances.Ybus = btg_data.admittances.Ybus
+        data.Admittances.Yf = btg_data.admittances.Yf
+        data.Admittances.Yt = btg_data.admittances.Yt
+
+        data.Bbus_ = btg_data.linear_admittances.Bbus
+        data.Bf_ = btg_data.linear_admittances.Bf
+
+        data.Yseries_ = btg_data.split_admittances.Yseries
+        data.Yshunt_ = btg_data.split_admittances.Yshunt
+
+        data.B1_ = btg_data.fast_decoupled_admittances.B1
+        data.B2_ = btg_data.fast_decoupled_admittances.B2
+
+        data.Cf_ = btg_data.Cf
+        data.Ct_ = btg_data.Ct
+
+        data.bus_data.bus_types = [x.value for x in btg_data.bus_data.bus_types]
+        data.pq_ = btg_data.bus_types_data.pq
+        data.pv_ = btg_data.bus_types_data.pv
+        data.vd_ = btg_data.bus_types_data.vd
+        data.pqpv_ = btg_data.bus_types_data.pqpv
+
+        data.original_bus_idx = btg_data.bus_data.original_indices
+        data.original_branch_idx = btg_data.branch_data.original_indices
+
+        data.Qmax_bus_ = btg_data.Qmax_bus
+        data.Qmin_bus_ = btg_data.Qmin_bus
+
+        data.iPfsh = btg_data.control_indices.iPfsh
+        data.iQfma = btg_data.control_indices.iQfma
+        data.iBeqz = btg_data.control_indices.iBeqz
+        data.iBeqv = btg_data.control_indices.iBeqv
+        data.iVtma = btg_data.control_indices.iVtma
+        data.iQtma = btg_data.control_indices.iQtma
+        data.iPfdp = btg_data.control_indices.iPfdp
+        data.iVscL = btg_data.control_indices.iVscL
+        data.VfBeqbus = btg_data.control_indices.iVfBeqBus
+        data.Vtmabus = btg_data.control_indices.iVtmaBus
+
+        data_lst.append(data)
+
+    return data_lst
+
+
+def get_bentayga_pf_options(opt: PowerFlowOptions):
+    """
+    Translate GridCal power flow options to Bentayga power flow options
+    :param opt:
+    :return:
+    """
+    solver_dict = {SolverType.NR: btg.PowerFlowSolvers.NewtonRaphson,
+                   SolverType.DC: btg.PowerFlowSolvers.LinearDc,
+                   # SolverType.HELM: nn.NativeSolverType.HELM,
+                   # SolverType.IWAMOTO: nn.NativeSolverType.IWAMOTO,
+                   SolverType.LM: btg.PowerFlowSolvers.LevenbergMarquardt,
+                   # SolverType.LACPF: nn.NativeSolverType.LACPF,
+                   # SolverType.FASTDECOUPLED: nn.NativeSolverType.FD
+                   }
+
+    q_control_dict = {ReactivePowerControlMode.NoControl: btg.QControlMode.NoControl,
+                      ReactivePowerControlMode.Direct: btg.QControlMode.Direct}
+
+    if opt.solver_type in solver_dict.keys():
+        solver_type = solver_dict[opt.solver_type]
+    else:
+        solver_type = btg.PowerFlowSolvers.NewtonRaphson
+
+    return btg.PowerFlowOptions(solver=solver_type,
+                                tolerance=opt.tolerance,
+                                max_iter=opt.max_iter,
+                                retry_with_other_methods=opt.retry_with_other_methods,
+                                q_control_mode=q_control_dict[opt.control_Q])
+
+
+def bentayga_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False):
+    """
+    Bentayga power flow
+    :param circuit: MultiCircuit instance
+    :param opt: Power Flow Options
+    :param time_series: Compile with GridCal time series?
+    :return: Bentayga Power flow results object
+    """
     btgCircuit = to_bentayga(circuit, time_series=time_series)
 
-    pf_options = btg.PowerFlowOptions(btg.PowerFlowSolvers.NewtonRaphson,
-                                      tolerance=gridcal_pf_options.tolerance,
-                                      max_iter=gridcal_pf_options.max_iter)
+    pf_options = get_bentayga_pf_options(opt)
     logger = btg.Logger()
-    pf_res = btg.run_power_flow(circuit=btgCircuit, options=pf_options, logger=logger, parallel=True)
+    pf_res = btg.run_power_flow(circuit=btgCircuit,
+                                options=pf_options,
+                                logger=logger,
+                                parallel=True)
 
     return pf_res
 
 
-def debug_bentayga_circuit_at(btgCircuit: "btg.Circuit", t: int = None):
+def bentayga_linear_matrices(circuit: MultiCircuit, distributed_slack=False):
+    """
+    Bentayga linear analysis
+    :param circuit: MultiCircuit instance
+    :param distributed_slack: distribute the PTDF slack
+    :return: Bentayga LinearAnalysisMatrices object
+    """
+    btg_circuit = to_bentayga(circuit, time_series=False)
+    lin_mat = btg.compute_linear_matrices_at(t=0,
+                                             circuit=btg_circuit,
+                                             distributed_slack=distributed_slack)
+
+    return lin_mat
+
+
+def debug_bentayga_circuit_at(btg_circuit: "btg.Circuit", t: int = None):
 
     if t is None:
         t = 0
 
-    data = btg.compile_at(btgCircuit, t=t)
+    data = btg.compile_at(btg_circuit, t=t)
 
     for i in range(len(data)):
 

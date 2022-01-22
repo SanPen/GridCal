@@ -1,17 +1,19 @@
-# This file is part of GridCal.
-#
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GridCal is distributed in the hope that it will be useful,
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
 import numpy as np
@@ -627,35 +629,26 @@ class Bus(EditableDevice):
         :param t: index of the profile
         :return: Nothing
         """
+
+        self.set_profile_values(t)
+
         for elm in self.loads:
-            elm.P = elm.P_prof[t]
-            elm.Q = elm.Q_prof[t]
-            elm.Ir = elm.Ir_prof[t]
-            elm.Ii = elm.Ii_prof[t]
-            elm.G = elm.G_prof[t]
-            elm.B = elm.B_prof[t]
+            elm.set_profile_values(t)
 
         for elm in self.static_generators:
-            elm.P = elm.P_prof[t]
-            elm.Q = elm.Q_prof[t]
+            elm.set_profile_values(t)
 
         for elm in self.external_grids:
-            elm.Vm = elm.Vm_prof[t]
-            elm.Va = elm.Va_prof[t]
-            elm.P = elm.P_prof[t]
-            elm.Q = elm.Q_prof[t]
+            elm.set_profile_values(t)
 
         for elm in self.batteries:
-            elm.P = elm.P_prof[t]
-            elm.Vset = elm.Vset_prof[t]
+            elm.set_profile_values(t)
 
         for elm in self.controlled_generators:
-            elm.P = elm.P_prof[t]
-            elm.Vset = elm.Vset_prof[t]
+            elm.set_profile_values(t)
 
         for elm in self.shunts:
-            elm.G = elm.G_prof[t]
-            elm.B = elm.B_prof[t]
+            elm.set_profile_values(t)
 
     def retrieve_graphic_position(self):
         """
@@ -830,38 +823,53 @@ class Bus(EditableDevice):
             # more than a single element, fuse the list
 
             elm1 = elm_list[0]  # select the main generator
-            act1 = elm1.active
-            act1_prof = elm1.active_prof
+            act_final = elm1.active
+            act_prof_final = elm1.active_prof
 
-            # declare the final status
-            act_final = act1
-            act_prof_final = act1_prof
-
+            # set the final active value
             for i in range(1, len(elm_list)):  # for each of the other generators
                 elm2 = elm_list[i]
-                act2 = elm1.active
-                act2_prof = elm1.active_prof
 
                 # modify the final status
-                act_final *= act2
+                act_final = bool(act_final + elm2.active)  # equivalent to OR
 
                 if act_prof_final is not None:
-                    act_prof_final *= act2_prof
+                    act_prof_final = (act_prof_final + elm2.active_prof).astype(bool)
 
-                for prop in property_names:  # sum the properties
+            for prop in property_names:  # sum the properties
+
+                # initialize the value with whatever it is inside elm1
+                if 'prof' not in prop:
+                    # is a regular property
+                    val = getattr(elm1, prop) * elm1.active
+                else:
+                    if act_prof_final is not None:
+                        # it is a profile property
+                        val = getattr(elm1, prop) * elm1.active_prof
+                    else:
+                        val = None
+
+                for i in range(1, len(elm_list)):  # for each of the other generators
+                    elm2 = elm_list[i]
+
                     if 'prof' not in prop:
                         # is a regular property
-                        val = getattr(elm1, prop) * act1 + getattr(elm2, prop) * act2
-                        setattr(elm1, prop, val)
+                        val += getattr(elm2, prop) * elm2.active
                     else:
                         if act_prof_final is not None:
                             # it is a profile property
-                            val = getattr(elm1, prop) * act1_prof + getattr(elm2, prop) * act2_prof
-                            setattr(elm1, prop, val)
+                            val += getattr(elm2, prop) * elm2.active_prof
 
-            elm1.active = bool(act_final)
-            if act_prof_final is not None:
-                elm1.active_prof = act_prof_final.astype(bool)
+                # set the final property value
+                if 'prof' not in prop:
+                    setattr(elm1, prop, val)
+                else:
+                    setattr(elm1, prop, val)
+
+            # set the final active status
+            elm1.active = act_final
+            elm1.active_prof = act_prof_final
+
             return [elm1]
 
         elif len(elm_list) == 1:

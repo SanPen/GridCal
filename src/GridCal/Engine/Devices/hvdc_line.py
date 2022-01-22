@@ -1,17 +1,19 @@
-# This file is part of GridCal.
-#
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GridCal is distributed in the hope that it will be useful,
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
 import pandas as pd
@@ -75,7 +77,8 @@ def getFromAndToPowerAt(Pset, theta_f, theta_t, Vnf, Vnt, v_set_f, v_set_t, Sbas
 
         # compute the angular difference in degrees (0.017453292f -> pi/180)
         # theta_f and theta_t are in rad
-        dtheta = np.rad2deg(theta_f - theta_t)
+        # for the control not to be oscillatory, the angle difference must be the opposite (to - from)
+        dtheta = np.rad2deg(theta_t - theta_f)
 
         # compute the desired control power flow
         Pcalc = Pset + angle_droop * dtheta  # this is in MW
@@ -94,15 +97,15 @@ def getFromAndToPowerAt(Pset, theta_f, theta_t, Vnf, Vnt, v_set_f, v_set_t, Sbas
         # from ->  to
         I = Pcalc / (Vnf * v_set_f)  # current in kA
         loss = r1 * I * I  # losses in MW
-        Pf = Pcalc
-        Pt = -(Pf - loss)
+        Pf = - Pcalc
+        Pt = Pcalc - loss
 
     elif Pcalc < 0:
         # to -> from
         I = Pcalc / (Vnt * v_set_t)  # current in kA
         loss = r1 * I * I  # losses in MW
-        Pt = -Pcalc
-        Pf = -(Pt - loss)
+        Pf = - Pcalc - loss
+        Pt = Pcalc  # is negative
 
     else:
         Pf = 0
@@ -390,52 +393,48 @@ class HvdcLine(EditableDevice):
         Get the power set at both ends accounting for meaningful losses
         :return: power from, power to
         """
-        # A = int(self.Pset > 0)
-        # B = 1 - A
-        # Pf = - self.Pset * A + self.Pset * (1 - self.loss_factor) * B
-        # Pt = self.Pset * A * (1 - self.loss_factor) - self.Pset * B
+        if self.active:
+            Pf, Pt, losses = getFromAndToPowerAt(Pset=self.Pset,
+                                                 theta_f=theta_f,
+                                                 theta_t=theta_t,
+                                                 Vnf=self.bus_from.Vnom,
+                                                 Vnt=self.bus_to.Vnom,
+                                                 v_set_f=self.Vset_f,
+                                                 v_set_t=self.Vset_t,
+                                                 Sbase=Sbase,
+                                                 r1=self.r,
+                                                 angle_droop=self.angle_droop,
+                                                 rate=self.rate,
+                                                 free=self.control_mode == HvdcControlType.type_0_free,
+                                                 in_pu=in_pu)
 
-        Pf, Pt, losses = getFromAndToPowerAt(Pset=self.Pset,
-                                             theta_f=theta_f,
-                                             theta_t=theta_t,
-                                             Vnf=self.bus_from.Vnom,
-                                             Vnt=self.bus_to.Vnom,
-                                             v_set_f=self.Vset_f,
-                                             v_set_t=self.Vset_t,
-                                             Sbase=Sbase,
-                                             r1=self.r,
-                                             angle_droop=self.angle_droop,
-                                             rate=self.rate,
-                                             free=self.control_mode == HvdcControlType.type_0_free,
-                                             in_pu=in_pu)
-
-        return Pf, Pt, losses
+            return Pf, Pt, losses
+        else:
+            return 0, 0, 0
 
     def get_from_and_to_power_at(self, t, theta_f, theta_t, Sbase, in_pu=False):
         """
         Get the power set at both ends accounting for meaningful losses
         :return: power from, power to
         """
-        # A = int(self.Pset > 0)
-        # B = 1 - A
-        # Pf = - self.Pset * A + self.Pset * (1 - self.loss_factor) * B
-        # Pt = self.Pset * A * (1 - self.loss_factor) - self.Pset * B
+        if self.active_prof[t]:
+            Pf, Pt, losses = getFromAndToPowerAt(Pset=self.Pset_prof[t],
+                                                 theta_f=theta_f,
+                                                 theta_t=theta_t,
+                                                 Vnf=self.bus_from.Vnom,
+                                                 Vnt=self.bus_to.Vnom,
+                                                 v_set_f=self.Vset_f_prof[t],
+                                                 v_set_t=self.Vset_t_prof[t],
+                                                 Sbase=Sbase,
+                                                 r1=self.r,
+                                                 angle_droop=self.angle_droop,
+                                                 rate=self.rate_prof[t],
+                                                 free=self.control_mode == HvdcControlType.type_0_free,
+                                                 in_pu=in_pu)
 
-        Pf, Pt, losses = getFromAndToPowerAt(Pset=self.Pset_prof[t],
-                                             theta_f=theta_f,
-                                             theta_t=theta_t,
-                                             Vnf=self.bus_from.Vnom,
-                                             Vnt=self.bus_to.Vnom,
-                                             v_set_f=self.Vset_f_prof[t],
-                                             v_set_t=self.Vset_t_prof[t],
-                                             Sbase=Sbase,
-                                             r1=self.r,
-                                             angle_droop=self.angle_droop,
-                                             rate=self.rate_prof[t],
-                                             free=self.control_mode == HvdcControlType.type_0_free,
-                                             in_pu=in_pu)
-
-        return Pf, Pt, losses
+            return Pf, Pt, losses
+        else:
+            return 0, 0, 0
 
     def get_from_and_to_power_profiles(self, theta_f, theta_t, Sbase):
         """

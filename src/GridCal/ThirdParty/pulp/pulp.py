@@ -92,10 +92,13 @@ References:
 [3] http://www.cplex.com/
 [4] http://www.gurobi.com/
 """
-
+import json
 import itertools
 import configparser
+from time import time
 from GridCal.ThirdParty.pulp.solver_interfaces import *
+from GridCal.ThirdParty.pulp import constants as const
+from GridCal.ThirdParty.pulp import mps_lp as mpslp
 from collections import Iterable
 
 import logging
@@ -151,6 +154,9 @@ elif GLPK_CMD().available():
 
 elif COIN_CMD().available():
     LpSolverDefault = COIN_CMD()
+
+elif HiGHS_CMD().available():
+    LpSolverDefault = HiGHS_CMD()
 
 else:
     LpSolverDefault = None
@@ -1139,31 +1145,31 @@ class LpConstraintVar(LpElement):
 
 
 class LpProblem(object):
-    """
-    An LP Problem
-    """
-    def __init__(self, name="NoName", sense=LpMinimize):
+    """An LP Problem"""
+
+    def __init__(self, name="NoName", sense=const.LpMinimize):
         """
         Creates an LP Problem
-
         This function creates a new LP Problem  with the specified associated parameters
-
         :param name: name of the problem used in the output .lp file
         :param sense: of the LP problem objective.  \
-                Either :data:`~pulp.constants.LpMinimize` (default) \
-                or :data:`~pulp.constants.LpMaximize`.
+                Either :data:`~pulp.const.LpMinimize` (default) \
+                or :data:`~pulp.const.LpMaximize`.
         :return: An LP Problem
         """
+        if " " in name:
+            warnings.warn("Spaces are not permitted in the name. Converted to '_'")
+            name = name.replace(" ", "_")
         self.objective = None
         self.constraints = _DICT_TYPE()
         self.name = name
         self.sense = sense
         self.sos1 = {}
         self.sos2 = {}
-        self.status = LpStatusNotSolved
+        self.status = const.LpStatusNotSolved
+        self.sol_status = const.LpSolutionNoSolutionFound
         self.noOverlap = 1
         self.solver = None
-        self.initialValues = {}
         self.modifiedVariables = []
         self.modifiedConstraints = []
         self.resolveOK = False
@@ -1171,31 +1177,32 @@ class LpProblem(object):
         self._variable_ids = {}  # old school using dict.keys() for a set
         self.dummyVar = None
         self.solutionTime = 0
+        self.solutionCpuTime = 0
 
         # locals
         self.lastUnused = 0
 
     def __repr__(self):
-        s = self.name+":\n"
+        s = self.name + ":\n"
         if self.sense == 1:
             s += "MINIMIZE\n"
         else:
             s += "MAXIMIZE\n"
-        s += repr(self.objective) +"\n"
+        s += repr(self.objective) + "\n"
 
         if self.constraints:
             s += "SUBJECT TO\n"
             for n, c in self.constraints.items():
-                s += c.asCplexLpConstraint(n) +"\n"
+                s += c.asCplexLpConstraint(n) + "\n"
         s += "VARIABLES\n"
         for v in self.variables():
-            s += v.asCplexLpVariable() + " " + LpCategories[v.cat] + "\n"
+            s += v.asCplexLpVariable() + " " + const.LpCategories[v.cat] + "\n"
         return s
 
     def __getstate__(self):
         # Remove transient data prior to pickling.
         state = self.__dict__.copy()
-        del state['_variable_ids']
+        del state["_variable_ids"]
         return state
 
     def __setstate__(self, state):
@@ -1203,12 +1210,10 @@ class LpProblem(object):
         self.__dict__.update(state)
         self._variable_ids = {}
         for v in self._variables:
-            self._variable_ids[id(v)] = v
+            self._variable_ids[v.hash] = v
 
     def copy(self):
-        """
-        Make a copy of self. Expressions are copied by reference
-        """
+        """Make a copy of self. Expressions are copied by reference"""
         lpcopy = LpProblem(name=self.name, sense=self.sense)
         lpcopy.objective = self.objective
         lpcopy.constraints = self.constraints.copy()
@@ -1222,42 +1227,142 @@ class LpProblem(object):
         if self.objective is not None:
             lpcopy.objective = self.objective.copy()
         lpcopy.constraints = {}
-        for k,v in self.constraints.items():
+        for k, v in self.constraints.items():
             lpcopy.constraints[k] = v.copy()
         lpcopy.sos1 = self.sos1.copy()
         lpcopy.sos2 = self.sos2.copy()
         return lpcopy
 
-    def normalisedNames(self):
+    def toDict(self):
+        """
+        creates a dictionary from the model with as much data as possible.
+        It replaces variables by variable names.
+        So it requires to have unique names for variables.
+        :return: dictionary with model data
+        :rtype: dict
+        """
+        try:
+            self.checkDuplicateVars()
+        except const.PulpError:
+            raise const.PulpError(
+                "Duplicated names found in variables:\nto export the model, variable names need to be unique"
+            )
+        self.fixObjective()
+        variables = self.variables()
+        return dict(
+            objective=dict(
+                name=self.objective.name, coefficients=self.objective.toDict()
+            ),
+            constraints=[v.toDict() for v in self.constraints.values()],
+            variables=[v.toDict() for v in variables],
+            parameters=dict(
+                name=self.name,
+                sense=self.sense,
+                status=self.status,
+                sol_status=self.sol_status,
+            ),
+            sos1=list(self.sos1.values()),
+            sos2=list(self.sos2.values()),
+        )
+
+    to_dict = toDict
+
+    @classmethod
+    def fromDict(cls, _dict):
+        """
+        Takes a dictionary with all necessary information to build a model.
+        And returns a dictionary of variables and a problem object
+        :param _dict: dictionary with the model stored
+        :return: a tuple with a dictionary of variables and a :py:class:`LpProblem`
         """
 
-        :return:
+        # we instantiate the problem
+        params = _dict["parameters"]
+        pb_params = {"name", "sense"}
+        args = {k: params[k] for k in pb_params}
+        pb = cls(**args)
+        pb.status = params["status"]
+        pb.sol_status = params["sol_status"]
+
+        # recreate the variables.
+        var = {v["name"]: LpVariable.fromDict(**v) for v in _dict["variables"]}
+
+        # objective function.
+        # we change the names for the objects:
+        obj_e = {var[v["name"]]: v["value"] for v in _dict["objective"]["coefficients"]}
+        pb += LpAffineExpression(e=obj_e, name=_dict["objective"]["name"])
+
+        # constraints
+        # we change the names for the objects:
+        def edit_const(const):
+            const = dict(const)
+            const["coefficients"] = {
+                var[v["name"]]: v["value"] for v in const["coefficients"]
+            }
+            return const
+
+        constraints = [edit_const(v) for v in _dict["constraints"]]
+        for c in constraints:
+            pb += LpConstraint.fromDict(c)
+
+        # last, parameters, other options
+        list_to_dict = lambda v: {k: v for k, v in enumerate(v)}
+        pb.sos1 = list_to_dict(_dict["sos1"])
+        pb.sos2 = list_to_dict(_dict["sos2"])
+
+        return var, pb
+
+    from_dict = fromDict
+
+    def toJson(self, filename, *args, **kwargs):
         """
-        constraints_names = {}
-        i = 0
-        for k in self.constraints:
-            constraints_names[k] = "C%07d" % i
-            i += 1
-        variables_names = {}
-        i = 0
-        for k in self.variables():
-            variables_names[k.name] = "X%07d" % i
-            i += 1
-        return constraints_names, variables_names, "OBJ"
+        Creates a json file from the LpProblem information
+        :param str filename: filename to write json
+        :param args: additional arguments for json function
+        :param kwargs: additional keyword arguments for json function
+        :return: None
+        """
+        with open(filename, "w") as f:
+            json.dump(self.toDict(), f, *args, **kwargs)
+
+    to_json = toJson
+
+    @classmethod
+    def fromJson(cls, filename):
+        """
+        Creates a new Lp Problem from a json file with information
+        :param str filename: json file name
+        :return: a tuple with a dictionary of variables and an LpProblem
+        :rtype: (dict, :py:class:`LpProblem`)
+        """
+        with open(filename, "r") as f:
+            data = json.load(f)
+        return cls.fromDict(data)
+
+    from_json = fromJson
+
+    @classmethod
+    def fromMPS(cls, filename, sense=const.LpMinimize, **kwargs):
+        data = mpslp.readMPS(filename, sense=sense, **kwargs)
+        return cls.fromDict(data)
+
+    def normalisedNames(self):
+        constraintsNames = {k: "C%07d" % i for i, k in enumerate(self.constraints)}
+        _variables = self.variables()
+        variablesNames = {k.name: "X%07d" % i for i, k in enumerate(_variables)}
+        return constraintsNames, variablesNames, "OBJ"
 
     def isMIP(self):
         for v in self.variables():
-            if v.cat == LpInteger:
+            if v.cat == const.LpInteger:
                 return 1
         return 0
 
     def roundSolution(self, epsInt=1e-5, eps=1e-7):
         """
         Rounds the lp variables
-
         Inputs:
             - none
-
         Side Effects:
             - The lp variables are rounded
         """
@@ -1265,10 +1370,6 @@ class LpProblem(object):
             v.round(epsInt, eps)
 
     def unusedConstraintName(self):
-        """
-
-        :return:
-        """
         self.lastUnused += 1
         while 1:
             s = "_C%d" % self.lastUnused
@@ -1299,17 +1400,15 @@ class LpProblem(object):
     def addVariable(self, variable):
         """
         Adds a variable to the problem before a constraint is added
-
         @param variable: the variable to be added
         """
-        if id(variable) not in self._variable_ids:
+        if variable.hash not in self._variable_ids:
             self._variables.append(variable)
-            self._variable_ids[id(variable)] = variable
+            self._variable_ids[variable.hash] = variable
 
     def addVariables(self, variables):
         """
         Adds variables to the problem before a constraint is added
-
         @param variables: the variables to be added
         """
         for v in variables:
@@ -1317,30 +1416,18 @@ class LpProblem(object):
 
     def variables(self):
         """
-        Returns a list of the problem variables
-
-        Inputs:
-            - none
-
-        Returns:
-            - A list of the problem variables
+        Returns the problem variables
+        :return: A list containing the problem variables
+        :rtype: (list, :py:class:`LpVariable`)
         """
         if self.objective:
             self.addVariables(list(self.objective.keys()))
         for c in self.constraints.values():
             self.addVariables(list(c.keys()))
-        variables = self._variables
-        # sort the varibles DSU
-        variables = [[v.name, v] for v in variables]
-        variables.sort()
-        variables = [v for _, v in variables]
-        return variables
+        self._variables.sort(key=lambda v: v.name)
+        return self._variables
 
     def variablesDict(self):
-        """
-
-        :return:
-        """
         variables = {}
         if self.objective:
             for v in self.objective:
@@ -1351,21 +1438,9 @@ class LpProblem(object):
         return variables
 
     def add(self, constraint, name=None):
-        """
-
-        :param constraint:
-        :param name:
-        :return:
-        """
         self.addConstraint(constraint, name)
 
-    def addConstraint(self, constraint, name = None):
-        """
-
-        :param constraint:
-        :param name:
-        :return:
-        """
+    def addConstraint(self, constraint, name=None):
         if not isinstance(constraint, LpConstraint):
             raise TypeError("Can only add LpConstraint objects")
         if name:
@@ -1378,12 +1453,12 @@ class LpProblem(object):
         except AttributeError:
             raise TypeError("Can only add LpConstraint objects")
             # removed as this test fails for empty constraints
-#        if len(constraint) == 0:
-#            if not constraint.valid():
-#                raise ValueError, "Cannot add false constraints"
+        #        if len(constraint) == 0:
+        #            if not constraint.valid():
+        #                raise ValueError, "Cannot add false constraints"
         if name in self.constraints:
             if self.noOverlap:
-                raise PulpError("overlapping constraint names: " + name)
+                raise const.PulpError("overlapping constraint names: " + name)
             else:
                 print("Warning: overlapping constraint names:", name)
         self.constraints[name] = constraint
@@ -1393,9 +1468,7 @@ class LpProblem(object):
     def setObjective(self, obj):
         """
         Sets the input variable as the objective function. Used in Columnwise Modelling
-
         :param obj: the objective function of type :class:`LpConstraintVar`
-
         Side Effects:
             - The objective function is set
         """
@@ -1412,18 +1485,15 @@ class LpProblem(object):
         self.resolveOK = False
 
     def __iadd__(self, other):
-        """
-        + operator overload
-        :param other:
-        :return:
-        """
         if isinstance(other, tuple):
             other, name = other
         else:
             name = None
         if other is True:
             return self
-        if isinstance(other, LpConstraintVar):
+        elif other is False:
+            raise TypeError("A False object cannot be passed as a constraint")
+        elif isinstance(other, LpConstraintVar):
             self.addConstraint(other.constraint)
         elif isinstance(other, LpConstraint):
             self.addConstraint(other, name)
@@ -1431,24 +1501,26 @@ class LpProblem(object):
             if self.objective is not None:
                 warnings.warn("Overwriting previously set objective.")
             self.objective = other
-            self.objective.name = name
+            if name is not None:
+                # we may keep the LpAffineExpression name
+                self.objective.name = name
         elif isinstance(other, LpVariable) or isinstance(other, (int, float)):
             if self.objective is not None:
                 warnings.warn("Overwriting previously set objective.")
             self.objective = LpAffineExpression(other)
             self.objective.name = name
         else:
-            raise TypeError("Can only add LpConstraintVar, LpConstraint, LpAffineExpression or True objects")
+            raise TypeError(
+                "Can only add LpConstraintVar, LpConstraint, LpAffineExpression or True objects"
+            )
         return self
 
     def extend(self, other, use_objective=True):
         """
         extends an LpProblem by adding constraints either from a dictionary
         a tuple or another LpProblem object.
-
         @param use_objective: determines whether the objective is imported from
         the other problem
-
         For dictionaries the constraints will be named with the keys
         For tuples an unique name will be generated
         For LpProblems the name of the problem will be added to the constraints
@@ -1479,13 +1551,8 @@ class LpProblem(object):
                 self.constraints[name] = c
 
     def coefficients(self, translation=None):
-        """
-
-        :param translation:
-        :return:
-        """
         coefs = []
-        if translation is None:
+        if translation == None:
             for c in self.constraints:
                 cst = self.constraints[c]
                 coefs.extend([(v.name, c, cst[v]) for v in cst])
@@ -1498,229 +1565,72 @@ class LpProblem(object):
 
     def writeMPS(self, filename, mpsSense=0, rename=0, mip=1):
         """
-
-        :param filename:
-        :param mpsSense:
-        :param rename:
-        :param mip:
+        Writes an mps files from the problem information
+        :param str filename: name of the file to write
+        :param int mpsSense:
+        :param bool rename: if True, normalized names are used for variables and constraints
+        :param mip: variables and variable renames
         :return:
+        Side Effects:
+            - The file is created
         """
-        wasNone, dummyVar = self.fixObjective()
+        return mpslp.writeMPS(self, filename, mpsSense=mpsSense, rename=rename, mip=mip)
 
-        f = open(filename, "w")
-
-        if mpsSense == 0:
-            mpsSense = self.sense
-        cobj = self.objective
-
-        if mpsSense != self.sense:
-            n = cobj.name
-            cobj = - cobj
-            cobj.name = n
-
-        if rename:
-            constraintsNames, variablesNames, cobj.name = self.normalisedNames()
-        f.write("*SENSE:"+LpSenses[mpsSense]+"\n")
-        n = self.name
-        if rename:
-            n = "MODEL"
-        f.write("NAME          "+n+"\n")
-        vs = self.variables()
-
-        # constraints
-        f.write("ROWS\n")
-        objName = cobj.name
-        if not objName:
-            objName = "OBJ"
-        f.write(" N  %s\n" % objName)
-
-        mpsConstraintType = {LpConstraintLE: "L", LpConstraintEQ: "E", LpConstraintGE: "G"}
-
-        for k, c in self.constraints.items():
-            if rename:
-                k = constraintsNames[k]
-            f.write(" "+mpsConstraintType[c.sense]+"  "+k+"\n")
-
-        # matrix
-        f.write("COLUMNS\n")
-        # Creation of a dict of dict:
-        # coefs[nomVariable][nomContrainte] = coefficient
-        coefs = {}
-        for k, c in self.constraints.items():
-            if rename:
-                k = constraintsNames[k]
-            for v in c:
-                n = v.name
-                if rename:
-                    n = variablesNames[n]
-                if n in coefs:
-                    coefs[n][k] = c[v]
-                else:
-                    coefs[n] = {k: c[v]}
-
-        for v in vs:
-            if mip and v.cat == LpInteger:
-                f.write("    MARK      'MARKER'                 'INTORG'\n")
-            n = v.name
-            if rename:
-                n = variablesNames[n]
-            if n in coefs:
-                cv = coefs[n]
-                # Most of the work is done here
-                for k in cv: f.write("    %-8s  %-8s  % .12e\n" % (n, k, cv[k]))
-
-            # objective function
-            if v in cobj:
-                f.write("    %-8s  %-8s  % .12e\n" % (n, objName, cobj[v]))
-            if mip and v.cat == LpInteger:
-                f.write("    MARK      'MARKER'                 'INTEND'\n")
-        # right hand side
-        f.write("RHS\n")
-        for k, c in self.constraints.items():
-            c = -c.constant
-            if rename:
-                k = constraintsNames[k]
-            if c == 0:
-                c = 0
-            f.write("    RHS       %-8s  % .12e\n" % (k,c))
-        # bounds
-        f.write("BOUNDS\n")
-        for v in vs:
-            n = v.name
-            if rename:
-                n = variablesNames[n]
-            if v.lowBound is not None and v.lowBound == v.upBound:
-                f.write(" FX BND       %-8s  % .12e\n" % (n, v.lowBound))
-            elif v.lowBound == 0 and v.upBound == 1 and mip and v.cat == LpInteger:
-                f.write(" BV BND       %-8s\n" % n)
-            else:
-                if v.lowBound is not None:
-                    # In MPS files, variables with no bounds (i.e. >= 0)
-                    # are assumed BV by COIN and CPLEX.
-                    # So we explicitly write a 0 lower bound in this case.
-                    if v.lowBound != 0 or (mip and v.cat == LpInteger and v.upBound is None):
-                        f.write(" LO BND       %-8s  % .12e\n" % (n, v.lowBound))
-                else:
-                    if v.upBound is not None:
-                        f.write(" MI BND       %-8s\n" % n)
-                    else:
-                        f.write(" FR BND       %-8s\n" % n)
-                if v.upBound is not None:
-                    f.write(" UP BND       %-8s  % .12e\n" % (n, v.upBound))
-        f.write("ENDATA\n")
-        f.close()
-        self.restoreObjective(wasNone, dummyVar)
-        # returns the variables, in writing order
-        if rename == 0:
-            return vs
-        else:
-            return vs, variablesNames, constraintsNames, cobj.name
-
-    def writeLP(self, filename, writeSOS=1, mip=1):
+    def writeLP(self, filename, writeSOS=1, mip=1, max_length=100):
         """
         Write the given Lp problem to a .lp file.
-
         This function writes the specifications (objective function,
         constraints, variables) of the defined Lp problem to a file.
-
-        :param filename:  the name of the file to be created.
-
+        :param str filename: the name of the file to be created.
+        :return: variables
         Side Effects:
-            - The file is created.
+            - The file is created
         """
-        f = open(filename, "w")
-        f.write("\\* "+self.name+" *\\\n")
-        if self.sense == 1:
-            f.write("Minimize\n")
-        else:
-            f.write("Maximize\n")
-        was_none, objective_dummy_var = self.fixObjective()
-        obj_name = self.objective.name
-        if not obj_name:
-            obj_name = "OBJ"
-        f.write(self.objective.asCplexLpAffineExpression(obj_name, constant=0))
-        f.write("Subject To\n")
-        ks = list(self.constraints.keys())
-        ks.sort()
-        dummy_written = False
-        for k in ks:
-            constraint = self.constraints[k]
-            if not list(constraint.keys()):
-                # empty constraint add the dummyVar
-                dummy_var = self.get_dummyVar()
-                constraint += dummy_var
-                # set this dummy_var to zero so infeasible problems are not made feasible
-                if not dummy_written:
-                    f.write((dummy_var == 0.0).asCplexLpConstraint("_dummy"))
-                    dummy_written = True
-            f.write(constraint.asCplexLpConstraint(k))
+        return mpslp.writeLP(self, filename=filename, writeSOS=writeSOS, mip=mip, max_length=max_length)
+
+    def checkDuplicateVars(self):
+        """
+        Checks if there are at least two variables with the same name
+        :return: 1
+        :raises `const.PulpError`: if there ar duplicates
+        """
         vs = self.variables()
 
-        # check if any names are longer than 100 characters
-        long_names = [v.name for v in vs if len(v.name) > 100]
-        if long_names:
-            raise PulpError('Variable names too long for Lp format\n' + str(long_names))
-
-        # check for repeated names
         repeated_names = {}
         for v in vs:
             repeated_names[v.name] = repeated_names.get(v.name, 0) + 1
-
-        repeated_names = [(key, val) for key, val in list(repeated_names.items()) if val >= 2]
-
+        repeated_names = [
+            (key, value) for key, value in list(repeated_names.items()) if value >= 2
+        ]
         if repeated_names:
-            raise PulpError('Repeated variable names in Lp format\n' + str(repeated_names))
-        # Bounds on non-"positive" variables
-        # Note: XPRESS and CPLEX do not interpret integer variables without
-        # explicit bounds
-        if mip:
-            vg = [v for v in vs if not (v.isPositive() and v.cat == LpContinuous) and not v.isBinary()]
-        else:
-            vg = [v for v in vs if not v.isPositive()]
-        if vg:
-            f.write("Bounds\n")
-            for v in vg:
-                f.write("%s\n" % v.asCplexLpVariable())
-        # Integer non-binary variables
-        if mip:
-            vg = [v for v in vs if v.cat == LpInteger and not v.isBinary()]
-            if vg:
-                f.write("Generals\n")
-                for v in vg:
-                    f.write("%s\n" % v.name)
-            # Binary variables
-            vg = [v for v in vs if v.isBinary()]
-            if vg:
-                f.write("Binaries\n")
-                for v in vg:
-                    f.write("%s\n" % v.name)
-        # Special Ordered Sets
-        if writeSOS and (self.sos1 or self.sos2):
-            f.write("SOS\n")
-            if self.sos1:
-                for sos in self.sos1.values():
-                    f.write("S1:: \n")
-                    for v, val in sos.items():
-                        f.write(" %s: %.12g\n" % (v.name, val))
-            if self.sos2:
-                for sos in self.sos2.values():
-                    f.write("S2:: \n")
-                    for v, val in sos.items():
-                        f.write(" %s: %.12g\n" % (v.name, val))
-        f.write("End\n")
-        f.close()
-        self.restoreObjective(was_none, objective_dummy_var)
+            raise const.PulpError("Repeated variable names:\n" + str(repeated_names))
+        return 1
+
+    def checkLengthVars(self, max_length):
+        """
+        Checks if variables have names smaller than `max_length`
+        :param int max_length: max size for variable name
+        :return:
+        :raises const.PulpError: if there is at least one variable that has a long name
+        """
+        vs = self.variables()
+        long_names = [v.name for v in vs if len(v.name) > max_length]
+        if long_names:
+            raise const.PulpError(
+                "Variable names too long for Lp format\n" + str(long_names)
+            )
+        return 1
 
     def assignVarsVals(self, values):
         variables = self.variablesDict()
         for name in values:
-            if name != '__dummy':
+            if name != "__dummy":
                 variables[name].varValue = values[name]
 
     def assignVarsDj(self, values):
         variables = self.variablesDict()
         for name in values:
-            if name != '__dummy':
+            if name != "__dummy":
                 variables[name].dj = values[name]
 
     def assignConsPi(self, values):
@@ -1734,9 +1644,10 @@ class LpProblem(object):
         for name in values:
             try:
                 if activity:
-                    # reports the activitynot the slack
+                    # reports the activity not the slack
                     self.constraints[name].slack = -1 * (
-                            self.constraints[name].constant + float(values[name]))
+                        self.constraints[name].constant + float(values[name])
+                    )
                 else:
                     self.constraints[name].slack = float(values[name])
             except KeyError:
@@ -1748,10 +1659,6 @@ class LpProblem(object):
         return self.dummyVar
 
     def fixObjective(self):
-        """
-
-        :return:
-        """
         if self.objective is None:
             self.objective = 0
             wasNone = 1
@@ -1775,78 +1682,86 @@ class LpProblem(object):
     def solve(self, solver=None, **kwargs):
         """
         Solve the given Lp problem.
-
         This function changes the problem to make it suitable for solving
         then calls the solver.actualSolve() method to find the solution
-
         :param solver:  Optional: the specific solver to be used, defaults to the
               default solver.
-
         Side Effects:
             - The attributes of the problem object are changed in
               :meth:`~pulp.solver.LpSolver.actualSolve()` to reflect the Lp solution
         """
 
-        if not solver:
+        if not (solver):
             solver = self.solver
-        if not solver:
+        if not (solver):
             solver = LpSolverDefault
         wasNone, dummyVar = self.fixObjective()
         # time it
-        self.solutionTime = -clock()
+        self.startClock()
         status = solver.actualSolve(self, **kwargs)
-        self.solutionTime += clock()
+        self.stopClock()
         self.restoreObjective(wasNone, dummyVar)
         self.solver = solver
         return status
 
-    def sequentialSolve(self, objectives, absoluteTols=None, relativeTols=None, solver=None, debug=False):
+    def startClock(self):
+        "initializes properties with the current time"
+        self.solutionCpuTime = -clock()
+        self.solutionTime = -time()
+
+    def stopClock(self):
+        "updates time wall time and cpu time"
+        self.solutionTime += time()
+        self.solutionCpuTime += clock()
+
+    def sequentialSolve(
+        self, objectives, absoluteTols=None, relativeTols=None, solver=None, debug=False
+    ):
         """
         Solve the given Lp problem with several objective functions.
-
         This function sequentially changes the objective of the problem
         and then adds the objective function as a constraint
-
         :param objectives: the list of objectives to be used to solve the problem
         :param absoluteTols: the list of absolute tolerances to be applied to
            the constraints should be +ve for a minimise objective
         :param relativeTols: the list of relative tolerances applied to the constraints
         :param solver: the specific solver to be used, defaults to the default solver.
-
         """
         # TODO Add a penalty variable to make problems elastic
         # TODO add the ability to accept different status values i.e. infeasible etc
 
-        if not solver:
+        if not (solver):
             solver = self.solver
-        if not solver:
+        if not (solver):
             solver = LpSolverDefault
-        if not absoluteTols:
+        if not (absoluteTols):
             absoluteTols = [0] * len(objectives)
-        if not relativeTols:
+        if not (relativeTols):
             relativeTols = [1] * len(objectives)
         # time it
-        self.solutionTime = -clock()
+        self.startClock()
         statuses = []
-        for i, (obj, absol, rel) in enumerate(zip(objectives, absoluteTols, relativeTols)):
+        for i, (obj, absol, rel) in enumerate(
+            zip(objectives, absoluteTols, relativeTols)
+        ):
             self.setObjective(obj)
             status = solver.actualSolve(self)
             statuses.append(status)
             if debug:
-                self.writeLP("%sSequence.lp"%i)
-            if self.sense == LpMinimize:
-                self += obj <= value(obj)*rel + absol,"%s_Sequence_Objective"%i
-            elif self.sense == LpMaximize:
-                self += obj >= value(obj)*rel + absol,"%s_Sequence_Objective"%i
-        self.solutionTime += clock()
+                self.writeLP("%sSequence.lp" % i)
+            if self.sense == const.LpMinimize:
+                self += obj <= value(obj) * rel + absol, "%s_Sequence_Objective" % i
+            elif self.sense == const.LpMaximize:
+                self += obj >= value(obj) * rel + absol, "%s_Sequence_Objective" % i
+        self.stopClock()
         self.solver = solver
         return statuses
 
-    def resolve(self, solver = None, **kwargs):
+    def resolve(self, solver=None, **kwargs):
         """
         resolves an Problem using the same solver as previously
         """
-        if not solver:
+        if not (solver):
             solver = self.solver
         if self.resolveOK:
             return self.solver.actualResolve(self, **kwargs)
@@ -1859,17 +1774,41 @@ class LpProblem(object):
         """
         self.solver = solver
 
-    def setInitial(self, values):
-        self.initialValues = values
-
     def numVariables(self):
+        """
+        :return: number of variables in model
+        """
         return len(self._variable_ids)
 
     def numConstraints(self):
+        """
+        :return: number of constraints in model
+        """
         return len(self.constraints)
 
     def getSense(self):
         return self.sense
+
+    def assignStatus(self, status, sol_status=None):
+        """
+        Sets the status of the model after solving.
+        :param status: code for the status of the model
+        :param sol_status: code for the status of the solution
+        :return:
+        """
+        if status not in const.LpStatus:
+            raise const.PulpError("Invalid status code: " + str(status))
+
+        if sol_status is not None and sol_status not in const.LpSolution:
+            raise const.PulpError("Invalid solution status code: " + str(sol_status))
+
+        self.status = status
+        if sol_status is None:
+            sol_status = const.LpStatusToSolution.get(
+                status, const.LpSolutionNoSolutionFound
+            )
+        self.sol_status = sol_status
+        return True
 
 
 class FixedElasticSubProblem(LpProblem):
@@ -2433,12 +2372,13 @@ def configSolvers():
 
 
 def pulpTestAll():
-    from .tests import pulpTestSolver
+    from GridCal.ThirdParty.pulp.tests import pulpTestSolver
     solvers = [PULP_CBC_CMD,
                CPLEX_DLL,
                CPLEX_CMD,
                CPLEX_PY,
                COIN_CMD,
+               HiGHS_CMD,
                COINMP_DLL,
                GLPK_CMD,
                XPRESS,

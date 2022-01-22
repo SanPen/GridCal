@@ -4,24 +4,12 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Devices.enumerations import ConverterControlType, TransformerControlType
+from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+
 try:
     import NewtonNative as nn
     NEWTON_AVAILBALE = True
     print('Newton Native v' + nn.get_version())
-
-    newton_solver_dict = {SolverType.NR: nn.NativeSolverType.NR,
-                          SolverType.DC: nn.NativeSolverType.DC,
-                          SolverType.HELM: nn.NativeSolverType.HELM,
-                          SolverType.IWAMOTO: nn.NativeSolverType.IWAMOTO,
-                          SolverType.LM: nn.NativeSolverType.LM,
-                          SolverType.LACPF: nn.NativeSolverType.LACPF,
-                          SolverType.FASTDECOUPLED: nn.NativeSolverType.FD}
-
-    newton_taps_dict = {TapsControlMode.NoControl: nn.NativeTapsControlMode.NoControl,
-                        TapsControlMode.Direct: nn.NativeTapsControlMode.Direct}
-
-    newton_q_control_dict = {ReactivePowerControlMode.NoControl: nn.NativeReactivePowerControlMode.NoControl,
-                             ReactivePowerControlMode.Direct: nn.NativeReactivePowerControlMode.Direct}
 
 except ImportError:
     NEWTON_AVAILBALE = False
@@ -304,30 +292,56 @@ def to_newton_native(circuit: MultiCircuit) -> "nn.NativeNumericCircuit":
     return nc
 
 
-def newton_power_flow(nc: "nn.NativeNumericCircuit", gridcal_pf_options):
+def get_newton_power_flow_options(opt: PowerFlowOptions):
     """
 
-    :param nc: NativeNumericCircuit instance
-    :param gridcal_pf_options:
+    :param opt:
     :return:
     """
-    if gridcal_pf_options.solver_type in newton_solver_dict.keys():
-        solver_type = newton_solver_dict[gridcal_pf_options.solver_type]
+    newton_solver_dict = {SolverType.NR: nn.NativeSolverType.NR,
+                          SolverType.DC: nn.NativeSolverType.DC,
+                          SolverType.HELM: nn.NativeSolverType.HELM,
+                          SolverType.IWAMOTO: nn.NativeSolverType.IWAMOTO,
+                          SolverType.LM: nn.NativeSolverType.LM,
+                          SolverType.LACPF: nn.NativeSolverType.LACPF,
+                          SolverType.FASTDECOUPLED: nn.NativeSolverType.FD}
+
+    newton_taps_dict = {TapsControlMode.NoControl: nn.NativeTapsControlMode.NoControl,
+                        TapsControlMode.Direct: nn.NativeTapsControlMode.Direct}
+
+    newton_q_control_dict = {ReactivePowerControlMode.NoControl: nn.NativeReactivePowerControlMode.NoControl,
+                             ReactivePowerControlMode.Direct: nn.NativeReactivePowerControlMode.Direct}
+
+    if opt.solver_type in newton_solver_dict.keys():
+        solver_type = newton_solver_dict[opt.solver_type]
     else:
         solver_type = nn.NativeSolverType.NR
 
     options = nn.NativePowerFlowOptions(solver_type=solver_type,
-                                        retry_with_other_methods=gridcal_pf_options.retry_with_other_methods,
-                                        verbose=gridcal_pf_options.verbose,
-                                        initialize_with_existing_solution=gridcal_pf_options.initialize_with_existing_solution,
-                                        tolerance=gridcal_pf_options.tolerance,
-                                        max_iter=gridcal_pf_options.max_iter,
-                                        control_q_mode=newton_q_control_dict[gridcal_pf_options.control_Q],
+                                        retry_with_other_methods=opt.retry_with_other_methods,
+                                        verbose=opt.verbose,
+                                        initialize_with_existing_solution=opt.initialize_with_existing_solution,
+                                        tolerance=opt.tolerance,
+                                        max_iter=opt.max_iter,
+                                        control_q_mode=newton_q_control_dict[opt.control_Q],
                                         tap_control_mode=nn.NativeTapsControlMode.NoControl,
-                                        distributed_slack=gridcal_pf_options.distributed_slack,
-                                        ignore_single_node_islands=gridcal_pf_options.ignore_single_node_islands,
-                                        correction_parameter=gridcal_pf_options.backtracking_parameter,
-                                        mu0=gridcal_pf_options.mu)
+                                        distributed_slack=opt.distributed_slack,
+                                        ignore_single_node_islands=opt.ignore_single_node_islands,
+                                        correction_parameter=opt.backtracking_parameter,
+                                        mu0=opt.mu)
+
+    return options
+
+
+def newton_power_flow(nc: "nn.NativeNumericCircuit", options: PowerFlowOptions):
+    """
+
+    :param nc: NativeNumericCircuit instance
+    :param options:
+    :return:
+    """
+
+    options = get_newton_power_flow_options(options)
 
     # declare the native power flow driver
     native_driver = nn.NativePowerFlow(nc, options)

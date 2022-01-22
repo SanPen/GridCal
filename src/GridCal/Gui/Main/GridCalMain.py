@@ -1,17 +1,19 @@
-# This file is part of GridCal.
-#
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GridCal is distributed in the hope that it will be useful,
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import datetime as dtelib
 import gc
 import os.path
@@ -35,6 +37,7 @@ import GridCal.Engine.Simulations as sim
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.grid_analysis as grid_analysis
+
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
@@ -224,6 +227,7 @@ class MainGUI(QMainWindow):
 
         self.mip_solvers_dict = OrderedDict()
         self.mip_solvers_dict[bs.MIPSolvers.CBC.value] = bs.MIPSolvers.CBC
+        self.mip_solvers_dict[bs.MIPSolvers.HiGS.value] = bs.MIPSolvers.HiGS
         self.mip_solvers_dict[bs.MIPSolvers.GLOP.value] = bs.MIPSolvers.GLOP
         self.mip_solvers_dict[bs.MIPSolvers.SCIP.value] = bs.MIPSolvers.SCIP
         self.mip_solvers_dict[bs.MIPSolvers.CPLEX.value] = bs.MIPSolvers.CPLEX
@@ -249,6 +253,12 @@ class MainGUI(QMainWindow):
         # do not allow MP under windows because it crashes
         if platform.system() == 'Windows':
             self.ui.use_multiprocessing_checkBox.setEnabled(False)
+
+        # array modes
+        self.ui.arrayModeComboBox.addItem('real')
+        self.ui.arrayModeComboBox.addItem('imag')
+        self.ui.arrayModeComboBox.addItem('abs')
+        self.ui.arrayModeComboBox.addItem('complex')
 
         # list of pointers to the GIS windows
         self.gis_dialogues = list()
@@ -399,8 +409,6 @@ class MainGUI(QMainWindow):
 
         self.ui.actionOnline_documentation.triggered.connect(self.show_online_docs)
 
-        self.ui.actionLicense.triggered.connect(self.show_license)
-
         self.ui.actionExport_all_results.triggered.connect(self.export_all)
 
         self.ui.actionDelete_selected.triggered.connect(self.delete_selected_from_the_schematic)
@@ -453,6 +461,10 @@ class MainGUI(QMainWindow):
 
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
 
+        self.ui.actionCorrect_inconsistences.triggered.connect(self.correct_inconsistencies)
+
+        self.ui.actionDelete_inconsistences.triggered.connect(self.delete_inconsistencies)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -461,7 +473,7 @@ class MainGUI(QMainWindow):
 
         self.ui.delete_profiles_structure_pushButton.clicked.connect(self.delete_profiles_structure)
 
-        self.ui.set_profile_state_button.clicked.connect(self.set_profiles_state_to_grid)
+        # self.ui.set_profile_state_button.clicked.connect(self.set_profiles_state_to_grid)
 
         self.ui.edit_profiles_pushButton.clicked.connect(self.import_profiles)
 
@@ -555,6 +567,10 @@ class MainGUI(QMainWindow):
 
         self.ui.loadResultFromDiskButton.clicked.connect(self.load_results_driver)
 
+        self.ui.plotArraysButton.clicked.connect(self.plot_simulation_objects_data)
+
+        self.ui.copyArraysButton.clicked.connect(self.copy_simulation_objects_data)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -570,9 +586,6 @@ class MainGUI(QMainWindow):
 
         self.ui.simulationDataStructuresListView.clicked.connect(self.view_simulation_objects_data)
 
-        self.ui.plotArraysButton.clicked.connect(self.plot_simulation_objects_data)
-
-        self.ui.copyArraysButton.clicked.connect(self.copy_simulation_objects_data)
 
         self.ui.catalogueDataStructuresListView.clicked.connect(self.catalogue_element_selected)
 
@@ -884,13 +897,6 @@ class MainGUI(QMainWindow):
         Open the online documentation in a web browser
         """
         webbrowser.open('https://gridcal.readthedocs.io/en/latest/', new=2)
-
-    @staticmethod
-    def show_license(self):
-        """
-        Open the gplv3 in a web browser
-        """
-        webbrowser.open('https://www.gnu.org/licenses/gpl-3.0.en.html', new=2)
 
     @staticmethod
     def print_console_help():
@@ -1907,7 +1913,8 @@ class MainGUI(QMainWindow):
         Copy the arrays of the compiled arrays view to the clipboard
         """
         mdl = self.ui.simulationDataStructureTableView.model()
-        mdl.copy_to_clipboard()
+        mode = self.ui.arrayModeComboBox.currentText()
+        mdl.copy_to_clipboard(mode=mode)
 
     def plot_simulation_objects_data(self):
         """
@@ -1916,22 +1923,15 @@ class MainGUI(QMainWindow):
         mdl = self.ui.simulationDataStructureTableView.model()
         data = mdl.data_c
 
-        # actually check if the array is 1D or 2D
-        is_2d = len(data.shape) == 2
-        if is_2d:
-            if data.shape[1] <= 1:
-                is_2d = False
-                data = data[:, 0]  # flatten the array
-
         # declare figure
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
 
-        if is_2d:
+        if mdl.is_2d():
             ax1.spy(data)
 
         else:
-            if mdl.data_c.dtype == complex:
+            if mdl.is_complex():
                 ax1.scatter(data.real, data.imag)
                 ax1.set_xlabel('Real')
                 ax1.set_ylabel('Imag')
@@ -2506,7 +2506,8 @@ class MainGUI(QMainWindow):
                                          types=results.bus_types,
                                          losses=results.losses,
                                          hvdc_loading=results.hvdc_loading,
-                                         hvdc_sending_power=results.hvdc_Pf,
+                                         hvdc_Pf=results.hvdc_Pf,
+                                         hvdc_Pt=results.hvdc_Pt,
                                          hvdc_losses=results.hvdc_losses,
                                          ma=results.ma,
                                          theta=results.theta,
@@ -2646,7 +2647,8 @@ class MainGUI(QMainWindow):
                         distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked(),
                         correct_values=self.ui.ptdf_correct_nonsense_values_checkBox.isChecked())
 
-                    drv = sim.LinearAnalysisDriver(grid=self.circuit, options=options)
+                    engine = self.get_preferred_engine()
+                    drv = sim.LinearAnalysisDriver(grid=self.circuit, options=options, engine=engine)
 
                     self.session.run(drv,
                                      post_func=self.post_linear_analysis,
@@ -3764,7 +3766,6 @@ class MainGUI(QMainWindow):
 
                 self.remove_simulation(sim.SimulationTypes.OPF_run)
 
-
                 # get the power flow options from the GUI
                 solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
                 mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
@@ -3775,6 +3776,24 @@ class MainGUI(QMainWindow):
                 skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
                 tolerance = 10 ** self.ui.opfTolSpinBox.value()
                 lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
+                maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
+
+                # available transfer capacity inter areas
+                if maximize_flows:
+                    compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                    idx_from = np.array([i for i, bus in lst_from])
+                    idx_to = np.array([i for i, bus in lst_to])
+
+                    if len(idx_from) == 0:
+                        error_msg('The area "from" has no buses!')
+                        return
+
+                    if len(idx_to) == 0:
+                        error_msg('The area "to" has no buses!')
+                        return
+                else:
+                    idx_from = None
+                    idx_to = None
 
                 # try to acquire the linear results
                 linear_results = self.session.linear_power_flow
@@ -3796,7 +3815,10 @@ class MainGUI(QMainWindow):
                                                       skip_generation_limits=skip_generation_limits,
                                                       tolerance=tolerance,
                                                       LODF=LODF,
-                                                      lodf_tolerance=lodf_tolerance)
+                                                      lodf_tolerance=lodf_tolerance,
+                                                      maximize_flows=maximize_flows,
+                                                      area_from_bus_idx=idx_from,
+                                                      area_to_bus_idx=idx_to)
 
                 self.ui.progress_label.setText('Running optimal power flow...')
                 QtGui.QGuiApplication.processEvents()
@@ -3835,8 +3857,9 @@ class MainGUI(QMainWindow):
                                              loadings=results.loading,
                                              types=results.bus_types,
                                              Sf=results.Sf,
+                                             St=results.St,
                                              Sbus=results.Sbus,
-                                             hvdc_sending_power=results.hvdc_Pf,
+                                             hvdc_Pf=results.hvdc_Pf,
                                              hvdc_loading=results.hvdc_loading,
                                              use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                                              theta=results.phase_shift,
@@ -3884,6 +3907,24 @@ class MainGUI(QMainWindow):
                     skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
                     tolerance = 10**self.ui.opfTolSpinBox.value()
                     lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
+                    maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
+
+                    # available transfer capacity inter areas
+                    if maximize_flows:
+                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                        idx_from = np.array([i for i, bus in lst_from])
+                        idx_to = np.array([i for i, bus in lst_to])
+
+                        if len(idx_from) == 0:
+                            error_msg('The area "from" has no buses!')
+                            return
+
+                        if len(idx_to) == 0:
+                            error_msg('The area "to" has no buses!')
+                            return
+                    else:
+                        idx_from = None
+                        idx_to = None
 
                     # try to acquire the linear results
                     linear_results = self.session.linear_power_flow
@@ -3905,7 +3946,10 @@ class MainGUI(QMainWindow):
                                                           skip_generation_limits=skip_generation_limits,
                                                           tolerance=tolerance,
                                                           LODF=LODF,
-                                                          lodf_tolerance=lodf_tolerance
+                                                          lodf_tolerance=lodf_tolerance,
+                                                          maximize_flows=maximize_flows,
+                                                          area_from_bus_idx=idx_from,
+                                                          area_to_bus_idx=idx_to
                                                           )
 
                     start = self.ui.profile_start_slider.value()
@@ -3952,14 +3996,14 @@ class MainGUI(QMainWindow):
                 if self.ui.draw_schematic_checkBox.isChecked():
 
                     viz.colour_the_schematic(circuit=self.circuit,
-                                             Sbus=None,
+                                             Sbus=results.Sbus[0, :],
                                              Sf=results.Sf[0, :],
+                                             St=results.St[0, :],
                                              voltages=results.voltage[0, :],
                                              loadings=results.loading[0, :],
                                              types=results.bus_types,
                                              losses=None,
-                                             St=None,
-                                             hvdc_sending_power=results.hvdc_Pf[0, :],
+                                             hvdc_Pf=results.hvdc_Pf[0, :],
                                              hvdc_losses=None,
                                              hvdc_loading=results.hvdc_loading[0, :],
                                              failed_br_idx=None,
@@ -4177,7 +4221,7 @@ class MainGUI(QMainWindow):
                                          types=results.bus_types,
                                          losses=results.losses,
                                          hvdc_loading=results.hvdc_loading,
-                                         hvdc_sending_power=results.hvdc_Pf,
+                                         hvdc_Pf=results.hvdc_Pf,
                                          hvdc_losses=None,
                                          ma=None,
                                          theta=results.phase_shift,
@@ -4830,15 +4874,15 @@ class MainGUI(QMainWindow):
             elif current_study == sim.LinearAnalysisDriver.name:
                 drv, results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_run)
                 voltage = np.ones(self.circuit.get_bus_number())
-                loading = results.PTDF[:, current_step]
 
                 plot_function(circuit=self.circuit,
-                              Sbus=None,
-                              Sf=loading,
+                              Sbus=results.Sbus,
+                              Sf=results.Sf,
+                              St=-results.Sf,
                               voltages=voltage,
-                              loadings=loading,
+                              loadings=results.loading,
                               types=results.bus_types,
-                              loading_label='Sensitivity',
+                              loading_label='Loading',
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -5508,11 +5552,23 @@ class MainGUI(QMainWindow):
         """
         if self.circuit is not None:
 
-            numerical_circuit = core.compile_snapshot_circuit(circuit=self.circuit)
+            engine = self.get_preferred_engine()
 
-            calculation_inputs = numerical_circuit.split_into_islands()
+            if engine == bs.EngineType.GridCal:
+                numerical_circuit = core.compile_snapshot_circuit(circuit=self.circuit)
+                calculation_inputs = numerical_circuit.split_into_islands()
+                self.calculation_inputs_to_display = calculation_inputs
 
-            self.calculation_inputs_to_display = calculation_inputs
+            elif engine == bs.EngineType.Bentayga:
+                import GridCal.Engine.Core.Compilers.circuit_to_bentayga as ben
+                self.calculation_inputs_to_display = ben.get_snapshots_from_bentayga(self.circuit)
+
+            else:
+                # fallback to gridcal
+                numerical_circuit = core.compile_snapshot_circuit(circuit=self.circuit)
+                calculation_inputs = numerical_circuit.split_into_islands()
+                self.calculation_inputs_to_display = calculation_inputs
+
             return True
         else:
             self.calculation_inputs_to_display = None
@@ -5896,7 +5952,7 @@ class MainGUI(QMainWindow):
         """
         numerical_circuit_ = core.compile_snapshot_opf_circuit(circuit=self.circuit, apply_temperature=False,)
         islands = numerical_circuit_.split_into_islands()
-
+        logger = Logger()
         buses_to_delete = list()
         buses_to_delete_idx = list()
         for island in islands:
@@ -5916,6 +5972,7 @@ class MainGUI(QMainWindow):
                 # this is a more complete function than the circuit one because it removes the
                 # graphical items too, and for loads and generators it deletes them properly
                 print('Deleted ', elm.device_type.value, elm.name)
+                logger.add_info("Deleted " + str(elm.device_type.value), elm.name)
                 elm.graphic_obj.remove(ask=False)
 
         # search other elements to delete
@@ -5936,7 +5993,10 @@ class MainGUI(QMainWindow):
                         # this is a more complete function than the circuit one because it removes the
                         # graphical items too, and for loads and generators it deletes them properly
                         print('Deleted ', elm.device_type.value, elm.name)
+                        logger.add_info("Deleted " + str(elm.device_type.value), elm.name)
                         elm.graphic_obj.remove(ask=False)
+
+        return logger
 
     def correct_shit(self, min_vset=0.98, max_vset=1.02):
         """
@@ -5944,25 +6004,42 @@ class MainGUI(QMainWindow):
         :param min_vset: minimum set point for the generators
         :param max_vset: maximum set point for the generators
         """
+        logger = Logger()
+
         for elm in self.circuit.transformers2w:
             HV = max(elm.bus_from.Vnom, elm.bus_to.Vnom)
             LV = min(elm.bus_from.Vnom, elm.bus_to.Vnom)
 
-            if elm.HV != HV or elm.LV != LV:
+            if elm.HV != HV:
                 self.console_msg('Corrected transformer HV for {0} from [{1},{2}] to [{3},{4}]'.format(elm.name,
                                                                                                        elm.LV, elm.HV,
                                                                                                        LV, HV))
+
+                logger.add_info("Corrected transformer HV", elm.name, elm.HV, HV)
+
                 elm.HV = HV
+
+            if elm.LV != LV:
+                self.console_msg('Corrected transformer HV for {0} from [{1},{2}] to [{3},{4}]'.format(elm.name,
+                                                                                                       elm.LV, elm.HV,
+                                                                                                       LV, HV))
+
+                logger.add_info("Corrected transformer LV", elm.name, elm.LV, LV)
+
                 elm.LV = LV
 
         for elm in self.circuit.get_generators():
             if elm.Vset > max_vset:
-                self.console_msg('Corrected generator set point for {0} from {1} to {2}'.format(elm.name,
-                                                                                                elm.Vset, max_vset))
+                # self.console_msg('Corrected generator set point for {0} from {1} to {2}'.format(elm.name,elm.Vset, max_vset))
+                logger.add_info("Corrected generator set point", elm.name, elm.Vset, max_vset)
                 elm.Vset = max_vset
+
             elif elm.Vset < min_vset:
-                self.console_msg('Corrected generator set point for {0} from {1} to {2}'.format(elm.name, elm.Vset, min_vset))
+                # self.console_msg('Corrected generator set point for {0} from {1} to {2}'.format(elm.name, elm.Vset, min_vset))
+                logger.add_info("Corrected generator set point", elm.name, elm.Vset, min_vset)
                 elm.Vset = min_vset
+
+        return logger
 
     def correct_branch_monitoring(self, max_loading=1.0):
         """
@@ -6625,6 +6702,38 @@ class MainGUI(QMainWindow):
         if ok:
             self.circuit.fuse_devices()
             self.draw_schematic()
+
+    def correct_inconsistencies(self):
+        """
+        Call correct shit
+        :return:
+        """
+        ok = yes_no_question("This action applies a number of expert rules to correct set points, "
+                             "transformer voltages and other inconsistencies", "Correct inconsistencies")
+
+        if ok:
+            logger = self.correct_shit()
+
+            if len(logger) > 0:
+                dlg = LogsDialogue("correct inconsistencies", logger)
+                dlg.setModal(True)
+                dlg.exec_()
+
+    def delete_inconsistencies(self):
+        """
+        Call delete shit
+        :return:
+        """
+        ok = yes_no_question("This action removes all disconnected devices and remove all small islands",
+                             "Delete inconsistencies")
+
+        if ok:
+            logger = self.delete_shit()
+
+            if len(logger) > 0:
+                dlg = LogsDialogue("Delete inconsistencies", logger)
+                dlg.setModal(True)
+                dlg.exec_()
 
 
 def run(use_native_dialogues=False):

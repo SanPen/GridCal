@@ -6,11 +6,28 @@ This section describes the changes introduced at each Version.
 
 \* Short releases indicate the fix of a critical bug.
 
-\* Notice that some versions skip numbers. This is not an error,
-this is because the stupid policy of pypi to not allow to correct packages.
-Hence if something goes wrong, you need to re-upload with a new Version number.
+Version 4.4.5
+^^^^^^^^^^^^^^^
 
-Version 4.3.1
+- Integrated Bentayga's PTDF / LODF calculation
+- Improved HVDC oscillation control when acting in free mode
+- Integrated the Highs solver into the custom pulp implementation
+
+Version 4.4.3
+^^^^^^^^^^^^^^^
+
+- Added HVDC oscillation control when acting in free mode
+
+
+Version 4.4.2
+^^^^^^^^^^^^^^^
+
+- Changed the license to LGPL
+- Improved HVDC power flow control management
+- Added the license directly in the about box, featuring the linking exceptions for Bentayga and Newton.
+- Rearranged menus oon the GUI.
+
+Version 4.3.5
 ^^^^^^^^^^^^^^^
 
 - Fixed State Estimation error.
@@ -19,8 +36,12 @@ Version 4.3.1
 - Added NTC-OPF pre-solve diagnostic.
 - Added ATC clustering simulation.
 - Added DC power flow phase shifter effects.
+- Added Proper HVDC losses calculation.
+- Added HVDC "free" control to the power flow. This changes the HVDC set point using the angular difference.
 - Added Newton interface for power flow.
 - Added bentayga interface for power flow and time series.
+- Added device fusion per node: this add all the devices of the same type connected to a node.
+- Added functions with expert rules to correct and delete inconsistencies.
 
 - Improved: Better island detection when buses are disconnected.
 

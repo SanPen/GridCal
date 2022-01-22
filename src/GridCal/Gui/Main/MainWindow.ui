@@ -539,7 +539,7 @@
                      </property>
                      <property name="icon">
                       <iconset resource="icons.qrc">
-                       <normaloff>:/Icons/icons/bars.svg</normaloff>:/Icons/icons/bars.svg</iconset>
+                       <normaloff>:/Icons/icons/inputs_analysis 2.svg</normaloff>:/Icons/icons/inputs_analysis 2.svg</iconset>
                      </property>
                     </widget>
                    </item>
@@ -701,6 +701,62 @@ p, li { white-space: pre-wrap; }
                      </widget>
                     </item>
                     <item>
+                     <widget class="QPushButton" name="setValueToColumnButton">
+                      <property name="toolTip">
+                       <string>Set value to column</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/copy2down.svg</normaloff>:/Icons/icons/copy2down.svg</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="highlight_by_property_pushButton">
+                      <property name="toolTip">
+                       <string>Highlight the schematic buses based on the values of the selected property</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/highlight2.svg</normaloff>:/Icons/icons/highlight2.svg</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="clear_highlight_pushButton">
+                      <property name="toolTip">
+                       <string>Clear the bus highlight</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/unhighlight.svg</normaloff>:/Icons/icons/unhighlight.svg</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="delete_and_reduce_pushButton">
+                      <property name="toolTip">
+                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delete and reduce.&lt;/p&gt;&lt;p&gt;Applicable to buses, it removes a bus and places its objects (loads, generators, etc.) into the next feasible bus of higher voltage.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
                      <spacer name="horizontalSpacer_6">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
@@ -712,34 +768,6 @@ p, li { white-space: pre-wrap; }
                        </size>
                       </property>
                      </spacer>
-                    </item>
-                    <item>
-                     <widget class="QPushButton" name="processTemplatesPushButton">
-                      <property name="toolTip">
-                       <string>Process templates</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="icon">
-                       <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/calculator.svg</normaloff>:/Icons/icons/calculator.svg</iconset>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QPushButton" name="viewTemplatesButton">
-                      <property name="toolTip">
-                       <string>View templates catalogue</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="icon">
-                       <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/Catalogue.svg</normaloff>:/Icons/icons/Catalogue.svg</iconset>
-                      </property>
-                     </widget>
                     </item>
                    </layout>
                   </widget>
@@ -797,62 +825,6 @@ p, li { white-space: pre-wrap; }
                      </widget>
                     </item>
                     <item>
-                     <widget class="QPushButton" name="delete_and_reduce_pushButton">
-                      <property name="toolTip">
-                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delete and reduce.&lt;/p&gt;&lt;p&gt;Applicable to buses, it removes a bus and places its objects (loads, generators, etc.) into the next feasible bus of higher voltage.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="icon">
-                       <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QPushButton" name="highlight_by_property_pushButton">
-                      <property name="toolTip">
-                       <string>Highlight the schematic buses based on the values of the selected property</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="icon">
-                       <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/highlight2.svg</normaloff>:/Icons/icons/highlight2.svg</iconset>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QPushButton" name="clear_highlight_pushButton">
-                      <property name="toolTip">
-                       <string>Clear the bus highlight</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="icon">
-                       <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/unhighlight.svg</normaloff>:/Icons/icons/unhighlight.svg</iconset>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QPushButton" name="setValueToColumnButton">
-                      <property name="toolTip">
-                       <string>Set value to column</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="icon">
-                       <iconset resource="icons.qrc">
-                        <normaloff>:/Icons/icons/copy2down.svg</normaloff>:/Icons/icons/copy2down.svg</iconset>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
                      <spacer name="horizontalSpacer_9">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
@@ -864,6 +836,34 @@ p, li { white-space: pre-wrap; }
                        </size>
                       </property>
                      </spacer>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="processTemplatesPushButton">
+                      <property name="toolTip">
+                       <string>Process templates</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/calculator.svg</normaloff>:/Icons/icons/calculator.svg</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="viewTemplatesButton">
+                      <property name="toolTip">
+                       <string>View templates catalogue</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/Catalogue.svg</normaloff>:/Icons/icons/Catalogue.svg</iconset>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </widget>
@@ -1580,17 +1580,10 @@ p, li { white-space: pre-wrap; }
                 <property name="rightMargin">
                  <number>0</number>
                 </property>
-                <item row="2" column="0" colspan="4">
+                <item row="1" column="0" colspan="4">
                  <widget class="QListView" name="simulationDataStructuresListView"/>
                 </item>
-                <item row="0" column="0" colspan="4">
-                 <widget class="QLabel" name="label_23">
-                  <property name="text">
-                   <string>Island</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
+                <item row="0" column="0">
                  <widget class="QPushButton" name="compute_simulation_data_pushButton">
                   <property name="maximumSize">
                    <size>
@@ -1610,7 +1603,7 @@ p, li { white-space: pre-wrap; }
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="1">
+                <item row="0" column="1">
                  <widget class="QPushButton" name="exportSimulationDataButton">
                   <property name="maximumSize">
                    <size>
@@ -1630,7 +1623,7 @@ p, li { white-space: pre-wrap; }
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="2" colspan="2">
+                <item row="0" column="2" colspan="2">
                  <widget class="QComboBox" name="simulation_data_island_comboBox"/>
                 </item>
                </layout>
@@ -1642,73 +1635,70 @@ p, li { white-space: pre-wrap; }
                <property name="frameShadow">
                 <enum>QFrame::Raised</enum>
                </property>
-               <layout class="QVBoxLayout" name="verticalLayout_28">
+               <layout class="QGridLayout" name="gridLayout_23">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
-                <item>
-                 <widget class="QFrame" name="frame_69">
-                  <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
+                <property name="topMargin">
+                 <number>8</number>
+                </property>
+                <item row="0" column="3">
+                 <spacer name="horizontalSpacer_23">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
                   </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>510</width>
+                    <height>20</height>
+                   </size>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_35">
-                   <property name="leftMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="topMargin">
-                    <number>20</number>
-                   </property>
-                   <property name="bottomMargin">
-                    <number>0</number>
-                   </property>
-                   <item>
-                    <widget class="QPushButton" name="copyArraysButton">
-                     <property name="toolTip">
-                      <string>Copy array to clipboard</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="icons.qrc">
-                       <normaloff>:/Icons/icons/copy.svg</normaloff>:/Icons/icons/copy.svg</iconset>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="plotArraysButton">
-                     <property name="toolTip">
-                      <string>Plot values</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="icons.qrc">
-                       <normaloff>:/Icons/icons/plot.svg</normaloff>:/Icons/icons/plot.svg</iconset>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer name="horizontalSpacer_23">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>510</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                  </layout>
+                 </spacer>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QComboBox" name="arrayModeComboBox"/>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QPushButton" name="copyArraysButton">
+                  <property name="minimumSize">
+                   <size>
+                    <width>32</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Copy array to clipboard</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="icons.qrc">
+                    <normaloff>:/Icons/icons/copy.svg</normaloff>:/Icons/icons/copy.svg</iconset>
+                  </property>
                  </widget>
                 </item>
-                <item>
+                <item row="0" column="4">
+                 <widget class="QPushButton" name="plotArraysButton">
+                  <property name="minimumSize">
+                   <size>
+                    <width>32</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Plot values</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="icons.qrc">
+                    <normaloff>:/Icons/icons/plot.svg</normaloff>:/Icons/icons/plot.svg</iconset>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0" colspan="5">
                  <widget class="QTableView" name="simulationDataStructureTableView"/>
                 </item>
                </layout>
@@ -3096,41 +3086,6 @@ p, li { white-space: pre-wrap; }
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_3">
-                  <item row="6" column="0" colspan="2">
-                   <widget class="QCheckBox" name="skipOpfGenerationLimitsCheckBox">
-                    <property name="text">
-                     <string>Skip generation limits</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="0">
-                   <widget class="QLabel" name="label_4">
-                    <property name="text">
-                     <string>Time grouping</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="label_103">
-                    <property name="text">
-                     <string>Zone grouping</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="QComboBox" name="opf_time_grouping_comboBox">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the time grouping to possibly shorten the solution time.&lt;/p&gt;&lt;p&gt;This splits the time series by week, month, etc. and the subproblems are solved sequentially.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="1">
-                   <widget class="QComboBox" name="mip_solver_comboBox">
-                    <property name="toolTip">
-                     <string>Choose the external mixed integer programming solver</string>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="4" column="1">
                    <widget class="QSpinBox" name="opfTolSpinBox">
                     <property name="prefix">
@@ -3138,30 +3093,6 @@ p, li { white-space: pre-wrap; }
                     </property>
                     <property name="minimum">
                      <number>-99</number>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="7" column="0" colspan="2">
-                   <widget class="QCheckBox" name="considerContingenciesOpfCheckBox">
-                    <property name="text">
-                     <string>Consider contingencies</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="4" column="0">
-                   <widget class="QLabel" name="label_44">
-                    <property name="text">
-                     <string>Convergence tolerance</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="1">
-                   <widget class="QComboBox" name="opfZonalGroupByComboBox"/>
-                  </item>
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="label_42">
-                    <property name="text">
-                     <string>Method</string>
                     </property>
                    </widget>
                   </item>
@@ -3179,10 +3110,69 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
+                  <item row="1" column="1">
+                   <widget class="QComboBox" name="opf_time_grouping_comboBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the time grouping to possibly shorten the solution time.&lt;/p&gt;&lt;p&gt;This splits the time series by week, month, etc. and the subproblems are solved sequentially.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="7" column="0" colspan="2">
+                   <widget class="QCheckBox" name="considerContingenciesOpfCheckBox">
+                    <property name="text">
+                     <string>Consider contingencies</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QComboBox" name="opfZonalGroupByComboBox"/>
+                  </item>
+                  <item row="4" column="0">
+                   <widget class="QLabel" name="label_44">
+                    <property name="text">
+                     <string>Convergence tolerance</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_42">
+                    <property name="text">
+                     <string>Method</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="6" column="0" colspan="2">
+                   <widget class="QCheckBox" name="skipOpfGenerationLimitsCheckBox">
+                    <property name="text">
+                     <string>Skip generation limits</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_103">
+                    <property name="text">
+                     <string>Zone grouping</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_4">
+                    <property name="text">
+                     <string>Time grouping</string>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="5" column="0">
                    <widget class="QLabel" name="label_104">
                     <property name="text">
                      <string>Contingency tolerance</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QComboBox" name="mip_solver_comboBox">
+                    <property name="toolTip">
+                     <string>Choose the external mixed integer programming solver</string>
                     </property>
                    </widget>
                   </item>
@@ -3196,6 +3186,16 @@ p, li { white-space: pre-wrap; }
                     </property>
                     <property name="value">
                      <double>0.050000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="8" column="0" colspan="2">
+                   <widget class="QCheckBox" name="opfMaximizeExcahngeCheckBox">
+                    <property name="toolTip">
+                     <string>Activate the maximization of inter-area flows in the sense indicated in the Areas tab options</string>
+                    </property>
+                    <property name="text">
+                     <string>Maximize exchange</string>
                     </property>
                    </widget>
                   </item>
@@ -7178,42 +7178,25 @@ QProgressBar::chunk{
      <string>Help</string>
     </property>
     <addaction name="actionOnline_documentation"/>
-    <addaction name="actionLicense"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuActions">
     <property name="title">
      <string>Actions</string>
     </property>
-    <widget class="QMenu" name="menuSet_selected_buses">
-     <property name="title">
-      <string>Set selected buses</string>
-     </property>
-     <addaction name="actionSetSelectedBusCountry"/>
-     <addaction name="actionSetSelectedBusZone"/>
-     <addaction name="actionSetSelectedBusArea"/>
-    </widget>
     <addaction name="actionBigger_nodes"/>
     <addaction name="actionSmaller_nodes"/>
     <addaction name="actionCenter_view"/>
     <addaction name="actionAutoatic_layout"/>
-    <addaction name="actionDetect_transformers"/>
-    <addaction name="actionAuto_rate_branches"/>
-    <addaction name="actionStorage_location_suggestion"/>
     <addaction name="actionApply_new_rates"/>
-    <addaction name="actionGrid_Reduction"/>
-    <addaction name="actionTry_to_fix_buses_location"/>
-    <addaction name="actionFind_node_groups"/>
     <addaction name="actionDrawSchematic"/>
-    <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
-    <addaction name="actionFuse_devices"/>
     <addaction name="separator"/>
-    <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="actionAdd_default_catalogue"/>
     <addaction name="actionClear_stuff_running_right_now"/>
     <addaction name="actionReset_console"/>
     <addaction name="separator"/>
-    <addaction name="menuSet_selected_buses"/>
+    <addaction name="actionOpf_to_Power_flow"/>
+    <addaction name="actionSet_OPF_generation_to_profiles"/>
    </widget>
    <widget class="QMenu" name="menuSimulations">
     <property name="title">
@@ -7223,18 +7206,13 @@ QProgressBar::chunk{
     <addaction name="actionPower_Flow_Time_series"/>
     <addaction name="actionClustering_time_series"/>
     <addaction name="actionInputs_analysis"/>
-    <addaction name="separator"/>
     <addaction name="actionShort_Circuit"/>
-    <addaction name="separator"/>
     <addaction name="actionVoltage_stability"/>
-    <addaction name="separator"/>
     <addaction name="actionSigma_analysis"/>
     <addaction name="separator"/>
     <addaction name="actionOPF"/>
     <addaction name="actionOPF_time_series"/>
     <addaction name="actionOptimal_Net_Transfer_Capacity"/>
-    <addaction name="actionOpf_to_Power_flow"/>
-    <addaction name="actionSet_OPF_generation_to_profiles"/>
     <addaction name="separator"/>
     <addaction name="actionPower_flow_Stochastic"/>
     <addaction name="actionBlackout_cascade"/>
@@ -7246,9 +7224,37 @@ QProgressBar::chunk{
     <addaction name="actionATC"/>
     <addaction name="actionATC_Time_Series"/>
     <addaction name="actionATC_clustering"/>
+    <addaction name="separator"/>
+    <addaction name="actionStorage_location_suggestion"/>
+    <addaction name="actionFind_node_groups"/>
+   </widget>
+   <widget class="QMenu" name="menuModel">
+    <property name="title">
+     <string>Model</string>
+    </property>
+    <widget class="QMenu" name="menuSet_selected_buses_2">
+     <property name="title">
+      <string>Set selected buses</string>
+     </property>
+     <addaction name="actionSetSelectedBusCountry"/>
+     <addaction name="actionSetSelectedBusZone"/>
+     <addaction name="actionSetSelectedBusArea"/>
+    </widget>
+    <addaction name="actionAuto_rate_branches"/>
+    <addaction name="actionDetect_transformers"/>
+    <addaction name="actionTry_to_fix_buses_location"/>
+    <addaction name="actionGrid_Reduction"/>
+    <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
+    <addaction name="actionFuse_devices"/>
+    <addaction name="actionCorrect_inconsistences"/>
+    <addaction name="actionDelete_inconsistences"/>
+    <addaction name="separator"/>
+    <addaction name="actionLaunch_data_analysis_tool"/>
+    <addaction name="menuSet_selected_buses_2"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
+   <addaction name="menuModel"/>
    <addaction name="menuSimulations"/>
    <addaction name="menuAbout"/>
   </widget>
@@ -7292,6 +7298,7 @@ QProgressBar::chunk{
    <addaction name="actionShort_Circuit"/>
    <addaction name="actionVoltage_stability"/>
    <addaction name="actionSigma_analysis"/>
+   <addaction name="actionInputs_analysis"/>
    <addaction name="separator"/>
    <addaction name="actionOPF"/>
    <addaction name="actionOPF_time_series"/>
@@ -7315,8 +7322,6 @@ QProgressBar::chunk{
    <addaction name="actionTry_to_fix_buses_location"/>
    <addaction name="actionDelete_selected"/>
    <addaction name="separator"/>
-   <addaction name="actionStorage_location_suggestion"/>
-   <addaction name="actionInputs_analysis"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
    <addaction name="separator"/>
    <addaction name="actionShow_color_controls"/>
@@ -7603,7 +7608,7 @@ QProgressBar::chunk{
   <action name="actionLaunch_data_analysis_tool">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/bars.svg</normaloff>:/Icons/icons/bars.svg</iconset>
+     <normaloff>:/Icons/icons/inputs_analysis 2.svg</normaloff>:/Icons/icons/inputs_analysis 2.svg</iconset>
    </property>
    <property name="text">
     <string>Launch data analysis tool</string>
@@ -7840,15 +7845,6 @@ QProgressBar::chunk{
     <string>Ctrl+G</string>
    </property>
   </action>
-  <action name="actionLicense">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/new2.svg</normaloff>:/Icons/icons/new2.svg</iconset>
-   </property>
-   <property name="text">
-    <string>License</string>
-   </property>
-  </action>
   <action name="actionImportPlexosNodeLoad">
    <property name="icon">
     <iconset resource="icons.qrc">
@@ -7993,7 +7989,7 @@ QProgressBar::chunk{
   <action name="actionInputs_analysis">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/inputs_analysis.svg</normaloff>:/Icons/icons/inputs_analysis.svg</iconset>
+     <normaloff>:/Icons/icons/stats.svg</normaloff>:/Icons/icons/stats.svg</iconset>
    </property>
    <property name="text">
     <string>Inputs analysis</string>
@@ -8024,6 +8020,24 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>Fuse devices into a single device of each category per node</string>
+   </property>
+  </action>
+  <action name="actionCorrect_inconsistences">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/gear.svg</normaloff>:/Icons/icons/gear.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Correct inconsistences</string>
+   </property>
+  </action>
+  <action name="actionDelete_inconsistences">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Delete inconsistences</string>
    </property>
   </action>
  </widget>

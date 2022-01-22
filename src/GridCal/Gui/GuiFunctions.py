@@ -1,17 +1,19 @@
-# This file is part of GridCal.
-#
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GridCal is distributed in the hope that it will be useful,
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
 import numba as nb
@@ -389,6 +391,21 @@ class PandasModel(QtCore.QAbstractTableModel):
         """
         self.data_c[:, col] = self.data_c[row, col]
 
+    def is_complex(self):
+        return self.data_c.dtype == complex
+
+    def is_2d(self):
+        """
+        actually check if the array is 1D or 2D
+        :return: true if it is really a 2D data set
+        """
+
+        is_2d_ = len(self.data_c.shape) == 2
+        if is_2d_:
+            if self.data_c.shape[1] <= 1:
+                is_2d_ = False
+        return is_2d_
+
     def get_data(self, mode=None):
         """
 
@@ -414,7 +431,7 @@ class PandasModel(QtCore.QAbstractTableModel):
             else:
                 names = [val.name for val in self.cols_c]
 
-            if self.data_c.dtype == complex:
+            if self.is_complex():
 
                 if mode == 'real':
                     values = self.data_c.real
@@ -423,7 +440,7 @@ class PandasModel(QtCore.QAbstractTableModel):
                 elif mode == 'abs':
                     values = np.abs(self.data_c)
                 else:
-                    values = np.abs(self.data_c)
+                    values = self.data_c.astype(object)
 
             else:
                 values = self.data_c

@@ -194,6 +194,16 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tab_4">
+      <attribute name="title">
+       <string>License</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QTextEdit" name="licenseTextEdit"/>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>
