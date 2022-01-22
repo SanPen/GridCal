@@ -1643,6 +1643,9 @@ p, li { white-space: pre-wrap; }
                  <number>8</number>
                 </property>
                 <item row="0" column="3">
+                 <widget class="QComboBox" name="arrayModeComboBox"/>
+                </item>
+                <item row="0" column="5">
                  <spacer name="horizontalSpacer_23">
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
@@ -1655,30 +1658,24 @@ p, li { white-space: pre-wrap; }
                   </property>
                  </spacer>
                 </item>
-                <item row="0" column="1">
-                 <widget class="QComboBox" name="arrayModeComboBox"/>
+                <item row="1" column="0" colspan="7">
+                 <widget class="QTableView" name="simulationDataStructureTableView"/>
                 </item>
-                <item row="0" column="0">
-                 <widget class="QPushButton" name="copyArraysButton">
-                  <property name="minimumSize">
-                   <size>
-                    <width>32</width>
-                    <height>0</height>
-                   </size>
-                  </property>
+                <item row="0" column="1">
+                 <widget class="QPushButton" name="copyArraysToNumpyButton">
                   <property name="toolTip">
-                   <string>Copy array to clipboard</string>
+                   <string>Copy to data frame to clipboard in array format</string>
                   </property>
                   <property name="text">
                    <string/>
                   </property>
                   <property name="icon">
                    <iconset resource="icons.qrc">
-                    <normaloff>:/Icons/icons/copy.svg</normaloff>:/Icons/icons/copy.svg</iconset>
+                    <normaloff>:/Icons/icons/array.svg</normaloff>:/Icons/icons/array.svg</iconset>
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="4">
+                <item row="0" column="6">
                  <widget class="QPushButton" name="plotArraysButton">
                   <property name="minimumSize">
                    <size>
@@ -1698,8 +1695,25 @@ p, li { white-space: pre-wrap; }
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="0" colspan="5">
-                 <widget class="QTableView" name="simulationDataStructureTableView"/>
+                <item row="0" column="2">
+                 <widget class="QPushButton" name="copyArraysButton">
+                  <property name="minimumSize">
+                   <size>
+                    <width>32</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Copy array to clipboard</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="icons.qrc">
+                    <normaloff>:/Icons/icons/copy.svg</normaloff>:/Icons/icons/copy.svg</iconset>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </widget>

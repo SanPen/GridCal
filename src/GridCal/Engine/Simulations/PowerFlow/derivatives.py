@@ -350,8 +350,10 @@ def dSf_dV_fast(Yf, V, Vc, E, F, Cf):
     """
     Derivatives of the branch power w.r.t the branch voltage modules and angles
     Works for dSf with Yf, F, Cf and for dSt with Yt, T, Ct
-    :param Yf: Admittances matrix of the branches with the "from" buses
+    :param Yf: Admittance matrix of the branches with the "from" buses
     :param V: Array of voltages
+    :param Vc: Array of voltages conjugates
+    :param E: Array of voltages unitary vectors
     :param F: Array of branch "from" bus indices
     :param Cf: Connectivity matrix of the branches with the "from" buses
     :return: dSf_dVa, dSf_dVm

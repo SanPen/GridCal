@@ -571,6 +571,8 @@ class MainGUI(QMainWindow):
 
         self.ui.copyArraysButton.clicked.connect(self.copy_simulation_objects_data)
 
+        self.ui.copyArraysToNumpyButton.clicked.connect(self.copy_simulation_objects_data_to_numpy)
+
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
 
@@ -1914,6 +1916,14 @@ class MainGUI(QMainWindow):
         """
         mdl = self.ui.simulationDataStructureTableView.model()
         mode = self.ui.arrayModeComboBox.currentText()
+        mdl.copy_to_clipboard(mode=mode)
+
+    def copy_simulation_objects_data_to_numpy(self):
+        """
+        Copy the arrays of the compiled arrays view to the clipboard
+        """
+        mdl = self.ui.simulationDataStructureTableView.model()
+        mode = 'numpy'
         mdl.copy_to_clipboard(mode=mode)
 
     def plot_simulation_objects_data(self):

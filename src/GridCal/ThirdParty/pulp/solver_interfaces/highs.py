@@ -81,10 +81,13 @@ class HiGHS_CMD(LpSolver_CMD):
 
         tmp_mps, tmp_sol, tmp_options, tmp_log = self.create_tmp_files(lp.name, "mps", "sol", "HiGHS", "HiGHS_log")
 
+        # https://www.maths.ed.ac.uk/hall/HiGHS/HighsOptions.html
         write_lines = [
             "solution_file = %s\n" % tmp_sol,
             "write_solution_to_file = true\n",
-            'parallel = "on"',
+            'parallel = "on"\n',
+            # 'threads="on"\n'
+            'threads={0}\n'.format(os.cpu_count()),  # max number of threads
         ]
         with open(tmp_options, "w") as fp:
             fp.writelines(write_lines)
@@ -187,7 +190,7 @@ class HiGHS_CMD(LpSolver_CMD):
         else:
             status = constants.LpStatusUndefined
             status_sol = constants.LpSolutionNoSolutionFound
-            raise PulpSolverError("Pulp: Error while executing", self.path)
+            # raise PulpSolverError("Pulp: Error while executing", self.path)
 
         if status == constants.LpStatusUndefined:
             raise PulpSolverError("Pulp: Error while executing", self.path)
