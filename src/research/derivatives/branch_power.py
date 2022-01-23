@@ -1,5 +1,6 @@
 
 import numpy as np
+from math import sin, cos
 from scipy.sparse import csc_matrix, diags
 np.set_printoptions(linewidth=1000000)
 
@@ -124,7 +125,19 @@ def dSf_dV(Yf, V, F, Cf, Vc, E):
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-def dP_dVa(Cf, Yf, V, tap_mod, R, X, F, T):
+def dP_dVa_simp(Cf, Yf, V, tap_mod, R, X, F, T):
+    """
+    According to Salvador Acha-Daza's book
+    :param Cf:
+    :param Yf:
+    :param V:
+    :param tap_mod:
+    :param R:
+    :param X:
+    :param F:
+    :param T:
+    :return:
+    """
     m, n = Cf.shape
     Vf = Cf * V
     If = Yf * V
@@ -147,7 +160,19 @@ def dP_dVa(Cf, Yf, V, tap_mod, R, X, F, T):
     return mat
 
 
-def dP_dVm(Cf, Yf, V, tap_mod, R, X, F, T):
+def dP_dVm_simp(Cf, Yf, V, tap_mod, R, X, F, T):
+    """
+    According to Salvador Acha-Daza's book
+    :param Cf:
+    :param Yf:
+    :param V:
+    :param tap_mod:
+    :param R:
+    :param X:
+    :param F:
+    :param T:
+    :return:
+    """
     m, n = Cf.shape
     Vf = Cf * V
     If = Yf * V
@@ -171,16 +196,135 @@ def dP_dVm(Cf, Yf, V, tap_mod, R, X, F, T):
     return mat
 
 
+def dPf_dVa(Cf, Y, V, F, T):
+    """
+    Acording to antonio exposito's book
+    :param Cf:
+    :param Y:
+    :param V:
+    :param F:
+    :param T:
+    :return:
+    """
+    m, n = Cf.shape
+    G = Y.real
+    B = Y.imag
+    vm = np.abs(V)
+    va = np.angle(V)
+
+    mat = np.zeros((m, n))
+
+    for k in range(m):
+        i = F[k]
+        j = T[k]
+        va_ij = va[i] - va[j]
+        mat[k, i] = vm[i] * vm[j] * (-G[i, j] * sin(va_ij) + B[i, j] * cos(va_ij))
+        mat[k, j] = vm[i] * vm[j] * (G[i, j] * sin(va_ij) - B[i, j] * cos(va_ij))
+
+    return mat
+
+
+def dPf_dVm(Cf, Y, V, F, T):
+    """
+    Acording to antonio exposito's book
+    :param Cf:
+    :param Y:
+    :param V:
+    :param F:
+    :param T:
+    :return:
+    """
+    m, n = Cf.shape
+    G = Y.real
+    B = Y.imag
+    vm = np.abs(V)
+    va = np.angle(V)
+
+    mat = np.zeros((m, n))
+
+    for k in range(m):
+        i = F[k]
+        j = T[k]
+        va_ij = va[i] - va[j]
+        mat[k, i] = vm[j] * (G[i, j] * cos(va_ij) + B[i, j] * sin(va_ij)) - 2 * G[i, j] * vm[i]
+        mat[k, j] = vm[i] * (G[i, j] * cos(va_ij) + B[i, j] * sin(va_ij))
+
+    return mat
+
+
+def dQf_dVa(Cf, Y, V, F, T):
+    """
+    Acording to antonio exposito's book
+    :param Cf:
+    :param Y:
+    :param V:
+    :param F:
+    :param T:
+    :return:
+    """
+    m, n = Cf.shape
+    G = Y.real
+    B = Y.imag
+    vm = np.abs(V)
+    va = np.angle(V)
+
+    mat = np.zeros((m, n))
+
+    for k in range(m):
+        i = F[k]
+        j = T[k]
+        va_ij = va[i] - va[j]
+        mat[k, i] = vm[i] * vm[j] * (G[i, j] * cos(va_ij) + B[i, j] * sin(va_ij))
+        mat[k, j] = - vm[i] * vm[j] * (G[i, j] * cos(va_ij) + B[i, j] * sin(va_ij))
+
+    return mat
+
+
+def dQf_dVm(Cf, Y, V, F, T, b):
+    """
+    Acording to antonio exposito's book
+    :param Cf:
+    :param Y:
+    :param V:
+    :param F:
+    :param T:
+    :return:
+    """
+    m, n = Cf.shape
+    G = Y.real
+    B = Y.imag
+    vm = np.abs(V)
+    va = np.angle(V)
+
+    mat = np.zeros((m, n))
+
+    for k in range(m):
+        i = F[k]
+        j = T[k]
+        va_ij = va[i] - va[j]
+        mat[k, i] = vm[j] * (G[i, j] * sin(va_ij) - B[i, j] * cos(va_ij)) + 2 * vm[i] * (B[i, j] - b[k])
+        mat[k, j] = vm[i] * (G[i, j] * sin(va_ij) - B[i, j] * cos(va_ij))
+
+    return mat
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
+    Y = np.array([[10.958904-25.997397j, -3.424658+7.534247j, -3.424658+7.534247j, 0.000000+0.000000j, -4.109589+10.958904j],
+                  [-3.424658+7.534247j, 11.672080-26.060948j, -4.123711+9.278351j, 0.000000+0.000000j, -4.123711+9.278351j],
+                  [-3.424658+7.534247j, -4.123711+9.278351j, 10.475198-23.119061j, -2.926829+6.341463j, 0.000000+0.000000j],
+                  [0.000000+0.000000j, 0.000000+0.000000j, -2.926829+6.341463j, 7.050541-15.594814j, -4.123711+9.278351j],
+                  [-4.109589+10.958904j, -4.123711+9.278351j, 0.000000+0.000000j, -4.123711+9.278351j, 12.357012-29.485605j]])
+    Y = csc_matrix(Y)
+
     Yf = np.array([[-3.424658+7.534247j, 0.000000+0.000000j, 3.424658-7.524247j, 0.000000+0.000000j, 0.000000+0.000000j],
-                    [0.000000+0.000000j, 0.000000+0.000000j, -2.926829+6.341463j, 2.926829-6.326463j, 0.000000+0.000000j],
-                    [0.000000+0.000000j, 0.000000+0.000000j, 0.000000+0.000000j, -4.123711+9.278351j, 4.123711-9.268351j],
-                    [0.000000+0.000000j, -4.123711+9.278351j, 0.000000+0.000000j, 0.000000+0.000000j, 4.123711-9.268351j],
-                    [-4.109589+10.958904j, 0.000000+0.000000j, 0.000000+0.000000j, 0.000000+0.000000j, 4.109589-10.948904j],
-                    [-3.424658+7.534247j, 3.424658-7.524247j, 0.000000+0.000000j, 0.000000+0.000000j, 0.000000+0.000000j],
-                    [0.000000+0.000000j, 4.123711-9.268351j, -4.123711+9.278351j, 0.000000+0.000000j, 0.000000+0.000000j]])
+                   [0.000000+0.000000j, 0.000000+0.000000j, -2.926829+6.341463j, 2.926829-6.326463j, 0.000000+0.000000j],
+                   [0.000000+0.000000j, 0.000000+0.000000j, 0.000000+0.000000j, -4.123711+9.278351j, 4.123711-9.268351j],
+                   [0.000000+0.000000j, -4.123711+9.278351j, 0.000000+0.000000j, 0.000000+0.000000j, 4.123711-9.268351j],
+                   [-4.109589+10.958904j, 0.000000+0.000000j, 0.000000+0.000000j, 0.000000+0.000000j, 4.109589-10.948904j],
+                   [-3.424658+7.534247j, 3.424658-7.524247j, 0.000000+0.000000j, 0.000000+0.000000j, 0.000000+0.000000j],
+                   [0.000000+0.000000j, 4.123711-9.268351j, -4.123711+9.278351j, 0.000000+0.000000j, 0.000000+0.000000j]])
     Yf = csc_matrix(Yf)
 
     Cf = np.array([[0.000000, 0.000000, 1.000000, 0.000000, 0.000000],
@@ -192,7 +336,7 @@ if __name__ == '__main__':
                    [0.000000, 1.000000, 0.000000, 0.000000, 0.000000]])
     Cf = csc_matrix(Cf)
 
-    V = np.array([1. +0.j, 0.95446473-0.04008461j, 0.9540054 -0.03938094j, 0.93144092-0.0594139j , 0.95234448-0.0447275j ])
+    V = np.array([1. + 0.j, 0.95446473-0.04008461j, 0.9540054 -0.03938094j, 0.93144092-0.0594139j, 0.95234448-0.0447275j])
     Vc = np.conj(V)
     E = V / np.abs(V)
 
@@ -201,15 +345,24 @@ if __name__ == '__main__':
 
     R = np.array([0.05, 0.06, 0.04, 0.04, 0.03, 0.05, 0.04])
     X = np.array([0.11, 0.13, 0.09, 0.09, 0.08, 0.11, 0.09])
+    bsh = np.array([0.02, 0.03, 0.02, 0.02, 0.02, 0.02, 0.02])
     tap_mod = np.array([1., 1., 1., 1., 1., 1., 1.])
 
     # dSf_dVa, dSf_dVm = dSf_dV_fast(Yf, V, Vc, E, F, Cf)
     dSf_dVa, dSf_dVm = dSf_dV(Yf, V, F, Cf, Vc, E)
-    dPf_dVa_ = dP_dVa(Cf, Yf, V, tap_mod, R, X, F, T)
-    dPf_dVm_ = dP_dVm(Cf, Yf, V, tap_mod, R, X, F, T)
+    dPf_dVa_ = dPf_dVa(Cf, Y, V, F, T)
+    dPf_dVm_ = dPf_dVm(Cf, Y, V, F, T)
+    dQf_dVa_ = dQf_dVa(Cf, Y, V, F, T)
+    dQf_dVm_ = dQf_dVm(Cf, Y, V, F, T, bsh/2)
 
     print('dP/dVa\n', dSf_dVa.real.toarray())
     print('dP/dVa\n', dPf_dVa_)
-
-    print('dP/dVa\n', dSf_dVm.real.toarray())
-    print('dP/dVa\n', dPf_dVm_)
+    print('_' * 100)
+    print('dP/dVm\n', dSf_dVm.real.toarray())
+    print('dP/dVm\n', dPf_dVm_)
+    print('_' * 100)
+    print('dQ/dVa\n', dSf_dVa.imag.toarray())
+    print('dQ/dVa\n', dQf_dVa_)
+    print('_' * 100)
+    print('dQ/dVm\n', dSf_dVm.imag.toarray())
+    print('dQ/dVm\n', dQf_dVm_)
