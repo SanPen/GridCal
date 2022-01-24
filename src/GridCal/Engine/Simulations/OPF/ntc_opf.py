@@ -1540,16 +1540,15 @@ class OpfNTC(Opf):
                      solver_type=solver_type,
                      ortools=True)
 
-    def formulate(self, add_slacks=True):
+    def formulate(self, add_slacks=True, t=0):
         """
         Formulate the Net Transfer Capacity problem
+        :param add_slacks:
+        :param t:
         :return:
         """
 
         self.inf = self.solver.infinity()
-
-        # time index
-        t = 0
 
         # general indices
         n = self.numerical_circuit.nbus
