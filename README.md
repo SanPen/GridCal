@@ -150,5 +150,5 @@ Some features you'll find already are:
 
 # Contact
 
-Send feedback and requests to [santiago.penate.vera@gmail.com](santiago.penate.vera@gmail.com).
+Send feedback and requests to [santiago@gridcal.org](santiago@gridcal.org).
 
