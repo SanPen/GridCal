@@ -44,13 +44,13 @@ class OptimalNetTransferCapacityOptions:
                  verbose=False,
                  grouping: TimeGrouping = TimeGrouping.NoGrouping,
                  mip_solver=MIPSolvers.CBC,
-                 generation_formulation: GenerationNtcFormulation = GenerationNtcFormulation.Optimal,
-                 monitor_only_sensitive_branches=False,
+                 generation_formulation: GenerationNtcFormulation = GenerationNtcFormulation.Proportional,
+                 monitor_only_sensitive_branches=True,
                  branch_sensitivity_threshold=0.01,
-                 skip_generation_limits=False,
+                 skip_generation_limits=True,
                  consider_contingencies=True,
                  maximize_exchange_flows=True,
-                 perform_previous_checks=True,
+                 perform_previous_checks=False,
                  dispatch_all_areas=False,
                  tolerance=1e-2,
                  sensitivity_dT=100.0,
@@ -549,8 +549,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
                    alpha[m] >= self.options.branch_sensitivity_threshold:
 
                     elm_name = '{0}'.format(numerical_circuit.branch_names[m])
-                    if '60134' in elm_name:
-                        kk =1
+
                     self.logger.add_error('Base overload', elm_name, pf_drv.results.loading[m].real * 100, 100)
                     base_problems = True
 
@@ -561,7 +560,9 @@ class OptimalNetTransferCapacity(DriverTemplate):
 
             if self.options.consider_contingencies:
                 self.progress_text.emit('Pre-solving base state (Contingency analysis)...')
-                options = ContingencyAnalysisOptions(distributed_slack=False)
+                options = ContingencyAnalysisOptions(distributed_slack=False,
+                                                     use_provided_flows=True,
+                                                     Pf=pf_drv.results.Sf.real)
                 cnt_drv = ContingencyAnalysisDriver(grid=self.grid, options=options)
                 cnt_drv.run()
                 indices = np.where(np.abs(cnt_drv.results.loading.real) >= 1.0)
@@ -645,7 +646,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
         else:
             self.progress_text.emit('Formulating NTC OPF...')
 
-            # DDefine the problem
+            # Define the problem
             problem = OpfNTC(
                 numerical_circuit,
                 area_from_bus_idx=self.options.area_from_bus_idx,
@@ -677,7 +678,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
             err = problem.error()
 
             if not converged:
-                self.logger.add_error('Did not converge', 'NTC OPF', str(err), self.options.tolerance)
+                self.logger.add_error('Did not solve', 'NTC OPF', str(err), self.options.tolerance)
 
             self.logger += problem.logger
 

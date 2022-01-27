@@ -531,7 +531,7 @@ def formulate_proportional_generation(
         if validate_generator_to_decrease(gen_idx, generator_active, generator_dispatchable, Pgen, Pmax, Pmin, t):
             sum_gen_2 += Pgen[gen_idx]
 
-    power_shift = solver.NumVar(0, inf, 'Area_slack')
+    power_shift = solver.NumVar(-inf, inf, 'Area_slack')
 
     for bus_idx, gen_idx in gens1:
 
@@ -543,7 +543,7 @@ def formulate_proportional_generation(
             name = 'Gen_up_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
 
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-            delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
+            delta[gen_idx] = solver.NumVar(-inf, inf, name + '_delta')
 
             # delta_slack_1[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_up_' + name)
             # delta_slack_2[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_down_' + name)
@@ -574,7 +574,7 @@ def formulate_proportional_generation(
             name = 'Gen_down_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
 
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-            delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
+            delta[gen_idx] = solver.NumVar(-inf, inf, name + '_delta')
 
             # delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
             # delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
@@ -834,7 +834,7 @@ def check_node_balance(Bbus, angles, Pinj, bus_active, bus_names, logger: Logger
 
 def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
                             branch_active, branch_names, branch_dc,
-                            theta_min, theta_max, control_mode, R, X, F, T, inf,
+                            theta, theta_min, theta_max, control_mode, R, X, F, T, inf,
                             monitor_loading, branch_sensitivity_threshold, monitor_only_sensitive_branches,
                             angles, alpha_abs, logger):
     """
@@ -885,7 +885,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
 
             # determine the monitoring logic
             if monitor_only_sensitive_branches:
-                monitor[m] =  monitor_loading[m] and alpha_abs[m] > branch_sensitivity_threshold
+                monitor[m] = monitor_loading[m] and alpha_abs[m] > branch_sensitivity_threshold
             else:
                 monitor[m] = monitor_loading[m]
 
@@ -933,7 +933,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
             else:
                 # branch power from-to eq.15
                 solver.Add(
-                    flow_f[m] == bk * (angles[_f] - angles[_t]),
+                    flow_f[m] == bk * (angles[_f] - angles[_t] +theta[m]),
                     'branch_power_flow_{0}_{1}'.format(m, branch_names[m])
                 )
 
@@ -1093,15 +1093,15 @@ def formulate_contingency(
 
                 lodf = LODF[m, c]
 
-                if lodf > 1:
+                if lodf > 1.1:
                     logger.add_warning("LODF correction", device=branch_names[m] + "@" + branch_names[c],
-                                       value=lodf, expected_value=replacement_value)
+                                       value=lodf, expected_value=1.1)
 
                     lodf = replacement_value
 
-                elif lodf < -1:
+                elif lodf < -1.1:
                     logger.add_warning("LODF correction", device=branch_names[m] + "@" + branch_names[c],
-                                       value=lodf, expected_value=-replacement_value)
+                                       value=lodf, expected_value=-1.1)
                     lodf = -replacement_value
 
                 suffix = "{0}_{1} @ {2}_{3}".format(m, branch_names[m], c, branch_names[c])
@@ -1430,11 +1430,13 @@ def formulate_objective(
 
     load_shedding_sum = solver.Sum(load_shedding * load_cost)
 
-    # formulate objective function
-    #f = -weight_power_shift * power_shift
+    all_slacks_sum = branch_overload + hvdc_overload + hvdc_control + delta_slacks + contingency_branch_overload
 
-    #if maximize_exchange_flows:
-    f = -weight_power_shift * flow_from_a1_to_a2
+    # formulate objective function
+    f = -weight_power_shift * power_shift
+
+    if maximize_exchange_flows:
+        f -= weight_power_shift * flow_from_a1_to_a2
 
     f += weight_generation_cost * gen_cost_f
     # f += weight_generation_delta * delta_slacks
@@ -1442,9 +1444,9 @@ def formulate_objective(
     # f += weight_overloads * contingency_branch_overload
     # f += weight_overloads * hvdc_overload
     # f += weight_hvdc_control * hvdc_control
-    f += weight_generation_delta * load_shedding_sum
+    # f += weight_generation_delta * load_shedding_sum
 
-    all_slacks_sum = branch_overload + hvdc_overload + hvdc_control + delta_slacks + contingency_branch_overload
+    solver.Minimize(f)
 
     slacks = [overload1, overload2,
               n1overload1, n1overload2,
@@ -1714,6 +1716,7 @@ class OpfNTC(Opf):
             branch_active=self.numerical_circuit.branch_active,
             branch_names=self.numerical_circuit.branch_names,
             branch_dc=self.numerical_circuit.branch_data.branch_dc,
+            theta=self.numerical_circuit.branch_data.theta[:,t],
             theta_min=self.numerical_circuit.branch_data.theta_min,
             theta_max=self.numerical_circuit.branch_data.theta_max,
             control_mode=self.numerical_circuit.branch_data.control_mode,
@@ -1881,6 +1884,7 @@ class OpfNTC(Opf):
 
         # generator
         Pg_fix = self.numerical_circuit.generator_data.get_effective_generation()[:, t] / Sbase
+        Pg_max = self.numerical_circuit.generator_pmax / Sbase
         Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
 
         if self.skip_generation_limits:
