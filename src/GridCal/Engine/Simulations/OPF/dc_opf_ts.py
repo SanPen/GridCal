@@ -460,7 +460,7 @@ def formulate_area_generation_summations(numerical_circuit: OpfTimeCircuit, buse
 
 class OpfDcTimeSeries(OpfTimeSeries):
 
-    def __init__(self, numerical_circuit: OpfTimeCircuit, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
+    def __init__(self, numerical_circuit: OpfTimeCircuit, start_idx, end_idx, solver_type: MIPSolvers = MIPSolvers.CBC,
                  zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                  skip_generation_limits=False, consider_contingencies=False, LODF=None, lodf_tolerance=0.001,
                  maximize_inter_area_flow=False,
@@ -470,7 +470,7 @@ class OpfDcTimeSeries(OpfTimeSeries):
         :param numerical_circuit: NumericalCircuit instance
         :param start_idx: start index of the time series
         :param end_idx: end index of the time series
-        :param solver: MIP solver_type to use
+        :param solver_type: MIP solver_type to use
         :param zonal_grouping:
         :param skip_generation_limits:
         :param consider_contingencies:
@@ -482,7 +482,7 @@ class OpfDcTimeSeries(OpfTimeSeries):
         """
         OpfTimeSeries.__init__(self, numerical_circuit=numerical_circuit,
                                start_idx=start_idx, end_idx=end_idx,
-                               solver=solver, skip_formulation=True)
+                               solver_type=solver_type, skip_formulation=True)
 
         self.zonal_grouping = zonal_grouping
         self.skip_generation_limits = skip_generation_limits

@@ -88,6 +88,8 @@ class ResultTypes(Enum):
     GenerationDeltaSlacks = 'Generation delta slacks', DeviceType.GeneratorDevice
     InterAreaExchange = 'Inter-Area exchange', DeviceType.NoDevice
 
+    OptimalNetTransferCapacityTimeSeriesReport = 'Optimal net transfer capacity series report', DeviceType.NoDevice
+
     # Short-circuit
     BusShortCircuitPower = 'Bus short circuit power', DeviceType.BusDevice
 

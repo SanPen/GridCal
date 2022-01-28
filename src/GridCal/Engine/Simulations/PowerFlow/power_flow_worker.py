@@ -639,7 +639,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     control_iter = 0
     max_control_iter = 10
     oscillations_number = 0
-    hvdc_error_threshold = 0.1
+    hvdc_error_threshold = 0.01
     lpf_alpha = 0.2
 
     while not all_controls_ok:
@@ -686,15 +686,18 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                 theta=np.angle(results.voltage)
             )
 
-            hvdc_control_err = np.max(np.abs(Pf_hvdc_prev - Pf_hvdc))
+            # hvdc_control_err = np.max(np.abs(Pf_hvdc_prev - Pf_hvdc))
+            hvdc_control_err = np.max(np.abs(Shvdc- Shvdc_prev))
+
+            Shvdc = Shvdc_prev + (Shvdc - Shvdc_prev)
 
             # check for oscillations
             oscillating = False
-            for i, (Pfi, Pfi_prev) in enumerate(zip(Pf_hvdc, Pf_hvdc_prev)):
-                if (Pfi > 0 and Pfi_prev < 0) or (Pfi < 0 and Pfi_prev > 0):
-                    logger.add_error("HVDC free control oscillations detected",
-                                     multi_circuit.hvdc_lines[i].name, Pfi, Pfi_prev)
-                    oscillating = True
+            # for i, (Pfi, Pfi_prev) in enumerate(zip(Pf_hvdc, Pf_hvdc_prev)):
+            #     if (Pfi > 0 and Pfi_prev < 0) or (Pfi < 0 and Pfi_prev > 0):
+            #         logger.add_error("HVDC free control oscillations detected",
+            #                          multi_circuit.hvdc_lines[i].name, Pfi, Pfi_prev)
+            #         oscillating = True
 
             # check oscillations: if Pf changes sign from prev to current, the previous prevails and we end the control
             print('control err:', hvdc_control_err, '', Pf_hvdc)
@@ -720,7 +723,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                 Pf_hvdc_prev = Pf_hvdc.copy()
                 Pt_hvdc_prev = Pt_hvdc.copy()
                 loading_hvdc_prev = loading_hvdc.copy()
-                # Shvdc_prev = Shvdc.copy()
+                Shvdc_prev = Shvdc.copy()
 
             else:
                 if hvdc_control_err < hvdc_error_threshold:
@@ -732,6 +735,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                     Pf_hvdc_prev = Pf_hvdc.copy()
                     Pt_hvdc_prev = Pt_hvdc.copy()
                     loading_hvdc_prev = loading_hvdc.copy()
+                    Shvdc_prev = Shvdc.copy()
         else:
             all_controls_ok = True
 
