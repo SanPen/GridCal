@@ -153,11 +153,12 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 logger=self.logger)
 
             # Solve
-            self.progress_text.emit('Solving NTC OPF...')
+            self.progress_text.emit('Solving NTC OPF...['+str(t)+']')
 
             problem.formulate_ts(add_slacks=True, t=t)
 
-            solved = problem.solve_ts(with_check=self.options.with_check)
+            solved = problem.solve_ts(with_check=self.options.with_check,
+                                      time_limit_ms=self.options.time_limit_ms)
             err = problem.error()
 
             self.logger += problem.logger
@@ -204,6 +205,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                     contingency_flows_slacks_list=problem.get_contingency_flows_slacks_list(),
                     rates=nc.branch_data.branch_rates[:, t],
                     contingency_rates=nc.branch_data.branch_contingency_rates[:, t])
+
+        end = time.time()
+        self.elapsed = end-start
 
 
 if __name__ == '__main__':
@@ -300,14 +304,14 @@ if __name__ == '__main__':
         weight_kirchoff=0,
         weight_overloads=weight_overloads,
         weight_hvdc_control=weight_hvdc_control,
-        with_check=False)
+        with_check=False,
+        time_limit_ms=1e4)
 
     print('Running optimal power flow...')
 
     # set optimal net transfer capacity driver instance
-    start = 38
-    # end = main_circuit.get_time_number()-1
-    end = 50
+    start = 0
+    end = main_circuit.get_time_number()-1
     driver = OptimalNetTransferCapacityTimeSeriesDriver(
         grid=main_circuit,
         options=options,
@@ -324,3 +328,6 @@ if __name__ == '__main__':
             labels, columns, data = driver.results[t].get_contingency_report()
             df = pd.DataFrame(index=labels, columns=columns, data=data)
             print(df[['Monitored','Contingency', 'ContingencyFlow (%)', 'ContingencyFlow (MW)']][:5])
+
+    print('\n\nTotal sin resultados:', driver.unresolved_counter)
+    print('\n\nTotal scs.:', driver.elapsed/1e3)

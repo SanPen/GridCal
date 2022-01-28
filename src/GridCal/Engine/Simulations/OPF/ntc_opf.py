@@ -2425,10 +2425,13 @@ class OpfNTC(Opf):
         """
         save_lp(self.solver, file_name)
 
-    def solve(self, with_check=True):
+    def solve(self, with_check=True, time_limit_ms=0):
         """
         Call ORTools to solve the problem
         """
+        if time_limit_ms != 0:
+            self.solver.set_time_limit(int(time_limit_ms))
+
         self.status = self.solver.Solve()
 
         converged = self.converged()
@@ -2441,10 +2444,13 @@ class OpfNTC(Opf):
 
         return converged
 
-    def solve_ts(self, with_check=True):
+    def solve_ts(self, with_check=True, time_limit_ms=0):
         """
         Call ORTools to solve the problem
         """
+        if time_limit_ms != 0:
+            self.solver.set_time_limit(int(time_limit_ms))
+
         self.status = self.solver.Solve()
 
         converged = self.converged()

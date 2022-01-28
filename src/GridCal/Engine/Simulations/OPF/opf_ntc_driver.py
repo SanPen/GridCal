@@ -63,7 +63,8 @@ class OptimalNetTransferCapacityOptions:
                  weight_kirchoff=1e5,
                  weight_overloads=1e5,
                  weight_hvdc_control=1e0,
-                 with_check=True):
+                 with_check=True,
+                 time_limit_ms=1e4):
         """
 
         :param area_from_bus_idx:
@@ -86,6 +87,7 @@ class OptimalNetTransferCapacityOptions:
         :param weight_overloads:
         :param weight_hvdc_control:
         :param with_check:
+        :param time_limit_ms
         """
         self.verbose = verbose
 
@@ -127,6 +129,7 @@ class OptimalNetTransferCapacityOptions:
         self.weight_hvdc_control = weight_hvdc_control
 
         self.with_check = with_check
+        self.time_limit_ms = time_limit_ms
 
 
 class OptimalNetTransferCapacityResults(ResultsTemplate):
@@ -720,7 +723,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
             # Solve
             self.progress_text.emit('Solving NTC OPF...')
             problem.formulate(add_slacks=True)
-            converged = problem.solve(with_check=self.options.with_check)
+            converged = problem.solve(with_check=self.options.with_check, max_time_seconds=self.options.time_limit_ms)
             err = problem.error()
 
             if not converged:
