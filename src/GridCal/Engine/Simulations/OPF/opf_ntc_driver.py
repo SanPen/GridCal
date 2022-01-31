@@ -723,7 +723,8 @@ class OptimalNetTransferCapacity(DriverTemplate):
             # Solve
             self.progress_text.emit('Solving NTC OPF...')
             problem.formulate(add_slacks=True)
-            converged = problem.solve(with_check=self.options.with_check, max_time_seconds=self.options.time_limit_ms)
+            converged = problem.solve(with_check=self.options.with_check,
+                                      time_limit_ms=self.options.time_limit_ms)
             err = problem.error()
 
             if not converged:
