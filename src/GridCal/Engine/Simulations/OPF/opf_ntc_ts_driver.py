@@ -218,11 +218,16 @@ if __name__ == '__main__':
     from GridCal.Engine import PowerFlowOptions, FileOpen, LinearAnalysis, PowerFlowDriver, SolverType
 
     fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse.gridcal'
+    path_out = r'd:\ntc_optimization_FE_PMODE1.csv'
+    contingencies_per_hour = 5
 
     main_circuit = FileOpen(fname).open()
 
-    areas_from_idx = [0, 1, 2, 3, 4]
-    areas_to_idx = [7]
+    # areas_from_idx = [0, 1, 2, 3, 4]
+    # areas_to_idx = [7]
+
+    areas_from_idx = [7]
+    areas_to_idx = [0, 1, 2, 3, 4]
 
     areas_from = [main_circuit.areas[i] for i in areas_from_idx]
     areas_to = [main_circuit.areas[i] for i in areas_to_idx]
@@ -320,14 +325,48 @@ if __name__ == '__main__':
 
     driver.run()
 
-    for t in range(end):
-        if t not in driver.results.keys():
-            print('\n\nHora', t, ': Sin solución',)
-        else:
-            print('\n\nHora', t, ': Capacidad', driver.results[t].get_exchange_power(), "MW")
-            labels, columns, data = driver.results[t].get_contingency_report()
-            df = pd.DataFrame(index=labels, columns=columns, data=data)
-            print(df[['Monitored','Contingency', 'ContingencyFlow (%)', 'ContingencyFlow (MW)']][:5])
+    # df_all = pd.DataFrame()
+    labels, columns, data = driver.results[list(driver.results.keys())[0]].get_contingency_report()
+    columns = ['Time index', 'NTC (MW)'] + columns
+    data_all = np.empty(shape=(0, len(columns)))
 
-    print('\n\nTotal sin resultados:', driver.unresolved_counter)
-    print('\n\nTotal scs.:', driver.elapsed/1e3)
+    print('\n')
+    for t in driver.results.keys():
+        ntc = np.floor(driver.results[t].get_exchange_power())
+        print('Hora', t, ': Capacidad', ntc, "MW")
+        l, c, data = driver.results[t].get_contingency_report()
+        # add columns time, ntc
+        data = np.append(np.ones((data.shape[0], 1)) * [t, ntc], data, axis=1)
+        data_all = np.concatenate((data_all, data[:5, :]), axis=0)
+
+
+    data_all = data_all[np.lexsort((data_all[:, 0], data_all[:, 1]))][::-1]
+
+    axis = np.zeros((data_all.shape[0], 1))
+
+    data_all = np.append(axis, data_all, axis=1)
+    columns = ['Axis'] + columns
+
+    index = 0
+    prev_timestamp = 0
+    step = len(driver.results.keys())
+    for row in range(data_all.shape[0]):
+        if data_all[row, 1] != prev_timestamp:
+            index += 1
+            prev_timestamp = data_all[row, 1]
+        data_all[row, 0] = index/step
+
+
+    df_all = pd.DataFrame(columns=columns, data=data_all)
+    df_all = df_all.sort_values(by=['NTC (MW)', 'Time index', 'ContingencyFlow (%)'], ascending=[False, False, False])
+
+    print(df_all)
+
+    ncases = end-start+1
+
+    print('\n\nTotal resueltos:', len(driver.results.keys()))
+    print('Total sin resultados:', driver.unresolved_counter)
+    print('Total timeouts:', ncases - len(driver.results.keys()) - driver.unresolved_counter)
+    print('\nEjecutado en scs.:{0} para {1} casos.'.format(driver.elapsed, ncases))
+
+    df_all.to_csv(path_out, index=False)
