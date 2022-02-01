@@ -460,9 +460,9 @@ class MainGUI(QMainWindow):
 
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
 
-        self.ui.actionCorrect_inconsistences.triggered.connect(self.correct_inconsistencies)
+        self.ui.actionCorrect_inconsistencies.triggered.connect(self.correct_inconsistencies)
 
-        self.ui.actionDelete_inconsistences.triggered.connect(self.delete_inconsistencies)
+        self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
 
         # Buttons
 
@@ -4086,7 +4086,7 @@ class MainGUI(QMainWindow):
         self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
         self.ui.ntcMaximizeExchangeFlowCheckBox.setChecked(True)
         self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
-        self.ui.ntcFeasibilityCheckCheckBox.setChecked(True)
+        self.ui.ntcFeasibilityCheckCheckBox.setChecked(False)
         self.ui.weightPowerShiftSpinBox.setValue(5)
         self.ui.weightGenCostSpinBox.setValue(0)
         self.ui.weightGenDeltaSpinBox.setValue(5)
@@ -4154,32 +4154,27 @@ class MainGUI(QMainWindow):
 
                 weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
                 weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
-                weight_generation_delta = 10.0 ** self.ui.weightGenDeltaSpinBox.value()
                 weight_overloads = 10.0 ** self.ui.weightsOverloadsSpinBox.value()
-                weight_hvdc_control = 10.0 ** self.ui.weightsHVDCControlSpinBox.value()
                 maximize_exchange_flows = self.ui.ntcMaximizeExchangeFlowCheckBox.isChecked()
 
-                options = sim.OptimalNetTransferCapacityOptions(area_from_bus_idx=idx_from,
-                                                                area_to_bus_idx=idx_to,
-                                                                mip_solver=mip_solver,
-                                                                generation_formulation=generation_formulation,
-                                                                monitor_only_sensitive_branches=monitor_only_sensitive_branches,
-                                                                branch_sensitivity_threshold=branch_sensitivity_threshold,
-                                                                skip_generation_limits=skip_generation_limits,
-                                                                consider_contingencies=consider_contingencies,
-                                                                maximize_exchange_flows=maximize_exchange_flows,
-                                                                dispatch_all_areas=dispatch_all_areas,
-                                                                tolerance=tolerance,
-                                                                sensitivity_dT=dT,
-                                                                sensitivity_mode=mode,
-                                                                perform_previous_checks=perform_previous_checks,
-                                                                weight_power_shift=weight_power_shift,
-                                                                weight_generation_cost=weight_generation_cost,
-                                                                weight_generation_delta=weight_generation_delta,
-                                                                weight_kirchoff=0,
-                                                                weight_overloads=weight_overloads,
-                                                                weight_hvdc_control=weight_hvdc_control
-                                                                )
+                options = sim.OptimalNetTransferCapacityOptions(
+                    area_from_bus_idx=idx_from,
+                    area_to_bus_idx=idx_to,
+                    mip_solver=mip_solver,
+                    generation_formulation=generation_formulation,
+                    monitor_only_sensitive_branches=monitor_only_sensitive_branches,
+                    branch_sensitivity_threshold=branch_sensitivity_threshold,
+                    skip_generation_limits=skip_generation_limits,
+                    consider_contingencies=consider_contingencies,
+                    maximize_exchange_flows=maximize_exchange_flows,
+                    dispatch_all_areas=dispatch_all_areas,
+                    tolerance=tolerance,
+                    sensitivity_dT=dT,
+                    sensitivity_mode=mode,
+                    perform_previous_checks=perform_previous_checks,
+                    weight_power_shift=weight_power_shift,
+                    weight_generation_cost=weight_generation_cost,
+                    weight_overloads=weight_overloads)
 
                 self.ui.progress_label.setText('Running optimal power flow...')
                 QtGui.QGuiApplication.processEvents()

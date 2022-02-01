@@ -18,7 +18,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1347, 764)
+        mainWindow.resize(1347, 741)
         mainWindow.setBaseSize(QSize(0, 0))
         icon = QIcon()
         icon.addFile(u":/Program icon/GridCal_icon.svg", QSize(), QIcon.Normal, QIcon.Off)
@@ -309,16 +309,16 @@ class Ui_mainWindow(object):
         icon48 = QIcon()
         icon48.addFile(u":/Icons/icons/fusion.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.actionFuse_devices.setIcon(icon48)
-        self.actionCorrect_inconsistences = QAction(mainWindow)
-        self.actionCorrect_inconsistences.setObjectName(u"actionCorrect_inconsistences")
+        self.actionCorrect_inconsistencies = QAction(mainWindow)
+        self.actionCorrect_inconsistencies.setObjectName(u"actionCorrect_inconsistencies")
         icon49 = QIcon()
         icon49.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.actionCorrect_inconsistences.setIcon(icon49)
-        self.actionDelete_inconsistences = QAction(mainWindow)
-        self.actionDelete_inconsistences.setObjectName(u"actionDelete_inconsistences")
+        self.actionCorrect_inconsistencies.setIcon(icon49)
+        self.actionDelete_inconsistencies = QAction(mainWindow)
+        self.actionDelete_inconsistencies.setObjectName(u"actionDelete_inconsistencies")
         icon50 = QIcon()
         icon50.addFile(u":/Icons/icons/delete.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.actionDelete_inconsistences.setIcon(icon50)
+        self.actionDelete_inconsistencies.setIcon(icon50)
         self.centralwidget = QWidget(mainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -1783,11 +1783,56 @@ class Ui_mainWindow(object):
         self.frame_2.setFrameShadow(QFrame.Raised)
         self.gridLayout_3 = QGridLayout(self.frame_2)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
+        self.skipOpfGenerationLimitsCheckBox = QCheckBox(self.frame_2)
+        self.skipOpfGenerationLimitsCheckBox.setObjectName(u"skipOpfGenerationLimitsCheckBox")
+
+        self.gridLayout_3.addWidget(self.skipOpfGenerationLimitsCheckBox, 6, 0, 1, 2)
+
+        self.label_4 = QLabel(self.frame_2)
+        self.label_4.setObjectName(u"label_4")
+
+        self.gridLayout_3.addWidget(self.label_4, 1, 0, 1, 1)
+
+        self.label_103 = QLabel(self.frame_2)
+        self.label_103.setObjectName(u"label_103")
+
+        self.gridLayout_3.addWidget(self.label_103, 2, 0, 1, 1)
+
+        self.opf_time_grouping_comboBox = QComboBox(self.frame_2)
+        self.opf_time_grouping_comboBox.setObjectName(u"opf_time_grouping_comboBox")
+
+        self.gridLayout_3.addWidget(self.opf_time_grouping_comboBox, 1, 1, 1, 1)
+
+        self.mip_solver_comboBox = QComboBox(self.frame_2)
+        self.mip_solver_comboBox.setObjectName(u"mip_solver_comboBox")
+
+        self.gridLayout_3.addWidget(self.mip_solver_comboBox, 3, 1, 1, 1)
+
         self.opfTolSpinBox = QSpinBox(self.frame_2)
         self.opfTolSpinBox.setObjectName(u"opfTolSpinBox")
         self.opfTolSpinBox.setMinimum(-99)
 
         self.gridLayout_3.addWidget(self.opfTolSpinBox, 4, 1, 1, 1)
+
+        self.considerContingenciesOpfCheckBox = QCheckBox(self.frame_2)
+        self.considerContingenciesOpfCheckBox.setObjectName(u"considerContingenciesOpfCheckBox")
+
+        self.gridLayout_3.addWidget(self.considerContingenciesOpfCheckBox, 7, 0, 1, 2)
+
+        self.label_44 = QLabel(self.frame_2)
+        self.label_44.setObjectName(u"label_44")
+
+        self.gridLayout_3.addWidget(self.label_44, 4, 0, 1, 1)
+
+        self.opfZonalGroupByComboBox = QComboBox(self.frame_2)
+        self.opfZonalGroupByComboBox.setObjectName(u"opfZonalGroupByComboBox")
+
+        self.gridLayout_3.addWidget(self.opfZonalGroupByComboBox, 2, 1, 1, 1)
+
+        self.label_42 = QLabel(self.frame_2)
+        self.label_42.setObjectName(u"label_42")
+
+        self.gridLayout_3.addWidget(self.label_42, 0, 0, 1, 1)
 
         self.label_10 = QLabel(self.frame_2)
         self.label_10.setObjectName(u"label_10")
@@ -1799,55 +1844,10 @@ class Ui_mainWindow(object):
 
         self.gridLayout_3.addWidget(self.lpf_solver_comboBox, 0, 1, 1, 1)
 
-        self.opf_time_grouping_comboBox = QComboBox(self.frame_2)
-        self.opf_time_grouping_comboBox.setObjectName(u"opf_time_grouping_comboBox")
-
-        self.gridLayout_3.addWidget(self.opf_time_grouping_comboBox, 1, 1, 1, 1)
-
-        self.considerContingenciesOpfCheckBox = QCheckBox(self.frame_2)
-        self.considerContingenciesOpfCheckBox.setObjectName(u"considerContingenciesOpfCheckBox")
-
-        self.gridLayout_3.addWidget(self.considerContingenciesOpfCheckBox, 7, 0, 1, 2)
-
-        self.opfZonalGroupByComboBox = QComboBox(self.frame_2)
-        self.opfZonalGroupByComboBox.setObjectName(u"opfZonalGroupByComboBox")
-
-        self.gridLayout_3.addWidget(self.opfZonalGroupByComboBox, 2, 1, 1, 1)
-
-        self.label_44 = QLabel(self.frame_2)
-        self.label_44.setObjectName(u"label_44")
-
-        self.gridLayout_3.addWidget(self.label_44, 4, 0, 1, 1)
-
-        self.label_42 = QLabel(self.frame_2)
-        self.label_42.setObjectName(u"label_42")
-
-        self.gridLayout_3.addWidget(self.label_42, 0, 0, 1, 1)
-
-        self.skipOpfGenerationLimitsCheckBox = QCheckBox(self.frame_2)
-        self.skipOpfGenerationLimitsCheckBox.setObjectName(u"skipOpfGenerationLimitsCheckBox")
-
-        self.gridLayout_3.addWidget(self.skipOpfGenerationLimitsCheckBox, 6, 0, 1, 2)
-
-        self.label_103 = QLabel(self.frame_2)
-        self.label_103.setObjectName(u"label_103")
-
-        self.gridLayout_3.addWidget(self.label_103, 2, 0, 1, 1)
-
-        self.label_4 = QLabel(self.frame_2)
-        self.label_4.setObjectName(u"label_4")
-
-        self.gridLayout_3.addWidget(self.label_4, 1, 0, 1, 1)
-
         self.label_104 = QLabel(self.frame_2)
         self.label_104.setObjectName(u"label_104")
 
         self.gridLayout_3.addWidget(self.label_104, 5, 0, 1, 1)
-
-        self.mip_solver_comboBox = QComboBox(self.frame_2)
-        self.mip_solver_comboBox.setObjectName(u"mip_solver_comboBox")
-
-        self.gridLayout_3.addWidget(self.mip_solver_comboBox, 3, 1, 1, 1)
 
         self.opfContingencyToleranceSpinBox = QDoubleSpinBox(self.frame_2)
         self.opfContingencyToleranceSpinBox.setObjectName(u"opfContingencyToleranceSpinBox")
@@ -1855,11 +1855,6 @@ class Ui_mainWindow(object):
         self.opfContingencyToleranceSpinBox.setValue(0.050000000000000)
 
         self.gridLayout_3.addWidget(self.opfContingencyToleranceSpinBox, 5, 1, 1, 1)
-
-        self.opfMaximizeExcahngeCheckBox = QCheckBox(self.frame_2)
-        self.opfMaximizeExcahngeCheckBox.setObjectName(u"opfMaximizeExcahngeCheckBox")
-
-        self.gridLayout_3.addWidget(self.opfMaximizeExcahngeCheckBox, 8, 0, 1, 2)
 
 
         self.verticalLayout_20.addWidget(self.frame_2)
@@ -1893,7 +1888,7 @@ class Ui_mainWindow(object):
         self.formLayout_2.setObjectName(u"formLayout_2")
         self.proportionalRedispatchRadioButton = QRadioButton(self.frame_67)
         self.proportionalRedispatchRadioButton.setObjectName(u"proportionalRedispatchRadioButton")
-        self.proportionalRedispatchRadioButton.setChecked(False)
+        self.proportionalRedispatchRadioButton.setChecked(True)
 
         self.formLayout_2.setWidget(0, QFormLayout.SpanningRole, self.proportionalRedispatchRadioButton)
 
@@ -1923,13 +1918,13 @@ class Ui_mainWindow(object):
 
         self.skipNtcGenerationLimitsCheckBox = QCheckBox(self.frame_67)
         self.skipNtcGenerationLimitsCheckBox.setObjectName(u"skipNtcGenerationLimitsCheckBox")
-        self.skipNtcGenerationLimitsCheckBox.setChecked(False)
+        self.skipNtcGenerationLimitsCheckBox.setChecked(True)
 
         self.formLayout_2.setWidget(3, QFormLayout.SpanningRole, self.skipNtcGenerationLimitsCheckBox)
 
         self.optimalRedispatchRadioButton = QRadioButton(self.frame_67)
         self.optimalRedispatchRadioButton.setObjectName(u"optimalRedispatchRadioButton")
-        self.optimalRedispatchRadioButton.setChecked(True)
+        self.optimalRedispatchRadioButton.setChecked(False)
 
         self.formLayout_2.setWidget(1, QFormLayout.SpanningRole, self.optimalRedispatchRadioButton)
 
@@ -2029,40 +2024,17 @@ class Ui_mainWindow(object):
 
         self.formLayout.setWidget(2, QFormLayout.FieldRole, self.weightGenCostSpinBox)
 
-        self.label_99 = QLabel(self.frame_68)
-        self.label_99.setObjectName(u"label_99")
-
-        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.label_99)
-
-        self.weightGenDeltaSpinBox = QSpinBox(self.frame_68)
-        self.weightGenDeltaSpinBox.setObjectName(u"weightGenDeltaSpinBox")
-        self.weightGenDeltaSpinBox.setMinimum(-99)
-        self.weightGenDeltaSpinBox.setValue(0)
-
-        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.weightGenDeltaSpinBox)
-
         self.label_98 = QLabel(self.frame_68)
         self.label_98.setObjectName(u"label_98")
 
-        self.formLayout.setWidget(4, QFormLayout.LabelRole, self.label_98)
+        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.label_98)
 
         self.weightsOverloadsSpinBox = QSpinBox(self.frame_68)
         self.weightsOverloadsSpinBox.setObjectName(u"weightsOverloadsSpinBox")
         self.weightsOverloadsSpinBox.setMinimum(-99)
         self.weightsOverloadsSpinBox.setValue(3)
 
-        self.formLayout.setWidget(4, QFormLayout.FieldRole, self.weightsOverloadsSpinBox)
-
-        self.label_100 = QLabel(self.frame_68)
-        self.label_100.setObjectName(u"label_100")
-
-        self.formLayout.setWidget(5, QFormLayout.LabelRole, self.label_100)
-
-        self.weightsHVDCControlSpinBox = QSpinBox(self.frame_68)
-        self.weightsHVDCControlSpinBox.setObjectName(u"weightsHVDCControlSpinBox")
-        self.weightsHVDCControlSpinBox.setMinimum(-99)
-
-        self.formLayout.setWidget(5, QFormLayout.FieldRole, self.weightsHVDCControlSpinBox)
+        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.weightsOverloadsSpinBox)
 
 
         self.gridLayout_15.addWidget(self.frame_68, 7, 0, 1, 3)
@@ -3433,12 +3405,12 @@ class Ui_mainWindow(object):
         self.menuAbout.setObjectName(u"menuAbout")
         self.menuActions = QMenu(self.menuBar)
         self.menuActions.setObjectName(u"menuActions")
+        self.menuSet_selected_buses = QMenu(self.menuActions)
+        self.menuSet_selected_buses.setObjectName(u"menuSet_selected_buses")
         self.menuSimulations = QMenu(self.menuBar)
         self.menuSimulations.setObjectName(u"menuSimulations")
         self.menuModel = QMenu(self.menuBar)
         self.menuModel.setObjectName(u"menuModel")
-        self.menuSet_selected_buses_2 = QMenu(self.menuModel)
-        self.menuSet_selected_buses_2.setObjectName(u"menuSet_selected_buses_2")
         mainWindow.setMenuBar(self.menuBar)
         self.toolBar = QToolBar(mainWindow)
         self.toolBar.setObjectName(u"toolBar")
@@ -3481,19 +3453,26 @@ class Ui_mainWindow(object):
         self.menuActions.addAction(self.actionClear_stuff_running_right_now)
         self.menuActions.addAction(self.actionReset_console)
         self.menuActions.addSeparator()
-        self.menuActions.addAction(self.actionOpf_to_Power_flow)
-        self.menuActions.addAction(self.actionSet_OPF_generation_to_profiles)
+        self.menuActions.addAction(self.menuSet_selected_buses.menuAction())
+        self.menuSet_selected_buses.addAction(self.actionSetSelectedBusCountry)
+        self.menuSet_selected_buses.addAction(self.actionSetSelectedBusZone)
+        self.menuSet_selected_buses.addAction(self.actionSetSelectedBusArea)
         self.menuSimulations.addAction(self.actionPower_flow)
         self.menuSimulations.addAction(self.actionPower_Flow_Time_series)
         self.menuSimulations.addAction(self.actionClustering_time_series)
         self.menuSimulations.addAction(self.actionInputs_analysis)
+        self.menuSimulations.addSeparator()
         self.menuSimulations.addAction(self.actionShort_Circuit)
+        self.menuSimulations.addSeparator()
         self.menuSimulations.addAction(self.actionVoltage_stability)
+        self.menuSimulations.addSeparator()
         self.menuSimulations.addAction(self.actionSigma_analysis)
         self.menuSimulations.addSeparator()
         self.menuSimulations.addAction(self.actionOPF)
         self.menuSimulations.addAction(self.actionOPF_time_series)
         self.menuSimulations.addAction(self.actionOptimal_Net_Transfer_Capacity)
+        self.menuSimulations.addAction(self.actionOpf_to_Power_flow)
+        self.menuSimulations.addAction(self.actionSet_OPF_generation_to_profiles)
         self.menuSimulations.addSeparator()
         self.menuSimulations.addAction(self.actionPower_flow_Stochastic)
         self.menuSimulations.addAction(self.actionBlackout_cascade)
@@ -3505,23 +3484,17 @@ class Ui_mainWindow(object):
         self.menuSimulations.addAction(self.actionATC)
         self.menuSimulations.addAction(self.actionATC_Time_Series)
         self.menuSimulations.addAction(self.actionATC_clustering)
-        self.menuSimulations.addSeparator()
-        self.menuSimulations.addAction(self.actionStorage_location_suggestion)
-        self.menuSimulations.addAction(self.actionFind_node_groups)
         self.menuModel.addAction(self.actionAuto_rate_branches)
         self.menuModel.addAction(self.actionDetect_transformers)
         self.menuModel.addAction(self.actionTry_to_fix_buses_location)
+        self.menuModel.addAction(self.actionStorage_location_suggestion)
+        self.menuModel.addAction(self.actionFind_node_groups)
         self.menuModel.addAction(self.actionGrid_Reduction)
         self.menuModel.addAction(self.actionSet_schematic_positions_from_GPS_coordinates)
         self.menuModel.addAction(self.actionFuse_devices)
-        self.menuModel.addAction(self.actionCorrect_inconsistences)
-        self.menuModel.addAction(self.actionDelete_inconsistences)
-        self.menuModel.addSeparator()
+        self.menuModel.addAction(self.actionCorrect_inconsistencies)
+        self.menuModel.addAction(self.actionDelete_inconsistencies)
         self.menuModel.addAction(self.actionLaunch_data_analysis_tool)
-        self.menuModel.addAction(self.menuSet_selected_buses_2.menuAction())
-        self.menuSet_selected_buses_2.addAction(self.actionSetSelectedBusCountry)
-        self.menuSet_selected_buses_2.addAction(self.actionSetSelectedBusZone)
-        self.menuSet_selected_buses_2.addAction(self.actionSetSelectedBusArea)
         self.toolBar.addAction(self.actionNew_project)
         self.toolBar.addAction(self.actionOpen_file)
         self.toolBar.addAction(self.actionSave)
@@ -3556,15 +3529,16 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionTry_to_fix_buses_location)
         self.toolBar.addAction(self.actionDelete_selected)
         self.toolBar.addSeparator()
+        self.toolBar.addAction(self.actionStorage_location_suggestion)
         self.toolBar.addAction(self.actionLaunch_data_analysis_tool)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionShow_color_controls)
 
         self.retranslateUi(mainWindow)
 
-        self.tabWidget.setCurrentIndex(0)
-        self.tabWidget_3.setCurrentIndex(0)
-        self.settings_tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(3)
+        self.tabWidget_3.setCurrentIndex(1)
+        self.settings_tabWidget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(mainWindow)
@@ -3782,8 +3756,14 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.actionFuse_devices.setToolTip(QCoreApplication.translate("mainWindow", u"Fuse devices into a single device of each category per node", None))
 #endif // QT_CONFIG(tooltip)
-        self.actionCorrect_inconsistences.setText(QCoreApplication.translate("mainWindow", u"Correct inconsistences", None))
-        self.actionDelete_inconsistences.setText(QCoreApplication.translate("mainWindow", u"Delete inconsistences", None))
+        self.actionCorrect_inconsistencies.setText(QCoreApplication.translate("mainWindow", u"Correct inconsistencies", None))
+#if QT_CONFIG(tooltip)
+        self.actionCorrect_inconsistencies.setToolTip(QCoreApplication.translate("mainWindow", u"Correct inconsistencies", None))
+#endif // QT_CONFIG(tooltip)
+        self.actionDelete_inconsistencies.setText(QCoreApplication.translate("mainWindow", u"Delete inconsistencies", None))
+#if QT_CONFIG(tooltip)
+        self.actionDelete_inconsistencies.setToolTip(QCoreApplication.translate("mainWindow", u"Delete inconsistencies", None))
+#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.run_cascade_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Run complete cascading process", None))
 #endif // QT_CONFIG(tooltip)
@@ -4118,31 +4098,27 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.label_72.setText("")
         self.label_73.setText(QCoreApplication.translate("mainWindow", u"Optimal Power Flow", None))
+        self.skipOpfGenerationLimitsCheckBox.setText(QCoreApplication.translate("mainWindow", u"Skip generation limits", None))
+        self.label_4.setText(QCoreApplication.translate("mainWindow", u"Time grouping", None))
+        self.label_103.setText(QCoreApplication.translate("mainWindow", u"Zone grouping", None))
+#if QT_CONFIG(tooltip)
+        self.opf_time_grouping_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Choose the time grouping to possibly shorten the solution time.</p><p>This splits the time series by week, month, etc. and the subproblems are solved sequentially.</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.mip_solver_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Choose the external mixed integer programming solver", None))
+#endif // QT_CONFIG(tooltip)
         self.opfTolSpinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e", None))
+        self.considerContingenciesOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider contingencies", None))
+        self.label_44.setText(QCoreApplication.translate("mainWindow", u"Convergence tolerance", None))
+        self.label_42.setText(QCoreApplication.translate("mainWindow", u"Method", None))
         self.label_10.setText(QCoreApplication.translate("mainWindow", u"MIP solver", None))
 #if QT_CONFIG(tooltip)
         self.lpf_solver_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Choose the optimal power flow method", None))
 #endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.opf_time_grouping_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Choose the time grouping to possibly shorten the solution time.</p><p>This splits the time series by week, month, etc. and the subproblems are solved sequentially.</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.considerContingenciesOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider contingencies", None))
-        self.label_44.setText(QCoreApplication.translate("mainWindow", u"Convergence tolerance", None))
-        self.label_42.setText(QCoreApplication.translate("mainWindow", u"Method", None))
-        self.skipOpfGenerationLimitsCheckBox.setText(QCoreApplication.translate("mainWindow", u"Skip generation limits", None))
-        self.label_103.setText(QCoreApplication.translate("mainWindow", u"Zone grouping", None))
-        self.label_4.setText(QCoreApplication.translate("mainWindow", u"Time grouping", None))
         self.label_104.setText(QCoreApplication.translate("mainWindow", u"Contingency tolerance", None))
-#if QT_CONFIG(tooltip)
-        self.mip_solver_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Choose the external mixed integer programming solver", None))
-#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.opfContingencyToleranceSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"LODF matrix tolerance choosing contingencies", None))
 #endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.opfMaximizeExcahngeCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"Activate the maximization of inter-area flows in the sense indicated in the Areas tab options", None))
-#endif // QT_CONFIG(tooltip)
-        self.opfMaximizeExcahngeCheckBox.setText(QCoreApplication.translate("mainWindow", u"Maximize exchange", None))
 #if QT_CONFIG(tooltip)
         self.proportionalRedispatchRadioButton.setToolTip(QCoreApplication.translate("mainWindow", u"The generation is modified as a linear combination of it's current dispatch", None))
 #endif // QT_CONFIG(tooltip)
@@ -4181,15 +4157,9 @@ class Ui_mainWindow(object):
         self.label_40.setText(QCoreApplication.translate("mainWindow", u"Generation cost", None))
         self.weightGenCostSpinBox.setSuffix("")
         self.weightGenCostSpinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e", None))
-        self.label_99.setText(QCoreApplication.translate("mainWindow", u"Generation delta", None))
-        self.weightGenDeltaSpinBox.setSuffix("")
-        self.weightGenDeltaSpinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e", None))
         self.label_98.setText(QCoreApplication.translate("mainWindow", u"Overloads", None))
         self.weightsOverloadsSpinBox.setSuffix("")
         self.weightsOverloadsSpinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e", None))
-        self.label_100.setText(QCoreApplication.translate("mainWindow", u"HVDC control", None))
-        self.weightsHVDCControlSpinBox.setSuffix("")
-        self.weightsHVDCControlSpinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"OPF", None))
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Optimal power flow settings", None))
@@ -4362,9 +4332,9 @@ class Ui_mainWindow(object):
         self.menuProject.setTitle(QCoreApplication.translate("mainWindow", u"File", None))
         self.menuAbout.setTitle(QCoreApplication.translate("mainWindow", u"Help", None))
         self.menuActions.setTitle(QCoreApplication.translate("mainWindow", u"Actions", None))
+        self.menuSet_selected_buses.setTitle(QCoreApplication.translate("mainWindow", u"Set selected buses", None))
         self.menuSimulations.setTitle(QCoreApplication.translate("mainWindow", u"Simulations", None))
         self.menuModel.setTitle(QCoreApplication.translate("mainWindow", u"Model", None))
-        self.menuSet_selected_buses_2.setTitle(QCoreApplication.translate("mainWindow", u"Set selected buses", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("mainWindow", u"toolBar", None))
     # retranslateUi
 
