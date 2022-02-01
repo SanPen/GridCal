@@ -33,6 +33,11 @@ from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
 from GridCal.Engine.basic_structures import SolverType
 
+try:
+    from ortools.linear_solver import pywraplp
+except ModuleNotFoundError:
+    print('ORTOOLS not found :(')
+
 ########################################################################################################################
 # Optimal Power flow classes
 ########################################################################################################################
@@ -59,12 +64,10 @@ class OptimalNetTransferCapacityOptions:
                  sensitivity_mode: AvailableTransferMode = AvailableTransferMode.InstalledPower,
                  weight_power_shift=1e0,
                  weight_generation_cost=1e-2,
-                 weight_generation_delta=1e0,
-                 weight_kirchoff=1e5,
                  weight_overloads=1e5,
-                 weight_hvdc_control=1e0,
                  with_check=True,
-                 time_limit_ms=1e4):
+                 time_limit_ms=1e4,
+                 max_report_elements=0):
         """
 
         :param area_from_bus_idx:
@@ -82,12 +85,10 @@ class OptimalNetTransferCapacityOptions:
         :param sensitivity_mode:
         :param weight_power_shift:
         :param weight_generation_cost:
-        :param weight_generation_delta:
-        :param weight_kirchoff:
         :param weight_overloads:
-        :param weight_hvdc_control:
         :param with_check:
-        :param time_limit_ms
+        :param time_limit_ms:
+        :param max_report_elements:
         """
         self.verbose = verbose
 
@@ -123,13 +124,11 @@ class OptimalNetTransferCapacityOptions:
 
         self.weight_power_shift = weight_power_shift
         self.weight_generation_cost = weight_generation_cost
-        self.weight_generation_delta = weight_generation_delta
-        self.weight_kirchoff = weight_kirchoff
         self.weight_overloads = weight_overloads
-        self.weight_hvdc_control = weight_hvdc_control
 
         self.with_check = with_check
         self.time_limit_ms = time_limit_ms
+        self.max_report_elements = max_report_elements
 
 
 class OptimalNetTransferCapacityResults(ResultsTemplate):
@@ -156,13 +155,11 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
     """
 
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names,
-                 Sbus=None, voltage=None, load_shedding=None, generator_shedding=None,
-                 battery_power=None, controlled_generation_power=None, Sf=None,
-                 overloads=None, loading=None, losses=None, converged=None, bus_types=None,
-                 hvdc_flow=None, hvdc_slacks=None, hvdc_loading=None, node_slacks=None, phase_shift=None,
-                 generation_delta=None, generation_delta_slacks=None,
+                 Sbus=None, voltage=None, load_shedding=None, generator_shedding=None, battery_power=None,
+                 controlled_generation_power=None, Sf=None, loading=None, losses=None, solved=None,
+                 bus_types=None, hvdc_flow=None, hvdc_loading=None, phase_shift=None, generation_delta=None,
                  inter_area_branches=list(), inter_area_hvdc=list(), alpha=None,
-                 contingency_flows_list=None, contingency_indices_list=None, contingency_flows_slacks_list=None,
+                 contingency_flows_list=None, contingency_indices_list=None,
                  rates=None, contingency_rates=None):
 
         ResultsTemplate.__init__(self,
@@ -217,13 +214,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.generation_delta = generation_delta
 
-        self.generation_delta_slacks = generation_delta_slacks
-
         self.Sbus = Sbus
 
         self.voltage = voltage
-
-        self.node_slacks = node_slacks
 
         self.load_shedding = load_shedding
 
@@ -231,13 +224,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.hvdc_Pf = hvdc_flow
         self.hvdc_loading = hvdc_loading
-        self.hvdc_overloads = hvdc_slacks
 
         self.phase_shift = phase_shift
 
         self.bus_types = bus_types
-
-        self.overloads = overloads
 
         self.loading = loading
 
@@ -249,13 +239,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.generator_power = controlled_generation_power
 
-        self.converged = converged
+        self.solved = solved
 
         self.alpha = alpha
 
         self.contingency_flows_list = contingency_flows_list
         self.contingency_indices_list = contingency_indices_list  # [(t, m, c), ...]
-        self.contingency_flows_slacks_list = contingency_flows_slacks_list
 
         self.rates = rates
         self.contingency_rates = contingency_rates
@@ -302,7 +291,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         return np.array(y).sum()
 
-    def get_contingency_report(self):
+    def get_contingency_report(self, max_report_elements=0):
         labels = list()
         y = list()
 
@@ -337,6 +326,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y = np.array(y, dtype=object)
         else:
             y = np.zeros((0, len(columns)), dtype=object)
+
+        # curtail report
+        if max_report_elements > 0:
+            y = y[:max_report_elements, :]
 
         return labels, columns, y
 
@@ -714,23 +707,47 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 tolerance=self.options.tolerance,
                 weight_power_shift=self.options.weight_power_shift,
                 weight_generation_cost=self.options.weight_generation_cost,
-                weight_generation_delta=self.options.weight_generation_delta,
-                weight_kirchoff=self.options.weight_kirchoff,
                 weight_overloads=self.options.weight_overloads,
-                weight_hvdc_control=self.options.weight_hvdc_control,
                 logger=self.logger)
 
             # Solve
             self.progress_text.emit('Solving NTC OPF...')
             problem.formulate(add_slacks=True)
-            converged = problem.solve(with_check=self.options.with_check,
-                                      time_limit_ms=self.options.time_limit_ms)
+            solved = problem.solve(with_check=self.options.with_check,
+                                   time_limit_ms=self.options.time_limit_ms)
             err = problem.error()
 
-            if not converged:
-                self.logger.add_error('Did not solve', 'NTC OPF', str(err), self.options.tolerance)
-
             self.logger += problem.logger
+
+            if not solved:
+
+                if problem.status == pywraplp.Solver.FEASIBLE:
+                    self.logger.add_error(
+                        'Feasible solution, not optimal or timeout',
+                        'NTC OPF',
+                        str(err),
+                        self.options.tolerance)
+
+                if problem.status == pywraplp.Solver.INFEASIBLE:
+                    self.logger.add_error(
+                        'Unfeasible solution',
+                        'NTC OPF',
+                        str(err),
+                        self.options.tolerance)
+
+                if problem.status == pywraplp.Solver.UNBOUNDED:
+                    self.logger.add_error(
+                        'Proved unbounded',
+                        'NTC OPF',
+                        str(err),
+                        self.options.tolerance)
+
+                if problem.status == pywraplp.Solver.ABNORMAL:
+                    self.logger.add_error(
+                        'Abnormal solution, some error happens',
+                        'NTC OPF',
+                        str(err),
+                        self.options.tolerance)
 
             # pack the results
             self.results = OptimalNetTransferCapacityResults(
@@ -747,22 +764,18 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 battery_power=np.zeros((numerical_circuit.nbatt, 1)),
                 controlled_generation_power=problem.get_generator_power(),
                 Sf=problem.get_branch_power_from(),
-                overloads=problem.get_overloads(),
                 loading=problem.get_loading(),
-                converged=bool(converged),
+                solved=bool(solved),
                 bus_types=numerical_circuit.bus_types,
                 hvdc_flow=problem.get_hvdc_flow(),
                 hvdc_loading=problem.get_hvdc_loading(),
-                hvdc_slacks=problem.get_hvdc_slacks(),
                 phase_shift=problem.get_phase_angles(),
                 generation_delta=problem.get_generator_delta(),
-                generation_delta_slacks=problem.get_generator_delta_slacks(),
                 inter_area_branches=problem.inter_area_branches,
                 inter_area_hvdc=problem.inter_area_hvdc,
                 alpha=alpha,
                 contingency_flows_list=problem.get_contingency_flows_list(),
                 contingency_indices_list=problem.contingency_indices_list,
-                contingency_flows_slacks_list=problem.get_contingency_flows_slacks_list(),
                 rates=numerical_circuit.branch_data.branch_rates[:, 0],
                 contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0])
 

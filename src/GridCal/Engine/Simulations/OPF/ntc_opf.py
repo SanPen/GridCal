@@ -24,7 +24,7 @@ from typing import List, Dict, Tuple
 import numpy as np
 from GridCal.Engine.Core.snapshot_opf_data import SnapshotOpfData
 from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
-from GridCal.Engine.Devices.enumerations import TransformerControlType, ConverterControlType, HvdcControlType, \
+from GridCal.Engine.Devices.enumerations import TransformerControlType, HvdcControlType, \
     GenerationNtcFormulation
 from GridCal.Engine.basic_structures import Logger
 
@@ -306,8 +306,6 @@ def formulate_optimal_generation(solver: pywraplp.Solver, generator_active, disp
     gen_cost = generator_cost * Sbase  # pass from $/MWh to $/p.u.h
     generation = np.zeros(ngen, dtype=object)
     delta = np.zeros(ngen, dtype=object)
-    delta_slack_1 = np.zeros(ngen, dtype=object)
-    delta_slack_2 = np.zeros(ngen, dtype=object)
 
     dgen1 = list()
     dgen2 = list()
@@ -333,18 +331,12 @@ def formulate_optimal_generation(solver: pywraplp.Solver, generator_active, disp
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             delta[gen_idx] = generation[gen_idx] - Pgen[gen_idx]
 
-            # delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
-            # delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
-            # delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
-
-            # solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx] - delta_slack_2[gen_idx],
+            # solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx]
             #            'Delta_up_gen{}'.format(gen_idx))
 
             dgen1.append(delta[gen_idx])
 
         else:
-            # name = 'Gen_down_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
-            # generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             generation[gen_idx] = Pgen[gen_idx]
             delta[gen_idx] = 0
 
@@ -364,18 +356,12 @@ def formulate_optimal_generation(solver: pywraplp.Solver, generator_active, disp
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             delta[gen_idx] = Pgen[gen_idx] - generation[gen_idx]
 
-            # delta[gen_idx] = solver.NumVar(0, inf, name + '_delta')
-            # delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
-            # delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
-
-            # solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx] + delta_slack_1[gen_idx],
+            # solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx]
             #            'Delta_down_gen{}'.format(gen_idx))
 
             dgen2.append(delta[gen_idx])
 
         else:
-            # name = 'Gen_down_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
-            # generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             generation[gen_idx] = Pgen[gen_idx]
             delta[gen_idx] = 0
 
@@ -385,10 +371,6 @@ def formulate_optimal_generation(solver: pywraplp.Solver, generator_active, disp
 
     # fix the generation at the rest of generators
     for bus_idx, gen_idx in gens_out:
-        # if generator_active[gen_idx]:
-        #     generation[gen_idx] = Pgen[gen_idx]
-        #     name = 'Gen_down_{0}@bus{1}_{2}'.format(gen_idx, bus_idx, generator_names[gen_idx])
-        #     generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
 
         if dispatch_all_areas:
 
@@ -415,7 +397,7 @@ def formulate_optimal_generation(solver: pywraplp.Solver, generator_active, disp
 
     power_shift = solver.Sum(generation1)
 
-    return generation, delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, gen_cost, delta_slack_1, delta_slack_2
+    return generation, delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, gen_cost
 
 
 def check_optimal_generation(generator_active, generator_names, dispatchable, Cgen, Pgen, a1, a2, generation, delta,
@@ -504,8 +486,6 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
     gen_cost = np.ones(ngen)
     generation = np.zeros(ngen, dtype=object)
     delta = np.zeros(ngen, dtype=object)
-    delta_slack_1 = np.zeros(ngen, dtype=object)
-    delta_slack_2 = np.zeros(ngen, dtype=object)
 
     dgen1 = list()
     dgen2 = list()
@@ -542,9 +522,6 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
 
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             delta[gen_idx] = solver.NumVar(-inf, inf, name + '_delta')
-
-            # delta_slack_1[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_up_' + name)
-            # delta_slack_2[gen_idx] = solver.NumVar(0, inf, 'Delta_slack_down_' + name)
 
             prop = round(abs(Pgen[gen_idx] / sum_gen_1), 6)
 
@@ -598,7 +575,7 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
         if generator_active[gen_idx]:
             generation[gen_idx] = Pgen[gen_idx]
 
-    return generation, delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, gen_cost, delta_slack_1, delta_slack_2
+    return generation, delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, gen_cost
 
 
 def check_proportional_generation(generator_active, generator_dispatchable, generator_cost, generator_names,
@@ -862,8 +839,6 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
     """
 
     flow_f = np.zeros(nbr, dtype=object)
-    overload1 = np.zeros(nbr, dtype=object)
-    overload2 = np.zeros(nbr, dtype=object)
     tau = np.zeros(nbr, dtype=object)
     monitor = np.zeros(nbr, dtype=bool)
     rates = Rates / Sbase
@@ -886,14 +861,6 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
 
                 # declare the flow variable with rate limits
                 flow_f[m] = solver.NumVar(-rates[m], rates[m], 'pftk_{0}_{1}'.format(m, branch_names[m]))
-
-                # rating restriction in the sense from-to: eq.17
-                # overload1[m] = solver.NumVar(0, inf, 'overload1_{0}_{1}'.format(m, branch_names[m]))
-                # solver.Add(flow_f[m] <= (rates[m] + overload1[m]), "ft_rating_{0}_{1}".format(m, branch_names[m]))
-                #
-                # rating restriction in the sense to-from: eq.18
-                # overload2[m] = solver.NumVar(0, inf, 'overload2_{0}_{1}'.format(m, branch_names[m]))
-                # solver.Add((-rates[m] - overload2[m]) <= flow_f[m], "tf_rating_{0}_{1}".format(m, branch_names[m]))
 
             else:
                 # declare the flow variable with ample limits
@@ -928,7 +895,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
                     'branch_power_flow_{0}_{1}'.format(m, branch_names[m])
                 )
 
-    return flow_f, overload1, overload2, tau, monitor
+    return flow_f, tau, monitor
 
 
 def check_branches_flow(nbr, Rates, Sbase, branch_active, branch_names, branch_dc, control_mode, R, X, F, T,
@@ -971,15 +938,6 @@ def check_branches_flow(nbr, Rates, Sbase, branch_active, branch_names, branch_d
                 monitor[m] = monitor_loading[m] and alpha_abs[m] > branch_sensitivity_threshold
             else:
                 monitor[m] = monitor_loading[m]
-
-            # # determine the monitoring logic
-            # if monitor_only_sensitive_branches:
-            #     if monitor_loading[m] and alpha_abs[m] > branch_sensitivity_threshold:
-            #         monitor[m] = True
-            #     else:
-            #         monitor[m] = False
-            # else:
-            #     monitor[m] = monitor_loading[m]
 
             if monitor[m]:
 
@@ -1064,8 +1022,6 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, bran
     # formulate contingency flows
     # this is done in a separated loop because all te flow variables must exist beforehand
     flow_n1f = list()
-    overloads1 = list()
-    overloads2 = list()
     con_idx = list()
     for m in mon_br_idx:  # for every monitored branch
         _f = F[m]
@@ -1090,28 +1046,16 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, bran
 
                 suffix = "{0}_{1} @ {2}_{3}".format(m, branch_names[m], c, branch_names[c])
 
-                # compute the N-1 flow
-                # flow_n1 = flow_f[m] + LODF[m, c] * flow_f[c]
-                # flow_n1 = flow_f[m] + lodf * flow_f[c]
+
 
                 flow_n1 = solver.NumVar(-rates[m], rates[m], 'n-1_flow__' + suffix)
                 solver.Add(flow_n1 == flow_f[m] + lodf * flow_f[c], "n-1_flow_assigment_" + suffix)
 
-                # rating restriction in the sense from-to
-                # overload1 = solver.NumVar(0, inf, 'n-1_overload1__' + suffix)
-                # solver.Add(flow_n1 <= (rates[m] + overload1), "n-1_overload_ft_rating_" + suffix)
-
-                # rating restriction in the sense to-from
-                # overload2 = solver.NumVar(0, inf, 'n-1_overload2_' + suffix)
-                # solver.Add((-rates[m] - overload2) <= flow_n1, "n-1_overload_tf_rating_" + suffix)
-
                 # store vars
                 con_idx.append((m, c))
                 flow_n1f.append(flow_n1)
-                # overloads1.append(overload1)
-                # overloads2.append(overload2)
 
-    return flow_n1f, overloads1, overloads2, con_idx
+    return flow_n1f, con_idx
 
 
 def check_contingency(ContingencyRates, Sbase, branch_names, contingency_enabled_indices, LODF, F, T,
@@ -1194,10 +1138,6 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, act
     rates = rate / Sbase
 
     flow_f = np.zeros(nhvdc, dtype=object)
-    overload1 = np.zeros(nhvdc, dtype=object)
-    overload2 = np.zeros(nhvdc, dtype=object)
-    hvdc_control1 = np.zeros(nhvdc, dtype=object)
-    hvdc_control2 = np.zeros(nhvdc, dtype=object)
 
     for i in range(nhvdc):
 
@@ -1208,8 +1148,6 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, act
 
             suffix = "{0}_{1}".format(i, names[i])
 
-            # hvdc_control1[i] = solver.NumVar(0, inf, 'hvdc_control1_' + suffix)
-            # hvdc_control2[i] = solver.NumVar(0, inf, 'hvdc_control2_' + suffix)
             P0 = Pt[i] / Sbase
 
             if control_mode[i] == HvdcControlType.type_0_free:
@@ -1221,39 +1159,27 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, act
 
                 # formulate the hvdc flow as an AC line equivalent
                 # to pass from MW/deg to p.u./rad -> * 180 / pi / (sbase=100)
-                angle_droop2 = angle_droop[i] * 57.295779513 / Sbase
+                angle_droop_rad = angle_droop[i] * 57.295779513 / Sbase
 
                 solver.Add(
-                    flow_f[i] == P0 + angle_droop2 * (angles[_f] - angles[_t]) + hvdc_control1[i] - hvdc_control2[i],
+                    flow_f[i] == P0 + angle_droop_rad * (angles[_f] - angles[_t]),
                     'hvdc_power_flow_' + suffix
                 )
 
-                # add the injections matching the flow
-                Pinj[_f] -= flow_f[i]
-                Pinj[_t] += flow_f[i]
-
-                # rating restriction in the sense from-to: eq.17
-                # overload1[i] = solver.NumVar(0, inf, 'overload_hvdc1_' + suffix)
-                # solver.Add(flow_f[i] <= (rates[i] + overload1[i]), "hvdc_ft_rating_" + suffix)
-
-                # rating restriction in the sense to-from: eq.18
-                # overload2[i] = solver.NumVar(0, inf, 'overload_hvdc2_' + suffix)
-                # solver.Add((-rates[i] - overload2[i]) <= flow_f[i], "hvdc_tf_rating_" + suffix)
-
             elif control_mode[i] == HvdcControlType.type_1_Pset and not dispatchable[i]:
                 # simple injections model: The power is set by the user
-                flow_f[i] = P0 + hvdc_control1[i] - hvdc_control2[i]
-                Pinj[_f] -= flow_f[i]
-                Pinj[_t] += flow_f[i]
+                flow_f[i] = P0
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and dispatchable[i]:
                 # simple injections model, the power is a variable and it is optimized
                 P0 = solver.NumVar(-rates[i], rates[i], 'hvdc_pf_' + suffix)
-                flow_f[i] = P0 + hvdc_control1[i] - hvdc_control2[i]
-                Pinj[_f] -= flow_f[i]
-                Pinj[_t] += flow_f[i]
+                flow_f[i] = P0
 
-    return flow_f, overload1, overload2, hvdc_control1, hvdc_control2
+            # add the injections matching the flow
+            Pinj[_f] -= flow_f[i]
+            Pinj[_t] += flow_f[i]
+
+    return flow_f
 
 
 def check_hvdc_flow(nhvdc, names, rate, angles, active, Pt, angle_droop, control_mode, dispatchable,
@@ -1293,13 +1219,13 @@ def check_hvdc_flow(nhvdc, names, rate, angles, active, Pt, angle_droop, control
             if control_mode[i] == HvdcControlType.type_0_free:
 
                 # formulate the hvdc flow as an AC line equivalent
-                bk = angle_droop2 = angle_droop[i] * 57.295779513 / Sbase
-                res = flow_f[i] == P0 + bk * (angles[_f] - angles[_t])
+                angle_droop_rad = angle_droop[i] * 57.295779513 / Sbase
+                res = flow_f[i] == P0 + angle_droop_rad * (angles[_f] - angles[_t])
 
                 if not res:
                     logger.add_divergence(
                         'HVDC free flow violation (flow_f[i] == P0 + bk * (angles[f] - angles[t]))',
-                        names[i], flow_f[i], P0 + bk * (angles[_f] - angles[_t])
+                        names[i], flow_f[i], P0 + angle_droop_rad * (angles[_f] - angles[_t])
                     )
 
                 # rating restriction in the sense from-to: eq.17
@@ -1336,40 +1262,25 @@ def check_hvdc_flow(nhvdc, names, rate, angles, active, Pt, angle_droop, control
 
 
 def formulate_objective(solver: pywraplp.Solver,
-                        inter_area_branches, flows_f, overload1, overload2, n1overload1, n1overload2,
-                        inter_area_hvdc, hvdc_flow_f, hvdc_overload1, hvdc_overload2, hvdc_control1, hvdc_control2,
+                        inter_area_branches, flows_f,
+                        inter_area_hvdc, hvdc_flow_f,
                         power_shift, dgen1, gen_cost, generation_delta,
-                        delta_slack_1, delta_slack_2,
                         weight_power_shift, maximize_exchange_flows, weight_generation_cost,
-                        weight_generation_delta, weight_overloads, weight_hvdc_control,
                         load_shedding, load_cost):
     """
 
     :param solver: Solver instance to which add the equations
     :param inter_area_branches: Array of indices of the inter-area branch indices (excluding HVDC)
     :param flows_f: Array of branch flows (LP variables)
-    :param overload1: Array of branch overloads in the positive sense (LP variables)
-    :param overload2: Array of branch overloads in the negative sense (LP variables)
-    :param n1overload1: List of branch contingency overloads in the positive sense (LP variables)
-    :param n1overload2: List of branch contingency overloads in the negative sense (LP variables)
     :param inter_area_hvdc: Array of inter-area HVDC line indices
     :param hvdc_flow_f: Array of HVDC flows
-    :param hvdc_overload1: Array of overload LP variables in the positive sense
-    :param hvdc_overload2: Array of overload LP variables in the negative sense
-    :param hvdc_control1: Array of HVDC slack LP variables in the positive sense
-    :param hvdc_control2: Array of HVDC slack LP variables in the negative sense
     :param power_shift: Array of branch phase shift angles (mix of values and LP variables)
     :param dgen1: List of generation delta LP variables in the area 1
     :param gen_cost: Array of generation costs
     :param generation_delta:  Array of generation delta LP variables
-    :param delta_slack_1: Array of generation delta LP Slack variables up
-    :param delta_slack_2: Array of generation delta LP Slack variables down
     :param weight_power_shift: Power shift maximization weight
     :param maximize_exchange_flows: Exchange flows weight
     :param weight_generation_cost: Generation cost minimization weight
-    :param weight_generation_delta: Generation delta slacks minimization
-    :param weight_overloads: Branch overload minimization weight
-    :param weight_hvdc_control: HVDC control mismatch minimization weight
     :param load_shedding: Array of load shedding LP variables
     :param load_cost: Array of cost of the load shedding per load
     :return:
@@ -1391,19 +1302,7 @@ def formulate_objective(solver: pywraplp.Solver,
     # include the cost of generation
     gen_cost_f = solver.Sum(gen_cost * generation_delta)
 
-    branch_overload = solver.Sum(overload1) + solver.Sum(overload2)
-
-    contingency_branch_overload = solver.Sum(n1overload1) + solver.Sum(n1overload2)
-
-    hvdc_overload = solver.Sum(hvdc_overload1) + solver.Sum(hvdc_overload2)
-
-    hvdc_control = solver.Sum(hvdc_control1) + solver.Sum(hvdc_control2)
-
-    delta_slacks = solver.Sum(delta_slack_1) + solver.Sum(delta_slack_2)
-
     load_shedding_sum = solver.Sum(load_shedding * load_cost)
-
-    all_slacks_sum = branch_overload + hvdc_overload + hvdc_control + delta_slacks + contingency_branch_overload
 
     # formulate objective function
     f = -weight_power_shift * power_shift
@@ -1415,19 +1314,10 @@ def formulate_objective(solver: pywraplp.Solver,
     # f += weight_generation_delta * delta_slacks
     # f += weight_overloads * branch_overload
     # f += weight_overloads * contingency_branch_overload
-    # f += weight_overloads * hvdc_overload
-    # f += weight_hvdc_control * hvdc_control
     # f += weight_generation_delta * load_shedding_sum
 
     solver.Minimize(f)
 
-    slacks = [overload1, overload2,
-              n1overload1, n1overload2,
-              hvdc_overload1, hvdc_overload2,
-              hvdc_control1, hvdc_control2,
-              delta_slack_1, delta_slack_2]
-
-    return all_slacks_sum, slacks
 
 
 class OpfNTC(Opf):
@@ -1448,10 +1338,7 @@ class OpfNTC(Opf):
                  tolerance=1e-2,
                  weight_power_shift=1e5,
                  weight_generation_cost=1e5,
-                 weight_generation_delta=1e5,
-                 weight_kirchoff=1e5,
                  weight_overloads=1e5,
-                 weight_hvdc_control=1e0,
                  logger: Logger = None):
         """
         DC time series linear optimal power flow
@@ -1470,10 +1357,7 @@ class OpfNTC(Opf):
         :param tolerance: Solution tolerance
         :param weight_power_shift: Power shift maximization weight
         :param weight_generation_cost: Generation cost minimization weight
-        :param weight_generation_delta: Generation delta slacks minimization
-        :param weight_kirchoff: (unused)
         :param weight_overloads: Branch overload minimization weight
-        :param weight_hvdc_control: HVDC control mismatch minimization weight
         :param logger: logger instance
         :param with_check: check when problem has no solution
         """
@@ -1504,10 +1388,7 @@ class OpfNTC(Opf):
 
         self.weight_power_shift = weight_power_shift
         self.weight_generation_cost = weight_generation_cost
-        self.weight_generation_delta = weight_generation_delta
-        self.weight_kirchoff = weight_kirchoff
         self.weight_overloads = weight_overloads
-        self.weight_hvdc_control = weight_hvdc_control
 
         self.inf = 99999999999999
 
@@ -1521,7 +1402,6 @@ class OpfNTC(Opf):
         self.generation_delta_slacks = None
         self.Pinj = None
         self.hvdc_flow = None
-        self.hvdc_slacks = None
         self.phase_shift = None
         self.inter_area_branches = None
         self.inter_area_hvdc = None
@@ -1602,8 +1482,8 @@ class OpfNTC(Opf):
         # formulate the generation
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
 
-            generation, generation_delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, gen_cost, delta_slack_1, \
-            delta_slack_2 = formulate_optimal_generation(
+            generation, generation_delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, \
+            gen_cost = formulate_optimal_generation(
                 solver=self.solver,
                 generator_active=self.numerical_circuit.generator_data.generator_active[:, t],
                 dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
@@ -1625,8 +1505,8 @@ class OpfNTC(Opf):
 
         elif self.generation_formulation == GenerationNtcFormulation.Proportional:
 
-            generation, generation_delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, gen_cost, delta_slack_1, \
-            delta_slack_2 = formulate_proportional_generation(
+            generation, generation_delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, \
+            gen_cost = formulate_proportional_generation(
                 solver=self.solver,
                 generator_active=self.numerical_circuit.generator_data.generator_active[:, t],
                 generator_dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
@@ -1669,7 +1549,7 @@ class OpfNTC(Opf):
             Sbase=self.numerical_circuit.Sbase)
 
         # formulate the flows
-        flow_f, overload1, overload2, tau, monitor = formulate_branches_flow(
+        flow_f, tau, monitor = formulate_branches_flow(
             solver=self.solver,
             nbr=self.numerical_circuit.nbr,
             Rates=self.numerical_circuit.Rates,
@@ -1695,7 +1575,7 @@ class OpfNTC(Opf):
 
         # formulate the contingencies
         if self.consider_contingencies:
-            n1flow_f, n1overload1, n1overload2, con_br_idx = formulate_contingency(
+            n1flow_f, con_br_idx = formulate_contingency(
                 solver=self.solver,
                 ContingencyRates=self.numerical_circuit.ContingencyRates,
                 Sbase=self.numerical_circuit.Sbase,
@@ -1711,13 +1591,11 @@ class OpfNTC(Opf):
                 replacement_value=0,
                 logger=self.logger)
         else:
-            n1overload1 = list()
-            n1overload2 = list()
             con_br_idx = list()
             n1flow_f = list()
 
         # formulate the HVDC flows
-        hvdc_flow_f, hvdc_overload1, hvdc_overload2, hvdc_control1, hvdc_control2 = formulate_hvdc_flow(
+        hvdc_flow_f = formulate_hvdc_flow(
             solver=self.solver,
             nhvdc=self.numerical_circuit.nhvdc,
             names=self.numerical_circuit.hvdc_names,
@@ -1745,32 +1623,19 @@ class OpfNTC(Opf):
             bus_names=self.numerical_circuit.bus_data.bus_names)
 
         # formulate the objective
-        self.all_slacks_sum, self.all_slacks = formulate_objective(
+        formulate_objective(
             solver=self.solver,
             inter_area_branches=inter_area_branches,
             flows_f=flow_f,
-            overload1=overload1,
-            overload2=overload2,
-            n1overload1=n1overload1,
-            n1overload2=n1overload2,
             inter_area_hvdc=inter_area_hvdc,
             hvdc_flow_f=hvdc_flow_f,
-            hvdc_overload1=hvdc_overload1,
-            hvdc_overload2=hvdc_overload2,
-            hvdc_control1=hvdc_control1,
-            hvdc_control2=hvdc_control2,
             power_shift=power_shift,
             dgen1=dgen1,
             gen_cost=gen_cost[gen_a1_idx],
             generation_delta=generation_delta[gen_a1_idx],
-            delta_slack_1=delta_slack_1,
-            delta_slack_2=delta_slack_2,
             weight_power_shift=self.weight_power_shift,
             maximize_exchange_flows=self.maximize_exchange_flows,
             weight_generation_cost=self.weight_generation_cost,
-            weight_generation_delta=self.weight_generation_delta,
-            weight_overloads=self.weight_overloads,
-            weight_hvdc_control=self.weight_hvdc_control,
             load_shedding=load_shedding,
             load_cost=load_cost)
 
@@ -1780,7 +1645,6 @@ class OpfNTC(Opf):
         self.Pg = generation
         self.Pg_delta = generation_delta
         self.area_balance_slack = power_shift
-        self.generation_delta_slacks = delta_slack_1 - delta_slack_2
 
         self.load_shedding = load_shedding
 
@@ -1790,16 +1654,14 @@ class OpfNTC(Opf):
         # self.Pb = Pb
         self.Pl = Pl_fix
         self.Pinj = Pinj
-        # self.load_shedding = load_slack
+
         self.s_from = flow_f
         self.s_to = - flow_f
         self.n1flow_f = n1flow_f
         self.contingency_br_idx = con_br_idx
 
         self.hvdc_flow = hvdc_flow_f
-        self.hvdc_slacks = hvdc_overload1 - hvdc_overload2
 
-        self.overloads = overload1 - overload2
         self.rating = branch_ratings
         self.phase_shift = tau
         self.nodal_restrictions = node_balance
@@ -1807,14 +1669,13 @@ class OpfNTC(Opf):
         self.inter_area_branches = inter_area_branches
         self.inter_area_hvdc = inter_area_hvdc
 
-        # n1flow_f, n1overload1, n1overload2, con_br_idx
+        # n1flow_f, con_br_idx
         self.contingency_flows_list = n1flow_f
         self.contingency_indices_list = con_br_idx  # [(t, m, c), ...]
-        self.contingency_flows_slacks_list = n1overload1
 
         return self.solver
 
-    def formulate_ts(self, add_slacks=True, t=0):
+    def formulate_ts(self, t=0):
         """
         Formulate the Net Transfer Capacity problem
         :param t: time index
@@ -1904,8 +1765,8 @@ class OpfNTC(Opf):
 
         elif self.generation_formulation == GenerationNtcFormulation.Proportional:
 
-            generation, generation_delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, gen_cost, delta_slack_1, \
-            delta_slack_2 = formulate_proportional_generation(
+            generation, generation_delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, \
+            gen_cost = formulate_proportional_generation(
                 solver=self.solver,
                 generator_active=self.numerical_circuit.generator_data.generator_active[:, t],
                 generator_dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
@@ -1948,7 +1809,7 @@ class OpfNTC(Opf):
             Sbase=self.numerical_circuit.Sbase)
 
         # formulate the flows
-        flow_f, overload1, overload2, tau, monitor = formulate_branches_flow(
+        flow_f, tau, monitor = formulate_branches_flow(
             solver=self.solver,
             nbr=self.numerical_circuit.nbr,
             Rates=self.numerical_circuit.Rates[:, t],
@@ -1974,7 +1835,7 @@ class OpfNTC(Opf):
 
         # formulate the contingencies
         if self.consider_contingencies:
-            n1flow_f, n1overload1, n1overload2, con_br_idx = formulate_contingency(
+            n1flow_f, con_br_idx = formulate_contingency(
                 solver=self.solver,
                 ContingencyRates=self.numerical_circuit.ContingencyRates[:, t],
                 Sbase=self.numerical_circuit.Sbase,
@@ -1990,13 +1851,11 @@ class OpfNTC(Opf):
                 replacement_value=0,
                 logger=self.logger)
         else:
-            n1overload1 = list()
-            n1overload2 = list()
             con_br_idx = list()
             n1flow_f = list()
 
         # formulate the HVDC flows
-        hvdc_flow_f, hvdc_overload1, hvdc_overload2, hvdc_control1, hvdc_control2 = formulate_hvdc_flow(
+        hvdc_flow_f = formulate_hvdc_flow(
             solver=self.solver,
             nhvdc=self.numerical_circuit.nhvdc,
             names=self.numerical_circuit.hvdc_names,
@@ -2024,32 +1883,19 @@ class OpfNTC(Opf):
             bus_names=self.numerical_circuit.bus_data.bus_names)
 
         # formulate the objective
-        self.all_slacks_sum, self.all_slacks = formulate_objective(
+        formulate_objective(
             solver=self.solver,
             inter_area_branches=inter_area_branches,
             flows_f=flow_f,
-            overload1=overload1,
-            overload2=overload2,
-            n1overload1=n1overload1,
-            n1overload2=n1overload2,
             inter_area_hvdc=inter_area_hvdc,
             hvdc_flow_f=hvdc_flow_f,
-            hvdc_overload1=hvdc_overload1,
-            hvdc_overload2=hvdc_overload2,
-            hvdc_control1=hvdc_control1,
-            hvdc_control2=hvdc_control2,
             power_shift=power_shift,
             dgen1=dgen1,
             gen_cost=gen_cost[gen_a1_idx],
             generation_delta=generation_delta[gen_a1_idx],
-            delta_slack_1=delta_slack_1,
-            delta_slack_2=delta_slack_2,
             weight_power_shift=self.weight_power_shift,
             maximize_exchange_flows=self.maximize_exchange_flows,
             weight_generation_cost=self.weight_generation_cost,
-            weight_generation_delta=self.weight_generation_delta,
-            weight_overloads=self.weight_overloads,
-            weight_hvdc_control=self.weight_hvdc_control,
             load_shedding=load_shedding,
             load_cost=load_cost)
 
@@ -2059,7 +1905,6 @@ class OpfNTC(Opf):
         self.Pg = generation
         self.Pg_delta = generation_delta
         self.area_balance_slack = power_shift
-        self.generation_delta_slacks = delta_slack_1 - delta_slack_2
 
         self.load_shedding = load_shedding
 
@@ -2069,16 +1914,14 @@ class OpfNTC(Opf):
         # self.Pb = Pb
         self.Pl = Pl_fix
         self.Pinj = Pinj
-        # self.load_shedding = load_slack
+
         self.s_from = flow_f
         self.s_to = - flow_f
         self.n1flow_f = n1flow_f
         self.contingency_br_idx = con_br_idx
 
         self.hvdc_flow = hvdc_flow_f
-        self.hvdc_slacks = hvdc_overload1 - hvdc_overload2
 
-        self.overloads = overload1 - overload2
         self.rating = branch_ratings
         self.phase_shift = tau
         self.nodal_restrictions = node_balance
@@ -2089,7 +1932,6 @@ class OpfNTC(Opf):
         # n1flow_f, n1overload1, n1overload2, con_br_idx
         self.contingency_flows_list = n1flow_f
         self.contingency_indices_list = con_br_idx  # [(t, m, c), ...]
-        self.contingency_flows_slacks_list = n1overload1
 
         return self.solver
 
@@ -2453,15 +2295,15 @@ class OpfNTC(Opf):
 
         self.status = self.solver.Solve()
 
-        converged = self.converged()
+        solved = self.solved()
 
         self.save_lp('ntc_opf.lp')
 
         # check the solution
-        if not converged and with_check:
+        if not solved and with_check:
             self.check_ts()
 
-        return converged
+        return solved
 
     def error(self):
         """
@@ -2469,12 +2311,15 @@ class OpfNTC(Opf):
         :return: total error
         """
         if self.status == pywraplp.Solver.OPTIMAL:
-            return self.all_slacks_sum.solution_value()
+            return 0
+            # return self.all_slacks_sum.solution_value()
         else:
             return 99999
 
-    def converged(self):
-        return abs(self.error()) < self.tolerance
+
+    def solved(self):
+        return self.status == pywraplp.Solver.OPTIMAL
+        # return abs(self.error()) < self.tolerance
 
     @staticmethod
     def extract(arr, make_abs=False):  # override this method to call ORTools instead of PuLP
@@ -2494,6 +2339,7 @@ class OpfNTC(Opf):
                 val[i] = arr[i]
             else:
                 val[i] = arr[i].solution_value()
+
         if make_abs:
             val = np.abs(val)
 
@@ -2592,13 +2438,6 @@ class OpfNTC(Opf):
         return self.extract(
             self.hvdc_flow, make_abs=False
         ) * self.numerical_circuit.Sbase / self.numerical_circuit.hvdc_data.rate[:, 0]
-
-    def get_hvdc_slacks(self):
-        """
-        return the branch loading (time, device)
-        :return: 2D array
-        """
-        return self.extract(self.hvdc_slacks, make_abs=False) * self.numerical_circuit.Sbase
 
 
 if __name__ == '__main__':
