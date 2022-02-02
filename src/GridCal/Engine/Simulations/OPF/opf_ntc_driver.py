@@ -668,22 +668,18 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 battery_power=np.zeros((numerical_circuit.nbatt, 1)),
                 controlled_generation_power=numerical_circuit.generator_data.generator_p,
                 Sf=pf_drv.results.Sf.real,
-                overloads=np.zeros(numerical_circuit.nbr),
                 loading=pf_drv.results.loading.real,
-                converged=False,
+                solved=False,
                 bus_types=numerical_circuit.bus_types,
                 hvdc_flow=pf_drv.results.hvdc_Pt,
                 hvdc_loading=pf_drv.results.hvdc_loading,
-                hvdc_slacks=np.zeros(numerical_circuit.nhvdc),
                 phase_shift=pf_drv.results.theta,
                 generation_delta=np.zeros(numerical_circuit.ngen),
-                generation_delta_slacks=np.zeros(numerical_circuit.ngen),
                 inter_area_branches=inter_area_branches,
                 inter_area_hvdc=inter_area_hvdc,
                 alpha=alpha,
                 contingency_flows_list=get_contingency_flows_list,
                 contingency_indices_list=contingency_indices_list,
-                contingency_flows_slacks_list=contingency_flows_slacks_list,
                 rates=numerical_circuit.branch_data.branch_rates[:, 0],
                 contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0])
         else:
@@ -717,13 +713,11 @@ class OptimalNetTransferCapacity(DriverTemplate):
                                    time_limit_ms=self.options.time_limit_ms)
             err = problem.error()
 
-            self.logger += problem.logger
-
             if not solved:
 
                 if problem.status == pywraplp.Solver.FEASIBLE:
                     self.logger.add_error(
-                        'Feasible solution, not optimal or timeout',
+                        'Feasible solution, not optimal',
                         'NTC OPF',
                         str(err),
                         self.options.tolerance)
@@ -748,6 +742,15 @@ class OptimalNetTransferCapacity(DriverTemplate):
                         'NTC OPF',
                         str(err),
                         self.options.tolerance)
+
+                if problem.status == pywraplp.Solver.NOT_SOLVED:
+                    self.logger.add_error(
+                        'Not solved, maybe timeout occurs',
+                        'NTC OPF',
+                        str(err),
+                        self.options.tolerance)
+
+            self.logger += problem.logger
 
             # pack the results
             self.results = OptimalNetTransferCapacityResults(

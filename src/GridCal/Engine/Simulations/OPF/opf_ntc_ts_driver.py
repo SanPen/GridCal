@@ -117,7 +117,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 ntc = 0
                 print('Hora', t, ': Sin resultados')
 
-                data = np.empty(shape=(1, len(columns)))
+                data = np.zeros(shape=(1, len(columns)))
 
             # add columns time, ntc
             data = np.append(np.ones((data.shape[0], 1)) * [t, ntc], data, axis=1)
@@ -455,7 +455,7 @@ if __name__ == '__main__':
         branch_sensitivity_threshold=0.05,
         skip_generation_limits=True,
         consider_contingencies=True,
-        maximize_exchange_flows=False,
+        maximize_exchange_flows=True,
         dispatch_all_areas=False,
         tolerance=1e-2,
         sensitivity_dT=100.0,
@@ -464,10 +464,7 @@ if __name__ == '__main__':
         perform_previous_checks=False,
         weight_power_shift=1e0,
         weight_generation_cost=1e-2,
-        weight_generation_delta=1e0,
-        weight_kirchoff=1e5,
         weight_overloads=1e5,
-        weight_hvdc_control=1e0,
         with_check=False,
         time_limit_ms=1e4,
         max_report_elements=5)
@@ -476,13 +473,13 @@ if __name__ == '__main__':
 
     # set optimal net transfer capacity driver instance
     start = 0
-    end = circuit.get_time_number() - 1
+    end = 10 #circuit.get_time_number() - 1
     driver = OptimalNetTransferCapacityTimeSeriesDriver(
         grid=circuit,
         options=options,
         start_=start,
         end_=end,
-        use_clustering=True,
+        use_clustering=False,
         cluster_number=10)
 
     driver.run()

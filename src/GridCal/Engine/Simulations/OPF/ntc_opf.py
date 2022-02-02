@@ -1299,10 +1299,10 @@ def formulate_objective(solver: pywraplp.Solver,
 
     flow_from_a1_to_a2 = solver.Sum(flows_ft) + solver.Sum(flows_hvdc_ft)
 
+    # flow_from_a1_to_a2 = solver.Sum(flows_hvdc_ft)
+
     # include the cost of generation
     gen_cost_f = solver.Sum(gen_cost * generation_delta)
-
-    load_shedding_sum = solver.Sum(load_shedding * load_cost)
 
     # formulate objective function
     f = -weight_power_shift * power_shift
@@ -1311,10 +1311,7 @@ def formulate_objective(solver: pywraplp.Solver,
         f -= weight_power_shift * flow_from_a1_to_a2
 
     f += weight_generation_cost * gen_cost_f
-    # f += weight_generation_delta * delta_slacks
     # f += weight_overloads * branch_overload
-    # f += weight_overloads * contingency_branch_overload
-    # f += weight_generation_delta * load_shedding_sum
 
     solver.Minimize(f)
 
@@ -1727,17 +1724,19 @@ class OpfNTC(Opf):
         # --------------------------------------------------------------------------------------------------------------
 
         # get the inter-area branches and their sign
-        inter_area_branches = get_inter_areas_branches(nbr=m,
-                                                       F=self.numerical_circuit.branch_data.F,
-                                                       T=self.numerical_circuit.branch_data.T,
-                                                       buses_areas_1=self.area_from_bus_idx,
-                                                       buses_areas_2=self.area_to_bus_idx)
+        inter_area_branches = get_inter_areas_branches(
+            nbr=m,
+            F=self.numerical_circuit.branch_data.F,
+            T=self.numerical_circuit.branch_data.T,
+            buses_areas_1=self.area_from_bus_idx,
+            buses_areas_2=self.area_to_bus_idx)
 
-        inter_area_hvdc = get_inter_areas_branches(nbr=self.numerical_circuit.nhvdc,
-                                                   F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
-                                                   T=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
-                                                   buses_areas_1=self.area_from_bus_idx,
-                                                   buses_areas_2=self.area_to_bus_idx)
+        inter_area_hvdc = get_inter_areas_branches(
+            nbr=self.numerical_circuit.nhvdc,
+            F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
+            T=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
+            buses_areas_1=self.area_from_bus_idx,
+            buses_areas_2=self.area_to_bus_idx)
 
         # formulate the generation
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
@@ -2276,15 +2275,15 @@ class OpfNTC(Opf):
 
         self.status = self.solver.Solve()
 
-        converged = self.converged()
+        solved = self.solved()
 
         self.save_lp('ntc_opf.lp')
 
         # check the solution
-        if not converged and with_check:
+        if not solved and with_check:
             self.check()
 
-        return converged
+        return solved
 
     def solve_ts(self, with_check=True, time_limit_ms=0):
         """
