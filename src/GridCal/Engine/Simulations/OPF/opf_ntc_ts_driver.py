@@ -102,11 +102,11 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
 
-        all_columns = ['Time index', 'NTC (MW)'] + columns
+        all_columns = ['Time index', 'Time', 'NTC (MW)'] + columns
         data_all = np.empty(shape=(0, len(all_columns)))
 
         print('\n')
-        for t in self.time_indices:
+        for idx, t in enumerate(self.time_indices):
             if t in self.results_dict.keys():
                 ntc = np.floor(self.results_dict[t].get_exchange_power())
                 print('Hora', t, ': Capacidad', ntc, "MW")
@@ -119,16 +119,20 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
                 data = np.zeros(shape=(1, len(columns)))
 
-            # add columns time, ntc
-            data = np.append(np.ones((data.shape[0], 1)) * [t, ntc], data, axis=1)
-            data_all = np.concatenate((data_all, data[:5, :]), axis=0)
+            # add columns time_index, ntc
+            extra_data = np.array([[t, self.time_array[idx], ntc]] * data.shape[0])
+            data = np.concatenate((extra_data, data), axis=1)
 
-        data_all = data_all[np.lexsort((data_all[:, 0], data_all[:, 1]))][::-1]
+            # add to main data set
+            data_all = np.concatenate((data_all, data), axis=0)
 
-        axis = np.zeros((data_all.shape[0], 1))
+        # sort data
+        data_all = data_all[np.lexsort((data_all[:, 0], data_all[:, 2]))][::-1]
 
-        data_all = np.append(axis, data_all, axis=1)
-        all_columns = ['Axis'] + all_columns
+
+        prob = np.zeros((data_all.shape[0], 1))
+        data_all = np.append(prob, data_all, axis=1)
+        all_columns = ['Prob.'] + all_columns
 
         time_prev = 0
         pct = 0
@@ -141,8 +145,8 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             data_all[row, 0] = pct
 
         df_all = pd.DataFrame(columns=all_columns, data=data_all)
-        df_all = df_all.sort_values(by=['NTC (MW)', 'Time index', 'ContingencyFlow (%)'],
-                                    ascending=[False, False, False])
+        # df_all = df_all.sort_values(by=['NTC (MW)', 'Time index', 'ContingencyFlow (%)'],
+        #                             ascending=[False, False, False])
 
         print('\n\n')
         print(df_all)
