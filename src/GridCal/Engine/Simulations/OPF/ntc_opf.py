@@ -863,7 +863,6 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
             if control_mode[m] == TransformerControlType.Pt:  # is a phase shifter
                 # create the phase shift variable
                 tau[m] = solver.NumVar(
-                    # -0.005, 0.005,
                     theta_min[m], theta_max[m],
                     'phase_shift_{0}_{1}'.format(m, branch_names[m]))
 
@@ -1027,8 +1026,6 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, bran
                     lodf = -replacement_value
 
                 suffix = "{0}_{1} @ {2}_{3}".format(m, branch_names[m], c, branch_names[c])
-
-
 
                 flow_n1 = solver.NumVar(-rates[m], rates[m], 'n-1_flow__' + suffix)
                 solver.Add(flow_n1 == flow_f[m] + lodf * flow_f[c], "n-1_flow_assigment_" + suffix)
@@ -1270,28 +1267,29 @@ def formulate_objective(solver: pywraplp.Solver,
         - slacks: List of all the slack variables' arrays
     """
 
-    # maximize the power from->to
-    flows_ft = np.zeros(len(inter_area_branches), dtype=object)
-    for i, (k, sign) in enumerate(inter_area_branches):
-        flows_ft[i] = sign * flows_f[k]
-
-    flows_hvdc_ft = np.zeros(len(inter_area_hvdc), dtype=object)
-    for i, (k, sign) in enumerate(inter_area_hvdc):
-        flows_hvdc_ft[i] = sign * hvdc_flow_f[k]
-
-    flow_from_a1_to_a2 = solver.Sum(flows_ft) + solver.Sum(flows_hvdc_ft)
-
     # include the cost of generation
     gen_cost_f = solver.Sum(gen_cost * generation_delta)
 
     # formulate objective function
     f = -weight_power_shift * power_shift
-
-    if maximize_exchange_flows:
-        f -= weight_power_shift * flow_from_a1_to_a2
-
     f += weight_generation_cost * gen_cost_f
     # f += weight_overloads * branch_overload
+
+    # if maximize_exchange_flows:
+    #
+    #     # maximize the power from->to
+    #     flows_ft = np.zeros(len(inter_area_branches), dtype=object)
+    #     for i, (k, sign) in enumerate(inter_area_branches):
+    #         flows_ft[i] = sign * flows_f[k]
+    #
+    #     flows_hvdc_ft = np.zeros(len(inter_area_hvdc), dtype=object)
+    #     for i, (k, sign) in enumerate(inter_area_hvdc):
+    #         flows_hvdc_ft[i] = sign * hvdc_flow_f[k]
+    #
+    #     flow_from_a1_to_a2 = solver.Sum(flows_ft) + solver.Sum(flows_hvdc_ft)
+    #
+    #     f -= weight_power_shift * flow_from_a1_to_a2
+
 
     solver.Minimize(f)
 
