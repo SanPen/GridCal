@@ -91,7 +91,19 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
     def get_steps(self):
         return
 
-    def make_report(self, path_out):
+    def get_all_shifter_names(self):
+        all_names = list()
+
+        # Get all shifters name
+        for idx, t in enumerate(self.time_indices):
+            if t in self.results_dict.keys():
+                shift_idx = np.where(self.results_dict[t].phase_shift != 0)
+                names = self.results_dict[t].branch_names[shift_idx]
+                all_names = all_names + [n for n in names if n not in all_names]
+
+        return all_names
+
+    def make_report(self, path_out=None):
         """
 
         :param path_out:
@@ -101,39 +113,52 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         prob_dict = dict(zip(self.time_indices, self.sampled_probabilities))
 
         labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
-
-        all_columns = ['Time index', 'Time', 'NTC (MW)'] + columns
+        shifter_names = self.get_all_shifter_names()
+        all_columns = ['Time index', 'Time', 'NTC (MW)'] + columns + shifter_names
         data_all = np.empty(shape=(0, len(all_columns)))
 
         print('\n')
         for idx, t in enumerate(self.time_indices):
+
+
             if t in self.results_dict.keys():
+
+                # get ntc value
                 ntc = np.floor(self.results_dict[t].get_exchange_power())
                 print('Hora', t, ': Capacidad', ntc, "MW")
 
+                # get contingency data
                 l, c, data = self.results_dict[t].get_contingency_report(
                     max_report_elements=self.max_report_elements)
+
+                # get phase shifter data
+                shift_idx = np.where(self.results_dict[t].phase_shift != 0)
+                shifter_data = np.array([self.results_dict[t].phase_shift[shift_idx]] * data.shape[0])
+
+                data = np.concatenate((data, shifter_data), axis=1)
+
             else:
                 ntc = 0
                 print('Hora', t, ': Sin resultados')
 
-                data = np.zeros(shape=(1, len(columns)))
+                data = np.zeros(shape=(1, len(columns) + len(shifter_names)))
 
-            # add columns time_index, ntc
+            # compose the data
             extra_data = np.array([[t, self.time_array[idx], ntc]] * data.shape[0])
             data = np.concatenate((extra_data, data), axis=1)
 
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
 
-        # sort data
+        # sort data by ntc and time index, descending to compute probaility factor
         data_all = data_all[np.lexsort((data_all[:, 0], data_all[:, 2]))][::-1]
 
-
+        # add column into data
         prob = np.zeros((data_all.shape[0], 1))
         data_all = np.append(prob, data_all, axis=1)
         all_columns = ['Prob.'] + all_columns
 
+        # compute cumulative probability
         time_prev = 0
         pct = 0
         for row in range(data_all.shape[0]):
@@ -144,10 +169,10 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
             data_all[row, 0] = pct
 
+        # Create dataframe
         df_all = pd.DataFrame(columns=all_columns, data=data_all)
-        # df_all = df_all.sort_values(by=['NTC (MW)', 'Time index', 'ContingencyFlow (%)'],
-        #                             ascending=[False, False, False])
 
+        # print results
         print('\n\n')
         print(df_all)
 
@@ -161,7 +186,9 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         print('Total con error:', len(self.abnormal_idx))
         print('Total sin analizar:', len(self.not_solved))
 
-        df_all.to_csv(path_out, index=False)
+        # Save file
+        if path_out:
+            df_all.to_csv(path_out, index=False)
 
 
 class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
@@ -401,8 +428,8 @@ if __name__ == '__main__':
     from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
     from GridCal.Engine import FileOpen, LinearAnalysis
 
-    fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1.gridcal'
-    path_out = r'd:\ntc_optimization_FE_PMODE1.csv'
+    fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE3.gridcal'
+    path_out = r'd:\ntc_optimization_FE_PMODE3.csv'
 
     circuit = FileOpen(fname).open()
 
@@ -459,7 +486,7 @@ if __name__ == '__main__':
         branch_sensitivity_threshold=0.05,
         skip_generation_limits=True,
         consider_contingencies=True,
-        maximize_exchange_flows=True,
+        maximize_exchange_flows=False,
         dispatch_all_areas=False,
         tolerance=1e-2,
         sensitivity_dT=100.0,
@@ -477,14 +504,14 @@ if __name__ == '__main__':
 
     # set optimal net transfer capacity driver instance
     start = 0
-    end = 10 #circuit.get_time_number() - 1
+    end = circuit.get_time_number() - 1
     driver = OptimalNetTransferCapacityTimeSeriesDriver(
         grid=circuit,
         options=options,
         start_=start,
         end_=end,
-        use_clustering=False,
-        cluster_number=10)
+        use_clustering=True,
+        cluster_number=5)
 
     driver.run()
 

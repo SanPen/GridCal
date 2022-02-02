@@ -160,7 +160,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                  bus_types=None, hvdc_flow=None, hvdc_loading=None, phase_shift=None, generation_delta=None,
                  inter_area_branches=list(), inter_area_hvdc=list(), alpha=None,
                  contingency_flows_list=None, contingency_indices_list=None,
-                 rates=None, contingency_rates=None):
+                 rates=None, contingency_rates=None, area_from_bus_idx=None, area_to_bus_idx=None):
 
         ResultsTemplate.__init__(self,
                                  name='OPF',
@@ -168,18 +168,15 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.BusVoltageAngle,
                                                     ResultTypes.BranchPower,
                                                     ResultTypes.BranchLoading,
-                                                    #ResultTypes.BranchOverloads,
                                                     ResultTypes.BranchTapAngle,
 
                                                     ResultTypes.ContingencyFlowsReport,
 
                                                     ResultTypes.HvdcPowerFrom,
-                                                    #ResultTypes.HvdcOverloads,
                                                     ResultTypes.BatteryPower,
                                                     ResultTypes.GeneratorPower,
                                                     ResultTypes.GenerationDelta,
-                                                    #ResultTypes.GenerationDeltaSlacks,
-                                                    #ResultTypes.LoadShedding,
+                                                    ResultTypes.LoadShedding,
                                                     ResultTypes.AvailableTransferCapacityAlpha,
                                                     ResultTypes.InterAreaExchange
                                                     ],
@@ -211,6 +208,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.inter_area_branches = inter_area_branches
 
         self.inter_area_hvdc = inter_area_hvdc
+
+        self.area_from_bus_idx = area_from_bus_idx
+        self.area_to_bus_idx = area_to_bus_idx
 
         self.generation_delta = generation_delta
 
@@ -629,7 +629,9 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 contingency_flows_list=get_contingency_flows_list,
                 contingency_indices_list=contingency_indices_list,
                 rates=numerical_circuit.branch_data.branch_rates[:, 0],
-                contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0])
+                contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0],
+                area_from_bus_idx=self.options.area_from_bus_idx,
+                area_to_bus_idx=self.options.area_to_bus_idx)
         else:
             self.progress_text.emit('Formulating NTC OPF...')
 
@@ -728,7 +730,9 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 contingency_flows_list=problem.get_contingency_flows_list(),
                 contingency_indices_list=problem.contingency_indices_list,
                 rates=numerical_circuit.branch_data.branch_rates[:, 0],
-                contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0])
+                contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0],
+                area_from_bus_idx=self.options.area_from_bus_idx,
+                area_to_bus_idx=self.options.area_to_bus_idx)
 
         self.progress_text.emit('Done!')
 

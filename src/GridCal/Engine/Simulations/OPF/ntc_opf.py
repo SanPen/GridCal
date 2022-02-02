@@ -302,6 +302,9 @@ def formulate_optimal_generation(solver: pywraplp.Solver, generator_active, disp
         - delta_slack_1: Array of generation delta LP Slack variables up
         - delta_slack_2: Array of generation delta LP Slack variables down
     """
+
+    #todo: check this method
+
     gens1, gens2, gens_out = get_generators_per_areas(Cgen, a1, a2)
     gen_cost = generator_cost * Sbase  # pass from $/MWh to $/p.u.h
     generation = np.zeros(ngen, dtype=object)
@@ -331,16 +334,13 @@ def formulate_optimal_generation(solver: pywraplp.Solver, generator_active, disp
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             delta[gen_idx] = generation[gen_idx] - Pgen[gen_idx]
 
-            # solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx]
-            #            'Delta_up_gen{}'.format(gen_idx))
-
             dgen1.append(delta[gen_idx])
 
         else:
             generation[gen_idx] = Pgen[gen_idx]
             delta[gen_idx] = 0
 
-        generation1.append(generation[gen_idx])
+        # generation1.append(generation[gen_idx])
         Pgen1.append(Pgen[gen_idx])
         gen_a1_idx.append(gen_idx)
 
@@ -356,16 +356,13 @@ def formulate_optimal_generation(solver: pywraplp.Solver, generator_active, disp
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             delta[gen_idx] = Pgen[gen_idx] - generation[gen_idx]
 
-            # solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx]
-            #            'Delta_down_gen{}'.format(gen_idx))
-
             dgen2.append(delta[gen_idx])
 
         else:
             generation[gen_idx] = Pgen[gen_idx]
             delta[gen_idx] = 0
 
-        generation2.append(generation[gen_idx])
+        # generation2.append(generation[gen_idx])
         Pgen2.append(Pgen[gen_idx])
         gen_a2_idx.append(gen_idx)
 
@@ -391,9 +388,7 @@ def formulate_optimal_generation(solver: pywraplp.Solver, generator_active, disp
             delta[gen_idx] = 0
 
     # enforce area equality
-    # power_shift = solver.NumVar(0, inf, 'power_shift')
-    # solver.Add(solver.Sum(dgen1) == power_shift, 'power_shift_assignment')
-    # solver.Add(solver.Sum(dgen1) == solver.Sum(dgen2), 'Area equality_2')
+    solver.Add(solver.Sum(dgen1) == solver.Sum(dgen2), 'Area equality')
 
     power_shift = solver.Sum(generation1)
 
@@ -490,14 +485,13 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
     dgen1 = list()
     dgen2 = list()
 
-    generation1 = list()
-    generation2 = list()
-
     Pgen1 = list()
     Pgen2 = list()
 
     gen_a1_idx = list()
     gen_a2_idx = list()
+
+    power_shift = solver.NumVar(-inf, inf, 'power_shift')
 
     sum_gen_1 = 0
     for bus_idx, gen_idx in gens1:
@@ -509,7 +503,6 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
         if validate_generator_to_decrease(gen_idx, generator_active, generator_dispatchable, Pgen, Pmax, Pmin):
             sum_gen_2 += Pgen[gen_idx]
 
-    power_shift = solver.NumVar(-inf, inf, 'Area_slack')
 
     for bus_idx, gen_idx in gens1:
 
@@ -527,7 +520,6 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
 
             solver.Add(delta[gen_idx] == prop * power_shift, 'Delta_up_gen{}'.format(gen_idx))
             solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx]
-                       # + delta_slack_1[gen_idx] - delta_slack_2[gen_idx]
                        , 'Gen_up_gen{}'.format(gen_idx))
 
         else:
@@ -535,7 +527,6 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
             delta[gen_idx] = 0
 
         dgen1.append(delta[gen_idx])
-        generation1.append(generation[gen_idx])
         Pgen1.append(Pgen[gen_idx])
         gen_a1_idx.append(gen_idx)
 
@@ -551,14 +542,10 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             delta[gen_idx] = solver.NumVar(-inf, inf, name + '_delta')
 
-            # delta_slack_1[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_up')
-            # delta_slack_2[gen_idx] = solver.NumVar(0, inf, name + '_delta_slack_down')
-
             prop = round(abs(Pgen[gen_idx] / sum_gen_2), 6)
 
             solver.Add(delta[gen_idx] == prop * power_shift, 'Delta_down_gen{}'.format(gen_idx))
             solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx]
-                       # + delta_slack_1[gen_idx] - delta_slack_2[gen_idx]
                        , 'Gen_down_gen{}'.format(gen_idx))
 
         else:
@@ -566,7 +553,6 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
             delta[gen_idx] = 0
 
         dgen2.append(delta[gen_idx])
-        generation2.append(generation[gen_idx])
         Pgen2.append(Pgen[gen_idx])
         gen_a2_idx.append(gen_idx)
 
@@ -858,10 +844,8 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
                 monitor[m] = monitor_loading[m]
 
             if monitor[m]:
-
                 # declare the flow variable with rate limits
                 flow_f[m] = solver.NumVar(-rates[m], rates[m], 'pftk_{0}_{1}'.format(m, branch_names[m]))
-
             else:
                 # declare the flow variable with ample limits
                 flow_f[m] = solver.NumVar(-inf, inf, 'pftk_{0}_{1}'.format(m, branch_names[m]))
@@ -879,21 +863,19 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
             if control_mode[m] == TransformerControlType.Pt:  # is a phase shifter
                 # create the phase shift variable
                 tau[m] = solver.NumVar(
+                    # -0.005, 0.005,
                     theta_min[m], theta_max[m],
-                    'phase_shift_{0}_{1}'.format(m, branch_names[m])
-                )
+                    'phase_shift_{0}_{1}'.format(m, branch_names[m]))
 
-                # branch power from-to eq.15
-                solver.Add(
-                    flow_f[m] == bk * (angles[_f] - angles[_t] + tau[m]),
-                    'phase_shifter_power_flow_{0}_{1}'.format(m, branch_names[m])
-                )
+                phase_shift = tau[m]
+
             else:
-                # branch power from-to eq.15
-                solver.Add(
-                    flow_f[m] == bk * (angles[_f] - angles[_t] + theta[m]),
-                    'branch_power_flow_{0}_{1}'.format(m, branch_names[m])
-                )
+                phase_shift = theta[m]
+
+            # branch power from-to eq.15
+            solver.Add(
+                flow_f[m] == bk * (angles[_f] - angles[_t] + phase_shift),
+                'phase_shifter_power_flow_{0}_{1}'.format(m, branch_names[m]))
 
     return flow_f, tau, monitor
 
@@ -1298,8 +1280,6 @@ def formulate_objective(solver: pywraplp.Solver,
         flows_hvdc_ft[i] = sign * hvdc_flow_f[k]
 
     flow_from_a1_to_a2 = solver.Sum(flows_ft) + solver.Sum(flows_hvdc_ft)
-
-    # flow_from_a1_to_a2 = solver.Sum(flows_hvdc_ft)
 
     # include the cost of generation
     gen_cost_f = solver.Sum(gen_cost * generation_delta)
@@ -1741,8 +1721,8 @@ class OpfNTC(Opf):
         # formulate the generation
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
 
-            generation, generation_delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, gen_cost, delta_slack_1, \
-            delta_slack_2 = formulate_optimal_generation(
+            generation, generation_delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, \
+            gen_cost = formulate_optimal_generation(
                 solver=self.solver,
                 generator_active=self.numerical_circuit.generator_data.generator_active[:, t],
                 dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
@@ -2471,8 +2451,7 @@ if __name__ == '__main__':
         numerical_circuit=numerical_circuit_,
         area_from_bus_idx=a1,
         area_to_bus_idx=a2,
-        generation_formulation=GenerationNtcFormulation.Proportional
-    )
+        generation_formulation=GenerationNtcFormulation.Proportional)
 
     print('Solving...')
     status = problem.solve()
