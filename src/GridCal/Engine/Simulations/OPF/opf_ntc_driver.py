@@ -56,7 +56,6 @@ class OptimalNetTransferCapacityOptions:
                  branch_sensitivity_threshold=0.05,
                  skip_generation_limits=True,
                  consider_contingencies=True,
-                 maximize_exchange_flows=True,
                  perform_previous_checks=False,
                  dispatch_all_areas=False,
                  tolerance=1e-2,
@@ -109,8 +108,6 @@ class OptimalNetTransferCapacityOptions:
         self.skip_generation_limits = skip_generation_limits
 
         self.consider_contingencies = consider_contingencies
-
-        self.maximize_exchange_flows = maximize_exchange_flows
 
         self.dispatch_all_areas = dispatch_all_areas
 
@@ -550,9 +547,8 @@ class OptimalNetTransferCapacity(DriverTemplate):
                     base_problems = True
 
             # run contingency analysis ---------------------------------------------------------------------------------
-            get_contingency_flows_list = list()
+            contingency_flows_list = list()
             contingency_indices_list = list()
-            contingency_flows_slacks_list = list()
 
             if self.options.consider_contingencies:
                 self.progress_text.emit('Pre-solving base state (Contingency analysis)...')
@@ -577,8 +573,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
                             elm_name, cnt_drv.results.loading[m, c].real * 100,
                             100)
 
-                        get_contingency_flows_list.append(cnt_drv.results.Sf[m, c].real)
-                        contingency_flows_slacks_list.append(0.0)
+                        contingency_flows_list.append(cnt_drv.results.Sf[m, c].real)
                         contingency_indices_list.append((m, c))
                         base_problems = True
         else:
@@ -626,7 +621,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 inter_area_branches=inter_area_branches,
                 inter_area_hvdc=inter_area_hvdc,
                 alpha=alpha,
-                contingency_flows_list=get_contingency_flows_list,
+                contingency_flows_list=contingency_flows_list,
                 contingency_indices_list=contingency_indices_list,
                 rates=numerical_circuit.branch_data.branch_rates[:, 0],
                 contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0],
@@ -648,7 +643,6 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
                 skip_generation_limits=self.options.skip_generation_limits,
                 consider_contingencies=self.options.consider_contingencies,
-                maximize_exchange_flows=self.options.maximize_exchange_flows,
                 dispatch_all_areas=self.options.dispatch_all_areas,
                 tolerance=self.options.tolerance,
                 weight_power_shift=self.options.weight_power_shift,
@@ -659,8 +653,10 @@ class OptimalNetTransferCapacity(DriverTemplate):
             # Solve
             self.progress_text.emit('Solving NTC OPF...')
             problem.formulate(add_slacks=True)
-            solved = problem.solve(with_check=self.options.with_check,
-                                   time_limit_ms=self.options.time_limit_ms)
+            solved = problem.solve(
+                with_check=self.options.with_check,
+                time_limit_ms=self.options.time_limit_ms)
+
             err = problem.error()
 
             if not solved:

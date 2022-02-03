@@ -110,7 +110,21 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         :return:
         """
 
+        print('\n\n')
+        print('Ejecutado en {0} scs. para {1} casos'.format(self.elapsed, len(self.time_array)))
+
+        print('\n\n')
+        print('Total resueltos:', len(self.optimal_idx))
+        print('Total factibles o interrumpidos:', len(self.feasible_idx))
+        print('Total sin resultado:', len(self.infeasible_idx))
+        print('Total sin limites:', len(self.unbounded_idx))
+        print('Total con error:', len(self.abnormal_idx))
+        print('Total sin analizar:', len(self.not_solved))
+
         prob_dict = dict(zip(self.time_indices, self.sampled_probabilities))
+
+        if len(self.results_dict.values()) == 0:
+            return
 
         labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
         shifter_names = self.get_all_shifter_names()
@@ -119,7 +133,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         print('\n')
         for idx, t in enumerate(self.time_indices):
-
 
             if t in self.results_dict.keys():
 
@@ -172,19 +185,9 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         # Create dataframe
         df_all = pd.DataFrame(columns=all_columns, data=data_all)
 
-        # print results
+        # print result dataframe
         print('\n\n')
         print(df_all)
-
-        print('\n\n')
-        print('Ejecutado en {0} scs. para {1} casos'.format(self.elapsed, len(self.time_array)))
-        print('\n')
-        print('Total resueltos:', len(self.optimal_idx))
-        print('Total factibles o interrumpidos:', len(self.feasible_idx))
-        print('Total sin resultado:', len(self.infeasible_idx))
-        print('Total sin limites:', len(self.unbounded_idx))
-        print('Total con error:', len(self.abnormal_idx))
-        print('Total sin analizar:', len(self.not_solved))
 
         # Save file
         if path_out:
@@ -282,7 +285,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         for idx, t in enumerate(time_indices):
 
             # update progress bar
-            progress = (self.start_ + 1) / (self.end_ - self.start_) * 100
+            progress = (self.start_ + 1) / (self.end_ - self.start_ + 1) * 100
             self.progress_signal.emit(progress)
 
             if self.progress_text is not None:
@@ -315,7 +318,6 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
                 skip_generation_limits=self.options.skip_generation_limits,
                 consider_contingencies=self.options.consider_contingencies,
-                maximize_exchange_flows=self.options.maximize_exchange_flows,
                 dispatch_all_areas=self.options.dispatch_all_areas,
                 tolerance=self.options.tolerance,
                 weight_power_shift=self.options.weight_power_shift,
@@ -428,8 +430,8 @@ if __name__ == '__main__':
     from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
     from GridCal.Engine import FileOpen, LinearAnalysis
 
-    fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1_trucoDESF.gridcal'
-    path_out = r'd:\ntc_optimization_FE_PMODE1_trucoDESF.csv'
+    fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1.gridcal'
+    path_out = r'd:\ntc_optimization_FE_PMODE1.csv'
 
     circuit = FileOpen(fname).open()
 
@@ -486,15 +488,14 @@ if __name__ == '__main__':
         branch_sensitivity_threshold=0.05,
         skip_generation_limits=True,
         consider_contingencies=True,
-        maximize_exchange_flows=False,
         dispatch_all_areas=False,
         tolerance=1e-2,
         sensitivity_dT=100.0,
         sensitivity_mode=AvailableTransferMode.InstalledPower,
         # todo: checkear si queremos el ptdf por potencia generada
         perform_previous_checks=False,
-        weight_power_shift=1e0,
-        weight_generation_cost=1e-2,
+        weight_power_shift=1e5,
+        weight_generation_cost=1e2,
         weight_overloads=1e5,
         with_check=False,
         time_limit_ms=1e4,
@@ -510,10 +511,10 @@ if __name__ == '__main__':
         options=options,
         start_=start,
         end_=end,
-        use_clustering=True,
+        use_clustering=False,
         cluster_number=10)
 
     driver.run()
 
     driver.results.make_report(path_out=path_out)
-
+    # driver.results.make_report()

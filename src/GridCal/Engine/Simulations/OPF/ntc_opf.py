@@ -1087,7 +1087,7 @@ def check_contingency(ContingencyRates, Sbase, branch_names, contingency_enabled
 
 
 def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, active, Pt, angle_droop, control_mode,
-                        dispatchable, F, T, Pinj, Sbase, inf, logger):
+                        dispatchable, F, T, Pinj, Sbase, inf, logger, inter_area_hvdc):
     """
     Formulate the HVDC flow
     :param solver: Solver instance to which add the equations
@@ -1106,17 +1106,13 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, act
     :param Sbase: Base power (i.e. 100 MVA)
     :param inf: Value representing the infinite (i.e. 1e20)
     :param logger: logger instance
-    :param t: time index
     :return:
         - flow_f: Array of formulated HVDC flows (mix of values and variables)
-        - overload1: Array of overload LP variables in the positive sense
-        - overload2: Array of overload LP variables in the negative sense
-        - hvdc_control1: Array of HVDC slack LP variables in the positive sense
-        - hvdc_control2: Array of HVDC slack LP variables in the negative sense
     """
     rates = rate / Sbase
 
     flow_f = np.zeros(nhvdc, dtype=object)
+    flow_sensed = np.zeros(nhvdc, dtype=object)
 
     for i in range(nhvdc):
 
@@ -1142,8 +1138,7 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, act
 
                 solver.Add(
                     flow_f[i] == P0 + angle_droop_rad * (angles[_f] - angles[_t]),
-                    'hvdc_power_flow_' + suffix
-                )
+                    'hvdc_power_flow_' + suffix)
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and not dispatchable[i]:
                 # simple injections model: The power is set by the user
@@ -1151,12 +1146,27 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, act
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and dispatchable[i]:
                 # simple injections model, the power is a variable and it is optimized
-                P0 = solver.NumVar(-rates[i], rates[i], 'hvdc_pf_' + suffix)
+                P0 = solver.NumVar(-rates[i], rates[i], 'hvdc_pset_' + suffix)
                 flow_f[i] = P0
 
             # add the injections matching the flow
             Pinj[_f] -= flow_f[i]
             Pinj[_t] += flow_f[i]
+
+    # TODO: to discussion. must be in the same sense?
+
+    # hvdc flow must be in the exchange sense
+    for i, sense in inter_area_hvdc:
+
+        if control_mode[i] == HvdcControlType.type_1_Pset and dispatchable[i]:
+
+            suffix = "{0}_{1}".format(i, names[i])
+
+            flow_sensed[i] = solver.NumVar(0, inf, 'hvdc_sense_flow_' + suffix)
+
+            solver.Add(
+                flow_sensed[i] == flow_f[i] * sense,
+                'hvdc_sense_restriction_' + suffix)
 
     return flow_f
 
@@ -1244,7 +1254,7 @@ def formulate_objective(solver: pywraplp.Solver,
                         inter_area_branches, flows_f,
                         inter_area_hvdc, hvdc_flow_f,
                         power_shift, dgen1, gen_cost, generation_delta,
-                        weight_power_shift, maximize_exchange_flows, weight_generation_cost,
+                        weight_power_shift, weight_generation_cost,
                         load_shedding, load_cost):
     """
 
@@ -1258,13 +1268,9 @@ def formulate_objective(solver: pywraplp.Solver,
     :param gen_cost: Array of generation costs
     :param generation_delta:  Array of generation delta LP variables
     :param weight_power_shift: Power shift maximization weight
-    :param maximize_exchange_flows: Exchange flows weight
     :param weight_generation_cost: Generation cost minimization weight
     :param load_shedding: Array of load shedding LP variables
     :param load_cost: Array of cost of the load shedding per load
-    :return:
-        - all_slacks_sum: summation of all the slacks
-        - slacks: List of all the slack variables' arrays
     """
 
     # include the cost of generation
@@ -1274,22 +1280,6 @@ def formulate_objective(solver: pywraplp.Solver,
     f = -weight_power_shift * power_shift
     f += weight_generation_cost * gen_cost_f
     # f += weight_overloads * branch_overload
-
-    # if maximize_exchange_flows:
-    #
-    #     # maximize the power from->to
-    #     flows_ft = np.zeros(len(inter_area_branches), dtype=object)
-    #     for i, (k, sign) in enumerate(inter_area_branches):
-    #         flows_ft[i] = sign * flows_f[k]
-    #
-    #     flows_hvdc_ft = np.zeros(len(inter_area_hvdc), dtype=object)
-    #     for i, (k, sign) in enumerate(inter_area_hvdc):
-    #         flows_hvdc_ft[i] = sign * hvdc_flow_f[k]
-    #
-    #     flow_from_a1_to_a2 = solver.Sum(flows_ft) + solver.Sum(flows_hvdc_ft)
-    #
-    #     f -= weight_power_shift * flow_from_a1_to_a2
-
 
     solver.Minimize(f)
 
@@ -1442,17 +1432,19 @@ class OpfNTC(Opf):
         # --------------------------------------------------------------------------------------------------------------
 
         # get the inter-area branches and their sign
-        inter_area_branches = get_inter_areas_branches(nbr=m,
-                                                       F=self.numerical_circuit.branch_data.F,
-                                                       T=self.numerical_circuit.branch_data.T,
-                                                       buses_areas_1=self.area_from_bus_idx,
-                                                       buses_areas_2=self.area_to_bus_idx)
+        inter_area_branches = get_inter_areas_branches(
+            nbr=m,
+            F=self.numerical_circuit.branch_data.F,
+            T=self.numerical_circuit.branch_data.T,
+            buses_areas_1=self.area_from_bus_idx,
+            buses_areas_2=self.area_to_bus_idx)
 
-        inter_area_hvdc = get_inter_areas_branches(nbr=self.numerical_circuit.nhvdc,
-                                                   F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
-                                                   T=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
-                                                   buses_areas_1=self.area_from_bus_idx,
-                                                   buses_areas_2=self.area_to_bus_idx)
+        inter_area_hvdc = get_inter_areas_branches(
+            nbr=self.numerical_circuit.nhvdc,
+            F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
+            T=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
+            buses_areas_1=self.area_from_bus_idx,
+            buses_areas_2=self.area_to_bus_idx)
 
         # formulate the generation
         if self.generation_formulation == GenerationNtcFormulation.Optimal:
@@ -1586,7 +1578,8 @@ class OpfNTC(Opf):
             Pinj=Pinj,
             Sbase=self.numerical_circuit.Sbase,
             inf=self.inf,
-            logger=self.logger)
+            logger=self.logger,
+            inter_area_hvdc=inter_area_hvdc)
 
         # formulate the node power balance
         node_balance = formulate_node_balance(
@@ -1609,7 +1602,6 @@ class OpfNTC(Opf):
             gen_cost=gen_cost[gen_a1_idx],
             generation_delta=generation_delta[gen_a1_idx],
             weight_power_shift=self.weight_power_shift,
-            maximize_exchange_flows=self.maximize_exchange_flows,
             weight_generation_cost=self.weight_generation_cost,
             load_shedding=load_shedding,
             load_cost=load_cost)
@@ -1848,7 +1840,8 @@ class OpfNTC(Opf):
             Pinj=Pinj,
             Sbase=self.numerical_circuit.Sbase,
             inf=self.inf,
-            logger=self.logger)
+            logger=self.logger,
+            inter_area_hvdc=inter_area_hvdc)
 
         # formulate the node power balance
         node_balance = formulate_node_balance(
@@ -1871,7 +1864,6 @@ class OpfNTC(Opf):
             gen_cost=gen_cost[gen_a1_idx],
             generation_delta=generation_delta[gen_a1_idx],
             weight_power_shift=self.weight_power_shift,
-            maximize_exchange_flows=self.maximize_exchange_flows,
             weight_generation_cost=self.weight_generation_cost,
             load_shedding=load_shedding,
             load_cost=load_cost)
