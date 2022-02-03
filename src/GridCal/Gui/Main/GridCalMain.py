@@ -4084,14 +4084,11 @@ class MainGUI(QMainWindow):
         self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
         self.ui.skipNtcGenerationLimitsCheckBox.setChecked(True)
         self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
-        self.ui.ntcMaximizeExchangeFlowCheckBox.setChecked(True)
         self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
         self.ui.ntcFeasibilityCheckCheckBox.setChecked(False)
         self.ui.weightPowerShiftSpinBox.setValue(5)
-        self.ui.weightGenCostSpinBox.setValue(0)
-        self.ui.weightGenDeltaSpinBox.setValue(5)
-        self.ui.weightsOverloadsSpinBox.setValue(5)
-        self.ui.weightsHVDCControlSpinBox.setValue(3)
+        self.ui.weightGenCostSpinBox.setValue(2)
+        self.ui.weightsOverloadsSpinBox.setValue(3)
 
     def run_opf_ntc(self):
         """
@@ -4155,7 +4152,6 @@ class MainGUI(QMainWindow):
                 weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
                 weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
                 weight_overloads = 10.0 ** self.ui.weightsOverloadsSpinBox.value()
-                maximize_exchange_flows = self.ui.ntcMaximizeExchangeFlowCheckBox.isChecked()
 
                 options = sim.OptimalNetTransferCapacityOptions(
                     area_from_bus_idx=idx_from,
@@ -4166,7 +4162,6 @@ class MainGUI(QMainWindow):
                     branch_sensitivity_threshold=branch_sensitivity_threshold,
                     skip_generation_limits=skip_generation_limits,
                     consider_contingencies=consider_contingencies,
-                    maximize_exchange_flows=maximize_exchange_flows,
                     dispatch_all_areas=dispatch_all_areas,
                     tolerance=tolerance,
                     sensitivity_dT=dT,
