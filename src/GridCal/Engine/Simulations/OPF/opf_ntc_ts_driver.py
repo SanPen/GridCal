@@ -91,17 +91,20 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
     def get_steps(self):
         return
 
-    def get_all_shifter_names(self):
+    def get_used_shifters(self):
         all_names = list()
+        all_idx = list()
 
         # Get all shifters name
         for idx, t in enumerate(self.time_indices):
             if t in self.results_dict.keys():
-                shift_idx = np.where(self.results_dict[t].phase_shift != 0)
-                names = self.results_dict[t].branch_names[shift_idx]
-                all_names = all_names + [n for n in names if n not in all_names]
+                shift_idx = np.where(self.results_dict[t].phase_shift != 0)[0]
+                if len(shift_idx) > 0:
+                    names = self.results_dict[t].branch_names[shift_idx]
+                    all_names = all_names + [n for n in names if n not in all_names]
+                    all_idx = all_idx + [ix for ix in shift_idx if ix not in all_idx]
 
-        return all_names
+        return all_names, all_idx
 
     def make_report(self, path_out=None):
         """
@@ -124,11 +127,13 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         prob_dict = dict(zip(self.time_indices, self.sampled_probabilities))
 
         if len(self.results_dict.values()) == 0:
+            print("Sin resultados")
             return
 
         labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
-        shifter_names = self.get_all_shifter_names()
-        all_columns = ['Time index', 'Time', 'NTC (MW)'] + columns + shifter_names
+        shifter_names, shift_idx = self.get_used_shifters()
+        hvdc_names = list(list(self.results_dict.values())[0].hvdc_names)
+        all_columns = ['Time index', 'Time', 'NTC (MW)'] + columns + shifter_names + hvdc_names
         data_all = np.empty(shape=(0, len(all_columns)))
 
         print('\n')
@@ -145,16 +150,18 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                     max_report_elements=self.max_report_elements)
 
                 # get phase shifter data
-                shift_idx = np.where(self.results_dict[t].phase_shift != 0)
                 shifter_data = np.array([self.results_dict[t].phase_shift[shift_idx]] * data.shape[0])
 
-                data = np.concatenate((data, shifter_data), axis=1)
+                # get phase hvdc data
+                hvdc_data = np.array([self.results_dict[t].hvdc_Pf] * data.shape[0])
+
+                data = np.concatenate((data, shifter_data, hvdc_data), axis=1)
 
             else:
                 ntc = 0
                 print('Hora', t, ': Sin resultados')
 
-                data = np.zeros(shape=(1, len(columns) + len(shifter_names)))
+                data = np.zeros(shape=(1, len(columns) + len(shifter_names) + len(hvdc_names)))
 
             # compose the data
             extra_data = np.array([[t, self.time_array[idx], ntc]] * data.shape[0])
@@ -163,7 +170,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
 
-        # sort data by ntc and time index, descending to compute probaility factor
+        # sort data by ntc and time index, descending to compute probability factor
         data_all = data_all[np.lexsort((data_all[:, 0], data_all[:, 2]))][::-1]
 
         # add column into data
@@ -330,8 +337,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             problem.formulate_ts(t=t)
 
-            solved = problem.solve_ts(with_check=self.options.with_check,
-                                      time_limit_ms=self.options.time_limit_ms)
+            solved = problem.solve_ts(
+                with_check=self.options.with_check,
+                time_limit_ms=self.options.time_limit_ms)
 
             self.logger += problem.logger
 
@@ -430,8 +438,8 @@ if __name__ == '__main__':
     from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
     from GridCal.Engine import FileOpen, LinearAnalysis
 
-    fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1.gridcal'
-    path_out = r'd:\ntc_optimization_FE_PMODE1.csv'
+    fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE3_pragneres.gridcal'
+    path_out = r'd:\ntc_optimization_FE_PMODE3_pragneres.csv'
 
     circuit = FileOpen(fname).open()
 
@@ -505,7 +513,7 @@ if __name__ == '__main__':
 
     # set optimal net transfer capacity driver instance
     start = 0
-    end = circuit.get_time_number() - 1
+    end = circuit.get_time_number()-1
     driver = OptimalNetTransferCapacityTimeSeriesDriver(
         grid=circuit,
         options=options,
