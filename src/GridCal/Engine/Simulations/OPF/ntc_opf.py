@@ -713,14 +713,14 @@ def formulate_power_injections(solver: pywraplp.Solver, Cgen, generation, Cload,
     load_fixed_injections = Cload * load_power
 
     # add the load shedding
-    # nl = len(load_active)
-    # load_shedding = np.zeros(nl, dtype=object)
-    # for i in range(nl):
-    #     if load_active[i] and load_power[i] > 0:
-    #         load_shedding[i] = solver.NumVar(0, load_power[i] / Sbase, 'load_shedding_{0}'.format(i))
-    # load_shedding_per_bus = lpExpand(Cload, load_shedding)
+    nl = len(load_active)
+    load_shedding = np.zeros(nl, dtype=object)
+    for i in range(nl):
+        if load_active[i] and load_power[i] > 0:
+            load_shedding[i] = solver.NumVar(0, load_power[i] / Sbase, 'load_shedding_{0}'.format(i))
+    load_shedding_per_bus = lpExpand(Cload, load_shedding)
 
-    return gen_injections_per_bus - load_fixed_injections  # + load_shedding_per_bus, load_shedding
+    return gen_injections_per_bus - load_fixed_injections + load_shedding_per_bus, load_shedding
 
 
 def check_power_injections(load_power, Cgen, generation, Cload, load_shedding):
@@ -1254,16 +1254,26 @@ def check_hvdc_flow(nhvdc, names, rate, angles, active, Pt, angle_droop, control
 
 
 def formulate_objective(solver: pywraplp.Solver,
-                        power_shift, gen_cost, generation_delta,
-                        weight_power_shift, weight_generation_cost):
+                        inter_area_branches, flows_f,
+                        inter_area_hvdc, hvdc_flow_f,
+                        power_shift, dgen1, gen_cost, generation_delta,
+                        weight_power_shift, weight_generation_cost,
+                        load_shedding, load_cost):
     """
 
     :param solver: Solver instance to which add the equations
+    :param inter_area_branches: Array of indices of the inter-area branch indices (excluding HVDC)
+    :param flows_f: Array of branch flows (LP variables)
+    :param inter_area_hvdc: Array of inter-area HVDC line indices
+    :param hvdc_flow_f: Array of HVDC flows
     :param power_shift: Array of branch phase shift angles (mix of values and LP variables)
+    :param dgen1: List of generation delta LP variables in the area 1
     :param gen_cost: Array of generation costs
     :param generation_delta:  Array of generation delta LP variables
     :param weight_power_shift: Power shift maximization weight
     :param weight_generation_cost: Generation cost minimization weight
+    :param load_shedding: Array of load shedding LP variables
+    :param load_cost: Array of cost of the load shedding per load
     """
 
     # include the cost of generation
@@ -1499,7 +1509,7 @@ class OpfNTC(Opf):
             logger=self.logger)
 
         # formulate the power injections
-        Pinj = formulate_power_injections(
+        Pinj, load_shedding = formulate_power_injections(
             solver=self.solver,
             Cgen=Cgen,
             generation=generation,
@@ -1590,7 +1600,9 @@ class OpfNTC(Opf):
             gen_cost=gen_cost[gen_a1_idx],
             generation_delta=generation_delta[gen_a1_idx],
             weight_power_shift=self.weight_power_shift,
-            weight_generation_cost=self.weight_generation_cost)
+            weight_generation_cost=self.weight_generation_cost,
+            load_shedding=load_shedding,
+            load_cost=load_cost)
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
@@ -1599,7 +1611,7 @@ class OpfNTC(Opf):
         self.Pg_delta = generation_delta
         self.area_balance_slack = power_shift
 
-        # self.load_shedding = load_shedding
+        self.load_shedding = load_shedding
 
         self.gen_a1_idx = gen_a1_idx
         self.gen_a2_idx = gen_a2_idx
@@ -1754,7 +1766,7 @@ class OpfNTC(Opf):
             logger=self.logger)
 
         # formulate the power injections
-        Pinj = formulate_power_injections(
+        Pinj, load_shedding = formulate_power_injections(
             solver=self.solver,
             Cgen=Cgen,
             generation=generation,
@@ -1845,7 +1857,9 @@ class OpfNTC(Opf):
             gen_cost=gen_cost[gen_a1_idx],
             generation_delta=generation_delta[gen_a1_idx],
             weight_power_shift=self.weight_power_shift,
-            weight_generation_cost=self.weight_generation_cost)
+            weight_generation_cost=self.weight_generation_cost,
+            load_shedding=load_shedding,
+            load_cost=load_cost)
 
         # Assign variables to keep
         # transpose them to be in the format of GridCal: time, device
@@ -1853,6 +1867,8 @@ class OpfNTC(Opf):
         self.Pg = generation
         self.Pg_delta = generation_delta
         self.area_balance_slack = power_shift
+
+        self.load_shedding = load_shedding
 
         self.gen_a1_idx = gen_a1_idx
         self.gen_a2_idx = gen_a2_idx
