@@ -63,7 +63,6 @@ class OptimalNetTransferCapacityOptions:
                  sensitivity_mode: AvailableTransferMode = AvailableTransferMode.InstalledPower,
                  weight_power_shift=1e0,
                  weight_generation_cost=1e-2,
-                 weight_overloads=1e5,
                  with_check=True,
                  time_limit_ms=1e4,
                  max_report_elements=0):
@@ -121,7 +120,6 @@ class OptimalNetTransferCapacityOptions:
 
         self.weight_power_shift = weight_power_shift
         self.weight_generation_cost = weight_generation_cost
-        self.weight_overloads = weight_overloads
 
         self.with_check = with_check
         self.time_limit_ms = time_limit_ms
@@ -152,12 +150,11 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
     """
 
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names,
-                 Sbus=None, voltage=None, load_shedding=None, generator_shedding=None, battery_power=None,
-                 controlled_generation_power=None, Sf=None, loading=None, losses=None, solved=None,
-                 bus_types=None, hvdc_flow=None, hvdc_loading=None, phase_shift=None, generation_delta=None,
-                 inter_area_branches=list(), inter_area_hvdc=list(), alpha=None,
-                 contingency_flows_list=None, contingency_indices_list=None,
-                 rates=None, contingency_rates=None, area_from_bus_idx=None, area_to_bus_idx=None):
+                 Sbus=None, voltage=None, battery_power=None, controlled_generation_power=None, Sf=None,
+                 loading=None, losses=None, solved=None, bus_types=None, hvdc_flow=None, hvdc_loading=None,
+                 phase_shift=None, generation_delta=None, inter_area_branches=list(), inter_area_hvdc=list(),
+                 alpha=None, contingency_flows_list=None, contingency_indices_list=None, rates=None,
+                 contingency_rates=None, area_from_bus_idx=None, area_to_bus_idx=None):
 
         ResultsTemplate.__init__(self,
                                  name='OPF',
@@ -173,7 +170,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.BatteryPower,
                                                     ResultTypes.GeneratorPower,
                                                     ResultTypes.GenerationDelta,
-                                                    ResultTypes.LoadShedding,
                                                     ResultTypes.AvailableTransferCapacityAlpha,
                                                     ResultTypes.InterAreaExchange
                                                     ],
@@ -185,8 +181,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                  'battery_names',
                                                  'Sbus',
                                                  'voltage',
-                                                 'load_shedding',
-                                                 'generator_shedding',
                                                  'Sf',
                                                  'bus_types',
                                                  'overloads',
@@ -215,8 +209,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.voltage = voltage
 
-        self.load_shedding = load_shedding
-
         self.Sf = Sf
 
         self.hvdc_Pf = hvdc_flow
@@ -231,8 +223,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.losses = losses
 
         self.battery_power = battery_power
-
-        self.generator_shedding = generator_shedding
 
         self.generator_power = controlled_generation_power
 
@@ -263,13 +253,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.voltage = np.zeros(n, dtype=complex)
 
-        self.load_shedding = np.zeros(n, dtype=float)
-
         self.Sf = np.zeros(m, dtype=complex)
 
         self.loading = np.zeros(m, dtype=complex)
-
-        self.overloads = np.zeros(m, dtype=complex)
 
         self.losses = np.zeros(m, dtype=complex)
 
@@ -414,12 +400,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         elif result_type == ResultTypes.GenerationDelta:
             labels = self.generator_names
             y = self.generation_delta
-            y_label = '(MW)'
-            title = result_type.value[0]
-
-        elif result_type == ResultTypes.LoadShedding:
-            labels = self.load_names
-            y = self.load_shedding
             y_label = '(MW)'
             title = result_type.value[0]
 
@@ -606,8 +586,6 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 hvdc_names=numerical_circuit.hvdc_data.names,
                 Sbus=numerical_circuit.Sbus.real,
                 voltage=pf_drv.results.voltage,
-                load_shedding=np.zeros((numerical_circuit.nload, 1)),
-                generator_shedding=np.zeros((numerical_circuit.ngen, 1)),
                 battery_power=np.zeros((numerical_circuit.nbatt, 1)),
                 controlled_generation_power=numerical_circuit.generator_data.generator_p,
                 Sf=pf_drv.results.Sf.real,
@@ -647,7 +625,6 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 tolerance=self.options.tolerance,
                 weight_power_shift=self.options.weight_power_shift,
                 weight_generation_cost=self.options.weight_generation_cost,
-                weight_overloads=self.options.weight_overloads,
                 logger=self.logger)
 
             # Solve
@@ -708,8 +685,6 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 hvdc_names=numerical_circuit.hvdc_data.names,
                 Sbus=problem.get_power_injections(),
                 voltage=problem.get_voltage(),
-                load_shedding=problem.get_load_shedding(),
-                generator_shedding=np.zeros((numerical_circuit.ngen, 1)),
                 battery_power=np.zeros((numerical_circuit.nbatt, 1)),
                 controlled_generation_power=problem.get_generator_power(),
                 Sf=problem.get_branch_power_from(),

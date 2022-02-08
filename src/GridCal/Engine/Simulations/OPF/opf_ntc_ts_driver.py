@@ -137,6 +137,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         data_all = np.empty(shape=(0, len(all_columns)))
 
         print('\n')
+
         for idx, t in enumerate(self.time_indices):
 
             if t in self.results_dict.keys():
@@ -171,6 +172,9 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             data_all = np.concatenate((data_all, data), axis=0)
 
         # sort data by ntc and time index, descending to compute probability factor
+
+        # data_all = data_all[np.lexsort((data_all[:, 2]))][::1]
+        # data_all = data_all[np.lexsort((data_all[:, 0]))][::-1]
         data_all = data_all[np.lexsort((data_all[:, 0], data_all[:, 2]))][::-1]
 
         # add column into data
@@ -329,7 +333,6 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 tolerance=self.options.tolerance,
                 weight_power_shift=self.options.weight_power_shift,
                 weight_generation_cost=self.options.weight_generation_cost,
-                weight_overloads=self.options.weight_overloads,
                 logger=self.logger)
 
             # Solve
@@ -387,8 +390,6 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                     hvdc_names=nc.hvdc_data.names,
                     Sbus=problem.get_power_injections(),
                     voltage=problem.get_voltage(),
-                    load_shedding=problem.get_load_shedding(),
-                    generator_shedding=np.zeros((nc.ngen, 1)),
                     battery_power=np.zeros((nc.nbatt, 1)),
                     controlled_generation_power=problem.get_generator_power(),
                     Sf=problem.get_branch_power_from(),
@@ -438,16 +439,16 @@ if __name__ == '__main__':
     from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
     from GridCal.Engine import FileOpen, LinearAnalysis
 
-    fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE3_pragneres.gridcal'
-    path_out = r'd:\ntc_optimization_FE_PMODE3_pragneres.csv'
+    fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE3.gridcal'
+    path_out = r'd:\original_ntc_optimization_EF_PMODE3.csv'
 
     circuit = FileOpen(fname).open()
 
-    # areas_from_idx = [0, 1, 2, 3, 4]
-    # areas_to_idx = [7]
+    areas_from_idx = [0, 1, 2, 3, 4]
+    areas_to_idx = [7]
 
-    areas_from_idx = [7]
-    areas_to_idx = [0, 1, 2, 3, 4]
+    # areas_from_idx = [7]
+    # areas_to_idx = [0, 1, 2, 3, 4]
 
     areas_from = [circuit.areas[i] for i in areas_from_idx]
     areas_to = [circuit.areas[i] for i in areas_to_idx]
@@ -504,7 +505,6 @@ if __name__ == '__main__':
         perform_previous_checks=False,
         weight_power_shift=1e5,
         weight_generation_cost=1e2,
-        weight_overloads=1e5,
         with_check=False,
         time_limit_ms=1e4,
         max_report_elements=5)

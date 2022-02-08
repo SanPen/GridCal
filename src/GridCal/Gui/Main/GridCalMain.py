@@ -227,6 +227,7 @@ class MainGUI(QMainWindow):
 
         self.mip_solvers_dict = OrderedDict()
         self.mip_solvers_dict[bs.MIPSolvers.CBC.value] = bs.MIPSolvers.CBC
+        self.mip_solvers_dict[bs.MIPSolvers.HiGS.value] = bs.MIPSolvers.HiGS
         self.mip_solvers_dict[bs.MIPSolvers.GLOP.value] = bs.MIPSolvers.GLOP
         self.mip_solvers_dict[bs.MIPSolvers.SCIP.value] = bs.MIPSolvers.SCIP
         self.mip_solvers_dict[bs.MIPSolvers.CPLEX.value] = bs.MIPSolvers.CPLEX
