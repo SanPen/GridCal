@@ -535,6 +535,7 @@ class StatisticalCharacterization:
 class MIPSolvers(Enum):
     GLOP = "GLOP"
     CBC = 'CBC'
+    HiGS = 'HiGS'
     SCIP = 'SCIP'
     CPLEX = 'CPLEX'
     GUROBI = 'Gurobi'
