@@ -323,6 +323,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 area_to_bus_idx=self.options.area_to_bus_idx,
                 alpha=alpha,
                 LODF=linear.LODF,
+                PTDF=linear.PTDF,
                 solver_type=self.options.mip_solver,
                 generation_formulation=self.options.generation_formulation,
                 monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,

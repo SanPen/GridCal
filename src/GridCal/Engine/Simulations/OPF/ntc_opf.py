@@ -1663,12 +1663,13 @@ class OpfNTC(Opf):
                 generator_names=self.numerical_circuit.generator_data.generator_names,
                 Cgen=Cgen,
                 Pgen=Pg_fix,
-                power_threshold=self.generation_contingency_threshold,
+                generation_contingency_threshold=self.generation_contingency_threshold,
                 PTDF=self.PTDF,
                 F=self.numerical_circuit.F,
                 T=self.numerical_circuit.T,
                 flow_f=flow_f,
-                monitor=monitor)
+                monitor=monitor,
+                logger=self.logger)
 
             # formulate the hvdc contingencies
             n1flow_hvdc_f, con_hvdc_idx = formulate_hvdc_contingency(
@@ -1682,7 +1683,8 @@ class OpfNTC(Opf):
                 F_hvdc=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
                 T_hvdc=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
                 flow_f=flow_f,
-                monitor=monitor)
+                monitor=monitor,
+                logger=self.logger)
         else:
             con_br_idx = list()
             n1flow_f = list()
@@ -1954,12 +1956,13 @@ class OpfNTC(Opf):
                 generator_names=self.numerical_circuit.generator_data.generator_names,
                 Cgen=Cgen,
                 Pgen=Pg_fix,
-                power_threshold=self.generation_contingency_threshold,
+                generation_contingency_threshold=self.generation_contingency_threshold,
                 PTDF=self.PTDF,
                 F=self.numerical_circuit.F,
                 T=self.numerical_circuit.T,
                 flow_f=flow_f,
-                monitor=monitor)
+                monitor=monitor,
+                logger=self.logger)
 
             # formulate the hvdc contingencies
             n1flow_hvdc_f, con_hvdc_idx = formulate_hvdc_contingency(
@@ -1973,7 +1976,8 @@ class OpfNTC(Opf):
                 F_hvdc=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
                 T_hvdc=self.numerical_circuit.hvdc_data.get_bus_indices_t(),
                 flow_f=flow_f,
-                monitor=monitor)
+                monitor=monitor,
+                logger=self.logger)
         else:
             con_br_idx = list()
             n1flow_f = list()
