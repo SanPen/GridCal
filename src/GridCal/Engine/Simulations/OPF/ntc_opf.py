@@ -984,8 +984,6 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, bran
     :param monitor: Array of final monitor status per branch after applying the logic
     :return:
         - flow_n1f: List of contingency flows LP variables
-        - overload1: Array of contingency overload LP variables in the positive sense
-        - overload2: Array of contingency overload LP variables in the negative sense
         - con_idx: list of accepted contingency monitored and failed indices [(monitored, failed), ...]
     """
     rates = ContingencyRates / Sbase
@@ -1027,6 +1025,7 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, bran
                 # store vars
                 con_idx.append((m, c))
                 flow_n1f.append(flow_n1)
+
 
     return flow_n1f, con_idx
 
