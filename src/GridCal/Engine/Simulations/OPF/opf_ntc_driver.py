@@ -55,7 +55,6 @@ class OptimalNetTransferCapacityOptions:
                  monitor_only_sensitive_branches=True,
                  branch_sensitivity_threshold=0.05,
                  skip_generation_limits=True,
-                 consider_contingencies=True,
                  perform_previous_checks=False,
                  dispatch_all_areas=False,
                  tolerance=1e-2,
@@ -65,7 +64,11 @@ class OptimalNetTransferCapacityOptions:
                  weight_generation_cost=1e-2,
                  with_check=True,
                  time_limit_ms=1e4,
-                 max_report_elements=0):
+                 max_report_elements=0,
+                 consider_contingencies=True,
+                 consider_hvdc_contingencies=False,
+                 consider_gen_contingencies=False,
+                 generation_contingency_threshold=0):
         """
 
         :param area_from_bus_idx:
@@ -83,10 +86,10 @@ class OptimalNetTransferCapacityOptions:
         :param sensitivity_mode:
         :param weight_power_shift:
         :param weight_generation_cost:
-        :param weight_overloads:
         :param with_check:
         :param time_limit_ms:
         :param max_report_elements:
+        :param generation_contingency_threshold:
         """
         self.verbose = verbose
 
@@ -106,8 +109,6 @@ class OptimalNetTransferCapacityOptions:
 
         self.skip_generation_limits = skip_generation_limits
 
-        self.consider_contingencies = consider_contingencies
-
         self.dispatch_all_areas = dispatch_all_areas
 
         self.tolerance = tolerance
@@ -121,9 +122,16 @@ class OptimalNetTransferCapacityOptions:
         self.weight_power_shift = weight_power_shift
         self.weight_generation_cost = weight_generation_cost
 
+
+        self.consider_contingencies = consider_contingencies
+        self.consider_hvdc_contingencies = consider_hvdc_contingencies
+        self.consider_gen_contingencies = consider_gen_contingencies
+        self.generation_contingency_threshold = generation_contingency_threshold
+
         self.with_check = with_check
         self.time_limit_ms = time_limit_ms
         self.max_report_elements = max_report_elements
+
 
 
 class OptimalNetTransferCapacityResults(ResultsTemplate):
@@ -154,7 +162,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                  loading=None, losses=None, solved=None, bus_types=None, hvdc_flow=None, hvdc_loading=None,
                  phase_shift=None, generation_delta=None, inter_area_branches=list(), inter_area_hvdc=list(),
                  alpha=None, contingency_flows_list=None, contingency_indices_list=None, rates=None,
-                 contingency_rates=None, area_from_bus_idx=None, area_to_bus_idx=None):
+                 contingency_gen_flows_list=None, contingency_gen_indices_list=None, contingency_hvdc_flows_list=None,
+                 contingency_hvdc_indices_list=None, contingency_rates=None, area_from_bus_idx=None,
+                 area_to_bus_idx=None):
 
         ResultsTemplate.__init__(self,
                                  name='OPF',
@@ -165,6 +175,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.BranchTapAngle,
 
                                                     ResultTypes.ContingencyFlowsReport,
+                                                    ResultTypes.ContingencyFlowsGenReport,
+                                                    ResultTypes.ContingencyFlowsHvdcReport,
 
                                                     ResultTypes.HvdcPowerFrom,
                                                     ResultTypes.BatteryPower,
@@ -233,6 +245,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.contingency_flows_list = contingency_flows_list
         self.contingency_indices_list = contingency_indices_list  # [(t, m, c), ...]
 
+        self.contingency_gen_flows_list = contingency_gen_flows_list
+        self.contingency_gen_indices_list = contingency_gen_indices_list  # [(t, m, c), ...]
+
+        self.contingency_hvdc_flows_list = contingency_hvdc_flows_list
+        self.contingency_hvdc_indices_list = contingency_hvdc_indices_list  # [(t, m, c), ...]
+
         self.rates = rates
         self.contingency_rates = contingency_rates
 
@@ -283,6 +301,90 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 y.append((m, c,
                           self.branch_names[m],
                           self.branch_names[c],
+                          contingency_flow,
+                          self.Sf[m],
+                          self.contingency_rates[m],
+                          self.rates[m],
+                          contingency_flow / self.contingency_rates[m] * 100,
+                          self.Sf[m] / self.rates[m] * 100))
+                labels.append(len(y))
+
+        columns = ['Monitored idx',
+                   'Contingency idx',
+                   'Monitored',
+                   'Contingency',
+                   'ContingencyFlow (MW)',
+                   'Base flow (MW)',
+                   'Contingency rates (MW)',
+                   'Base rates (MW)',
+                   'ContingencyFlow (%)',
+                   'Base flow (%)']
+
+        y = np.array(y)
+        if len(y.shape) == 2:
+            idx = np.flip(np.argsort(np.abs(y[:, 8].astype(float))))  # sort by ContingencyFlow (%)
+            y = y[idx, :]
+            y = np.array(y, dtype=object)
+        else:
+            y = np.zeros((0, len(columns)), dtype=object)
+
+        # curtail report
+        if max_report_elements > 0:
+            y = y[:max_report_elements, :]
+
+        return labels, columns, y
+
+    def get_contingency_gen_report(self, max_report_elements=0):
+        labels = list()
+        y = list()
+
+        for (m, c), contingency_flow in zip(self.contingency_gen_indices_list, self.contingency_gen_flows_list):
+            if contingency_flow != 0.0:
+                y.append((m, c,
+                          self.branch_names[m],
+                          self.generator_names[c],
+                          contingency_flow,
+                          self.Sf[m],
+                          self.contingency_rates[m],
+                          self.rates[m],
+                          contingency_flow / self.contingency_rates[m] * 100,
+                          self.Sf[m] / self.rates[m] * 100))
+                labels.append(len(y))
+
+        columns = ['Monitored idx',
+                   'Contingency idx',
+                   'Monitored',
+                   'Contingency',
+                   'ContingencyFlow (MW)',
+                   'Base flow (MW)',
+                   'Contingency rates (MW)',
+                   'Base rates (MW)',
+                   'ContingencyFlow (%)',
+                   'Base flow (%)']
+
+        y = np.array(y)
+        if len(y.shape) == 2:
+            idx = np.flip(np.argsort(np.abs(y[:, 8].astype(float))))  # sort by ContingencyFlow (%)
+            y = y[idx, :]
+            y = np.array(y, dtype=object)
+        else:
+            y = np.zeros((0, len(columns)), dtype=object)
+
+        # curtail report
+        if max_report_elements > 0:
+            y = y[:max_report_elements, :]
+
+        return labels, columns, y
+
+    def get_contingency_hvdc_report(self, max_report_elements=0):
+        labels = list()
+        y = list()
+
+        for (m, c), contingency_flow in zip(self.contingency_hvdc_indices_list, self.contingency_hvdc_flows_list):
+            if contingency_flow != 0.0:
+                y.append((m, c,
+                          self.branch_names[m],
+                          self.hvdc_names[c],
                           contingency_flow,
                           self.Sf[m],
                           self.contingency_rates[m],
@@ -426,6 +528,16 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = ''
             title = result_type.value[0]
 
+        elif result_type == ResultTypes.ContingencyFlowsGenReport:
+            labels, columns, y = self.get_contingency_gen_report()
+            y_label = ''
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.ContingencyFlowsHvdcReport:
+            labels, columns, y = self.get_contingency_hvdc_report()
+            y_label = ''
+            title = result_type.value[0]
+
         else:
             labels = []
             y = np.zeros(0)
@@ -487,7 +599,15 @@ class OptimalNetTransferCapacity(DriverTemplate):
         Run a power flow for every circuit
         @return: OptimalPowerFlowResults object
         """
+
         self.progress_text.emit('Compiling...')
+
+        contingency_flows_list = list()
+        contingency_indices_list = list()
+        contingency_gen_flows_list = list()
+        contingency_gen_indices_list = list()
+        contingency_hvdc_flows_list = list()
+        contingency_hvdc_indices_list = list()
 
         numerical_circuit = compile_snapshot_opf_circuit(
             circuit=self.grid,
@@ -527,8 +647,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
                     base_problems = True
 
             # run contingency analysis ---------------------------------------------------------------------------------
-            contingency_flows_list = list()
-            contingency_indices_list = list()
+
 
             if self.options.consider_contingencies:
                 self.progress_text.emit('Pre-solving base state (Contingency analysis)...')
@@ -601,6 +720,10 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 alpha=alpha,
                 contingency_flows_list=contingency_flows_list,
                 contingency_indices_list=contingency_indices_list,
+                contingency_gen_flows_list=contingency_gen_flows_list,
+                contingency_gen_indices_list=contingency_gen_indices_list,
+                contingency_hvdc_flows_list=contingency_hvdc_flows_list,
+                contingency_hvdc_indices_list=contingency_hvdc_indices_list,
                 rates=numerical_circuit.branch_data.branch_rates[:, 0],
                 contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0],
                 area_from_bus_idx=self.options.area_from_bus_idx,
@@ -615,16 +738,20 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 area_to_bus_idx=self.options.area_to_bus_idx,
                 alpha=alpha,
                 LODF=linear.LODF,
+                PTDF=linear.PTDF,
                 solver_type=self.options.mip_solver,
                 generation_formulation=self.options.generation_formulation,
                 monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
                 branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
                 skip_generation_limits=self.options.skip_generation_limits,
-                consider_contingencies=self.options.consider_contingencies,
                 dispatch_all_areas=self.options.dispatch_all_areas,
                 tolerance=self.options.tolerance,
                 weight_power_shift=self.options.weight_power_shift,
                 weight_generation_cost=self.options.weight_generation_cost,
+                consider_contingencies=self.options.consider_contingencies,
+                consider_hvdc_contingencies=self.options.consider_hvdc_contingencies,
+                consider_gen_contingencies=self.options.consider_gen_contingencies,
+                generation_contingency_threshold=self.options.generation_contingency_threshold,
                 logger=self.logger)
 
             # Solve
@@ -700,6 +827,10 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 alpha=alpha,
                 contingency_flows_list=problem.get_contingency_flows_list(),
                 contingency_indices_list=problem.contingency_indices_list,
+                contingency_gen_flows_list=problem.get_contingency_gen_flows_list(),
+                contingency_gen_indices_list=problem.contingency_gen_indices_list,
+                contingency_hvdc_flows_list=problem.get_contingency_hvdc_flows_list(),
+                contingency_hvdc_indices_list=problem.contingency_hvdc_indices_list,
                 rates=numerical_circuit.branch_data.branch_rates[:, 0],
                 contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0],
                 area_from_bus_idx=self.options.area_from_bus_idx,

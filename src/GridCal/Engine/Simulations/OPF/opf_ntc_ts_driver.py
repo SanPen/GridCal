@@ -147,8 +147,22 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 print('Hora', t, ': Capacidad', ntc, "MW")
 
                 # get contingency data
-                l, c, data = self.results_dict[t].get_contingency_report(
+                l, c, data1 = self.results_dict[t].get_contingency_report(
                     max_report_elements=self.max_report_elements)
+
+                # get contingency gen data
+                l, c, data2 = self.results_dict[t].get_contingency_gen_report(
+                    max_report_elements=self.max_report_elements)
+
+                # get contingency hvdc data
+                l, c, data3 = self.results_dict[t].get_contingency_hvdc_report(
+                    max_report_elements=self.max_report_elements)
+
+                # group all contingency reports
+                data = np.concatenate((data1, data2, data3), axis=0)
+
+                # sort and filer the worst contingencies
+                data = data[np.argsort(np.abs(data[:, 8].astype(float)))][::-1][:self.max_report_elements]
 
                 # get phase shifter data
                 shifter_data = np.array([self.results_dict[t].phase_shift[shift_idx]] * data.shape[0])
@@ -156,6 +170,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 # get phase hvdc data
                 hvdc_data = np.array([self.results_dict[t].hvdc_Pf] * data.shape[0])
 
+                # add columns to data
                 data = np.concatenate((data, shifter_data, hvdc_data), axis=1)
 
             else:
@@ -173,9 +188,9 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         # sort data by ntc and time index, descending to compute probability factor
 
-        # data_all = data_all[np.lexsort((data_all[:, 2]))][::1]
-        # data_all = data_all[np.lexsort((data_all[:, 0]))][::-1]
-        data_all = data_all[np.lexsort((data_all[:, 0], data_all[:, 2]))][::-1]
+        data_all = data_all[np.lexsort(
+            (np.abs(data_all[:, 11].astype(float)), data_all[:, 0], data_all[:, 2])
+        )][::-1]
 
         # add column into data
         prob = np.zeros((data_all.shape[0], 1))
@@ -329,11 +344,14 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
                 branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
                 skip_generation_limits=self.options.skip_generation_limits,
-                consider_contingencies=self.options.consider_contingencies,
                 dispatch_all_areas=self.options.dispatch_all_areas,
                 tolerance=self.options.tolerance,
                 weight_power_shift=self.options.weight_power_shift,
                 weight_generation_cost=self.options.weight_generation_cost,
+                consider_contingencies=self.options.consider_contingencies,
+                consider_hvdc_contingencies=self.options.consider_hvdc_contingencies,
+                consider_gen_contingencies=self.options.consider_gen_contingencies,
+                generation_contingency_threshold=self.options.generation_contingency_threshold,
                 logger=self.logger)
 
             # Solve
@@ -406,6 +424,10 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                     alpha=alpha,
                     contingency_flows_list=problem.get_contingency_flows_list(),
                     contingency_indices_list=problem.contingency_indices_list,
+                    contingency_gen_flows_list=problem.get_contingency_gen_flows_list(),
+                    contingency_gen_indices_list=problem.contingency_gen_indices_list,
+                    contingency_hvdc_flows_list=problem.get_contingency_hvdc_flows_list(),
+                    contingency_hvdc_indices_list=problem.contingency_hvdc_indices_list,
                     rates=nc.branch_data.branch_rates[:, t],
                     contingency_rates=nc.branch_data.branch_contingency_rates[:, t])
 
@@ -440,8 +462,8 @@ if __name__ == '__main__':
     from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
     from GridCal.Engine import FileOpen, LinearAnalysis
 
-    fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE3.gridcal'
-    path_out = r'd:\original_ntc_optimization_EF_PMODE3.csv'
+    fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1.gridcal'
+    path_out = r'd:\original_ntc_optimization_EF_PMODE1.csv'
 
     circuit = FileOpen(fname).open()
 
@@ -508,7 +530,8 @@ if __name__ == '__main__':
         weight_generation_cost=1e2,
         with_check=False,
         time_limit_ms=1e4,
-        max_report_elements=5)
+        max_report_elements=5,
+        generation_contingency_threshold=1000)
 
     print('Running optimal net transfer capacity...')
 
@@ -521,7 +544,7 @@ if __name__ == '__main__':
         start_=start,
         end_=end,
         use_clustering=True,
-        cluster_number=10)
+        cluster_number=5)
 
     driver.run()
 

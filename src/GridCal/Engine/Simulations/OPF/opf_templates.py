@@ -260,6 +260,20 @@ class Opf:
         return True
 
 
+    def get_contingency_gen_flows_list(self):
+        """
+        return the load shedding (time, device)
+        :return: 2D array
+        """
+        return self.extract_list(self.contingency_gen_flows_list) * self.numerical_circuit.Sbase
+
+    def get_contingency_hvdc_flows_list(self):
+        """
+        return the load shedding (time, device)
+        :return: 2D array
+        """
+        return self.extract_list(self.contingency_hvdc_flows_list) * self.numerical_circuit.Sbase
+
 class OpfTimeSeries:
 
     def __init__(self, numerical_circuit: OpfTimeCircuit,
