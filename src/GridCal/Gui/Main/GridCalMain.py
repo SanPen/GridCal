@@ -4143,7 +4143,6 @@ class MainGUI(QMainWindow):
                 branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
-                consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
                 tolerance = 10.0 ** self.ui.ntcOpfTolSpinBox.value()
 
                 perform_previous_checks = self.ui.ntcFeasibilityCheckCheckBox.isChecked()
@@ -4152,7 +4151,11 @@ class MainGUI(QMainWindow):
 
                 weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
                 weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
-                weight_overloads = 10.0 ** self.ui.weightsOverloadsSpinBox.value()
+
+                consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
+                consider_hvdc_contingencies = self.ui.considerContingenciesHvdcOpfCheckBox.isChecked()
+                consider_gen_contingencies = self.ui.considerContingenciesGeneratorOpfCheckBox.isChecked()
+                generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
 
                 options = sim.OptimalNetTransferCapacityOptions(
                     area_from_bus_idx=idx_from,
@@ -4162,7 +4165,6 @@ class MainGUI(QMainWindow):
                     monitor_only_sensitive_branches=monitor_only_sensitive_branches,
                     branch_sensitivity_threshold=branch_sensitivity_threshold,
                     skip_generation_limits=skip_generation_limits,
-                    consider_contingencies=consider_contingencies,
                     dispatch_all_areas=dispatch_all_areas,
                     tolerance=tolerance,
                     sensitivity_dT=dT,
@@ -4170,7 +4172,10 @@ class MainGUI(QMainWindow):
                     perform_previous_checks=perform_previous_checks,
                     weight_power_shift=weight_power_shift,
                     weight_generation_cost=weight_generation_cost,
-                    weight_overloads=weight_overloads)
+                    consider_contingencies=consider_contingencies,
+                    consider_hvdc_contingencies=consider_hvdc_contingencies,
+                    consider_gen_contingencies=consider_gen_contingencies,
+                    generation_contingency_threshold=generation_contingency_threshold)
 
                 self.ui.progress_label.setText('Running optimal power flow...')
                 QtGui.QGuiApplication.processEvents()
