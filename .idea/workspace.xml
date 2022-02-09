@@ -23,18 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed HVDC oscillation control and visualization">
-      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE 118 Bus - ntc_areas.raw" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE 39 dynamic bus types.gridcal" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE 39+HVDC line.gridcal" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/IEEE118_locations.xlsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/Lynn 5 Bus (pq).gridcal" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/Lynn 5 bus (SVC).gridcal" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/trafo.gridcal" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/trafo2.gridcal" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="PTDF research added distributed slack to the KULeuven formulation &#10;Added missing grids in the examples">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/PTDF/PTDF_ku_leuven.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/PTDF/PTDF_ku_leuven.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/pulp.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/pulp.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -697,14 +688,10 @@
       <workItem from="1641648944285" duration="104000" />
       <workItem from="1641656630000" duration="1211000" />
       <workItem from="1642258686374" duration="11666000" />
-      <workItem from="1642324846172" duration="9100000" />
-    </task>
-    <task id="LOCAL-00199" summary="Small bug fixes:&#10;- Added the coordinates in the branches that were missing&#10;- After a very long time, the bus drag and drop has a icon!&#10;- Fixed the kV tooltip thing">
-      <created>1632949796379</created>
-      <option name="number" value="00199" />
-      <option name="presentableId" value="LOCAL-00199" />
-      <option name="project" value="LOCAL" />
-      <updated>1632949796379</updated>
+      <workItem from="1642324846172" duration="10016000" />
+      <workItem from="1644333240281" duration="9000" />
+      <workItem from="1644338564444" duration="6843000" />
+      <workItem from="1644433735350" duration="699000" />
     </task>
     <task id="LOCAL-00200" summary="Added Activs500g">
       <created>1632949829511</created>
@@ -1042,7 +1029,14 @@
       <option name="project" value="LOCAL" />
       <updated>1642278036423</updated>
     </task>
-    <option name="localTasksCounter" value="248" />
+    <task id="LOCAL-00248" summary="PTDF research added distributed slack to the KULeuven formulation &#10;Added missing grids in the examples">
+      <created>1642349596358</created>
+      <option name="number" value="00248" />
+      <option name="presentableId" value="LOCAL-00248" />
+      <option name="project" value="LOCAL" />
+      <updated>1642349596359</updated>
+    </task>
+    <option name="localTasksCounter" value="249" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1075,7 +1069,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Implemented optional way to open the web maps when the pyside webdriver is not available" />
     <MESSAGE value="implemented simpler zoom by selecting and adjusting the screen" />
     <MESSAGE value="For apple M1 use GLOP when using ortools" />
     <MESSAGE value="4.2.6" />
@@ -1100,7 +1093,8 @@
     <MESSAGE value="fixed error with has_time_series" />
     <MESSAGE value="Improved copying the compiled arrays" />
     <MESSAGE value="Fixed HVDC oscillation control and visualization" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed HVDC oscillation control and visualization" />
+    <MESSAGE value="PTDF research added distributed slack to the KULeuven formulation &#10;Added missing grids in the examples" />
+    <option name="LAST_COMMIT_MESSAGE" value="PTDF research added distributed slack to the KULeuven formulation &#10;Added missing grids in the examples" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
