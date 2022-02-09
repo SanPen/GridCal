@@ -19,7 +19,7 @@ import numpy as np
 import numba as nb
 import pandas as pd
 import scipy.sparse as sp
-from typing import List
+from typing import List, Tuple, Dict, Any
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
@@ -120,6 +120,46 @@ def compose_generator_voltage_profile(nbus, ntime,
                     used[from_idx, t] = 1
 
     return V
+
+
+def get_inter_areas_branch(F, T, buses_areas_1, buses_areas_2):
+    """
+    Get the branches that join two areas
+    :param buses_areas_1: Area from
+    :param buses_areas_2: Area to
+    :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+    """
+    nbr = len(F)
+    lst: List[Tuple[int, float]] = list()
+    for k in range(nbr):
+        if F[k] in buses_areas_1 and T[k] in buses_areas_2:
+            lst.append((k, 1.0))
+        elif F[k] in buses_areas_2 and T[k] in buses_areas_1:
+            lst.append((k, -1.0))
+    return lst
+
+
+def get_devices_per_areas(Cdev, buses_in_a1, buses_in_a2):
+    """
+    Get the generators that belong to the Area 1, Area 2 and the rest of areas
+    :param buses_in_a1: List of bus indices of the area 1
+    :param buses_in_a2: List of bus indices of the area 2
+    :return: Tree lists: (gens_in_a1, gens_in_a2, gens_out) each of the lists contains (bus index, generator index) tuples
+    """
+    gens_in_a1 = list()
+    gens_in_a2 = list()
+    gens_out = list()
+    for j in range(Cdev.shape[1]):  # for each bus
+        for ii in range(Cdev.indptr[j], Cdev.indptr[j + 1]):
+            i = Cdev.indices[ii]
+            if i in buses_in_a1:
+                gens_in_a1.append((i, j))  # i: bus idx, j: gen idx
+            elif i in buses_in_a2:
+                gens_in_a2.append((i, j))  # i: bus idx, j: gen idx
+            else:
+                gens_out.append((i, j))  # i: bus idx, j: gen idx
+
+    return gens_in_a1, gens_in_a2, gens_out
 
 
 class SnapshotData:
@@ -1094,6 +1134,56 @@ class SnapshotData:
 
         return Bmax, Bmin
 
+    def get_inter_areas_branches(self, buses_areas_1, buses_areas_2):
+        """
+        Get the branches that join two areas
+        :param buses_areas_1: Area from
+        :param buses_areas_2: Area to
+        :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+        """
+        return get_inter_areas_branch(self.branch_data.F, self.branch_data.T, buses_areas_1, buses_areas_2)
+
+    def get_inter_areas_hvdc(self, buses_areas_1, buses_areas_2):
+        """
+        Get the branches that join two areas
+        :param buses_areas_1: Area from
+        :param buses_areas_2: Area to
+        :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+        """
+        F = self.hvdc_data.get_bus_indices_f()
+        T = self.hvdc_data.get_bus_indices_t()
+        return get_inter_areas_branch(F, T, buses_areas_1, buses_areas_2)
+
+    def get_generators_per_areas(self, buses_in_a1, buses_in_a2):
+        """
+        Get the generators that belong to the Area 1, Area 2 and the rest of areas
+        :param buses_in_a1: List of bus indices of the area 1
+        :param buses_in_a2: List of bus indices of the area 2
+        :return: Tree lists: (gens_in_a1, gens_in_a2, gens_out)
+                 each of the lists contains (bus index, generator index) tuples
+        """
+        if isinstance(self.generator_data.C_bus_gen, sp.csc_matrix):
+            Cgen = self.generator_data.C_bus_gen
+        else:
+            Cgen = self.generator_data.C_bus_gen.tocsc()
+
+        return get_devices_per_areas(Cgen, buses_in_a1, buses_in_a2)
+
+    def get_batteries_per_areas(self, buses_in_a1, buses_in_a2):
+        """
+        Get the batteries that belong to the Area 1, Area 2 and the rest of areas
+        :param buses_in_a1: List of bus indices of the area 1
+        :param buses_in_a2: List of bus indices of the area 2
+        :return: Tree lists: (batteries_in_a1, batteries_in_a2, batteries_out)
+                 each of the lists contains (bus index, generator index) tuples
+        """
+        if isinstance(self.battery_data.C_bus_batt, sp.csc_matrix):
+            Cgen = self.battery_data.C_bus_batt
+        else:
+            Cgen = self.battery_data.C_bus_batt.tocsc()
+
+        return get_devices_per_areas(Cgen, buses_in_a1, buses_in_a2)
+
     def get_structure(self, structure_type) -> pd.DataFrame:
         """
         Get a DataFrame with the input.
@@ -1350,6 +1440,8 @@ class SnapshotData:
         nc.generator_data = self.generator_data.slice(gen_idx, bus_idx, time_idx)
         nc.shunt_data = self.shunt_data.slice(shunt_idx, bus_idx, time_idx)
 
+        nc.determine_control_indices()
+
         return nc
 
     def split_into_islands(self, ignore_single_node_islands=False) -> List["SnapshotData"]:
@@ -1377,12 +1469,10 @@ class SnapshotData:
 
                 if len(bus_idx) > 1:
                     island = self.get_island(bus_idx)
-                    # island.compute_all()  # compute the internal magnitudes
                     circuit_islands.append(island)
 
             else:
                 island = self.get_island(bus_idx)
-                # island.compute_all()  # compute the internal magnitudes
                 circuit_islands.append(island)
 
         return circuit_islands
@@ -1463,9 +1553,6 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
                                                    bus_dict=bus_dict,
                                                    apply_temperature=apply_temperature,
                                                    branch_tolerance_mode=branch_tolerance_mode)
-
-    nc.upfc_data = gc_compiler.get_upfc_data(circuit=circuit,
-                                             bus_dict=bus_dict)
 
     nc.branch_data = gc_compiler.get_branch_data(circuit=circuit,
                                                  bus_dict=bus_dict,

@@ -382,12 +382,18 @@ class MultiCircuit:
     def get_buses(self):
         return self.buses
 
+    def get_bus_names(self):
+        return [e.name for e in self.buses]
+
     def get_branches_wo_hvdc(self):
         """
         Return all the branch objects
         :return: lines + transformers 2w + hvdc
         """
-        return self.lines + self.transformers2w + self.vsc_devices + self.dc_lines + self.upfc_devices + self.switch_devices
+        return self.lines + self.dc_lines + self.transformers2w + self.vsc_devices + self.upfc_devices + self.switch_devices
+
+    def get_branches_wo_hvdc_names(self):
+        return [e.name for e in self.get_branches_wo_hvdc()]
 
     def get_branches(self):
         """
@@ -1713,6 +1719,10 @@ class MultiCircuit:
         """
         for bus in self.buses:
             bus.set_state(t)
+
+        for branch in self.get_branches():
+            branch.set_profile_values(t)
+
 
     def get_bus_branch_connectivity_matrix(self):
         """

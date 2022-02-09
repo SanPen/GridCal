@@ -41,7 +41,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                  name='OPF time series',
                                  available_results=[ResultTypes.BusVoltageModule,
                                                     ResultTypes.BusVoltageAngle,
-                                                    ResultTypes.ShadowPrices,
+                                                    ResultTypes.BusShadowPrices,
+
                                                     ResultTypes.BranchPower,
                                                     ResultTypes.BranchLoading,
                                                     ResultTypes.BranchOverloads,
@@ -51,10 +52,10 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
                                                     ResultTypes.HvdcPowerFrom,
                                                     ResultTypes.HvdcLoading,
-                                                    ResultTypes.HvdcOverloads,
+
                                                     ResultTypes.LoadShedding,
-                                                    ResultTypes.ControlledGeneratorShedding,
-                                                    ResultTypes.ControlledGeneratorPower,
+                                                    ResultTypes.GeneratorShedding,
+                                                    ResultTypes.GeneratorPower,
                                                     ResultTypes.BatteryPower,
                                                     ResultTypes.BatteryEnergy],
                                  data_variables=['bus_names',
@@ -67,6 +68,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                  'Sbus',
                                                  'voltage',
                                                  'load_shedding',
+                                                 'hvdc_Pf',
+                                                 'hvdc_loading',
                                                  'Sf',
                                                  'overloads',
                                                  'loading',
@@ -107,14 +110,13 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         self.Sbus = np.zeros((nt, n), dtype=complex)
 
-        self.shadow_prices = np.zeros((nt, n), dtype=float)
+        self.bus_shadow_prices = np.zeros((nt, n), dtype=float)
 
         self.Sf = np.zeros((nt, m), dtype=complex)
-
+        self.St = np.zeros((nt, m), dtype=complex)
 
         self.hvdc_Pf = np.zeros((nt, nhvdc), dtype=float)
         self.hvdc_loading = np.zeros((nt, nhvdc), dtype=float)
-        self.hvdc_overloads = np.zeros((nt, nhvdc), dtype=float)
 
         self.phase_shift = np.zeros((nt, m), dtype=float)
 
@@ -189,10 +191,10 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             y_label = '(Radians)'
             title = 'Bus voltage angle'
 
-        elif result_type == ResultTypes.ShadowPrices:
+        elif result_type == ResultTypes.BusShadowPrices:
             labels = self.bus_names
-            y = self.shadow_prices
-            y_label = '(currency)'
+            y = self.bus_shadow_prices
+            y_label = '(currency / MW)'
             title = 'Bus shadow prices'
 
         elif result_type == ResultTypes.BranchPower:
@@ -237,12 +239,6 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             y_label = '(MW)'
             title = result_type.value[0]
 
-        elif result_type == ResultTypes.HvdcOverloads:
-            labels = self.hvdc_names
-            y = self.hvdc_overloads
-            y_label = '(MW)'
-            title = result_type.value[0]
-
         elif result_type == ResultTypes.HvdcLoading:
             labels = self.hvdc_names
             y = self.hvdc_loading * 100.0
@@ -255,13 +251,13 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             y_label = '(MW)'
             title = 'Load shedding'
 
-        elif result_type == ResultTypes.ControlledGeneratorPower:
+        elif result_type == ResultTypes.GeneratorPower:
             labels = self.generator_names
             y = self.generator_power
             y_label = '(MW)'
             title = 'Controlled generator power'
 
-        elif result_type == ResultTypes.ControlledGeneratorShedding:
+        elif result_type == ResultTypes.GeneratorShedding:
             labels = self.generator_names
             y = self.generator_shedding
             y_label = '(MW)'

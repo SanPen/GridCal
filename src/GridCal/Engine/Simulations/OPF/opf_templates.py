@@ -47,7 +47,6 @@ class Opf:
 
         self.Pinj = None
         self.hvdc_flow = None
-        self.hvdc_slacks = None
 
         self.phase_shift = None
 
@@ -78,9 +77,7 @@ class Opf:
         else:
             self.solver = solver_type
 
-        if self.solver is not None:
-
-            self.problem = self.formulate()
+        self.problem = None
 
     def formulate(self):
         """
@@ -93,25 +90,28 @@ class Opf:
 
         return problem
 
-    def solve(self):
+    def solve(self, msg=True):
         """
         Call PuLP to solve the problem
         """
         # self.problem.writeLP('OPF.lp')
         if self.solver_type == MIPSolvers.CBC:
-            params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=1)
+            params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=msg)
 
         elif self.solver_type == MIPSolvers.SCIP:
-            params = SCIP_CMD(msg=1)
+            params = SCIP_CMD(msg=msg)
 
         elif self.solver_type == MIPSolvers.CPLEX:
-            params = CPLEX_CMD(msg=1)
+            params = CPLEX_CMD(msg=msg)
+
+        elif self.solver_type == MIPSolvers.HiGS:
+            params = HiGHS_CMD(msg=msg)
 
         elif self.solver_type == MIPSolvers.GUROBI:
-            params = GUROBI_CMD(msg=1)
+            params = GUROBI_CMD(msg=msg)
 
         elif self.solver_type == MIPSolvers.XPRESS:
-            params = XPRESS(msg=1)
+            params = XPRESS(msg=msg)
 
         else:
             raise Exception('Solver not supported! ' + str(self.solver_type))
@@ -184,26 +184,26 @@ class Opf:
         """
         return self.extract(self.hvdc_flow) * self.numerical_circuit.Sbase
 
-    def get_hvdc_slacks(self):
-        """
-        return the branch overloads (time, device)
-        :return: 2D array
-        """
-        return self.extract(self.hvdc_slacks)
-
     def get_loading(self):
         """
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.extract(self.s_from, make_abs=False) / (self.rating + 1e-12)
+        return self.extract(self.s_from, make_abs=False) / (self.rating + 1e-20)
 
-    def get_branch_power(self):
+    def get_branch_power_from(self):
         """
         return the branch loading (time, device)
         :return: 2D array
         """
         return self.extract(self.s_from, make_abs=False) * self.numerical_circuit.Sbase
+
+    def get_branch_power_to(self):
+        """
+        return the branch loading (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.s_to, make_abs=False) * self.numerical_circuit.Sbase
 
     def get_battery_power(self):
         """
@@ -254,8 +254,9 @@ class Opf:
         """
         val = np.zeros(self.nodal_restrictions.shape)
         for i in range(val.shape[0]):
-            if self.nodal_restrictions[i].pi is not None:
-                val[i] = - self.nodal_restrictions[i].pi
+            if self.nodal_restrictions[i] is not None:
+                if self.nodal_restrictions[i].pi is not None:
+                    val[i] = - self.nodal_restrictions[i].pi
         return val.transpose()
 
     def converged(self):
@@ -287,7 +288,6 @@ class OpfTimeSeries:
 
         self.Pinj = None
         self.hvdc_flow = None
-        self.hvdc_slacks = None
         self.phase_shift = None
 
         self.E = None
@@ -302,8 +302,7 @@ class OpfTimeSeries:
         self.contingency_indices_list = list()  # [(t, m, c), ...]
         self.contingency_flows_slacks_list = list()
 
-        if not skip_formulation:
-            self.problem = self.formulate()
+        self.problem = None
 
     def formulate(self):
         """
@@ -323,6 +322,9 @@ class OpfTimeSeries:
 
         if self.solver == MIPSolvers.CBC:
             params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=msg)
+
+        elif self.solver == MIPSolvers.HiGS:
+            params = HiGHS_CMD(msg=msg)
 
         elif self.solver == MIPSolvers.SCIP:
             params = SCIP_CMD(msg=msg)
@@ -391,7 +393,7 @@ class OpfTimeSeries:
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.s_from, make_abs=False) / self.rating
+        return self.extract2D(self.s_from, make_abs=False) / (self.rating + 1e-20)
 
     def get_power_injections(self):
         """
@@ -414,19 +416,19 @@ class OpfTimeSeries:
         """
         return self.extract2D(self.hvdc_flow) * self.numerical_circuit.Sbase
 
-    def get_hvdc_slacks(self):
-        """
-        return the branch overloads (time, device)
-        :return: 2D array
-        """
-        return self.extract2D(self.hvdc_slacks) * self.numerical_circuit.Sbase
-
-    def get_branch_power(self):
+    def get_branch_power_from(self):
         """
         return the branch loading (time, device)
         :return: 2D array
         """
         return self.extract2D(self.s_from, make_abs=False) * self.numerical_circuit.Sbase
+
+    def get_branch_power_to(self):
+        """
+        return the branch loading (time, device)
+        :return: 2D array
+        """
+        return self.extract2D(self.s_to, make_abs=False) * self.numerical_circuit.Sbase
 
     def get_battery_power(self):
         """
@@ -484,6 +486,7 @@ class OpfTimeSeries:
         """
         val = np.zeros(self.nodal_restrictions.shape)
         for i, j in product(range(val.shape[0]), range(val.shape[1])):
-            if self.nodal_restrictions[i, j].pi is not None:
-                val[i, j] = - self.nodal_restrictions[i, j].pi
+            if self.nodal_restrictions[i, j] is not None:
+                if self.nodal_restrictions[i, j].pi is not None:
+                    val[i, j] = - self.nodal_restrictions[i, j].pi
         return val.transpose()

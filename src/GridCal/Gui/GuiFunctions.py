@@ -483,16 +483,19 @@ class PandasModel(QtCore.QAbstractTableModel):
 
         if n > 0:
 
-            index, columns, data = self.get_data(mode=mode)
+            if mode == 'numpy':
+                txt = fast_data_to_numpy_text(self.data_c)
+            else:
+                index, columns, data = self.get_data(mode=mode)
 
-            data = data.astype(str)
+                data = data.astype(str)
 
-            # header first
-            txt = '\t' + '\t'.join(columns) + '\n'
+                # header first
+                txt = '\t' + '\t'.join(columns) + '\n'
 
-            # data
-            for t, index_value in enumerate(index):
-                txt += str(index_value) + '\t' + '\t'.join(data[t, :]) + '\n'
+                # data
+                for t, index_value in enumerate(index):
+                    txt += str(index_value) + '\t' + '\t'.join(data[t, :]) + '\n'
 
             # copy to clipboard
             cb = QApplication.clipboard()
@@ -1365,3 +1368,26 @@ def get_tree_item_path(item: QtGui.QStandardItem):
         item_parent = item_parent.parent()
     path.reverse()
     return path
+
+def fast_data_to_numpy_text(data):
+
+    if len(data.shape) == 1:
+        txt = '[' + ', '.join(['{0:.6f}'.format(x) for x in data]) + ']'
+
+    elif len(data.shape) == 2:
+
+        if data.shape[1] > 1:
+            # header first
+            txt = '['
+
+            # data
+            for t in range(data.shape[0]):
+                txt += '[' + ', '.join(['{0:.6f}'.format(x) for x in data[t, :]]) + '],\n'
+
+            txt += ']'
+        else:
+            txt = '[' + ', '.join(['{0:.6f}'.format(x) for x in data[:, 0]]) + ']'
+    else:
+        txt = '[]'
+
+    return txt

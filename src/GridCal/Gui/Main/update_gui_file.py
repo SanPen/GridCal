@@ -16,11 +16,17 @@ if __name__ == '__main__':
     if f1 == 'bin':
         fbase = folder
     else:
-        fbase = os.path.join(folder, 'Script')
+        if 'script' in folder.lower():
+            fbase = folder
+        else:
+            fbase = os.path.join(folder, 'Script')
 
     # update icon/images resources
     if os.path.exists(os.path.join(fbase, 'pyside2-rcc')):
         call([py, os.path.join(fbase, 'pyside2-rcc'), 'icons.qrc', '-o', 'icons_rc.py'])
+        print('pyside2-rcc (py) ok')
+    elif os.path.exists(os.path.join(fbase, 'pyside2-rcc.exe')):
+        call([py, os.path.join(fbase, 'pyside2-rcc.exe'), 'icons.qrc', '-o', 'icons_rc.py'])
         print('pyside2-rcc (py) ok')
     else:
         try:
@@ -38,6 +44,9 @@ if __name__ == '__main__':
         # update ui handler file
         if os.path.exists(os.path.join(fbase, 'pyside2-uic')):
             call([py, os.path.join(fbase, 'pyside2-uic'), filename_ui, '-o', filename])
+            print('pyside2-uic (py) ok')
+        elif os.path.exists(os.path.join(fbase, 'pyside2-uic.exe')):
+            call([py, os.path.join(fbase, 'pyside2-uic.exe'), filename_ui, '-o', filename])
             print('pyside2-uic (py) ok')
         else:
             try:

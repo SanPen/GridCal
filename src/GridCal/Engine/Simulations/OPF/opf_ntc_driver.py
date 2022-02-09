@@ -171,7 +171,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.HvdcPowerFrom,
                                                     ResultTypes.HvdcOverloads,
                                                     ResultTypes.BatteryPower,
-                                                    ResultTypes.ControlledGeneratorPower,
+                                                    ResultTypes.GeneratorPower,
                                                     ResultTypes.GenerationDelta,
                                                     ResultTypes.GenerationDeltaSlacks,
                                                     ResultTypes.LoadShedding,
@@ -352,7 +352,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = '(MW)'
             title = result_type.value[0]
 
-        elif result_type == ResultTypes.ControlledGeneratorPower:
+        elif result_type == ResultTypes.GeneratorPower:
             labels = self.generator_names
             y = self.generator_power
             y_label = '(MW)'
@@ -689,7 +689,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 generator_shedding=np.zeros((numerical_circuit.ngen, 1)),
                 battery_power=np.zeros((numerical_circuit.nbatt, 1)),
                 controlled_generation_power=problem.get_generator_power(),
-                Sf=problem.get_branch_power(),
+                Sf=problem.get_branch_power_from(),
                 overloads=problem.get_overloads(),
                 loading=problem.get_loading(),
                 converged=bool(converged),

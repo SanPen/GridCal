@@ -30,8 +30,8 @@ from GridCal.ThirdParty.pulp.solvers import *
 class CPLEX_CMD(LpSolver_CMD):
     """The CPLEX LP solver_type"""
 
-    def __init__(self, path = None, keepFiles = 0, mip = 1,
-            msg = 0, options = [], timelimit = None):
+    def __init__(self, path=None, keepFiles=0, mip=1,
+            msg=0, options=[], timelimit=None):
         LpSolver_CMD.__init__(self, path, keepFiles, mip, msg, options)
         self.timelimit = timelimit
 
@@ -46,6 +46,7 @@ class CPLEX_CMD(LpSolver_CMD):
         """Solve a well formulated lp problem"""
         if not self.executable(self.path):
             raise PulpSolverError("PuLP: cannot execute " + self.path)
+
         if not self.keepFiles:
             uuid = uuid4().hex
             tmpLp = os.path.join(self.tmpDir, "%s-pulp.lp" % uuid)
@@ -54,8 +55,10 @@ class CPLEX_CMD(LpSolver_CMD):
             tmpLp = lp.name+"-pulp.lp"
             tmpSol = lp.name+"-pulp.sol"
         lp.writeLP(tmpLp, writeSOS = 1)
+
         try: os.remove(tmpSol)
         except: pass
+
         if not self.msg:
             cplex = subprocess.Popen(self.path, stdin = subprocess.PIPE,
                 stdout = subprocess.PIPE, stderr = subprocess.PIPE)
@@ -78,20 +81,32 @@ class CPLEX_CMD(LpSolver_CMD):
         cplex_cmds += "quit\n"
         cplex_cmds = cplex_cmds.encode('UTF-8')
         cplex.communicate(cplex_cmds)
+
         if cplex.returncode != 0:
             raise PulpSolverError("PuLP: Error while trying to execute "+self.path)
+
         if not self.keepFiles:
-            try: os.remove(tmpLp)
-            except: pass
+            try:
+                os.remove(tmpLp)
+            except:
+                pass
+
         if not os.path.exists(tmpSol):
             status = LpStatusInfeasible
         else:
             status, values, reducedCosts, shadowPrices, slacks = self.readsol(tmpSol)
+
         if not self.keepFiles:
-            try: os.remove(tmpSol)
-            except: pass
-            try: os.remove("cplex.log")
-            except: pass
+            try:
+                os.remove(tmpSol)
+            except:
+                pass
+
+            try:
+                os.remove("cplex.log")
+            except:
+                pass
+
         if status != LpStatusInfeasible:
             lp.assignVarsVals(values)
             lp.assignVarsDj(reducedCosts)
@@ -117,8 +132,6 @@ class CPLEX_CMD(LpSolver_CMD):
             raise PulpSolverError("Unknown status returned by CPLEX: " + statusString)
         status = cplexStatus[statusString]
 
-        shadowPrices = {}
-        slacks = {}
         shadowPrices = {}
         slacks = {}
         constraints = solutionXML.find("linearConstraints")

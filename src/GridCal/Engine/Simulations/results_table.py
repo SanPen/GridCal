@@ -314,7 +314,10 @@ class ResultsTable:
         Convert the data to abs
         :return:
         """
-        self.data_c = np.abs(self.data_c)
+        try:
+            self.data_c = np.abs(self.data_c)
+        except TypeError:
+            print('Could not convert to abs :/')
 
     def to_df(self):
         """

@@ -227,6 +227,7 @@ class MainGUI(QMainWindow):
 
         self.mip_solvers_dict = OrderedDict()
         self.mip_solvers_dict[bs.MIPSolvers.CBC.value] = bs.MIPSolvers.CBC
+        self.mip_solvers_dict[bs.MIPSolvers.HiGS.value] = bs.MIPSolvers.HiGS
         self.mip_solvers_dict[bs.MIPSolvers.GLOP.value] = bs.MIPSolvers.GLOP
         self.mip_solvers_dict[bs.MIPSolvers.SCIP.value] = bs.MIPSolvers.SCIP
         self.mip_solvers_dict[bs.MIPSolvers.CPLEX.value] = bs.MIPSolvers.CPLEX
@@ -472,7 +473,7 @@ class MainGUI(QMainWindow):
 
         self.ui.delete_profiles_structure_pushButton.clicked.connect(self.delete_profiles_structure)
 
-        self.ui.set_profile_state_button.clicked.connect(self.set_profiles_state_to_grid)
+        # self.ui.set_profile_state_button.clicked.connect(self.set_profiles_state_to_grid)
 
         self.ui.edit_profiles_pushButton.clicked.connect(self.import_profiles)
 
@@ -569,6 +570,8 @@ class MainGUI(QMainWindow):
         self.ui.plotArraysButton.clicked.connect(self.plot_simulation_objects_data)
 
         self.ui.copyArraysButton.clicked.connect(self.copy_simulation_objects_data)
+
+        self.ui.copyArraysToNumpyButton.clicked.connect(self.copy_simulation_objects_data_to_numpy)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -1915,6 +1918,14 @@ class MainGUI(QMainWindow):
         mode = self.ui.arrayModeComboBox.currentText()
         mdl.copy_to_clipboard(mode=mode)
 
+    def copy_simulation_objects_data_to_numpy(self):
+        """
+        Copy the arrays of the compiled arrays view to the clipboard
+        """
+        mdl = self.ui.simulationDataStructureTableView.model()
+        mode = 'numpy'
+        mdl.copy_to_clipboard(mode=mode)
+
     def plot_simulation_objects_data(self):
         """
         Plot the arrays of the compiled arrays view
@@ -2646,7 +2657,8 @@ class MainGUI(QMainWindow):
                         distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked(),
                         correct_values=self.ui.ptdf_correct_nonsense_values_checkBox.isChecked())
 
-                    drv = sim.LinearAnalysisDriver(grid=self.circuit, options=options)
+                    engine = self.get_preferred_engine()
+                    drv = sim.LinearAnalysisDriver(grid=self.circuit, options=options, engine=engine)
 
                     self.session.run(drv,
                                      post_func=self.post_linear_analysis,
@@ -3764,7 +3776,6 @@ class MainGUI(QMainWindow):
 
                 self.remove_simulation(sim.SimulationTypes.OPF_run)
 
-
                 # get the power flow options from the GUI
                 solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
                 mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
@@ -3775,6 +3786,24 @@ class MainGUI(QMainWindow):
                 skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
                 tolerance = 10 ** self.ui.opfTolSpinBox.value()
                 lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
+                maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
+
+                # available transfer capacity inter areas
+                if maximize_flows:
+                    compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                    idx_from = np.array([i for i, bus in lst_from])
+                    idx_to = np.array([i for i, bus in lst_to])
+
+                    if len(idx_from) == 0:
+                        error_msg('The area "from" has no buses!')
+                        return
+
+                    if len(idx_to) == 0:
+                        error_msg('The area "to" has no buses!')
+                        return
+                else:
+                    idx_from = None
+                    idx_to = None
 
                 # try to acquire the linear results
                 linear_results = self.session.linear_power_flow
@@ -3796,7 +3825,10 @@ class MainGUI(QMainWindow):
                                                       skip_generation_limits=skip_generation_limits,
                                                       tolerance=tolerance,
                                                       LODF=LODF,
-                                                      lodf_tolerance=lodf_tolerance)
+                                                      lodf_tolerance=lodf_tolerance,
+                                                      maximize_flows=maximize_flows,
+                                                      area_from_bus_idx=idx_from,
+                                                      area_to_bus_idx=idx_to)
 
                 self.ui.progress_label.setText('Running optimal power flow...')
                 QtGui.QGuiApplication.processEvents()
@@ -3835,6 +3867,7 @@ class MainGUI(QMainWindow):
                                              loadings=results.loading,
                                              types=results.bus_types,
                                              Sf=results.Sf,
+                                             St=results.St,
                                              Sbus=results.Sbus,
                                              hvdc_Pf=results.hvdc_Pf,
                                              hvdc_loading=results.hvdc_loading,
@@ -3884,6 +3917,24 @@ class MainGUI(QMainWindow):
                     skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
                     tolerance = 10**self.ui.opfTolSpinBox.value()
                     lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
+                    maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
+
+                    # available transfer capacity inter areas
+                    if maximize_flows:
+                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+                        idx_from = np.array([i for i, bus in lst_from])
+                        idx_to = np.array([i for i, bus in lst_to])
+
+                        if len(idx_from) == 0:
+                            error_msg('The area "from" has no buses!')
+                            return
+
+                        if len(idx_to) == 0:
+                            error_msg('The area "to" has no buses!')
+                            return
+                    else:
+                        idx_from = None
+                        idx_to = None
 
                     # try to acquire the linear results
                     linear_results = self.session.linear_power_flow
@@ -3905,7 +3956,10 @@ class MainGUI(QMainWindow):
                                                           skip_generation_limits=skip_generation_limits,
                                                           tolerance=tolerance,
                                                           LODF=LODF,
-                                                          lodf_tolerance=lodf_tolerance
+                                                          lodf_tolerance=lodf_tolerance,
+                                                          maximize_flows=maximize_flows,
+                                                          area_from_bus_idx=idx_from,
+                                                          area_to_bus_idx=idx_to
                                                           )
 
                     start = self.ui.profile_start_slider.value()
@@ -3952,13 +4006,13 @@ class MainGUI(QMainWindow):
                 if self.ui.draw_schematic_checkBox.isChecked():
 
                     viz.colour_the_schematic(circuit=self.circuit,
-                                             Sbus=None,
+                                             Sbus=results.Sbus[0, :],
                                              Sf=results.Sf[0, :],
+                                             St=results.St[0, :],
                                              voltages=results.voltage[0, :],
                                              loadings=results.loading[0, :],
                                              types=results.bus_types,
                                              losses=None,
-                                             St=None,
                                              hvdc_Pf=results.hvdc_Pf[0, :],
                                              hvdc_losses=None,
                                              hvdc_loading=results.hvdc_loading[0, :],
@@ -4830,15 +4884,15 @@ class MainGUI(QMainWindow):
             elif current_study == sim.LinearAnalysisDriver.name:
                 drv, results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_run)
                 voltage = np.ones(self.circuit.get_bus_number())
-                loading = results.PTDF[:, current_step]
 
                 plot_function(circuit=self.circuit,
-                              Sbus=None,
-                              Sf=loading,
+                              Sbus=results.Sbus,
+                              Sf=results.Sf,
+                              St=-results.Sf,
                               voltages=voltage,
-                              loadings=loading,
+                              loadings=results.loading,
                               types=results.bus_types,
-                              loading_label='Sensitivity',
+                              loading_label='Loading',
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -5713,7 +5767,7 @@ class MainGUI(QMainWindow):
 
                     filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).lower()]
 
-                elif tpe == DeviceType.BusDevice:
+                elif elm.device_type == DeviceType.BusDevice:
                     filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).name.lower()]
 
                 else:
@@ -5744,7 +5798,7 @@ class MainGUI(QMainWindow):
 
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) == args]
 
-                elif tpe == DeviceType.BusDevice:
+                elif elm.device_type == DeviceType.BusDevice:
                     filtered_objects = [x for x in self.type_objects_list if args == getattr(x, attr).name.lower()]
 
                 else:
@@ -5767,7 +5821,7 @@ class MainGUI(QMainWindow):
 
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() != args]
 
-                elif tpe == DeviceType.BusDevice:
+                elif elm.device_type == DeviceType.BusDevice:
                     filtered_objects = [x for x in self.type_objects_list if args != getattr(x, attr).name.lower()]
 
                 else:
