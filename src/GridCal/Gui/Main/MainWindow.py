@@ -1911,8 +1911,9 @@ class Ui_mainWindow(object):
 
         self.frame_4 = QFrame(self.frame_65)
         self.frame_4.setObjectName(u"frame_4")
-        self.frame_4.setFrameShape(QFrame.StyledPanel)
+        self.frame_4.setFrameShape(QFrame.NoFrame)
         self.frame_4.setFrameShadow(QFrame.Raised)
+        self.frame_4.setLineWidth(1)
         self.gridLayout_5 = QGridLayout(self.frame_4)
         self.gridLayout_5.setObjectName(u"gridLayout_5")
         self.label_105 = QLabel(self.frame_4)
