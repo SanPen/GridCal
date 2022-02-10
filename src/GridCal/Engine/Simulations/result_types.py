@@ -127,8 +127,9 @@ class ResultTypes(Enum):
     AvailableTransferCapacityReport = 'ATC Report', DeviceType.NoDevice
 
     ContingencyFlowsReport = 'Contingency Report', DeviceType.NoDevice
-    ContingencyFlowsGenReport = 'Generator Contingency Report', DeviceType.NoDevice
-    ContingencyFlowsHvdcReport = 'HVDC Contingency Report', DeviceType.NoDevice
+    ContingencyFlowsBranchReport = 'Contingency Branch Report', DeviceType.NoDevice
+    ContingencyFlowsGenerationReport = 'Contingency Generation Report', DeviceType.NoDevice
+    ContingencyFlowsHvdcReport = 'Contingency Hvdc Report', DeviceType.NoDevice
 
     # inputs analysis
     ZoneAnalysis = 'Zone analysis', DeviceType.NoDevice
