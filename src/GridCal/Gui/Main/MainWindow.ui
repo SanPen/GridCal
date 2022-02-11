@@ -7318,6 +7318,7 @@ QProgressBar::chunk{
    <addaction name="actionOPF"/>
    <addaction name="actionOPF_time_series"/>
    <addaction name="actionOptimal_Net_Transfer_Capacity"/>
+   <addaction name="actionOptimal_Net_Transfer_Capacity_Time_Series"/>
    <addaction name="actionOpf_to_Power_flow"/>
    <addaction name="separator"/>
    <addaction name="actionPower_flow_Stochastic"/>
@@ -8060,6 +8061,18 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>Delete inconsistencies</string>
+   </property>
+  </action>
+  <action name="actionOptimal_Net_Transfer_Capacity_Time_Series">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/ntc_opf_ts.svg</normaloff>icons/ntc_opf_ts.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Optimal NTC time series</string>
+   </property>
+   <property name="toolTip">
+    <string>Optimal net transfer capacity time series</string>
    </property>
   </action>
  </widget>
