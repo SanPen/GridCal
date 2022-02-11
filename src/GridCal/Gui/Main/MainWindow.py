@@ -18,7 +18,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1347, 741)
+        mainWindow.resize(1347, 748)
         mainWindow.setBaseSize(QSize(0, 0))
         icon = QIcon()
         icon.addFile(u":/Program icon/GridCal_icon.svg", QSize(), QIcon.Normal, QIcon.Off)
@@ -322,7 +322,7 @@ class Ui_mainWindow(object):
         self.actionOptimal_Net_Transfer_Capacity_Time_Series = QAction(mainWindow)
         self.actionOptimal_Net_Transfer_Capacity_Time_Series.setObjectName(u"actionOptimal_Net_Transfer_Capacity_Time_Series")
         icon51 = QIcon()
-        icon51.addFile(u"icons/ntc_opf_ts.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon51.addFile(u":/Icons/icons/ntc_opf_ts.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.actionOptimal_Net_Transfer_Capacity_Time_Series.setIcon(icon51)
         self.centralwidget = QWidget(mainWindow)
         self.centralwidget.setObjectName(u"centralwidget")

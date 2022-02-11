@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1347</width>
-    <height>741</height>
+    <height>748</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -8066,8 +8066,8 @@ QProgressBar::chunk{
   </action>
   <action name="actionOptimal_Net_Transfer_Capacity_Time_Series">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/ntc_opf_ts.svg</normaloff>icons/ntc_opf_ts.svg</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/ntc_opf_ts.svg</normaloff>:/Icons/icons/ntc_opf_ts.svg</iconset>
    </property>
    <property name="text">
     <string>Optimal NTC time series</string>
