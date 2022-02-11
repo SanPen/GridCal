@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1347</width>
-    <height>741</height>
+    <width>1194</width>
+    <height>763</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -7187,7 +7187,7 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1347</width>
+     <width>1194</width>
      <height>21</height>
     </rect>
    </property>
@@ -7286,9 +7286,13 @@ QProgressBar::chunk{
     <addaction name="actionGrid_Reduction"/>
     <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
     <addaction name="actionFuse_devices"/>
+    <addaction name="actionre_index_time"/>
+    <addaction name="actionFix_generators_active_based_on_the_power"/>
+    <addaction name="separator"/>
+    <addaction name="actionLaunch_data_analysis_tool"/>
+    <addaction name="separator"/>
     <addaction name="actionCorrect_inconsistencies"/>
     <addaction name="actionDelete_inconsistencies"/>
-    <addaction name="actionLaunch_data_analysis_tool"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
@@ -8108,6 +8112,24 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>Optimal NTC time series with clustering</string>
+   </property>
+  </action>
+  <action name="actionre_index_time">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/data.svg</normaloff>:/Icons/icons/data.svg</iconset>
+   </property>
+   <property name="text">
+    <string>re-index time</string>
+   </property>
+  </action>
+  <action name="actionFix_generators_active_based_on_the_power">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/gear.svg</normaloff>:/Icons/icons/gear.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Fix generators active based on the power</string>
    </property>
   </action>
  </widget>

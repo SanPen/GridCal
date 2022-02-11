@@ -471,6 +471,10 @@ class MainGUI(QMainWindow):
 
         self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
 
+        self.ui.actionFix_generators_active_based_on_the_power.triggered.connect(self.fix_generators_active_based_on_the_power)
+
+        self.ui.actionre_index_time.triggered.connect(self.re_index_time)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -6877,6 +6881,33 @@ class MainGUI(QMainWindow):
                 dlg = LogsDialogue("Delete inconsistencies", logger)
                 dlg.setModal(True)
                 dlg.exec_()
+
+    def re_index_time(self):
+        """
+        Re-index time
+        :return:
+        """
+
+        dlg = TimeReIndexDialogue()
+        dlg.setModal(True)
+        dlg.exec_()
+
+        if dlg.accepted:
+            self.circuit.re_index_time(year=dlg.year_spinner.value(),
+                                       hours_per_step=dlg.interval_hours.value())
+
+    def fix_generators_active_based_on_the_power(self):
+        """
+        set the generators active based on the active power values
+        :return:
+        """
+        ok = yes_no_question("This action sets the generation active profile based on the active power profile "
+                             "such that ig a generator active power is zero, the active value is false",
+                             "Set generation active profile")
+
+        if ok:
+            self.circuit.set_generators_active_profile_from_their_active_power()
+            self.circuit.set_batteries_active_profile_from_their_active_power()
 
 
 def run(use_native_dialogues=False):
