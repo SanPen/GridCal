@@ -389,7 +389,11 @@ class MainGUI(QMainWindow):
 
         self.ui.actionOptimal_Net_Transfer_Capacity.triggered.connect(self.run_opf_ntc)
 
-        self.ui.actionOptimal_Net_Transfer_Capacity_Time_Series.triggered.connect(self.run_opf_ntc_ts)
+        self.ui.actionOptimal_Net_Transfer_Capacity_Time_Series.triggered.connect(
+            lambda: self.run_opf_ntc_ts(with_clustering=False))
+
+        self.ui.actionOptimal_NTC_time_series_clustering.triggered.connect(
+            lambda: self.run_opf_ntc_ts(with_clustering=True))
 
         self.ui.actionAbout.triggered.connect(self.about_box)
 
@@ -4233,7 +4237,7 @@ class MainGUI(QMainWindow):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
-    def run_opf_ntc_ts(self):
+    def run_opf_ntc_ts(self, with_clustering=False):
         """
         Run OPF time series simulation
         """
@@ -4321,6 +4325,7 @@ class MainGUI(QMainWindow):
 
                 start_ = self.ui.profile_start_slider.value()
                 end_ = self.ui.profile_end_slider.value()
+                cluster_number = self.ui.cluster_number_spinBox.value()
 
                 # set optimal net transfer capacity driver instance
                 drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(
@@ -4328,8 +4333,8 @@ class MainGUI(QMainWindow):
                     options=options,
                     start_=start_,
                     end_=end_,
-                    use_clustering=True,
-                    cluster_number=5)
+                    use_clustering=with_clustering,
+                    cluster_number=cluster_number)
 
                 self.LOCK()
                 self.session.run(drv,
@@ -4359,30 +4364,6 @@ class MainGUI(QMainWindow):
             self.remove_simulation(sim.SimulationTypes.OPF_NTC_TS_run)
 
             if results is not None:
-                if self.ui.draw_schematic_checkBox.isChecked():
-
-                    viz.colour_the_schematic(circuit=self.circuit,
-                                             Sbus=results.Sbus[0, :],
-                                             Sf=results.Sf[0, :],
-                                             St=results.St[0, :],
-                                             voltages=results.voltage[0, :],
-                                             loadings=results.loading[0, :],
-                                             types=results.bus_types,
-                                             losses=None,
-                                             hvdc_Pf=results.hvdc_Pf[0, :],
-                                             hvdc_losses=None,
-                                             hvdc_loading=results.hvdc_loading[0, :],
-                                             failed_br_idx=None,
-                                             loading_label='loading',
-                                             ma=None,
-                                             theta=results.phase_shift[0, :],
-                                             Beq=None,
-                                             use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
-                                             min_branch_width=self.ui.min_branch_size_spinBox.value(),
-                                             max_branch_width=self.ui.max_branch_size_spinBox.value(),
-                                             min_bus_width=self.ui.min_node_size_spinBox.value(),
-                                             max_bus_width=self.ui.max_node_size_spinBox.value())
-
                 self.update_available_results()
 
                 msg = 'Optimal NTC time series elapsed ' + str(drv.elapsed) + ' s'

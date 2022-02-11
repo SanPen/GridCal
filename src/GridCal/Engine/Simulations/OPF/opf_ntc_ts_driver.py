@@ -29,12 +29,14 @@ from GridCal.Engine.Simulations.Clustering.clustering import kmeans_approximate_
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.result_types import ResultTypes
+from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.LinearFactors import LinearAnalysis
 
 try:
     from ortools.linear_solver import pywraplp
 except ModuleNotFoundError:
     print('ORTOOLS not found :(')
+
 
 class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
@@ -56,8 +58,8 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             self,
             name='NTC Optimal time series results',
             available_results=[
-                ResultTypes.OptimalNetTransferCapacityTimeSeriesReport,
-                               ],
+                ResultTypes.OptimalNetTransferCapacityTimeSeriesReport
+            ],
 
             data_variables=[])
 
@@ -140,6 +142,31 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         # Save file
         if path_out:
             df.to_csv(path_out, index=False)
+    
+
+    def mdl(self, result_type) -> "ResultsTable":
+        """
+        Plot the results
+        :param result_type: type of results (string)
+        :return: DataFrame of the results (or None if the result was not understood)
+        """
+
+        if result_type == ResultTypes.OptimalNetTransferCapacityTimeSeriesReport:
+            labels, columns, y = self.get_contingency_report()
+            y_label = ''
+            title = result_type.value[0]
+
+        else:
+            raise Exception('No results available')
+
+        mdl = ResultsTable(data=y,
+                           index=labels,
+                           columns=columns,
+                           title=title,
+                           ylabel=y_label,
+                           xlabel='',
+                           units=y_label)
+        return mdl
 
     def get_contingency_report(self):
 
@@ -432,6 +459,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         # return report data
         return labels_all, columns_all, data_all
 
+
 class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
     tpe = SimulationTypes.OptimalNetTransferCapacityTimeSeries_run
@@ -520,10 +548,10 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         # get the power injections
         P = nc.Sbus.real  # these are in p.u.
 
-        for idx, t in enumerate(time_indices):
+        for t_idx, t in enumerate(time_indices):
 
             # update progress bar
-            progress = (self.start_ + 1) / (self.end_ - self.start_ + 1) * 100
+            progress = (t_idx + 1) / len(time_indices) * 100
             self.progress_signal.emit(progress)
 
             if self.progress_text is not None:
@@ -646,7 +674,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 self.results.results_dict[t] = result
 
                 if self.progress_signal is not None:
-                    self.progress_signal.emit((idx + 1) / nt * 100)
+                    self.progress_signal.emit((t_idx + 1) / nt * 100)
 
                 if self.__cancel__:
                     break
