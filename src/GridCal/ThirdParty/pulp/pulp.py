@@ -780,10 +780,12 @@ class LpAffineExpression(_DICT_TYPE):
 
         if isinstance(other, LpElement):
             self.addterm(other, -1)
+
         elif isinstance(other, LpAffineExpression):
             self.constant -= other.constant
             for v, x in other.items():
                 self.addterm(v, -x)
+
         elif isinstance(other, dict):
             for e in other.values():
                 self.subInPlace(e)
