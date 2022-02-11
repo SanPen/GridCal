@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1347</width>
-    <height>764</height>
+    <height>741</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -2931,6 +2931,19 @@ p, li { white-space: pre-wrap; }
             <string>Optimal power flow settings</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_10">
+            <item row="1" column="0">
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>260</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
             <item row="0" column="0">
              <widget class="QFrame" name="frame_30">
               <property name="frameShape">
@@ -3100,6 +3113,57 @@ p, li { white-space: pre-wrap; }
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_3">
+                  <item row="6" column="0" colspan="2">
+                   <widget class="QCheckBox" name="skipOpfGenerationLimitsCheckBox">
+                    <property name="text">
+                     <string>Skip generation limits</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QComboBox" name="lpf_solver_comboBox">
+                    <property name="toolTip">
+                     <string>Choose the optimal power flow method</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="1">
+                   <widget class="QDoubleSpinBox" name="opfContingencyToleranceSpinBox">
+                    <property name="toolTip">
+                     <string>LODF matrix tolerance choosing contingencies</string>
+                    </property>
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                    <property name="value">
+                     <double>0.050000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QComboBox" name="opf_time_grouping_comboBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the time grouping to possibly shorten the solution time.&lt;/p&gt;&lt;p&gt;This splits the time series by week, month, etc. and the subproblems are solved sequentially.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QComboBox" name="opfZonalGroupByComboBox"/>
+                  </item>
+                  <item row="5" column="0">
+                   <widget class="QLabel" name="label_104">
+                    <property name="text">
+                     <string>Contingency tolerance</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QComboBox" name="mip_solver_comboBox">
+                    <property name="toolTip">
+                     <string>Choose the external mixed integer programming solver</string>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="4" column="1">
                    <widget class="QSpinBox" name="opfTolSpinBox">
                     <property name="prefix">
@@ -3117,48 +3181,10 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="1">
-                   <widget class="QComboBox" name="lpf_solver_comboBox">
-                    <property name="toolTip">
-                     <string>Choose the optimal power flow method</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="QComboBox" name="opf_time_grouping_comboBox">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the time grouping to possibly shorten the solution time.&lt;/p&gt;&lt;p&gt;This splits the time series by week, month, etc. and the subproblems are solved sequentially.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="7" column="0" colspan="2">
-                   <widget class="QCheckBox" name="considerContingenciesOpfCheckBox">
-                    <property name="text">
-                     <string>Consider contingencies</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="1">
-                   <widget class="QComboBox" name="opfZonalGroupByComboBox"/>
-                  </item>
                   <item row="4" column="0">
                    <widget class="QLabel" name="label_44">
                     <property name="text">
                      <string>Convergence tolerance</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="label_42">
-                    <property name="text">
-                     <string>Method</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="6" column="0" colspan="2">
-                   <widget class="QCheckBox" name="skipOpfGenerationLimitsCheckBox">
-                    <property name="text">
-                     <string>Skip generation limits</string>
                     </property>
                    </widget>
                   </item>
@@ -3169,6 +3195,20 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_42">
+                    <property name="text">
+                     <string>Method</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="7" column="0" colspan="2">
+                   <widget class="QCheckBox" name="considerContingenciesOpfCheckBox">
+                    <property name="text">
+                     <string>Consider contingencies</string>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="1" column="0">
                    <widget class="QLabel" name="label_4">
                     <property name="text">
@@ -3176,40 +3216,10 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="5" column="0">
-                   <widget class="QLabel" name="label_104">
-                    <property name="text">
-                     <string>Contingency tolerance</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="1">
-                   <widget class="QComboBox" name="mip_solver_comboBox">
-                    <property name="toolTip">
-                     <string>Choose the external mixed integer programming solver</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="5" column="1">
-                   <widget class="QDoubleSpinBox" name="opfContingencyToleranceSpinBox">
-                    <property name="toolTip">
-                     <string>LODF matrix tolerance choosing contingencies</string>
-                    </property>
-                    <property name="decimals">
-                     <number>4</number>
-                    </property>
-                    <property name="value">
-                     <double>0.050000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="8" column="0" colspan="2">
                    <widget class="QCheckBox" name="opfMaximizeExcahngeCheckBox">
-                    <property name="toolTip">
-                     <string>Activate the maximization of inter-area flows in the sense indicated in the Areas tab options</string>
-                    </property>
                     <property name="text">
-                     <string>Maximize exchange</string>
+                     <string>Maximize area exchange</string>
                     </property>
                    </widget>
                   </item>
@@ -3232,32 +3242,6 @@ p, li { white-space: pre-wrap; }
               </layout>
              </widget>
             </item>
-            <item row="0" column="2">
-             <spacer name="horizontalSpacer_10">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="1" column="0">
-             <spacer name="verticalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>260</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
             <item row="0" column="1">
              <widget class="QFrame" name="frame_65">
               <property name="frameShape">
@@ -3267,137 +3251,7 @@ p, li { white-space: pre-wrap; }
                <enum>QFrame::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_15">
-               <item row="6" column="0" colspan="3">
-                <widget class="QFrame" name="frame_67">
-                 <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
-                 </property>
-                 <layout class="QFormLayout" name="formLayout_2">
-                  <item row="0" column="0" colspan="2">
-                   <widget class="QRadioButton" name="proportionalRedispatchRadioButton">
-                    <property name="toolTip">
-                     <string>The generation is modified as a linear combination of it's current dispatch</string>
-                    </property>
-                    <property name="text">
-                     <string>Proportional redispatch</string>
-                    </property>
-                    <property name="checked">
-                     <bool>false</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="0" colspan="2">
-                   <widget class="QCheckBox" name="monitorOnlySensitiveBranchesCheckBox">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Overrides the monitor loading property of the branches.Then, only the branches whose sensitivity is greater than the threshold are monitored. Use the transfer sensitivity threshold value of the linear method.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                    <property name="text">
-                     <string>Only monitor sensitive branches to the exchange</string>
-                    </property>
-                    <property name="checked">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="8" column="0">
-                   <widget class="QLabel" name="label_101">
-                    <property name="text">
-                     <string>Tolerance</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="8" column="1">
-                   <widget class="QSpinBox" name="ntcOpfTolSpinBox">
-                    <property name="toolTip">
-                     <string>This value determines if the convergence is reached</string>
-                    </property>
-                    <property name="suffix">
-                     <string/>
-                    </property>
-                    <property name="prefix">
-                     <string>1e</string>
-                    </property>
-                    <property name="minimum">
-                     <number>-99</number>
-                    </property>
-                    <property name="value">
-                     <number>-3</number>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="4" column="0" colspan="2">
-                   <widget class="QCheckBox" name="considerContingenciesNtcOpfCheckBox">
-                    <property name="toolTip">
-                     <string>If activated, the N-1 contingencies are considered</string>
-                    </property>
-                    <property name="text">
-                     <string>Consider contingencies</string>
-                    </property>
-                    <property name="checked">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="0" colspan="2">
-                   <widget class="QCheckBox" name="skipNtcGenerationLimitsCheckBox">
-                    <property name="toolTip">
-                     <string>If activated, the generation limits are not considered</string>
-                    </property>
-                    <property name="text">
-                     <string>Skip generation limits</string>
-                    </property>
-                    <property name="checked">
-                     <bool>false</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="0" colspan="2">
-                   <widget class="QRadioButton" name="optimalRedispatchRadioButton">
-                    <property name="toolTip">
-                     <string>The generation is modified so that the transference is maximal.</string>
-                    </property>
-                    <property name="text">
-                     <string>Optimal dispatch</string>
-                    </property>
-                    <property name="checked">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="5" column="0" colspan="2">
-                   <widget class="QCheckBox" name="ntcMaximizeExchangeFlowCheckBox">
-                    <property name="text">
-                     <string>Maximize exchange flow</string>
-                    </property>
-                    <property name="checked">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="7" column="0" colspan="2">
-                   <widget class="QCheckBox" name="ntcFeasibilityCheckCheckBox">
-                    <property name="text">
-                     <string>Check feasibility</string>
-                    </property>
-                    <property name="checked">
-                     <bool>false</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="6" column="0">
-                   <widget class="QCheckBox" name="ntcDispatchAllAreasCheckBox">
-                    <property name="text">
-                     <string>Dispatch all areas</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item row="3" column="0">
+               <item row="0" column="0">
                 <widget class="QLabel" name="label_97">
                  <property name="minimumSize">
                   <size>
@@ -3422,7 +3276,7 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0" colspan="3">
+               <item row="1" column="0" colspan="3">
                 <widget class="Line" name="line_27">
                  <property name="palette">
                   <palette>
@@ -3472,7 +3326,7 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="3" column="1" colspan="2">
+               <item row="0" column="1" colspan="2">
                 <widget class="QLabel" name="label_96">
                  <property name="palette">
                   <palette>
@@ -3521,7 +3375,204 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="9" column="2">
+               <item row="4" column="0" rowspan="2" colspan="3">
+                <widget class="QFrame" name="frame_4">
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>1</number>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_5">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_105">
+                    <property name="font">
+                     <font>
+                      <weight>75</weight>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>Contingencies</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QCheckBox" name="considerContingenciesHvdcOpfCheckBox">
+                    <property name="text">
+                     <string>Consider hvdc contingencies</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0">
+                   <widget class="QLabel" name="contingencyPowerTripLabel">
+                    <property name="text">
+                     <string>Generation power contingency</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="1">
+                   <widget class="QDoubleSpinBox" name="contingencyGenerationThresholdDoubleSpinBox">
+                    <property name="toolTip">
+                     <string>Generation power to trip as contingency</string>
+                    </property>
+                    <property name="suffix">
+                     <string> MW</string>
+                    </property>
+                    <property name="decimals">
+                     <number>0</number>
+                    </property>
+                    <property name="maximum">
+                     <double>5000.000000000000000</double>
+                    </property>
+                    <property name="singleStep">
+                     <double>50.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>1000.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QCheckBox" name="considerContingenciesNtcOpfCheckBox">
+                    <property name="toolTip">
+                     <string>If activated, the N-1 contingencies are considered</string>
+                    </property>
+                    <property name="text">
+                     <string>Consider branch contingencies</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QCheckBox" name="considerContingenciesGeneratorOpfCheckBox">
+                    <property name="text">
+                     <string>Consider generator contingencies</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="2" column="0" colspan="3">
+                <widget class="QFrame" name="frame_67">
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_24">
+                  <item row="0" column="0" colspan="2">
+                   <widget class="QRadioButton" name="proportionalRedispatchRadioButton">
+                    <property name="toolTip">
+                     <string>The generation is modified as a linear combination of it's current dispatch</string>
+                    </property>
+                    <property name="text">
+                     <string>Proportional redispatch</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QRadioButton" name="optimalRedispatchRadioButton">
+                    <property name="toolTip">
+                     <string>The generation is modified so that the transference is maximal.</string>
+                    </property>
+                    <property name="text">
+                     <string>Optimal dispatch</string>
+                    </property>
+                    <property name="checked">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0" colspan="2">
+                   <widget class="QCheckBox" name="monitorOnlySensitiveBranchesCheckBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Overrides the monitor loading property of the branches.Then, only the branches whose sensitivity is greater than the threshold are monitored. Use the transfer sensitivity threshold value of the linear method.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="text">
+                     <string>Only monitor sensitive branches to the exchange</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0" colspan="2">
+                   <widget class="QCheckBox" name="skipNtcGenerationLimitsCheckBox">
+                    <property name="toolTip">
+                     <string>If activated, the generation limits are not considered</string>
+                    </property>
+                    <property name="text">
+                     <string>Skip generation limits</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0">
+                   <widget class="QCheckBox" name="ntcDispatchAllAreasCheckBox">
+                    <property name="text">
+                     <string>Dispatch all areas</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="0">
+                   <widget class="QCheckBox" name="ntcFeasibilityCheckCheckBox">
+                    <property name="text">
+                     <string>Check feasibility</string>
+                    </property>
+                    <property name="checked">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="6" column="0">
+                   <widget class="QLabel" name="label_101">
+                    <property name="text">
+                     <string>Tolerance</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="6" column="1">
+                   <widget class="QSpinBox" name="ntcOpfTolSpinBox">
+                    <property name="toolTip">
+                     <string>This value determines if the convergence is reached</string>
+                    </property>
+                    <property name="suffix">
+                     <string/>
+                    </property>
+                    <property name="prefix">
+                     <string>1e</string>
+                    </property>
+                    <property name="minimum">
+                     <number>-99</number>
+                    </property>
+                    <property name="value">
+                     <number>-3</number>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="7" column="1">
                 <spacer name="verticalSpacer_17">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -3534,7 +3585,7 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </spacer>
                </item>
-               <item row="7" column="0" colspan="3">
+               <item row="6" column="0" colspan="3">
                 <widget class="QFrame" name="frame_68">
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
@@ -3575,7 +3626,7 @@ p, li { white-space: pre-wrap; }
                      <number>-99</number>
                     </property>
                     <property name="value">
-                     <number>0</number>
+                     <number>5</number>
                     </property>
                    </widget>
                   </item>
@@ -3598,41 +3649,18 @@ p, li { white-space: pre-wrap; }
                      <number>-99</number>
                     </property>
                     <property name="value">
-                     <number>0</number>
+                     <number>2</number>
                     </property>
                    </widget>
                   </item>
                   <item row="3" column="0">
-                   <widget class="QLabel" name="label_99">
-                    <property name="text">
-                     <string>Generation delta</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="1">
-                   <widget class="QSpinBox" name="weightGenDeltaSpinBox">
-                    <property name="suffix">
-                     <string/>
-                    </property>
-                    <property name="prefix">
-                     <string>1e</string>
-                    </property>
-                    <property name="minimum">
-                     <number>-99</number>
-                    </property>
-                    <property name="value">
-                     <number>0</number>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="4" column="0">
                    <widget class="QLabel" name="label_98">
                     <property name="text">
                      <string>Overloads</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="4" column="1">
+                  <item row="3" column="1">
                    <widget class="QSpinBox" name="weightsOverloadsSpinBox">
                     <property name="suffix">
                      <string/>
@@ -3648,31 +3676,24 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="5" column="0">
-                   <widget class="QLabel" name="label_100">
-                    <property name="text">
-                     <string>HVDC control</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="5" column="1">
-                   <widget class="QSpinBox" name="weightsHVDCControlSpinBox">
-                    <property name="suffix">
-                     <string/>
-                    </property>
-                    <property name="prefix">
-                     <string>1e</string>
-                    </property>
-                    <property name="minimum">
-                     <number>-99</number>
-                    </property>
-                   </widget>
-                  </item>
                  </layout>
                 </widget>
                </item>
               </layout>
              </widget>
+            </item>
+            <item row="0" column="2">
+             <spacer name="horizontalSpacer_10">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </widget>
@@ -7198,6 +7219,14 @@ QProgressBar::chunk{
     <property name="title">
      <string>Actions</string>
     </property>
+    <widget class="QMenu" name="menuSet_selected_buses">
+     <property name="title">
+      <string>Set selected buses</string>
+     </property>
+     <addaction name="actionSetSelectedBusCountry"/>
+     <addaction name="actionSetSelectedBusZone"/>
+     <addaction name="actionSetSelectedBusArea"/>
+    </widget>
     <addaction name="actionBigger_nodes"/>
     <addaction name="actionSmaller_nodes"/>
     <addaction name="actionCenter_view"/>
@@ -7209,8 +7238,7 @@ QProgressBar::chunk{
     <addaction name="actionClear_stuff_running_right_now"/>
     <addaction name="actionReset_console"/>
     <addaction name="separator"/>
-    <addaction name="actionOpf_to_Power_flow"/>
-    <addaction name="actionSet_OPF_generation_to_profiles"/>
+    <addaction name="menuSet_selected_buses"/>
    </widget>
    <widget class="QMenu" name="menuSimulations">
     <property name="title">
@@ -7220,13 +7248,20 @@ QProgressBar::chunk{
     <addaction name="actionPower_Flow_Time_series"/>
     <addaction name="actionClustering_time_series"/>
     <addaction name="actionInputs_analysis"/>
+    <addaction name="separator"/>
     <addaction name="actionShort_Circuit"/>
+    <addaction name="separator"/>
     <addaction name="actionVoltage_stability"/>
+    <addaction name="separator"/>
     <addaction name="actionSigma_analysis"/>
     <addaction name="separator"/>
     <addaction name="actionOPF"/>
     <addaction name="actionOPF_time_series"/>
     <addaction name="actionOptimal_Net_Transfer_Capacity"/>
+    <addaction name="actionOptimal_Net_Transfer_Capacity_Time_Series"/>
+    <addaction name="actionOptimal_NTC_time_series_clustering"/>
+    <addaction name="actionOpf_to_Power_flow"/>
+    <addaction name="actionSet_OPF_generation_to_profiles"/>
     <addaction name="separator"/>
     <addaction name="actionPower_flow_Stochastic"/>
     <addaction name="actionBlackout_cascade"/>
@@ -7238,33 +7273,22 @@ QProgressBar::chunk{
     <addaction name="actionATC"/>
     <addaction name="actionATC_Time_Series"/>
     <addaction name="actionATC_clustering"/>
-    <addaction name="separator"/>
-    <addaction name="actionStorage_location_suggestion"/>
-    <addaction name="actionFind_node_groups"/>
    </widget>
    <widget class="QMenu" name="menuModel">
     <property name="title">
      <string>Model</string>
     </property>
-    <widget class="QMenu" name="menuSet_selected_buses_2">
-     <property name="title">
-      <string>Set selected buses</string>
-     </property>
-     <addaction name="actionSetSelectedBusCountry"/>
-     <addaction name="actionSetSelectedBusZone"/>
-     <addaction name="actionSetSelectedBusArea"/>
-    </widget>
     <addaction name="actionAuto_rate_branches"/>
     <addaction name="actionDetect_transformers"/>
     <addaction name="actionTry_to_fix_buses_location"/>
+    <addaction name="actionStorage_location_suggestion"/>
+    <addaction name="actionFind_node_groups"/>
     <addaction name="actionGrid_Reduction"/>
     <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
     <addaction name="actionFuse_devices"/>
-    <addaction name="actionCorrect_inconsistences"/>
-    <addaction name="actionDelete_inconsistences"/>
-    <addaction name="separator"/>
+    <addaction name="actionCorrect_inconsistencies"/>
+    <addaction name="actionDelete_inconsistencies"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
-    <addaction name="menuSet_selected_buses_2"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
@@ -7317,6 +7341,7 @@ QProgressBar::chunk{
    <addaction name="actionOPF"/>
    <addaction name="actionOPF_time_series"/>
    <addaction name="actionOptimal_Net_Transfer_Capacity"/>
+   <addaction name="actionOptimal_Net_Transfer_Capacity_Time_Series"/>
    <addaction name="actionOpf_to_Power_flow"/>
    <addaction name="separator"/>
    <addaction name="actionPower_flow_Stochastic"/>
@@ -7336,6 +7361,7 @@ QProgressBar::chunk{
    <addaction name="actionTry_to_fix_buses_location"/>
    <addaction name="actionDelete_selected"/>
    <addaction name="separator"/>
+   <addaction name="actionStorage_location_suggestion"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
    <addaction name="separator"/>
    <addaction name="actionShow_color_controls"/>
@@ -8036,22 +8062,52 @@ QProgressBar::chunk{
     <string>Fuse devices into a single device of each category per node</string>
    </property>
   </action>
-  <action name="actionCorrect_inconsistences">
+  <action name="actionCorrect_inconsistencies">
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/Icons/icons/gear.svg</normaloff>:/Icons/icons/gear.svg</iconset>
    </property>
    <property name="text">
-    <string>Correct inconsistences</string>
+    <string>Correct inconsistencies</string>
+   </property>
+   <property name="toolTip">
+    <string>Correct inconsistencies</string>
    </property>
   </action>
-  <action name="actionDelete_inconsistences">
+  <action name="actionDelete_inconsistencies">
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
    </property>
    <property name="text">
-    <string>Delete inconsistences</string>
+    <string>Delete inconsistencies</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete inconsistencies</string>
+   </property>
+  </action>
+  <action name="actionOptimal_Net_Transfer_Capacity_Time_Series">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/ntc_opf_ts.svg</normaloff>:/Icons/icons/ntc_opf_ts.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Optimal NTC time series</string>
+   </property>
+   <property name="toolTip">
+    <string>Optimal net transfer capacity time series</string>
+   </property>
+  </action>
+  <action name="actionOptimal_NTC_time_series_clustering">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/ntc_opf_ts_clustering.svg</normaloff>:/Icons/icons/ntc_opf_ts_clustering.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Optimal NTC time series with clustering</string>
+   </property>
+   <property name="toolTip">
+    <string>Optimal NTC time series with clustering</string>
    </property>
   </action>
  </widget>

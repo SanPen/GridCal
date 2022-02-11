@@ -31,7 +31,8 @@ except ModuleNotFoundError:
 
 class Opf:
 
-    def __init__(self, numerical_circuit: SnapshotOpfData, solver_type: MIPSolvers = MIPSolvers.CBC, ortools=False):
+    def __init__(self, numerical_circuit: SnapshotOpfData,
+                 solver_type: MIPSolvers = MIPSolvers.CBC, ortools=False):
         """
         Optimal power flow template class
         :param numerical_circuit: NumericalCircuit instance
@@ -62,6 +63,10 @@ class Opf:
         self.contingency_flows_list = list()
         self.contingency_indices_list = list()  # [(m, c), ...]
         self.contingency_flows_slacks_list = list()
+
+        self.contingency_gen_flows_list = list()
+
+        self.contingency_hvdc_flows_list = list()
 
         self.solver_type = solver_type
 
@@ -263,11 +268,25 @@ class Opf:
         return True
 
 
+    def get_contingency_gen_flows_list(self):
+        """
+        return the load shedding (time, device)
+        :return: 2D array
+        """
+        return self.extract_list(self.contingency_gen_flows_list) * self.numerical_circuit.Sbase
+
+    def get_contingency_hvdc_flows_list(self):
+        """
+        return the load shedding (time, device)
+        :return: 2D array
+        """
+        return self.extract_list(self.contingency_hvdc_flows_list) * self.numerical_circuit.Sbase
+
 class OpfTimeSeries:
 
     def __init__(self, numerical_circuit: OpfTimeCircuit,
-                 start_idx, end_idx, solver: MIPSolvers=MIPSolvers.CBC,
-                 skip_formulation=True):
+                 start_idx, end_idx, solver_type: MIPSolvers=MIPSolvers.CBC,
+                 skip_formulation=True, ortools=False):
         """
 
         :param numerical_circuit:
@@ -279,7 +298,7 @@ class OpfTimeSeries:
         self.numerical_circuit = numerical_circuit
         self.start_idx = start_idx
         self.end_idx = end_idx
-        self.solver = solver
+        self.solver_type = solver_type
 
         self.theta = None
         self.Pg = None
@@ -301,6 +320,16 @@ class OpfTimeSeries:
         self.contingency_flows_list = list()
         self.contingency_indices_list = list()  # [(t, m, c), ...]
         self.contingency_flows_slacks_list = list()
+
+        # if ortools:
+        #     if platform.system() == 'Darwin':
+        #         self.solver = pywraplp.Solver.CreateSolver("GLOP")
+        #         print('Forced the use of GLOP')
+        #     else:
+        #         self.solver = pywraplp.Solver.CreateSolver(self.solver_type.value)
+        #
+        # else:
+        #     self.solver = solver_type
 
         self.problem = None
 
