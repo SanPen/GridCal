@@ -349,26 +349,26 @@ class OpfTimeSeries:
         Call PuLP to solve the problem
         """
 
-        if self.solver == MIPSolvers.CBC:
+        if self.solver_type == MIPSolvers.CBC:
             params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=msg)
 
-        elif self.solver == MIPSolvers.HiGS:
+        elif self.solver_type == MIPSolvers.HiGS:
             params = HiGHS_CMD(msg=msg)
 
-        elif self.solver == MIPSolvers.SCIP:
+        elif self.solver_type == MIPSolvers.SCIP:
             params = SCIP_CMD(msg=msg)
 
-        elif self.solver == MIPSolvers.CPLEX:
+        elif self.solver_type == MIPSolvers.CPLEX:
             params = CPLEX_CMD(msg=msg)
 
-        elif self.solver == MIPSolvers.GUROBI:
+        elif self.solver_type == MIPSolvers.GUROBI:
             params = GUROBI_CMD(msg=msg)
 
-        elif self.solver == MIPSolvers.XPRESS:
+        elif self.solver_type == MIPSolvers.XPRESS:
             params = XPRESS(msg=msg)
 
         else:
-            raise Exception('Solver not supported! ' + str(self.solver))
+            raise Exception('Solver not supported! ' + str(self.solver_type))
 
         self.problem.solve(params)
 

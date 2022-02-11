@@ -1116,41 +1116,49 @@ class Ui_mainWindow(object):
         self.gridLayout_23 = QGridLayout(self.frame_29)
         self.gridLayout_23.setObjectName(u"gridLayout_23")
         self.gridLayout_23.setContentsMargins(0, 8, -1, -1)
-        self.horizontalSpacer_23 = QSpacerItem(510, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.gridLayout_23.addItem(self.horizontalSpacer_23, 0, 3, 1, 1)
-
         self.arrayModeComboBox = QComboBox(self.frame_29)
         self.arrayModeComboBox.setObjectName(u"arrayModeComboBox")
 
-        self.gridLayout_23.addWidget(self.arrayModeComboBox, 0, 1, 1, 1)
+        self.gridLayout_23.addWidget(self.arrayModeComboBox, 0, 3, 1, 1)
 
-        self.copyArraysButton = QPushButton(self.frame_29)
-        self.copyArraysButton.setObjectName(u"copyArraysButton")
-        self.copyArraysButton.setMinimumSize(QSize(32, 0))
-        self.copyArraysButton.setIcon(icon55)
+        self.horizontalSpacer_23 = QSpacerItem(510, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.gridLayout_23.addWidget(self.copyArraysButton, 0, 0, 1, 1)
+        self.gridLayout_23.addItem(self.horizontalSpacer_23, 0, 5, 1, 1)
+
+        self.simulationDataStructureTableView = QTableView(self.frame_29)
+        self.simulationDataStructureTableView.setObjectName(u"simulationDataStructureTableView")
+
+        self.gridLayout_23.addWidget(self.simulationDataStructureTableView, 1, 0, 1, 7)
+
+        self.copyArraysToNumpyButton = QPushButton(self.frame_29)
+        self.copyArraysToNumpyButton.setObjectName(u"copyArraysToNumpyButton")
+        icon81 = QIcon()
+        icon81.addFile(u":/Icons/icons/array.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.copyArraysToNumpyButton.setIcon(icon81)
+
+        self.gridLayout_23.addWidget(self.copyArraysToNumpyButton, 0, 1, 1, 1)
 
         self.plotArraysButton = QPushButton(self.frame_29)
         self.plotArraysButton.setObjectName(u"plotArraysButton")
         self.plotArraysButton.setMinimumSize(QSize(32, 0))
         self.plotArraysButton.setIcon(icon76)
 
-        self.gridLayout_23.addWidget(self.plotArraysButton, 0, 4, 1, 1)
+        self.gridLayout_23.addWidget(self.plotArraysButton, 0, 6, 1, 1)
 
-        self.simulationDataStructureTableView = QTableView(self.frame_29)
-        self.simulationDataStructureTableView.setObjectName(u"simulationDataStructureTableView")
+        self.copyArraysButton = QPushButton(self.frame_29)
+        self.copyArraysButton.setObjectName(u"copyArraysButton")
+        self.copyArraysButton.setMinimumSize(QSize(32, 0))
+        self.copyArraysButton.setIcon(icon55)
 
-        self.gridLayout_23.addWidget(self.simulationDataStructureTableView, 1, 0, 1, 5)
+        self.gridLayout_23.addWidget(self.copyArraysButton, 0, 2, 1, 1)
 
         self.simulationDataSplitter.addWidget(self.frame_29)
 
         self.horizontalLayout_7.addWidget(self.simulationDataSplitter)
 
-        icon81 = QIcon()
-        icon81.addFile(u":/Icons/icons/squares.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.tabWidget_3.addTab(self.compiledArraysTab, icon81, "")
+        icon82 = QIcon()
+        icon82.addFile(u":/Icons/icons/squares.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.tabWidget_3.addTab(self.compiledArraysTab, icon82, "")
         self.commentsTab = QWidget()
         self.commentsTab.setObjectName(u"commentsTab")
         self.verticalLayout_18 = QVBoxLayout(self.commentsTab)
@@ -1288,9 +1296,7 @@ class Ui_mainWindow(object):
 
         self.copy_numpy_button = QPushButton(self.frame_8)
         self.copy_numpy_button.setObjectName(u"copy_numpy_button")
-        icon82 = QIcon()
-        icon82.addFile(u":/Icons/icons/array.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.copy_numpy_button.setIcon(icon82)
+        self.copy_numpy_button.setIcon(icon81)
 
         self.horizontalLayout_2.addWidget(self.copy_numpy_button)
 
@@ -4038,13 +4044,17 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.exportSimulationDataButton.setText("")
 #if QT_CONFIG(tooltip)
-        self.copyArraysButton.setToolTip(QCoreApplication.translate("mainWindow", u"Copy array to clipboard", None))
+        self.copyArraysToNumpyButton.setToolTip(QCoreApplication.translate("mainWindow", u"Copy to data frame to clipboard in array format", None))
 #endif // QT_CONFIG(tooltip)
-        self.copyArraysButton.setText("")
+        self.copyArraysToNumpyButton.setText("")
 #if QT_CONFIG(tooltip)
         self.plotArraysButton.setToolTip(QCoreApplication.translate("mainWindow", u"Plot values", None))
 #endif // QT_CONFIG(tooltip)
         self.plotArraysButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.copyArraysButton.setToolTip(QCoreApplication.translate("mainWindow", u"Copy array to clipboard", None))
+#endif // QT_CONFIG(tooltip)
+        self.copyArraysButton.setText("")
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.compiledArraysTab), QCoreApplication.translate("mainWindow", u"Compiled arrays", None))
 #if QT_CONFIG(tooltip)
         self.comments_textEdit.setToolTip(QCoreApplication.translate("mainWindow", u"Write here some comments about the grid", None))

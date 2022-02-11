@@ -23,9 +23,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="modified LpElement">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed icon">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/pulp.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/pulp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,7 +56,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="ntc_no_slacks" />
+        <entry key="$PROJECT_DIR$" value="devel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -75,6 +78,7 @@
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/GIS/gis_dialogue.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/basic_structures.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/CoordinatesInput/coordinates_dialogue.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/IO/zip_interface.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/derivatives.py" root0="FORCE_HIGHLIGHTING" />
@@ -84,6 +88,8 @@
     <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Devices/transformer.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/helm_power_flow.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/IO/pack_unpack.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContingencyAnalysis/contingency_analysis_driver.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Devices/line.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/Session/export_results_driver.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Devices/editable_device.py" root0="FORCE_HIGHLIGHTING" />
@@ -93,14 +99,12 @@
     <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Core/admittance_matrices.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContinuationPowerFlow/continuation_power_flow_driver.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/SigmaAnalysis/sigma_analysis_driver.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/plot_config.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/IO/file_handler.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/ConsoleWidget.py" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="JupyterTrust" id="3f3378b4-0928-4af1-9795-ba1c77415c18" />
-  <component name="MarkdownSettingsMigration">
-    <option name="stateVersion" value="1" />
-  </component>
   <component name="ProjectId" id="1bGvT9JqoJhBes9WGdphyWxAfMi" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="false" id="Update" />
@@ -118,27 +122,27 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="ToolWindowDatabase.ShowToolbar" value="false" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../PratcticalGridModeling" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../gitlab/reeview" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/src/research/state_estimation" />
-      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\Main\icons" />
-      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\AboutDialogue\icons" />
-      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
-      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\Session" />
+      <recent name="D:\ReposGit\github\sanpen\GridCal\src\GridCal\Engine\Simulations\OPF" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\ThirdParty\pulp\solverdir\highs" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\ThirdParty\pulp\solverdir\highs\linux" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\ThirdParty\pulp\solverdir\highs\linux\64" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\ThirdParty\pulp\solverdir\highs\win" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\ThirdParty\pulp\solverdir\highs\win\x64" />
+      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal" />
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\research" />
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui\Session" />
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
-      <recent name="$PROJECT_DIR$/doc/formats" />
-      <recent name="$PROJECT_DIR$/src/research/power_flow" />
     </key>
   </component>
   <component name="RunManager" selected="Python.ExecuteGridCal">
@@ -164,7 +168,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="PTDF_ku_leuven" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="object_select_window" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -172,12 +176,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/research/PTDF" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/Main" />
+      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/research/PTDF/PTDF_ku_leuven.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/Main/object_select_window.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -186,7 +190,29 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="update_gui_file" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="opf_ntc_ts_driver" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="update_gui_file (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -208,52 +234,42 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests in test_power_flow.py" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+    <configuration name="update_gui_file" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_power_flow.py&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Nosetests in tests" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/update_gui_file.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.update_gui_file (1)" />
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python.PTDF_ku_leuven" />
       <item itemvalue="Python.update_gui_file" />
-      <item itemvalue="Python tests.Nosetests in test_power_flow.py" />
-      <item itemvalue="Python tests.Nosetests in tests" />
+      <item itemvalue="Python.opf_ntc_ts_driver" />
+      <item itemvalue="Python.object_select_window" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.PTDF_ku_leuven" />
+        <item itemvalue="Python.update_gui_file (1)" />
+        <item itemvalue="Python.object_select_window" />
+        <item itemvalue="Python.opf_ntc_ts_driver" />
         <item itemvalue="Python.update_gui_file" />
-        <item itemvalue="Python tests.Nosetests in test_power_flow.py" />
-        <item itemvalue="Python tests.Nosetests in tests" />
       </list>
     </recent_temporary>
   </component>
@@ -679,195 +695,15 @@
       <workItem from="1636714098985" duration="5162000" />
       <workItem from="1641245917031" duration="1783000" />
       <workItem from="1641292416750" duration="11537000" />
-      <workItem from="1641380785864" duration="4924000" />
-      <workItem from="1641386047825" duration="629000" />
-      <workItem from="1641391919541" duration="1299000" />
-      <workItem from="1641548626085" duration="5201000" />
-      <workItem from="1641557236010" duration="4098000" />
-      <workItem from="1641572930783" duration="10106000" />
-      <workItem from="1641648944285" duration="104000" />
-      <workItem from="1641656630000" duration="1211000" />
-      <workItem from="1642258686374" duration="11666000" />
-      <workItem from="1642324846172" duration="10016000" />
-      <workItem from="1644333240281" duration="9000" />
-      <workItem from="1644338564444" duration="6843000" />
-      <workItem from="1644433735350" duration="699000" />
-      <workItem from="1644524048674" duration="4709000" />
-    </task>
-    <task id="LOCAL-00200" summary="Added Activs500g">
-      <created>1632949829511</created>
-      <option name="number" value="00200" />
-      <option name="presentableId" value="LOCAL-00200" />
-      <option name="project" value="LOCAL" />
-      <updated>1632949829511</updated>
-    </task>
-    <task id="LOCAL-00201" summary="Added epc extension to open dialogue filter">
-      <created>1632951603906</created>
-      <option name="number" value="00201" />
-      <option name="presentableId" value="LOCAL-00201" />
-      <option name="project" value="LOCAL" />
-      <updated>1632951603906</updated>
-    </task>
-    <task id="LOCAL-00202" summary="Added new vsc modes">
-      <created>1632998548555</created>
-      <option name="number" value="00202" />
-      <option name="presentableId" value="LOCAL-00202" />
-      <option name="project" value="LOCAL" />
-      <updated>1632998548555</updated>
-    </task>
-    <task id="LOCAL-00203" summary="improved powerworld converter">
-      <created>1632998564051</created>
-      <option name="number" value="00203" />
-      <option name="presentableId" value="LOCAL-00203" />
-      <option name="project" value="LOCAL" />
-      <updated>1632998564051</updated>
-    </task>
-    <task id="LOCAL-00204" summary="Added console commands `app.numerical_circuit`and `app.islands`.">
-      <created>1632998575386</created>
-      <option name="number" value="00204" />
-      <option name="presentableId" value="LOCAL-00204" />
-      <option name="project" value="LOCAL" />
-      <updated>1632998575386</updated>
-    </task>
-    <task id="LOCAL-00205" summary="finalized version 4.2.1">
-      <created>1632998589706</created>
-      <option name="number" value="00205" />
-      <option name="presentableId" value="LOCAL-00205" />
-      <option name="project" value="LOCAL" />
-      <updated>1632998589706</updated>
-    </task>
-    <task id="LOCAL-00206" summary="improved some bugs">
-      <created>1633080774642</created>
-      <option name="number" value="00206" />
-      <option name="presentableId" value="LOCAL-00206" />
-      <option name="project" value="LOCAL" />
-      <updated>1633080774642</updated>
-    </task>
-    <task id="LOCAL-00207" summary="Fixed CIM export">
-      <created>1633093145139</created>
-      <option name="number" value="00207" />
-      <option name="presentableId" value="LOCAL-00207" />
-      <option name="project" value="LOCAL" />
-      <updated>1633093145139</updated>
-    </task>
-    <task id="LOCAL-00208" summary="Fixed CIM export">
-      <created>1633171413746</created>
-      <option name="number" value="00208" />
-      <option name="presentableId" value="LOCAL-00208" />
-      <option name="project" value="LOCAL" />
-      <updated>1633171413747</updated>
-    </task>
-    <task id="LOCAL-00209" summary="Passed the parent (main window) to most of the sub-windows">
-      <created>1633732210351</created>
-      <option name="number" value="00209" />
-      <option name="presentableId" value="LOCAL-00209" />
-      <option name="project" value="LOCAL" />
-      <updated>1633732210351</updated>
-    </task>
-    <task id="LOCAL-00210" summary="Improved the design of the tower builder">
-      <created>1633774436210</created>
-      <option name="number" value="00210" />
-      <option name="presentableId" value="LOCAL-00210" />
-      <option name="project" value="LOCAL" />
-      <updated>1633774436211</updated>
-    </task>
-    <task id="LOCAL-00211" summary="Fixed branch flow in simple OPF&#10;Removed linear AC OPF for the moment&#10;Fixed PuLP initialization">
-      <created>1633792288255</created>
-      <option name="number" value="00211" />
-      <option name="presentableId" value="LOCAL-00211" />
-      <option name="project" value="LOCAL" />
-      <updated>1633792288256</updated>
-    </task>
-    <task id="LOCAL-00212" summary="Implemented dispatcheable in the HVDC line and implemented the NTC OPF mode">
-      <created>1633793367480</created>
-      <option name="number" value="00212" />
-      <option name="presentableId" value="LOCAL-00212" />
-      <option name="project" value="LOCAL" />
-      <updated>1633793367480</updated>
-    </task>
-    <task id="LOCAL-00213" summary="implemented HVDC dispatch in the OPF&#10;Joined it to the power flow non-destructive feed&#10;Added attributes in the compilation functions">
-      <created>1633859600935</created>
-      <option name="number" value="00213" />
-      <option name="presentableId" value="LOCAL-00213" />
-      <option name="project" value="LOCAL" />
-      <updated>1633859600936</updated>
-    </task>
-    <task id="LOCAL-00214" summary="Added branch tap angle optimization in the OPF">
-      <created>1633861130364</created>
-      <option name="number" value="00214" />
-      <option name="presentableId" value="LOCAL-00214" />
-      <option name="project" value="LOCAL" />
-      <updated>1633861130364</updated>
-    </task>
-    <task id="LOCAL-00215" summary="OPF sign corrected">
-      <created>1633861540378</created>
-      <option name="number" value="00215" />
-      <option name="presentableId" value="LOCAL-00215" />
-      <option name="project" value="LOCAL" />
-      <updated>1633861540378</updated>
-    </task>
-    <task id="LOCAL-00216" summary="Implemented HVDC and phase shift into the OPF time series">
-      <created>1633874574582</created>
-      <option name="number" value="00216" />
-      <option name="presentableId" value="LOCAL-00216" />
-      <option name="project" value="LOCAL" />
-      <updated>1633874574582</updated>
-    </task>
-    <task id="LOCAL-00217" summary="added transformer angle and tap module profiles">
-      <created>1633875493750</created>
-      <option name="number" value="00217" />
-      <option name="presentableId" value="LOCAL-00217" />
-      <option name="project" value="LOCAL" />
-      <updated>1633875493750</updated>
-    </task>
-    <task id="LOCAL-00218" summary="Added contingencies to the OPF simulations&#10;Added the contingency report as a compromise to show the contingencies">
-      <created>1634136542079</created>
-      <option name="number" value="00218" />
-      <option name="presentableId" value="LOCAL-00218" />
-      <option name="project" value="LOCAL" />
-      <updated>1634136542079</updated>
-    </task>
-    <task id="LOCAL-00219" summary="Added PTDF contingency tolerance">
-      <created>1634138472418</created>
-      <option name="number" value="00219" />
-      <option name="presentableId" value="LOCAL-00219" />
-      <option name="project" value="LOCAL" />
-      <updated>1634138472418</updated>
-    </task>
-    <task id="LOCAL-00220" summary="Implemented the skip generation in the dc opf">
-      <created>1634138565931</created>
-      <option name="number" value="00220" />
-      <option name="presentableId" value="LOCAL-00220" />
-      <option name="project" value="LOCAL" />
-      <updated>1634138565931</updated>
-    </task>
-    <task id="LOCAL-00221" summary="Version 4.2.4">
-      <created>1634139632205</created>
-      <option name="number" value="00221" />
-      <option name="presentableId" value="LOCAL-00221" />
-      <option name="project" value="LOCAL" />
-      <updated>1634139632205</updated>
-    </task>
-    <task id="LOCAL-00222" summary="Implemented optional way to open the web maps when the pyside webdriver is not available">
-      <created>1634571179268</created>
-      <option name="number" value="00222" />
-      <option name="presentableId" value="LOCAL-00222" />
-      <option name="project" value="LOCAL" />
-      <updated>1634571179269</updated>
-    </task>
-    <task id="LOCAL-00223" summary="implemented simpler zoom by selecting and adjusting the screen">
-      <created>1634571787400</created>
-      <option name="number" value="00223" />
-      <option name="presentableId" value="LOCAL-00223" />
-      <option name="project" value="LOCAL" />
-      <updated>1634571787400</updated>
-    </task>
-    <task id="LOCAL-00224" summary="For apple M1 use GLOP when using ortools">
-      <created>1634668672037</created>
-      <option name="number" value="00224" />
-      <option name="presentableId" value="LOCAL-00224" />
-      <option name="project" value="LOCAL" />
-      <updated>1634668672037</updated>
+      <workItem from="1642058915637" duration="8601000" />
+      <workItem from="1642145208905" duration="6757000" />
+      <workItem from="1642405995681" duration="11562000" />
+      <workItem from="1642445073918" duration="3119000" />
+      <workItem from="1642492356909" duration="9995000" />
+      <workItem from="1642532568418" duration="7428000" />
+      <workItem from="1642578402785" duration="15289000" />
+      <workItem from="1642603851071" duration="4791000" />
+      <workItem from="1642610723451" duration="5530000" />
     </task>
     <task id="LOCAL-00225" summary="4.2.6">
       <created>1634829329676</created>
@@ -974,70 +810,245 @@
       <option name="project" value="LOCAL" />
       <updated>1641247352350</updated>
     </task>
-    <task id="LOCAL-00240" summary="fixed unavailability of types like btg or nn">
-      <created>1641378097770</created>
+    <task id="LOCAL-00240" summary="Fixed HVDC &quot;free&quot; control for OPF">
+      <created>1642008809064</created>
       <option name="number" value="00240" />
       <option name="presentableId" value="LOCAL-00240" />
       <option name="project" value="LOCAL" />
-      <updated>1641378097770</updated>
+      <updated>1642008809064</updated>
     </task>
-    <task id="LOCAL-00241" summary="fixed critical error introduced when implementing the HVDC control loop&#10;Improved the Bentayga integration">
-      <created>1641385603005</created>
+    <task id="LOCAL-00241" summary="Implemented bentayga inspection from  the compiled arrays view">
+      <created>1642018867140</created>
       <option name="number" value="00241" />
       <option name="presentableId" value="LOCAL-00241" />
       <option name="project" value="LOCAL" />
-      <updated>1641385603006</updated>
+      <updated>1642018867140</updated>
     </task>
-    <task id="LOCAL-00242" summary="removed the pqpv_lookup BS from the numerical methods and put it back into the Jacobian">
-      <created>1641549087169</created>
+    <task id="LOCAL-00242" summary="Improved bentayga arrays viewer implementation">
+      <created>1642022491062</created>
       <option name="number" value="00242" />
       <option name="presentableId" value="LOCAL-00242" />
       <option name="project" value="LOCAL" />
-      <updated>1641549087169</updated>
+      <updated>1642022491062</updated>
     </task>
-    <task id="LOCAL-00243" summary="Minor changes to LM">
-      <created>1641556220621</created>
+    <task id="LOCAL-00243" summary="Fixed HVDC logic when devices are not active">
+      <created>1642064296994</created>
       <option name="number" value="00243" />
       <option name="presentableId" value="LOCAL-00243" />
       <option name="project" value="LOCAL" />
-      <updated>1641556220621</updated>
+      <updated>1642064296995</updated>
     </task>
-    <task id="LOCAL-00244" summary="changed bentayga integer type integration with numpy">
-      <created>1641559303115</created>
+    <task id="LOCAL-00244" summary="renamed _iter to iter_control">
+      <created>1642064598748</created>
       <option name="number" value="00244" />
       <option name="presentableId" value="LOCAL-00244" />
       <option name="project" value="LOCAL" />
-      <updated>1641559303116</updated>
+      <updated>1642064598748</updated>
     </task>
-    <task id="LOCAL-00245" summary="fixed error with has_time_series">
-      <created>1641568173602</created>
+    <task id="LOCAL-00245" summary="Modified the outer loop control convergence">
+      <created>1642066133170</created>
       <option name="number" value="00245" />
       <option name="presentableId" value="LOCAL-00245" />
       <option name="project" value="LOCAL" />
-      <updated>1641568173602</updated>
+      <updated>1642066133170</updated>
     </task>
-    <task id="LOCAL-00246" summary="Improved copying the compiled arrays">
-      <created>1642268732724</created>
+    <task id="LOCAL-00246" summary="Integrated bentayga license activation">
+      <created>1642146364827</created>
       <option name="number" value="00246" />
       <option name="presentableId" value="LOCAL-00246" />
       <option name="project" value="LOCAL" />
-      <updated>1642268732725</updated>
+      <updated>1642146364827</updated>
     </task>
-    <task id="LOCAL-00247" summary="Fixed HVDC oscillation control and visualization">
-      <created>1642278036423</created>
+    <task id="LOCAL-00247" summary="Updated to LGPL">
+      <created>1642155667785</created>
       <option name="number" value="00247" />
       <option name="presentableId" value="LOCAL-00247" />
       <option name="project" value="LOCAL" />
-      <updated>1642278036423</updated>
+      <updated>1642155667785</updated>
     </task>
-    <task id="LOCAL-00248" summary="PTDF research added distributed slack to the KULeuven formulation &#10;Added missing grids in the examples">
-      <created>1642349596358</created>
+    <task id="LOCAL-00248" summary="Updated to LGPL">
+      <created>1642155751834</created>
       <option name="number" value="00248" />
       <option name="presentableId" value="LOCAL-00248" />
       <option name="project" value="LOCAL" />
-      <updated>1642349596359</updated>
+      <updated>1642155751834</updated>
     </task>
-    <option name="localTasksCounter" value="249" />
+    <task id="LOCAL-00249" summary="4.4.0">
+      <created>1642158102595</created>
+      <option name="number" value="00249" />
+      <option name="presentableId" value="LOCAL-00249" />
+      <option name="project" value="LOCAL" />
+      <updated>1642158102595</updated>
+    </task>
+    <task id="LOCAL-00250" summary="4.4.2">
+      <created>1642160174005</created>
+      <option name="number" value="00250" />
+      <option name="presentableId" value="LOCAL-00250" />
+      <option name="project" value="LOCAL" />
+      <updated>1642160174005</updated>
+    </task>
+    <task id="LOCAL-00251" summary="Fixed reverse HVDC sense">
+      <created>1642168997628</created>
+      <option name="number" value="00251" />
+      <option name="presentableId" value="LOCAL-00251" />
+      <option name="project" value="LOCAL" />
+      <updated>1642168997628</updated>
+    </task>
+    <task id="LOCAL-00252" summary="Fixed the license reading">
+      <created>1642169744102</created>
+      <option name="number" value="00252" />
+      <option name="presentableId" value="LOCAL-00252" />
+      <option name="project" value="LOCAL" />
+      <updated>1642169744102</updated>
+    </task>
+    <task id="LOCAL-00253" summary="Improved the oscillation detection">
+      <created>1642406835841</created>
+      <option name="number" value="00253" />
+      <option name="presentableId" value="LOCAL-00253" />
+      <option name="project" value="LOCAL" />
+      <updated>1642406835841</updated>
+    </task>
+    <task id="LOCAL-00254" summary="fixed the FUBM indices calculation when islands are present">
+      <created>1642492727406</created>
+      <option name="number" value="00254" />
+      <option name="presentableId" value="LOCAL-00254" />
+      <option name="project" value="LOCAL" />
+      <updated>1642492727406</updated>
+    </task>
+    <task id="LOCAL-00255" summary="Merged some changes">
+      <created>1642507950166</created>
+      <option name="number" value="00255" />
+      <option name="presentableId" value="LOCAL-00255" />
+      <option name="project" value="LOCAL" />
+      <updated>1642507950166</updated>
+    </task>
+    <task id="LOCAL-00256" summary="Added &quot;maximize exchange&quot; option to the normal OPF">
+      <created>1642536865181</created>
+      <option name="number" value="00256" />
+      <option name="presentableId" value="LOCAL-00256" />
+      <option name="project" value="LOCAL" />
+      <updated>1642536865181</updated>
+    </task>
+    <task id="LOCAL-00257" summary="Added &quot;maximize exchange&quot; option to the normal OPF-time series">
+      <created>1642540764467</created>
+      <option name="number" value="00257" />
+      <option name="presentableId" value="LOCAL-00257" />
+      <option name="project" value="LOCAL" />
+      <updated>1642540764467</updated>
+    </task>
+    <task id="LOCAL-00258" summary="Added inter area generation maximization/minimization&#10;Rearranged menus&#10;Added area &quot;slicing&quot; functions to the snapshot">
+      <created>1642583578445</created>
+      <option name="number" value="00258" />
+      <option name="presentableId" value="LOCAL-00258" />
+      <option name="project" value="LOCAL" />
+      <updated>1642583578445</updated>
+    </task>
+    <task id="LOCAL-00259" summary="removed HVDC slack variables from the OPF and OPF-TS formulations">
+      <created>1642585639088</created>
+      <option name="number" value="00259" />
+      <option name="presentableId" value="LOCAL-00259" />
+      <option name="project" value="LOCAL" />
+      <updated>1642585639088</updated>
+    </task>
+    <task id="LOCAL-00260" summary="Added shadow prices to both opf and opf-ts">
+      <created>1642587559143</created>
+      <option name="number" value="00260" />
+      <option name="presentableId" value="LOCAL-00260" />
+      <option name="project" value="LOCAL" />
+      <updated>1642587559143</updated>
+    </task>
+    <task id="LOCAL-00261" summary="Fixed bug when the nodal restrictions are None">
+      <created>1642590889867</created>
+      <option name="number" value="00261" />
+      <option name="presentableId" value="LOCAL-00261" />
+      <option name="project" value="LOCAL" />
+      <updated>1642590889867</updated>
+    </task>
+    <task id="LOCAL-00262" summary="Fixed some little bugs with the OPF">
+      <created>1642596603078</created>
+      <option name="number" value="00262" />
+      <option name="presentableId" value="LOCAL-00262" />
+      <option name="project" value="LOCAL" />
+      <updated>1642596603078</updated>
+    </task>
+    <task id="LOCAL-00263" summary="Added Highs for windows, not working yet">
+      <created>1642609834253</created>
+      <option name="number" value="00263" />
+      <option name="presentableId" value="LOCAL-00263" />
+      <option name="project" value="LOCAL" />
+      <updated>1642609834254</updated>
+    </task>
+    <task id="LOCAL-00264" summary="Highs WIP">
+      <created>1642611851084</created>
+      <option name="number" value="00264" />
+      <option name="presentableId" value="LOCAL-00264" />
+      <option name="project" value="LOCAL" />
+      <updated>1642611851085</updated>
+    </task>
+    <task id="LOCAL-00265" summary="Highs working with shadow prices, when HiGHS is in the PATH">
+      <created>1642665845052</created>
+      <option name="number" value="00265" />
+      <option name="presentableId" value="LOCAL-00265" />
+      <option name="project" value="LOCAL" />
+      <updated>1642665845052</updated>
+    </task>
+    <task id="LOCAL-00266" summary="correct hvdc angle sense">
+      <created>1642756879727</created>
+      <option name="number" value="00266" />
+      <option name="presentableId" value="LOCAL-00266" />
+      <option name="project" value="LOCAL" />
+      <updated>1642756879729</updated>
+    </task>
+    <task id="LOCAL-00267" summary="fix duplicated call">
+      <created>1642756897131</created>
+      <option name="number" value="00267" />
+      <option name="presentableId" value="LOCAL-00267" />
+      <option name="project" value="LOCAL" />
+      <updated>1642756897131</updated>
+    </task>
+    <task id="LOCAL-00268" summary="add time index to call">
+      <created>1642756918606</created>
+      <option name="number" value="00268" />
+      <option name="presentableId" value="LOCAL-00268" />
+      <option name="project" value="LOCAL" />
+      <updated>1642756918606</updated>
+    </task>
+    <task id="LOCAL-00269" summary="working optimal ntc with proportional generation">
+      <created>1643282150260</created>
+      <option name="number" value="00269" />
+      <option name="presentableId" value="LOCAL-00269" />
+      <option name="project" value="LOCAL" />
+      <updated>1643282150262</updated>
+    </task>
+    <task id="LOCAL-00270" summary="working optimal net transfer capacity time series">
+      <created>1643374428116</created>
+      <option name="number" value="00270" />
+      <option name="presentableId" value="LOCAL-00270" />
+      <option name="project" value="LOCAL" />
+      <updated>1643374428116</updated>
+    </task>
+    <task id="LOCAL-00271" summary="working optimal net transfer capacity time series">
+      <created>1643374434131</created>
+      <option name="number" value="00271" />
+      <option name="presentableId" value="LOCAL-00271" />
+      <option name="project" value="LOCAL" />
+      <updated>1643374434131</updated>
+    </task>
+    <task id="LOCAL-00272" summary="deleted ntc_opf_ts file">
+      <created>1643374535841</created>
+      <option name="number" value="00272" />
+      <option name="presentableId" value="LOCAL-00272" />
+      <option name="project" value="LOCAL" />
+      <updated>1643374535841</updated>
+    </task>
+    <task id="LOCAL-00273" summary="Fixed icon">
+      <created>1644578037522</created>
+      <option name="number" value="00273" />
+      <option name="presentableId" value="LOCAL-00273" />
+      <option name="project" value="LOCAL" />
+      <updated>1644578037522</updated>
+    </task>
+    <option name="localTasksCounter" value="274" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1050,6 +1061,7 @@
         <option value="Default.Author" />
         <option value="Default.Date" />
         <option value="Default.Subject" />
+        <option value="Space.CommitStatus" />
       </list>
     </option>
   </component>
@@ -1070,39 +1082,39 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="implemented simpler zoom by selecting and adjusting the screen" />
-    <MESSAGE value="For apple M1 use GLOP when using ortools" />
-    <MESSAGE value="4.2.6" />
-    <MESSAGE value="Improved analysis dialogue adding a new column and transformer virtual taps support&#10;Added transformer virtual taps into the array viewer&#10;Added &quot;correct_shit&quot; function to GridCalMain.py" />
-    <MESSAGE value="improved NTC report" />
-    <MESSAGE value="Fixed silly error with SE" />
-    <MESSAGE value="Moved NTC-OPF formulation out of the class" />
-    <MESSAGE value="Added node balance check in the NTC opf" />
-    <MESSAGE value="Added more explicative values" />
-    <MESSAGE value="Added N-1 exploration" />
-    <MESSAGE value="Added NTC-OPF previous checking using DC power flow and contingency analysis" />
-    <MESSAGE value="changed version" />
-    <MESSAGE value="Fixed indices in the NTC pre-solve and the linear contingency analysis" />
-    <MESSAGE value="Refactored the order of the generation formulation in NTC-OPF" />
-    <MESSAGE value="4.3.1" />
-    <MESSAGE value="Fixed critical bug with NR when many islands" />
-    <MESSAGE value="fixed unavailability of types like btg or nn" />
-    <MESSAGE value="fixed critical error introduced when implementing the HVDC control loop&#10;Improved the Bentayga integration" />
-    <MESSAGE value="removed the pqpv_lookup BS from the numerical methods and put it back into the Jacobian" />
-    <MESSAGE value="Minor changes to LM" />
-    <MESSAGE value="changed bentayga integer type integration with numpy" />
-    <MESSAGE value="fixed error with has_time_series" />
-    <MESSAGE value="Improved copying the compiled arrays" />
-    <MESSAGE value="Fixed HVDC oscillation control and visualization" />
-    <MESSAGE value="PTDF research added distributed slack to the KULeuven formulation &#10;Added missing grids in the examples" />
-    <option name="LAST_COMMIT_MESSAGE" value="PTDF research added distributed slack to the KULeuven formulation &#10;Added missing grids in the examples" />
+    <MESSAGE value="Updated to LGPL" />
+    <MESSAGE value="4.4.0" />
+    <MESSAGE value="4.4.2" />
+    <MESSAGE value="Fixed reverse HVDC sense" />
+    <MESSAGE value="Fixed the license reading" />
+    <MESSAGE value="Improved the oscillation detection" />
+    <MESSAGE value="fixed the FUBM indices calculation when islands are present" />
+    <MESSAGE value="Merged some changes" />
+    <MESSAGE value="Added &quot;maximize exchange&quot; option to the normal OPF" />
+    <MESSAGE value="Added &quot;maximize exchange&quot; option to the normal OPF-time series" />
+    <MESSAGE value="Added inter area generation maximization/minimization&#10;Rearranged menus&#10;Added area &quot;slicing&quot; functions to the snapshot" />
+    <MESSAGE value="removed HVDC slack variables from the OPF and OPF-TS formulations" />
+    <MESSAGE value="Added shadow prices to both opf and opf-ts" />
+    <MESSAGE value="Fixed bug when the nodal restrictions are None" />
+    <MESSAGE value="Fixed some little bugs with the OPF" />
+    <MESSAGE value="Added Highs for windows, not working yet" />
+    <MESSAGE value="Highs WIP" />
+    <MESSAGE value="Highs working with shadow prices, when HiGHS is in the PATH" />
+    <MESSAGE value="correct hvdc angle sense" />
+    <MESSAGE value="fix duplicated call" />
+    <MESSAGE value="add time index to call" />
+    <MESSAGE value="working optimal ntc with proportional generation" />
+    <MESSAGE value="working optimal net transfer capacity time series" />
+    <MESSAGE value="deleted ntc_opf_ts file" />
+    <MESSAGE value="Fixed icon" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed icon" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/json_parser.py</url>
-          <line>739</line>
+          <line>828</line>
           <option name="timeStamp" value="29" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1129,11 +1141,6 @@
           <url>file://$PROJECT_DIR$/src/research/PTDF/PTDF_research.py</url>
           <line>239</line>
           <option name="timeStamp" value="99" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>1015</line>
-          <option name="timeStamp" value="161" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/research/power_flow/asd/josep/v3_pv.py</url>
@@ -1181,18 +1188,13 @@
           <option name="timeStamp" value="298" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>5208</line>
-          <option name="timeStamp" value="303" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ac_opf_ts.py</url>
-          <line>407</line>
-          <option name="timeStamp" value="328" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/NK/n_minus_k_driver.py</url>
+          <line>142</line>
+          <option name="timeStamp" value="325" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py</url>
-          <line>1684</line>
+          <line>1694</line>
           <option name="timeStamp" value="332" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1216,11 +1218,6 @@
           <option name="timeStamp" value="344" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_transformer_regulator.py</url>
-          <line>185</line>
-          <option name="timeStamp" value="352" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/research/admittance/admittance_variations.py</url>
           <line>122</line>
           <option name="timeStamp" value="355" />
@@ -1242,19 +1239,14 @@
           <option name="timeStamp" value="407" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContinuationPowerFlow/continuation_power_flow_driver.py</url>
+          <line>364</line>
+          <option name="timeStamp" value="408" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_power_flow.py</url>
-          <line>1142</line>
+          <line>971</line>
           <option name="timeStamp" value="418" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_power_flow.py</url>
-          <line>1168</line>
-          <option name="timeStamp" value="419" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_power_flow.py</url>
-          <line>1165</line>
-          <option name="timeStamp" value="420" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/research/upfc/fuerte_esquivel_acha_ambriz_perez_paper.py</url>
@@ -1270,11 +1262,6 @@
           <url>file://$PROJECT_DIR$/src/research/upfc/fuerte_esquivel_acha_ambriz_perez_paper.py</url>
           <line>119</line>
           <option name="timeStamp" value="428" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/admittance_matrices.py</url>
-          <line>297</line>
-          <option name="timeStamp" value="431" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/research/power_flow/fubm/derivatives_research0.py</url>
@@ -1312,241 +1299,74 @@
           <option name="timeStamp" value="486" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_acdc_power_flow.py</url>
+          <line>1019</line>
+          <option name="timeStamp" value="493" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_acdc_power_flow.py</url>
+          <line>915</line>
+          <option name="timeStamp" value="494" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/setup.py</url>
+          <line>157</line>
+          <option name="timeStamp" value="505" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/json_parser.py</url>
+          <line>956</line>
+          <option name="timeStamp" value="534" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/json_parser.py</url>
+          <line>963</line>
+          <option name="timeStamp" value="535" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/zip_interface.py</url>
-          <line>344</line>
+          <line>223</line>
           <option name="timeStamp" value="564" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py</url>
-          <line>2077</line>
-          <option name="timeStamp" value="618" />
+          <url>file://$PROJECT_DIR$/src/tests/test_transformer_controls.py</url>
+          <line>48</line>
+          <option name="timeStamp" value="617" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py</url>
-          <line>2076</line>
-          <option name="timeStamp" value="619" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Analysis/AnalysisDialogue.py</url>
+          <line>565</line>
+          <option name="timeStamp" value="620" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/h5_interface.py</url>
-          <line>99</line>
-          <option name="timeStamp" value="625" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py</url>
+          <line>45</line>
+          <option name="timeStamp" value="631" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/time_series_clustring_driver.py</url>
-          <line>123</line>
-          <option name="timeStamp" value="669" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/research/PTDF/ATC1.py</url>
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py</url>
           <line>25</line>
-          <option name="timeStamp" value="670" />
+          <option name="timeStamp" value="632" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/research/PTDF/PTDF_by_node_groups.py</url>
-          <line>88</line>
-          <option name="timeStamp" value="687" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py</url>
+          <line>32</line>
+          <option name="timeStamp" value="633" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/research/PTDF/PTDF_by_node_groups.py</url>
-          <line>90</line>
-          <option name="timeStamp" value="688" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py</url>
+          <line>52</line>
+          <option name="timeStamp" value="634" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/research/PTDF/PTDF_by_node_groups.py</url>
-          <line>135</line>
-          <option name="timeStamp" value="690" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py</url>
+          <line>384</line>
+          <option name="timeStamp" value="672" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>2572</line>
-          <option name="timeStamp" value="698" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>2204</line>
-          <option name="timeStamp" value="717" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Session/results_model.py</url>
-          <line>160</line>
-          <option name="timeStamp" value="729" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Session/results_model.py</url>
-          <line>162</line>
-          <option name="timeStamp" value="730" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/DataStructures/generator_data.py</url>
-          <line>100</line>
-          <option name="timeStamp" value="740" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_power_flow.py</url>
-          <line>74</line>
-          <option name="timeStamp" value="745" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>3050</line>
-          <option name="timeStamp" value="798" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
-          <line>3029</line>
-          <option name="timeStamp" value="799" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Session/session.py</url>
-          <line>106</line>
-          <option name="timeStamp" value="802" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/IO/power_world_parser.py</url>
-          <line>199</line>
-          <option name="timeStamp" value="808" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solver_interfaces/cplex.py</url>
-          <line>59</line>
-          <option name="timeStamp" value="816" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/time_series_pf_data.py</url>
-          <line>435</line>
-          <option name="timeStamp" value="821" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py</url>
-          <line>436</line>
-          <option name="timeStamp" value="835" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_driver.py</url>
-          <line>182</line>
-          <option name="timeStamp" value="837" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ts_driver.py</url>
-          <line>184</line>
-          <option name="timeStamp" value="839" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_driver.py</url>
-          <line>571</line>
-          <option name="timeStamp" value="841" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/research/state_estimation/5_bus_se.py</url>
-          <line>34</line>
-          <option name="timeStamp" value="848" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_state_estimation.py</url>
-          <line>56</line>
-          <option name="timeStamp" value="850" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/StateEstimation/state_estimation.py</url>
-          <line>285</line>
-          <option name="timeStamp" value="851" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>320</line>
-          <option name="timeStamp" value="853" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/research/PTDF/PTDF_ku_leuven.py</url>
-          <line>137</line>
-          <option name="timeStamp" value="854" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/time_series_driver.py</url>
-          <line>448</line>
-          <option name="timeStamp" value="875" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py</url>
-          <line>622</line>
-          <option name="timeStamp" value="876" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_bentayga.py</url>
-          <line>442</line>
-          <option name="timeStamp" value="878" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_bentayga.py</url>
-          <line>455</line>
-          <option name="timeStamp" value="881" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_power_flow.py</url>
-          <line>891</line>
-          <option name="timeStamp" value="889" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_power_flow.py</url>
-          <line>921</line>
-          <option name="timeStamp" value="890" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_power_flow.py</url>
-          <line>935</line>
-          <option name="timeStamp" value="892" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_power_flow.py</url>
-          <line>957</line>
-          <option name="timeStamp" value="894" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_power_flow.py</url>
-          <line>947</line>
-          <option name="timeStamp" value="897" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/jacobian_based_power_flow.py</url>
-          <line>940</line>
-          <option name="timeStamp" value="898" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <condition expression="free" language="Python" />
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py</url>
-          <line>99</line>
-          <option name="timeStamp" value="901" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <condition expression="free" language="Python" />
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py</url>
-          <line>106</line>
-          <option name="timeStamp" value="907" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py</url>
-          <line>696</line>
-          <option name="timeStamp" value="913" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py</url>
-          <line>706</line>
-          <option name="timeStamp" value="914" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py</url>
-          <line>64</line>
-          <option name="timeStamp" value="917" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py</url>
-          <line>115</line>
-          <option name="timeStamp" value="919" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py</url>
-          <line>95</line>
-          <option name="timeStamp" value="920" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py</url>
+          <line>406</line>
+          <option name="timeStamp" value="674" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1569,7 +1389,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_tests.coverage" NAME="Nosetests in tests Coverage Results" MODIFIED="1630416906709" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$asd_power_flow.coverage" NAME="asd_power_flow Coverage Results" MODIFIED="1598789868769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_flow/asd" />
     <SUITE FILE_PATH="coverage/GridCal$lhs_ts.coverage" NAME="lhs_ts Coverage Results" MODIFIED="1634932764037" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/interpolation" />
-    <SUITE FILE_PATH="coverage/GridCal$update_gui_file__1_.coverage" NAME="update_gui_file (1) Coverage Results" MODIFIED="1607546655496" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
+    <SUITE FILE_PATH="coverage/GridCal$update_gui_file__1_.coverage" NAME="update_gui_file (1) Coverage Results" MODIFIED="1644587720126" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_continuation_power_flow_py.coverage" NAME="Nosetests in test_continuation_power_flow.py Coverage Results" MODIFIED="1632998648549" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$ptdf_ts_driver.coverage" NAME="ptdf_ts_driver Coverage Results" MODIFIED="1600186726130" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$rpgm_algo.coverage" NAME="rpgm_algo Coverage Results" MODIFIED="1603645665438" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/ThirdParty/SyntheticNetworks" />
@@ -1655,7 +1475,7 @@
     <SUITE FILE_PATH="coverage/GridCal$line_example.coverage" NAME="line_example Coverage Results" MODIFIED="1619379775789" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/per_unit" />
     <SUITE FILE_PATH="coverage/GridCal$test_transformer_regulator.coverage" NAME="test_transformer_regulator Coverage Results" MODIFIED="1602954515929" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$analytic_ptdf_driver.coverage" NAME="analytic_ptdf_driver Coverage Results" MODIFIED="1600179811175" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PTDF" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1644488980211" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1644587975298" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_time_series_py.coverage" NAME="Nosetests in test_time_series.py Coverage Results" MODIFIED="1634139775407" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_api_dcopf_py.coverage" NAME="Nosetests in test_api_dcopf.py Coverage Results" MODIFIED="1609500321255" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$node_branch_drawing.coverage" NAME="node_branch_drawing Coverage Results" MODIFIED="1615652035782" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/qt_related" />
@@ -1693,8 +1513,8 @@
     <SUITE FILE_PATH="coverage/GridCal$ACPTDF_research2.coverage" NAME="ACPTDF_research2 Coverage Results" MODIFIED="1601972012772" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$psse_transformer_impedance_conversion.coverage" NAME="psse_transformer_impedance_conversion Coverage Results" MODIFIED="1632831296503" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research" />
     <SUITE FILE_PATH="coverage/GridCal$matpower_parser.coverage" NAME="matpower_parser Coverage Results" MODIFIED="1600002676691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
-    <SUITE FILE_PATH="coverage/GridCal$object_select_window.coverage" NAME="object_select_window Coverage Results" MODIFIED="1618777253667" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_reverse_transformer_definition_py.coverage" NAME="Nosetests in test_reverse_transformer_definition.py Coverage Results" MODIFIED="1609501285838" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$object_select_window.coverage" NAME="object_select_window Coverage Results" MODIFIED="1644587709559" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_power_flow_test_ieee_grids.coverage" NAME="Nosetests for tests.test_power_flow.test_ieee_grids Coverage Results" MODIFIED="1602926441076" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$inputs_analysis_driver.coverage" NAME="inputs_analysis_driver Coverage Results" MODIFIED="1632813432332" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/InputsAnalysis" />
     <SUITE FILE_PATH="coverage/GridCal$power_world_parser.coverage" NAME="power_world_parser Coverage Results" MODIFIED="1632911407871" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
