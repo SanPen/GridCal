@@ -3512,6 +3512,7 @@ class Ui_mainWindow(object):
         self.menuSimulations.addAction(self.actionOPF)
         self.menuSimulations.addAction(self.actionOPF_time_series)
         self.menuSimulations.addAction(self.actionOptimal_Net_Transfer_Capacity)
+        self.menuSimulations.addAction(self.actionOptimal_Net_Transfer_Capacity_Time_Series)
         self.menuSimulations.addAction(self.actionOpf_to_Power_flow)
         self.menuSimulations.addAction(self.actionSet_OPF_generation_to_profiles)
         self.menuSimulations.addSeparator()

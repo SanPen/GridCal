@@ -29,6 +29,7 @@ from GridCal.Engine.Simulations.Clustering.clustering import kmeans_approximate_
 from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.result_types import ResultTypes
+from GridCal.Engine.Simulations.LinearFactors import LinearAnalysis
 
 try:
     from ortools.linear_solver import pywraplp
@@ -37,7 +38,8 @@ except ModuleNotFoundError:
 
 class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
-    def __init__(self, br_names, bus_names, rates, contingency_rates, time_array, time_indices,
+    def __init__(self, bus_names, br_names,
+                 rates, contingency_rates, time_array, time_indices,
                  sampled_probabilities=None, max_report_elements=5):
         """
 
@@ -52,9 +54,11 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         """
         ResultsTemplate.__init__(
             self,
-            name='NTC Optimal Results',
+            name='NTC Optimal time series results',
             available_results=[
-                ResultTypes.OptimalNetTransferCapacityTimeSeriesReport],
+                ResultTypes.OptimalNetTransferCapacityTimeSeriesReport,
+                               ],
+
             data_variables=[])
 
         self.time_array = time_array
@@ -668,7 +672,8 @@ if __name__ == '__main__':
     import GridCal.Engine.basic_structures as bs
     import GridCal.Engine.Devices as dev
     from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
-    from GridCal.Engine import FileOpen, LinearAnalysis
+    from GridCal.Engine import FileOpen, \
+        LinearAnalysis
 
     fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1.gridcal'
     path_out = r'd:\original_ntc_optimization_EF_PMODE1.csv'

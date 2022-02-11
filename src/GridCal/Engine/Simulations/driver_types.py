@@ -31,6 +31,7 @@ class SimulationTypes(Enum):
     Cascade_run = 'Cascade'
     OPF_run = 'Optimal power flow'
     OPF_NTC_run = 'Optimal net transfer capacity'
+    OPF_NTC_TS_run = 'Optimal net transfer capacity time series'
     OPFTimeSeries_run = 'Optimal power flow time series'
     TransientStability_run = 'Transient stability'
     TopologyReduction_run = 'Topology reduction'

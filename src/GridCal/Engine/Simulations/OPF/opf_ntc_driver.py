@@ -209,7 +209,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.hvdc_names = hvdc_names
 
         self.inter_area_branches = inter_area_branches
-
         self.inter_area_hvdc = inter_area_hvdc
 
         self.area_from_bus_idx = area_from_bus_idx

@@ -7237,6 +7237,7 @@ QProgressBar::chunk{
     <addaction name="actionOPF"/>
     <addaction name="actionOPF_time_series"/>
     <addaction name="actionOptimal_Net_Transfer_Capacity"/>
+    <addaction name="actionOptimal_Net_Transfer_Capacity_Time_Series"/>
     <addaction name="actionOpf_to_Power_flow"/>
     <addaction name="actionSet_OPF_generation_to_profiles"/>
     <addaction name="separator"/>
