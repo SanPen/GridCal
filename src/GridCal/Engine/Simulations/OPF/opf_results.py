@@ -88,7 +88,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                  'overloads',
                                                  'loading',
                                                  'hvdc_names',
-                                                 'hvdc_power',
+                                                 'hvdc_Pf',
                                                  'hvdc_loading',
                                                  'phase_shift',
                                                  'battery_power',

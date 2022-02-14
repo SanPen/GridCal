@@ -64,6 +64,10 @@ class Opf:
         self.contingency_indices_list = list()  # [(m, c), ...]
         self.contingency_flows_slacks_list = list()
 
+        self.contingency_gen_flows_list = list()
+
+        self.contingency_hvdc_flows_list = list()
+
         self.solver_type = solver_type
 
         self.status = 100000  # a number that is not likely to be an enumeration value so converged returns false
@@ -91,25 +95,28 @@ class Opf:
 
         return problem
 
-    def solve(self):
+    def solve(self, msg=True):
         """
         Call PuLP to solve the problem
         """
         # self.problem.writeLP('OPF.lp')
         if self.solver_type == MIPSolvers.CBC:
-            params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=1)
+            params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=msg)
 
         elif self.solver_type == MIPSolvers.SCIP:
-            params = SCIP_CMD(msg=1)
+            params = SCIP_CMD(msg=msg)
 
         elif self.solver_type == MIPSolvers.CPLEX:
-            params = CPLEX_CMD(msg=1)
+            params = CPLEX_CMD(msg=msg)
+
+        elif self.solver_type == MIPSolvers.HiGS:
+            params = HiGHS_CMD(msg=msg)
 
         elif self.solver_type == MIPSolvers.GUROBI:
-            params = GUROBI_CMD(msg=1)
+            params = GUROBI_CMD(msg=msg)
 
         elif self.solver_type == MIPSolvers.XPRESS:
-            params = XPRESS(msg=1)
+            params = XPRESS(msg=msg)
 
         else:
             raise Exception('Solver not supported! ' + str(self.solver_type))
@@ -187,7 +194,7 @@ class Opf:
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.extract(self.s_from, make_abs=False) / (self.rating + 1e-12)
+        return self.extract(self.s_from, make_abs=False) / (self.rating + 1e-20)
 
     def get_branch_power_from(self):
         """
@@ -252,8 +259,9 @@ class Opf:
         """
         val = np.zeros(self.nodal_restrictions.shape)
         for i in range(val.shape[0]):
-            if self.nodal_restrictions[i].pi is not None:
-                val[i] = - self.nodal_restrictions[i].pi
+            if self.nodal_restrictions[i] is not None:
+                if self.nodal_restrictions[i].pi is not None:
+                    val[i] = - self.nodal_restrictions[i].pi
         return val.transpose()
 
     def converged(self):
@@ -313,15 +321,15 @@ class OpfTimeSeries:
         self.contingency_indices_list = list()  # [(t, m, c), ...]
         self.contingency_flows_slacks_list = list()
 
-        if ortools:
-            if platform.system() == 'Darwin':
-                self.solver = pywraplp.Solver.CreateSolver("GLOP")
-                print('Forced the use of GLOP')
-            else:
-                self.solver = pywraplp.Solver.CreateSolver(self.solver_type.value)
-
-        else:
-            self.solver = solver_type
+        # if ortools:
+        #     if platform.system() == 'Darwin':
+        #         self.solver = pywraplp.Solver.CreateSolver("GLOP")
+        #         print('Forced the use of GLOP')
+        #     else:
+        #         self.solver = pywraplp.Solver.CreateSolver(self.solver_type.value)
+        #
+        # else:
+        #     self.solver = solver_type
 
         self.problem = None
 
@@ -343,6 +351,9 @@ class OpfTimeSeries:
 
         if self.solver_type == MIPSolvers.CBC:
             params = PULP_CBC_CMD(fracGap=0.00001, threads=None, msg=msg)
+
+        elif self.solver_type == MIPSolvers.HiGS:
+            params = HiGHS_CMD(msg=msg)
 
         elif self.solver_type == MIPSolvers.SCIP:
             params = SCIP_CMD(msg=msg)
@@ -411,7 +422,7 @@ class OpfTimeSeries:
         return the branch loading (time, device)
         :return: 2D array
         """
-        return self.extract2D(self.s_from, make_abs=False) / self.rating
+        return self.extract2D(self.s_from, make_abs=False) / (self.rating + 1e-20)
 
     def get_power_injections(self):
         """
@@ -504,6 +515,7 @@ class OpfTimeSeries:
         """
         val = np.zeros(self.nodal_restrictions.shape)
         for i, j in product(range(val.shape[0]), range(val.shape[1])):
-            if self.nodal_restrictions[i, j].pi is not None:
-                val[i, j] = - self.nodal_restrictions[i, j].pi
+            if self.nodal_restrictions[i, j] is not None:
+                if self.nodal_restrictions[i, j].pi is not None:
+                    val[i, j] = - self.nodal_restrictions[i, j].pi
         return val.transpose()

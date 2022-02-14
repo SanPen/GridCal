@@ -471,6 +471,10 @@ class MainGUI(QMainWindow):
 
         self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
 
+        self.ui.actionFix_generators_active_based_on_the_power.triggered.connect(self.fix_generators_active_based_on_the_power)
+
+        self.ui.actionre_index_time.triggered.connect(self.re_index_time)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -576,6 +580,8 @@ class MainGUI(QMainWindow):
         self.ui.plotArraysButton.clicked.connect(self.plot_simulation_objects_data)
 
         self.ui.copyArraysButton.clicked.connect(self.copy_simulation_objects_data)
+
+        self.ui.copyArraysToNumpyButton.clicked.connect(self.copy_simulation_objects_data_to_numpy)
 
         # node size
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
@@ -1922,6 +1928,14 @@ class MainGUI(QMainWindow):
         mode = self.ui.arrayModeComboBox.currentText()
         mdl.copy_to_clipboard(mode=mode)
 
+    def copy_simulation_objects_data_to_numpy(self):
+        """
+        Copy the arrays of the compiled arrays view to the clipboard
+        """
+        mdl = self.ui.simulationDataStructureTableView.model()
+        mode = 'numpy'
+        mdl.copy_to_clipboard(mode=mode)
+
     def plot_simulation_objects_data(self):
         """
         Plot the arrays of the compiled arrays view
@@ -2653,7 +2667,8 @@ class MainGUI(QMainWindow):
                         distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked(),
                         correct_values=self.ui.ptdf_correct_nonsense_values_checkBox.isChecked())
 
-                    drv = sim.LinearAnalysisDriver(grid=self.circuit, options=options)
+                    engine = self.get_preferred_engine()
+                    drv = sim.LinearAnalysisDriver(grid=self.circuit, options=options, engine=engine)
 
                     self.session.run(drv,
                                      post_func=self.post_linear_analysis,
@@ -5006,15 +5021,15 @@ class MainGUI(QMainWindow):
             elif current_study == sim.LinearAnalysisDriver.name:
                 drv, results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_run)
                 voltage = np.ones(self.circuit.get_bus_number())
-                loading = results.PTDF[:, current_step]
 
                 plot_function(circuit=self.circuit,
-                              Sbus=None,
-                              Sf=loading,
+                              Sbus=results.Sbus,
+                              Sf=results.Sf,
+                              St=-results.Sf,
                               voltages=voltage,
-                              loadings=loading,
+                              loadings=results.loading,
                               types=results.bus_types,
-                              loading_label='Sensitivity',
+                              loading_label='Loading',
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -5889,7 +5904,7 @@ class MainGUI(QMainWindow):
 
                     filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).lower()]
 
-                elif tpe == DeviceType.BusDevice:
+                elif elm.device_type == DeviceType.BusDevice:
                     filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).name.lower()]
 
                 else:
@@ -5920,7 +5935,7 @@ class MainGUI(QMainWindow):
 
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) == args]
 
-                elif tpe == DeviceType.BusDevice:
+                elif elm.device_type == DeviceType.BusDevice:
                     filtered_objects = [x for x in self.type_objects_list if args == getattr(x, attr).name.lower()]
 
                 else:
@@ -5943,7 +5958,7 @@ class MainGUI(QMainWindow):
 
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() != args]
 
-                elif tpe == DeviceType.BusDevice:
+                elif elm.device_type == DeviceType.BusDevice:
                     filtered_objects = [x for x in self.type_objects_list if args != getattr(x, attr).name.lower()]
 
                 else:
@@ -6866,6 +6881,33 @@ class MainGUI(QMainWindow):
                 dlg = LogsDialogue("Delete inconsistencies", logger)
                 dlg.setModal(True)
                 dlg.exec_()
+
+    def re_index_time(self):
+        """
+        Re-index time
+        :return:
+        """
+
+        dlg = TimeReIndexDialogue()
+        dlg.setModal(True)
+        dlg.exec_()
+
+        if dlg.accepted:
+            self.circuit.re_index_time(year=dlg.year_spinner.value(),
+                                       hours_per_step=dlg.interval_hours.value())
+
+    def fix_generators_active_based_on_the_power(self):
+        """
+        set the generators active based on the active power values
+        :return:
+        """
+        ok = yes_no_question("This action sets the generation active profile based on the active power profile "
+                             "such that ig a generator active power is zero, the active value is false",
+                             "Set generation active profile")
+
+        if ok:
+            self.circuit.set_generators_active_profile_from_their_active_power()
+            self.circuit.set_batteries_active_profile_from_their_active_power()
 
 
 def run(use_native_dialogues=False):

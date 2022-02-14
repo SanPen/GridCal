@@ -77,8 +77,8 @@ def getFromAndToPowerAt(Pset, theta_f, theta_t, Vnf, Vnt, v_set_f, v_set_t, Sbas
 
         # compute the angular difference in degrees (0.017453292f -> pi/180)
         # theta_f and theta_t are in rad
-        dtheta = np.rad2deg(theta_f - theta_t)
-        # dtheta = np.rad2deg(theta_t - theta_f)  # control not to be oscillatory the angle difference must be negative
+        # for the control not to be oscillatory, the angle difference must be the opposite (to - from)
+        dtheta = np.rad2deg(theta_t - theta_f)
 
         # compute the desired control power flow
         Pcalc = Pset + angle_droop * dtheta  # this is in MW

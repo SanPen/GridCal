@@ -130,6 +130,11 @@ def initialize(filename, operating_system='linux', arch='64'):
         pulp_cbc_path = 'cbc'
 
     try:
+        pulp_highs_path = config.get("locations", "PulpHiGHSPath")
+    except configparser.Error:
+        pulp_highs_path = 'highs'
+
+    try:
         scip_path = config.get("locations", "ScipPath")
     except configparser.Error:
         scip_path = 'scip'
@@ -140,7 +145,7 @@ def initialize(filename, operating_system='linux', arch='64'):
             coinMP_path[i] = os.path.join(os.path.dirname(config_filename), path)
 
     return cplex_dll_path, ilm_cplex_license, ilm_cplex_license_signature,\
-        coinMP_path, gurobi_path, cbc_path, glpk_path, pulp_cbc_path, scip_path
+        coinMP_path, gurobi_path, cbc_path, glpk_path, pulp_cbc_path, scip_path, pulp_highs_path
 
 
 # pick up the correct config file depending on operating system
@@ -180,7 +185,7 @@ cplex_dll_path, \
  cbc_path, \
  glpk_path, \
  pulp_cbc_path, \
- scip_path = initialize(config_filename, operating_system, arch)
+ scip_path, pulp_highs_path = initialize(config_filename, operating_system, arch)
 
 
 try:
@@ -393,6 +398,22 @@ class LpSolver_CMD(LpSolver):
             self.tmpDir = ""
         elif not os.access(self.tmpDir, os.F_OK + os.W_OK):
             self.tmpDir = ""
+
+    def create_tmp_files(self, name, *args):
+        if self.keepFiles:
+            prefix = name
+        else:
+            prefix = os.path.join(self.tmpDir, uuid4().hex)
+        return ("%s-pulp.%s" % (prefix, n) for n in args)
+
+    def delete_tmp_files(self, *args):
+        if self.keepFiles:
+            return
+        for file in args:
+            try:
+                os.remove(file)
+            except:
+                pass
 
     def defaultPath(self):
         raise NotImplementedError

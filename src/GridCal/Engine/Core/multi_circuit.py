@@ -382,12 +382,18 @@ class MultiCircuit:
     def get_buses(self):
         return self.buses
 
+    def get_bus_names(self):
+        return [e.name for e in self.buses]
+
     def get_branches_wo_hvdc(self):
         """
         Return all the branch objects
         :return: lines + transformers 2w + hvdc
         """
-        return self.lines + self.transformers2w + self.vsc_devices + self.dc_lines + self.upfc_devices + self.switch_devices
+        return self.lines + self.dc_lines + self.transformers2w + self.vsc_devices + self.upfc_devices + self.switch_devices
+
+    def get_branches_wo_hvdc_names(self):
+        return [e.name for e in self.get_branches_wo_hvdc()]
 
     def get_branches(self):
         """
@@ -2351,4 +2357,35 @@ class MultiCircuit:
         """
         for bus in self.buses:
             bus.fuse_devices()
+
+    def re_index_time(self, year=None, hours_per_step=1):
+        """
+        Generate sequential time steps to correct the time_profile
+        :param year: base year, if None, this year is taken
+        :param hours_per_step: number of hours per step, by default 1 hour by step
+        """
+        if year is None:
+            t0 = datetime.now()
+            year = t0.year
+
+        nt = self.get_time_number()
+        t0 = datetime(year=year, month=1, day=1)
+        tm = [t0 + timedelta(hours=t * hours_per_step) for t in range(nt)]
+        self.time_profile = pd.to_datetime(tm)
+
+    def set_generators_active_profile_from_their_active_power(self):
+        """
+        Modify the generators active profile to match the active power profile
+        if P=0, active = False else active=True
+        """
+        for g in self.get_generators():
+            g.active_prof = g.P_prof.astype(bool)
+
+    def set_batteries_active_profile_from_their_active_power(self):
+        """
+        Modify the batteries active profile to match the active power profile
+        if P=0, active = False else active=True
+        """
+        for g in self.get_batteries():
+            g.active_prof = g.P_prof.astype(bool)
 

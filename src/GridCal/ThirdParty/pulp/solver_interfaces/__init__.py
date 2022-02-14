@@ -31,3 +31,4 @@ from GridCal.ThirdParty.pulp.solver_interfaces.gurobi import *
 from GridCal.ThirdParty.pulp.solver_interfaces.scip import *
 from GridCal.ThirdParty.pulp.solver_interfaces.xpress import *
 from GridCal.ThirdParty.pulp.solver_interfaces.yaposib import *
+from GridCal.ThirdParty.pulp.solver_interfaces.highs import *
