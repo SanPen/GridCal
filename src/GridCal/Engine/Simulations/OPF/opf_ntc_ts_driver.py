@@ -703,8 +703,8 @@ if __name__ == '__main__':
     from GridCal.Engine import FileOpen, \
         LinearAnalysis
 
-    fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1.gridcal'
-    path_out = r'd:\original_ntc_optimization_EF_PMODE1.csv'
+    fname = r'd:\0.ntc_opf\Propuesta_2026_v22_20260729_17_flushed_PMODE1.gridcal'
+    path_out = r'd:\0.ntc_opf\Propuesta_2026_v22_20260729_17_flushed_PMODE1.csv'
 
     circuit = FileOpen(fname).open()
 
@@ -778,13 +778,13 @@ if __name__ == '__main__':
 
     # set optimal net transfer capacity driver instance
     start = 0
-    end = circuit.get_time_number()-1
+    end = 10 # circuit.get_time_number()-1
     driver = OptimalNetTransferCapacityTimeSeriesDriver(
         grid=circuit,
         options=options,
         start_=start,
         end_=end,
-        use_clustering=True,
+        use_clustering=False,
         cluster_number=5)
 
     driver.run()
