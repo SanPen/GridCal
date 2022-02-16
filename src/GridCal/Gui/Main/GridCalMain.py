@@ -4328,6 +4328,7 @@ class MainGUI(QMainWindow):
                     sensitivity_dT=dT,
                     sensitivity_mode=mode,
                     perform_previous_checks=perform_previous_checks,
+                    with_check=False,
                     weight_power_shift=weight_power_shift,
                     weight_generation_cost=weight_generation_cost,
                     consider_contingencies=consider_contingencies,

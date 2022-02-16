@@ -1475,7 +1475,7 @@ class OpfNTC(Opf):
                      solver_type=solver_type,
                      ortools=True)
 
-    def formulate(self, add_slacks=True):
+    def formulate(self):
         """
         Formulate the Net Transfer Capacity problem
         :return:
@@ -1642,9 +1642,9 @@ class OpfNTC(Opf):
             names=self.numerical_circuit.hvdc_names,
             rate=self.numerical_circuit.hvdc_data.rate[:, t],
             angles=theta,
-            active=self.numerical_circuit.hvdc_data.active[:, t],
-            Pt=self.numerical_circuit.hvdc_data.Pset[:, t],
-            angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase)[:, t],
+            active=self.numerical_circuit.hvdc_data.active, #[:, t],
+            Pt=self.numerical_circuit.hvdc_data.Pset, #[:, t],
+            angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase), #[:, t],
             control_mode=self.numerical_circuit.hvdc_data.control_mode,
             dispatchable=self.numerical_circuit.hvdc_data.dispatchable,
             F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
@@ -1655,8 +1655,8 @@ class OpfNTC(Opf):
             inter_area_hvdc=inter_area_hvdc,
             logger=self.logger)
 
-        # formulate the contingencies
         if self.consider_contingencies:
+            # formulate the contingencies
             n1flow_f, con_br_idx = formulate_contingency(
                 solver=self.solver,
                 ContingencyRates=self.numerical_circuit.ContingencyRates,
@@ -1671,12 +1671,12 @@ class OpfNTC(Opf):
                 monitor=monitor,
                 lodf_replacement_value=0,
                 logger=self.logger)
+
         else:
-            n1flow_f = list()
             con_br_idx = list()
+            n1flow_f = list()
 
         if self.consider_gen_contingencies and self.generation_contingency_threshold != 0:
-
             # formulate the generator contingencies
             n1flow_gen_f, con_gen_idx = formulate_generator_contingency(
                 solver=self.solver,
@@ -1716,7 +1716,7 @@ class OpfNTC(Opf):
             n1flow_hvdc_f = list()
             con_hvdc_idx = list()
 
-            # formulate the node power balance
+        # formulate the node power balance
         node_balance = formulate_node_balance(
             solver=self.solver,
             Bbus=self.numerical_circuit.Bbus,
@@ -1725,7 +1725,6 @@ class OpfNTC(Opf):
             bus_active=self.numerical_circuit.bus_data.bus_active[:, t],
             bus_names=self.numerical_circuit.bus_data.bus_names,
             logger=self.logger)
-
 
         # formulate the objective
         formulate_objective(
@@ -1758,6 +1757,10 @@ class OpfNTC(Opf):
 
         self.hvdc_flow = hvdc_flow_f
 
+        self.n1flow_gen_f = n1flow_gen_f
+        self.con_gen_idx = con_gen_idx
+        self.n1flow_hvdc_f = n1flow_hvdc_f
+        self.con_hvdc_idx = con_hvdc_idx
 
         self.rating = branch_ratings
         self.phase_shift = tau
@@ -1954,8 +1957,8 @@ class OpfNTC(Opf):
             inter_area_hvdc=inter_area_hvdc,
             logger=self.logger)
 
-        # formulate the contingencies
         if self.consider_contingencies:
+            # formulate the contingencies
             n1flow_f, con_br_idx = formulate_contingency(
                 solver=self.solver,
                 ContingencyRates=self.numerical_circuit.ContingencyRates[:, t],
@@ -1971,6 +1974,11 @@ class OpfNTC(Opf):
                 lodf_replacement_value=0,
                 logger=self.logger)
 
+        else:
+            con_br_idx = list()
+            n1flow_f = list()
+
+        if self.consider_gen_contingencies and self.generation_contingency_threshold != 0:
             # formulate the generator contingencies
             n1flow_gen_f, con_gen_idx = formulate_generator_contingency(
                 solver=self.solver,
@@ -1987,7 +1995,11 @@ class OpfNTC(Opf):
                 flow_f=flow_f,
                 monitor=monitor,
                 logger=self.logger)
+        else:
+            n1flow_gen_f = list()
+            con_gen_idx = list()
 
+        if self.consider_hvdc_contingencies:
             # formulate the hvdc contingencies
             n1flow_hvdc_f, con_hvdc_idx = formulate_hvdc_contingency(
                 solver=self.solver,
@@ -2002,15 +2014,10 @@ class OpfNTC(Opf):
                 flow_f=flow_f,
                 monitor=monitor,
                 logger=self.logger)
-
-
         else:
-            con_br_idx = list()
-            n1flow_f = list()
-            n1flow_gen_f = list()
-            con_gen_idx = list()
             n1flow_hvdc_f = list()
             con_hvdc_idx = list()
+
 
         # formulate the node power balance
         node_balance = formulate_node_balance(
