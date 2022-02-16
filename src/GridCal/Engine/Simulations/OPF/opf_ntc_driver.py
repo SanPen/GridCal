@@ -645,7 +645,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
         alpha = compute_alpha(
             ptdf=linear.PTDF,
             P0=numerical_circuit.Sbus.real,
-            Pinstalled=numerical_circuit.bus_installed_power,
+            Pinstalled=Sbus, #numerical_circuit.bus_installed_power,
             idx1=self.options.area_from_bus_idx,
             idx2=self.options.area_to_bus_idx,
             bus_types=numerical_circuit.bus_types.astype(int),

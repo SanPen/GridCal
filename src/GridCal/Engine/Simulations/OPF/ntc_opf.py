@@ -2121,17 +2121,17 @@ class OpfNTC(Opf):
         alpha_abs = np.abs(self.alpha)
 
         # check that the slacks are 0
-        if self.all_slacks is not None:
-            for var_array in self.all_slacks:
-                for var in var_array:
-                    if isinstance(var, float) or isinstance(var, int):
-                        val = var
-                    else:
-                        val = var.solution_value()
-
-                    if abs(val) > 0:
-                        self.logger.add_divergence(
-                            'Slack variable is over the tolerance', var.name(), val, 0)
+        # if self.all_slacks is not None:
+        #     for var_array in self.all_slacks:
+        #         for var in var_array:
+        #             if isinstance(var, float) or isinstance(var, int):
+        #                 val = var
+        #             else:
+        #                 val = var.solution_value()
+        #
+        #             if abs(val) > 0:
+        #                 self.logger.add_divergence(
+        #                     'Slack variable is over the tolerance', var.name(), val, 0)
 
         # check variables
         for var in self.solver.variables():

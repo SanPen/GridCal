@@ -499,16 +499,17 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
     name = tpe.value
 
-    def compute_exchange_sensitivity(self, linear, numerical_circuit, Sbus):
+    def compute_exchange_sensitivity(self, linear, numerical_circuit, t):
 
         # compute the branch exchange sensitivity (alpha)
         alpha = compute_alpha(
             ptdf=linear.PTDF,
-            P0=Sbus,
+            P0=numerical_circuit.Sbus.real[:, t],
             Pinstalled=numerical_circuit.bus_installed_power,
             idx1=self.options.area_from_bus_idx,
             idx2=self.options.area_to_bus_idx,
-            bus_types=numerical_circuit.bus_types.astype(int),
+            bus_types=numerical_circuit.bus_types_prof(t),
+            # bus_types=numerical_circuit.bus_types.astype(int),
             dT=self.options.sensitivity_dT,
             mode=self.options.sensitivity_mode.value)
 
@@ -562,9 +563,6 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 time_indices=time_indices)
 
 
-        # get the power injections
-        P = nc.Sbus.real  # these are in p.u.
-
         for t_idx, t in enumerate(time_indices):
 
             # update progress bar
@@ -576,7 +574,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             # sensitivities
             if self.options.monitor_only_sensitive_branches:
-                alpha = self.compute_exchange_sensitivity(linear, nc, P[:, t])
+                alpha = self.compute_exchange_sensitivity(linear, nc, t)
+
             else:
                 alpha = np.ones(nc.nbr)
 
