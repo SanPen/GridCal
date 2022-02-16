@@ -2442,7 +2442,7 @@ class OpfNTC(Opf):
 
         solved = self.solved()
 
-        self.save_lp('ntc_opf.lp')
+        self.save_lp('ntc_opf_ts.lp')
 
         # check the solution
         if not solved and with_check:

@@ -499,6 +499,21 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
     name = tpe.value
 
+    def compute_exchange_sensitivity(self, linear, numerical_circuit, Sbus):
+
+        # compute the branch exchange sensitivity (alpha)
+        alpha = compute_alpha(
+            ptdf=linear.PTDF,
+            P0=Sbus,
+            Pinstalled=numerical_circuit.bus_installed_power,
+            idx1=self.options.area_from_bus_idx,
+            idx2=self.options.area_to_bus_idx,
+            bus_types=numerical_circuit.bus_types.astype(int),
+            dT=self.options.sensitivity_dT,
+            mode=self.options.sensitivity_mode.value)
+
+        return alpha
+
     def opf(self):
         """
         Run thread
@@ -559,17 +574,11 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             if self.progress_text is not None:
                 self.progress_text.emit('Optimal net transfer capacity at ' + str(self.grid.time_profile[t]))
 
-            # compute the branch exchange sensitivity (alpha)
-            alpha = compute_alpha(
-                ptdf=linear.PTDF,
-                P0=P[:, t],
-                # no problem that there are in p.u., are only used for the sensitivity
-                Pinstalled=nc.bus_installed_power,
-                idx1=self.options.area_from_bus_idx,
-                idx2=self.options.area_to_bus_idx,
-                bus_types=nc.bus_types_prof(t),
-                dT=self.options.sensitivity_dT,
-                mode=self.options.sensitivity_mode.value)
+            # sensitivities
+            if self.options.monitor_only_sensitive_branches:
+                alpha = self.compute_exchange_sensitivity(linear, nc, P[:, t])
+            else:
+                alpha = np.ones(nc.nbr)
 
             # Define the problem
             self.progress_text.emit('Formulating NTC OPF...')
@@ -609,7 +618,6 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.logger += problem.logger
 
             if solved:
-
                 self.results.optimal_idx.append(t)
 
             else:
@@ -704,10 +712,10 @@ if __name__ == '__main__':
     import GridCal.Engine.basic_structures as bs
     import GridCal.Engine.Devices as dev
     from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
-    from GridCal.Engine import FileOpen, \
-        LinearAnalysis
+    from GridCal.Engine import FileOpen, LinearAnalysis
 
     fname = r'd:\0.ntc_opf\Propuesta_2026_v22_20260729_17_flushed_PMODE1.gridcal'
+    # fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1.gridcal'
     path_out = r'd:\0.ntc_opf\Propuesta_2026_v22_20260729_17_flushed_PMODE1.csv'
 
     circuit = FileOpen(fname).open()
@@ -784,7 +792,7 @@ if __name__ == '__main__':
 
     # set optimal net transfer capacity driver instance
     start = 0
-    end = 2  # circuit.get_time_number()-1
+    end = 3  # circuit.get_time_number()-1
     driver = OptimalNetTransferCapacityTimeSeriesDriver(
         grid=circuit,
         options=options,

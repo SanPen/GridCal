@@ -639,7 +639,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
         """
         return list()
 
-    def compute_exchange_sensitivity(self, linear, numerical_circuit):
+    def compute_exchange_sensitivity(self, linear, numerical_circuit, Sbus):
 
         # compute the branch exchange sensitivity (alpha)
         alpha = compute_alpha(
@@ -686,7 +686,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
 
         # sensitivities
         if self.options.monitor_only_sensitive_branches:
-            alpha = self.compute_exchange_sensitivity(linear, numerical_circuit)
+            alpha = self.compute_exchange_sensitivity(linear, numerical_circuit, numerical_circuit.Sbus.real)
         else:
             alpha = np.ones(numerical_circuit.nbr)
 
