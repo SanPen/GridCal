@@ -229,7 +229,7 @@ class BusGraphicItem(QGraphicsRectItem):
         y0 = h + self.offset
         x0 = 0
         self.terminal.setPos(x0, y0)
-        self.terminal.setRect(0.0, 0.0, w, 10)
+        self.terminal.setRect(0, 0, w, 10)
 
         # Set text
         if self.api_object is not None:
@@ -422,6 +422,12 @@ class BusGraphicItem(QGraphicsRectItem):
             self.diagramScene.removeItem(self)
             self.diagramScene.circuit.delete_bus(self.api_object, ask)
 
+    def update_color(self):
+        if self.api_object.active:
+            self.set_tile_color(QBrush(ACTIVE['color']))
+        else:
+            self.set_tile_color(QBrush(DEACTIVATED['color']))
+
     def enable_disable_toggle(self):
         """
         Toggle bus element state
@@ -437,10 +443,7 @@ class BusGraphicItem(QGraphicsRectItem):
                 if host.api_object is not None:
                     host.set_enable(val=self.api_object.active)
 
-            if self.api_object.active:
-                self.set_tile_color(QBrush(ACTIVE['color']))
-            else:
-                self.set_tile_color(QBrush(DEACTIVATED['color']))
+            self.update_color()
 
             if self.diagramScene.circuit.has_time_series:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',

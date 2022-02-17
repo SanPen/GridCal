@@ -751,7 +751,7 @@ if __name__ == '__main__':
     from GridCal.Engine import *
     from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
-    fname = os.path.join('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids', 'IEEE_14.xlsx')
+    fname = os.path.join('/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids', 'IEEE 14.xlsx')
     # fname = os.path.join('..', '..', '..', '..', 'Grids_and_profiles', 'grids', 'lynn5buspv.xlsx')
 
     print('Reading...')
@@ -792,25 +792,23 @@ if __name__ == '__main__':
 
     # just for this test
     numeric_circuit = compile_snapshot_circuit(main_circuit)
-    numeric_inputs = numeric_circuit.split_into_islands(ignore_single_node_islands=pf_options.ignore_single_node_islands)
-    Sbase_ = np.zeros(len(main_circuit.buses), dtype=complex)
-    Vbase_ = np.zeros(len(main_circuit.buses), dtype=complex)
-    for c in numeric_inputs:
-        Sbase_[c.original_bus_idx] = c.Sbus
-        Vbase_[c.original_bus_idx] = c.Vbus
+    numeric_inputs = numeric_circuit.split_into_islands()
+    Sbase_ = power_flow.results.Sbus / numeric_circuit.Sbase
+    Vbase_ = power_flow.results.voltage
 
-    np.random.seed(42)
-    unitary_vector = -1 + 2 * np.random.random(len(main_circuit.buses))
-
-    # unitary_vector = random.random(len(grid.buses))
     vc_inputs = ContinuationPowerFlowInput(Sbase=Sbase_,
                                            Vbase=Vbase_,
-                                           Starget=Sbase_ * 2,  # (1 + unitary_vector)
-                                           )
-    vc = ContinuationPowerFlowDriver(circuit=main_circuit, options=vc_options, inputs=vc_inputs, pf_options=pf_options)
-    vc.run()
-    df = vc.results.plot()
+                                           Starget=Sbase_ * 2)
 
-    print(df)
+    vc = ContinuationPowerFlowDriver(circuit=main_circuit,
+                                     options=vc_options,
+                                     inputs=vc_inputs,
+                                     pf_options=pf_options)
+    vc.run()
+    res = vc.results.mdl(ResultTypes.BusActivePower)
+    res.plot()
+
+    res = vc.results.mdl(ResultTypes.BusVoltage)
+    res.plot()
 
     plt.show()
