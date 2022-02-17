@@ -181,7 +181,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         hvdc_names = list(list(self.results_dict.values())[0].hvdc_names)
         columns_all = ['Time index', 'Time', 'NTC (MW)'] + columns + shifter_names + hvdc_names
         data_all = np.empty(shape=(0, len(columns_all)))
-        labels_all = list()
 
         print('\n')
 
@@ -206,20 +205,17 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                     # add new columns to report
                     data = np.concatenate((data, shifter_data, hvdc_data), axis=1)
 
-                    labels = [self.time_array[idx]] * data.shape[0]
                 else:
                     print('Hora', t, ': Sin resultados')
 
                     data = np.zeros(shape=(1, len(columns) + len(shifter_names) + len(hvdc_names)))
-                    labels = [self.time_array[idx]]
 
             # complete the data with time and ntc columns
-            extra_data = np.array([[t, self.time_array[idx], ntc]] * data.shape[0])
+            extra_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S"), ntc]] * data.shape[0])
             data = np.concatenate((extra_data, data), axis=1)
 
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
-            labels_all = labels_all + labels
 
         # sort data by ntc and time index, descending to compute probability factor
         data_all = data_all[np.lexsort(
@@ -235,7 +231,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         time_prev = 0
         pct = 0
         for row in range(data_all.shape[0]):
-            t = data_all[row, 1]
+            t = int(data_all[row, 1])
             if t != time_prev:
                 pct += prob_dict[t]
                 time_prev = t
@@ -243,6 +239,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             data_all[row, 0] = pct
 
         # return report data
+        labels_all = np.arange(data_all.shape[0])
         return labels_all, columns_all, data_all
 
     def get_contingency_branch_report(self):

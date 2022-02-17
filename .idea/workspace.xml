@@ -23,12 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="new scale delta power with possitive and negative powers">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="simplified scale functions (signed)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_ts_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -136,7 +134,7 @@
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.opf_ntc_driver">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -252,10 +250,10 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.opf_ntc_driver" />
-        <item itemvalue="Python.opf_ntc_ts_driver" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.opf_ntc_ts_driver" />
         <item itemvalue="Python.setup" />
+        <item itemvalue="Python.opf_ntc_driver" />
         <item itemvalue="Python.update_gui_file" />
       </list>
     </recent_temporary>
@@ -692,13 +690,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00260" summary="Added shadow prices to both opf and opf-ts">
-      <created>1642587559143</created>
-      <option name="number" value="00260" />
-      <option name="presentableId" value="LOCAL-00260" />
-      <option name="project" value="LOCAL" />
-      <updated>1642587559143</updated>
-    </task>
     <task id="LOCAL-00261" summary="Fixed bug when the nodal restrictions are None">
       <created>1642590889867</created>
       <option name="number" value="00261" />
@@ -1035,7 +1026,14 @@
       <option name="project" value="LOCAL" />
       <updated>1645108648657</updated>
     </task>
-    <option name="localTasksCounter" value="309" />
+    <task id="LOCAL-00309" summary="simplified scale functions (signed)">
+      <created>1645120993084</created>
+      <option name="number" value="00309" />
+      <option name="presentableId" value="LOCAL-00309" />
+      <option name="project" value="LOCAL" />
+      <updated>1645120993084</updated>
+    </task>
+    <option name="localTasksCounter" value="310" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1069,7 +1067,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="report shifter angle" />
     <MESSAGE value="fixed KMeans random results" />
     <MESSAGE value="checking phase shifters" />
     <MESSAGE value="remove unused checkboxes and fix default spinbox values" />
@@ -1094,7 +1091,8 @@
     <MESSAGE value="working again (change how to compute exchange sensibility)" />
     <MESSAGE value="checking bus types computation" />
     <MESSAGE value="new scale delta power with possitive and negative powers" />
-    <option name="LAST_COMMIT_MESSAGE" value="new scale delta power with possitive and negative powers" />
+    <MESSAGE value="simplified scale functions (signed)" />
+    <option name="LAST_COMMIT_MESSAGE" value="simplified scale functions (signed)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1346,11 +1344,6 @@
           <option name="timeStamp" value="674" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>1029</line>
-          <option name="timeStamp" value="742" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py</url>
           <line>804</line>
           <option name="timeStamp" value="743" />
@@ -1361,9 +1354,9 @@
           <option name="timeStamp" value="745" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py</url>
-          <line>644</line>
-          <option name="timeStamp" value="748" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py</url>
+          <line>172</line>
+          <option name="timeStamp" value="750" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
