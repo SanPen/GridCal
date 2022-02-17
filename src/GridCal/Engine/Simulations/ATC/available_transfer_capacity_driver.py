@@ -40,9 +40,151 @@ class AvailableTransferMode(Enum):
     Load = 2
     GenerationAndLoad = 3
 
+def get_delta_power(P, idx, dP=1.0):
+    """
+
+    :param P: all power injections
+    :param idx: bus indices of the sending region
+    :param dP: Power amount
+    :return:
+    """
+
+    # declare the power increment due to the transference
+    deltaP = np.zeros(len(P))
+
+    nU = 0.0
+    nD = 0.0
+    for i in idx:
+
+        if P[i] > 0:
+            nU += P[i]
+
+        if P[i] < 0:
+            nD -= P[i]  # store it as positive value
+
+    # compute witch proportion to attend with positive and negative sense
+    dPu = dP * nU / (nU + nD)  # positive proportion
+    dPd = dP - dPu  # negative proportion
+
+    for i in idx:
+
+        if P[i] > 0:
+            deltaP[i] = dPu * P[i] / nU
+
+        if P[i] < 0:
+            deltaP[i] = -dPd * P[i] / nD  # P[i] is already negative
+
+    return deltaP
 
 @nb.njit()
-def compute_alpha(ptdf, P0, Pinstalled, idx1, idx2, bus_types, dT=1.0, mode=0):
+def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, bus_types, dT=1.0, mode=0):
+    """
+    Compute line sensitivity to power transfer
+    :param ptdf: Power transfer distribution factors (n-branch, n-bus)
+    :param P0: all bus injections [p.u.]
+    :param Pinstalled: bus installed power [p.u.]
+    :param Pgen: bus generation injection [p.u.]
+    :param Pload: bus load injection [p.u.]
+    :param idx1: bus indices of the sending region
+    :param idx2: bus indices of the receiving region
+    :param bus_types: Array of bus types {1: pq, 2: pv, 3: slack}
+    :param dT: Exchange amount
+    :param mode: Type of power shift
+                 0: shift generation based on the current generated power
+                 1: shift generation based on the installed power
+                 2: shift load
+                 3 (or else): shift using generation and load
+
+    :return: Exchange sensitivity vector for all the lines
+    """
+
+    # TODO: create a generic function to get a vector scaled
+    # refactor this making first a filter of idx1 and idx2 with witch buses
+    # will participate in then scale
+
+    nbus = ptdf.shape[1]
+
+    filtered_idx1 = list()
+    filtered_idx2 = list()
+
+    if mode == 0:
+        # ----------------------------------------------------------------------------------------
+        # move the generators based on the generated power
+        P = Pgen
+
+        # set the sending power indices (Area 1)
+        for i in idx1:
+            if bus_types[i] == 2 or bus_types[i] == 3:
+                # it is a PV or slack node
+                filtered_idx1.append(i)
+
+        # set the receiving power indices (Area 2)
+        for i in idx2:
+            if bus_types[i] == 2 or bus_types[i] == 3:
+                # it is a PV or slack node
+                filtered_idx2.append(i)
+
+    elif mode == 1:
+        # ----------------------------------------------------------------------------------------
+        # move the generators based on the installed power
+        P = Pinstalled
+
+        # set the sending power indices (Area 1)
+        for i in idx1:
+            if bus_types[i] == 2 or bus_types[i] == 3:
+                # it is a PV or slack node
+                filtered_idx1.append(i)
+
+        # set the receiving power indices (Area 2)
+        for i in idx2:
+            if bus_types[i] == 2 or bus_types[i] == 3:
+                # it is a PV or slack node
+                filtered_idx2.append(i)
+
+    elif mode == 2:
+        # ----------------------------------------------------------------------------------------
+        # move the load
+        P = Pload
+
+        # set the sending power indices (Area 1)
+        for i in idx1:
+            if bus_types[i] < 4:  # it is a PV or PQ
+                filtered_idx1.append(i)
+
+        # set the receiving power indices (Area 2)
+        for i in idx2:
+            if bus_types[i] < 4:  # it is a PV or PQ
+                filtered_idx2.append(i)
+
+    else:
+        # ----------------------------------------------------------------------------------------
+        # move all of it
+        P = P0
+
+        # set the sending power indices (Area 1)
+        filtered_idx1 = idx1
+
+        # set the sending power indices (Area 2)
+        filtered_idx2 = idx2
+
+    # ----------------------------------------------------------------------------------------
+    # compute the bus injection increments due to the exchange
+    dPu = get_delta_power(P, filtered_idx1, dP=dT)
+    dPd = get_delta_power(P, filtered_idx2, dP=-dT)
+
+    dP = dPu + dPd
+
+    # ----------------------------------------------------------------------------------------
+    # compute the line flow increments due to the exchange increment dT in MW
+    dflow = ptdf.dot(dP)
+
+    # compute the sensitivity
+    alpha = dflow / dT
+
+    return alpha
+
+@nb.njit()
+def compute_alpha_old(ptdf, P0, Pinstalled, idx1, idx2, bus_types, dT=1.0, mode=0):
     """
     Compute all lines' ATC
     :param ptdf: Power transfer distribution factors (n-branch, n-bus)
@@ -114,40 +256,69 @@ def compute_alpha(ptdf, P0, Pinstalled, idx1, idx2, bus_types, dT=1.0, mode=0):
         # set the sending power increment proportional to the current power (Area 1)
         n1 = 0.0
         for i in idx1:
-            if bus_types[i] == 1:  # it is a PV or slack node
+            if bus_types[i] == 1:  # it is a PQ
                 n1 += P0[i]
 
         for i in idx1:
-            if bus_types[i] == 1:  # it is a PV or slack node
+            if bus_types[i] == 1:  # it is a PQ
                 dP[i] = dT * P0[i] / abs(n1)
 
         # set the receiving power increment proportional to the current power (Area 2)
         n2 = 0.0
         for i in idx2:
-            if bus_types[i] == 1:  # it is a PV or slack node
+            if bus_types[i] == 1:  # it is a PQ
                 n2 += P0[i]
 
         for i in idx2:
-            if bus_types[i] == 1:  # it is a PV or slack node
+            if bus_types[i] == 1:  # it is a PQ
                 dP[i] = -dT * P0[i] / abs(n2)
 
     else:  # move all of it -----------------------------------------------------------------
 
         # set the sending power increment proportional to the current power
-        n1 = 0.0
+
+        n1u = 0.0
+        n1d = 0.0
         for i in idx1:
-            n1 += P0[i]
+
+            if P0[i] > 0:
+                n1u += P0[i]
+
+            if P0[i] < 0:
+                n1d -= P0[i]
+
+        dT1u = dT * n1u / (n1u + n1d)
+        dT1d = dT - dT1u
 
         for i in idx1:
-            dP[i] = dT * P0[i] / abs(n1)
+
+            if P0[i] > 0:
+                dP[i] = dT1u * P0[i] / n1u
+
+            if P0[i] < 0:
+                dP[i] = dT1d * P0[i] / n1d
 
         # set the receiving power increment proportional to the current power
-        n2 = 0.0
+        n2u = 0.0
+        n2d = 0.0
         for i in idx2:
-            n2 += P0[i]
+
+            if P0[i] > 0:
+                n2u += P0[i]
+
+            if P0[i] < 0:
+                n2d -= P0[i]
+
+        dT2u = dT * n2u / (n2u + n2d)
+        dT2d = dT - dT2u
 
         for i in idx2:
-            dP[i] = -dT * P0[i] / abs(n2)
+
+            if P0[i] > 0:
+                dP[i] = dT2u * P0[i] / n2u
+
+            if P0[i] < 0:
+                dP[i] = dT2d * P0[i] / n2d
 
     # ----------------------------------------------------------------------------------------
     # compute the line flow increments due to the exchange increment dT in MW
@@ -586,6 +757,8 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         alpha = compute_alpha(ptdf=linear.PTDF,
                               P0=nc.Sbus.real,
                               Pinstalled=nc.bus_installed_power,
+                              Pgen=nc.generator_data.get_injections_per_bus(),
+                              Pload=nc.load_data.get_injections_per_bus(),
                               idx1=idx1b,
                               idx2=idx2b,
                               bus_types=nc.bus_types.astype(np.int),

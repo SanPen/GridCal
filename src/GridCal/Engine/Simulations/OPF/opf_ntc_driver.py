@@ -639,13 +639,15 @@ class OptimalNetTransferCapacity(DriverTemplate):
         """
         return list()
 
-    def compute_exchange_sensitivity(self, linear, numerical_circuit, Sbus):
+    def compute_exchange_sensitivity(self, linear, numerical_circuit):
 
         # compute the branch exchange sensitivity (alpha)
         alpha = compute_alpha(
             ptdf=linear.PTDF,
             P0=numerical_circuit.Sbus.real,
-            Pinstalled=Sbus, #numerical_circuit.bus_installed_power,
+            Pinstalled=numerical_circuit.bus_installed_power,
+            Pgen=numerical_circuit.generator_data.get_injections_per_bus(),
+            Pload=numerical_circuit.load_data.get_injections_per_bus(),
             idx1=self.options.area_from_bus_idx,
             idx2=self.options.area_to_bus_idx,
             bus_types=numerical_circuit.bus_types.astype(int),
@@ -918,10 +920,10 @@ if __name__ == '__main__':
     import GridCal.Engine.basic_structures as bs
     import GridCal.Engine.Devices as dev
     from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
-    from GridCal.Engine import FileOpen, \
-        LinearAnalysis
+    from GridCal.Engine import FileOpen, LinearAnalysis
 
     fname = r'd:\0.ntc_opf\Propuesta_2026_v22_20260729_17_flushed_PMODE1.gridcal'
+    # fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1.gridcal'
     path_out = r'd:\0.ntc_opf\Propuesta_2026_v22_20260729_17_flushed_PMODE1.csv'
 
     circuit = FileOpen(fname).open()

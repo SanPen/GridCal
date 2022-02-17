@@ -20,7 +20,7 @@ import numpy as np
 import time
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.time_series_opf_data import compile_opf_time_circuit
+from GridCal.Engine.Core.time_series_opf_data import compile_opf_time_circuit, OpfTimeCircuit
 from GridCal.Engine.Simulations.OPF.ntc_opf import OpfNTC
 from GridCal.Engine.Simulations.OPF.opf_ntc_driver import OptimalNetTransferCapacityOptions, OptimalNetTransferCapacityResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
@@ -499,17 +499,18 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
     name = tpe.value
 
-    def compute_exchange_sensitivity(self, linear, numerical_circuit, t):
+    def compute_exchange_sensitivity(self, linear, numerical_circuit: OpfTimeCircuit, Pload, Pgen, t):
 
         # compute the branch exchange sensitivity (alpha)
         alpha = compute_alpha(
             ptdf=linear.PTDF,
             P0=numerical_circuit.Sbus.real[:, t],
             Pinstalled=numerical_circuit.bus_installed_power,
+            Pload=Pload[:, t].real,
+            Pgen=numerical_circuit.generator_data.get_injections_per_bus()[:, t].real,
             idx1=self.options.area_from_bus_idx,
             idx2=self.options.area_to_bus_idx,
             bus_types=numerical_circuit.bus_types_prof(t),
-            # bus_types=numerical_circuit.bus_types.astype(int),
             dT=self.options.sensitivity_dT,
             mode=self.options.sensitivity_mode.value)
 
@@ -524,6 +525,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         nc = compile_opf_time_circuit(self.grid)
         time_indices = self.get_time_indices()
+
+        Pload = nc.load_data.get_injections_per_bus()
+        Pgen = nc.generator_data.get_injections_per_bus()
 
         nt = len(time_indices)
 
@@ -574,8 +578,12 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             # sensitivities
             if self.options.monitor_only_sensitive_branches:
-                alpha = self.compute_exchange_sensitivity(linear, nc, t)
-
+                alpha = self.compute_exchange_sensitivity(
+                    linear=linear,
+                    numerical_circuit=nc,
+                    Pload=Pload,
+                    Pgen=Pgen,
+                    t=t)
             else:
                 alpha = np.ones(nc.nbr)
 

@@ -515,8 +515,7 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             delta[gen_idx] = solver.NumVar(-inf, inf, name + '_delta')
 
-            # prop = round(abs(Pgen[gen_idx] / sum_gen_1), 6)
-            prop = abs(Pgen[gen_idx] / sum_gen_1)
+            prop = Pgen[gen_idx] / sum_gen_1
 
             solver.Add(delta[gen_idx] == prop * power_shift, 'Delta_up_gen{}'.format(gen_idx))
             solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx],
@@ -542,8 +541,7 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             delta[gen_idx] = solver.NumVar(-inf, inf, name + '_delta')
 
-            # prop = round(abs(Pgen[gen_idx] / sum_gen_2), 6)
-            prop = abs(Pgen[gen_idx] / sum_gen_2)
+            prop = Pgen[gen_idx] / sum_gen_2
 
             solver.Add(delta[gen_idx] == prop * power_shift, 'Delta_down_gen{}'.format(gen_idx))
             solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx]
@@ -2119,19 +2117,6 @@ class OpfNTC(Opf):
 
         # branch
         alpha_abs = np.abs(self.alpha)
-
-        # check that the slacks are 0
-        # if self.all_slacks is not None:
-        #     for var_array in self.all_slacks:
-        #         for var in var_array:
-        #             if isinstance(var, float) or isinstance(var, int):
-        #                 val = var
-        #             else:
-        #                 val = var.solution_value()
-        #
-        #             if abs(val) > 0:
-        #                 self.logger.add_divergence(
-        #                     'Slack variable is over the tolerance', var.name(), val, 0)
 
         # check variables
         for var in self.solver.variables():

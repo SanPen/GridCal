@@ -260,8 +260,8 @@ class Bus(EditableDevice):
         """
         if self.is_slack:
             # if it is set as slack, set the bus as slack and exit
-            # self.type = BusMode.Slack
-            return BusMode.Slack  # self.type
+            self.type = BusMode.Slack
+            return BusMode.Slack
 
         elif len(self.external_grids) > 0:  # there are devices setting this as a slack bus
 
@@ -273,8 +273,8 @@ class Bus(EditableDevice):
 
             # if there ar any active external grids, set as slack and exit
             if ext_on > 0:
-                # self.type = BusMode.Slack
-                return BusMode.Slack  # self.type
+                self.type = BusMode.Slack
+                return BusMode.Slack
 
         # if we got here, determine what to do...
 
@@ -296,17 +296,15 @@ class Bus(EditableDevice):
                 shunt_on += 1
 
         if (gen_on + batt_on + shunt_on) > 0:
-            # self.type = BusMode.PV
+            self.type = BusMode.PV
             return BusMode.PV
 
         else:
             # Nothing special; set it as PQ
-            # self.type = BusMode.PQ
+            self.type = BusMode.PQ
             return BusMode.PQ
 
-        # return self.type
-
-    def determine_bus_type_at(self, t):
+    def determine_bus_type_at(self, t) -> BusMode:
         """
         Infer the bus type from the devices attached to it
         :param t: time index
