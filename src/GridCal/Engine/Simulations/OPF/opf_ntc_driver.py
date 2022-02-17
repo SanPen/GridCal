@@ -646,11 +646,10 @@ class OptimalNetTransferCapacity(DriverTemplate):
             ptdf=linear.PTDF,
             P0=numerical_circuit.Sbus.real,
             Pinstalled=numerical_circuit.bus_installed_power,
-            Pgen=numerical_circuit.generator_data.get_injections_per_bus(),
-            Pload=numerical_circuit.load_data.get_injections_per_bus(),
+            Pgen=numerical_circuit.generator_data.get_injections_per_bus()[:,0].real,
+            Pload=numerical_circuit.load_data.get_injections_per_bus()[:,0].real,
             idx1=self.options.area_from_bus_idx,
             idx2=self.options.area_to_bus_idx,
-            bus_types=numerical_circuit.bus_types.astype(int),
             dT=self.options.sensitivity_dT,
             mode=self.options.sensitivity_mode.value)
 
@@ -688,7 +687,9 @@ class OptimalNetTransferCapacity(DriverTemplate):
 
         # sensitivities
         if self.options.monitor_only_sensitive_branches:
-            alpha = self.compute_exchange_sensitivity(linear, numerical_circuit, numerical_circuit.Sbus.real)
+            alpha = self.compute_exchange_sensitivity(
+                linear=linear,
+                numerical_circuit=numerical_circuit)
         else:
             alpha = np.ones(numerical_circuit.nbr)
 

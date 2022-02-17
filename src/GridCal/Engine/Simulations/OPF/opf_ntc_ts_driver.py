@@ -510,7 +510,6 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             Pgen=numerical_circuit.generator_data.get_injections_per_bus()[:, t].real,
             idx1=self.options.area_from_bus_idx,
             idx2=self.options.area_to_bus_idx,
-            bus_types=numerical_circuit.bus_types_prof(t),
             dT=self.options.sensitivity_dT,
             mode=self.options.sensitivity_mode.value)
 

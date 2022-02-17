@@ -309,7 +309,6 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                   Pload=nc.load_data.get_injections_per_bus(),
                                   idx1=self.options.bus_idx_from,
                                   idx2=self.options.bus_idx_to,
-                                  bus_types=nc.bus_types_prof(t),
                                   dT=self.options.dT,
                                   mode=self.options.mode.value)
 
