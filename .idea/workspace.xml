@@ -23,8 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="simplified scale functions (signed)">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="fix timestamp in ntc report">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
@@ -690,13 +692,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00261" summary="Fixed bug when the nodal restrictions are None">
-      <created>1642590889867</created>
-      <option name="number" value="00261" />
-      <option name="presentableId" value="LOCAL-00261" />
-      <option name="project" value="LOCAL" />
-      <updated>1642590889867</updated>
-    </task>
     <task id="LOCAL-00262" summary="Fixed some little bugs with the OPF">
       <created>1642596603078</created>
       <option name="number" value="00262" />
@@ -1033,7 +1028,14 @@
       <option name="project" value="LOCAL" />
       <updated>1645120993084</updated>
     </task>
-    <option name="localTasksCounter" value="310" />
+    <task id="LOCAL-00310" summary="fix timestamp in ntc report">
+      <created>1645124098155</created>
+      <option name="number" value="00310" />
+      <option name="presentableId" value="LOCAL-00310" />
+      <option name="project" value="LOCAL" />
+      <updated>1645124098155</updated>
+    </task>
+    <option name="localTasksCounter" value="311" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1067,7 +1069,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed KMeans random results" />
     <MESSAGE value="checking phase shifters" />
     <MESSAGE value="remove unused checkboxes and fix default spinbox values" />
     <MESSAGE value="added hvdc sense control" />
@@ -1092,7 +1093,8 @@
     <MESSAGE value="checking bus types computation" />
     <MESSAGE value="new scale delta power with possitive and negative powers" />
     <MESSAGE value="simplified scale functions (signed)" />
-    <option name="LAST_COMMIT_MESSAGE" value="simplified scale functions (signed)" />
+    <MESSAGE value="fix timestamp in ntc report" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix timestamp in ntc report" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1352,11 +1354,6 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/time_series_pf_data.py</url>
           <line>131</line>
           <option name="timeStamp" value="745" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py</url>
-          <line>172</line>
-          <option name="timeStamp" value="750" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

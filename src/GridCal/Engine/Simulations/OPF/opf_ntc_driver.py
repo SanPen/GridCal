@@ -923,9 +923,9 @@ if __name__ == '__main__':
     from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
     from GridCal.Engine import FileOpen, LinearAnalysis
 
-    fname = r'd:\0.ntc_opf\Propuesta_2026_v22_20260729_17_flushed_PMODE1.gridcal'
+    fname = r'd:\0.ntc_opf\Propuesta_2026_v22_20260729_17_fused_PMODE1.gridcal'
     # fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1.gridcal'
-    path_out = r'd:\0.ntc_opf\Propuesta_2026_v22_20260729_17_flushed_PMODE1.csv'
+    path_out = r'd:\0.ntc_opf\Propuesta_2026_v22_20260729_17_fused_PMODE1.csv'
 
     circuit = FileOpen(fname).open()
 

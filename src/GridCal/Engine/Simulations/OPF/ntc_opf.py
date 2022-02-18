@@ -1505,7 +1505,6 @@ class OpfNTC(Opf):
         Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
 
         if self.skip_generation_limits:
-            print('Skipping generation limits')
             Pg_max = self.inf * np.ones(self.numerical_circuit.ngen)
             Pg_min = -self.inf * np.ones(self.numerical_circuit.ngen)
 
@@ -1807,7 +1806,6 @@ class OpfNTC(Opf):
         Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
 
         if self.skip_generation_limits:
-            print('Skipping generation limits')
             Pg_max = self.inf * np.ones(self.numerical_circuit.ngen)
             Pg_min = -self.inf * np.ones(self.numerical_circuit.ngen)
 
@@ -2108,7 +2106,6 @@ class OpfNTC(Opf):
         Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
 
         if self.skip_generation_limits:
-            print('Skipping generation limits')
             Pg_max = self.inf * np.ones(self.numerical_circuit.ngen)
             Pg_min = -self.inf * np.ones(self.numerical_circuit.ngen)
 
@@ -2256,7 +2253,6 @@ class OpfNTC(Opf):
         Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
 
         if self.skip_generation_limits:
-            print('Skipping generation limits')
             Pg_max = self.inf * np.ones(self.numerical_circuit.ngen)
             Pg_min = -self.inf * np.ones(self.numerical_circuit.ngen)
 
@@ -2622,8 +2618,7 @@ if __name__ == '__main__':
     numerical_circuit_ = compile_snapshot_opf_circuit(
         circuit=main_circuit,
         apply_temperature=False,
-        branch_tolerance_mode=BranchImpedanceMode.Specified
-    )
+        branch_tolerance_mode=BranchImpedanceMode.Specified)
 
     # get the area bus indices
     areas = areas[numerical_circuit_.original_bus_idx]
