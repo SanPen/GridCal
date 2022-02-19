@@ -9,7 +9,7 @@
 
 ![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal.png)
 
-This software aims to be a complete platform for power systems research and simulation.
+This software Aim's to be a complete platform for power systems research and simulation.
 
 - [Watch the video](https://youtu.be/SY66WgLGo54)
 - Check out the [Documentation](https://gridcal.readthedocs.io/en/latest/about.html)
@@ -76,7 +76,7 @@ tests under [src/tests](https://github.com/SanPen/GridCal/tree/master/src/tests)
 
 # Features overview
 
-It is pure Python, it works for Windows, Linux and OSX.
+It is a pure Python, it works for Windows, Linux and OSX.
 
 Some features you'll find already are:
 
