@@ -135,7 +135,7 @@
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.opf_ntc_ts_driver">
+  <component name="RunManager" selected="Python.setup">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -251,9 +251,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.setup" />
         <item itemvalue="Python.opf_ntc_ts_driver" />
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.setup" />
         <item itemvalue="Python.opf_ntc_driver" />
         <item itemvalue="Python.update_gui_file" />
       </list>
