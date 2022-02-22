@@ -94,6 +94,30 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         self.sampled_probabilities = sampled_probabilities
 
+    def mdl(self, result_type) -> "ResultsTable":
+        """
+        Plot the results
+        :param result_type: type of results (string)
+        :return: DataFrame of the results (or None if the result was not understood)
+        """
+
+        if result_type == ResultTypes.OptimalNetTransferCapacityTimeSeriesReport:
+            labels, columns, y = self.get_contingency_report()
+            y_label = ''
+            title = result_type.value[0]
+
+        else:
+            raise Exception('No results available')
+
+        mdl = ResultsTable(data=y,
+                           index=labels,
+                           columns=columns,
+                           title=title,
+                           ylabel=y_label,
+                           xlabel='',
+                           units=y_label)
+        return mdl
+
     def get_steps(self):
         return
 
@@ -142,31 +166,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         # Save file
         if path_out:
             df.to_csv(path_out, index=False)
-    
 
-    def mdl(self, result_type) -> "ResultsTable":
-        """
-        Plot the results
-        :param result_type: type of results (string)
-        :return: DataFrame of the results (or None if the result was not understood)
-        """
-
-        if result_type == ResultTypes.OptimalNetTransferCapacityTimeSeriesReport:
-            labels, columns, y = self.get_contingency_report()
-            y_label = ''
-            title = result_type.value[0]
-
-        else:
-            raise Exception('No results available')
-
-        mdl = ResultsTable(data=y,
-                           index=labels,
-                           columns=columns,
-                           title=title,
-                           ylabel=y_label,
-                           xlabel='',
-                           units=y_label)
-        return mdl
 
     def get_contingency_report(self):
 
@@ -206,7 +206,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                     data = np.zeros(shape=(1, len(columns) + len(shifter_names) + len(hvdc_names)))
 
             # complete the data with time and ntc columns
-            extra_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S"), ntc]] * data.shape[0])
+            extra_data = np.array([[t, self.time_array[idx], ntc]] * data.shape[0])
             data = np.concatenate((extra_data, data), axis=1)
 
             # add to main data set
@@ -235,6 +235,9 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         # return report data
         labels_all = np.arange(data_all.shape[0])
+
+        # convert time to formated string
+        data_all[:, 2] = [t.strftime("%d/%m/%Y %H:%M:%S") for t in data_all[:, 2]]
 
         print('Ejecutado en {0} scs. para {1} casos'.format(self.elapsed, len(self.time_array)))
         return labels_all, columns_all, data_all
@@ -521,7 +524,13 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         linear.run()
 
         if self.use_clustering:
-            self.progress_text.emit('Clustering...')
+
+            if self.progress_text is not None:
+                self.progress_text.emit('Clustering...')
+
+            else:
+                print('Clustering...')
+
             X = nc.Sbus
             X = X[:, time_indices].real.T
 
@@ -547,7 +556,6 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 time_array=nc.time_array[time_indices],
                 time_indices=time_indices)
 
-
         for t_idx, t in enumerate(time_indices):
 
             # update progress bar
@@ -556,6 +564,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             if self.progress_text is not None:
                 self.progress_text.emit('Optimal net transfer capacity at ' + str(self.grid.time_profile[t]))
+
+            else:
+                print('Optimal net transfer capacity at ' + str(self.grid.time_profile[t]))
 
             # sensitivities
             if self.options.monitor_only_sensitive_branches:
@@ -703,8 +714,9 @@ if __name__ == '__main__':
     from GridCal.Engine import FileOpen, LinearAnalysis
 
     fname = r'd:\0.ntc_opf\Propuesta_2026_v22_20260729_17_fused_PMODE1.gridcal'
-    # fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1.gridcal'
     path_out = r'd:\0.ntc_opf\Propuesta_2026_v22_20260729_17_fused_PMODE1.csv'
+    # fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1.gridcal'
+    # path_out = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1.csv'
 
     circuit = FileOpen(fname).open()
 

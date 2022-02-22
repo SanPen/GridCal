@@ -23,12 +23,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="fix timestamp in ntc report">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Version 4.4.7a5">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -136,7 +135,7 @@
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.opf_ntc_ts_driver">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -252,8 +251,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.opf_ntc_ts_driver" />
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.setup" />
         <item itemvalue="Python.opf_ntc_driver" />
         <item itemvalue="Python.update_gui_file" />
@@ -692,27 +691,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00262" summary="Fixed some little bugs with the OPF">
-      <created>1642596603078</created>
-      <option name="number" value="00262" />
-      <option name="presentableId" value="LOCAL-00262" />
-      <option name="project" value="LOCAL" />
-      <updated>1642596603078</updated>
-    </task>
-    <task id="LOCAL-00263" summary="Added Highs for windows, not working yet">
-      <created>1642609834253</created>
-      <option name="number" value="00263" />
-      <option name="presentableId" value="LOCAL-00263" />
-      <option name="project" value="LOCAL" />
-      <updated>1642609834254</updated>
-    </task>
-    <task id="LOCAL-00264" summary="Highs WIP">
-      <created>1642611851084</created>
-      <option name="number" value="00264" />
-      <option name="presentableId" value="LOCAL-00264" />
-      <option name="project" value="LOCAL" />
-      <updated>1642611851085</updated>
-    </task>
     <task id="LOCAL-00265" summary="Highs working with shadow prices, when HiGHS is in the PATH">
       <created>1642665845052</created>
       <option name="number" value="00265" />
@@ -1035,7 +1013,28 @@
       <option name="project" value="LOCAL" />
       <updated>1645124098155</updated>
     </task>
-    <option name="localTasksCounter" value="311" />
+    <task id="LOCAL-00311" summary="Removed unnecessary prints">
+      <created>1645189550553</created>
+      <option name="number" value="00311" />
+      <option name="presentableId" value="LOCAL-00311" />
+      <option name="project" value="LOCAL" />
+      <updated>1645189550553</updated>
+    </task>
+    <task id="LOCAL-00312" summary="Nothing">
+      <created>1645433344235</created>
+      <option name="number" value="00312" />
+      <option name="presentableId" value="LOCAL-00312" />
+      <option name="project" value="LOCAL" />
+      <updated>1645433344235</updated>
+    </task>
+    <task id="LOCAL-00313" summary="Version 4.4.7a5">
+      <created>1645433395959</created>
+      <option name="number" value="00313" />
+      <option name="presentableId" value="LOCAL-00313" />
+      <option name="project" value="LOCAL" />
+      <updated>1645433395960</updated>
+    </task>
+    <option name="localTasksCounter" value="314" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1069,9 +1068,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="checking phase shifters" />
-    <MESSAGE value="remove unused checkboxes and fix default spinbox values" />
-    <MESSAGE value="added hvdc sense control" />
     <MESSAGE value="removed load shedding" />
     <MESSAGE value="recovered load shedding" />
     <MESSAGE value="Working NTC. No more load_shedding" />
@@ -1094,7 +1090,10 @@
     <MESSAGE value="new scale delta power with possitive and negative powers" />
     <MESSAGE value="simplified scale functions (signed)" />
     <MESSAGE value="fix timestamp in ntc report" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix timestamp in ntc report" />
+    <MESSAGE value="Removed unnecessary prints" />
+    <MESSAGE value="Nothing" />
+    <MESSAGE value="Version 4.4.7a5" />
+    <option name="LAST_COMMIT_MESSAGE" value="Version 4.4.7a5" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

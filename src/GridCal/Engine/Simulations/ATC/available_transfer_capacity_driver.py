@@ -66,16 +66,16 @@ def get_proportional_deltas_sensed(P, idx, dP=1.0):
             nD -= P[i]  # store it as positive value
 
     # compute witch proportion to attend with positive and negative sense
-    dPu = dP * nU / (nU + nD)  # positive proportion
-    dPd = dP - dPu  # negative proportion
+    dPu = nU / (nU + nD)  # positive proportion
+    dPd = 1 - dPu  # negative proportion
 
     for i in idx:
 
         if P[i] > 0:
-            deltaP[i] = dPu * P[i] / nU
+            deltaP[i] = dP * dPu * P[i] / nU
 
         if P[i] < 0:
-            deltaP[i] = -dPd * P[i] / nD  # P[i] is already negative
+            deltaP[i] = -dP * dPd * P[i] / nD  # P[i] is already negative
 
     return deltaP
 
@@ -114,7 +114,7 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0)
                  0: shift generation based on the current generated power
                  1: shift generation based on the installed power
                  2: shift load
-                 3 (or else): shift using generation and load
+                 3 (or else): shift udasing generation and load
 
     :return: Exchange sensitivity vector for all the lines
     """
