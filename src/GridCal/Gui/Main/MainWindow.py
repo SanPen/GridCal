@@ -3041,7 +3041,7 @@ class Ui_mainWindow(object):
         self.max_branch_size_spinBox = QSpinBox(self.frame_58)
         self.max_branch_size_spinBox.setObjectName(u"max_branch_size_spinBox")
         self.max_branch_size_spinBox.setMinimum(5)
-        self.max_branch_size_spinBox.setMaximum(100)
+        self.max_branch_size_spinBox.setMaximum(10000)
         self.max_branch_size_spinBox.setValue(20)
 
         self.gridLayout.addWidget(self.max_branch_size_spinBox, 10, 1, 1, 1)
@@ -3063,7 +3063,7 @@ class Ui_mainWindow(object):
         self.min_node_size_spinBox = QSpinBox(self.frame_58)
         self.min_node_size_spinBox.setObjectName(u"min_node_size_spinBox")
         self.min_node_size_spinBox.setMinimum(20)
-        self.min_node_size_spinBox.setMaximum(100)
+        self.min_node_size_spinBox.setMaximum(10000)
 
         self.gridLayout.addWidget(self.min_node_size_spinBox, 5, 1, 1, 1)
 
@@ -3090,7 +3090,7 @@ class Ui_mainWindow(object):
         self.max_node_size_spinBox = QSpinBox(self.frame_58)
         self.max_node_size_spinBox.setObjectName(u"max_node_size_spinBox")
         self.max_node_size_spinBox.setMinimum(20)
-        self.max_node_size_spinBox.setMaximum(100)
+        self.max_node_size_spinBox.setMaximum(10000)
         self.max_node_size_spinBox.setValue(40)
 
         self.gridLayout.addWidget(self.max_node_size_spinBox, 6, 1, 1, 1)
@@ -3121,7 +3121,7 @@ class Ui_mainWindow(object):
         self.min_branch_size_spinBox = QSpinBox(self.frame_58)
         self.min_branch_size_spinBox.setObjectName(u"min_branch_size_spinBox")
         self.min_branch_size_spinBox.setMinimum(5)
-        self.min_branch_size_spinBox.setMaximum(100)
+        self.min_branch_size_spinBox.setMaximum(10000)
 
         self.gridLayout.addWidget(self.min_branch_size_spinBox, 9, 1, 1, 1)
 
@@ -3599,9 +3599,7 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionTry_to_fix_buses_location)
         self.toolBar.addAction(self.actionDelete_selected)
         self.toolBar.addSeparator()
-        self.toolBar.addAction(self.actionStorage_location_suggestion)
         self.toolBar.addAction(self.actionLaunch_data_analysis_tool)
-        self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionShow_color_controls)
 
         self.retranslateUi(mainWindow)

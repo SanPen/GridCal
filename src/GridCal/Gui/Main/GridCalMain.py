@@ -1103,13 +1103,6 @@ class MainGUI(QMainWindow):
 
         self.grid_editor.clear()
 
-        # delete all widgets
-        #for i in reversed(range(self.ui.schematic_layout.count())):
-        #    self.ui.schematic_layout.itemAt(i).widget().deleteLater()
-
-        # add the widgets
-        #self.ui.schematic_layout.addWidget(self.grid_editor)
-
         self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
         # clear the results
@@ -1121,6 +1114,15 @@ class MainGUI(QMainWindow):
         # clear the simulation objects
         for thread in self.get_all_threads():
             thread = None
+
+        # close all the bus view windows
+        for hndl in self.bus_viewer_windows:
+            if hndl is not None:
+                hndl.close()
+        self.bus_viewer_windows.clear()
+
+        if self.analysis_dialogue is not None:
+            self.analysis_dialogue.close()
 
         self.clear_stuff_running()
         self.clear_results()
@@ -4897,6 +4899,11 @@ class MainGUI(QMainWindow):
                               loadings=np.abs(results.loading),
                               types=results.bus_types,
                               losses=results.losses,
+                              failed_br_idx=None,
+                              hvdc_Pf=results.hvdc_Pf,
+                              hvdc_Pt=results.hvdc_Pt,
+                              hvdc_losses=results.hvdc_losses,
+                              hvdc_loading=results.hvdc_loading,
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -4914,6 +4921,12 @@ class MainGUI(QMainWindow):
                               voltages=results.voltage[current_step, :],
                               loadings=np.abs(results.loading[current_step, :]),
                               types=results.bus_types,
+                              losses=results.losses[current_step, :],
+                              failed_br_idx=None,
+                              hvdc_Pf=results.hvdc_Pf[current_step, :],
+                              hvdc_Pt=results.hvdc_Pt[current_step, :],
+                              hvdc_losses=results.hvdc_losses[current_step, :],
+                              hvdc_loading=results.hvdc_loading[current_step, :],
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -4931,6 +4944,12 @@ class MainGUI(QMainWindow):
                               voltages=results.voltage[current_step, :],
                               loadings=np.abs(results.loading[current_step, :]),
                               types=results.bus_types,
+                              losses=results.losses[current_step, :],
+                              failed_br_idx=None,
+                              hvdc_Pf=results.hvdc_Pf[current_step, :],
+                              hvdc_Pt=results.hvdc_Pt[current_step, :],
+                              hvdc_losses=results.hvdc_losses[current_step, :],
+                              hvdc_loading=results.hvdc_loading[current_step, :],
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,

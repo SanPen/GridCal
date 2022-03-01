@@ -6211,7 +6211,7 @@ p, li { white-space: pre-wrap; }
                      <number>5</number>
                     </property>
                     <property name="maximum">
-                     <number>100</number>
+                     <number>10000</number>
                     </property>
                     <property name="value">
                      <number>20</number>
@@ -6276,7 +6276,7 @@ p, li { white-space: pre-wrap; }
                      <number>20</number>
                     </property>
                     <property name="maximum">
-                     <number>100</number>
+                     <number>10000</number>
                     </property>
                    </widget>
                   </item>
@@ -6310,7 +6310,7 @@ p, li { white-space: pre-wrap; }
                      <number>20</number>
                     </property>
                     <property name="maximum">
-                     <number>100</number>
+                     <number>10000</number>
                     </property>
                     <property name="value">
                      <number>40</number>
@@ -6395,7 +6395,7 @@ p, li { white-space: pre-wrap; }
                      <number>5</number>
                     </property>
                     <property name="maximum">
-                     <number>100</number>
+                     <number>10000</number>
                     </property>
                    </widget>
                   </item>
@@ -7365,9 +7365,7 @@ QProgressBar::chunk{
    <addaction name="actionTry_to_fix_buses_location"/>
    <addaction name="actionDelete_selected"/>
    <addaction name="separator"/>
-   <addaction name="actionStorage_location_suggestion"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
-   <addaction name="separator"/>
    <addaction name="actionShow_color_controls"/>
   </widget>
   <action name="actionOpen_file">
