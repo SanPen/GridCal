@@ -5711,7 +5711,7 @@ class MainGUI(QMainWindow):
 
                 try:
                     args = tpe(args)
-                except:
+                except TypeError:
                     error_msg('Could not parse the argument for the data type')
                     return
 
@@ -5723,7 +5723,7 @@ class MainGUI(QMainWindow):
 
                 try:
                     args = tpe(args)
-                except:
+                except TypeError:
                     error_msg('Could not parse the argument for the data type')
                     return
 
@@ -5735,7 +5735,7 @@ class MainGUI(QMainWindow):
 
                 try:
                     args = tpe(args)
-                except:
+                except TypeError:
                     error_msg('Could not parse the argument for the data type')
                     return
 
@@ -5747,7 +5747,7 @@ class MainGUI(QMainWindow):
 
                 try:
                     args = tpe(args)
-                except:
+                except TypeError:
                     error_msg('Could not parse the argument for the data type')
                     return
 
@@ -5761,7 +5761,7 @@ class MainGUI(QMainWindow):
 
                     try:
                         args = tpe(args)
-                    except:
+                    except TypeError:
                         error_msg('Could not parse the argument for the data type')
                         return
 
@@ -5781,7 +5781,7 @@ class MainGUI(QMainWindow):
 
                     try:
                         args = tpe(args)
-                    except:
+                    except TypeError:
                         error_msg('Could not parse the argument for the data type')
                         return
 
@@ -5815,7 +5815,7 @@ class MainGUI(QMainWindow):
 
                     try:
                         args = tpe(args)
-                    except:
+                    except TypeError:
                         error_msg('Could not parse the argument for the data type')
                         return
 
