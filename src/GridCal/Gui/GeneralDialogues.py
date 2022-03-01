@@ -338,6 +338,63 @@ class ElementsDialogue(QtWidgets.QDialog):
         pass
 
 
+class TimeReIndexDialogue(QtWidgets.QDialog):
+    """
+    New profile dialogue window
+    """
+    def __init__(self):
+        super(TimeReIndexDialogue, self).__init__()
+        self.setObjectName("self")
+        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+
+        self.accepted = False
+
+        self.label1 = QtWidgets.QLabel()
+        self.label1.setText("Year")
+
+        # year
+        d = datetime.now()
+        self.year_spinner = QtWidgets.QSpinBox()
+        self.year_spinner.setMinimum(0)
+        self.year_spinner.setMaximum(3000)
+        self.year_spinner.setValue(d.year)
+
+        self.label2 = QtWidgets.QLabel()
+        self.label2.setText("Hours per interval")
+
+        self.interval_hours = QtWidgets.QDoubleSpinBox()
+        self.interval_hours.setMinimum(0.0001)
+        self.interval_hours.setMaximum(1000)
+        self.interval_hours.setValue(1)
+
+        # accept button
+        self.accept_btn = QtWidgets.QPushButton()
+        self.accept_btn.setText('Accept')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        # add all to the GUI
+        self.main_layout.addWidget(self.label1)
+        self.main_layout.addWidget(self.year_spinner)
+        self.main_layout.addWidget(self.label2)
+        self.main_layout.addWidget(self.interval_hours)
+        self.main_layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.main_layout)
+
+        self.setWindowTitle('Time re-index')
+
+        h = 120
+        self.resize(h, int(1.1 * h))
+
+    def accept_click(self):
+        """
+        Accept and close
+        """
+        self.accepted = True
+        self.accept()
+
+
 if __name__ == "__main__":
     import sys
     from PySide2.QtWidgets import QApplication

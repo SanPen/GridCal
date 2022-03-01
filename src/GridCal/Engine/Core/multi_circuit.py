@@ -1718,11 +1718,11 @@ class MultiCircuit:
         Set the profiles state at the index t as the default values.
         """
         for bus in self.buses:
-            bus.set_state(t)
+            bus.set_profile_values(t)
+            bus.graphic_obj.update()
 
         for branch in self.get_branches():
             branch.set_profile_values(t)
-
 
     def get_bus_branch_connectivity_matrix(self):
         """
@@ -2357,4 +2357,35 @@ class MultiCircuit:
         """
         for bus in self.buses:
             bus.fuse_devices()
+
+    def re_index_time(self, year=None, hours_per_step=1):
+        """
+        Generate sequential time steps to correct the time_profile
+        :param year: base year, if None, this year is taken
+        :param hours_per_step: number of hours per step, by default 1 hour by step
+        """
+        if year is None:
+            t0 = datetime.now()
+            year = t0.year
+
+        nt = self.get_time_number()
+        t0 = datetime(year=year, month=1, day=1)
+        tm = [t0 + timedelta(hours=t * hours_per_step) for t in range(nt)]
+        self.time_profile = pd.to_datetime(tm)
+
+    def set_generators_active_profile_from_their_active_power(self):
+        """
+        Modify the generators active profile to match the active power profile
+        if P=0, active = False else active=True
+        """
+        for g in self.get_generators():
+            g.active_prof = g.P_prof.astype(bool)
+
+    def set_batteries_active_profile_from_their_active_power(self):
+        """
+        Modify the batteries active profile to match the active power profile
+        if P=0, active = False else active=True
+        """
+        for g in self.get_batteries():
+            g.active_prof = g.P_prof.astype(bool)
 

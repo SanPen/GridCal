@@ -53,7 +53,7 @@ def dSbus_dV(Ybus, V):
     return dS_dVm, dS_dVa
 
 
-@jit(nopython=True, cache=False)
+@jit(nopython=True, cache=True)
 def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma: no cover
     """
     Calculates Jacobian in CSR format.
@@ -172,7 +172,7 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
 
 
 # @jit(i8(c16[:], c16[:], i4[:], i4[:], i8[:], i8[:], f8[:], i8[:], i8[:]), nopython=True, cache=True)
-@jit(nopython=True, cache=False)
+@jit(nopython=True, cache=True)
 def create_J_no_pv(dS_dVm, dS_dVa, Yp, Yj, pvpq_lookup, pvpq, Jx, Jj, Jp):  # pragma: no cover
     """
         Calculates Jacobian faster with numba and sparse matrices. This version is similar to create_J except that
@@ -292,7 +292,7 @@ def AC_jacobian(Ybus, V, pvpq, pq, npv, npq):
 
 
 
-@njit()
+@njit(cache=True)
 def jacobian_numba(nbus, Gi, Gp, Gx, Bx, P, Q, E, F, Vm, pq, pvpq):
     """
     Compute the Tinney version of the AC jacobian without any sin, cos or abs

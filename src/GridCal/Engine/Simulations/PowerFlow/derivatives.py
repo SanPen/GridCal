@@ -110,7 +110,7 @@ def dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V, E):
     return dS_dVm, dS_dVa
 
 
-@nb.jit(nopython=True, cache=False)
+@nb.jit(nopython=True, cache=True)
 def dSbus_dV_numba_sparse_csr(Yx, Yp, Yj, V, E, Ibus):  # pragma: no cover
     """
     partial derivatives of power injection w.r.t. voltage.
@@ -294,7 +294,7 @@ def dSt_dV(Yt, V, T, Ct, Vc, diagVc, diagVnorm, diagV):
     return dSt_dVa.tocsc(), dSt_dVm.tocsc()
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def data_1_4(Cf_data, Cf_indptr, Cf_indices, Ifc, V, E, n_cols):
     """
     Performs the operations:
@@ -320,7 +320,7 @@ def data_1_4(Cf_data, Cf_indptr, Cf_indices, Ifc, V, E, n_cols):
     return data1, data4
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def data_2_3(Yf_data, Yf_indptr, Yf_indices, V, F, Vc, E, n_cols):
     """
     Performs the operations:
@@ -430,7 +430,7 @@ def derivatives_sh(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
     return dSbus_dPxsh.tocsc(), dSf_dshx2.tocsc(), dSt_dshx2.tocsc()
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def derivatives_sh_csc_numba(iPxsh, F, T, Ys, k2, tap, V):
     """
     This function computes the derivatives of Sbus, Sf and St w.r.t. Ɵsh
@@ -592,7 +592,7 @@ def derivatives_ma(nb, nl, iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
     return dSbus_dmax2.tocsc(), dSf_dmax2.tocsc(), dSt_dmax2.tocsc()
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def derivatives_ma_csc_numba(iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
     """
     Useful for the calculation of
@@ -766,7 +766,7 @@ def derivatives_Beq(nb, nl, iBeqx, F, T, V, ma, k2):
     return dSbus_dBeqx.tocsc(), dSf_dBeqx.tocsc(), dSt_dBeqx.tocsc()
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def derivatives_Beq_csc_numba(iBeqx, F, V, ma, k2):
     """
     Compute the derivatives of:

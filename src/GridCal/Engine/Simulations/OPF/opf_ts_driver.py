@@ -125,7 +125,7 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
             problem = OpfDcTimeSeries(numerical_circuit=self.numerical_circuit,
                                       start_idx=start_,
                                       end_idx=end_,
-                                      solver=self.options.mip_solver,
+                                      solver_type=self.options.mip_solver,
                                       zonal_grouping=self.options.zonal_grouping,
                                       skip_generation_limits=self.options.skip_generation_limits,
                                       consider_contingencies=self.options.consider_contingencies,
@@ -141,14 +141,14 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
             problem = OpfAcTimeSeries(numerical_circuit=self.numerical_circuit,
                                       start_idx=start_,
                                       end_idx=end_,
-                                      solver=self.options.mip_solver)
+                                      solver_type=self.options.mip_solver)
 
         elif self.options.solver == SolverType.Simple_OPF:
 
             # AC optimal power flow
             problem = OpfSimpleTimeSeries(numerical_circuit=self.numerical_circuit,
                                           start_idx=start_, end_idx=end_,
-                                          solver=self.options.mip_solver,
+                                          solver_type=self.options.mip_solver,
                                           text_prog=self.progress_text.emit,
                                           prog_func=self.progress_signal.emit)
 

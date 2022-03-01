@@ -76,8 +76,11 @@ class BatteryData:
 
         return data
 
-    def get_island(self, bus_idx):
-        return tp.get_elements_of_the_island(self.C_bus_batt.T, bus_idx)
+    def get_island(self, bus_idx, t_idx=0):
+        if self.nbatt:
+            return tp.get_elements_of_the_island(self.C_bus_batt.T, bus_idx, active=self.battery_active[t_idx])
+        else:
+            return np.zeros(0, dtype=int)
 
     def get_injections(self):
         """

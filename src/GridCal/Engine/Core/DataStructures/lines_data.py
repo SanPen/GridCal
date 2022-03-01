@@ -31,6 +31,7 @@ class LinesData:
         self.ntime = ntime
 
         self.line_names = np.zeros(nline, dtype=object)
+        self.line_active = np.zeros((nline, ntime), dtype=int)
         self.line_R = np.zeros(nline, dtype=float)
         self.line_X = np.zeros(nline, dtype=float)
         self.line_B = np.zeros(nline, dtype=float)
@@ -45,9 +46,17 @@ class LinesData:
         :return:
         """
 
+        if time_idx is None:
+            idx = elm_idx
+        else:
+            idx = np.ix_(elm_idx, time_idx)
+
         data = LinesData(nline=len(elm_idx), nbus=len(bus_idx))
 
+        data.line_active = self.line_active[idx]
+
         data.line_names = self.line_names[elm_idx]
+
         data.line_R = self.line_R[elm_idx]
         data.line_X = self.line_X[elm_idx]
         data.line_B = self.line_B[elm_idx]
@@ -55,13 +64,17 @@ class LinesData:
 
         return data
 
-    def get_island(self, bus_idx):
+    def get_island(self, bus_idx, t_idx=0):
         """
         Get the elements of the island given the bus indices
         :param bus_idx: list of bus indices
         :return: list of line indices of the island
         """
-        return tp.get_elements_of_the_island(self.C_line_bus, bus_idx)
+        if self.nline:
+            return tp.get_elements_of_the_island(self.C_line_bus, bus_idx,
+                                                 active=self.line_active[:, t_idx])
+        else:
+            return np.zeros(0, dtype=int)
 
     def __len__(self):
         return self.nline

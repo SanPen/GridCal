@@ -97,4 +97,5 @@ class TimeSeriesDriverTemplate(DriverTemplate):
         """
         if self.end_ is None:
             self.end_ = len(self.grid.time_profile)
+
         return np.arange(self.start_, self.end_ + 1)

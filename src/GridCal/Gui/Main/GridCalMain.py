@@ -389,6 +389,12 @@ class MainGUI(QMainWindow):
 
         self.ui.actionOptimal_Net_Transfer_Capacity.triggered.connect(self.run_opf_ntc)
 
+        self.ui.actionOptimal_Net_Transfer_Capacity_Time_Series.triggered.connect(
+            lambda: self.run_opf_ntc_ts(with_clustering=False))
+
+        self.ui.actionOptimal_NTC_time_series_clustering.triggered.connect(
+            lambda: self.run_opf_ntc_ts(with_clustering=True))
+
         self.ui.actionAbout.triggered.connect(self.about_box)
 
         self.ui.actionExport.triggered.connect(self.export_diagram)
@@ -461,9 +467,13 @@ class MainGUI(QMainWindow):
 
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
 
-        self.ui.actionCorrect_inconsistences.triggered.connect(self.correct_inconsistencies)
+        self.ui.actionCorrect_inconsistencies.triggered.connect(self.correct_inconsistencies)
 
-        self.ui.actionDelete_inconsistences.triggered.connect(self.delete_inconsistencies)
+        self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
+
+        self.ui.actionFix_generators_active_based_on_the_power.triggered.connect(self.fix_generators_active_based_on_the_power)
+
+        self.ui.actionre_index_time.triggered.connect(self.re_index_time)
 
         # Buttons
 
@@ -4079,14 +4089,11 @@ class MainGUI(QMainWindow):
         self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
         self.ui.skipNtcGenerationLimitsCheckBox.setChecked(False)
         self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
-        self.ui.ntcMaximizeExchangeFlowCheckBox.setChecked(True)
         self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
         self.ui.ntcFeasibilityCheckCheckBox.setChecked(False)
         self.ui.weightPowerShiftSpinBox.setValue(0)
         self.ui.weightGenCostSpinBox.setValue(0)
-        self.ui.weightGenDeltaSpinBox.setValue(0)
         self.ui.weightsOverloadsSpinBox.setValue(0)
-        self.ui.weightsHVDCControlSpinBox.setValue(0)
 
     def default_options_opf_ntc_proportional(self):
         """
@@ -4096,14 +4103,11 @@ class MainGUI(QMainWindow):
         self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
         self.ui.skipNtcGenerationLimitsCheckBox.setChecked(True)
         self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
-        self.ui.ntcMaximizeExchangeFlowCheckBox.setChecked(True)
         self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
-        self.ui.ntcFeasibilityCheckCheckBox.setChecked(True)
+        self.ui.ntcFeasibilityCheckCheckBox.setChecked(False)
         self.ui.weightPowerShiftSpinBox.setValue(5)
-        self.ui.weightGenCostSpinBox.setValue(0)
-        self.ui.weightGenDeltaSpinBox.setValue(5)
-        self.ui.weightsOverloadsSpinBox.setValue(5)
-        self.ui.weightsHVDCControlSpinBox.setValue(3)
+        self.ui.weightGenCostSpinBox.setValue(2)
+        self.ui.weightsOverloadsSpinBox.setValue(3)
 
     def run_opf_ntc(self):
         """
@@ -4124,9 +4128,6 @@ class MainGUI(QMainWindow):
                 idx_from = np.array([i for i, bus in lst_from])
                 idx_to = np.array([i for i, bus in lst_to])
                 idx_br = np.array([i for i, bus, sense in lst_br])
-                sense_br = np.array([sense for i, bus, sense in lst_br])
-                idx_hvdc_br = np.array([i for i, bus, sense in lst_hvdc_br])
-                sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
 
                 if len(idx_from) == 0:
                     error_msg('The area "from" has no buses!')
@@ -4157,7 +4158,6 @@ class MainGUI(QMainWindow):
                 branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
-                consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
                 tolerance = 10.0 ** self.ui.ntcOpfTolSpinBox.value()
 
                 perform_previous_checks = self.ui.ntcFeasibilityCheckCheckBox.isChecked()
@@ -4166,34 +4166,33 @@ class MainGUI(QMainWindow):
 
                 weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
                 weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
-                weight_generation_delta = 10.0 ** self.ui.weightGenDeltaSpinBox.value()
-                weight_overloads = 10.0 ** self.ui.weightsOverloadsSpinBox.value()
-                weight_hvdc_control = 10.0 ** self.ui.weightsHVDCControlSpinBox.value()
-                maximize_exchange_flows = self.ui.ntcMaximizeExchangeFlowCheckBox.isChecked()
 
-                options = sim.OptimalNetTransferCapacityOptions(area_from_bus_idx=idx_from,
-                                                                area_to_bus_idx=idx_to,
-                                                                mip_solver=mip_solver,
-                                                                generation_formulation=generation_formulation,
-                                                                monitor_only_sensitive_branches=monitor_only_sensitive_branches,
-                                                                branch_sensitivity_threshold=branch_sensitivity_threshold,
-                                                                skip_generation_limits=skip_generation_limits,
-                                                                consider_contingencies=consider_contingencies,
-                                                                maximize_exchange_flows=maximize_exchange_flows,
-                                                                dispatch_all_areas=dispatch_all_areas,
-                                                                tolerance=tolerance,
-                                                                sensitivity_dT=dT,
-                                                                sensitivity_mode=mode,
-                                                                perform_previous_checks=perform_previous_checks,
-                                                                weight_power_shift=weight_power_shift,
-                                                                weight_generation_cost=weight_generation_cost,
-                                                                weight_generation_delta=weight_generation_delta,
-                                                                weight_kirchoff=0,
-                                                                weight_overloads=weight_overloads,
-                                                                weight_hvdc_control=weight_hvdc_control
-                                                                )
+                consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
+                consider_hvdc_contingencies = self.ui.considerContingenciesHvdcOpfCheckBox.isChecked()
+                consider_gen_contingencies = self.ui.considerContingenciesGeneratorOpfCheckBox.isChecked()
+                generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
 
-                self.ui.progress_label.setText('Running optimal power flow...')
+                options = sim.OptimalNetTransferCapacityOptions(
+                    area_from_bus_idx=idx_from,
+                    area_to_bus_idx=idx_to,
+                    mip_solver=mip_solver,
+                    generation_formulation=generation_formulation,
+                    monitor_only_sensitive_branches=monitor_only_sensitive_branches,
+                    branch_sensitivity_threshold=branch_sensitivity_threshold,
+                    skip_generation_limits=skip_generation_limits,
+                    dispatch_all_areas=dispatch_all_areas,
+                    tolerance=tolerance,
+                    sensitivity_dT=dT,
+                    sensitivity_mode=mode,
+                    perform_previous_checks=perform_previous_checks,
+                    weight_power_shift=weight_power_shift,
+                    weight_generation_cost=weight_generation_cost,
+                    consider_contingencies=consider_contingencies,
+                    consider_hvdc_contingencies=consider_hvdc_contingencies,
+                    consider_gen_contingencies=consider_gen_contingencies,
+                    generation_contingency_threshold=generation_contingency_threshold)
+
+                self.ui.progress_label.setText('Running optimal net transfer capacity...')
                 QtGui.QGuiApplication.processEvents()
                 pf_options = self.get_selected_power_flow_options()
                 # set power flow object instance
@@ -4249,6 +4248,144 @@ class MainGUI(QMainWindow):
                 dlg = LogsDialogue(drv.name, drv.logger)
                 dlg.setModal(True)
                 dlg.exec_()
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()
+
+    def run_opf_ntc_ts(self, with_clustering=False):
+        """
+        Run OPF time series simulation
+        """
+        if len(self.circuit.buses) > 0:
+
+            if not self.session.is_this_running(sim.SimulationTypes.OPF_NTC_TS_run):
+
+                self.remove_simulation(sim.SimulationTypes.OPF_NTC_TS_run)
+
+                # available transfer capacity inter areas
+                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+
+                if not compatible_areas:
+                    return
+
+                idx_from = np.array([i for i, bus in lst_from])
+                idx_to = np.array([i for i, bus in lst_to])
+                idx_br = np.array([i for i, bus, sense in lst_br])
+
+                if len(idx_from) == 0:
+                    error_msg('The area "from" has no buses!')
+                    return
+
+                if len(idx_to) == 0:
+                    error_msg('The area "to" has no buses!')
+                    return
+
+                if len(idx_br) == 0:
+                    error_msg('There are no inter-area branches!')
+                    return
+
+                mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
+
+                if self.ui.optimalRedispatchRadioButton.isChecked():
+                    generation_formulation = dev.GenerationNtcFormulation.Optimal
+                    # perform_previous_checks = False
+                elif self.ui.proportionalRedispatchRadioButton.isChecked():
+                    generation_formulation = dev.GenerationNtcFormulation.Proportional
+                    # perform_previous_checks = True
+                else:
+                    generation_formulation = dev.GenerationNtcFormulation.Optimal
+                    # perform_previous_checks = False
+
+                monitor_only_sensitive_branches = self.ui.monitorOnlySensitiveBranchesCheckBox.isChecked()
+                skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
+                branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
+                dT = self.ui.atcPerturbanceSpinBox.value()
+                mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
+                tolerance = 10.0 ** self.ui.ntcOpfTolSpinBox.value()
+
+                perform_previous_checks = self.ui.ntcFeasibilityCheckCheckBox.isChecked()
+
+                dispatch_all_areas = self.ui.ntcDispatchAllAreasCheckBox.isChecked()
+
+                weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
+                weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
+
+                consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
+                consider_hvdc_contingencies = self.ui.considerContingenciesHvdcOpfCheckBox.isChecked()
+                consider_gen_contingencies = self.ui.considerContingenciesGeneratorOpfCheckBox.isChecked()
+                generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
+
+                options = sim.OptimalNetTransferCapacityOptions(
+                    area_from_bus_idx=idx_from,
+                    area_to_bus_idx=idx_to,
+                    mip_solver=mip_solver,
+                    generation_formulation=generation_formulation,
+                    monitor_only_sensitive_branches=monitor_only_sensitive_branches,
+                    branch_sensitivity_threshold=branch_sensitivity_threshold,
+                    skip_generation_limits=skip_generation_limits,
+                    dispatch_all_areas=dispatch_all_areas,
+                    tolerance=tolerance,
+                    sensitivity_dT=dT,
+                    sensitivity_mode=mode,
+                    perform_previous_checks=perform_previous_checks,
+                    weight_power_shift=weight_power_shift,
+                    weight_generation_cost=weight_generation_cost,
+                    consider_contingencies=consider_contingencies,
+                    consider_hvdc_contingencies=consider_hvdc_contingencies,
+                    consider_gen_contingencies=consider_gen_contingencies,
+                    generation_contingency_threshold=generation_contingency_threshold)
+
+                self.ui.progress_label.setText('Running optimal net transfer capacity time series...')
+                QtGui.QGuiApplication.processEvents()
+
+                start_ = self.ui.profile_start_slider.value()
+                end_ = self.ui.profile_end_slider.value()
+                cluster_number = self.ui.cluster_number_spinBox.value()
+
+                # set optimal net transfer capacity driver instance
+                drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(
+                    grid=self.circuit,
+                    options=options,
+                    start_=start_,
+                    end_=end_,
+                    use_clustering=with_clustering,
+                    cluster_number=cluster_number)
+
+                self.LOCK()
+                self.session.run(drv,
+                                 post_func=self.post_opf_ntc_ts,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
+
+            else:
+                warning_msg('Another Optimal NCT time series is being run...')
+        else:
+            pass
+
+    def post_opf_ntc_ts(self):
+        """
+        Actions to run after the optimal net transfer capacity time series simulation
+        """
+
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_NTC_TS_run)
+
+        if results is not None:
+
+            if len(drv.logger) > 0:
+                dlg = LogsDialogue('logger', drv.logger)
+                dlg.exec_()
+
+            # remove from the current simulations
+            self.remove_simulation(sim.SimulationTypes.OPF_NTC_TS_run)
+
+            if results is not None:
+                self.update_available_results()
+
+                msg = 'Optimal NTC time series elapsed ' + str(drv.elapsed) + ' s'
+                self.console_msg(msg)
+
+        else:
+            pass
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -6744,6 +6881,33 @@ class MainGUI(QMainWindow):
                 dlg = LogsDialogue("Delete inconsistencies", logger)
                 dlg.setModal(True)
                 dlg.exec_()
+
+    def re_index_time(self):
+        """
+        Re-index time
+        :return:
+        """
+
+        dlg = TimeReIndexDialogue()
+        dlg.setModal(True)
+        dlg.exec_()
+
+        if dlg.accepted:
+            self.circuit.re_index_time(year=dlg.year_spinner.value(),
+                                       hours_per_step=dlg.interval_hours.value())
+
+    def fix_generators_active_based_on_the_power(self):
+        """
+        set the generators active based on the active power values
+        :return:
+        """
+        ok = yes_no_question("This action sets the generation active profile based on the active power profile "
+                             "such that ig a generator active power is zero, the active value is false",
+                             "Set generation active profile")
+
+        if ok:
+            self.circuit.set_generators_active_profile_from_their_active_power()
+            self.circuit.set_batteries_active_profile_from_their_active_power()
 
 
 def run(use_native_dialogues=False):
