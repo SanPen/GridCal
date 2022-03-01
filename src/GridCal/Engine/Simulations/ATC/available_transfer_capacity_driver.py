@@ -41,7 +41,7 @@ class AvailableTransferMode(Enum):
     GenerationAndLoad = 3
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def compute_alpha(ptdf, P0, Pinstalled, idx1, idx2, bus_types, dT=1.0, mode=0):
     """
     Compute all lines' ATC
@@ -247,7 +247,7 @@ def compute_alpha(ptdf, P0, Pinstalled, idx1, idx2, bus_types, dT=1.0, mode=0):
 #     return beta_mat, beta_used, atc_n, atc_mc, atc_final, atc_limiting_contingency_branch, atc_limiting_contingency_flow
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def compute_atc_list(br_idx, contingency_br_idx, lodf, alpha, flows, rates, contingency_rates, base_exchange,
                      threshold, time_idx):
     """

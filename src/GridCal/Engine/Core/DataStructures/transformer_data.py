@@ -31,6 +31,7 @@ class TransformerData:
         self.ntime = ntime
 
         self.tr_names = np.zeros(ntr, dtype=object)
+        self.tr_active = np.zeros((ntr, ntime), dtype=int)
         self.tr_R = np.zeros(ntr, dtype=float)
         self.tr_X = np.zeros(ntr, dtype=float)
         self.tr_G = np.zeros(ntr, dtype=float)
@@ -60,7 +61,14 @@ class TransformerData:
         :param time_idx
         :return:
         """
+        if time_idx is None:
+            idx = tr_idx
+        else:
+            idx = np.ix_(tr_idx, time_idx)
+
         data = TransformerData(ntr=len(tr_idx), nbus=len(bus_idx))
+
+        data.tr_active = self.tr_active[idx]
 
         data.tr_names = self.tr_names[tr_idx]
         data.tr_R = self.tr_R[tr_idx]
@@ -84,13 +92,16 @@ class TransformerData:
 
         return data
 
-    def get_island(self, bus_idx):
+    def get_island(self, bus_idx, t_idx=0):
         """
         Get the elements of the island given the bus indices
         :param bus_idx: list of bus indices
         :return: list of line indices of the island
         """
-        return tp.get_elements_of_the_island(self.C_tr_bus, bus_idx)
+        if self.ntr:
+            return tp.get_elements_of_the_island(self.C_tr_bus, bus_idx, active=self.tr_active[:, t_idx])
+        else:
+            return np.zeros(0, dtype=int)
 
     def __len__(self):
         return self.ntr

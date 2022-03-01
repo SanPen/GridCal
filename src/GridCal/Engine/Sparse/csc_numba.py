@@ -24,13 +24,13 @@ import math
 
 
 # @nb.njit("i4[:](i8)")
-@nb.njit()
+@nb.njit(cache=True)
 def ialloc(n):
     return np.zeros(n, dtype=nb.int32)
 
 
 # @nb.njit("f8[:](i8)")
-@nb.njit()
+@nb.njit(cache=True)
 def xalloc(n):
     return np.zeros(n, dtype=nb.float64)
 

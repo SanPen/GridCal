@@ -21,20 +21,20 @@ import numba as nb
 from scipy.sparse import csc_matrix, diags
 
 
-def find_islands(adj: csc_matrix, active: np.ndarray):
+# @nb.jit(cache=True)
+def find_islands_numba(node_number, indptr, indices, active: np.ndarray):
     """
     Method to get the islands of a graph
     This is the non-recursive version
     :return: list of islands, where each element is a list of the node indices of the island
     """
 
-    node_number = adj.shape[0]
-
     # Mark all the vertices as not visited
-    visited = np.zeros(node_number, dtype=bool)
+    visited = np.zeros(node_number, dtype=int)
 
     # storage structure for the islands (list of lists)
     islands = list()  # type: List[List[int]]
+    # islands = nb.typeof([[0]])
 
     # set the island index
     island_idx = 0
@@ -65,16 +65,16 @@ def find_islands(adj: csc_matrix, active: np.ndarray):
                 if not visited[v]:
 
                     # mark as visited
-                    visited[v] = True
+                    visited[v] = 1
 
                     # add element to the island
                     islands[island_idx].append(v)
 
                     # Add the neighbours of v to the stack
-                    start = adj.indptr[v]
-                    end = adj.indptr[v + 1]
+                    start = indptr[v]
+                    end = indptr[v + 1]
                     for i in range(start, end):
-                        k = adj.indices[i]  # get the row index in the CSC scheme
+                        k = indices[i]  # get the row index in the CSC scheme
                         if not visited[k] and active[k]:
                             stack.append(k)
             # ------------------------------------------------------------------------------------------------------
@@ -89,7 +89,53 @@ def find_islands(adj: csc_matrix, active: np.ndarray):
     return islands
 
 
-def get_elements_of_the_island(C_element_bus, island):
+@nb.njit(cache=True)
+def get_elements_of_the_island_numba(n_rows, indptr, indices, island, active):
+    """
+    Get the element indices of the island
+    :param n_rows: Number of rows of the connectivity matrix
+    :param indptr: CSC index pointers of the element-node connectivity matrix
+    :param indices: CSC indices of the element-node connectivity matrix
+    :param island: island node indices
+    :return: array of indices of the elements that match that island
+    """
+
+    visited = np.zeros(n_rows, dtype=nb.int32)
+    elm_idx = np.zeros(n_rows, dtype=nb.int32)
+    n_visited = 0
+
+    for k in range(len(island)):
+
+        j = island[k]  # column index
+
+        for l in range(indptr[j], indptr[j + 1]):
+
+            i = indices[l]  # row index
+
+            if not visited[i] and active[i]:
+                visited[i] = 1
+                elm_idx[n_visited] = i
+                n_visited += 1
+
+    # resize vector
+    elm_idx = elm_idx[:n_visited]
+
+    return elm_idx
+
+
+def find_islands(adj: csc_matrix, active: np.ndarray):
+    """
+    Method to get the islands of a graph
+    This is the non-recursive version
+    :return: list of islands, where each element is a list of the node indices of the island
+    """
+    return find_islands_numba(node_number=adj.shape[0],
+                              indptr=adj.indptr,
+                              indices=adj.indices,
+                              active=active)
+
+
+def get_elements_of_the_island(C_element_bus, island, active):
     """
     Get the branch indices of the island
     :param C_element_bus: CSC elements-buses connectivity matrix with the dimensions: elements x buses
@@ -101,28 +147,11 @@ def get_elements_of_the_island(C_element_bus, island):
         C_element_bus = C_element_bus.tocsc()
 
     # faster method
-    n_rows = C_element_bus.shape[0]
-    visited = np.zeros(n_rows, dtype=bool)
-    elm_idx = np.zeros(n_rows, dtype=int)
-    n_visited = 0
-
-    for k in range(len(island)):
-
-        j = island[k]  # column index
-
-        for l in range(C_element_bus.indptr[j], C_element_bus.indptr[j + 1]):
-
-            i = C_element_bus.indices[l]  # row index
-
-            if not visited[i]:
-                visited[i] = True
-                elm_idx[n_visited] = i
-                n_visited += 1
-
-    # resize vector
-    elm_idx = elm_idx[:n_visited]
-
-    return elm_idx
+    return get_elements_of_the_island_numba(n_rows=C_element_bus.shape[0],
+                                            indptr=C_element_bus.indptr,
+                                            indices=C_element_bus.indices,
+                                            island=np.array(island, dtype=int),
+                                            active=active)
 
 
 def get_adjacency_matrix(C_branch_bus_f, C_branch_bus_t, branch_active, bus_active):
@@ -149,40 +178,3 @@ def get_adjacency_matrix(C_branch_bus_f, C_branch_bus_t, branch_active, bus_acti
 
 
 
-
-
-class Graph:
-
-    def __init__(self, C_bus_bus, C_branch_bus, bus_states):
-        """
-        Graph adapted to work with CSC sparse matrices
-        see: http://www.scipy-lectures.org/advanced/scipy_sparse/csc_matrix.html
-        :param C_bus_bus: Adjacency matrix in lil format
-        :param C_branch_bus: Connectivity of the branches and the buses
-        :param bus_states: states of the branches
-        """
-        self.node_number = C_bus_bus.shape[0]
-
-        self.adj = C_bus_bus
-
-        self.C_branch_bus = C_branch_bus
-
-        self.bus_states = bus_states
-
-    def find_islands(self):
-        """
-        Method to get the islands of a graph
-        This is the non-recursive version
-        :return: List of islands where each element is a list of the node indices of the island
-        """
-
-        return find_islands(self.adj)
-
-    def get_branches_of_the_island(self, island):
-        """
-        Get the branch indices of the island
-        :param island: array of bus indices of the island
-        :return: array of indices of the branches that belong to the island
-        """
-
-        return get_elements_of_the_island(self.C_branch_bus, island)

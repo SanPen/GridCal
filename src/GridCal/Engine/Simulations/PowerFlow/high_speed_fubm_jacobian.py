@@ -26,14 +26,14 @@ from scipy.sparse import lil_matrix, diags, csc_matrix
 import GridCal.Engine.Simulations.PowerFlow.derivatives as deriv
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def make_lookup(n, arr):
     lookup = np.zeros(n, dtype=np.int32)
     lookup[arr] = np.arange(len(arr), dtype=np.int32)
     return lookup
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                             dSbus_dVa_x, dSbus_dVm_x,
                             dSf_dVa_x, dSf_dVa_i, dSf_dVa_p,

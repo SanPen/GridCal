@@ -39,6 +39,7 @@ class VscData:
         self.theta = np.zeros(nvsc)
         self.Inom = np.zeros(nvsc)
 
+        self.active = np.zeros((nvsc, ntime), dtype=int)
         self.Pfset = np.zeros((nvsc, ntime))  # DC active power
         self.Qtset = np.zeros((nvsc, ntime))  # AC reactive power
         self.Vac_set = np.ones((nvsc, ntime))
@@ -57,9 +58,9 @@ class VscData:
         """
 
         if time_idx is None:
-            tidx = elm_idx
+            idx = elm_idx
         else:
-            tidx = np.ix_(elm_idx, time_idx)
+            idx = np.ix_(elm_idx, time_idx)
 
         nc = VscData(nvsc=len(elm_idx), nbus=len(bus_idx))
 
@@ -72,10 +73,11 @@ class VscData:
         nc.theta = self.theta[elm_idx]
         nc.Inom = self.Inom[elm_idx]
 
-        nc.Pfset = self.Pfset[tidx]
-        nc.Qtset = self.Qtset[tidx]
-        nc.Vac_set = self.Vac_set[tidx]
-        nc.Vdc_set = self.Vdc_set[tidx]
+        nc.active = self.active[idx]
+        nc.Pfset = self.Pfset[idx]
+        nc.Qtset = self.Qtset[idx]
+        nc.Vac_set = self.Vac_set[idx]
+        nc.Vdc_set = self.Vdc_set[idx]
 
         nc.control_mode = self.control_mode[elm_idx]
 
@@ -83,13 +85,16 @@ class VscData:
 
         return nc
 
-    def get_island(self, bus_idx):
+    def get_island(self, bus_idx, t_idx=0):
         """
         Get the elements of the island given the bus indices
         :param bus_idx: list of bus indices
         :return: list of line indices of the island
         """
-        return tp.get_elements_of_the_island(self.C_vsc_bus, bus_idx)
+        if self.nvsc:
+            return tp.get_elements_of_the_island(self.C_vsc_bus, bus_idx, active=self.active[:, t_idx])
+        else:
+            return np.zeros(0, dtype=int)
 
     def get_bus_indices_f(self):
         return self.C_vsc_bus.tocsc().indices
