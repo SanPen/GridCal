@@ -2389,3 +2389,22 @@ class MultiCircuit:
         for g in self.get_batteries():
             g.active_prof = g.P_prof.astype(bool)
 
+    def correct_inconsistencies(self, logger: Logger, maximum_difference=0.1, min_vset=0.98, max_vset=1.02):
+        """
+        Correct devices' inconsistencies
+        :param logger: logger to store the events
+        :param maximum_difference: proportion to be under or above (i.e.
+                                   Transformer HV=41.9, bus HV=45 41.9/45 = 0.93 ->
+                                   0.9 <= 0.93 <= 1.1, so its ok
+        :param min_vset: minimum voltage set point (p.u.)
+        :param max_vset: maximum voltage set point (p.u.)
+        :return:
+        """
+        for elm in self.transformers2w:
+            elm.fix_inconsistencies(logger,
+                                    maximum_difference=maximum_difference)
+
+        for elm in self.get_generators():
+            elm.fix_inconsistencies(logger,
+                                    min_vset=min_vset,
+                                    max_vset=max_vset)

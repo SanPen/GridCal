@@ -395,6 +395,76 @@ class TimeReIndexDialogue(QtWidgets.QDialog):
         self.accept()
 
 
+class CorrectInconsistenciesDialogue(QtWidgets.QDialog):
+    """
+    New profile dialogue window
+    """
+    def __init__(self):
+        super(CorrectInconsistenciesDialogue, self).__init__()
+        self.setObjectName("self")
+        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+
+        self.accepted = False
+
+        self.label1 = QtWidgets.QLabel()
+        self.label1.setText("Minimum generator set point")
+
+        # min voltage
+        self.min_voltage = QtWidgets.QDoubleSpinBox()
+        self.min_voltage.setMinimum(0)
+        self.min_voltage.setMaximum(2)
+        self.min_voltage.setSingleStep(0.01)
+        self.min_voltage.setValue(0.98)
+
+        self.label2 = QtWidgets.QLabel()
+        self.label2.setText("Maximum generator set point")
+
+        # min voltage
+        self.max_voltage = QtWidgets.QDoubleSpinBox()
+        self.max_voltage.setMinimum(0)
+        self.max_voltage.setMaximum(2)
+        self.max_voltage.setSingleStep(0.01)
+        self.max_voltage.setValue(1.02)
+
+        self.label3 = QtWidgets.QLabel()
+        self.label3.setText("Maximum virtual tap difference")
+
+        self.max_virtual_tap = QtWidgets.QDoubleSpinBox()
+        self.max_virtual_tap.setMinimum(0)
+        self.max_virtual_tap.setMaximum(1)
+        self.max_virtual_tap.setSingleStep(0.01)
+        self.max_virtual_tap.setValue(0.1)
+
+        # accept button
+        self.accept_btn = QtWidgets.QPushButton()
+        self.accept_btn.setText('Accept')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        # add all to the GUI
+        self.main_layout.addWidget(self.label1)
+        self.main_layout.addWidget(self.min_voltage)
+        self.main_layout.addWidget(self.label2)
+        self.main_layout.addWidget(self.max_voltage)
+        self.main_layout.addWidget(self.label3)
+        self.main_layout.addWidget(self.max_virtual_tap)
+        self.main_layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.main_layout)
+
+        self.setWindowTitle('Correct inconsistencies')
+
+        h = 120
+        self.resize(h, int(1.1 * h))
+
+    def accept_click(self):
+        """
+        Accept and close
+        """
+        self.accepted = True
+        self.accept()
+
+
 if __name__ == "__main__":
     import sys
     from PySide2.QtWidgets import QApplication

@@ -18,6 +18,7 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Devices.editable_device import EditableDevice, GCProp
 from GridCal.Engine.Devices.enumerations import DeviceType, GeneratorTechnologyType
 
@@ -448,6 +449,28 @@ class Generator(EditableDevice):
 
             if show_fig:
                 plt.show()
+
+    def fix_inconsistencies(self, logger: Logger, min_vset=0.98, max_vset=1.02):
+        """
+        Correct the voltage set points
+        :param logger: logger to store the events
+        :param min_vset: minimum voltage set point (p.u.)
+        :param max_vset: maximum voltage set point (p.u.)
+        :return: True if any correction happened
+        """
+        errors = False
+
+        if self.Vset > max_vset:
+            logger.add_warning("Corrected generator set point", self.name, self.Vset, max_vset)
+            self.Vset = max_vset
+            errors = True
+
+        elif self.Vset < min_vset:
+            logger.add_warning("Corrected generator set point", self.name, self.Vset, min_vset)
+            self.Vset = min_vset
+            errors = True
+
+        return errors
 
     @property
     def Qmax(self):

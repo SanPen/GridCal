@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+import numpy as np
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 from PySide2.QtGui import *
@@ -172,7 +172,10 @@ class BusGraphicItem(QGraphicsRectItem):
         :param x: x in pixels
         :param y: y in pixels
         """
-        # self.setPos(self.editor.diagramView.mapToScene(QPoint(x, y)))
+        if np.isnan(x):
+            x = 0
+        if np.isnan(y):
+            y = 0
         self.setPos(QPoint(int(x), int(y)))
 
     def set_tile_color(self, brush):

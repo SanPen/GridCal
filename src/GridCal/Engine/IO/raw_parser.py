@@ -1184,7 +1184,6 @@ class PSSeTransformer:
         else:
             logger.add_warning('Transformer not implemented for version', str(version))
 
-
     def get_object(self, psse_bus_dict, sbase, logger: Logger):
         """
         Return Newton branch object
@@ -1626,7 +1625,7 @@ def interpret_line(line, splitter=','):
 
 class PSSeParser:
 
-    def __init__(self, file_name):
+    def __init__(self, file_name, text_func=print,  progress_func=None):
         """
         Parse PSSe file
         Args:
@@ -1639,7 +1638,7 @@ class PSSeParser:
 
         self.file_name = file_name
 
-        self.pss_grid, logs = self.parse_psse()
+        self.pss_grid, logs = self.parse_psse(text_func=text_func,  progress_func=progress_func)
 
         self.logger += logs
 
@@ -1648,16 +1647,26 @@ class PSSeParser:
         self.circuit.comments = 'Converted from the PSS/e .raw file ' \
                                 + os.path.basename(file_name) + '\n\n' + str(self.logger)
 
-    def read_and_split(self) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
+    def read_and_split(self, text_func=None,  progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
         """
         Read the text file and split it into sections
         :return: list of sections, dictionary of sections by type
         """
 
+        if text_func is not None:
+            text_func("Detecting raw file encoding...")
+
+        if progress_func is not None:
+            progress_func(0)
+
         # make a guess of the file encoding
         detection = chardet.detect(open(self.file_name, "rb").read())
 
         # open the text file into a variable
+
+        if text_func is not None:
+            text_func("Reading raw file...")
+
         txt = ''
         with open(self.file_name, 'r', encoding=detection['encoding']) as my_file:
             for line in my_file:
@@ -1669,9 +1678,12 @@ class PSSeParser:
 
         sections_dict = dict()
 
+        if text_func is not None:
+            text_func("Parsing the raw file information...")
+
         str_a = 'End of'.lower()
         str_b = 'data'.lower()
-
+        n_sec = len(sections)
         for i, sec in enumerate(sections):
             data = sec.split('\n')
             first = data.pop(0).lower()
@@ -1689,9 +1701,12 @@ class PSSeParser:
 
                 sections_dict[name] = data2
 
+            if progress_func is not None:
+                progress_func((i / n_sec) * 100)
+
         return sections, sections_dict
 
-    def parse_psse(self) -> (MultiCircuit, List[AnyStr]):
+    def parse_psse(self, text_func=None,  progress_func=None) -> (MultiCircuit, List[AnyStr]):
         """
         Parser implemented according to:
             - POM section 4.1.1 Power Flow Raw Data File Contents (v.29)
@@ -1703,7 +1718,10 @@ class PSSeParser:
 
         logger = Logger()
 
-        sections, sections_dict = self.read_and_split()
+        if text_func is not None:
+            text_func("Reading file...")
+
+        sections, sections_dict = self.read_and_split(text_func=text_func,  progress_func=progress_func)
 
         # header -> new grid
         grid = PSSeGrid(interpret_line(sections[0]))
@@ -1767,6 +1785,9 @@ class PSSeParser:
             # get the parsers for the declared object type
             objects_list, ObjectT, lines_per_object = values
 
+            if text_func is not None:
+                text_func("Converting {0}...".format(key))
+
             if key in sections_dict.keys():
                 lines = sections_dict[key]
 
@@ -1811,6 +1832,9 @@ class PSSeParser:
 
                     # add lines
                     l += lines_per_object2
+
+                    if progress_func is not None:
+                        progress_func((l / len(lines)) * 100)
 
             else:
                 pass

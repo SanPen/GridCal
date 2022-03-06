@@ -6164,48 +6164,7 @@ class MainGUI(QMainWindow):
 
         return logger
 
-    def correct_shit(self, min_vset=0.98, max_vset=1.02):
-        """
-        Correct common flaws such as the transformer virtual taps too high
-        :param min_vset: minimum set point for the generators
-        :param max_vset: maximum set point for the generators
-        """
-        logger = Logger()
 
-        for elm in self.circuit.transformers2w:
-            HV = max(elm.bus_from.Vnom, elm.bus_to.Vnom)
-            LV = min(elm.bus_from.Vnom, elm.bus_to.Vnom)
-
-            if elm.HV != HV:
-                self.console_msg('Corrected transformer HV for {0} from [{1},{2}] to [{3},{4}]'.format(elm.name,
-                                                                                                       elm.LV, elm.HV,
-                                                                                                       LV, HV))
-
-                logger.add_info("Corrected transformer HV", elm.name, elm.HV, HV)
-
-                elm.HV = HV
-
-            if elm.LV != LV:
-                self.console_msg('Corrected transformer HV for {0} from [{1},{2}] to [{3},{4}]'.format(elm.name,
-                                                                                                       elm.LV, elm.HV,
-                                                                                                       LV, HV))
-
-                logger.add_info("Corrected transformer LV", elm.name, elm.LV, LV)
-
-                elm.LV = LV
-
-        for elm in self.circuit.get_generators():
-            if elm.Vset > max_vset:
-                # self.console_msg('Corrected generator set point for {0} from {1} to {2}'.format(elm.name,elm.Vset, max_vset))
-                logger.add_info("Corrected generator set point", elm.name, elm.Vset, max_vset)
-                elm.Vset = max_vset
-
-            elif elm.Vset < min_vset:
-                # self.console_msg('Corrected generator set point for {0} from {1} to {2}'.format(elm.name, elm.Vset, min_vset))
-                logger.add_info("Corrected generator set point", elm.name, elm.Vset, min_vset)
-                elm.Vset = min_vset
-
-        return logger
 
     def correct_branch_monitoring(self, max_loading=1.0):
         """
@@ -6871,14 +6830,20 @@ class MainGUI(QMainWindow):
 
     def correct_inconsistencies(self):
         """
-        Call correct shit
+        Call correct inconsistencies
         :return:
         """
-        ok = yes_no_question("This action applies a number of expert rules to correct set points, "
-                             "transformer voltages and other inconsistencies", "Correct inconsistencies")
+        dlg = CorrectInconsistenciesDialogue()
+        dlg.setModal(True)
+        dlg.exec_()
 
-        if ok:
-            logger = self.correct_shit()
+        if dlg.accepted:
+            logger = Logger()
+
+            self.circuit.correct_inconsistencies(logger=logger,
+                                                 maximum_difference=dlg.max_virtual_tap.value(),
+                                                 min_vset=dlg.min_voltage.value(),
+                                                 max_vset=dlg.max_voltage.value())
 
             if len(logger) > 0:
                 dlg = LogsDialogue("correct inconsistencies", logger)

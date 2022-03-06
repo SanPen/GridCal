@@ -172,7 +172,7 @@ class FileOpen:
                         self.logger.add_error('Unknown json format')
 
                 elif file_extension.lower() == '.raw':
-                    parser = PSSeParser(self.file_name)
+                    parser = PSSeParser(self.file_name, text_func=text_func,  progress_func=progress_func)
                     self.circuit = parser.circuit
                     self.logger += parser.logger
 
