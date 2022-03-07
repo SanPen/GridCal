@@ -35,7 +35,7 @@ from GridCal.Engine.Devices.enumerations import TransformerControlType, Converte
 sparse_type = get_sparse_type()
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def compose_generator_voltage_profile(nbus, ntime,
                                       gen_bus_indices, gen_vset, gen_status, gen_is_controlled,
                                       bat_bus_indices, bat_vset, bat_status, bat_is_controlled,
@@ -1020,8 +1020,8 @@ class SnapshotData:
                                                                                   Ct=self.Ct,
                                                                                   ac=self.ac_indices,
                                                                                   dc=self.dc_indices)
-            self.Bpqpv_ = self.Bbus_[np.ix_(self.pqpv, self.pqpv)]
-            self.Bref_ = self.Bbus_[np.ix_(self.pqpv, self.vd)]
+            self.Bpqpv_ = self.Bbus_[np.ix_(self.pqpv, self.pqpv)].tocsc()
+            self.Bref_ = self.Bbus_[np.ix_(self.pqpv, self.vd)].tocsc()
 
         return self.Bbus_
 

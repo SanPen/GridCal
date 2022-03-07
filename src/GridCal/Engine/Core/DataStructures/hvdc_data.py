@@ -105,13 +105,17 @@ class HvdcData:
     def get_bus_indices_t(self):
         return self.C_hvdc_bus_t * np.arange(self.C_hvdc_bus_t.shape[1])
 
-    def get_island(self, bus_idx):
+    def get_island(self, bus_idx, t_idx=0):
         """
         Get HVDC indices of the island given by the bus indices
         :param bus_idx: list of bus indices
         :return: list of HVDC lines indices
         """
-        return tp.get_elements_of_the_island(self.C_hvdc_bus_f + self.C_hvdc_bus_t, bus_idx)
+        if self.nhvdc:
+            return tp.get_elements_of_the_island(self.C_hvdc_bus_f + self.C_hvdc_bus_t, bus_idx,
+                                                 active=self.active[:, t_idx])
+        else:
+            return np.zeros(0, dtype=int)
 
     def get_qmax_from_per_bus(self):
         """

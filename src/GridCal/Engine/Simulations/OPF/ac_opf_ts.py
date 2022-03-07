@@ -261,18 +261,18 @@ def add_battery_discharge_restriction(problem: LpProblem, SoC0, Capacity, Effici
 
 class OpfAcTimeSeries(OpfTimeSeries):
 
-    def __init__(self, numerical_circuit: OpfTimeCircuit, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC):
+    def __init__(self, numerical_circuit: OpfTimeCircuit, start_idx, end_idx, solver_type: MIPSolvers = MIPSolvers.CBC):
         """
         AC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
         :param start_idx: start index of the time series
         :param end_idx: end index of the time series
-        :param solver: MIP solver_type to use
+        :param solver_type: MIP solver_type to use
         :param batteries_energy_0: initial state of the batteries, if None the default values are taken
         """
 
         OpfTimeSeries.__init__(self, numerical_circuit=numerical_circuit, start_idx=start_idx, end_idx=end_idx,
-                               solver=solver, skip_formulation=True)
+                               solver_type=solver_type, skip_formulation=True)
 
         self.v0 = None
         self.dva = None

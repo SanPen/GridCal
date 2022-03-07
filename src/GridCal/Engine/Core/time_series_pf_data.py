@@ -122,7 +122,8 @@ class TimeCircuit(SnapshotData):
         self.pqpv_prof_ = list()
 
         for t in range(self.ntime):
-            vd, pq, pv, pqpv = compile_types(Sbus=self.Sbus[:, t], types=self.bus_data.bus_types_prof[:, t])
+            vd, pq, pv, pqpv = compile_types(Sbus=self.Sbus[:, t],
+                                             types=self.bus_data.bus_types_prof[:, t])
             self.vd_prof_.append(vd)
             self.pq_prof_.append(pq)
             self.pv_prof_.append(pv)
@@ -454,4 +455,6 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
     nc.consolidate_information()
 
     return nc
+
+
 

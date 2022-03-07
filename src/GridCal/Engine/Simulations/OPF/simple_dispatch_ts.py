@@ -27,18 +27,18 @@ from GridCal.Engine.Simulations.OPF.opf_templates import OpfTimeSeries
 
 class OpfSimpleTimeSeries(OpfTimeSeries):
 
-    def __init__(self, numerical_circuit: OpfTimeCircuit, start_idx, end_idx, solver: MIPSolvers = MIPSolvers.CBC,
+    def __init__(self, numerical_circuit: OpfTimeCircuit, start_idx, end_idx, solver_type: MIPSolvers = MIPSolvers.CBC,
                  text_prog=None, prog_func=None):
         """
         DC time series linear optimal power flow
         :param numerical_circuit: NumericalCircuit instance
         :param start_idx: start index of the time series
         :param end_idx: end index of the time series
-        :param solver: MIP solver_type to use
+        :param solver_type: MIP solver_type to use
         :param batteries_energy_0: initial state of the batteries, if None the default values are taken
         """
         OpfTimeSeries.__init__(self, numerical_circuit=numerical_circuit, start_idx=start_idx, end_idx=end_idx,
-                               solver=solver)
+                               solver_type=solver_type)
 
         self.text_prog = text_prog
 

@@ -329,7 +329,9 @@ def get_line_data(circuit: MultiCircuit, bus_dict,
     :return:
     """
 
-    nc = LinesData(nline=len(circuit.lines), nbus=len(circuit.buses))
+    data = LinesData(nline=len(circuit.lines),
+                     nbus=len(circuit.buses),
+                     ntime=ntime)
 
     # Compile the lines
     for i, elm in enumerate(circuit.lines):
@@ -337,24 +339,29 @@ def get_line_data(circuit: MultiCircuit, bus_dict,
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
 
-        nc.line_names[i] = elm.name
+        data.line_names[i] = elm.name
+
+        if time_series:
+            data.line_active[i, :] = elm.active_prof
+        else:
+            data.line_active[i] = elm.active
 
         if apply_temperature:
-            nc.line_R[i] = elm.R_corrected
+            data.line_R[i] = elm.R_corrected
         else:
-            nc.line_R[i] = elm.R
+            data.line_R[i] = elm.R
 
         if branch_tolerance_mode == BranchImpedanceMode.Lower:
-            nc.line_R[i] *= (1 - elm.tolerance / 100.0)
+            data.line_R[i] *= (1 - elm.tolerance / 100.0)
         elif branch_tolerance_mode == BranchImpedanceMode.Upper:
-            nc.line_R[i] *= (1 + elm.tolerance / 100.0)
+            data.line_R[i] *= (1 + elm.tolerance / 100.0)
 
-        nc.line_X[i] = elm.X
-        nc.line_B[i] = elm.B
-        nc.C_line_bus[i, f] = 1
-        nc.C_line_bus[i, t] = 1
+        data.line_X[i] = elm.X
+        data.line_B[i] = elm.B
+        data.C_line_bus[i, f] = 1
+        data.C_line_bus[i, t] = 1
 
-    return nc
+    return data
 
 
 def get_transformer_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
@@ -364,7 +371,9 @@ def get_transformer_data(circuit: MultiCircuit, bus_dict, time_series=False, nti
     :param bus_dict:
     :return:
     """
-    data = TransformerData(ntr=len(circuit.transformers2w), nbus=len(circuit.buses))
+    data = TransformerData(ntr=len(circuit.transformers2w),
+                           nbus=len(circuit.buses),
+                           ntime=ntime)
 
     # 2-winding transformers
     for i, elm in enumerate(circuit.transformers2w):
@@ -373,15 +382,21 @@ def get_transformer_data(circuit: MultiCircuit, bus_dict, time_series=False, nti
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
 
+        if time_series:
+            data.tr_active[i, :] = elm.active_prof
+        else:
+            data.tr_active[i] = elm.active
+
         # impedance
         data.tr_names[i] = elm.name
+
         data.tr_R[i] = elm.R
         data.tr_X[i] = elm.X
         data.tr_G[i] = elm.G
         data.tr_B[i] = elm.B
 
         data.C_tr_bus[i, f] = 1
-        data.C_tr_bus[i, t] = 1
+        data.C_tr_bus[i, t] = -1
 
         # tap changer
         data.tr_tap_mod[i] = elm.tap_module
@@ -410,7 +425,7 @@ def get_vsc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
     :param bus_dict:
     :return:
     """
-    nc = VscData(nvsc=len(circuit.vsc_devices), nbus=len(circuit.buses), ntime=ntime)
+    data = VscData(nvsc=len(circuit.vsc_devices), nbus=len(circuit.buses), ntime=ntime)
 
     # VSC
     for i, elm in enumerate(circuit.vsc_devices):
@@ -419,25 +434,30 @@ def get_vsc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
 
+        if time_series:
+            data.active[i, :] = elm.active_prof
+        else:
+            data.active[i] = elm.active
+
         # vsc values
-        nc.names[i] = elm.name
-        nc.R1[i] = elm.R1
-        nc.X1[i] = elm.X1
-        nc.G0[i] = elm.G0
-        nc.Beq[i] = elm.Beq
-        nc.m[i] = elm.m
-        nc.theta[i] = elm.theta
+        data.names[i] = elm.name
+        data.R1[i] = elm.R1
+        data.X1[i] = elm.X1
+        data.G0[i] = elm.G0
+        data.Beq[i] = elm.Beq
+        data.m[i] = elm.m
+        data.theta[i] = elm.theta
         # nc.Inom[i] = (elm.rate / nc.Sbase) / np.abs(nc.Vbus[f])
-        nc.Pfset[i] = elm.Pdc_set
-        nc.Qtset[i] = elm.Qac_set
-        nc.Vac_set[i] = elm.Vac_set
-        nc.Vdc_set[i] = elm.Vdc_set
-        nc.control_mode[i] = elm.control_mode
+        data.Pfset[i] = elm.Pdc_set
+        data.Qtset[i] = elm.Qac_set
+        data.Vac_set[i] = elm.Vac_set
+        data.Vdc_set[i] = elm.Vdc_set
+        data.control_mode[i] = elm.control_mode
 
-        nc.C_vsc_bus[i, f] = 1
-        nc.C_vsc_bus[i, t] = 1
+        data.C_vsc_bus[i, f] = 1
+        data.C_vsc_bus[i, t] = 1
 
-    return nc
+    return data
 
 
 def get_upfc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
@@ -455,6 +475,11 @@ def get_upfc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
         # generic stuff
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
+
+        if time_series:
+            data.active[i, :] = elm.active_prof
+        else:
+            data.active[i] = elm.active
 
         # vsc values
         data.names[i] = elm.name
@@ -496,6 +521,11 @@ def get_dc_line_data(circuit: MultiCircuit, bus_dict,
         # generic stuff
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
+
+        if time_series:
+            data.dc_line_active[i, :] = elm.active_prof
+        else:
+            data.dc_line_active[i] = elm.active
 
         # dc line values
         data.dc_line_names[i] = elm.name

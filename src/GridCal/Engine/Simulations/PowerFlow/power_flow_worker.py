@@ -586,40 +586,62 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     :return: PowerFlowResults instance
     """
 
-    nc = compile_snapshot_circuit(circuit=multi_circuit,
-                                  apply_temperature=options.apply_temperature_correction,
-                                  branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-                                  opf_results=opf_results)
+    nc = compile_snapshot_circuit(
+        circuit=multi_circuit,
+        apply_temperature=options.apply_temperature_correction,
+        branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+        opf_results=opf_results
+    )
+
+    PowerFlowResults(
+        n=nc.nbus,
+        m=nc.nbr,
+        n_tr=nc.ntr,
+        n_hvdc=nc.nhvdc,
+        bus_names=nc.bus_data.bus_names,
+        branch_names=nc.branch_data.branch_names,
+        transformer_names=nc.transformer_data.tr_names,
+        hvdc_names=nc.hvdc_data.names,
+        bus_types=nc.bus_data.bus_types
+    )
 
     # compose the HVDC power injections
     bus_dict = multi_circuit.get_bus_index_dict()
-    Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(multi_circuit,
-                                                                                bus_dict,
-                                                                                theta=np.zeros(nc.nbus))
+    Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(
+        multi_circuit,
+        bus_dict,
+        theta=np.zeros(nc.nbus)
+    )
+
     # remember the initial hvdc control values
     Losses_hvdc_prev = Losses_hvdc.copy()
     Pf_hvdc_prev = Pf_hvdc.copy()
     Pt_hvdc_prev = Pt_hvdc.copy()
     loading_hvdc_prev = loading_hvdc.copy()
+    Shvdc_prev = Shvdc.copy()
 
     calculation_inputs = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
 
-    results = PowerFlowResults(n=nc.nbus,
-                               m=nc.nbr,
-                               n_tr=nc.ntr,
-                               n_hvdc=nc.nhvdc,
-                               bus_names=nc.bus_data.bus_names,
-                               branch_names=nc.branch_data.branch_names,
-                               transformer_names=nc.transformer_data.tr_names,
-                               hvdc_names=nc.hvdc_data.names,
-                               bus_types=nc.bus_data.bus_types)
+    results = PowerFlowResults(
+        n=nc.nbus,
+        m=nc.nbr,
+        n_tr=nc.ntr,
+        n_hvdc=nc.nhvdc,
+        bus_names=nc.bus_data.bus_names,
+        branch_names=nc.branch_data.branch_names,
+        transformer_names=nc.transformer_data.tr_names,
+        hvdc_names=nc.hvdc_data.names,
+        bus_types=nc.bus_data.bus_types
+    )
 
     # initialize the all controls var
     all_controls_ok = False  # to run the first time
     control_iter = 0
     max_control_iter = 10
     oscillations_number = 0
+    hvdc_error_threshold = 0.01
     lpf_alpha = 0.2
+
     while not all_controls_ok:
 
         # simulate each island and merge the results (doesn't matter if there is only a single island) -----------------
@@ -628,67 +650,83 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
             if len(calculation_input.vd) > 0:
 
                 # run circuit power flow
-                res = single_island_pf(circuit=calculation_input,
-                                       Vbus=calculation_input.Vbus,
-                                       Sbus=calculation_input.Sbus + Shvdc[calculation_input.original_bus_idx],
-                                       Ibus=calculation_input.Ibus,
-                                       ma=calculation_input.branch_data.m[:, 0],
-                                       theta=calculation_input.branch_data.theta[:, 0],
-                                       Beq=calculation_input.branch_data.Beq[:, 0],
-                                       branch_rates=calculation_input.Rates,
-                                       pq=calculation_input.pq,
-                                       pv=calculation_input.pv,
-                                       vd=calculation_input.vd,
-                                       pqpv=calculation_input.pqpv,
-                                       options=options,
-                                       logger=logger)
+                res = single_island_pf(
+                    circuit=calculation_input,
+                    Vbus=calculation_input.Vbus,
+                    Sbus=calculation_input.Sbus + Shvdc[calculation_input.original_bus_idx],
+                    Ibus=calculation_input.Ibus,
+                    ma=calculation_input.branch_data.m[:, 0],
+                    theta=calculation_input.branch_data.theta[:, 0],
+                    Beq=calculation_input.branch_data.Beq[:, 0],
+                    branch_rates=calculation_input.Rates,
+                    pq=calculation_input.pq,
+                    pv=calculation_input.pv,
+                    vd=calculation_input.vd,
+                    pqpv=calculation_input.pqpv,
+                    options=options,
+                    logger=logger
+                )
 
                 # merge the results from this island
-                results.apply_from_island(res,
-                                          calculation_input.original_bus_idx,
-                                          calculation_input.original_branch_idx,
-                                          calculation_input.original_tr_idx)
+                results.apply_from_island(
+                    res,
+                    calculation_input.original_bus_idx,
+                    calculation_input.original_branch_idx,
+                    calculation_input.original_tr_idx
+                )
 
             else:
                 logger.add_info('No slack nodes in the island', str(i))
         # --------------------------------------------------------------------------------------------------------------
 
         if n_free and control_iter < max_control_iter:
-            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(multi_circuit,
-                                                                                        bus_dict,
-                                                                                        theta=np.angle(results.voltage))
-            hvdc_control_err = np.max(np.abs(Pf_hvdc_prev - Pf_hvdc))
+            Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = get_hvdc_power(
+                multi_circuit,
+                bus_dict,
+                theta=np.angle(results.voltage)
+            )
+
+            # hvdc_control_err = np.max(np.abs(Pf_hvdc_prev - Pf_hvdc))
+            hvdc_control_err = np.max(np.abs(Shvdc- Shvdc_prev))
+
+            Shvdc = Shvdc_prev + (Shvdc - Shvdc_prev)
 
             # check for oscillations
             oscillating = False
-            for i, (Pfi, Pfi_prev) in enumerate(zip(Pf_hvdc, Pf_hvdc_prev)):
-                if (Pfi > 0 and Pfi_prev < 0) or (Pfi < 0 and Pfi_prev > 0):
-                    logger.add_error("HVDC free control oscillations detected",
-                                     multi_circuit.hvdc_lines[i].name, Pfi, Pfi_prev)
-                    oscillating = True
+            # for i, (Pfi, Pfi_prev) in enumerate(zip(Pf_hvdc, Pf_hvdc_prev)):
+            #     if (Pfi > 0 and Pfi_prev < 0) or (Pfi < 0 and Pfi_prev > 0):
+            #         logger.add_error("HVDC free control oscillations detected",
+            #                          multi_circuit.hvdc_lines[i].name, Pfi, Pfi_prev)
+            #         oscillating = True
 
             # check oscillations: if Pf changes sign from prev to current, the previous prevails and we end the control
             print('control err:', hvdc_control_err, '', Pf_hvdc)
             if oscillating:
                 oscillations_number += 1
 
-                # if oscillations_number > 1:
-                #     all_controls_ok = True
-                #     # revert the data
+                if oscillations_number > 1:
+                    all_controls_ok = True
+                    # revert the data
+                    Losses_hvdc = Losses_hvdc_prev
+                    Pf_hvdc = Pf_hvdc_prev
+                    Pt_hvdc = Pt_hvdc_prev
+                    loading_hvdc = loading_hvdc_prev
 
-                Losses_hvdc = Losses_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Losses_hvdc
-                Pf_hvdc = Pf_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Pf_hvdc
-                Pt_hvdc = Pt_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Pt_hvdc
-                loading_hvdc = loading_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * loading_hvdc
+                # Losses_hvdc = Losses_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Losses_hvdc
+                # Pf_hvdc = Pf_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Pf_hvdc
+                # Pt_hvdc = Pt_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * Pt_hvdc
+                # loading_hvdc = loading_hvdc_prev * (1 - lpf_alpha) + lpf_alpha * loading_hvdc
+                # Shvdc = Shvdc_prev * (1 - lpf_alpha) + lpf_alpha * Shvdc
 
                 # update
                 Losses_hvdc_prev = Losses_hvdc.copy()
                 Pf_hvdc_prev = Pf_hvdc.copy()
                 Pt_hvdc_prev = Pt_hvdc.copy()
                 loading_hvdc_prev = loading_hvdc.copy()
+                Shvdc_prev = Shvdc.copy()
 
             else:
-                if hvdc_control_err < 0.1:
+                if hvdc_control_err < hvdc_error_threshold:
                     # finalize
                     all_controls_ok = True
                 else:
@@ -697,6 +735,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                     Pf_hvdc_prev = Pf_hvdc.copy()
                     Pt_hvdc_prev = Pt_hvdc.copy()
                     loading_hvdc_prev = loading_hvdc.copy()
+                    Shvdc_prev = Shvdc.copy()
         else:
             all_controls_ok = True
 

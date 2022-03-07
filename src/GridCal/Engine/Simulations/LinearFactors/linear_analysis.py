@@ -116,7 +116,7 @@ def make_lodf(Cf, Ct, PTDF, correct_values=True):
     return LODF
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def make_otdf(ptdf, lodf, j):
     """
     Outage sensitivity of the branches when transferring power from the bus j to the slack
@@ -168,7 +168,7 @@ def make_otdf_max(ptdf, lodf):
     return otdf
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def make_contingency_flows(lodf, flows):
     """
     Make contingency Sf matrix
@@ -187,7 +187,7 @@ def make_contingency_flows(lodf, flows):
     return omw
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def make_transfer_limits(ptdf, flows, rates):
     """
     Compute the maximum transfer limits of each branch in normal operation

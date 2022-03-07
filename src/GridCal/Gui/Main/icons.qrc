@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/ntc_opf_ts_clustering.svg</file>
     <file>icons/stats.svg</file>
     <file>icons/inputs_analysis 2.svg</file>
     <file>icons/fusion.svg</file>
@@ -8,8 +9,8 @@
     <file>icons/atc_ts_clustering.svg</file>
     <file>icons/bus_icon.svg</file>
     <file>icons/inputs_analysis.svg</file>
-    <file>icons/ntc_opf_ts.svg</file>
     <file>icons/ntc_opf.svg</file>
+    <file>icons/ntc_opf_ts.svg</file>
     <file>icons/atc_ts.svg</file>
     <file>icons/atc.svg</file>
     <file>icons/pf_ts_cluster.svg</file>
