@@ -1252,13 +1252,20 @@ class PSSeTransformer:
                                                                              self.ANG1, self.NOMV1, self.NOMV2,
                                                                              self.R1_2, self.X1_2, self.SBASE1_2)
 
+            if V1 >= V2:
+                HV = V1
+                LV = V2
+            else:
+                HV = V2
+                LV = V1
+
             elm = Transformer2W(bus_from=bus_from,
                                 bus_to=bus_to,
                                 idtag=None,
                                 code=code,
                                 name=name,
-                                HV=V1,
-                                LV=V2,
+                                HV=HV,
+                                LV=LV,
                                 r=r,
                                 x=x,
                                 g=g,
