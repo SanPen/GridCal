@@ -23,8 +23,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed LODF error, now using the LU factorization">
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed LODF bug when dividing by very small numbers">
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/IO/raw_parser.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -258,10 +258,10 @@
     </configuration>
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python.branch_power" />
       <item itemvalue="Python.pulp" />
-      <item itemvalue="Python.se_editor" />
       <item itemvalue="Python.update_gui_file" />
+      <item itemvalue="Python.branch_power" />
+      <item itemvalue="Python.se_editor" />
     </list>
     <recent_temporary>
       <list>
@@ -724,13 +724,6 @@
       <workItem from="1646596754247" duration="5002000" />
       <workItem from="1646637733706" duration="432000" />
     </task>
-    <task id="LOCAL-00229" summary="Moved NTC-OPF formulation out of the class">
-      <created>1636030544680</created>
-      <option name="number" value="00229" />
-      <option name="presentableId" value="LOCAL-00229" />
-      <option name="project" value="LOCAL" />
-      <updated>1636030544681</updated>
-    </task>
     <task id="LOCAL-00230" summary="Added node balance check in the NTC opf">
       <created>1636104721959</created>
       <option name="number" value="00230" />
@@ -1067,7 +1060,14 @@
       <option name="project" value="LOCAL" />
       <updated>1646601520988</updated>
     </task>
-    <option name="localTasksCounter" value="278" />
+    <task id="LOCAL-00278" summary="Fixed LODF bug when dividing by very small numbers">
+      <created>1646940921578</created>
+      <option name="number" value="00278" />
+      <option name="presentableId" value="LOCAL-00278" />
+      <option name="project" value="LOCAL" />
+      <updated>1646940921578</updated>
+    </task>
+    <option name="localTasksCounter" value="279" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1100,7 +1100,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved the oscillation detection" />
     <MESSAGE value="fixed the FUBM indices calculation when islands are present" />
     <MESSAGE value="Merged some changes" />
     <MESSAGE value="Added &quot;maximize exchange&quot; option to the normal OPF" />
@@ -1125,7 +1124,8 @@
     <MESSAGE value="Added typeError to some smart serach exceptions" />
     <MESSAGE value="Improved html visualization&#10;Improved &quot;new&quot; function on the GUI" />
     <MESSAGE value="Improved raw file reading integration with the GUI&#10;Added dialogue to the correct inconsistencies function" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved raw file reading integration with the GUI&#10;Added dialogue to the correct inconsistencies function" />
+    <MESSAGE value="Fixed LODF bug when dividing by very small numbers" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed LODF bug when dividing by very small numbers" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

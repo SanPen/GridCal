@@ -840,8 +840,8 @@ class PSSeVscDCLine:
         # P = dV^2 / R
         V1 = bus1.Vnom * Vset_f
         V2 = bus2.Vnom * Vset_t
-        dV = (V1-V2) * 1000.0  # in V
-        P = dV * dV / self.RDC  # power in W
+        dV = (V1 - V2) * 1000.0  # in V
+        P = dV * dV / self.RDC if self.RDC != 0 else 0  # power in W
         specified_power = P * 1e-6  # power in MW
 
         obj = HvdcLine(bus_from=bus1,
