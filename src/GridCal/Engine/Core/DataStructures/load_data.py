@@ -35,6 +35,8 @@ class LoadData:
 
         self.load_active = np.zeros((nload, ntime), dtype=bool)
         self.load_s = np.zeros((nload, ntime), dtype=complex)
+        self.load_i = np.zeros((nload, ntime), dtype=complex)
+        self.load_y = np.zeros((nload, ntime), dtype=complex)
 
         self.C_bus_load = sp.lil_matrix((nbus, nload), dtype=int)
 
@@ -58,6 +60,8 @@ class LoadData:
 
         data.load_active = self.load_active[tidx]
         data.load_s = self.load_s[tidx]
+        data.load_i = self.load_i[tidx]
+        data.load_y = self.load_y[tidx]
 
         data.C_bus_load = self.C_bus_load[np.ix_(bus_idx, elm_idx)]
 
@@ -75,6 +79,12 @@ class LoadData:
 
     def get_injections_per_bus(self):
         return - self.C_bus_load * self.get_effective_load()
+
+    def get_current_injections_per_bus(self):
+        return - self.C_bus_load * (self.load_i * self.load_active)
+
+    def get_admittance_injections_per_bus(self):
+        return - self.C_bus_load * (self.load_y * self.load_active)
 
     def __len__(self):
         return self.nload

@@ -35,7 +35,7 @@ from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 from GridCal.Engine.Devices.enumerations import HvdcControlType
 
 
-def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.ConvergenceReport, V0, Sbus, Ibus,
+def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.ConvergenceReport, V0, Sbus, Ibus, Yloadbus,
           ma, theta, Beq,
           pq, pv, ref, pqpv, logger=bs.Logger()) -> NumericPowerFlowResults:
     """
@@ -154,14 +154,17 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
             if circuit.any_control:
                 solution = acdcjb.LM_ACDC(nc=circuit,
                                           Vbus=V0,
-                                          Sbus=Sbus,
+                                          S0=Sbus,
+                                          I0=Ibus,
+                                          Y0=Yloadbus,
                                           tolerance=options.tolerance,
                                           max_iter=options.max_iter)
             else:
                 solution = acjb.levenberg_marquardt_pf(Ybus=circuit.Ybus,
-                                                       Sbus_=Sbus,
+                                                       S0=Sbus,
                                                        V0=final_solution.V,
-                                                       Ibus=Ibus,
+                                                       I0=Ibus,
+                                                       Y0=Yloadbus,
                                                        pv_=pv,
                                                        pq_=pq,
                                                        Qmin=circuit.Qmin_bus[0, :],
@@ -173,8 +176,9 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
         # Fast decoupled
         elif solver_type == bs.SolverType.FASTDECOUPLED:
             solution = acfd.FDPF(Vbus=V0,
-                                 Sbus=Sbus,
-                                 Ibus=Ibus,
+                                 S0=Sbus,
+                                 I0=Ibus,
+                                 Y0=Yloadbus,
                                  Ybus=circuit.Ybus,
                                  B1=circuit.B1,
                                  B2=circuit.B2,
@@ -191,7 +195,9 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
                 # Solve NR with the AC/DC algorithm
                 solution = acdcjb.NR_LS_ACDC(nc=circuit,
                                              Vbus=V0,
-                                             Sbus=Sbus,
+                                             S0=Sbus,
+                                             I0=Ibus,
+                                             Y0=Yloadbus,
                                              tolerance=options.tolerance,
                                              max_iter=options.max_iter,
                                              acceleration_parameter=options.backtracking_parameter,
@@ -200,9 +206,10 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
             else:
                 # Solve NR with the AC algorithm
                 solution = acjb.NR_LS(Ybus=circuit.Ybus,
-                                      Sbus_=Sbus,
+                                      S0=Sbus,
                                       V0=final_solution.V,
-                                      Ibus=Ibus,
+                                      I0=Ibus,
+                                      Y0=Yloadbus,
                                       pv_=pv,
                                       pq_=pq,
                                       Qmin=circuit.Qmin_bus[0, :],
@@ -217,9 +224,10 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
         elif solver_type == bs.SolverType.NRD:
             # Solve NR with the linear AC solution
             solution = acjb.NRD_LS(Ybus=circuit.Ybus,
-                                   Sbus=Sbus,
+                                   S0=Sbus,
                                    V0=final_solution.V,
-                                   Ibus=Ibus,
+                                   I0=Ibus,
+                                   Y0=Yloadbus,
                                    pv=pv,
                                    pq=pq,
                                    tol=options.tolerance,
@@ -229,9 +237,10 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
         # Newton-Raphson-Iwamoto
         elif solver_type == bs.SolverType.IWAMOTO:
             solution = acjb.IwamotoNR(Ybus=circuit.Ybus,
-                                      Sbus_=Sbus,
+                                      S0=Sbus,
                                       V0=final_solution.V,
-                                      Ibus=Ibus,
+                                      I0=Ibus,
+                                      Y0=Yloadbus,
                                       pv_=pv,
                                       pq_=pq,
                                       Qmin=circuit.Qmin_bus[0, :],
@@ -287,7 +296,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
 
 
 def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
-                          voltage_solution, Sbus, Ibus, ma, theta, Beq, branch_rates,
+                          voltage_solution, Sbus, Ibus, Yloadbus, ma, theta, Beq, branch_rates,
                           pq, pv, vd, pqpv, logger=bs.Logger()) -> "PowerFlowResults":
     """
     Run a power flow simulation for a single circuit using the selected outer loop
@@ -340,6 +349,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                          V0=voltage_solution,
                          Sbus=Sbus,
                          Ibus=Ibus,
+                         Yloadbus=Yloadbus,
                          ma=ma,
                          theta=theta,
                          Beq=Beq,
@@ -364,6 +374,7 @@ def outer_loop_power_flow(circuit: SnapshotData, options: PowerFlowOptions,
                                  V0=solution.V,
                                  Sbus=Sbus + delta,
                                  Ibus=Ibus,
+                                 Yloadbus=Yloadbus,
                                  ma=ma,
                                  theta=theta,
                                  Beq=Beq,
@@ -485,7 +496,7 @@ def power_flow_post_process(calculation_inputs: SnapshotData, Sbus, V, branch_ra
     return Sfb, Stb, If, It, Vbranch, loading, losses, Sbus
 
 
-def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, ma, theta, Beq, branch_rates,
+def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, Yloadbus, ma, theta, Beq, branch_rates,
                      pq, pv, vd, pqpv,
                      options: PowerFlowOptions, logger: bs.Logger) -> "PowerFlowResults":
     """
@@ -510,6 +521,7 @@ def single_island_pf(circuit: SnapshotData, Vbus, Sbus, Ibus, ma, theta, Beq, br
                                     voltage_solution=Vbus,
                                     Sbus=Sbus,
                                     Ibus=Ibus,
+                                    Yloadbus=Yloadbus,
                                     ma=ma, theta=theta, Beq=Beq,
                                     branch_rates=branch_rates,
                                     pq=pq,
@@ -655,6 +667,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
                     Vbus=calculation_input.Vbus,
                     Sbus=calculation_input.Sbus + Shvdc[calculation_input.original_bus_idx],
                     Ibus=calculation_input.Ibus,
+                    Yloadbus=calculation_input.YLoadBus,
                     ma=calculation_input.branch_data.m[:, 0],
                     theta=calculation_input.branch_data.theta[:, 0],
                     Beq=calculation_input.branch_data.Beq[:, 0],

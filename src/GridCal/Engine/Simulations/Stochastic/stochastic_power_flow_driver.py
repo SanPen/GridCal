@@ -186,6 +186,7 @@ class StochasticPowerFlowDriver(DriverTemplate):
                                        Vbus=Vbus,
                                        Sbus=S,
                                        Ibus=I,
+                                       Yloadbus=np.zeros_like(S),  # TODO: Check this
                                        ma=numerical_island.branch_data.m[:, 0],
                                        theta=numerical_island.branch_data.theta[:, 0],
                                        Beq=numerical_island.branch_data.Beq[:, 0],
@@ -327,6 +328,7 @@ class StochasticPowerFlowDriver(DriverTemplate):
                                        Vbus=Vbus,
                                        Sbus=S,
                                        Ibus=I,
+                                       Yloadbus=np.zeros_like(S),  # TODO: Check this
                                        ma=numerical_island.branch_data.m[:, 0],
                                        theta=numerical_island.branch_data.theta[:, 0],
                                        Beq=numerical_island.branch_data.Beq[:, 0],

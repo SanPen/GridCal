@@ -256,6 +256,7 @@ class SnapshotData:
         self.Vbus_ = None
         self.Sbus_ = None
         self.Ibus_ = None
+        self.YloadBus_ = None
         self.Yshunt_from_devices_ = None
 
         self.Qmax_bus_ = None
@@ -678,9 +679,17 @@ class SnapshotData:
     def Ibus(self):
 
         if self.Ibus_ is None:
-            self.Ibus_ = np.zeros(len(self.bus_data), dtype=complex)
+            self.Ibus_ = self.load_data.get_current_injections_per_bus() / self.Sbase
 
-        return self.Ibus_
+        return self.Ibus_[:, 0]
+
+    @property
+    def YLoadBus(self):
+
+        if self.YloadBus_ is None:
+            self.YloadBus_ = self.load_data.get_admittance_injections_per_bus() / self.Sbase
+
+        return self.YloadBus_[:, 0]
 
     @property
     def Rates(self):

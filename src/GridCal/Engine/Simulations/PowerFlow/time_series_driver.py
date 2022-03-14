@@ -498,6 +498,7 @@ class TimeSeries(DriverTemplate):
                 V = calculation_input.Vbus[:, t]
                 I = calculation_input.Ibus[:, t]
                 S = calculation_input.Sbus[:, t]
+                Yload = calculation_input.YLoadBus[:, t]
                 branch_rates = calculation_input.Rates[:, t]
 
                 # add the controlled storage power if we are controlling the storage devices
@@ -521,6 +522,7 @@ class TimeSeries(DriverTemplate):
                                        Vbus=V,
                                        Sbus=S,
                                        Ibus=I,
+                                       Yloadbus=Yload,
                                        ma=calculation_input.branch_data.m[:, t],
                                        theta=calculation_input.branch_data.theta[:, t],
                                        Beq=calculation_input.branch_data.Beq[:, t],

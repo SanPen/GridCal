@@ -72,6 +72,8 @@ def get_load_data(circuit: MultiCircuit, bus_dict, opf_results=None, time_series
 
         if time_series:
             data.load_s[k, :] = elm.P_prof + 1j * elm.Q_prof
+            data.load_i[k, :] = elm.Ir_prof + 1j * elm.Ii_prof
+            data.load_y[k, :] = elm.G_prof + 1j * elm.B_prof
 
             if opf:
                 data.load_cost[k, :] = elm.Cost_prof
@@ -81,6 +83,8 @@ def get_load_data(circuit: MultiCircuit, bus_dict, opf_results=None, time_series
 
         else:
             data.load_s[k] = complex(elm.P, elm.Q)
+            data.load_i[k] = complex(elm.Ir, elm.Ii)
+            data.load_y[k] = complex(elm.G, elm.B)
 
             if opf:
                 data.load_cost[k] = elm.Cost
