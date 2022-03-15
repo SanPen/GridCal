@@ -95,6 +95,14 @@ class TimeCircuit(SnapshotData):
         return self.Ibus_
 
     @property
+    def YLoadBus(self):
+
+        if self.YloadBus_ is None:
+            self.YloadBus_ = self.load_data.get_admittance_injections_per_bus() / self.Sbase
+
+        return self.YloadBus_
+
+    @property
     def Rates(self):
         return self.branch_data.branch_rates
 

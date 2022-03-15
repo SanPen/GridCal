@@ -477,22 +477,10 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             iter_ += 1
 
             # evaluate Jacobian
-            # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
             J = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
-            # J = AC_jacobian2(Ybus, Scalc, V, Vm, pq, pv)
-
-            # print(V.real)
-            # print(V.imag)
-            # print(Scalc.real)
-            # print(Scalc.imag)
-            # print(J.todense())
 
             # compute update step
             dx = linear_solver(J, f)
-
-            # print(dx)
-
-            # print("\n")
 
             # reassign the solution vector
             dVa[pvpq] = dx[:npvpq]
@@ -551,7 +539,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
                 # but not pq to pv because that is unstable
-                n_changes, Scalc, Sbus, pv, pq, pvpq = control_q_inside_method(Scalc, Sbus, pv, pq, pvpq, Qmin, Qmax)
+                n_changes, Scalc, S0, pv, pq, pvpq = control_q_inside_method(Scalc, S0, pv, pq, pvpq, Qmin, Qmax)
 
                 if n_changes > 0:
 
@@ -561,6 +549,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                     npvpq = npv + npq
 
                     # recompute the error based on the new Sbus
+                    Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
                     dS = Scalc - Sbus  # complex power mismatch
                     f = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
                     norm_f = np.linalg.norm(f, np.inf)

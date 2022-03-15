@@ -362,6 +362,7 @@ def control_q_inside_method(Scalc, Sbus, pv, pq, pvpq, Qmin, Qmax):
             changed.append(k)
 
     if len(changed) > 0:
+        # convert PV nodes to PQ
         pv_new = pv[np.array(changed)]
         pq = np.concatenate((pq, pv_new))
         pv = np.delete(pv, changed)
