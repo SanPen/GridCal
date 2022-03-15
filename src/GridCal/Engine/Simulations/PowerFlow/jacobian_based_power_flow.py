@@ -656,7 +656,7 @@ def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
         Vnew = Vm * np.exp(1.0j * Va)
 
         # compute the mismatch function f(x_new)
-        dS = Vnew * np.conj(Ybus * Vnew - I0) - S0  # complex power mismatch
+        dS = Vnew * np.conj(Ybus * Vnew) - S0  # complex power mismatch
         f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
 
         if use_norm_error:
@@ -682,7 +682,7 @@ def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
             Vnew = Vm * np.exp(1.0j * Va)
 
             # compute the mismatch function f(x_new)
-            dS = Vnew * np.conj(Ybus * Vnew - I0) - S0  # complex power mismatch
+            dS = Vnew * np.conj(Ybus * Vnew) - S0  # complex power mismatch
             f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
 
             if use_norm_error:

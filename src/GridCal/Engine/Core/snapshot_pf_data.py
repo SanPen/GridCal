@@ -355,7 +355,7 @@ class SnapshotData:
 
         return Sbus
 
-    def consolidate_information(self):
+    def consolidate_information(self, use_stored_guess=False):
         """
         Consolidates the information of this object
         :return:
@@ -408,28 +408,29 @@ class SnapshotData:
         self.bus_data.bus_installed_power = self.generator_data.get_installed_power_per_bus()
         self.bus_data.bus_installed_power += self.battery_data.get_installed_power_per_bus()
 
-        self.bus_data.Vbus = compose_generator_voltage_profile(nbus=self.nbus,
-                                                               ntime=self.ntime,
-                                                               gen_bus_indices=self.generator_data.get_bus_indices(),
-                                                               gen_vset=self.generator_data.generator_v,
-                                                               gen_status=self.generator_data.generator_active,
-                                                               gen_is_controlled=self.generator_data.generator_controllable,
-                                                               bat_bus_indices=self.battery_data.get_bus_indices(),
-                                                               bat_vset=self.battery_data.battery_v,
-                                                               bat_status=self.battery_data.battery_active,
-                                                               bat_is_controlled=self.battery_data.battery_controllable,
-                                                               hvdc_bus_f=self.hvdc_data.get_bus_indices_f(),
-                                                               hvdc_bus_t=self.hvdc_data.get_bus_indices_t(),
-                                                               hvdc_status=self.hvdc_data.active,
-                                                               hvdc_vf=self.hvdc_data.Vset_f,
-                                                               hvdc_vt=self.hvdc_data.Vset_t,
-                                                               iBeqv=np.array(self.iBeqv, dtype=int),
-                                                               iVtma=np.array(self.iVtma, dtype=int),
-                                                               VfBeqbus=np.array(self.VfBeqbus, dtype=int),
-                                                               Vtmabus=np.array(self.Vtmabus, dtype=int),
-                                                               branch_status=self.branch_data.branch_active,
-                                                               br_vf=self.branch_data.vf_set,
-                                                               br_vt=self.branch_data.vt_set)
+        if not use_stored_guess:
+            self.bus_data.Vbus = compose_generator_voltage_profile(nbus=self.nbus,
+                                                                   ntime=self.ntime,
+                                                                   gen_bus_indices=self.generator_data.get_bus_indices(),
+                                                                   gen_vset=self.generator_data.generator_v,
+                                                                   gen_status=self.generator_data.generator_active,
+                                                                   gen_is_controlled=self.generator_data.generator_controllable,
+                                                                   bat_bus_indices=self.battery_data.get_bus_indices(),
+                                                                   bat_vset=self.battery_data.battery_v,
+                                                                   bat_status=self.battery_data.battery_active,
+                                                                   bat_is_controlled=self.battery_data.battery_controllable,
+                                                                   hvdc_bus_f=self.hvdc_data.get_bus_indices_f(),
+                                                                   hvdc_bus_t=self.hvdc_data.get_bus_indices_t(),
+                                                                   hvdc_status=self.hvdc_data.active,
+                                                                   hvdc_vf=self.hvdc_data.Vset_f,
+                                                                   hvdc_vt=self.hvdc_data.Vset_t,
+                                                                   iBeqv=np.array(self.iBeqv, dtype=int),
+                                                                   iVtma=np.array(self.iVtma, dtype=int),
+                                                                   VfBeqbus=np.array(self.VfBeqbus, dtype=int),
+                                                                   Vtmabus=np.array(self.Vtmabus, dtype=int),
+                                                                   branch_status=self.branch_data.branch_active,
+                                                                   br_vf=self.branch_data.vf_set,
+                                                                   br_vt=self.branch_data.vt_set)
 
         self.determine_control_indices()
 
@@ -1489,13 +1490,15 @@ class SnapshotData:
 
 def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
                              branch_tolerance_mode=BranchImpedanceMode.Specified,
-                             opf_results=None) -> SnapshotData:
+                             opf_results=None,
+                             use_stored_guess=True) -> SnapshotData:
     """
 
     :param circuit:
     :param apply_temperature:
     :param branch_tolerance_mode:
     :param opf_results:
+    :param use_stored_guess:
     :return:
     """
 
@@ -1518,7 +1521,7 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
 
     bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
 
-    nc.bus_data = gc_compiler.get_bus_data(circuit=circuit)
+    nc.bus_data = gc_compiler.get_bus_data(circuit=circuit, use_stored_guess=use_stored_guess)
 
     nc.load_data = gc_compiler.get_load_data(circuit=circuit,
                                              bus_dict=bus_dict,
@@ -1531,18 +1534,21 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
                                                        bus_dict=bus_dict,
                                                        Vbus=nc.bus_data.Vbus,
                                                        logger=logger,
-                                                       opf_results=opf_results)
+                                                       opf_results=opf_results,
+                                                       use_stored_guess=use_stored_guess)
 
     nc.battery_data = gc_compiler.get_battery_data(circuit=circuit,
                                                    bus_dict=bus_dict,
                                                    Vbus=nc.bus_data.Vbus,
                                                    logger=logger,
-                                                   opf_results=opf_results)
+                                                   opf_results=opf_results,
+                                                   use_stored_guess=use_stored_guess)
 
     nc.shunt_data = gc_compiler.get_shunt_data(circuit=circuit,
                                                bus_dict=bus_dict,
                                                Vbus=nc.bus_data.Vbus,
-                                               logger=logger)
+                                               logger=logger,
+                                               use_stored_guess=use_stored_guess)
 
     nc.line_data = gc_compiler.get_line_data(circuit=circuit,
                                              bus_dict=bus_dict,
@@ -1568,13 +1574,14 @@ def compile_snapshot_circuit(circuit: MultiCircuit, apply_temperature=False,
                                                  Vbus=nc.bus_data.Vbus,
                                                  apply_temperature=apply_temperature,
                                                  branch_tolerance_mode=branch_tolerance_mode,
-                                                 opf_results=opf_results)
+                                                 opf_results=opf_results,
+                                                 use_stored_guess=use_stored_guess)
 
     nc.hvdc_data = gc_compiler.get_hvdc_data(circuit=circuit,
                                              bus_dict=bus_dict,
                                              bus_types=nc.bus_data.bus_types,
                                              opf_results=opf_results)
 
-    nc.consolidate_information()
+    nc.consolidate_information(use_stored_guess=use_stored_guess)
 
     return nc

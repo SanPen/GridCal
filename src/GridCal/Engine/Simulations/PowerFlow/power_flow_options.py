@@ -92,7 +92,8 @@ class PowerFlowOptions:
                  distributed_slack=False,
                  ignore_single_node_islands=False,
                  mu=1.0,
-                 backtracking_parameter=0.05):
+                 backtracking_parameter=0.05,
+                 use_stored_guess=False):
 
         self.solver_type = solver_type
 
@@ -131,6 +132,8 @@ class PowerFlowOptions:
         self.mu = mu
 
         self.backtracking_parameter = backtracking_parameter
+
+        self.use_stored_guess = use_stored_guess
 
     def __str__(self):
         return "PowerFlowOptions"

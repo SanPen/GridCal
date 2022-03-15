@@ -2402,6 +2402,8 @@ class MainGUI(QMainWindow):
 
         ignore_single_node_islands = self.ui.ignore_single_node_islands_checkBox.isChecked()
 
+        use_stored_guess = self.ui.use_voltage_guess_checkBox.isChecked()
+
         ops = sim.PowerFlowOptions(solver_type=solver_type,
                                    retry_with_other_methods=retry_with_other_methods,
                                    verbose=False,
@@ -2418,7 +2420,8 @@ class MainGUI(QMainWindow):
                                    q_steepness_factor=q_steepness_factor,
                                    distributed_slack=distributed_slack,
                                    ignore_single_node_islands=ignore_single_node_islands,
-                                   mu=mu)
+                                   mu=mu,
+                                   use_stored_guess=use_stored_guess)
 
         return ops
 

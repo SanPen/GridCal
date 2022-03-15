@@ -425,7 +425,8 @@ class TimeSeries(DriverTemplate):
         time_circuit = compile_time_circuit(circuit=self.grid,
                                             apply_temperature=False,
                                             branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                            opf_results=self.opf_time_series_results)
+                                            opf_results=self.opf_time_series_results,
+                                            use_stored_guess=self.options.use_stored_guess)
 
         # do the topological computation
         time_islands = time_circuit.split_into_islands(ignore_single_node_islands=self.options.ignore_single_node_islands)

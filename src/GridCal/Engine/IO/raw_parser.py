@@ -225,7 +225,7 @@ class PSSeBus:
 
         bustype = {1: BusMode.PQ, 2: BusMode.PV, 3: BusMode.Slack, 4: BusMode.PQ}
 
-        if version == 33:
+        if version >= 33:
             n = len(data[0])
             dta = np.zeros(13, dtype=object)
             dta[0:n] = data[0]
@@ -237,7 +237,7 @@ class PSSeBus:
             name = self.NAME.replace("'", "")
             self.bus = Bus(name=name,
                            vnom=self.BASKV, code=str(self.I), vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0, active=True,
-                           area=self.AREA, zone=self.ZONE)
+                           area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
 
         elif version == 32:
 
@@ -246,17 +246,17 @@ class PSSeBus:
             # create bus
             name = self.NAME
             self.bus = Bus(name=name, code=str(self.I), vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
-                           active=True, area=self.AREA, zone=self.ZONE)
+                           active=True, area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
 
         elif version in [29, 30]:
-            # I, ’NAME’, BASKV, IDE, GL, BL, AREA, ZONE, VM, VA, OWNER
+            # I, 'NAME', BASKV, IDE, GL, BL, AREA, ZONE, VM, VA, OWNER
             self.I, self.NAME, self.BASKV, self.IDE, self.GL, self.BL, \
             self.AREA, self.ZONE, self.VM, self.VA, self.OWNER = data[0]
 
             # create bus
             name = self.NAME
             self.bus = Bus(name=name, code=str(self.I), vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
-                           active=True, area=self.AREA, zone=self.ZONE)
+                           active=True, area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
 
             if self.GL > 0 or self.BL > 0:
                 sh = Shunt(name='Shunt_' + str(self.I),
@@ -344,7 +344,7 @@ class PSSeLoad:
                    idtag=None,
                    code=name,
                    active=bool(self.STATUS),
-                   P=p, Q=q)
+                   P=p, Q=q, Ir=ir, Ii=ii, G=g, B=b)
 
         return elm
 
@@ -684,7 +684,7 @@ class PSSeTwoTerminalDCLine:
             '''
             'NAME',MDC,RDC,SETVL,VSCHD,VCMOD,RCOMP,DELTI,METER,DCVMIN,CCCITMX,CCCACC
             IPR,NBR,ANMXR,ANMNR,RCR,XCR,EBASR,TRR,TAPR,TMXR,TMNR,STPR,ICR,IFR,ITR,IDR,XCAPR
-            IPI,NBI,ANMXI,ANMNI,RCI,XCI,EBASI,TRI,TAPI,TMXI,TMNI,STPI,ICI,IFI,ITI,IDI,XCAPI 
+            IPI,NBI,ANMXI,ANMNI,RCI,XCI,EBASI,TRI,TAPI,TMXI,TMNI,STPI,ICI,IFI,ITI,IDI,XCAPI
             '''
 
             self.NAME, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP, self.DELTI, self.METER, \
@@ -803,7 +803,7 @@ class PSSeVscDCLine:
         elif version == 29:
 
             '''
-            ’NAME’, MDC, RDC, O1, F1, ... O4, F4
+            'NAME', MDC, RDC, O1, F1, ... O4, F4
             IBUS,TYPE,MODE,DCSET,ACSET,ALOSS,BLOSS,MINLOSS,SMAX,IMAX,PWF,MAXQ,MINQ,REMOT,RMPCT
             IBUS,TYPE,MODE,DCSET,ACSET,ALOSS,BLOSS,MINLOSS,SMAX,IMAX,PWF,MAXQ,MINQ,REMOT,RMPCT
             '''
@@ -979,7 +979,7 @@ class PSSeTransformer:
                 self.windings = 2
 
                 '''
-                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4,VECGRP
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,'NAME',STAT,O1,F1,...,O4,F4,VECGRP
                 R1-2,X1-2,SBASE1-2
                 WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD1,CONT1,RMA1,RMI1,VMA1,VMI1,NTP1,TAB1,CR1,CX1,CNXA1
                 WINDV2,NOMV2
@@ -1000,7 +1000,7 @@ class PSSeTransformer:
                 self.windings = 3
 
                 '''
-                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4,VECGRP
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,'NAME',STAT,O1,F1,...,O4,F4,VECGRP
                 R1-2,X1-2,SBASE1-2,R2-3,X2-3,SBASE2-3,R3-1,X3-1,SBASE3-1,VMSTAR,ANSTAR
                 WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD1,CONT1,RMA1,RMI1,VMA1,VMI1,NTP1,TAB1,CR1,CX1,CNXA1
                 WINDV2,NOMV2,ANG2,RATA2,RATB2,RATC2,COD2,CONT2,RMA2,RMI2,VMA2,VMI2,NTP2,TAB2,CR2,CX2,CNXA2
@@ -1025,7 +1025,7 @@ class PSSeTransformer:
         elif version == 32:
 
             '''
-            I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4
+            I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,'NAME',STAT,O1,F1,...,O4,F4
 
             R1-2,X1-2,SBASE1-2,R2-3,X2-3,SBASE2-3,R3-1,X3-1,SBASE3-1,VMSTAR,ANSTAR
 
@@ -1118,14 +1118,14 @@ class PSSeTransformer:
 
                 2 windings -> 4 lines
 
-                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,'NAME',STAT,O1,F1,...,O4,F4
                 R1-2,X1-2,SBASE1-2
                 WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD,CONT,RMA,RMI,VMA,VMI,NTP,TAB,CR,CX
                 WINDV2,NOMV2
 
                 3 windings -> 5 lines
 
-                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,'NAME',STAT,O1,F1,...,O4,F4
                 R1-2,X1-2,SBASE1-2,R2-3,X2-3,SBASE2-3,R3-1,X3-1,SBASE3-1,VMSTAR,ANSTAR
                 WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD,CONT,RMA,RMI,VMA,VMI,NTP,TAB,CR,CX
                 WINDV2,NOMV2,ANG2,RATA2,RATB2,RATC2
@@ -1139,7 +1139,7 @@ class PSSeTransformer:
             if len(data[1]) == 3:
 
                 '''
-                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,'NAME',STAT,O1,F1,...,O4,F4
                 R1-2,X1-2,SBASE1-2
                 WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD,CONT,RMA,RMI,VMA,VMI,NTP,TAB,CR,CX
                 WINDV2,NOMV2
@@ -1157,7 +1157,7 @@ class PSSeTransformer:
             else:
 
                 '''
-                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,'NAME',STAT,O1,F1,...,O4,F4
                 R1-2,X1-2,SBASE1-2,R2-3,X2-3,SBASE2-3,R3-1,X3-1,SBASE3-1,VMSTAR,ANSTAR
 
                 WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD,CONT,RMA,RMI,VMA,VMI,NTP,TAB,CR,CX
@@ -1302,8 +1302,8 @@ class PSSeTransformer:
             else:
                 V3 = self.NOMV3
 
-            """            
-            PSS/e's randomness:            
+            """
+            PSS/e's randomness:
             """
 
             # see: https://en.wikipedia.org/wiki/Per-unit_system
@@ -1418,8 +1418,8 @@ class PSSeFACTS:
 
         if version in [32, 33, 34]:
             '''
-            ’NAME’,I,J,MODE,PDES,QDES,VSET,SHMX,TRMX,VTMN,VTMX,VSMX,IMX,LINX,
-            RMPCT,OWNER,SET1,SET2,VSREF,REMOT,’MNAME’
+            'NAME',I,J,MODE,PDES,QDES,VSET,SHMX,TRMX,VTMN,VTMX,VSMX,IMX,LINX,
+            RMPCT,OWNER,SET1,SET2,VSREF,REMOT,'MNAME'
             '''
 
             self.NAME, self.I, self.J, self.MODE, self.PDES, self.QDES, self.VSET, self.SHMX, \
@@ -1428,8 +1428,8 @@ class PSSeFACTS:
 
         elif version == 29:
             '''
-            ’NAME’,I,J,MODE,PDES,QDES,VSET,SHMX,TRMX,VTMN,VTMX,VSMX,IMX,LINX,
-                RMPCT,OWNER,SET1,SET2,VSREF,REMOT,’MNAME’
+            'NAME',I,J,MODE,PDES,QDES,VSET,SHMX,TRMX,VTMN,VTMX,VSMX,IMX,LINX,
+                RMPCT,OWNER,SET1,SET2,VSREF,REMOT,'MNAME'
             '''
 
             self.NAME, self.I, self.J, self.MODE, self.PDES, self.QDES, self.VSET, self.SHMX, \

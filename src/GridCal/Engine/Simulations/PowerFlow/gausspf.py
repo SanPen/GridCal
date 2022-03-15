@@ -25,18 +25,20 @@ import numpy as np
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 
 
-def gausspf(Ybus, Sbus, V0, pv, pq, tol=1e-3, max_it=50, verbose=False):
+def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, tol=1e-3, max_it=50, verbose=False) -> NumericPowerFlowResults:
     """
-
-    :param Ybus:
-    :param Sbus:
-    :param V0:
-    :param pv:
-    :param pq:
-    :param tol:
-    :param max_it:
-    :param verbose:
-    :return:
+    Gauss-Seidel Power flow
+    :param Ybus: Admittance matrix
+    :param S0: Power injections array
+    :param I0: Current injections array
+    :param Y0: Admittance injections array
+    :param V0: Voltage seed solution array
+    :param pv: array of pv-node indices
+    :param pq: array of pq-node indices
+    :param tol: Tolerance
+    :param max_it: Maximum number of iterations
+    :param verbose: Verbose?
+    :return: NumericPowerFlowResults instance
     """
     start = time.time()
 
@@ -45,12 +47,15 @@ def gausspf(Ybus, Sbus, V0, pv, pq, tol=1e-3, max_it=50, verbose=False):
     V = V0.copy()
     Vm = np.abs(V)
 
+    Ydiag = Ybus.diagonal()
+
     # set up indexing for updating V
     npv = len(pv)
     npq = len(pq)
     pvpq = np.r_[pv, pq]
 
     # evaluate F(x0)
+    Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
     Scalc = V * np.conj(Ybus * V)
     mis = Scalc - Sbus
     F = np.r_[mis[pvpq].real, mis[pq].imag]
@@ -63,7 +68,7 @@ def gausspf(Ybus, Sbus, V0, pv, pq, tol=1e-3, max_it=50, verbose=False):
     while not converged and iter_ < max_it:
 
         # update the voltage at PQ buses
-        V[pq] += (np.conj(Sbus[pq] / V[pq]) - Ybus[pq, :] * V) / Ybus.diagonal()[pq]
+        V[pq] += (np.conj(Sbus[pq] / V[pq]) - Ybus[pq, :] * V) / Ydiag[pq]
 
         # update the voltage at PV buses
         if npv:
@@ -72,10 +77,12 @@ def gausspf(Ybus, Sbus, V0, pv, pq, tol=1e-3, max_it=50, verbose=False):
             Sbus[pv] = Sbus[pv].real + 1j * Q
 
             # update the pv voltage
-            V[pv] += (np.conj(Sbus[pv] / V[pv]) - Ybus[pv, :] * V) / Ybus.diagonal()[pv]
+            V[pv] += (np.conj(Sbus[pv] / V[pv]) - Ybus[pv, :] * V) / Ydiag[pv]
             V[pv] = Vm[pv] * V[pv] / np.abs(V[pv])
 
         # evaluate F(x)
+        Vm = np.abs(V)
+        Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
         Scalc = V * np.conj(Ybus * V)
         mis = Scalc - Sbus
         F = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]

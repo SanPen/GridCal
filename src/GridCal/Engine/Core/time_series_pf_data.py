@@ -341,13 +341,15 @@ class TimeCircuit(SnapshotData):
 
 def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                          branch_tolerance_mode=BranchImpedanceMode.Specified,
-                         opf_results=None) -> TimeCircuit:
+                         opf_results=None,
+                         use_stored_guess=True) -> TimeCircuit:
     """
     Compile the information of a circuit and generate the pertinent power flow islands
     :param circuit: Circuit instance
     :param apply_temperature:
     :param branch_tolerance_mode:
     :param opf_results: OptimalPowerFlowTimeSeriesResults instance
+    :param use_stored_guess:
     :return: list of NumericIslands
     """
 
@@ -371,7 +373,10 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
 
     bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
 
-    nc.bus_data = gc_compiler.get_bus_data(circuit=circuit, time_series=True, ntime=ntime)
+    nc.bus_data = gc_compiler.get_bus_data(circuit=circuit,
+                                           time_series=True,
+                                           ntime=ntime,
+                                           use_stored_guess=use_stored_guess)
 
     nc.load_data = gc_compiler.get_load_data(circuit=circuit,
                                              bus_dict=bus_dict,
@@ -390,7 +395,8 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                                                        logger=logger,
                                                        opf_results=opf_results,
                                                        time_series=True,
-                                                       ntime=ntime)
+                                                       ntime=ntime,
+                                                       use_stored_guess=use_stored_guess)
 
     nc.battery_data = gc_compiler.get_battery_data(circuit=circuit,
                                                    bus_dict=bus_dict,
@@ -398,14 +404,16 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                                                    logger=logger,
                                                    opf_results=opf_results,
                                                    time_series=True,
-                                                   ntime=ntime)
+                                                   ntime=ntime,
+                                                   use_stored_guess=use_stored_guess)
 
     nc.shunt_data = gc_compiler.get_shunt_data(circuit=circuit,
                                                bus_dict=bus_dict,
                                                Vbus=nc.bus_data.Vbus,
                                                logger=logger,
                                                time_series=True,
-                                               ntime=ntime)
+                                               ntime=ntime,
+                                               use_stored_guess=use_stored_guess)
 
     nc.line_data = gc_compiler.get_line_data(circuit=circuit,
                                              bus_dict=bus_dict,
@@ -443,7 +451,8 @@ def compile_time_circuit(circuit: MultiCircuit, apply_temperature=False,
                                                  branch_tolerance_mode=branch_tolerance_mode,
                                                  time_series=True,
                                                  ntime=ntime,
-                                                 opf_results=opf_results)
+                                                 opf_results=opf_results,
+                                                 use_stored_guess=use_stored_guess)
 
     nc.hvdc_data = gc_compiler.get_hvdc_data(circuit=circuit,
                                              bus_dict=bus_dict,

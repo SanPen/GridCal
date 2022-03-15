@@ -170,7 +170,7 @@ class SolSlicer:
         return dVa, dVm, dBeq_v, dma_Vt, dtheta_Pf, dma_Qf, dBeq_z, dma_Qt, dtheta_Pd
 
 
-def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
+def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
                tolerance=1e-6, max_iter=4, mu_0=1.0, acceleration_parameter=0.05,
                verbose=False, t=0, control_q=ReactivePowerControlMode.NoControl) -> NumericPowerFlowResults:
     """
@@ -191,9 +191,12 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
     nb = nc.nbus
     nl = nc.nbr
     V = Vbus
-    S0 = Sbus
+
     Va = np.angle(V)
     Vm = np.abs(V)
+
+    Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
+
     Vmfset = nc.branch_data.vf_set[:, t]
     m = nc.branch_data.m[:, t].copy()
     theta = nc.branch_data.theta[:, t].copy()
@@ -271,7 +274,7 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
     fx, Scalc = compute_fx(Ybus=Ybus,
                            V=V,
                            Vm=Vm,
-                           Sbus=S0,
+                           Sbus=Sbus,
                            Sf=Sf,
                            St=St,
                            Pfset=Pfset,
@@ -344,6 +347,8 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
                 Beq[nc.iBeqv] += dBeq_v * mu
                 V = Vm * np.exp(1j * Va)
 
+                Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
+
                 # compute admittances
                 Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
                                                    C_bus_shunt=nc.shunt_data.C_bus_shunt,
@@ -373,7 +378,7 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
                 fx, Scalc = compute_fx(Ybus=Ybus,
                                        V=V,
                                        Vm=Vm,
-                                       Sbus=S0,
+                                       Sbus=Sbus,
                                        Sf=Sf,
                                        St=St,
                                        Pfset=Pfset,
@@ -406,7 +411,6 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
                 theta = prev_theta.copy()
                 Beq = prev_Beq.copy()
                 V = Vm * np.exp(1j * Va)
-
                 end = time.time()
                 elapsed = end - start
 
@@ -444,6 +448,8 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
                         # but not pq to pv because that is unstable
                         n_changes, Scalc, S0, pv, pq, pvpq = control_q_inside_method(Scalc, S0, pv, pq, pvpq, Qmin, Qmax)
 
+                        Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
+
                         if n_changes > 0:
                             # adjust internal variables to the new pq|pv values
                             npv = len(pv)
@@ -463,7 +469,7 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
                             fx, Scalc = compute_fx(Ybus=Ybus,
                                                    V=V,
                                                    Vm=Vm,
-                                                   Sbus=S0,
+                                                   Sbus=Sbus,
                                                    Sf=Sf,
                                                    St=St,
                                                    Pfset=Pfset,
@@ -507,7 +513,7 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, Sbus,
     return NumericPowerFlowResults(V, converged, norm_f, Scalc, m, theta, Beq, Ybus, Yf, Yt, iterations, elapsed)
 
 
-def LM_ACDC(nc: "SnapshotData", Vbus, Sbus,
+def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
             tolerance=1e-6, max_iter=4, verbose=False) -> NumericPowerFlowResults:
     """
     Solves the power flow problem by the Levenberg-Marquardt power flow algorithm.
@@ -524,9 +530,12 @@ def LM_ACDC(nc: "SnapshotData", Vbus, Sbus,
     nb = nc.nbus
     nl = nc.nbr
     V = Vbus
-    S0 = Sbus
+
     Va = np.angle(V)
     Vm = np.abs(V)
+
+    Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
+
     Vmfset = nc.branch_data.vf_set[:, 0]
     m = nc.branch_data.m[:, 0].copy()
     theta = nc.branch_data.theta[:, 0].copy()
@@ -602,7 +611,7 @@ def LM_ACDC(nc: "SnapshotData", Vbus, Sbus,
         dz, Scalc = compute_fx(Ybus=Ybus,
                                V=V,
                                Vm=Vm,
-                               Sbus=S0,
+                               Sbus=Sbus,
                                Sf=Sf,
                                St=St,
                                Pfset=Pfset,
@@ -697,6 +706,7 @@ def LM_ACDC(nc: "SnapshotData", Vbus, Sbus,
                 Beq[nc.iBeqz] -= dBeq_z
                 Beq[nc.iBeqv] -= dBeq_v
                 V = Vm * np.exp(1.0j * Va)
+                Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
 
             else:
                 update_jacobian = False
@@ -732,7 +742,7 @@ def LM_ACDC(nc: "SnapshotData", Vbus, Sbus,
             dz, Scalc = compute_fx(Ybus=Ybus,
                                    V=V,
                                    Vm=Vm,
-                                   Sbus=S0,
+                                   Sbus=Sbus,
                                    Sf=Sf,
                                    St=St,
                                    Pfset=Pfset,
@@ -768,7 +778,7 @@ def LM_ACDC(nc: "SnapshotData", Vbus, Sbus,
     else:
         norm_f = 0
         converged = True
-        Scalc = S0  # V * np.conj(Ybus * V - Ibus)
+        Scalc = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
         iter_ = 0
         Ybus = None
         Yf = None
