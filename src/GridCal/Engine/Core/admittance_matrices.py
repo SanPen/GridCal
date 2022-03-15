@@ -221,7 +221,7 @@ def compute_linear_admittances(nbr, X, R, m, active, Cf, Ct, ac, dc):
     :param Ct: Connectivity branch-bus "to" with the branch states computed
     :param ac: array of ac branches indices
     :param dc: array of dc branches indices
-    :return: Bbus, Bf
+    :return: Bbus, Bf, Btheta
     """
 
     m_abs = np.abs(m)

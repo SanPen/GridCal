@@ -8,7 +8,7 @@ from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPower
 np.set_printoptions(linewidth=320)
 
 
-def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> NumericPowerFlowResults:
+def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> NumericPowerFlowResults:
     """
     Fast decoupled power flow
     :param Vbus: array of initial voltages
@@ -38,7 +38,8 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> 
     J2 = splu(B2[np.ix_(pq, pq)])
 
     # evaluate initial mismatch
-    Scalc = voltage * np.conj(Ybus * voltage - Ibus)
+    Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
+    Scalc = voltage * np.conj(Ybus * voltage)
     mis = (Scalc - Sbus) / Vm  # complex power mismatch
     dP = mis[pqpv].real
     dQ = mis[pq].imag
@@ -63,7 +64,8 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> 
             voltage = Vm * exp(1j * Va)
 
             # evaluate mismatch
-            Scalc = voltage * conj(Ybus * voltage - Ibus)
+            # (Sbus does not change here since Vm is fixed ...)
+            Scalc = voltage * conj(Ybus * voltage)
             mis = (Scalc - Sbus) / Vm  # complex power mismatch
             dP = mis[pqpv].real
             dQ = mis[pq].imag
@@ -82,7 +84,8 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> 
                 voltage = Vm * exp(1j * Va)
 
                 # evaluate mismatch
-                Scalc = voltage * conj(Ybus * voltage - Ibus)
+                Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
+                Scalc = voltage * conj(Ybus * voltage)
                 mis = (Scalc - Sbus) / Vm  # complex power mismatch
                 dP = mis[pqpv].real
                 dQ = mis[pq].imag
@@ -126,8 +129,9 @@ if __name__ == '__main__':
     island = islands[0]
 
     voltage_, converged_, normF_, Scalc_, iter_, elapsed_ = FDPF(Vbus=island.Vbus,
-                                                                 Sbus=island.Sbus,
-                                                                 Ibus=island.Ibus,
+                                                                 S0=island.Sbus,
+                                                                 I0=island.Ibus,
+                                                                 Y0=island.YLoadBus,
                                                                  Ybus=island.Ybus,
                                                                  B1=island.B1,
                                                                  B2=island.B2,

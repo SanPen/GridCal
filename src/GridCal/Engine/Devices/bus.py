@@ -85,7 +85,8 @@ class Bus(EditableDevice):
     def __init__(self, name="Bus", idtag=None, code='', vnom=10, vmin=0.9, vmax=1.1,
                  angle_min=-6.28, angle_max=6.28, r_fault=0.0, x_fault=0.0,
                  xpos=0, ypos=0, height=0, width=0, active=True, is_slack=False, is_dc=False,
-                 area=None, zone=None, substation=None, country=None, longitude=0.0, latitude=0.0):
+                 area=None, zone=None, substation=None, country=None, longitude=0.0, latitude=0.0,
+                 Vm0=1, Va0=0):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -102,10 +103,12 @@ class Bus(EditableDevice):
                                                   'is_dc': GCProp('', bool, 'Is this bus of DC type?.'),
                                                   'Vnom': GCProp('kV', float,
                                                                  'Nominal line voltage of the bus.'),
+                                                  'Vm0': GCProp('p.u.', float, 'Voltage module guess.'),
                                                   'Vmin': GCProp('p.u.', float,
                                                                  'Lower range of allowed voltage module.'),
                                                   'Vmax': GCProp('p.u.', float,
                                                                  'Higher range of allowed voltage module.'),
+                                                  'Va0': GCProp('rad.', float, 'Voltage angle guess.'),
                                                   'angle_min': GCProp('rad.', float,
                                                                       'Lower range of allowed voltage angle.'),
                                                   'angle_max': GCProp('rad.', float,
@@ -136,6 +139,10 @@ class Bus(EditableDevice):
 
         # maximum voltage limit
         self.Vmax = vmax
+
+        self.Vm0 = Vm0
+
+        self.Va0 = Va0
 
         self.angle_min = angle_min
 
@@ -397,26 +404,30 @@ class Bus(EditableDevice):
 
         return Qmin, Qmax
 
-    def get_voltage_guess(self, logger=None):
+    def get_voltage_guess(self, logger=None, use_stored_guess=False):
         """
         Determine the voltage initial guess
         :param logger: Logger object
+        :param use_stored_guess: use the stored guess or get one from the devices
         :return: voltage guess
         """
-        vm = 1.0
-        va = 0.0
-        v = complex(1, 0)
+        if use_stored_guess:
+            return self.Vm0 * np.exp(1j * self.Va0)
+        else:
+            vm = 1.0
+            va = 0.0
+            v = complex(1, 0)
 
-        for lst in [self.controlled_generators, self.batteries]:
-            for elm in lst:
-                if vm == 1.0:
-                    v = complex(elm.Vset, 0)
-                    vm = elm.Vset
-                elif elm.Vset != vm:
-                    if logger is not None:
-                        logger.append('Different set points at ' + self.name + ': ' + str(elm.Vset) + ' !=' + str(v))
+            for lst in [self.controlled_generators, self.batteries]:
+                for elm in lst:
+                    if vm == 1.0:
+                        v = complex(elm.Vset, 0)
+                        vm = elm.Vset
+                    elif elm.Vset != vm:
+                        if logger is not None:
+                            logger.append('Different set points at ' + self.name + ': ' + str(elm.Vset) + ' !=' + str(v))
 
-        return v
+            return v
 
     def plot_profiles(self, time_profile, ax_load=None, ax_voltage=None, time_series_driver=None, my_index=0):
         """

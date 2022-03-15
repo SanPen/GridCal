@@ -65,12 +65,14 @@ def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
     return H
 
 
-def make_lodf(Cf, Ct, PTDF, correct_values=True):
+def make_lodf(Cf, Ct, PTDF, correct_values=True, numerical_zero=1e-10):
     """
     Compute the LODF matrix
     :param Cf: Branch "from" -bus connectivity matrix
     :param Ct: Branch "to" -bus connectivity matrix
     :param PTDF: PTDF matrix in numpy array form (branches, buses)
+    :param correct_values: correct values out of the interval
+    :param numerical_zero: value considered zero in numerical terms (i.e. 1e-10)
     :return: LODF matrix of dimensions (branches, branches)
     """
     nl = PTDF.shape[0]
@@ -84,7 +86,7 @@ def make_lodf(Cf, Ct, PTDF, correct_values=True):
     LODF = np.zeros((nl, nl))
     div = 1 - H.diagonal()
     for j in range(H.shape[1]):
-        if div[j] != 0:
+        if abs(div[j]) > numerical_zero:
             LODF[:, j] = H[:, j] / div[j]
 
     # replace the diagonal elements by -1

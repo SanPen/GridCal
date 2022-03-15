@@ -2403,106 +2403,20 @@ p, li { white-space: pre-wrap; }
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_22">
-                  <item row="4" column="0" colspan="2">
-                   <widget class="QCheckBox" name="ignore_single_node_islands_checkBox">
+                  <item row="2" column="0" colspan="2">
+                   <widget class="QCheckBox" name="helm_retry_checkBox">
                     <property name="toolTip">
-                     <string>If active, the islands of a single node are ignored.</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the selected method does not converge, try a list of methods that may help&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
-                     <string>Ignore single node islands</string>
+                     <string>Retry with other methods if failed</string>
                     </property>
                     <property name="checked">
                      <bool>true</bool>
                     </property>
                    </widget>
                   </item>
-                  <item row="13" column="0" colspan="2">
-                   <widget class="QComboBox" name="taps_control_mode_comboBox"/>
-                  </item>
-                  <item row="6" column="1">
-                   <widget class="QSpinBox" name="tolerance_spinBox">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exponent of the precission to use.&lt;/p&gt;&lt;p&gt;precision = 1x10^-factor&lt;/p&gt;&lt;p&gt;i.e.&lt;/p&gt;&lt;p&gt;factor=3&lt;/p&gt;&lt;p&gt;precision = 1e-3&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                    <property name="prefix">
-                     <string>1e-</string>
-                    </property>
-                    <property name="minimum">
-                     <number>1</number>
-                    </property>
-                    <property name="maximum">
-                     <number>15</number>
-                    </property>
-                    <property name="value">
-                     <number>4</number>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="0" colspan="2">
-                   <widget class="QCheckBox" name="distributed_slack_checkBox">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If active, the slack power is distributed among the generators according to their installed power &amp;quot;Snom&amp;quot;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                    <property name="text">
-                     <string>Distributed slack</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="0" colspan="2">
-                   <widget class="QComboBox" name="solver_comboBox"/>
-                  </item>
-                  <item row="12" column="0" colspan="2">
-                   <widget class="QLabel" name="label_50">
-                    <property name="text">
-                     <string>Transformer taps control mode</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="6" column="0">
-                   <widget class="QLabel" name="label_5">
-                    <property name="text">
-                     <string>Precision</string>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="8" column="1">
-                   <widget class="QSpinBox" name="max_iterations_spinBox">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximum numberof iterations to use.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Tipical values: &lt;/p&gt;&lt;p&gt;Newton Raphson: 5&lt;/p&gt;&lt;p&gt;Levenberg-Marquards: 20&lt;/p&gt;&lt;p&gt;Fast decoupled: 10&lt;/p&gt;&lt;p&gt;Others: 20&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                    <property name="minimum">
-                     <number>1</number>
-                    </property>
-                    <property name="maximum">
-                     <number>1000</number>
-                    </property>
-                    <property name="value">
-                     <number>40</number>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="10" column="0" colspan="2">
-                   <widget class="QLabel" name="label_48">
-                    <property name="text">
-                     <string>Reactive power control mode</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="7" column="0">
-                   <widget class="QLabel" name="label_11">
-                    <property name="text">
-                     <string>Acceleration</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="9" column="0" colspan="2">
-                   <widget class="QLabel" name="label_22">
-                    <property name="text">
-                     <string/>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="7" column="1">
                    <widget class="QDoubleSpinBox" name="muSpinBox">
                     <property name="toolTip">
                      <string>Factor by which multiply each jacobian result. In practice this is used to slow down troublesome solutions.</string>
@@ -2524,52 +2438,22 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="0" colspan="2">
-                   <widget class="QCheckBox" name="helm_retry_checkBox">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the selected method does not converge, try a list of methods that may help&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                    <property name="text">
-                     <string>Retry with other methods if failed</string>
-                    </property>
-                    <property name="checked">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="15" column="0" colspan="2">
-                   <widget class="QCheckBox" name="apply_impedance_tolerances_checkBox">
-                    <property name="text">
-                     <string>Apply impedance tolerances</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="8" column="0">
+                  <item row="9" column="0">
                    <widget class="QLabel" name="label_6">
                     <property name="text">
                      <string>Numerical method max. iterations</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="14" column="0" colspan="2">
-                   <widget class="QCheckBox" name="temperature_correction_checkBox">
-                    <property name="toolTip">
-                     <string>Correct the branches resistance using the temperature</string>
-                    </property>
-                    <property name="text">
-                     <string>Apply temperature correction</string>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="11" column="0" colspan="2">
-                   <widget class="QComboBox" name="reactive_power_control_mode_comboBox"/>
-                  </item>
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="label_2">
+                   <widget class="QLabel" name="label_48">
                     <property name="text">
-                     <string>Solver</string>
+                     <string>Reactive power control mode</string>
                     </property>
                    </widget>
+                  </item>
+                  <item row="14" column="0" colspan="2">
+                   <widget class="QComboBox" name="taps_control_mode_comboBox"/>
                   </item>
                   <item row="5" column="0" colspan="2">
                    <widget class="QCheckBox" name="auto_precision_checkBox">
@@ -2581,13 +2465,136 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="16" column="0">
+                  <item row="7" column="1">
+                   <widget class="QSpinBox" name="tolerance_spinBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exponent of the precission to use.&lt;/p&gt;&lt;p&gt;precision = 1x10^-factor&lt;/p&gt;&lt;p&gt;i.e.&lt;/p&gt;&lt;p&gt;factor=3&lt;/p&gt;&lt;p&gt;precision = 1e-3&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="prefix">
+                     <string>1e-</string>
+                    </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                    <property name="maximum">
+                     <number>15</number>
+                    </property>
+                    <property name="value">
+                     <number>4</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="10" column="0" colspan="2">
+                   <widget class="QLabel" name="label_22">
+                    <property name="text">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="17" column="0">
                    <widget class="QCheckBox" name="dispatch_storage_checkBox">
                     <property name="toolTip">
                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When enabled, the storage devices beheave as actual storage devices taking into account their energy limitations when delivering power.&lt;/p&gt;&lt;p&gt;When disabled, the storage devices beheave exactly as controlled generators&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string>dispatch storage</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0" colspan="2">
+                   <widget class="QCheckBox" name="distributed_slack_checkBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If active, the slack power is distributed among the generators according to their installed power &amp;quot;Snom&amp;quot;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="text">
+                     <string>Distributed slack</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="7" column="0">
+                   <widget class="QLabel" name="label_5">
+                    <property name="text">
+                     <string>Precision</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_2">
+                    <property name="text">
+                     <string>Solver</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="13" column="0" colspan="2">
+                   <widget class="QLabel" name="label_50">
+                    <property name="text">
+                     <string>Transformer taps control mode</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0" colspan="2">
+                   <widget class="QComboBox" name="solver_comboBox"/>
+                  </item>
+                  <item row="9" column="1">
+                   <widget class="QSpinBox" name="max_iterations_spinBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximum numberof iterations to use.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Tipical values: &lt;/p&gt;&lt;p&gt;Newton Raphson: 5&lt;/p&gt;&lt;p&gt;Levenberg-Marquards: 20&lt;/p&gt;&lt;p&gt;Fast decoupled: 10&lt;/p&gt;&lt;p&gt;Others: 20&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                    <property name="maximum">
+                     <number>1000</number>
+                    </property>
+                    <property name="value">
+                     <number>40</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="12" column="0" colspan="2">
+                   <widget class="QComboBox" name="reactive_power_control_mode_comboBox"/>
+                  </item>
+                  <item row="8" column="0">
+                   <widget class="QLabel" name="label_11">
+                    <property name="text">
+                     <string>Acceleration</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="16" column="0" colspan="2">
+                   <widget class="QCheckBox" name="apply_impedance_tolerances_checkBox">
+                    <property name="text">
+                     <string>Apply impedance tolerances</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="15" column="0" colspan="2">
+                   <widget class="QCheckBox" name="temperature_correction_checkBox">
+                    <property name="toolTip">
+                     <string>Correct the branches resistance using the temperature</string>
+                    </property>
+                    <property name="text">
+                     <string>Apply temperature correction</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0" colspan="2">
+                   <widget class="QCheckBox" name="ignore_single_node_islands_checkBox">
+                    <property name="toolTip">
+                     <string>If active, the islands of a single node are ignored.</string>
+                    </property>
+                    <property name="text">
+                     <string>Ignore single node islands</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="6" column="0" colspan="2">
+                   <widget class="QCheckBox" name="use_voltage_guess_checkBox">
+                    <property name="text">
+                     <string>Use voltage guess</string>
                     </property>
                    </widget>
                   </item>

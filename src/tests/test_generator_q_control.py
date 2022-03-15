@@ -16,9 +16,11 @@ def test_q_control_true():
 
     nc = compile_snapshot_circuit(main_circuit)
 
-    Q = power_flow.results.Sbus.imag
-    Qmin = nc.Qmin_bus[:, 0] * nc.Sbase
-    Qmax = nc.Qmax_bus[:, 0] * nc.Sbase
+    assert(power_flow.results.converged)
+
+    Q = power_flow.results.Sbus.imag[nc.pv]
+    Qmin = nc.Qmin_bus[nc.pv, 0] * nc.Sbase
+    Qmax = nc.Qmax_bus[nc.pv, 0] * nc.Sbase
     l1 = Q <= Qmax
     l2 = Qmin <= Q
     ok = l1 * l2

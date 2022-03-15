@@ -405,16 +405,17 @@ def NR_LS_lynn(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0
     return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
 
 
-def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
+def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
           acceleration_parameter=0.05, error_registry=None,
           control_q=ReactivePowerControlMode.NoControl) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with backtrack correction.
     @Author: Santiago Peñate Vera
     :param Ybus: Admittance matrix
-    :param Sbus: Array of nodal power injections
+    :param S0: Array of nodal power injections (ZIP)
     :param V0: Array of nodal voltages (initial solution)
-    :param Ibus: Array of nodal current injections
+    :param I0: Array of nodal current injections (ZIP)
+    :param Y0: Array of nodal admittance injections (ZIP)
     :param pv_: Array with the indices of the PV buses
     :param pq_: Array with the indices of the PQ buses
     :param Qmin: array of lower reactive power limits per bus
@@ -431,10 +432,14 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
 
     # initialize
     iter_ = 0
-    Sbus = Sbus_.copy()
+
     V = V0
     Va = np.angle(V)
     Vm = np.abs(V)
+
+    # compute the ZIP power injection
+    # Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)
+
     dVa = np.zeros_like(Va)
     dVm = np.zeros_like(Vm)
 
@@ -453,7 +458,8 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     if npvpq > 0:
 
         # evaluate F(x0)
-        Scalc = V * np.conj(Ybus * V - Ibus)
+        Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
+        Scalc = V * np.conj(Ybus * V)
         dS = Scalc - Sbus  # compute the mismatch
         f = np.r_[dS[pvpq].real, dS[pq].imag]
         norm_f = np.linalg.norm(f, np.inf)
@@ -471,16 +477,10 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             iter_ += 1
 
             # evaluate Jacobian
-            # J = Jacobian(Ybus, V, Ibus, pq, pvpq)
             J = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
-            # J = AC_jacobian2(Ybus, Scalc, V, Vm, pq, pv)
 
             # compute update step
             dx = linear_solver(J, f)
-
-            # print(dx)
-
-            # print("\n")
 
             # reassign the solution vector
             dVa[pvpq] = dx[:npvpq]
@@ -498,26 +498,31 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             while back_track_condition and l_iter < max_it and mu > tol:
 
                 # restore the previous values if we are backtracking (the first iteration is the normal NR procedure)
-                Vm = prev_Vm - mu * dVm
-                Va = prev_Va - mu * dVa
+                if l_iter > 0:
+                    Va = prev_Va.copy()
+                    Vm = prev_Vm.copy()
+
+                # update voltage the Newton way
+                Vm -= mu * dVm
+                Va -= mu * dVa
                 V = Vm * np.exp(1.0j * Va)
 
                 # compute the mismatch function f(x_new)
-                Scalc = V * np.conj(Ybus * V - Ibus)
+                Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
+                Scalc = V * np.conj(Ybus * V)
                 dS = Scalc - Sbus  # complex power mismatch
                 f = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
                 norm_f_new = np.linalg.norm(f, np.inf)
-
-                # print("mu:", mu,  "|| new err: ",  norm_f_new,  ", err: ", norm_f)
 
                 back_track_condition = norm_f_new > norm_f
                 mu *= acceleration_parameter
                 l_iter += 1
 
             if l_iter > 1 and back_track_condition:
-                # this means that not even the backtracking was able to correct the
-                # solution so, restore and end
-                V = prev_Vm * np.exp(1.0j * prev_Va)
+                # this means that not even the backtracking was able to correct the solution so, restore and end
+                Va = prev_Va.copy()
+                Vm = prev_Vm.copy()
+                V = Vm * np.exp(1.0j * Va)
 
                 end = time.time()
                 elapsed = end - start
@@ -534,7 +539,7 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
                 # but not pq to pv because that is unstable
-                n_changes, Scalc, Sbus, pv, pq, pvpq = control_q_inside_method(Scalc, Sbus, pv, pq, pvpq, Qmin, Qmax)
+                n_changes, Scalc, S0, pv, pq, pvpq = control_q_inside_method(Scalc, S0, pv, pq, pvpq, Qmin, Qmax)
 
                 if n_changes > 0:
 
@@ -544,6 +549,7 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                     npvpq = npv + npq
 
                     # recompute the error based on the new Sbus
+                    Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
                     dS = Scalc - Sbus  # complex power mismatch
                     f = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
                     norm_f = np.linalg.norm(f, np.inf)
@@ -556,7 +562,7 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     else:
         norm_f = 0
         converged = True
-        Scalc = Sbus
+        Scalc = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
 
     end = time.time()
     elapsed = end - start
@@ -564,15 +570,15 @@ def NR_LS(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
 
 
-def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15,
+def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
            acceleration_parameter=0.5, error_registry=None) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with backtrack correction.
     @Author: Santiago Peñate Vera
     :param Ybus: Admittance matrix
-    :param Sbus: Array of nodal power injections
+    :param S0: Array of nodal power injections
     :param V0: Array of nodal voltages (initial solution)
-    :param Ibus: Array of nodal current injections
+    :param I0: Array of nodal current injections
     :param pv: Array with the indices of the PV buses
     :param pq: Array with the indices of the PQ buses
     :param tol: Tolerance
@@ -603,8 +609,9 @@ def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15,
     npq = len(pq)
 
     # evaluate F(x0)
-    Scalc = V * np.conj(Ybus * V - Ibus)
-    dS = Scalc - Sbus  # compute the mismatch
+
+    Scalc = V * np.conj(Ybus * V - I0)
+    dS = Scalc - S0  # compute the mismatch
     f = np.r_[dS[pvpq].real, dS[pq].imag]
 
     # check tolerance
@@ -625,7 +632,7 @@ def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15,
         iter_ += 1
 
         # evaluate Jacobian
-        J1, J4 = Jacobian_decoupled(Ybus, V, Ibus, pq, pvpq)
+        J1, J4 = Jacobian_decoupled(Ybus, V, I0, pq, pvpq)
 
         # compute update step and reassign the solution vector
         dVa[pvpq] = linear_solver(J1, f[pvpq])
@@ -638,7 +645,7 @@ def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15,
         Vnew = Vm * np.exp(1.0j * Va)
 
         # compute the mismatch function f(x_new)
-        dS = Vnew * np.conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
+        dS = Vnew * np.conj(Ybus * Vnew) - S0  # complex power mismatch
         f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
 
         if use_norm_error:
@@ -664,7 +671,7 @@ def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15,
             Vnew = Vm * np.exp(1.0j * Va)
 
             # compute the mismatch function f(x_new)
-            dS = Vnew * np.conj(Ybus * Vnew - Ibus) - Sbus  # complex power mismatch
+            dS = Vnew * np.conj(Ybus * Vnew) - S0  # complex power mismatch
             f_new = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
 
             if use_norm_error:
@@ -702,15 +709,15 @@ def NRD_LS(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15,
     return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
 
 
-def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
+def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
               control_q=ReactivePowerControlMode.NoControl, robust=False) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
     Args:
         Ybus: Admittance matrix
-        Sbus_: Array of nodal power injections
+        S0: Array of nodal power injections
         V0: Array of nodal voltages (initial solution)
-        Ibus: Array of nodal current injections
+        I0: Array of nodal current injections
         pv_: Array with the indices of the PV buses
         pq_: Array with the indices of the PQ buses
         tol: Tolerance
@@ -724,7 +731,6 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
     start = time.time()
 
     # initialize
-    Sbus = Sbus_.copy()
     converged = 0
     iter_ = 0
     V = V0
@@ -744,7 +750,8 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
     if npvpq > 0:
 
         # evaluate F(x0)
-        Scalc = V * np.conj(Ybus * V - Ibus)
+        Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
+        Scalc = V * np.conj(Ybus * V - I0)
         mis = Scalc - Sbus  # compute the mismatch
         f = np.r_[mis[pvpq].real, mis[pq].imag]
 
@@ -782,7 +789,7 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
                 # if dV contains zeros will crash the second Jacobian derivative
                 if not (dV == 0.0).any():
                     # calculate the optimal multiplier for enhanced convergence
-                    mu_ = mu(Ybus, Ibus, J, f, dV, dx, pvpq, pq, npv, npq)
+                    mu_ = mu(Ybus, I0, J, f, dV, dx, pvpq, pq, npv, npq)
                 else:
                     mu_ = 1.0
             else:
@@ -796,7 +803,8 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
             Va = np.angle(V)  # we wrapped around with a negative Vm
 
             # evaluate F(x)
-            Scalc = V * np.conj(Ybus * V - Ibus)
+            Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
+            Scalc = V * np.conj(Ybus * V)
             mis = Scalc - Sbus  # complex power mismatch
             f = np.r_[mis[pvpq].real, mis[pq].imag]  # concatenate again
 
@@ -833,7 +841,7 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
     else:
         norm_f = 0
         converged = True
-        Scalc = Sbus
+        Scalc = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
 
     end = time.time()
     elapsed = end - start
@@ -841,16 +849,16 @@ def IwamotoNR(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=15,
     return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
 
 
-def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max_it=50,
+def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=50,
                            control_q=ReactivePowerControlMode.NoControl) -> NumericPowerFlowResults:
     """
     Solves the power flow problem by the Levenberg-Marquardt power flow algorithm.
     It is usually better than Newton-Raphson, but it takes an order of magnitude more time to converge.
     Args:
         Ybus: Admittance matrix
-        Sbus_: Array of nodal power injections
+        S0: Array of nodal power injections
         V0: Array of nodal voltages (initial solution)
-        Ibus: Array of nodal current injections
+        I0: Array of nodal current injections
         pv_: Array with the indices of the PV buses
         pq_: Array with the indices of the PQ buses
         Qmin:
@@ -866,7 +874,6 @@ def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max
     start = time.time()
 
     # initialize
-    Sbus = Sbus_.copy()
     V = V0
     Va = np.angle(V)
     Vm = np.abs(V)
@@ -899,7 +906,8 @@ def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max
                 H = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
 
             # evaluate the solution error F(x0)
-            Scalc = V * np.conj(Ybus * V - Ibus)
+            Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
+            Scalc = V * np.conj(Ybus * V)
             dS = Scalc - Sbus  # compute the mismatch
             dz = np.r_[dS[pvpq].real, dS[pq].imag]  # mismatch in the Jacobian order
 
@@ -955,6 +963,7 @@ def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max
                 nu *= 2.0
 
             # check convergence
+            Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
             Scalc = V * np.conj(Ybus.dot(V))
             dS = Sbus - Scalc
             e = np.r_[dS[pvpq].real, dS[pq].imag]
@@ -996,7 +1005,7 @@ def levenberg_marquardt_pf(Ybus, Sbus_, V0, Ibus, pv_, pq_, Qmin, Qmax, tol, max
     else:
         normF = 0
         converged = True
-        Scalc = Sbus  # V * np.conj(Ybus * V - Ibus)
+        Scalc = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
         iter_ = 0
 
     end = time.time()
