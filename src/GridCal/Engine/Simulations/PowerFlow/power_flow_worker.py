@@ -604,7 +604,8 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
         circuit=multi_circuit,
         apply_temperature=options.apply_temperature_correction,
         branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-        opf_results=opf_results
+        opf_results=opf_results,
+        use_stored_guess=options.use_stored_guess
     )
 
     PowerFlowResults(

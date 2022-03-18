@@ -369,12 +369,26 @@ def parse_json_data_v3(data: dict, logger: Logger):
         if "Shunt" in devices.keys():
             shunts = devices["Shunt"]
             for jentry in shunts:
+                if 'b_max' in jentry:
+                    Bmax = float(jentry['b_max'])
+                elif 'bmax' in jentry:
+                    Bmax = float(jentry['bmax'])
+                else:
+                    Bmax = 9999
+
+                if 'b_min' in jentry:
+                    Bmin = float(jentry['b_min'])
+                elif 'bmax' in jentry:
+                    Bmin = float(jentry['bmin'])
+                else:
+                    Bmin = 9999
+
                 elm = Shunt(name=str(jentry['name']),
                             idtag=str(jentry['id']),
                             G=float(jentry['g']),
                             B=float(jentry['b']),
-                            Bmax=float(jentry['b_max']),
-                            Bmin=float(jentry['b_min']),
+                            Bmax=Bmax,
+                            Bmin=Bmin,
                             active=bool(jentry['active']),
                             controlled=bool(jentry['controlled'])
                             )
