@@ -28,6 +28,53 @@ from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 import GridCal.Engine.basic_structures as bs
 
 
+def translate_bentayga_pf_results(grid: MultiCircuit, res) -> PowerFlowResults:
+    results = PowerFlowResults(n=grid.get_bus_number(),
+                               m=grid.get_branch_number_wo_hvdc(),
+                               n_tr=grid.get_transformers2w_number(),
+                               n_hvdc=grid.get_hvdc_number(),
+                               bus_names=res.bus_names,
+                               branch_names=res.branch_names,
+                               transformer_names=[],
+                               hvdc_names=res.hvdc_names,
+                               bus_types=res.bus_types)
+
+    results.voltage = res.V[0, :]
+    results.Sbus = res.S[0, :]
+    results.Sf = res.Sf[0, :]
+    results.St = res.St[0, :]
+    results.loading = res.loading[0, :]
+    results.losses = res.losses[0, :]
+    results.Vbranch = res.Vbranch[0, :]
+    results.If = res.If[0, :]
+    results.It = res.It[0, :]
+    results.Beq = res.Beq[0, :]
+    results.m = res.tap_modules[0, :]
+    results.theta = res.tap_angles[0, :]
+    results.F = res.F
+    results.T = res.T
+    results.hvdc_F = res.F_hvdc
+    results.hvdc_T = res.T_hvdc
+    results.hvdc_Pf = res.hvdc_Pf[0, :]
+    results.hvdc_Pt = res.hvdc_Pt[0, :]
+    results.hvdc_loading = res.hvdc_loading[0, :]
+    results.hvdc_losses = res.hvdc_losses[0, :]
+    results.bus_area_indices = grid.get_bus_area_indices()
+    results.area_names = [a.name for a in grid.areas]
+
+    for rep in res.stats[0]:
+        report = bs.ConvergenceReport()
+        for i in range(len(rep.converged)):
+            report.add(method=rep.solver[i].name,
+                       converged=rep.converged[i],
+                       error=rep.norm_f[i],
+                       elapsed=rep.elapsed[i],
+                       iterations=rep.iterations[i])
+            results.convergence_reports.append(report)
+
+    return results
+
+
 class PowerFlowDriver(DriverTemplate):
     name = 'Power Flow'
     tpe = SimulationTypes.PowerFlow_run
@@ -133,29 +180,8 @@ class PowerFlowDriver(DriverTemplate):
                                             hvdc_names=res.hvdc_names,
                                             bus_types=res.bus_types)
 
-            self.results.voltage = res.V[0, :]
-            self.results.Sbus = res.S[0, :]
-            self.results.Sf = res.Sf[0, :]
-            self.results.St = res.St[0, :]
-            self.results.loading = res.loading[0, :]
-            self.results.losses = res.losses[0, :]
-            self.results.Vbranch = res.Vbranch[0, :]
-            self.results.If = res.If[0, :]
-            self.results.It = res.It[0, :]
-            self.results.Beq = res.Beq[0, :]
-            self.results.m = res.tap_modules[0, :]
-            self.results.theta = res.tap_angles[0, :]
-            self.results.F = res.F
-            self.results.T = res.T
-            self.results.hvdc_F = res.F_hvdc
-            self.results.hvdc_T = res.T_hvdc
-            self.results.hvdc_Pf = res.hvdc_Pf[0, :]
-            self.results.hvdc_Pt = res.hvdc_Pt[0, :]
-            self.results.hvdc_loading = res.hvdc_loading[0, :]
-            self.results.hvdc_losses = res.hvdc_losses[0, :]
-            self.results.bus_area_indices = self.grid.get_bus_area_indices()
-            self.results.area_names = [a.name for a in self.grid.areas]
-            print('Bentayga error:', res.stats)
+            self.results = translate_bentayga_pf_results(self.grid, res)
+            self.convergence_reports = self.results.convergence_reports
 
         else:
             raise Exception('Engine ' + self.engine.value + ' not implemented for ' + self.name)

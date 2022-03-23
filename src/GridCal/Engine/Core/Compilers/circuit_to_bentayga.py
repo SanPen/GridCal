@@ -574,7 +574,7 @@ def get_bentayga_pf_options(opt: PowerFlowOptions):
                    # SolverType.IWAMOTO: nn.NativeSolverType.IWAMOTO,
                    SolverType.LM: btg.PowerFlowSolvers.LevenbergMarquardt,
                    # SolverType.LACPF: nn.NativeSolverType.LACPF,
-                   # SolverType.FASTDECOUPLED: nn.NativeSolverType.FD
+                   SolverType.FASTDECOUPLED: btg.PowerFlowSolvers.FastDecoupled
                    }
 
     q_control_dict = {ReactivePowerControlMode.NoControl: btg.QControlMode.NoControl,
