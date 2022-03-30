@@ -24,7 +24,7 @@ from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
-from GridCal.Engine.Simulations.PowerFlow.helm_power_flow import helm_coefficients_josep, sigma_function
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_coefficients_josep, sigma_function
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 

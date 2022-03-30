@@ -15,15 +15,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import os
-import time
-
 import numpy as np
 import numba as nb
 from scipy.sparse import lil_matrix, diags, csc_matrix
 
 
-import GridCal.Engine.Simulations.PowerFlow.derivatives as deriv
+import GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives as deriv
 
 
 @nb.njit(cache=True)

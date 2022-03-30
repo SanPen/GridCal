@@ -1,14 +1,8 @@
 # This file is a python port of the routines included in MATPOWER to perform continuation power flow.
 # The license is the same BSD-style that is provided in LICENSE_MATPOWER
 
-import numpy as np
-from scipy.sparse import hstack, vstack
-from scipy.sparse.linalg import spsolve
 from enum import Enum
 from GridCal.Engine.basic_structures import ReactivePowerControlMode, Logger
-from GridCal.Engine.Simulations.PowerFlow.discrete_controls import control_q_direct
-from GridCal.Engine.Core.common_functions import compile_types
-from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import AC_jacobian
 
 
 class CpfStopAt(Enum):

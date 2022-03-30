@@ -15,17 +15,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import pandas as pd
 import numpy as np
 import GridCal.Engine.basic_structures as bs
 
-import GridCal.Engine.Simulations.PowerFlow.linearized_power_flow as aclin
-import GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow as acjb
-import GridCal.Engine.Simulations.PowerFlow.jacobian_based_acdc_power_flow as acdcjb
-import GridCal.Engine.Simulations.PowerFlow.fast_decoupled_power_flow as acfd
-import GridCal.Engine.Simulations.PowerFlow.helm_power_flow as hl
-import GridCal.Engine.Simulations.PowerFlow.gausspf as gs
-
+import GridCal.Engine.Simulations.PowerFlow as pflw
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
@@ -100,7 +93,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
 
         # type HELM
         if solver_type == bs.SolverType.HELM:
-            solution = hl.helm_josep(Ybus=circuit.Ybus,
+            solution = pflw.helm_josep(Ybus=circuit.Ybus,
                                      Yseries=circuit.Yseries,
                                      V0=V0,  # take V0 instead of V
                                      S0=S0,
@@ -116,7 +109,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
 
         # type DC
         elif solver_type == bs.SolverType.DC:
-            solution = aclin.dcpf(Ybus=circuit.Ybus,
+            solution = pflw.dcpf(Ybus=circuit.Ybus,
                                   Bpqpv=circuit.Bpqpv,
                                   Bref=circuit.Bref,
                                   Btheta=circuit.Btheta,
@@ -131,7 +124,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
 
         # LAC PF
         elif solver_type == bs.SolverType.LACPF:
-            solution = aclin.lacpf(Y=circuit.Ybus,
+            solution = pflw.lacpf(Y=circuit.Ybus,
                                    Ys=circuit.Yseries,
                                    S=S0,
                                    I=I0,
@@ -140,7 +133,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
                                    pv=pv)
 
         elif solver_type == bs.SolverType.GAUSS:
-            solution = gs.gausspf(Ybus=circuit.Ybus,
+            solution = pflw.gausspf(Ybus=circuit.Ybus,
                                   S0=S0,
                                   I0=I0,
                                   Y0=Y0,
@@ -154,7 +147,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
         # Levenberg-Marquardt
         elif solver_type == bs.SolverType.LM:
             if circuit.any_control:
-                solution = acdcjb.LM_ACDC(nc=circuit,
+                solution = pflw.LM_ACDC(nc=circuit,
                                           Vbus=V0,
                                           S0=S0,
                                           I0=I0,
@@ -162,7 +155,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
                                           tolerance=options.tolerance,
                                           max_iter=options.max_iter)
             else:
-                solution = acjb.levenberg_marquardt_pf(Ybus=circuit.Ybus,
+                solution = pflw.levenberg_marquardt_pf(Ybus=circuit.Ybus,
                                                        S0=S0,
                                                        V0=final_solution.V,
                                                        I0=I0,
@@ -177,7 +170,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
 
         # Fast decoupled
         elif solver_type == bs.SolverType.FASTDECOUPLED:
-            solution = acfd.FDPF(Vbus=V0,
+            solution = pflw.FDPF(Vbus=V0,
                                  S0=S0,
                                  I0=I0,
                                  Y0=Y0,
@@ -195,7 +188,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
 
             if circuit.any_control:
                 # Solve NR with the AC/DC algorithm
-                solution = acdcjb.NR_LS_ACDC(nc=circuit,
+                solution = pflw.NR_LS_ACDC(nc=circuit,
                                              Vbus=V0,
                                              S0=S0,
                                              I0=I0,
@@ -207,7 +200,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
                                              control_q=options.control_Q)
             else:
                 # Solve NR with the AC algorithm
-                solution = acjb.NR_LS(Ybus=circuit.Ybus,
+                solution = pflw.NR_LS(Ybus=circuit.Ybus,
                                       S0=S0,
                                       V0=final_solution.V,
                                       I0=I0,
@@ -225,7 +218,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
         # Newton-Raphson-Decpupled
         elif solver_type == bs.SolverType.NRD:
             # Solve NR with the linear AC solution
-            solution = acjb.NRD_LS(Ybus=circuit.Ybus,
+            solution = pflw.NRD_LS(Ybus=circuit.Ybus,
                                    S0=S0,
                                    V0=final_solution.V,
                                    I0=I0,
@@ -238,7 +231,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
 
         # Newton-Raphson-Iwamoto
         elif solver_type == bs.SolverType.IWAMOTO:
-            solution = acjb.IwamotoNR(Ybus=circuit.Ybus,
+            solution = pflw.IwamotoNR(Ybus=circuit.Ybus,
                                       S0=S0,
                                       V0=final_solution.V,
                                       I0=I0,
@@ -254,7 +247,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
 
         # Newton-Raphson in current equations
         elif solver_type == bs.SolverType.NRI:
-            solution = acjb.NR_I_LS(Ybus=circuit.Ybus,
+            solution = pflw.NR_I_LS(Ybus=circuit.Ybus,
                                     Sbus_sp=S0,
                                     V0=final_solution.V,
                                     Ibus_sp=I0,

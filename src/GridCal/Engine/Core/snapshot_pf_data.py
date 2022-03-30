@@ -19,13 +19,13 @@ import numpy as np
 import numba as nb
 import pandas as pd
 import scipy.sparse as sp
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple
 
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.basic_structures import BranchImpedanceMode
 import GridCal.Engine.Core.topology as tp
-from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import Jacobian
 from GridCal.Engine.Core.common_functions import compile_types
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
 import GridCal.Engine.Core.Compilers.circuit_to_data as gc_compiler

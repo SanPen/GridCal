@@ -16,18 +16,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-import numba as nb
-import pandas as pd
-import scipy.sparse as sp
-from typing import List, Dict
+from typing import List
 
 from GridCal.Engine.basic_structures import Logger
 import GridCal.Engine.Core.topology as tp
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import SnapshotData
 from GridCal.Engine.basic_structures import BranchImpedanceMode
-from GridCal.Engine.basic_structures import BusMode
-from GridCal.Engine.Simulations.PowerFlow.jacobian_based_power_flow import Jacobian
 from GridCal.Engine.Core.common_functions import compile_types, find_different_states
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type
 # from GridCal.Engine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
