@@ -22,6 +22,7 @@ Solves the power flow using a Gauss-Seidel method.
 import sys
 import time
 import numpy as np
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 
 
@@ -55,13 +56,12 @@ def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, tol=1e-3, max_it=50, verbose=False) ->
     pvpq = np.r_[pv, pq]
 
     # evaluate F(x0)
-    Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
-    Scalc = V * np.conj(Ybus * V)
-    mis = Scalc - Sbus
-    F = np.r_[mis[pvpq].real, mis[pq].imag]
+    Sbus = compute_zip_power(S0, I0, Y0, Vm)
+    Scalc = compute_power(Ybus, V)
+    F = compute_fx(Scalc, Sbus, pvpq, pq)
+    normF = compute_fx_error(F)
 
     # check tolerance
-    normF = np.linalg.norm(F, np.Inf)
     converged = normF < tol
 
     # do Gauss-Seidel iterations
@@ -82,13 +82,12 @@ def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, tol=1e-3, max_it=50, verbose=False) ->
 
         # evaluate F(x)
         Vm = np.abs(V)
-        Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
-        Scalc = V * np.conj(Ybus * V)
-        mis = Scalc - Sbus
-        F = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]
+        Sbus = compute_zip_power(S0, I0, Y0, Vm)
+        Scalc = compute_power(Ybus, V)
+        F = compute_fx(Scalc, Sbus, pvpq, pq)
+        normF = compute_fx_error(F)
 
         # check for convergence
-        normF = np.linalg.norm(F, np.Inf)  # same as max(abs(F))
         converged = normF < tol
 
         # update iteration counter

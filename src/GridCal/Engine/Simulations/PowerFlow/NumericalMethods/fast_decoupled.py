@@ -3,7 +3,7 @@ from numpy import angle, conj, exp, r_, Inf
 from numpy.linalg import norm
 from scipy.sparse.linalg import splu
 import time
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_ac_fx_norm, compute_zip_power
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 
 np.set_printoptions(linewidth=320)
@@ -66,7 +66,7 @@ def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> 
 
             # evaluate mismatch
             # (Sbus does not change here since Vm is fixed ...)
-            Scalc = voltage * conj(Ybus * voltage)
+            Scalc = compute_power(Ybus, voltage)
             mis = (Scalc - Sbus) / Vm  # complex power mismatch
             dP = mis[pqpv].real
             dQ = mis[pq].imag
@@ -86,7 +86,7 @@ def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> 
 
                 # evaluate mismatch
                 Sbus = compute_zip_power(S0, I0, Y0, Vm)  # compute the ZIP power injection
-                Scalc = voltage * conj(Ybus * voltage)
+                Scalc = compute_power(Ybus, voltage)
                 mis = (Scalc - Sbus) / Vm  # complex power mismatch
                 dP = mis[pqpv].real
                 dQ = mis[pq].imag

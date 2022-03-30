@@ -22,7 +22,7 @@ import numpy as np
 
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_ac_fx_norm, compute_ac_fx, compute_zip_power, compute_fx_error
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.basic_structures import ReactivePowerControlMode
 from GridCal.Engine.Simulations.PowerFlow.discrete_controls import control_q_inside_method
@@ -64,10 +64,6 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     V = V0
     Va = np.angle(V)
     Vm = np.abs(V)
-
-    # compute the ZIP power injection
-    # Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)
-
     dVa = np.zeros_like(Va)
     dVm = np.zeros_like(Vm)
 
@@ -79,22 +75,20 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     npq = len(pq)
     npvpq = npv + npq
 
-    # j1 = 0
-    # j2 = npv + npq  # j1:j2 - V angle of pv and pq buses
-    # j3 = j2 + npq  # j2:j3 - V mag of pq buses
-
     if npvpq > 0:
 
         # evaluate F(x0)
-        fx, Scalc = compute_ac_fx(Ybus, S0, I0, Y0, Vm, V, pvpq, pq)
-        norm_f = compute_fx_error(fx)
+        Sbus = compute_zip_power(S0, I0, Y0, Vm)
+        Scalc = compute_power(Ybus, V)
+        f = compute_fx(Scalc, Sbus, pvpq, pq)
+        norm_f = compute_fx_error(f)
         converged = norm_f < tol
 
         if error_registry is not None:
             error_registry.append(norm_f)
 
         # to be able to compare
-        Ybus.sort_indices()
+        # Ybus.sort_indices()
 
         # do Newton iterations
         while not converged and iter_ < max_it:
@@ -105,7 +99,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             J = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
 
             # compute update step
-            dx = linear_solver(J, fx)
+            dx = linear_solver(J, f)
 
             # reassign the solution vector
             dVa[pvpq] = dx[:npvpq]
@@ -133,7 +127,10 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                 V = Vm * np.exp(1.0j * Va)
 
                 # compute the mismatch function f(x_new)
-                norm_f_new, Scalc = compute_ac_fx_norm(Ybus, S0, I0, Y0, Vm, V, pvpq, pq)
+                Sbus = compute_zip_power(S0, I0, Y0, Vm)
+                Scalc = compute_power(Ybus, V)
+                f = compute_fx(Scalc, Sbus, pvpq, pq)
+                norm_f_new = compute_fx_error(f)
 
                 back_track_condition = norm_f_new > norm_f
                 mu *= acceleration_parameter
@@ -169,10 +166,9 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                     npq = len(pq)
                     npvpq = npv + npq
 
-                    # recompute the error based on the new Sbus
-                    Sbus = compute_zip_power(S0, I0, Y0, Vm)  # compute the ZIP power injection
-                    dS = Scalc - Sbus  # complex power mismatch
-                    fx = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
+                    # recompute the error based on the new Scalc and S0
+                    Sbus = compute_zip_power(S0, I0, Y0, Vm)
+                    fx = compute_fx(Scalc, Sbus, pvpq, pq)
                     norm_f = np.linalg.norm(fx, np.inf)
 
             if error_registry is not None:

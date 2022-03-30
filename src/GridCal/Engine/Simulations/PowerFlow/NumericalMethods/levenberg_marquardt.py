@@ -22,7 +22,7 @@ import numpy as np
 
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_ac_fx, compute_ac_fx_norm, compute_zip_power
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.basic_structures import ReactivePowerControlMode
 from GridCal.Engine.Simulations.PowerFlow.discrete_controls import control_q_inside_method
@@ -99,7 +99,9 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
                 H2 = H1.dot(H)
 
             # evaluate the solution error F(x0)
-            dz, Scalc = compute_ac_fx(Ybus, S0, I0, Y0, Vm, V, pvpq, pq)
+            Sbus = compute_zip_power(S0, I0, Y0, Vm)
+            Scalc = compute_power(Ybus, V)
+            dz = compute_fx(Scalc, Sbus, pvpq, pq)
 
             # set first value of lmbda
             if iter_ == 0:
@@ -146,7 +148,10 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
                 nu *= 2.0
 
             # check convergence
-            normF, Scalc = compute_ac_fx_norm(Ybus, S0, I0, Y0, Vm, V, pvpq, pq)
+            Sbus = compute_zip_power(S0, I0, Y0, Vm)
+            Scalc = compute_power(Ybus, V)
+            e = compute_fx(Scalc, Sbus, pvpq, pq)
+            normF = compute_fx_error(e)
 
             # review reactive power limits
             # it is only worth checking Q limits with a low error
@@ -172,9 +177,8 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
                     Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csc_matrix identity
 
                     # recompute the error based on the new Sbus
-                    ds = Sbus - Scalc
-                    e = np.r_[ds[pvpq].real, ds[pq].imag]
-                    normF = np.linalg.norm(e, np.inf)
+                    e = compute_fx(Scalc, Sbus, pvpq, pq)
+                    normF = compute_fx_error(e)
 
             converged = normF < tol
             f_prev = f

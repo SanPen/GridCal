@@ -25,8 +25,8 @@ from scipy.sparse.linalg import spsolve
 from GridCal.Engine.Core.admittance_matrices import compile_y_acdc
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.discrete_controls import control_q_inside_method
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_acdc_fx, compute_converter_losses, SolSlicer
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_acdc_fx, compute_converter_losses
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian, AcDcSolSlicer
 from GridCal.Engine.basic_structures import ReactivePowerControlMode
 import GridCal.Engine.Simulations.sparse_solve as gcsp
 
@@ -91,14 +91,14 @@ def LM_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
     if (npq + npv) > 0:
         # --------------------------------------------------------------------------
         # variables dimensions in Jacobian
-        sol_slicer = SolSlicer(npq, npv,
-                               len(nc.VfBeqbus),
-                               len(nc.Vtmabus),
-                               len(nc.iPfsh),
-                               len(nc.iQfma),
-                               len(nc.iBeqz),
-                               len(nc.iQtma),
-                               len(nc.iPfdp))
+        sol_slicer = AcDcSolSlicer(npq, npv,
+                                   len(nc.VfBeqbus),
+                                   len(nc.Vtmabus),
+                                   len(nc.iPfsh),
+                                   len(nc.iQfma),
+                                   len(nc.iBeqz),
+                                   len(nc.iQtma),
+                                   len(nc.iPfdp))
         # -------------------------------------------------------------------------
         # compute initial admittances
         Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,

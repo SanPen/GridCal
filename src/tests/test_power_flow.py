@@ -39,7 +39,7 @@ def test_ieee_grids():
              ('IEEE 118 Bus v2.raw', 'IEEE 118 Bus.sav.xlsx'),
             ]
 
-    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM]:
+    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM, SolverType.FASTDECOUPLED]:
 
         print(solver_type)
 

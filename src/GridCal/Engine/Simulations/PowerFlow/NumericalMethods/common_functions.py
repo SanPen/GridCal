@@ -102,50 +102,36 @@ def compute_zip_power(S0, I0, Y0, Vm):
     return S0 + I0 * Vm + Y0 * np.power(Vm, 2)
 
 
-def compute_ac_fx(Ybus, S0, I0, Y0, Vm, V, pvpq, pq):
+def compute_power(Ybus, V):
     """
 
     :param Ybus:
-    :param S0:
-    :param I0:
-    :param Y0:
-    :param Vm:
     :param V:
+    :return:
+    """
+    return V * np.conj(Ybus * V)
+
+
+def compute_fx(Scalc, Sbus, pvpq, pq):
+    """
+
+    :param Scalc:
+    :param Sbus:
     :param pvpq:
     :param pq:
     :return:
     """
-    # compute the mismatch function f(x_new)
-    Sbus = compute_zip_power(S0, I0, Y0, Vm)
-    Scalc = V * np.conj(Ybus * V)
-    dS = Scalc - Sbus  # complex power mismatch
-    f = np.r_[dS[pvpq].real, dS[pq].imag]  # concatenate to form the mismatch function
-
-    return f, Scalc
+    dS = Scalc - Sbus  # compute the mismatch
+    return np.r_[dS[pvpq].real, dS[pq].imag]
 
 
 def compute_fx_error(fx):
-    return np.linalg.norm(fx, np.inf)
-
-
-def compute_ac_fx_norm(Ybus, S0, I0, Y0, Vm, V, pvpq, pq):
     """
-    Compute fx infinite norm
-    :param Ybus:
-    :param S0:
-    :param I0:
-    :param Y0:
-    :param Vm:
-    :param V:
-    :param pvpq:
-    :param pq:
+
+    :param fx:
     :return:
     """
-    # compute the mismatch function f(x_new)
-    f, Scalc = compute_ac_fx(Ybus, S0, I0, Y0, Vm, V, pvpq, pq)
-    norm_f = compute_fx_error(f)
-
-    return norm_f, Scalc
+    return np.linalg.norm(fx, np.inf)
 
 
 @nb.jit(nopython=True, cache=True)
@@ -241,46 +227,4 @@ def compute_acdc_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp,
     return df, Scalc
 
 
-class SolSlicer:
 
-    def __init__(self, npq, npv, nVfBeqbus, nVtmabus, nPfsh, nQfma, nBeqz, nQtma, nPfdp):
-        """
-        Declare the slicing limits in the same order as the Jacobian rows
-        :param npq:
-        :param npv:
-        :param nVfBeqbus:
-        :param nVtmabus:
-        :param nPfsh:
-        :param nQfma:
-        :param nBeqz:
-        :param nQtma:
-        :param nPfdp:
-        """
-        self.a0 = 0
-        self.a1 = self.a0 + npq + npv
-        self.a2 = self.a1 + npq
-        self.a3 = self.a2 + nBeqz
-        self.a4 = self.a3 + nVfBeqbus
-        self.a5 = self.a4 + nQfma
-        self.a6 = self.a5 + nQtma
-        self.a7 = self.a6 + nVtmabus
-        self.a8 = self.a7 + nPfsh
-        self.a9 = self.a8 + nPfdp
-
-    def split(self, dx):
-        """
-        Split the linear system solution
-        :param dx:
-        :return:
-        """
-        dVa = dx[self.a0:self.a1]
-        dVm = dx[self.a1:self.a2]
-        dBeq_z = dx[self.a2:self.a3]
-        dBeq_v = dx[self.a3:self.a4]
-        dma_Qf = dx[self.a4:self.a5]
-        dma_Qt = dx[self.a5:self.a6]
-        dma_Vt = dx[self.a6:self.a7]
-        dtheta_Pf = dx[self.a7:self.a8]
-        dtheta_Pd = dx[self.a8:self.a9]
-
-        return dVa, dVm, dBeq_v, dma_Vt, dtheta_Pf, dma_Qf, dBeq_z, dma_Qt, dtheta_Pd
