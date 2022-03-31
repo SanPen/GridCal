@@ -67,7 +67,7 @@ def control_q_iterative(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, 
         print('Q control logic (iterative)')
 
     n = len(V)
-    Vm = abs(V)
+    Vm = np.abs(V)
     Qnew = Q.copy()
     types_new = types.copy()
     any_control_issue = False
@@ -336,8 +336,6 @@ def control_q_direct(V, Vm, Vset, Q, Qmax, Qmin, types, original_types, verbose=
     return Vnew, Qnew, types_new, any_control_issue
 
 
-# @nb.njit("Tuple((u8, c16[:], c16[:], i8[:], i8[:], i8[:]))"
-#          "(c16[:], c16[:], i8[:], i8[:], i8[:], f8[:], f8[:])", cache=True)
 @nb.njit(cache=True)
 def control_q_inside_method(Scalc, Sbus, pv, pq, pvpq, Qmin, Qmax):
     """

@@ -23,4 +23,5 @@ from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.newton_raphson_ode im
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.gauss_power_flow import gausspf
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_josep, helm_coefficients_josep
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.newton_raphson_acdc import NR_LS_ACDC
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.newton_raphson_decoupled import NRD_LS
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.levenberg_marquardt_acdc import LM_ACDC

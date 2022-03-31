@@ -17,15 +17,13 @@
 
 import time
 import scipy
-import scipy.sparse as sp
-import numpy as np
 
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.basic_structures import ReactivePowerControlMode
-from GridCal.Engine.Simulations.PowerFlow.discrete_controls import control_q_inside_method
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()

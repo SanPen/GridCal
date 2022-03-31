@@ -21,9 +21,9 @@ import numpy as np
 
 from GridCal.Engine.Core.admittance_matrices import compile_y_acdc
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCal.Engine.Simulations.PowerFlow.discrete_controls import control_q_inside_method
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian, AcDcSolSlicer
-from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_acdc_fx, compute_converter_losses
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_acdc_fx, compute_converter_losses, compute_power
 from GridCal.Engine.basic_structures import ReactivePowerControlMode
 import GridCal.Engine.Simulations.sparse_solve as gcsp
 
@@ -129,27 +129,27 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
                                    iVscL=nc.iVscL)
 
     # compute total mismatch
-    fx, Scalc = compute_acdc_fx(Ybus=Ybus,
-                                V=V,
-                                Vm=Vm,
-                                Sbus=Sbus,
-                                Sf=Sf,
-                                St=St,
-                                Pfset=Pfset,
-                                Qfset=Qfset,
-                                Qtset=Qtset,
-                                Vmfset=Vmfset,
-                                Kdp=Kdp,
-                                F=F,
-                                pvpq=pvpq,
-                                pq=pq,
-                                iPfsh=nc.iPfsh,
-                                iQfma=nc.iQfma,
-                                iBeqz=nc.iBeqz,
-                                iQtma=nc.iQtma,
-                                iPfdp=nc.iPfdp,
-                                VfBeqbus=nc.VfBeqbus,
-                                Vtmabus=nc.Vtmabus)
+    Scalc = compute_power(Ybus, V)
+    fx = compute_acdc_fx(Vm=Vm,
+                         Sbus=Sbus,
+                         Scalc=Scalc,
+                         Sf=Sf,
+                         St=St,
+                         Pfset=Pfset,
+                         Qfset=Qfset,
+                         Qtset=Qtset,
+                         Vmfset=Vmfset,
+                         Kdp=Kdp,
+                         F=F,
+                         pvpq=pvpq,
+                         pq=pq,
+                         iPfsh=nc.iPfsh,
+                         iQfma=nc.iQfma,
+                         iBeqz=nc.iBeqz,
+                         iQtma=nc.iQtma,
+                         iPfdp=nc.iPfdp,
+                         VfBeqbus=nc.VfBeqbus,
+                         Vtmabus=nc.Vtmabus)
 
     norm_f = np.max(np.abs(fx))
 
@@ -233,27 +233,27 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
                                                iVscL=nc.iVscL)
 
                 # compute total mismatch
-                fx, Scalc = compute_acdc_fx(Ybus=Ybus,
-                                            V=V,
-                                            Vm=Vm,
-                                            Sbus=Sbus,
-                                            Sf=Sf,
-                                            St=St,
-                                            Pfset=Pfset,
-                                            Qfset=Qfset,
-                                            Qtset=Qtset,
-                                            Vmfset=Vmfset,
-                                            Kdp=Kdp,
-                                            F=F,
-                                            pvpq=pvpq,
-                                            pq=pq,
-                                            iPfsh=nc.iPfsh,
-                                            iQfma=nc.iQfma,
-                                            iBeqz=nc.iBeqz,
-                                            iQtma=nc.iQtma,
-                                            iPfdp=nc.iPfdp,
-                                            VfBeqbus=nc.VfBeqbus,
-                                            Vtmabus=nc.Vtmabus)
+                Scalc = compute_power(Ybus, V)
+                fx = compute_acdc_fx(Vm=Vm,
+                                     Sbus=Sbus,
+                                     Scalc=Scalc,
+                                     Sf=Sf,
+                                     St=St,
+                                     Pfset=Pfset,
+                                     Qfset=Qfset,
+                                     Qtset=Qtset,
+                                     Vmfset=Vmfset,
+                                     Kdp=Kdp,
+                                     F=F,
+                                     pvpq=pvpq,
+                                     pq=pq,
+                                     iPfsh=nc.iPfsh,
+                                     iQfma=nc.iQfma,
+                                     iBeqz=nc.iBeqz,
+                                     iQtma=nc.iQtma,
+                                     iPfdp=nc.iPfdp,
+                                     VfBeqbus=nc.VfBeqbus,
+                                     Vtmabus=nc.Vtmabus)
 
                 norm_f_new = np.max(np.abs(fx))
                 cond = norm_f_new > norm_f  # condition to back track (no improvement at all)
@@ -324,27 +324,27 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
                                                        len(nc.iPfdp))
 
                             # recompute the mismatch, based on the new S0
-                            fx, Scalc = compute_acdc_fx(Ybus=Ybus,
-                                                        V=V,
-                                                        Vm=Vm,
-                                                        Sbus=Sbus,
-                                                        Sf=Sf,
-                                                        St=St,
-                                                        Pfset=Pfset,
-                                                        Qfset=Qfset,
-                                                        Qtset=Qtset,
-                                                        Vmfset=Vmfset,
-                                                        Kdp=Kdp,
-                                                        F=F,
-                                                        pvpq=pvpq,
-                                                        pq=pq,
-                                                        iPfsh=nc.iPfsh,
-                                                        iQfma=nc.iQfma,
-                                                        iBeqz=nc.iBeqz,
-                                                        iQtma=nc.iQtma,
-                                                        iPfdp=nc.iPfdp,
-                                                        VfBeqbus=nc.VfBeqbus,
-                                                        Vtmabus=nc.Vtmabus)
+                            Scalc = compute_power(Ybus, V)
+                            fx = compute_acdc_fx(Vm=Vm,
+                                                 Sbus=Sbus,
+                                                 Scalc=Scalc,
+                                                 Sf=Sf,
+                                                 St=St,
+                                                 Pfset=Pfset,
+                                                 Qfset=Qfset,
+                                                 Qtset=Qtset,
+                                                 Vmfset=Vmfset,
+                                                 Kdp=Kdp,
+                                                 F=F,
+                                                 pvpq=pvpq,
+                                                 pq=pq,
+                                                 iPfsh=nc.iPfsh,
+                                                 iQfma=nc.iQfma,
+                                                 iBeqz=nc.iBeqz,
+                                                 iQtma=nc.iQtma,
+                                                 iPfdp=nc.iPfdp,
+                                                 VfBeqbus=nc.VfBeqbus,
+                                                 Vtmabus=nc.Vtmabus)
                             norm_f_new = np.max(np.abs(fx))
 
                 # set the mismatch to the new mismatch

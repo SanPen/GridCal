@@ -90,6 +90,12 @@ def diag(x):
     return csc_matrix((data, indices, indptr), shape=(m, m))
 
 
+@nb.njit(cache=True, fastmath=True)
+def polar_to_rect(Vm, Va):
+    return Vm * np.exp(1.0j * Va)
+
+
+@nb.njit(cache=True, fastmath=True)
 def compute_zip_power(S0, I0, Y0, Vm):
     """
 
@@ -112,6 +118,7 @@ def compute_power(Ybus, V):
     return V * np.conj(Ybus * V)
 
 
+@nb.njit(cache=True, fastmath=True)
 def compute_fx(Scalc, Sbus, pvpq, pq):
     """
 
@@ -121,8 +128,27 @@ def compute_fx(Scalc, Sbus, pvpq, pq):
     :param pq:
     :return:
     """
-    dS = Scalc - Sbus  # compute the mismatch
-    return np.r_[dS[pvpq].real, dS[pq].imag]
+    # dS = Scalc - Sbus  # compute the mismatch
+    # return np.r_[dS[pvpq].real, dS[pq].imag]
+
+    n = len(pvpq) + len(pq)
+
+    fx = np.empty(n)
+
+    k = 0
+    for i in pvpq:
+        # F1(x0) Power balance mismatch - Va
+        # fx[k] = mis[i].real
+        fx[k] = Scalc[i].real - Sbus[i].real
+        k += 1
+
+    for i in pq:
+        # F2(x0) Power balance mismatch - Vm
+        # fx[k] = mis[i].imag
+        fx[k] = Scalc[i].imag - Sbus[i].imag
+        k += 1
+
+    return fx
 
 
 def compute_fx_error(fx):
@@ -134,7 +160,7 @@ def compute_fx_error(fx):
     return np.linalg.norm(fx, np.inf)
 
 
-@nb.jit(nopython=True, cache=True)
+@nb.jit(nopython=True, cache=True, fastmath=True)
 def compute_converter_losses(V, It, F, alpha1, alpha2, alpha3, iVscL):
     """
     Compute the converter losses according to the IEC 62751-2
@@ -171,12 +197,93 @@ def compute_converter_losses(V, It, F, alpha1, alpha2, alpha3, iVscL):
     return Gsw
 
 
-def compute_acdc_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
+@nb.jit(nopython=True, cache=True, fastmath=True)
+def compute_acdc_fx(Vm, Sbus, Scalc, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
                     pvpq, pq, iPfsh, iQfma, iBeqz, iQtma, iPfdp, VfBeqbus, Vtmabus):
     """
     Compute the increments vector
-    :param Ybus: Admittance matrix
-    :param V: Voltages array
+    :param Vm: Voltages module array
+    :param Sbus: Array of specified bus power
+    :param Scalc: Array of computed bus power
+    :param Pfset: Array of Pf set values per branch
+    :param Qfset: Array of Qf set values per branch
+    :param Qtset: Array of Qt set values per branch
+    :param Vmfset: Array of Vf module set values per branch
+    :param Kdp: Array of branch droop value per branch
+    :param F: Array of from bus indices of the branches
+    :param T: Array of to bus indices of the branches
+    :param pvpq: Array of pv|pq bus indices
+    :param pq: Array of pq indices
+    :param iPfsh:
+    :param iQfma:
+    :param iBeqz:
+    :param iQtma:
+    :param iPfdp:
+    :param VfBeqbus:
+    :param Vtmabus:
+    :return: mismatch vector, also known as fx or delta f
+    """
+    # mis = Scalc - Sbus  # F1(x0) & F2(x0) Power balance mismatch
+
+    n = len(pvpq) + len(pq) + len(VfBeqbus) + len(Vtmabus) + len(iPfsh) + len(iQfma) + len(iBeqz) + len(iQtma) + len(iPfdp)
+
+    fx = np.empty(n)
+
+    k = 0
+    for i in pvpq:
+        # F1(x0) Power balance mismatch - Va
+        # fx[k] = mis[i].real
+        fx[k] = Scalc[i].real - Sbus[i].real
+        k += 1
+
+    for i in pq:
+        # F2(x0) Power balance mismatch - Vm
+        # fx[k] = mis[i].imag
+        fx[k] = Scalc[i].imag - Sbus[i].imag
+        k += 1
+
+    for i in VfBeqbus:
+        # F6(x0) Vf control mismatch
+        fx[k] = Scalc[i].imag - Sbus[i].imag
+        k += 1
+
+    for i in Vtmabus:
+        # F7(x0) Vt control mismatch
+        fx[k] = Scalc[i].imag - Sbus[i].imag
+        k += 1
+
+    for i in iPfsh:
+        # F3(x0) Pf control mismatch
+        fx[k] = Sf[i].real - Pfset[i]
+        k += 1
+
+    for i in iQfma:
+        # F4(x0) Qf control mismatch
+        fx[k] = Sf[i].imag - Qfset[i]
+        k += 1
+
+    for i in iBeqz:
+        # F5(x0) Qf control mismatch
+        fx[k] = Sf[i].imag - 0
+        k += 1
+
+    for i in iQtma:
+        # F8(x0) Qt control mismatch
+        fx[k] = St[i].imag - Qtset[i]
+        k += 1
+
+    for i in iPfdp:
+        # F9(x0) Pf control mismatch, Droop Pf - Pfset = Kdp*(Vmf - Vmfset)
+        fx[k] = -Sf[i].real + Pfset[i] + Kdp[i] * (Vm[F[i]] - Vmfset[i])
+        k += 1
+
+    return fx
+
+
+def compute_acdc_fx_old(Vm, Sbus, Scalc, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp, F,
+                        pvpq, pq, iPfsh, iQfma, iBeqz, iQtma, iPfdp, VfBeqbus, Vtmabus):
+    """
+    Compute the increments vector
     :param Vm: Voltages module array
     :param Sbus: Array of bus power matrix
     :param Pfset: Array of Pf set values per branch
@@ -197,16 +304,16 @@ def compute_acdc_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp,
     :param Vtmabus:
     :return:
     """
-    Scalc = V * np.conj(Ybus * V)
     mis = Scalc - Sbus  # F1(x0) & F2(x0) Power balance mismatch
 
     misPbus = mis[pvpq].real  # F1(x0) Power balance mismatch - Va
     misQbus = mis[pq].imag  # F2(x0) Power balance mismatch - Vm
+    misBeqv = mis[VfBeqbus].imag  # F6(x0) Vf control mismatch
+    misVtma = mis[Vtmabus].imag  # F7(x0) Vt control mismatch
+
     misPfsh = Sf[iPfsh].real - Pfset[iPfsh]  # F3(x0) Pf control mismatch
     misQfma = Sf[iQfma].imag - Qfset[iQfma]  # F4(x0) Qf control mismatch
     misBeqz = Sf[iBeqz].imag - 0  # F5(x0) Qf control mismatch
-    misBeqv = mis[VfBeqbus].imag  # F6(x0) Vf control mismatch
-    misVtma = mis[Vtmabus].imag  # F7(x0) Vt control mismatch
     misQtma = St[iQtma].imag - Qtset[iQtma]  # F8(x0) Qt control mismatch
     misPfdp = -Sf[iPfdp].real + Pfset[iPfdp] + Kdp[iPfdp] * (Vm[F[iPfdp]] - Vmfset[iPfdp])  # F9(x0) Pf control mismatch, Droop Pf - Pfset = Kdp*(Vmf - Vmfset)
     # -------------------------------------------------------------------------
@@ -214,7 +321,7 @@ def compute_acdc_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp,
     #  Create F vector
     # FUBM ---------------------------------------------------------------------
 
-    df = np.r_[misPbus,  # F1(x0) Power balance mismatch - Va
+    fx = np.r_[misPbus,  # F1(x0) Power balance mismatch - Va
                misQbus,  # F2(x0) Power balance mismatch - Vm
                misBeqv,  # F5(x0) Qf control    mismatch - Beq
                misVtma,  # F6(x0) Vf control    mismatch - Beq
@@ -224,7 +331,7 @@ def compute_acdc_fx(Ybus, V, Vm, Sbus, Sf, St, Pfset, Qfset, Qtset, Vmfset, Kdp,
                misQtma,  # F3(x0) Pf control    mismatch - Theta_shift
                misPfdp]  # F9(x0) Pf control    mismatch - Theta_shift Droop
 
-    return df, Scalc
+    return fx
 
 
 

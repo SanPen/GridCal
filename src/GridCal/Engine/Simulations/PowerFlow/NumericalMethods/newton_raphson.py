@@ -17,15 +17,13 @@
 
 import time
 import scipy
-import scipy.sparse as sp
-import numpy as np
 
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.basic_structures import ReactivePowerControlMode
-from GridCal.Engine.Simulations.PowerFlow.discrete_controls import control_q_inside_method
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
@@ -34,8 +32,8 @@ np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 
 def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
-          acceleration_parameter=0.05, error_registry=None,
-          control_q=ReactivePowerControlMode.NoControl) -> NumericPowerFlowResults:
+          acceleration_parameter=0.05, control_q=ReactivePowerControlMode.NoControl,
+          verbose=False) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with backtrack correction.
     @Author: Santiago Peñate Vera
@@ -51,16 +49,15 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     :param tol: Tolerance
     :param max_it: Maximum number of iterations
     :param mu_0: initial acceleration value
-    :param acceleration_parameter: parameter used to correct the "bad" iterations, should be be between 1e-3 ~ 0.5
-    :param error_registry: list to store the error for plotting
+    :param acceleration_parameter: parameter used to correct the "bad" iterations, should be between 1e-3 ~ 0.5
     :param control_q: Control reactive power
+    :param verbose: Display console information
     :return: Voltage solution, converged?, error, calculated power injections
     """
     start = time.time()
 
     # initialize
     iter_ = 0
-
     V = V0
     Va = np.angle(V)
     Vm = np.abs(V)
@@ -84,12 +81,6 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
         norm_f = compute_fx_error(f)
         converged = norm_f < tol
 
-        if error_registry is not None:
-            error_registry.append(norm_f)
-
-        # to be able to compare
-        # Ybus.sort_indices()
-
         # do Newton iterations
         while not converged and iter_ < max_it:
             # update iteration counter
@@ -100,6 +91,11 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
 
             # compute update step
             dx = linear_solver(J, f)
+
+            if verbose:
+                print('Iteration {0}'.format(iter_) + '-' * 200)
+                print('J:\n', J.toarray())
+                print('f:\n', f)
 
             # reassign the solution vector
             dVa[pvpq] = dx[:npvpq]
@@ -116,15 +112,16 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             norm_f_new = 0.0
             while back_track_condition and l_iter < max_it and mu > tol:
 
-                # restore the previous values if we are backtracking (the first iteration is the normal NR procedure)
                 if l_iter > 0:
+                    # restore the previous values if we are backtracking
+                    # the first iteration is the normal NR procedure
                     Va = prev_Va.copy()
                     Vm = prev_Vm.copy()
 
                 # update voltage the Newton way
                 Vm -= mu * dVm
                 Va -= mu * dVa
-                V = Vm * np.exp(1.0j * Va)
+                V = polar_to_rect(Vm, Va)
 
                 # compute the mismatch function f(x_new)
                 Sbus = compute_zip_power(S0, I0, Y0, Vm)
@@ -132,19 +129,31 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                 f = compute_fx(Scalc, Sbus, pvpq, pq)
                 norm_f_new = compute_fx_error(f)
 
-                back_track_condition = norm_f_new > norm_f
+                # change mu for the next iteration
                 mu *= acceleration_parameter
+
+                # keep back-tracking?
+                back_track_condition = norm_f_new > norm_f
+
+                if verbose:
+                    if l_iter == 0:
+                        print('error', norm_f_new)
+                    else:
+                        print('Backtrcking, mu=', mu, 'error', norm_f_new)
+
                 l_iter += 1
 
             if l_iter > 1 and back_track_condition:
-                # this means that not even the backtracking was able to correct the solution so, restore and end
-                Va = prev_Va.copy()
-                Vm = prev_Vm.copy()
-                V = Vm * np.exp(1.0j * Va)
+                # this means that not even the backtracking was able to correct
+                # the solution so, restore and terminate
+                # Va = prev_Va.copy()
+                # Vm = prev_Vm.copy()
+                V = polar_to_rect(Vm, Va)
 
                 end = time.time()
                 elapsed = end - start
-                return NumericPowerFlowResults(V, converged, norm_f_new, Scalc, None, None, None, None, None, None,
+                return NumericPowerFlowResults(V, converged, norm_f_new, Scalc,
+                                               None, None, None, None, None, None,
                                                iter_, elapsed)
             else:
                 norm_f = norm_f_new
@@ -171,10 +180,8 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                     fx = compute_fx(Scalc, Sbus, pvpq, pq)
                     norm_f = np.linalg.norm(fx, np.inf)
 
-            if error_registry is not None:
-                error_registry.append(norm_f)
-
-            converged = norm_f < tol
+            # determine the convergence condition
+            converged = norm_f <= tol
 
     else:
         norm_f = 0

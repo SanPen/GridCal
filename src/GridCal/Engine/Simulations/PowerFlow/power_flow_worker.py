@@ -213,7 +213,8 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
                                       max_it=options.max_iter,
                                       mu_0=options.mu,
                                       acceleration_parameter=options.backtracking_parameter,
-                                      control_q=options.control_Q)
+                                      control_q=options.control_Q,
+                                      verbose=options.verbose)
 
         # Newton-Raphson-Decpupled
         elif solver_type == bs.SolverType.NRD:

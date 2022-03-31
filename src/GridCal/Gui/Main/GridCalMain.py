@@ -2374,6 +2374,8 @@ class MainGUI(QMainWindow):
         q_steepness_factor = 1.0
         taps_control_mode = self.taps_control_modes_dict[self.ui.taps_control_mode_comboBox.currentText()]
 
+        verbose = self.ui.verbositySpinBox.value()
+
         exponent = self.ui.tolerance_spinBox.value()
         tolerance = 1.0 / (10.0 ** exponent)
 
@@ -2406,7 +2408,7 @@ class MainGUI(QMainWindow):
 
         ops = sim.PowerFlowOptions(solver_type=solver_type,
                                    retry_with_other_methods=retry_with_other_methods,
-                                   verbose=False,
+                                   verbose=verbose,
                                    initialize_with_existing_solution=True,
                                    tolerance=tolerance,
                                    max_iter=max_iter,

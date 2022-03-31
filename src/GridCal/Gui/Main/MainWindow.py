@@ -1465,11 +1465,97 @@ class Ui_mainWindow(object):
         self.frame_19.setFrameShadow(QFrame.Raised)
         self.gridLayout_22 = QGridLayout(self.frame_19)
         self.gridLayout_22.setObjectName(u"gridLayout_22")
-        self.helm_retry_checkBox = QCheckBox(self.frame_19)
-        self.helm_retry_checkBox.setObjectName(u"helm_retry_checkBox")
-        self.helm_retry_checkBox.setChecked(True)
+        self.max_iterations_spinBox = QSpinBox(self.frame_19)
+        self.max_iterations_spinBox.setObjectName(u"max_iterations_spinBox")
+        self.max_iterations_spinBox.setMinimum(1)
+        self.max_iterations_spinBox.setMaximum(1000)
+        self.max_iterations_spinBox.setValue(40)
 
-        self.gridLayout_22.addWidget(self.helm_retry_checkBox, 2, 0, 1, 2)
+        self.gridLayout_22.addWidget(self.max_iterations_spinBox, 9, 1, 1, 1)
+
+        self.temperature_correction_checkBox = QCheckBox(self.frame_19)
+        self.temperature_correction_checkBox.setObjectName(u"temperature_correction_checkBox")
+
+        self.gridLayout_22.addWidget(self.temperature_correction_checkBox, 16, 0, 1, 2)
+
+        self.auto_precision_checkBox = QCheckBox(self.frame_19)
+        self.auto_precision_checkBox.setObjectName(u"auto_precision_checkBox")
+
+        self.gridLayout_22.addWidget(self.auto_precision_checkBox, 5, 0, 1, 2)
+
+        self.label_50 = QLabel(self.frame_19)
+        self.label_50.setObjectName(u"label_50")
+
+        self.gridLayout_22.addWidget(self.label_50, 14, 0, 1, 2)
+
+        self.apply_impedance_tolerances_checkBox = QCheckBox(self.frame_19)
+        self.apply_impedance_tolerances_checkBox.setObjectName(u"apply_impedance_tolerances_checkBox")
+
+        self.gridLayout_22.addWidget(self.apply_impedance_tolerances_checkBox, 17, 0, 1, 2)
+
+        self.label_6 = QLabel(self.frame_19)
+        self.label_6.setObjectName(u"label_6")
+
+        self.gridLayout_22.addWidget(self.label_6, 9, 0, 1, 1)
+
+        self.label_2 = QLabel(self.frame_19)
+        self.label_2.setObjectName(u"label_2")
+
+        self.gridLayout_22.addWidget(self.label_2, 0, 0, 1, 1)
+
+        self.label_22 = QLabel(self.frame_19)
+        self.label_22.setObjectName(u"label_22")
+
+        self.gridLayout_22.addWidget(self.label_22, 11, 0, 1, 2)
+
+        self.solver_comboBox = QComboBox(self.frame_19)
+        self.solver_comboBox.setObjectName(u"solver_comboBox")
+
+        self.gridLayout_22.addWidget(self.solver_comboBox, 1, 0, 1, 2)
+
+        self.tolerance_spinBox = QSpinBox(self.frame_19)
+        self.tolerance_spinBox.setObjectName(u"tolerance_spinBox")
+        self.tolerance_spinBox.setMinimum(1)
+        self.tolerance_spinBox.setMaximum(15)
+        self.tolerance_spinBox.setValue(4)
+
+        self.gridLayout_22.addWidget(self.tolerance_spinBox, 7, 1, 1, 1)
+
+        self.dispatch_storage_checkBox = QCheckBox(self.frame_19)
+        self.dispatch_storage_checkBox.setObjectName(u"dispatch_storage_checkBox")
+
+        self.gridLayout_22.addWidget(self.dispatch_storage_checkBox, 18, 0, 1, 1)
+
+        self.label_11 = QLabel(self.frame_19)
+        self.label_11.setObjectName(u"label_11")
+
+        self.gridLayout_22.addWidget(self.label_11, 8, 0, 1, 1)
+
+        self.ignore_single_node_islands_checkBox = QCheckBox(self.frame_19)
+        self.ignore_single_node_islands_checkBox.setObjectName(u"ignore_single_node_islands_checkBox")
+        self.ignore_single_node_islands_checkBox.setChecked(True)
+
+        self.gridLayout_22.addWidget(self.ignore_single_node_islands_checkBox, 4, 0, 1, 2)
+
+        self.reactive_power_control_mode_comboBox = QComboBox(self.frame_19)
+        self.reactive_power_control_mode_comboBox.setObjectName(u"reactive_power_control_mode_comboBox")
+
+        self.gridLayout_22.addWidget(self.reactive_power_control_mode_comboBox, 13, 0, 1, 2)
+
+        self.label_5 = QLabel(self.frame_19)
+        self.label_5.setObjectName(u"label_5")
+
+        self.gridLayout_22.addWidget(self.label_5, 7, 0, 1, 1)
+
+        self.taps_control_mode_comboBox = QComboBox(self.frame_19)
+        self.taps_control_mode_comboBox.setObjectName(u"taps_control_mode_comboBox")
+
+        self.gridLayout_22.addWidget(self.taps_control_mode_comboBox, 15, 0, 1, 2)
+
+        self.distributed_slack_checkBox = QCheckBox(self.frame_19)
+        self.distributed_slack_checkBox.setObjectName(u"distributed_slack_checkBox")
+
+        self.gridLayout_22.addWidget(self.distributed_slack_checkBox, 3, 0, 1, 2)
 
         self.muSpinBox = QDoubleSpinBox(self.frame_19)
         self.muSpinBox.setObjectName(u"muSpinBox")
@@ -1481,107 +1567,32 @@ class Ui_mainWindow(object):
 
         self.gridLayout_22.addWidget(self.muSpinBox, 8, 1, 1, 1)
 
-        self.label_6 = QLabel(self.frame_19)
-        self.label_6.setObjectName(u"label_6")
-
-        self.gridLayout_22.addWidget(self.label_6, 9, 0, 1, 1)
-
-        self.label_48 = QLabel(self.frame_19)
-        self.label_48.setObjectName(u"label_48")
-
-        self.gridLayout_22.addWidget(self.label_48, 11, 0, 1, 2)
-
-        self.taps_control_mode_comboBox = QComboBox(self.frame_19)
-        self.taps_control_mode_comboBox.setObjectName(u"taps_control_mode_comboBox")
-
-        self.gridLayout_22.addWidget(self.taps_control_mode_comboBox, 14, 0, 1, 2)
-
-        self.auto_precision_checkBox = QCheckBox(self.frame_19)
-        self.auto_precision_checkBox.setObjectName(u"auto_precision_checkBox")
-
-        self.gridLayout_22.addWidget(self.auto_precision_checkBox, 5, 0, 1, 2)
-
-        self.tolerance_spinBox = QSpinBox(self.frame_19)
-        self.tolerance_spinBox.setObjectName(u"tolerance_spinBox")
-        self.tolerance_spinBox.setMinimum(1)
-        self.tolerance_spinBox.setMaximum(15)
-        self.tolerance_spinBox.setValue(4)
-
-        self.gridLayout_22.addWidget(self.tolerance_spinBox, 7, 1, 1, 1)
-
-        self.label_22 = QLabel(self.frame_19)
-        self.label_22.setObjectName(u"label_22")
-
-        self.gridLayout_22.addWidget(self.label_22, 10, 0, 1, 2)
-
-        self.dispatch_storage_checkBox = QCheckBox(self.frame_19)
-        self.dispatch_storage_checkBox.setObjectName(u"dispatch_storage_checkBox")
-
-        self.gridLayout_22.addWidget(self.dispatch_storage_checkBox, 17, 0, 1, 1)
-
-        self.distributed_slack_checkBox = QCheckBox(self.frame_19)
-        self.distributed_slack_checkBox.setObjectName(u"distributed_slack_checkBox")
-
-        self.gridLayout_22.addWidget(self.distributed_slack_checkBox, 3, 0, 1, 2)
-
-        self.label_5 = QLabel(self.frame_19)
-        self.label_5.setObjectName(u"label_5")
-
-        self.gridLayout_22.addWidget(self.label_5, 7, 0, 1, 1)
-
-        self.label_2 = QLabel(self.frame_19)
-        self.label_2.setObjectName(u"label_2")
-
-        self.gridLayout_22.addWidget(self.label_2, 0, 0, 1, 1)
-
-        self.label_50 = QLabel(self.frame_19)
-        self.label_50.setObjectName(u"label_50")
-
-        self.gridLayout_22.addWidget(self.label_50, 13, 0, 1, 2)
-
-        self.solver_comboBox = QComboBox(self.frame_19)
-        self.solver_comboBox.setObjectName(u"solver_comboBox")
-
-        self.gridLayout_22.addWidget(self.solver_comboBox, 1, 0, 1, 2)
-
-        self.max_iterations_spinBox = QSpinBox(self.frame_19)
-        self.max_iterations_spinBox.setObjectName(u"max_iterations_spinBox")
-        self.max_iterations_spinBox.setMinimum(1)
-        self.max_iterations_spinBox.setMaximum(1000)
-        self.max_iterations_spinBox.setValue(40)
-
-        self.gridLayout_22.addWidget(self.max_iterations_spinBox, 9, 1, 1, 1)
-
-        self.reactive_power_control_mode_comboBox = QComboBox(self.frame_19)
-        self.reactive_power_control_mode_comboBox.setObjectName(u"reactive_power_control_mode_comboBox")
-
-        self.gridLayout_22.addWidget(self.reactive_power_control_mode_comboBox, 12, 0, 1, 2)
-
-        self.label_11 = QLabel(self.frame_19)
-        self.label_11.setObjectName(u"label_11")
-
-        self.gridLayout_22.addWidget(self.label_11, 8, 0, 1, 1)
-
-        self.apply_impedance_tolerances_checkBox = QCheckBox(self.frame_19)
-        self.apply_impedance_tolerances_checkBox.setObjectName(u"apply_impedance_tolerances_checkBox")
-
-        self.gridLayout_22.addWidget(self.apply_impedance_tolerances_checkBox, 16, 0, 1, 2)
-
-        self.temperature_correction_checkBox = QCheckBox(self.frame_19)
-        self.temperature_correction_checkBox.setObjectName(u"temperature_correction_checkBox")
-
-        self.gridLayout_22.addWidget(self.temperature_correction_checkBox, 15, 0, 1, 2)
-
-        self.ignore_single_node_islands_checkBox = QCheckBox(self.frame_19)
-        self.ignore_single_node_islands_checkBox.setObjectName(u"ignore_single_node_islands_checkBox")
-        self.ignore_single_node_islands_checkBox.setChecked(True)
-
-        self.gridLayout_22.addWidget(self.ignore_single_node_islands_checkBox, 4, 0, 1, 2)
-
         self.use_voltage_guess_checkBox = QCheckBox(self.frame_19)
         self.use_voltage_guess_checkBox.setObjectName(u"use_voltage_guess_checkBox")
 
         self.gridLayout_22.addWidget(self.use_voltage_guess_checkBox, 6, 0, 1, 2)
+
+        self.label_48 = QLabel(self.frame_19)
+        self.label_48.setObjectName(u"label_48")
+
+        self.gridLayout_22.addWidget(self.label_48, 12, 0, 1, 2)
+
+        self.helm_retry_checkBox = QCheckBox(self.frame_19)
+        self.helm_retry_checkBox.setObjectName(u"helm_retry_checkBox")
+        self.helm_retry_checkBox.setChecked(True)
+
+        self.gridLayout_22.addWidget(self.helm_retry_checkBox, 2, 0, 1, 2)
+
+        self.label_23 = QLabel(self.frame_19)
+        self.label_23.setObjectName(u"label_23")
+
+        self.gridLayout_22.addWidget(self.label_23, 10, 0, 1, 1)
+
+        self.verbositySpinBox = QSpinBox(self.frame_19)
+        self.verbositySpinBox.setObjectName(u"verbositySpinBox")
+        self.verbositySpinBox.setMaximum(3)
+
+        self.gridLayout_22.addWidget(self.verbositySpinBox, 10, 1, 1, 1)
 
 
         self.verticalLayout_4.addWidget(self.frame_19)
@@ -4123,48 +4134,52 @@ class Ui_mainWindow(object):
         self.label_63.setText("")
         self.label_17.setText(QCoreApplication.translate("mainWindow", u"Power flow", None))
 #if QT_CONFIG(tooltip)
-        self.helm_retry_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>If the selected method does not converge, try a list of methods that may help</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.helm_retry_checkBox.setText(QCoreApplication.translate("mainWindow", u"Retry with other methods if failed", None))
-#if QT_CONFIG(tooltip)
-        self.muSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Factor by which multiply each jacobian result. In practice this is used to slow down troublesome solutions.", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_6.setText(QCoreApplication.translate("mainWindow", u"Numerical method max. iterations", None))
-        self.label_48.setText(QCoreApplication.translate("mainWindow", u"Reactive power control mode", None))
-#if QT_CONFIG(tooltip)
-        self.auto_precision_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If active, GridCal finds a precission that suits the magnitude of the power injections so that the power flow is meaningful", None))
-#endif // QT_CONFIG(tooltip)
-        self.auto_precision_checkBox.setText(QCoreApplication.translate("mainWindow", u"Automatic precision", None))
-#if QT_CONFIG(tooltip)
-        self.tolerance_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Exponent of the precission to use.</p><p>precision = 1x10^-factor</p><p>i.e.</p><p>factor=3</p><p>precision = 1e-3</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.tolerance_spinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e-", None))
-        self.label_22.setText("")
-#if QT_CONFIG(tooltip)
-        self.dispatch_storage_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>When enabled, the storage devices beheave as actual storage devices taking into account their energy limitations when delivering power.</p><p>When disabled, the storage devices beheave exactly as controlled generators</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.dispatch_storage_checkBox.setText(QCoreApplication.translate("mainWindow", u"dispatch storage", None))
-#if QT_CONFIG(tooltip)
-        self.distributed_slack_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>If active, the slack power is distributed among the generators according to their installed power &quot;Snom&quot;</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.distributed_slack_checkBox.setText(QCoreApplication.translate("mainWindow", u"Distributed slack", None))
-        self.label_5.setText(QCoreApplication.translate("mainWindow", u"Precision", None))
-        self.label_2.setText(QCoreApplication.translate("mainWindow", u"Solver", None))
-        self.label_50.setText(QCoreApplication.translate("mainWindow", u"Transformer taps control mode", None))
-#if QT_CONFIG(tooltip)
         self.max_iterations_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Maximum numberof iterations to use.</p><p><br/></p><p>Tipical values: </p><p>Newton Raphson: 5</p><p>Levenberg-Marquards: 20</p><p>Fast decoupled: 10</p><p>Others: 20</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_11.setText(QCoreApplication.translate("mainWindow", u"Acceleration", None))
-        self.apply_impedance_tolerances_checkBox.setText(QCoreApplication.translate("mainWindow", u"Apply impedance tolerances", None))
 #if QT_CONFIG(tooltip)
         self.temperature_correction_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Correct the branches resistance using the temperature", None))
 #endif // QT_CONFIG(tooltip)
         self.temperature_correction_checkBox.setText(QCoreApplication.translate("mainWindow", u"Apply temperature correction", None))
 #if QT_CONFIG(tooltip)
+        self.auto_precision_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If active, GridCal finds a precission that suits the magnitude of the power injections so that the power flow is meaningful", None))
+#endif // QT_CONFIG(tooltip)
+        self.auto_precision_checkBox.setText(QCoreApplication.translate("mainWindow", u"Automatic precision", None))
+        self.label_50.setText(QCoreApplication.translate("mainWindow", u"Transformer taps control mode", None))
+        self.apply_impedance_tolerances_checkBox.setText(QCoreApplication.translate("mainWindow", u"Apply impedance tolerances", None))
+        self.label_6.setText(QCoreApplication.translate("mainWindow", u"Numerical method max. iterations", None))
+        self.label_2.setText(QCoreApplication.translate("mainWindow", u"Solver", None))
+        self.label_22.setText("")
+#if QT_CONFIG(tooltip)
+        self.tolerance_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Exponent of the precission to use.</p><p>precision = 1x10^-factor</p><p>i.e.</p><p>factor=3</p><p>precision = 1e-3</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.tolerance_spinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e-", None))
+#if QT_CONFIG(tooltip)
+        self.dispatch_storage_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>When enabled, the storage devices beheave as actual storage devices taking into account their energy limitations when delivering power.</p><p>When disabled, the storage devices beheave exactly as controlled generators</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.dispatch_storage_checkBox.setText(QCoreApplication.translate("mainWindow", u"dispatch storage", None))
+        self.label_11.setText(QCoreApplication.translate("mainWindow", u"Acceleration", None))
+#if QT_CONFIG(tooltip)
         self.ignore_single_node_islands_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If active, the islands of a single node are ignored.", None))
 #endif // QT_CONFIG(tooltip)
         self.ignore_single_node_islands_checkBox.setText(QCoreApplication.translate("mainWindow", u"Ignore single node islands", None))
+        self.label_5.setText(QCoreApplication.translate("mainWindow", u"Precision", None))
+#if QT_CONFIG(tooltip)
+        self.distributed_slack_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>If active, the slack power is distributed among the generators according to their installed power &quot;Snom&quot;</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.distributed_slack_checkBox.setText(QCoreApplication.translate("mainWindow", u"Distributed slack", None))
+#if QT_CONFIG(tooltip)
+        self.muSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Factor by which multiply each jacobian result. In practice this is used to slow down troublesome solutions.", None))
+#endif // QT_CONFIG(tooltip)
         self.use_voltage_guess_checkBox.setText(QCoreApplication.translate("mainWindow", u"Use voltage guess", None))
+        self.label_48.setText(QCoreApplication.translate("mainWindow", u"Reactive power control mode", None))
+#if QT_CONFIG(tooltip)
+        self.helm_retry_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>If the selected method does not converge, try a list of methods that may help</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.helm_retry_checkBox.setText(QCoreApplication.translate("mainWindow", u"Retry with other methods if failed", None))
+        self.label_23.setText(QCoreApplication.translate("mainWindow", u"Verbosity", None))
+#if QT_CONFIG(tooltip)
+        self.verbositySpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Level of console information. 0: None, 1: some information, 2: all the information", None))
+#endif // QT_CONFIG(tooltip)
         self.label_8.setText(QCoreApplication.translate("mainWindow", u"Stop at", None))
         self.label_25.setText(QCoreApplication.translate("mainWindow", u"Refer to the NTC areas (Linear tab)", None))
         self.label_107.setText("")
