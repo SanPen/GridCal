@@ -177,8 +177,8 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
 
                     # recompute the error based on the new Scalc and S0
                     Sbus = compute_zip_power(S0, I0, Y0, Vm)
-                    fx = compute_fx(Scalc, Sbus, pvpq, pq)
-                    norm_f = np.linalg.norm(fx, np.inf)
+                    f = compute_fx(Scalc, Sbus, pvpq, pq)
+                    norm_f = np.linalg.norm(f, np.inf)
 
             # determine the convergence condition
             converged = norm_f <= tol

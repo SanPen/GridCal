@@ -51,8 +51,9 @@ class ShortCircuitOptions:
         :param verbose:
         """
 
-        assert (len(branch_fault_locations) == len(branch_index))
-        assert (len(branch_fault_impedance) == len(branch_index))
+        if branch_index is not None:
+            assert (len(branch_fault_locations) == len(branch_index))
+            assert (len(branch_fault_impedance) == len(branch_index))
 
         if bus_index is None:
             self.bus_index = list()
