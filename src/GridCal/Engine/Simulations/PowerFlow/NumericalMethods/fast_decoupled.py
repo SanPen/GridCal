@@ -3,12 +3,13 @@ from numpy import angle, conj, exp, r_, Inf
 from numpy.linalg import norm
 from scipy.sparse.linalg import splu
 import time
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 
 np.set_printoptions(linewidth=320)
 
 
-def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> NumericPowerFlowResults:
+def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> NumericPowerFlowResults:
     """
     Fast decoupled power flow
     :param Vbus: array of initial voltages
@@ -38,7 +39,8 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> 
     J2 = splu(B2[np.ix_(pq, pq)])
 
     # evaluate initial mismatch
-    Scalc = voltage * np.conj(Ybus * voltage - Ibus)
+    Sbus = compute_zip_power(S0, I0, Y0, Vm)  # compute the ZIP power injection
+    Scalc = voltage * np.conj(Ybus * voltage)
     mis = (Scalc - Sbus) / Vm  # complex power mismatch
     dP = mis[pqpv].real
     dQ = mis[pq].imag
@@ -63,7 +65,8 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> 
             voltage = Vm * exp(1j * Va)
 
             # evaluate mismatch
-            Scalc = voltage * conj(Ybus * voltage - Ibus)
+            # (Sbus does not change here since Vm is fixed ...)
+            Scalc = compute_power(Ybus, voltage)
             mis = (Scalc - Sbus) / Vm  # complex power mismatch
             dP = mis[pqpv].real
             dQ = mis[pq].imag
@@ -82,7 +85,8 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> 
                 voltage = Vm * exp(1j * Va)
 
                 # evaluate mismatch
-                Scalc = voltage * conj(Ybus * voltage - Ibus)
+                Sbus = compute_zip_power(S0, I0, Y0, Vm)  # compute the ZIP power injection
+                Scalc = compute_power(Ybus, voltage)
                 mis = (Scalc - Sbus) / Vm  # complex power mismatch
                 dP = mis[pqpv].real
                 dQ = mis[pq].imag
@@ -114,29 +118,3 @@ def FDPF(Vbus, Sbus, Ibus, Ybus, B1, B2, pq, pv, pqpv, tol=1e-9, max_it=100) -> 
                                    elapsed=elapsed)
 
 
-if __name__ == '__main__':
-
-    fname = r'/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 9 Bus.gridcal'
-
-    from GridCal.Engine import FileOpen
-
-    circuit = FileOpen(fname).open()
-    nc = circuit.compile_snapshot()
-    islands = nc.compute()
-    island = islands[0]
-
-    voltage_, converged_, normF_, Scalc_, iter_, elapsed_ = FDPF(Vbus=island.Vbus,
-                                                                 Sbus=island.Sbus,
-                                                                 Ibus=island.Ibus,
-                                                                 Ybus=island.Ybus,
-                                                                 B1=island.B1,
-                                                                 B2=island.B2,
-                                                                 pq=island.pq,
-                                                                 pv=island.pv,
-                                                                 pqpv=island.pqpv,
-                                                                 tol=1e-9,
-                                                                 max_it=100)
-
-    print(np.abs(voltage_))
-    print('iter:', iter_)
-    print('Error:', normF_)

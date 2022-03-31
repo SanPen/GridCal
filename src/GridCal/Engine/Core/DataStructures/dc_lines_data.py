@@ -31,6 +31,7 @@ class DcLinesData:
         self.ntime = ntime
 
         self.dc_line_names = np.zeros(ndcline, dtype=object)
+        self.dc_line_active = np.zeros((ndcline, ntime), dtype=int)
         self.dc_line_R = np.zeros(ndcline, dtype=float)
         self.dc_line_temp_base = np.zeros(ndcline, dtype=float)
         self.dc_line_temp_oper = np.zeros(ndcline, dtype=float)
@@ -65,13 +66,17 @@ class DcLinesData:
 
         return data
 
-    def get_island(self, bus_idx):
+    def get_island(self, bus_idx, t_idx=0):
         """
         Get the elements of the island given the bus indices
         :param bus_idx: list of bus indices
         :return: list of line indices of the island
         """
-        return tp.get_elements_of_the_island(self.C_dc_line_bus, bus_idx)
+        if self.ndcline:
+            # the active status comes in branches data
+            return tp.get_elements_of_the_island(self.C_dc_line_bus, bus_idx, active=self.dc_line_active[:, t_idx])
+        else:
+            return np.zeros(0, dtype=int)
 
     def DC_R_corrected(self):
         """

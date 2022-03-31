@@ -67,7 +67,7 @@ def control_q_iterative(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, 
         print('Q control logic (iterative)')
 
     n = len(V)
-    Vm = abs(V)
+    Vm = np.abs(V)
     Qnew = Q.copy()
     types_new = types.copy()
     any_control_issue = False
@@ -336,9 +336,7 @@ def control_q_direct(V, Vm, Vset, Q, Qmax, Qmin, types, original_types, verbose=
     return Vnew, Qnew, types_new, any_control_issue
 
 
-# @nb.njit("Tuple((u8, c16[:], c16[:], i8[:], i8[:], i8[:]))"
-#          "(c16[:], c16[:], i8[:], i8[:], i8[:], f8[:], f8[:])", cache=True)
-@nb.njit()
+@nb.njit(cache=True)
 def control_q_inside_method(Scalc, Sbus, pv, pq, pvpq, Qmin, Qmax):
     """
     Control of reactive power within the numerical method
@@ -362,6 +360,7 @@ def control_q_inside_method(Scalc, Sbus, pv, pq, pvpq, Qmin, Qmax):
             changed.append(k)
 
     if len(changed) > 0:
+        # convert PV nodes to PQ
         pv_new = pv[np.array(changed)]
         pq = np.concatenate((pq, pv_new))
         pv = np.delete(pv, changed)

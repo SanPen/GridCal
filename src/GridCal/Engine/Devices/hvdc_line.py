@@ -86,6 +86,7 @@ def getFromAndToPowerAt(Pset, theta_f, theta_t, Vnf, Vnt, v_set_f, v_set_t, Sbas
         # rate truncation
         if Pcalc > rate:
             Pcalc = rate
+
         elif Pcalc < -rate:
             Pcalc = -rate
 

@@ -34,8 +34,9 @@ from numpy import conj, abs
 from numpy import complex128, float64, int32
 from numpy.core.multiarray import zeros, empty
 import numpy as np
-from scipy.sparse import csr_matrix, csc_matrix
-import GridCal.Engine.Simulations.PowerFlow.derivatives as deriv
+import scipy.sparse as sp
+from scipy.sparse import csr_matrix, csc_matrix, diags
+import GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives as deriv
 
 
 def dSbus_dV(Ybus, V):
@@ -53,7 +54,7 @@ def dSbus_dV(Ybus, V):
     return dS_dVm, dS_dVa
 
 
-@jit(nopython=True, cache=False)
+@jit(nopython=True, cache=True)
 def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma: no cover
     """
     Calculates Jacobian in CSR format.
@@ -172,7 +173,7 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
 
 
 # @jit(i8(c16[:], c16[:], i4[:], i4[:], i8[:], i8[:], f8[:], i8[:], i8[:]), nopython=True, cache=True)
-@jit(nopython=True, cache=False)
+@jit(nopython=True, cache=True)
 def create_J_no_pv(dS_dVm, dS_dVa, Yp, Yj, pvpq_lookup, pvpq, Jx, Jj, Jp):  # pragma: no cover
     """
         Calculates Jacobian faster with numba and sparse matrices. This version is similar to create_J except that
@@ -292,7 +293,7 @@ def AC_jacobian(Ybus, V, pvpq, pq, npv, npq):
 
 
 
-@njit()
+@njit(cache=True)
 def jacobian_numba(nbus, Gi, Gp, Gx, Bx, P, Q, E, F, Vm, pq, pvpq):
     """
     Compute the Tinney version of the AC jacobian without any sin, cos or abs
@@ -431,3 +432,100 @@ def AC_jacobian2(Y, S, V, Vm, pq, pv):
     Ji = np.resize(Ji, nnz)
 
     return csc_matrix((Jx, Ji, Jp), shape=(n_rows, n_cols))
+
+
+
+
+
+
+def Jacobian(Ybus, V, Ibus, pq, pvpq):
+    """
+    Computes the system Jacobian matrix in polar coordinates
+    Args:
+        Ybus: Admittance matrix
+        V: Array of nodal voltages
+        Ibus: Array of nodal current injections
+        pq: Array with the indices of the PQ buses
+        pvpq: Array with the indices of the PV and PQ buses
+
+    Returns:
+        The system Jacobian matrix
+    """
+    I = Ybus * V - Ibus
+
+    diagV = sp.diags(V)
+    diagI = sp.diags(I)
+    diagVnorm = sp.diags(V / np.abs(V))
+
+    dS_dVm = diagV * np.conj(Ybus * diagVnorm) + np.conj(diagI) * diagVnorm
+    dS_dVa = 1.0j * diagV * np.conj(diagI - Ybus * diagV)
+
+    J = sp.vstack([sp.hstack([dS_dVa[np.ix_(pvpq, pvpq)].real, dS_dVm[np.ix_(pvpq, pq)].real]),
+                   sp.hstack([dS_dVa[np.ix_(pq, pvpq)].imag, dS_dVm[np.ix_(pq, pq)].imag])], format="csc")
+
+    return csc_matrix(J)
+
+
+def Jacobian_cartesian(Ybus, V, Ibus, pq, pvpq):
+    """
+    Computes the system Jacobian matrix in cartesian coordinates
+    Args:
+        Ybus: Admittance matrix
+        V: Array of nodal voltages
+        Ibus: Array of nodal current injections
+        pq: Array with the indices of the PQ buses
+        pvpq: Array with the indices of the PV and PQ buses
+
+    Returns:
+        The system Jacobian matrix in cartesian coordinates
+    """
+    I = Ybus * V - Ibus
+
+    diagV = sp.diags(V)
+    diagI = sp.diags(I)
+    VY = diagV * np.conj(Ybus)
+
+    dS_dVr = np.conj(diagI) + VY  # dSbus / dVr
+    dS_dVi = 1j * (np.conj(diagI) - VY)  # dSbus / dVi
+
+    '''
+    j11 = real(dSbus_dVr([pq; pv], pq));    j12 = real(dSbus_dVi([pq; pv], [pv; pq]));
+
+    j21 = imag(dSbus_dVr(pq, pq));          j22 = imag(dSbus_dVi(pq, [pv; pq]));
+
+
+    J = [   j11 j12;
+            j21 j22;    ];
+    '''
+
+    J = sp.vstack([sp.hstack([dS_dVr[np.ix_(pvpq, pq)].real, dS_dVi[np.ix_(pvpq, pvpq)].real]),
+                   sp.hstack([dS_dVr[np.ix_(pq, pq)].imag, dS_dVi[np.ix_(pq, pvpq)].imag])], format="csc")
+
+    return csc_matrix(J)
+
+
+def Jacobian_decoupled(Ybus, V, Ibus, pq, pvpq):
+    """
+    Computes the decoupled Jacobian matrices
+    Args:
+        Ybus: Admittance matrix
+        V: Array of nodal voltages
+        Ibus: Array of nodal current injections
+        pq: Array with the indices of the PQ buses
+        pvpq: Array with the indices of the PV and PQ buses
+
+    Returns: J11, J22
+    """
+    I = Ybus * V - Ibus
+
+    diagV = sp.diags(V)
+    diagI = sp.diags(I)
+    diagVnorm = sp.diags(V / np.abs(V))
+
+    dS_dVm = diagV * np.conj(Ybus * diagVnorm) + np.conj(diagI) * diagVnorm
+    dS_dVa = 1.0j * diagV * np.conj(diagI - Ybus * diagV)
+
+    J11 = dS_dVa[np.ix_(pvpq, pvpq)].real
+    J22 = dS_dVm[np.ix_(pq, pq)].imag
+
+    return J11, J22

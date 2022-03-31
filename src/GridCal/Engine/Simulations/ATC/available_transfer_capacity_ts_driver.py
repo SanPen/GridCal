@@ -228,11 +228,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.options = options
 
         # OPF results
-        self.results = AvailableTransferCapacityTimeSeriesResults(br_names=[],
-                                                                  bus_names=[],
-                                                                  rates=[],
-                                                                  contingency_rates=[],
-                                                                  time_array=[])
+        self.results: AvailableTransferCapacityTimeSeriesResults = None
 
     def run(self):
         """

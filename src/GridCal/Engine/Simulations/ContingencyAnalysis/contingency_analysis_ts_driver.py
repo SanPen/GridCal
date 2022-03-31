@@ -28,7 +28,7 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import TimeSeriesDriverTemplate
 
 
-@jit(nopython=True, parallel=False)
+@jit(nopython=True, parallel=False, cache=True)
 def compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_overload, worst_flows):
     """
     Compute LODF based flows (Sf)
@@ -61,7 +61,7 @@ def compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_over
             worst_flows[t, e] = flow_n_1
 
 
-@jit(nopython=True, parallel=True)
+@jit(nopython=True, parallel=True, cache=True)
 def compute_flows_numba(e, nt, contingency_branch_idx, LODF, Flows, rates, overload_count,
                         max_overload, worst_flows, parallelize_from=500):
     """

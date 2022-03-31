@@ -33,6 +33,11 @@ from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
 from GridCal.Engine.basic_structures import SolverType
 
+try:
+    from ortools.linear_solver import pywraplp
+except ModuleNotFoundError:
+    print('ORTOOLS not found :(')
+
 ########################################################################################################################
 # Optimal Power flow classes
 ########################################################################################################################
@@ -40,28 +45,30 @@ from GridCal.Engine.basic_structures import SolverType
 
 class OptimalNetTransferCapacityOptions:
 
-    def __init__(self, area_from_bus_idx, area_to_bus_idx,
+    def __init__(self,
+                 area_from_bus_idx,
+                 area_to_bus_idx,
                  verbose=False,
                  grouping: TimeGrouping = TimeGrouping.NoGrouping,
                  mip_solver=MIPSolvers.CBC,
-                 generation_formulation: GenerationNtcFormulation = GenerationNtcFormulation.Optimal,
-                 monitor_only_sensitive_branches=False,
-                 branch_sensitivity_threshold=0.01,
-                 skip_generation_limits=False,
-                 consider_contingencies=True,
-                 maximize_exchange_flows=True,
-                 perform_previous_checks=True,
+                 generation_formulation: GenerationNtcFormulation = GenerationNtcFormulation.Proportional,
+                 monitor_only_sensitive_branches=True,
+                 branch_sensitivity_threshold=0.05,
+                 skip_generation_limits=True,
+                 perform_previous_checks=False,
                  dispatch_all_areas=False,
                  tolerance=1e-2,
                  sensitivity_dT=100.0,
                  sensitivity_mode: AvailableTransferMode = AvailableTransferMode.InstalledPower,
                  weight_power_shift=1e0,
                  weight_generation_cost=1e-2,
-                 weight_generation_delta=1e0,
-                 weight_kirchoff=1e5,
-                 weight_overloads=1e5,
-                 weight_hvdc_control=1e0
-                 ):
+                 with_check=True,
+                 time_limit_ms=1e4,
+                 max_report_elements=0,
+                 consider_contingencies=True,
+                 consider_hvdc_contingencies=False,
+                 consider_gen_contingencies=False,
+                 generation_contingency_threshold=0):
         """
 
         :param area_from_bus_idx:
@@ -79,10 +86,10 @@ class OptimalNetTransferCapacityOptions:
         :param sensitivity_mode:
         :param weight_power_shift:
         :param weight_generation_cost:
-        :param weight_generation_delta:
-        :param weight_kirchoff:
-        :param weight_overloads:
-        :param weight_hvdc_control:
+        :param with_check:
+        :param time_limit_ms:
+        :param max_report_elements:
+        :param generation_contingency_threshold:
         """
         self.verbose = verbose
 
@@ -102,10 +109,6 @@ class OptimalNetTransferCapacityOptions:
 
         self.skip_generation_limits = skip_generation_limits
 
-        self.consider_contingencies = consider_contingencies
-
-        self.maximize_exchange_flows = maximize_exchange_flows
-
         self.dispatch_all_areas = dispatch_all_areas
 
         self.tolerance = tolerance
@@ -118,10 +121,17 @@ class OptimalNetTransferCapacityOptions:
 
         self.weight_power_shift = weight_power_shift
         self.weight_generation_cost = weight_generation_cost
-        self.weight_generation_delta = weight_generation_delta
-        self.weight_kirchoff = weight_kirchoff
-        self.weight_overloads = weight_overloads
-        self.weight_hvdc_control = weight_hvdc_control
+
+
+        self.consider_contingencies = consider_contingencies
+        self.consider_hvdc_contingencies = consider_hvdc_contingencies
+        self.consider_gen_contingencies = consider_gen_contingencies
+        self.generation_contingency_threshold = generation_contingency_threshold
+
+        self.with_check = with_check
+        self.time_limit_ms = time_limit_ms
+        self.max_report_elements = max_report_elements
+
 
 
 class OptimalNetTransferCapacityResults(ResultsTemplate):
@@ -148,14 +158,13 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
     """
 
     def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names,
-                 Sbus=None, voltage=None, load_shedding=None, generator_shedding=None,
-                 battery_power=None, controlled_generation_power=None, Sf=None,
-                 overloads=None, loading=None, losses=None, converged=None, bus_types=None,
-                 hvdc_flow=None, hvdc_slacks=None, hvdc_loading=None, node_slacks=None, phase_shift=None,
-                 generation_delta=None, generation_delta_slacks=None,
-                 inter_area_branches=list(), inter_area_hvdc=list(), alpha=None,
-                 contingency_flows_list=None, contingency_indices_list=None, contingency_flows_slacks_list=None,
-                 rates=None, contingency_rates=None):
+                 Sbus=None, voltage=None, battery_power=None, controlled_generation_power=None, Sf=None,
+                 loading=None, losses=None, solved=None, bus_types=None, hvdc_flow=None, hvdc_loading=None,
+                 phase_shift=None, generation_delta=None, inter_area_branches=list(), inter_area_hvdc=list(),
+                 alpha=None, contingency_branch_flows_list=None, contingency_branch_indices_list=None, rates=None,
+                 contingency_generation_flows_list=None, contingency_generation_indices_list=None,
+                 contingency_hvdc_flows_list=None, contingency_hvdc_indices_list=None, contingency_rates=None,
+                 area_from_bus_idx=None, area_to_bus_idx=None):
 
         ResultsTemplate.__init__(self,
                                  name='OPF',
@@ -163,21 +172,19 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.BusVoltageAngle,
                                                     ResultTypes.BranchPower,
                                                     ResultTypes.BranchLoading,
-                                                    ResultTypes.BranchOverloads,
                                                     ResultTypes.BranchTapAngle,
 
                                                     ResultTypes.ContingencyFlowsReport,
+                                                    ResultTypes.ContingencyFlowsBranchReport,
+                                                    ResultTypes.ContingencyFlowsGenerationReport,
+                                                    ResultTypes.ContingencyFlowsHvdcReport,
 
                                                     ResultTypes.HvdcPowerFrom,
-                                                    ResultTypes.HvdcOverloads,
                                                     ResultTypes.BatteryPower,
                                                     ResultTypes.GeneratorPower,
                                                     ResultTypes.GenerationDelta,
-                                                    ResultTypes.GenerationDeltaSlacks,
-                                                    ResultTypes.LoadShedding,
                                                     ResultTypes.AvailableTransferCapacityAlpha,
-                                                    ResultTypes.InterAreaExchange
-                                                    ],
+                                                    ResultTypes.InterAreaExchange],
 
                                  data_variables=['bus_names',
                                                  'branch_names',
@@ -186,8 +193,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                  'battery_names',
                                                  'Sbus',
                                                  'voltage',
-                                                 'load_shedding',
-                                                 'generator_shedding',
                                                  'Sf',
                                                  'bus_types',
                                                  'overloads',
@@ -204,32 +209,25 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.hvdc_names = hvdc_names
 
         self.inter_area_branches = inter_area_branches
-
         self.inter_area_hvdc = inter_area_hvdc
 
-        self.generation_delta = generation_delta
+        self.area_from_bus_idx = area_from_bus_idx
+        self.area_to_bus_idx = area_to_bus_idx
 
-        self.generation_delta_slacks = generation_delta_slacks
+        self.generation_delta = generation_delta
 
         self.Sbus = Sbus
 
         self.voltage = voltage
 
-        self.node_slacks = node_slacks
-
-        self.load_shedding = load_shedding
-
         self.Sf = Sf
 
         self.hvdc_Pf = hvdc_flow
         self.hvdc_loading = hvdc_loading
-        self.hvdc_overloads = hvdc_slacks
 
         self.phase_shift = phase_shift
 
         self.bus_types = bus_types
-
-        self.overloads = overloads
 
         self.loading = loading
 
@@ -237,17 +235,20 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.battery_power = battery_power
 
-        self.generator_shedding = generator_shedding
-
         self.generator_power = controlled_generation_power
 
-        self.converged = converged
+        self.solved = solved
 
         self.alpha = alpha
 
-        self.contingency_flows_list = contingency_flows_list
-        self.contingency_indices_list = contingency_indices_list  # [(t, m, c), ...]
-        self.contingency_flows_slacks_list = contingency_flows_slacks_list
+        self.contingency_branch_flows_list = contingency_branch_flows_list
+        self.contingency_branch_indices_list = contingency_branch_indices_list  # [(t, m, c), ...]
+
+        self.contingency_generation_flows_list = contingency_generation_flows_list
+        self.contingency_generation_indices_list = contingency_generation_indices_list  # [(t, m, c), ...]
+
+        self.contingency_hvdc_flows_list = contingency_hvdc_flows_list
+        self.contingency_hvdc_indices_list = contingency_hvdc_indices_list  # [(t, m, c), ...]
 
         self.rates = rates
         self.contingency_rates = contingency_rates
@@ -269,19 +270,186 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.voltage = np.zeros(n, dtype=complex)
 
-        self.load_shedding = np.zeros(n, dtype=float)
-
         self.Sf = np.zeros(m, dtype=complex)
 
         self.loading = np.zeros(m, dtype=complex)
-
-        self.overloads = np.zeros(m, dtype=complex)
 
         self.losses = np.zeros(m, dtype=complex)
 
         self.converged = list()
 
         self.plot_bars_limit = 100
+
+    def get_exchange_power(self):
+        y = list()
+
+        for (k, sign) in self.inter_area_branches:
+            y.append([self.Sf[k] * sign])
+
+        for (k, sign) in self.inter_area_hvdc:
+            y.append([self.hvdc_Pf[k] * sign])
+
+        return np.array(y).sum()
+
+    def get_contingency_report(self, max_report_elements=0):
+
+        l1, c1, y1 = self.get_contingency_branch_report()
+        l2, c2, y2 = self.get_contingency_generation_report()
+        l3, c3, y3 = self.get_contingency_hvdc_report()
+
+        # group all contingency reports
+        labels = l1 + l2 + l3
+        columns = c1
+        y = np.concatenate((y1, y2, y3), axis=0)
+
+        if len(y.shape) == 2:
+            idx = np.flip(np.argsort(np.abs(y[:, 8].astype(float))))  # sort by ContingencyFlow (%)
+            y = y[idx, :]
+            y = np.array(y, dtype=object)
+        else:
+            y = np.zeros((0, len(columns)), dtype=object)
+
+        # curtail report
+        if max_report_elements > 0:
+            y = y[:max_report_elements, :]
+            labels = labels[:max_report_elements]
+
+        return labels, columns, y
+
+    def get_contingency_branch_report(self, max_report_elements=0):
+        labels = list()
+        y = list()
+
+        for (m, c), contingency_flow in zip(self.contingency_branch_indices_list, self.contingency_branch_flows_list):
+            if contingency_flow != 0.0:
+                y.append((m, c,
+                          self.branch_names[m],
+                          self.branch_names[c],
+                          contingency_flow,
+                          self.Sf[m],
+                          self.contingency_rates[m],
+                          self.rates[m],
+                          contingency_flow / self.contingency_rates[m] * 100,
+                          self.Sf[m] / self.rates[m] * 100,
+                          'Branch'))
+                labels.append(len(y))
+
+        columns = ['Monitored idx',
+                   'Contingency idx',
+                   'Monitored',
+                   'Contingency',
+                   'ContingencyFlow (MW)',
+                   'Base flow (MW)',
+                   'Contingency rates (MW)',
+                   'Base rates (MW)',
+                   'ContingencyFlow (%)',
+                   'Base flow (%)',
+                   'Contingency Type']
+
+        y = np.array(y)
+        if len(y.shape) == 2:
+            idx = np.flip(np.argsort(np.abs(y[:, 8].astype(float))))  # sort by ContingencyFlow (%)
+            y = y[idx, :]
+            y = np.array(y, dtype=object)
+        else:
+            y = np.zeros((0, len(columns)), dtype=object)
+
+        # curtail report
+        if max_report_elements > 0:
+            y = y[:max_report_elements, :]
+            labels = labels[:max_report_elements]
+
+        return labels, columns, y
+
+    def get_contingency_generation_report(self, max_report_elements=0):
+        labels = list()
+        y = list()
+
+        for (m, c), contingency_flow in zip(self.contingency_generation_indices_list, self.contingency_generation_flows_list):
+            if contingency_flow != 0.0:
+                y.append((m, c,
+                          self.branch_names[m],
+                          self.generator_names[c],
+                          contingency_flow,
+                          self.Sf[m],
+                          self.contingency_rates[m],
+                          self.rates[m],
+                          contingency_flow / self.contingency_rates[m] * 100,
+                          self.Sf[m] / self.rates[m] * 100,
+                          'Generation'))
+                labels.append(len(y))
+
+        columns = ['Monitored idx',
+                   'Contingency idx',
+                   'Monitored',
+                   'Contingency',
+                   'ContingencyFlow (MW)',
+                   'Base flow (MW)',
+                   'Contingency rates (MW)',
+                   'Base rates (MW)',
+                   'ContingencyFlow (%)',
+                   'Base flow (%)',
+                   'Contingency Type']
+
+        y = np.array(y)
+        if len(y.shape) == 2:
+            idx = np.flip(np.argsort(np.abs(y[:, 8].astype(float))))  # sort by ContingencyFlow (%)
+            y = y[idx, :]
+            y = np.array(y, dtype=object)
+        else:
+            y = np.zeros((0, len(columns)), dtype=object)
+
+        # curtail report
+        if max_report_elements > 0:
+            y = y[:max_report_elements, :]
+            labels = labels[:max_report_elements]
+
+        return labels, columns, y
+
+    def get_contingency_hvdc_report(self, max_report_elements=0):
+        labels = list()
+        y = list()
+
+        for (m, c), contingency_flow in zip(self.contingency_hvdc_indices_list, self.contingency_hvdc_flows_list):
+            if contingency_flow != 0.0:
+                y.append((m, c,
+                          self.branch_names[m],
+                          self.hvdc_names[c],
+                          contingency_flow,
+                          self.Sf[m],
+                          self.contingency_rates[m],
+                          self.rates[m],
+                          contingency_flow / self.contingency_rates[m] * 100,
+                          self.Sf[m] / self.rates[m] * 100,
+                          'Hvdc'))
+                labels.append(len(y))
+
+        columns = ['Monitored idx',
+                   'Contingency idx',
+                   'Monitored',
+                   'Contingency',
+                   'ContingencyFlow (MW)',
+                   'Base flow (MW)',
+                   'Contingency rates (MW)',
+                   'Base rates (MW)',
+                   'ContingencyFlow (%)',
+                   'Base flow (%)',
+                   'Contingency Type']
+
+        y = np.array(y)
+        if len(y.shape) == 2:
+            idx = np.flip(np.argsort(np.abs(y[:, 8].astype(float))))  # sort by ContingencyFlow (%)
+            y = y[idx, :]
+            y = np.array(y, dtype=object)
+        else:
+            y = np.zeros((0, len(columns)), dtype=object)
+
+        # curtail report
+        if max_report_elements > 0:
+            y = y[:max_report_elements, :]
+            labels = labels[:max_report_elements]
+
+        return labels, columns, y
 
     def mdl(self, result_type) -> "ResultsTable":
         """
@@ -340,18 +508,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = '(deg)'
             title = result_type.value[0]
 
-        # elif result_type == ResultTypes.NodeSlacks:
-        #     labels = self.bus_names
-        #     y = self.node_slacks
-        #     y_label = '(MW)'
-        #     title = result_type.value[0]
-
-        elif result_type == ResultTypes.GenerationDeltaSlacks:
-            labels = self.generator_names
-            y = self.generation_delta_slacks
-            y_label = '(MW)'
-            title = result_type.value[0]
-
         elif result_type == ResultTypes.GeneratorPower:
             labels = self.generator_names
             y = self.generator_power
@@ -370,12 +526,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = '(MW)'
             title = result_type.value[0]
 
-        elif result_type == ResultTypes.HvdcOverloads:
-            labels = self.hvdc_names
-            y = self.hvdc_overloads
-            y_label = '(MW)'
-            title = result_type.value[0]
-
         elif result_type == ResultTypes.AvailableTransferCapacityAlpha:
             labels = self.branch_names
             y = self.alpha
@@ -385,12 +535,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         elif result_type == ResultTypes.GenerationDelta:
             labels = self.generator_names
             y = self.generation_delta
-            y_label = '(MW)'
-            title = result_type.value[0]
-
-        elif result_type == ResultTypes.LoadShedding:
-            labels = self.load_names
-            y = self.load_shedding
             y_label = '(MW)'
             title = result_type.value[0]
 
@@ -413,41 +557,22 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             title = result_type.value[0]
 
         elif result_type == ResultTypes.ContingencyFlowsReport:
+            labels, columns, y = self.get_contingency_report()
+            y_label = ''
+            title = result_type.value[0]
 
-            y = list()
-            labels = list()
-            for (m, c), contingency_flow in zip(self.contingency_indices_list, self.contingency_flows_list):
-                if contingency_flow != 0.0:
-                    y.append((m, c,
-                              self.branch_names[m],
-                              self.branch_names[c],
-                              contingency_flow,
-                              self.Sf[m],
-                              self.contingency_rates[m],
-                              self.rates[m],
-                              contingency_flow / self.contingency_rates[m] * 100,
-                              self.Sf[m] / self.rates[m] * 100))
-                    labels.append(len(y))
+        elif result_type == ResultTypes.ContingencyFlowsBranchReport:
+            labels, columns, y = self.get_contingency_branch_report()
+            y_label = ''
+            title = result_type.value[0]
 
-            columns = ['Monitored idx',
-                       'Contingency idx',
-                       'Monitored',
-                       'Contingency',
-                       'ContingencyFlow (MW)',
-                       'Base flow (MW)',
-                       'Contingency rates (MW)',
-                       'Base rates (MW)',
-                       'ContingencyFlow (%)',
-                       'Base flow (%)']
+        elif result_type == ResultTypes.ContingencyFlowsGenerationReport:
+            labels, columns, y = self.get_contingency_generation_report()
+            y_label = ''
+            title = result_type.value[0]
 
-            y = np.array(y)
-            if len(y.shape) == 2:
-                idx = np.flip(np.argsort(np.abs(y[:, 8].astype(float))))  # sort by ContingencyFlow (%)
-                y = y[idx, :]
-                y = np.array(y, dtype=object)
-            else:
-                y = np.zeros((0, len(columns)), dtype=object)
-
+        elif result_type == ResultTypes.ContingencyFlowsHvdcReport:
+            labels, columns, y = self.get_contingency_hvdc_report()
             y_label = ''
             title = result_type.value[0]
 
@@ -503,8 +628,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
             idx2=self.options.area_to_bus_idx,
             bus_types=numerical_circuit.bus_types.astype(np.int),
             dT=self.options.sensitivity_dT,
-            mode=self.options.sensitivity_mode.value
-        )
+            mode=self.options.sensitivity_mode.value)
 
         return alpha
 
@@ -513,13 +637,20 @@ class OptimalNetTransferCapacity(DriverTemplate):
         Run a power flow for every circuit
         @return: OptimalPowerFlowResults object
         """
+
         self.progress_text.emit('Compiling...')
+
+        contingency_flows_list = list()
+        contingency_indices_list = list()
+        contingency_gen_flows_list = list()
+        contingency_gen_indices_list = list()
+        contingency_hvdc_flows_list = list()
+        contingency_hvdc_indices_list = list()
 
         numerical_circuit = compile_snapshot_opf_circuit(
             circuit=self.grid,
             apply_temperature=self.pf_options.apply_temperature_correction,
-            branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode
-        )
+            branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
 
         self.progress_text.emit('Running linear analysis...')
 
@@ -545,40 +676,41 @@ class OptimalNetTransferCapacity(DriverTemplate):
             pf_drv.run()
             indices = np.where(np.abs(pf_drv.results.loading.real) >= 1.0)
             for m in zip(indices[0]):
-                if numerical_circuit.branch_data.monitor_loading[m]:
+                if numerical_circuit.branch_data.monitor_loading[m] and \
+                   alpha[m] >= self.options.branch_sensitivity_threshold:
+
                     elm_name = '{0}'.format(numerical_circuit.branch_names[m])
+
                     self.logger.add_error('Base overload', elm_name, pf_drv.results.loading[m].real * 100, 100)
                     base_problems = True
 
             # run contingency analysis ---------------------------------------------------------------------------------
-            get_contingency_flows_list = list()
-            contingency_indices_list = list()
-            contingency_flows_slacks_list = list()
+
 
             if self.options.consider_contingencies:
                 self.progress_text.emit('Pre-solving base state (Contingency analysis)...')
-                options = ContingencyAnalysisOptions(distributed_slack=False)
+                options = ContingencyAnalysisOptions(distributed_slack=False,
+                                                     use_provided_flows=True,
+                                                     Pf=pf_drv.results.Sf.real)
                 cnt_drv = ContingencyAnalysisDriver(grid=self.grid, options=options)
                 cnt_drv.run()
                 indices = np.where(np.abs(cnt_drv.results.loading.real) >= 1.0)
 
                 for m, c in zip(indices[0], indices[1]):
                     if numerical_circuit.branch_data.monitor_loading[m] and \
-                       numerical_circuit.branch_data.contingency_enabled[c]:
+                       numerical_circuit.branch_data.contingency_enabled[c] and \
+                       alpha[m] >= self.options.branch_sensitivity_threshold:
 
                         elm_name = '{0} @ {1}'.format(
                             numerical_circuit.branch_names[m],
-                            numerical_circuit.branch_names[c]
-                        )
+                            numerical_circuit.branch_names[c])
 
                         self.logger.add_error(
                             'Base contingency overload',
                             elm_name, cnt_drv.results.loading[m, c].real * 100,
-                            100
-                        )
+                            100)
 
-                        get_contingency_flows_list.append(cnt_drv.results.Sf[m, c].real)
-                        contingency_flows_slacks_list.append(0.0)
+                        contingency_flows_list.append(cnt_drv.results.Sf[m, c].real)
                         contingency_indices_list.append((m, c))
                         base_problems = True
         else:
@@ -592,16 +724,14 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 F=numerical_circuit.branch_data.F,
                 T=numerical_circuit.branch_data.T,
                 buses_areas_1=self.options.area_from_bus_idx,
-                buses_areas_2=self.options.area_to_bus_idx
-            )
+                buses_areas_2=self.options.area_to_bus_idx)
 
             inter_area_hvdc = get_inter_areas_branches(
                 nbr=numerical_circuit.nhvdc,
                 F=numerical_circuit.hvdc_data.get_bus_indices_f(),
                 T=numerical_circuit.hvdc_data.get_bus_indices_t(),
                 buses_areas_1=self.options.area_from_bus_idx,
-                buses_areas_2=self.options.area_to_bus_idx
-            )
+                buses_areas_2=self.options.area_to_bus_idx)
 
             # pack the results
             self.results = OptimalNetTransferCapacityResults(
@@ -613,65 +743,100 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 hvdc_names=numerical_circuit.hvdc_data.names,
                 Sbus=numerical_circuit.Sbus.real,
                 voltage=pf_drv.results.voltage,
-                load_shedding=np.zeros((numerical_circuit.nload, 1)),
-                generator_shedding=np.zeros((numerical_circuit.ngen, 1)),
                 battery_power=np.zeros((numerical_circuit.nbatt, 1)),
                 controlled_generation_power=numerical_circuit.generator_data.generator_p,
                 Sf=pf_drv.results.Sf.real,
-                overloads=np.zeros(numerical_circuit.nbr),
                 loading=pf_drv.results.loading.real,
-                converged=False,
+                solved=False,
                 bus_types=numerical_circuit.bus_types,
                 hvdc_flow=pf_drv.results.hvdc_Pt,
                 hvdc_loading=pf_drv.results.hvdc_loading,
-                hvdc_slacks=np.zeros(numerical_circuit.nhvdc),
                 phase_shift=pf_drv.results.theta,
                 generation_delta=np.zeros(numerical_circuit.ngen),
-                generation_delta_slacks=np.zeros(numerical_circuit.ngen),
                 inter_area_branches=inter_area_branches,
                 inter_area_hvdc=inter_area_hvdc,
                 alpha=alpha,
-                contingency_flows_list=get_contingency_flows_list,
-                contingency_indices_list=contingency_indices_list,
-                contingency_flows_slacks_list=contingency_flows_slacks_list,
+                contingency_branch_flows_list=contingency_flows_list,
+                contingency_branch_indices_list=contingency_indices_list,
+                contingency_generation_flows_list=contingency_gen_flows_list,
+                contingency_generation_indices_list=contingency_gen_indices_list,
+                contingency_hvdc_flows_list=contingency_hvdc_flows_list,
+                contingency_hvdc_indices_list=contingency_hvdc_indices_list,
                 rates=numerical_circuit.branch_data.branch_rates[:, 0],
-                contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0]
-            )
+                contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0],
+                area_from_bus_idx=self.options.area_from_bus_idx,
+                area_to_bus_idx=self.options.area_to_bus_idx)
         else:
             self.progress_text.emit('Formulating NTC OPF...')
 
-            # DDefine the problem
+            # Define the problem
             problem = OpfNTC(
                 numerical_circuit,
                 area_from_bus_idx=self.options.area_from_bus_idx,
                 area_to_bus_idx=self.options.area_to_bus_idx,
                 alpha=alpha,
                 LODF=linear.LODF,
+                PTDF=linear.PTDF,
                 solver_type=self.options.mip_solver,
                 generation_formulation=self.options.generation_formulation,
                 monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
                 branch_sensitivity_threshold=self.options.branch_sensitivity_threshold,
                 skip_generation_limits=self.options.skip_generation_limits,
-                consider_contingencies=self.options.consider_contingencies,
-                maximize_exchange_flows=self.options.maximize_exchange_flows,
                 dispatch_all_areas=self.options.dispatch_all_areas,
                 tolerance=self.options.tolerance,
                 weight_power_shift=self.options.weight_power_shift,
                 weight_generation_cost=self.options.weight_generation_cost,
-                weight_generation_delta=self.options.weight_generation_delta,
-                weight_kirchoff=self.options.weight_kirchoff,
-                weight_overloads=self.options.weight_overloads,
-                weight_hvdc_control=self.options.weight_hvdc_control,
-                logger=self.logger
-            )
+                consider_contingencies=self.options.consider_contingencies,
+                consider_hvdc_contingencies=self.options.consider_hvdc_contingencies,
+                consider_gen_contingencies=self.options.consider_gen_contingencies,
+                generation_contingency_threshold=self.options.generation_contingency_threshold,
+                logger=self.logger)
 
             # Solve
             self.progress_text.emit('Solving NTC OPF...')
-            converged = problem.solve()
+            problem.formulate(add_slacks=True)
+            solved = problem.solve(
+                with_check=self.options.with_check,
+                time_limit_ms=self.options.time_limit_ms)
+
             err = problem.error()
 
-            if not converged:
-                self.logger.add_error('Did not converge', 'NTC OPF', str(err), self.options.tolerance)
+            if not solved:
+
+                if problem.status == pywraplp.Solver.FEASIBLE:
+                    self.logger.add_error(
+                        'Feasible solution, not optimal',
+                        'NTC OPF',
+                        str(err),
+                        self.options.tolerance)
+
+                if problem.status == pywraplp.Solver.INFEASIBLE:
+                    self.logger.add_error(
+                        'Unfeasible solution',
+                        'NTC OPF',
+                        str(err),
+                        self.options.tolerance)
+
+                if problem.status == pywraplp.Solver.UNBOUNDED:
+                    self.logger.add_error(
+                        'Proved unbounded',
+                        'NTC OPF',
+                        str(err),
+                        self.options.tolerance)
+
+                if problem.status == pywraplp.Solver.ABNORMAL:
+                    self.logger.add_error(
+                        'Abnormal solution, some error happens',
+                        'NTC OPF',
+                        str(err),
+                        self.options.tolerance)
+
+                if problem.status == pywraplp.Solver.NOT_SOLVED:
+                    self.logger.add_error(
+                        'Not solved, maybe timeout occurs',
+                        'NTC OPF',
+                        str(err),
+                        self.options.tolerance)
 
             self.logger += problem.logger
 
@@ -685,30 +850,29 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 hvdc_names=numerical_circuit.hvdc_data.names,
                 Sbus=problem.get_power_injections(),
                 voltage=problem.get_voltage(),
-                load_shedding=problem.get_load_shedding(),
-                generator_shedding=np.zeros((numerical_circuit.ngen, 1)),
                 battery_power=np.zeros((numerical_circuit.nbatt, 1)),
                 controlled_generation_power=problem.get_generator_power(),
                 Sf=problem.get_branch_power_from(),
-                overloads=problem.get_overloads(),
                 loading=problem.get_loading(),
-                converged=bool(converged),
+                solved=bool(solved),
                 bus_types=numerical_circuit.bus_types,
                 hvdc_flow=problem.get_hvdc_flow(),
                 hvdc_loading=problem.get_hvdc_loading(),
-                hvdc_slacks=problem.get_hvdc_slacks(),
                 phase_shift=problem.get_phase_angles(),
                 generation_delta=problem.get_generator_delta(),
-                generation_delta_slacks=problem.get_generator_delta_slacks(),
                 inter_area_branches=problem.inter_area_branches,
                 inter_area_hvdc=problem.inter_area_hvdc,
                 alpha=alpha,
-                contingency_flows_list=problem.get_contingency_flows_list(),
-                contingency_indices_list=problem.contingency_indices_list,
-                contingency_flows_slacks_list=problem.get_contingency_flows_slacks_list(),
+                contingency_branch_flows_list=problem.get_contingency_flows_list(),
+                contingency_branch_indices_list=problem.contingency_indices_list,
+                contingency_generation_flows_list=problem.get_contingency_gen_flows_list(),
+                contingency_generation_indices_list=problem.contingency_gen_indices_list,
+                contingency_hvdc_flows_list=problem.get_contingency_hvdc_flows_list(),
+                contingency_hvdc_indices_list=problem.contingency_hvdc_indices_list,
                 rates=numerical_circuit.branch_data.branch_rates[:, 0],
-                contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0]
-            )
+                contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0],
+                area_from_bus_idx=self.options.area_from_bus_idx,
+                area_to_bus_idx=self.options.area_to_bus_idx)
 
         self.progress_text.emit('Done!')
 

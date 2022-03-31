@@ -15,25 +15,67 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import os
-import time
-
 import numpy as np
 import numba as nb
 from scipy.sparse import lil_matrix, diags, csc_matrix
 
 
-import GridCal.Engine.Simulations.PowerFlow.derivatives as deriv
+import GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives as deriv
 
 
-@nb.njit()
+class AcDcSolSlicer:
+
+    def __init__(self, npq, npv, nVfBeqbus, nVtmabus, nPfsh, nQfma, nBeqz, nQtma, nPfdp):
+        """
+        Declare the slicing limits in the same order as the Jacobian rows
+        :param npq:
+        :param npv:
+        :param nVfBeqbus:
+        :param nVtmabus:
+        :param nPfsh:
+        :param nQfma:
+        :param nBeqz:
+        :param nQtma:
+        :param nPfdp:
+        """
+        self.a0 = 0
+        self.a1 = self.a0 + npq + npv
+        self.a2 = self.a1 + npq
+        self.a3 = self.a2 + nBeqz
+        self.a4 = self.a3 + nVfBeqbus
+        self.a5 = self.a4 + nQfma
+        self.a6 = self.a5 + nQtma
+        self.a7 = self.a6 + nVtmabus
+        self.a8 = self.a7 + nPfsh
+        self.a9 = self.a8 + nPfdp
+
+    def split(self, dx):
+        """
+        Split the linear system solution
+        :param dx:
+        :return:
+        """
+        dVa = dx[self.a0:self.a1]
+        dVm = dx[self.a1:self.a2]
+        dBeq_z = dx[self.a2:self.a3]
+        dBeq_v = dx[self.a3:self.a4]
+        dma_Qf = dx[self.a4:self.a5]
+        dma_Qt = dx[self.a5:self.a6]
+        dma_Vt = dx[self.a6:self.a7]
+        dtheta_Pf = dx[self.a7:self.a8]
+        dtheta_Pd = dx[self.a8:self.a9]
+
+        return dVa, dVm, dBeq_v, dma_Vt, dtheta_Pf, dma_Qf, dBeq_z, dma_Qt, dtheta_Pd
+
+
+@nb.njit(cache=True)
 def make_lookup(n, arr):
     lookup = np.zeros(n, dtype=np.int32)
     lookup[arr] = np.arange(len(arr), dtype=np.int32)
     return lookup
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def fill_acdc_jacobian_data(Jx, Ji, Jp, Yp, Yi, Ys,
                             dSbus_dVa_x, dSbus_dVm_x,
                             dSf_dVa_x, dSf_dVa_i, dSf_dVa_p,

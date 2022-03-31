@@ -6,12 +6,13 @@ from GridCal.Engine.Devices.enumerations import ConverterControlType, Transforme
 from GridCal.Engine.Core.DataStructures import *
 
 
-def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1):
+def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1, use_stored_guess=False):
     """
 
     :param circuit:
     :param time_series:
     :param ntime:
+    :param use_stored_guess:
     :return:
     """
     bus_data = BusData(nbus=len(circuit.buses), ntime=ntime)
@@ -24,6 +25,7 @@ def get_bus_data(circuit: MultiCircuit, time_series=False, ntime=1):
         bus_data.bus_names[i] = bus.name
         bus_data.Vmin[i] = bus.Vmin
         bus_data.Vmax[i] = bus.Vmax
+        bus_data.Vbus[i] = bus.get_voltage_guess(None, use_stored_guess=use_stored_guess)
 
         bus_data.angle_min[i] = bus.angle_min
         bus_data.angle_max[i] = bus.angle_max
@@ -72,6 +74,8 @@ def get_load_data(circuit: MultiCircuit, bus_dict, opf_results=None, time_series
 
         if time_series:
             data.load_s[k, :] = elm.P_prof + 1j * elm.Q_prof
+            data.load_i[k, :] = elm.Ir_prof + 1j * elm.Ii_prof
+            data.load_y[k, :] = elm.G_prof + 1j * elm.B_prof
 
             if opf:
                 data.load_cost[k, :] = elm.Cost_prof
@@ -81,6 +85,8 @@ def get_load_data(circuit: MultiCircuit, bus_dict, opf_results=None, time_series
 
         else:
             data.load_s[k] = complex(elm.P, elm.Q)
+            data.load_i[k] = complex(elm.Ir, elm.Ii)
+            data.load_y[k] = complex(elm.G, elm.B)
 
             if opf:
                 data.load_cost[k] = elm.Cost
@@ -123,7 +129,7 @@ def get_static_generator_data(circuit: MultiCircuit, bus_dict, time_series=False
     return data
 
 
-def get_shunt_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, time_series=False, ntime=1):
+def get_shunt_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, time_series=False, ntime=1, use_stored_guess=False):
     """
 
     :param circuit:
@@ -151,10 +157,11 @@ def get_shunt_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, time_s
             data.shunt_active[k] = elm.active
             data.shunt_admittance[k] = complex(elm.G, elm.B)
 
-        if Vbus[i, 0].real == 1.0:
-            Vbus[i, :] = complex(elm.Vset, 0)
-        elif elm.Vset != Vbus[i, 0]:
-            logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
+        if not use_stored_guess:
+            if Vbus[i, 0].real == 1.0:
+                Vbus[i, :] = complex(elm.Vset, 0)
+            elif elm.Vset != Vbus[i, 0]:
+                logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
 
         data.C_bus_shunt[i, k] = 1
 
@@ -162,7 +169,8 @@ def get_shunt_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger, time_s
 
 
 def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
-                       opf_results: "OptimalPowerFlowResults" = None, time_series=False, opf=False, ntime=1):
+                       opf_results: "OptimalPowerFlowResults" = None, time_series=False, opf=False, ntime=1,
+                       use_stored_guess=False):
     """
 
     :param circuit:
@@ -225,16 +233,18 @@ def get_generator_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
 
         data.C_bus_gen[i, k] = 1
 
-        if Vbus[i, 0].real == 1.0:
-            Vbus[i, :] = complex(elm.Vset, 0)
-        elif elm.Vset != Vbus[i, 0]:
-            logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
+        if not use_stored_guess:
+            if Vbus[i, 0].real == 1.0:
+                Vbus[i, :] = complex(elm.Vset, 0)
+            elif elm.Vset != Vbus[i, 0]:
+                logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
 
     return data
 
 
 def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
-                     opf_results=None, time_series=False, opf=False, ntime=1):
+                     opf_results=None, time_series=False, opf=False, ntime=1,
+                     use_stored_guess=False):
     """
 
     :param circuit:
@@ -309,10 +319,11 @@ def get_battery_data(circuit: MultiCircuit, bus_dict, Vbus, logger: Logger,
 
         data.C_bus_batt[i, k] = 1
 
-        if Vbus[i, 0].real == 1.0:
-            Vbus[i, :] = complex(elm.Vset, 0)
-        elif elm.Vset != Vbus[i, 0]:
-            logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
+        if not use_stored_guess:
+            if Vbus[i, 0].real == 1.0:
+                Vbus[i, :] = complex(elm.Vset, 0)
+            elif elm.Vset != Vbus[i, 0]:
+                logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i, 0])
 
     return data
 
@@ -329,7 +340,9 @@ def get_line_data(circuit: MultiCircuit, bus_dict,
     :return:
     """
 
-    nc = LinesData(nline=len(circuit.lines), nbus=len(circuit.buses))
+    data = LinesData(nline=len(circuit.lines),
+                     nbus=len(circuit.buses),
+                     ntime=ntime)
 
     # Compile the lines
     for i, elm in enumerate(circuit.lines):
@@ -337,24 +350,29 @@ def get_line_data(circuit: MultiCircuit, bus_dict,
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
 
-        nc.line_names[i] = elm.name
+        data.line_names[i] = elm.name
+
+        if time_series:
+            data.line_active[i, :] = elm.active_prof
+        else:
+            data.line_active[i] = elm.active
 
         if apply_temperature:
-            nc.line_R[i] = elm.R_corrected
+            data.line_R[i] = elm.R_corrected
         else:
-            nc.line_R[i] = elm.R
+            data.line_R[i] = elm.R
 
         if branch_tolerance_mode == BranchImpedanceMode.Lower:
-            nc.line_R[i] *= (1 - elm.tolerance / 100.0)
+            data.line_R[i] *= (1 - elm.tolerance / 100.0)
         elif branch_tolerance_mode == BranchImpedanceMode.Upper:
-            nc.line_R[i] *= (1 + elm.tolerance / 100.0)
+            data.line_R[i] *= (1 + elm.tolerance / 100.0)
 
-        nc.line_X[i] = elm.X
-        nc.line_B[i] = elm.B
-        nc.C_line_bus[i, f] = 1
-        nc.C_line_bus[i, t] = 1
+        data.line_X[i] = elm.X
+        data.line_B[i] = elm.B
+        data.C_line_bus[i, f] = 1
+        data.C_line_bus[i, t] = 1
 
-    return nc
+    return data
 
 
 def get_transformer_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
@@ -364,7 +382,9 @@ def get_transformer_data(circuit: MultiCircuit, bus_dict, time_series=False, nti
     :param bus_dict:
     :return:
     """
-    data = TransformerData(ntr=len(circuit.transformers2w), nbus=len(circuit.buses))
+    data = TransformerData(ntr=len(circuit.transformers2w),
+                           nbus=len(circuit.buses),
+                           ntime=ntime)
 
     # 2-winding transformers
     for i, elm in enumerate(circuit.transformers2w):
@@ -373,15 +393,21 @@ def get_transformer_data(circuit: MultiCircuit, bus_dict, time_series=False, nti
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
 
+        if time_series:
+            data.tr_active[i, :] = elm.active_prof
+        else:
+            data.tr_active[i] = elm.active
+
         # impedance
         data.tr_names[i] = elm.name
+
         data.tr_R[i] = elm.R
         data.tr_X[i] = elm.X
         data.tr_G[i] = elm.G
         data.tr_B[i] = elm.B
 
         data.C_tr_bus[i, f] = 1
-        data.C_tr_bus[i, t] = 1
+        data.C_tr_bus[i, t] = -1
 
         # tap changer
         data.tr_tap_mod[i] = elm.tap_module
@@ -410,7 +436,7 @@ def get_vsc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
     :param bus_dict:
     :return:
     """
-    nc = VscData(nvsc=len(circuit.vsc_devices), nbus=len(circuit.buses), ntime=ntime)
+    data = VscData(nvsc=len(circuit.vsc_devices), nbus=len(circuit.buses), ntime=ntime)
 
     # VSC
     for i, elm in enumerate(circuit.vsc_devices):
@@ -419,25 +445,30 @@ def get_vsc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
 
+        if time_series:
+            data.active[i, :] = elm.active_prof
+        else:
+            data.active[i] = elm.active
+
         # vsc values
-        nc.names[i] = elm.name
-        nc.R1[i] = elm.R1
-        nc.X1[i] = elm.X1
-        nc.G0[i] = elm.G0
-        nc.Beq[i] = elm.Beq
-        nc.m[i] = elm.m
-        nc.theta[i] = elm.theta
+        data.names[i] = elm.name
+        data.R1[i] = elm.R1
+        data.X1[i] = elm.X1
+        data.G0[i] = elm.G0
+        data.Beq[i] = elm.Beq
+        data.m[i] = elm.m
+        data.theta[i] = elm.theta
         # nc.Inom[i] = (elm.rate / nc.Sbase) / np.abs(nc.Vbus[f])
-        nc.Pfset[i] = elm.Pdc_set
-        nc.Qtset[i] = elm.Qac_set
-        nc.Vac_set[i] = elm.Vac_set
-        nc.Vdc_set[i] = elm.Vdc_set
-        nc.control_mode[i] = elm.control_mode
+        data.Pfset[i] = elm.Pdc_set
+        data.Qtset[i] = elm.Qac_set
+        data.Vac_set[i] = elm.Vac_set
+        data.Vdc_set[i] = elm.Vdc_set
+        data.control_mode[i] = elm.control_mode
 
-        nc.C_vsc_bus[i, f] = 1
-        nc.C_vsc_bus[i, t] = 1
+        data.C_vsc_bus[i, f] = 1
+        data.C_vsc_bus[i, t] = 1
 
-    return nc
+    return data
 
 
 def get_upfc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
@@ -455,6 +486,11 @@ def get_upfc_data(circuit: MultiCircuit, bus_dict, time_series=False, ntime=1):
         # generic stuff
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
+
+        if time_series:
+            data.active[i, :] = elm.active_prof
+        else:
+            data.active[i] = elm.active
 
         # vsc values
         data.names[i] = elm.name
@@ -497,6 +533,11 @@ def get_dc_line_data(circuit: MultiCircuit, bus_dict,
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
 
+        if time_series:
+            data.dc_line_active[i, :] = elm.active_prof
+        else:
+            data.dc_line_active[i] = elm.active
+
         # dc line values
         data.dc_line_names[i] = elm.name
 
@@ -527,7 +568,8 @@ def get_dc_line_data(circuit: MultiCircuit, bus_dict,
 def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
                     branch_tolerance_mode: BranchImpedanceMode,
                     time_series=False, opf=False, ntime=1,
-                    opf_results: "OptimalPowerFlowResults" = None):
+                    opf_results: "OptimalPowerFlowResults" = None,
+                    use_stored_guess=False):
     """
 
     :param circuit:
@@ -705,11 +747,12 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
 
-        if elm.control_mode == TransformerControlType.Vt:
-            Vbus[t] = elm.vset
+        if not use_stored_guess:
+            if elm.control_mode == TransformerControlType.Vt:
+                Vbus[t] = elm.vset
 
-        elif elm.control_mode == TransformerControlType.PtVt:  # 2a:Vdc
-            Vbus[t] = elm.vset
+            elif elm.control_mode == TransformerControlType.PtVt:  # 2a:Vdc
+                Vbus[t] = elm.vset
 
     # VSC
     offset += ntr
@@ -787,24 +830,25 @@ def get_branch_data(circuit: MultiCircuit, bus_dict, Vbus, apply_temperature,
         type_III_7 = '7:Droop+Vac'
         '''
 
-        if elm.control_mode == ConverterControlType.type_I_1:  # 1a:Vac
-            Vbus[t] = elm.Vac_set
+        if not use_stored_guess:
+            if elm.control_mode == ConverterControlType.type_I_1:  # 1a:Vac
+                Vbus[t] = elm.Vac_set
 
-        elif elm.control_mode == ConverterControlType.type_I_3:  # 3:Pdc+Vac
-            Vbus[t] = elm.Vac_set
+            elif elm.control_mode == ConverterControlType.type_I_3:  # 3:Pdc+Vac
+                Vbus[t] = elm.Vac_set
 
-        elif elm.control_mode == ConverterControlType.type_II_4:  # 4:Vdc+Qac
-            Vbus[f] = elm.Vdc_set
+            elif elm.control_mode == ConverterControlType.type_II_4:  # 4:Vdc+Qac
+                Vbus[f] = elm.Vdc_set
 
-        elif elm.control_mode == ConverterControlType.type_II_5:  # 5:Vdc+Vac
-            Vbus[f] = elm.Vdc_set
-            Vbus[t] = elm.Vac_set
+            elif elm.control_mode == ConverterControlType.type_II_5:  # 5:Vdc+Vac
+                Vbus[f] = elm.Vdc_set
+                Vbus[t] = elm.Vac_set
 
-        elif elm.control_mode == ConverterControlType.type_III_7:  # 7:Droop+Vac
-            Vbus[t] = elm.Vac_set
+            elif elm.control_mode == ConverterControlType.type_III_7:  # 7:Droop+Vac
+                Vbus[t] = elm.Vac_set
 
-        elif elm.control_mode == ConverterControlType.type_IV_I:  # 8:Vdc
-            Vbus[f] = elm.Vdc_set
+            elif elm.control_mode == ConverterControlType.type_IV_I:  # 8:Vdc
+                Vbus[f] = elm.Vdc_set
 
     # UPFC
     offset += nvsc

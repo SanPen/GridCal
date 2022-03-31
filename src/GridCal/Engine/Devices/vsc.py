@@ -215,6 +215,14 @@ class VSC(EditableDevice):
     def get_weight(self):
         return np.sqrt(self.R1 * self.R1 + self.X1 * self.X1)
 
+    @property
+    def R(self):
+        return self.R1
+
+    @property
+    def X(self):
+        return self.X1
+
     def change_base(self, Sbase_old, Sbase_new):
         b = Sbase_new / Sbase_old
 

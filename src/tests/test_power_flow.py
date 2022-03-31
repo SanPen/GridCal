@@ -39,7 +39,7 @@ def test_ieee_grids():
              ('IEEE 118 Bus v2.raw', 'IEEE 118 Bus.sav.xlsx'),
             ]
 
-    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM]:
+    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM, SolverType.FASTDECOUPLED]:
 
         print(solver_type)
 
@@ -69,7 +69,7 @@ def test_ieee_grids():
             p_gc = power_flow.results.Sf.real
             p_psse = df_p.values[:, 0]
 
-            v_ok = np.allclose(v_gc, v_psse, atol=1e-3)
+            v_ok = np.allclose(v_gc, v_psse, atol=1e-2)
             flow_ok = np.allclose(p_gc, p_psse, atol=1e-0)
 
             df = pd.DataFrame(data=np.c_[v_gc, v_psse], columns=['GridCal', 'PSSe'])

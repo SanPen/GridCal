@@ -70,8 +70,11 @@ class ShuntData:
 
         return data
 
-    def get_island(self, bus_idx):
-        return tp.get_elements_of_the_island(self.C_bus_shunt.T, bus_idx)
+    def get_island(self, bus_idx, t_idx=0):
+        if self.nshunt:
+            return tp.get_elements_of_the_island(self.C_bus_shunt.T, bus_idx, active=self.shunt_active[t_idx])
+        else:
+            return np.zeros(0, dtype=int)
 
     def get_controlled_per_bus(self):
         return self.C_bus_shunt * (self.shunt_controlled * self.shunt_active)

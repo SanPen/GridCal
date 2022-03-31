@@ -172,11 +172,7 @@ class LinearAnalysisDriver(DriverTemplate):
         self.engine = engine
 
         # OPF results
-        self.results = LinearAnalysisResults(n_br=0,
-                                             n_bus=0,
-                                             br_names=[],
-                                             bus_names=[],
-                                             bus_types=[])
+        self.results: LinearAnalysisResults = None
 
         self.all_solved = True
 
@@ -191,11 +187,15 @@ class LinearAnalysisDriver(DriverTemplate):
         bus_names = self.grid.get_bus_names()
         br_names = self.grid.get_branches_wo_hvdc_names()
         bus_types = np.ones(len(bus_names), dtype=int)
-        self.results = LinearAnalysisResults(n_br=len(br_names),
-                                             n_bus=len(bus_names),
-                                             br_names=br_names,
-                                             bus_names=bus_names,
-                                             bus_types=bus_types)
+        try:
+            self.results = LinearAnalysisResults(n_br=len(br_names),
+                                                 n_bus=len(bus_names),
+                                                 br_names=br_names,
+                                                 bus_names=bus_names,
+                                                 bus_types=bus_types)
+        except MemoryError as e:
+            self.logger.add_error(str(e))
+            return
 
         # Run Analysis
         NEWTON_AVAILBALE = False

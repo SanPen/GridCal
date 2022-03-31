@@ -350,13 +350,26 @@ def get_base_map(location, zoom_start=5):
     return my_map, marker_cluster
 
 
-def plot_html_map(circuit: MultiCircuit, Sbus, Sf, voltages, loadings, types, losses=None,
+def plot_html_map(circuit: MultiCircuit,
+                  Sbus,
+                  Sf,
+                  voltages,
+                  loadings,
+                  types=None,
+                  losses=None,
                   St=None,
+                  hvdc_Pf=None,
+                  hvdc_Pt=None,
+                  hvdc_losses=None,
+                  hvdc_loading=None,
                   failed_br_idx=None,
                   loading_label='loading',
+                  ma=None,
+                  theta=None,
+                  Beq=None,
                   use_flow_based_width=False,
-                  min_branch_width=5,
-                  max_branch_width=5,
+                  min_branch_width=1,
+                  max_branch_width=1,
                   min_bus_width=20,
                   max_bus_width=20,
                   file_name='map.html'):
@@ -369,8 +382,15 @@ def plot_html_map(circuit: MultiCircuit, Sbus, Sf, voltages, loadings, types, lo
     :param loadings: Branches load
     :param types: Buses type
     :param losses: Branches losses
+    :param St:
     :param failed_br_idx: failed branches
     :param loading_label:
+    :param use_flow_based_width:
+    :param min_branch_width:
+    :param max_branch_width:
+    :param min_bus_width:
+    :param max_bus_width:
+    :param file_name:
     :return:
     """
 
@@ -398,6 +418,8 @@ def plot_html_map(circuit: MultiCircuit, Sbus, Sf, voltages, loadings, types, lo
     # create map at he average location
     my_map, marker_cluster = get_base_map(location=circuit.get_center_location(), zoom_start=5)
 
+    Pnorm = np.abs(Sbus.real) / np.max(Sbus.real)
+
     # add node positions
     for i, bus in enumerate(circuit.buses):
 
@@ -414,19 +436,25 @@ def plot_html_map(circuit: MultiCircuit, Sbus, Sf, voltages, loadings, types, lo
         color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
         html_color = color.name()
 
+        if use_flow_based_width:
+            radius = int(np.floor(min_bus_width + Pnorm[i] * (max_bus_width - min_bus_width)))
+        else:
+            radius = 50
+
         position = bus.get_coordinates()
         html = '<i>' + tooltip + '</i>'
         folium.Circle(position,
                       popup=html,
-                      radius=50,
+                      radius=radius,
                       color=html_color,
                       tooltip=tooltip).add_to(marker_cluster)
 
     # add lines
     lnorm = np.abs(loadings)
     lnorm[lnorm == np.inf] = 0
-    branches = circuit.get_branches()
-    for i, branch in enumerate(branches):
+    Sfabs = np.abs(Sf)
+    Sfnorm = Sfabs / np.max(Sfabs)
+    for i, branch in enumerate(circuit.get_branches_wo_hvdc()):
 
         points = branch.get_coordinates()
 
@@ -443,7 +471,43 @@ def plot_html_map(circuit: MultiCircuit, Sbus, Sf, voltages, loadings, types, lo
             r, g, b, a = loading_cmap(lnorm[i])
             color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
             html_color = color.name()
-            weight = 3
+            if use_flow_based_width:
+                weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
+            else:
+                weight = 3
+
+            # draw the line
+            folium.PolyLine(points,
+                            color=html_color,
+                            weight=weight,
+                            opacity=1,
+                            tooltip=tooltip).add_to(marker_cluster)
+
+    lnorm = np.abs(hvdc_loading)
+    lnorm[lnorm == np.inf] = 0
+    Sfabs = np.abs(hvdc_Pf)
+    Sfnorm = Sfabs / np.max(Sfabs)
+    for i, branch in enumerate(circuit.get_hvdc()):
+
+        points = branch.get_coordinates()
+
+        if not has_null_coordinates(points):
+            # compose the tooltip
+            tooltip = str(i) + ': ' + branch.name
+            tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
+            if Sf is not None:
+                tooltip += '\nPower: ' + "{:10.4f}".format(hvdc_Pf[i]) + ' [MW]'
+            if losses is not None:
+                tooltip += '\nLosses: ' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
+
+            # get the line colour
+            r, g, b, a = loading_cmap(lnorm[i])
+            color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+            html_color = color.name()
+            if use_flow_based_width:
+                weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
+            else:
+                weight = 3
 
             # draw the line
             folium.PolyLine(points,

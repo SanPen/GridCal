@@ -425,7 +425,8 @@ class TimeSeries(DriverTemplate):
         time_circuit = compile_time_circuit(circuit=self.grid,
                                             apply_temperature=False,
                                             branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                            opf_results=self.opf_time_series_results)
+                                            opf_results=self.opf_time_series_results,
+                                            use_stored_guess=self.options.use_stored_guess)
 
         # do the topological computation
         time_islands = time_circuit.split_into_islands(ignore_single_node_islands=self.options.ignore_single_node_islands)
@@ -498,6 +499,7 @@ class TimeSeries(DriverTemplate):
                 V = calculation_input.Vbus[:, t]
                 I = calculation_input.Ibus[:, t]
                 S = calculation_input.Sbus[:, t]
+                Yload = calculation_input.YLoadBus[:, t]
                 branch_rates = calculation_input.Rates[:, t]
 
                 # add the controlled storage power if we are controlling the storage devices
@@ -521,6 +523,7 @@ class TimeSeries(DriverTemplate):
                                        Vbus=V,
                                        Sbus=S,
                                        Ibus=I,
+                                       Yloadbus=Yload,
                                        ma=calculation_input.branch_data.m[:, t],
                                        theta=calculation_input.branch_data.theta[:, t],
                                        Beq=calculation_input.branch_data.Beq[:, t],

@@ -38,29 +38,42 @@ from GridCal.Engine.Simulations.driver_template import DriverTemplate
 
 class ShortCircuitOptions:
 
-    def __init__(self, bus_index=[], branch_index=[], branch_fault_locations=[], branch_fault_impedance=[],
+    def __init__(self, bus_index=None, branch_index=None, branch_fault_locations=None, branch_fault_impedance=None,
                  branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
                  verbose=False):
         """
 
-        Args:
-            bus_index:
-            branch_index:
-            branch_fault_locations:
-            branch_fault_impedance:
-            verbose:
+        :param bus_index:
+        :param branch_index:
+        :param branch_fault_locations:
+        :param branch_fault_impedance:
+        :param branch_impedance_tolerance_mode:
+        :param verbose:
         """
 
-        assert (len(branch_fault_locations) == len(branch_index))
-        assert (len(branch_fault_impedance) == len(branch_index))
+        if branch_index is not None:
+            assert (len(branch_fault_locations) == len(branch_index))
+            assert (len(branch_fault_impedance) == len(branch_index))
 
-        self.bus_index = bus_index
+        if bus_index is None:
+            self.bus_index = list()
+        else:
+            self.bus_index = bus_index
 
-        self.branch_index = branch_index
+        if branch_index is None:
+            self.branch_index = list()
+        else:
+            self.branch_index = branch_index
 
-        self.branch_fault_locations = branch_fault_locations
+        if branch_fault_locations is None:
+            self.branch_fault_locations = list()
+        else:
+            self.branch_fault_locations = branch_fault_locations
 
-        self.branch_fault_impedance = branch_fault_impedance
+        if branch_fault_impedance is None:
+            self.branch_fault_impedance = list()
+        else:
+            self.branch_fault_impedance = branch_fault_impedance
 
         self.branch_impedance_tolerance_mode = branch_impedance_tolerance_mode
 
