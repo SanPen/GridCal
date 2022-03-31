@@ -102,6 +102,8 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                 if verbose > 1:
                     print('J:\n', J.toarray())
                     print('f:\n', f)
+                    print('Vm:\n', Vm)
+                    print('Va:\n', Va)
 
             # reassign the solution vector
             dVa[pvpq] = dx[:npvpq]

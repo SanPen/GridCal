@@ -64,6 +64,10 @@ def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, tol=1e-3, max_it=50, verbose=False) ->
     # check tolerance
     converged = normF < tol
 
+    if verbose:
+        print('GS Iteration {0}'.format(iter_) + '-' * 200)
+        print('error', normF)
+
     # do Gauss-Seidel iterations
     while not converged and iter_ < max_it:
 
@@ -89,6 +93,15 @@ def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, tol=1e-3, max_it=50, verbose=False) ->
 
         # check for convergence
         converged = normF < tol
+
+        if verbose:
+            print('GS Iteration {0}'.format(iter_) + '-' * 200)
+
+            if verbose > 1:
+                print('Vm:\n', np.abs(V))
+                print('Va:\n', np.angle(V))
+
+            print('error', normF)
 
         # update iteration counter
         iter_ += 1
