@@ -35,8 +35,8 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
           acceleration_parameter=0.05, control_q=ReactivePowerControlMode.NoControl,
           verbose=False) -> NumericPowerFlowResults:
     """
-    Solves the power flow using a full Newton's method with backtrack correction.
-    @Author: Santiago Peñate Vera
+    Solves the power flow using a full Newton's method with backtracking correction.
+    @Author: Santiago Peñate-Vera
     :param Ybus: Admittance matrix
     :param S0: Array of nodal power injections (ZIP)
     :param V0: Array of nodal voltages (initial solution)
@@ -52,12 +52,12 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     :param acceleration_parameter: parameter used to correct the "bad" iterations, should be between 1e-3 ~ 0.5
     :param control_q: Control reactive power
     :param verbose: Display console information
-    :return: Voltage solution, converged?, error, calculated power injections
+    :return: NumericPowerFlowResults instance
     """
     start = time.time()
 
     # initialize
-    iter_ = 0
+    iteration = 0
     V = V0
     Va = np.angle(V)
     Vm = np.abs(V)
@@ -81,10 +81,14 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
         norm_f = compute_fx_error(f)
         converged = norm_f < tol
 
+        if verbose:
+            print('NR Iteration {0}'.format(iteration) + '-' * 200)
+            print('error', norm_f)
+
         # do Newton iterations
-        while not converged and iter_ < max_it:
+        while not converged and iteration < max_it:
             # update iteration counter
-            iter_ += 1
+            iteration += 1
 
             # evaluate Jacobian
             J = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
@@ -93,17 +97,15 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             dx = linear_solver(J, f)
 
             if verbose:
-                print('Iteration {0}'.format(iter_) + '-' * 200)
-                print('J:\n', J.toarray())
-                print('f:\n', f)
+                print('NR Iteration {0}'.format(iteration) + '-' * 200)
+
+                if verbose > 1:
+                    print('J:\n', J.toarray())
+                    print('f:\n', f)
 
             # reassign the solution vector
             dVa[pvpq] = dx[:npvpq]
             dVm[pq] = dx[npvpq:]
-
-            # set the restoration values
-            prev_Vm = Vm.copy()
-            prev_Va = Va.copy()
 
             # set the values and correct with an adaptive mu if needed
             mu = mu_0  # ideally 1.0
@@ -112,20 +114,14 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             norm_f_new = 0.0
             while back_track_condition and l_iter < max_it and mu > tol:
 
-                if l_iter > 0:
-                    # restore the previous values if we are backtracking
-                    # the first iteration is the normal NR procedure
-                    Va = prev_Va.copy()
-                    Vm = prev_Vm.copy()
-
                 # update voltage the Newton way
-                Vm -= mu * dVm
-                Va -= mu * dVa
-                V = polar_to_rect(Vm, Va)
+                Vm2 = Vm - mu * dVm
+                Va2 = Va - mu * dVa
+                V2 = polar_to_rect(Vm2, Va2)
 
                 # compute the mismatch function f(x_new)
-                Sbus = compute_zip_power(S0, I0, Y0, Vm)
-                Scalc = compute_power(Ybus, V)
+                Sbus = compute_zip_power(S0, I0, Y0, Vm2)
+                Scalc = compute_power(Ybus, V2)
                 f = compute_fx(Scalc, Sbus, pvpq, pq)
                 norm_f_new = compute_fx_error(f)
 
@@ -134,6 +130,13 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
 
                 # keep back-tracking?
                 back_track_condition = norm_f_new > norm_f
+
+                if not back_track_condition:
+                    # accept the solution
+                    Vm = Vm2
+                    Va = Va2
+                    V = V2
+                    norm_f = norm_f_new
 
                 if verbose:
                     if l_iter == 0:
@@ -145,18 +148,13 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
 
             if l_iter > 1 and back_track_condition:
                 # this means that not even the backtracking was able to correct
-                # the solution so, restore and terminate
-                # Va = prev_Va.copy()
-                # Vm = prev_Vm.copy()
-                V = polar_to_rect(Vm, Va)
+                # the solution, so terminate
 
                 end = time.time()
                 elapsed = end - start
                 return NumericPowerFlowResults(V, converged, norm_f_new, Scalc,
                                                None, None, None, None, None, None,
-                                               iter_, elapsed)
-            else:
-                norm_f = norm_f_new
+                                               iteration, elapsed)
 
             # review reactive power limits
             # it is only worth checking Q limits with a low error
@@ -191,5 +189,5 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
+    return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iteration, elapsed)
 

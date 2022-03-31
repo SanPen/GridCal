@@ -2456,7 +2456,7 @@ p, li { white-space: pre-wrap; }
                   <item row="9" column="0">
                    <widget class="QLabel" name="label_6">
                     <property name="text">
-                     <string>Numerical method max. iterations</string>
+                     <string>Max. iterations</string>
                     </property>
                    </widget>
                   </item>

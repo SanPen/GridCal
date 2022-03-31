@@ -78,9 +78,9 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
                                              converged=False,
                                              norm_f=1e200,
                                              Scalc=S0,
-                                             ma=circuit.branch_data.m[:, 0],
+                                             ma=ma,
                                              theta=circuit.branch_data.theta[:, 0],
-                                             Beq=circuit.branch_data.Beq[:, 0],
+                                             Beq=Beq,
                                              Ybus=circuit.Ybus,
                                              Yf=circuit.Yf,
                                              Yt=circuit.Yt,
@@ -94,66 +94,67 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
         # type HELM
         if solver_type == bs.SolverType.HELM:
             solution = pflw.helm_josep(Ybus=circuit.Ybus,
-                                     Yseries=circuit.Yseries,
-                                     V0=V0,  # take V0 instead of V
-                                     S0=S0,
-                                     Ysh0=circuit.Yshunt,
-                                     pq=pq,
-                                     pv=pv,
-                                     sl=ref,
-                                     pqpv=pqpv,
-                                     tolerance=options.tolerance,
-                                     max_coeff=options.max_iter,
-                                     use_pade=True,
-                                     verbose=False)
+                                       Yseries=circuit.Yseries,
+                                       V0=V0,  # take V0 instead of V
+                                       S0=S0,
+                                       Ysh0=circuit.Yshunt,
+                                       pq=pq,
+                                       pv=pv,
+                                       sl=ref,
+                                       pqpv=pqpv,
+                                       tolerance=options.tolerance,
+                                       max_coeff=options.max_iter,
+                                       use_pade=True,
+                                       verbose=options.verbose)
 
         # type DC
         elif solver_type == bs.SolverType.DC:
             solution = pflw.dcpf(Ybus=circuit.Ybus,
-                                  Bpqpv=circuit.Bpqpv,
-                                  Bref=circuit.Bref,
-                                  Btheta=circuit.Btheta,
-                                  Sbus=S0,
-                                  Ibus=I0,
-                                  V0=V0,
-                                  theta=theta,
-                                  ref=ref,
-                                  pvpq=pqpv,
-                                  pq=pq,
-                                  pv=pv)
+                                 Bpqpv=circuit.Bpqpv,
+                                 Bref=circuit.Bref,
+                                 Btheta=circuit.Btheta,
+                                 S0=S0,
+                                 I0=I0,
+                                 V0=V0,
+                                 theta=theta,
+                                 ref=ref,
+                                 pvpq=pqpv,
+                                 pq=pq,
+                                 pv=pv)
 
         # LAC PF
         elif solver_type == bs.SolverType.LACPF:
-            solution = pflw.lacpf(Y=circuit.Ybus,
-                                   Ys=circuit.Yseries,
-                                   S=S0,
-                                   I=I0,
-                                   Vset=V0,
-                                   pq=pq,
-                                   pv=pv)
-
-        elif solver_type == bs.SolverType.GAUSS:
-            solution = pflw.gausspf(Ybus=circuit.Ybus,
+            solution = pflw.lacpf(Ybus=circuit.Ybus,
+                                  Ys=circuit.Yseries,
                                   S0=S0,
                                   I0=I0,
-                                  Y0=Y0,
-                                  V0=V0,
-                                  pv=pv,
+                                  Vset=V0,
                                   pq=pq,
-                                  tol=options.tolerance,
-                                  max_it=options.max_iter,
-                                  verbose=False)
+                                  pv=pv)
+
+        # Gauss-Seidel
+        elif solver_type == bs.SolverType.GAUSS:
+            solution = pflw.gausspf(Ybus=circuit.Ybus,
+                                    S0=S0,
+                                    I0=I0,
+                                    Y0=Y0,
+                                    V0=V0,
+                                    pv=pv,
+                                    pq=pq,
+                                    tol=options.tolerance,
+                                    max_it=options.max_iter,
+                                    verbose=options.verbose)
 
         # Levenberg-Marquardt
         elif solver_type == bs.SolverType.LM:
             if circuit.any_control:
                 solution = pflw.LM_ACDC(nc=circuit,
-                                          Vbus=V0,
-                                          S0=S0,
-                                          I0=I0,
-                                          Y0=Y0,
-                                          tolerance=options.tolerance,
-                                          max_iter=options.max_iter)
+                                        Vbus=V0,
+                                        S0=S0,
+                                        I0=I0,
+                                        Y0=Y0,
+                                        tolerance=options.tolerance,
+                                        max_iter=options.max_iter)
             else:
                 solution = pflw.levenberg_marquardt_pf(Ybus=circuit.Ybus,
                                                        S0=S0,
@@ -189,15 +190,15 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
             if circuit.any_control:
                 # Solve NR with the AC/DC algorithm
                 solution = pflw.NR_LS_ACDC(nc=circuit,
-                                             Vbus=V0,
-                                             S0=S0,
-                                             I0=I0,
-                                             Y0=Y0,
-                                             tolerance=options.tolerance,
-                                             max_iter=options.max_iter,
-                                             acceleration_parameter=options.backtracking_parameter,
-                                             mu_0=options.mu,
-                                             control_q=options.control_Q)
+                                           Vbus=V0,
+                                           S0=S0,
+                                           I0=I0,
+                                           Y0=Y0,
+                                           tolerance=options.tolerance,
+                                           max_iter=options.max_iter,
+                                           acceleration_parameter=options.backtracking_parameter,
+                                           mu_0=options.mu,
+                                           control_q=options.control_Q)
             else:
                 # Solve NR with the AC algorithm
                 solution = pflw.NR_LS(Ybus=circuit.Ybus,
@@ -272,6 +273,10 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
                        elapsed=solution.elapsed,
                        iterations=solution.iterations)
             final_solution = solution
+        else:
+            logger.add_info('Tried solver but it did not improve the solution',
+                            solver_type.value, value=solution.norm_f,
+                            expected_value=final_solution.norm_f)
 
         # record the solver steps
         solver_idx += 1
@@ -280,13 +285,13 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
         logger.add_error('Did not converge, even after retry!', 'Error', str(final_solution.norm_f), options.tolerance)
 
     if final_solution.ma is None:
-        final_solution.ma = circuit.branch_data.m[:, 0]
+        final_solution.ma = ma
 
     if final_solution.theta is None:
-        final_solution.theta = circuit.branch_data.theta[:, 0]
+        final_solution.theta = theta
 
     if final_solution.Beq is None:
-        final_solution.Beq = circuit.branch_data.Beq[:, 0]
+        final_solution.Beq = Beq
 
     return final_solution
 

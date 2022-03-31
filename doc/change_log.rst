@@ -17,6 +17,8 @@ Version 4.5.0
     - Translated the power flow report
     - Added fast decoupled power flow
 - Refactored the code for all power flow numerical methods (No external changes should be appreciated)
+- Cleaned the backtracking process in Newton-Raphson
+
 
 Version 4.4.5
 ^^^^^^^^^^^^^^^

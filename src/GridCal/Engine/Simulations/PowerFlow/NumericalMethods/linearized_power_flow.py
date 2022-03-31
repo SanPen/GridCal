@@ -28,15 +28,15 @@ linear_solver = get_linear_solver()
 sparse = get_sparse_type()
 
 
-def dcpf(Ybus, Bpqpv, Bref, Btheta, Sbus, Ibus, V0, theta, ref, pvpq, pq, pv) -> NumericPowerFlowResults:
+def dcpf(Ybus, Bpqpv, Bref, Btheta, S0, I0, V0, theta, ref, pvpq, pq, pv) -> NumericPowerFlowResults:
     """
     Solves a linear-DC power flow.
     :param Ybus: Normal circuit admittance matrix
     :param Bpqpv: Susceptance matrix reduced
     :param Bref: Susceptane matrix sliced for the slack node
     :param Btheta: Susceptance matrix of the branches to nodes (used to include the phase shifters)
-    :param Sbus: Complex power injections at all the nodes
-    :param Ibus: Complex current injections at all the nodes
+    :param S0: Complex power injections at all the nodes
+    :param I0: Complex current injections at all the nodes
     :param V0: Array of complex seed voltage (it contains the ref voltages)
     :param theta: Array of branch angles
     :param ref: array of the indices of the slack nodes
@@ -61,7 +61,7 @@ def dcpf(Ybus, Bpqpv, Bref, Btheta, Sbus, Ibus, V0, theta, ref, pvpq, pq, pv) ->
         # Since we have removed the slack nodes, we must account their influence as injections Bref * Va_ref
         # We also nee to account for the effect of the phase shifters
         Pps = Btheta * theta
-        Pinj = Sbus[pvpq].real + (- Bref * Va_ref + Ibus[pvpq].real) * Vm[pvpq] - Pps[pvpq]
+        Pinj = S0[pvpq].real + (- Bref * Va_ref + I0[pvpq].real) * Vm[pvpq] - Pps[pvpq]
 
         # update angles for non-reference buses
         Va[pvpq] = linear_solver(Bpqpv, Pinj)
@@ -71,17 +71,17 @@ def dcpf(Ybus, Bpqpv, Bref, Btheta, Sbus, Ibus, V0, theta, ref, pvpq, pq, pv) ->
         V = polar_to_rect(Vm, Va)
 
         # compute the calculated power injection and the error of the voltage solution
-        Scalc = V * np.conj(Ybus * V - Ibus)
+        Scalc = V * np.conj(Ybus * V - I0)
 
         # compute the power mismatch between the specified power Sbus and the calculated power Scalc
-        mismatch = compute_fx(Scalc, Sbus, pvpq, pq)
+        mismatch = compute_fx(Scalc, S0, pvpq, pq)
 
         # check for convergence
         norm_f = np.linalg.norm(mismatch, np.Inf)
     else:
         norm_f = 0.0
         V = V0
-        Scalc = V * np.conj(Ybus * V - Ibus)
+        Scalc = V * np.conj(Ybus * V - I0)
 
     end = time.time()
     elapsed = end - start
@@ -163,7 +163,7 @@ def lacpf(Ybus, Ys, S0, I0, Vset, pq, pv) -> NumericPowerFlowResults:
 
         # Calculate the error and check the convergence
         Scalc = compute_power(Ybus, V)
-        mismatch = compute_fx(Scalc, S0)
+        mismatch = compute_fx(Scalc, S0, pvpq, pq)
         norm_f = compute_fx_error(mismatch)
     else:
         norm_f = 0.0
