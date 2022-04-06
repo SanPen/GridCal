@@ -41,7 +41,7 @@ The following requirements must be satisfied:
 
 2. :math:`\textbf{V}_{post-failure, B} = -\textbf{z}_{f,B} \times \textbf{I}_B`.
 
-Along with the above equations for :math:`\Delta \textbf{V}` and :math:`\textbf{V}_{post-failure}`, we get that
+Along with the equations for :math:`\Delta \textbf{V}` and :math:`\textbf{V}_{post-failure}` above, we get that
 
 .. math::
 
@@ -49,7 +49,8 @@ Along with the above equations for :math:`\Delta \textbf{V}` and :math:`\textbf{
 
 wherein :math:`\textbf{z}_{f,B}` is added to the diagonals.
 
-Short circuit currents :math:`\textbf{I}_B` can now be computed through the above equation for :math:`\textbf{V}_{pre-failure, B}`.
+Short circuit currents :math:`\textbf{I}_B` can now be computed through the equation for :math:`\textbf{V}_{pre-failure, B}` above.
+Note that the single bus short circuit current computation above follows immediately if :math:`B` has only one bus.
 
 **Variables:**
 
