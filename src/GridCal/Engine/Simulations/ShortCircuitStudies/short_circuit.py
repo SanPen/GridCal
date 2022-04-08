@@ -15,7 +15,7 @@ def short_circuit_3p(bus_idx, Zbus, Vbus, Zf, baseMVA):
 
     """
     n = len(Vbus)
-    Z = Zbus[bus_idx, :][:, bus_idx]  # Z_B in doc
+    Z = Zbus[bus_idx, :][:, bus_idx]  # Z_B in documentation
 
     # Voltage Source Contribution
     I_kI = zeros(n, dtype=complex)
