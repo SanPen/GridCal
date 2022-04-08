@@ -24,6 +24,8 @@ from scipy.sparse import hstack as hs, vstack as vs
 from scipy.sparse.linalg import factorized, spsolve, inv
 from matplotlib import pyplot as plt
 from GridCal.Engine import *
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_fast
 
 
 def SysMat(Y, Ys, pq, pvpq):
@@ -50,15 +52,13 @@ def SysMat(Y, Ys, pq, pvpq):
     return Asys
 
 
-def compute_acptdf(Ybus, Yseries, Yf, Yt, Cf, V, pq, pv, distribute_slack):
+def compute_acptdf(Ybus, Yf, F, Cf, V, pq, pv, distribute_slack):
     """
     Compute the AC-PTDF
     :param Ybus: admittance matrix
     :param Yf: Admittance matrix of the buses "from"
-    :param Yt: Admittance matrix of the buses "to"
     :param Cf: Connectivity branch - bus "from"
     :param V: voltages array
-    :param Ibus: array of currents
     :param pq: array of pq node indices
     :param pv: array of pv node indices
     :return: AC-PTDF matrix (branches, buses)
@@ -66,9 +66,11 @@ def compute_acptdf(Ybus, Yseries, Yf, Yt, Cf, V, pq, pv, distribute_slack):
     n = len(V)
     pvpq = np.r_[pv, pq]
     npq = len(pq)
+    npv = len(pv)
 
     # compute the Jacobian
-    J = SysMat(Ybus, Yseries, pq, pvpq)
+    # J = SysMat(Ybus, Yseries, pq, pvpq)
+    J = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
 
     if distribute_slack:
         dP = np.ones((n, n)) * (-1 / (n - 1))
@@ -86,21 +88,9 @@ def compute_acptdf(Ybus, Yseries, Yf, Yt, Cf, V, pq, pv, distribute_slack):
     dx = spsolve(J, dS)
 
     # compute branch derivatives
-    If = Yf * V
+    Vc = np.conj(V)
     E = V / np.abs(V)
-    Vdiag = sp.diags(V)
-    Vdiag_conj = sp.diags(np.conj(V))
-    Ediag = sp.diags(E)
-    Ediag_conj = sp.diags(np.conj(E))
-    If_diag_conj = sp.diags(np.conj(If))
-
-    Yf_conj = Yf.copy()
-    Yf_conj.data = np.conj(Yf_conj.data)
-    Yt_conj = Yt.copy()
-    Yt_conj.data = np.conj(Yt_conj.data)
-
-    dSf_dVa = 1j * (If_diag_conj * Cf * Vdiag - sp.diags(Cf * V) * Yf_conj * Vdiag_conj)
-    dSf_dVm = If_diag_conj * Cf * Ediag - sp.diags(Cf * V) * Yf_conj * Ediag_conj
+    dSf_dVa, dSf_dVm = dSf_dV_fast(Yf.tocsc(), V, Vc, E, F, Cf)
 
     # compose the final AC-PTDF
     dPf_dVa = dSf_dVa.real[:, pvpq]
@@ -263,10 +253,10 @@ def check_lodf(grid: MultiCircuit):
     islands = nc.split_into_islands()
     circuit = islands[0]
 
+    # compute_acptdf(Ybus, Yf, F, Cf, V, pq, pv, distribute_slack)
     PTDF = compute_acptdf(Ybus=circuit.Ybus,
-                          Yseries=circuit.Yseries,
                           Yf=circuit.Yf,
-                          Yt=circuit.Yt,
+                          F=circuit.F,
                           Cf=circuit.Cf,
                           V=circuit.Vbus,
                           pq=circuit.pq,
@@ -300,10 +290,10 @@ def test_ptdf(grid):
     pf_driver = PowerFlowDriver(grid, PowerFlowOptions())
     pf_driver.run()
 
+    # compute_acptdf(Ybus, Yf, F, Cf, V, pq, pv, distribute_slack)
     PTDF = compute_acptdf(Ybus=circuit.Ybus,
-                          Yseries=circuit.Yseries,
                           Yf=circuit.Yf,
-                          Yt=circuit.Yt,
+                          F=circuit.F,
                           Cf=circuit.Cf,
                           V=circuit.Vbus,
                           pq=circuit.pq,
@@ -329,13 +319,13 @@ if __name__ == '__main__':
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
-    fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\KULeuven_5node.gridcal'
+    # fname = r'C:\Users\penversa\Git\Github\GridCal\Grids_and_profiles\grids\KULeuven_5node.gridcal'
     # fname = 'helm_data1.gridcal'
     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14 PQ only.gridcal'
     # fname = 'IEEE 14 PQ only full.gridcal'
     # fname = '/home/santi/Descargas/matpower-fubm-master/data/case5.m'
     # fname = '/home/santi/Descargas/matpower-fubm-master/data/case30.m'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/PGOC_6bus.gridcal'
+    fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/PGOC_6bus.gridcal'
     grid_ = FileOpen(fname).open()
 
     test_ptdf(grid_)
@@ -345,10 +335,10 @@ if __name__ == '__main__':
     islands_ = nc_.split_into_islands()
     circuit_ = islands_[0]
 
+    # compute_acptdf(Ybus, Yf, F, Cf, V, pq, pv, distribute_slack)
     H_ = compute_acptdf(Ybus=circuit_.Ybus,
-                        Yseries=circuit_.Yseries,
                         Yf=circuit_.Yf,
-                        Yt=circuit_.Yt,
+                        F=circuit_.F,
                         Cf=circuit_.Cf,
                         V=circuit_.Vbus,
                         pq=circuit_.pq,
