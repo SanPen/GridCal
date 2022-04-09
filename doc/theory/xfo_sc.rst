@@ -14,7 +14,7 @@ into the desired values. The values to take from the specs sheet are:
 - :math:`P_{cu}`: Copper losses in kW.
 - :math:`I_0`: No load current in %.
 - :math:`GX_{hv1}`: Reactance contribution to the HV side. Value from 0 to 1.
-- :math:`GR_{hv1}`: Resistance contribution to the HV side Value from 0 to 1.
+- :math:`GR_{hv1}`: Resistance contribution to the HV side. Value from 0 to 1.
 
 Then, the series and shunt impedances are computed as follows:
 
