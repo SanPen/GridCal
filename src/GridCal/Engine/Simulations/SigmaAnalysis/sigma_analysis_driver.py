@@ -218,17 +218,18 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
 
             if len(calculation_input.vd) > 0:
                 # V, converged, norm_f, Scalc, iter_, elapsed, Sig_re, Sig_im
-                U, X, Q, iter_ = helm_coefficients_josep(Yseries=calculation_input.Yseries,
-                                                         V0=calculation_input.Vbus,
-                                                         S0=calculation_input.Sbus,
-                                                         Ysh0=calculation_input.Yshunt,
-                                                         pq=calculation_input.pq,
-                                                         pv=calculation_input.pv,
-                                                         sl=calculation_input.vd,
-                                                         pqpv=calculation_input.pqpv,
-                                                         tolerance=options.tolerance,
-                                                         max_coeff=options.max_iter,
-                                                         verbose=False,)
+                U, X, Q, V, iter_ = helm_coefficients_josep(Ybus=calculation_input.Ybus,
+                                                            Yseries=calculation_input.Yseries,
+                                                            V0=calculation_input.Vbus,
+                                                            S0=calculation_input.Sbus,
+                                                            Ysh0=calculation_input.Yshunt,
+                                                            pq=calculation_input.pq,
+                                                            pv=calculation_input.pv,
+                                                            sl=calculation_input.vd,
+                                                            pqpv=calculation_input.pqpv,
+                                                            tolerance=options.tolerance,
+                                                            max_coeff=options.max_iter,
+                                                            verbose=False)
 
                 # compute the sigma values
                 n = calculation_input.nbus
@@ -260,17 +261,18 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
             # only one island
             calculation_input = calculation_inputs[0]
 
-            U, X, Q, iter_ = helm_coefficients_josep(Yseries=calculation_input.Yseries,
-                                                     V0=calculation_input.Vbus,
-                                                     S0=calculation_input.Sbus,
-                                                     Ysh0=calculation_input.Yshunt,
-                                                     pq=calculation_input.pq,
-                                                     pv=calculation_input.pv,
-                                                     sl=calculation_input.vd,
-                                                     pqpv=calculation_input.pqpv,
-                                                     tolerance=options.tolerance,
-                                                     max_coeff=options.max_iter,
-                                                     verbose=False, )
+            U, X, Q, V, iter_ = helm_coefficients_josep(Ybus=calculation_input.Ybus,
+                                                        Yseries=calculation_input.Yseries,
+                                                        V0=calculation_input.Vbus,
+                                                        S0=calculation_input.Sbus,
+                                                        Ysh0=calculation_input.Yshunt,
+                                                        pq=calculation_input.pq,
+                                                        pv=calculation_input.pv,
+                                                        sl=calculation_input.vd,
+                                                        pqpv=calculation_input.pqpv,
+                                                        tolerance=options.tolerance,
+                                                        max_coeff=options.max_iter,
+                                                        verbose=False)
 
             # compute the sigma values
             n = calculation_input.nbus

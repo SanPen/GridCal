@@ -1,5 +1,4 @@
 import numpy as np
-from numpy import zeros
 
 
 def short_circuit_3p(bus_idx, Zbus, Vbus, Zf, baseMVA):
@@ -18,7 +17,7 @@ def short_circuit_3p(bus_idx, Zbus, Vbus, Zf, baseMVA):
     Z = Zbus[bus_idx, :][:, bus_idx]  # Z_B in documentation
 
     # Voltage Source Contribution
-    I_kI = zeros(n, dtype=complex)
+    I_kI = np.zeros(n, dtype=complex)
     Z.flat[::len(bus_idx) + 1] += Zf[bus_idx]  # add Zf to diagonals of Z_B
     I_kI[bus_idx] = -1 * np.linalg.solve(Z, Vbus[bus_idx])
 
