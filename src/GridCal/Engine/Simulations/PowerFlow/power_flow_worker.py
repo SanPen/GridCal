@@ -103,8 +103,8 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
                                        sl=ref,
                                        pqpv=pqpv,
                                        tolerance=options.tolerance,
-                                       max_coeff=options.max_iter,
-                                       use_pade=True,
+                                       max_coefficients=options.max_iter,
+                                       use_pade=False,
                                        verbose=options.verbose)
 
         # type DC

@@ -28,6 +28,7 @@ from scipy.sparse import csc_matrix, coo_matrix
 from scipy.sparse import hstack as hs, vstack as vs
 from scipy.sparse.linalg import spsolve, factorized
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
 
 
 def epsilon(Sn, n, E):
@@ -256,7 +257,7 @@ def conv3(A, B, c, indices):
     return suma
 
 
-def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, verbose=False):
+def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, verbose=False):
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
     THis function just returns the coefficients for further usage in other routines
@@ -271,7 +272,7 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
     :param tolerance: target error (or tolerance)
     :param max_coeff: maximum number of coefficients
     :param verbose: print intermediate information
-    :return: U, X, Q, iterations
+    :return: U, X, Q, V, iterations
     """
 
     npqpv = len(pqpv)
@@ -280,9 +281,9 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
     n = Yseries.shape[0]
 
     # --------------------------- PREPARING IMPLEMENTATION -------------------------------------------------------------
-    U = np.zeros((max_coeff, npqpv), dtype=complex)  # voltages
-    X = np.zeros((max_coeff, npqpv), dtype=complex)  # compute X=1/conj(U)
-    Q = np.zeros((max_coeff, npqpv), dtype=complex)  # unknown reactive powers
+    U = np.zeros((max_coeff + 1, npqpv), dtype=complex)  # voltages
+    X = np.zeros((max_coeff + 1, npqpv), dtype=complex)  # compute X=1/conj(U)
+    Q = np.zeros((max_coeff + 1, npqpv), dtype=complex)  # unknown reactive powers
 
     if n < 2:
         return U, X, Q, 0
@@ -372,7 +373,12 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
 
     # .......................CALCULATION OF TERMS [>=2] ----------------------------------------------------------------
     iter_ = 1
-    for c in range(2, max_coeff):  # c defines the current depth
+    c = 2
+    converged = False
+    V = np.empty(n, dtype=complex)
+    V[sl] = V0[sl]
+    V[pqpv] = U[:c, :].sum(axis=0)
+    while c <= max_coeff and not converged:  # c defines the current depth
 
         valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] - U[c - 1, pq_] * Ysh[pq_]
         valor[pv_] = -1j * conv2(X, Q, c, pv_) - U[c - 1, pv_] * Ysh[pv_] + X[c - 1, pv_] * vec_P[pv_]
@@ -392,12 +398,19 @@ def helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1
         # update voltage inverse coefficients
         X[c, :] = -conv1(U, X, c) / np.conj(U[0, :])
 
+        # compute power mismatch
+        V[pqpv] += U[c, :]
+        Scalc = compute_power(Ybus, V)
+        norm_f = compute_fx_error(compute_fx(Scalc, S0, pqpv, pq))
+        converged = (norm_f <= tolerance) and (c % 2)  # we want an odd amount of coefficients
+
         iter_ += 1
+        c += 1
 
-    return U, X, Q, iter_
+    return U, X, Q, V, iter_
 
 
-def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, use_pade=True,
+def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coefficients=30, use_pade=True,
                verbose=False) -> NumericPowerFlowResults:
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
@@ -405,14 +418,14 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     :param Yseries: Admittance matrix of the series elements
     :param V0: vector of specified voltages
     :param S0: vector of specified power
-    :param Ysh0: vector of shunt admittances (including the shunts of the branches)
+    :param Ysh0: vector of shunt admittances (including the shunt "legs" of the pi branches)
     :param pq: list of pq nodes
     :param pv: list of pv nodes
     :param sl: list of slack nodes
     :param pqpv: sorted list of pq and pv nodes
     :param tolerance: target error (or tolerance)
-    :param max_coeff: maximum number of coefficients
-    :param use_pade: Use the Padè approximation? otherwise a simple summation is done
+    :param max_coefficients: maximum number of coefficients
+    :param use_pade: Use the Padè approximation? otherwise, a simple summation is done
     :param verbose: print intermediate information
     :return: V, converged, norm_f, Scalc, iter_, elapsed
     """
@@ -424,9 +437,10 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
         return NumericPowerFlowResults(V0, True, 0.0, S0, None, None, None, None, None, None, 0, 0.0)
 
     # compute the series of coefficients
-    U, X, Q, iter_ = helm_coefficients_josep(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv,
-                                             tolerance=tolerance, max_coeff=max_coeff,
-                                             verbose=verbose)
+    U, X, Q, V, iter_ = helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv,
+                                                tolerance=tolerance,
+                                                max_coeff=max_coefficients,
+                                                verbose=verbose)
 
     # --------------------------- RESULTS COMPOSITION ------------------------------------------------------------------
     if verbose:
@@ -434,21 +448,17 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
         print(U)
 
     # compute the final voltage vector
-    V = V0.copy()
     if use_pade:
+        V = V0.copy()
         try:
-            V[pqpv] = pade4all(max_coeff - 1, U, 1)
+            V[pqpv] = pade4all(max_coefficients - 1, U, 1)
         except:
             warn('Padè failed :(, using coefficients summation')
             V[pqpv] = U.sum(axis=0)
-    else:
-        V[pqpv] = U.sum(axis=0)
 
     # compute power mismatch
-    Scalc = V * np.conj(Ybus * V)
-    dP = np.abs(S0[pqpv].real - Scalc[pqpv].real)
-    dQ = np.abs(S0[pq].imag - Scalc[pq].imag)
-    norm_f = np.linalg.norm(np.r_[dP, dQ], np.inf)  # same as max(abs())
+    Scalc = compute_power(Ybus, V)
+    norm_f = compute_fx_error(compute_fx(Scalc, S0, pqpv, pq))
 
     # check convergence
     converged = norm_f < tolerance
@@ -458,50 +468,50 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
 
 
-if __name__ == '__main__':
-    from GridCal.Engine import FileOpen
-    import pandas as pd
-
-    np.set_printoptions(linewidth=2000, suppress=True)
-    pd.set_option('display.max_rows', 500)
-    pd.set_option('display.max_columns', 500)
-    pd.set_option('display.width', 1000)
-
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
-    fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
-    # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
-    # fname = 'helm_data1.gridcal'
-
-    grid = FileOpen(fname).open()
-
-    nc = grid.compile_snapshot()
-    inputs = nc.compute()[0]  # pick the first island
-
-    V, converged_, error, Scalc_, iter_, elapsed_ = helm_josep(Ybus=inputs.Ybus,
-                                                               Yseries=inputs.Yseries,
-                                                               V0=inputs.Vbus,
-                                                               S0=inputs.Sbus,
-                                                               Ysh0=inputs.Ysh,
-                                                               pq=inputs.pq,
-                                                               pv=inputs.pv,
-                                                               sl=inputs.ref,
-                                                               pqpv=inputs.pqpv,
-                                                               tolerance=1e-6,
-                                                               max_coeff=10,
-                                                               use_pade=False,
-                                                               verbose=False)
-    Vm = np.abs(V)
-    Va = np.angle(V)
-    dP = np.abs(inputs.Sbus.real - Scalc_.real)
-    dP[inputs.ref] = 0
-    dQ = np.abs(inputs.Sbus.imag - Scalc_.imag)
-    dQ[inputs.pv] = np.nan
-    dQ[inputs.ref] = np.nan
-    df = pd.DataFrame(data=np.c_[inputs.bus_types, Vm, Va, np.abs(inputs.Vbus), dP, dQ],
-                      columns=['Types', 'Vm', 'Va', 'Vset', 'P mismatch', 'Q mismatch'])
-    print(df)
-    print('Error', error)
-    print('P error', np.max(np.abs(dP)))
-    print('Elapsed', elapsed_)
+# if __name__ == '__main__':
+#     from GridCal.Engine import FileOpen
+#     import pandas as pd
+#
+#     np.set_printoptions(linewidth=2000, suppress=True)
+#     pd.set_option('display.max_rows', 500)
+#     pd.set_option('display.max_columns', 500)
+#     pd.set_option('display.width', 1000)
+#
+#     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
+#     fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.xlsx'
+#     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/lynn5buspv.xlsx'
+#     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 118.xlsx'
+#     # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
+#     # fname = 'helm_data1.gridcal'
+#
+#     grid = FileOpen(fname).open()
+#
+#     nc = grid.compile_snapshot()
+#     inputs = nc.compute()[0]  # pick the first island
+#
+#     V, converged_, error, Scalc_, iter_, elapsed_ = helm_josep(Ybus=inputs.Ybus,
+#                                                                Yseries=inputs.Yseries,
+#                                                                V0=inputs.Vbus,
+#                                                                S0=inputs.Sbus,
+#                                                                Ysh0=inputs.Ysh,
+#                                                                pq=inputs.pq,
+#                                                                pv=inputs.pv,
+#                                                                sl=inputs.ref,
+#                                                                pqpv=inputs.pqpv,
+#                                                                tolerance=1e-6,
+#                                                                max_coefficients=10,
+#                                                                use_pade=False,
+#                                                                verbose=False)
+#     Vm = np.abs(V)
+#     Va = np.angle(V)
+#     dP = np.abs(inputs.Sbus.real - Scalc_.real)
+#     dP[inputs.ref] = 0
+#     dQ = np.abs(inputs.Sbus.imag - Scalc_.imag)
+#     dQ[inputs.pv] = np.nan
+#     dQ[inputs.ref] = np.nan
+#     df = pd.DataFrame(data=np.c_[inputs.bus_types, Vm, Va, np.abs(inputs.Vbus), dP, dQ],
+#                       columns=['Types', 'Vm', 'Va', 'Vset', 'P mismatch', 'Q mismatch'])
+#     print(df)
+#     print('Error', error)
+#     print('P error', np.max(np.abs(dP)))
+#     print('Elapsed', elapsed_)
