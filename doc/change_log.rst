@@ -6,6 +6,15 @@ This section describes the changes introduced at each Version.
 
 \* Short releases indicate the fix of a critical bug.
 
+Version 4.5.1
+^^^^^^^^^^^^^^^
+
+- Now the short circuit includes the loading results again (bug fix)
+- Merged Short circuit contribution from user "poypoyan"
+- The HELM algorithm is now able to stop before reaching the iteration limit
+
+
+
 Version 4.5.0
 ^^^^^^^^^^^^^^^
 
