@@ -23,13 +23,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="added loss factors research files">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/helm_power_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/helm_power_flow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improved the HELM speed by stopping if the tolerance is achieved&#10;Fixed the short circuit routine by adding the missing loading results">
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/SigmaAnalysis/sigma_analysis_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/SigmaAnalysis/sigma_analysis_driver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -718,14 +713,7 @@
       <workItem from="1646596754247" duration="5002000" />
       <workItem from="1646637733706" duration="432000" />
       <workItem from="1648649205491" duration="4560000" />
-      <workItem from="1649501375083" duration="5403000" />
-    </task>
-    <task id="LOCAL-00233" summary="Added NTC-OPF previous checking using DC power flow and contingency analysis">
-      <created>1636372248527</created>
-      <option name="number" value="00233" />
-      <option name="presentableId" value="LOCAL-00233" />
-      <option name="project" value="LOCAL" />
-      <updated>1636372248527</updated>
+      <workItem from="1649501375083" duration="5751000" />
     </task>
     <task id="LOCAL-00234" summary="changed version">
       <created>1636372507097</created>
@@ -1063,7 +1051,14 @@
       <option name="project" value="LOCAL" />
       <updated>1649445968719</updated>
     </task>
-    <option name="localTasksCounter" value="282" />
+    <task id="LOCAL-00282" summary="Improved the HELM speed by stopping if the tolerance is achieved&#10;Fixed the short circuit routine by adding the missing loading results">
+      <created>1649509806991</created>
+      <option name="number" value="00282" />
+      <option name="presentableId" value="LOCAL-00282" />
+      <option name="project" value="LOCAL" />
+      <updated>1649509806991</updated>
+    </task>
+    <option name="localTasksCounter" value="283" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1096,7 +1091,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added &quot;maximize exchange&quot; option to the normal OPF-time series" />
     <MESSAGE value="Added inter area generation maximization/minimization&#10;Rearranged menus&#10;Added area &quot;slicing&quot; functions to the snapshot" />
     <MESSAGE value="removed HVDC slack variables from the OPF and OPF-TS formulations" />
     <MESSAGE value="Added shadow prices to both opf and opf-ts" />
@@ -1121,7 +1115,8 @@
     <MESSAGE value="Improved ZIP load model&#10;Added voltage guess" />
     <MESSAGE value="Merged the changes from the main devel branch refactoring the power flow methods" />
     <MESSAGE value="added loss factors research files" />
-    <option name="LAST_COMMIT_MESSAGE" value="added loss factors research files" />
+    <MESSAGE value="Improved the HELM speed by stopping if the tolerance is achieved&#10;Fixed the short circuit routine by adding the missing loading results" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved the HELM speed by stopping if the tolerance is achieved&#10;Fixed the short circuit routine by adding the missing loading results" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

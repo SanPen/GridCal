@@ -344,25 +344,6 @@ class ShortCircuitDriver(DriverTemplate):
 
         return results
 
-    @staticmethod
-    def compute_branch_results(calculation_inputs: SnapshotData, V):
-        """
-        Compute the power Sf trough the branches
-        @param calculation_inputs: instance of Circuit
-        @param V: Voltage solution array for the circuit buses
-        @return: Sf, If, loading, losses
-        """
-        If = calculation_inputs.Yf * V
-        It = calculation_inputs.Yt * V
-        Sf = (calculation_inputs.Cf * V) * np.conj(If)
-        St = (calculation_inputs.Ct * V) * np.conj(It)
-        losses = Sf - St
-        # Ibranch = np.maximum(If, It)
-        # Sbranch = np.maximum(Sf, St)
-        loading = Sf * calculation_inputs.Sbase / (calculation_inputs.branch_rates + 1e-20)
-
-        return Sf, If, loading, losses
-
     def run(self):
         """
         Run a power flow for every circuit
