@@ -35,5 +35,6 @@ contributors_msg += 'Josep Fanals Batllori (HELM)\n'
 contributors_msg += 'Manuel Navarro Catalán (Better documentation)\n'
 contributors_msg += 'Paul Schultz (Grid Generator)\n'
 contributors_msg += 'Andrés Ramiro (Optimal net transfer capacity)\n'
+contributors_msg += 'Ameer Carlo Lubang (Improved short-circuit)\n'
 
 about_msg += copyright_msg + '\n' + contributors_msg

@@ -10,7 +10,7 @@ Version 4.5.1
 ^^^^^^^^^^^^^^^
 
 - Now the short circuit includes the loading results again (bug fix)
-- Merged Short circuit contribution from user "poypoyan"
+- Merged Short circuit contribution from user Ameer Carlo Lubang
 - The HELM algorithm is now able to stop before reaching the iteration limit
 
 
