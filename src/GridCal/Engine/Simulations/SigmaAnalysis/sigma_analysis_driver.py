@@ -229,7 +229,8 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
                                                             pqpv=calculation_input.pqpv,
                                                             tolerance=options.tolerance,
                                                             max_coeff=options.max_iter,
-                                                            verbose=False)
+                                                            verbose=False,
+                                                            logger=logger)
 
                 # compute the sigma values
                 n = calculation_input.nbus
@@ -272,7 +273,8 @@ def multi_island_sigma(multi_circuit: MultiCircuit, options: PowerFlowOptions, l
                                                         pqpv=calculation_input.pqpv,
                                                         tolerance=options.tolerance,
                                                         max_coeff=options.max_iter,
-                                                        verbose=False)
+                                                        verbose=False,
+                                                        logger=logger)
 
             # compute the sigma values
             n = calculation_input.nbus

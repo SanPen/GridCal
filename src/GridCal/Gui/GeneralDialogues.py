@@ -189,17 +189,17 @@ class LogsDialogue(QtWidgets.QDialog):
     """
     New profile dialogue window
     """
-    def __init__(self, name, logs: Logger(), expand_all=True):
+    def __init__(self, name, logger: Logger(), expand_all=True):
         super(LogsDialogue, self).__init__()
         self.setObjectName("self")
         self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
         self.main_layout = QtWidgets.QVBoxLayout(self)
 
-        self.logs = logs
+        self.logger = logger
 
         # logs_list
         self.logs_table = QtWidgets.QTreeView()
-        model = fill_tree_from_logs(logs)
+        model = fill_tree_from_logs(logger)
         self.logs_table.setModel(model)
         self.logs_table.setFirstColumnSpanned(0, QtCore.QModelIndex(), True)
         self.logs_table.setFirstColumnSpanned(1, QtCore.QModelIndex(), True)
@@ -260,19 +260,19 @@ class LogsDialogue(QtWidgets.QDialog):
                 f = file
                 if not f.endswith('.xlsx'):
                     f += '.xlsx'
-                self.logs.to_xlsx(f)
+                self.logger.to_xlsx(f)
 
             if 'csv' in filter_:
                 f = file
                 if not f.endswith('.csv'):
                     f += '.csv'
-                self.logs.to_csv(f)
+                self.logger.to_csv(f)
 
     def copy_click(self):
         """
         Copy logs to the clipboard
         """
-        df = self.logs.to_df()
+        df = self.logger.to_df()
         s = io.StringIO()
         df.to_csv(s, sep='\t')
         txt = s.getvalue()
@@ -469,6 +469,6 @@ if __name__ == "__main__":
     import sys
     from PySide2.QtWidgets import QApplication
     app = QApplication(sys.argv)
-    window = LogsDialogue(name='', logs=Logger())
+    window = LogsDialogue(name='', logger=Logger())
     window.show()
     sys.exit(app.exec_())

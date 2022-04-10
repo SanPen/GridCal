@@ -747,13 +747,21 @@ class MainGUI(QMainWindow):
         else:
             self.grid_editor.setDisabled(True)
 
+    def clear_qt_layout(self, layout):
+        """
+        Remove all widgets from a layout object
+        :param layout:
+        """
+        for i in reversed(range(layout.count())):
+            layout.itemAt(i).widget().deleteLater()
+
     def create_console(self):
         """
         Create console
         """
         if qt_console_available:
             if self.console is not None:
-                self.ui.main_console_tab.layout().removeWidget(self.console)
+                self.clear_qt_layout(self.ui.pythonConsoleTab.layout())
 
             self.console = ConsoleWidget(customBanner="GridCal console.\n\n"
                                                       "type hlp() to see the available specific commands.\n\n"
@@ -767,7 +775,7 @@ class MainGUI(QMainWindow):
             self.console.buffer_size = 10000
 
             # add the console widget to the user interface
-            self.ui.main_console_tab.layout().addWidget(self.console)
+            self.ui.pythonConsoleTab.layout().addWidget(self.console)
 
             # push some variables to the console
             self.console.push_vars({"hlp": self.print_console_help,
@@ -994,7 +1002,10 @@ class MainGUI(QMainWindow):
         """
         self.console.clear()
 
-    def console_msg(self, msg_):
+    def clear_text_output(self):
+        self.ui.outputTextEdit.setPlainText("")
+
+    def console_msg(self, *msg_):
         """
         Print some message in the console.
 
@@ -1003,11 +1014,20 @@ class MainGUI(QMainWindow):
             **msg_** (str): Message
 
         """
-        if self.console is not None:
-            dte = dtelib.datetime.now().strftime("%b %d %Y %H:%M:%S")
-            self.console.print_text('\n' + dte + '->' + msg_)
-        else:
-            print(msg_)
+        dte = dtelib.datetime.now().strftime("%b %d %Y %H:%M:%S")
+
+        txt = self.ui.outputTextEdit.toPlainText()
+
+        for e in msg_:
+            if isinstance(e, list):
+                txt += '\n' + dte + '->\n'
+                for elm in e:
+                    txt += str(elm) + "\n"
+            else:
+                txt += '\n' + dte + '->'
+                txt += " " + str(e)
+
+        self.ui.outputTextEdit.setPlainText(txt)
 
     def auto_layout(self):
         """
@@ -2560,6 +2580,8 @@ class MainGUI(QMainWindow):
             if len(drv.logger) > 0:
                 dlg = LogsDialogue('Power flow', drv.logger)
                 dlg.exec_()
+            if len(drv.logger.debug_entries):
+                self.console_msg(drv.logger.debug_entries)
 
         if not self.session.is_anything_running():
             self.UNLOCK()

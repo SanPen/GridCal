@@ -105,7 +105,8 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
                                        tolerance=options.tolerance,
                                        max_coefficients=options.max_iter,
                                        use_pade=False,
-                                       verbose=options.verbose)
+                                       verbose=options.verbose,
+                                       logger=logger)
 
         # type DC
         elif solver_type == bs.SolverType.DC:
@@ -143,7 +144,8 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
                                     pq=pq,
                                     tol=options.tolerance,
                                     max_it=options.max_iter,
-                                    verbose=options.verbose)
+                                    verbose=options.verbose,
+                                    logger=logger)
 
         # Levenberg-Marquardt
         elif solver_type == bs.SolverType.LM:
@@ -215,7 +217,8 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
                                       mu_0=options.mu,
                                       acceleration_parameter=options.backtracking_parameter,
                                       control_q=options.control_Q,
-                                      verbose=options.verbose)
+                                      verbose=options.verbose,
+                                      logger=logger)
 
         # Newton-Raphson-Decpupled
         elif solver_type == bs.SolverType.NRD:

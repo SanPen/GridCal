@@ -29,6 +29,7 @@ from scipy.sparse import hstack as hs, vstack as vs
 from scipy.sparse.linalg import spsolve, factorized
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
+from GridCal.Engine.basic_structures import Logger
 
 
 def epsilon(Sn, n, E):
@@ -257,7 +258,8 @@ def conv3(A, B, c, indices):
     return suma
 
 
-def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, verbose=False):
+def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, verbose=False,
+                            logger: Logger = None):
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
     THis function just returns the coefficients for further usage in other routines
@@ -272,6 +274,7 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
     :param tolerance: target error (or tolerance)
     :param max_coeff: maximum number of coefficients
     :param verbose: print intermediate information
+    :param logger: Logger object to store the debug info
     :return: U, X, Q, V, iterations
     """
 
@@ -289,11 +292,11 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
         return U, X, Q, 0
 
     if verbose:
-        print('Yseries')
-        print(Yseries.toarray())
+        logger.add_debug('Yseries', Yseries.toarray())
+
         df = pd.DataFrame(data=np.c_[Ysh0.imag, S0.real, S0.imag, np.abs(V0)],
                           columns=['Ysh', 'P0', 'Q0', 'V0'])
-        print(df)
+        logger.add_debug(df.to_string())
 
     # build the reduced system
     Yred = Yseries[np.ix_(pqpv, pqpv)]  # admittance matrix without slack buses
@@ -357,14 +360,15 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
               hs((VRE, VIM, EMPTY))), format='csc')
 
     if verbose:
-        print('MAT')
-        print(MAT.toarray())
+        logger.add_debug("MAT", MAT.toarray())
 
     # factorize (only once)
     # MAT_LU = factorized(MAT.tocsc())
 
     # solve
-    LHS = spsolve(MAT, RHS)
+    mat_factorized = factorized(MAT)
+    LHS = mat_factorized(RHS)
+    # LHS = spsolve(MAT, RHS)
 
     # update coefficients
     U[1, :] = LHS[:npqpv] + 1j * LHS[npqpv:2 * npqpv]
@@ -387,7 +391,8 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
                     valor.imag,
                     -conv3(U, U, c, pv_).real]
 
-        LHS = spsolve(MAT, RHS)
+        # LHS = spsolve(MAT, RHS)
+        LHS = mat_factorized(RHS)
 
         # update voltage coefficients
         U[c, :] = LHS[:npqpv] + 1j * LHS[npqpv:2 * npqpv]
@@ -411,7 +416,7 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
 
 
 def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coefficients=30, use_pade=True,
-               verbose=False) -> NumericPowerFlowResults:
+               verbose=False, logger: Logger = None) -> NumericPowerFlowResults:
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
     :param Ybus: Complete admittance matrix
@@ -427,6 +432,7 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     :param max_coefficients: maximum number of coefficients
     :param use_pade: Use the Padè approximation? otherwise, a simple summation is done
     :param verbose: print intermediate information
+    :param logger: Logger object to store the debug info
     :return: V, converged, norm_f, Scalc, iter_, elapsed
     """
 
@@ -440,12 +446,12 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     U, X, Q, V, iter_ = helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv,
                                                 tolerance=tolerance,
                                                 max_coeff=max_coefficients,
-                                                verbose=verbose)
+                                                verbose=verbose,
+                                                logger=logger)
 
     # --------------------------- RESULTS COMPOSITION ------------------------------------------------------------------
     if verbose:
-        print('V coefficients')
-        print(U)
+        logger.add_debug('V coefficients\n', U)
 
     # compute the final voltage vector
     if use_pade:

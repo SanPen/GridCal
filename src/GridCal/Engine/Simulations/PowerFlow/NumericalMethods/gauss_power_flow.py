@@ -19,14 +19,15 @@
 Solves the power flow using a Gauss-Seidel method.
 """
 
-import sys
 import time
 import numpy as np
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+from GridCal.Engine.basic_structures import Logger
 
 
-def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, tol=1e-3, max_it=50, verbose=False) -> NumericPowerFlowResults:
+def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, tol=1e-3, max_it=50,
+            verbose=False, logger: Logger = None) -> NumericPowerFlowResults:
     """
     Gauss-Seidel Power flow
     :param Ybus: Admittance matrix
@@ -39,6 +40,7 @@ def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, tol=1e-3, max_it=50, verbose=False) ->
     :param tol: Tolerance
     :param max_it: Maximum number of iterations
     :param verbose: Verbose?
+    :param logger: Logger to store the debug information
     :return: NumericPowerFlowResults instance
     """
     start = time.time()
@@ -65,8 +67,8 @@ def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, tol=1e-3, max_it=50, verbose=False) ->
     converged = normF < tol
 
     if verbose:
-        print('GS Iteration {0}'.format(iter_) + '-' * 200)
-        print('error', normF)
+        logger.add_debug('GS Iteration {0}'.format(iter_) + '-' * 200)
+        logger.add_debug('error', normF)
 
     # do Gauss-Seidel iterations
     while not converged and iter_ < max_it:
@@ -95,21 +97,16 @@ def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, tol=1e-3, max_it=50, verbose=False) ->
         converged = normF < tol
 
         if verbose:
-            print('GS Iteration {0}'.format(iter_) + '-' * 200)
+            logger.add_debug('GS Iteration {0}'.format(iter_) + '-' * 200)
 
             if verbose > 1:
-                print('Vm:\n', np.abs(V))
-                print('Va:\n', np.angle(V))
+                logger.add_debug('Vm:\n', np.abs(V))
+                logger.add_debug('Va:\n', np.angle(V))
 
-            print('error', normF)
+            logger.add_debug('error', normF)
 
         # update iteration counter
         iter_ += 1
-
-    if verbose:
-        if not converged:
-            sys.stdout.write('Gauss-Seidel power did not converge in %d '
-                             'iterations.' % iter_)
 
     end = time.time()
     elapsed = end - start

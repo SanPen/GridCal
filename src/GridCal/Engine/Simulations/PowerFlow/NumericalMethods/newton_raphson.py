@@ -24,6 +24,7 @@ from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions impo
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.basic_structures import ReactivePowerControlMode
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
+from GridCal.Engine.basic_structures import Logger
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
@@ -33,7 +34,7 @@ np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
           acceleration_parameter=0.05, control_q=ReactivePowerControlMode.NoControl,
-          verbose=False) -> NumericPowerFlowResults:
+          verbose=False, logger: Logger = None) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with backtracking correction.
     @Author: Santiago Peñate-Vera
@@ -52,6 +53,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     :param acceleration_parameter: parameter used to correct the "bad" iterations, should be between 1e-3 ~ 0.5
     :param control_q: Control reactive power
     :param verbose: Display console information
+    :param print_function: printing function (print by default)
     :return: NumericPowerFlowResults instance
     """
     start = time.time()
@@ -82,8 +84,8 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
         converged = norm_f < tol
 
         if verbose:
-            print('NR Iteration {0}'.format(iteration) + '-' * 200)
-            print('error', norm_f)
+            logger.add_debug('NR Iteration {0}'.format(iteration) + '-' * 200)
+            logger.add_debug('error', norm_f)
 
         # do Newton iterations
         while not converged and iteration < max_it:
@@ -97,13 +99,13 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             dx = linear_solver(J, f)
 
             if verbose:
-                print('NR Iteration {0}'.format(iteration) + '-' * 200)
+                logger.add_debug('NR Iteration {0}'.format(iteration) + '-' * 200)
 
                 if verbose > 1:
-                    print('J:\n', J.toarray())
-                    print('f:\n', f)
-                    print('Vm:\n', Vm)
-                    print('Va:\n', Va)
+                    logger.add_debug('J:\n', J.toarray())
+                    logger.add_debug('f:\n', f)
+                    logger.add_debug('Vm:\n', Vm)
+                    logger.add_debug('Va:\n', Va)
 
             # reassign the solution vector
             dVa[pvpq] = dx[:npvpq]
@@ -142,9 +144,9 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
 
                 if verbose:
                     if l_iter == 0:
-                        print('error', norm_f_new)
+                        logger.add_debug('error', norm_f_new)
                     else:
-                        print('Backtrcking, mu=', mu, 'error', norm_f_new)
+                        logger.add_debug('Backtrcking, mu=', mu, 'error', norm_f_new)
 
                 l_iter += 1
 
