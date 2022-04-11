@@ -15,7 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
 import numba as nb
 import numpy as np
 import scipy.sparse as sp
@@ -115,6 +114,15 @@ def compute_power(Ybus, V):
     :param V:
     :return:
     """
+
+    # with warnings.catch_warnings():
+    #     warnings.filterwarnings('error')
+    #
+    #     try:
+    #         return V * np.conj(Ybus * V)
+    #     except Warning as e:
+    #         print()
+
     return V * np.conj(Ybus * V)
 
 

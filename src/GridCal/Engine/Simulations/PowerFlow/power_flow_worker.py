@@ -709,7 +709,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
             oscillating = False
 
             # check oscillations: if Pf changes sign from prev to current, the previous prevails and we end the control
-            print('control err:', hvdc_control_err, '', Pf_hvdc)
+            logger.add_debug('HVDC angle droop control err:', hvdc_control_err, '', Pf_hvdc)
             if oscillating:
                 oscillations_number += 1
 

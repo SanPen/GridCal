@@ -405,9 +405,14 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
 
         # compute power mismatch
         V[pqpv] += U[c, :]
-        Scalc = compute_power(Ybus, V)
-        norm_f = compute_fx_error(compute_fx(Scalc, S0, pqpv, pq))
-        converged = (norm_f <= tolerance) and (c % 2)  # we want an odd amount of coefficients
+
+        if V.max().real < 10:
+            Scalc = compute_power(Ybus, V)
+            norm_f = compute_fx_error(compute_fx(Scalc, S0, pqpv, pq))
+            converged = (norm_f <= tolerance) and (c % 2)  # we want an odd amount of coefficients
+        else:
+            # completely erroneous
+            break
 
         iter_ += 1
         c += 1
