@@ -88,6 +88,9 @@ This class is the handler of the main gui of GridCal.
 ########################################################################################################################
 
 
+
+
+
 class MainGUI(QMainWindow):
 
     def __init__(self, parent=None, use_native_dialogues=False):
@@ -747,21 +750,13 @@ class MainGUI(QMainWindow):
         else:
             self.grid_editor.setDisabled(True)
 
-    def clear_qt_layout(self, layout):
-        """
-        Remove all widgets from a layout object
-        :param layout:
-        """
-        for i in reversed(range(layout.count())):
-            layout.itemAt(i).widget().deleteLater()
-
     def create_console(self):
         """
         Create console
         """
         if qt_console_available:
             if self.console is not None:
-                self.clear_qt_layout(self.ui.pythonConsoleTab.layout())
+                clear_qt_layout(self.ui.pythonConsoleTab.layout())
 
             self.console = ConsoleWidget(customBanner="GridCal console.\n\n"
                                                       "type hlp() to see the available specific commands.\n\n"
@@ -1296,9 +1291,14 @@ class MainGUI(QMainWindow):
                     if reply == QMessageBox.No:
                         self.ui.draw_schematic_checkBox.setChecked(False)
                         self.set_grid_editor_state()
+                else:
+                    if not self.ui.draw_schematic_checkBox.isChecked():
+                        # the schematic is disabled but the grid size is ok
+                        self.ui.draw_schematic_checkBox.setChecked(True)
+                        self.set_grid_editor_state()
 
                 # create schematic
-                self.create_schematic_from_api(explode_factor=1)
+                self.create_schematic_from_api(explode_factor=1, show_msg=False)
 
                 # set circuit name
                 self.grid_editor.name_label.setText(str(self.circuit.name))
@@ -1705,6 +1705,8 @@ class MainGUI(QMainWindow):
         """
         Sandbox to call create_schematic_from_api from the action item without affecting the explode factor variable
         """
+        self.ui.draw_schematic_checkBox.setChecked(True)
+        self.set_grid_editor_state()
         self.create_schematic_from_api()
 
     def set_xy_from_lat_lon(self):
@@ -1717,9 +1719,9 @@ class MainGUI(QMainWindow):
                 self.circuit.fill_xy_from_lat_lon()
                 self.create_schematic_from_api()
 
-    def create_schematic_from_api(self, explode_factor=1.0):
+    def create_schematic_from_api(self, explode_factor=1.0, show_msg=True):
         """
-        This function explores the API values and draws an schematic layout
+        This function explores the API values and draws a schematic layout
         @return:
         """
         if self.ui.draw_schematic_checkBox.isChecked():
@@ -1731,7 +1733,8 @@ class MainGUI(QMainWindow):
             # center nodes
             self.grid_editor.align_schematic()
         else:
-            info_msg('The schematic drawing is disabled')
+            if show_msg:
+                info_msg('The schematic drawing is disabled')
 
     def post_create_schematic(self):
         """
@@ -4741,7 +4744,7 @@ class MainGUI(QMainWindow):
         self.coordinates_window = CoordinatesInputGUI(self, self.circuit.buses)
         self.coordinates_window.exec_()
 
-        self.draw_schematic()
+        self.create_schematic_from_api()
 
     def set_selected_bus_property(self, prop):
         """
@@ -6853,7 +6856,7 @@ class MainGUI(QMainWindow):
 
         if ok:
             self.circuit.fuse_devices()
-            self.draw_schematic()
+            self.create_schematic_from_api()
 
     def correct_inconsistencies(self):
         """

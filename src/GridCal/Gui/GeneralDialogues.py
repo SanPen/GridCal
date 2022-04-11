@@ -465,6 +465,15 @@ class CorrectInconsistenciesDialogue(QtWidgets.QDialog):
         self.accept()
 
 
+def clear_qt_layout(layout):
+    """
+    Remove all widgets from a layout object
+    :param layout:
+    """
+    for i in reversed(range(layout.count())):
+        layout.itemAt(i).widget().deleteLater()
+
+
 if __name__ == "__main__":
     import sys
     from PySide2.QtWidgets import QApplication
