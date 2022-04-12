@@ -99,7 +99,7 @@ from time import time
 from GridCal.ThirdParty.pulp.solver_interfaces import *
 from GridCal.ThirdParty.pulp import constants as const
 from GridCal.ThirdParty.pulp import mps_lp as mpslp
-from collections import Iterable
+from collections.abc import Iterable
 
 import logging
 log = logging.getLogger(__name__)
