@@ -605,7 +605,7 @@ def formulate_proportional_generation_simplified(solver: pywraplp.Solver, genera
                                       generator_cost, generator_names, inf, ngen, Cgen, Pgen, Pmax,
                                       Pmin, a1, a2, logger: Logger):
     """
-    Formulate the generation increments in a proportional fashion.
+    Formulate the generation increments in a proportional fashion. This method ignore negative generators!!
     This is a simplified method because doesn't consider negative generation
     :param solver: Solver instance to which add the equations
     :param generator_active: Array of generation active values (True / False)
@@ -1153,7 +1153,7 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, bran
     :param T: Array of branch "to" bus indices
     :param inf: Value representing the infinite (i.e. 1e20)
     :param branch_sensitivity_threshold: minimum branch sensitivity to the exchange (used to filter branches out)
-    :param flow_f: Array of formulated branch flows (LP variblaes)
+    :param flow_f: Array of formulated branch flows (LP variables)
     :param monitor: Array of final monitor status per branch after applying the logic
     :return:
         - flow_n1f: List of contingency flows LP variables
@@ -1182,7 +1182,6 @@ def formulate_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase, bran
                 if lodf > 1.1:
                     logger.add_warning("LODF correction", device=branch_names[m] + "@" + branch_names[c],
                                        value=lodf, expected_value=1.1)
-
                     lodf = lodf_replacement_value
 
                 elif lodf < -1.1:
