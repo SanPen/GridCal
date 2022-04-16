@@ -91,9 +91,14 @@ def get_pgm_static_generators(circuit: MultiCircuit, bus_dict):
     :param bus_dict: dictionary of bus id to bentayga bus object
     """
     devices = circuit.get_static_generators()
+
+    stagen = pgm.initialize_array('input', 'sym_load', len(devices))
+
     for k, elm in enumerate(devices):
 
         pass
+
+    stagen
 
 
 def get_pgm_shunts(circuit: MultiCircuit, bus_dict):
@@ -103,9 +108,14 @@ def get_pgm_shunts(circuit: MultiCircuit, bus_dict):
     :param bus_dict: dictionary of bus id to bentayga bus object
     """
     devices = circuit.get_shunts()
+
+    shunt = pgm.initialize_array('input', 'sym_load', len(devices))
+
     for k, elm in enumerate(devices):
 
         pass
+
+    return shunt
 
 
 def get_pgm_generators(circuit: MultiCircuit, bus_dict):
@@ -116,9 +126,13 @@ def get_pgm_generators(circuit: MultiCircuit, bus_dict):
     """
     devices = circuit.get_generators()
 
+    gen = pgm.initialize_array('input', 'sym_load', len(devices))
+
     for k, elm in enumerate(devices):
 
         pass
+
+    return gen
 
 
 def get_battery_data(circuit: MultiCircuit, bus_dict):
@@ -128,12 +142,13 @@ def get_battery_data(circuit: MultiCircuit, bus_dict):
     :param bus_dict: dictionary of bus id to bentayga bus object
     """
     devices = circuit.get_batteries()
-
+    batt = pgm.initialize_array('input', 'sym_load', len(devices))
     for k, elm in enumerate(devices):
         pass
+    return batt
 
 
-def add_pgm_line(circuit: MultiCircuit, bus_dict):
+def get_pgm_line(circuit: MultiCircuit, bus_dict):
     """
 
     :param circuit: GridCal circuit
@@ -165,8 +180,12 @@ def get_transformer_data(circuit: MultiCircuit, bus_dict):
     :param circuit: GridCal circuit
     :param bus_dict: dictionary of bus id to bentayga bus object
     """
+    xfo = pgm.initialize_array('input', 'sym_load', len(circuit.transformers2w))
+
     for i, elm in enumerate(circuit.transformers2w):
         pass
+
+    return xfo
 
 
 def get_vsc_data(circuit: MultiCircuit, bus_dict):
@@ -175,8 +194,10 @@ def get_vsc_data(circuit: MultiCircuit, bus_dict):
     :param circuit: GridCal circuit
     :param bus_dict: dictionary of bus id to bentayga bus object
     """
+    vsc = pgm.initialize_array('input', 'sym_load', len(circuit.vsc_devices))
     for i, elm in enumerate(circuit.vsc_devices):
         pass
+    return vsc
 
 
 def get_dc_line_data(circuit: MultiCircuit, bus_dict):
@@ -185,9 +206,11 @@ def get_dc_line_data(circuit: MultiCircuit, bus_dict):
     :param circuit: GridCal circuit
     :param bus_dict: dictionary of bus id to bentayga bus object
     """
+    dc_line = pgm.initialize_array('input', 'sym_load', len(circuit.dc_lines))
     # Compile the lines
     for i, elm in enumerate(circuit.dc_lines):
         pass
+    return dc_line
 
 
 def get_hvdc_data(circuit: MultiCircuit,  bus_dict):
@@ -196,9 +219,10 @@ def get_hvdc_data(circuit: MultiCircuit,  bus_dict):
     :param circuit: GridCal circuit
     :param bus_dict: dictionary of bus id to bentayga bus object
     """
-
+    hvdc = pgm.initialize_array('input', 'sym_load', len(circuit.hvdc_lines))
     for i, elm in enumerate(circuit.hvdc_lines):
         pass
+    return hvdc
 
 
 def to_pgm(circuit: MultiCircuit) -> pgm.PowerGridModel:
@@ -215,7 +239,7 @@ def to_pgm(circuit: MultiCircuit) -> pgm.PowerGridModel:
     shunt = get_pgm_shunts(circuit, bus_dict)
     source = get_pgm_generators(circuit, bus_dict)
     battery = get_battery_data(circuit, bus_dict)
-    line = add_pgm_line(circuit, bus_dict)
+    line = get_pgm_line(circuit, bus_dict)
     xfo = get_transformer_data(circuit, bus_dict)
     vsc = get_vsc_data(circuit, bus_dict)
     dc_line = get_dc_line_data(circuit, bus_dict)
