@@ -25,6 +25,7 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE, to_newton_native, newton_power_flow
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf
+from GridCal.Engine.Core.Compilers.circuit_to_alliander_pgm import ALLIANDER_PGM_AVAILABLE, alliander_pgm_pf
 import GridCal.Engine.basic_structures as bs
 
 
@@ -129,6 +130,10 @@ class PowerFlowDriver(DriverTemplate):
             self.engine = bs.EngineType.GridCal
             self.logger.add_warning('Failed back to GridCal')
 
+        if self.engine == bs.EngineType.AllianderPGM and not ALLIANDER_PGM_AVAILABLE:
+            self.engine = bs.EngineType.GridCal
+            self.logger.add_warning('Failed back to GridCal')
+
         if self.engine == bs.EngineType.GridCal:
             self.results = multi_island_pf(multi_circuit=self.grid,
                                            options=self.options,
@@ -182,6 +187,10 @@ class PowerFlowDriver(DriverTemplate):
 
             self.results = translate_bentayga_pf_results(self.grid, res)
             self.convergence_reports = self.results.convergence_reports
+
+        elif self.engine == bs.EngineType.AllianderPGM:
+
+            res = alliander_pgm_pf(self.grid, self.options)
 
         else:
             raise Exception('Engine ' + self.engine.value + ' not implemented for ' + self.name)

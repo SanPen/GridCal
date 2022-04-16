@@ -1,3 +1,19 @@
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os.path
 
 from GridCal.Engine.basic_structures import Logger
@@ -41,14 +57,14 @@ except ImportError:
 BINT = np.ulonglong
 
 
-def add_btg_buses(circuit: MultiCircuit, btg_circuit: "btg.Circuit", time_series: bool, ntime=1):
+def add_btg_buses(circuit: MultiCircuit, btg_circuit: "btg.Circuit", time_series: bool, ntime: int=1):
     """
     Convert the buses to bentayga buses
     :param circuit: GridCal circuit
     :param btg_circuit: bentayga circuit
-    :param time_series: compile the time series from GridCal? otherwise just the snapshot
+    :param time_series: compile the time series from GridCal? otherwise, just the snapshot
     :param ntime: number of time steps
-    :return:
+    :return: bus dictionary buses[uuid] -> Bus
     """
     areas_dict = {elm: k for k, elm in enumerate(circuit.areas)}
     bus_dict = dict()

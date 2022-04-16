@@ -297,6 +297,7 @@ class EngineType(Enum):
     GridCal = 'GridCal'
     Bentayga = 'Bentayga'
     Newton = 'NewtonNative'
+    AllianderPGM = 'Alliander PGM'
 
     def __str__(self):
         return self.value
