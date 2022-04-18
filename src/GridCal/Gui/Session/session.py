@@ -45,8 +45,8 @@ def get_results_object_dictionary():
     Get dictionary of recognizable result types in order to be able to load a driver from disk
     :return: dictionary[driver name: empty results object]
     """
-    lst = [(AvailableTransferCapacityResults(0, 0, [], [], [], (), ()), SimulationTypes.NetTransferCapacity_run),
-           (AvailableTransferCapacityTimeSeriesResults(0, 0, [], [], [], []), SimulationTypes.NetTransferCapacityTS_run),
+    lst = [(AvailableTransferCapacityResults([], [], [], []), SimulationTypes.NetTransferCapacity_run),
+           (AvailableTransferCapacityTimeSeriesResults([], [], [], [], []), SimulationTypes.NetTransferCapacityTS_run),
            (ContingencyAnalysisResults(0, 0, [], [], []), SimulationTypes.ContingencyAnalysis_run),
            (ContingencyAnalysisTimeSeriesResults(0, 0, 0, [], [], [], []), SimulationTypes.ContingencyAnalysisTS_run),
            (ContinuationPowerFlowResults(0, 0, 0, [], [], []), SimulationTypes.ContinuationPowerFlow_run),

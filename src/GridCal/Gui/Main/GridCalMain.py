@@ -4363,6 +4363,7 @@ class MainGUI(QMainWindow):
                     sensitivity_dT=dT,
                     sensitivity_mode=mode,
                     perform_previous_checks=perform_previous_checks,
+                    with_check=False,
                     weight_power_shift=weight_power_shift,
                     weight_generation_cost=weight_generation_cost,
                     consider_contingencies=consider_contingencies,
@@ -6912,6 +6913,7 @@ class MainGUI(QMainWindow):
         if dlg.accepted:
             self.circuit.re_index_time(year=dlg.year_spinner.value(),
                                        hours_per_step=dlg.interval_hours.value())
+            self.update_date_dependent_combos()
 
     def fix_generators_active_based_on_the_power(self):
         """

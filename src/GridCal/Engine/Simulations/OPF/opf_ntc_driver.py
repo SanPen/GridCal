@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from enum import Enum
+import pandas as pd
 import numpy as np
 import time
 
@@ -451,6 +452,28 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         return labels, columns, y
 
+
+    def make_report(self, path_out=None):
+        """
+
+         :param path_out:
+         :return:
+         """
+
+        print('NTC is', self.get_exchange_power(), 'MW')
+
+        labels, columns, data = self.get_contingency_report()
+
+        df = pd.DataFrame(data=data, columns=columns, index=labels)
+
+        # print result dataframe
+        print('\n\n')
+        print(df)
+
+        # Save file
+        if path_out:
+            df.to_csv(path_out, index=False)
+
     def mdl(self, result_type) -> "ResultsTable":
         """
         Plot the results
@@ -591,7 +614,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                            units=y_label)
         return mdl
 
-
 class OptimalNetTransferCapacity(DriverTemplate):
     name = 'Optimal net transfer capacity'
     tpe = SimulationTypes.OPF_NTC_run
@@ -624,9 +646,10 @@ class OptimalNetTransferCapacity(DriverTemplate):
             ptdf=linear.PTDF,
             P0=numerical_circuit.Sbus.real,
             Pinstalled=numerical_circuit.bus_installed_power,
+            Pgen=numerical_circuit.generator_data.get_injections_per_bus()[:,0].real,
+            Pload=numerical_circuit.load_data.get_injections_per_bus()[:,0].real,
             idx1=self.options.area_from_bus_idx,
             idx2=self.options.area_to_bus_idx,
-            bus_types=numerical_circuit.bus_types.astype(np.int),
             dT=self.options.sensitivity_dT,
             mode=self.options.sensitivity_mode.value)
 
@@ -655,14 +678,18 @@ class OptimalNetTransferCapacity(DriverTemplate):
         self.progress_text.emit('Running linear analysis...')
 
         # declare the linear analysis
-        linear = LinearAnalysis(grid=self.grid,
-                                distributed_slack=False,
-                                correct_values=False)
+        linear = LinearAnalysis(
+            grid=self.grid,
+            distributed_slack=False,
+            correct_values=False)
+
         linear.run()
 
         # sensitivities
         if self.options.monitor_only_sensitive_branches:
-            alpha = self.compute_exchange_sensitivity(linear, numerical_circuit)
+            alpha = self.compute_exchange_sensitivity(
+                linear=linear,
+                numerical_circuit=numerical_circuit)
         else:
             alpha = np.ones(numerical_circuit.nbr)
 
@@ -794,7 +821,7 @@ class OptimalNetTransferCapacity(DriverTemplate):
 
             # Solve
             self.progress_text.emit('Solving NTC OPF...')
-            problem.formulate(add_slacks=True)
+            problem.formulate()
             solved = problem.solve(
                 with_check=self.options.with_check,
                 time_limit_ms=self.options.time_limit_ms)
@@ -887,3 +914,101 @@ class OptimalNetTransferCapacity(DriverTemplate):
         self.opf()
         end = time.time()
         self.elapsed = end - start
+
+
+if __name__ == '__main__':
+
+    import GridCal.Engine.basic_structures as bs
+    import GridCal.Engine.Devices as dev
+    from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
+    from GridCal.Engine import FileOpen, LinearAnalysis
+
+    fname = r'd:\0.ntc_opf\Propuesta_2026_v22_20260729_17_fused_PMODE1.gridcal'
+    # fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1.gridcal'
+    path_out = r'd:\0.ntc_opf\Propuesta_2026_v22_20260729_17_fused_PMODE1.csv'
+
+    circuit = FileOpen(fname).open()
+
+    areas_from_idx = [0, 1, 2, 3, 4]
+    areas_to_idx = [7]
+
+    # areas_from_idx = [7]
+    # areas_to_idx = [0, 1, 2, 3, 4]
+
+    areas_from = [circuit.areas[i] for i in areas_from_idx]
+    areas_to = [circuit.areas[i] for i in areas_to_idx]
+
+    compatible_areas = True
+    for a1 in areas_from:
+        if a1 in areas_to:
+            compatible_areas = False
+            print("The area from '{0}' is in the list of areas to. This cannot be.".format(a1.name),
+                  'Incompatible areas')
+
+    for a2 in areas_to:
+        if a2 in areas_from:
+            compatible_areas = False
+            print("The area to '{0}' is in the list of areas from. This cannot be.".format(a2.name),
+                  'Incompatible areas')
+
+    lst_from = circuit.get_areas_buses(areas_from)
+    lst_to = circuit.get_areas_buses(areas_to)
+    lst_br = circuit.get_inter_areas_branches(areas_from, areas_to)
+    lst_br_hvdc = circuit.get_inter_areas_hvdc_branches(areas_from, areas_to)
+
+    idx_from = np.array([i for i, bus in lst_from])
+    idx_to = np.array([i for i, bus in lst_to])
+    idx_br = np.array([i for i, bus, sense in lst_br])
+    sense_br = np.array([sense for i, bus, sense in lst_br])
+    idx_hvdc_br = np.array([i for i, bus, sense in lst_br_hvdc])
+    sense_hvdc_br = np.array([sense for i, bus, sense in lst_br_hvdc])
+
+    if len(idx_from) == 0:
+        print('The area "from" has no buses!')
+
+    if len(idx_to) == 0:
+        print('The area "to" has no buses!')
+
+    if len(idx_br) == 0:
+        print('There are no inter-area branches!')
+
+
+    options = OptimalNetTransferCapacityOptions(
+        area_from_bus_idx=idx_from,
+        area_to_bus_idx=idx_to,
+        mip_solver=bs.MIPSolvers.CBC,
+        generation_formulation=dev.GenerationNtcFormulation.Proportional,
+        monitor_only_sensitive_branches=True,
+        branch_sensitivity_threshold=0.05,
+        skip_generation_limits=True,
+        consider_contingencies=True,
+        consider_gen_contingencies=True,
+        consider_hvdc_contingencies=True,
+        dispatch_all_areas=False,
+        generation_contingency_threshold=1000,
+        tolerance=1e-2,
+        sensitivity_dT=100.0,
+        sensitivity_mode=AvailableTransferMode.InstalledPower,
+        # todo: checkear si queremos el ptdf por potencia generada
+        perform_previous_checks=False,
+        weight_power_shift=1e5,
+        weight_generation_cost=1e2,
+        with_check=False,
+        time_limit_ms=1e4,
+        max_report_elements=5)
+
+    print('Running optimal net transfer capacity...')
+
+    # set optimal net transfer capacity driver instance
+    start = 0
+    end = 2  # circuit.get_time_number()-1
+    driver = OptimalNetTransferCapacity(
+        grid=circuit,
+        options=options,
+        pf_options=PowerFlowOptions(solver_type=SolverType.DC))
+
+    driver.run()
+
+    driver.results.make_report(path_out=path_out)
+    # driver.results.make_report()
+
