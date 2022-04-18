@@ -23,9 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="added return to all alliander's compiler functions">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="minimal changes to the function names in the PGM compiler">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_bentayga.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_bentayga.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_alliander_pgm.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_alliander_pgm.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -727,14 +727,7 @@
       <workItem from="1650102707008" duration="3177000" />
       <workItem from="1650224395267" duration="560000" />
       <workItem from="1650225040102" duration="1813000" />
-      <workItem from="1650264631384" duration="703000" />
-    </task>
-    <task id="LOCAL-00244" summary="renamed _iter to iter_control">
-      <created>1642064598748</created>
-      <option name="number" value="00244" />
-      <option name="presentableId" value="LOCAL-00244" />
-      <option name="project" value="LOCAL" />
-      <updated>1642064598748</updated>
+      <workItem from="1650264631384" duration="2510000" />
     </task>
     <task id="LOCAL-00245" summary="Modified the outer loop control convergence">
       <created>1642066133170</created>
@@ -1072,7 +1065,14 @@
       <option name="project" value="LOCAL" />
       <updated>1650105862983</updated>
     </task>
-    <option name="localTasksCounter" value="293" />
+    <task id="LOCAL-00293" summary="minimal changes to the function names in the PGM compiler">
+      <created>1650266957316</created>
+      <option name="number" value="00293" />
+      <option name="presentableId" value="LOCAL-00293" />
+      <option name="project" value="LOCAL" />
+      <updated>1650266957316</updated>
+    </task>
+    <option name="localTasksCounter" value="294" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1105,7 +1105,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Corrected the sense of the HVDC" />
     <MESSAGE value="Integrated Bentayga for PTDF and LODF in the linear analysis" />
     <MESSAGE value="moved the dc lines compilation right after the ac lines" />
     <MESSAGE value="Added Highs for linux&#10;Added a button to copy the compiled arrays as numpy&#10;started a file on derivatives research" />
@@ -1130,7 +1129,8 @@
     <MESSAGE value="included general script to update the gui logic" />
     <MESSAGE value="started alliander's engine integration" />
     <MESSAGE value="added return to all alliander's compiler functions" />
-    <option name="LAST_COMMIT_MESSAGE" value="added return to all alliander's compiler functions" />
+    <MESSAGE value="minimal changes to the function names in the PGM compiler" />
+    <option name="LAST_COMMIT_MESSAGE" value="minimal changes to the function names in the PGM compiler" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1529,11 +1529,6 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_alliander_pgm.py</url>
           <line>257</line>
           <option name="timeStamp" value="1012" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_alliander_pgm.py</url>
-          <line>255</line>
-          <option name="timeStamp" value="1013" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

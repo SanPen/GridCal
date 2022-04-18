@@ -40,7 +40,7 @@ except ImportError:
 
 def get_pgm_buses(circuit: MultiCircuit):
     """
-    Convert the buses to bentayga buses
+    Convert the buses to Alliander's PGM buses
     :param circuit: GridCal circuit
     :return: bus dictionary buses[uuid] -> int
     """
@@ -64,7 +64,7 @@ def get_pgm_loads(circuit: MultiCircuit, bus_dict):
     """
     Generate load data
     :param circuit: GridCal circuit
-    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param bus_dict: dictionary of bus id to Alliander's PGM index
     :return struct of load values
     """
 
@@ -87,7 +87,7 @@ def get_pgm_static_generators(circuit: MultiCircuit, bus_dict):
     """
 
     :param circuit: GridCal circuit
-    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param bus_dict: dictionary of bus id to Alliander's PGM index
     """
     devices = circuit.get_static_generators()
 
@@ -104,7 +104,7 @@ def get_pgm_shunts(circuit: MultiCircuit, bus_dict):
     """
 
     :param circuit: GridCal circuit
-    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param bus_dict: dictionary of bus id to Alliander's PGM index
     """
     devices = circuit.get_shunts()
 
@@ -121,7 +121,7 @@ def get_pgm_generators(circuit: MultiCircuit, bus_dict):
     """
 
     :param circuit: GridCal circuit
-    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param bus_dict: dictionary of bus id to Alliander's PGM index
     """
     devices = circuit.get_generators()
 
@@ -138,7 +138,7 @@ def get_pgm_battery_data(circuit: MultiCircuit, bus_dict):
     """
 
     :param circuit: GridCal circuit
-    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param bus_dict: dictionary of bus id to Alliander's PGM index
     """
     devices = circuit.get_batteries()
     batt = pgm.initialize_array('input', 'sym_load', len(devices))
@@ -151,7 +151,7 @@ def get_pgm_line(circuit: MultiCircuit, bus_dict):
     """
 
     :param circuit: GridCal circuit
-    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param bus_dict: dictionary of bus id to Alliander's PGM index
     """
 
     line = pgm.initialize_array('input', 'line', len(circuit.lines))
@@ -177,7 +177,7 @@ def get_pgm_transformer_data(circuit: MultiCircuit, bus_dict):
     """
 
     :param circuit: GridCal circuit
-    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param bus_dict: dictionary of bus id to Alliander's PGM index
     """
     xfo = pgm.initialize_array('input', 'sym_load', len(circuit.transformers2w))
 
@@ -191,7 +191,7 @@ def get_pgm_vsc_data(circuit: MultiCircuit, bus_dict):
     """
 
     :param circuit: GridCal circuit
-    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param bus_dict: dictionary of bus id to Alliander's PGM index
     """
     vsc = pgm.initialize_array('input', 'sym_load', len(circuit.vsc_devices))
     for i, elm in enumerate(circuit.vsc_devices):
@@ -203,7 +203,7 @@ def get_pgm_dc_line_data(circuit: MultiCircuit, bus_dict):
     """
 
     :param circuit: GridCal circuit
-    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param bus_dict: dictionary of bus id to Alliander's PGM index
     """
     dc_line = pgm.initialize_array('input', 'sym_load', len(circuit.dc_lines))
     # Compile the lines
@@ -216,7 +216,7 @@ def get_pgm_hvdc_data(circuit: MultiCircuit,  bus_dict):
     """
 
     :param circuit: GridCal circuit
-    :param bus_dict: dictionary of bus id to bentayga bus object
+    :param bus_dict: dictionary of bus id to Alliander's PGM index
     """
     hvdc = pgm.initialize_array('input', 'sym_load', len(circuit.hvdc_lines))
     for i, elm in enumerate(circuit.hvdc_lines):
@@ -227,8 +227,9 @@ def get_pgm_hvdc_data(circuit: MultiCircuit,  bus_dict):
 def to_pgm(circuit: MultiCircuit) -> pgm.PowerGridModel:
     """
     Convert GridCal circuit to Alliander's PGM model
+    See https://github.com/alliander-opensource/power-grid-model/blob/main/docs/graph-data-model.md
     :param circuit: MultiCircuit
-    :return: btg.Circuit instance
+    :return: pgm.PowerGridModel instance
     """
 
     node, bus_dict = get_pgm_buses(circuit)
@@ -259,10 +260,10 @@ def to_pgm(circuit: MultiCircuit) -> pgm.PowerGridModel:
 
 def alliander_pgm_pf(circuit: MultiCircuit, opt: PowerFlowOptions):
     """
-    Bentayga power flow
+    Alliander's PGM power flow
     :param circuit: MultiCircuit instance
     :param opt: Power Flow Options
-    :return: Bentayga Power flow results object
+    :return: Alliander's PGM Power flow results object
     """
     model = to_pgm(circuit)
 
