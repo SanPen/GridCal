@@ -25,7 +25,6 @@ from GridCal.Engine.Devices.enumerations import ConverterControlType, Transforme
 from GridCal.Engine.Devices import *
 from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerControlMode, TapsControlMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 
 
 try:
@@ -36,7 +35,7 @@ try:
 
 except ImportError:
     ALLIANDER_PGM_AVAILABLE = False
-    print("Alliander's power grid model is not available")
+    print("Alliander's power grid model is not available, try pip install power-grid-model")
 
 
 def get_pgm_buses(circuit: MultiCircuit):
@@ -135,7 +134,7 @@ def get_pgm_generators(circuit: MultiCircuit, bus_dict):
     return gen
 
 
-def get_battery_data(circuit: MultiCircuit, bus_dict):
+def get_pgm_battery_data(circuit: MultiCircuit, bus_dict):
     """
 
     :param circuit: GridCal circuit
@@ -174,7 +173,7 @@ def get_pgm_line(circuit: MultiCircuit, bus_dict):
     return line
 
 
-def get_transformer_data(circuit: MultiCircuit, bus_dict):
+def get_pgm_transformer_data(circuit: MultiCircuit, bus_dict):
     """
 
     :param circuit: GridCal circuit
@@ -188,7 +187,7 @@ def get_transformer_data(circuit: MultiCircuit, bus_dict):
     return xfo
 
 
-def get_vsc_data(circuit: MultiCircuit, bus_dict):
+def get_pgm_vsc_data(circuit: MultiCircuit, bus_dict):
     """
 
     :param circuit: GridCal circuit
@@ -200,7 +199,7 @@ def get_vsc_data(circuit: MultiCircuit, bus_dict):
     return vsc
 
 
-def get_dc_line_data(circuit: MultiCircuit, bus_dict):
+def get_pgm_dc_line_data(circuit: MultiCircuit, bus_dict):
     """
 
     :param circuit: GridCal circuit
@@ -213,7 +212,7 @@ def get_dc_line_data(circuit: MultiCircuit, bus_dict):
     return dc_line
 
 
-def get_hvdc_data(circuit: MultiCircuit,  bus_dict):
+def get_pgm_hvdc_data(circuit: MultiCircuit,  bus_dict):
     """
 
     :param circuit: GridCal circuit
@@ -238,12 +237,12 @@ def to_pgm(circuit: MultiCircuit) -> pgm.PowerGridModel:
     stagen = get_pgm_static_generators(circuit, bus_dict)
     shunt = get_pgm_shunts(circuit, bus_dict)
     source = get_pgm_generators(circuit, bus_dict)
-    battery = get_battery_data(circuit, bus_dict)
+    battery = get_pgm_battery_data(circuit, bus_dict)
     line = get_pgm_line(circuit, bus_dict)
-    xfo = get_transformer_data(circuit, bus_dict)
-    vsc = get_vsc_data(circuit, bus_dict)
-    dc_line = get_dc_line_data(circuit, bus_dict)
-    hvdc = get_hvdc_data(circuit, bus_dict)
+    xfo = get_pgm_transformer_data(circuit, bus_dict)
+    vsc = get_pgm_vsc_data(circuit, bus_dict)
+    dc_line = get_pgm_dc_line_data(circuit, bus_dict)
+    hvdc = get_pgm_hvdc_data(circuit, bus_dict)
 
     # all
     input_data = {
