@@ -23,387 +23,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed LODF numerical zero">
-      <change afterPath="$PROJECT_DIR$/src/GridCal.egg-info/PKG-INFO" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal.egg-info/SOURCES.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal.egg-info/dependency_links.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal.egg-info/requires.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal.egg-info/top_level.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/9f01499e71b247ad8ac96a25db13aa08-pulp.mps" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/9f01499e71b247ad8ac96a25db13aa08-pulp.sol" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.lp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf_ts.lp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/ntc_opf.lp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/ntc_opf_ts.lp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/Compilers/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/Compilers/circuit_to_bentayga.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/Compilers/circuit_to_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/Compilers/circuit_to_newton.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/DataStructures/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/DataStructures/battery_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/DataStructures/branch_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/DataStructures/bus_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/DataStructures/dc_lines_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/DataStructures/generator_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/DataStructures/hvdc_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/DataStructures/lines_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/DataStructures/load_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/DataStructures/shunt_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/DataStructures/static_generator_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/DataStructures/transformer_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/DataStructures/upfc_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/DataStructures/vsc_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/admittance_matrices.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/common_functions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/multi_circuit.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/snapshot_opf_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/snapshot_pf_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/time_series_opf_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/time_series_pf_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/topology.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/battery.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/branch.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/bus.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/dc_line.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/editable_device.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/enumerations.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/external_grid.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/generator.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/groupings.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/hvdc_line.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/line.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/load.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/measurement.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/shunt.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/static_generator.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/switch.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/technology.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/templates.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/tower.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/transformer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/underground_line.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/upfc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/vsc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/wire.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/cim/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/cim/cim_circuit.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/cim/cim_devices.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/cim/cim_parser.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/dgs_parser.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/dpx_parser.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/excel_interface.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/file_handler.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/file_system.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/generic_io_functions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/h5_interface.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/ipa_parser.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/json_parser.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/matpower/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/matpower/matpower_branch_definitions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/matpower/matpower_bus_definitions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/matpower/matpower_gen_definitions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/matpower/matpower_parser.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/matpower/matpower_storage_definitions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/pack_unpack.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/plexos.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/power_world_parser.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/raw_parser.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/rawx_parser.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/sqlite_interface.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/IO/zip_interface.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Replacements/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Replacements/mpiserve.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Replacements/poap_controller.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Replacements/strategy.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Replacements/tcpserve.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/ATC/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/ATC/available_transfer_capacity_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/ATC/available_transfer_capacity_ts_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/Clustering/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/Clustering/clustering.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/ContingencyAnalysis/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/ContingencyAnalysis/contingency_analysis_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/ContingencyAnalysis/contingency_analysis_results.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/ContingencyAnalysis/contingency_analysis_ts_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/ContingencyAnalysis/contingency_analysis_ts_results.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/ContinuationPowerFlow/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/ContinuationPowerFlow/continuation_power_flow.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/ContinuationPowerFlow/continuation_power_flow_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/Dynamics/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/Dynamics/dynamic_modules.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/Dynamics/transient_stability_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/InputsAnalysis/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/InputsAnalysis/inputs_analysis_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/LinearFactors/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/LinearFactors/linear_analysis_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/LinearFactors/linear_analysis_ts_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/OPF/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/OPF/ac_opf.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/OPF/ac_opf_ts.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/OPF/dc_opf.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/OPF/dc_opf_ts.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/OPF/opf_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/OPF/opf_results.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/OPF/opf_templates.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/OPF/opf_ts_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/OPF/opf_ts_results.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/OPF/simple_dispatch.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/OPF/simple_dispatch_ts.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/derivatives.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/discrete_controls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/fast_decoupled_power_flow.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/gausspf.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/helm_power_flow.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/high_speed_fubm_jacobian.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/high_speed_jacobian.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/jacobian_based_acdc_power_flow.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/jacobian_based_power_flow.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/linearized_power_flow.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/numba_functions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/power_flow_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/power_flow_options.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/power_flow_results.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/time_Series_input.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/time_series_clustring_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/PowerFlow/time_series_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/ShortCircuitStudies/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/SigmaAnalysis/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/SigmaAnalysis/sigma_analysis_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/StateEstimation/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/StateEstimation/state_estimation.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/StateEstimation/state_stimation_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/Stochastic/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/Stochastic/blackout_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/Stochastic/latin_hypercube_sampling.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/Stochastic/reliability_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/Stochastic/stochastic_power_flow_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/Stochastic/stochastic_power_flow_input.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/Stochastic/stochastic_power_flow_results.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/Topology/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/Topology/topology_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/driver_template.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/driver_types.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/result_types.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/results_table.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/results_template.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Simulations/sparse_solve.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Sparse/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Sparse/csc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Sparse/csc_numba.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Sparse/utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/basic_structures.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/grid_analysis.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ExecuteGridCal.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/AboutDialogue/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/AboutDialogue/about_dialogue.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/AboutDialogue/gui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/AboutDialogue/icons_rc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/AboutDialogue/matplotlibwidget.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/AboutDialogue/update_gui_file.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Analysis/AnalysisDialogue.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Analysis/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Analysis/gui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Analysis/matplotlibwidget.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Analysis/update_gui_file.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/BusViewer/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/BusViewer/bus_viewer_dialogue.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/BusViewer/gui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/BusViewer/icons_rc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/BusViewer/update_gui_file.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/ConsoleWidget.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/CoordinatesInput/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/CoordinatesInput/coordinates_dialogue.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/CoordinatesInput/gui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/CoordinatesInput/icons_rc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/CoordinatesInput/matplotlibwidget.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/CoordinatesInput/update_gui_file.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GIS/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GIS/gis_dialogue.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GIS/gui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GIS/icons_rc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GIS/update_gui_file.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GeneralDialogues.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/battery_graphics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/bus_graphics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/dc_line_graphics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/editor.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/generator_graphics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/generic_graphics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/hvdc_graphics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/line_graphics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/load_graphics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/matplotlibwidget.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/messages.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/shunt_graphics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/static_generator_graphics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/terminal_item.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/transformer2w_graphics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/upfc_graphics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridEditorWidget/vsc_graphics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridGenerator/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridGenerator/grid_generator_dialogue.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridGenerator/gui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridGenerator/icons_rc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridGenerator/matplotlibwidget.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GridGenerator/update_gui_file.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/GuiFunctions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/LoadDesigner/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/LoadDesigner/gui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/LoadDesigner/icons_rc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/LoadDesigner/load_designer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/LoadDesigner/matplotlibwidget.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/LoadDesigner/update_gui_file.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Main/ConsoleLog.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Main/ConsoleLogController.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Main/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Main/banner.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Main/grid_paint_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Main/matplotlibwidget.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Main/object_select_window.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Main/update_gui_file.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/ProfilesInput/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/ProfilesInput/excel_dialog.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/ProfilesInput/excel_sheet_selection.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/ProfilesInput/gui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/ProfilesInput/icons_rc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/ProfilesInput/matplotlibwidget.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/ProfilesInput/profile_dialogue.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/ProfilesInput/update_gui_file.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Session/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Session/export_results_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Session/file_handler.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Session/results_model.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Session/session.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Session/synchronization_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/SigmaAnalysis/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/SigmaAnalysis/gui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/SigmaAnalysis/icons_rc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/SigmaAnalysis/matplotlibwidget.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/SigmaAnalysis/sigma_analysis_dialogue.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/SigmaAnalysis/update_gui_file.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/SyncDialogue/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/SyncDialogue/gui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/SyncDialogue/icons_rc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/SyncDialogue/sync_dialogue.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/SyncDialogue/update_gui_file.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/TowerBuilder/LineBuilderDialogue.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/TowerBuilder/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/TowerBuilder/gui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/TowerBuilder/icons_rc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/TowerBuilder/matplotlibwidget.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/TowerBuilder/table_models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/TowerBuilder/test_.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/TowerBuilder/update_gui_file.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Visualization/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/Visualization/visualization.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/plot_config.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Gui/themes.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/LICENSE.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/SyntheticNetworks/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/SyntheticNetworks/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/SyntheticNetworks/rpgm_algo.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/LICENSE.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/amply.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/constants.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/mps_lp.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/pulp.cfg.buildout" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/pulp.cfg.linux" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/pulp.cfg.osx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/pulp.cfg.win" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/pulp.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/pulp_extra.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solver_interfaces/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solver_interfaces/coin.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solver_interfaces/cplex.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solver_interfaces/glpk.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solver_interfaces/gridcal_solver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solver_interfaces/gurobi.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solver_interfaces/highs.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solver_interfaces/scip.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solver_interfaces/xpress.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solver_interfaces/yaposib.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/CoinMP.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/linux/32/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/linux/32/cbc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/linux/32/coin-license.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/linux/64/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/linux/64/cbc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/linux/64/coin-license.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/linux/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/osx/64/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/osx/64/cbc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/osx/64/coin-license.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/osx/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/win/32/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/win/32/cbc.exe" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/win/32/coin-license.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/win/64/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/win/64/cbc.exe" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/win/64/coin-license.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/cbc/win/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/coinMP/win/32/CoinMP.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/coinMP/win/64/CoinMP.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/highs/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/highs/highs-license.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/highs/linux/64/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/highs/linux/64/libbasiclu.so" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/highs/linux/64/libhighs.so.1.1.1" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/highs/linux/64/libipx.so" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/highs/linux/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/highs/osx/64/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/highs/osx/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/highs/win/64/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/highs/win/64/basiclu.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/highs/win/64/highs.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/highs/win/64/highs.exe" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/highs/win/64/ipx.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/highs/win/64/libhighs.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solverdir/highs/win/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/solvers.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/sparse.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/ThirdParty/pulp/tests.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/__version__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/data/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/data/cables.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/data/transformers.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/data/wires.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/build/lib/GridCal/update.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/dist/GridCal-4.3.5-py3-none-any.whl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/dist/GridCal-4.4.4a1-py3-none-any.whl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/dist/GridCal-4.4.6a1-py3-none-any.whl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/dist/GridCal-4.4.7a2-py3-none-any.whl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/dist/GridCal-4.4.7a3-py3-none-any.whl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/dist/GridCal-4.4.7a4-py3-none-any.whl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/dist/GridCal-4.4.7a5-py3-none-any.whl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/dist/GridCal-4.4.7a6-py3-none-any.whl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/or_tools/ortools2.lp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/or_tools/ortools3.lp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/research/or_tools/ortools_v7.lp" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="skip contingencies for disconnected hvdcs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/ntc_opf.lp" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ntc_opf.lp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/ntc_opf_ts.lp" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ntc_opf_ts.lp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -490,7 +114,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../gitlab/reeview" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
@@ -1067,20 +691,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00268" summary="add time index to call">
-      <created>1642756918606</created>
-      <option name="number" value="00268" />
-      <option name="presentableId" value="LOCAL-00268" />
-      <option name="project" value="LOCAL" />
-      <updated>1642756918606</updated>
-    </task>
-    <task id="LOCAL-00269" summary="working optimal ntc with proportional generation">
-      <created>1643282150260</created>
-      <option name="number" value="00269" />
-      <option name="presentableId" value="LOCAL-00269" />
-      <option name="project" value="LOCAL" />
-      <updated>1643282150262</updated>
-    </task>
     <task id="LOCAL-00270" summary="working optimal net transfer capacity time series">
       <created>1643374428116</created>
       <option name="number" value="00270" />
@@ -1410,7 +1020,21 @@
       <option name="project" value="LOCAL" />
       <updated>1646988525071</updated>
     </task>
-    <option name="localTasksCounter" value="317" />
+    <task id="LOCAL-00317" summary="only comments">
+      <created>1649852206906</created>
+      <option name="number" value="00317" />
+      <option name="presentableId" value="LOCAL-00317" />
+      <option name="project" value="LOCAL" />
+      <updated>1649852206906</updated>
+    </task>
+    <task id="LOCAL-00318" summary="only comments">
+      <created>1649852225189</created>
+      <option name="number" value="00318" />
+      <option name="presentableId" value="LOCAL-00318" />
+      <option name="project" value="LOCAL" />
+      <updated>1649852225189</updated>
+    </task>
+    <option name="localTasksCounter" value="319" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1444,8 +1068,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added HiGs solver" />
-    <MESSAGE value="fix comments" />
     <MESSAGE value="Added hvdc and generator contingencies" />
     <MESSAGE value="Added hvdc and generator contingencies (fixed PTDF missing)" />
     <MESSAGE value="New ntcOpf contingency settings" />
@@ -1469,7 +1091,9 @@
     <MESSAGE value="New formulation including pumps for porportional generation" />
     <MESSAGE value="New version 4.4.7a6" />
     <MESSAGE value="Fixed LODF numerical zero" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed LODF numerical zero" />
+    <MESSAGE value="only comments" />
+    <MESSAGE value="skip contingencies for disconnected hvdcs" />
+    <option name="LAST_COMMIT_MESSAGE" value="skip contingencies for disconnected hvdcs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
