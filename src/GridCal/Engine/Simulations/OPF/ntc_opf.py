@@ -1250,7 +1250,7 @@ def check_contingency(ContingencyRates, Sbase, branch_names, contingency_enabled
                                           branch_names[m] + '@' + branch_names[c], flow_n1, -rates[m])
 
 
-def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, active, Pt, angle_droop, control_mode,
+def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, hvdc_active, Pt, angle_droop, control_mode,
                         dispatchable, F, T, Pinj, Sbase, inf, inter_area_hvdc,
                         logger: Logger, force_exchange_sense=False):
     """
@@ -1260,7 +1260,7 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, act
     :param names: Array of HVDC names
     :param rate: Array of HVDC rates
     :param angles: Array of bus voltage angles (LP Variables)
-    :param active: Array of HVDC active status (True / False)
+    :param hvdc_active: Array of HVDC active status (True / False)
     :param Pt: Array of HVDC sending power
     :param angle_droop: Array of HVDC resistance values (this is used as the HVDC power/angle droop)
     :param control_mode: Array of HVDC control modes
@@ -1282,7 +1282,7 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, act
 
     for i in range(nhvdc):
 
-        if active[i]:
+        if hvdc_active[i]:
 
             _f = F[i]
             _t = T[i]
@@ -1338,7 +1338,7 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, act
     return flow_f
 
 
-def check_hvdc_flow(nhvdc, names, rate, angles, active, Pt, angle_droop, control_mode, dispatchable,
+def check_hvdc_flow(nhvdc, names, rate, angles, hvdc_active, Pt, angle_droop, control_mode, dispatchable,
                     F, T, Sbase, flow_f, logger: Logger):
     """
     Check the HVDC flows
@@ -1346,7 +1346,7 @@ def check_hvdc_flow(nhvdc, names, rate, angles, active, Pt, angle_droop, control
     :param names: Array of HVDC names
     :param rate: Array of HVDC rates
     :param angles: Array of bus voltage angles (values from the problem)
-    :param active: Array of HVDC active status (True / False)
+    :param hvdc_active: Array of HVDC active status (True / False)
     :param Pt: Array of HVDC sending power
     :param r: Array of HVDC resistance values (this is used as the HVDC power/angle droop)
     :param control_mode: Array of HVDC control modes
@@ -1362,7 +1362,7 @@ def check_hvdc_flow(nhvdc, names, rate, angles, active, Pt, angle_droop, control
 
     for i in range(nhvdc):
 
-        if active[i]:
+        if hvdc_active[i]:
 
             _f = F[i]
             _t = T[i]
@@ -1418,7 +1418,7 @@ def check_hvdc_flow(nhvdc, names, rate, angles, active, Pt, angle_droop, control
 
 
 def formulate_hvdc_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
-                               hvdc_flow_f,  PTDF, F, T, F_hvdc, T_hvdc, flow_f, monitor,
+                               hvdc_flow_f, hvdc_active, PTDF, F, T, F_hvdc, T_hvdc, flow_f, monitor,
                                logger: Logger):
     """
     Formulate the contingency flows
@@ -1430,6 +1430,7 @@ def formulate_hvdc_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
     :param F_hvdc: Array of hvdc "from" bus indices
     :param T_hvdc: Array of hvdc "to" bus indices
     :param flow_f: Array of formulated branch flows (LP variblaes)
+    :param hvdc_active: Array of hvdc active status
     :param monitor: Array of final monitor status per branch after applying the logic
     :param logger: logger instance
     :return:
@@ -1447,18 +1448,19 @@ def formulate_hvdc_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
         _f_hvdc = F_hvdc[i]
         _t_hvdc = T_hvdc[i]
 
-        for m in mon_br_idx:  # for every monitored branch
-            _f = F[m]
-            _t = T[m]
-            suffix = "Branch {0} @ Hvdc {1}".format(m, i)
+        if hvdc_active[i]:
+            for m in mon_br_idx:  # for every monitored branch
+                _f = F[m]
+                _t = T[m]
+                suffix = "Branch {0} @ Hvdc {1}".format(m, i)
 
-            flow_n1 = solver.NumVar(-rates[m], rates[m], 'n-1_hvdc_flow__' + suffix)
-            solver.Add(flow_n1 == flow_f[m] + (PTDF[m, _f_hvdc] - PTDF[m, _t_hvdc]) * hvdc_f,
-                       "n-1_hvdc_flow_assigment_" + suffix)
+                flow_n1 = solver.NumVar(-rates[m], rates[m], 'n-1_hvdc_flow__' + suffix)
+                solver.Add(flow_n1 == flow_f[m] + (PTDF[m, _f_hvdc] - PTDF[m, _t_hvdc]) * hvdc_f,
+                           "n-1_hvdc_flow_assigment_" + suffix)
 
-            # store vars
-            con_hvdc_idx.append((m, i))
-            flow_hvdc_n1f.append(flow_n1)
+                # store vars
+                con_hvdc_idx.append((m, i))
+                flow_hvdc_n1f.append(flow_n1)
 
     return flow_hvdc_n1f, con_hvdc_idx
 
@@ -1810,7 +1812,7 @@ class OpfNTC(Opf):
             names=self.numerical_circuit.hvdc_names,
             rate=self.numerical_circuit.hvdc_data.rate[:, t],
             angles=theta,
-            active=self.numerical_circuit.hvdc_data.active, #[:, t],
+            hvdc_active=self.numerical_circuit.hvdc_data.active, #[:, t],
             Pt=self.numerical_circuit.hvdc_data.Pset, #[:, t],
             angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase), #[:, t],
             control_mode=self.numerical_circuit.hvdc_data.control_mode,
@@ -1872,6 +1874,7 @@ class OpfNTC(Opf):
                 ContingencyRates=self.numerical_circuit.ContingencyRates,
                 Sbase=self.numerical_circuit.Sbase,
                 hvdc_flow_f=hvdc_flow_f,
+                hvdc_active=self.numerical_circuit.hvdc_data.active, #[:, t],
                 PTDF=self.PTDF,
                 F=self.numerical_circuit.F,
                 T=self.numerical_circuit.T,
@@ -2111,7 +2114,7 @@ class OpfNTC(Opf):
             names=self.numerical_circuit.hvdc_names,
             rate=self.numerical_circuit.hvdc_data.rate[:, t],
             angles=theta,
-            active=self.numerical_circuit.hvdc_data.active[:, t],
+            hvdc_active=self.numerical_circuit.hvdc_data.active[:, t],
             Pt=self.numerical_circuit.hvdc_data.Pset[:, t],
             angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase)[:, t],
             control_mode=self.numerical_circuit.hvdc_data.control_mode,
@@ -2173,6 +2176,7 @@ class OpfNTC(Opf):
                 ContingencyRates=self.numerical_circuit.ContingencyRates[:, t],
                 Sbase=self.numerical_circuit.Sbase,
                 hvdc_flow_f=hvdc_flow_f,
+                hvdc_active = self.numerical_circuit.hvdc_data.active[:, t],
                 PTDF=self.PTDF,
                 F=self.numerical_circuit.F,
                 T=self.numerical_circuit.T,
@@ -2372,7 +2376,7 @@ class OpfNTC(Opf):
             names=self.numerical_circuit.hvdc_names,
             rate=self.numerical_circuit.hvdc_data.rate[:, t],
             angles=self.extract(self.theta),
-            active=self.numerical_circuit.hvdc_data.active[:, t],
+            hvdc_active=self.numerical_circuit.hvdc_data.active[:, t],
             Pt=self.numerical_circuit.hvdc_data.Pset[:, t],
             angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase)[:, t],
             control_mode=self.numerical_circuit.hvdc_data.control_mode,
@@ -2532,7 +2536,7 @@ class OpfNTC(Opf):
             names=self.numerical_circuit.hvdc_names,
             rate=self.numerical_circuit.hvdc_data.rate[:, t],
             angles=self.extract(self.theta),
-            active=self.numerical_circuit.hvdc_data.active[:, t],
+            hvdc_active=self.numerical_circuit.hvdc_data.active[:, t],
             Pt=self.numerical_circuit.hvdc_data.Pset[:, t],
             angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase)[:, t],
             control_mode=self.numerical_circuit.hvdc_data.control_mode,
