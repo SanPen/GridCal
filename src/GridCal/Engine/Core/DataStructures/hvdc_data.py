@@ -40,6 +40,7 @@ class HvdcData:
 
         self.active = np.zeros((nhvdc, ntime), dtype=bool)
         self.rate = np.zeros((nhvdc, ntime))
+        self.contingency_rate = np.zeros((nhvdc, ntime))
 
         self.r = np.zeros(nhvdc)
 
@@ -78,6 +79,7 @@ class HvdcData:
         data.dispatchable = self.dispatchable[elm_idx]
 
         data.rate = self.rate[tidx]
+        data.contingency_rate = self.contingency_rate[tidx]
         data.Pset = self.Pset[tidx]
 
         data.r = self.r[elm_idx]

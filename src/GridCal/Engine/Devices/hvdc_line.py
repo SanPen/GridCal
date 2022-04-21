@@ -236,7 +236,7 @@ class HvdcLine(EditableDevice):
                  max_firing_angle_t=1.0,  active_prof=np.ones(0, dtype=bool), rate_prof=np.zeros(0),
                  Pset_prof=np.zeros(0), Vset_f_prof=np.ones(0), Vset_t_prof=np.ones(0), overload_cost_prof=np.zeros(0),
                  contingency_factor=1.0, control_mode: HvdcControlType=HvdcControlType.type_1_Pset,
-                 dispatchable=False, angle_droop=0, angle_droop_prof=np.ones(0),):
+                 dispatchable=False, angle_droop=0, angle_droop_prof=np.ones(0), contingency_factor_prof=None):
         """
         HVDC Line model
         :param bus_from: Bus from
@@ -324,6 +324,7 @@ class HvdcLine(EditableDevice):
                                 non_editable_attributes=['bus_from', 'bus_to', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'rate': 'rate_prof',
+                                                         'contingency_factor': 'contingency_factor_prof',
                                                          'Pset': 'Pset_prof',
                                                          'Vset_f': 'Vset_f_prof',
                                                          'Vset_t': 'Vset_t_prof',
@@ -388,6 +389,7 @@ class HvdcLine(EditableDevice):
         self.rate = rate
         self.contingency_factor = contingency_factor
         self.rate_prof = rate_prof
+        self.contingency_factor_prof = contingency_factor_prof
 
     def get_from_and_to_power(self, theta_f, theta_t, Sbase, in_pu=False):
         """

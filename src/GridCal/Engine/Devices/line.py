@@ -230,7 +230,7 @@ class Line(EditableDevice):
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  length=1, temp_base=20, temp_oper=20, alpha=0.00330,
                  template=LineTemplate(), rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
-                 contingency_factor=1.0, contingency_enabled=True, monitor_loading=True):
+                 contingency_factor=1.0, contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -293,6 +293,7 @@ class Line(EditableDevice):
                                 non_editable_attributes=['bus_from', 'bus_to', 'template', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'rate': 'rate_prof',
+                                                         'contingency_factor': 'contingency_factor_prof',
                                                          'temp_oper': 'temp_oper_prof',
                                                          'Cost': 'Cost_prof'})
 
@@ -346,6 +347,8 @@ class Line(EditableDevice):
         self.rate = rate
         self.contingency_factor = contingency_factor
         self.rate_prof = rate_prof
+
+        self.contingency_factor_prof = contingency_factor_prof
 
         # line type: Line, Transformer, etc...
         self.branch_type = BranchType.Line
