@@ -169,7 +169,9 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
                                                        Qmax=circuit.Qmax_bus[0, :],
                                                        tol=options.tolerance,
                                                        max_it=options.max_iter,
-                                                       control_q=options.control_Q)
+                                                       control_q=options.control_Q,
+                                                       verbose=options.verbose,
+                                                       logger=logger)
 
         # Fast decoupled
         elif solver_type == bs.SolverType.FASTDECOUPLED:

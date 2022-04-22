@@ -283,7 +283,7 @@ def get_pgm_hvdc_data(circuit: MultiCircuit,  bus_dict):
     return hvdc
 
 
-def to_pgm(circuit: MultiCircuit) -> pgm.PowerGridModel:
+def to_pgm(circuit: MultiCircuit) -> "pgm.PowerGridModel":
     """
     Convert GridCal circuit to Alliander's PGM model
     See https://github.com/alliander-opensource/power-grid-model/blob/main/docs/graph-data-model.md

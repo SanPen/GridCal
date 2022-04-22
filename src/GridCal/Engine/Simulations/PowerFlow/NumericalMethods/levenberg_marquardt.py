@@ -24,6 +24,7 @@ from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions impo
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCal.Engine.basic_structures import ReactivePowerControlMode
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
+from GridCal.Engine.basic_structures import Logger
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
@@ -32,24 +33,27 @@ np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 
 def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=50,
-                           control_q=ReactivePowerControlMode.NoControl) -> NumericPowerFlowResults:
+                           control_q=ReactivePowerControlMode.NoControl,
+                           verbose=False, logger: Logger = None) -> NumericPowerFlowResults:
     """
     Solves the power flow problem by the Levenberg-Marquardt power flow algorithm.
     It is usually better than Newton-Raphson, but it takes an order of magnitude more time to converge.
     @Author: Santiago Peñate Vera
     :param Ybus: Admittance matrix
-    :param S0:  Array of nodal power injections
+    :param S0: Array of nodal power injections (ZIP)
     :param V0: Array of nodal voltages (initial solution)
-    :param I0: Array of nodal current injections
-    :param Y0:
+    :param I0: Array of nodal current injections (ZIP)
+    :param Y0: Array of nodal admittance injections (ZIP)
     :param pv_: Array with the indices of the PV buses
     :param pq_: Array with the indices of the PQ buses
-    :param Qmin:
-    :param Qmax:
+    :param Qmin: array of lower reactive power limits per bus
+    :param Qmax: array of upper reactive power limits per bus
     :param tol: Tolerance
     :param max_it: Maximum number of iterations
     :param control_q: Type of reactive power control
-    :return:
+    :param verbose: Display console information
+    :param logger: Logger instance
+    :return: NumericPowerFlowResults instance
     """
     start = time.time()
 
@@ -83,7 +87,19 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
         H2: sp.csc_matrix = sp.csc_matrix((0, 0))
         Scalc = S0  # is updated later
 
+        if verbose > 1:
+            logger.add_debug('LM previous values ' + '-' * 200)
+            logger.add_debug('Y (real):\n', Ybus.real.toarray())
+            logger.add_debug('Y (imag):\n', Ybus.imag.toarray())
+            logger.add_debug('pvpq:\n', pvpq)
+            logger.add_debug('pq:\n', pq)
+            logger.add_debug('Vm:\n', Vm)
+            logger.add_debug('Va:\n', Va)
+
         while not converged and iter_ < max_it:
+
+            if verbose:
+                logger.add_debug('LM Iteration {0}'.format(iter_) + '-' * 200)
 
             # evaluate Jacobian
             if update_jacobian:
@@ -125,6 +141,9 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
             else:
                 rho = -1.0
 
+            if verbose > 1:
+                logger.add_debug('rho:', rho)
+
             # lambda update
             if rho >= 0:
                 update_jacobian = True
@@ -140,6 +159,12 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
                 Va -= dVa
                 V = polar_to_rect(Vm, Va)
 
+                if verbose > 1:
+                    logger.add_debug('J:\n', H.toarray())
+                    logger.add_debug('f:\n', rhs)
+                    logger.add_debug('Vm:\n', Vm)
+                    logger.add_debug('Va:\n', Va)
+
             else:
                 update_jacobian = False
                 lbmda *= nu
@@ -150,6 +175,9 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
             Scalc = compute_power(Ybus, V)
             e = compute_fx(Scalc, Sbus, pvpq, pq)
             normF = compute_fx_error(e)
+
+            if verbose:
+                logger.add_debug('error', normF)
 
             # review reactive power limits
             # it is only worth checking Q limits with a low error

@@ -53,7 +53,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     :param acceleration_parameter: parameter used to correct the "bad" iterations, should be between 1e-3 ~ 0.5
     :param control_q: Control reactive power
     :param verbose: Display console information
-    :param print_function: printing function (print by default)
+    :param logger: Logger instance
     :return: NumericPowerFlowResults instance
     """
     start = time.time()
