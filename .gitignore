@@ -19,6 +19,10 @@ __pycache__
 
 /src/tests/data/output/*.png
 
+Results.xlsx
+lynn5node.gridcal
+demo_5_node.json
+
 /venv
 /.tox/
 .idea/*.iml
