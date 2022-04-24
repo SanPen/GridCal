@@ -872,12 +872,34 @@ class MultiCircuit:
         self.bus_dictionary = {bus.idtag: i for i, bus in enumerate(self.buses)}
 
         for branch_list in self.get_branch_lists():
-            for i, branch in enumerate(branch_list):
+            for branch in branch_list:
                 f = self.bus_dictionary[branch.bus_from.idtag]
                 t = self.bus_dictionary[branch.bus_to.idtag]
                 self.graph.add_edge(f, t)
 
         return self.graph
+
+    def build_graph_real_power_flow(self, current_flow):
+        """
+        Returns a networkx DiGraph object of the grid.
+
+        Arguments:
+
+            **current_flow** (list): power_flow.results.If object
+        """
+        self.graph_real_power_flow = nx.DiGraph()
+
+        current_flow_direction = np.real(current_flow) > 0
+
+        for branch_list in self.get_branch_lists():
+            for direction, branch in zip(current_flow_direction, branch_list):
+                f = self.bus_dictionary[branch.bus_from.idtag]
+                t = self.bus_dictionary[branch.bus_to.idtag]
+                if direction:
+                    self.graph_real_power_flow.add_edge(f, t)
+                else:
+                    self.graph_real_power_flow.add_edge(t, f)
+        return self.graph_real_power_flow
 
     def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
         """
