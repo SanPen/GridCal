@@ -877,7 +877,7 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, time_series=False,
         if time_series:
             data.active[i, :] = elm.active_prof
             data.rate[i, :] = elm.rate_prof
-            data.contingency_rates[i, :] = elm.rate_prof * elm.contingency_factor_prof
+            data.contingency_rate[i, :] = elm.rate_prof * elm.contingency_factor_prof
             data.angle_droop[i, :] = elm.angle_droop_prof
 
             if opf_results is not None:
@@ -890,7 +890,7 @@ def get_hvdc_data(circuit: MultiCircuit, bus_dict, bus_types, time_series=False,
         else:
             data.active[i] = elm.active
             data.rate[i] = elm.rate
-            data.contingency_rates[i] = elm.rate * elm.contingency_factor
+            data.contingency_rate[i] = elm.rate * elm.contingency_factor
             data.angle_droop[i] = elm.angle_droop
             data.r[i] = elm.r
 
