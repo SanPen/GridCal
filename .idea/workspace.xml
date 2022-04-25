@@ -23,11 +23,20 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="skip contingencies for disconnected hvdcs">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="added contingency rates as profile">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/ntc_opf.lp" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ntc_opf.lp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/ntc_opf_ts.lp" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ntc_opf_ts.lp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal.egg-info/PKG-INFO" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal.egg-info/PKG-INFO" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/Compilers/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/Compilers/circuit_to_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/DataStructures/hvdc_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Core/DataStructures/hvdc_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/dc_line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/dc_line.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/hvdc_line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/hvdc_line.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/line.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/transformer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/upfc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/upfc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/vsc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/build/lib/GridCal/Engine/Devices/vsc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/build/lib/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/build/lib/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -244,10 +253,10 @@
     </configuration>
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
+      <item itemvalue="Python.opf_ntc_driver" />
       <item itemvalue="Python.opf_ntc_ts_driver" />
       <item itemvalue="Python.setup" />
       <item itemvalue="Python.update_gui_file" />
-      <item itemvalue="Python.opf_ntc_driver" />
     </list>
     <recent_temporary>
       <list>
@@ -691,55 +700,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00270" summary="working optimal net transfer capacity time series">
-      <created>1643374428116</created>
-      <option name="number" value="00270" />
-      <option name="presentableId" value="LOCAL-00270" />
-      <option name="project" value="LOCAL" />
-      <updated>1643374428116</updated>
-    </task>
-    <task id="LOCAL-00271" summary="working optimal net transfer capacity time series">
-      <created>1643374434131</created>
-      <option name="number" value="00271" />
-      <option name="presentableId" value="LOCAL-00271" />
-      <option name="project" value="LOCAL" />
-      <updated>1643374434131</updated>
-    </task>
-    <task id="LOCAL-00272" summary="deleted ntc_opf_ts file">
-      <created>1643374535841</created>
-      <option name="number" value="00272" />
-      <option name="presentableId" value="LOCAL-00272" />
-      <option name="project" value="LOCAL" />
-      <updated>1643374535841</updated>
-    </task>
-    <task id="LOCAL-00273" summary="added timeout options in ortools solver">
-      <created>1643378359101</created>
-      <option name="number" value="00273" />
-      <option name="presentableId" value="LOCAL-00273" />
-      <option name="project" value="LOCAL" />
-      <updated>1643378359101</updated>
-    </task>
-    <task id="LOCAL-00274" summary="little fix">
-      <created>1643638874647</created>
-      <option name="number" value="00274" />
-      <option name="presentableId" value="LOCAL-00274" />
-      <option name="project" value="LOCAL" />
-      <updated>1643638874648</updated>
-    </task>
-    <task id="LOCAL-00275" summary="Final ntc report working">
-      <created>1643638917943</created>
-      <option name="number" value="00275" />
-      <option name="presentableId" value="LOCAL-00275" />
-      <option name="project" value="LOCAL" />
-      <updated>1643638917943</updated>
-    </task>
-    <task id="LOCAL-00276" summary="nothing">
-      <created>1643737632875</created>
-      <option name="number" value="00276" />
-      <option name="presentableId" value="LOCAL-00276" />
-      <option name="project" value="LOCAL" />
-      <updated>1643737632875</updated>
-    </task>
     <task id="LOCAL-00277" summary="removed unused weights in ntc opf panel">
       <created>1643739791653</created>
       <option name="number" value="00277" />
@@ -1034,7 +994,56 @@
       <option name="project" value="LOCAL" />
       <updated>1649852225189</updated>
     </task>
-    <option name="localTasksCounter" value="319" />
+    <task id="LOCAL-00319" summary="skip contingencies for disconnected hvdcs">
+      <created>1650373956274</created>
+      <option name="number" value="00319" />
+      <option name="presentableId" value="LOCAL-00319" />
+      <option name="project" value="LOCAL" />
+      <updated>1650373956274</updated>
+    </task>
+    <task id="LOCAL-00320" summary="new version wheel">
+      <created>1650374267654</created>
+      <option name="number" value="00320" />
+      <option name="presentableId" value="LOCAL-00320" />
+      <option name="project" value="LOCAL" />
+      <updated>1650374267654</updated>
+    </task>
+    <task id="LOCAL-00321" summary="added numerical zero">
+      <created>1650445607767</created>
+      <option name="number" value="00321" />
+      <option name="presentableId" value="LOCAL-00321" />
+      <option name="project" value="LOCAL" />
+      <updated>1650445607767</updated>
+    </task>
+    <task id="LOCAL-00322" summary="added memory error control">
+      <created>1650445634376</created>
+      <option name="number" value="00322" />
+      <option name="presentableId" value="LOCAL-00322" />
+      <option name="project" value="LOCAL" />
+      <updated>1650445634376</updated>
+    </task>
+    <task id="LOCAL-00323" summary="added comment">
+      <created>1650445653573</created>
+      <option name="number" value="00323" />
+      <option name="presentableId" value="LOCAL-00323" />
+      <option name="project" value="LOCAL" />
+      <updated>1650445653573</updated>
+    </task>
+    <task id="LOCAL-00324" summary="new version">
+      <created>1650445673213</created>
+      <option name="number" value="00324" />
+      <option name="presentableId" value="LOCAL-00324" />
+      <option name="project" value="LOCAL" />
+      <updated>1650445673213</updated>
+    </task>
+    <task id="LOCAL-00325" summary="added contingency rates as profile">
+      <created>1650542189605</created>
+      <option name="number" value="00325" />
+      <option name="presentableId" value="LOCAL-00325" />
+      <option name="project" value="LOCAL" />
+      <updated>1650542189605</updated>
+    </task>
+    <option name="localTasksCounter" value="326" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1068,12 +1077,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added hvdc and generator contingencies" />
-    <MESSAGE value="Added hvdc and generator contingencies (fixed PTDF missing)" />
-    <MESSAGE value="New ntcOpf contingency settings" />
-    <MESSAGE value="New contingencies: Hvdc, generator" />
-    <MESSAGE value="Organized ntc reports" />
-    <MESSAGE value="Removed contingency frame line" />
     <MESSAGE value="New optimal ntc time series button" />
     <MESSAGE value="add TS to Gui (in progress)" />
     <MESSAGE value="new optimal ntc time series with clustering in GUI" />
@@ -1093,7 +1096,13 @@
     <MESSAGE value="Fixed LODF numerical zero" />
     <MESSAGE value="only comments" />
     <MESSAGE value="skip contingencies for disconnected hvdcs" />
-    <option name="LAST_COMMIT_MESSAGE" value="skip contingencies for disconnected hvdcs" />
+    <MESSAGE value="new version wheel" />
+    <MESSAGE value="added numerical zero" />
+    <MESSAGE value="added memory error control" />
+    <MESSAGE value="added comment" />
+    <MESSAGE value="new version" />
+    <MESSAGE value="added contingency rates as profile" />
+    <option name="LAST_COMMIT_MESSAGE" value="added contingency rates as profile" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
