@@ -2034,7 +2034,6 @@ class MainGUI(QMainWindow):
                 for bus in self.circuit.buses:
                     bus.delete_profiles()
                 self.circuit.time_profile = None
-                self.circuit.has_time_series = False
                 self.ui.profiles_tableView.setModel(None)
                 self.set_up_profile_sliders()
                 self.update_date_dependent_combos()
