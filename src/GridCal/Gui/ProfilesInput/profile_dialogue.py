@@ -400,10 +400,11 @@ class ProfileInputGUI(QtWidgets.QDialog):
             s = s.replace(p, '')
         return s.lower().strip()
 
-    def check_simularity(self, name_to_search, names_array, threshold):
+    def check_simularity(self, name_to_search, code_to_search, names_array, threshold):
         """
 
         :param name_to_search:
+        :param code_to_search:
         :param names_array:
         :param threshold:
         :return:
@@ -412,8 +413,11 @@ class ProfileInputGUI(QtWidgets.QDialog):
         if name_to_search in names_array:
             return np.where(names_array == name_to_search)[0][0]
 
+        if code_to_search in names_array:
+            return np.where(names_array == code_to_search)[0][0]
+
         # else determine the likelihood
-        if threshold > 0.01:
+        if 0.01 <= threshold < 1.0:
             max_val = 0
             max_idx = None
             for idx_s, col_name in enumerate(names_array):
@@ -444,6 +448,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
         for idx_o, elm in enumerate(self.objects):
 
             idx = self.check_simularity(name_to_search=elm.name.strip(),
+                                        code_to_search=elm.code.strip(),
                                         names_array=self.profile_names,
                                         threshold=threshold)
 
