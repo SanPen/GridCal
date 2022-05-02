@@ -487,13 +487,13 @@ class LineGraphicItem(QGraphicsLineItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
+        if self.api_object is not None:
+            mdl = BranchObjectModel([self.api_object], self.api_object.editable_headers,
+                                    parent=self.diagramScene.parent().object_editor_table,
+                                    editable=True, transposed=True,
+                                    non_editable_attributes=self.api_object.non_editable_attributes)
 
-        mdl = BranchObjectModel([self.api_object], self.api_object.editable_headers,
-                                parent=self.diagramScene.parent().object_editor_table,
-                                editable=True, transposed=True,
-                                non_editable_attributes=self.api_object.non_editable_attributes)
-
-        self.diagramScene.parent().object_editor_table.setModel(mdl)
+            self.diagramScene.parent().object_editor_table.setModel(mdl)
 
     def mouseDoubleClickEvent(self, event):
         """
@@ -501,13 +501,13 @@ class LineGraphicItem(QGraphicsLineItem):
         :param event:
         :return:
         """
-
-        if self.api_object.branch_type in [BranchType.Transformer, BranchType.Line]:
-            # trigger the editor
-            self.edit()
-        elif self.api_object.branch_type is BranchType.Switch:
-            # change state
-            self.enable_disable_toggle()
+        if self.api_object is not None:
+            if self.api_object.branch_type in [BranchType.Transformer, BranchType.Line]:
+                # trigger the editor
+                self.edit()
+            elif self.api_object.branch_type is BranchType.Switch:
+                # change state
+                self.enable_disable_toggle()
 
     def remove(self, ask=True):
         """

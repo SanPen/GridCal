@@ -1034,6 +1034,16 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.transformers2w.append(obj)
 
+    def add_transformer3w(self, obj: Transformer3W):
+        """
+        Add a transformer object
+        :param obj: Transformer3W instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.transformers3w.append(obj)
+
     def add_hvdc(self, obj: HvdcLine):
         """
         Add a hvdc line object

@@ -1853,6 +1853,10 @@ class MainGUI(QMainWindow):
             elm = dev.Transformer2W(None, None)
             elements = self.circuit.transformers2w
 
+        elif elm_type == DeviceType.Transformer3WDevice.value:
+            elm = dev.Transformer3W()
+            elements = self.circuit.transformers3w
+
         elif elm_type == DeviceType.HVDCLineDevice.value:
             elm = dev.HvdcLine(None, None)
             elements = self.circuit.hvdc_lines

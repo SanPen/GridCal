@@ -143,20 +143,12 @@ class EditorGraphicsView(QGraphicsView):
                 self.scene_.circuit.add_bus(obj)  # weird but it's the only way to have graphical-API communication
 
             elif tr3w_data == obj_type:
-                # name = 'Bus ' + str(len(self.scene_.circuit.buses))
-                #
-                # obj = Bus(name=name,
-                #           area=self.scene_.circuit.areas[0],
-                #           zone=self.scene_.circuit.zones[0],
-                #           substation=self.scene_.circuit.substations[0],
-                #           country=self.scene_.circuit.countries[0])
-                #
-                obj = Transformer3W(name="Transformer 3-windings")
+                name = "Transformer 3-windings" + str(len(self.scene_.circuit.transformers3w))
+                obj = Transformer3W(name=name)
                 elm = Transformer3WGraphicItem(diagramScene=self.scene(), editor=self.editor, elm=obj)
                 obj.graphic_obj = elm
-                # self.scene_.circuit.add_bus(obj)  # weird but it's the only way to have graphical-API communication
+                self.scene_.circuit.add_transformer3w(obj)  # weird but it's the only way to have graphical-API communication
                 print('3w transformer dropped')
-
 
             if elm is not None:
                 elm.setPos(self.mapToScene(event.pos()))
@@ -773,9 +765,37 @@ class GridEditor(QSplitter):
 
                         elif isinstance(self.started_branch.bus_from.api_object, Transformer3W):
 
+                            obj = self.started_branch.bus_from.api_object
+
+                            obj.graphic_obj = LineGraphicItem(fromPort=self.started_branch.fromPort,
+                                                              toPort=self.started_branch.toPort,
+                                                              diagramScene=self.diagramScene,
+                                                              branch=None)
+
+                            # update the connection placement
+                            obj.graphic_obj.fromPort.update()
+                            obj.graphic_obj.toPort.update()
+
+                            # set the connection placement
+                            obj.graphic_obj.setZValue(-1)
+
                             print('Hosted tr3w connection FROM')
 
                         elif isinstance(self.started_branch.bus_to.api_object, Transformer3W):
+
+                            obj = self.started_branch.bus_to.api_object
+
+                            obj.graphic_obj = LineGraphicItem(fromPort=self.started_branch.fromPort,
+                                                              toPort=self.started_branch.toPort,
+                                                              diagramScene=self.diagramScene,
+                                                              branch=None)
+
+                            # update the connection placement
+                            obj.graphic_obj.fromPort.update()
+                            obj.graphic_obj.toPort.update()
+
+                            # set the connection placement
+                            obj.graphic_obj.setZValue(-1)
 
                             print('Hosted tr3w connection TO')
 
