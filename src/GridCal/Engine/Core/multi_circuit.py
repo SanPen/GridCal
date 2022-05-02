@@ -123,6 +123,8 @@ class MultiCircuit:
 
         self.switch_devices: List[Switch] = list()
 
+        self.transformers3w: List[Transformer3W] = list()
+
         # array of branch indices in the master circuit
         self.branch_original_idx = list()
 
@@ -201,6 +203,7 @@ class MultiCircuit:
                                       Line(None, None),
                                       DcLine(None, None),
                                       Transformer2W(None, None),
+                                      Transformer3W(),
                                       HvdcLine(None, None),
                                       VSC(None, None),
                                       UPFC(None, None),

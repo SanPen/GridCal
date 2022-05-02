@@ -35,6 +35,7 @@ from GridCal.Engine.Devices.transformer import Transformer2W
 from GridCal.Engine.Devices.vsc import VSC
 from GridCal.Engine.Devices.upfc import UPFC
 from GridCal.Engine.Devices.hvdc_line import HvdcLine
+from GridCal.Engine.Devices.transformer3w import Transformer3W
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.GridEditorWidget.bus_graphics import BusGraphicItem
 from GridCal.Gui.GridEditorWidget.line_graphics import LineGraphicItem
@@ -43,6 +44,7 @@ from GridCal.Gui.GridEditorWidget.transformer2w_graphics import TransformerGraph
 from GridCal.Gui.GridEditorWidget.hvdc_graphics import HvdcGraphicItem
 from GridCal.Gui.GridEditorWidget.vsc_graphics import VscGraphicItem
 from GridCal.Gui.GridEditorWidget.upfc_graphics import UpfcGraphicItem
+from GridCal.Gui.GridEditorWidget.transformer3w_graphics import Transformer3WGraphicItem
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from matplotlib import pyplot as plt
 
@@ -63,6 +65,12 @@ GridEditor
 The graphic objects need to call the API objects and functions inside the MultiCircuit instance.
 To do this the graphic objects call "parent.circuit.<function or object>"
 '''
+
+def toQBytesArray(val: str):
+    data = QByteArray()
+    stream = QDataStream(data, QIODevice.WriteOnly)
+    stream.writeQString(val)
+    return data
 
 
 class EditorGraphicsView(QGraphicsView):
@@ -118,10 +126,10 @@ class EditorGraphicsView(QGraphicsView):
         if event.mimeData().hasFormat('component/name'):
             obj_type = event.mimeData().data('component/name')
             elm = None
-            data = QByteArray()
-            stream = QDataStream(data, QIODevice.WriteOnly)
-            stream.writeQString('Add bus')
-            if obj_type == data:
+            bus_data = toQBytesArray('Bus')
+            tr3w_data = toQBytesArray('3W-Transformer')
+
+            if bus_data == obj_type:
                 name = 'Bus ' + str(len(self.scene_.circuit.buses))
 
                 obj = Bus(name=name,
@@ -133,6 +141,22 @@ class EditorGraphicsView(QGraphicsView):
                 elm = BusGraphicItem(diagramScene=self.scene(), name=name, editor=self.editor, bus=obj)
                 obj.graphic_obj = elm
                 self.scene_.circuit.add_bus(obj)  # weird but it's the only way to have graphical-API communication
+
+            elif tr3w_data == obj_type:
+                # name = 'Bus ' + str(len(self.scene_.circuit.buses))
+                #
+                # obj = Bus(name=name,
+                #           area=self.scene_.circuit.areas[0],
+                #           zone=self.scene_.circuit.zones[0],
+                #           substation=self.scene_.circuit.substations[0],
+                #           country=self.scene_.circuit.countries[0])
+                #
+                obj = Transformer3W(name="Transformer 3-windings")
+                elm = Transformer3WGraphicItem(diagramScene=self.scene(), editor=self.editor, elm=obj)
+                obj.graphic_obj = elm
+                # self.scene_.circuit.add_bus(obj)  # weird but it's the only way to have graphical-API communication
+                print('3w transformer dropped')
+
 
             if elm is not None:
                 elm.setPos(self.mapToScene(event.pos()))
@@ -175,6 +199,7 @@ class EditorGraphicsView(QGraphicsView):
 class LibraryModel(QStandardItemModel):
     """
     Items model to host the draggable icons
+    This is the list of draggable items
     """
 
     def __init__(self, parent=None):
@@ -547,38 +572,6 @@ class DiagramScene(QGraphicsScene):
         super(DiagramScene, self).mouseReleaseEvent(event)
 
 
-class ObjectFactory(object):
-
-    def get_box(self):
-        """
-
-        @return:
-        """
-        pixmap = QPixmap(40, 40)
-        pixmap.fill()
-        painter = QPainter(pixmap)
-        painter.fillRect(0, 0, 40, 40, Qt.black)
-        painter.end()
-
-        return QIcon(pixmap)
-
-    def get_circle(self):
-        """
-
-        @return:
-        """
-        pixmap = QPixmap(40, 40)
-        pixmap.fill()
-        painter = QPainter(pixmap)
-
-        painter.setBrush(Qt.red)
-        painter.drawEllipse(0, 0, 40, 40)
-
-        painter.end()
-
-        return QIcon(pixmap)
-
-
 class GridEditor(QSplitter):
 
     def __init__(self, circuit: MultiCircuit):
@@ -602,16 +595,23 @@ class GridEditor(QSplitter):
         self.libraryModel = LibraryModel(self)
         self.libraryModel.setColumnCount(1)
 
-        # Create an icon with an icon:
-        object_factory = ObjectFactory()
-
         # initialize library of items
         self.libItems = list()
+
+        # add bus to the drag&drop
         bus_icon = QIcon()
         bus_icon.addPixmap(QPixmap(":/Icons/icons/bus_icon.svg"))
-        item = QStandardItem(bus_icon, "Add bus")
+        item = QStandardItem(bus_icon, "Bus")
         item.setToolTip("Drag & drop this into the schematic")
         self.libItems.append(item)
+
+        # add transformer3w to the drag&drop
+        t3w_icon = QIcon()
+        t3w_icon.addPixmap(QPixmap(":/Icons/icons/transformer3w.svg"))
+        item = QStandardItem(t3w_icon, "3W-Transformer")
+        item.setToolTip("Drag & drop this into the schematic")
+        self.libItems.append(item)
+
         for i in self.libItems:
             self.libraryModel.appendRow(i)
 
@@ -705,68 +705,82 @@ class GridEditor(QSplitter):
                         item.hosting_connections.append(self.started_branch)
                         self.started_branch.bus_to = item.parent
 
-                        if self.started_branch.bus_from.api_object.is_dc != self.started_branch.bus_to.api_object.is_dc:
-                            # different DC status -> VSC
+                        if isinstance(self.started_branch.bus_from.api_object, Bus) and \
+                           isinstance(self.started_branch.bus_to.api_object, Bus):
 
-                            name = 'VSC ' + str(len(self.circuit.vsc_devices) + 1)
-                            obj = VSC(bus_from=self.started_branch.bus_from.api_object,
-                                      bus_to=self.started_branch.bus_to.api_object,
-                                      name=name)
+                            if self.started_branch.bus_from.api_object.is_dc != self.started_branch.bus_to.api_object.is_dc:
+                                # different DC status -> VSC
 
-                            obj.graphic_obj = VscGraphicItem(fromPort=self.started_branch.fromPort,
-                                                             toPort=self.started_branch.toPort,
-                                                             diagramScene=self.diagramScene,
-                                                             branch=obj)
+                                name = 'VSC ' + str(len(self.circuit.vsc_devices) + 1)
+                                obj = VSC(bus_from=self.started_branch.bus_from.api_object,
+                                          bus_to=self.started_branch.bus_to.api_object,
+                                          name=name)
 
-                        elif self.started_branch.bus_from.api_object.is_dc and self.started_branch.bus_to.api_object.is_dc:
-                            # both buses are DC
+                                obj.graphic_obj = VscGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                 toPort=self.started_branch.toPort,
+                                                                 diagramScene=self.diagramScene,
+                                                                 branch=obj)
 
-                            name = 'Dc line ' + str(len(self.circuit.dc_lines) + 1)
-                            obj = DcLine(bus_from=self.started_branch.bus_from.api_object,
-                                         bus_to=self.started_branch.bus_to.api_object,
-                                         name=name)
+                            elif self.started_branch.bus_from.api_object.is_dc and self.started_branch.bus_to.api_object.is_dc:
+                                # both buses are DC
 
-                            obj.graphic_obj = DcLineGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                toPort=self.started_branch.toPort,
-                                                                diagramScene=self.diagramScene,
-                                                                branch=obj)
+                                name = 'Dc line ' + str(len(self.circuit.dc_lines) + 1)
+                                obj = DcLine(bus_from=self.started_branch.bus_from.api_object,
+                                             bus_to=self.started_branch.bus_to.api_object,
+                                             name=name)
 
-                        else:
-                            # Same DC status -> line / trafo
-                            v1 = self.started_branch.bus_from.api_object.Vnom
-                            v2 = self.started_branch.bus_to.api_object.Vnom
-
-                            if abs(v1 - v2) > 1.0:
-                                name = 'Transformer ' + str(len(self.circuit.transformers2w) + 1)
-                                obj = Transformer2W(bus_from=self.started_branch.bus_from.api_object,
-                                                    bus_to=self.started_branch.bus_to.api_object,
-                                                    name=name)
-
-                                obj.graphic_obj = TransformerGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                         toPort=self.started_branch.toPort,
-                                                                         diagramScene=self.diagramScene,
-                                                                         branch=obj)
+                                obj.graphic_obj = DcLineGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                    toPort=self.started_branch.toPort,
+                                                                    diagramScene=self.diagramScene,
+                                                                    branch=obj)
 
                             else:
-                                name = 'Line ' + str(len(self.circuit.lines) + 1)
-                                obj = Line(bus_from=self.started_branch.bus_from.api_object,
-                                           bus_to=self.started_branch.bus_to.api_object,
-                                           name=name)
+                                # Same DC status -> line / trafo
+                                v1 = self.started_branch.bus_from.api_object.Vnom
+                                v2 = self.started_branch.bus_to.api_object.Vnom
 
-                                obj.graphic_obj = LineGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                  toPort=self.started_branch.toPort,
-                                                                  diagramScene=self.diagramScene,
-                                                                  branch=obj)
+                                if abs(v1 - v2) > 1.0:
+                                    name = 'Transformer ' + str(len(self.circuit.transformers2w) + 1)
+                                    obj = Transformer2W(bus_from=self.started_branch.bus_from.api_object,
+                                                        bus_to=self.started_branch.bus_to.api_object,
+                                                        name=name)
 
-                        # add the new object to the circuit
-                        self.circuit.add_branch(obj)
+                                    obj.graphic_obj = TransformerGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                             toPort=self.started_branch.toPort,
+                                                                             diagramScene=self.diagramScene,
+                                                                             branch=obj)
 
-                        # update the connection placement
-                        obj.graphic_obj.fromPort.update()
-                        obj.graphic_obj.toPort.update()
+                                else:
+                                    name = 'Line ' + str(len(self.circuit.lines) + 1)
+                                    obj = Line(bus_from=self.started_branch.bus_from.api_object,
+                                               bus_to=self.started_branch.bus_to.api_object,
+                                               name=name)
 
-                        # set the connection placement
-                        obj.graphic_obj.setZValue(-1)
+                                    obj.graphic_obj = LineGraphicItem(fromPort=self.started_branch.fromPort,
+                                                                      toPort=self.started_branch.toPort,
+                                                                      diagramScene=self.diagramScene,
+                                                                      branch=obj)
+
+                            # add the new object to the circuit
+                            self.circuit.add_branch(obj)
+
+                            # update the connection placement
+                            obj.graphic_obj.fromPort.update()
+                            obj.graphic_obj.toPort.update()
+
+                            # set the connection placement
+                            obj.graphic_obj.setZValue(-1)
+
+                        elif isinstance(self.started_branch.bus_from.api_object, Transformer3W):
+
+                            print('Hosted tr3w connection FROM')
+
+                        elif isinstance(self.started_branch.bus_to.api_object, Transformer3W):
+
+                            print('Hosted tr3w connection TO')
+
+                        else:
+                            print('unknown connection')
 
             # if self.started_branch.toPort is None:
             self.started_branch.remove_widget()

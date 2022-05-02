@@ -58,6 +58,30 @@ class TerminalItem(QGraphicsRectItem):
         self.posCallbacks = list()
         self.setFlag(self.ItemSendsScenePositionChanges, True)
 
+    @property
+    def w(self):
+        return self.rect().width()
+
+    @property
+    def h(self):
+        return self.rect().height()
+
+    @property
+    def x(self):
+        return self.pos().x()
+
+    @property
+    def y(self):
+        return self.pos().y()
+
+    @property
+    def xc(self):
+        return self.pos().x() - self.w / 2
+
+    @property
+    def yc(self):
+        return self.pos().y() - self.h / 2
+
     def update(self):
 
         self.process_callbacks(self.parent.pos() + self.pos())

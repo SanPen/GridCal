@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/transformer3w.svg</file>
     <file>icons/ntc_opf_ts_clustering.svg</file>
     <file>icons/stats.svg</file>
     <file>icons/inputs_analysis 2.svg</file>
