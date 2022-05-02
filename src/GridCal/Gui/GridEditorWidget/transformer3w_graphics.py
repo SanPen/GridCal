@@ -33,6 +33,67 @@ from GridCal.Gui.GridEditorWidget.messages import *
 from GridCal.Engine.Devices.enumerations import DeviceType
 
 
+class WindingGraphicItem(QGraphicsRectItem):
+
+    def __init__(self, parent=None, x=0.0, y=0.0,
+                diameter=40.0, rotation=0.0,
+                color=Qt.black, pen_width=2, style=Qt.SolidLine, editor=None):
+        """
+        Winding constructor
+        :param i: winding index
+        :param parent: parent graphical element
+        :param diameter: circle diameter (px)
+        :param rotation: rotation of the whole thing (degrees)
+        :param color:
+        :param pen_width:
+        :param style:
+        """
+        QGraphicsRectItem.__init__(self, parent=parent)
+        self.editor = editor
+        self.d = diameter  # circle diameter
+
+        # main
+        self.color = color
+        self.pen_width = pen_width
+        self.style = style
+        self.setRect(0.0, 0.0, self.d, self.d)
+        self.setPos(x, y)
+        self.setRotation(rotation)
+
+        # draw winding
+        self.circle = QGraphicsEllipseItem(parent=self)
+        self.circle.setRect(0, 0, self.d, self.d)
+        self.circle.setPen(QPen(self.color, self.pen_width, self.style))
+
+        # draw the connection terminal
+        self.terminal = TerminalItem('s', parent=self, editor=self.editor)
+        self.terminal.setPos(self.d / 2, -3)
+
+    @property
+    def w(self):
+        return self.rect().width()
+
+    @property
+    def h(self):
+        return self.rect().height()
+
+    @property
+    def x(self):
+        return self.pos().x()
+
+    @property
+    def y(self):
+        return self.pos().y()
+
+    @property
+    def xc(self):
+        return self.pos().x() - self.w / 2
+
+    @property
+    def yc(self):
+        return self.pos().y() - self.h / 2
+
+
 class Transformer3WGraphicItem(QGraphicsRectItem):
     """
       Represents a block in the diagram
@@ -97,30 +158,45 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         angle_0 = -90
         n_windings = 3
         d_angle = 360 / n_windings
-        angles = np.deg2rad([angle_0, angle_0 + d_angle, angle_0 + d_angle * 2])
+        angles = np.deg2rad([angle_0 + d_angle * i for i in range(n_windings)])
         x = r * np.cos(angles) + self.w / 4
         y = r * np.sin(angles) + self.w / 3
-        self.winding1 = QGraphicsEllipseItem(x[0], y[0], diameter, diameter, parent=self)
-        self.winding2 = QGraphicsEllipseItem(x[1], y[1], diameter, diameter, parent=self)
-        self.winding3 = QGraphicsEllipseItem(x[2], y[2], diameter, diameter, parent=self)
 
-        self.winding1.setPen(QPen(self.color, self.pen_width, self.style))
-        self.winding2.setPen(QPen(self.color, self.pen_width, self.style))
-        self.winding3.setPen(QPen(self.color, self.pen_width, self.style))
+        self.windings = list()
+        for i in range(n_windings):
+            winding = WindingGraphicItem(parent=self,
+                                         x=x[i],
+                                         y=y[i],
+                                         diameter=diameter,
+                                         rotation=angles[i],
+                                         color=self.color,
+                                         pen_width=self.pen_width,
+                                         style=self.style,
+                                         editor=self.editor)
+            # winding = WindingGraphicItem(parent=self)
+            self.windings.append(winding)
 
-        self.terminal1 = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
-        self.terminal2 = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
-        self.terminal3 = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
-
-        # self.terminal1.setPen(QPen(Qt.blue, self.pen_width, self.style))
-        # self.terminal2.setPen(QPen(Qt.red, self.pen_width, self.style))
-        # self.terminal3.setPen(QPen(Qt.green, self.pen_width, self.style))
-
-        self.terminal1.setPos(self.w/2, -3)
-        self.terminal2.setPos(self.w, self.h)
-        self.terminal3.setPos(0, self.h)
-        self.terminal2.setRotation(45)
-        self.terminal3.setRotation(45)
+        # self.winding1 = QGraphicsEllipseItem(x[0], y[0], diameter, diameter, parent=self)
+        # self.winding2 = QGraphicsEllipseItem(x[1], y[1], diameter, diameter, parent=self)
+        # self.winding3 = QGraphicsEllipseItem(x[2], y[2], diameter, diameter, parent=self)
+        #
+        # self.winding1.setPen(QPen(self.color, self.pen_width, self.style))
+        # self.winding2.setPen(QPen(self.color, self.pen_width, self.style))
+        # self.winding3.setPen(QPen(self.color, self.pen_width, self.style))
+        #
+        # self.terminal1 = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
+        # self.terminal2 = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
+        # self.terminal3 = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
+        #
+        # # self.terminal1.setPen(QPen(Qt.blue, self.pen_width, self.style))
+        # # self.terminal2.setPen(QPen(Qt.red, self.pen_width, self.style))
+        # # self.terminal3.setPen(QPen(Qt.green, self.pen_width, self.style))
+        #
+        # self.terminal1.setPos(self.w/2, -3)
+        # self.terminal2.setPos(self.w, self.h)
+        # self.terminal3.setPos(0, self.h)
+        # self.terminal2.setRotation(45)
+        # self.terminal3.setRotation(45)
 
         self.big_marker = None
 
@@ -136,10 +212,11 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
     def set_winding_tool_tips(self):
 
-        if self.api_object is not None:
-            self.winding1.setToolTip("Winding 1: {0} kV".format(self.api_object.V1))
-            self.winding2.setToolTip("Winding 2: {0} kV".format(self.api_object.V2))
-            self.winding3.setToolTip("Winding 3: {0} kV".format(self.api_object.V3))
+        # if self.api_object is not None:
+        #     self.winding1.setToolTip("Winding 1: {0} kV".format(self.api_object.V1))
+        #     self.winding2.setToolTip("Winding 2: {0} kV".format(self.api_object.V2))
+        #     self.winding3.setToolTip("Winding 3: {0} kV".format(self.api_object.V3))
+        pass
 
     def set_label(self, val: str):
         """
@@ -160,9 +237,8 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         self.api_object.retrieve_graphic_position()
 
         # Arrange line positions
-        self.terminal1.process_callbacks(self.pos() + self.terminal1.pos())
-        self.terminal2.process_callbacks(self.pos() + self.terminal2.pos())
-        self.terminal3.process_callbacks(self.pos() + self.terminal3.pos())
+        for winding in self.windings:
+            winding.terminal.process_callbacks(self.pos() + winding.terminal.pos())
 
     def add_big_marker(self, color=Qt.red, tool_tip_text=""):
         """
