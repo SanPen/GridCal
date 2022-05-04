@@ -1812,9 +1812,9 @@ class OpfNTC(Opf):
             names=self.numerical_circuit.hvdc_names,
             rate=self.numerical_circuit.hvdc_data.rate[:, t],
             angles=theta,
-            hvdc_active=self.numerical_circuit.hvdc_data.active, #[:, t],
-            Pt=self.numerical_circuit.hvdc_data.Pset, #[:, t],
-            angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase), #[:, t],
+            hvdc_active=self.numerical_circuit.hvdc_data.active[:, t],
+            Pt=self.numerical_circuit.hvdc_data.Pset[:, t],
+            angle_droop=self.numerical_circuit.hvdc_data.get_angle_droop_in_pu_rad(Sbase)[:, t],
             control_mode=self.numerical_circuit.hvdc_data.control_mode,
             dispatchable=self.numerical_circuit.hvdc_data.dispatchable,
             F=self.numerical_circuit.hvdc_data.get_bus_indices_f(),
@@ -1874,7 +1874,7 @@ class OpfNTC(Opf):
                 ContingencyRates=self.numerical_circuit.ContingencyRates,
                 Sbase=self.numerical_circuit.Sbase,
                 hvdc_flow_f=hvdc_flow_f,
-                hvdc_active=self.numerical_circuit.hvdc_data.active, #[:, t],
+                hvdc_active=self.numerical_circuit.hvdc_data.active[:, t],
                 PTDF=self.PTDF,
                 F=self.numerical_circuit.F,
                 T=self.numerical_circuit.T,
@@ -2176,7 +2176,7 @@ class OpfNTC(Opf):
                 ContingencyRates=self.numerical_circuit.ContingencyRates[:, t],
                 Sbase=self.numerical_circuit.Sbase,
                 hvdc_flow_f=hvdc_flow_f,
-                hvdc_active = self.numerical_circuit.hvdc_data.active[:, t],
+                hvdc_active=self.numerical_circuit.hvdc_data.active[:, t],
                 PTDF=self.PTDF,
                 F=self.numerical_circuit.F,
                 T=self.numerical_circuit.T,
@@ -2581,6 +2581,9 @@ class OpfNTC(Opf):
 
         self.save_lp('ntc_opf.lp')
 
+        if not solved:
+            self.save_lp('ntc_opf_{0}.lp')
+
         # check the solution
         if not solved and with_check:
             self.check()
@@ -2778,16 +2781,15 @@ if __name__ == '__main__':
     from GridCal.Engine.IO.file_handler import FileOpen
     from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
 
-    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas.gridcal'
-    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14 - ntc areas_voltages_hvdc_shifter.gridcal'
-    fname = r'C:\Users\SPV86\Documents\Git\GitHub\GridCal\Grids_and_profiles\grids\IEEE14 - ntc areas_voltages_hvdc_shifter.gridcal'
+    folder = r'\\mornt4\DESRED\DPE-Planificacion\Plan 2021_2026\_0_TRABAJO\5_Plexos_PSSE\Peninsula\_2026_TRABAJO\Vesiones con alegaciones\Anexo II\TYNDP 2022\5GW\Con N-x\merged\GridCal'
+    fname = folder + r'\ES-PTv2--FR v4_ts_5k_PMODE1.gridcal'
 
     main_circuit = FileOpen(fname).open()
 
     # compute information about areas ----------------------------------------------------------------------------------
 
-    area_from_idx = 1
-    area_to_idx = 0
+    area_from_idx = 0
+    area_to_idx = 1
     areas = main_circuit.get_bus_area_indices()
 
     numerical_circuit_ = compile_snapshot_opf_circuit(
