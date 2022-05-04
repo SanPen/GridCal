@@ -1728,8 +1728,7 @@ class MultiCircuit:
         Set the profiles state at the index t as the default values.
         """
         for bus in self.buses:
-            bus.set_profile_values(t)
-            bus.graphic_obj.update()
+            bus.set_state(t)
 
         for branch in self.get_branches():
             branch.set_profile_values(t)

@@ -639,6 +639,33 @@ class Bus(EditableDevice):
                 'lon': 'degrees',
                 'alt': 'm'}
 
+    def set_state(self, t):
+        """
+        Set the profiles state of the objects in this bus to the value given in the profiles at the index t
+        :param t: index of the profile
+        :return: Nothing
+        """
+
+        self.set_profile_values(t)
+
+        for elm in self.loads:
+            elm.set_profile_values(t)
+
+        for elm in self.static_generators:
+            elm.set_profile_values(t)
+
+        for elm in self.external_grids:
+            elm.set_profile_values(t)
+
+        for elm in self.batteries:
+            elm.set_profile_values(t)
+
+        for elm in self.controlled_generators:
+            elm.set_profile_values(t)
+
+        for elm in self.shunts:
+            elm.set_profile_values(t)
+
     def retrieve_graphic_position(self):
         """
         Get the position set by the graphic object into this object's variables

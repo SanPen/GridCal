@@ -1000,13 +1000,11 @@ if __name__ == '__main__':
     print('Running optimal net transfer capacity...')
 
     # set optimal net transfer capacity driver instance
-    start = 0
-    end = 2  # circuit.get_time_number()-1
+    circuit.set_state(t=1)
     driver = OptimalNetTransferCapacity(
         grid=circuit,
         options=options,
         pf_options=PowerFlowOptions(solver_type=SolverType.DC))
-
     driver.run()
 
     driver.results.make_report(path_out=path_out)

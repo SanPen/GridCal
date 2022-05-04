@@ -58,9 +58,9 @@ class VscData:
         """
 
         if time_idx is None:
-            idx = elm_idx
+            tidx = elm_idx
         else:
-            idx = np.ix_(elm_idx, time_idx)
+            tidx = np.ix_(elm_idx, time_idx)
 
         nc = VscData(nvsc=len(elm_idx), nbus=len(bus_idx))
 
@@ -73,11 +73,11 @@ class VscData:
         nc.theta = self.theta[elm_idx]
         nc.Inom = self.Inom[elm_idx]
 
-        nc.active = self.active[idx]
-        nc.Pfset = self.Pfset[idx]
-        nc.Qtset = self.Qtset[idx]
-        nc.Vac_set = self.Vac_set[idx]
-        nc.Vdc_set = self.Vdc_set[idx]
+        nc.active = self.active[tidx]
+        nc.Pfset = self.Pfset[tidx]
+        nc.Qtset = self.Qtset[tidx]
+        nc.Vac_set = self.Vac_set[tidx]
+        nc.Vdc_set = self.Vdc_set[tidx]
 
         nc.control_mode = self.control_mode[elm_idx]
 

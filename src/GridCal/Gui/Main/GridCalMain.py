@@ -2047,28 +2047,28 @@ class MainGUI(QMainWindow):
         else:
             warning_msg('There are no profiles', 'Delete profiles')
 
-    def set_profiles_state_to_grid(self):
-        """
-        Set the profiles scenario at the selected time index to the main values of the grid
-        :return: Nothing
-        """
-        if self.circuit.time_profile is not None:
-            t = self.ui.profile_time_selection_comboBox.currentIndex()
-
-            if t > -1:
-                name_t = self.ui.profile_time_selection_comboBox.currentText()
-                quit_msg = "Replace the grid values by the scenario at " + name_t
-                reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
-
-                if reply == QMessageBox.Yes:
-                    for bus in self.circuit.buses:
-                        bus.set_profile_values(t)
-                else:
-                    pass
-            else:
-                warning_msg('No profile time selected', 'Set profile values')
-        else:
-            warning_msg('There are no profiles', 'Set profile values')
+    # def set_profiles_state_to_grid(self):
+    #     """
+    #     Set the profiles scenario at the selected time index to the main values of the grid
+    #     :return: Nothing
+    #     """
+    #     if self.circuit.time_profile is not None:
+    #         t = self.ui.profile_time_selection_comboBox.currentIndex()
+    #
+    #         if t > -1:
+    #             name_t = self.ui.profile_time_selection_comboBox.currentText()
+    #             quit_msg = "Replace the grid values by the scenario at " + name_t
+    #             reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
+    #
+    #             if reply == QMessageBox.Yes:
+    #                 for bus in self.circuit.buses:
+    #                     bus.set_profile_values(t)
+    #             else:
+    #                 pass
+    #         else:
+    #             warning_msg('No profile time selected', 'Set profile values')
+    #     else:
+    #         warning_msg('There are no profiles', 'Set profile values')
 
     def import_profiles(self):
         """

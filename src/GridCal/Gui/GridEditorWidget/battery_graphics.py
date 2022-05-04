@@ -88,7 +88,7 @@ class BatteryGraphicItem(QGraphicsItemGroup):
             pos.x() + self.w / 2,
             pos.y() + 0,
             parent.x() + rect.width() / 2,
-            parent.y() + parent.terminal.y() + 5,
+            parent.y() + parent.terminal.y + 5,
         )
         self.setZValue(-1)
         self.nexus.setZValue(-1)

@@ -304,7 +304,8 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
                         # check and adjust the reactive power
                         # this function passes pv buses to pq when the limits are violated,
                         # but not pq to pv because that is unstable
-                        n_changes, Scalc, S0, pv, pq, pvpq = control_q_inside_method(Scalc, S0, pv, pq, pvpq, Qmin, Qmax)
+                        n_changes, Scalc, S0, pv, pq, pvpq, messages = control_q_inside_method(Scalc, S0, pv, pq,
+                                                                                               pvpq, Qmin, Qmax)
 
                         Sbus = S0 + I0 * Vm + Y0 * np.power(Vm, 2)  # compute the ZIP power injection
 
@@ -346,6 +347,11 @@ def NR_LS_ACDC(nc: "SnapshotData", Vbus, S0, I0, Y0,
                                                  VfBeqbus=nc.VfBeqbus,
                                                  Vtmabus=nc.Vtmabus)
                             norm_f_new = np.max(np.abs(fx))
+
+                            # if verbose > 0:
+                            #     for sense, idx, var in messages:
+                            #         msg = "Bus " + str(idx) + " changed to PQ, limited to " + str(var * 100) + " MVAr"
+                            #         logger.add_debug(msg)
 
                 # set the mismatch to the new mismatch
                 norm_f = norm_f_new

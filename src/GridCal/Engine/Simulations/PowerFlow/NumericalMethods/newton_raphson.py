@@ -169,7 +169,8 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
                 # but not pq to pv because that is unstable
-                n_changes, Scalc, S0, pv, pq, pvpq = control_q_inside_method(Scalc, S0, pv, pq, pvpq, Qmin, Qmax)
+                n_changes, Scalc, S0, pv, pq, pvpq, messages = control_q_inside_method(Scalc, S0, pv, pq,
+                                                                                       pvpq, Qmin, Qmax)
 
                 if n_changes > 0:
                     # adjust internal variables to the new pq|pv values
@@ -181,6 +182,11 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                     Sbus = compute_zip_power(S0, I0, Y0, Vm)
                     f = compute_fx(Scalc, Sbus, pvpq, pq)
                     norm_f = np.linalg.norm(f, np.inf)
+
+                    if verbose > 0:
+                        for sense, idx, var in messages:
+                            msg = "Bus i=" + str(idx) + " changed to PQ, limited to " + str(var * 100) + " MVAr"
+                            logger.add_debug(msg)
 
             # determine the convergence condition
             converged = norm_f <= tol

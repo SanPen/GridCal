@@ -30,7 +30,7 @@ class UPFC(EditableDevice):
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='UPFC', code='', idtag=None, active=True,
                  rs=0.0, xs=0.00001, rl=0.0, xl=0.0, bl=0.0, rp=0.0, xp=0.0, vp=1.0, Pset = 0.0, Qset=0.0, rate=9999,
                  mttf=0, mttr=0, cost=100, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0,
-                 contingency_enabled=True, monitor_loading=True):
+                 contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None):
         """
         Unified Power Flow Converter (UPFC)
         :param bus_from:
@@ -97,6 +97,7 @@ class UPFC(EditableDevice):
                                 non_editable_attributes=['bus_from', 'bus_to', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'rate': 'rate_prof',
+                                                         'contingency_factor': 'contingency_factor_prof',
                                                          'Cost': 'Cost_prof'})
 
         self.bus_from = bus_from
@@ -132,6 +133,7 @@ class UPFC(EditableDevice):
         self.contingency_enabled: bool = contingency_enabled
         self.monitor_loading: bool = monitor_loading
         self.rate_prof = rate_prof
+        self.contingency_factor_prof = contingency_factor_prof
 
         # branch type: Line, Transformer, etc...
         self.branch_type = BranchType.UPFC

@@ -720,8 +720,8 @@ if __name__ == '__main__':
 
     circuit = FileOpen(fname).open()
 
-    areas_from_idx = [0, 1, 2, 3, 4]
-    areas_to_idx = [7]
+    areas_from_idx = [0]
+    areas_to_idx = [1]
 
     # areas_from_idx = [7]
     # areas_to_idx = [0, 1, 2, 3, 4]
@@ -792,14 +792,15 @@ if __name__ == '__main__':
 
     # set optimal net transfer capacity driver instance
     start = 0
-    end = circuit.get_time_number()-1
+    end = 1  #circuit.get_time_number()-1
+
     driver = OptimalNetTransferCapacityTimeSeriesDriver(
         grid=circuit,
         options=options,
         start_=start,
         end_=end,
-        use_clustering=True,
-        cluster_number=100)
+        use_clustering=False,
+        cluster_number=1)
 
     driver.run()
 
