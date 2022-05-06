@@ -640,6 +640,9 @@ class SnapshotData:
         self.iPfdp_va = np.array(self.iPfdp_va, dtype=np.int)
         self.iVscL = np.array(self.iVscL, dtype=np.int)
 
+    def get_branch_df(self, t=0):
+        return self.branch_data.to_df(t)
+
     @property
     def line_idx(self):
         return slice(0, self.nline, 1)

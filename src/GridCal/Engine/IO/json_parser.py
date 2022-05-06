@@ -415,8 +415,12 @@ def parse_json_data_v3(data: dict, logger: Logger):
                            )
                 circuit.add_line(elm)
 
-        if "Transformer2w" in devices.keys():
-            transformers = devices["Transformer2w"]
+        if "Transformer2w" in devices.keys() or "Transformer" in devices.keys():
+
+            if "Transformer2w" in devices.keys():
+                transformers = devices["Transformer2w"]
+            else:
+                transformers = devices["Transformer"]
 
             for entry in transformers:
 
@@ -454,7 +458,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
                                     active=bool(entry['active']),
                                     tap=float(entry['tap_module']),
                                     shift_angle=float(entry['tap_angle']),
-                                    bus_to_regulated=bool(entry['bus_to_regulated']),
+                                    bus_to_regulated=bool(entry['bus_to_regulated']) if 'bus_to_regulated' in entry else False,
                                     vset=float(entry['vset']),
                                     temp_base=float(entry['base_temperature']),
                                     temp_oper=float(entry['operational_temperature']),

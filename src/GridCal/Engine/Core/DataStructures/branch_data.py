@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
+import pandas as pd
 import scipy.sparse as sp
 import GridCal.Engine.Core.topology as tp
 
@@ -218,6 +219,28 @@ class BranchData:
         :return:
         """
         return np.where(self.contingency_enabled == 1)[0]
+
+    def to_df(self, t=0):
+        """
+        Create DataFrame with the compiled branches information
+        :param t: time index, relevant for those magnitudes that change with time
+        :return: Pandas DataFrame
+        """
+        data = {'names': self.branch_names,
+                'active': self.branch_active[:, t],
+                'F': self.F,
+                'T': self.T,
+                'Rates': self.branch_rates[:, t],
+                'Contingency rates': self.branch_contingency_rates[:, t],
+                'R': self.R,
+                'X': self.X,
+                'G': self.G,
+                'B': self.B,
+                'Vtap F': self.tap_f,
+                'Vtap T': self.tap_t,
+                'Tap module': self.m[:, t],
+                'Tap angle': self.theta[:, t]}
+        return pd.DataFrame(data=data)
 
     def __len__(self):
         return self.nbr
