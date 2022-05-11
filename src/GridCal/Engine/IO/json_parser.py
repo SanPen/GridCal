@@ -362,6 +362,10 @@ def parse_json_data_v3(data: dict, logger: Logger):
                            idtag=str(jentry['id']),
                            P=float(jentry['p']),
                            Q=float(jentry['q']),
+                           Ir=float(jentry['ir']),
+                           Ii=float(jentry['ii']),
+                           G=float(jentry['g']),
+                           B=float(jentry['b']),
                            active=bool(jentry['active']))
                 elm.bus = bus_dict[jentry['bus']]
                 circuit.add_load(elm.bus, elm)

@@ -104,6 +104,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                 if verbose > 1:
                     logger.add_debug('J:\n', J.toarray())
                     logger.add_debug('f:\n', f)
+                    logger.add_debug('dx:\n', dx)
                     logger.add_debug('Vm:\n', Vm)
                     logger.add_debug('Va:\n', Va)
 
