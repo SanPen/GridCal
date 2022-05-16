@@ -637,7 +637,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     loading_hvdc_prev = loading_hvdc.copy()
     Shvdc_prev = Shvdc.copy()
 
-    calculation_inputs = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
+    islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
 
     results = PowerFlowResults(
         n=nc.nbus,
@@ -662,7 +662,7 @@ def multi_island_pf(multi_circuit: MultiCircuit, options: PowerFlowOptions, opf_
     while not all_controls_ok:
 
         # simulate each island and merge the results (doesn't matter if there is only a single island) -----------------
-        for i, calculation_input in enumerate(calculation_inputs):
+        for i, calculation_input in enumerate(islands):
 
             if len(calculation_input.vd) > 0:
 

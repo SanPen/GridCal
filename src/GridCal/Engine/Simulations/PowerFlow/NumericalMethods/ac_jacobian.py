@@ -262,10 +262,8 @@ def AC_jacobian(Ybus, V, pvpq, pq, npv, npq):
     pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
     pvpq_lookup[pvpq] = np.arange(len(pvpq))
 
-    Ibus = zeros(len(V), dtype=complex128)
-
     # create Jacobian from fast calc of dS_dV
-    dS_dVm, dS_dVa = deriv.dSbus_dV_numba_sparse_csr(Ybus.data, Ybus.indptr, Ybus.indices, V, V / np.abs(V), Ibus)
+    dS_dVm, dS_dVa = deriv.dSbus_dV_numba_sparse_csr(Ybus.data, Ybus.indptr, Ybus.indices, V, V / np.abs(V))
 
     # data in J, space pre-allocated is bigger than actual Jx -> will be reduced later on
     Jx = empty(len(dS_dVm) * 4, dtype=float64)

@@ -111,7 +111,7 @@ def dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V, E):
 
 
 @nb.jit(nopython=True, cache=True)
-def dSbus_dV_numba_sparse_csr(Yx, Yp, Yj, V, E, Ibus):  # pragma: no cover
+def dSbus_dV_numba_sparse_csr(Yx, Yp, Yj, V, E):  # pragma: no cover
     """
     partial derivatives of power injection w.r.t. voltage.
     :param Yx: Ybus data in CSC format
@@ -119,12 +119,17 @@ def dSbus_dV_numba_sparse_csr(Yx, Yp, Yj, V, E, Ibus):  # pragma: no cover
     :param Yj: Ybus indices in CSC format
     :param V: Voltage vector
     :param E: Normalized voltage vector
-    :param Ibus: Currents vector
     :return: dS_dVm, dS_dVa data in CSR format, index pointer and indices are the same as the ones from Ybus
     """
 
     # init buffer vector
-    buffer = np.zeros(len(V), dtype=nb.complex128)
+    n = len(V)
+    buffer = np.zeros(n, dtype=nb.complex128)
+    Ibus = np.zeros(n, dtype=nb.complex128)
+
+    # buffer = np.zeros(n, dtype=complex)
+    # Ibus = np.zeros(n, dtype=complex)
+
     dS_dVm = Yx.copy()
     dS_dVa = Yx.copy()
 
@@ -177,7 +182,7 @@ def dSbus_dV_csc(Ybus, V, E):
            sp.csc_matrix((dS_dVm, Ybus.indices, Ybus.indptr))
 
 
-def dSbus_dV_csr(Ybus, V, I):
+def dSbus_dV_csr(Ybus, V):
     """
     Calls functions to calculate dS/dV depending on whether Ybus is sparse or not
     :param Ybus: Ybus in CSC
@@ -189,7 +194,7 @@ def dSbus_dV_csr(Ybus, V, I):
     # I is subtracted from Y*V,
     # therefore it must be negative for numba version of dSbus_dV if it is not zeros anyways
     # calculates sparse data
-    dS_dVm, dS_dVa = dSbus_dV_numba_sparse_csr(Ybus.data, Ybus.indptr, Ybus.indices, V, V / np.abs(V), I)
+    dS_dVm, dS_dVa = dSbus_dV_numba_sparse_csr(Ybus.data, Ybus.indptr, Ybus.indices, V, V / np.abs(V))
 
     # generate sparse CSR matrices with computed data and return them
     return sp.csr_matrix((dS_dVm, Ybus.indices, Ybus.indptr)), \

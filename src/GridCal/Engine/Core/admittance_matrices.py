@@ -35,7 +35,7 @@ def compute_connectivity(branch_active, Cf_, Ct_):
     return Cf.tocsc(), Ct.tocsc()
 
 
-def compute_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus):
+def compute_admittances(R, X, G, B, k, tap_module, vtap_f, vtap_t, tap_angle, Beq, If, Cf, Ct, G0, a, b, c, Yshunt_bus):
     """
     Compute the complete admittance matrices for the general power flow methods (Newton-Raphson based)
     :param R: array of branch resistance (p.u.)
@@ -43,10 +43,10 @@ def compute_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a,
     :param G: array of branch conductance (p.u.)
     :param B: array of branch susceptance (p.u.)
     :param k: array of converter values: 1 for regular branches, sqrt(3) / 2 for VSC
-    :param m: array of tap modules (for all branches, regardless of their type)
-    :param mf: array of virtual taps at the "from" side
-    :param mt: array of virtual taps at the "to" side
-    :param theta: array of tap angles (for all branches, regardless of their type)
+    :param tap_module: array of tap modules (for all branches, regardless of their type)
+    :param vtap_f: array of virtual taps at the "from" side
+    :param vtap_t: array of virtual taps at the "to" side
+    :param tap_angle: array of tap angles (for all branches, regardless of their type)
     :param Beq: Array of equivalent susceptance
     :param If: Array of currents "from" in all the branches
     :param Cf: Connectivity branch-bus "from" with the branch states computed
@@ -66,13 +66,13 @@ def compute_admittances(R, X, G, B, k, m, mf, mt, theta, Beq, If, Cf, Ct, G0, a,
     ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
     bc2 = (G + 1j * B) / 2.0  # shunt admittance
     # k is already filled with the appropriate value for each type of branch
-    mp = k * m
+    mp = k * tap_module
 
     # compose the primitives
-    Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * mf * mf)
-    Yft = -ys / (mp * np.exp(-1.0j * theta) * mf * mt)
-    Ytf = -ys / (mp * np.exp(1.0j * theta) * mt * mf)
-    Ytt = (ys + bc2) / (mt * mt)
+    Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
+    Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+    Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
+    Ytt = (ys + bc2) / (vtap_t * vtap_t)
 
     # compose the matrices
     Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct

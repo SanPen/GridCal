@@ -17,7 +17,7 @@
 
 import time
 import scipy
-
+import json
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
@@ -107,6 +107,19 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                     logger.add_debug('dx:\n', dx)
                     logger.add_debug('Vm:\n', Vm)
                     logger.add_debug('Va:\n', Va)
+
+                    # if verbose == 2:
+                    #     with open('GridCal_nr_data_it_{0}.json'.format(iteration), 'w') as file_ptr:
+                    #         J2 = J.tocsc()
+                    #         data = {"Ji": J2.indices.tolist(),
+                    #                 "Jp": J2.indptr.tolist(),
+                    #                 "Jx": J2.data.tolist(),
+                    #                 "Jm": J2.shape[0],
+                    #                 "Jn": J2.shape[1],
+                    #                 "f": f.tolist(),
+                    #                 "Va": Va.tolist(),
+                    #                 "Vm": Vm.tolist()}
+                    #         json.dump(data, file_ptr)
 
             # reassign the solution vector
             dVa[pvpq] = dx[:npvpq]
