@@ -18,6 +18,7 @@
 import pandas as pd
 import numpy as np
 import time
+import os
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.time_series_opf_data import compile_opf_time_circuit, OpfTimeCircuit
@@ -713,10 +714,8 @@ if __name__ == '__main__':
     from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
     from GridCal.Engine import FileOpen, LinearAnalysis
 
-
-    folder = r'\\mornt4\DESRED\DPE-Planificacion\Plan 2021_2026\_0_TRABAJO\5_Plexos_PSSE\Peninsula\_2026_TRABAJO\Vesiones con alegaciones\Anexo II\TYNDP 2022\5GW\Con N-x\merged\GridCal'
-    fname = folder + r'\ES-PTv2--FR v4_ts_5k_PMODE1.gridcal'
-    path_out = folder + r'ES-PTv2--FR v4_ts_5k_PMODE1.csv'
+    folder = r'\\mornt4\DESRED\DPE-Planificacion\Plan 2021_2026\_0_TRABAJO\5_Plexos_PSSE\Peninsula\_2026_TRABAJO\Vesiones con alegaciones\Anexo II\TYNDP 2022 V2\5GW\Con N-x\merged\GridCal'
+    fname = os.path.join(folder, 'ES-PTv2--FR v4_fused - ts corta 5k.gridcal')
 
     circuit = FileOpen(fname).open()
 
@@ -791,8 +790,8 @@ if __name__ == '__main__':
     print('Running optimal net transfer capacity...')
 
     # set optimal net transfer capacity driver instance
-    start = 0
-    end = 1  #circuit.get_time_number()-1
+    start = 5
+    end = 6  #circuit.get_time_number()-1
 
     driver = OptimalNetTransferCapacityTimeSeriesDriver(
         grid=circuit,
@@ -804,5 +803,5 @@ if __name__ == '__main__':
 
     driver.run()
 
-    driver.results.make_report(path_out=path_out)
+    driver.results.make_report(path_out=folder)
     # driver.results.make_report()

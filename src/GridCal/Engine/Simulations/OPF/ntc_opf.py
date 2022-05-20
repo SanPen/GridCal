@@ -27,6 +27,7 @@ from GridCal.Engine.Simulations.OPF.opf_templates import Opf, MIPSolvers
 from GridCal.Engine.Devices.enumerations import TransformerControlType, HvdcControlType, \
     GenerationNtcFormulation
 from GridCal.Engine.basic_structures import Logger
+import os
 
 try:
     from ortools.linear_solver import pywraplp
@@ -510,6 +511,7 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
 
     gU2 = 0
     gD2 = 0
+
     for bus_idx, gen_idx in gens2:
         if validate_generator_to_decrease(gen_idx, generator_active, generator_dispatchable, Pgen, Pmax, Pmin):
 
@@ -2781,13 +2783,12 @@ if __name__ == '__main__':
     from GridCal.Engine.IO.file_handler import FileOpen
     from GridCal.Engine.Core.snapshot_opf_data import compile_snapshot_opf_circuit
 
-    folder = r'\\mornt4\DESRED\DPE-Planificacion\Plan 2021_2026\_0_TRABAJO\5_Plexos_PSSE\Peninsula\_2026_TRABAJO\Vesiones con alegaciones\Anexo II\TYNDP 2022\5GW\Con N-x\merged\GridCal'
-    fname = folder + r'\ES-PTv2--FR v4_ts_5k_PMODE1.gridcal'
+    folder = r'\\mornt4\DESRED\DPE-Planificacion\Plan 2021_2026\_0_TRABAJO\5_Plexos_PSSE\Peninsula\_2026_TRABAJO\Vesiones con alegaciones\Anexo II\TYNDP 2022 V2\5GW\Con N-x\merged\GridCal'
+    fname = os.path.join(folder, 'ES-PTv2--FR v4_fused - ts corta 5k.gridcal')
 
     main_circuit = FileOpen(fname).open()
 
     # compute information about areas ----------------------------------------------------------------------------------
-
     area_from_idx = 0
     area_to_idx = 1
     areas = main_circuit.get_bus_area_indices()
