@@ -7288,6 +7288,7 @@ QProgressBar::chunk{
     <addaction name="actionFuse_devices"/>
     <addaction name="actionre_index_time"/>
     <addaction name="actionFix_generators_active_based_on_the_power"/>
+    <addaction name="actionFix_loads_active_based_on_the_power"/>
     <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="separator"/>
@@ -8130,6 +8131,18 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Fix generators active based on the power</string>
+   </property>
+  </action>
+  <action name="actionFix_loads_active_based_on_the_power">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/gear.svg</normaloff>:/Icons/icons/gear.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Fix loads active based on the power</string>
+   </property>
+   <property name="toolTip">
+    <string>Fix loads active based on the power</string>
    </property>
   </action>
  </widget>

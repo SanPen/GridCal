@@ -475,6 +475,8 @@ class MainGUI(QMainWindow):
 
         self.ui.actionre_index_time.triggered.connect(self.re_index_time)
 
+        self.ui.actionFix_loads_active_based_on_the_power.triggered.connect(self.fix_loads_active_based_on_the_power)
+
         # Buttons
 
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -2095,6 +2097,23 @@ class MainGUI(QMainWindow):
                 self.set_up_profile_sliders()
                 self.update_date_dependent_combos()
                 self.display_profiles()
+
+                # ask to update active profile when magnitude is P for generators and loads
+                if len(objects) > 0:
+                    if magnitude == 'P':
+                        if objects[0].device_type == DeviceType.GeneratorDevice:
+                            ok = yes_no_question(
+                                "Do you want to correct the generators active profile based on the active power profile?",
+                                "Match")
+                            if ok:
+                                self.fix_generators_active_based_on_the_power(ask_before=False)
+                        elif objects[0].device_type == DeviceType.LoadDevice:
+                            ok = yes_no_question(
+                                "Do you want to correct the loads active profile based on the active power profile?",
+                                "Match")
+                            if ok:
+                                self.fix_loads_active_based_on_the_power(ask_before=False)
+
             else:
                 pass  # the dialogue was closed
 
@@ -6109,7 +6128,7 @@ class MainGUI(QMainWindow):
                     buses_to_delete_idx.append(r)
 
         for r, bus in enumerate(self.circuit.buses):
-            if not bus.active:
+            if not bus.active and not np.any(bus.active_prof):
                 if r not in buses_to_delete_idx:
                     buses_to_delete.append(bus)
                     buses_to_delete_idx.append(r)
@@ -6135,7 +6154,7 @@ class MainGUI(QMainWindow):
                         self.circuit.get_static_generators(),
                         ]:
             for elm in dev_lst:
-                if not elm.active:
+                if not elm.active and not np.any(elm.active_prof):
                     if elm.graphic_obj is not None:
                         # this is a more complete function than the circuit one because it removes the
                         # graphical items too, and for loads and generators it deletes them properly
@@ -6871,8 +6890,9 @@ class MainGUI(QMainWindow):
         Call delete shit
         :return:
         """
-        ok = yes_no_question("This action removes all disconnected devices and remove all small islands",
-                             "Delete inconsistencies")
+        ok = yes_no_question(
+            "This action removes all disconnected devices with no active profile and remove all small islands",
+            "Delete inconsistencies")
 
         if ok:
             logger = self.delete_shit()
@@ -6896,19 +6916,37 @@ class MainGUI(QMainWindow):
             self.circuit.re_index_time(year=dlg.year_spinner.value(),
                                        hours_per_step=dlg.interval_hours.value())
 
-    def fix_generators_active_based_on_the_power(self):
+    def fix_generators_active_based_on_the_power(self, ask_before=True):
         """
         set the generators active based on the active power values
         :return:
         """
-        ok = yes_no_question("This action sets the generation active profile based on the active power profile "
+        if ask_before:
+            ok = yes_no_question("This action sets the generation active profile based on the active power profile "
                              "such that ig a generator active power is zero, the active value is false",
                              "Set generation active profile")
+        else:
+            ok = True
 
         if ok:
             self.circuit.set_generators_active_profile_from_their_active_power()
             self.circuit.set_batteries_active_profile_from_their_active_power()
 
+    def fix_loads_active_based_on_the_power(self, ask_before=True):
+        """
+        set the loads active based on the active power values
+        :return:
+        """
+
+        if ask_before:
+            ok = yes_no_question("This action sets the generation active profile based on the active power profile "
+                             "such that ig a generator active power is zero, the active value is false",
+                             "Set generation active profile")
+        else:
+            ok = True
+
+        if ok:
+            self.circuit.set_loads_active_profile_from_their_active_power()
 
 def run(use_native_dialogues=False):
     """

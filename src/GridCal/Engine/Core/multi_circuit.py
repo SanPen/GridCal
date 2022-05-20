@@ -2389,3 +2389,10 @@ class MultiCircuit:
         for g in self.get_batteries():
             g.active_prof = g.P_prof.astype(bool)
 
+    def set_loads_active_profile_from_their_active_power(self):
+        """
+        Modify the loads active profile to match the active power profile
+        if P=0, active = False else active=True
+        """
+        for ld in self.get_loads():
+            ld.active_prof = ld.P_prof.astype(bool)
