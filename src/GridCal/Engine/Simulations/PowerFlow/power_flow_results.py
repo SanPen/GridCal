@@ -540,7 +540,10 @@ class PowerFlowResults(ResultsTemplate):
         la = self.losses.real
         lr = self.losses.imag
         ls = np.abs(self.losses)
-        tm = self.transformer_tap_module
+        if self.transformer_tap_module.size == 0:
+            tm = [np.nan] * sr.size
+        else:
+            tm = self.transformer_tap_module
 
         branch_data = np.c_[sr, si, sm, ld, la, lr, ls, tm]
         branch_cols = ['Real power (MW)',
