@@ -485,15 +485,15 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
     name = tpe.value
 
-    def compute_exchange_sensitivity(self, linear, numerical_circuit: OpfTimeCircuit, Pload, Pgen, t):
+    def compute_exchange_sensitivity(self, linear, numerical_circuit: OpfTimeCircuit, t):
 
         # compute the branch exchange sensitivity (alpha)
         alpha = compute_alpha(
             ptdf=linear.PTDF,
             P0=numerical_circuit.Sbus.real[:, t],
             Pinstalled=numerical_circuit.bus_installed_power,
-            Pload=Pload[:, t].real,
             Pgen=numerical_circuit.generator_data.get_injections_per_bus()[:, t].real,
+            Pload=numerical_circuit.load_data.get_injections_per_bus()[:, t].real,
             idx1=self.options.area_from_bus_idx,
             idx2=self.options.area_to_bus_idx,
             dT=self.options.sensitivity_dT,
@@ -510,9 +510,6 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         nc = compile_opf_time_circuit(self.grid)
         time_indices = self.get_time_indices()
-
-        Pload = nc.load_data.get_injections_per_bus()
-        Pgen = nc.generator_data.get_injections_per_bus()
 
         nt = len(time_indices)
 
@@ -574,8 +571,6 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 alpha = self.compute_exchange_sensitivity(
                     linear=linear,
                     numerical_circuit=nc,
-                    Pload=Pload,
-                    Pgen=Pgen,
                     t=t)
             else:
                 alpha = np.ones(nc.nbr)

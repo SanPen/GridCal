@@ -531,6 +531,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = '(deg)'
             title = result_type.value[0]
 
+        elif result_type == ResultTypes.BranchRadAngles:
+            labels = self.branch_names
+            y = self.phase_shift
+            y_label = '(rad)'
+            title = result_type.value[0]
+
         elif result_type == ResultTypes.GeneratorPower:
             labels = self.generator_names
             y = self.generator_power
@@ -646,8 +652,8 @@ class OptimalNetTransferCapacity(DriverTemplate):
             ptdf=linear.PTDF,
             P0=numerical_circuit.Sbus.real,
             Pinstalled=numerical_circuit.bus_installed_power,
-            Pgen=numerical_circuit.generator_data.get_injections_per_bus()[:,0].real,
-            Pload=numerical_circuit.load_data.get_injections_per_bus()[:,0].real,
+            Pgen=numerical_circuit.generator_data.get_injections_per_bus()[:, 0].real,
+            Pload=numerical_circuit.load_data.get_injections_per_bus()[:, 0].real,
             idx1=self.options.area_from_bus_idx,
             idx2=self.options.area_to_bus_idx,
             dT=self.options.sensitivity_dT,

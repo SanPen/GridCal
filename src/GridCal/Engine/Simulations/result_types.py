@@ -44,7 +44,8 @@ class ResultTypes(Enum):
     BranchLoading = 'Branch loading', DeviceType.BranchDevice
     Transformer2WTapModule = 'Transformer tap module', DeviceType.Transformer2WDevice
     BranchVoltage = 'Branch voltage drop', DeviceType.BranchDevice
-    BranchAngles = 'Branch voltage angles', DeviceType.BranchDevice
+    BranchAngles = 'Branch voltage angles (deg)', DeviceType.BranchDevice
+    BranchRadAngles = 'Branch voltage angles (rad)', DeviceType.BranchDevice
     BranchLosses = 'Branch losses', DeviceType.BranchDevice
     BranchActiveLosses = 'Branch active losses', DeviceType.BranchDevice
     BranchReactiveLosses = 'Branch reactive losses', DeviceType.BranchDevice
