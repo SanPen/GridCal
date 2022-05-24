@@ -15,7 +15,7 @@ __pycache__
 
 /build
 /dist
-/GridCal.egg-info
+*.egg-info
 
 /src/tests/data/output/*.png
 
