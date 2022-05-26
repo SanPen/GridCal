@@ -598,6 +598,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 consider_hvdc_contingencies=self.options.consider_hvdc_contingencies,
                 consider_gen_contingencies=self.options.consider_gen_contingencies,
                 generation_contingency_threshold=self.options.generation_contingency_threshold,
+                match_gen_load=self.options.match_gen_load,
                 logger=self.logger)
 
             # Solve
@@ -607,7 +608,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             problem.formulate_ts(t=t)
 
             solved = problem.solve_ts(
-                with_check=self.options.with_check,
+                t=t,
+                with_check=self.options.with_solution_checks,
                 time_limit_ms=self.options.time_limit_ms)
 
             self.logger += problem.logger
@@ -778,7 +780,7 @@ if __name__ == '__main__':
         perform_previous_checks=False,
         weight_power_shift=1e5,
         weight_generation_cost=1e2,
-        with_check=False,
+        with_solution_checks=False,
         time_limit_ms=1e4,
         max_report_elements=5)
 

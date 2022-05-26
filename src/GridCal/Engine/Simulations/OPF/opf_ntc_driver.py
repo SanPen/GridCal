@@ -63,13 +63,14 @@ class OptimalNetTransferCapacityOptions:
                  sensitivity_mode: AvailableTransferMode = AvailableTransferMode.InstalledPower,
                  weight_power_shift=1e0,
                  weight_generation_cost=1e-2,
-                 with_check=True,
+                 with_solution_checks=True,
                  time_limit_ms=1e4,
                  max_report_elements=0,
                  consider_contingencies=True,
                  consider_hvdc_contingencies=False,
                  consider_gen_contingencies=False,
-                 generation_contingency_threshold=0):
+                 generation_contingency_threshold=0,
+                 match_gen_load=True):
         """
 
         :param area_from_bus_idx:
@@ -87,7 +88,7 @@ class OptimalNetTransferCapacityOptions:
         :param sensitivity_mode:
         :param weight_power_shift:
         :param weight_generation_cost:
-        :param with_check:
+        :param with_solution_checks:
         :param time_limit_ms:
         :param max_report_elements:
         :param generation_contingency_threshold:
@@ -129,11 +130,11 @@ class OptimalNetTransferCapacityOptions:
         self.consider_gen_contingencies = consider_gen_contingencies
         self.generation_contingency_threshold = generation_contingency_threshold
 
-        self.with_check = with_check
+        self.with_solution_checks = with_solution_checks
         self.time_limit_ms = time_limit_ms
         self.max_report_elements = max_report_elements
 
-
+        self.match_gen_load = match_gen_load
 
 class OptimalNetTransferCapacityResults(ResultsTemplate):
     """
@@ -620,7 +621,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                            units=y_label)
         return mdl
 
-class OptimalNetTransferCapacity(DriverTemplate):
+class OptimalNetTransferCapacityDriver(DriverTemplate):
     name = 'Optimal net transfer capacity'
     tpe = SimulationTypes.OPF_NTC_run
 
@@ -823,13 +824,14 @@ class OptimalNetTransferCapacity(DriverTemplate):
                 consider_hvdc_contingencies=self.options.consider_hvdc_contingencies,
                 consider_gen_contingencies=self.options.consider_gen_contingencies,
                 generation_contingency_threshold=self.options.generation_contingency_threshold,
+                match_gen_load=self.options.match_gen_load,
                 logger=self.logger)
 
             # Solve
             self.progress_text.emit('Solving NTC OPF...')
             problem.formulate()
             solved = problem.solve(
-                with_check=self.options.with_check,
+                with_solution_checks=self.options.with_solution_checks,
                 time_limit_ms=self.options.time_limit_ms)
 
             err = problem.error()
@@ -996,7 +998,7 @@ if __name__ == '__main__':
         perform_previous_checks=False,
         weight_power_shift=1e5,
         weight_generation_cost=1e2,
-        with_check=False,
+        with_solution_checks=False,
         time_limit_ms=1e4,
         max_report_elements=5)
 
@@ -1005,7 +1007,7 @@ if __name__ == '__main__':
 
     # set optimal net transfer capacity driver instance
     circuit.set_state(t=1)
-    driver = OptimalNetTransferCapacity(
+    driver = OptimalNetTransferCapacityDriver(
         grid=circuit,
         options=options,
         pf_options=PowerFlowOptions(solver_type=SolverType.DC))

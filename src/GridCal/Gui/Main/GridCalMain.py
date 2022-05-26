@@ -4203,6 +4203,7 @@ class MainGUI(QMainWindow):
                     sensitivity_dT=dT,
                     sensitivity_mode=mode,
                     perform_previous_checks=perform_previous_checks,
+                    with_solution_checks=False,
                     weight_power_shift=weight_power_shift,
                     weight_generation_cost=weight_generation_cost,
                     consider_contingencies=consider_contingencies,
@@ -4214,7 +4215,7 @@ class MainGUI(QMainWindow):
                 QtGui.QGuiApplication.processEvents()
                 pf_options = self.get_selected_power_flow_options()
                 # set power flow object instance
-                drv = sim.OptimalNetTransferCapacity(self.circuit, options, pf_options)
+                drv = sim.OptimalNetTransferCapacityDriver(self.circuit, options, pf_options)
 
                 self.LOCK()
                 self.session.run(drv,
@@ -4346,7 +4347,7 @@ class MainGUI(QMainWindow):
                     sensitivity_dT=dT,
                     sensitivity_mode=mode,
                     perform_previous_checks=perform_previous_checks,
-                    with_check=False,
+                    with_solution_checks=False,
                     weight_power_shift=weight_power_shift,
                     weight_generation_cost=weight_generation_cost,
                     consider_contingencies=consider_contingencies,
