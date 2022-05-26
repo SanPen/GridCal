@@ -1070,20 +1070,8 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
             else:
                 bk = 1.0 / X[m]
 
-            # if control_mode[m] == TransformerControlType.Pt:  # is a phase shifter
-            #     # create the phase shift variable
-            #     tau[m] = solver.NumVar(
-            #         theta_min[m], theta_max[m],
-            #         'phase_shift_{0}_{1}'.format(m, branch_names[m]))
-            #
-            #     # phase_shift = tau[m]
-            #     angles[_t] = angles[_t] + tau[m]
-            # else:
-            #     phase_shift = theta[m]
-
             # branch power from-to eq.15
             solver.Add(
-                # flow_f[m] == bk * (angles[_f] - angles[_t] + phase_shift),
                 flow_f[m] == bk * (angles[_f] - angles[_t]),
                 'branch_power_flow_{0}_{1}'.format(m, branch_names[m]))
 
@@ -1618,6 +1606,7 @@ class OpfNTC(Opf):
                  consider_hvdc_contingencies=True,
                  consider_gen_contingencies=True,
                  generation_contingency_threshold=1000,
+                 match_gen_load=False,
                  logger: Logger = None):
         """
         DC time series linear optimal power flow
@@ -1636,6 +1625,7 @@ class OpfNTC(Opf):
         :param tolerance: Solution tolerance
         :param weight_power_shift: Power shift maximization weight
         :param weight_generation_cost: Generation cost minimization weight
+        :param match_gen_load: Boolean to match generation and load power
         :param logger: logger instance
         :param with_check: check when problem has no solution
         """
@@ -1672,6 +1662,8 @@ class OpfNTC(Opf):
         self.weight_power_shift = weight_power_shift
         self.weight_generation_cost = weight_generation_cost
 
+        self.match_gen_load = match_gen_load
+
         self.inf = 99999999999999
 
         # results
@@ -1695,6 +1687,35 @@ class OpfNTC(Opf):
         Opf.__init__(self, numerical_circuit=numerical_circuit,
                      solver_type=solver_type,
                      ortools=True)
+
+    def scale_to_reference(self, reference, scalable):
+
+        delta = np.sum(reference) - np.sum(scalable)
+
+        positive = scalable * (scalable > 0)
+        negative = scalable * (scalable < 0)
+
+        # proportion of delta to increase and to decrease
+        prop_up = np.sum(positive) / np.sum(np.abs(scalable))
+        prop_dw = np.sum(negative) / np.sum(np.abs(scalable))
+
+        delta_up = delta * prop_up
+        delta_dw = delta * prop_dw
+
+        # proportion of value to increase and to
+        sum_pos = np.sum(positive)
+        sum_neg = np.sum(negative)
+        prop_up = delta_up / sum_pos if sum_pos != 0 else 0
+        prop_dw = delta_dw / sum_neg if sum_neg != 0 else 0
+
+        # scale
+        positive *= (1 + prop_up)
+        negative *= (1 - prop_dw)
+
+        # join
+        scalable = positive + negative
+
+        return scalable
 
     def formulate(self):
         """
@@ -1724,7 +1745,7 @@ class OpfNTC(Opf):
         # generator
         Pg_max = self.numerical_circuit.generator_pmax / Sbase
         Pg_min = self.numerical_circuit.generator_pmin / Sbase
-        Pg_fix = self.numerical_circuit.generator_data.get_effective_generation()[:, t] / Sbase
+        Pgen_orig = self.numerical_circuit.generator_data.get_effective_generation()[:, t] / Sbase
         Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
 
         if self.skip_generation_limits:
@@ -1732,13 +1753,10 @@ class OpfNTC(Opf):
             Pg_min = -self.inf * np.ones(self.numerical_circuit.ngen)
 
         # load
-        Pl_fix = self.numerical_circuit.load_data.get_effective_load().real[:, t] / Sbase
+        Pload = self.numerical_circuit.load_data.get_effective_load().real[:, t] / Sbase
 
-        # modify Pg_fix until it is identical to Pload
-        total_load = Pl_fix.sum()
-        total_gen = Pg_fix.sum()
-        diff = total_gen - total_load
-        Pg_fix -= diff * (Pg_fix / total_gen)
+        if self.match_gen_load:
+            Pgen = self.scale_to_reference(reference=Pload, scalable=Pgen_orig)
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
@@ -1779,7 +1797,7 @@ class OpfNTC(Opf):
                 inf=self.inf,
                 ngen=ng,
                 Cgen=Cgen,
-                Pgen=Pg_fix,
+                Pgen=Pgen,
                 Pmax=Pg_max,
                 Pmin=Pg_min,
                 a1=self.area_from_bus_idx,
@@ -1799,7 +1817,7 @@ class OpfNTC(Opf):
                 inf=self.inf,
                 ngen=ng,
                 Cgen=Cgen,
-                Pgen=Pg_fix,
+                Pgen=Pgen,
                 Pmax=Pg_max,
                 Pmin=Pg_min,
                 a1=self.area_from_bus_idx,
@@ -1842,7 +1860,7 @@ class OpfNTC(Opf):
             Cgen=Cgen,
             generation=generation,
             Cload=self.numerical_circuit.load_data.C_bus_load,
-            load_power=Pl_fix,
+            load_power=Pload,
             logger=self.logger)
 
         # formulate the flows
@@ -1924,7 +1942,7 @@ class OpfNTC(Opf):
                 branch_names=self.numerical_circuit.branch_names,
                 generator_names=self.numerical_circuit.generator_data.generator_names,
                 Cgen=Cgen,
-                Pgen=Pg_fix,
+                Pgen=Pgen,
                 generation_contingency_threshold=self.generation_contingency_threshold,
                 PTDF=self.PTDF,
                 F=self.numerical_circuit.F,
@@ -1987,7 +2005,7 @@ class OpfNTC(Opf):
         self.gen_a2_idx = gen_a2_idx
 
         # self.Pb = Pb
-        self.Pl = Pl_fix
+        self.Pl = Pload
         self.Pinj = Pinj
 
         self.s_from = flow_f
@@ -2045,7 +2063,7 @@ class OpfNTC(Opf):
         # generator
         Pg_max = self.numerical_circuit.generator_pmax / Sbase
         Pg_min = self.numerical_circuit.generator_pmin / Sbase
-        Pg_fix = self.numerical_circuit.generator_data.get_effective_generation()[:, t] / Sbase
+        Pgen_orig = self.numerical_circuit.generator_data.get_effective_generation()[:, t] / Sbase
         Cgen = self.numerical_circuit.generator_data.C_bus_gen.tocsc()
 
         if self.skip_generation_limits:
@@ -2053,13 +2071,10 @@ class OpfNTC(Opf):
             Pg_min = -self.inf * np.ones(self.numerical_circuit.ngen)
 
         # load
-        Pl_fix = self.numerical_circuit.load_data.get_effective_load().real[:, t] / Sbase
+        Pload = self.numerical_circuit.load_data.get_effective_load().real[:, t] / Sbase
 
-        # modify Pg_fix until it is identical to Pload
-        total_load = Pl_fix.sum()
-        total_gen = Pg_fix.sum()
-        diff = total_gen - total_load
-        Pg_fix -= diff * (Pg_fix / total_gen)
+        if self.match_gen_load:
+            Pgen = self.scale_to_reference(reference=Pload, scalable=Pgen_orig)
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates[:, t] / Sbase
@@ -2100,7 +2115,7 @@ class OpfNTC(Opf):
                 inf=self.inf,
                 ngen=ng,
                 Cgen=Cgen,
-                Pgen=Pg_fix,
+                Pgen=Pgen,
                 Pmax=Pg_max,
                 Pmin=Pg_min,
                 a1=self.area_from_bus_idx,
@@ -2120,7 +2135,7 @@ class OpfNTC(Opf):
                 inf=self.inf,
                 ngen=ng,
                 Cgen=Cgen,
-                Pgen=Pg_fix,
+                Pgen=Pgen,
                 Pmax=Pg_max,
                 Pmin=Pg_min,
                 a1=self.area_from_bus_idx,
@@ -2163,7 +2178,7 @@ class OpfNTC(Opf):
             Cgen=Cgen,
             generation=generation,
             Cload=self.numerical_circuit.load_data.C_bus_load,
-            load_power=Pl_fix,
+            load_power=Pload,
             logger=self.logger)
 
         # formulate the flows
@@ -2245,7 +2260,7 @@ class OpfNTC(Opf):
                 branch_names=self.numerical_circuit.branch_names,
                 generator_names=self.numerical_circuit.generator_data.generator_names,
                 Cgen=Cgen,
-                Pgen=Pg_fix,
+                Pgen=Pgen,
                 generation_contingency_threshold=self.generation_contingency_threshold,
                 PTDF=self.PTDF,
                 F=self.numerical_circuit.F,
@@ -2309,7 +2324,7 @@ class OpfNTC(Opf):
         self.gen_a2_idx = gen_a2_idx
 
         # self.Pb = Pb
-        self.Pl = Pl_fix
+        self.Pl = Pload
         self.Pinj = Pinj
 
         self.s_from = flow_f
@@ -2656,7 +2671,7 @@ class OpfNTC(Opf):
         """
         save_lp(self.solver, file_name)
 
-    def solve(self, with_check=True, time_limit_ms=0):
+    def solve(self, with_solution_checks=True, time_limit_ms=0):
         """
         Call ORTools to solve the problem
         """
@@ -2667,18 +2682,15 @@ class OpfNTC(Opf):
 
         solved = self.solved()
 
-        self.save_lp('ntc_opf.lp')
-
-        if not solved:
-            self.save_lp('ntc_opf_{0}.lp')
+        self.save_lp('h_snp_ntc_opf.lp')
 
         # check the solution
-        if not solved and with_check:
+        if not solved and with_solution_checks:
             self.check()
 
         return solved
 
-    def solve_ts(self, with_check=True, time_limit_ms=0):
+    def solve_ts(self, t, with_check=True, time_limit_ms=0):
         """
         Call ORTools to solve the problem
         """
@@ -2689,7 +2701,7 @@ class OpfNTC(Opf):
 
         solved = self.solved()
 
-        self.save_lp('ntc_opf_ts.lp')
+        self.save_lp('h{0}_ntc_opf_ts.lp'.format(t))
 
         # check the solution
         if not solved and with_check:
