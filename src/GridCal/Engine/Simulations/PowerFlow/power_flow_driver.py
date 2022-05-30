@@ -25,6 +25,7 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE, to_newton_native, newton_power_flow
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf, translate_bentayga_pf_results
+from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_pf, translate_newton_pa_pf_results
 from GridCal.Engine.Core.Compilers.circuit_to_alliander_pgm import ALLIANDER_PGM_AVAILABLE, alliander_pgm_pf
 import GridCal.Engine.basic_structures as bs
 
@@ -79,6 +80,10 @@ class PowerFlowDriver(DriverTemplate):
             self.engine = bs.EngineType.GridCal
             self.logger.add_warning('Failed back to GridCal')
 
+        if self.engine == bs.EngineType.NewtonPA and not NEWTON_PA_AVAILABLE:
+            self.engine = bs.EngineType.GridCal
+            self.logger.add_warning('Failed back to GridCal')
+
         if self.engine == bs.EngineType.Bentayga and not BENTAYGA_AVAILABLE:
             self.engine = bs.EngineType.GridCal
             self.logger.add_warning('Failed back to GridCal')
@@ -123,6 +128,24 @@ class PowerFlowDriver(DriverTemplate):
             self.results.bus_area_indices = self.grid.get_bus_area_indices()
             self.results.area_names = [a.name for a in self.grid.areas]
             print('newton error:', res.error)
+
+
+        elif self.engine == bs.EngineType.NewtonPA:
+
+            res = newton_pa_pf(self.grid, self.options, time_series=False)
+
+            self.results = PowerFlowResults(n=self.grid.get_bus_number(),
+                                            m=self.grid.get_branch_number_wo_hvdc(),
+                                            n_tr=self.grid.get_transformers2w_number(),
+                                            n_hvdc=self.grid.get_hvdc_number(),
+                                            bus_names=res.bus_names,
+                                            branch_names=res.branch_names,
+                                            transformer_names=[],
+                                            hvdc_names=res.hvdc_names,
+                                            bus_types=res.bus_types)
+
+            self.results = translate_newton_pa_pf_results(self.grid, res)
+            self.convergence_reports = self.results.convergence_reports
 
         elif self.engine == bs.EngineType.Bentayga:
 

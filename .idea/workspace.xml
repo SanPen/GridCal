@@ -23,16 +23,15 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added ZIP values to the Json V3 reader&#10;Added extra debug info to NR">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed serious bug where the compiler was not considering the load active profiles">
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton_pa.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/admittance_matrices.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/admittance_matrices.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/ac_jacobian.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/ac_jacobian.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/newton_raphson.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/newton_raphson.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/jacobian/jacobian_gomez_exposito.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/jacobian/jacobian_gomez_exposito.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/research/jacobian/jacobian_lynn_cartesian.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/research/jacobian/jacobian_lynn_cartesian.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/time_series_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/time_series_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/basic_structures.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/basic_structures.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -146,7 +145,7 @@
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitLab/newton-solver&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/GridCal/Engine/Core/Compilers&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
@@ -156,11 +155,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers" />
       <recent name="$PROJECT_DIR$/src/research/PTDF" />
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\ThirdParty\pulp\solverdir\highs\linux\64" />
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\ThirdParty\pulp\solverdir\highs" />
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\ThirdParty\pulp\solverdir\highs\linux" />
-      <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\ThirdParty\pulp\solverdir\highs\win" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods" />
@@ -185,6 +184,28 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="circuit_to_newton_pa" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton_pa.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -237,28 +258,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="se_editor" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/research/qt_related" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/research/qt_related/se_editor.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="setup" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -282,19 +281,19 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.circuit_to_newton_pa" />
       <item itemvalue="Python.jacobian_gomez_exposito" />
       <item itemvalue="Python.jacobian_lynn_cartesian" />
       <item itemvalue="Python.setup" />
-      <item itemvalue="Python.se_editor" />
       <item itemvalue="Python.ExecuteGridCal" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.circuit_to_newton_pa" />
         <item itemvalue="Python.jacobian_gomez_exposito" />
         <item itemvalue="Python.jacobian_lynn_cartesian" />
         <item itemvalue="Python.setup" />
-        <item itemvalue="Python.se_editor" />
       </list>
     </recent_temporary>
   </component>
@@ -793,21 +792,12 @@
       <workItem from="1652440996267" duration="3339000" />
       <workItem from="1652520188536" duration="11881000" />
       <workItem from="1652603391227" duration="2207000" />
-      <workItem from="1652690000575" duration="1604000" />
-    </task>
-    <task id="LOCAL-00251" summary="Fixed reverse HVDC sense">
-      <created>1642168997628</created>
-      <option name="number" value="00251" />
-      <option name="presentableId" value="LOCAL-00251" />
-      <option name="project" value="LOCAL" />
-      <updated>1642168997628</updated>
-    </task>
-    <task id="LOCAL-00252" summary="Fixed the license reading">
-      <created>1642169744102</created>
-      <option name="number" value="00252" />
-      <option name="presentableId" value="LOCAL-00252" />
-      <option name="project" value="LOCAL" />
-      <updated>1642169744102</updated>
+      <workItem from="1652690000575" duration="2272000" />
+      <workItem from="1652695551751" duration="4595000" />
+      <workItem from="1653029895077" duration="606000" />
+      <workItem from="1653293063916" duration="608000" />
+      <workItem from="1653569248453" duration="75000" />
+      <workItem from="1653899198641" duration="6605000" />
     </task>
     <task id="LOCAL-00253" summary="Improved the oscillation detection">
       <created>1642406835841</created>
@@ -1138,7 +1128,21 @@
       <option name="project" value="LOCAL" />
       <updated>1652303366559</updated>
     </task>
-    <option name="localTasksCounter" value="300" />
+    <task id="LOCAL-00300" summary="Slight modifications to display more data for debugging">
+      <created>1652692334167</created>
+      <option name="number" value="00300" />
+      <option name="presentableId" value="LOCAL-00300" />
+      <option name="project" value="LOCAL" />
+      <updated>1652692334168</updated>
+    </task>
+    <task id="LOCAL-00301" summary="Fixed serious bug where the compiler was not considering the load active profiles">
+      <created>1653569314433</created>
+      <option name="number" value="00301" />
+      <option name="presentableId" value="LOCAL-00301" />
+      <option name="project" value="LOCAL" />
+      <updated>1653569314433</updated>
+    </task>
+    <option name="localTasksCounter" value="302" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1171,8 +1175,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added typeError to some smart serach exceptions" />
-    <MESSAGE value="Improved html visualization&#10;Improved &quot;new&quot; function on the GUI" />
     <MESSAGE value="Improved raw file reading integration with the GUI&#10;Added dialogue to the correct inconsistencies function" />
     <MESSAGE value="Fixed LODF bug when dividing by very small numbers" />
     <MESSAGE value="Improved ZIP load model&#10;Added voltage guess" />
@@ -1196,7 +1198,9 @@
     <MESSAGE value="parametric windings" />
     <MESSAGE value="Merged changes" />
     <MESSAGE value="Added ZIP values to the Json V3 reader&#10;Added extra debug info to NR" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added ZIP values to the Json V3 reader&#10;Added extra debug info to NR" />
+    <MESSAGE value="Slight modifications to display more data for debugging" />
+    <MESSAGE value="Fixed serious bug where the compiler was not considering the load active profiles" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed serious bug where the compiler was not considering the load active profiles" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1548,7 +1552,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/time_series_driver.py</url>
-          <line>501</line>
+          <line>502</line>
           <option name="timeStamp" value="991" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1624,7 +1628,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/ac_jacobian.py</url>
-          <line>267</line>
+          <line>265</line>
           <option name="timeStamp" value="1046" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1663,6 +1667,21 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py</url>
           <line>639</line>
           <option name="timeStamp" value="1058" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton_pa.py</url>
+          <line>775</line>
+          <option name="timeStamp" value="1059" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Visualization/visualization.py</url>
+          <line>135</line>
+          <option name="timeStamp" value="1061" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_driver.py</url>
+          <line>164</line>
+          <option name="timeStamp" value="1062" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1736,7 +1755,7 @@
     <SUITE FILE_PATH="coverage/GridCal$newton_current.coverage" NAME="newton_current Coverage Results" MODIFIED="1597481272992" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_flow" />
     <SUITE FILE_PATH="coverage/GridCal$topology_driver.coverage" NAME="topology_driver Coverage Results" MODIFIED="1590932816525" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Topology" />
     <SUITE FILE_PATH="coverage/GridCal$LineBuilderDialogue.coverage" NAME="LineBuilderDialogue Coverage Results" MODIFIED="1633774223527" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1652690009256" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1653913663057" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_admittance_matrix_test_py.coverage" NAME="Nosetests in admittance_matrix_test.py Coverage Results" MODIFIED="1609500304123" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$ACPTDF_research2.coverage" NAME="ACPTDF_research2 Coverage Results" MODIFIED="1601972012772" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$grid_generator_dialogue.coverage" NAME="grid_generator_dialogue Coverage Results" MODIFIED="1603650116973" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator" />
@@ -1815,6 +1834,7 @@
     <SUITE FILE_PATH="coverage/GridCal$line_example.coverage" NAME="line_example Coverage Results" MODIFIED="1619379775789" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/per_unit" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_bus_types_py.coverage" NAME="Nosetests in test_bus_types.py Coverage Results" MODIFIED="1645114540203" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_matrix_stacking_py.coverage" NAME="Nosetests in test_matrix_stacking.py Coverage Results" MODIFIED="1609500758192" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$circuit_to_newton_pa.coverage" NAME="circuit_to_newton_pa Coverage Results" MODIFIED="1653913533516" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers" />
     <SUITE FILE_PATH="coverage/GridCal$conf.coverage" NAME="conf Coverage Results" MODIFIED="1628853896361" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../GridCalUI/doc" />
     <SUITE FILE_PATH="coverage/GridCal$linear_factors_research.coverage" NAME="linear_factors_research Coverage Results" MODIFIED="1646235632825" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research" />
     <SUITE FILE_PATH="coverage/GridCal$psse_transformer_impedance_conversion.coverage" NAME="psse_transformer_impedance_conversion Coverage Results" MODIFIED="1632831296503" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research" />
