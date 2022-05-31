@@ -999,8 +999,7 @@ def check_node_balance(Bbus, angles, Pinj, bus_active, bus_names, logger: Logger
 
 
 def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
-                            branch_active, branch_names, branch_dc,
-                            theta, theta_min, theta_max, control_mode, R, X, F, T, inf,
+                            branch_active, branch_names, branch_dc, R, X, F, T, inf,
                             monitor_loading, branch_sensitivity_threshold, monitor_only_sensitive_branches,
                             angles, alpha_abs, logger):
     """
@@ -1008,13 +1007,9 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
     :param solver: Solver instance to which add the equations
     :param nbr: number of branches
     :param Rates: array of branch rates
-    :param Sbase: Base power (i.e. 100 MVA)
     :param branch_active: array of branch active states
     :param branch_names: array of branch names
     :param branch_dc: array of branch DC status (True/False)
-    :param theta_min: Array of branch minimum angles
-    :param theta_max: Array of branch maximum angles
-    :param control_mode: Array of branch control modes
     :param R: Array of branch resistance values
     :param X: Array of branch reactance values
     :param F: Array of branch "from" bus indices
@@ -1035,7 +1030,6 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
     """
 
     flow_f = np.zeros(nbr, dtype=object)
-    tau = np.zeros(nbr, dtype=object)
     monitor = np.zeros(nbr, dtype=bool)
     rates = Rates / Sbase
 
@@ -1075,9 +1069,6 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
                 flow_f[m] == bk * (angles[_f] - angles[_t]),
                 'branch_power_flow_{0}_{1}'.format(m, branch_names[m]))
 
-            # TODO: to discussion. Add the current limit?
-
-    # return flow_f, tau, monitor
     return flow_f, monitor
 
 def check_branches_flow(nbr, Rates, Sbase, branch_active, branch_names, branch_dc, control_mode, R, X, F, T,
@@ -1607,6 +1598,7 @@ class OpfNTC(Opf):
                  consider_gen_contingencies=True,
                  generation_contingency_threshold=1000,
                  match_gen_load=False,
+                 force_exchange_sense=False,
                  logger: Logger = None):
         """
         DC time series linear optimal power flow
@@ -1663,6 +1655,7 @@ class OpfNTC(Opf):
         self.weight_generation_cost = weight_generation_cost
 
         self.match_gen_load = match_gen_load
+        self.force_exchange_sense = force_exchange_sense
 
         self.inf = 99999999999999
 
@@ -1757,6 +1750,8 @@ class OpfNTC(Opf):
 
         if self.match_gen_load:
             Pgen = self.scale_to_reference(reference=Pload, scalable=Pgen_orig)
+        else:
+            Pgen = Pgen_orig
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
@@ -1872,10 +1867,6 @@ class OpfNTC(Opf):
             branch_active=self.numerical_circuit.branch_active,
             branch_names=self.numerical_circuit.branch_names,
             branch_dc=self.numerical_circuit.branch_data.branch_dc,
-            theta=self.numerical_circuit.branch_data.theta[:, t],
-            theta_min=self.numerical_circuit.branch_data.theta_min,
-            theta_max=self.numerical_circuit.branch_data.theta_max,
-            control_mode=self.numerical_circuit.branch_data.control_mode,
             R=self.numerical_circuit.branch_data.R,
             X=self.numerical_circuit.branch_data.X,
             F=self.numerical_circuit.F,
@@ -1906,6 +1897,7 @@ class OpfNTC(Opf):
             Sbase=self.numerical_circuit.Sbase,
             inf=self.inf,
             inter_area_hvdc=inter_area_hvdc,
+            force_exchange_sense=self.force_exchange_sense,
             logger=self.logger)
 
         if self.consider_contingencies:
@@ -2075,6 +2067,8 @@ class OpfNTC(Opf):
 
         if self.match_gen_load:
             Pgen = self.scale_to_reference(reference=Pload, scalable=Pgen_orig)
+        else:
+            Pgen = Pgen_orig
 
         # branch
         branch_ratings = self.numerical_circuit.branch_rates[:, t] / Sbase
@@ -2190,10 +2184,6 @@ class OpfNTC(Opf):
             branch_active=self.numerical_circuit.branch_active[:, t],
             branch_names=self.numerical_circuit.branch_names,
             branch_dc=self.numerical_circuit.branch_data.branch_dc,
-            theta=self.numerical_circuit.branch_data.theta[:, t],
-            theta_min=self.numerical_circuit.branch_data.theta_min,
-            theta_max=self.numerical_circuit.branch_data.theta_max,
-            control_mode=self.numerical_circuit.branch_data.control_mode,
             R=self.numerical_circuit.branch_data.R,
             X=self.numerical_circuit.branch_data.X,
             F=self.numerical_circuit.F,
@@ -2224,6 +2214,7 @@ class OpfNTC(Opf):
             Sbase=self.numerical_circuit.Sbase,
             inf=self.inf,
             inter_area_hvdc=inter_area_hvdc,
+            force_exchange_sense=self.force_exchange_sense,
             logger=self.logger)
 
         if self.consider_contingencies:
@@ -2682,10 +2673,9 @@ class OpfNTC(Opf):
 
         solved = self.solved()
 
-        self.save_lp('h_snp_ntc_opf.lp')
-
         # check the solution
         if not solved and with_solution_checks:
+            self.save_lp('h_snp_ntc_opf.lp')
             self.check()
 
         return solved
@@ -2701,10 +2691,10 @@ class OpfNTC(Opf):
 
         solved = self.solved()
 
-        self.save_lp('h{0}_ntc_opf_ts.lp'.format(t))
 
         # check the solution
         if not solved and with_check:
+            self.save_lp('h{0}_ntc_opf_ts.lp'.format(t))
             self.check_ts()
 
         return solved

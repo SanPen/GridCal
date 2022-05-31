@@ -25,11 +25,7 @@
   <component name="ChangeListManager">
     <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fix opf snapshot data (load_active as profile instead snapshot value)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1355,6 +1351,11 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py</url>
           <line>802</line>
           <option name="timeStamp" value="757" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
+          <line>1351</line>
+          <option name="timeStamp" value="762" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
