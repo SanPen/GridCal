@@ -23,11 +23,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="save .lp file only if no solution">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
-    </list>
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="avoid overload Qpoint bug drawing buses" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -133,7 +129,7 @@
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.setup">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -249,8 +245,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.setup" />
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.opf_ntc_ts_driver" />
         <item itemvalue="Python.update" />
         <item itemvalue="Python.update_gui_file" />
@@ -689,13 +685,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00287" summary="added hvdc sense control">
-      <created>1643914171736</created>
-      <option name="number" value="00287" />
-      <option name="presentableId" value="LOCAL-00287" />
-      <option name="project" value="LOCAL" />
-      <updated>1643914171736</updated>
-    </task>
     <task id="LOCAL-00288" summary="removed load shedding">
       <created>1644252481288</created>
       <option name="number" value="00288" />
@@ -1032,7 +1021,14 @@
       <option name="project" value="LOCAL" />
       <updated>1653998342481</updated>
     </task>
-    <option name="localTasksCounter" value="336" />
+    <task id="LOCAL-00336" summary="avoid overload Qpoint bug drawing buses">
+      <created>1654077324432</created>
+      <option name="number" value="00336" />
+      <option name="presentableId" value="LOCAL-00336" />
+      <option name="project" value="LOCAL" />
+      <updated>1654077324432</updated>
+    </task>
+    <option name="localTasksCounter" value="337" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1067,7 +1063,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new scale delta power with possitive and negative powers" />
     <MESSAGE value="simplified scale functions (signed)" />
     <MESSAGE value="fix timestamp in ntc report" />
     <MESSAGE value="Removed unnecessary prints" />
@@ -1092,7 +1087,8 @@
     <MESSAGE value="Fixed power shifter influence in bus voltage angles" />
     <MESSAGE value="Fix opf snapshot data (load_active as profile instead snapshot value)" />
     <MESSAGE value="save .lp file only if no solution" />
-    <option name="LAST_COMMIT_MESSAGE" value="save .lp file only if no solution" />
+    <MESSAGE value="avoid overload Qpoint bug drawing buses" />
+    <option name="LAST_COMMIT_MESSAGE" value="avoid overload Qpoint bug drawing buses" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
