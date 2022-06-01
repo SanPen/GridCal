@@ -167,6 +167,12 @@ class EditorGraphicsView(QGraphicsView):
         elm = BusGraphicItem(diagramScene=self.scene(), name=bus.name, editor=self.editor, bus=bus)
         x = int(bus.x * explode_factor)
         y = int(bus.y * explode_factor)
+
+        # avoid overload bug
+        if abs(x) >= 2 ** 30 or abs(y) >= 2 ** 30:
+            x = int(x / 1000)
+            y = int(y / 1000)
+
         elm.setPos(self.mapToScene(QPoint(x, y)))
         self.scene_.addItem(elm)
         return elm
@@ -1001,7 +1007,7 @@ class GridEditor(QSplitter):
         graphic_obj.redraw()
         branch.graphic_obj = graphic_obj
 
-    def add_api_bus(self, bus: Bus, explode_factor=1.0):
+    def add_api_bus(self, bus: Bus, explode_factor=1):
         """
         Add API bus to the diagram
         :param bus: Bus instance

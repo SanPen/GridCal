@@ -23,9 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fix opf snapshot data (load_active as profile instead snapshot value)">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="save .lp file only if no solution">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -688,13 +689,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00286" summary="remove unused checkboxes and fix default spinbox values">
-      <created>1643914103545</created>
-      <option name="number" value="00286" />
-      <option name="presentableId" value="LOCAL-00286" />
-      <option name="project" value="LOCAL" />
-      <updated>1643914103546</updated>
-    </task>
     <task id="LOCAL-00287" summary="added hvdc sense control">
       <created>1643914171736</created>
       <option name="number" value="00287" />
@@ -1031,7 +1025,14 @@
       <option name="project" value="LOCAL" />
       <updated>1653570103543</updated>
     </task>
-    <option name="localTasksCounter" value="335" />
+    <task id="LOCAL-00335" summary="save .lp file only if no solution">
+      <created>1653998342481</created>
+      <option name="number" value="00335" />
+      <option name="presentableId" value="LOCAL-00335" />
+      <option name="project" value="LOCAL" />
+      <updated>1653998342481</updated>
+    </task>
+    <option name="localTasksCounter" value="336" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1066,7 +1067,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="checking bus types computation" />
     <MESSAGE value="new scale delta power with possitive and negative powers" />
     <MESSAGE value="simplified scale functions (signed)" />
     <MESSAGE value="fix timestamp in ntc report" />
@@ -1091,7 +1091,8 @@
     <MESSAGE value="nothing" />
     <MESSAGE value="Fixed power shifter influence in bus voltage angles" />
     <MESSAGE value="Fix opf snapshot data (load_active as profile instead snapshot value)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix opf snapshot data (load_active as profile instead snapshot value)" />
+    <MESSAGE value="save .lp file only if no solution" />
+    <option name="LAST_COMMIT_MESSAGE" value="save .lp file only if no solution" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
