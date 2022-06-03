@@ -170,8 +170,8 @@ class EditorGraphicsView(QGraphicsView):
 
         # avoid overload bug
         if abs(x) >= 2 ** 30 or abs(y) >= 2 ** 30:
-            x = int(x / 1000)
-            y = int(y / 1000)
+            x = int(x / 2)
+            y = int(y / 2)
 
         elm.setPos(self.mapToScene(QPoint(x, y)))
         self.scene_.addItem(elm)
