@@ -2647,7 +2647,7 @@ class Ui_mainWindow(object):
         self.cluster_number_spinBox.setObjectName(u"cluster_number_spinBox")
         self.cluster_number_spinBox.setMinimum(1)
         self.cluster_number_spinBox.setMaximum(999999)
-        self.cluster_number_spinBox.setValue(100)
+        self.cluster_number_spinBox.setValue(200)
 
         self.gridLayout_21.addWidget(self.cluster_number_spinBox, 11, 0, 1, 3)
 

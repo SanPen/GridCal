@@ -23,7 +23,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="avoid overload Qpoint bug drawing buses" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="new version 4.4.7a17 (fixed bug overload QPoint)">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -129,7 +134,7 @@
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.setup">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -245,11 +250,11 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.setup" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.update_gui_file" />
+        <item itemvalue="Python.setup" />
         <item itemvalue="Python.opf_ntc_ts_driver" />
         <item itemvalue="Python.update" />
-        <item itemvalue="Python.update_gui_file" />
       </list>
     </recent_temporary>
   </component>
@@ -685,13 +690,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00288" summary="removed load shedding">
-      <created>1644252481288</created>
-      <option name="number" value="00288" />
-      <option name="presentableId" value="LOCAL-00288" />
-      <option name="project" value="LOCAL" />
-      <updated>1644252481288</updated>
-    </task>
     <task id="LOCAL-00289" summary="recovered load shedding">
       <created>1644254452934</created>
       <option name="number" value="00289" />
@@ -1028,7 +1026,14 @@
       <option name="project" value="LOCAL" />
       <updated>1654077324432</updated>
     </task>
-    <option name="localTasksCounter" value="337" />
+    <task id="LOCAL-00337" summary="new version 4.4.7a17 (fixed bug overload QPoint)">
+      <created>1654077465387</created>
+      <option name="number" value="00337" />
+      <option name="presentableId" value="LOCAL-00337" />
+      <option name="project" value="LOCAL" />
+      <updated>1654077465387</updated>
+    </task>
+    <option name="localTasksCounter" value="338" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1063,7 +1068,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="simplified scale functions (signed)" />
     <MESSAGE value="fix timestamp in ntc report" />
     <MESSAGE value="Removed unnecessary prints" />
     <MESSAGE value="Nothing" />
@@ -1088,7 +1092,8 @@
     <MESSAGE value="Fix opf snapshot data (load_active as profile instead snapshot value)" />
     <MESSAGE value="save .lp file only if no solution" />
     <MESSAGE value="avoid overload Qpoint bug drawing buses" />
-    <option name="LAST_COMMIT_MESSAGE" value="avoid overload Qpoint bug drawing buses" />
+    <MESSAGE value="new version 4.4.7a17 (fixed bug overload QPoint)" />
+    <option name="LAST_COMMIT_MESSAGE" value="new version 4.4.7a17 (fixed bug overload QPoint)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
