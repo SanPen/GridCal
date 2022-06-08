@@ -175,6 +175,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.BranchPower,
                                                     ResultTypes.BranchLoading,
                                                     ResultTypes.BranchTapAngle,
+                                                    ResultTypes.BranchTapAngleRad,
 
                                                     ResultTypes.ContingencyFlowsReport,
                                                     ResultTypes.ContingencyFlowsBranchReport,
@@ -532,7 +533,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = '(deg)'
             title = result_type.value[0]
 
-        elif result_type == ResultTypes.BranchRadAngles:
+        elif result_type == ResultTypes.BranchTapAngleRad:
             labels = self.branch_names
             y = self.phase_shift
             y_label = '(rad)'
