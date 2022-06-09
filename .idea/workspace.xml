@@ -23,11 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="try to fix shifters">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="shifter as injections&#10;Renamed solver variables">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/result_types.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/result_types.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -690,27 +689,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00289" summary="recovered load shedding">
-      <created>1644254452934</created>
-      <option name="number" value="00289" />
-      <option name="presentableId" value="LOCAL-00289" />
-      <option name="project" value="LOCAL" />
-      <updated>1644254452934</updated>
-    </task>
-    <task id="LOCAL-00290" summary="Working NTC. No more load_shedding">
-      <created>1644320616564</created>
-      <option name="number" value="00290" />
-      <option name="presentableId" value="LOCAL-00290" />
-      <option name="project" value="LOCAL" />
-      <updated>1644320616564</updated>
-    </task>
-    <task id="LOCAL-00291" summary="Added HiGs solver">
-      <created>1644320636489</created>
-      <option name="number" value="00291" />
-      <option name="presentableId" value="LOCAL-00291" />
-      <option name="project" value="LOCAL" />
-      <updated>1644320636489</updated>
-    </task>
     <task id="LOCAL-00292" summary="fix comments">
       <created>1644324025289</created>
       <option name="number" value="00292" />
@@ -1033,7 +1011,28 @@
       <option name="project" value="LOCAL" />
       <updated>1654077465387</updated>
     </task>
-    <option name="localTasksCounter" value="338" />
+    <task id="LOCAL-00338" summary="new branch tap angle in radians report">
+      <created>1654700987122</created>
+      <option name="number" value="00338" />
+      <option name="presentableId" value="LOCAL-00338" />
+      <option name="project" value="LOCAL" />
+      <updated>1654700987122</updated>
+    </task>
+    <task id="LOCAL-00339" summary="new branch tap angle in radians report">
+      <created>1654700996122</created>
+      <option name="number" value="00339" />
+      <option name="presentableId" value="LOCAL-00339" />
+      <option name="project" value="LOCAL" />
+      <updated>1654700996122</updated>
+    </task>
+    <task id="LOCAL-00340" summary="shifter as injections&#10;Renamed solver variables">
+      <created>1654701035121</created>
+      <option name="number" value="00340" />
+      <option name="presentableId" value="LOCAL-00340" />
+      <option name="project" value="LOCAL" />
+      <updated>1654701035121</updated>
+    </task>
+    <option name="localTasksCounter" value="341" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1068,8 +1067,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix timestamp in ntc report" />
-    <MESSAGE value="Removed unnecessary prints" />
     <MESSAGE value="Nothing" />
     <MESSAGE value="Version 4.4.7a5" />
     <MESSAGE value="New formulation including pumps for porportional generation" />
@@ -1093,7 +1090,9 @@
     <MESSAGE value="save .lp file only if no solution" />
     <MESSAGE value="avoid overload Qpoint bug drawing buses" />
     <MESSAGE value="new version 4.4.7a17 (fixed bug overload QPoint)" />
-    <option name="LAST_COMMIT_MESSAGE" value="new version 4.4.7a17 (fixed bug overload QPoint)" />
+    <MESSAGE value="new branch tap angle in radians report" />
+    <MESSAGE value="shifter as injections&#10;Renamed solver variables" />
+    <option name="LAST_COMMIT_MESSAGE" value="shifter as injections&#10;Renamed solver variables" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

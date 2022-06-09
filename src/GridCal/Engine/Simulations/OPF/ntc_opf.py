@@ -532,7 +532,7 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
             # add logger message if generator is out of limits
             validate_generator_limits(gen_idx, Pgen, Pmax, Pmin, logger)
 
-            name = 'gen_up_{0}_bus{1}'.format(generator_names[gen_idx], bus_idx)
+            name = 'gen_up_{0}_bus:{1}'.format(generator_names[gen_idx], bus_idx)
 
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             delta[gen_idx] = solver.NumVar(-inf, inf, name + '_delta')
@@ -547,10 +547,10 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
                 prop = 0
 
             solver.Add(delta[gen_idx] == prop * power_shift,
-                       'delta_up_gen_assignment_{0}'.format(generator_names[gen_idx]))
+                       'delta_{0}_assignment'.format(name))
 
             solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx],
-                       'gen_up_gen_assignment_{0}'.format(generator_names[gen_idx]))
+                       '{0}_assignment'.format(name))
 
         else:
             generation[gen_idx] = Pgen[gen_idx]
@@ -567,7 +567,7 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
             # add logger message if generator is out of limits
             validate_generator_limits(gen_idx, Pgen, Pmax, Pmin, logger)
 
-            name = 'gen_down_{0}_bus{1}'.format(generator_names[gen_idx], bus_idx)
+            name = 'gen_down_{0}_bus:{1}'.format(generator_names[gen_idx], bus_idx)
 
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             delta[gen_idx] = solver.NumVar(-inf, inf, 'delta_' + name)
@@ -582,10 +582,10 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
                 prop = 0
 
             solver.Add(delta[gen_idx] == prop * power_shift,
-                       'delta_up_gen_assignment_{0}'.format(generator_names[gen_idx]))
+                       'delta_{0}assignment'.format(generator_names[gen_idx]))
 
             solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx],
-                       'gen_up_gen_assignment_{0}'.format(generator_names[gen_idx]))
+                       '{0}_assignment'.format(name))
 
         else:
             generation[gen_idx] = Pgen[gen_idx]
@@ -671,7 +671,7 @@ def formulate_proportional_generation_simplified(solver: pywraplp.Solver, genera
             # add logger message if generator is out of limits
             validate_generator_limits(gen_idx, Pgen, Pmax, Pmin, logger)
 
-            name = 'gen_up_{0}_bus{1}'.format(generator_names[gen_idx], bus_idx)
+            name = 'gen_up_{0}_bus:{1}'.format(generator_names[gen_idx], bus_idx)
 
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             delta[gen_idx] = solver.NumVar(-inf, inf, 'delta_' + name)
@@ -679,10 +679,10 @@ def formulate_proportional_generation_simplified(solver: pywraplp.Solver, genera
             prop = Pgen[gen_idx] / sum_gen_1
 
             solver.Add(delta[gen_idx] == prop * power_shift,
-                       'delta_up_gen_assignment_{0}'.format(generator_names[gen_idx]))
+                       'delta_{0}_assignment'.format(name))
 
             solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx],
-                       'gen_up_gen_assignment_{0}'.format(generator_names[gen_idx]))
+                       '{0}_assignment'.format(name))
 
         else:
             generation[gen_idx] = Pgen[gen_idx]
@@ -700,7 +700,7 @@ def formulate_proportional_generation_simplified(solver: pywraplp.Solver, genera
             # add logger message if generator is out of limits
             validate_generator_limits(gen_idx, Pgen, Pmax, Pmin, logger)
 
-            name = 'gen_down_{0}_bus{1}'.format(generator_names[gen_idx], bus_idx)
+            name = 'gen_down_{0}_bus:{1}'.format(generator_names[gen_idx], bus_idx)
 
             generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
             delta[gen_idx] = solver.NumVar(-inf, inf, 'delta_' + name)
@@ -708,10 +708,10 @@ def formulate_proportional_generation_simplified(solver: pywraplp.Solver, genera
             prop = Pgen[gen_idx] / sum_gen_2
 
             solver.Add(delta[gen_idx] == prop * power_shift,
-                       'delta_down_gen_assignment_{0}'.format(generator_names[gen_idx]))
+                       'delta_{0}_assignment'.format(name))
 
             solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx],
-                       'gen_down_gen_assignment_{0}'.format(generator_names[gen_idx]))
+                       '{0}_assignment'.format(name))
 
         else:
             generation[gen_idx] = Pgen[gen_idx]
@@ -863,11 +863,11 @@ def formulate_angles(solver: pywraplp.Solver, nbus, vd, bus_names, angle_min, an
 
         theta[i] = solver.NumVar(
             angle_min[i], angle_max[i],
-            'theta_{0}_bus{1}'.format(bus_names[i], i))
+            'theta_{0}:{1}'.format(bus_names[i], i))
 
     if set_ref_to_zero:
         for i in vd:
-            solver.Add(theta[i] == 0, "reference_bus_angle_zero_assignment_{0}_{1}".format(bus_names[i], i))
+            solver.Add(theta[i] == 0, "reference_bus_angle_zero_assignment_{0}:{1}".format(bus_names[i], i))
 
     return theta
 
@@ -901,7 +901,7 @@ def formulate_angles_shifters(solver: pywraplp.Solver, nbr, branch_active, branc
                 # create the phase shift variable
                 tau[m] = solver.NumVar(
                     branch_theta_min[m], branch_theta_max[m],
-                    'branch_phase_shift_{0}_{1}'.format(branch_names[m], m))
+                    'branch_phase_shift_{0}:{1}'.format(branch_names[m], m))
 
             else:
                 tau[m] = branch_theta[m]
@@ -963,7 +963,7 @@ def formulate_node_balance(solver: pywraplp.Solver, Bbus, angles, Pinj, bus_acti
     i = 0
     for p_calc, p_set in zip(calculated_power, Pinj):
         if bus_active[i] and not isinstance(p_calc, int):  # balance is 0 for isolated buses
-            solver.Add(p_calc == p_set, "Node_power_balance_assignment_{0}_{1}".format(bus_names[i], i))
+            solver.Add(p_calc == p_set, "node_power_balance_assignment_{0}:{1}".format(bus_names[i], i))
         i += 1
 
     return calculated_power
@@ -1049,11 +1049,11 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
             if monitor[m]:
                 # declare the flow variable with rate limits
                 flow_f[m] = solver.NumVar(
-                    -rates[m], rates[m], 'branch_flow_{0}_{1}'.format(branch_names[m], m))
+                    -rates[m], rates[m], 'branch_flow_{0}:{1}'.format(branch_names[m], m))
             else:
                 # declare the flow variable with ample limits
                 flow_f[m] = solver.NumVar(
-                    -inf, inf, 'branch_flow_{0}_{1}'.format(branch_names[m], m))
+                    -inf, inf, 'branch_flow_{0}:{1}'.format(branch_names[m], m))
 
             # compute the flow
             _f = F[m]
@@ -1068,7 +1068,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
             # branch power from-to eq.15
             solver.Add(
                 flow_f[m] == bk * (angles[_f] - angles[_t]),
-                'branch_power_flow_assignment_{0}_{1}'.format(branch_names[m], m))
+                'branch_power_flow_assignment_{0}:{1}'.format(branch_names[m], m))
 
             # add the shifter injections matching the flow
             Ptau = bk * tau[m] / Sbase
@@ -1362,7 +1362,7 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, hvd
 
             if control_mode[i] == HvdcControlType.type_1_Pset and dispatchable[i]:
 
-                suffix = "{0}_{1}".format(names[i], i)
+                suffix = "{0}:{1}".format(names[i], i)
 
                 flow_sensed[i] = solver.NumVar(0, inf, 'hvdc_sense_flow_' + suffix)
 
@@ -1402,7 +1402,7 @@ def check_hvdc_flow(nhvdc, names, rate, angles, hvdc_active, Pt, angle_droop, co
             _f = F[i]
             _t = T[i]
 
-            suffix = "{0}_{1}".format(names[i], i)
+            suffix = "{0}:{1}".format(names[i], i)
 
             P0 = Pt[i] / Sbase
 
@@ -1489,7 +1489,7 @@ def formulate_hvdc_contingency(solver: pywraplp.Solver, ContingencyRates, Sbase,
                 _t = T[m]
                 suffix = "Branch_{0}@Hvdc_{1}".format(m, i)
 
-                flow_n1 = solver.NumVar(-rates[m], rates[m], 'hvdc_n-1_flow__' + suffix)
+                flow_n1 = solver.NumVar(-rates[m], rates[m], 'hvdc_n-1_flow_' + suffix)
                 solver.Add(flow_n1 == flow_f[m] + (PTDF[m, _f_hvdc] - PTDF[m, _t_hvdc]) * hvdc_f,
                            "hvdc_n-1_flow_assignment_" + suffix)
 
