@@ -483,38 +483,39 @@ def plot_html_map(circuit: MultiCircuit,
                             opacity=1,
                             tooltip=tooltip).add_to(marker_cluster)
 
-    lnorm = np.abs(hvdc_loading)
-    lnorm[lnorm == np.inf] = 0
-    Sfabs = np.abs(hvdc_Pf)
-    Sfnorm = Sfabs / np.max(Sfabs)
-    for i, branch in enumerate(circuit.get_hvdc()):
+    if len(circuit.get_hvdc()) > 0:
+        lnorm = np.abs(hvdc_loading)
+        lnorm[lnorm == np.inf] = 0
+        Sfabs = np.abs(hvdc_Pf)
+        Sfnorm = Sfabs / np.max(Sfabs)
+        for i, branch in enumerate(circuit.get_hvdc()):
 
-        points = branch.get_coordinates()
+            points = branch.get_coordinates()
 
-        if not has_null_coordinates(points):
-            # compose the tooltip
-            tooltip = str(i) + ': ' + branch.name
-            tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
-            if Sf is not None:
-                tooltip += '\nPower: ' + "{:10.4f}".format(hvdc_Pf[i]) + ' [MW]'
-            if losses is not None:
-                tooltip += '\nLosses: ' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
+            if not has_null_coordinates(points):
+                # compose the tooltip
+                tooltip = str(i) + ': ' + branch.name
+                tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
+                if Sf is not None:
+                    tooltip += '\nPower: ' + "{:10.4f}".format(hvdc_Pf[i]) + ' [MW]'
+                if losses is not None:
+                    tooltip += '\nLosses: ' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
 
-            # get the line colour
-            r, g, b, a = loading_cmap(lnorm[i])
-            color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
-            html_color = color.name()
-            if use_flow_based_width:
-                weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
-            else:
-                weight = 3
+                # get the line colour
+                r, g, b, a = loading_cmap(lnorm[i])
+                color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+                html_color = color.name()
+                if use_flow_based_width:
+                    weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
+                else:
+                    weight = 3
 
-            # draw the line
-            folium.PolyLine(points,
-                            color=html_color,
-                            weight=weight,
-                            opacity=1,
-                            tooltip=tooltip).add_to(marker_cluster)
+                # draw the line
+                folium.PolyLine(points,
+                                color=html_color,
+                                weight=weight,
+                                opacity=1,
+                                tooltip=tooltip).add_to(marker_cluster)
 
     # save the map
     my_map.save(file_name)

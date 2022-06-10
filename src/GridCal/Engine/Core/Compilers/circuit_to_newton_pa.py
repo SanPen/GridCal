@@ -50,9 +50,9 @@ try:
         print('Newton Power Analytics v' + npa.get_version())
         NEWTON_PA_AVAILABLE = True
 
-except ImportError:
+except ImportError as e:
     NEWTON_PA_AVAILABLE = False
-    print('Newton Power Analytics is not available')
+    print('Newton Power Analytics is not available:', e)
 
 # numpy integer type for Newton's uword
 BINT = np.ulonglong
