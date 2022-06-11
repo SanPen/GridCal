@@ -177,19 +177,26 @@ def add_branch_loading_restriction(problem: LpProblem,
     """
     Add the branch loading restrictions
     :param problem: LpProblem instance
-    :param theta_f: voltage angles at the "from" side of the branches (m, nt)
-    :param theta_t: voltage angles at the "to" side of the branches (m, nt)
-    :param Bseries: Array of branch susceptances (m)
+    :param nc: OpfTimeCircuit instance
+    :param theta: array of LpVariables with the bus angles (n, nt)
+    :param F: Array with the "from" branch indices (m)
+    :param T: Array with the "to" branch indices (m)
     :param ratings: Array of branch ratings (m, nt)
     :param ratings_slack_from: Array of branch loading slack variables in the from-to sense
     :param ratings_slack_to: Array of branch loading slack variables in the to-from sense
-    :return: Nothing
+    :param monitored: Array with the monitoring status (m, nt)
+    :param active: Array with the active status (m, nt)
+    :return: Pbr_f: Array of power flowing through the branch (m, nt)
+             tau: Array of tap angles in the phase shifters (m, nt)
+             Pinj_tau: Array of the nodal power injections due to the phase shift (n, nt)
     """
+
     nbr, nt = ratings_slack_to.shape
 
     # from-to branch power restriction
     Pbr_f = np.zeros((nbr, nt), dtype=object)
     tau = np.zeros((nbr, nt), dtype=object)
+    Pinj_tau = np.zeros((nc.nbus, nt), dtype=object)
 
     for m, t in product(range(nbr), range(nt)):
         if active[m, t]:
@@ -205,6 +212,11 @@ def add_branch_loading_restriction(problem: LpProblem,
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
                 tau[m, t] = LpVariable('Tau_{0}_{1}'.format(m, t), nc.branch_data.theta_min[m], nc.branch_data.theta_max[m])
                 Pbr_f[m, t] = bk * (theta[F[m], t] - theta[T[m], t] + tau[m, t])
+
+                # power injected and subtracted due to the phase shift
+                Pinj_tau[F[m], t] = -bk * tau[m, t]
+                Pinj_tau[T[m], t] = bk * tau[m, t]
+
             else:
                 # regular branch
                 tau[m, t] = 0.0
@@ -216,7 +228,7 @@ def add_branch_loading_restriction(problem: LpProblem,
         else:
             Pbr_f[m, t] = 0
 
-    return Pbr_f, tau
+    return Pbr_f, tau, Pinj_tau
 
 
 def formulate_contingency(problem: LpProblem, numerical_circuit: OpfTimeCircuit, flow_f, ratings, LODF, monitor,
@@ -601,33 +613,34 @@ class OpfDcTimeSeries(OpfTimeSeries):
                                           logger=self.logger,
                                           inf=999999)
 
-        # set the nodal restrictions -----------------------------------------------------------------------------------
-        self.nodal_restrictions = formulate_dc_nodal_power_balance(numerical_circuit=self.numerical_circuit,
-                                                                   problem=self.problem,
-                                                                   theta=theta,
-                                                                   P=P,
-                                                                   start_=self.start_idx,
-                                                                   end_=self.end_idx)
-
         # add branch restrictions --------------------------------------------------------------------------------------
         if self.zonal_grouping == ZonalGrouping.NoGrouping:
-            flow_f, tau = add_branch_loading_restriction(problem=self.problem,
-                                                         nc=self.numerical_circuit,
-                                                         theta=theta,
-                                                         F=F,
-                                                         T=T,
-                                                         ratings=branch_ratings,
-                                                         ratings_slack_from=branch_rating_slack1,
-                                                         ratings_slack_to=branch_rating_slack2,
-                                                         monitored=self.numerical_circuit.branch_data.monitor_loading,
-                                                         active=br_active)
+            flow_f, tau, Pinj_tau = add_branch_loading_restriction(problem=self.problem,
+                                                                   nc=self.numerical_circuit,
+                                                                   theta=theta,
+                                                                   F=F,
+                                                                   T=T,
+                                                                   ratings=branch_ratings,
+                                                                   ratings_slack_from=branch_rating_slack1,
+                                                                   ratings_slack_to=branch_rating_slack2,
+                                                                   monitored=self.numerical_circuit.branch_data.monitor_loading,
+                                                                   active=br_active)
 
         elif self.zonal_grouping == ZonalGrouping.All:
             flow_f = np.zeros((self.numerical_circuit.nbr, nt))
             tau = np.ones((self.numerical_circuit.nbr, nt))
+            Pinj_tau = np.zeros((self.numerical_circuit.nbr, nt))
 
         else:
             raise ValueError()
+
+        # set the nodal restrictions -----------------------------------------------------------------------------------
+        self.nodal_restrictions = formulate_dc_nodal_power_balance(numerical_circuit=self.numerical_circuit,
+                                                                   problem=self.problem,
+                                                                   theta=theta,
+                                                                   P=P + Pinj_tau,   # add the phase shift injections
+                                                                   start_=self.start_idx,
+                                                                   end_=self.end_idx)
 
         # if there are batteries, add the batteries --------------------------------------------------------------------
         if nb > 0:
