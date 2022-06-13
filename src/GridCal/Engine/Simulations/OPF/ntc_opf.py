@@ -473,15 +473,24 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
         - power_shift: Power shift LP variable
         - gen_cost: Array of generation costs
     """
-    gens1, gens2, gens_out = get_generators_per_areas(Cgen, a1, a2)
+    gens_a1, gens_a2, gens_out = get_generators_per_areas(Cgen, a1, a2)
     gen_cost = np.ones(ngen)
     generation = np.zeros(ngen, dtype=object)
     delta = np.zeros(ngen, dtype=object)
 
+    # # Only for debug purpose
+    # Pgen = np.array([-102, 500, 1800, 1500, -300, 100])
+    # gens_a1 = [(0, 0), (1, 1), (2, 2)]
+    # gens_a2 = [(3, 3), (4, 4), (5, 5)]
+    # gens_out = [(6, 6)]
+    # Pmax = np.array([1500, 1500, 1500, 1500, 1500, 1500])
+    # Pmin = np.array([-1500, -1500, -1500, -1500, -100, -1500])
+    # generator_active = np.array([True, True, True, True, True, True])
+    # generator_dispatchable = np.array([True, True, True, True, True, True])
 
     # get generator idx for each areas. A1 increase. A2 decrease
-    a1_gen_idx = [gen_idx for bus_idx, gen_idx in gens1]
-    a2_gen_idx = [gen_idx for bus_idx, gen_idx in gens2]
+    a1_gen_idx = [gen_idx for bus_idx, gen_idx in gens_a1]
+    a2_gen_idx = [gen_idx for bus_idx, gen_idx in gens_a2]
     out_gen_idx = [gen_idx for bus_idx, gen_idx in gens_out]
 
     # generator area mask
@@ -492,78 +501,74 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
     Pgen_a1 = Pgen * is_gen_in_a1 * generator_active * generator_dispatchable * (Pgen < Pmax)
     Pgen_a2 = Pgen * is_gen_in_a2 * generator_active * generator_dispatchable * (Pgen > Pmin)
 
-    # Split positive and negative generators. Same vectors lenghts, not matched set to zero.
+    # Filter positive and negative generators. Same vectors lenght, set not matched values to zero.
     gen_pos_a1 = np.where(Pgen_a1 < 0, 0, Pgen_a1)
     gen_neg_a1 = np.where(Pgen_a1 > 0, 0, Pgen_a1)
     gen_pos_a2 = np.where(Pgen_a2 < 0, 0, Pgen_a2)
     gen_neg_a2 = np.where(Pgen_a2 > 0, 0, Pgen_a2)
 
-    # get proportions of contribution by sense
+    # get proportions of contribution by sense (gen or pump) and area
+    # the idea is both techs contributes to achieve the power shift goal in the same proportion
+    # that in base situation
     prop_up_a1 = np.sum(gen_pos_a1) / np.sum(np.abs(Pgen_a1))
     prop_dw_a1 = np.sum(gen_neg_a1) / np.sum(np.abs(Pgen_a1))
     prop_up_a2 = np.sum(gen_pos_a2) / np.sum(np.abs(Pgen_a2))
     prop_dw_a2 = np.sum(gen_neg_a2) / np.sum(np.abs(Pgen_a2))
 
-    # get proportions of contribution by generator and sense.
-    prop_up_gen_a1 = gen_pos_a1 / np.sum(np.abs(gen_pos_a1))
-    prop_dw_gen_a1 = gen_neg_a1 / np.sum(np.abs(gen_neg_a1))
-    prop_up_gen_a2 = gen_pos_a2 / np.sum(np.abs(gen_pos_a2))
-    prop_dw_gen_a2 = gen_neg_a2 / np.sum(np.abs(gen_neg_a2))
+    # get proportion by production (ammount of power contributed by generator to his sensed area).
+    prop_up_gen_a1 = gen_pos_a1 / np.sum(np.abs(gen_pos_a1)) if np.sum(np.abs(gen_pos_a1)) != 0 else np.zeros_like(gen_pos_a1)
+    prop_dw_gen_a1 = gen_neg_a1 / np.sum(np.abs(gen_neg_a1)) if np.sum(np.abs(gen_neg_a1)) != 0 else np.zeros_like(gen_neg_a1)
+    prop_up_gen_a2 = gen_pos_a2 / np.sum(np.abs(gen_pos_a2)) if np.sum(np.abs(gen_pos_a2)) != 0 else np.zeros_like(gen_pos_a2)
+    prop_dw_gen_a2 = gen_neg_a2 / np.sum(np.abs(gen_neg_a2)) if np.sum(np.abs(gen_neg_a2)) != 0 else np.zeros_like(gen_neg_a2)
 
-    # replace possible zero division by zero
-    prop_up_gen_a1 = np.nan_to_num(prop_up_gen_a1, nan=0)
-    prop_dw_gen_a1 = np.nan_to_num(prop_dw_gen_a1, nan=0)
-    prop_up_gen_a2 = np.nan_to_num(prop_up_gen_a2, nan=0)
-    prop_dw_gen_a2 = np.nan_to_num(prop_dw_gen_a2, nan=0)
-
-    # delta proportion by generator
+    # delta proportion by generator (considering both proportions: sense and production)
     prop_gen_delta_up_a1 = prop_up_gen_a1 * prop_up_a1
     prop_gen_delta_dw_a1 = prop_dw_gen_a1 * prop_dw_a1
     prop_gen_delta_up_a2 = prop_up_gen_a2 * prop_up_a2
     prop_gen_delta_dw_a2 = prop_dw_gen_a2 * prop_dw_a2
 
-    # Final proportion by generator.
-    # Notice they will be joined, not added: just joining because they were filtered by masks
+    # Join generator proportions into one vector
+    # Notice they will not added: just joining like 'or' logical operation
     proportions_a1 = prop_gen_delta_up_a1 + prop_gen_delta_dw_a1
     proportions_a2 = prop_gen_delta_up_a2 + prop_gen_delta_dw_a2
-    proportions = proportions_a2 + proportions_a2
+    proportions = proportions_a1 + proportions_a2
 
     # some checks
     if not np.isclose(np.sum(proportions_a1), 1, rtol=1e-6):
-        logger.add_warning('Issue computing proportions to scale delta generation in area 1')
+        logger.add_warning('Issue computing proportions to scale delta generation in area 1.')
 
     if not np.isclose(np.sum(proportions_a2), 1, rtol=1e-6):
         logger.add_warning('Issue computing proportions to scale delta generation in area 2')
 
-
-    # apply power shift sense
+    # apply power shift sense based on area (increase a1, decrease a2)
     sense = (1 * is_gen_in_a1) + (-1 * is_gen_in_a2)
 
-    # Solver variables
+    # # only for debug purpose
+    # debug_power_shift = 1000
+    # debug_deltas = debug_power_shift * proportions * sense
+    # debug_generation = Pgen + debug_deltas
+
+    # --------------------------------------------
+    # Formulate Solver valiables
+    # --------------------------------------------
+
     power_shift = solver.NumVar(-inf, inf, 'power_shift')
 
-    power_shift_prueba = 1000
-    deltas_generator = np.where(Pgen != 0, Pgen/power_shift_prueba, 0)
-
-    delta_prueba = proportions * np.sum(Pgen) / power_shift_prueba * sense
-    generacion_prueba = Pgen + delta
-
     for gen_idx, P in enumerate(Pgen):
-
         if gen_idx not in out_gen_idx:
 
             # store solver variables
-            delta[gen_idx] = solver.NumVar(
-                -inf, inf,
-                'gen_{0}_delta'.format(generator_names[gen_idx]))
-
             generation[gen_idx] = solver.NumVar(
                 Pmin[gen_idx], Pmax[gen_idx],
                 'gen_{0}'.format(generator_names[gen_idx]))
 
+            delta[gen_idx] = solver.NumVar(
+                -inf, inf,
+                'gen_{0}_delta'.format(generator_names[gen_idx]))
+
             # solver variables formulation
             solver.Add(
-                delta[gen_idx] == proportions[gen_idx] * power_shift * sense,
+                delta[gen_idx] == power_shift * proportions[gen_idx] * sense[gen_idx],
                 'gen_{0}_assignment'.format(generator_names[gen_idx]))
 
             solver.Add(
@@ -573,289 +578,8 @@ def formulate_proportional_generation(solver: pywraplp.Solver, generator_active,
         else:
             generation[gen_idx] = Pgen[gen_idx]
 
+
     return generation, delta, a1_gen_idx, a2_gen_idx, power_shift, gen_cost
-
-
-
-def formulate_proportional_generation_old(solver: pywraplp.Solver, generator_active, generator_dispatchable,
-                                      generator_cost, generator_names, inf, ngen, Cgen, Pgen, Pmax,
-                                      Pmin, a1, a2, logger: Logger):
-    """
-    Formulate the generation increments in a proportional fashion
-    :param solver: Solver instance to which add the equations
-    :param generator_active: Array of generation active values (True / False)
-    :param generator_dispatchable: Array of Generator dispatchable variables (True / False)
-    :param generator_cost: Array of generator costs
-    :param generator_names: Array of Generator names
-    :param inf: Value representing the infinite value (i.e. 1e20)
-    :param ngen: Number of generators
-    :param Cgen: CSC connectivity matrix of generators and buses [ngen, nbus]
-    :param Pgen: Array of generator active power values in p.u.
-    :param Pmax: Array of generator maximum active power values in p.u.
-    :param Pmin: Array of generator minimum active power values in p.u.
-    :param a1: array of bus indices of the area 1
-    :param a2: array of bus indices of the area 2
-    :param logger: Logger instance
-        :return: Many arrays of variables:
-        - generation: Array of generation LP variables
-        - delta: Array of generation delta LP variables
-        - gen_a1_idx: Indices of the generators in the area 1
-        - gen_a2_idx: Indices of the generators in the area 2
-        - power_shift: Power shift LP variable
-        - dgen1: List of generation delta LP variables in the area 1
-        - gen_cost: Array of generation costs
-        - delta_slack_1: Array of generation delta LP Slack variables up
-        - delta_slack_2: Array of generation delta LP Slack variables down
-    """
-    gens1, gens2, gens_out = get_generators_per_areas(Cgen, a1, a2)
-    gen_cost = np.ones(ngen)
-    generation = np.zeros(ngen, dtype=object)
-    delta = np.zeros(ngen, dtype=object)
-
-    dgen1 = list()
-    dgen2 = list()
-
-    Pgen1 = list()
-    Pgen2 = list()
-
-    gen_a1_idx = list()
-    gen_a2_idx = list()
-
-    power_shift = solver.NumVar(-inf, inf, 'power_shift')
-
-    gU1 = 0
-    gD1 = 0
-    for bus_idx, gen_idx in gens1:
-        if validate_generator_to_increase(gen_idx, generator_active, generator_dispatchable, Pgen, Pmax, Pmin):
-
-            if Pgen[gen_idx] > 0:
-                gU1 += Pgen[gen_idx]
-
-            if Pgen[gen_idx] < 0:
-                gD1 -= Pgen[gen_idx]  # store it as positive value
-
-    # compute witch proportion to attend with positive and negative sense  in area1
-    dPP1 = gU1 / (gU1 + gD1)  # positive proportion
-    dPN1 = gD1 / (gU1 + gD1)  # negative proportion
-
-    gU2 = 0
-    gD2 = 0
-
-    for bus_idx, gen_idx in gens2:
-        if validate_generator_to_decrease(gen_idx, generator_active, generator_dispatchable, Pgen, Pmax, Pmin):
-
-            if Pgen[gen_idx] > 0:
-                gU2 += Pgen[gen_idx]
-
-            if Pgen[gen_idx] < 0:
-                gD2 -= Pgen[gen_idx]  # store it as positive value
-
-    # compute witch proportion to attend with positive and negative sense in area2
-    dPP2 = gU2 / (gU2 + gD2)  # positive proportion
-    dPP2 = gD2 / (gU2 + gD2)  # negative proportion
-
-    for bus_idx, gen_idx in gens1:
-
-        if validate_generator_to_increase(gen_idx, generator_active, generator_dispatchable, Pgen, Pmax, Pmin):
-
-            # add logger message if generator is out of limits
-            validate_generator_limits(gen_idx, Pgen, Pmax, Pmin, logger)
-
-            name = 'gen_up_{0}_bus:{1}'.format(generator_names[gen_idx], bus_idx)
-
-            generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-            delta[gen_idx] = solver.NumVar(-inf, inf, name + '_delta')
-
-            if Pgen[gen_idx] > 0:
-                prop = dPP1 * Pgen[gen_idx] / gU1
-
-            if Pgen[gen_idx] < 0:
-                prop = -dPN1 * Pgen[gen_idx] / gD1  # Pgen[gen_idx] is already negative
-
-            if Pgen[gen_idx] == 0:
-                prop = 0
-
-            solver.Add(delta[gen_idx] == prop * power_shift,
-                       'delta_{0}_assignment'.format(name))
-
-            solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx],
-                       '{0}_assignment'.format(name))
-
-        else:
-            generation[gen_idx] = Pgen[gen_idx]
-            delta[gen_idx] = 0
-
-        dgen1.append(delta[gen_idx])
-        Pgen1.append(Pgen[gen_idx])
-        gen_a1_idx.append(gen_idx)
-
-    for bus_idx, gen_idx in gens2:
-
-        if validate_generator_to_decrease(gen_idx, generator_active, generator_dispatchable, Pgen, Pmax, Pmin):
-
-            # add logger message if generator is out of limits
-            validate_generator_limits(gen_idx, Pgen, Pmax, Pmin, logger)
-
-            name = 'gen_down_{0}_bus:{1}'.format(generator_names[gen_idx], bus_idx)
-
-            generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-            delta[gen_idx] = solver.NumVar(-inf, inf, 'delta_' + name)
-
-            if Pgen[gen_idx] > 0:
-                prop = dPP2 * Pgen[gen_idx] / gU2
-
-            if Pgen[gen_idx] < 0:
-                prop = -dPN2 * Pgen[gen_idx] / gD2  # Pgen[gen_idx] is already negative
-
-            if Pgen[gen_idx] == 0:
-                prop = 0
-
-            solver.Add(delta[gen_idx] == prop * power_shift,
-                       'delta_{0}assignment'.format(generator_names[gen_idx]))
-
-            solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx],
-                       '{0}_assignment'.format(name))
-
-        else:
-            generation[gen_idx] = Pgen[gen_idx]
-            delta[gen_idx] = 0
-
-        dgen2.append(delta[gen_idx])
-        Pgen2.append(Pgen[gen_idx])
-        gen_a2_idx.append(gen_idx)
-
-    # set the generation in the non inter-area ones
-    for bus_idx, gen_idx in gens_out:
-        if generator_active[gen_idx]:
-            generation[gen_idx] = Pgen[gen_idx]
-
-    return generation, delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, gen_cost
-
-
-def formulate_proportional_generation_simplified(solver: pywraplp.Solver, generator_active, generator_dispatchable,
-                                      generator_cost, generator_names, inf, ngen, Cgen, Pgen, Pmax,
-                                      Pmin, a1, a2, logger: Logger):
-    """
-    Formulate the generation increments in a proportional fashion. This method ignore negative generators!!
-    This is a simplified method because doesn't consider negative generation
-    :param solver: Solver instance to which add the equations
-    :param generator_active: Array of generation active values (True / False)
-    :param generator_dispatchable: Array of Generator dispatchable variables (True / False)
-    :param generator_cost: Array of generator costs
-    :param generator_names: Array of Generator names
-    :param inf: Value representing the infinite value (i.e. 1e20)
-    :param ngen: Number of generators
-    :param Cgen: CSC connectivity matrix of generators and buses [ngen, nbus]
-    :param Pgen: Array of generator active power values in p.u.
-    :param Pmax: Array of generator maximum active power values in p.u.
-    :param Pmin: Array of generator minimum active power values in p.u.
-    :param a1: array of bus indices of the area 1
-    :param a2: array of bus indices of the area 2
-    :param logger: Logger instance
-        :return: Many arrays of variables:
-        - generation: Array of generation LP variables
-        - delta: Array of generation delta LP variables
-        - gen_a1_idx: Indices of the generators in the area 1
-        - gen_a2_idx: Indices of the generators in the area 2
-        - power_shift: Power shift LP variable
-        - dgen1: List of generation delta LP variables in the area 1
-        - gen_cost: Array of generation costs
-        - delta_slack_1: Array of generation delta LP Slack variables up
-        - delta_slack_2: Array of generation delta LP Slack variables down
-    """
-    gens1, gens2, gens_out = get_generators_per_areas(Cgen, a1, a2)
-    gen_cost = np.ones(ngen)
-    generation = np.zeros(ngen, dtype=object)
-    delta = np.zeros(ngen, dtype=object)
-
-    dgen1 = list()
-    dgen2 = list()
-
-    Pgen1 = list()
-    Pgen2 = list()
-
-    gen_a1_idx = list()
-    gen_a2_idx = list()
-
-    power_shift = solver.NumVar(-inf, inf, 'power_shift')
-
-    sum_gen_1 = 0
-    for bus_idx, gen_idx in gens1:
-        if validate_generator_to_increase(gen_idx, generator_active, generator_dispatchable, Pgen, Pmax, Pmin) and \
-                Pgen[gen_idx] > 0:
-            sum_gen_1 += Pgen[gen_idx]
-
-    sum_gen_2 = 0
-    for bus_idx, gen_idx in gens2:
-        if validate_generator_to_decrease(gen_idx, generator_active, generator_dispatchable, Pgen, Pmax, Pmin) and \
-                Pgen[gen_idx] > 0:
-            sum_gen_2 += Pgen[gen_idx]
-
-
-    for bus_idx, gen_idx in gens1:
-
-        if validate_generator_to_increase(gen_idx, generator_active, generator_dispatchable, Pgen, Pmax, Pmin)  and \
-                Pgen[gen_idx] > 0:
-
-            # add logger message if generator is out of limits
-            validate_generator_limits(gen_idx, Pgen, Pmax, Pmin, logger)
-
-            name = 'gen_up_{0}_bus:{1}'.format(generator_names[gen_idx], bus_idx)
-
-            generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-            delta[gen_idx] = solver.NumVar(-inf, inf, 'delta_' + name)
-
-            prop = Pgen[gen_idx] / sum_gen_1
-
-            solver.Add(delta[gen_idx] == prop * power_shift,
-                       'delta_{0}_assignment'.format(name))
-
-            solver.Add(generation[gen_idx] == Pgen[gen_idx] + delta[gen_idx],
-                       '{0}_assignment'.format(name))
-
-        else:
-            generation[gen_idx] = Pgen[gen_idx]
-            delta[gen_idx] = 0
-
-        dgen1.append(delta[gen_idx])
-        Pgen1.append(Pgen[gen_idx])
-        gen_a1_idx.append(gen_idx)
-
-    for bus_idx, gen_idx in gens2:
-
-        if validate_generator_to_decrease(gen_idx, generator_active, generator_dispatchable, Pgen, Pmax, Pmin) and \
-                Pgen[gen_idx] > 0:
-
-            # add logger message if generator is out of limits
-            validate_generator_limits(gen_idx, Pgen, Pmax, Pmin, logger)
-
-            name = 'gen_down_{0}_bus:{1}'.format(generator_names[gen_idx], bus_idx)
-
-            generation[gen_idx] = solver.NumVar(Pmin[gen_idx], Pmax[gen_idx], name)
-            delta[gen_idx] = solver.NumVar(-inf, inf, 'delta_' + name)
-
-            prop = Pgen[gen_idx] / sum_gen_2
-
-            solver.Add(delta[gen_idx] == prop * power_shift,
-                       'delta_{0}_assignment'.format(name))
-
-            solver.Add(generation[gen_idx] == Pgen[gen_idx] - delta[gen_idx],
-                       '{0}_assignment'.format(name))
-
-        else:
-            generation[gen_idx] = Pgen[gen_idx]
-            delta[gen_idx] = 0
-
-        dgen2.append(delta[gen_idx])
-        Pgen2.append(Pgen[gen_idx])
-        gen_a2_idx.append(gen_idx)
-
-    # set the generation in the non inter-area ones
-    for bus_idx, gen_idx in gens_out:
-        if generator_active[gen_idx]:
-            generation[gen_idx] = Pgen[gen_idx]
-
-    return generation, delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, gen_cost
 
 
 def check_proportional_generation(generator_active, generator_dispatchable, generator_cost, generator_names,
@@ -1125,14 +849,15 @@ def check_node_balance(Bbus, angles, Pinj, bus_active, bus_names, logger: Logger
     return calculated_power
 
 
-def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
+def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
                             branch_active, branch_names, branch_dc, R, X, F, T, inf, monitor_loading,
                             branch_sensitivity_threshold, monitor_only_sensitive_branches, angles, tau,
-                            alpha_abs, Pinj, logger):
+                            alpha_abs,logger):
     """
 
     :param solver: Solver instance to which add the equations
     :param nbr: number of branches
+    :param nbus: number of branches
     :param Rates: array of branch rates
     :param branch_active: array of branch active states
     :param branch_names: array of branch names
@@ -1148,7 +873,6 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
     :param angles: array of bus voltage angles (LP variables)
     :param tau: Array branch phase shift angles (mix of values and LP variables)
     :param alpha_abs: Array of absolute branch sensitivity to the exchange
-    :param Pinj: Array of power injections (Mix of values and LP variables)
     :param logger: logger instance
     :return:
         - flow_f: Array of formulated branch flows (LP variblaes)
@@ -1159,6 +883,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
 
     flow_f = np.zeros(nbr, dtype=object)
     monitor = np.zeros(nbr, dtype=bool)
+    Pinj_tau = np.zeros(nbus, dtype=object)
     rates = Rates / Sbase
 
     # formulate flows
@@ -1200,13 +925,12 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, Rates, Sbase,
                 'branch_power_flow_assignment_{0}:{1}'.format(branch_names[m], m))
 
             # add the shifter injections matching the flow
-            # todo: check if sbase
-            Ptau = bk * tau[m] / Sbase
+            Ptau = bk * tau[m]
 
-            Pinj[_f] -= Ptau
-            Pinj[_t] += Ptau
+            Pinj_tau[_f] = -Ptau
+            Pinj_tau[_t] = Ptau
 
-    return flow_f, monitor
+    return flow_f, monitor, Pinj_tau
 
 
 def check_branches_flow(nbr, Rates, Sbase, branch_active, branch_names, branch_dc, control_mode, R, X, F, T,
@@ -1938,7 +1662,7 @@ class OpfNTC(Opf):
 
         elif self.generation_formulation == GenerationNtcFormulation.Proportional:
 
-            generation, generation_delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, \
+            generation, generation_delta, gen_a1_idx, gen_a2_idx, power_shift, \
             gen_cost = formulate_proportional_generation(
                 solver=self.solver,
                 generator_active=self.numerical_circuit.generator_data.generator_active[:, t],
@@ -1993,9 +1717,10 @@ class OpfNTC(Opf):
             logger=self.logger)
 
         # formulate the flows
-        flow_f, monitor = formulate_branches_flow(
+        flow_f, monitor, Pinj_tau = formulate_branches_flow(
             solver=self.solver,
             nbr=self.numerical_circuit.nbr,
+            nbus=self.numerical_circuit.nbus,
             Rates=self.numerical_circuit.Rates,
             Sbase=self.numerical_circuit.Sbase,
             branch_active=self.numerical_circuit.branch_active,
@@ -2007,7 +1732,6 @@ class OpfNTC(Opf):
             T=self.numerical_circuit.T,
             angles=theta,
             tau=tau,
-            Pinj=Pinj,
             inf=self.inf,
             monitor_loading=self.numerical_circuit.branch_data.monitor_loading,
             branch_sensitivity_threshold=self.branch_sensitivity_threshold,
@@ -2041,7 +1765,7 @@ class OpfNTC(Opf):
             solver=self.solver,
             Bbus=self.numerical_circuit.Bbus,
             angles=theta,
-            Pinj=Pinj,
+            Pinj=Pinj + Pinj_tau,
             bus_active=self.numerical_circuit.bus_data.bus_active[:, t],
             bus_names=self.numerical_circuit.bus_data.bus_names,
             logger=self.logger)
@@ -2252,7 +1976,7 @@ class OpfNTC(Opf):
         elif self.generation_formulation == GenerationNtcFormulation.Proportional:
 
             generation, generation_delta, gen_a1_idx, gen_a2_idx, power_shift, \
-            dgen1, gen_cost = formulate_proportional_generation(
+            gen_cost = formulate_proportional_generation(
                 solver=self.solver,
                 generator_active=self.numerical_circuit.generator_data.generator_active[:, t],
                 generator_dispatchable=self.numerical_circuit.generator_data.generator_dispatchable,
@@ -2306,9 +2030,10 @@ class OpfNTC(Opf):
             logger=self.logger)
 
         # formulate the flows
-        flow_f, monitor = formulate_branches_flow(
+        flow_f, monitor, Pinj_tau = formulate_branches_flow(
             solver=self.solver,
             nbr=self.numerical_circuit.nbr,
+            nbus=self.numerical_circuit.nbus,
             Rates=self.numerical_circuit.Rates[:, t],
             Sbase=self.numerical_circuit.Sbase,
             branch_active=self.numerical_circuit.branch_active[:, t],
@@ -2320,7 +2045,6 @@ class OpfNTC(Opf):
             T=self.numerical_circuit.T,
             angles=theta,
             tau=tau,
-            Pinj=Pinj,
             inf=self.inf,
             monitor_loading=self.numerical_circuit.branch_data.monitor_loading,
             branch_sensitivity_threshold=self.branch_sensitivity_threshold,
@@ -2356,7 +2080,7 @@ class OpfNTC(Opf):
             solver=self.solver,
             Bbus=self.numerical_circuit.Bbus,
             angles=theta,
-            Pinj=Pinj,
+            Pinj=Pinj + Pinj_tau,
             bus_active=self.numerical_circuit.bus_data.bus_active[:, t],
             bus_names=self.numerical_circuit.bus_data.bus_names,
             logger=self.logger)
