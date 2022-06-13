@@ -51,26 +51,29 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
         self.pf_options = options.power_flow_options
 
         # compile the circuit into a numerical equivalent for this simulation
-        self.numerical_circuit = compile_opf_time_circuit(circuit=self.grid,
-                                                          apply_temperature=self.pf_options.apply_temperature_correction,
-                                                          branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
+        self.numerical_circuit = compile_opf_time_circuit(
+            circuit=self.grid,
+            apply_temperature=self.pf_options.apply_temperature_correction,
+            branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode)
 
         # OPF results
-        self.results = OptimalPowerFlowTimeSeriesResults(bus_names=self.numerical_circuit.bus_names,
-                                                         branch_names=self.numerical_circuit.branch_names,
-                                                         load_names=self.numerical_circuit.load_names,
-                                                         generator_names=self.numerical_circuit.generator_names,
-                                                         battery_names=self.numerical_circuit.battery_names,
-                                                         hvdc_names=self.numerical_circuit.hvdc_names,
-                                                         n=self.numerical_circuit.nbus,
-                                                         m=self.numerical_circuit.nbr,
-                                                         nt=self.numerical_circuit.ntime,
-                                                         ngen=self.numerical_circuit.ngen,
-                                                         nbat=self.numerical_circuit.nbatt,
-                                                         nload=self.numerical_circuit.nload,
-                                                         nhvdc=self.numerical_circuit.nhvdc,
-                                                         time=self.grid.time_profile,
-                                                         bus_types=self.numerical_circuit.bus_types)
+        self.results = OptimalPowerFlowTimeSeriesResults(
+            bus_names=self.numerical_circuit.bus_names,
+            branch_names=self.numerical_circuit.branch_names,
+            load_names=self.numerical_circuit.load_names,
+            generator_names=self.numerical_circuit.generator_names,
+            battery_names=self.numerical_circuit.battery_names,
+            hvdc_names=self.numerical_circuit.hvdc_names,
+            n=self.numerical_circuit.nbus,
+            m=self.numerical_circuit.nbr,
+            nt=self.numerical_circuit.ntime,
+            ngen=self.numerical_circuit.ngen,
+            nbat=self.numerical_circuit.nbatt,
+            nload=self.numerical_circuit.nload,
+            nhvdc=self.numerical_circuit.nhvdc,
+            time=self.grid.time_profile,
+            bus_types=self.numerical_circuit.bus_types)
+
         self.results.rates = self.numerical_circuit.branch_data.branch_rates
         self.results.contingency_rates = self.numerical_circuit.branch_data.branch_contingency_rates
 
@@ -81,21 +84,23 @@ class OptimalPowerFlowTimeSeries(TimeSeriesDriverTemplate):
         Clears the results
         """
         # reinitialize
-        self.results = OptimalPowerFlowTimeSeriesResults(bus_names=self.numerical_circuit.bus_names,
-                                                         branch_names=self.numerical_circuit.branch_names,
-                                                         load_names=self.numerical_circuit.load_names,
-                                                         generator_names=self.numerical_circuit.generator_names,
-                                                         battery_names=self.numerical_circuit.battery_names,
-                                                         hvdc_names=self.numerical_circuit.hvdc_names,
-                                                         n=self.numerical_circuit.nbus,
-                                                         m=self.numerical_circuit.nbr,
-                                                         nt=self.numerical_circuit.ntime,
-                                                         ngen=self.numerical_circuit.ngen,
-                                                         nbat=self.numerical_circuit.nbatt,
-                                                         nload=self.numerical_circuit.nload,
-                                                         nhvdc=self.numerical_circuit.nhvdc,
-                                                         time=self.grid.time_profile,
-                                                         bus_types=self.numerical_circuit.bus_types)
+        self.results = OptimalPowerFlowTimeSeriesResults(
+            bus_names=self.numerical_circuit.bus_names,
+            branch_names=self.numerical_circuit.branch_names,
+            load_names=self.numerical_circuit.load_names,
+            generator_names=self.numerical_circuit.generator_names,
+            battery_names=self.numerical_circuit.battery_names,
+            hvdc_names=self.numerical_circuit.hvdc_names,
+            n=self.numerical_circuit.nbus,
+            m=self.numerical_circuit.nbr,
+            nt=self.numerical_circuit.ntime,
+            ngen=self.numerical_circuit.ngen,
+            nbat=self.numerical_circuit.nbatt,
+            nload=self.numerical_circuit.nload,
+            nhvdc=self.numerical_circuit.nhvdc,
+            time=self.grid.time_profile,
+            bus_types=self.numerical_circuit.bus_types)
+
         self.results.rates = self.numerical_circuit.branch_data.branch_rates
         self.results.contingency_rates = self.numerical_circuit.branch_data.branch_contingency_rates
 

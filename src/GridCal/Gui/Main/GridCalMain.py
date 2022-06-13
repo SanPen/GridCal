@@ -3975,35 +3975,40 @@ class MainGUI(QMainWindow):
                                         "Run a linear simulation first", "OPF time series")
                             return
 
-                    options = sim.OptimalPowerFlowOptions(solver=solver,
-                                                          time_grouping=time_grouping,
-                                                          zonal_grouping=zonal_grouping,
-                                                          mip_solver=mip_solver,
-                                                          power_flow_options=pf_options,
-                                                          consider_contingencies=consider_contingencies,
-                                                          skip_generation_limits=skip_generation_limits,
-                                                          tolerance=tolerance,
-                                                          LODF=LODF,
-                                                          lodf_tolerance=lodf_tolerance,
-                                                          maximize_flows=maximize_flows,
-                                                          area_from_bus_idx=idx_from,
-                                                          area_to_bus_idx=idx_to
-                                                          )
+                    options = sim.OptimalPowerFlowOptions(
+                        solver=solver,
+                        time_grouping=time_grouping,
+                        zonal_grouping=zonal_grouping,
+                        mip_solver=mip_solver,
+                        power_flow_options=pf_options,
+                        consider_contingencies=consider_contingencies,
+                        skip_generation_limits=skip_generation_limits,
+                        tolerance=tolerance,
+                        LODF=LODF,
+                        lodf_tolerance=lodf_tolerance,
+                        maximize_flows=maximize_flows,
+                        area_from_bus_idx=idx_from,
+                        area_to_bus_idx=idx_to)
 
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1
 
+                    trm = self.ui.trm_spinBox.value()
+
                     # create the OPF time series instance
                     # if non_sequential:
-                    drv = sim.OptimalPowerFlowTimeSeries(grid=self.circuit,
-                                                         options=options,
-                                                         start_=start,
-                                                         end_=end)
+                    drv = sim.OptimalPowerFlowTimeSeries(
+                        grid=self.circuit,
+                        options=options,
+                        start_=start,
+                        end_=end,
+                        trm=trm)
 
-                    self.session.run(drv,
-                                     post_func=self.post_opf_time_series,
-                                     prog_func=self.ui.progressBar.setValue,
-                                     text_func=self.ui.progress_label.setText)
+                    self.session.run(
+                        drv,
+                        post_func=self.post_opf_time_series,
+                        prog_func=self.ui.progressBar.setValue,
+                        text_func=self.ui.progress_label.setText)
 
                 else:
                     warning_msg('There are no time series.\nLoad time series are needed for this simulation.')
@@ -4362,6 +4367,8 @@ class MainGUI(QMainWindow):
                 end_ = self.ui.profile_end_slider.value()
                 cluster_number = self.ui.cluster_number_spinBox.value()
 
+                trm = self.ui.trm_spinBox.value()
+
                 # set optimal net transfer capacity driver instance
                 drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(
                     grid=self.circuit,
@@ -4369,7 +4376,8 @@ class MainGUI(QMainWindow):
                     start_=start_,
                     end_=end_,
                     use_clustering=with_clustering,
-                    cluster_number=cluster_number)
+                    cluster_number=cluster_number,
+                    trm=trm)
 
                 self.LOCK()
                 self.session.run(drv,

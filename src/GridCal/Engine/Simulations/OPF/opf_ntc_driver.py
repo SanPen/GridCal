@@ -136,6 +136,7 @@ class OptimalNetTransferCapacityOptions:
 
         self.match_gen_load = match_gen_load
 
+
 class OptimalNetTransferCapacityResults(ResultsTemplate):
     """
     OPF results.

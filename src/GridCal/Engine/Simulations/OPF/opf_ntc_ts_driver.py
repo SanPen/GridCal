@@ -41,9 +41,8 @@ except ModuleNotFoundError:
 
 class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
-    def __init__(self, bus_names, br_names,
-                 rates, contingency_rates, time_array, time_indices,
-                 sampled_probabilities=None, max_report_elements=5):
+    def __init__(self, bus_names, br_names, rates, contingency_rates, time_array, time_indices,
+                 sampled_probabilities=None, max_report_elements=5, trm=0):
         """
 
         :param br_names:
@@ -78,6 +77,8 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.max_report_elements = max_report_elements
 
         self.sampled_probabilities = sampled_probabilities
+
+        self.trm = trm
 
         self.results_dict = dict()
         self.optimal_idx = []
@@ -180,17 +181,22 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
         shifter_names, shift_idx = self.get_used_shifters()
         hvdc_names = list(list(self.results_dict.values())[0].hvdc_names)
-        columns_all = ['Time index', 'Time', 'NTC (MW)'] + columns + shifter_names + hvdc_names
+        columns_all = ['Time index', 'Time', 'TTC (MW)', 'TRM (MW)', 'NTC (MW)'] + columns + shifter_names + hvdc_names
         data_all = np.empty(shape=(0, len(columns_all)))
+        trm = self.trm
+        ttc = 0
+        ntc = 0
 
         for idx, t in enumerate(self.time_indices):
 
+
             if t in self.results_dict.keys():
 
-                # get ntc value
-                ntc = np.floor(self.results_dict[t].get_exchange_power())
+                # get ttc and ntc values
+                ttc = np.floor(self.results_dict[t].get_exchange_power())
 
-                if ntc != 0:
+                if ttc != 0:
+                    ntc = ttc - self.trm
 
                     l, c, data = self.results_dict[t].get_contingency_report(
                         max_report_elements=self.max_report_elements)
@@ -203,11 +209,11 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                     data = np.concatenate((data, shifter_data, hvdc_data), axis=1)
 
                 else:
-
+                    ntc = 0
                     data = np.zeros(shape=(1, len(columns) + len(shifter_names) + len(hvdc_names)))
 
             # complete the data with time and ntc columns
-            extra_data = np.array([[t, self.time_array[idx], ntc]] * data.shape[0])
+            extra_data = np.array([[t, self.time_array[idx], ttc, trm, ntc]] * data.shape[0])
             data = np.concatenate((extra_data, data), axis=1)
 
             # add to main data set
@@ -453,7 +459,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
     tpe = SimulationTypes.OptimalNetTransferCapacityTimeSeries_run
 
     def __init__(self, grid: MultiCircuit, options: OptimalNetTransferCapacityOptions, start_=0, end_=None,
-                 use_clustering=False, cluster_number=100):
+                 use_clustering=False, cluster_number=100, trm=0):
         """
 
         :param grid: MultiCircuit Object
@@ -475,13 +481,16 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.use_clustering = use_clustering
         self.cluster_number = cluster_number
 
+        self.trm = trm
+
         self.results = OptimalNetTransferCapacityTimeSeriesResults(
             br_names=[],
             bus_names=[],
             rates=[],
             contingency_rates=[],
             time_array=[],
-            time_indices=[])
+            time_indices=[],
+            trm=self.trm)
 
     name = tpe.value
 
@@ -543,7 +552,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 contingency_rates=nc.ContingencyRates,
                 time_array=nc.time_array[time_indices],
                 sampled_probabilities=sampled_probabilities,
-                time_indices=time_indices)
+                time_indices=time_indices,
+                trm=self.trm)
 
         else:
             self.results = OptimalNetTransferCapacityTimeSeriesResults(
@@ -552,7 +562,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 rates=nc.Rates,
                 contingency_rates=nc.ContingencyRates,
                 time_array=nc.time_array[time_indices],
-                time_indices=time_indices)
+                time_indices=time_indices,
+                trm=self.trm)
 
         for t_idx, t in enumerate(time_indices):
 

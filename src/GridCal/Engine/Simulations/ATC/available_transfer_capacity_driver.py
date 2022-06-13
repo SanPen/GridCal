@@ -475,7 +475,7 @@ class AvailableTransferCapacityOptions:
                  bus_idx_from=list(), bus_idx_to=list(), idx_br=list(), sense_br=list(), Pf=None,
                  idx_hvdc_br=list(), sense_hvdc_br=list(), Pf_hvdc=None,
                  dT=100.0, threshold=0.02, mode: AvailableTransferMode = AvailableTransferMode.Generation,
-                 max_report_elements=-1, use_clustering=False, cluster_number=100):
+                 max_report_elements=-1, use_clustering=False, cluster_number=200):
         """
 
         :param distributed_slack:
