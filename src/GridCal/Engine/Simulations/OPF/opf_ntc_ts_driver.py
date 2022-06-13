@@ -253,7 +253,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
         shifter_names, shift_idx = self.get_used_shifters()
         hvdc_names = list(list(self.results_dict.values())[0].hvdc_names)
-        columns_all = ['Time index', 'Time', 'NTC (MW)'] + columns + shifter_names + hvdc_names
+        columns_all = ['Time index', 'Time', 'TTC (MW)'] + columns + shifter_names + hvdc_names
         data_all = np.empty(shape=(0, len(columns_all)))
 
         for idx, t in enumerate(self.time_indices):
@@ -261,7 +261,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             if t in self.results_dict.keys():
 
                 # get ntc value
-                ntc = np.floor(self.results_dict[t].get_exchange_power())
+                ttc = np.floor(self.results_dict[t].get_exchange_power())
 
                 l, c, data = self.results_dict[t].get_contingency_branch_report(
                     max_report_elements=self.max_report_elements)
@@ -279,7 +279,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 data = np.zeros(shape=(1, len(columns) + len(shifter_names) + len(hvdc_names)))
 
             # complete the data with time and ntc columns
-            extra_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S"), ntc]] * data.shape[0])
+            extra_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S"), ttc]] * data.shape[0])
             data = np.concatenate((extra_data, data), axis=1)
 
             # add to main data set

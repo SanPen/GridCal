@@ -38,7 +38,9 @@ class ResultTypes(Enum):
     BranchReactiveCurrentTo = 'Branch reactive current "to"', DeviceType.BranchDevice
 
     BranchTapModule = 'Branch tap module', DeviceType.BranchDevice
-    BranchTapAngle = 'Branch tap angle', DeviceType.BranchDevice
+    BranchTapAngle = 'Branch tap angle (deg)', DeviceType.BranchDevice
+    BranchTapAngleRad = 'Branch tap angle (rad)', DeviceType.BranchDevice
+
     BranchBeq = 'Branch Beq', DeviceType.BranchDevice
 
     BranchLoading = 'Branch loading', DeviceType.BranchDevice

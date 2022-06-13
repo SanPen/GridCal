@@ -23,11 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="new version 4.4.7a17 (fixed bug overload QPoint)">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="new scale in progress">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,7 +112,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../gitlab/reeview" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="org.jetbrains.plugins.github.ui.GithubSettingsConfigurable" />
   </component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
@@ -245,16 +244,16 @@
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.opf_ntc_ts_driver" />
       <item itemvalue="Python.setup" />
-      <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.update" />
+      <item itemvalue="Python.update_gui_file" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_file" />
+        <item itemvalue="Python.update" />
         <item itemvalue="Python.setup" />
         <item itemvalue="Python.opf_ntc_ts_driver" />
-        <item itemvalue="Python.update" />
       </list>
     </recent_temporary>
   </component>
@@ -690,20 +689,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00289" summary="recovered load shedding">
-      <created>1644254452934</created>
-      <option name="number" value="00289" />
-      <option name="presentableId" value="LOCAL-00289" />
-      <option name="project" value="LOCAL" />
-      <updated>1644254452934</updated>
-    </task>
-    <task id="LOCAL-00290" summary="Working NTC. No more load_shedding">
-      <created>1644320616564</created>
-      <option name="number" value="00290" />
-      <option name="presentableId" value="LOCAL-00290" />
-      <option name="project" value="LOCAL" />
-      <updated>1644320616564</updated>
-    </task>
     <task id="LOCAL-00291" summary="Added HiGs solver">
       <created>1644320636489</created>
       <option name="number" value="00291" />
@@ -1033,7 +1018,21 @@
       <option name="project" value="LOCAL" />
       <updated>1654077465387</updated>
     </task>
-    <option name="localTasksCounter" value="338" />
+    <task id="LOCAL-00338" summary="New version 4.4.7a18">
+      <created>1654758676936</created>
+      <option name="number" value="00338" />
+      <option name="presentableId" value="LOCAL-00338" />
+      <option name="project" value="LOCAL" />
+      <updated>1654758676936</updated>
+    </task>
+    <task id="LOCAL-00339" summary="new scale in progress">
+      <created>1654860427666</created>
+      <option name="number" value="00339" />
+      <option name="presentableId" value="LOCAL-00339" />
+      <option name="project" value="LOCAL" />
+      <updated>1654860427666</updated>
+    </task>
+    <option name="localTasksCounter" value="340" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1068,8 +1067,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix timestamp in ntc report" />
-    <MESSAGE value="Removed unnecessary prints" />
     <MESSAGE value="Nothing" />
     <MESSAGE value="Version 4.4.7a5" />
     <MESSAGE value="New formulation including pumps for porportional generation" />
@@ -1093,7 +1090,9 @@
     <MESSAGE value="save .lp file only if no solution" />
     <MESSAGE value="avoid overload Qpoint bug drawing buses" />
     <MESSAGE value="new version 4.4.7a17 (fixed bug overload QPoint)" />
-    <option name="LAST_COMMIT_MESSAGE" value="new version 4.4.7a17 (fixed bug overload QPoint)" />
+    <MESSAGE value="New version 4.4.7a18" />
+    <MESSAGE value="new scale in progress" />
+    <option name="LAST_COMMIT_MESSAGE" value="new scale in progress" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1355,9 +1354,9 @@
           <option name="timeStamp" value="757" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py</url>
-          <line>1351</line>
-          <option name="timeStamp" value="762" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/profile_dialogue.py</url>
+          <line>269</line>
+          <option name="timeStamp" value="758" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
