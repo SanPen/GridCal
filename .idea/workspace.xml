@@ -23,10 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Added TTC, TRM and NTC into report">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="nes solution to overflow error">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,7 +53,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="solving_shifters_effect" />
+        <entry key="$PROJECT_DIR$" value="devel_REE" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -689,13 +688,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00292" summary="fix comments">
-      <created>1644324025289</created>
-      <option name="number" value="00292" />
-      <option name="presentableId" value="LOCAL-00292" />
-      <option name="project" value="LOCAL" />
-      <updated>1644324025289</updated>
-    </task>
     <task id="LOCAL-00293" summary="Added hvdc and generator contingencies">
       <created>1644343299998</created>
       <option name="number" value="00293" />
@@ -1032,7 +1024,14 @@
       <option name="project" value="LOCAL" />
       <updated>1655126654870</updated>
     </task>
-    <option name="localTasksCounter" value="341" />
+    <task id="LOCAL-00341" summary="nes solution to overflow error">
+      <created>1655212267871</created>
+      <option name="number" value="00341" />
+      <option name="presentableId" value="LOCAL-00341" />
+      <option name="project" value="LOCAL" />
+      <updated>1655212267871</updated>
+    </task>
+    <option name="localTasksCounter" value="342" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1067,7 +1066,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Version 4.4.7a5" />
     <MESSAGE value="New formulation including pumps for porportional generation" />
     <MESSAGE value="New version 4.4.7a6" />
     <MESSAGE value="Fixed LODF numerical zero" />
@@ -1092,7 +1090,8 @@
     <MESSAGE value="New version 4.4.7a18" />
     <MESSAGE value="new scale in progress" />
     <MESSAGE value="Added TTC, TRM and NTC into report" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added TTC, TRM and NTC into report" />
+    <MESSAGE value="nes solution to overflow error" />
+    <option name="LAST_COMMIT_MESSAGE" value="nes solution to overflow error" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

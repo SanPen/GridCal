@@ -1168,6 +1168,8 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, hvd
 
     flow_f = np.zeros(nhvdc, dtype=object)
     flow_sensed = np.zeros(nhvdc, dtype=object)
+    hvdc_angle_slack_pos = np.zeros(nhvdc, dtype=object)
+    hvdc_angle_slack_neg = np.zeros(nhvdc, dtype=object)
 
     for i in range(nhvdc):
 
@@ -1191,8 +1193,11 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, hvd
                 # to pass from MW/deg to p.u./rad -> * 180 / pi / (sbase=100)
                 angle_droop_rad = angle_droop[i] * 57.295779513 / Sbase
 
+                hvdc_angle_slack_pos[i] = solver.NumVar(0, inf, 'hvdc_angle_slack_pos_' + suffix)
+                hvdc_angle_slack_neg[i] = solver.NumVar(0, inf, 'hvdc_angle_slack_neg_' + suffix)
+
                 solver.Add(
-                    flow_f[i] == P0 + angle_droop_rad * (angles[_f] - angles[_t]),
+                    flow_f[i] == P0 + angle_droop_rad * (angles[_f] - angles[_t] + hvdc_angle_slack_pos[i] - hvdc_angle_slack_neg[i]),
                     'hvdc_flow_assignment_' + suffix)
 
             elif control_mode[i] == HvdcControlType.type_1_Pset and not dispatchable[i]:
@@ -1224,7 +1229,7 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, hvd
                     flow_sensed[i] == flow_f[i] * sense,
                     'hvdc_sense_restriction_assignment_' + suffix)
 
-    return flow_f
+    return flow_f, hvdc_angle_slack_pos, hvdc_angle_slack_neg
 
 
 def check_hvdc_flow(nhvdc, names, rate, angles, hvdc_active, Pt, angle_droop, control_mode, dispatchable,
@@ -1410,6 +1415,7 @@ def formulate_generator_contingency(solver: pywraplp.Solver, ContingencyRates, S
 def formulate_objective(solver: pywraplp.Solver,
                         power_shift, gen_cost, generation_delta,
                         weight_power_shift, weight_generation_cost,
+                        hvdc_angle_slack_pos, hvdc_angle_slack_neg,
                         logger: Logger):
     """
 
@@ -1430,6 +1436,9 @@ def formulate_objective(solver: pywraplp.Solver,
     # formulate objective function
     f = -weight_power_shift * power_shift
     f += weight_generation_cost * gen_cost_f
+    f += solver.Sum(hvdc_angle_slack_pos)
+    f += solver.Sum(hvdc_angle_slack_neg)
+
 
     solver.Minimize(f)
 
@@ -1740,7 +1749,7 @@ class OpfNTC(Opf):
             logger=self.logger)
 
         # formulate the HVDC flows
-        hvdc_flow_f = formulate_hvdc_flow(
+        hvdc_flow_f, hvdc_angle_slack_pos, hvdc_angle_slack_neg = formulate_hvdc_flow(
             solver=self.solver,
             nhvdc=self.numerical_circuit.nhvdc,
             names=self.numerical_circuit.hvdc_names,
@@ -1840,6 +1849,8 @@ class OpfNTC(Opf):
             generation_delta=generation_delta[gen_a1_idx],
             weight_power_shift=self.weight_power_shift,
             weight_generation_cost=self.weight_generation_cost,
+            hvdc_angle_slack_pos=hvdc_angle_slack_pos,
+            hvdc_angle_slack_neg=hvdc_angle_slack_neg,
             logger=self.logger)
 
         # Assign variables to keep
