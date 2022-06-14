@@ -1310,8 +1310,8 @@ class GridEditor(QSplitter):
             x = int(bus.x * explode_factor)
             y = int(bus.y * explode_factor)
 
-            scale_y = abs(overflow_value / abs(y))
-            scale_x = abs(overflow_value / abs(x))
+            scale_y = abs(y) / overflow_value
+            scale_x = abs(x) / overflow_value
 
             scale = max(scale, scale_x, scale_y)
 
