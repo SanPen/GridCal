@@ -171,8 +171,11 @@ class EditorGraphicsView(QGraphicsView):
         # avoid overload bug
         if abs(x) >= 2 ** 30 or abs(y) >= 2 ** 30:
             # todo: check to use scale_factor from gui
-            x = int(x / 1.2)
-            y = int(y / 1.2)
+            scale_y = abs(abs(y) - 2 ** 30)
+            scale_x = abs(abs(x) - 2 ** 30)
+            scale = max(scale_x, scale_y) / 2 ** 30
+            x = int(x / scale)
+            y = int(y / scale)
 
         elm.setPos(self.mapToScene(QPoint(x, y)))
         self.scene_.addItem(elm)
