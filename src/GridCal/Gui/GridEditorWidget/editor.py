@@ -168,15 +168,6 @@ class EditorGraphicsView(QGraphicsView):
         x = int(bus.x * explode_factor)
         y = int(bus.y * explode_factor)
 
-        # avoid overload bug
-        if abs(x) >= 2 ** 30 or abs(y) >= 2 ** 30:
-            # todo: check to use scale_factor from gui
-            scale_y = abs(abs(y) - 2 ** 30)
-            scale_x = abs(abs(x) - 2 ** 30)
-            scale = max(scale_x, scale_y) / 2 ** 30
-            x = int(x / scale)
-            y = int(y / scale)
-
         elm.setPos(self.mapToScene(QPoint(x, y)))
         self.scene_.addItem(elm)
         return elm
@@ -1304,6 +1295,31 @@ class GridEditor(QSplitter):
 
             branch.graphic_obj = self.add_api_upfc(branch)
 
+    def get_unoverflowed_explode_factor(self, circuit: "MultiCircuit", explode_factor=1.0):
+        """
+        Function to get a secured explode factor that prevents overflow Qt integer variable
+        :param circuit:
+        :param explode_factor:
+        :return:
+        """
+
+        scale = 1
+        overflow_value = 2 ** 31
+
+        for bus in circuit.buses:
+            x = int(bus.x * explode_factor)
+            y = int(bus.y * explode_factor)
+
+            scale_y = abs(overflow_value / abs(y))
+            scale_x = abs(overflow_value / abs(x))
+
+            scale = max(scale, scale_x, scale_y)
+
+        if scale > explode_factor:
+            explode_factor = explode_factor/scale
+
+        return explode_factor
+
     def add_circuit_to_schematic(self, circuit: "MultiCircuit", explode_factor=1.0, prog_func=None, text_func=None):
         """
         Add a complete circuit to the schematic scene
@@ -1315,6 +1331,10 @@ class GridEditor(QSplitter):
 
         # reset zoom level, otherwise the newly loaded grids appear with a much wider spacing
         self.diagramView.resetTransform()
+
+        explode_factor = self.get_unoverflowed_explode_factor(
+            circuit=circuit,
+            explode_factor=explode_factor)
 
         self.add_elements_to_schematic(buses=circuit.buses,
                                        lines=circuit.lines,

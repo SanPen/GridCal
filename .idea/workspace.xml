@@ -23,9 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="nes solution to overflow error">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="New fix to pmode3 implementation">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -688,13 +688,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00293" summary="Added hvdc and generator contingencies">
-      <created>1644343299998</created>
-      <option name="number" value="00293" />
-      <option name="presentableId" value="LOCAL-00293" />
-      <option name="project" value="LOCAL" />
-      <updated>1644343299998</updated>
-    </task>
     <task id="LOCAL-00294" summary="Added hvdc and generator contingencies (fixed PTDF missing)">
       <created>1644343627198</created>
       <option name="number" value="00294" />
@@ -1031,7 +1024,14 @@
       <option name="project" value="LOCAL" />
       <updated>1655212267871</updated>
     </task>
-    <option name="localTasksCounter" value="342" />
+    <task id="LOCAL-00342" summary="New fix to pmode3 implementation">
+      <created>1655213233091</created>
+      <option name="number" value="00342" />
+      <option name="presentableId" value="LOCAL-00342" />
+      <option name="project" value="LOCAL" />
+      <updated>1655213233091</updated>
+    </task>
+    <option name="localTasksCounter" value="343" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1066,7 +1066,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="New formulation including pumps for porportional generation" />
     <MESSAGE value="New version 4.4.7a6" />
     <MESSAGE value="Fixed LODF numerical zero" />
     <MESSAGE value="only comments" />
@@ -1091,7 +1090,8 @@
     <MESSAGE value="new scale in progress" />
     <MESSAGE value="Added TTC, TRM and NTC into report" />
     <MESSAGE value="nes solution to overflow error" />
-    <option name="LAST_COMMIT_MESSAGE" value="nes solution to overflow error" />
+    <MESSAGE value="New fix to pmode3 implementation" />
+    <option name="LAST_COMMIT_MESSAGE" value="New fix to pmode3 implementation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1361,6 +1361,11 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py</url>
           <line>4004</line>
           <option name="timeStamp" value="769" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/editor.py</url>
+          <line>1327</line>
+          <option name="timeStamp" value="781" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
