@@ -6,17 +6,20 @@ from GridCal.Engine.basic_structures import BusMode
 from GridCal.Engine.Devices.enumerations import ConverterControlType, TransformerControlType
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 
+import logging
+logger = logging.getLogger(__name__)
+
 try:
     import NewtonNative as nn
     NEWTON_AVAILBALE = True
-    print('Newton Native v' + nn.get_version())
+    logger.info('Newton Native v' + nn.get_version())
 
 except ImportError:
     NEWTON_AVAILBALE = False
     newton_solver_dict = dict()
     newton_taps_dict = dict()
     newton_q_control_dict = dict()
-    print('Newton native is not available')
+    logger.info('Newton native is not available')
 
 
 def set_branch_values(nc: "nn.NativeNumericCircuit",
