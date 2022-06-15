@@ -10,6 +10,8 @@ from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerCon
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 
+import logging
+logger = logging.getLogger(__name__)
 
 try:
     import bentayga as btg
@@ -18,24 +20,24 @@ try:
     if not btg.is_license_activated():
         btg_license = os.path.join(get_create_gridcal_folder(), 'bentayga.lic')
         if os.path.exists(btg_license):
-            # print('Bentayga v' + btg.get_version())
+            # logger.info('Bentayga v' + btg.get_version())
             btg.activate_license(btg_license)
             if btg.is_license_activated():
                 BENTAYGA_AVAILABLE = True
             else:
-                print('Bentayga v' + btg.get_version(),
+                logger.info('Bentayga v' + btg.get_version(),
                       "installed, tried to activate with {} but the license did not work :/".format(btg_license))
                 BENTAYGA_AVAILABLE = False
         else:
-            print('Bentayga v' + btg.get_version(), "installed but not licensed")
+            logger.info('Bentayga v' + btg.get_version(), "installed but not licensed")
             BENTAYGA_AVAILABLE = False
     else:
-        print('Bentayga v' + btg.get_version())
+        logger.info('Bentayga v' + btg.get_version())
         BENTAYGA_AVAILABLE = True
 
 except ImportError:
     BENTAYGA_AVAILABLE = False
-    print('Bentayga is not available')
+    logger.info('Bentayga is not available')
 
 # numpy integer type for bentayga's uword
 BINT = np.ulonglong
