@@ -1278,6 +1278,7 @@ class MainGUI(QMainWindow):
                         self.set_grid_editor_state()
 
                 # create schematic
+                self.circuit.normalize_bus_positions()
                 self.create_schematic_from_api(explode_factor=1)
 
                 # set circuit name
@@ -1695,6 +1696,7 @@ class MainGUI(QMainWindow):
             if yes_no_question("All nodes will be moved as a conversion to a 2D plane of their latitude and longitude. "
                                "Are you sure of this?"):
                 self.circuit.fill_xy_from_lat_lon()
+                self.circuit.normalize_bus_positions()
                 self.create_schematic_from_api()
 
     def create_schematic_from_api(self, explode_factor=1.0):

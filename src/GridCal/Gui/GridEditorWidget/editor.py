@@ -1211,6 +1211,7 @@ class GridEditor(QSplitter):
         :param prog_func: progress report function
         :param text_func: Text report function
         """
+
         # first create the buses
         if text_func is not None:
             text_func('Creating schematic buses')
@@ -1295,30 +1296,6 @@ class GridEditor(QSplitter):
 
             branch.graphic_obj = self.add_api_upfc(branch)
 
-    def get_unoverflowed_explode_factor(self, circuit: "MultiCircuit", explode_factor=1.0):
-        """
-        Function to get a secured explode factor that prevents overflow Qt integer variable
-        :param circuit:
-        :param explode_factor:
-        :return:
-        """
-
-        scale = 1
-        overflow_value = 2 ** 31
-
-        for bus in circuit.buses:
-            x = int(bus.x * explode_factor)
-            y = int(bus.y * explode_factor)
-
-            scale_y = abs(y) / overflow_value
-            scale_x = abs(x) / overflow_value
-
-            scale = max(scale, scale_x, scale_y)
-
-        if scale > explode_factor:
-            explode_factor = explode_factor/scale
-
-        return explode_factor
 
     def add_circuit_to_schematic(self, circuit: "MultiCircuit", explode_factor=1.0, prog_func=None, text_func=None):
         """
@@ -1332,10 +1309,6 @@ class GridEditor(QSplitter):
         # reset zoom level, otherwise the newly loaded grids appear with a much wider spacing
         self.diagramView.resetTransform()
 
-        explode_factor = self.get_unoverflowed_explode_factor(
-            circuit=circuit,
-            explode_factor=explode_factor)
-
         self.add_elements_to_schematic(buses=circuit.buses,
                                        lines=circuit.lines,
                                        dc_lines=circuit.dc_lines,
@@ -1346,6 +1319,7 @@ class GridEditor(QSplitter):
                                        explode_factor=explode_factor,
                                        prog_func=prog_func,
                                        text_func=text_func)
+
 
     def align_schematic(self, buses: List[Bus] = []):
         """
@@ -1375,8 +1349,16 @@ class GridEditor(QSplitter):
             max_y = max(max_y, y)
             min_y = min(min_y, y)
 
+        # Fix boundaries
+        for bus in lst:
+            bus.graphic_obj.arrange_children()
+            # get the item position
+            x = bus.graphic_obj.pos().x()
+            y = bus.graphic_obj.pos().y()
+            bus.graphic_obj.set_position(x - min_x, y - max_y)
+
         # set the figure limits
-        self.set_limits(min_x, max_x, min_y, max_y)
+        self.set_limits(0, max_x - min_x, min_y - max_y, 0)
 
         #  center the view
         self.center_nodes()

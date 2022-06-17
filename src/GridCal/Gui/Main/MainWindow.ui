@@ -3678,6 +3678,9 @@ p, li { white-space: pre-wrap; }
                   </item>
                   <item row="7" column="1">
                    <widget class="QSpinBox" name="trm_spinBox">
+                    <property name="suffix">
+                     <string> MW</string>
+                    </property>
                     <property name="maximum">
                      <number>1500</number>
                     </property>
@@ -3695,7 +3698,7 @@ p, li { white-space: pre-wrap; }
                   <item row="7" column="0">
                    <widget class="QLabel" name="label_23">
                     <property name="text">
-                     <string>Transmission reliability Margin (TRM)</string>
+                     <string>Transmission reliability margin (TRM)</string>
                     </property>
                    </widget>
                   </item>

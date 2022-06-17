@@ -2396,3 +2396,30 @@ class MultiCircuit:
         """
         for ld in self.get_loads():
             ld.active_prof = ld.P_prof.astype(bool)
+
+    def normalize_bus_positions(self):
+        # figure limits
+        min_x = sys.maxsize
+        min_y = sys.maxsize
+        max_x = -sys.maxsize
+        max_y = -sys.maxsize
+
+        # Align lines
+        for bus in self.buses:
+            # get the item position
+            x = bus.x
+            y = bus.y
+
+            # compute the boundaries of the grid
+            max_x = max(max_x, x)
+            min_x = min(min_x, x)
+            max_y = max(max_y, y)
+            min_y = min(min_y, y)
+
+        # Fix boundaries
+        for bus in self.buses:
+            # get the item position
+            x = bus.x
+            y = bus.y
+            bus.x = x - min_x
+            bus.y = y - max_y

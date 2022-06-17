@@ -1537,6 +1537,8 @@ class OpfNTC(Opf):
         self.phase_shift = None
         self.inter_area_branches = None
         self.inter_area_hvdc = None
+        self.hvdc_angle_slack_pos = None
+        self.hvdc_angle_slack_neg = None
 
         self.contingency_gen_flows_list = list()
         self.contingency_gen_indices_list = list()  # [(m, c), ...]
@@ -1774,7 +1776,7 @@ class OpfNTC(Opf):
             solver=self.solver,
             Bbus=self.numerical_circuit.Bbus,
             angles=theta,
-            Pinj=Pinj + Pinj_tau,
+            Pinj=Pinj - Pinj_tau,
             bus_active=self.numerical_circuit.bus_data.bus_active[:, t],
             bus_names=self.numerical_circuit.bus_data.bus_names,
             logger=self.logger)
@@ -2065,7 +2067,7 @@ class OpfNTC(Opf):
 
 
         # formulate the HVDC flows
-        hvdc_flow_f = formulate_hvdc_flow(
+        hvdc_flow_f, hvdc_angle_slack_pos, hvdc_angle_slack_neg  = formulate_hvdc_flow(
             solver=self.solver,
             nhvdc=self.numerical_circuit.nhvdc,
             names=self.numerical_circuit.hvdc_names,
@@ -2091,7 +2093,7 @@ class OpfNTC(Opf):
             solver=self.solver,
             Bbus=self.numerical_circuit.Bbus,
             angles=theta,
-            Pinj=Pinj + Pinj_tau,
+            Pinj=Pinj - Pinj_tau,
             bus_active=self.numerical_circuit.bus_data.bus_active[:, t],
             bus_names=self.numerical_circuit.bus_data.bus_names,
             logger=self.logger)
@@ -2201,6 +2203,9 @@ class OpfNTC(Opf):
 
         self.inter_area_branches = inter_area_branches
         self.inter_area_hvdc = inter_area_hvdc
+
+        self.hvdc_angle_slack_pos = hvdc_angle_slack_pos
+        self.hvdc_angle_slack_neg = hvdc_angle_slack_neg
 
         # n1flow_f, con_br_idx
         self.contingency_flows_list = n1flow_f
