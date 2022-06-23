@@ -3995,7 +3995,6 @@ class MainGUI(QMainWindow):
                     start = self.ui.profile_start_slider.value()
                     end = self.ui.profile_end_slider.value() + 1
 
-                    trm = self.ui.trm_spinBox.value()
 
                     # create the OPF time series instance
                     # if non_sequential:
@@ -4003,8 +4002,7 @@ class MainGUI(QMainWindow):
                         grid=self.circuit,
                         options=options,
                         start_=start,
-                        end_=end,
-                        trm=trm)
+                        end_=end)
 
                     self.session.run(
                         drv,
@@ -4221,8 +4219,16 @@ class MainGUI(QMainWindow):
                 self.ui.progress_label.setText('Running optimal net transfer capacity...')
                 QtGui.QGuiApplication.processEvents()
                 pf_options = self.get_selected_power_flow_options()
+
+
+                trm = self.ui.trm_spinBox.value()
                 # set power flow object instance
-                drv = sim.OptimalNetTransferCapacityDriver(self.circuit, options, pf_options)
+
+                drv = sim.OptimalNetTransferCapacityDriver(
+                    grid=self.circuit,
+                    options=options,
+                    pf_options=pf_options,
+                    trm=trm)
 
                 self.LOCK()
                 self.session.run(drv,

@@ -173,7 +173,7 @@ def get_inter_areas_branches(nbr, F, T, buses_areas_1, buses_areas_2):
     :param T: Array of To node indices
     :param buses_areas_1: Area from
     :param buses_areas_2: Area to
-    :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+    :return: List of (branch index, flow sense w.r.t the area exchange)
     """
 
     lst: List[Tuple[int, float]] = list()
@@ -2067,7 +2067,7 @@ class OpfNTC(Opf):
 
 
         # formulate the HVDC flows
-        hvdc_flow_f, hvdc_angle_slack_pos, hvdc_angle_slack_neg  = formulate_hvdc_flow(
+        hvdc_flow_f, hvdc_angle_slack_pos, hvdc_angle_slack_neg = formulate_hvdc_flow(
             solver=self.solver,
             nhvdc=self.numerical_circuit.nhvdc,
             names=self.numerical_circuit.hvdc_names,
@@ -2169,6 +2169,8 @@ class OpfNTC(Opf):
             generation_delta=generation_delta[gen_a1_idx],
             weight_power_shift=self.weight_power_shift,
             weight_generation_cost=self.weight_generation_cost,
+            hvdc_angle_slack_pos=hvdc_angle_slack_pos,
+            hvdc_angle_slack_neg=hvdc_angle_slack_neg,
             logger=self.logger)
 
         # Assign variables to keep
@@ -2728,13 +2730,19 @@ class OpfNTC(Opf):
 
     def get_hvdc_loading(self):
         """
-        return the branch loading (time, device)
+        return the hvdc loading (time, device)
         :return: 2D array
         """
         return self.extract(
             self.hvdc_flow, make_abs=False
         ) * self.numerical_circuit.Sbase / self.numerical_circuit.hvdc_data.rate[:, 0]
 
+    def get_hvdc_angle_slacks(self):
+        """
+        return the hvdc angle slacks (time, device)
+        :return: 2D array
+        """
+        return self.extract(self.hvdc_angle_slack_neg + self.hvdc_angle_slack_pos, make_abs=False)
 
 if __name__ == '__main__':
     from GridCal.Engine.basic_structures import BranchImpedanceMode

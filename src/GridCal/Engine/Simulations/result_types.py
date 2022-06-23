@@ -90,8 +90,10 @@ class ResultTypes(Enum):
     GenerationDelta = 'Generation deltas', DeviceType.GeneratorDevice
     GenerationDeltaSlacks = 'Generation delta slacks', DeviceType.GeneratorDevice
     InterAreaExchange = 'Inter-Area exchange', DeviceType.NoDevice
+    HvdcPmode3Slack = 'HVDC pmode3 slack angle', DeviceType.HVDCLineDevice
 
-    OptimalNetTransferCapacityTimeSeriesReport = 'Optimal net transfer capacity series report', DeviceType.NoDevice
+    OpfNtcTsContingencyReport = 'Contingency flow report', DeviceType.NoDevice
+    OpfNtcTsBaseReport = 'Base flow report', DeviceType.NoDevice
 
     # Short-circuit
     BusShortCircuitPower = 'Bus short circuit power', DeviceType.BusDevice

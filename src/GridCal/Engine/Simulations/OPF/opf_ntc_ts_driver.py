@@ -58,7 +58,8 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             self,
             name='NTC Optimal time series results',
             available_results=[
-                ResultTypes.OptimalNetTransferCapacityTimeSeriesReport
+                ResultTypes.OpfNtcTsContingencyReport,
+                ResultTypes.OpfNtcTsBaseReport
             ],
 
             data_variables=[])
@@ -103,11 +104,14 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         :return: DataFrame of the results (or None if the result was not understood)
         """
 
-        if result_type == ResultTypes.OptimalNetTransferCapacityTimeSeriesReport:
+        if result_type == ResultTypes.OpfNtcTsBaseReport:
+            labels, columns, y = self.get_base_report()
+            y_label = ''
+            title = result_type.value[0]
+        elif result_type == ResultTypes.OpfNtcTsContingencyReport:
             labels, columns, y = self.get_contingency_report()
             y_label = ''
             title = result_type.value[0]
-
         else:
             raise Exception('No results available')
 
@@ -135,6 +139,21 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                     names = self.results_dict[t].branch_names[shift_idx]
                     all_names = all_names + [n for n in names if n not in all_names]
                     all_idx = all_idx + [ix for ix in shift_idx if ix not in all_idx]
+
+        return all_names, all_idx
+
+    def get_hvdc_angle_slacks(self):
+        all_names = list()
+        all_idx = list()
+
+        # Get all shifters name
+        for idx, t in enumerate(self.time_indices):
+            if t in self.results_dict.keys():
+                angle_idx = np.where(self.results_dict[t].hvdc_angle_slack != 0)[0]
+                if len(angle_idx) > 0:
+                    names = self.results_dict[t].branch_names[angle_idx]
+                    all_names = all_names + [n for n in names if n not in all_names]
+                    all_idx = all_idx + [ix for ix in angle_idx if ix not in all_idx]
 
         return all_names, all_idx
 
@@ -169,6 +188,59 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         if path_out:
             df.to_csv(path_out, index=False)
 
+    def get_base_report(self):
+
+        prob_dict = dict(zip(self.time_indices, self.sampled_probabilities))
+
+        if len(self.results_dict.values()) == 0:
+            print("Sin resultados")
+            return
+
+        labels, columns, data = list(self.results_dict.values())[0].get_base_report()
+        columns_all = ['Time index', 'Time'] + columns
+        data_all = np.empty(shape=(0, len(columns_all)))
+
+        for idx, t in enumerate(self.time_indices):
+            if t in self.results_dict.keys():
+                l, c, data = self.results_dict[t].get_base_report(
+                    max_report_elements=self.max_report_elements)
+
+            # complete the data with time and ntc columns
+            extra_data = np.array([[t, self.time_array[idx]]] * data.shape[0])
+            data = np.concatenate((extra_data, data), axis=1)
+
+            # add to main data set
+            data_all = np.concatenate((data_all, data), axis=0)
+
+        # sort data by ntc and time index, descending to compute probability factor
+        data_all = data_all[np.lexsort(
+            (np.abs(data_all[:, 7].astype(float)), data_all[:, 0], data_all[:, 2])
+        )][::-1]
+
+        # add column into data
+        prob = np.zeros((data_all.shape[0], 1))
+        data_all = np.append(prob, data_all, axis=1)
+        columns_all = ['Prob.'] + columns_all
+
+        # compute cumulative probability
+        time_prev = 0
+        pct = 0
+        for row in range(data_all.shape[0]):
+            t = int(data_all[row, 1])
+            if t != time_prev:
+                pct += prob_dict[t]
+                time_prev = t
+
+            data_all[row, 0] = pct
+
+        # return report data
+        labels_all = np.arange(data_all.shape[0])
+
+        # convert time to formated string
+        data_all[:, 2] = [t.strftime("%d/%m/%Y %H:%M:%S") for t in data_all[:, 2]]
+
+        print('Ejecutado en {0} scs. para {1} casos'.format(self.elapsed, len(self.time_array)))
+        return labels_all, columns_all, data_all
 
     def get_contingency_report(self):
 
@@ -179,16 +251,10 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             return
 
         labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
-        shifter_names, shift_idx = self.get_used_shifters()
-        hvdc_names = list(list(self.results_dict.values())[0].hvdc_names)
-        columns_all = ['Time index', 'Time', 'TTC (MW)', 'TRM (MW)', 'NTC (MW)'] + columns + shifter_names + hvdc_names
+        columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
-        trm = self.trm
-        ttc = 0
-        ntc = 0
 
         for idx, t in enumerate(self.time_indices):
-
 
             if t in self.results_dict.keys():
 
@@ -196,24 +262,13 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 ttc = np.floor(self.results_dict[t].get_exchange_power())
 
                 if ttc != 0:
-                    ntc = ttc - self.trm
-
                     l, c, data = self.results_dict[t].get_contingency_report(
                         max_report_elements=self.max_report_elements)
-
-                    # get phase shifter and hvdc data
-                    shifter_data = np.array([self.results_dict[t].phase_shift[shift_idx]] * data.shape[0])
-                    hvdc_data = np.array([self.results_dict[t].hvdc_Pf] * data.shape[0])
-
-                    # add new columns to report
-                    data = np.concatenate((data, shifter_data, hvdc_data), axis=1)
-
                 else:
-                    ntc = 0
-                    data = np.zeros(shape=(1, len(columns) + len(shifter_names) + len(hvdc_names)))
+                    data = np.zeros(shape=(1, len(columns)))
 
             # complete the data with time and ntc columns
-            extra_data = np.array([[t, self.time_array[idx], ttc, trm, ntc]] * data.shape[0])
+            extra_data = np.array([[t, self.time_array[idx]]] * data.shape[0])
             data = np.concatenate((extra_data, data), axis=1)
 
             # add to main data set
@@ -257,9 +312,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             return
 
         labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
-        shifter_names, shift_idx = self.get_used_shifters()
-        hvdc_names = list(list(self.results_dict.values())[0].hvdc_names)
-        columns_all = ['Time index', 'Time', 'TTC (MW)'] + columns + shifter_names + hvdc_names
+        columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
 
         for idx, t in enumerate(self.time_indices):
@@ -272,27 +325,17 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 l, c, data = self.results_dict[t].get_contingency_branch_report(
                     max_report_elements=self.max_report_elements)
 
-                # get phase shifter and hvdc data
-                shifter_data = np.array([self.results_dict[t].phase_shift[shift_idx]] * data.shape[0])
-                hvdc_data = np.array([self.results_dict[t].hvdc_Pf] * data.shape[0])
-
-                # add new columns to report
-                data = np.concatenate((data, shifter_data, hvdc_data), axis=1)
-
             else:
-                ntc = 0
-
-                data = np.zeros(shape=(1, len(columns) + len(shifter_names) + len(hvdc_names)))
+                data = np.zeros(shape=(1, len(columns)))
 
             # complete the data with time and ntc columns
-            extra_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S"), ttc]] * data.shape[0])
+            extra_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * data.shape[0])
             data = np.concatenate((extra_data, data), axis=1)
 
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
 
         # sort data by ntc and time index, descending to compute probability factor
-
         data_all = data_all[np.lexsort(
             (np.abs(data_all[:, 11].astype(float)), data_all[:, 0], data_all[:, 2])
         )][::-1]
@@ -325,9 +368,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             return
 
         labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
-        shifter_names, shift_idx = self.get_used_shifters()
-        hvdc_names = list(list(self.results_dict.values())[0].hvdc_names)
-        columns_all = ['Time index', 'Time', 'NTC (MW)'] + columns + shifter_names + hvdc_names
+        columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
 
         for idx, t in enumerate(self.time_indices):
@@ -340,20 +381,11 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 l, c, data = self.results_dict[t].get_contingency_generation_report(
                     max_report_elements=self.max_report_elements)
 
-                # get phase shifter and hvdc data
-                shifter_data = np.array([self.results_dict[t].phase_shift[shift_idx]] * data.shape[0])
-                hvdc_data = np.array([self.results_dict[t].hvdc_Pf] * data.shape[0])
-
-                # add new columns to report
-                data = np.concatenate((data, shifter_data, hvdc_data), axis=1)
-
             else:
-                ntc = 0
-
-                data = np.zeros(shape=(1, len(columns) + len(shifter_names) + len(hvdc_names)))
+                data = np.zeros(shape=(1, len(columns)))
 
             # complete the data with time and ntc columns
-            extra_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S"), ntc]] * data.shape[0])
+            extra_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * data.shape[0])
             data = np.concatenate((extra_data, data), axis=1)
 
             # add to main data set
@@ -393,9 +425,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             return
 
         labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
-        shifter_names, shift_idx = self.get_used_shifters()
-        hvdc_names = list(list(self.results_dict.values())[0].hvdc_names)
-        columns_all = ['Time index', 'Time', 'NTC (MW)'] + columns + shifter_names + hvdc_names
+        columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
 
         for idx, t in enumerate(self.time_indices):
@@ -407,21 +437,11 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
                 l, c, data = self.results_dict[t].get_contingency_hvdc_report(
                     max_report_elements=self.max_report_elements)
-
-                # get phase shifter and hvdc data
-                shifter_data = np.array([self.results_dict[t].phase_shift[shift_idx]] * data.shape[0])
-                hvdc_data = np.array([self.results_dict[t].hvdc_Pf] * data.shape[0])
-
-                # add new columns to report
-                data = np.concatenate((data, shifter_data, hvdc_data), axis=1)
-
             else:
-                ntc = 0
-
-                data = np.zeros(shape=(1, len(columns) + len(shifter_names) + len(hvdc_names)))
+                data = np.zeros(shape=(1, len(columns)))
 
             # complete the data with time and ntc columns
-            extra_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S"), ntc]] * data.shape[0])
+            extra_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * data.shape[0])
             data = np.concatenate((extra_data, data), axis=1)
 
             # add to main data set
@@ -668,6 +688,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 generator_names=nc.generator_data.generator_names,
                 battery_names=nc.battery_data.battery_names,
                 hvdc_names=nc.hvdc_data.names,
+                trm=self.trm,
+                branch_control_modes=nc.branch_data.control_mode,
+                hvdc_control_modes=nc.hvdc_data.control_mode,
                 Sbus=problem.get_power_injections(),
                 voltage=problem.get_voltage(),
                 battery_power=np.zeros((nc.nbatt, 1)),
@@ -680,6 +703,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 hvdc_loading=problem.get_hvdc_loading(),
                 phase_shift=problem.get_phase_angles(),
                 generation_delta=problem.get_generator_delta(),
+                hvdc_angle_slack=problem.get_hvdc_angle_slacks(),
                 inter_area_branches=problem.inter_area_branches,
                 inter_area_hvdc=problem.inter_area_hvdc,
                 alpha=alpha,
@@ -690,7 +714,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 contingency_hvdc_flows_list=problem.get_contingency_hvdc_flows_list(),
                 contingency_hvdc_indices_list=problem.contingency_hvdc_indices_list,
                 rates=nc.branch_data.branch_rates[:, t],
-                contingency_rates=nc.branch_data.branch_contingency_rates[:, t])
+                contingency_rates=nc.branch_data.branch_contingency_rates[:, t],
+                area_from_bus_idx=self.options.area_from_bus_idx,
+                area_to_bus_idx=self.options.area_to_bus_idx)
 
             self.results.results_dict[t] = result
 

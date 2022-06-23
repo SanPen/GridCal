@@ -32,6 +32,7 @@ from GridCal.Engine.Simulations.results_table import ResultsTable
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisDriver, ContingencyAnalysisOptions
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
+from GridCal.Engine.Devices.enumerations import TransformerControlType, HvdcControlType
 from GridCal.Engine.basic_structures import SolverType
 
 try:
@@ -124,7 +125,6 @@ class OptimalNetTransferCapacityOptions:
         self.weight_power_shift = weight_power_shift
         self.weight_generation_cost = weight_generation_cost
 
-
         self.consider_contingencies = consider_contingencies
         self.consider_hvdc_contingencies = consider_hvdc_contingencies
         self.consider_gen_contingencies = consider_gen_contingencies
@@ -160,11 +160,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         **converged**: converged?
     """
 
-    def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names,
-                 Sbus=None, voltage=None, battery_power=None, controlled_generation_power=None, Sf=None,
-                 loading=None, losses=None, solved=None, bus_types=None, hvdc_flow=None, hvdc_loading=None,
-                 phase_shift=None, generation_delta=None, inter_area_branches=list(), inter_area_hvdc=list(),
-                 alpha=None, contingency_branch_flows_list=None, contingency_branch_indices_list=None, rates=None,
+    def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names, trm,
+                 branch_control_modes, hvdc_control_modes, Sbus=None, voltage=None, battery_power=None,
+                 controlled_generation_power=None, Sf=None, loading=None, losses=None, solved=None, bus_types=None,
+                 hvdc_flow=None, hvdc_loading=None, hvdc_angle_slack=None, phase_shift=None, generation_delta=None,
+                 inter_area_branches=list(), inter_area_hvdc=list(), alpha=None, alpha_n1=None, rates=None,
+                 contingency_branch_flows_list=None, contingency_branch_indices_list=None,
                  contingency_generation_flows_list=None, contingency_generation_indices_list=None,
                  contingency_hvdc_flows_list=None, contingency_hvdc_indices_list=None, contingency_rates=None,
                  area_from_bus_idx=None, area_to_bus_idx=None):
@@ -184,6 +185,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.ContingencyFlowsHvdcReport,
 
                                                     ResultTypes.HvdcPowerFrom,
+                                                    ResultTypes.HvdcPmode3Slack,
                                                     ResultTypes.BatteryPower,
                                                     ResultTypes.GeneratorPower,
                                                     ResultTypes.GenerationDelta,
@@ -212,6 +214,11 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.battery_names = battery_names
         self.hvdc_names = hvdc_names
 
+        self.trm = trm
+
+        self.hvdc_control_modes = hvdc_control_modes
+        self.branch_control_modes = branch_control_modes
+
         self.inter_area_branches = inter_area_branches
         self.inter_area_hvdc = inter_area_hvdc
 
@@ -228,6 +235,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.hvdc_Pf = hvdc_flow
         self.hvdc_loading = hvdc_loading
+        self.hvdc_angle_slack = hvdc_angle_slack
 
         self.phase_shift = phase_shift
 
@@ -320,13 +328,61 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         return labels, columns, y
 
+    def get_base_report(self, max_report_elements=0):
+
+        labels = self.branch_names
+        y = list()
+
+        trm = self.trm
+        ttc = np.floor(self.get_exchange_power())
+        ntc = ttc - trm
+
+        for i, branch in enumerate(self.branch_names):
+            y.append([ttc,
+                      trm,
+                      ntc,
+                      branch,
+                      self.Sf[i].real,
+                      self.Sf[i] / self.rates[i] * 100,
+                      self.rates[i]])
+
+        y = np.array(y, dtype=object)
+        columns = ['TTC', 'TRM', 'TTC', 'Branch', 'Flow (MW)', 'Load (%)', 'Rate']
+
+        # Add inter area branches, shifter and hvdc data into report
+        y, columns = self.add_inter_area_branches_data(y=y, columns=columns)
+        y, columns = self.add_hvdc_data(y=y, columns=columns)
+        y, columns = self.add_shifter_data(y=y, columns=columns)
+
+        idx = np.flip(np.argsort(np.abs(y[:, 5].astype(float))))  # sort by Load (%)
+        y = y[idx, :]
+
+        # curtail report
+        if max_report_elements > 0:
+            y = y[:max_report_elements, :]
+            labels = labels[:max_report_elements]
+
+        return labels, columns, y
+
+    def get_controled_shifters_as_pt(self):
+        shifter_idx = np.where(self.branch_control_modes == TransformerControlType.Pt)
+        shifter_names = self.branch_names[shifter_idx]
+
+        return shifter_names, shifter_idx
+
     def get_contingency_branch_report(self, max_report_elements=0):
         labels = list()
         y = list()
 
+        ttc = self.get_exchange_power()
+        trm = self.trm
+        ntc = ttc - trm
+
         for (m, c), contingency_flow in zip(self.contingency_branch_indices_list, self.contingency_branch_flows_list):
             if contingency_flow != 0.0:
-                y.append((m, c,
+                y.append((ttc,
+                          trm,
+                          ntc,
                           self.branch_names[m],
                           self.branch_names[c],
                           contingency_flow,
@@ -335,11 +391,13 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           self.rates[m],
                           contingency_flow / self.contingency_rates[m] * 100,
                           self.Sf[m] / self.rates[m] * 100,
-                          'Branch'))
+                          'Branch',
+                          m, c))
                 labels.append(len(y))
 
-        columns = ['Monitored idx',
-                   'Contingency idx',
+        columns = ['TTC'
+                   'TRM',
+                   'NTC',
                    'Monitored',
                    'Contingency',
                    'ContingencyFlow (MW)',
@@ -348,11 +406,20 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                    'Base rates (MW)',
                    'ContingencyFlow (%)',
                    'Base flow (%)',
-                   'Contingency Type']
+                   'Contingency Type',
+                   'Monitored idx',
+                   'Contingency idx',
+                   ]
 
         y = np.array(y)
+
+        # Add inter area branches, shifter and hvdc data into report
+        y, columns = self.add_inter_area_branches_data(y=y, columns=columns)
+        y, columns = self.add_hvdc_data(y=y, columns=columns)
+        y, columns = self.add_shifter_data(y=y, columns=columns)
+
         if len(y.shape) == 2:
-            idx = np.flip(np.argsort(np.abs(y[:, 8].astype(float))))  # sort by ContingencyFlow (%)
+            idx = np.flip(np.argsort(np.abs(y[:, 9].astype(float))))  # sort by ContingencyFlow (%)
             y = y[idx, :]
             y = np.array(y, dtype=object)
         else:
@@ -369,9 +436,16 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         labels = list()
         y = list()
 
-        for (m, c), contingency_flow in zip(self.contingency_generation_indices_list, self.contingency_generation_flows_list):
+        ttc = self.get_exchange_power()
+        trm = self.trm
+        ntc = ttc - trm
+
+        for (m, c), contingency_flow in zip(self.contingency_generation_indices_list,
+                                            self.contingency_generation_flows_list):
             if contingency_flow != 0.0:
-                y.append((m, c,
+                y.append((ttc,
+                          trm,
+                          ntc,
                           self.branch_names[m],
                           self.generator_names[c],
                           contingency_flow,
@@ -380,11 +454,14 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           self.rates[m],
                           contingency_flow / self.contingency_rates[m] * 100,
                           self.Sf[m] / self.rates[m] * 100,
-                          'Generation'))
+                          'Generation',
+                          m, c))
                 labels.append(len(y))
 
-        columns = ['Monitored idx',
-                   'Contingency idx',
+
+        columns = ['TTC',
+                   'TRM',
+                   'NTC',
                    'Monitored',
                    'Contingency',
                    'ContingencyFlow (MW)',
@@ -393,11 +470,20 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                    'Base rates (MW)',
                    'ContingencyFlow (%)',
                    'Base flow (%)',
-                   'Contingency Type']
+                   'Contingency Type',
+                   'Monitored idx',
+                   'Contingency idx']
+
 
         y = np.array(y)
+
+        # Add inter area branches, shifter and hvdc data into report
+        y, columns = self.add_inter_area_branches_data(y=y, columns=columns)
+        y, columns = self.add_hvdc_data(y=y, columns=columns)
+        y, columns = self.add_shifter_data(y=y, columns=columns)
+
         if len(y.shape) == 2:
-            idx = np.flip(np.argsort(np.abs(y[:, 8].astype(float))))  # sort by ContingencyFlow (%)
+            idx = np.flip(np.argsort(np.abs(y[:, 9].astype(float))))  # sort by ContingencyFlow (%)
             y = y[idx, :]
             y = np.array(y, dtype=object)
         else:
@@ -414,9 +500,15 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         labels = list()
         y = list()
 
+        ttc = self.get_exchange_power()
+        trm = self.trm
+        ntc = ttc - trm
+
         for (m, c), contingency_flow in zip(self.contingency_hvdc_indices_list, self.contingency_hvdc_flows_list):
             if contingency_flow != 0.0:
-                y.append((m, c,
+                y.append((ttc,
+                          trm,
+                          ttc,
                           self.branch_names[m],
                           self.hvdc_names[c],
                           contingency_flow,
@@ -425,11 +517,13 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           self.rates[m],
                           contingency_flow / self.contingency_rates[m] * 100,
                           self.Sf[m] / self.rates[m] * 100,
-                          'Hvdc'))
+                          'Hvdc',
+                          m, c))
                 labels.append(len(y))
 
-        columns = ['Monitored idx',
-                   'Contingency idx',
+        columns = ['TTC',
+                   'TRM',
+                   'NTC',
                    'Monitored',
                    'Contingency',
                    'ContingencyFlow (MW)',
@@ -438,11 +532,19 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                    'Base rates (MW)',
                    'ContingencyFlow (%)',
                    'Base flow (%)',
-                   'Contingency Type']
+                   'Contingency Type',
+                   'Monitored idx',
+                   'Contingency idx']
 
         y = np.array(y)
+
+        # Add shifter and hvdc data into report
+        y, columns = self.add_shifter_data(y=y, columns=columns)
+        y, columns = self.add_hvdc_data(y=y, columns=columns)
+        y, columns = self.add_shifter_data(y=y, columns=columns)
+
         if len(y.shape) == 2:
-            idx = np.flip(np.argsort(np.abs(y[:, 8].astype(float))))  # sort by ContingencyFlow (%)
+            idx = np.flip(np.argsort(np.abs(y[:, 9].astype(float))))  # sort by ContingencyFlow (%)
             y = y[idx, :]
             y = np.array(y, dtype=object)
         else:
@@ -455,6 +557,52 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         return labels, columns, y
 
+    def add_inter_area_branches_data(self, y, columns):
+        """
+        Add inter area branches data into y, columns from report
+        :param y:
+        :param columns:
+        :return:
+        """
+        inter_area_idx = [idx for (idx, name) in self.inter_area_branches]
+        inter_area_names = self.branch_names[inter_area_idx]
+        inter_area_data = np.array([self.Sf[inter_area_idx]] * y.shape[0])
+
+        y = np.concatenate((y, inter_area_data), axis=1)
+        columns = columns + [name for name in inter_area_names]
+
+        return y, columns
+
+    def add_shifter_data(self, y, columns):
+        """
+        Add shifter data into y, columns from report
+        :param y:
+        :param columns:
+        :return:
+        """
+
+        shifter_names, shifter_idx = self.get_controled_shifters_as_pt()
+        shifter_data = np.array([self.phase_shift[shifter_idx]] * y.shape[0])
+
+        y = np.concatenate((y, shifter_data), axis=1)
+        columns = columns + [name for name in shifter_names]
+
+        return y, columns
+
+    def add_hvdc_data(self, y, columns):
+        """
+        Add hvdc data into y, columns from report
+        :param y:
+        :param columns:
+        :return:
+        """
+
+        hvdc_data = np.array([self.hvdc_Pf] * y.shape[0])
+        hvdc_angles = np.array([self.hvdc_angle_slack] * y.shape[0])
+
+        y = np.concatenate((y, hvdc_data, hvdc_angles), axis=1)
+        columns = columns + [name for name in self.hvdc_names] + ['Slack angle ' + name for name in self.hvdc_names]
+        return y, columns
 
     def make_report(self, path_out=None):
         """
@@ -558,6 +706,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = '(MW)'
             title = result_type.value[0]
 
+        elif result_type == ResultTypes.HvdcPmode3Slack:
+            labels = self.hvdc_names
+            y = self.hvdc_angle_slack
+            y_label = '(rad)'
+            title = result_type.value[0]
+
         elif result_type == ResultTypes.AvailableTransferCapacityAlpha:
             labels = self.branch_names
             y = self.alpha
@@ -627,7 +781,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
     name = 'Optimal net transfer capacity'
     tpe = SimulationTypes.OPF_NTC_run
 
-    def __init__(self, grid: MultiCircuit, options: OptimalNetTransferCapacityOptions, pf_options: PowerFlowOptions):
+    def __init__(self, grid: MultiCircuit, options: OptimalNetTransferCapacityOptions, pf_options: PowerFlowOptions,
+                 trm=0):
         """
         PowerFlowDriver class constructor
         @param grid: MultiCircuit Object
@@ -637,8 +792,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
 
         # Options to use
         self.options = options
-
         self.pf_options = pf_options
+        self.trm = trm
 
         self.all_solved = True
 
@@ -777,6 +932,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 generator_names=numerical_circuit.generator_data.generator_names,
                 battery_names=numerical_circuit.battery_data.battery_names,
                 hvdc_names=numerical_circuit.hvdc_data.names,
+                trm=self.trm,
                 Sbus=numerical_circuit.Sbus.real,
                 voltage=pf_drv.results.voltage,
                 battery_power=np.zeros((numerical_circuit.nbatt, 1)),
@@ -885,6 +1041,9 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 generator_names=numerical_circuit.generator_data.generator_names,
                 battery_names=numerical_circuit.battery_data.battery_names,
                 hvdc_names=numerical_circuit.hvdc_data.names,
+                trm=self.trm,
+                branch_control_modes=numerical_circuit.branch_data.control_mode,
+                hvdc_control_modes=numerical_circuit.hvdc_data.control_mode,
                 Sbus=problem.get_power_injections(),
                 voltage=problem.get_voltage(),
                 battery_power=np.zeros((numerical_circuit.nbatt, 1)),
@@ -897,6 +1056,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 hvdc_loading=problem.get_hvdc_loading(),
                 phase_shift=problem.get_phase_angles(),
                 generation_delta=problem.get_generator_delta(),
+                hvdc_angle_slack=problem.get_hvdc_angle_slacks(),
                 inter_area_branches=problem.inter_area_branches,
                 inter_area_hvdc=problem.inter_area_hvdc,
                 alpha=alpha,
