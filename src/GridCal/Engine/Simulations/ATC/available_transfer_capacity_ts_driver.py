@@ -269,8 +269,8 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             X = X[:, time_indices].real.T
 
             # cluster and re-assign the time indices
-            time_indices, \
-                sampled_probabilities = kmeans_approximate_sampling(X, n_points=self.options.cluster_number)
+            time_indices, sampled_probabilities = kmeans_approximate_sampling(
+                X, n_points=self.options.cluster_number)
 
         # get the power injections
         P = nc.Sbus.real  # these are in p.u.
@@ -302,15 +302,17 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 self.progress_text.emit('Available transfer capacity at ' + str(self.grid.time_profile[t]))
 
             # compute the branch exchange sensitivity (alpha)
-            alpha = compute_alpha(ptdf=linear_analysis.PTDF,
-                                  P0=P[:, t],  # no problem that there are in p.u., are only used for the sensitivity
-                                  Pinstalled=nc.bus_installed_power,
-                                  Pgen=nc.generator_data.get_injections_per_bus(),
-                                  Pload=nc.load_data.get_injections_per_bus(),
-                                  idx1=self.options.bus_idx_from,
-                                  idx2=self.options.bus_idx_to,
-                                  dT=self.options.dT,
-                                  mode=self.options.mode.value)
+            alpha, alpha_n1 = compute_alpha(
+                ptdf=linear_analysis.PTDF,
+                lodf=linear_analysis.LODF,
+                P0=P[:, t],  # no problem that there are in p.u., are only used for the sensitivity
+                Pinstalled=nc.bus_installed_power,
+                Pgen=nc.generator_data.get_injections_per_bus(),
+                Pload=nc.load_data.get_injections_per_bus(),
+                idx1=self.options.bus_idx_from,
+                idx2=self.options.bus_idx_to,
+                dT=self.options.dT,
+                mode=self.options.mode.value)
 
             # base exchange
             base_exchange = (self.options.inter_area_branch_sense * flows[t, self.options.inter_area_branch_idx]).sum()

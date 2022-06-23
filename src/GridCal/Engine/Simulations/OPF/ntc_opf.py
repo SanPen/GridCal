@@ -852,7 +852,7 @@ def check_node_balance(Bbus, angles, Pinj, bus_active, bus_names, logger: Logger
 def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
                             branch_active, branch_names, branch_dc, R, X, F, T, inf, monitor_loading,
                             branch_sensitivity_threshold, monitor_only_sensitive_branches, angles, tau,
-                            alpha_abs,logger):
+                            alpha_abs, alpha_n1_abs, logger):
     """
 
     :param solver: Solver instance to which add the equations
@@ -873,6 +873,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
     :param angles: array of bus voltage angles (LP variables)
     :param tau: Array branch phase shift angles (mix of values and LP variables)
     :param alpha_abs: Array of absolute branch sensitivity to the exchange
+    :param alpha_n1_abs: Array of absolute branch sensitivity to the exchange in n-1 condition
     :param logger: logger instance
     :return:
         - flow_f: Array of formulated branch flows (LP variblaes)
@@ -896,7 +897,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
 
             # determine the monitoring logic
             if monitor_only_sensitive_branches:
-                monitor[m] = monitor_loading[m] and alpha_abs[m] > branch_sensitivity_threshold
+                monitor[m] = monitor_loading[m] and max(alpha_abs[m], alpha_n1_abs[m]) > branch_sensitivity_threshold
             else:
                 monitor[m] = monitor_loading[m]
 
@@ -935,7 +936,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
 
 def check_branches_flow(nbr, Rates, Sbase, branch_active, branch_names, branch_dc, control_mode, R, X, F, T,
                         monitor_loading, branch_sensitivity_threshold, monitor_only_sensitive_branches,
-                        angles, alpha_abs, flow_f, tau, logger: Logger,):
+                        angles, alpha_abs, alpha_n1_abs, flow_f, tau, logger: Logger,):
     """
 
     :param nbr: number of branches
@@ -954,6 +955,7 @@ def check_branches_flow(nbr, Rates, Sbase, branch_active, branch_names, branch_d
     :param monitor_only_sensitive_branches: Flag to monitor only sensitive branches
     :param angles: array of bus voltage angles (LP variables)
     :param alpha_abs: Array of absolute branch sensitivity to the exchange
+    :param alpha_n1_abs: Array of absolute branch sensitivity to the exchange on n-1 condition
     :param flow_f: Array of branch flow solutions
     :param tau: Array branch phase shift angle solutions
     :param logger: logger instance
@@ -970,7 +972,7 @@ def check_branches_flow(nbr, Rates, Sbase, branch_active, branch_names, branch_d
 
             # determine the monitoring logic
             if monitor_only_sensitive_branches:
-                monitor[m] = monitor_loading[m] and alpha_abs[m] > branch_sensitivity_threshold
+                monitor[m] = monitor_loading[m] and max(alpha_abs[m], alpha_n1_abs[m]) > branch_sensitivity_threshold
             else:
                 monitor[m] = monitor_loading[m]
 
@@ -1450,6 +1452,7 @@ class OpfNTC(Opf):
                  area_from_bus_idx,
                  area_to_bus_idx,
                  alpha,
+                 alpha_n1,
                  LODF,
                  PTDF,
                  solver_type: MIPSolvers = MIPSolvers.CBC,
@@ -1475,6 +1478,7 @@ class OpfNTC(Opf):
         :param area_from_bus_idx:  indices of the buses of the area 1
         :param area_to_bus_idx: indices of the buses of the area 2
         :param alpha: Array of branch sensitivities to the exchange
+        :param alpha_n1: Array of branch sensitivities to the exchange on n-1 condition
         :param LODF: LODF matrix
         :param solver_type: type of linear solver
         :param generation_formulation: type of generation formulation
@@ -1510,6 +1514,7 @@ class OpfNTC(Opf):
         self.tolerance = tolerance
 
         self.alpha = alpha
+        self.alpha_n1 = alpha_n1
 
         self.LODF = LODF
 
@@ -1627,6 +1632,7 @@ class OpfNTC(Opf):
         # branch
         branch_ratings = self.numerical_circuit.branch_rates / Sbase
         alpha_abs = np.abs(self.alpha)
+        alpha_n1_abs = np.abs(self.alpha_n1)
 
         # --------------------------------------------------------------------------------------------------------------
         # Formulate the problem
@@ -1748,6 +1754,7 @@ class OpfNTC(Opf):
             branch_sensitivity_threshold=self.branch_sensitivity_threshold,
             monitor_only_sensitive_branches=self.monitor_only_sensitive_branches,
             alpha_abs=alpha_abs,
+            alpha_n1_abs=alpha_n1_abs,
             logger=self.logger)
 
         # formulate the HVDC flows
@@ -1942,6 +1949,7 @@ class OpfNTC(Opf):
         # branch
         branch_ratings = self.numerical_circuit.branch_rates[:, t] / Sbase
         alpha_abs = np.abs(self.alpha)
+        alpha_n1_abs = np.abs(self.alpha_n1)
 
         # --------------------------------------------------------------------------------------------------------------
         # Formulate the problem
@@ -2063,6 +2071,7 @@ class OpfNTC(Opf):
             branch_sensitivity_threshold=self.branch_sensitivity_threshold,
             monitor_only_sensitive_branches=self.monitor_only_sensitive_branches,
             alpha_abs=alpha_abs,
+            alpha_n1_abs=alpha_n1_abs,
             logger=self.logger)
 
 

@@ -67,7 +67,7 @@ def get_proportional_deltas_sensed(P, idx, dP=1.0):
 
     # compute witch proportion to attend with positive and negative sense
     dPu = nU / (nU + nD)  # positive proportion
-    dPd = 1 - dPu  # negative proportion
+    dPd = nD / (nU + nD)  # negative proportion
 
     for i in idx:
 
@@ -98,11 +98,13 @@ def scale_proportional_sensed(P, idx1, idx2, dT=1.0):
 
     return P + dP
 
-@nb.njit()
-def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0):
+# @nb.njit()
+def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0, lodf=None,
+                  with_n1=False, top_n=10):
     """
     Compute line sensitivity to power transfer
     :param ptdf: Power transfer distribution factors (n-branch, n-bus)
+    :param lodf: Line outage distribution factor (n-branch, n-branch)
     :param P0: all bus injections [p.u.]
     :param Pinstalled: bus generation installed power [p.u.]
     :param Pgen: bus generation current power [p.u.]
@@ -110,6 +112,7 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0)
     :param idx1: bus indices of the sending region
     :param idx2: bus indices of the receiving region
     :param dT: Exchange amount
+    :param top_n: number of worst contingencies to consider
     :param mode: Type of power shift
                  0: shift generation based on the current generated power
                  1: shift generation based on the installed power
@@ -146,9 +149,26 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0)
 
     # compute the sensitivity
     alpha = dflow / dT
+    alpha_n1 = alpha
 
-    return alpha
+    if with_n1:
+        for m in range(len(alpha)):
+            # Get n worst contingencies to consider
+            idx = [i for i in np.argsort(np.abs(lodf[m, :])) if i != c][:top_n]
+            dflow_n1 = (dflow[m] + lodf[m, idx] * dflow[idx])
+            alpha_n1 = dflow_n1 / dT
 
+            dflow_n1 = (dflow[m] + lodf[m, :] * dflow)
+            alpha_n1 = dflow_n1 / dT
+
+            for c in idx:
+                if m != c:
+                    flow_n1 = dflow[m] + lodf[m, c] * dflow[c]
+                    alpha_c = flow_n1 / dT
+                    if abs(alpha_c) > abs(alpha_n1[m]):
+                        alpha_n1[m] = alpha_c
+
+    return alpha, alpha_n1
 
 # @nb.njit()
 # def compute_atc(br_idx, contingency_br_idx, lodf, alpha, flows, rates, contingency_rates, threshold=0.005):
@@ -574,15 +594,17 @@ class AvailableTransferCapacityDriver(DriverTemplate):
                                                         contingency_rates=nc.ContingencyRates)
 
         # compute the branch exchange sensitivity (alpha)
-        alpha = compute_alpha(ptdf=linear.PTDF,
-                              P0=nc.Sbus.real,
-                              Pinstalled=nc.bus_installed_power,
-                              Pgen=nc.generator_data.get_injections_per_bus(),
-                              Pload=nc.load_data.get_injections_per_bus(),
-                              idx1=idx1b,
-                              idx2=idx2b,
-                              dT=self.options.dT,
-                              mode=int(self.options.mode.value))
+        alpha, alpha_n1 = compute_alpha(
+            ptdf=linear.PTDF,
+            lodf=linear.LODF,
+            P0=nc.Sbus.real,
+            Pinstalled=nc.bus_installed_power,
+            Pgen=nc.generator_data.get_injections_per_bus(),
+            Pload=nc.load_data.get_injections_per_bus(),
+            idx1=idx1b,
+            idx2=idx2b,
+            dT=self.options.dT,
+            mode=int(self.options.mode.value))
 
         # get flow
         if self.options.use_provided_flows:

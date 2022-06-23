@@ -517,8 +517,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
     def compute_exchange_sensitivity(self, linear, numerical_circuit: OpfTimeCircuit, t):
 
         # compute the branch exchange sensitivity (alpha)
-        alpha = compute_alpha(
+        alpha, alpha_n1 = compute_alpha(
             ptdf=linear.PTDF,
+            lodf=linear.LODF,
             P0=numerical_circuit.Sbus.real[:, t],
             Pinstalled=numerical_circuit.bus_installed_power,
             Pgen=numerical_circuit.generator_data.get_injections_per_bus()[:, t].real,
@@ -526,9 +527,11 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             idx1=self.options.area_from_bus_idx,
             idx2=self.options.area_to_bus_idx,
             dT=self.options.sensitivity_dT,
-            mode=self.options.sensitivity_mode.value)
+            mode=self.options.sensitivity_mode.value,
+            with_n1=True,
+            top_n=10)
 
-        return alpha
+        return alpha, alpha_n1
 
     def opf(self):
         """
@@ -539,6 +542,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         nc = compile_opf_time_circuit(self.grid)
         time_indices = self.get_time_indices()
+
 
         nt = len(time_indices)
 
@@ -585,6 +589,10 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 time_indices=time_indices,
                 trm=self.trm)
 
+        # hourly alphas
+        alpha = np.zeros((len(time_indices), nc.nbr))
+        alpha_n1 = np.zeros((len(time_indices), nc.nbr))
+
         for t_idx, t in enumerate(time_indices):
 
             # update progress bar
@@ -599,12 +607,13 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             # sensitivities
             if self.options.monitor_only_sensitive_branches:
-                alpha = self.compute_exchange_sensitivity(
+                alpha[t, :], alpha_n1[t, :] = self.compute_exchange_sensitivity(
                     linear=linear,
                     numerical_circuit=nc,
                     t=t)
             else:
-                alpha = np.ones(nc.nbr)
+                alpha[t, :] = np.ones(nc.nbr)
+                alpha_n1[t, :] = np.ones(nc.nbr)
 
             # Define the problem
             self.progress_text.emit('Formulating NTC OPF...')
@@ -613,7 +622,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 numerical_circuit=nc,
                 area_from_bus_idx=self.options.area_from_bus_idx,
                 area_to_bus_idx=self.options.area_to_bus_idx,
-                alpha=alpha,
+                alpha=alpha[t],
+                alpha_n1=alpha_n1[t],
                 LODF=linear.LODF,
                 PTDF=linear.PTDF,
                 solver_type=self.options.mip_solver,
@@ -707,6 +717,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 inter_area_branches=problem.inter_area_branches,
                 inter_area_hvdc=problem.inter_area_hvdc,
                 alpha=alpha,
+                alpha_n1=alpha_n1,
                 contingency_branch_flows_list=problem.get_contingency_flows_list(),
                 contingency_branch_indices_list=problem.contingency_indices_list,
                 contingency_generation_flows_list=problem.get_contingency_gen_flows_list(),

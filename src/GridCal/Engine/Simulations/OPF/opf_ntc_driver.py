@@ -252,6 +252,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.solved = solved
 
         self.alpha = alpha
+        self.alpha_n1 = alpha_n1
 
         self.contingency_branch_flows_list = contingency_branch_flows_list
         self.contingency_branch_indices_list = contingency_branch_indices_list  # [(t, m, c), ...]
@@ -806,8 +807,10 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
     def compute_exchange_sensitivity(self, linear, numerical_circuit):
 
         # compute the branch exchange sensitivity (alpha)
-        alpha = compute_alpha(
+        tm01 = time.time()
+        alpha, alpha_n1 = compute_alpha(
             ptdf=linear.PTDF,
+            lodf=linear.LODF,
             P0=numerical_circuit.Sbus.real,
             Pinstalled=numerical_circuit.bus_installed_power,
             Pgen=numerical_circuit.generator_data.get_injections_per_bus()[:, 0].real,
@@ -815,9 +818,12 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             idx1=self.options.area_from_bus_idx,
             idx2=self.options.area_to_bus_idx,
             dT=self.options.sensitivity_dT,
-            mode=self.options.sensitivity_mode.value)
+            mode=self.options.sensitivity_mode.value,
+            with_n1=True,
+            top_n=10)
+        tm02 = time.time()
 
-        return alpha
+        return alpha, alpha_n1
 
     def opf(self):
         """
@@ -851,11 +857,12 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
 
         # sensitivities
         if self.options.monitor_only_sensitive_branches:
-            alpha = self.compute_exchange_sensitivity(
+            alpha, alpha_n1 = self.compute_exchange_sensitivity(
                 linear=linear,
                 numerical_circuit=numerical_circuit)
         else:
             alpha = np.ones(numerical_circuit.nbr)
+            alpha_n1 = np.ones(numerical_circuit.nbr)
 
         base_problems = False
         if self.options.perform_previous_checks:
@@ -948,6 +955,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 inter_area_branches=inter_area_branches,
                 inter_area_hvdc=inter_area_hvdc,
                 alpha=alpha,
+                alpha_n1=alpha_n1,
                 contingency_branch_flows_list=contingency_flows_list,
                 contingency_branch_indices_list=contingency_indices_list,
                 contingency_generation_flows_list=contingency_gen_flows_list,
