@@ -165,7 +165,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                  controlled_generation_power=None, Sf=None, loading=None, losses=None, solved=None, bus_types=None,
                  hvdc_flow=None, hvdc_loading=None, hvdc_angle_slack=None, phase_shift=None, generation_delta=None,
                  inter_area_branches=list(), inter_area_hvdc=list(), alpha=None, alpha_n1=None, rates=None,
-                 contingency_branch_flows_list=None, contingency_branch_indices_list=None,
+                 monitor=None, contingency_branch_flows_list=None, contingency_branch_indices_list=None,
                  contingency_generation_flows_list=None, contingency_generation_indices_list=None,
                  contingency_hvdc_flows_list=None, contingency_hvdc_indices_list=None, contingency_rates=None,
                  area_from_bus_idx=None, area_to_bus_idx=None):
@@ -254,6 +254,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.alpha = alpha
         self.alpha_n1 = alpha_n1
 
+        self.monitor = monitor
+
         self.contingency_branch_flows_list = contingency_branch_flows_list
         self.contingency_branch_indices_list = contingency_branch_indices_list  # [(t, m, c), ...]
 
@@ -338,11 +340,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         ttc = np.floor(self.get_exchange_power())
         ntc = ttc - trm
 
-        for i, branch in enumerate(self.branch_names):
+        monitor_idx = np.where(self.monitor)[0]
+        for i in monitor_idx:
             y.append([ttc,
                       trm,
                       ntc,
-                      branch,
+                      self.branch_names[i],
                       self.Sf[i].real,
                       self.Sf[i] / self.rates[i] * 100,
                       self.rates[i]])
@@ -396,7 +399,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           m, c))
                 labels.append(len(y))
 
-        columns = ['TTC'
+        columns = ['TTC',
                    'TRM',
                    'NTC',
                    'Monitored',
@@ -459,7 +462,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                           m, c))
                 labels.append(len(y))
 
-
         columns = ['TTC',
                    'TRM',
                    'NTC',
@@ -474,7 +476,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                    'Contingency Type',
                    'Monitored idx',
                    'Contingency idx']
-
 
         y = np.array(y)
 
@@ -509,7 +510,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             if contingency_flow != 0.0:
                 y.append((ttc,
                           trm,
-                          ttc,
+                          ntc,
                           self.branch_names[m],
                           self.hvdc_names[c],
                           contingency_flow,
@@ -540,7 +541,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         y = np.array(y)
 
         # Add shifter and hvdc data into report
-        y, columns = self.add_shifter_data(y=y, columns=columns)
+        y, columns = self.add_inter_area_branches_data(y=y, columns=columns)
         y, columns = self.add_hvdc_data(y=y, columns=columns)
         y, columns = self.add_shifter_data(y=y, columns=columns)
 
@@ -569,7 +570,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         inter_area_names = self.branch_names[inter_area_idx]
         inter_area_data = np.array([self.Sf[inter_area_idx]] * y.shape[0])
 
-        y = np.concatenate((y, inter_area_data), axis=1)
+        if len(y.shape) == 2:
+            y = np.concatenate((y, inter_area_data), axis=1)
+
         columns = columns + [name for name in inter_area_names]
 
         return y, columns
@@ -585,7 +588,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         shifter_names, shifter_idx = self.get_controled_shifters_as_pt()
         shifter_data = np.array([self.phase_shift[shifter_idx]] * y.shape[0])
 
-        y = np.concatenate((y, shifter_data), axis=1)
+        if len(y.shape) == 2:
+            y = np.concatenate((y, shifter_data), axis=1)
+
         columns = columns + [name for name in shifter_names]
 
         return y, columns
@@ -601,8 +606,11 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         hvdc_data = np.array([self.hvdc_Pf] * y.shape[0])
         hvdc_angles = np.array([self.hvdc_angle_slack] * y.shape[0])
 
-        y = np.concatenate((y, hvdc_data, hvdc_angles), axis=1)
+        if len(y.shape) == 2:
+            y = np.concatenate((y, hvdc_data, hvdc_angles), axis=1)
+
         columns = columns + [name for name in self.hvdc_names] + ['Slack angle ' + name for name in self.hvdc_names]
+
         return y, columns
 
     def make_report(self, path_out=None):
@@ -807,7 +815,6 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
     def compute_exchange_sensitivity(self, linear, numerical_circuit):
 
         # compute the branch exchange sensitivity (alpha)
-        tm01 = time.time()
         alpha, alpha_n1 = compute_alpha(
             ptdf=linear.PTDF,
             lodf=linear.LODF,
@@ -819,9 +826,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             idx2=self.options.area_to_bus_idx,
             dT=self.options.sensitivity_dT,
             mode=self.options.sensitivity_mode.value,
-            with_n1=True,
-            top_n=10)
-        tm02 = time.time()
+            with_n1=True)
 
         return alpha, alpha_n1
 
@@ -1068,6 +1073,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 inter_area_branches=problem.inter_area_branches,
                 inter_area_hvdc=problem.inter_area_hvdc,
                 alpha=alpha,
+                alpha_n1=alpha_n1,
+                monitor=problem.monitor,
                 contingency_branch_flows_list=problem.get_contingency_flows_list(),
                 contingency_branch_indices_list=problem.contingency_indices_list,
                 contingency_generation_flows_list=problem.get_contingency_gen_flows_list(),
@@ -1077,7 +1084,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 rates=numerical_circuit.branch_data.branch_rates[:, 0],
                 contingency_rates=numerical_circuit.branch_data.branch_contingency_rates[:, 0],
                 area_from_bus_idx=self.options.area_from_bus_idx,
-                area_to_bus_idx=self.options.area_to_bus_idx)
+                area_to_bus_idx=self.options.area_to_bus_idx,
+                )
 
         self.progress_text.emit('Done!')
 

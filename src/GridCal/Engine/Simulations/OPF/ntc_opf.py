@@ -1544,6 +1544,7 @@ class OpfNTC(Opf):
         self.inter_area_hvdc = None
         self.hvdc_angle_slack_pos = None
         self.hvdc_angle_slack_neg = None
+        self.monitor = None
 
         self.contingency_gen_flows_list = list()
         self.contingency_gen_indices_list = list()  # [(m, c), ...]
@@ -1872,6 +1873,8 @@ class OpfNTC(Opf):
         self.gen_a1_idx = gen_a1_idx
         self.gen_a2_idx = gen_a2_idx
 
+        self.monitor = monitor
+
         # self.Pb = Pb
         self.Pl = Pload
         self.Pinj = Pinj
@@ -2191,6 +2194,8 @@ class OpfNTC(Opf):
 
         self.gen_a1_idx = gen_a1_idx
         self.gen_a2_idx = gen_a2_idx
+
+        self.monitor = monitor
 
         # self.Pb = Pb
         self.Pl = Pload

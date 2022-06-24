@@ -23,15 +23,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Final solution to overflow error normalizing x,y coordinates. &#10;Added normalize call after load a new file, and creating x,y from lat,lon functions.">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_ts_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/result_types.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/result_types.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -147,12 +144,11 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="D:\ReposGit\github\sanpen\GridCal\venv\Scripts\python.exe" />
+      <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -247,11 +243,11 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.opf_ntc_ts_driver" />
       <item itemvalue="Python.setup" />
       <item itemvalue="Python.update" />
       <item itemvalue="Python.update_gui_file" />
+      <item itemvalue="Python.ExecuteGridCal" />
     </list>
     <recent_temporary>
       <list>
@@ -695,27 +691,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00297" summary="Organized ntc reports">
-      <created>1644493360285</created>
-      <option name="number" value="00297" />
-      <option name="presentableId" value="LOCAL-00297" />
-      <option name="project" value="LOCAL" />
-      <updated>1644493360292</updated>
-    </task>
-    <task id="LOCAL-00298" summary="Removed contingency frame line">
-      <created>1644493522651</created>
-      <option name="number" value="00298" />
-      <option name="presentableId" value="LOCAL-00298" />
-      <option name="project" value="LOCAL" />
-      <updated>1644493522651</updated>
-    </task>
-    <task id="LOCAL-00299" summary="New optimal ntc time series button">
-      <created>1644572084126</created>
-      <option name="number" value="00299" />
-      <option name="presentableId" value="LOCAL-00299" />
-      <option name="project" value="LOCAL" />
-      <updated>1644572084126</updated>
-    </task>
     <task id="LOCAL-00300" summary="add TS to Gui (in progress)">
       <created>1644577706018</created>
       <option name="number" value="00300" />
@@ -1038,7 +1013,28 @@
       <option name="project" value="LOCAL" />
       <updated>1655455849028</updated>
     </task>
-    <option name="localTasksCounter" value="346" />
+    <task id="LOCAL-00346" summary="New  NTC Base report&#10;&#10;Changes on NTC reports:&#10;    - Creation responsibility has moved to snapshot driver.&#10;    - TS driver reads snapshot reports.&#10;    - Added TTC, TRM, NTC values&#10;    - Added Hvdc slack angles to report.&#10;    - Added inter area branches data">
+      <created>1655977893407</created>
+      <option name="number" value="00346" />
+      <option name="presentableId" value="LOCAL-00346" />
+      <option name="project" value="LOCAL" />
+      <updated>1655977893407</updated>
+    </task>
+    <task id="LOCAL-00347" summary="New alpha_n1 computation(exchange n-1 sensibility)">
+      <created>1655977978262</created>
+      <option name="number" value="00347" />
+      <option name="presentableId" value="LOCAL-00347" />
+      <option name="project" value="LOCAL" />
+      <updated>1655977978262</updated>
+    </task>
+    <task id="LOCAL-00348" summary="nothing">
+      <created>1655977988577</created>
+      <option name="number" value="00348" />
+      <option name="presentableId" value="LOCAL-00348" />
+      <option name="project" value="LOCAL" />
+      <updated>1655977988577</updated>
+    </task>
+    <option name="localTasksCounter" value="349" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1073,8 +1069,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="skip contingencies for disconnected hvdcs" />
-    <MESSAGE value="new version wheel" />
     <MESSAGE value="added numerical zero" />
     <MESSAGE value="added memory error control" />
     <MESSAGE value="added comment" />
@@ -1084,7 +1078,6 @@
     <MESSAGE value="fix profile assignment by code" />
     <MESSAGE value="fixed contingency factors profile issue to compute n-1 flows" />
     <MESSAGE value="Check active profile before delete any device.&#10;&#10;Ask to match active profile importing P profile." />
-    <MESSAGE value="nothing" />
     <MESSAGE value="Fixed power shifter influence in bus voltage angles" />
     <MESSAGE value="Fix opf snapshot data (load_active as profile instead snapshot value)" />
     <MESSAGE value="save .lp file only if no solution" />
@@ -1098,7 +1091,10 @@
     <MESSAGE value="Fix overflow bug implemented as a new function" />
     <MESSAGE value="improving overload bug function" />
     <MESSAGE value="Final solution to overflow error normalizing x,y coordinates. &#10;Added normalize call after load a new file, and creating x,y from lat,lon functions." />
-    <option name="LAST_COMMIT_MESSAGE" value="Final solution to overflow error normalizing x,y coordinates. &#10;Added normalize call after load a new file, and creating x,y from lat,lon functions." />
+    <MESSAGE value="New  NTC Base report&#10;&#10;Changes on NTC reports:&#10;    - Creation responsibility has moved to snapshot driver.&#10;    - TS driver reads snapshot reports.&#10;    - Added TTC, TRM, NTC values&#10;    - Added Hvdc slack angles to report.&#10;    - Added inter area branches data" />
+    <MESSAGE value="New alpha_n1 computation(exchange n-1 sensibility)" />
+    <MESSAGE value="nothing" />
+    <option name="LAST_COMMIT_MESSAGE" value="nothing" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1356,7 +1352,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py</url>
-          <line>850</line>
+          <line>759</line>
           <option name="timeStamp" value="757" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1370,34 +1366,9 @@
           <option name="timeStamp" value="769" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py</url>
-          <line>274</line>
-          <option name="timeStamp" value="770" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py</url>
-          <line>811</line>
-          <option name="timeStamp" value="789" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py</url>
-          <line>848</line>
-          <option name="timeStamp" value="794" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py</url>
-          <line>841</line>
-          <option name="timeStamp" value="795" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py</url>
-          <line>826</line>
-          <option name="timeStamp" value="816" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_driver.py</url>
-          <line>156</line>
-          <option name="timeStamp" value="817" />
+          <line>1076</line>
+          <option name="timeStamp" value="771" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

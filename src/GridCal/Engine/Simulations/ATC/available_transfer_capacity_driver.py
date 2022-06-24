@@ -98,9 +98,9 @@ def scale_proportional_sensed(P, idx1, idx2, dT=1.0):
 
     return P + dP
 
-# @nb.njit()
+@nb.njit()
 def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0, lodf=None,
-                  with_n1=False, top_n=10):
+                  with_n1=False):
     """
     Compute line sensitivity to power transfer
     :param ptdf: Power transfer distribution factors (n-branch, n-bus)
@@ -112,7 +112,6 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0,
     :param idx1: bus indices of the sending region
     :param idx2: bus indices of the receiving region
     :param dT: Exchange amount
-    :param top_n: number of worst contingencies to consider
     :param mode: Type of power shift
                  0: shift generation based on the current generated power
                  1: shift generation based on the installed power
@@ -149,24 +148,24 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0,
 
     # compute the sensitivity
     alpha = dflow / dT
-    alpha_n1 = alpha
+    alpha_n1 = np.zeros(len(alpha))
 
     if with_n1:
         for m in range(len(alpha)):
-            # Get n worst contingencies to consider
-            idx = [i for i in np.argsort(np.abs(lodf[m, :])) if i != c][:top_n]
-            dflow_n1 = (dflow[m] + lodf[m, idx] * dflow[idx])
-            alpha_n1 = dflow_n1 / dT
+            # # NUMPY METHOD
+            # dflow_n1 = (dflow[m] + lodf[m, :] * dflow)
+            # alpha_n1[m] = np.max(dflow_n1) / dT
 
-            dflow_n1 = (dflow[m] + lodf[m, :] * dflow)
-            alpha_n1 = dflow_n1 / dT
-
-            for c in idx:
+            # FOR LOOP METHOD
+            for c in range(len(alpha)):
                 if m != c:
-                    flow_n1 = dflow[m] + lodf[m, c] * dflow[c]
-                    alpha_c = flow_n1 / dT
-                    if abs(alpha_c) > abs(alpha_n1[m]):
+                    dflow_n1 = dflow[m] + lodf[m, c] * dflow[c]
+                    alpha_c = dflow_n1 / dT
+                    if alpha_c > alpha_n1[m]:
                         alpha_n1[m] = alpha_c
+
+    else:
+        alpha_n1 = alpha
 
     return alpha, alpha_n1
 

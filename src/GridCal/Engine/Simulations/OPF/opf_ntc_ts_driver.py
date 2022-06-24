@@ -79,8 +79,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         self.sampled_probabilities = sampled_probabilities
 
-        self.trm = trm
-
         self.results_dict = dict()
         self.optimal_idx = []
         self.feasible_idx = []
@@ -90,6 +88,8 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.not_solved = []
 
         self.elapsed = 0
+
+        self.trm = trm
 
         if sampled_probabilities is None and len(self.time_array) > 0:
             pct = 1 / len(self.time_array)
@@ -157,7 +157,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         return all_names, all_idx
 
-    def make_report(self, path_out=None):
+    def save_report(self, path_out=None):
         """
 
          :param path_out:
@@ -188,13 +188,37 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         if path_out:
             df.to_csv(path_out, index=False)
 
-    def get_base_report(self):
+    def add_probability_info(self, columns, data):
 
         prob_dict = dict(zip(self.time_indices, self.sampled_probabilities))
 
-        if len(self.results_dict.values()) == 0:
-            print("Sin resultados")
-            return
+        # sort data by ntc and time index, descending to compute probability factor
+        data = data[np.lexsort(
+            (np.abs(data[:, 11].astype(float)), data[:, 0], data[:, 2])
+        )][::-1]
+
+        # add probability info into data
+        prob = np.zeros((data.shape[0], 1))
+        data = np.append(prob, data, axis=1)
+        columns = ['Prob.'] + columns
+
+        # compute cumulative probability
+        time_prev = 0
+        pct = 0
+        for row in range(data.shape[0]):
+            t = int(data[row, 1])
+            if t != time_prev:
+                pct += prob_dict[t]
+                time_prev = t
+
+            data[row, 0] = pct
+
+        # # convert time to formated string
+        # data[:, 2] = [t.strftime("%d/%m/%Y %H:%M:%S") for t in data[:, 2]]
+
+        return columns, data
+
+    def get_base_report(self):
 
         labels, columns, data = list(self.results_dict.values())[0].get_base_report()
         columns_all = ['Time index', 'Time'] + columns
@@ -205,46 +229,21 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 l, c, data = self.results_dict[t].get_base_report(
                     max_report_elements=self.max_report_elements)
 
-            # complete the data with time and ntc columns
-            extra_data = np.array([[t, self.time_array[idx]]] * data.shape[0])
-            data = np.concatenate((extra_data, data), axis=1)
+            # complete the report data with Time info
+            time_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * data.shape[0])
+            data = np.concatenate((time_data, data), axis=1)
 
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
 
-        # sort data by ntc and time index, descending to compute probability factor
-        data_all = data_all[np.lexsort(
-            (np.abs(data_all[:, 7].astype(float)), data_all[:, 0], data_all[:, 2])
-        )][::-1]
+        self.add_probability_info(columns=columns_all, data=data_all)
 
-        # add column into data
-        prob = np.zeros((data_all.shape[0], 1))
-        data_all = np.append(prob, data_all, axis=1)
-        columns_all = ['Prob.'] + columns_all
-
-        # compute cumulative probability
-        time_prev = 0
-        pct = 0
-        for row in range(data_all.shape[0]):
-            t = int(data_all[row, 1])
-            if t != time_prev:
-                pct += prob_dict[t]
-                time_prev = t
-
-            data_all[row, 0] = pct
-
-        # return report data
         labels_all = np.arange(data_all.shape[0])
-
-        # convert time to formated string
-        data_all[:, 2] = [t.strftime("%d/%m/%Y %H:%M:%S") for t in data_all[:, 2]]
 
         print('Ejecutado en {0} scs. para {1} casos'.format(self.elapsed, len(self.time_array)))
         return labels_all, columns_all, data_all
 
     def get_contingency_report(self):
-
-        prob_dict = dict(zip(self.time_indices, self.sampled_probabilities))
 
         if len(self.results_dict.values()) == 0:
             print("Sin resultados")
@@ -258,7 +257,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
             if t in self.results_dict.keys():
 
-                # get ttc and ntc values
                 ttc = np.floor(self.results_dict[t].get_exchange_power())
 
                 if ttc != 0:
@@ -267,60 +265,33 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 else:
                     data = np.zeros(shape=(1, len(columns)))
 
-            # complete the data with time and ntc columns
-            extra_data = np.array([[t, self.time_array[idx]]] * data.shape[0])
-            data = np.concatenate((extra_data, data), axis=1)
+            # complete the report data with Time info
+            time_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * data.shape[0])
+            data = np.concatenate((time_data, data), axis=1)
 
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
 
-        # sort data by ntc and time index, descending to compute probability factor
-        data_all = data_all[np.lexsort(
-            (np.abs(data_all[:, 11].astype(float)), data_all[:, 0], data_all[:, 2])
-        )][::-1]
+        self.add_probability_info(columns=columns_all, data=data_all)
 
-        # add column into data
-        prob = np.zeros((data_all.shape[0], 1))
-        data_all = np.append(prob, data_all, axis=1)
-        columns_all = ['Prob.'] + columns_all
-
-        # compute cumulative probability
-        time_prev = 0
-        pct = 0
-        for row in range(data_all.shape[0]):
-            t = int(data_all[row, 1])
-            if t != time_prev:
-                pct += prob_dict[t]
-                time_prev = t
-
-            data_all[row, 0] = pct
-
-        # return report data
         labels_all = np.arange(data_all.shape[0])
 
-        # convert time to formated string
-        data_all[:, 2] = [t.strftime("%d/%m/%Y %H:%M:%S") for t in data_all[:, 2]]
-
-        print('Ejecutado en {0} scs. para {1} casos'.format(self.elapsed, len(self.time_array)))
+        print('Ejecutado en {0:2f} scs. para {1} casos'.format(self.elapsed, len(self.time_array)))
         return labels_all, columns_all, data_all
 
     def get_contingency_branch_report(self):
-
-        prob_dict = dict(zip(self.time_indices, self.sampled_probabilities))
 
         if len(self.results_dict.values()) == 0:
             return
 
         labels, columns, data = list(self.results_dict.values())[0].get_contingency_report()
+
         columns_all = ['Time index', 'Time'] + columns
         data_all = np.empty(shape=(0, len(columns_all)))
 
         for idx, t in enumerate(self.time_indices):
 
             if t in self.results_dict.keys():
-
-                # get ntc value
-                ttc = np.floor(self.results_dict[t].get_exchange_power())
 
                 l, c, data = self.results_dict[t].get_contingency_branch_report(
                     max_report_elements=self.max_report_elements)
@@ -328,41 +299,20 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             else:
                 data = np.zeros(shape=(1, len(columns)))
 
-            # complete the data with time and ntc columns
-            extra_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * data.shape[0])
-            data = np.concatenate((extra_data, data), axis=1)
+            # complete the report data with Time info
+            time_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * data.shape[0])
+            data = np.concatenate((time_data, data), axis=1)
 
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
 
-        # sort data by ntc and time index, descending to compute probability factor
-        data_all = data_all[np.lexsort(
-            (np.abs(data_all[:, 11].astype(float)), data_all[:, 0], data_all[:, 2])
-        )][::-1]
+        self.add_probability_info(columns=columns_all, data=data_all)
 
-        # add column into data
-        prob = np.zeros((data_all.shape[0], 1))
-        data_all = np.append(prob, data_all, axis=1)
-        columns_all = ['Prob.'] + columns_all
-
-        # compute cumulative probability
-        time_prev = 0
-        pct = 0
-        for row in range(data_all.shape[0]):
-            t = data_all[row, 1]
-            if t != time_prev:
-                pct += prob_dict[t]
-                time_prev = t
-
-            data_all[row, 0] = pct
-
-        # return report data
         labels_all = np.arange(data_all.shape[0])
+
         return labels_all, columns_all, data_all
 
     def get_contingency_generation_report(self):
-
-        prob_dict = dict(zip(self.time_indices, self.sampled_probabilities))
 
         if len(self.results_dict.values()) == 0:
             return
@@ -374,9 +324,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         for idx, t in enumerate(self.time_indices):
 
             if t in self.results_dict.keys():
-
-                # get ntc value
-                ntc = np.floor(self.results_dict[t].get_exchange_power())
 
                 l, c, data = self.results_dict[t].get_contingency_generation_report(
                     max_report_elements=self.max_report_elements)
@@ -384,42 +331,20 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             else:
                 data = np.zeros(shape=(1, len(columns)))
 
-            # complete the data with time and ntc columns
-            extra_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * data.shape[0])
-            data = np.concatenate((extra_data, data), axis=1)
+            # complete the report data with Time info
+            time_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * data.shape[0])
+            data = np.concatenate((time_data, data), axis=1)
 
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
 
-        # sort data by ntc and time index, descending to compute probability factor
+        self.add_probability_info(columns=columns_all, data=data_all)
 
-        data_all = data_all[np.lexsort(
-            (np.abs(data_all[:, 11].astype(float)), data_all[:, 0], data_all[:, 2])
-        )][::-1]
-
-        # add column into data
-        prob = np.zeros((data_all.shape[0], 1))
-        data_all = np.append(prob, data_all, axis=1)
-        columns_all = ['Prob.'] + columns_all
-
-        # compute cumulative probability
-        time_prev = 0
-        pct = 0
-        for row in range(data_all.shape[0]):
-            t = data_all[row, 1]
-            if t != time_prev:
-                pct += prob_dict[t]
-                time_prev = t
-
-            data_all[row, 0] = pct
-
-        # return report data
         labels_all = np.arange(data_all.shape[0])
+
         return labels_all, columns_all, data_all
 
     def get_contingency_hvdc_report(self):
-
-        prob_dict = dict(zip(self.time_indices, self.sampled_probabilities))
 
         if len(self.results_dict.values()) == 0:
             return
@@ -432,44 +357,20 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
             if t in self.results_dict.keys():
 
-                # get ntc value
-                ntc = np.floor(self.results_dict[t].get_exchange_power())
-
                 l, c, data = self.results_dict[t].get_contingency_hvdc_report(
                     max_report_elements=self.max_report_elements)
             else:
                 data = np.zeros(shape=(1, len(columns)))
 
-            # complete the data with time and ntc columns
-            extra_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * data.shape[0])
-            data = np.concatenate((extra_data, data), axis=1)
+            # complete the report data with Time info
+            time_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * data.shape[0])
+            data = np.concatenate((time_data, data), axis=1)
 
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
 
-        # sort data by ntc and time index, descending to compute probability factor
+        self.add_probability_info(columns=columns_all, data=data_all)
 
-        data_all = data_all[np.lexsort(
-            (np.abs(data_all[:, 11].astype(float)), data_all[:, 0], data_all[:, 2])
-        )][::-1]
-
-        # add column into data
-        prob = np.zeros((data_all.shape[0], 1))
-        data_all = np.append(prob, data_all, axis=1)
-        columns_all = ['Prob.'] + columns_all
-
-        # compute cumulative probability
-        time_prev = 0
-        pct = 0
-        for row in range(data_all.shape[0]):
-            t = data_all[row, 1]
-            if t != time_prev:
-                pct += prob_dict[t]
-                time_prev = t
-
-            data_all[row, 0] = pct
-
-        # return report data
         labels_all = np.arange(data_all.shape[0])
         return labels_all, columns_all, data_all
 
@@ -517,6 +418,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
     def compute_exchange_sensitivity(self, linear, numerical_circuit: OpfTimeCircuit, t):
 
         # compute the branch exchange sensitivity (alpha)
+        # tm0 = time.time()
         alpha, alpha_n1 = compute_alpha(
             ptdf=linear.PTDF,
             lodf=linear.LODF,
@@ -528,9 +430,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             idx2=self.options.area_to_bus_idx,
             dT=self.options.sensitivity_dT,
             mode=self.options.sensitivity_mode.value,
-            with_n1=True,
-            top_n=10)
-
+            with_n1=True)
+        # print('Exchange sensibility computed in {0:.2f} scs.'.format(time.time()-tm0))
         return alpha, alpha_n1
 
     def opf(self):
@@ -540,9 +441,11 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.progress_signal.emit(0)
 
+        # tm0 = time.time()
         nc = compile_opf_time_circuit(self.grid)
-        time_indices = self.get_time_indices()
+        # print('Circuit compiled in {0:.2f} scs.'.format(time.time()-tm0))
 
+        time_indices = self.get_time_indices()
 
         nt = len(time_indices)
 
@@ -552,7 +455,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             distributed_slack=False,
             correct_values=False)
 
+        # tm0 = time.time()
         linear.run()
+        # print('Linear analysis computed in {0:.2f} scs.'.format(time.time()-tm0))
 
         if self.use_clustering:
 
@@ -586,8 +491,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 rates=nc.Rates,
                 contingency_rates=nc.ContingencyRates,
                 time_array=nc.time_array[time_indices],
-                time_indices=time_indices,
-                trm=self.trm)
+                time_indices=time_indices)
 
         # hourly alphas
         alpha = np.zeros((len(time_indices), nc.nbr))
@@ -646,12 +550,16 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             time_str = str(nc.time_array[time_indices][t_idx])
             self.progress_text.emit('Solving NTC OPF...['+time_str+']')
 
+            # tm0 = time.time()
             problem.formulate_ts(t=t)
+            # print('Problem formulated in {0:.2f} scs.'.format(time.time() - tm0))
 
+            # tm0 = time.time()
             solved = problem.solve_ts(
                 t=t,
                 with_check=self.options.with_solution_checks,
                 time_limit_ms=self.options.time_limit_ms)
+            # print('Problem solved in {0:.2f} scs.'.format(time.time() - tm0))
 
             self.logger += problem.logger
 
@@ -718,6 +626,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 inter_area_hvdc=problem.inter_area_hvdc,
                 alpha=alpha,
                 alpha_n1=alpha_n1,
+                monitor=problem.monitor,
                 contingency_branch_flows_list=problem.get_contingency_flows_list(),
                 contingency_branch_indices_list=problem.contingency_indices_list,
                 contingency_generation_flows_list=problem.get_contingency_gen_flows_list(),
@@ -848,5 +757,5 @@ if __name__ == '__main__':
 
     driver.run()
 
-    driver.results.make_report(path_out=folder)
+    driver.results.save_report(path_out=folder)
     # driver.results.make_report()
