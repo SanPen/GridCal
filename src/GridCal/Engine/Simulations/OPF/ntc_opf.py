@@ -1898,6 +1898,9 @@ class OpfNTC(Opf):
         self.inter_area_branches = inter_area_branches
         self.inter_area_hvdc = inter_area_hvdc
 
+        self.hvdc_angle_slack_pos = hvdc_angle_slack_pos
+        self.hvdc_angle_slack_neg = hvdc_angle_slack_neg
+
         # n1flow_f, con_br_idx
         self.contingency_flows_list = n1flow_f
         self.contingency_indices_list = con_br_idx  # [(t, m, c), ...]
