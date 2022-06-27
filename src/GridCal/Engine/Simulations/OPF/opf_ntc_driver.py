@@ -34,6 +34,7 @@ from GridCal.Engine.Simulations.ContingencyAnalysis.contingency_analysis_driver 
 from GridCal.Engine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
 from GridCal.Engine.Devices.enumerations import TransformerControlType, HvdcControlType
 from GridCal.Engine.basic_structures import SolverType
+from GridCal.Engine.basic_structures import Logger
 
 try:
     from ortools.linear_solver import pywraplp
@@ -189,7 +190,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                                     ResultTypes.BatteryPower,
                                                     ResultTypes.GeneratorPower,
                                                     ResultTypes.GenerationDelta,
+
                                                     ResultTypes.AvailableTransferCapacityAlpha,
+                                                    ResultTypes.AvailableTransferCapacityAlphaN1,
+
                                                     ResultTypes.InterAreaExchange],
 
                                  data_variables=['bus_names',
@@ -727,6 +731,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             y_label = '(p.u.)'
             title = result_type.value[0]
 
+        elif result_type == ResultTypes.AvailableTransferCapacityAlphaN1:
+            labels = self.branch_names
+            y = self.alpha_n1
+            y_label = '(p.u.)'
+            title = result_type.value[0]
+
         elif result_type == ResultTypes.GenerationDelta:
             labels = self.generator_names
             y = self.generation_delta
@@ -805,6 +815,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         self.trm = trm
 
         self.all_solved = True
+
+        self.logger = Logger()
 
     def get_steps(self):
         """
@@ -980,6 +992,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 area_from_bus_idx=self.options.area_from_bus_idx,
                 area_to_bus_idx=self.options.area_to_bus_idx,
                 alpha=alpha,
+                alpha_n1=alpha_n1,
                 LODF=linear.LODF,
                 PTDF=linear.PTDF,
                 solver_type=self.options.mip_solver,

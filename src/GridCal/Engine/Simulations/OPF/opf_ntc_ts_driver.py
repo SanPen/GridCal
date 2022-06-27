@@ -31,6 +31,7 @@ from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import co
 from GridCal.Engine.Simulations.results_template import ResultsTemplate
 from GridCal.Engine.Simulations.result_types import ResultTypes
 from GridCal.Engine.Simulations.results_table import ResultsTable
+from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Simulations.LinearFactors import LinearAnalysis
 
 try:
@@ -59,7 +60,10 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             name='NTC Optimal time series results',
             available_results=[
                 ResultTypes.OpfNtcTsContingencyReport,
-                ResultTypes.OpfNtcTsBaseReport
+                ResultTypes.OpfNtcTsBaseReport,
+
+                ResultTypes.AvailableTransferCapacityAlpha,
+                ResultTypes.AvailableTransferCapacityAlphaN1
             ],
 
             data_variables=[])
@@ -110,6 +114,14 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             title = result_type.value[0]
         elif result_type == ResultTypes.OpfNtcTsContingencyReport:
             labels, columns, y = self.get_contingency_report()
+            y_label = ''
+            title = result_type.value[0]
+        elif result_type == ResultTypes.AvailableTransferCapacityAlpha:
+            labels, columns, y = self.get_alpha_report()
+            y_label = ''
+            title = result_type.value[0]
+        elif result_type == ResultTypes.AvailableTransferCapacityAlphaN1:
+            labels, columns, y = self.get_alpha_n1_report()
             y_label = ''
             title = result_type.value[0]
         else:
@@ -175,7 +187,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         print('Total con error:', len(self.abnormal_idx))
         print('Total sin analizar:', len(self.not_solved))
 
-
         labels, columns, data = self.get_contingency_report()
 
         df = pd.DataFrame(data=data, columns=columns, index=labels)
@@ -218,6 +229,34 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         return columns, data
 
+    def get_alpha_report(self):
+
+        columns = ['Time index', 'Time'] + list(self.results_dict[0].branch_names)
+        data = np.zeros((len(self.time_indices), self.results_dict[0].alpha.shape[1] + 2), np.object)
+
+        for idx, t in enumerate(self.time_indices):
+            if t in self.results_dict.keys():
+                data[idx, 2:] = self.results_dict[t].alpha[0]
+                data[idx, :2] = [t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]
+
+        labels = np.arange(data.shape[0])
+
+        return labels, columns, data
+
+    def get_alpha_n1_report(self):
+
+        columns = ['Time index', 'Time'] + list(self.results_dict[0].branch_names)
+        data = np.zeros((len(self.time_indices), self.results_dict[0].alpha.shape[1] + 2), np.object)
+
+        for idx, t in enumerate(self.time_indices):
+            if t in self.results_dict.keys():
+                data[idx, 2:] = self.results_dict[t].alpha_n1[0]
+                data[idx, :2] = [t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]
+
+        labels = np.arange(data.shape[0])
+
+        return labels, columns, data
+
     def get_base_report(self):
 
         labels, columns, data = list(self.results_dict.values())[0].get_base_report()
@@ -240,7 +279,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         labels_all = np.arange(data_all.shape[0])
 
-        print('Ejecutado en {0} scs. para {1} casos'.format(self.elapsed, len(self.time_array)))
         return labels_all, columns_all, data_all
 
     def get_contingency_report(self):
@@ -276,7 +314,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         labels_all = np.arange(data_all.shape[0])
 
-        print('Ejecutado en {0:2f} scs. para {1} casos'.format(self.elapsed, len(self.time_array)))
         return labels_all, columns_all, data_all
 
     def get_contingency_branch_report(self):
@@ -404,6 +441,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.trm = trm
 
+        self.logger = Logger()
+
         self.results = OptimalNetTransferCapacityTimeSeriesResults(
             br_names=[],
             bus_names=[],
@@ -418,7 +457,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
     def compute_exchange_sensitivity(self, linear, numerical_circuit: OpfTimeCircuit, t):
 
         # compute the branch exchange sensitivity (alpha)
-        # tm0 = time.time()
+        tm0 = time.time()
         alpha, alpha_n1 = compute_alpha(
             ptdf=linear.PTDF,
             lodf=linear.LODF,
@@ -431,7 +470,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             dT=self.options.sensitivity_dT,
             mode=self.options.sensitivity_mode.value,
             with_n1=True)
-        # print('Exchange sensibility computed in {0:.2f} scs.'.format(time.time()-tm0))
+        self.logger.add_info('Exchange sensibility computed in {0:.2f} scs.'.format(time.time()-tm0))
+
         return alpha, alpha_n1
 
     def opf(self):
@@ -441,9 +481,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.progress_signal.emit(0)
 
-        # tm0 = time.time()
+        tm0 = time.time()
         nc = compile_opf_time_circuit(self.grid)
-        # print('Circuit compiled in {0:.2f} scs.'.format(time.time()-tm0))
+        self.logger.add_info('Circuit compiled in {0:.2f} scs.'.format(time.time()-tm0))
 
         time_indices = self.get_time_indices()
 
@@ -455,9 +495,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             distributed_slack=False,
             correct_values=False)
 
-        # tm0 = time.time()
+        tm0 = time.time()
         linear.run()
-        # print('Linear analysis computed in {0:.2f} scs.'.format(time.time()-tm0))
+        self.logger.add_info('Linear analysis computed in {0:.2f} scs.'.format(time.time()-tm0))
 
         if self.use_clustering:
 
@@ -646,6 +686,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             if self.__cancel__:
                 break
 
+        self.logger.add_info('Ejecutado en {0:.2f} scs. para {1} casos'.format(
+            self.results.elapsed, len(self.results.time_array)))
 
     def run(self):
         """

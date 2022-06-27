@@ -1427,8 +1427,6 @@ def formulate_objective(solver: pywraplp.Solver,
     :param generation_delta:  Array of generation delta LP variables
     :param weight_power_shift: Power shift maximization weight
     :param weight_generation_cost: Generation cost minimization weight
-    :param load_shedding: Array of load shedding LP variables
-    :param load_cost: Array of cost of the load shedding per load
     :param logger: logger instance
     """
 
