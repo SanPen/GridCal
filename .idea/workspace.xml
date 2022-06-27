@@ -23,12 +23,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed reports issues&#10;Alpha n-1 considered">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="New alpha and alphaN-1 reports">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_driver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/result_types.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/result_types.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -135,7 +132,7 @@
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.setup">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -251,10 +248,10 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.setup" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.update" />
-        <item itemvalue="Python.setup" />
         <item itemvalue="Python.opf_ntc_ts_driver" />
       </list>
     </recent_temporary>
@@ -691,13 +688,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00302" summary="new optimal ntc time series with clustering in GUI (version)">
-      <created>1644581321500</created>
-      <option name="number" value="00302" />
-      <option name="presentableId" value="LOCAL-00302" />
-      <option name="project" value="LOCAL" />
-      <updated>1644581321500</updated>
-    </task>
     <task id="LOCAL-00303" summary="new optimal ntc time series with clustering in GUI (version)">
       <created>1644581529809</created>
       <option name="number" value="00303" />
@@ -1034,7 +1024,14 @@
       <option name="project" value="LOCAL" />
       <updated>1656313773638</updated>
     </task>
-    <option name="localTasksCounter" value="351" />
+    <task id="LOCAL-00351" summary="New alpha and alphaN-1 reports">
+      <created>1656325348255</created>
+      <option name="number" value="00351" />
+      <option name="presentableId" value="LOCAL-00351" />
+      <option name="project" value="LOCAL" />
+      <updated>1656325348255</updated>
+    </task>
+    <option name="localTasksCounter" value="352" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1069,7 +1066,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added memory error control" />
     <MESSAGE value="added comment" />
     <MESSAGE value="new version" />
     <MESSAGE value="added contingency rates as profile" />
@@ -1094,7 +1090,8 @@
     <MESSAGE value="New alpha_n1 computation(exchange n-1 sensibility)" />
     <MESSAGE value="nothing" />
     <MESSAGE value="Fixed reports issues&#10;Alpha n-1 considered" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed reports issues&#10;Alpha n-1 considered" />
+    <MESSAGE value="New alpha and alphaN-1 reports" />
+    <option name="LAST_COMMIT_MESSAGE" value="New alpha and alphaN-1 reports" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

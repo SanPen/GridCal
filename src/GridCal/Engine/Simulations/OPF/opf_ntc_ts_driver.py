@@ -230,13 +230,13 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         return columns, data
 
     def get_alpha_report(self):
-
-        columns = ['Time index', 'Time'] + list(self.results_dict[0].branch_names)
-        data = np.zeros((len(self.time_indices), self.results_dict[0].alpha.shape[1] + 2), np.object)
+        result = list(self.results_dict.values())[0]
+        columns = ['Time index', 'Time'] + list(result.branch_names)
+        data = np.zeros((len(self.time_indices), len(result.alpha) + 2), np.object)
 
         for idx, t in enumerate(self.time_indices):
             if t in self.results_dict.keys():
-                data[idx, 2:] = self.results_dict[t].alpha[0]
+                data[idx, 2:] = self.results_dict[t].alpha
                 data[idx, :2] = [t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]
 
         labels = np.arange(data.shape[0])
@@ -244,13 +244,13 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         return labels, columns, data
 
     def get_alpha_n1_report(self):
-
-        columns = ['Time index', 'Time'] + list(self.results_dict[0].branch_names)
-        data = np.zeros((len(self.time_indices), self.results_dict[0].alpha.shape[1] + 2), np.object)
+        result = list(self.results_dict.values())[0]
+        columns = ['Time index', 'Time'] + list(result.branch_names)
+        data = np.zeros((len(self.time_indices), len(result.alpha) + 2), np.object)
 
         for idx, t in enumerate(self.time_indices):
             if t in self.results_dict.keys():
-                data[idx, 2:] = self.results_dict[t].alpha_n1[0]
+                data[idx, 2:] = self.results_dict[t].alpha_n1
                 data[idx, :2] = [t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]
 
         labels = np.arange(data.shape[0])
@@ -551,13 +551,13 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             # sensitivities
             if self.options.monitor_only_sensitive_branches:
-                alpha[t, :], alpha_n1[t, :] = self.compute_exchange_sensitivity(
+                alpha[t_idx, :], alpha_n1[t_idx, :] = self.compute_exchange_sensitivity(
                     linear=linear,
                     numerical_circuit=nc,
                     t=t)
             else:
-                alpha[t, :] = np.ones(nc.nbr)
-                alpha_n1[t, :] = np.ones(nc.nbr)
+                alpha[t_idx, :] = np.ones(nc.nbr)
+                alpha_n1[t_idx, :] = np.ones(nc.nbr)
 
             # Define the problem
             self.progress_text.emit('Formulating NTC OPF...')
@@ -566,8 +566,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 numerical_circuit=nc,
                 area_from_bus_idx=self.options.area_from_bus_idx,
                 area_to_bus_idx=self.options.area_to_bus_idx,
-                alpha=alpha[t],
-                alpha_n1=alpha_n1[t],
+                alpha=alpha[t_idx],
+                alpha_n1=alpha_n1[t_idx],
                 LODF=linear.LODF,
                 PTDF=linear.PTDF,
                 solver_type=self.options.mip_solver,
@@ -664,8 +664,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 hvdc_angle_slack=problem.get_hvdc_angle_slacks(),
                 inter_area_branches=problem.inter_area_branches,
                 inter_area_hvdc=problem.inter_area_hvdc,
-                alpha=alpha,
-                alpha_n1=alpha_n1,
+                alpha=alpha[t_idx],
+                alpha_n1=alpha_n1[t_idx],
                 monitor=problem.monitor,
                 contingency_branch_flows_list=problem.get_contingency_flows_list(),
                 contingency_branch_indices_list=problem.contingency_indices_list,
