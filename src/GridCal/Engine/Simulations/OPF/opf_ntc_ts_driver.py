@@ -205,7 +205,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         # sort data by ntc and time index, descending to compute probability factor
         data = data[np.lexsort(
-            (np.abs(data[:, 11].astype(float)), data[:, 0], data[:, 2])
+            (np.abs(data[:, 11].astype(float)), data[:, 0], data[:, 2].astype(float))
         )][::-1]
 
         # add probability info into data

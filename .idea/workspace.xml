@@ -23,7 +23,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="little fix in contingency report (probability lost)">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="little fix in contingency report (sort column issue)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -687,13 +687,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00305" summary="fixed series report">
-      <created>1645018077887</created>
-      <option name="number" value="00305" />
-      <option name="presentableId" value="LOCAL-00305" />
-      <option name="project" value="LOCAL" />
-      <updated>1645018077887</updated>
-    </task>
     <task id="LOCAL-00306" summary="working again (change how to compute exchange sensibility)">
       <created>1645021654292</created>
       <option name="number" value="00306" />
@@ -1030,7 +1023,14 @@
       <option name="project" value="LOCAL" />
       <updated>1656404128986</updated>
     </task>
-    <option name="localTasksCounter" value="354" />
+    <task id="LOCAL-00354" summary="little fix in contingency report (sort column issue)">
+      <created>1656407036175</created>
+      <option name="number" value="00354" />
+      <option name="presentableId" value="LOCAL-00354" />
+      <option name="project" value="LOCAL" />
+      <updated>1656407036175</updated>
+    </task>
+    <option name="localTasksCounter" value="355" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1065,7 +1065,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added contingency rates as profile" />
     <MESSAGE value="fix little bug deleting time series" />
     <MESSAGE value="fix profile assignment by code" />
     <MESSAGE value="fixed contingency factors profile issue to compute n-1 flows" />
@@ -1090,7 +1089,8 @@
     <MESSAGE value="New alpha and alphaN-1 reports" />
     <MESSAGE value="New alpha and alphaN-1 reports (little fix)" />
     <MESSAGE value="little fix in contingency report (probability lost)" />
-    <option name="LAST_COMMIT_MESSAGE" value="little fix in contingency report (probability lost)" />
+    <MESSAGE value="little fix in contingency report (sort column issue)" />
+    <option name="LAST_COMMIT_MESSAGE" value="little fix in contingency report (sort column issue)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1355,6 +1355,11 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py</url>
           <line>229</line>
           <option name="timeStamp" value="763" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py</url>
+          <line>206</line>
+          <option name="timeStamp" value="765" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
