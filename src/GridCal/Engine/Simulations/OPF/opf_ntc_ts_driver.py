@@ -224,9 +224,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
             data[row, 0] = pct
 
-        # # convert time to formated string
-        # data[:, 2] = [t.strftime("%d/%m/%Y %H:%M:%S") for t in data[:, 2]]
-
         return columns, data
 
     def get_alpha_report(self):

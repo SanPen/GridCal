@@ -922,7 +922,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
 
             # branch power from-to eq.15
             solver.Add(
-                flow_f[m] == bk * (angles[_f] - angles[_t] + tau[m]),
+                flow_f[m] == bk * (angles[_f] - angles[_t] - tau[m]),
                 'branch_power_flow_assignment_{0}:{1}'.format(branch_names[m], m))
 
             # add the shifter injections matching the flow
@@ -1230,6 +1230,8 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, hvd
                 solver.Add(
                     flow_sensed[i] == flow_f[i] * sense,
                     'hvdc_sense_restriction_assignment_' + suffix)
+
+        #todo: ver cómo devolver el peso para el slack de hvdc que sea la diferencia entre el rate-flow (¿puede ser una variable?)
 
     return flow_f, hvdc_angle_slack_pos, hvdc_angle_slack_neg
 
