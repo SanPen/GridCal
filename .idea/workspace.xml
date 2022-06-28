@@ -23,9 +23,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="New alpha and alphaN-1 reports (little fix)">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="little fix in contingency report (probability lost)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -132,7 +131,7 @@
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.setup">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -248,8 +247,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.setup" />
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.update" />
         <item itemvalue="Python.opf_ntc_ts_driver" />
@@ -688,13 +687,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00304" summary="nothing">
-      <created>1644826450643</created>
-      <option name="number" value="00304" />
-      <option name="presentableId" value="LOCAL-00304" />
-      <option name="project" value="LOCAL" />
-      <updated>1644826450643</updated>
-    </task>
     <task id="LOCAL-00305" summary="fixed series report">
       <created>1645018077887</created>
       <option name="number" value="00305" />
@@ -1031,7 +1023,14 @@
       <option name="project" value="LOCAL" />
       <updated>1656338385707</updated>
     </task>
-    <option name="localTasksCounter" value="353" />
+    <task id="LOCAL-00353" summary="little fix in contingency report (probability lost)">
+      <created>1656404128986</created>
+      <option name="number" value="00353" />
+      <option name="presentableId" value="LOCAL-00353" />
+      <option name="project" value="LOCAL" />
+      <updated>1656404128986</updated>
+    </task>
+    <option name="localTasksCounter" value="354" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1066,7 +1065,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new version" />
     <MESSAGE value="added contingency rates as profile" />
     <MESSAGE value="fix little bug deleting time series" />
     <MESSAGE value="fix profile assignment by code" />
@@ -1091,7 +1089,8 @@
     <MESSAGE value="Fixed reports issues&#10;Alpha n-1 considered" />
     <MESSAGE value="New alpha and alphaN-1 reports" />
     <MESSAGE value="New alpha and alphaN-1 reports (little fix)" />
-    <option name="LAST_COMMIT_MESSAGE" value="New alpha and alphaN-1 reports (little fix)" />
+    <MESSAGE value="little fix in contingency report (probability lost)" />
+    <option name="LAST_COMMIT_MESSAGE" value="little fix in contingency report (probability lost)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

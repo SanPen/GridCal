@@ -322,7 +322,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         y = np.concatenate((y1, y2, y3), axis=0)
 
         if len(y.shape) == 2:
-            idx = np.flip(np.argsort(np.abs(y[:, 8].astype(float))))  # sort by ContingencyFlow (%)
+            idx = np.flip(np.argsort(np.abs(y[:, 9].astype(float))))  # sort by ContingencyFlow (%)
             y = y[idx, :]
             y = np.array(y, dtype=object)
         else:
