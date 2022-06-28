@@ -275,7 +275,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
 
-        self.add_probability_info(columns=columns_all, data=data_all)
+        columns_all, data_all = self.add_probability_info(columns=columns_all, data=data_all)
 
         labels_all = np.arange(data_all.shape[0])
 
@@ -310,7 +310,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
 
-        self.add_probability_info(columns=columns_all, data=data_all)
+        columns_all, data_all = self.add_probability_info(columns=columns_all, data=data_all)
 
         labels_all = np.arange(data_all.shape[0])
 
@@ -343,7 +343,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
 
-        self.add_probability_info(columns=columns_all, data=data_all)
+        columns_all, data_all = self.add_probability_info(columns=columns_all, data=data_all)
 
         labels_all = np.arange(data_all.shape[0])
 
@@ -375,7 +375,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
 
-        self.add_probability_info(columns=columns_all, data=data_all)
+        columns_all, data_all = self.add_probability_info(columns=columns_all, data=data_all)
 
         labels_all = np.arange(data_all.shape[0])
 
@@ -406,7 +406,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
 
-        self.add_probability_info(columns=columns_all, data=data_all)
+        columns_all, data_all = self.add_probability_info(columns=columns_all, data=data_all)
 
         labels_all = np.arange(data_all.shape[0])
         return labels_all, columns_all, data_all

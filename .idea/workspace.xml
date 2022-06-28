@@ -23,7 +23,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="New alpha and alphaN-1 reports">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="New alpha and alphaN-1 reports (little fix)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py" afterDir="false" />
     </list>
@@ -132,7 +132,7 @@
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.setup">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -248,8 +248,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.setup" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.setup" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.update" />
         <item itemvalue="Python.opf_ntc_ts_driver" />
@@ -688,13 +688,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00303" summary="new optimal ntc time series with clustering in GUI (version)">
-      <created>1644581529809</created>
-      <option name="number" value="00303" />
-      <option name="presentableId" value="LOCAL-00303" />
-      <option name="project" value="LOCAL" />
-      <updated>1644581529809</updated>
-    </task>
     <task id="LOCAL-00304" summary="nothing">
       <created>1644826450643</created>
       <option name="number" value="00304" />
@@ -1031,7 +1024,14 @@
       <option name="project" value="LOCAL" />
       <updated>1656325348255</updated>
     </task>
-    <option name="localTasksCounter" value="352" />
+    <task id="LOCAL-00352" summary="New alpha and alphaN-1 reports (little fix)">
+      <created>1656338385707</created>
+      <option name="number" value="00352" />
+      <option name="presentableId" value="LOCAL-00352" />
+      <option name="project" value="LOCAL" />
+      <updated>1656338385707</updated>
+    </task>
+    <option name="localTasksCounter" value="353" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1066,7 +1066,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added comment" />
     <MESSAGE value="new version" />
     <MESSAGE value="added contingency rates as profile" />
     <MESSAGE value="fix little bug deleting time series" />
@@ -1091,7 +1090,8 @@
     <MESSAGE value="nothing" />
     <MESSAGE value="Fixed reports issues&#10;Alpha n-1 considered" />
     <MESSAGE value="New alpha and alphaN-1 reports" />
-    <option name="LAST_COMMIT_MESSAGE" value="New alpha and alphaN-1 reports" />
+    <MESSAGE value="New alpha and alphaN-1 reports (little fix)" />
+    <option name="LAST_COMMIT_MESSAGE" value="New alpha and alphaN-1 reports (little fix)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1346,6 +1346,16 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/profile_dialogue.py</url>
           <line>269</line>
           <option name="timeStamp" value="758" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py</url>
+          <line>314</line>
+          <option name="timeStamp" value="761" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_ntc_ts_driver.py</url>
+          <line>229</line>
+          <option name="timeStamp" value="763" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
