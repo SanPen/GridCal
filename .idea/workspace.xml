@@ -23,8 +23,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="little fix in contingency report (sort column issue)">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="little fix in contingency report (sort column issue, asfloat ntc)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/ntc_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -131,7 +133,7 @@
       <recent name="C:\Users\SPV86\Documents\Git\GitHub\GridCal\src\GridCal\Gui" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.setup">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -687,13 +689,6 @@
       <workItem from="1642603851071" duration="4791000" />
       <workItem from="1642610723451" duration="5530000" />
     </task>
-    <task id="LOCAL-00306" summary="working again (change how to compute exchange sensibility)">
-      <created>1645021654292</created>
-      <option name="number" value="00306" />
-      <option name="presentableId" value="LOCAL-00306" />
-      <option name="project" value="LOCAL" />
-      <updated>1645021654292</updated>
-    </task>
     <task id="LOCAL-00307" summary="checking bus types computation">
       <created>1645031811065</created>
       <option name="number" value="00307" />
@@ -1030,7 +1025,14 @@
       <option name="project" value="LOCAL" />
       <updated>1656407036175</updated>
     </task>
-    <option name="localTasksCounter" value="355" />
+    <task id="LOCAL-00355" summary="little fix in contingency report (sort column issue, asfloat ntc)">
+      <created>1656410222514</created>
+      <option name="number" value="00355" />
+      <option name="presentableId" value="LOCAL-00355" />
+      <option name="project" value="LOCAL" />
+      <updated>1656410222514</updated>
+    </task>
+    <option name="localTasksCounter" value="356" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1065,7 +1067,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix little bug deleting time series" />
     <MESSAGE value="fix profile assignment by code" />
     <MESSAGE value="fixed contingency factors profile issue to compute n-1 flows" />
     <MESSAGE value="Check active profile before delete any device.&#10;&#10;Ask to match active profile importing P profile." />
@@ -1090,7 +1091,8 @@
     <MESSAGE value="New alpha and alphaN-1 reports (little fix)" />
     <MESSAGE value="little fix in contingency report (probability lost)" />
     <MESSAGE value="little fix in contingency report (sort column issue)" />
-    <option name="LAST_COMMIT_MESSAGE" value="little fix in contingency report (sort column issue)" />
+    <MESSAGE value="little fix in contingency report (sort column issue, asfloat ntc)" />
+    <option name="LAST_COMMIT_MESSAGE" value="little fix in contingency report (sort column issue, asfloat ntc)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

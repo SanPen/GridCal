@@ -922,7 +922,7 @@ def formulate_branches_flow(solver: pywraplp.Solver, nbr, nbus, Rates, Sbase,
 
             # branch power from-to eq.15
             solver.Add(
-                flow_f[m] == bk * (angles[_f] - angles[_t]),
+                flow_f[m] == bk * (angles[_f] - angles[_t] + tau[m]),
                 'branch_power_flow_assignment_{0}:{1}'.format(branch_names[m], m))
 
             # add the shifter injections matching the flow
