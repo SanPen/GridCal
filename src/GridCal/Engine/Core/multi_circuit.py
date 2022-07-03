@@ -837,7 +837,7 @@ class MultiCircuit:
         """
         """
         if self.time_profile is not None:
-            t = self.time_profile.view(int).tolist()
+            t = (self.time_profile.view(int) * 1e-9).tolist()  # UNIX time in seconds
         else:
             t = list()
         return {'time': t}
@@ -927,6 +927,22 @@ class MultiCircuit:
         for branch_list in self.get_branch_lists():
             for elm in branch_list:
                 elm.create_profiles(index)
+
+    def set_time_profile(self, unix_data):
+
+        # try parse
+        try:
+            self.time_profile = pd.to_datetime(np.array(unix_data), unit='s', origin='unix')
+        except Exception as e:
+            # it may come in nanoseconds instead of seconds...
+            self.time_profile = pd.to_datetime(np.array(unix_data) / 1e9, unit='s', origin='unix')
+
+        for elm in self.buses:
+            elm.create_profiles(self.time_profile)
+
+        for branch_list in self.get_branch_lists():
+            for elm in branch_list:
+                elm.create_profiles(self.time_profile)
 
     def ensure_profiles_exist(self):
         """
@@ -2023,11 +2039,12 @@ class MultiCircuit:
 
         return tolerance, exponent
 
-    def fill_xy_from_lat_lon(self, destructive=True, factor=0.01):
+    def fill_xy_from_lat_lon(self, destructive=True, factor=0.01, remove_offset=True):
         """
         fill the x and y value from the latitude and longitude values
         :param destructive: if true, the values are overwritten regardless, otherwise only if x and y are 0
         :param factor: Explosion factor
+        :param remove_offset: remove the sometimes huge offset coming from pyproj
         """
 
         n = len(self.buses)
@@ -2038,16 +2055,31 @@ class MultiCircuit:
             lat[i] = bus.latitude
 
         # perform the coordinate transformation
-        import pyproj
+        logger = Logger()
+        try:
+            import pyproj
+        except ImportError:
+            logger.add_error("pyproj is not installed")
+            return logger
+
         x, y = pyproj.Transformer.from_crs(4326, 25830, always_xy=True).transform(lon, lat)
         x *= factor
         y *= factor
+
+        # remove the offset
+        if remove_offset:
+            x_min = np.min(x)
+            y_max = np.max(y)
+            x -= x_min + 100  # 100 is a healthy offset
+            y -= y_max - 100  # 100 is a healthy offset
 
         # assign the values
         for i, bus in enumerate(self.buses):
             if destructive or (bus.x == 0.0 and bus.y == 0.0):
                 bus.x = x[i]
                 bus.y = -y[i]
+
+        return logger
 
     def fill_lat_lon_from_xy(self, destructive=True, factor=1.0, offset_x=0, offset_y=0):
         """
@@ -2065,7 +2097,13 @@ class MultiCircuit:
             x[i] = bus.x * factor + offset_x
             y[i] = bus.y * factor + offset_y
 
-        import pyproj
+        logger = Logger()
+        try:
+            import pyproj
+        except ImportError:
+            logger.add_error("pyproj is not installed")
+            return logger
+
         proj_latlon = pyproj.Proj(proj='latlong', datum='WGS84')
         proj_xy = pyproj.Proj(proj="utm", zone=33, datum='WGS84')
         lonlat = pyproj.transform(proj_xy, proj_latlon, x, y)
@@ -2079,13 +2117,15 @@ class MultiCircuit:
                 bus.latitude = lat[i]
                 bus.longitude = lon[i]
 
+        return logger
+
     def import_bus_lat_lon(self, df: pd.DataFrame, bus_col, lat_col, lon_col):
         """
 
-        :param df:
-        :param bus_col:
-        :param lat_col:
-        :param lon_col:
+        :param df: Pandas DataFrame with the information
+        :param bus_col: bus column name
+        :param lat_col: latitude column name
+        :param lon_col: longitude column name
         :return:
         """
         logger = Logger()
@@ -2164,8 +2204,6 @@ class MultiCircuit:
                 gen.P_prof = df[col_name].values
             except KeyError:
                 logger.add_error("Missing in the model", col_name)
-                # gen.P_prof = np.zeros(nn)
-                # gen.Q_prof = np.zeros(nn)
 
         return logger
 
@@ -2417,3 +2455,32 @@ class MultiCircuit:
             elm.fix_inconsistencies(logger,
                                     min_vset=min_vset,
                                     max_vset=max_vset)
+
+    def normalize_bus_positions_offset(self, base_offset=100):
+        """
+        Normalize the massive offset that may be in the Qt graphic objects' positions
+        :param base_offset:
+        :return:
+        """
+        n = len(self.buses)
+        x = np.zeros(n, dtype=int)
+        y = np.zeros(n, dtype=int)
+
+        # read values
+        for i, bus in enumerate(self.buses):
+            gr = bus.graphic_obj
+            x[i] = gr.x()
+            y[i] = gr.y()
+
+        # correct values
+        x_min = np.min(x)
+        y_max = np.max(y)
+        x -= x_min + base_offset  # 100 is a healthy offset
+        y -= y_max - base_offset  # 100 is a healthy offset
+
+        # assign values
+        for i, bus in enumerate(self.buses):
+            bus.x = x[i]
+            bus.y = y[i]
+            if bus.graphic_obj is not None:
+                bus.graphic_obj.set_position(x[i], y[i])

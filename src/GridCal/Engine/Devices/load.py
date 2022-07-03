@@ -202,6 +202,7 @@ class Load(EditableDevice):
             Ii_prof = self.Ii_prof.tolist()
             G_prof = self.G_prof.tolist()
             B_prof = self.B_prof.tolist()
+
         else:
             active_profile = list()
             P_prof = list()

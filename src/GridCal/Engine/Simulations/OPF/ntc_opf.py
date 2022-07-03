@@ -601,7 +601,7 @@ def formulate_proportional_generation(solver: "pywraplp.Solver", generator_activ
     return generation, delta, gen_a1_idx, gen_a2_idx, power_shift, dgen1, gen_cost
 
 
-def formulate_proportional_generation_simplified(solver: pywraplp.Solver, generator_active, generator_dispatchable,
+def formulate_proportional_generation_simplified(solver: "pywraplp.Solver", generator_active, generator_dispatchable,
                                       generator_cost, generator_names, inf, ngen, Cgen, Pgen, Pmax,
                                       Pmin, a1, a2, logger: Logger):
     """

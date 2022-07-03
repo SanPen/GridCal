@@ -365,7 +365,6 @@ class Bus(EditableDevice):
             # Nothing special; set it as PQ
             return BusMode.PQ
 
-
     def determine_bus_type_prof(self):
         """
         Array of bus types according to the profile

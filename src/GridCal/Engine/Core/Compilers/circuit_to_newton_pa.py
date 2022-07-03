@@ -432,22 +432,54 @@ def get_hvdc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
                   HvdcControlType.type_1_Pset: npa.HvdcControlMode.HvdcControlPfix}
 
     for i, elm in enumerate(circuit.hvdc_lines):
+        """
+        (uuid: str = '', 
+        secondary_id: str = '', 
+        name: str = '', 
+        calc_node_from: newtonpa.CalculationNode = None, 
+        calc_node_to: newtonpa.CalculationNode = None, 
+        cn_from: newtonpa.ConnectivityNode = None, 
+        cn_to: newtonpa.ConnectivityNode = None, 
+        time_steps: int = 1, 
+        active_default: int = 1, 
+        rate: float = 9999, 
+        contingency_rate: float = 9999, 
+        monitor_loading_default: int = 1, 
+        monitor_contingency_default: int = 1, 
+        P: float = 0.0, 
+        Vf: float = 1.0, 
+        Vf: float = 1.0, 
+        r: float = 1e-20, 
+        angle_droop: float = 360.0, 
+        length: float = 0.0, 
+        min_firing_angle_f: float = -1.0, 
+        max_firing_angle_f: float = 1.0, 
+        min_firing_angle_t: float = -1.0, 
+        max_firing_angle_t: float = -1.0, 
+        control_mode: newtonpa.HvdcControlMode = <HvdcControlMode.HvdcControlPfix: 1>)
+        """
         hvdc = npa.HvdcLine(uuid=elm.idtag,
-                            code=elm.code,
+                            secondary_id=elm.code,
                             name=elm.name,
                             calc_node_from=bus_dict[elm.bus_from.idtag],
                             calc_node_to=bus_dict[elm.bus_to.idtag],
+                            cn_from=None,
+                            cn_to=None,
                             time_steps=ntime,
-                            length=elm.length,
+                            active_default=int(elm.active),
                             rate=elm.rate,
-                            active_default=elm.active,
+                            contingency_rate=elm.rate * elm.contingency_factor,
+                            monitor_loading_default=1,
+                            monitor_contingency_default=1,
+                            P=elm.Pset,
+                            Vf=elm.Vset_f,
+                            Vt=elm.Vset_t,
                             r=elm.r,
-                            Pset=elm.Pset,
-                            v_set_f=elm.Vset_f,
-                            v_set_t=elm.Vset_t,
+                            angle_droop=elm.angle_droop,
+                            length=elm.length,
                             min_firing_angle_f=elm.min_firing_angle_f,
-                            min_firing_angle_t=elm.min_firing_angle_t,
                             max_firing_angle_f=elm.max_firing_angle_f,
+                            min_firing_angle_t=elm.min_firing_angle_t,
                             max_firing_angle_t=elm.max_firing_angle_t,
                             control_mode=cmode_dict[elm.control_mode])
 
@@ -457,8 +489,8 @@ def get_hvdc_data(circuit: MultiCircuit, npa_circuit: "npa.HybridCircuit", bus_d
         if time_series:
             hvdc.active = elm.active_prof.astype(BINT)
             hvdc.rates = elm.rate_prof
-            hvdc.v_set_f = elm.Vset_f_prof
-            hvdc.v_set_t = elm.Vset_t_prof
+            hvdc.Vf = elm.Vset_f_prof
+            hvdc.Vt = elm.Vset_t_prof
             hvdc.contingency_rates = elm.rate_prof * elm.contingency_factor
             hvdc.angle_droop = elm.angle_droop_prof
         else:
@@ -644,10 +676,15 @@ def newton_pa_pf(circuit: MultiCircuit, opt: PowerFlowOptions, time_series=False
 
     if time_series:
         time_indices = [i for i in range(circuit.get_time_number())]
+        n_threads = 0  # max threads
     else:
         time_indices = [0]
+        n_threads = 1
 
-    pf_res = npa.runPowerFlow(npaCircuit, pf_options, time_indices)
+    pf_res = npa.runPowerFlow(numeric_circuit=npaCircuit,
+                              pf_options=pf_options,
+                              time_indices=time_indices,
+                              n_threads=n_threads)
 
     return pf_res
 
@@ -763,13 +800,13 @@ if __name__ == '__main__':
 
     from GridCal.Engine import *
 
-    fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14_from_raw.gridcal'
-
+    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14_from_raw.gridcal'
+    fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.gridcal'
     _grid = FileOpen(fname).open()
 
     # _newton_grid = to_newton_pa(circuit=_grid, time_series=False)
     _options = PowerFlowOptions()
-    _res = newton_pa_pf(circuit=_grid, opt=_options, time_series=False)
+    _res = newton_pa_pf(circuit=_grid, opt=_options, time_series=True)
 
     _res2 = translate_newton_pa_pf_results(_grid, _res)
 
