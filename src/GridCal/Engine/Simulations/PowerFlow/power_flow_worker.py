@@ -69,7 +69,7 @@ def solve(circuit: SnapshotData, options: PowerFlowOptions, report: bs.Convergen
         # No retry selected
         solvers = [options.solver_type]
 
-    # set worked to false to enter in the loop
+    # set worked = false to enter the loop
     solver_idx = 0
 
     # set the initial value

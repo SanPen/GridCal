@@ -140,13 +140,13 @@ def add_npa_static_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCir
                                                name=elm.name,
                                                calc_node=bus_dict[elm.bus.idtag],
                                                time_steps=ntime,
-                                               P=-elm.P,
-                                               Q=-elm.Q)
+                                               P=elm.P,
+                                               Q=elm.Q)
 
         if time_series:
             pe_inj.active = elm.active_prof.astype(BINT)
-            pe_inj.P = -elm.P_prof
-            pe_inj.Q = -elm.Q_prof
+            pe_inj.P = elm.P_prof
+            pe_inj.Q = elm.Q_prof
         else:
             pe_inj.active = np.ones(ntime, dtype=BINT) * int(elm.active)
 

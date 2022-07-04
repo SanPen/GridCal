@@ -93,7 +93,7 @@ def getFromAndToPowerAt(Pset, theta_f, theta_t, Vnf, Vnt, v_set_f, v_set_t, Sbas
     else:
         Pcalc = 0
 
-    # depending of the value of Pcalc, assign the from and to values
+    # depending on the value of Pcalc, assign the from and to values
     if Pcalc > 0:
         # from ->  to
         I = Pcalc / (Vnf * v_set_f)  # current in kA
