@@ -646,7 +646,8 @@ class TimeSeries(DriverTemplate):
         results.hvdc_Pt = res.hvdc_Pt
         results.hvdc_loading = res.hvdc_loading
         results.hvdc_losses = res.hvdc_losses
-
+        results.error_values = res.error
+        
         return results
 
     def run(self):
