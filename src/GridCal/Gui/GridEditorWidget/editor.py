@@ -598,11 +598,11 @@ class GridEditor(QSplitter):
         self.libItems.append(item)
 
         # add transformer3w to the drag&drop
-        t3w_icon = QIcon()
-        t3w_icon.addPixmap(QPixmap(":/Icons/icons/transformer3w.svg"))
-        item = QStandardItem(t3w_icon, "3W-Transformer")
-        item.setToolTip("Drag & drop this into the schematic")
-        self.libItems.append(item)
+        # t3w_icon = QIcon()
+        # t3w_icon.addPixmap(QPixmap(":/Icons/icons/transformer3w.svg"))
+        # item = QStandardItem(t3w_icon, "3W-Transformer")
+        # item.setToolTip("Drag & drop this into the schematic")
+        # self.libItems.append(item)
 
         for i in self.libItems:
             self.libraryModel.appendRow(i)
