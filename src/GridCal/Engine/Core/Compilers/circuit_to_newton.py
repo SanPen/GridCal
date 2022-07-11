@@ -16,7 +16,7 @@ except ImportError:
     newton_solver_dict = dict()
     newton_taps_dict = dict()
     newton_q_control_dict = dict()
-    print('Newton native unavailable')
+    print('Newton native is not available')
 
 
 def set_branch_values(nc: "nn.NativeNumericCircuit",

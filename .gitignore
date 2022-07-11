@@ -15,9 +15,13 @@ __pycache__
 
 /build
 /dist
-/GridCal.egg-info
+*.egg-info
 
 /src/tests/data/output/*.png
+
+Results.xlsx
+lynn5node.gridcal
+demo_5_node.json
 
 /venv
 /.tox/
