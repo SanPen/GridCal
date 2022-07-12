@@ -530,7 +530,7 @@ class PowerWorldParser:
             if 'dc converter data' in data_dict.keys():
                 grid.vsc_devices = parse_dc_converters(data_dict['dc converter data']['data'], buses_dict, dc_buses_dict)
 
-        grid.fill_xy_from_lat_lon()
+        logger += grid.fill_xy_from_lat_lon()
 
         return grid, logger
 

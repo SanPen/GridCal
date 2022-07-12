@@ -107,7 +107,10 @@ class EditableDevice:
         return self.__hash__() < other.__hash__()
 
     def __eq__(self, other):
-        return self.idtag == other.idtag
+        if hasattr(other, 'idtag'):
+            return self.idtag == other.idtag
+        else:
+            return False
 
     @property
     def name(self):

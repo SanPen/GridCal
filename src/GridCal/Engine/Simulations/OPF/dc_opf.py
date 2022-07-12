@@ -172,22 +172,25 @@ def formulate_branch_loading_restriction(problem: pl.LpProblem, nc: SnapshotOpfD
     Add the branch loading restrictions
     :param problem: LpProblem instance
     :param nc: SnapshotOpfData instance
-    :param F:
-    :param T:
-    :param theta: voltage angles
-    :param ys: Array of branch linear admittances (m)
-    :param active: Array of branch active states
-    :param monitored: Array of branch monitoring
+    :param F: Array with the "from" branch indices (m)
+    :param T: Array with the "to" branch indices (m)
+    :param theta: voltage angles (n)
+    :param active: Array of branch active states (m)
+    :param monitored: Array of branch monitoring (m)
     :param ratings: Array of branch ratings (m)
     :param ratings_slack_from: Array of branch loading slack variables in the from-to sense
     :param ratings_slack_to: Array of branch loading slack variables in the to-from sense
-    :return: load_f and load_t arrays (LP+float)
+    :return: Pbr_f: Array of power flowing through the branch (m)
+             tau: Array of tap angles in the phase shifters (m)
+             Pinj_tau: Array of the nodal power injections due to the phase shift (n)
     """
+
     nbr = len(ratings)
 
     # from-to branch power restriction
     Pbr_f = np.zeros(nbr, dtype=object)
     tau = np.zeros(nbr, dtype=object)
+    Pinj_tau = np.zeros(nc.nbus, dtype=object)
 
     for m in range(nbr):
         if active[m]:
@@ -203,6 +206,10 @@ def formulate_branch_loading_restriction(problem: pl.LpProblem, nc: SnapshotOpfD
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
                 tau[m] = LpVariable('Tau_{}'.format(m), nc.branch_data.theta_min[m], nc.branch_data.theta_max[m])
                 Pbr_f[m] = bk * (theta[F[m]] - theta[T[m]] + tau[m])
+
+                # power injected and subtracted due to the phase shift
+                Pinj_tau[F[m]] = -bk * tau[m]
+                Pinj_tau[T[m]] = bk * tau[m]
             else:
                 # is a regular branch
                 Pbr_f[m] = bk * (theta[F[m]] - theta[T[m]])
@@ -213,7 +220,7 @@ def formulate_branch_loading_restriction(problem: pl.LpProblem, nc: SnapshotOpfD
         else:
             Pbr_f[m] = 0
 
-    return Pbr_f, tau
+    return Pbr_f, tau, Pinj_tau
 
 
 def formulate_contingency(problem: pl.LpProblem, numerical_circuit: SnapshotOpfData, flow_f, ratings, LODF, monitor, lodf_tolerance):
@@ -497,23 +504,23 @@ class OpfDc(Opf):
                                           logger=self.logger,
                                           inf=999999)
 
+        # add the branch loading restriction ---------------------------------------------------------------------------
+        flow_f, tau, Pinj_tau = formulate_branch_loading_restriction(problem=self.problem,
+                                                                     nc=self.numerical_circuit,
+                                                                     F=self.numerical_circuit.F,
+                                                                     T=self.numerical_circuit.T,
+                                                                     theta=theta,
+                                                                     active=branch_active,
+                                                                     monitored=branch_monitored,
+                                                                     ratings=branch_ratings,
+                                                                     ratings_slack_from=branch_rating_slack1,
+                                                                     ratings_slack_to=branch_rating_slack2)
+
         # add the DC grid restrictions (with real slack losses) --------------------------------------------------------
         self.nodal_restrictions = formulate_dc_nodal_power_balance(numerical_circuit=self.numerical_circuit,
                                                                    problem=self.problem,
                                                                    theta=theta,
-                                                                   P=P)
-
-        # add the branch loading restriction ---------------------------------------------------------------------------
-        flow_f, tau = formulate_branch_loading_restriction(problem=self.problem,
-                                                           nc=self.numerical_circuit,
-                                                           F=self.numerical_circuit.F,
-                                                           T=self.numerical_circuit.T,
-                                                           theta=theta,
-                                                           active=branch_active,
-                                                           monitored=branch_monitored,
-                                                           ratings=branch_ratings,
-                                                           ratings_slack_from=branch_rating_slack1,
-                                                           ratings_slack_to=branch_rating_slack2)
+                                                                   P=P + Pinj_tau)  # add the phase shift injections
 
         # formulate contingencies --------------------------------------------------------------------------------------
         if self.consider_contingencies:

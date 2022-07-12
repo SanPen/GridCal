@@ -16,16 +16,18 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import datetime as dtelib
 import gc
+import sys
 import os.path
 import platform
-import time
 import webbrowser
 from collections import OrderedDict
 from typing import List, Tuple
-
+import numpy as np
 import networkx as nx
+import pandas as pd
 from matplotlib.colors import LinearSegmentedColormap
 from pandas.plotting import register_matplotlib_converters
+from warnings import warn
 
 # Engine imports
 import GridCal.Engine.Core as core
@@ -37,10 +39,12 @@ import GridCal.Engine.Simulations as sim
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Engine.basic_structures as bs
 import GridCal.Engine.grid_analysis as grid_analysis
-
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
 from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
+from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
+from GridCal.Engine.Core.Compilers.circuit_to_alliander_pgm import ALLIANDER_PGM_AVAILABLE
+from GridCal.Engine.Simulations.driver_types import SimulationTypes
 
 # GUI imports
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
@@ -75,6 +79,7 @@ try:
 except ModuleNotFoundError:
     qt_web_engine_available = False
 
+from matplotlib import pyplot as plt
 
 __author__ = 'Santiago Peñate Vera'
 
@@ -83,13 +88,34 @@ This class is the handler of the main gui of GridCal.
 """
 
 
+def traverse_objects(name, obj, lst: list, i=0):
+
+    lst.append((name, sys.getsizeof(obj)))
+    if i < 10:
+        if hasattr(obj, '__dict__'):
+            for name2, obj2 in obj.__dict__.items():
+                if isinstance(obj2, np.ndarray):
+                    lst.append((name + "/" + name2, sys.getsizeof(obj2)))
+                else:
+                    if isinstance(obj2, list):
+                        # list or
+                        for k, obj3 in enumerate(obj2):
+                            traverse_objects(name=name + "/" + name2 + '[' + str(k) + ']',
+                                             obj=obj3, lst=lst, i=i + 1)
+                    elif isinstance(obj2, dict):
+                        # list or
+                        for name3, obj3 in obj2.items():
+                            traverse_objects(name=name + "/" + name2 + '[' + name3 + ']',
+                                             obj=obj3, lst=lst, i=i + 1)
+                    else:
+                        # normal obj
+                        if obj2 != obj:
+                            traverse_objects(name=name + "/" + name2, obj=obj2, lst=lst, i=i+1)
+
+
 ########################################################################################################################
 # Main Window
 ########################################################################################################################
-
-
-
-
 
 class MainGUI(QMainWindow):
 
@@ -112,7 +138,7 @@ class MainGUI(QMainWindow):
         self.use_native_dialogues = use_native_dialogues
 
         # Declare circuit
-        self.circuit = MultiCircuit()
+        self.circuit = core.MultiCircuit()
 
         self.calculation_inputs_to_display = None
 
@@ -167,8 +193,9 @@ class MainGUI(QMainWindow):
         self.ui.transferMethodComboBox.setCurrentIndex(1)
 
         self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
-                                    '.dgs', '.m', '.raw', '.RAW', '.json', '.xml', '.rawx',
-                                    '.zip', '.dpx', '.epc']
+                                    '.dgs', '.m', '.raw', '.RAW', '.json',
+                                    '.ejson2', '.ejson3', '.ejson4',
+                                    '.xml', '.rawx', '.zip', '.dpx', '.epc']
 
         # ptdf grouping modes
         self.ptdf_group_modes = OrderedDict()
@@ -247,8 +274,13 @@ class MainGUI(QMainWindow):
         engine_lst = [bs.EngineType.GridCal]
         if NEWTON_AVAILBALE:
             engine_lst.append(bs.EngineType.Newton)
+        if NEWTON_PA_AVAILABLE:
+            engine_lst.append(bs.EngineType.NewtonPA)
         if BENTAYGA_AVAILABLE:
             engine_lst.append(bs.EngineType.Bentayga)
+        if ALLIANDER_PGM_AVAILABLE:
+            engine_lst.append(bs.EngineType.AllianderPGM)
+
         self.ui.engineComboBox.setModel(get_list_model([x.value for x in engine_lst]))
         self.ui.engineComboBox.setCurrentIndex(0)
         self.engine_dict = {x.value: x for x in engine_lst}
@@ -601,7 +633,6 @@ class MainGUI(QMainWindow):
 
         self.ui.simulationDataStructuresListView.clicked.connect(self.view_simulation_objects_data)
 
-
         self.ui.catalogueDataStructuresListView.clicked.connect(self.catalogue_element_selected)
 
         # tree-view clicks
@@ -671,6 +702,11 @@ class MainGUI(QMainWindow):
         if not self.any_thread_running():
             self.LOCK(False)
 
+    @staticmethod
+    def collect_memory():
+        for i in (0, 1, 2):
+            gc.collect(generation=i)
+
     def get_preferred_engine(self):
         """
         Get the currently selected engine
@@ -691,7 +727,7 @@ class MainGUI(QMainWindow):
 
     def get_simulations(self):
         """
-        Get all threads that has to do with simulation
+        Get all threads that have to do with simulation
         :return: list of simulation threads
         """
 
@@ -1111,7 +1147,7 @@ class MainGUI(QMainWindow):
         New project right now without asking questions
         """
         # clear the circuit model
-        self.circuit = MultiCircuit()
+        self.circuit = core.MultiCircuit()
 
         # clear the file name
         self.file_name = ''
@@ -1143,6 +1179,8 @@ class MainGUI(QMainWindow):
         self.clear_results()
         self.add_default_catalogue()
         self.create_console()
+
+        self.collect_memory()
 
     def new_project(self):
         """
@@ -1185,7 +1223,7 @@ class MainGUI(QMainWindow):
         """
 
         files_types = "Formats (*.gridcal *.gch5 *.xlsx *.xls *.sqlite *.dgs " \
-                      "*.m *.raw *.RAW *.rawx *.json *.xml *.zip *.dpx *.epc)"
+                      "*.m *.raw *.RAW *.rawx *.json *.ejson2 *.ejson3 *.ejson4 *.xml *.zip *.dpx *.epc)"
         # files_types = ''
         # call dialog to select the file
 
@@ -1332,6 +1370,8 @@ class MainGUI(QMainWindow):
             # center nodes
             self.grid_editor.align_schematic()
 
+        self.collect_memory()
+
     def add_circuit(self):
         """
         Prompt to add another circuit
@@ -1415,7 +1455,8 @@ class MainGUI(QMainWindow):
                       "GridCal HDF5 (*.gch5);;" \
                       "Excel (*.xlsx);;" \
                       "CIM (*.xml);;" \
-                      "Json (*.json);;" \
+                      "Electrical Json V3 (*.ejson3);;"\
+                      "Electrical Json V4 (*.ejson4);;" \
                       "Rawx (*.rawx);;" \
                       "Sqlite (*.sqlite)"
 
@@ -1448,7 +1489,9 @@ class MainGUI(QMainWindow):
                 extension = dict()
                 extension['Excel (*.xlsx)'] = '.xlsx'
                 extension['CIM (*.xml)'] = '.xml'
-                extension['JSON (*.json)'] = '.json'
+                extension['Electrical Json V2 (*.ejson2)'] = '.ejson2'
+                extension['Electrical Json V3 (*.ejson3)'] = '.ejson3'
+                extension['Electrical Json V4 (*.ejson4)'] = '.ejson4'
                 extension['GridCal zip (*.gridcal)'] = '.gridcal'
                 extension['PSSe rawx (*.rawx)'] = '.rawx'
                 extension['GridCal HDF5 (*.gch5)'] = '.gch5'
@@ -1528,7 +1571,7 @@ class MainGUI(QMainWindow):
         self.ui.diskSessionsTreeView.setModel(mdl)
 
         # call the garbage collector to free memory
-        gc.collect()
+        self.collect_memory()
 
     def closeEvent(self, event):
         """
@@ -1714,9 +1757,14 @@ class MainGUI(QMainWindow):
         Get the x, y coordinates of the buses from their latitude and longitude
         """
         if len(self.circuit.buses) > 0:
-            if yes_no_question("All nodes will be moved as a conversion to a 2D plane of their latitude and longitude. "
+            if yes_no_question("All nodes will be positioned to a 2D plane projection of their latitude and longitude. "
                                "Are you sure of this?"):
-                self.circuit.fill_xy_from_lat_lon()
+                logger = self.circuit.fill_xy_from_lat_lon(destructive=True, factor=0.01, remove_offset=True)
+
+                if len(logger) > 0:
+                    dlg = LogsDialogue('Set xy from lat lon', logger)
+                    dlg.exec_()
+
                 self.create_schematic_from_api()
 
     def create_schematic_from_api(self, explode_factor=1.0, show_msg=True):
@@ -1849,6 +1897,10 @@ class MainGUI(QMainWindow):
         elif elm_type == DeviceType.Transformer2WDevice.value:
             elm = dev.Transformer2W(None, None)
             elements = self.circuit.transformers2w
+
+        elif elm_type == DeviceType.Transformer3WDevice.value:
+            elm = dev.Transformer3W()
+            elements = self.circuit.transformers3w
 
         elif elm_type == DeviceType.HVDCLineDevice.value:
             elm = dev.HvdcLine(None, None)
@@ -2031,7 +2083,6 @@ class MainGUI(QMainWindow):
                 for bus in self.circuit.buses:
                     bus.delete_profiles()
                 self.circuit.time_profile = None
-                self.circuit.has_time_series = False
                 self.ui.profiles_tableView.setModel(None)
                 self.set_up_profile_sliders()
                 self.update_date_dependent_combos()
@@ -2041,28 +2092,28 @@ class MainGUI(QMainWindow):
         else:
             warning_msg('There are no profiles', 'Delete profiles')
 
-    def set_profiles_state_to_grid(self):
-        """
-        Set the profiles scenario at the selected time index to the main values of the grid
-        :return: Nothing
-        """
-        if self.circuit.time_profile is not None:
-            t = self.ui.profile_time_selection_comboBox.currentIndex()
-
-            if t > -1:
-                name_t = self.ui.profile_time_selection_comboBox.currentText()
-                quit_msg = "Replace the grid values by the scenario at " + name_t
-                reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
-
-                if reply == QMessageBox.Yes:
-                    for bus in self.circuit.buses:
-                        bus.set_profile_values(t)
-                else:
-                    pass
-            else:
-                warning_msg('No profile time selected', 'Set profile values')
-        else:
-            warning_msg('There are no profiles', 'Set profile values')
+    # def set_profiles_state_to_grid(self):
+    #     """
+    #     Set the profiles scenario at the selected time index to the main values of the grid
+    #     :return: Nothing
+    #     """
+    #     if self.circuit.time_profile is not None:
+    #         t = self.ui.profile_time_selection_comboBox.currentIndex()
+    #
+    #         if t > -1:
+    #             name_t = self.ui.profile_time_selection_comboBox.currentText()
+    #             quit_msg = "Replace the grid values by the scenario at " + name_t
+    #             reply = QMessageBox.question(self, 'Message', quit_msg, QMessageBox.Yes, QMessageBox.No)
+    #
+    #             if reply == QMessageBox.Yes:
+    #                 for bus in self.circuit.buses:
+    #                     bus.set_profile_values(t)
+    #             else:
+    #                 pass
+    #         else:
+    #             warning_msg('No profile time selected', 'Set profile values')
+    #     else:
+    #         warning_msg('There are no profiles', 'Set profile values')
 
     def import_profiles(self):
         """
@@ -4360,6 +4411,7 @@ class MainGUI(QMainWindow):
                     sensitivity_dT=dT,
                     sensitivity_mode=mode,
                     perform_previous_checks=perform_previous_checks,
+                    with_check=False,
                     weight_power_shift=weight_power_shift,
                     weight_generation_cost=weight_generation_cost,
                     consider_contingencies=consider_contingencies,
@@ -5519,7 +5571,7 @@ class MainGUI(QMainWindow):
                                                                 wires_catalogue=self.circuit.wire_types)
                     self.tower_builder_window.resize(int(1.81 * 700.0), 700)
                     self.tower_builder_window.exec()
-                    gc.collect()
+                    self.collect_memory()
 
                     something_happened = True
 
@@ -6909,6 +6961,7 @@ class MainGUI(QMainWindow):
         if dlg.accepted:
             self.circuit.re_index_time(year=dlg.year_spinner.value(),
                                        hours_per_step=dlg.interval_hours.value())
+            self.update_date_dependent_combos()
 
     def fix_generators_active_based_on_the_power(self):
         """
@@ -6922,6 +6975,17 @@ class MainGUI(QMainWindow):
         if ok:
             self.circuit.set_generators_active_profile_from_their_active_power()
             self.circuit.set_batteries_active_profile_from_their_active_power()
+
+    def get_all_objects_in_memory(self):
+        objects = []
+        # for name, obj in globals().items():
+        #     objects.append([name, sys.getsizeof(obj)])
+
+        traverse_objects('MainGUI', self, objects)
+
+        df = pd.DataFrame(data=objects, columns=['Name', 'Size (kb)'])
+        df.sort_values(by='Size (kb)', inplace=True, ascending=False)
+        return df
 
 
 def run(use_native_dialogues=False):

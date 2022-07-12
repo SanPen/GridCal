@@ -113,6 +113,47 @@ class StringSubstitutions(Enum):
     PSSeBusLoad = 'N -> N_1'
 
 
+def check_similarity(name_to_search, code_to_search, names_array, threshold):
+    """
+    Search a value in the array of input names
+    :param name_to_search: name of the GridCal object
+    :param code_to_search: code (secondary id) of the GridCal object
+    :param names_array: array of names coming from the profile
+    :param threshold: similarity threshold
+    :return: index of the profile entry match or None if no match was found
+    """
+    # exact match of the name or the code
+    for what_to_search in [name_to_search, code_to_search]:
+        if what_to_search in names_array:
+            matches = np.where(names_array == what_to_search)[0]
+            if len(matches) > 0:
+                return matches[0]
+            else:
+                return None
+
+    # else, find the most likely match if the threshold is appropriate
+    if 0.01 <= threshold < 1.0:
+        max_val = 0
+        max_idx = None
+        for idx_s, col_name in enumerate(names_array):
+            profile_name = col_name.strip()
+
+            # find the string distance
+            d = SequenceMatcher(None, name_to_search, profile_name).ratio()
+
+            if d > max_val:
+                max_val = d
+                max_idx = idx_s
+
+        # assign the string with the closest profile (60% or better similarity)
+        if max_idx is not None and max_val > threshold:
+            return max_idx
+        else:
+            return None
+    else:
+        return None
+
+
 class ProfileInputGUI(QtWidgets.QDialog):
 
     def __init__(self, parent=None, list_of_objects=None, magnitudes=[''], use_native_dialogues=True):
@@ -400,40 +441,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
             s = s.replace(p, '')
         return s.lower().strip()
 
-    def check_simularity(self, name_to_search, names_array, threshold):
-        """
-
-        :param name_to_search:
-        :param names_array:
-        :param threshold:
-        :return:
-        """
-
-        if name_to_search in names_array:
-            return np.where(names_array == name_to_search)[0][0]
-
-        # else determine the likelihood
-        if threshold > 0.01:
-            max_val = 0
-            max_idx = None
-            for idx_s, col_name in enumerate(names_array):
-                profile_name = col_name.strip()
-
-                # find the string distance
-                d = SequenceMatcher(None, name_to_search, profile_name).ratio()
-
-                if d > max_val:
-                    max_val = d
-                    max_idx = idx_s
-
-            # assign the string with the closest profile (60% or better similarity)
-            if max_idx is not None and max_val > threshold:
-                return max_idx
-            else:
-                return None
-        else:
-            return None
-
     def auto_link(self):
         """
         Performs an automatic link between the sources and the objectives based on the names
@@ -443,11 +450,12 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
         for idx_o, elm in enumerate(self.objects):
 
-            idx = self.check_simularity(name_to_search=elm.name.strip(),
-                                        names_array=self.profile_names,
-                                        threshold=threshold)
+            idx = check_similarity(name_to_search=elm.name.strip(),
+                                   code_to_search=elm.code.strip(),
+                                   names_array=self.profile_names,
+                                   threshold=threshold)
 
-            # assign the string with the closest profile (60% or better similarity)
+            # assign the string with the closest profile
             if idx is not None:
                 self.make_association(idx, idx_o, mult)
 

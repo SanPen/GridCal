@@ -59,9 +59,9 @@ class UpfcData:
         """
 
         if time_idx is None:
-            idx = elm_idx
+            tidx = elm_idx
         else:
-            idx = np.ix_(elm_idx, time_idx)
+            tidx = np.ix_(elm_idx, time_idx)
 
         data = UpfcData(nelm=len(elm_idx), nbus=len(bus_idx))
 
@@ -76,10 +76,10 @@ class UpfcData:
         data.Rsh = self.Rsh[elm_idx]
         data.Xsh = self.Xsh[elm_idx]
 
-        data.active = self.active[idx]
-        data.Pset = self.Pset[idx]
-        data.Qset = self.Qset[idx]
-        data.Vsh = self.Vsh[idx]
+        data.active = self.active[tidx]
+        data.Pset = self.Pset[tidx]
+        data.Qset = self.Qset[tidx]
+        data.Vsh = self.Vsh[tidx]
 
         data.C_elm_bus = self.C_elm_bus[np.ix_(elm_idx, bus_idx)]
 

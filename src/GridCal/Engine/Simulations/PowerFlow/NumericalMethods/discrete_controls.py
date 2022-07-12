@@ -349,15 +349,18 @@ def control_q_inside_method(Scalc, Sbus, pv, pq, pvpq, Qmin, Qmax):
     :param Qmax: Array of upper reactive power limits per bus in p.u.
     :return: any change?, Scalc, Sbus, pv, pq, pvpq
     """
+    messages = list()
     changed = list()
     for k, i in enumerate(pv):
         Q = Scalc[i].imag
         if Q > Qmax[i]:
             Sbus[i] = np.complex128(complex(Sbus[i].real, Qmax[i]))
             changed.append(k)
+            messages.append((1, i, Qmax[i]))
         elif Q < Qmin[i]:
             Sbus[i] = np.complex128(complex(Sbus[i].real, Qmin[i]))
             changed.append(k)
+            messages.append((1, i, Qmin[i]))
 
     if len(changed) > 0:
         # convert PV nodes to PQ
@@ -367,7 +370,7 @@ def control_q_inside_method(Scalc, Sbus, pv, pq, pvpq, Qmin, Qmax):
         pq.sort()
         pvpq = np.concatenate((pv, pq))
 
-    return len(changed), Scalc, Sbus, pv, pq, pvpq
+    return len(changed), Scalc, Sbus, pv, pq, pvpq, messages
 
 
 def tap_up(tap, max_tap):

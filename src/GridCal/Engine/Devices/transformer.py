@@ -429,7 +429,7 @@ class Transformer2W(EditableDevice):
                  rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
                  tap_module_prof=None, angle_prof=None,
                  contingency_factor=1.0,
-                 contingency_enabled=True, monitor_loading=True):
+                 contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None):
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -502,6 +502,7 @@ class Transformer2W(EditableDevice):
                                 non_editable_attributes=['bus_from', 'bus_to', 'template'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'rate': 'rate_prof',
+                                                         'contingency_factor': 'contingency_factor_prof',
                                                          'tap_module': 'tap_module_prof',
                                                          'angle': 'angle_prof',
                                                          'temp_oper': 'temp_oper_prof',
@@ -574,6 +575,7 @@ class Transformer2W(EditableDevice):
         self.contingency_enabled: bool = contingency_enabled
         self.monitor_loading: bool = monitor_loading
         self.rate_prof = rate_prof
+        self.contingency_factor_prof = contingency_factor_prof
 
         # branch type: Line, Transformer, etc...
         self.branch_type = BranchType.Transformer

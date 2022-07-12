@@ -1,3 +1,19 @@
+# GridCal
+# Copyright (C) 2022 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os.path
 
 from GridCal.Engine.basic_structures import Logger
@@ -8,8 +24,9 @@ from GridCal.Engine.Devices.enumerations import ConverterControlType, Transforme
 from GridCal.Engine.Devices import *
 from GridCal.Engine.basic_structures import Logger, SolverType, ReactivePowerControlMode, TapsControlMode
 from GridCal.Engine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from GridCal.Engine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCal.Engine.IO.file_system import get_create_gridcal_folder
-
+import GridCal.Engine.basic_structures as bs
 
 try:
     import bentayga as btg
@@ -18,13 +35,17 @@ try:
     if not btg.is_license_activated():
         btg_license = os.path.join(get_create_gridcal_folder(), 'bentayga.lic')
         if os.path.exists(btg_license):
-            # print('Bentayga v' + btg.get_version())
-            btg.activate_license(btg_license)
-            if btg.is_license_activated():
-                BENTAYGA_AVAILABLE = True
-            else:
-                print('Bentayga v' + btg.get_version(),
-                      "installed, tried to activate with {} but the license did not work :/".format(btg_license))
+
+            try:
+                btg.activate_license(btg_license)
+                if btg.is_license_activated():
+                    BENTAYGA_AVAILABLE = True
+                else:
+                    print('Bentayga v' + btg.get_version(),
+                          "installed, tried to activate with {} but the license did not work :/".format(btg_license))
+                    BENTAYGA_AVAILABLE = False
+            except RuntimeError:
+                print("Bentayga: Error reading the license file :(")
                 BENTAYGA_AVAILABLE = False
         else:
             print('Bentayga v' + btg.get_version(), "installed but not licensed")
@@ -41,22 +62,25 @@ except ImportError:
 BINT = np.ulonglong
 
 
-def add_btg_buses(circuit: MultiCircuit, btg_circuit: "btg.Circuit", time_series: bool, ntime=1):
+def add_btg_buses(circuit: MultiCircuit, btg_circuit: "btg.Circuit", time_series: bool, ntime: int=1):
     """
     Convert the buses to bentayga buses
     :param circuit: GridCal circuit
     :param btg_circuit: bentayga circuit
-    :param time_series: compile the time series from GridCal? otherwise just the snapshot
+    :param time_series: compile the time series from GridCal? otherwise, just the snapshot
     :param ntime: number of time steps
-    :return:
+    :return: bus dictionary buses[uuid] -> Bus
     """
     areas_dict = {elm: k for k, elm in enumerate(circuit.areas)}
     bus_dict = dict()
 
     for i, bus in enumerate(circuit.buses):
 
-        elm = btg.Node(uuid=bus.idtag, name=bus.name, time_steps=ntime,
-                       is_slack=bus.is_slack, is_dc=bus.is_dc,
+        elm = btg.Node(uuid=bus.idtag,
+                       name=bus.name,
+                       time_steps=ntime,
+                       is_slack=bus.is_slack,
+                       is_dc=bus.is_dc,
                        nominal_voltage=bus.Vnom)
 
         if time_series and ntime > 1:
@@ -626,6 +650,52 @@ def bentayga_linear_matrices(circuit: MultiCircuit, distributed_slack=False):
 
     return lin_mat
 
+
+def translate_bentayga_pf_results(grid: MultiCircuit, res) -> PowerFlowResults:
+    results = PowerFlowResults(n=grid.get_bus_number(),
+                               m=grid.get_branch_number_wo_hvdc(),
+                               n_tr=grid.get_transformers2w_number(),
+                               n_hvdc=grid.get_hvdc_number(),
+                               bus_names=res.bus_names,
+                               branch_names=res.branch_names,
+                               transformer_names=[],
+                               hvdc_names=res.hvdc_names,
+                               bus_types=res.bus_types)
+
+    results.voltage = res.V[0, :]
+    results.Sbus = res.S[0, :]
+    results.Sf = res.Sf[0, :]
+    results.St = res.St[0, :]
+    results.loading = res.loading[0, :]
+    results.losses = res.losses[0, :]
+    results.Vbranch = res.Vbranch[0, :]
+    results.If = res.If[0, :]
+    results.It = res.It[0, :]
+    results.Beq = res.Beq[0, :]
+    results.m = res.tap_modules[0, :]
+    results.theta = res.tap_angles[0, :]
+    results.F = res.F
+    results.T = res.T
+    results.hvdc_F = res.F_hvdc
+    results.hvdc_T = res.T_hvdc
+    results.hvdc_Pf = res.hvdc_Pf[0, :]
+    results.hvdc_Pt = res.hvdc_Pt[0, :]
+    results.hvdc_loading = res.hvdc_loading[0, :]
+    results.hvdc_losses = res.hvdc_losses[0, :]
+    results.bus_area_indices = grid.get_bus_area_indices()
+    results.area_names = [a.name for a in grid.areas]
+
+    for rep in res.stats[0]:
+        report = bs.ConvergenceReport()
+        for i in range(len(rep.converged)):
+            report.add(method=rep.solver[i].name,
+                       converged=rep.converged[i],
+                       error=rep.norm_f[i],
+                       elapsed=rep.elapsed[i],
+                       iterations=rep.iterations[i])
+            results.convergence_reports.append(report)
+
+    return results
 
 def debug_bentayga_circuit_at(btg_circuit: "btg.Circuit", t: int = None):
 

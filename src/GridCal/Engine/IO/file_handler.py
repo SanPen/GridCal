@@ -19,7 +19,7 @@ import json
 
 from GridCal.Engine.basic_structures import Logger
 
-from GridCal.Engine.IO.json_parser import save_json_file
+from GridCal.Engine.IO.json_parser import save_json_file_v3, save_json_file_v4
 from GridCal.Engine.IO.cim.cim_parser import CIMExport
 from GridCal.Engine.IO.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
 from GridCal.Engine.IO.pack_unpack import create_data_frames, data_frames_to_circuit
@@ -171,6 +171,14 @@ class FileOpen:
                     else:
                         self.logger.add_error('Unknown json format')
 
+                elif file_extension.lower() == '.ejson3':
+                    data = json.load(open(self.file_name))
+                    self.circuit = parse_json_data_v3(data, self.logger)
+
+                elif file_extension.lower() == '.ejson4':
+                    data = json.load(open(self.file_name))
+                    # self.circuit = parse_json_data_v4(data, self.logger)
+
                 elif file_extension.lower() == '.raw':
                     parser = PSSeParser(self.file_name, text_func=text_func,  progress_func=progress_func)
                     self.circuit = parser.circuit
@@ -236,8 +244,11 @@ class FileSave:
         elif self.file_name.endswith('.sqlite'):
             logger = self.save_sqlite()
 
-        elif self.file_name.endswith('.json'):
-            logger = self.save_json()
+        elif self.file_name.endswith('.ejson3'):
+            logger = self.save_json_v3()
+
+        elif self.file_name.endswith('.ejson4'):
+            logger = self.save_json_v4()
 
         elif self.file_name.endswith('.xml'):
             logger = self.save_cim()
@@ -299,13 +310,22 @@ class FileSave:
 
         return logger
 
-    def save_json(self):
+    def save_json_v3(self):
         """
         Save the circuit information in json format
         :return:logger with information
         """
 
-        logger = save_json_file(self.file_name, self.circuit, self.simulation_drivers)
+        logger = save_json_file_v3(self.file_name, self.circuit, self.simulation_drivers)
+        return logger
+
+    def save_json_v4(self):
+        """
+        Save the circuit information in json format
+        :return:logger with information
+        """
+
+        logger = save_json_file_v4(self.file_name, self.circuit, self.simulation_drivers)
         return logger
 
     def save_cim(self):

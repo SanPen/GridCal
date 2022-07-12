@@ -291,7 +291,7 @@ class SnapshotData:
         self.available_structures = ['Vbus',
                                      'Sbus',
                                      'Ibus',
-                                     'Ybus',
+                                     'Ybus',  'G', 'B',
                                      'Yf',
                                      'Yt',
                                      'Bbus',
@@ -640,6 +640,9 @@ class SnapshotData:
         self.iPfdp_va = np.array(self.iPfdp_va, dtype=np.int)
         self.iVscL = np.array(self.iVscL, dtype=np.int)
 
+    def get_branch_df(self, t=0):
+        return self.branch_data.to_df(t)
+
     @property
     def line_idx(self):
         return slice(0, self.nline, 1)
@@ -905,10 +908,10 @@ class SnapshotData:
                                                          G=self.branch_data.G,
                                                          B=self.branch_data.B,
                                                          k=self.branch_data.k,
-                                                         m=self.branch_data.m[:, 0],
-                                                         mf=self.branch_data.tap_f,
-                                                         mt=self.branch_data.tap_t,
-                                                         theta=self.branch_data.theta[:, 0],
+                                                         tap_module=self.branch_data.m[:, 0],
+                                                         vtap_f=self.branch_data.tap_f,
+                                                         vtap_t=self.branch_data.tap_t,
+                                                         tap_angle=self.branch_data.theta[:, 0],
                                                          Beq=self.branch_data.Beq[:, 0],
                                                          Cf=self.Cf,
                                                          Ct=self.Ct,
@@ -1233,6 +1236,16 @@ class SnapshotData:
                               columns=self.bus_data.bus_names,
                               index=self.bus_data.bus_names)
 
+        elif structure_type == 'G':
+            df = pd.DataFrame(data=self.Ybus.real.toarray(),
+                              columns=self.bus_data.bus_names,
+                              index=self.bus_data.bus_names)
+
+        elif structure_type == 'B':
+            df = pd.DataFrame(data=self.Ybus.imag.toarray(),
+                              columns=self.bus_data.bus_names,
+                              index=self.bus_data.bus_names)
+
         elif structure_type == 'Yf':
             df = pd.DataFrame(data=self.Yf.toarray(),
                               columns=self.bus_data.bus_names,
@@ -1457,7 +1470,6 @@ class SnapshotData:
     def split_into_islands(self, ignore_single_node_islands=False) -> List["SnapshotData"]:
         """
         Split circuit into islands
-        :param numeric_circuit: NumericCircuit instance
         :param ignore_single_node_islands: ignore islands composed of only one bus
         :return: List[NumericCircuit]
         """

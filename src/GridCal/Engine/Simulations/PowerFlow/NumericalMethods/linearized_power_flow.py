@@ -59,7 +59,7 @@ def dcpf(Ybus, Bpqpv, Bref, Btheta, S0, I0, V0, theta, ref, pvpq, pq, pv) -> Num
 
         # compose the reduced power injections
         # Since we have removed the slack nodes, we must account their influence as injections Bref * Va_ref
-        # We also nee to account for the effect of the phase shifters
+        # We also need to account for the effect of the phase shifters
         Pps = Btheta * theta
         Pinj = S0[pvpq].real + (- Bref * Va_ref + I0[pvpq].real) * Vm[pvpq] - Pps[pvpq]
 

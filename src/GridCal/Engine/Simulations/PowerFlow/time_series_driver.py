@@ -31,6 +31,7 @@ from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE, to_newton_native, newton_power_flow
 from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf
+from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_pf
 import GridCal.Engine.basic_structures as bs
 
 
@@ -610,6 +611,45 @@ class TimeSeries(DriverTemplate):
 
         return results
 
+    def run_newton_pa(self):
+
+        res = newton_pa_pf(self.grid, self.options, time_series=True)
+
+        results = TimeSeriesResults(n=self.grid.get_bus_number(),
+                                    m=self.grid.get_branch_number_wo_hvdc(),
+                                    n_tr=self.grid.get_transformers2w_number(),
+                                    n_hvdc=self.grid.get_hvdc_number(),
+                                    bus_names=res.bus_names,
+                                    branch_names=res.branch_names,
+                                    transformer_names=[],
+                                    hvdc_names=res.hvdc_names,
+                                    bus_types=res.bus_types,
+                                    time_array=self.grid.time_profile)
+
+        results.voltage = res.voltage
+        results.S = res.Scalc
+        results.Sf = res.Sf
+        results.St = res.St
+        results.loading = res.Loading
+        results.losses = res.Losses
+        # results.Vbranch = res.Vbranch
+        # results.If = res.If
+        # results.It = res.It
+        results.Beq = res.Beq
+        results.m = res.tap_module
+        results.theta = res.tap_angle
+        results.F = res.F
+        results.T = res.T
+        results.hvdc_F = res.hvdc_F
+        results.hvdc_T = res.hvdc_T
+        results.hvdc_Pf = res.hvdc_Pf
+        results.hvdc_Pt = res.hvdc_Pt
+        results.hvdc_loading = res.hvdc_loading
+        results.hvdc_losses = res.hvdc_losses
+        results.error_values = res.error
+        
+        return results
+
     def run(self):
         """
         Run the time series simulation
@@ -631,5 +671,9 @@ class TimeSeries(DriverTemplate):
         elif self.engine == bs.EngineType.Bentayga:
 
             self.results = self.run_bentayga()
+
+        elif self.engine == bs.EngineType.NewtonPA:
+
+            self.results = self.run_newton_pa()
 
         self.elapsed = time.time() - a

@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
+import pandas as pd
 import scipy.sparse as sp
 import GridCal.Engine.Core.topology as tp
 
@@ -104,9 +105,9 @@ class BranchData:
         """
 
         if time_idx is None:
-            idx = elm_idx
+            tidx = elm_idx
         else:
-            idx = np.ix_(elm_idx, time_idx)
+            tidx = np.ix_(elm_idx, time_idx)
 
         data = BranchData(nbr=len(elm_idx), nbus=len(bus_idx))
 
@@ -131,23 +132,23 @@ class BranchData:
         data.contingency_enabled = self.contingency_enabled[elm_idx]
         data.monitor_loading = self.monitor_loading[elm_idx]
 
-        data.branch_active = self.branch_active[idx]
-        data.branch_rates = self.branch_rates[idx]
-        data.branch_contingency_rates = self.branch_contingency_rates[idx]
-        data.m = self.m[idx]
+        data.branch_active = self.branch_active[tidx]
+        data.branch_rates = self.branch_rates[tidx]
+        data.branch_contingency_rates = self.branch_contingency_rates[tidx]
+        data.m = self.m[tidx]
 
         data.m_min = self.m_min[elm_idx]
         data.m_max = self.m_max[elm_idx]
-        data.theta = self.theta[idx]
+        data.theta = self.theta[tidx]
         data.theta_min = self.theta_min[elm_idx]
         data.theta_max = self.theta_max[elm_idx]
-        data.Beq = self.Beq[idx]
-        data.G0 = self.G0[idx]
-        data.Pfset = self.Pfset[idx]
-        data.Qfset = self.Qfset[idx]
-        data.Qtset = self.Qtset[idx]
-        data.vf_set = self.vf_set[idx]
-        data.vt_set = self.vt_set[idx]
+        data.Beq = self.Beq[tidx]
+        data.G0 = self.G0[tidx]
+        data.Pfset = self.Pfset[tidx]
+        data.Qfset = self.Qfset[tidx]
+        data.Qtset = self.Qtset[tidx]
+        data.vf_set = self.vf_set[tidx]
+        data.vt_set = self.vt_set[tidx]
 
         data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(elm_idx, bus_idx)]
         data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(elm_idx, bus_idx)]
@@ -218,6 +219,28 @@ class BranchData:
         :return:
         """
         return np.where(self.contingency_enabled == 1)[0]
+
+    def to_df(self, t=0):
+        """
+        Create DataFrame with the compiled branches information
+        :param t: time index, relevant for those magnitudes that change with time
+        :return: Pandas DataFrame
+        """
+        data = {'names': self.branch_names,
+                'active': self.branch_active[:, t],
+                'F': self.F,
+                'T': self.T,
+                'Rates': self.branch_rates[:, t],
+                'Contingency rates': self.branch_contingency_rates[:, t],
+                'R': self.R,
+                'X': self.X,
+                'G': self.G,
+                'B': self.B,
+                'Vtap F': self.tap_f,
+                'Vtap T': self.tap_t,
+                'Tap module': self.m[:, t],
+                'Tap angle': self.theta[:, t]}
+        return pd.DataFrame(data=data)
 
     def __len__(self):
         return self.nbr

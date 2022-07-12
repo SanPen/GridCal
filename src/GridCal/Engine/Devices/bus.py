@@ -271,7 +271,7 @@ class Bus(EditableDevice):
         if self.is_slack:
             # if it is set as slack, set the bus as slack and exit
             self.type = BusMode.Slack
-            return self.type
+            return BusMode.Slack
 
         elif len(self.external_grids) > 0:  # there are devices setting this as a slack bus
 
@@ -284,7 +284,7 @@ class Bus(EditableDevice):
             # if there ar any active external grids, set as slack and exit
             if ext_on > 0:
                 self.type = BusMode.Slack
-                return self.type
+                return BusMode.Slack
 
         # if we got here, determine what to do...
 
@@ -307,14 +307,14 @@ class Bus(EditableDevice):
 
         if (gen_on + batt_on + shunt_on) > 0:
             self.type = BusMode.PV
+            return BusMode.PV
 
         else:
             # Nothing special; set it as PQ
             self.type = BusMode.PQ
+            return BusMode.PQ
 
-        return self.type
-
-    def determine_bus_type_at(self, t):
+    def determine_bus_type_at(self, t) -> BusMode:
         """
         Infer the bus type from the devices attached to it
         :param t: time index
@@ -338,34 +338,32 @@ class Bus(EditableDevice):
             # if there ar any active external grids, set as slack and exit
             if ext_on > 0:
                 return BusMode.Slack
+
+        # if we got here, determine what to do...
+
+        # count the active and controlled generators
+        gen_on = 0
+        for elm in self.controlled_generators:
+            if elm.active_prof[t] and elm.is_controlled:
+                gen_on += 1
+
+        # count the active and controlled batteries
+        batt_on = 0
+        for elm in self.batteries:
+            if elm.active_prof[t] and elm.is_controlled:
+                batt_on += 1
+
+        shunt_on = 0
+        for elm in self.shunts:
+            if elm.active_prof[t] and elm.is_controlled:
+                shunt_on += 1
+
+        if (gen_on + batt_on + shunt_on) > 0:
+            return BusMode.PV
+
         else:
-            # if we got here, determine what to do...
-
-            # count the active and controlled generators
-            gen_on = 0
-            for elm in self.controlled_generators:
-                if elm.active_prof[t] and elm.is_controlled:
-                    gen_on += 1
-
-            # count the active and controlled batteries
-            batt_on = 0
-            for elm in self.batteries:
-                if elm.active_prof[t] and elm.is_controlled:
-                    batt_on += 1
-
-            shunt_on = 0
-            for elm in self.shunts:
-                if elm.active_prof[t] and elm.is_controlled:
-                    shunt_on += 1
-
-            if (gen_on + batt_on + shunt_on) > 0:
-                return BusMode.PV
-
-            else:
-                # Nothing special; set it as PQ
-                return BusMode.PQ
-
-        return BusMode.PQ
+            # Nothing special; set it as PQ
+            return BusMode.PQ
 
     def determine_bus_type_prof(self):
         """
@@ -639,6 +637,33 @@ class Bus(EditableDevice):
                 'lat': 'degrees',
                 'lon': 'degrees',
                 'alt': 'm'}
+
+    def set_state(self, t):
+        """
+        Set the profiles state of the objects in this bus to the value given in the profiles at the index t
+        :param t: index of the profile
+        :return: Nothing
+        """
+
+        self.set_profile_values(t)
+
+        for elm in self.loads:
+            elm.set_profile_values(t)
+
+        for elm in self.static_generators:
+            elm.set_profile_values(t)
+
+        for elm in self.external_grids:
+            elm.set_profile_values(t)
+
+        for elm in self.batteries:
+            elm.set_profile_values(t)
+
+        for elm in self.controlled_generators:
+            elm.set_profile_values(t)
+
+        for elm in self.shunts:
+            elm.set_profile_values(t)
 
     def retrieve_graphic_position(self):
         """

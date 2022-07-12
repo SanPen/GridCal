@@ -37,7 +37,7 @@ class VSC(EditableDevice):
                  Pfset = 0.0, Qfset=0.0, Vac_set=1.0, Vdc_set=1.0,
                  alpha1=0.0001, alpha2=0.015, alpha3=0.2,
                  mttf=0, mttr=0, cost=100, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0,
-                 contingency_enabled=True, monitor_loading=True):
+                 contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None):
         """
         Voltage source converter (VSC)
         :param bus_from:
@@ -140,6 +140,7 @@ class VSC(EditableDevice):
                                 non_editable_attributes=['bus_from', 'bus_to', 'idtag'],
                                 properties_with_profile={'active': 'active_prof',
                                                          'rate': 'rate_prof',
+                                                         'contingency_factor': 'contingency_factor_prof',
                                                          'Cost': 'Cost_prof'})
 
         # the VSC must only connect from an DC to a AC bus
@@ -208,6 +209,7 @@ class VSC(EditableDevice):
         self.contingency_enabled: bool = contingency_enabled
         self.monitor_loading: bool = monitor_loading
         self.rate_prof = rate_prof
+        self.contingency_factor_prof = contingency_factor_prof
 
         # branch type: Line, Transformer, etc...
         self.branch_type = BranchType.VSC

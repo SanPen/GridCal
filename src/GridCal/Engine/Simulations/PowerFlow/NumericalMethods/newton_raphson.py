@@ -17,7 +17,7 @@
 
 import time
 import scipy
-
+import json
 from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
@@ -53,7 +53,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     :param acceleration_parameter: parameter used to correct the "bad" iterations, should be between 1e-3 ~ 0.5
     :param control_q: Control reactive power
     :param verbose: Display console information
-    :param print_function: printing function (print by default)
+    :param logger: Logger instance
     :return: NumericPowerFlowResults instance
     """
     start = time.time()
@@ -104,8 +104,22 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                 if verbose > 1:
                     logger.add_debug('J:\n', J.toarray())
                     logger.add_debug('f:\n', f)
+                    logger.add_debug('dx:\n', dx)
                     logger.add_debug('Vm:\n', Vm)
                     logger.add_debug('Va:\n', Va)
+
+                    # if verbose == 2:
+                    #     with open('GridCal_nr_data_it_{0}.json'.format(iteration), 'w') as file_ptr:
+                    #         J2 = J.tocsc()
+                    #         data = {"Ji": J2.indices.tolist(),
+                    #                 "Jp": J2.indptr.tolist(),
+                    #                 "Jx": J2.data.tolist(),
+                    #                 "Jm": J2.shape[0],
+                    #                 "Jn": J2.shape[1],
+                    #                 "f": f.tolist(),
+                    #                 "Va": Va.tolist(),
+                    #                 "Vm": Vm.tolist()}
+                    #         json.dump(data, file_ptr)
 
             # reassign the solution vector
             dVa[pvpq] = dx[:npvpq]
@@ -169,7 +183,8 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
                 # but not pq to pv because that is unstable
-                n_changes, Scalc, S0, pv, pq, pvpq = control_q_inside_method(Scalc, S0, pv, pq, pvpq, Qmin, Qmax)
+                n_changes, Scalc, S0, pv, pq, pvpq, messages = control_q_inside_method(Scalc, S0, pv, pq,
+                                                                                       pvpq, Qmin, Qmax)
 
                 if n_changes > 0:
                     # adjust internal variables to the new pq|pv values
@@ -181,6 +196,11 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                     Sbus = compute_zip_power(S0, I0, Y0, Vm)
                     f = compute_fx(Scalc, Sbus, pvpq, pq)
                     norm_f = np.linalg.norm(f, np.inf)
+
+                    if verbose > 0:
+                        for sense, idx, var in messages:
+                            msg = "Bus i=" + str(idx) + " changed to PQ, limited to " + str(var * 100) + " MVAr"
+                            logger.add_debug(msg)
 
             # determine the convergence condition
             converged = norm_f <= tol

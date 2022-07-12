@@ -57,13 +57,13 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
             if name.endswith('_prof'):
 
                 # compose the csv file name
-                filename = name + ".pkl"
+                filename = name + ".parquet"
 
                 # open a string buffer
-                try:  # try pickle
+                try:  # try parquet file
                     with BytesIO() as buffer:
                         # save the DataFrame to the buffer, protocol4 is to be compatible with python 3.6
-                        df.to_pickle(buffer, protocol=4)
+                        df.to_parquet(buffer)
                         # save the buffer to the zip file
                         f_zip_ptr.writestr(filename, buffer.getvalue())
 
@@ -106,8 +106,13 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
                                 text_func('Flushing ' + filename + ' to ' + filename_zip + '...')
 
                             with BytesIO() as buffer:
-                                np.save(buffer, np.array(arr))  # save the DataFrame to the buffer
-                                f_zip_ptr.writestr(filename + '.npy', buffer.getvalue())  # save the buffer to the zip file
+                                # np.save(buffer, np.array(arr))  # save the DataFrame to the buffer
+                                # f_zip_ptr.writestr(filename + '.npy', buffer.getvalue())  # save the buffer to the zip file
+
+                                # save the DataFrame to the buffer, protocol4 is to be compatible with python 3.6
+                                pd.DataFrame(data=arr).to_parquet(buffer)
+                                # save the buffer to the zip file
+                                f_zip_ptr.writestr(filename + '.parquet', buffer.getvalue())
 
                             if progress_func is not None:
                                 progress_func((i + 1) / n_items * 100)
@@ -130,6 +135,13 @@ def read_data_frame_from_zip(file_pointer, extension, index_col=None, logger=Log
     try:
         if extension == '.csv':
             return pd.read_csv(file_pointer, index_col=index_col)
+
+        elif extension == '.npy':
+            try:
+                return np.load(file_pointer)
+            except ValueError:
+                return np.load(file_pointer, allow_pickle=True)
+
         elif extension == '.pkl':
             try:
                 return pd.read_pickle(file_pointer)
@@ -139,6 +151,17 @@ def read_data_frame_from_zip(file_pointer, extension, index_col=None, logger=Log
             except AttributeError as e:
                 logger.add_error(str(e) + ' Upgrading pandas might help.', device=file_pointer.name)
                 return None
+
+        elif extension == '.parquet':
+            try:
+                return pd.read_parquet(file_pointer)
+            except ValueError as e:
+                logger.add_error(str(e), device=file_pointer.name)
+                return None
+            except AttributeError as e:
+                logger.add_error(str(e) + ' Upgrading pandas might help.', device=file_pointer.name)
+                return None
+
     except EOFError:
         return None
     except zipfile.BadZipFile:
@@ -251,14 +274,21 @@ def load_session_driver_objects(file_name_zip: str, session_name: str, study_nam
             path = name.split('/')
             if len(path) > 3:
                 if path[0].lower() == 'sessions' and session_name == path[1] and study_name == path[2]:
-                    arr_name = path[3].replace('.npy', '')
+
                     # create a buffer to read the file
                     file_pointer = zip_file_pointer.open(name)
 
-                    try:
-                        data[arr_name] = np.load(file_pointer)
-                    except ValueError:
-                        data[arr_name] = np.load(file_pointer, allow_pickle=True)
+                    # split the file name into name and extension
+                    _, extension = os.path.splitext(name)
+                    arr_name = path[3].replace(extension, '')
+
+                    # read the data
+                    data[arr_name] = read_data_frame_from_zip(file_pointer, extension)
+
+                    # try:
+                    #     data[arr_name] = np.load(file_pointer)
+                    # except ValueError:
+                    #     data[arr_name] = np.load(file_pointer, allow_pickle=True)
 
     return data
 

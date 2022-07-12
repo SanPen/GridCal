@@ -20,7 +20,7 @@ import numpy as np
 import time
 
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
-from GridCal.Engine.Core.time_series_opf_data import compile_opf_time_circuit
+from GridCal.Engine.Core.time_series_opf_data import compile_opf_time_circuit, OpfTimeCircuit
 from GridCal.Engine.Simulations.OPF.ntc_opf import OpfNTC
 from GridCal.Engine.Simulations.OPF.opf_ntc_driver import OptimalNetTransferCapacityOptions, OptimalNetTransferCapacityResults
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
@@ -94,6 +94,30 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         self.sampled_probabilities = sampled_probabilities
 
+    def mdl(self, result_type) -> "ResultsTable":
+        """
+        Plot the results
+        :param result_type: type of results (string)
+        :return: DataFrame of the results (or None if the result was not understood)
+        """
+
+        if result_type == ResultTypes.OptimalNetTransferCapacityTimeSeriesReport:
+            labels, columns, y = self.get_contingency_report()
+            y_label = ''
+            title = result_type.value[0]
+
+        else:
+            raise Exception('No results available')
+
+        mdl = ResultsTable(data=y,
+                           index=labels,
+                           columns=columns,
+                           title=title,
+                           ylabel=y_label,
+                           xlabel='',
+                           units=y_label)
+        return mdl
+
     def get_steps(self):
         return
 
@@ -142,31 +166,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         # Save file
         if path_out:
             df.to_csv(path_out, index=False)
-    
 
-    def mdl(self, result_type) -> "ResultsTable":
-        """
-        Plot the results
-        :param result_type: type of results (string)
-        :return: DataFrame of the results (or None if the result was not understood)
-        """
-
-        if result_type == ResultTypes.OptimalNetTransferCapacityTimeSeriesReport:
-            labels, columns, y = self.get_contingency_report()
-            y_label = ''
-            title = result_type.value[0]
-
-        else:
-            raise Exception('No results available')
-
-        mdl = ResultsTable(data=y,
-                           index=labels,
-                           columns=columns,
-                           title=title,
-                           ylabel=y_label,
-                           xlabel='',
-                           units=y_label)
-        return mdl
 
     def get_contingency_report(self):
 
@@ -181,9 +181,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         hvdc_names = list(list(self.results_dict.values())[0].hvdc_names)
         columns_all = ['Time index', 'Time', 'NTC (MW)'] + columns + shifter_names + hvdc_names
         data_all = np.empty(shape=(0, len(columns_all)))
-        labels_all = list()
-
-        print('\n')
 
         for idx, t in enumerate(self.time_indices):
 
@@ -191,24 +188,22 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
                 # get ntc value
                 ntc = np.floor(self.results_dict[t].get_exchange_power())
-                print('Hora', t, ': Capacidad', ntc, "MW")
 
-                l, c, data = self.results_dict[t].get_contingency_report(
-                    max_report_elements=self.max_report_elements)
+                if ntc != 0:
 
-                # get phase shifter and hvdc data
-                shifter_data = np.array([self.results_dict[t].phase_shift[shift_idx]] * data.shape[0])
-                hvdc_data = np.array([self.results_dict[t].hvdc_Pf] * data.shape[0])
+                    l, c, data = self.results_dict[t].get_contingency_report(
+                        max_report_elements=self.max_report_elements)
 
-                # add new columns to report
-                data = np.concatenate((data, shifter_data, hvdc_data), axis=1)
+                    # get phase shifter and hvdc data
+                    shifter_data = np.array([self.results_dict[t].phase_shift[shift_idx]] * data.shape[0])
+                    hvdc_data = np.array([self.results_dict[t].hvdc_Pf] * data.shape[0])
 
-            else:
-                ntc = 0
-                print('Hora', t, ': Sin resultados')
+                    # add new columns to report
+                    data = np.concatenate((data, shifter_data, hvdc_data), axis=1)
 
-                data = np.zeros(shape=(1, len(columns) + len(shifter_names) + len(hvdc_names)))
-                l = list()
+                else:
+
+                    data = np.zeros(shape=(1, len(columns) + len(shifter_names) + len(hvdc_names)))
 
             # complete the data with time and ntc columns
             extra_data = np.array([[t, self.time_array[idx], ntc]] * data.shape[0])
@@ -216,10 +211,8 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
-            labels_all = labels_all + l
 
         # sort data by ntc and time index, descending to compute probability factor
-
         data_all = data_all[np.lexsort(
             (np.abs(data_all[:, 11].astype(float)), data_all[:, 0], data_all[:, 2])
         )][::-1]
@@ -233,7 +226,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         time_prev = 0
         pct = 0
         for row in range(data_all.shape[0]):
-            t = data_all[row, 1]
+            t = int(data_all[row, 1])
             if t != time_prev:
                 pct += prob_dict[t]
                 time_prev = t
@@ -241,6 +234,12 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             data_all[row, 0] = pct
 
         # return report data
+        labels_all = np.arange(data_all.shape[0])
+
+        # convert time to formated string
+        data_all[:, 2] = [t.strftime("%d/%m/%Y %H:%M:%S") for t in data_all[:, 2]]
+
+        print('Ejecutado en {0} scs. para {1} casos'.format(self.elapsed, len(self.time_array)))
         return labels_all, columns_all, data_all
 
     def get_contingency_branch_report(self):
@@ -255,9 +254,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         hvdc_names = list(list(self.results_dict.values())[0].hvdc_names)
         columns_all = ['Time index', 'Time', 'NTC (MW)'] + columns + shifter_names + hvdc_names
         data_all = np.empty(shape=(0, len(columns_all)))
-        labels_all = list()
-
-        print('\n')
 
         for idx, t in enumerate(self.time_indices):
 
@@ -280,15 +276,13 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 ntc = 0
 
                 data = np.zeros(shape=(1, len(columns) + len(shifter_names) + len(hvdc_names)))
-                l = list()
 
             # complete the data with time and ntc columns
-            extra_data = np.array([[t, self.time_array[idx], ntc]] * data.shape[0])
+            extra_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S"), ntc]] * data.shape[0])
             data = np.concatenate((extra_data, data), axis=1)
 
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
-            labels_all = labels_all + l
 
         # sort data by ntc and time index, descending to compute probability factor
 
@@ -313,6 +307,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             data_all[row, 0] = pct
 
         # return report data
+        labels_all = np.arange(data_all.shape[0])
         return labels_all, columns_all, data_all
 
     def get_contingency_generation_report(self):
@@ -327,9 +322,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         hvdc_names = list(list(self.results_dict.values())[0].hvdc_names)
         columns_all = ['Time index', 'Time', 'NTC (MW)'] + columns + shifter_names + hvdc_names
         data_all = np.empty(shape=(0, len(columns_all)))
-        labels_all = list()
-
-        print('\n')
 
         for idx, t in enumerate(self.time_indices):
 
@@ -352,15 +344,13 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 ntc = 0
 
                 data = np.zeros(shape=(1, len(columns) + len(shifter_names) + len(hvdc_names)))
-                l = list()
 
             # complete the data with time and ntc columns
-            extra_data = np.array([[t, self.time_array[idx], ntc]] * data.shape[0])
+            extra_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S"), ntc]] * data.shape[0])
             data = np.concatenate((extra_data, data), axis=1)
 
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
-            labels_all = labels_all + l
 
         # sort data by ntc and time index, descending to compute probability factor
 
@@ -385,6 +375,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             data_all[row, 0] = pct
 
         # return report data
+        labels_all = np.arange(data_all.shape[0])
         return labels_all, columns_all, data_all
 
     def get_contingency_hvdc_report(self):
@@ -399,9 +390,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         hvdc_names = list(list(self.results_dict.values())[0].hvdc_names)
         columns_all = ['Time index', 'Time', 'NTC (MW)'] + columns + shifter_names + hvdc_names
         data_all = np.empty(shape=(0, len(columns_all)))
-        labels_all = list()
-
-        print('\n')
 
         for idx, t in enumerate(self.time_indices):
 
@@ -424,15 +412,13 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 ntc = 0
 
                 data = np.zeros(shape=(1, len(columns) + len(shifter_names) + len(hvdc_names)))
-                l = list()
 
             # complete the data with time and ntc columns
-            extra_data = np.array([[t, self.time_array[idx], ntc]] * data.shape[0])
+            extra_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S"), ntc]] * data.shape[0])
             data = np.concatenate((extra_data, data), axis=1)
 
             # add to main data set
             data_all = np.concatenate((data_all, data), axis=0)
-            labels_all = labels_all + l
 
         # sort data by ntc and time index, descending to compute probability factor
 
@@ -457,6 +443,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             data_all[row, 0] = pct
 
         # return report data
+        labels_all = np.arange(data_all.shape[0])
         return labels_all, columns_all, data_all
 
 
@@ -497,6 +484,22 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
     name = tpe.value
 
+    def compute_exchange_sensitivity(self, linear, numerical_circuit: OpfTimeCircuit, Pload, Pgen, t):
+
+        # compute the branch exchange sensitivity (alpha)
+        alpha = compute_alpha(
+            ptdf=linear.PTDF,
+            P0=numerical_circuit.Sbus.real[:, t],
+            Pinstalled=numerical_circuit.bus_installed_power,
+            Pload=Pload[:, t].real,
+            Pgen=numerical_circuit.generator_data.get_injections_per_bus()[:, t].real,
+            idx1=self.options.area_from_bus_idx,
+            idx2=self.options.area_to_bus_idx,
+            dT=self.options.sensitivity_dT,
+            mode=self.options.sensitivity_mode.value)
+
+        return alpha
+
     def opf(self):
         """
         Run thread
@@ -506,6 +509,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         nc = compile_opf_time_circuit(self.grid)
         time_indices = self.get_time_indices()
+
+        Pload = nc.load_data.get_injections_per_bus()
+        Pgen = nc.generator_data.get_injections_per_bus()
 
         nt = len(time_indices)
 
@@ -518,7 +524,13 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         linear.run()
 
         if self.use_clustering:
-            self.progress_text.emit('Clustering...')
+
+            if self.progress_text is not None:
+                self.progress_text.emit('Clustering...')
+
+            else:
+                print('Clustering...')
+
             X = nc.Sbus
             X = X[:, time_indices].real.T
 
@@ -544,10 +556,6 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 time_array=nc.time_array[time_indices],
                 time_indices=time_indices)
 
-
-        # get the power injections
-        P = nc.Sbus.real  # these are in p.u.
-
         for t_idx, t in enumerate(time_indices):
 
             # update progress bar
@@ -557,17 +565,19 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             if self.progress_text is not None:
                 self.progress_text.emit('Optimal net transfer capacity at ' + str(self.grid.time_profile[t]))
 
-            # compute the branch exchange sensitivity (alpha)
-            alpha = compute_alpha(
-                ptdf=linear.PTDF,
-                P0=P[:, t],
-                # no problem that there are in p.u., are only used for the sensitivity
-                Pinstalled=nc.bus_installed_power,
-                idx1=self.options.area_from_bus_idx,
-                idx2=self.options.area_to_bus_idx,
-                bus_types=nc.bus_types_prof(t),
-                dT=self.options.sensitivity_dT,
-                mode=self.options.sensitivity_mode.value)
+            else:
+                print('Optimal net transfer capacity at ' + str(self.grid.time_profile[t]))
+
+            # sensitivities
+            if self.options.monitor_only_sensitive_branches:
+                alpha = self.compute_exchange_sensitivity(
+                    linear=linear,
+                    numerical_circuit=nc,
+                    Pload=Pload,
+                    Pgen=Pgen,
+                    t=t)
+            else:
+                alpha = np.ones(nc.nbr)
 
             # Define the problem
             self.progress_text.emit('Formulating NTC OPF...')
@@ -595,7 +605,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 logger=self.logger)
 
             # Solve
-            self.progress_text.emit('Solving NTC OPF...['+str(t)+']')
+            time_str = str(nc.time_array[time_indices][t_idx])
+            self.progress_text.emit('Solving NTC OPF...['+time_str+']')
 
             problem.formulate_ts(t=t)
 
@@ -605,7 +616,10 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             self.logger += problem.logger
 
-            if not solved:
+            if solved:
+                self.results.optimal_idx.append(t)
+
+            else:
 
                 if problem.status == pywraplp.Solver.FEASIBLE:
                     self.results.feasible_idx.append(t)
@@ -637,48 +651,45 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                         'Not solved',
                         'NTC OPF')
 
-            else:
-                self.results.optimal_idx.append(t)
-                # pack the results
-                result = OptimalNetTransferCapacityResults(
-                    bus_names=nc.bus_data.bus_names,
-                    branch_names=nc.branch_data.branch_names,
-                    load_names=nc.load_data.load_names,
-                    generator_names=nc.generator_data.generator_names,
-                    battery_names=nc.battery_data.battery_names,
-                    hvdc_names=nc.hvdc_data.names,
-                    Sbus=problem.get_power_injections(),
-                    voltage=problem.get_voltage(),
-                    battery_power=np.zeros((nc.nbatt, 1)),
-                    controlled_generation_power=problem.get_generator_power(),
-                    Sf=problem.get_branch_power_from(),
-                    loading=problem.get_loading(),
-                    solved=bool(solved),
-                    bus_types=nc.bus_types,
-                    hvdc_flow=problem.get_hvdc_flow(),
-                    hvdc_loading=problem.get_hvdc_loading(),
-                    phase_shift=problem.get_phase_angles(),
-                    generation_delta=problem.get_generator_delta(),
-                    inter_area_branches=problem.inter_area_branches,
-                    inter_area_hvdc=problem.inter_area_hvdc,
-                    alpha=alpha,
-                    contingency_branch_flows_list=problem.get_contingency_flows_list(),
-                    contingency_branch_indices_list=problem.contingency_indices_list,
-                    contingency_generation_flows_list=problem.get_contingency_gen_flows_list(),
-                    contingency_generation_indices_list=problem.contingency_gen_indices_list,
-                    contingency_hvdc_flows_list=problem.get_contingency_hvdc_flows_list(),
-                    contingency_hvdc_indices_list=problem.contingency_hvdc_indices_list,
-                    rates=nc.branch_data.branch_rates[:, t],
-                    contingency_rates=nc.branch_data.branch_contingency_rates[:, t])
+            # pack the results
+            result = OptimalNetTransferCapacityResults(
+                bus_names=nc.bus_data.bus_names,
+                branch_names=nc.branch_data.branch_names,
+                load_names=nc.load_data.load_names,
+                generator_names=nc.generator_data.generator_names,
+                battery_names=nc.battery_data.battery_names,
+                hvdc_names=nc.hvdc_data.names,
+                Sbus=problem.get_power_injections(),
+                voltage=problem.get_voltage(),
+                battery_power=np.zeros((nc.nbatt, 1)),
+                controlled_generation_power=problem.get_generator_power(),
+                Sf=problem.get_branch_power_from(),
+                loading=problem.get_loading(),
+                solved=bool(solved),
+                bus_types=nc.bus_types,
+                hvdc_flow=problem.get_hvdc_flow(),
+                hvdc_loading=problem.get_hvdc_loading(),
+                phase_shift=problem.get_phase_angles(),
+                generation_delta=problem.get_generator_delta(),
+                inter_area_branches=problem.inter_area_branches,
+                inter_area_hvdc=problem.inter_area_hvdc,
+                alpha=alpha,
+                contingency_branch_flows_list=problem.get_contingency_flows_list(),
+                contingency_branch_indices_list=problem.contingency_indices_list,
+                contingency_generation_flows_list=problem.get_contingency_gen_flows_list(),
+                contingency_generation_indices_list=problem.contingency_gen_indices_list,
+                contingency_hvdc_flows_list=problem.get_contingency_hvdc_flows_list(),
+                contingency_hvdc_indices_list=problem.contingency_hvdc_indices_list,
+                rates=nc.branch_data.branch_rates[:, t],
+                contingency_rates=nc.branch_data.branch_contingency_rates[:, t])
 
-                self.results.results_dict[t] = result
+            self.results.results_dict[t] = result
 
-                if self.progress_signal is not None:
-                    self.progress_signal.emit((t_idx + 1) / nt * 100)
+            if self.progress_signal is not None:
+                self.progress_signal.emit((t_idx + 1) / nt * 100)
 
-                if self.__cancel__:
-                    break
-
+            if self.__cancel__:
+                break
 
 
     def run(self):
@@ -700,16 +711,17 @@ if __name__ == '__main__':
     import GridCal.Engine.basic_structures as bs
     import GridCal.Engine.Devices as dev
     from GridCal.Engine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferMode
-    from GridCal.Engine import FileOpen, \
-        LinearAnalysis
+    from GridCal.Engine import FileOpen, LinearAnalysis
 
-    fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1.gridcal'
-    path_out = r'd:\original_ntc_optimization_EF_PMODE1.csv'
+    fname = r'd:\0.ntc_opf\Propuesta_2026_v22_20260729_17_fused_PMODE1.gridcal'
+    path_out = r'd:\0.ntc_opf\Propuesta_2026_v22_20260729_17_fused_PMODE1.csv'
+    # fname = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1.gridcal'
+    # path_out = r'd:\v19_20260105_22_zero_100hconsecutivas_active_profilesEXP_timestamp_FRfalse_PMODE1.csv'
 
     circuit = FileOpen(fname).open()
 
-    areas_from_idx = [0, 1, 2, 3, 4]
-    areas_to_idx = [7]
+    areas_from_idx = [0]
+    areas_to_idx = [1]
 
     # areas_from_idx = [7]
     # areas_to_idx = [0, 1, 2, 3, 4]
@@ -761,6 +773,9 @@ if __name__ == '__main__':
         branch_sensitivity_threshold=0.05,
         skip_generation_limits=True,
         consider_contingencies=True,
+        consider_gen_contingencies=True,
+        consider_hvdc_contingencies=True,
+        generation_contingency_threshold=1000,
         dispatch_all_areas=False,
         tolerance=1e-2,
         sensitivity_dT=100.0,
@@ -771,21 +786,21 @@ if __name__ == '__main__':
         weight_generation_cost=1e2,
         with_check=False,
         time_limit_ms=1e4,
-        max_report_elements=5,
-        generation_contingency_threshold=1000)
+        max_report_elements=5)
 
     print('Running optimal net transfer capacity...')
 
     # set optimal net transfer capacity driver instance
     start = 0
-    end = circuit.get_time_number()-1
+    end = 1  #circuit.get_time_number()-1
+
     driver = OptimalNetTransferCapacityTimeSeriesDriver(
         grid=circuit,
         options=options,
         start_=start,
         end_=end,
-        use_clustering=True,
-        cluster_number=5)
+        use_clustering=False,
+        cluster_number=1)
 
     driver.run()
 

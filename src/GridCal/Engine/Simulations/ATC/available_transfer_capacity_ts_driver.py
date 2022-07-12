@@ -301,9 +301,10 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             alpha = compute_alpha(ptdf=linear_analysis.PTDF,
                                   P0=P[:, t],  # no problem that there are in p.u., are only used for the sensitivity
                                   Pinstalled=nc.bus_installed_power,
+                                  Pgen=nc.generator_data.get_injections_per_bus(),
+                                  Pload=nc.load_data.get_injections_per_bus(),
                                   idx1=self.options.bus_idx_from,
                                   idx2=self.options.bus_idx_to,
-                                  bus_types=nc.bus_types_prof(t),
                                   dT=self.options.dT,
                                   mode=self.options.mode.value)
 

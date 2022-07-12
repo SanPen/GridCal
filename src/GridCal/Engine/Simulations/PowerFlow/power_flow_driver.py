@@ -24,55 +24,10 @@ from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Simulations.driver_types import SimulationTypes
 from GridCal.Engine.Simulations.driver_template import DriverTemplate
 from GridCal.Engine.Core.Compilers.circuit_to_newton import NEWTON_AVAILBALE, to_newton_native, newton_power_flow
-from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf
+from GridCal.Engine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf, translate_bentayga_pf_results
+from GridCal.Engine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_pf, translate_newton_pa_pf_results
+from GridCal.Engine.Core.Compilers.circuit_to_alliander_pgm import ALLIANDER_PGM_AVAILABLE, alliander_pgm_pf
 import GridCal.Engine.basic_structures as bs
-
-
-def translate_bentayga_pf_results(grid: MultiCircuit, res) -> PowerFlowResults:
-    results = PowerFlowResults(n=grid.get_bus_number(),
-                               m=grid.get_branch_number_wo_hvdc(),
-                               n_tr=grid.get_transformers2w_number(),
-                               n_hvdc=grid.get_hvdc_number(),
-                               bus_names=res.bus_names,
-                               branch_names=res.branch_names,
-                               transformer_names=[],
-                               hvdc_names=res.hvdc_names,
-                               bus_types=res.bus_types)
-
-    results.voltage = res.V[0, :]
-    results.Sbus = res.S[0, :]
-    results.Sf = res.Sf[0, :]
-    results.St = res.St[0, :]
-    results.loading = res.loading[0, :]
-    results.losses = res.losses[0, :]
-    results.Vbranch = res.Vbranch[0, :]
-    results.If = res.If[0, :]
-    results.It = res.It[0, :]
-    results.Beq = res.Beq[0, :]
-    results.m = res.tap_modules[0, :]
-    results.theta = res.tap_angles[0, :]
-    results.F = res.F
-    results.T = res.T
-    results.hvdc_F = res.F_hvdc
-    results.hvdc_T = res.T_hvdc
-    results.hvdc_Pf = res.hvdc_Pf[0, :]
-    results.hvdc_Pt = res.hvdc_Pt[0, :]
-    results.hvdc_loading = res.hvdc_loading[0, :]
-    results.hvdc_losses = res.hvdc_losses[0, :]
-    results.bus_area_indices = grid.get_bus_area_indices()
-    results.area_names = [a.name for a in grid.areas]
-
-    for rep in res.stats[0]:
-        report = bs.ConvergenceReport()
-        for i in range(len(rep.converged)):
-            report.add(method=rep.solver[i].name,
-                       converged=rep.converged[i],
-                       error=rep.norm_f[i],
-                       elapsed=rep.elapsed[i],
-                       iterations=rep.iterations[i])
-            results.convergence_reports.append(report)
-
-    return results
 
 
 class PowerFlowDriver(DriverTemplate):
@@ -125,7 +80,15 @@ class PowerFlowDriver(DriverTemplate):
             self.engine = bs.EngineType.GridCal
             self.logger.add_warning('Failed back to GridCal')
 
+        if self.engine == bs.EngineType.NewtonPA and not NEWTON_PA_AVAILABLE:
+            self.engine = bs.EngineType.GridCal
+            self.logger.add_warning('Failed back to GridCal')
+
         if self.engine == bs.EngineType.Bentayga and not BENTAYGA_AVAILABLE:
+            self.engine = bs.EngineType.GridCal
+            self.logger.add_warning('Failed back to GridCal')
+
+        if self.engine == bs.EngineType.AllianderPGM and not ALLIANDER_PGM_AVAILABLE:
             self.engine = bs.EngineType.GridCal
             self.logger.add_warning('Failed back to GridCal')
 
@@ -166,6 +129,24 @@ class PowerFlowDriver(DriverTemplate):
             self.results.area_names = [a.name for a in self.grid.areas]
             print('newton error:', res.error)
 
+
+        elif self.engine == bs.EngineType.NewtonPA:
+
+            res = newton_pa_pf(self.grid, self.options, time_series=False)
+
+            self.results = PowerFlowResults(n=self.grid.get_bus_number(),
+                                            m=self.grid.get_branch_number_wo_hvdc(),
+                                            n_tr=self.grid.get_transformers2w_number(),
+                                            n_hvdc=self.grid.get_hvdc_number(),
+                                            bus_names=res.bus_names,
+                                            branch_names=res.branch_names,
+                                            transformer_names=[],
+                                            hvdc_names=res.hvdc_names,
+                                            bus_types=res.bus_types)
+
+            self.results = translate_newton_pa_pf_results(self.grid, res)
+            self.convergence_reports = self.results.convergence_reports
+
         elif self.engine == bs.EngineType.Bentayga:
 
             res = bentayga_pf(self.grid, self.options, time_series=False)
@@ -182,6 +163,10 @@ class PowerFlowDriver(DriverTemplate):
 
             self.results = translate_bentayga_pf_results(self.grid, res)
             self.convergence_reports = self.results.convergence_reports
+
+        elif self.engine == bs.EngineType.AllianderPGM:
+
+            self.results = alliander_pgm_pf(self.grid, self.options, logger=self.logger)
 
         else:
             raise Exception('Engine ' + self.engine.value + ' not implemented for ' + self.name)

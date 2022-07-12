@@ -31,6 +31,7 @@ from GridCal.Engine.Devices.shunt import *
 from GridCal.Engine.Devices.static_generator import *
 from GridCal.Engine.Devices.tower import *
 from GridCal.Engine.Devices.transformer import *
+from GridCal.Engine.Devices.transformer3w import *
 from GridCal.Engine.Devices.underground_line import *
 from GridCal.Engine.Devices.wire import *
 from GridCal.Engine.Devices.measurement import *
