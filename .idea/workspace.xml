@@ -237,9 +237,9 @@
     </configuration>
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
+      <item itemvalue="Python.branch_power" />
       <item itemvalue="Python.pulp" />
       <item itemvalue="Python.update_gui_file" />
-      <item itemvalue="Python.branch_power" />
       <item itemvalue="Python tests.Doctests in pulp" />
     </list>
     <recent_temporary>
