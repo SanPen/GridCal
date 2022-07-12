@@ -2,13 +2,20 @@
 # The license is the same BSD-style that is provided in LICENSE_MATPOWER
 
 import numpy as np
-from scipy.sparse import hstack, vstack
-from scipy.sparse.linalg import spsolve
+import scipy
+import scipy.sparse as sp
 from enum import Enum
 from GridCal.Engine.basic_structures import ReactivePowerControlMode, Logger
-from GridCal.Engine.Simulations.PowerFlow.discrete_controls import control_q_direct
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_direct
 from GridCal.Engine.Core.common_functions import compile_types
-from GridCal.Engine.Simulations.PowerFlow.high_speed_jacobian import AC_jacobian
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
+from GridCal.Engine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
+
+linear_solver = get_linear_solver()
+sparse = get_sparse_type()
+scipy.ALLOW_THREADS = True
+np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 
 class CpfStopAt(Enum):
@@ -228,7 +235,7 @@ def cpf_p_jac(parametrization: CpfParametrization, z, V, lam, Vprv, lamprv, pv, 
     return dP_dV, dP_dlam
 
 
-def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
+def predictor(V, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
               parametrization: CpfParametrization):
     """
     Computes a prediction (approximation) to the next solution of the
@@ -269,8 +276,8 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
     J2 = [   J   dF_dlam
            dP_dV dP_dlam ]
     '''
-    J2 = vstack([hstack([J, dF_dlam.reshape(nj, 1)]),
-                 hstack([dP_dV, dP_dlam])], format="csc")
+    J2 = sp.vstack([sp.hstack([J, dF_dlam.reshape(nj, 1)]),
+                    sp.hstack([dP_dV, dP_dlam])], format="csc")
 
     Va_prev = np.angle(V)
     Vm_prev = np.abs(V)
@@ -282,7 +289,7 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
     s[npv + 2 * npq] = 1
 
     # tangent vector
-    z[np.r_[pvpq, nb + pq, 2 * nb]] = spsolve(J2, s)
+    z[np.r_[pvpq, nb + pq, 2 * nb]] = linear_solver(J2, s)
 
     # normalize_string tangent predictor  (dividing by the euclidean norm)
     z /= np.linalg.norm(z)
@@ -300,7 +307,7 @@ def predictor(V, Ibus, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
     return V0, lam0, z
 
 
-def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parametrization, tol, max_it,
+def corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parametrization, tol, max_it,
               verbose, mu_0=1.0, acceleration_parameter=0.5):
     """
     Solves the corrector step of a continuation power flow using a full Newton method
@@ -320,7 +327,6 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
      the number of iterations performed, and the final lambda.
 
     :param Ybus: Admittance matrix (CSC sparse)
-    :param Ibus: Bus current injections
     :param Sbus: Bus power injections
     :param V0:  Bus initial voltages
     :param pv: list of pv nodes
@@ -395,11 +401,11 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
         J = [   J   dF_dlam 
               dP_dV dP_dlam ]
         '''
-        J = vstack([hstack([J, dF_dlam.reshape(nj, 1)]),
-                    hstack([dP_dV, dP_dlam])], format="csc")
+        J = sp.vstack([sp.hstack([J, dF_dlam.reshape(nj, 1)]),
+                       sp.hstack([dP_dV, dP_dlam])], format="csc")
     
         # compute update step
-        dx = spsolve(J, F)
+        dx = linear_solver(J, F)
         dVa[pvpq] = dx[j1:j2]
         dVm[pq] = dx[j2:j3]
         dlam = dx[j3]
@@ -428,10 +434,10 @@ def corrector(Ybus, Ibus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, p
             lam -= mu * dlam
 
             # update Vm and Va again in case we wrapped around with a negative Vm
-            V = Vm * np.exp(1j * Va)
+            V = polar_to_rect(Vm, Va)
 
             # evaluate F(x, lam)
-            Scalc = V * np.conj(Ybus * V)
+            Scalc = compute_power(Ybus, V)
             mismatch = Scalc - Sbus - lam * Sxfr
 
             # evaluate the parametrization function P(x, lambda)
@@ -558,7 +564,6 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
 
         # prediction for next step -------------------------------------------------------------------------------------
         V0, lam0, z = predictor(V=V,
-                                Ibus=Ibus_base,
                                 lam=lam,
                                 Ybus=Ybus,
                                 Sxfr=Sxfr,
@@ -576,7 +581,6 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
 
         # correction ---------------------------------------------------------------------------------------------------
         V, success, i, lam, normF, Scalc = corrector(Ybus=Ybus,
-                                                     Ibus=Ibus_base,
                                                      Sbus=Sbus_base,
                                                      V0=V0,
                                                      pv=pv,
@@ -602,7 +606,6 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
                 # rerun with the slack distributed and replace the results
                 # also, initialize with the last voltage
                 V, success, i, lam, normF, Scalc = corrector(Ybus=Ybus,
-                                                             Ibus=Ibus_base,
                                                              Sbus=Sbus_base + delta,
                                                              V0=V,
                                                              pv=pv,
@@ -645,6 +648,8 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
 
             # Check controls
             if control_q == ReactivePowerControlMode.Direct:
+
+
                 Vm = np.abs(V)
                 V, \
                 Qnew, \
@@ -671,7 +676,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
 
                 Sxfr = Sbus_target - Sbus  # TODO: really?
 
-                vd, pq, pv, pqpv = compile_types(Sbus, types_new, logger)
+                vd, pq, pv, pqpv = compile_types(Sbus, types_new)
             else:
                 if verbose:
                     print('Q controls Ok')
@@ -705,7 +710,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
                     continuation = False
 
             elif stop_at == CpfStopAt.ExtraOverloads:
-                    # look for overloads and determine if there are more overloads than in the base situation
+                # look for overloads and determine if there are more overloads than in the base situation
                 idx = np.where(np.abs(loading) > 1)[0]
                 if len(idx) > base_overload_number:
                     continuation = False
@@ -751,7 +756,7 @@ if __name__ == '__main__':
     from GridCal.Engine import *
     from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit
 
-    fname = os.path.join('/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids', 'IEEE_14.xlsx')
+    fname = os.path.join('/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids', 'IEEE 14.xlsx')
     # fname = os.path.join('..', '..', '..', '..', 'Grids_and_profiles', 'grids', 'lynn5buspv.xlsx')
 
     print('Reading...')
@@ -759,7 +764,7 @@ if __name__ == '__main__':
     pf_options = PowerFlowOptions(SolverType.NR, verbose=False,
                                   initialize_with_existing_solution=False,
                                   multi_core=False, dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.NoControl,
+                                  control_q=ReactivePowerControlMode.Direct,
                                   control_p=True)
 
     ####################################################################################################################
@@ -792,25 +797,23 @@ if __name__ == '__main__':
 
     # just for this test
     numeric_circuit = compile_snapshot_circuit(main_circuit)
-    numeric_inputs = numeric_circuit.split_into_islands(ignore_single_node_islands=pf_options.ignore_single_node_islands)
-    Sbase_ = np.zeros(len(main_circuit.buses), dtype=complex)
-    Vbase_ = np.zeros(len(main_circuit.buses), dtype=complex)
-    for c in numeric_inputs:
-        Sbase_[c.original_bus_idx] = c.Sbus
-        Vbase_[c.original_bus_idx] = c.Vbus
+    numeric_inputs = numeric_circuit.split_into_islands()
+    Sbase_ = power_flow.results.Sbus / numeric_circuit.Sbase
+    Vbase_ = power_flow.results.voltage
 
-    np.random.seed(42)
-    unitary_vector = -1 + 2 * np.random.random(len(main_circuit.buses))
-
-    # unitary_vector = random.random(len(grid.buses))
     vc_inputs = ContinuationPowerFlowInput(Sbase=Sbase_,
                                            Vbase=Vbase_,
-                                           Starget=Sbase_ * 2,  # (1 + unitary_vector)
-                                           )
-    vc = ContinuationPowerFlowDriver(circuit=main_circuit, options=vc_options, inputs=vc_inputs, pf_options=pf_options)
-    vc.run()
-    df = vc.results.plot()
+                                           Starget=Sbase_ * 2)
 
-    print(df)
+    vc = ContinuationPowerFlowDriver(circuit=main_circuit,
+                                     options=vc_options,
+                                     inputs=vc_inputs,
+                                     pf_options=pf_options)
+    vc.run()
+    res = vc.results.mdl(ResultTypes.BusActivePower)
+    res.plot()
+
+    res = vc.results.mdl(ResultTypes.BusVoltage)
+    res.plot()
 
     plt.show()

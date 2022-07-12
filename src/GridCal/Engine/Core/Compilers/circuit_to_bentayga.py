@@ -20,7 +20,12 @@ try:
         if os.path.exists(btg_license):
             # print('Bentayga v' + btg.get_version())
             btg.activate_license(btg_license)
-            BENTAYGA_AVAILABLE = True
+            if btg.is_license_activated():
+                BENTAYGA_AVAILABLE = True
+            else:
+                print('Bentayga v' + btg.get_version(),
+                      "installed, tried to activate with {} but the license did not work :/".format(btg_license))
+                BENTAYGA_AVAILABLE = False
         else:
             print('Bentayga v' + btg.get_version(), "installed but not licensed")
             BENTAYGA_AVAILABLE = False
@@ -569,7 +574,7 @@ def get_bentayga_pf_options(opt: PowerFlowOptions):
                    # SolverType.IWAMOTO: nn.NativeSolverType.IWAMOTO,
                    SolverType.LM: btg.PowerFlowSolvers.LevenbergMarquardt,
                    # SolverType.LACPF: nn.NativeSolverType.LACPF,
-                   # SolverType.FASTDECOUPLED: nn.NativeSolverType.FD
+                   SolverType.FASTDECOUPLED: btg.PowerFlowSolvers.FastDecoupled
                    }
 
     q_control_dict = {ReactivePowerControlMode.NoControl: btg.QControlMode.NoControl,

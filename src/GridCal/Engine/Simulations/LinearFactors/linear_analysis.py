@@ -23,6 +23,8 @@ from scipy.sparse.linalg import spsolve
 from GridCal.Engine.basic_structures import Logger
 from GridCal.Engine.Core.multi_circuit import MultiCircuit
 from GridCal.Engine.Core.snapshot_pf_data import compile_snapshot_circuit, SnapshotData
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_fast
 
 
 def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
@@ -65,12 +67,62 @@ def make_ptdf(Bbus, Bf, pqpv, distribute_slack=True):
     return H
 
 
-def make_lodf(Cf, Ct, PTDF, correct_values=True):
+def compute_acptdf(Ybus, Yf, Cf, F, V, pq, pv, distribute_slack: bool = False):
+    """
+    Compute the AC-PTDF
+    :param Ybus: admittance matrix
+    :param Yf: Admittance matrix of the buses "from"
+    :param Cf: Connectivity branch - bus "from"
+    :param F: array if branches "from" bus indices
+    :param V: voltages array
+    :param pq: array of pq node indices
+    :param pv: array of pv node indices
+    :param distribute_slack: distribute slack?
+    :return: AC-PTDF matrix (branches, buses)
+    """
+    n = len(V)
+    pvpq = np.r_[pv, pq]
+    npq = len(pq)
+    npv = len(pv)
+
+    # compute the Jacobian
+    J = AC_jacobian(Ybus, V, pvpq, pq, npv, npq)
+
+    if distribute_slack:
+        dP = np.ones((n, n)) * (-1 / (n - 1))
+        for i in range(n):
+            dP[i, i] = 1.0
+    else:
+        dP = np.eye(n, n)
+
+    # compose the compatible array (the Q increments are considered zero
+    dQ = np.zeros((npq, n))
+    dS = np.r_[dP[pvpq, :], dQ]
+
+    # solve the voltage increments
+    dx = spsolve(J, dS)
+
+    # compute branch derivatives
+    Vc = np.conj(V)
+    E = V / np.abs(V)
+    dSf_dVa, dSf_dVm = dSf_dV_fast(Yf.tocsc(), V, Vc, E, F, Cf)
+
+    # compose the final AC-PTDF
+    dPf_dVa = dSf_dVa.real[:, pvpq]
+    dPf_dVm = dSf_dVm.real[:, pq]
+    PTDF = sp.hstack((dPf_dVa, dPf_dVm)) * dx
+
+    return PTDF
+
+
+def make_lodf(Cf, Ct, PTDF, correct_values=True, numerical_zero=1e-10):
     """
     Compute the LODF matrix
     :param Cf: Branch "from" -bus connectivity matrix
     :param Ct: Branch "to" -bus connectivity matrix
     :param PTDF: PTDF matrix in numpy array form (branches, buses)
+    :param correct_values: correct values out of the interval
+    :param numerical_zero: value considered zero in numerical terms (i.e. 1e-10)
     :return: LODF matrix of dimensions (branches, branches)
     """
     nl = PTDF.shape[0]
@@ -84,7 +136,7 @@ def make_lodf(Cf, Ct, PTDF, correct_values=True):
     LODF = np.zeros((nl, nl))
     div = 1 - H.diagonal()
     for j in range(H.shape[1]):
-        if div[j] != 0:
+        if abs(div[j]) > numerical_zero:
             LODF[:, j] = H[:, j] / div[j]
 
     # replace the diagonal elements by -1
@@ -116,7 +168,7 @@ def make_lodf(Cf, Ct, PTDF, correct_values=True):
     return LODF
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def make_otdf(ptdf, lodf, j):
     """
     Outage sensitivity of the branches when transferring power from the bus j to the slack
@@ -168,7 +220,7 @@ def make_otdf_max(ptdf, lodf):
     return otdf
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def make_contingency_flows(lodf, flows):
     """
     Make contingency Sf matrix
@@ -187,7 +239,7 @@ def make_contingency_flows(lodf, flows):
     return omw
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def make_transfer_limits(ptdf, flows, rates):
     """
     Compute the maximum transfer limits of each branch in normal operation

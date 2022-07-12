@@ -110,7 +110,7 @@ def dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V, E):
     return dS_dVm, dS_dVa
 
 
-@nb.jit(nopython=True, cache=False)
+@nb.jit(nopython=True, cache=True)
 def dSbus_dV_numba_sparse_csr(Yx, Yp, Yj, V, E, Ibus):  # pragma: no cover
     """
     partial derivatives of power injection w.r.t. voltage.
@@ -241,7 +241,7 @@ def dSbr_dV(Yf, Yt, V, F, T, Cf, Ct):
 
 def dSf_dV(Yf, V, F, Cf, Vc, diagVc, diagE, diagV):
     """
-    Derivatives of the branch power w.r.t the branch voltage modules and angles
+    Derivatives of the branch power "from" w.r.t the branch voltage modules and angles
     :param Yf: Admittances matrix of the branches with the "from" buses
     :param V: Array of voltages
     :param F: Array of branch "from" bus indices
@@ -269,13 +269,17 @@ def dSf_dV(Yf, V, F, Cf, Vc, diagVc, diagE, diagV):
     return dSf_dVa.tocsc(), dSf_dVm.tocsc()
 
 
-def dSt_dV(Yt, V, T, Ct, Vc, diagVc, diagVnorm, diagV):
+def dSt_dV(Yt, V, T, Ct, Vc, diagVc, diagE, diagV):
     """
-    Derivatives of the branch power w.r.t the branch voltage modules and angles
+    Derivatives of the branch power "to" w.r.t the branch voltage modules and angles
     :param Yt: Admittances matrix of the branches with the "to" buses
     :param V: Array of voltages
     :param T: Array of branch "to" bus indices
     :param Ct: Connectivity matrix of the branches with the "to" buses
+    :param Vc: array of conjugate voltages
+    :param diagVc: diagonal matrix of conjugate voltages
+    :param diagE: diagonal matrix of normalized voltages
+    :param diagV: diagonal matrix of voltages
     :return: dSf_dVa, dSf_dVm, dSt_dVa, dSt_dVm
     """
     Ytc = np.conj(Yt)
@@ -286,15 +290,15 @@ def dSt_dV(Yt, V, T, Ct, Vc, diagVc, diagVnorm, diagV):
     diagVt = diags(Vt)
 
     CVt = Ct * diagV
-    CVnt = Ct * diagVnorm
+    CVnt = Ct * diagE
 
     dSt_dVa = 1j * (diagItc * CVt - diagVt * Ytc * diagVc)
-    dSt_dVm = diagVt * np.conj(Yt * diagVnorm) + diagItc * CVnt
+    dSt_dVm = diagVt * np.conj(Yt * diagE) + diagItc * CVnt
 
     return dSt_dVa.tocsc(), dSt_dVm.tocsc()
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def data_1_4(Cf_data, Cf_indptr, Cf_indices, Ifc, V, E, n_cols):
     """
     Performs the operations:
@@ -304,8 +308,8 @@ def data_1_4(Cf_data, Cf_indptr, Cf_indices, Ifc, V, E, n_cols):
     :param Cf_indptr:
     :param Cf_indices:
     :param Ifc:
-    :param V:
-    :param E:
+    :param V: Array of voltages
+    :param E: Array of voltages unitary vectors
     :param n_cols:
     :return:
     """
@@ -320,7 +324,7 @@ def data_1_4(Cf_data, Cf_indptr, Cf_indices, Ifc, V, E, n_cols):
     return data1, data4
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def data_2_3(Yf_data, Yf_indptr, Yf_indices, V, F, Vc, E, n_cols):
     """
     Performs the operations:
@@ -329,10 +333,10 @@ def data_2_3(Yf_data, Yf_indptr, Yf_indices, V, F, Vc, E, n_cols):
     :param Yf_data:
     :param Yf_indptr:
     :param Yf_indices:
-    :param V:
-    :param F:
-    :param Vc:
-    :param E:
+    :param V: Array of voltages
+    :param F: Array of branch "from" bus indices
+    :param Vc: Array of voltages conjugates
+    :param E: Array of voltages unitary vectors
     :param n_cols:
     :return:
     """
@@ -379,6 +383,42 @@ def dSf_dV_fast(Yf, V, Vc, E, F, Cf):
     dSf_dVm = op3 + op4
 
     return dSf_dVa, dSf_dVm
+
+
+def dSt_dV_fast(Yt, V, Vc, E, T, Ct):
+    """
+    Derivatives of the branch power w.r.t the branch voltage modules and angles
+    note: Works for dSf with Yf, F, Cf and for dSt with Yt, T, Ct
+          The operations are identical to dSf_dV_fast, only changing Cf by Ct and Yf by Yt
+    :param Yt: Admittance matrix of the branches with the "to" buses
+    :param V: Array of voltages
+    :param Vc: Array of voltages conjugates
+    :param E: Array of voltages unitary vectors
+    :param T: Array of branch "to" bus indices
+    :param Ct: Connectivity matrix of the branches with the "to" buses
+    :return: dSf_dVa, dSf_dVm
+    """
+
+    Ifc = np.conj(Yt) * Vc  # conjugate  of "from"  current
+
+    # Perform the following operations
+    # op1 = [diagIfc * Cf * diagV]
+    # op4 = [diagIfc * Cf * diagE]
+    data1, data4 = data_1_4(Ct.data, Ct.indptr, Ct.indices, Ifc, V, E, Ct.shape[1])
+    op1 = sp.csc_matrix((data1, Ct.indices, Ct.indptr), shape=Ct.shape)
+    op4 = sp.csc_matrix((data4, Ct.indices, Ct.indptr), shape=Ct.shape)
+
+    # Perform the following operations
+    # op2 = [diagVf * Yfc * diagVc]
+    # op3 = [diagVf * np.conj(Yf * diagE)]
+    data2, data3 = data_2_3(Yt.data, Yt.indptr, Yt.indices, V, T, Vc, E, Yt.shape[1])
+    op2 = sp.csc_matrix((data2, Yt.indices, Yt.indptr), shape=Yt.shape)
+    op3 = sp.csc_matrix((data3, Yt.indices, Yt.indptr), shape=Yt.shape)
+
+    dSt_dVa = 1j * (op1 - op2)
+    dSt_dVm = op3 + op4
+
+    return dSt_dVa, dSt_dVm
 
 
 def derivatives_sh(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
@@ -430,7 +470,7 @@ def derivatives_sh(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
     return dSbus_dPxsh.tocsc(), dSf_dshx2.tocsc(), dSt_dshx2.tocsc()
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def derivatives_sh_csc_numba(iPxsh, F, T, Ys, k2, tap, V):
     """
     This function computes the derivatives of Sbus, Sf and St w.r.t. Ɵsh
@@ -592,7 +632,7 @@ def derivatives_ma(nb, nl, iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
     return dSbus_dmax2.tocsc(), dSf_dmax2.tocsc(), dSt_dmax2.tocsc()
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def derivatives_ma_csc_numba(iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
     """
     Useful for the calculation of
@@ -766,7 +806,7 @@ def derivatives_Beq(nb, nl, iBeqx, F, T, V, ma, k2):
     return dSbus_dBeqx.tocsc(), dSf_dBeqx.tocsc(), dSt_dBeqx.tocsc()
 
 
-@nb.njit()
+@nb.njit(cache=True)
 def derivatives_Beq_csc_numba(iBeqx, F, V, ma, k2):
     """
     Compute the derivatives of:

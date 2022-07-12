@@ -169,7 +169,7 @@ class TowerBuilderGUI(QDialog):
         all_ok = self.tower_driver.tower.check(logs)
 
         if not all_ok:
-            logger_diag = LogsDialogue(name='Tower computation', logs=logs)
+            logger_diag = LogsDialogue(name='Tower computation', logger=logs)
             logger_diag.exec_()
         else:
             try:

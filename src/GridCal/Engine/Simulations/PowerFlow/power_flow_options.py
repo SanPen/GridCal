@@ -30,7 +30,7 @@ class PowerFlowOptions:
         **retry_with_other_methods** (bool, True): Use a battery of methods to tackle
         the problem if the main solver_type fails
 
-        **verbose** (bool, False): Print additional details in the logger
+        **verbose** (int, 0): Print additional details in the console (0: no details, 1: some details, 2: all details)
 
         **initialize_with_existing_solution** (bool, True): *To be detailed*
 
@@ -76,7 +76,7 @@ class PowerFlowOptions:
     def __init__(self,
                  solver_type: SolverType = SolverType.NR,
                  retry_with_other_methods=True,
-                 verbose=False,
+                 verbose=0,
                  initialize_with_existing_solution=True,
                  tolerance=1e-6,
                  max_iter=25,
@@ -92,7 +92,8 @@ class PowerFlowOptions:
                  distributed_slack=False,
                  ignore_single_node_islands=False,
                  mu=1.0,
-                 backtracking_parameter=0.05):
+                 backtracking_parameter=0.05,
+                 use_stored_guess=False):
 
         self.solver_type = solver_type
 
@@ -131,6 +132,8 @@ class PowerFlowOptions:
         self.mu = mu
 
         self.backtracking_parameter = backtracking_parameter
+
+        self.use_stored_guess = use_stored_guess
 
     def __str__(self):
         return "PowerFlowOptions"

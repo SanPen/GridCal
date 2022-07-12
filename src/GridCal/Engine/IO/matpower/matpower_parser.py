@@ -231,11 +231,15 @@ def parse_generators(circuit: MultiCircuit, data, bus_idx_dict, logger: Logger):
         names = ['gen ' + str(i) for i in range(n)]
     for i in range(len(table)):
         bus_idx = bus_idx_dict[int(table[i, matpower_gen.GEN_BUS])]
+        # TODO: Calculate pf based on reactive_power
         gen = Generator(name=names[i],
                         active_power=table[i, matpower_gen.PG],
                         voltage_module=table[i, matpower_gen.VG],
                         Qmax=table[i, matpower_gen.QMAX],
-                        Qmin=table[i, matpower_gen.QMIN])
+                        Qmin=table[i, matpower_gen.QMIN],
+                        p_min=table[i, matpower_gen.PMIN],
+                        p_max=table[i, matpower_gen.PMAX]
+                        )
 
         # Add the generator to the bus
         gen.bus = circuit.buses[bus_idx]

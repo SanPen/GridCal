@@ -225,7 +225,7 @@ class PSSeBus:
 
         bustype = {1: BusMode.PQ, 2: BusMode.PV, 3: BusMode.Slack, 4: BusMode.PQ}
 
-        if version == 33:
+        if version >= 33:
             n = len(data[0])
             dta = np.zeros(13, dtype=object)
             dta[0:n] = data[0]
@@ -237,7 +237,7 @@ class PSSeBus:
             name = self.NAME.replace("'", "")
             self.bus = Bus(name=name,
                            vnom=self.BASKV, code=str(self.I), vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0, active=True,
-                           area=self.AREA, zone=self.ZONE)
+                           area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
 
         elif version == 32:
 
@@ -246,17 +246,17 @@ class PSSeBus:
             # create bus
             name = self.NAME
             self.bus = Bus(name=name, code=str(self.I), vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
-                           active=True, area=self.AREA, zone=self.ZONE)
+                           active=True, area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
 
         elif version in [29, 30]:
-            # I, ’NAME’, BASKV, IDE, GL, BL, AREA, ZONE, VM, VA, OWNER
+            # I, 'NAME', BASKV, IDE, GL, BL, AREA, ZONE, VM, VA, OWNER
             self.I, self.NAME, self.BASKV, self.IDE, self.GL, self.BL, \
             self.AREA, self.ZONE, self.VM, self.VA, self.OWNER = data[0]
 
             # create bus
             name = self.NAME
             self.bus = Bus(name=name, code=str(self.I), vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
-                           active=True, area=self.AREA, zone=self.ZONE)
+                           active=True, area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
 
             if self.GL > 0 or self.BL > 0:
                 sh = Shunt(name='Shunt_' + str(self.I),
@@ -344,7 +344,7 @@ class PSSeLoad:
                    idtag=None,
                    code=name,
                    active=bool(self.STATUS),
-                   P=p, Q=q)
+                   P=p, Q=q, Ir=ir, Ii=ii, G=g, B=b)
 
         return elm
 
@@ -684,7 +684,7 @@ class PSSeTwoTerminalDCLine:
             '''
             'NAME',MDC,RDC,SETVL,VSCHD,VCMOD,RCOMP,DELTI,METER,DCVMIN,CCCITMX,CCCACC
             IPR,NBR,ANMXR,ANMNR,RCR,XCR,EBASR,TRR,TAPR,TMXR,TMNR,STPR,ICR,IFR,ITR,IDR,XCAPR
-            IPI,NBI,ANMXI,ANMNI,RCI,XCI,EBASI,TRI,TAPI,TMXI,TMNI,STPI,ICI,IFI,ITI,IDI,XCAPI 
+            IPI,NBI,ANMXI,ANMNI,RCI,XCI,EBASI,TRI,TAPI,TMXI,TMNI,STPI,ICI,IFI,ITI,IDI,XCAPI
             '''
 
             self.NAME, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP, self.DELTI, self.METER, \
@@ -803,7 +803,7 @@ class PSSeVscDCLine:
         elif version == 29:
 
             '''
-            ’NAME’, MDC, RDC, O1, F1, ... O4, F4
+            'NAME', MDC, RDC, O1, F1, ... O4, F4
             IBUS,TYPE,MODE,DCSET,ACSET,ALOSS,BLOSS,MINLOSS,SMAX,IMAX,PWF,MAXQ,MINQ,REMOT,RMPCT
             IBUS,TYPE,MODE,DCSET,ACSET,ALOSS,BLOSS,MINLOSS,SMAX,IMAX,PWF,MAXQ,MINQ,REMOT,RMPCT
             '''
@@ -840,8 +840,8 @@ class PSSeVscDCLine:
         # P = dV^2 / R
         V1 = bus1.Vnom * Vset_f
         V2 = bus2.Vnom * Vset_t
-        dV = (V1-V2) * 1000.0  # in V
-        P = dV * dV / self.RDC  # power in W
+        dV = (V1 - V2) * 1000.0  # in V
+        P = dV * dV / self.RDC if self.RDC != 0 else 0  # power in W
         specified_power = P * 1e-6  # power in MW
 
         obj = HvdcLine(bus_from=bus1,
@@ -979,7 +979,7 @@ class PSSeTransformer:
                 self.windings = 2
 
                 '''
-                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4,VECGRP
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,'NAME',STAT,O1,F1,...,O4,F4,VECGRP
                 R1-2,X1-2,SBASE1-2
                 WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD1,CONT1,RMA1,RMI1,VMA1,VMI1,NTP1,TAB1,CR1,CX1,CNXA1
                 WINDV2,NOMV2
@@ -1000,7 +1000,7 @@ class PSSeTransformer:
                 self.windings = 3
 
                 '''
-                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4,VECGRP
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,'NAME',STAT,O1,F1,...,O4,F4,VECGRP
                 R1-2,X1-2,SBASE1-2,R2-3,X2-3,SBASE2-3,R3-1,X3-1,SBASE3-1,VMSTAR,ANSTAR
                 WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD1,CONT1,RMA1,RMI1,VMA1,VMI1,NTP1,TAB1,CR1,CX1,CNXA1
                 WINDV2,NOMV2,ANG2,RATA2,RATB2,RATC2,COD2,CONT2,RMA2,RMI2,VMA2,VMI2,NTP2,TAB2,CR2,CX2,CNXA2
@@ -1025,7 +1025,7 @@ class PSSeTransformer:
         elif version == 32:
 
             '''
-            I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4
+            I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,'NAME',STAT,O1,F1,...,O4,F4
 
             R1-2,X1-2,SBASE1-2,R2-3,X2-3,SBASE2-3,R3-1,X3-1,SBASE3-1,VMSTAR,ANSTAR
 
@@ -1118,14 +1118,14 @@ class PSSeTransformer:
 
                 2 windings -> 4 lines
 
-                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,'NAME',STAT,O1,F1,...,O4,F4
                 R1-2,X1-2,SBASE1-2
                 WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD,CONT,RMA,RMI,VMA,VMI,NTP,TAB,CR,CX
                 WINDV2,NOMV2
 
                 3 windings -> 5 lines
 
-                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,'NAME',STAT,O1,F1,...,O4,F4
                 R1-2,X1-2,SBASE1-2,R2-3,X2-3,SBASE2-3,R3-1,X3-1,SBASE3-1,VMSTAR,ANSTAR
                 WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD,CONT,RMA,RMI,VMA,VMI,NTP,TAB,CR,CX
                 WINDV2,NOMV2,ANG2,RATA2,RATB2,RATC2
@@ -1139,7 +1139,7 @@ class PSSeTransformer:
             if len(data[1]) == 3:
 
                 '''
-                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,'NAME',STAT,O1,F1,...,O4,F4
                 R1-2,X1-2,SBASE1-2
                 WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD,CONT,RMA,RMI,VMA,VMI,NTP,TAB,CR,CX
                 WINDV2,NOMV2
@@ -1157,7 +1157,7 @@ class PSSeTransformer:
             else:
 
                 '''
-                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,’NAME’,STAT,O1,F1,...,O4,F4
+                I,J,K,CKT,CW,CZ,CM,MAG1,MAG2,NMETR,'NAME',STAT,O1,F1,...,O4,F4
                 R1-2,X1-2,SBASE1-2,R2-3,X2-3,SBASE2-3,R3-1,X3-1,SBASE3-1,VMSTAR,ANSTAR
 
                 WINDV1,NOMV1,ANG1,RATA1,RATB1,RATC1,COD,CONT,RMA,RMI,VMA,VMI,NTP,TAB,CR,CX
@@ -1183,7 +1183,6 @@ class PSSeTransformer:
 
         else:
             logger.add_warning('Transformer not implemented for version', str(version))
-
 
     def get_object(self, psse_bus_dict, sbase, logger: Logger):
         """
@@ -1253,13 +1252,20 @@ class PSSeTransformer:
                                                                              self.ANG1, self.NOMV1, self.NOMV2,
                                                                              self.R1_2, self.X1_2, self.SBASE1_2)
 
+            if V1 >= V2:
+                HV = V1
+                LV = V2
+            else:
+                HV = V2
+                LV = V1
+
             elm = Transformer2W(bus_from=bus_from,
                                 bus_to=bus_to,
                                 idtag=None,
                                 code=code,
                                 name=name,
-                                HV=V1,
-                                LV=V2,
+                                HV=HV,
+                                LV=LV,
                                 r=r,
                                 x=x,
                                 g=g,
@@ -1296,8 +1302,8 @@ class PSSeTransformer:
             else:
                 V3 = self.NOMV3
 
-            """            
-            PSS/e's randomness:            
+            """
+            PSS/e's randomness:
             """
 
             # see: https://en.wikipedia.org/wiki/Per-unit_system
@@ -1412,8 +1418,8 @@ class PSSeFACTS:
 
         if version in [32, 33, 34]:
             '''
-            ’NAME’,I,J,MODE,PDES,QDES,VSET,SHMX,TRMX,VTMN,VTMX,VSMX,IMX,LINX,
-            RMPCT,OWNER,SET1,SET2,VSREF,REMOT,’MNAME’
+            'NAME',I,J,MODE,PDES,QDES,VSET,SHMX,TRMX,VTMN,VTMX,VSMX,IMX,LINX,
+            RMPCT,OWNER,SET1,SET2,VSREF,REMOT,'MNAME'
             '''
 
             self.NAME, self.I, self.J, self.MODE, self.PDES, self.QDES, self.VSET, self.SHMX, \
@@ -1422,8 +1428,8 @@ class PSSeFACTS:
 
         elif version == 29:
             '''
-            ’NAME’,I,J,MODE,PDES,QDES,VSET,SHMX,TRMX,VTMN,VTMX,VSMX,IMX,LINX,
-                RMPCT,OWNER,SET1,SET2,VSREF,REMOT,’MNAME’
+            'NAME',I,J,MODE,PDES,QDES,VSET,SHMX,TRMX,VTMN,VTMX,VSMX,IMX,LINX,
+                RMPCT,OWNER,SET1,SET2,VSREF,REMOT,'MNAME'
             '''
 
             self.NAME, self.I, self.J, self.MODE, self.PDES, self.QDES, self.VSET, self.SHMX, \
@@ -1626,7 +1632,7 @@ def interpret_line(line, splitter=','):
 
 class PSSeParser:
 
-    def __init__(self, file_name):
+    def __init__(self, file_name, text_func=print,  progress_func=None):
         """
         Parse PSSe file
         Args:
@@ -1639,7 +1645,7 @@ class PSSeParser:
 
         self.file_name = file_name
 
-        self.pss_grid, logs = self.parse_psse()
+        self.pss_grid, logs = self.parse_psse(text_func=text_func,  progress_func=progress_func)
 
         self.logger += logs
 
@@ -1648,16 +1654,26 @@ class PSSeParser:
         self.circuit.comments = 'Converted from the PSS/e .raw file ' \
                                 + os.path.basename(file_name) + '\n\n' + str(self.logger)
 
-    def read_and_split(self) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
+    def read_and_split(self, text_func=None,  progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
         """
         Read the text file and split it into sections
         :return: list of sections, dictionary of sections by type
         """
 
+        if text_func is not None:
+            text_func("Detecting raw file encoding...")
+
+        if progress_func is not None:
+            progress_func(0)
+
         # make a guess of the file encoding
         detection = chardet.detect(open(self.file_name, "rb").read())
 
         # open the text file into a variable
+
+        if text_func is not None:
+            text_func("Reading raw file...")
+
         txt = ''
         with open(self.file_name, 'r', encoding=detection['encoding']) as my_file:
             for line in my_file:
@@ -1669,9 +1685,12 @@ class PSSeParser:
 
         sections_dict = dict()
 
+        if text_func is not None:
+            text_func("Parsing the raw file information...")
+
         str_a = 'End of'.lower()
         str_b = 'data'.lower()
-
+        n_sec = len(sections)
         for i, sec in enumerate(sections):
             data = sec.split('\n')
             first = data.pop(0).lower()
@@ -1689,9 +1708,12 @@ class PSSeParser:
 
                 sections_dict[name] = data2
 
+            if progress_func is not None:
+                progress_func((i / n_sec) * 100)
+
         return sections, sections_dict
 
-    def parse_psse(self) -> (MultiCircuit, List[AnyStr]):
+    def parse_psse(self, text_func=None,  progress_func=None) -> (MultiCircuit, List[AnyStr]):
         """
         Parser implemented according to:
             - POM section 4.1.1 Power Flow Raw Data File Contents (v.29)
@@ -1703,7 +1725,10 @@ class PSSeParser:
 
         logger = Logger()
 
-        sections, sections_dict = self.read_and_split()
+        if text_func is not None:
+            text_func("Reading file...")
+
+        sections, sections_dict = self.read_and_split(text_func=text_func,  progress_func=progress_func)
 
         # header -> new grid
         grid = PSSeGrid(interpret_line(sections[0]))
@@ -1767,6 +1792,9 @@ class PSSeParser:
             # get the parsers for the declared object type
             objects_list, ObjectT, lines_per_object = values
 
+            if text_func is not None:
+                text_func("Converting {0}...".format(key))
+
             if key in sections_dict.keys():
                 lines = sections_dict[key]
 
@@ -1811,6 +1839,9 @@ class PSSeParser:
 
                     # add lines
                     l += lines_per_object2
+
+                    if progress_func is not None:
+                        progress_func((l / len(lines)) * 100)
 
             else:
                 pass

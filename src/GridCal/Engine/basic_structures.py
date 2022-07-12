@@ -738,6 +738,11 @@ class Logger:
 
         self.entries: List[LogEntry] = list()
 
+        self.debug_entries: List[str] = list()
+
+    def add_debug(self, *args):
+        self.debug_entries.append(" ".join([str(x) for x in args]))
+
     def append(self, txt: str):
         """
 

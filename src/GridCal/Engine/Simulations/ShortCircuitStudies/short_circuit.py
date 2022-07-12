@@ -1,4 +1,4 @@
-from numpy import zeros, diag
+import numpy as np
 
 
 def short_circuit_3p(bus_idx, Zbus, Vbus, Zf, baseMVA):
@@ -14,10 +14,12 @@ def short_circuit_3p(bus_idx, Zbus, Vbus, Zf, baseMVA):
 
     """
     n = len(Vbus)
-    Z = diag(Zbus)
+    Z = Zbus[bus_idx, :][:, bus_idx]  # Z_B in documentation
+
     # Voltage Source Contribution
-    I_kI = zeros(n, dtype=complex)
-    I_kI[bus_idx] = -1 * Vbus[bus_idx] / (Z[bus_idx] + Zf[bus_idx])
+    I_kI = np.zeros(n, dtype=complex)
+    Z.flat[::len(bus_idx) + 1] += Zf[bus_idx]  # add Zf to diagonals of Z_B
+    I_kI[bus_idx] = -1 * np.linalg.solve(Z, Vbus[bus_idx])
 
     # Current source contribution
     # I_kII = -1 * Zbus.dot(I_kC / Z[elm_idx])
@@ -27,7 +29,7 @@ def short_circuit_3p(bus_idx, Zbus, Vbus, Zf, baseMVA):
     I_k = I_kI
 
     # voltage increment due to these currents
-    incV = Zbus.dot(I_k) / len(bus_idx)
+    incV = Zbus.dot(I_k)
 
     V = Vbus + incV
 

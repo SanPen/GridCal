@@ -275,6 +275,7 @@ class LpVariable(LpElement):
         self.init = 0
         # code to add a variable to constraints for column based
         # modelling
+        self.expression = None
         if cat == LpBinary:
             self.lowBound = 0
             self.upBound = 1
@@ -283,14 +284,16 @@ class LpVariable(LpElement):
             self.add_expression(e)
 
     def add_expression(self, e):
-
         self.expression = e
         self.addVariableToConstraints(e)
 
-    def matrix(self, name, indexs, lowBound=None, upBound=None, cat=LpContinuous, indexStart=[]):
+    def matrix(self, name, indexs, lowBound=None, upBound=None, cat=LpContinuous, indexStart=None):
 
         if not isinstance(indexs, tuple):
             indexs = (indexs,)
+
+        if indexStart is None:
+            indexStart = list()
 
         if "%" not in name:
             name += "_%s" * len(indexs)
@@ -305,7 +308,7 @@ class LpVariable(LpElement):
 
     matrix = classmethod(matrix)
 
-    def dicts(self, name, indexs, lowBound=None, upBound=None, cat=LpContinuous, indexStart=[]):
+    def dicts(self, name, indexs, lowBound=None, upBound=None, cat=LpContinuous, indexStart=None):
         """
         Creates a dictionary of LP variables
 
@@ -324,6 +327,9 @@ class LpVariable(LpElement):
 
         :return: A dictionary of LP Variables
         """
+        if indexStart is None:
+            indexStart = list()
+
         if not isinstance(indexs, tuple): indexs = (indexs,)
         if "%" not in name: name += "_%s" * len(indexs)
 
@@ -585,7 +591,7 @@ class LpAffineExpression(_DICT_TYPE):
             super(LpAffineExpression, self).__init__(e)
         elif isinstance(e, LpElement):
             self.constant = 0
-            super(LpAffineExpression, self).__init__( [(e, 1)])
+            super(LpAffineExpression, self).__init__([(e, 1)])
         else:
             self.constant = e
             super(LpAffineExpression, self).__init__()
@@ -636,23 +642,31 @@ class LpAffineExpression(_DICT_TYPE):
         # Will not copy the name
         return LpAffineExpression(self)
 
-    def __str__(self, constant = 1):
+    def __str__(self, constant=1):
         s = ""
         for v in self.sorted_keys():
             val = self[v]
-            if val<0:
-                if s != "": s += " - "
-                else: s += "-"
+            if val < 0:
+                if s != "":
+                    s += " - "
+                else:
+                    s += "-"
                 val = -val
-            elif s != "": s += " + "
-            if val == 1: s += str(v)
-            else: s += str(val) + "*" + str(v)
+            elif s != "":
+                s += " + "
+            if val == 1:
+                s += str(v)
+            else:
+                s += str(val) + "*" + str(v)
+
         if constant:
             if s == "":
                 s = str(self.constant)
             else:
-                if self.constant < 0: s += " - " + str(-self.constant)
-                elif self.constant > 0: s += " + " + str(self.constant)
+                if self.constant < 0:
+                    s += " - " + str(-self.constant)
+                elif self.constant > 0:
+                    s += " + " + str(self.constant)
         elif s == "":
             s = "0"
         return s
@@ -772,10 +786,12 @@ class LpAffineExpression(_DICT_TYPE):
 
         if isinstance(other, LpElement):
             self.addterm(other, -1)
+
         elif isinstance(other, LpAffineExpression):
             self.constant -= other.constant
             for v, x in other.items():
                 self.addterm(v, -x)
+
         elif isinstance(other, dict):
             for e in other.values():
                 self.subInPlace(e)

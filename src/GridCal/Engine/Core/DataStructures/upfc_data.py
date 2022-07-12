@@ -42,6 +42,7 @@ class UpfcData:
         self.Rsh = np.zeros(nelm)
         self.Xsh = np.zeros(nelm)
 
+        self.active = np.zeros((nelm, ntime), dtype=int)
         self.Vsh = np.zeros((nelm, ntime))
         self.Pset = np.zeros((nelm, ntime))
         self.Qset = np.zeros((nelm, ntime))
@@ -58,9 +59,9 @@ class UpfcData:
         """
 
         if time_idx is None:
-            tidx = elm_idx
+            idx = elm_idx
         else:
-            tidx = np.ix_(elm_idx, time_idx)
+            idx = np.ix_(elm_idx, time_idx)
 
         data = UpfcData(nelm=len(elm_idx), nbus=len(bus_idx))
 
@@ -75,21 +76,25 @@ class UpfcData:
         data.Rsh = self.Rsh[elm_idx]
         data.Xsh = self.Xsh[elm_idx]
 
-        data.Pset = self.Pset[tidx]
-        data.Qset = self.Qset[tidx]
-        data.Vsh = self.Vsh[tidx]
+        data.active = self.active[idx]
+        data.Pset = self.Pset[idx]
+        data.Qset = self.Qset[idx]
+        data.Vsh = self.Vsh[idx]
 
         data.C_elm_bus = self.C_elm_bus[np.ix_(elm_idx, bus_idx)]
 
         return data
 
-    def get_island(self, bus_idx):
+    def get_island(self, bus_idx, t_idx=0):
         """
         Get the elements of the island given the bus indices
         :param bus_idx: list of bus indices
         :return: list of line indices of the island
         """
-        return tp.get_elements_of_the_island(self.C_elm_bus, bus_idx)
+        if self.nelm:
+            return tp.get_elements_of_the_island(self.C_elm_bus, bus_idx, active=self.active[:, t_idx])
+        else:
+            return np.zeros(0, dtype=int)
 
     def __len__(self):
         return self.nelm

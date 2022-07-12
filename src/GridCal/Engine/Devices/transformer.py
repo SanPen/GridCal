@@ -1056,3 +1056,35 @@ class Transformer2W(EditableDevice):
         """
         self.HV = max(self.bus_from.Vnom, self.bus_to.Vnom)
         self.LV = min(self.bus_from.Vnom, self.bus_to.Vnom)
+
+    def fix_inconsistencies(self, logger: Logger, maximum_difference=0.1):
+        """
+        Fix the voltage inconsistencies
+        :param logger:
+        :param maximum_difference: proportion to be under or above (i.e. Transformer HV=41.9, bus HV=45 41.9/45 = 0.93 -> 0.9 <= 0.93 <= 1.1, so its ok
+        :return:
+        """
+        errors = False
+        HV = max(self.bus_from.Vnom, self.bus_to.Vnom)
+        LV = min(self.bus_from.Vnom, self.bus_to.Vnom)
+
+        if self.LV > self.HV:
+            logger.add_warning("HV > LV", self.name, self.HV, HV)
+            self.HV, self.LV = self.LV, self.HV
+            errors = True
+
+        rHV = self.HV / HV
+        rLV = self.LV / LV
+        LB = 1 - maximum_difference
+        UB = 1 + maximum_difference
+        if not (LB <= rHV <= UB):
+            logger.add_warning("Corrected transformer HV", self.name, self.HV, HV)
+            self.HV = HV
+            errors = True
+
+        if not (LB <= rLV <= UB):
+            logger.add_warning("Corrected transformer LV", self.name, self.LV, LV)
+            self.LV = LV
+            errors = True
+
+        return errors

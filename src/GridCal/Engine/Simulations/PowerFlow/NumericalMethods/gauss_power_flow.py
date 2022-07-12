@@ -19,24 +19,29 @@
 Solves the power flow using a Gauss-Seidel method.
 """
 
-import sys
 import time
 import numpy as np
+from GridCal.Engine.Simulations.PowerFlow.NumericalMethods.common_functions import *
 from GridCal.Engine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+from GridCal.Engine.basic_structures import Logger
 
 
-def gausspf(Ybus, Sbus, V0, pv, pq, tol=1e-3, max_it=50, verbose=False):
+def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, tol=1e-3, max_it=50,
+            verbose=False, logger: Logger = None) -> NumericPowerFlowResults:
     """
-
-    :param Ybus:
-    :param Sbus:
-    :param V0:
-    :param pv:
-    :param pq:
-    :param tol:
-    :param max_it:
-    :param verbose:
-    :return:
+    Gauss-Seidel Power flow
+    :param Ybus: Admittance matrix
+    :param S0: Power injections array
+    :param I0: Current injections array
+    :param Y0: Admittance injections array
+    :param V0: Voltage seed solution array
+    :param pv: array of pv-node indices
+    :param pq: array of pq-node indices
+    :param tol: Tolerance
+    :param max_it: Maximum number of iterations
+    :param verbose: Verbose?
+    :param logger: Logger to store the debug information
+    :return: NumericPowerFlowResults instance
     """
     start = time.time()
 
@@ -45,25 +50,31 @@ def gausspf(Ybus, Sbus, V0, pv, pq, tol=1e-3, max_it=50, verbose=False):
     V = V0.copy()
     Vm = np.abs(V)
 
+    Ydiag = Ybus.diagonal()
+
     # set up indexing for updating V
     npv = len(pv)
     npq = len(pq)
     pvpq = np.r_[pv, pq]
 
     # evaluate F(x0)
-    Scalc = V * np.conj(Ybus * V)
-    mis = Scalc - Sbus
-    F = np.r_[mis[pvpq].real, mis[pq].imag]
+    Sbus = compute_zip_power(S0, I0, Y0, Vm)
+    Scalc = compute_power(Ybus, V)
+    F = compute_fx(Scalc, Sbus, pvpq, pq)
+    normF = compute_fx_error(F)
 
     # check tolerance
-    normF = np.linalg.norm(F, np.Inf)
     converged = normF < tol
+
+    if verbose:
+        logger.add_debug('GS Iteration {0}'.format(iter_) + '-' * 200)
+        logger.add_debug('error', normF)
 
     # do Gauss-Seidel iterations
     while not converged and iter_ < max_it:
 
         # update the voltage at PQ buses
-        V[pq] += (np.conj(Sbus[pq] / V[pq]) - Ybus[pq, :] * V) / Ybus.diagonal()[pq]
+        V[pq] += (np.conj(Sbus[pq] / V[pq]) - Ybus[pq, :] * V) / Ydiag[pq]
 
         # update the voltage at PV buses
         if npv:
@@ -72,25 +83,30 @@ def gausspf(Ybus, Sbus, V0, pv, pq, tol=1e-3, max_it=50, verbose=False):
             Sbus[pv] = Sbus[pv].real + 1j * Q
 
             # update the pv voltage
-            V[pv] += (np.conj(Sbus[pv] / V[pv]) - Ybus[pv, :] * V) / Ybus.diagonal()[pv]
+            V[pv] += (np.conj(Sbus[pv] / V[pv]) - Ybus[pv, :] * V) / Ydiag[pv]
             V[pv] = Vm[pv] * V[pv] / np.abs(V[pv])
 
         # evaluate F(x)
-        Scalc = V * np.conj(Ybus * V)
-        mis = Scalc - Sbus
-        F = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]
+        Vm = np.abs(V)
+        Sbus = compute_zip_power(S0, I0, Y0, Vm)
+        Scalc = compute_power(Ybus, V)
+        F = compute_fx(Scalc, Sbus, pvpq, pq)
+        normF = compute_fx_error(F)
 
         # check for convergence
-        normF = np.linalg.norm(F, np.Inf)  # same as max(abs(F))
         converged = normF < tol
+
+        if verbose:
+            logger.add_debug('GS Iteration {0}'.format(iter_) + '-' * 200)
+
+            if verbose > 1:
+                logger.add_debug('Vm:\n', np.abs(V))
+                logger.add_debug('Va:\n', np.angle(V))
+
+            logger.add_debug('error', normF)
 
         # update iteration counter
         iter_ += 1
-
-    if verbose:
-        if not converged:
-            sys.stdout.write('Gauss-Seidel power did not converge in %d '
-                             'iterations.' % iter_)
 
     end = time.time()
     elapsed = end - start

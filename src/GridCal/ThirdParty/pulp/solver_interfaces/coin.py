@@ -37,7 +37,7 @@ class COIN_CMD(LpSolver_CMD):
         return self.executableExtension(cbc_path)
 
     def __init__(self, path=None, keepFiles=0, mip=1, msg=0, cuts=None, presolve=None, dual=None,
-                 strong=None, options=[], fracGap=None, maxSeconds=None, threads=None):
+                 strong=None, options=None, fracGap=None, maxSeconds=None, threads=None):
         """
 
         :param path:
@@ -53,6 +53,9 @@ class COIN_CMD(LpSolver_CMD):
         :param maxSeconds:
         :param threads:
         """
+        if options is None:
+            options = list()
+
         LpSolver_CMD.__init__(self, path, keepFiles, mip, msg, options)
         self.cuts = cuts
         self.presolve = presolve

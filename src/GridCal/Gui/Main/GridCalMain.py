@@ -88,6 +88,9 @@ This class is the handler of the main gui of GridCal.
 ########################################################################################################################
 
 
+
+
+
 class MainGUI(QMainWindow):
 
     def __init__(self, parent=None, use_native_dialogues=False):
@@ -389,6 +392,12 @@ class MainGUI(QMainWindow):
 
         self.ui.actionOptimal_Net_Transfer_Capacity.triggered.connect(self.run_opf_ntc)
 
+        self.ui.actionOptimal_Net_Transfer_Capacity_Time_Series.triggered.connect(
+            lambda: self.run_opf_ntc_ts(with_clustering=False))
+
+        self.ui.actionOptimal_NTC_time_series_clustering.triggered.connect(
+            lambda: self.run_opf_ntc_ts(with_clustering=True))
+
         self.ui.actionAbout.triggered.connect(self.about_box)
 
         self.ui.actionExport.triggered.connect(self.export_diagram)
@@ -461,9 +470,13 @@ class MainGUI(QMainWindow):
 
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
 
-        self.ui.actionCorrect_inconsistences.triggered.connect(self.correct_inconsistencies)
+        self.ui.actionCorrect_inconsistencies.triggered.connect(self.correct_inconsistencies)
 
-        self.ui.actionDelete_inconsistences.triggered.connect(self.delete_inconsistencies)
+        self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
+
+        self.ui.actionFix_generators_active_based_on_the_power.triggered.connect(self.fix_generators_active_based_on_the_power)
+
+        self.ui.actionre_index_time.triggered.connect(self.re_index_time)
 
         # Buttons
 
@@ -743,7 +756,7 @@ class MainGUI(QMainWindow):
         """
         if qt_console_available:
             if self.console is not None:
-                self.ui.main_console_tab.layout().removeWidget(self.console)
+                clear_qt_layout(self.ui.pythonConsoleTab.layout())
 
             self.console = ConsoleWidget(customBanner="GridCal console.\n\n"
                                                       "type hlp() to see the available specific commands.\n\n"
@@ -757,7 +770,7 @@ class MainGUI(QMainWindow):
             self.console.buffer_size = 10000
 
             # add the console widget to the user interface
-            self.ui.main_console_tab.layout().addWidget(self.console)
+            self.ui.pythonConsoleTab.layout().addWidget(self.console)
 
             # push some variables to the console
             self.console.push_vars({"hlp": self.print_console_help,
@@ -984,7 +997,10 @@ class MainGUI(QMainWindow):
         """
         self.console.clear()
 
-    def console_msg(self, msg_):
+    def clear_text_output(self):
+        self.ui.outputTextEdit.setPlainText("")
+
+    def console_msg(self, *msg_):
         """
         Print some message in the console.
 
@@ -993,11 +1009,20 @@ class MainGUI(QMainWindow):
             **msg_** (str): Message
 
         """
-        if self.console is not None:
-            dte = dtelib.datetime.now().strftime("%b %d %Y %H:%M:%S")
-            self.console.print_text('\n' + dte + '->' + msg_)
-        else:
-            print(msg_)
+        dte = dtelib.datetime.now().strftime("%b %d %Y %H:%M:%S")
+
+        txt = self.ui.outputTextEdit.toPlainText()
+
+        for e in msg_:
+            if isinstance(e, list):
+                txt += '\n' + dte + '->\n'
+                for elm in e:
+                    txt += str(elm) + "\n"
+            else:
+                txt += '\n' + dte + '->'
+                txt += " " + str(e)
+
+        self.ui.outputTextEdit.setPlainText(txt)
 
     def auto_layout(self):
         """
@@ -1093,13 +1118,6 @@ class MainGUI(QMainWindow):
 
         self.grid_editor.clear()
 
-        # delete all widgets
-        #for i in reversed(range(self.ui.schematic_layout.count())):
-        #    self.ui.schematic_layout.itemAt(i).widget().deleteLater()
-
-        # add the widgets
-        #self.ui.schematic_layout.addWidget(self.grid_editor)
-
         self.ui.dataStructuresListView.setModel(get_list_model(self.grid_editor.object_types))
 
         # clear the results
@@ -1111,6 +1129,15 @@ class MainGUI(QMainWindow):
         # clear the simulation objects
         for thread in self.get_all_threads():
             thread = None
+
+        # close all the bus view windows
+        for hndl in self.bus_viewer_windows:
+            if hndl is not None:
+                hndl.close()
+        self.bus_viewer_windows.clear()
+
+        if self.analysis_dialogue is not None:
+            self.analysis_dialogue.close()
 
         self.clear_stuff_running()
         self.clear_results()
@@ -1264,9 +1291,14 @@ class MainGUI(QMainWindow):
                     if reply == QMessageBox.No:
                         self.ui.draw_schematic_checkBox.setChecked(False)
                         self.set_grid_editor_state()
+                else:
+                    if not self.ui.draw_schematic_checkBox.isChecked():
+                        # the schematic is disabled but the grid size is ok
+                        self.ui.draw_schematic_checkBox.setChecked(True)
+                        self.set_grid_editor_state()
 
                 # create schematic
-                self.create_schematic_from_api(explode_factor=1)
+                self.create_schematic_from_api(explode_factor=1, show_msg=False)
 
                 # set circuit name
                 self.grid_editor.name_label.setText(str(self.circuit.name))
@@ -1673,6 +1705,8 @@ class MainGUI(QMainWindow):
         """
         Sandbox to call create_schematic_from_api from the action item without affecting the explode factor variable
         """
+        self.ui.draw_schematic_checkBox.setChecked(True)
+        self.set_grid_editor_state()
         self.create_schematic_from_api()
 
     def set_xy_from_lat_lon(self):
@@ -1685,9 +1719,9 @@ class MainGUI(QMainWindow):
                 self.circuit.fill_xy_from_lat_lon()
                 self.create_schematic_from_api()
 
-    def create_schematic_from_api(self, explode_factor=1.0):
+    def create_schematic_from_api(self, explode_factor=1.0, show_msg=True):
         """
-        This function explores the API values and draws an schematic layout
+        This function explores the API values and draws a schematic layout
         @return:
         """
         if self.ui.draw_schematic_checkBox.isChecked():
@@ -1699,7 +1733,8 @@ class MainGUI(QMainWindow):
             # center nodes
             self.grid_editor.align_schematic()
         else:
-            info_msg('The schematic drawing is disabled')
+            if show_msg:
+                info_msg('The schematic drawing is disabled')
 
     def post_create_schematic(self):
         """
@@ -2362,6 +2397,8 @@ class MainGUI(QMainWindow):
         q_steepness_factor = 1.0
         taps_control_mode = self.taps_control_modes_dict[self.ui.taps_control_mode_comboBox.currentText()]
 
+        verbose = self.ui.verbositySpinBox.value()
+
         exponent = self.ui.tolerance_spinBox.value()
         tolerance = 1.0 / (10.0 ** exponent)
 
@@ -2390,9 +2427,11 @@ class MainGUI(QMainWindow):
 
         ignore_single_node_islands = self.ui.ignore_single_node_islands_checkBox.isChecked()
 
+        use_stored_guess = self.ui.use_voltage_guess_checkBox.isChecked()
+
         ops = sim.PowerFlowOptions(solver_type=solver_type,
                                    retry_with_other_methods=retry_with_other_methods,
-                                   verbose=False,
+                                   verbose=verbose,
                                    initialize_with_existing_solution=True,
                                    tolerance=tolerance,
                                    max_iter=max_iter,
@@ -2406,7 +2445,8 @@ class MainGUI(QMainWindow):
                                    q_steepness_factor=q_steepness_factor,
                                    distributed_slack=distributed_slack,
                                    ignore_single_node_islands=ignore_single_node_islands,
-                                   mu=mu)
+                                   mu=mu,
+                                   use_stored_guess=use_stored_guess)
 
         return ops
 
@@ -2543,6 +2583,8 @@ class MainGUI(QMainWindow):
             if len(drv.logger) > 0:
                 dlg = LogsDialogue('Power flow', drv.logger)
                 dlg.exec_()
+            if len(drv.logger.debug_entries):
+                self.console_msg(drv.logger.debug_entries)
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -4079,14 +4121,11 @@ class MainGUI(QMainWindow):
         self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
         self.ui.skipNtcGenerationLimitsCheckBox.setChecked(False)
         self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
-        self.ui.ntcMaximizeExchangeFlowCheckBox.setChecked(True)
         self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
         self.ui.ntcFeasibilityCheckCheckBox.setChecked(False)
         self.ui.weightPowerShiftSpinBox.setValue(0)
         self.ui.weightGenCostSpinBox.setValue(0)
-        self.ui.weightGenDeltaSpinBox.setValue(0)
         self.ui.weightsOverloadsSpinBox.setValue(0)
-        self.ui.weightsHVDCControlSpinBox.setValue(0)
 
     def default_options_opf_ntc_proportional(self):
         """
@@ -4096,14 +4135,11 @@ class MainGUI(QMainWindow):
         self.ui.monitorOnlySensitiveBranchesCheckBox.setChecked(True)
         self.ui.skipNtcGenerationLimitsCheckBox.setChecked(True)
         self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
-        self.ui.ntcMaximizeExchangeFlowCheckBox.setChecked(True)
         self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
-        self.ui.ntcFeasibilityCheckCheckBox.setChecked(True)
+        self.ui.ntcFeasibilityCheckCheckBox.setChecked(False)
         self.ui.weightPowerShiftSpinBox.setValue(5)
-        self.ui.weightGenCostSpinBox.setValue(0)
-        self.ui.weightGenDeltaSpinBox.setValue(5)
-        self.ui.weightsOverloadsSpinBox.setValue(5)
-        self.ui.weightsHVDCControlSpinBox.setValue(3)
+        self.ui.weightGenCostSpinBox.setValue(2)
+        self.ui.weightsOverloadsSpinBox.setValue(3)
 
     def run_opf_ntc(self):
         """
@@ -4124,9 +4160,6 @@ class MainGUI(QMainWindow):
                 idx_from = np.array([i for i, bus in lst_from])
                 idx_to = np.array([i for i, bus in lst_to])
                 idx_br = np.array([i for i, bus, sense in lst_br])
-                sense_br = np.array([sense for i, bus, sense in lst_br])
-                idx_hvdc_br = np.array([i for i, bus, sense in lst_hvdc_br])
-                sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
 
                 if len(idx_from) == 0:
                     error_msg('The area "from" has no buses!')
@@ -4157,7 +4190,6 @@ class MainGUI(QMainWindow):
                 branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
                 dT = self.ui.atcPerturbanceSpinBox.value()
                 mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
-                consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
                 tolerance = 10.0 ** self.ui.ntcOpfTolSpinBox.value()
 
                 perform_previous_checks = self.ui.ntcFeasibilityCheckCheckBox.isChecked()
@@ -4166,34 +4198,33 @@ class MainGUI(QMainWindow):
 
                 weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
                 weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
-                weight_generation_delta = 10.0 ** self.ui.weightGenDeltaSpinBox.value()
-                weight_overloads = 10.0 ** self.ui.weightsOverloadsSpinBox.value()
-                weight_hvdc_control = 10.0 ** self.ui.weightsHVDCControlSpinBox.value()
-                maximize_exchange_flows = self.ui.ntcMaximizeExchangeFlowCheckBox.isChecked()
 
-                options = sim.OptimalNetTransferCapacityOptions(area_from_bus_idx=idx_from,
-                                                                area_to_bus_idx=idx_to,
-                                                                mip_solver=mip_solver,
-                                                                generation_formulation=generation_formulation,
-                                                                monitor_only_sensitive_branches=monitor_only_sensitive_branches,
-                                                                branch_sensitivity_threshold=branch_sensitivity_threshold,
-                                                                skip_generation_limits=skip_generation_limits,
-                                                                consider_contingencies=consider_contingencies,
-                                                                maximize_exchange_flows=maximize_exchange_flows,
-                                                                dispatch_all_areas=dispatch_all_areas,
-                                                                tolerance=tolerance,
-                                                                sensitivity_dT=dT,
-                                                                sensitivity_mode=mode,
-                                                                perform_previous_checks=perform_previous_checks,
-                                                                weight_power_shift=weight_power_shift,
-                                                                weight_generation_cost=weight_generation_cost,
-                                                                weight_generation_delta=weight_generation_delta,
-                                                                weight_kirchoff=0,
-                                                                weight_overloads=weight_overloads,
-                                                                weight_hvdc_control=weight_hvdc_control
-                                                                )
+                consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
+                consider_hvdc_contingencies = self.ui.considerContingenciesHvdcOpfCheckBox.isChecked()
+                consider_gen_contingencies = self.ui.considerContingenciesGeneratorOpfCheckBox.isChecked()
+                generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
 
-                self.ui.progress_label.setText('Running optimal power flow...')
+                options = sim.OptimalNetTransferCapacityOptions(
+                    area_from_bus_idx=idx_from,
+                    area_to_bus_idx=idx_to,
+                    mip_solver=mip_solver,
+                    generation_formulation=generation_formulation,
+                    monitor_only_sensitive_branches=monitor_only_sensitive_branches,
+                    branch_sensitivity_threshold=branch_sensitivity_threshold,
+                    skip_generation_limits=skip_generation_limits,
+                    dispatch_all_areas=dispatch_all_areas,
+                    tolerance=tolerance,
+                    sensitivity_dT=dT,
+                    sensitivity_mode=mode,
+                    perform_previous_checks=perform_previous_checks,
+                    weight_power_shift=weight_power_shift,
+                    weight_generation_cost=weight_generation_cost,
+                    consider_contingencies=consider_contingencies,
+                    consider_hvdc_contingencies=consider_hvdc_contingencies,
+                    consider_gen_contingencies=consider_gen_contingencies,
+                    generation_contingency_threshold=generation_contingency_threshold)
+
+                self.ui.progress_label.setText('Running optimal net transfer capacity...')
                 QtGui.QGuiApplication.processEvents()
                 pf_options = self.get_selected_power_flow_options()
                 # set power flow object instance
@@ -4249,6 +4280,144 @@ class MainGUI(QMainWindow):
                 dlg = LogsDialogue(drv.name, drv.logger)
                 dlg.setModal(True)
                 dlg.exec_()
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()
+
+    def run_opf_ntc_ts(self, with_clustering=False):
+        """
+        Run OPF time series simulation
+        """
+        if len(self.circuit.buses) > 0:
+
+            if not self.session.is_this_running(sim.SimulationTypes.OPF_NTC_TS_run):
+
+                self.remove_simulation(sim.SimulationTypes.OPF_NTC_TS_run)
+
+                # available transfer capacity inter areas
+                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br = self.get_compatible_areas_from_to()
+
+                if not compatible_areas:
+                    return
+
+                idx_from = np.array([i for i, bus in lst_from])
+                idx_to = np.array([i for i, bus in lst_to])
+                idx_br = np.array([i for i, bus, sense in lst_br])
+
+                if len(idx_from) == 0:
+                    error_msg('The area "from" has no buses!')
+                    return
+
+                if len(idx_to) == 0:
+                    error_msg('The area "to" has no buses!')
+                    return
+
+                if len(idx_br) == 0:
+                    error_msg('There are no inter-area branches!')
+                    return
+
+                mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
+
+                if self.ui.optimalRedispatchRadioButton.isChecked():
+                    generation_formulation = dev.GenerationNtcFormulation.Optimal
+                    # perform_previous_checks = False
+                elif self.ui.proportionalRedispatchRadioButton.isChecked():
+                    generation_formulation = dev.GenerationNtcFormulation.Proportional
+                    # perform_previous_checks = True
+                else:
+                    generation_formulation = dev.GenerationNtcFormulation.Optimal
+                    # perform_previous_checks = False
+
+                monitor_only_sensitive_branches = self.ui.monitorOnlySensitiveBranchesCheckBox.isChecked()
+                skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
+                branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
+                dT = self.ui.atcPerturbanceSpinBox.value()
+                mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
+                tolerance = 10.0 ** self.ui.ntcOpfTolSpinBox.value()
+
+                perform_previous_checks = self.ui.ntcFeasibilityCheckCheckBox.isChecked()
+
+                dispatch_all_areas = self.ui.ntcDispatchAllAreasCheckBox.isChecked()
+
+                weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
+                weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
+
+                consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
+                consider_hvdc_contingencies = self.ui.considerContingenciesHvdcOpfCheckBox.isChecked()
+                consider_gen_contingencies = self.ui.considerContingenciesGeneratorOpfCheckBox.isChecked()
+                generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
+
+                options = sim.OptimalNetTransferCapacityOptions(
+                    area_from_bus_idx=idx_from,
+                    area_to_bus_idx=idx_to,
+                    mip_solver=mip_solver,
+                    generation_formulation=generation_formulation,
+                    monitor_only_sensitive_branches=monitor_only_sensitive_branches,
+                    branch_sensitivity_threshold=branch_sensitivity_threshold,
+                    skip_generation_limits=skip_generation_limits,
+                    dispatch_all_areas=dispatch_all_areas,
+                    tolerance=tolerance,
+                    sensitivity_dT=dT,
+                    sensitivity_mode=mode,
+                    perform_previous_checks=perform_previous_checks,
+                    weight_power_shift=weight_power_shift,
+                    weight_generation_cost=weight_generation_cost,
+                    consider_contingencies=consider_contingencies,
+                    consider_hvdc_contingencies=consider_hvdc_contingencies,
+                    consider_gen_contingencies=consider_gen_contingencies,
+                    generation_contingency_threshold=generation_contingency_threshold)
+
+                self.ui.progress_label.setText('Running optimal net transfer capacity time series...')
+                QtGui.QGuiApplication.processEvents()
+
+                start_ = self.ui.profile_start_slider.value()
+                end_ = self.ui.profile_end_slider.value()
+                cluster_number = self.ui.cluster_number_spinBox.value()
+
+                # set optimal net transfer capacity driver instance
+                drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(
+                    grid=self.circuit,
+                    options=options,
+                    start_=start_,
+                    end_=end_,
+                    use_clustering=with_clustering,
+                    cluster_number=cluster_number)
+
+                self.LOCK()
+                self.session.run(drv,
+                                 post_func=self.post_opf_ntc_ts,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
+
+            else:
+                warning_msg('Another Optimal NCT time series is being run...')
+        else:
+            pass
+
+    def post_opf_ntc_ts(self):
+        """
+        Actions to run after the optimal net transfer capacity time series simulation
+        """
+
+        drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_NTC_TS_run)
+
+        if results is not None:
+
+            if len(drv.logger) > 0:
+                dlg = LogsDialogue('logger', drv.logger)
+                dlg.exec_()
+
+            # remove from the current simulations
+            self.remove_simulation(sim.SimulationTypes.OPF_NTC_TS_run)
+
+            if results is not None:
+                self.update_available_results()
+
+                msg = 'Optimal NTC time series elapsed ' + str(drv.elapsed) + ' s'
+                self.console_msg(msg)
+
+        else:
+            pass
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -4575,7 +4744,7 @@ class MainGUI(QMainWindow):
         self.coordinates_window = CoordinatesInputGUI(self, self.circuit.buses)
         self.coordinates_window.exec_()
 
-        self.draw_schematic()
+        self.create_schematic_from_api()
 
     def set_selected_bus_property(self, prop):
         """
@@ -4760,6 +4929,11 @@ class MainGUI(QMainWindow):
                               loadings=np.abs(results.loading),
                               types=results.bus_types,
                               losses=results.losses,
+                              failed_br_idx=None,
+                              hvdc_Pf=results.hvdc_Pf,
+                              hvdc_Pt=results.hvdc_Pt,
+                              hvdc_losses=results.hvdc_losses,
+                              hvdc_loading=results.hvdc_loading,
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -4777,6 +4951,12 @@ class MainGUI(QMainWindow):
                               voltages=results.voltage[current_step, :],
                               loadings=np.abs(results.loading[current_step, :]),
                               types=results.bus_types,
+                              losses=results.losses[current_step, :],
+                              failed_br_idx=None,
+                              hvdc_Pf=results.hvdc_Pf[current_step, :],
+                              hvdc_Pt=results.hvdc_Pt[current_step, :],
+                              hvdc_losses=results.hvdc_losses[current_step, :],
+                              hvdc_loading=results.hvdc_loading[current_step, :],
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -4794,6 +4974,12 @@ class MainGUI(QMainWindow):
                               voltages=results.voltage[current_step, :],
                               loadings=np.abs(results.loading[current_step, :]),
                               types=results.bus_types,
+                              losses=results.losses[current_step, :],
+                              failed_br_idx=None,
+                              hvdc_Pf=results.hvdc_Pf[current_step, :],
+                              hvdc_Pt=results.hvdc_Pt[current_step, :],
+                              hvdc_losses=results.hvdc_losses[current_step, :],
+                              hvdc_loading=results.hvdc_loading[current_step, :],
                               use_flow_based_width=use_flow_based_width,
                               min_branch_width=min_branch_width,
                               max_branch_width=max_branch_width,
@@ -5711,7 +5897,7 @@ class MainGUI(QMainWindow):
 
                 try:
                     args = tpe(args)
-                except:
+                except TypeError:
                     error_msg('Could not parse the argument for the data type')
                     return
 
@@ -5723,7 +5909,7 @@ class MainGUI(QMainWindow):
 
                 try:
                     args = tpe(args)
-                except:
+                except TypeError:
                     error_msg('Could not parse the argument for the data type')
                     return
 
@@ -5735,7 +5921,7 @@ class MainGUI(QMainWindow):
 
                 try:
                     args = tpe(args)
-                except:
+                except TypeError:
                     error_msg('Could not parse the argument for the data type')
                     return
 
@@ -5747,7 +5933,7 @@ class MainGUI(QMainWindow):
 
                 try:
                     args = tpe(args)
-                except:
+                except TypeError:
                     error_msg('Could not parse the argument for the data type')
                     return
 
@@ -5761,13 +5947,13 @@ class MainGUI(QMainWindow):
 
                     try:
                         args = tpe(args)
-                    except:
+                    except TypeError:
                         error_msg('Could not parse the argument for the data type')
                         return
 
                     filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).lower()]
 
-                elif tpe == DeviceType.BusDevice:
+                elif elm.device_type == DeviceType.BusDevice:
                     filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).name.lower()]
 
                 else:
@@ -5781,7 +5967,7 @@ class MainGUI(QMainWindow):
 
                     try:
                         args = tpe(args)
-                    except:
+                    except TypeError:
                         error_msg('Could not parse the argument for the data type')
                         return
 
@@ -5798,7 +5984,7 @@ class MainGUI(QMainWindow):
 
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) == args]
 
-                elif tpe == DeviceType.BusDevice:
+                elif elm.device_type == DeviceType.BusDevice:
                     filtered_objects = [x for x in self.type_objects_list if args == getattr(x, attr).name.lower()]
 
                 else:
@@ -5815,13 +6001,13 @@ class MainGUI(QMainWindow):
 
                     try:
                         args = tpe(args)
-                    except:
+                    except TypeError:
                         error_msg('Could not parse the argument for the data type')
                         return
 
                     filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() != args]
 
-                elif tpe == DeviceType.BusDevice:
+                elif elm.device_type == DeviceType.BusDevice:
                     filtered_objects = [x for x in self.type_objects_list if args != getattr(x, attr).name.lower()]
 
                 else:
@@ -6008,48 +6194,7 @@ class MainGUI(QMainWindow):
 
         return logger
 
-    def correct_shit(self, min_vset=0.98, max_vset=1.02):
-        """
-        Correct common flaws such as the transformer virtual taps too high
-        :param min_vset: minimum set point for the generators
-        :param max_vset: maximum set point for the generators
-        """
-        logger = Logger()
 
-        for elm in self.circuit.transformers2w:
-            HV = max(elm.bus_from.Vnom, elm.bus_to.Vnom)
-            LV = min(elm.bus_from.Vnom, elm.bus_to.Vnom)
-
-            if elm.HV != HV:
-                self.console_msg('Corrected transformer HV for {0} from [{1},{2}] to [{3},{4}]'.format(elm.name,
-                                                                                                       elm.LV, elm.HV,
-                                                                                                       LV, HV))
-
-                logger.add_info("Corrected transformer HV", elm.name, elm.HV, HV)
-
-                elm.HV = HV
-
-            if elm.LV != LV:
-                self.console_msg('Corrected transformer HV for {0} from [{1},{2}] to [{3},{4}]'.format(elm.name,
-                                                                                                       elm.LV, elm.HV,
-                                                                                                       LV, HV))
-
-                logger.add_info("Corrected transformer LV", elm.name, elm.LV, LV)
-
-                elm.LV = LV
-
-        for elm in self.circuit.get_generators():
-            if elm.Vset > max_vset:
-                # self.console_msg('Corrected generator set point for {0} from {1} to {2}'.format(elm.name,elm.Vset, max_vset))
-                logger.add_info("Corrected generator set point", elm.name, elm.Vset, max_vset)
-                elm.Vset = max_vset
-
-            elif elm.Vset < min_vset:
-                # self.console_msg('Corrected generator set point for {0} from {1} to {2}'.format(elm.name, elm.Vset, min_vset))
-                logger.add_info("Corrected generator set point", elm.name, elm.Vset, min_vset)
-                elm.Vset = min_vset
-
-        return logger
 
     def correct_branch_monitoring(self, max_loading=1.0):
         """
@@ -6711,18 +6856,24 @@ class MainGUI(QMainWindow):
 
         if ok:
             self.circuit.fuse_devices()
-            self.draw_schematic()
+            self.create_schematic_from_api()
 
     def correct_inconsistencies(self):
         """
-        Call correct shit
+        Call correct inconsistencies
         :return:
         """
-        ok = yes_no_question("This action applies a number of expert rules to correct set points, "
-                             "transformer voltages and other inconsistencies", "Correct inconsistencies")
+        dlg = CorrectInconsistenciesDialogue()
+        dlg.setModal(True)
+        dlg.exec_()
 
-        if ok:
-            logger = self.correct_shit()
+        if dlg.accepted:
+            logger = Logger()
+
+            self.circuit.correct_inconsistencies(logger=logger,
+                                                 maximum_difference=dlg.max_virtual_tap.value(),
+                                                 min_vset=dlg.min_voltage.value(),
+                                                 max_vset=dlg.max_voltage.value())
 
             if len(logger) > 0:
                 dlg = LogsDialogue("correct inconsistencies", logger)
@@ -6744,6 +6895,33 @@ class MainGUI(QMainWindow):
                 dlg = LogsDialogue("Delete inconsistencies", logger)
                 dlg.setModal(True)
                 dlg.exec_()
+
+    def re_index_time(self):
+        """
+        Re-index time
+        :return:
+        """
+
+        dlg = TimeReIndexDialogue()
+        dlg.setModal(True)
+        dlg.exec_()
+
+        if dlg.accepted:
+            self.circuit.re_index_time(year=dlg.year_spinner.value(),
+                                       hours_per_step=dlg.interval_hours.value())
+
+    def fix_generators_active_based_on_the_power(self):
+        """
+        set the generators active based on the active power values
+        :return:
+        """
+        ok = yes_no_question("This action sets the generation active profile based on the active power profile "
+                             "such that ig a generator active power is zero, the active value is false",
+                             "Set generation active profile")
+
+        if ok:
+            self.circuit.set_generators_active_profile_from_their_active_power()
+            self.circuit.set_batteries_active_profile_from_their_active_power()
 
 
 def run(use_native_dialogues=False):

@@ -9,7 +9,7 @@
 
 ![](https://github.com/SanPen/GridCal/blob/master/pics/GridCal.png)
 
-This software aims to be a complete platform for power systems research and simulation.
+This software Aim's to be a complete platform for power systems research and simulation.
 
 - [Watch the video](https://youtu.be/SY66WgLGo54)
 - Check out the [Documentation](https://gridcal.readthedocs.io/en/latest/about.html)
@@ -23,9 +23,8 @@ You can choose to install GridCal through pip or just get a standalone setup rea
 
 - From your python distribution on any OS: `pip install GridCal`
 
-- [GridCal for windows x64](https://45a5077a-25c4-47e3-9a30-f60734789b44.filesusr.com/archives/f651ec_0ea805a09a8841ea8e5e2cfd6fbd8598.zip?dn=GridCalsetup.zip)
+- [GridCal standalone for windows x64](https://www.advancedgridinsights.com/gridcal)
 
-- [GridCal for linux x64](https://45a5077a-25c4-47e3-9a30-f60734789b44.filesusr.com/archives/f651ec_7e2426b48b7849af9d19325f709f7b17.zip?dn=GridCal_linux.tar.zip)
 
 For more options and details follow the
 [installation instructions](https://gridcal.readthedocs.io/en/latest/getting_started/install.html).
@@ -77,7 +76,7 @@ tests under [src/tests](https://github.com/SanPen/GridCal/tree/master/src/tests)
 
 # Features overview
 
-It is pure Python, it works for Windows, Linux and OSX.
+It is a pure Python, it works for Windows, Linux and OSX.
 
 Some features you'll find already are:
 
@@ -150,5 +149,5 @@ Some features you'll find already are:
 
 # Contact
 
-Send feedback and requests to [santiago.penate.vera@gmail.com](santiago.penate.vera@gmail.com).
+Send feedback and requests to [santiago@gridcal.org](santiago@gridcal.org).
 

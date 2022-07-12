@@ -60,8 +60,11 @@ class StaticGeneratorData:
 
         return data
 
-    def get_island(self, bus_idx):
-        return tp.get_elements_of_the_island(self.C_bus_static_generator.T, bus_idx)
+    def get_island(self, bus_idx, t_idx=0):
+        if self.nstagen:
+            return tp.get_elements_of_the_island(self.C_bus_static_generator.T, bus_idx, active=self.static_generator_active[t_idx])
+        else:
+            return np.zeros(0, dtype=int)
 
     def get_injections_per_bus(self):
         return self.C_bus_static_generator * (self.static_generator_s * self.static_generator_active)

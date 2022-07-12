@@ -21,12 +21,12 @@ import numba as nb
 from GridCal.Engine.basic_structures import BusMode, Logger
 
 
-def compile_types(Sbus, types, logger=Logger()):
+nb.njit(cache=True)
+def compile_types(Sbus, types):
     """
     Compile the types.
     :param Sbus: array of power injections per node
     :param types: array of tentative node types
-    :param logger: logger where to store the errors
     :return: ref, pq, pv, pqpv
     """
 
@@ -40,9 +40,7 @@ def compile_types(Sbus, types, logger=Logger()):
     if len(ref) == 0:  # there is no slack!
 
         if len(pv) == 0:  # there are no pv neither -> blackout grid
-
-            logger.add('There are no slack nodes selected')
-
+            pass
         else:  # select the first PV generator as the slack
 
             mx = max(Sbus[pv])

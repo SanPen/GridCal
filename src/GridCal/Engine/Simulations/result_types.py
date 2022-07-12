@@ -88,6 +88,8 @@ class ResultTypes(Enum):
     GenerationDeltaSlacks = 'Generation delta slacks', DeviceType.GeneratorDevice
     InterAreaExchange = 'Inter-Area exchange', DeviceType.NoDevice
 
+    OptimalNetTransferCapacityTimeSeriesReport = 'Optimal net transfer capacity series report', DeviceType.NoDevice
+
     # Short-circuit
     BusShortCircuitPower = 'Bus short circuit power', DeviceType.BusDevice
 
@@ -125,6 +127,9 @@ class ResultTypes(Enum):
     AvailableTransferCapacityReport = 'ATC Report', DeviceType.NoDevice
 
     ContingencyFlowsReport = 'Contingency Report', DeviceType.NoDevice
+    ContingencyFlowsBranchReport = 'Contingency Branch Report', DeviceType.NoDevice
+    ContingencyFlowsGenerationReport = 'Contingency Generation Report', DeviceType.NoDevice
+    ContingencyFlowsHvdcReport = 'Contingency Hvdc Report', DeviceType.NoDevice
 
     # inputs analysis
     ZoneAnalysis = 'Zone analysis', DeviceType.NoDevice
