@@ -152,16 +152,11 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0,
 
     if with_n1:
         for m in range(len(alpha)):
-            # # NUMPY METHOD
-            # dflow_n1 = (dflow[m] + lodf[m, :] * dflow)
-            # alpha_n1[m] = np.max(dflow_n1) / dT
-
-            # FOR LOOP METHOD
             for c in range(len(alpha)):
                 if m != c:
                     dflow_n1 = dflow[m] + lodf[m, c] * dflow[c]
                     alpha_c = dflow_n1 / dT
-                    if alpha_c > alpha_n1[m]:
+                    if abs(alpha_c) > abs(alpha_n1[m]):
                         alpha_n1[m] = alpha_c
 
     else:

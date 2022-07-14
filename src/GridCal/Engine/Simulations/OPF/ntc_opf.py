@@ -1231,7 +1231,9 @@ def formulate_hvdc_flow(solver: pywraplp.Solver, nhvdc, names, rate, angles, hvd
                     flow_sensed[i] == flow_f[i] * sense,
                     'hvdc_sense_restriction_assignment_' + suffix)
 
-        #todo: ver cómo devolver el peso para el slack de hvdc que sea la diferencia entre el rate-flow (¿puede ser una variable?)
+
+
+    #todo: ver cómo devolver el peso para el slack de hvdc que sea la diferencia entre el rate-flow (¿puede ser una variable?)
 
     return flow_f, hvdc_angle_slack_pos, hvdc_angle_slack_neg
 
