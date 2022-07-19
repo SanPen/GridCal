@@ -5482,11 +5482,12 @@ class MainGUI(QMainWindow):
             end = start
 
         if self.circuit.time_profile is not None:
-            t1 = self.circuit.time_profile[start]
-            t2 = self.circuit.time_profile[end]
-            t1 = pd.to_datetime(t1).strftime('%d/%m/%Y %H:%M')
-            t2 = pd.to_datetime(t2).strftime('%d/%m/%Y %H:%M')
-            self.ui.profile_label.setText(str(t1) + ' -> ' + str(t2))
+            if len(self.circuit.time_profile) > 0:
+                t1 = self.circuit.time_profile[start]
+                t2 = self.circuit.time_profile[end]
+                t1 = pd.to_datetime(t1).strftime('%d/%m/%Y %H:%M')
+                t2 = pd.to_datetime(t2).strftime('%d/%m/%Y %H:%M')
+                self.ui.profile_label.setText(str(t1) + ' -> ' + str(t2))
 
     def add_to_catalogue(self):
         """
