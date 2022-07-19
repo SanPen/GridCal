@@ -43,7 +43,7 @@ except ModuleNotFoundError:
 class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def __init__(self, bus_names, br_names, rates, contingency_rates, time_array, time_indices,
-                 sampled_probabilities=None, max_report_elements=5, trm=0):
+                 sampled_probabilities=None, max_report_elements=5, trm=0, ntc_load_rule=100):
         """
 
         :param br_names:
@@ -94,6 +94,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
         self.elapsed = 0
 
         self.trm = trm
+        self.ntc_load_rule = ntc_load_rule
 
         if sampled_probabilities is None and len(self.time_array) > 0:
             pct = 1 / len(self.time_array)
@@ -414,7 +415,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
     tpe = SimulationTypes.OptimalNetTransferCapacityTimeSeries_run
 
     def __init__(self, grid: MultiCircuit, options: OptimalNetTransferCapacityOptions, start_=0, end_=None,
-                 use_clustering=False, cluster_number=100, trm=0):
+                 use_clustering=False, cluster_number=100, trm=0, max_report_elements=10, ntc_load_rule=0,
+                 n1_consideration=True):
         """
 
         :param grid: MultiCircuit Object
@@ -437,6 +439,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.cluster_number = cluster_number
 
         self.trm = trm
+        self.max_report_elements = max_report_elements
+        self.ntc_load_rule = ntc_load_rule
+        self.n1_consideration = n1_consideration
 
         self.logger = Logger()
 
@@ -447,11 +452,13 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             contingency_rates=[],
             time_array=[],
             time_indices=[],
-            trm=self.trm)
+            trm=self.trm,
+            max_report_elements=self.max_report_elements,
+            ntc_load_rule=self.ntc_load_rule)
 
     name = tpe.value
 
-    def compute_exchange_sensitivity(self, linear, numerical_circuit: OpfTimeCircuit, t):
+    def compute_exchange_sensitivity(self, linear, numerical_circuit: OpfTimeCircuit, t, with_n1=True):
 
         # compute the branch exchange sensitivity (alpha)
         tm0 = time.time()
@@ -466,7 +473,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             idx2=self.options.area_to_bus_idx,
             dT=self.options.sensitivity_dT,
             mode=self.options.sensitivity_mode.value,
-            with_n1=True)
+            with_n1=with_n1)
         self.logger.add_info('Exchange sensibility computed in {0:.2f} scs.'.format(time.time()-tm0))
 
         return alpha, alpha_n1
@@ -519,7 +526,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 time_array=nc.time_array[time_indices],
                 sampled_probabilities=sampled_probabilities,
                 time_indices=time_indices,
-                trm=self.trm)
+                trm=self.trm,
+                max_report_elements=self.max_report_elements,
+                ntc_load_rule=self.ntc_load_rule)
 
         else:
             self.results = OptimalNetTransferCapacityTimeSeriesResults(
@@ -528,7 +537,10 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 rates=nc.Rates,
                 contingency_rates=nc.ContingencyRates,
                 time_array=nc.time_array[time_indices],
-                time_indices=time_indices)
+                time_indices=time_indices,
+                trm=self.trm,
+                max_report_elements=self.max_report_elements,
+                ntc_load_rule=self.ntc_load_rule)
 
         # hourly alphas
         alpha = np.zeros((len(time_indices), nc.nbr))
@@ -551,7 +563,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 alpha[t_idx, :], alpha_n1[t_idx, :] = self.compute_exchange_sensitivity(
                     linear=linear,
                     numerical_circuit=nc,
-                    t=t)
+                    t=t,
+                    with_n1=self.n1_consideration)
             else:
                 alpha[t_idx, :] = np.ones(nc.nbr)
                 alpha_n1[t_idx, :] = np.ones(nc.nbr)

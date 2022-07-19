@@ -4220,15 +4220,21 @@ class MainGUI(QMainWindow):
                 QtGui.QGuiApplication.processEvents()
                 pf_options = self.get_selected_power_flow_options()
 
+                trm = self.ui.trmSpinBox.value()
+                nTopContingencies = self.ui.ntcReportLimitingElementsSpinBox.value()
+                ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value()
+                n1Consideration = self.ui.n1ConsiderationCheckBox.value()
 
-                trm = self.ui.trm_spinBox.value()
                 # set power flow object instance
 
                 drv = sim.OptimalNetTransferCapacityDriver(
                     grid=self.circuit,
                     options=options,
                     pf_options=pf_options,
-                    trm=trm)
+                    trm=trm,
+                    nTopContingencies=nTopContingencies,
+                    ntc_load_rule=ntcLoadRule,
+                    n1_consideration=n1Consideration)
 
                 self.LOCK()
                 self.session.run(drv,
@@ -4375,7 +4381,10 @@ class MainGUI(QMainWindow):
                 end_ = self.ui.profile_end_slider.value()
                 cluster_number = self.ui.cluster_number_spinBox.value()
 
-                trm = self.ui.trm_spinBox.value()
+                trm = self.ui.trmSpinBox.value()
+                nTopContingencies = self.ui.ntcReportLimitingElementsSpinBox.value()
+                ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value()
+                n1Consideration = self.ui.n1ConsiderationCheckBox.value()
 
                 # set optimal net transfer capacity driver instance
                 drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(
@@ -4385,7 +4394,10 @@ class MainGUI(QMainWindow):
                     end_=end_,
                     use_clustering=with_clustering,
                     cluster_number=cluster_number,
-                    trm=trm)
+                    trm=trm,
+                    max_report_elements=nTopContingencies,
+                    ntc_load_rule=ntcLoadRule,
+                    n1_consideration=n1Consideration)
 
                 self.LOCK()
                 self.session.run(drv,

@@ -161,14 +161,15 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         **converged**: converged?
     """
 
-    def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names, hvdc_names, trm,
-                 branch_control_modes, hvdc_control_modes, Sbus=None, voltage=None, battery_power=None,
-                 controlled_generation_power=None, Sf=None, loading=None, losses=None, solved=None, bus_types=None,
-                 hvdc_flow=None, hvdc_loading=None, hvdc_angle_slack=None, phase_shift=None, generation_delta=None,
-                 inter_area_branches=list(), inter_area_hvdc=list(), alpha=None, alpha_n1=None, rates=None,
-                 monitor=None, contingency_branch_flows_list=None, contingency_branch_indices_list=None,
-                 contingency_generation_flows_list=None, contingency_generation_indices_list=None,
-                 contingency_hvdc_flows_list=None, contingency_hvdc_indices_list=None, contingency_rates=None,
+    def __init__(self, bus_names, branch_names, load_names, generator_names, battery_names,
+                 hvdc_names, trm, ntc_load_rule, branch_control_modes, hvdc_control_modes,
+                 Sbus=None, voltage=None, battery_power=None, controlled_generation_power=None, Sf=None, loading=None,
+                 losses=None, solved=None, bus_types=None, hvdc_flow=None, hvdc_loading=None, hvdc_angle_slack=None,
+                 phase_shift=None, generation_delta=None, inter_area_branches=list(), inter_area_hvdc=list(),
+                 alpha=None, alpha_n1=None, rates=None, monitor=None, contingency_branch_flows_list=None,
+                 contingency_branch_indices_list=None, contingency_generation_flows_list=None,
+                 contingency_generation_indices_list=None, contingency_hvdc_flows_list=None,
+                 contingency_hvdc_indices_list=None, contingency_rates=None,
                  area_from_bus_idx=None, area_to_bus_idx=None):
 
         ResultsTemplate.__init__(self,
@@ -219,6 +220,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.hvdc_names = hvdc_names
 
         self.trm = trm
+        self.ntc_load_rule = ntc_load_rule
 
         self.hvdc_control_modes = hvdc_control_modes
         self.branch_control_modes = branch_control_modes
@@ -801,7 +803,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
     tpe = SimulationTypes.OPF_NTC_run
 
     def __init__(self, grid: MultiCircuit, options: OptimalNetTransferCapacityOptions, pf_options: PowerFlowOptions,
-                 trm=0):
+                 trm=0, ntc_load_rule=0, n1_consideration=True):
         """
         PowerFlowDriver class constructor
         @param grid: MultiCircuit Object
@@ -813,6 +815,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         self.options = options
         self.pf_options = pf_options
         self.trm = trm
+        self.ntc_load_rule = ntc_load_rule
+        self.n1_consideration = n1_consideration
 
         self.all_solved = True
 
@@ -824,7 +828,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         """
         return list()
 
-    def compute_exchange_sensitivity(self, linear, numerical_circuit):
+    def compute_exchange_sensitivity(self, linear, numerical_circuit, with_n1=True):
 
         # compute the branch exchange sensitivity (alpha)
         alpha, alpha_n1 = compute_alpha(
@@ -838,7 +842,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             idx2=self.options.area_to_bus_idx,
             dT=self.options.sensitivity_dT,
             mode=self.options.sensitivity_mode.value,
-            with_n1=True)
+            with_n1=with_n1)
 
         return alpha, alpha_n1
 
@@ -876,7 +880,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         if self.options.monitor_only_sensitive_branches:
             alpha, alpha_n1 = self.compute_exchange_sensitivity(
                 linear=linear,
-                numerical_circuit=numerical_circuit)
+                numerical_circuit=numerical_circuit,
+                with_n1=self.n1_consideration)
         else:
             alpha = np.ones(numerical_circuit.nbr)
             alpha_n1 = np.ones(numerical_circuit.nbr)
@@ -900,8 +905,6 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                     base_problems = True
 
             # run contingency analysis ---------------------------------------------------------------------------------
-
-
             if self.options.consider_contingencies:
                 self.progress_text.emit('Pre-solving base state (Contingency analysis)...')
                 options = ContingencyAnalysisOptions(distributed_slack=False,
@@ -957,6 +960,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 battery_names=numerical_circuit.battery_data.battery_names,
                 hvdc_names=numerical_circuit.hvdc_data.names,
                 trm=self.trm,
+                ntc_load_rule=self.ntc_load_rule,
                 Sbus=numerical_circuit.Sbus.real,
                 voltage=pf_drv.results.voltage,
                 battery_power=np.zeros((numerical_circuit.nbatt, 1)),
@@ -1068,6 +1072,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
                 battery_names=numerical_circuit.battery_data.battery_names,
                 hvdc_names=numerical_circuit.hvdc_data.names,
                 trm=self.trm,
+                ntc_load_rule=self.ntc_load_rule,
                 branch_control_modes=numerical_circuit.branch_data.control_mode,
                 hvdc_control_modes=numerical_circuit.hvdc_data.control_mode,
                 Sbus=problem.get_power_injections(),
