@@ -110,9 +110,8 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame], filename_zip="file.zip
                                 # f_zip_ptr.writestr(filename + '.npy', buffer.getvalue())  # save the buffer to the zip file
 
                                 # save the DataFrame to the buffer, protocol4 is to be compatible with python 3.6
-                                pd.DataFrame(data=arr).to_parquet(buffer)
-                                # save the buffer to the zip file
-                                f_zip_ptr.writestr(filename + '.parquet', buffer.getvalue())
+                                np.save(buffer, np.array(arr))  # save the DataFrame to the buffer
+                                f_zip_ptr.writestr(filename + '.npy', buffer.getvalue())  # save the buffer to the zip file
 
                             if progress_func is not None:
                                 progress_func((i + 1) / n_items * 100)

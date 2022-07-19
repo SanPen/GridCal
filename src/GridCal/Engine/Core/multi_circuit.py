@@ -837,7 +837,10 @@ class MultiCircuit:
         """
         """
         if self.time_profile is not None:
-            t = (self.time_profile.view(int) * 1e-9).tolist()  # UNIX time in seconds
+            # recommended way to get the unix datetimes
+            arr = (self.time_profile - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")
+            # t = (self.time_profile.array.astype(int) * 1e-9).tolist()  # UNIX time in seconds
+            t = arr.tolist()
         else:
             t = list()
         return {'time': t}
